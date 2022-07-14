@@ -2,23 +2,17 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/rsa"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
-	"time"
 
-	"github.com/go-jose/go-jose/v3"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/vanti-dev/bsp-ew/pkg/api"
 	"github.com/vanti-dev/bsp-ew/pkg/auth"
 	"github.com/vanti-dev/bsp-ew/pkg/auth/keycloak"
-	"github.com/vanti-dev/bsp-ew/pkg/auth/tenant"
 	"github.com/vanti-dev/bsp-ew/pkg/policy"
 	"github.com/vanti-dev/bsp-ew/pkg/testgen"
 	"golang.org/x/sync/errgroup"
@@ -69,7 +63,6 @@ func run(ctx context.Context) error {
 	// Register handlers
 	mux := http.NewServeMux()
 	mux.Handle("/", http.FileServer(http.Dir("static")))
-	mux.Handle("/oauth2/token", tenant.OAuth2TokenHandler(genTenantSecrets(), genTenantTokenSource()))
 
 	// Setup gRPC server
 	grpcServer := grpc.NewServer(
@@ -113,50 +106,6 @@ func listen(desiredPort int) (listener net.Listener, port int) {
 	port = listener.Addr().(*net.TCPAddr).Port
 
 	return
-}
-
-func genTenantSecrets() tenant.SecretStore {
-	store := tenant.NewMemorySecretStore(nil)
-	for i := 1; i <= 3; i++ {
-		clientId := fmt.Sprintf("tenant-%d", i)
-		data := tenant.SecretData{ClientID: clientId}
-		secret, err := store.Enroll(context.TODO(), data)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("Created new tenant %s with secret %s\n", clientId, secret)
-	}
-	return store
-}
-
-func genTenantTokenSource() *tenant.TokenSource {
-	key, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		panic(err)
-	}
-
-	signingKey := jose.SigningKey{
-		Algorithm: jose.RS256,
-		Key:       key,
-	}
-
-	jwk := jose.JSONWebKey{
-		Key:       key.Public(),
-		Algorithm: string(signingKey.Algorithm),
-		Use:       "sig",
-	}
-	jwkBytes, err := json.Marshal(jwk)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("generated signing key %s\n", string(jwkBytes))
-
-	return &tenant.TokenSource{
-		Key:      signingKey,
-		Issuer:   "http://localhost:8080",
-		Validity: 5 * time.Minute,
-	}
 }
 
 func initKeycloakVerifier(ctx context.Context) (auth.TokenVerifier, error) {
