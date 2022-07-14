@@ -1,0 +1,13 @@
+{
+  "name": "@ew-auth-poc/ui-gen",
+  "private": true,
+  "version": "0.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "gen": "protoc -I ../proto test.proto --js_out=import_style=commonjs:src --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:src"
+  },
+  "dependencies": {
+    "google-protobuf": "^3.20.1",
+    "grpc-web": "^1.3.1"
+  }
+}

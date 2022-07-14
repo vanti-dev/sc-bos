@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package vanti.bsp.ew;
+
+option go_package = "github.com/vanti-dev/bsp-ew/pkg/testgen";
+
+service TestApi {
+  rpc GetTest(GetTestRequest) returns (Test) {}
+  rpc UpdateTest(UpdateTestRequest) returns (Test) {}
+}
+
+message Test {
+  string data = 1;
+}
+
+message GetTestRequest {
+
+}
+
+message UpdateTestRequest {
+  Test test = 1;
+}

@@ -1,0 +1,143 @@
+{
+  "id": "744e81c1-cf8d-476f-ab8c-648c8109b0ed",
+  "acceptMappedClaims": null,
+  "accessTokenAcceptedVersion": 2,
+  "addIns": [],
+  "allowPublicClient": null,
+  "appId": "10c0b693-5131-4d1f-840f-cbaafc4d72fb",
+  "appRoles": [
+    {
+      "allowedMemberTypes": [
+        "User",
+        "Application"
+      ],
+      "description": "Provides normal user-level permissions to access the Test dataset",
+      "displayName": "Test User",
+      "id": "a21269bd-7f7b-43d8-8062-772088808afd",
+      "isEnabled": true,
+      "lang": null,
+      "origin": "Application",
+      "value": "Test.User"
+    },
+    {
+      "allowedMemberTypes": [
+        "User",
+        "Application"
+      ],
+      "description": "Provides administrator-level access to the Test dataset.",
+      "displayName": "Test Admin",
+      "id": "ffffda94-2627-4033-8c30-f82c6ec4b9e3",
+      "isEnabled": true,
+      "lang": null,
+      "origin": "Application",
+      "value": "Test.Admin"
+    }
+  ],
+  "oauth2AllowUrlPathMatching": false,
+  "createdDateTime": "2022-05-30T08:56:41Z",
+  "description": null,
+  "certification": null,
+  "disabledByMicrosoftStatus": null,
+  "groupMembershipClaims": "ApplicationGroup",
+  "identifierUris": [
+    "api://10c0b693-5131-4d1f-840f-cbaafc4d72fb"
+  ],
+  "informationalUrls": {
+    "termsOfService": null,
+    "support": null,
+    "privacy": null,
+    "marketing": null
+  },
+  "keyCredentials": [],
+  "knownClientApplications": [],
+  "logoUrl": null,
+  "logoutUrl": null,
+  "name": "Enterprise Wharf Smart Core API",
+  "notes": null,
+  "oauth2AllowIdTokenImplicitFlow": false,
+  "oauth2AllowImplicitFlow": false,
+  "oauth2Permissions": [
+    {
+      "adminConsentDescription": "Allows the application to read any Test data that the user has access to.",
+      "adminConsentDisplayName": "Read Test dataset",
+      "id": "44ee42ba-c78f-48da-9de2-f38779dc5075",
+      "isEnabled": true,
+      "lang": null,
+      "origin": "Application",
+      "type": "User",
+      "userConsentDescription": "Allows the application to read any Test data that you have access to",
+      "userConsentDisplayName": "Read Test data",
+      "value": "Test.Read"
+    },
+    {
+      "adminConsentDescription": "Allows the app to write any part of the Test dataset that the user is permitted to write to",
+      "adminConsentDisplayName": "Write Test dataset",
+      "id": "04b91140-55ac-4908-a55f-128d1bf4ff2d",
+      "isEnabled": true,
+      "lang": null,
+      "origin": "Application",
+      "type": "User",
+      "userConsentDescription": "Allows the app to modify any Test data that you are allowed to access",
+      "userConsentDisplayName": "Modify Test data",
+      "value": "Test.Write"
+    }
+  ],
+  "oauth2RequirePostResponse": false,
+  "optionalClaims": {
+    "idToken": [
+      {
+        "name": "groups",
+        "source": null,
+        "essential": false,
+        "additionalProperties": []
+      }
+    ],
+    "accessToken": [
+      {
+        "name": "groups",
+        "source": null,
+        "essential": false,
+        "additionalProperties": []
+      },
+      {
+        "name": "idtyp",
+        "source": null,
+        "essential": false,
+        "additionalProperties": []
+      }
+    ],
+    "saml2Token": [
+      {
+        "name": "groups",
+        "source": null,
+        "essential": false,
+        "additionalProperties": []
+      }
+    ]
+  },
+  "orgRestrictions": [],
+  "parentalControlSettings": {
+    "countriesBlockedForMinors": [],
+    "legalAgeGroupRule": "Allow"
+  },
+  "passwordCredentials": [],
+  "preAuthorizedApplications": [],
+  "publisherDomain": "smartcoredev.onmicrosoft.com",
+  "replyUrlsWithType": [],
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "00000003-0000-0000-c000-000000000000",
+      "resourceAccess": [
+        {
+          "id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
+          "type": "Scope"
+        }
+      ]
+    }
+  ],
+  "samlMetadataUrl": null,
+  "signInUrl": null,
+  "signInAudience": "AzureADMyOrg",
+  "tags": [],
+  "tokenEncryptionKeyId": null
+}
