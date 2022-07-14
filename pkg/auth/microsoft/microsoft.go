@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/vanti-dev/ew-auth-poc/pkg/auth"
+	"github.com/vanti-dev/bsp-ew/pkg/auth"
 )
 
 type ClientConfig struct {

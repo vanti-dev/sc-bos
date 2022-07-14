@@ -14,7 +14,7 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/ew-config-poc/pkg/db"
+	"github.com/vanti-dev/bsp-ew/pkg/db"
 	"go.uber.org/multierr"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
