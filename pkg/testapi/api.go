@@ -1,4 +1,4 @@
-package api
+package testapi
 
 import (
 	"context"

@@ -10,10 +10,10 @@ import (
 	"os/signal"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/vanti-dev/bsp-ew/pkg/api"
 	"github.com/vanti-dev/bsp-ew/pkg/auth"
 	"github.com/vanti-dev/bsp-ew/pkg/auth/keycloak"
 	"github.com/vanti-dev/bsp-ew/pkg/policy"
+	"github.com/vanti-dev/bsp-ew/pkg/testapi"
 	"github.com/vanti-dev/bsp-ew/pkg/testgen"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -58,7 +58,7 @@ func run(ctx context.Context) error {
 	}
 
 	// Create API handler
-	apiHandler := api.NewAPI()
+	apiHandler := testapi.NewAPI()
 
 	// Register handlers
 	mux := http.NewServeMux()

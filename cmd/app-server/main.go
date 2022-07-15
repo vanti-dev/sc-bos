@@ -16,11 +16,11 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/jackc/pgx/v4"
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/bsp-ew/pkg/api"
 	"github.com/vanti-dev/bsp-ew/pkg/auth"
 	"github.com/vanti-dev/bsp-ew/pkg/auth/keycloak"
 	"github.com/vanti-dev/bsp-ew/pkg/db"
 	"github.com/vanti-dev/bsp-ew/pkg/policy"
+	"github.com/vanti-dev/bsp-ew/pkg/testapi"
 	"github.com/vanti-dev/bsp-ew/pkg/testgen"
 	"go.uber.org/multierr"
 	"golang.org/x/sync/errgroup"
@@ -92,7 +92,7 @@ func run(ctx context.Context) error {
 
 	grpcServer := grpc.NewServer(grpcServerOptions...)
 	traits.RegisterPublicationApiServer(grpcServer, pubServer)
-	testgen.RegisterTestApiServer(grpcServer, api.NewAPI())
+	testgen.RegisterTestApiServer(grpcServer, testapi.NewAPI())
 	reflection.Register(grpcServer)
 	grpcWebWrapper := grpcweb.WrapServer(grpcServer)
 
