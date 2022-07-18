@@ -3,7 +3,6 @@ module github.com/vanti-dev/bsp-ew
 go 1.18
 
 require (
-	github.com/AzureAD/microsoft-authentication-library-for-go v0.5.2
 	github.com/go-jose/go-jose/v3 v3.0.0
 	github.com/google/go-cmp v0.5.7
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
@@ -11,6 +10,7 @@ require (
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/open-policy-agent/opa v0.42.2
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.38
+	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 	google.golang.org/grpc v1.48.0
@@ -24,9 +24,7 @@ require (
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
-	github.com/golang-jwt/jwt v3.2.1+incompatible // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/uuid v1.2.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.12.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
@@ -35,7 +33,6 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.11.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
-	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0 // indirect
 	github.com/rs/cors v1.7.0 // indirect
