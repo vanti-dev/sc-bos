@@ -1,15 +1,26 @@
 version: "3.9"
 services:
   db:
-    image: postgres:14.3
+    image: postgres:14
     restart: always
     environment:
-      POSTGRES_PASSWORD: dev-password
-      POSTGRES_DB: keycloak
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: smart_core
     ports:
       - "5432:5432"
     volumes:
       - postgres-storage:/var/lib/postgresql/data
+      - "./scripts/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d"
+
+  pgadmin:
+    image: dpage/pgadmin4:6
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@example.com"
+      PGADMIN_DEFAULT_PASSWORD: "postgres"
+    ports:
+      - "8881:80"
 
   keycloak:
     image: quay.io/keycloak/keycloak:18.0
@@ -18,11 +29,11 @@ services:
       - "8888:8080"
     environment:
       KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: dev-password
+      KEYCLOAK_ADMIN_PASSWORD: admin
       KC_DB: postgres
       KC_DB_URL: "jdbc:postgresql://db/keycloak"
       KC_DB_USERNAME: postgres
-      KC_DB_PASSWORD: dev-password
+      KC_DB_PASSWORD: postgres
     command: "start-dev"
 
 volumes:
