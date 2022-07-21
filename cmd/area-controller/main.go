@@ -6,27 +6,51 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-api/go/types"
+	"github.com/vanti-dev/bsp-ew/pkg/pubcache"
+	"go.etcd.io/bbolt"
 	"go.uber.org/multierr"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
-	serverAddress string
-	deviceName    string
+	cachePath        string
+	serverAddress    string
+	managementDevice string
+	name             string
 )
 
 func init() {
+	flag.StringVar(&name, "name", "test/area-controller-1", "Smart Core name of this area controller")
 	flag.StringVar(&serverAddress, "server", "localhost:23557", "address (host:port) of the Smart Core server")
-	flag.StringVar(&deviceName, "device", "", "name of smart core device to pull publications from")
+	flag.StringVar(&managementDevice, "management-device", "", "name of smart core device that manages this area controller")
+	flag.StringVar(&cachePath, "cache", ".cache/area-controller.bolt", "path to cache database file")
 }
 
 func run(ctx context.Context) (errs error) {
 	flag.Parse()
+
+	// create DB dir if it doesn't exist
+	dbDir := filepath.Dir(cachePath)
+	err := os.MkdirAll(dbDir, 0750)
+	if err != nil {
+		errs = multierr.Append(errs, err)
+	}
+
+	// open database
+	db, err := bbolt.Open(cachePath, 0640, nil)
+	if err != nil {
+		errs = multierr.Append(errs, err)
+		return
+	}
+	pubStorage := pubcache.NewBoltStorage(db, []byte("publications"))
+
+	// open connection to management server
 	conn, err := grpc.DialContext(ctx, serverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		errs = multierr.Append(errs, err)
@@ -38,38 +62,15 @@ func run(ctx context.Context) (errs error) {
 	}()
 
 	pubClient := traits.NewPublicationApiClient(conn)
-	stream, err := pubClient.PullPublications(ctx, &traits.PullPublicationsRequest{Name: deviceName})
-	if err != nil {
-		errs = multierr.Append(errs, err)
-		return
+	pubID := fmt.Sprintf("%s:config", name)
+	cache := pubcache.New(ctx, pubClient, managementDevice, pubID, pubStorage)
+
+	for pub := range cache.Pull(ctx) {
+		fmt.Printf("[%s] Publication %q update:\n", time.Now().String(), pubID)
+		logPublication(pub)
 	}
 
-	for {
-		res, err := stream.Recv()
-		if err != nil {
-			errs = multierr.Append(errs, err)
-			return
-		}
-
-		for _, change := range res.Changes {
-			logChange(change)
-		}
-	}
-}
-
-func logChange(change *traits.PullPublicationsResponse_Change) {
-	t := change.ChangeTime.AsTime()
-
-	switch change.Type {
-	case types.ChangeType_REMOVE:
-		fmt.Printf("[%s] Publication %q removed.\n", t.String(), change.OldValue.GetId())
-	case types.ChangeType_ADD:
-		fmt.Printf("[%s] Publication %q added:\n", t.String(), change.NewValue.GetId())
-		logPublication(change.NewValue)
-	case types.ChangeType_UPDATE, types.ChangeType_REPLACE:
-		fmt.Printf("[%s] Publication %q updated:\n", t.String(), change.NewValue.GetId())
-		logPublication(change.NewValue)
-	}
+	return
 }
 
 func logPublication(pub *traits.Publication) {
@@ -81,8 +82,14 @@ func logPublication(pub *traits.Publication) {
 
 	bodyRunes := []rune(strings.ToValidUTF8(string(body), "."))
 	for len(bodyRunes) > 0 {
-		lineRunes := bodyRunes[:64]
-		bodyRunes = bodyRunes[64:]
+		var lineRunes []rune
+		if len(bodyRunes) >= 64 {
+			lineRunes = bodyRunes[:64]
+			bodyRunes = bodyRunes[64:]
+		} else {
+			lineRunes = bodyRunes
+			bodyRunes = nil
+		}
 
 		fmt.Printf("\t\t%s\n", string(lineRunes))
 	}

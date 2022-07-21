@@ -48,7 +48,7 @@ func init() {
 	flag.StringVar(&flagPostgresAddress, "postgres-addr", "localhost:5432", "host:port to connect to postgres on")
 	flag.StringVar(&flagPostgresUsername, "postgres-user", "postgres", "username for authenticating with postgres")
 	flag.StringVar(&flagPostgresPassword, "postgres-password", "postgres", "password for authenticating with postgres")
-	flag.StringVar(&flagPostgresDatabase, "postgres-db", "config_poc", "database name for connecting to postgres")
+	flag.StringVar(&flagPostgresDatabase, "postgres-db", "smart_core", "database name for connecting to postgres")
 	flag.BoolVar(&flagPopulateDatabase, "populate-db", false, "inserts some test data into the database and exits")
 }
 
@@ -183,9 +183,9 @@ func connectDB(ctx context.Context) (*pgx.Conn, error) {
 
 func populateDB(ctx context.Context, conn *pgx.Conn) error {
 	deviceNames := []string{
-		"vanti/floors/1/area-controller",
-		"vanti/floors/2/area-controller",
-		"vanti/floors/3/area-controller",
+		"test/area-controller-1",
+		"test/area-controller-2",
+		"test/area-controller-3",
 	}
 
 	baseTime := time.Date(2022, 7, 6, 11, 18, 0, 0, time.UTC)

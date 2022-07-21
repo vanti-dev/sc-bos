@@ -164,8 +164,7 @@ func (p *PublicationServer) DeletePublication(ctx context.Context, request *trai
 }
 
 func (p *PublicationServer) PullPublication(request *traits.PullPublicationRequest, server traits.PublicationApi_PullPublicationServer) error {
-	//TODO implement me
-	panic("implement me")
+	return status.Error(codes.Unimplemented, "PullPublication not implemented")
 }
 
 func (p *PublicationServer) ListPublications(ctx context.Context, request *traits.ListPublicationsRequest) (*traits.ListPublicationsResponse, error) {
@@ -195,8 +194,7 @@ func (p *PublicationServer) ListPublications(ctx context.Context, request *trait
 }
 
 func (p *PublicationServer) PullPublications(request *traits.PullPublicationsRequest, server traits.PublicationApi_PullPublicationsServer) error {
-	//TODO implement me
-	panic("implement me")
+	return status.Error(codes.Unimplemented, "PullPublications not implemented")
 }
 
 func (p *PublicationServer) AcknowledgePublication(ctx context.Context, request *traits.AcknowledgePublicationRequest) (*traits.Publication, error) {
