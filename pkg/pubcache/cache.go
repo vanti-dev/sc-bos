@@ -63,7 +63,7 @@ func New(ctx context.Context, source traits.PublicationApiClient, device string,
 // Storage), then the initial value may be delayed indefinitely.
 // The returned channel does not apply backpressure, so if the consumer is slow, some intermediate values of the
 // publication may be missed.
-func (c *Cache) Pull(ctx context.Context, pubID string) <-chan *traits.Publication {
+func (c *Cache) Pull(ctx context.Context) <-chan *traits.Publication {
 	ch := make(chan *traits.Publication)
 	c.startBackground()
 
@@ -114,7 +114,7 @@ func (c *Cache) runBackground() {
 		}
 	}
 
-	_ = c.pullPublicationRetry()
+	_ = c.runUpdate()
 }
 
 func (c *Cache) commitPublication(pub *traits.Publication, store bool) error {
@@ -150,10 +150,7 @@ func (c *Cache) pullPublication() (err error, started bool) {
 		Name: c.device,
 		Id:   c.pubID,
 	})
-	if status.Code(err) == codes.Unimplemented {
-		log.Printf("device does not support PullPublication, switching to poll at interval %s", PollInterval.String())
-		return c.pullPublicationPoll()
-	} else if err != nil {
+	if err != nil {
 		return err, false
 	}
 
@@ -174,40 +171,55 @@ func (c *Cache) pullPublication() (err error, started bool) {
 	}
 }
 
-func (c *Cache) pullPublicationPoll() (err error, started bool) {
+func (c *Cache) pollPublication() (err error, started bool) {
 	ticker := time.NewTicker(PollInterval)
 	defer ticker.Stop()
 
+	// ticker only fires for the first time after PollInterval has elapsed, so we must poll once outside the loop
+	err = c.pollPublicationOnce()
+	if err != nil {
+		return
+	}
+	started = true
+
 	for range ticker.C {
-		ctx, cancel := context.WithTimeout(c.ctx, PollInterval)
-
-		var pub *traits.Publication
-		pub, err = c.source.GetPublication(ctx, &traits.GetPublicationRequest{
-			Name: c.device,
-			Id:   c.pubID,
-		})
-		cancel()
-
-		if err != nil {
-			return
-		}
-		started = true // at least one successful poll
-
-		err = c.commitPublication(pub, true)
+		err = c.pollPublicationOnce()
 		if err != nil {
 			return
 		}
 	}
-	panic("unreachable")
+	panic("unreachable") // ticker will never stop by itself
+}
+
+// fetches and commits a publication once, using the GetPublication gRPC call
+func (c *Cache) pollPublicationOnce() error {
+	ctx, cancel := context.WithTimeout(c.ctx, PollInterval)
+	defer cancel()
+
+	pub, err := c.source.GetPublication(ctx, &traits.GetPublicationRequest{
+		Name: c.device,
+		Id:   c.pubID,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return c.commitPublication(pub, true)
 }
 
 // calls pullPublication in a loop with exponential backoff
+// if pullPublication returns an error with gRPC status code Unimplemented, switches to polling
 // this function only returns once c.ctx has completed
-func (c *Cache) pullPublicationRetry() error {
+func (c *Cache) runUpdate() error {
 	ctx := c.ctx
 	backoff := MinBackoff
 	for {
 		err, started := c.pullPublication()
+		if status.Code(err) == codes.Unimplemented {
+			log.Printf("device does not support PullPublication, switching to poll at interval %s", PollInterval.String())
+			err, started = c.pollPublication()
+		}
 		if err != nil {
 			log.Printf("pull publication %q from %q error: %v", c.pubID, c.device, err)
 		}
