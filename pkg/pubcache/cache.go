@@ -27,7 +27,7 @@ const (
 // received publication updates into the Cache.
 // Do not copy a Cache or modify its fields once any methods have been called.
 type Cache struct {
-	ctx     context.Context // Updating will stop when this ctx ends. Optional; defaults to context.Background()
+	ctx     context.Context // Updating will stop when this ctx ends.
 	source  traits.PublicationApiClient
 	device  string
 	pubID   string
@@ -38,6 +38,10 @@ type Cache struct {
 	latest              *resource.Value // do not attempt to read until initialised is closed
 }
 
+// New constructs a Cache.
+// Background tasks are not started immediately, they will begin once Pull is called for the first time.
+// The Context ctx can be used to stop the Cache's background tasks.
+// Storage is optional; if nil, storage won't be used.
 func New(ctx context.Context, source traits.PublicationApiClient, device string, pubID string, storage Storage) *Cache {
 	if ctx == nil {
 		panic("parameter ctx is required")

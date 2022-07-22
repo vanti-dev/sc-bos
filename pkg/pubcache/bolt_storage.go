@@ -8,7 +8,14 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// NewBoltStorage create a Storage using a Bolt database as the backend.
+// The passed database must have been opened read-write.
+// This implementation is not context aware; contexts passed to methods will be ignored.
 func NewBoltStorage(db *bbolt.DB, bucket []byte) Storage {
+	if db == nil {
+		panic("db must not be nil")
+	}
+
 	// copy the bucket identifier to guard against external mutation
 	bucketCopy := make([]byte, len(bucket))
 	copy(bucketCopy, bucket)
