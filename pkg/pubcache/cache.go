@@ -197,7 +197,7 @@ func (c *Cache) pollPublication() (err error, started bool) {
 
 // fetches and commits a publication once, using the GetPublication gRPC call
 func (c *Cache) pollPublicationOnce() error {
-	ctx, cancel := context.WithTimeout(c.ctx, PollInterval)
+	ctx, cancel := context.WithTimeout(c.ctx, time.Minute)
 	defer cancel()
 
 	pub, err := c.source.GetPublication(ctx, &traits.GetPublicationRequest{

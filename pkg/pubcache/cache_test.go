@@ -33,7 +33,7 @@ func TestCache_Pull(t *testing.T) {
 
 	cache := New(ctx, modelClient, "", id, nil)
 
-	ch := cache.Pull(ctx, id)
+	ch := cache.Pull(ctx)
 
 	// first value received should be the initial value
 	val := recvTimeout(ch, time.Second)

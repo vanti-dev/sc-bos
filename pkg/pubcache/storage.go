@@ -14,7 +14,7 @@ var (
 	ErrPublicationInvalid  = errors.New("invalid publication cannot be stored")
 )
 
-// A Storage implementation is used by the cache to
+// A Storage implementation is used by the cache to persist a single version for each publication it caches.
 type Storage interface {
 	// LoadPublication retrieves a cached publication from storage.
 	// If a publication with the given ID is not cached, returns ErrPublicationNotFound

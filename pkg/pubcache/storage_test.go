@@ -29,7 +29,7 @@ func TestMemoryStorage(t *testing.T) {
 
 // checks the full lifecycle of a publication - insert, update, retrieve, delete
 func publicationRoundTrip(ctx context.Context, t *testing.T, storage Storage) (ok bool) {
-	id := "publicationRoundTrip"
+	id := "publicationRoundTrip!:$@.-_"
 	baseTime := time.Date(2022, 7, 18, 11, 27, 0, 0, time.UTC)
 	pub1 := &traits.Publication{
 		Id:          id,
