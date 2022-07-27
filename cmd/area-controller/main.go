@@ -2,75 +2,119 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"errors"
 	"flag"
 	"fmt"
+	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"strings"
-	"time"
 
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/bsp-ew/pkg/pubcache"
-	"go.etcd.io/bbolt"
+	"github.com/vanti-dev/bsp-ew/pkg/pki"
+	"github.com/vanti-dev/bsp-ew/pkg/testapi"
+	"github.com/vanti-dev/bsp-ew/pkg/testgen"
 	"go.uber.org/multierr"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/reflection"
 )
 
 var (
-	cachePath        string
-	serverAddress    string
-	managementDevice string
-	name             string
+	dataDir   string
+	staticDir string
+	grpcBind  string
+	httpsBind string
 )
 
 func init() {
-	flag.StringVar(&name, "name", "test/area-controller-1", "Smart Core name of this area controller")
-	flag.StringVar(&serverAddress, "server", "localhost:23557", "address (host:port) of the Smart Core server")
-	flag.StringVar(&managementDevice, "management-device", "", "name of smart core device that manages this area controller")
-	flag.StringVar(&cachePath, "cache", ".cache/area-controller.bolt", "path to cache database file")
+	flag.StringVar(&grpcBind, "bind-grpc", "localhost:23557", "address (host:port) to host a Smart Core gRPC server on")
+	flag.StringVar(&httpsBind, "bind-https", "localhost:443", "address (host:port) to host a HTTPS server on")
+	flag.StringVar(&dataDir, "data-dir", ".data/area-controller-01", "path to local data storage directory")
+	flag.StringVar(&staticDir, "static-dir", "ui/dist", "path for HTTP static resources")
 }
 
 func run(ctx context.Context) (errs error) {
 	flag.Parse()
 
-	// create DB dir if it doesn't exist
-	dbDir := filepath.Dir(cachePath)
-	err := os.MkdirAll(dbDir, 0750)
+	// create data dir if it doesn't exist
+	err := os.MkdirAll(dataDir, 0750)
 	if err != nil {
 		errs = multierr.Append(errs, err)
 	}
 
-	// open database
-	db, err := bbolt.Open(cachePath, 0640, nil)
-	if err != nil {
-		errs = multierr.Append(errs, err)
-		return
-	}
-	pubStorage := pubcache.NewBoltStorage(db, []byte("publications"))
-
-	// open connection to management server
-	conn, err := grpc.DialContext(ctx, serverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// create private key if it doesn't exist
+	keyPEM, err := pki.LoadOrGenerateKeyPair(filepath.Join(dataDir, "private-key.pem"))
 	if err != nil {
 		errs = multierr.Append(errs, err)
 		return
 	}
 
-	defer func() {
-		errs = multierr.Append(errs, conn.Close())
-	}()
-
-	pubClient := traits.NewPublicationApiClient(conn)
-	pubID := fmt.Sprintf("%s:config", name)
-	cache := pubcache.New(ctx, pubClient, managementDevice, pubID, pubStorage)
-
-	for pub := range cache.Pull(ctx) {
-		fmt.Printf("[%s] Publication %q update:\n", time.Now().String(), pubID)
-		logPublication(pub)
+	// try to load an enrollment from disk
+	enrollment, err := LoadEnrollment(filepath.Join(dataDir, "enrollment"), keyPEM)
+	if errors.Is(err, ErrNotEnrolled) {
+		// switch to enrollment mode, so this node can be enrolled with a Smart Core app server
+		return runEnrollment(ctx, keyPEM)
+	} else if err != nil {
+		return err
 	}
 
-	return
+	return runNormal(ctx, enrollment)
+}
+
+func runEnrollment(ctx context.Context, keyPEM []byte) error {
+	fmt.Println("TODO: enrollment mode")
+	return nil
+}
+
+func runNormal(ctx context.Context, enrollment Enrollment) error {
+	tlsServerConfig := &tls.Config{
+		Certificates: []tls.Certificate{enrollment.Cert},
+		ClientAuth:   tls.VerifyClientCertIfGiven,
+	}
+
+	grpcServer := grpc.NewServer(
+		grpc.Creds(credentials.NewTLS(tlsServerConfig)),
+	)
+	reflection.Register(grpcServer)
+	testgen.RegisterTestApiServer(grpcServer, testapi.NewAPI())
+
+	grpcWebServer := grpcweb.WrapServer(grpcServer)
+	staticFileHandler := http.FileServer(http.Dir(staticDir))
+
+	httpsHandler := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if grpcWebServer.IsGrpcWebRequest(request) || grpcWebServer.IsAcceptableGrpcCorsRequest(request) {
+			grpcWebServer.ServeHTTP(writer, request)
+		} else {
+			staticFileHandler.ServeHTTP(writer, request)
+		}
+	})
+	httpsServer := &http.Server{
+		Addr:      httpsBind,
+		Handler:   httpsHandler,
+		TLSConfig: tlsServerConfig,
+	}
+
+	group, ctx := errgroup.WithContext(ctx)
+	group.Go(func() error {
+		grpcListener, err := net.Listen("tcp", grpcBind)
+		if err != nil {
+			return err
+		}
+
+		return grpcServer.Serve(grpcListener)
+	})
+	group.Go(func() error {
+		// don't need to supply certs here because httpServer.TLSConfig is populated
+		return httpsServer.ListenAndServeTLS("", "")
+	})
+
+	return group.Wait()
 }
 
 func logPublication(pub *traits.Publication) {

@@ -11,7 +11,7 @@ Authentication and Authorization Use Cases
   - The system may have access to some (limited) personal information (think name, email, job title etc.)
     which needs to be protected
 
-### Smart Core machine-to-machine
+### Smart Core node-to-node auth
   - Landlord-owned devices need to communicate to each other
   - Control of area controllers from centralised location
   - Sending data from area controllers to be aggregated
