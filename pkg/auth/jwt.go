@@ -81,8 +81,8 @@ func (v *JWTClaimVerifier) Verify(claims JWTCommonClaims) error {
 
 type JWTScopes []string
 
-func (s JWTScopes) MarshalJSON() ([]byte, error) {
-	return json.Marshal(strings.Join(s, " "))
+func (s *JWTScopes) MarshalJSON() ([]byte, error) {
+	return json.Marshal(strings.Join(*s, " "))
 }
 
 func (s *JWTScopes) UnmarshalJSON(data []byte) error {
@@ -95,6 +95,6 @@ func (s *JWTScopes) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (s JWTScopes) HasScopes(required ...string) bool {
-	return RequireAll(required, s)
+func (s *JWTScopes) HasScopes(required ...string) bool {
+	return RequireAll(required, *s)
 }

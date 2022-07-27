@@ -2,6 +2,7 @@ package policy
 
 import (
 	"context"
+	"crypto/x509"
 	"fmt"
 	"log"
 	"regexp"
@@ -11,6 +12,8 @@ import (
 	"github.com/vanti-dev/bsp-ew/pkg/auth"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 )
 
@@ -47,23 +50,27 @@ func checkPolicyGrpc(ctx context.Context, verifier auth.TokenVerifier, request a
 		log.Printf("no request bearer token: %s", err.Error())
 	}
 
-	if token != "" {
+	if token != "" && verifier != nil {
 		authorization, err = verifier.VerifyAccessToken(ctx, token)
 		if err != nil {
 			log.Printf("token failed verification: %s", err.Error())
 		}
 	}
 
+	cert := getConnectionVerifiedCertificate(ctx)
+
 	input := struct {
-		Authorization *auth.Authorization
-		Request       any
-		Method        string
-		Service       string
+		Token       *auth.Authorization
+		Certificate *x509.Certificate
+		Request     any
+		Method      string
+		Service     string
 	}{
-		Authorization: authorization,
-		Method:        method,
-		Service:       service,
-		Request:       request,
+		Token:       authorization,
+		Certificate: cert,
+		Method:      method,
+		Service:     service,
+		Request:     request,
 	}
 
 	query := fmt.Sprintf("data.%s.allow", service)
@@ -101,4 +108,24 @@ func getGrpcServiceMethod(ctx context.Context) (service, method string, ok bool)
 	method = groups[2]
 	ok = true
 	return
+}
+
+// find the certificate of the connection peer that was verified when the connection was established.
+// returns nil if no certificate was verified
+func getConnectionVerifiedCertificate(ctx context.Context) *x509.Certificate {
+	peerInfo, ok := peer.FromContext(ctx)
+	if !ok {
+		return nil
+	}
+
+	tlsInfo, ok := peerInfo.AuthInfo.(credentials.TLSInfo)
+	if !ok {
+		return nil
+	}
+
+	verifiedChains := tlsInfo.State.VerifiedChains
+	if len(verifiedChains) == 0 {
+		return nil
+	}
+	return verifiedChains[0][0]
 }
