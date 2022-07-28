@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package vanti.bsp.ew;
 
-option go_package = "github.com/vanti-dev/bsp-ew/pkg/testgen";
+option go_package = "github.com/vanti-dev/bsp-ew/pkg/gen";
 
 service TestApi {
   rpc GetTest(GetTestRequest) returns (Test) {}

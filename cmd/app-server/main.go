@@ -21,7 +21,7 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/db"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
-	"github.com/vanti-dev/bsp-ew/internal/testgen"
+	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/multierr"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -92,7 +92,7 @@ func run(ctx context.Context) error {
 
 	grpcServer := grpc.NewServer(grpcServerOptions...)
 	traits.RegisterPublicationApiServer(grpcServer, pubServer)
-	testgen.RegisterTestApiServer(grpcServer, testapi.NewAPI())
+	gen.RegisterTestApiServer(grpcServer, testapi.NewAPI())
 	reflection.Register(grpcServer)
 	grpcWebWrapper := grpcweb.WrapServer(grpcServer)
 

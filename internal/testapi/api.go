@@ -4,31 +4,31 @@ import (
 	"context"
 	"sync"
 
-	"github.com/vanti-dev/bsp-ew/internal/testgen"
+	"github.com/vanti-dev/bsp-ew/pkg/gen"
 )
 
 type API struct {
-	testgen.UnimplementedTestApiServer
+	gen.UnimplementedTestApiServer
 
 	m    sync.RWMutex
 	data string
 }
 
-func (api *API) GetTest(ctx context.Context, request *testgen.GetTestRequest) (*testgen.Test, error) {
+func (api *API) GetTest(ctx context.Context, request *gen.GetTestRequest) (*gen.Test, error) {
 	api.m.RLock()
 	defer api.m.RUnlock()
 
 	data := api.data
-	return &testgen.Test{Data: data}, nil
+	return &gen.Test{Data: data}, nil
 }
 
-func (api *API) UpdateTest(ctx context.Context, request *testgen.UpdateTestRequest) (*testgen.Test, error) {
+func (api *API) UpdateTest(ctx context.Context, request *gen.UpdateTestRequest) (*gen.Test, error) {
 	api.m.Lock()
 	defer api.m.Unlock()
 
 	data := request.GetTest().GetData()
 	api.data = data
-	return &testgen.Test{Data: data}, nil
+	return &gen.Test{Data: data}, nil
 }
 
 func NewAPI() *API {

@@ -19,7 +19,7 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/pki"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
-	"github.com/vanti-dev/bsp-ew/internal/testgen"
+	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/multierr"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -90,7 +90,7 @@ func runNormal(ctx context.Context, enrollment Enrollment) error {
 		grpc.StreamInterceptor(policy.GRPCStreamingInterceptor(nil)),
 	)
 	reflection.Register(grpcServer)
-	testgen.RegisterTestApiServer(grpcServer, testapi.NewAPI())
+	gen.RegisterTestApiServer(grpcServer, testapi.NewAPI())
 
 	grpcWebServer := grpcweb.WrapServer(grpcServer)
 	staticFileHandler := http.FileServer(http.Dir(staticDir))
