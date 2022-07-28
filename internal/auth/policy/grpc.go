@@ -9,7 +9,7 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/open-policy-agent/opa/rego"
-	"github.com/vanti-dev/bsp-ew/pkg/auth"
+	"github.com/vanti-dev/bsp-ew/internal/auth"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"

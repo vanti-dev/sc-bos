@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
-	"github.com/vanti-dev/bsp-ew/pkg/auth/tenant"
+	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
 )
 
 func main() {

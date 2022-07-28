@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
-	"github.com/vanti-dev/bsp-ew/pkg/util/fetch"
+	"github.com/vanti-dev/bsp-ew/internal/util/fetch"
 	"go.uber.org/multierr"
 )
 

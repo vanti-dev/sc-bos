@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/vanti-dev/bsp-ew/pkg/testgen"
+	"github.com/vanti-dev/bsp-ew/internal/testgen"
 )
 
 type API struct {

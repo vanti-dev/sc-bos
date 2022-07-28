@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vanti-dev/bsp-ew/pkg/util/fetch"
+	"github.com/vanti-dev/bsp-ew/internal/util/fetch"
 )
 
 type OIDCConfig struct {

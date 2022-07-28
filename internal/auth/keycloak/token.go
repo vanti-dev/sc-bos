@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/vanti-dev/bsp-ew/pkg/auth"
+	"github.com/vanti-dev/bsp-ew/internal/auth"
 )
 
 type AccessTokenPayload struct {

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
-	"github.com/vanti-dev/bsp-ew/pkg/auth"
+	"github.com/vanti-dev/bsp-ew/internal/auth"
 )
 
 type AccessTokenPayload struct {
