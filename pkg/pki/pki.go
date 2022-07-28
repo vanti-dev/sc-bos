@@ -56,6 +56,16 @@ func LoadOrGenerateKeyPair(path string) (pkcs8PEM []byte, err error) {
 	return
 }
 
+func GetCertificateSmartCoreNames(cert *x509.Certificate) []string {
+	var names []string
+	for _, uri := range cert.URIs {
+		if uri.Scheme == "smart-core" {
+			names = append(names, uri.Opaque)
+		}
+	}
+	return names
+}
+
 // works like os.WriteFile, but uses os.O_EXCL to produce an error if the file already exists
 func writeFileNoTruncate(path string, data []byte, perm os.FileMode) error {
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, perm)

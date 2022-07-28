@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"flag"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/bsp-ew/pkg/auth/policy"
 	"github.com/vanti-dev/bsp-ew/pkg/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/testapi"
 	"github.com/vanti-dev/bsp-ew/pkg/testgen"
@@ -73,13 +75,19 @@ func runEnrollment(ctx context.Context, keyPEM []byte) error {
 }
 
 func runNormal(ctx context.Context, enrollment Enrollment) error {
+	clientRoot := x509.NewCertPool()
+	clientRoot.AddCert(enrollment.RootCA)
+
 	tlsServerConfig := &tls.Config{
 		Certificates: []tls.Certificate{enrollment.Cert},
 		ClientAuth:   tls.VerifyClientCertIfGiven,
+		ClientCAs:    clientRoot,
 	}
 
 	grpcServer := grpc.NewServer(
 		grpc.Creds(credentials.NewTLS(tlsServerConfig)),
+		grpc.UnaryInterceptor(policy.GRPCUnaryInterceptor(nil)),
+		grpc.StreamInterceptor(policy.GRPCStreamingInterceptor(nil)),
 	)
 	reflection.Register(grpcServer)
 	testgen.RegisterTestApiServer(grpcServer, testapi.NewAPI())

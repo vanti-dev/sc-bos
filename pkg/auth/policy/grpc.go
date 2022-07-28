@@ -43,7 +43,7 @@ func checkPolicyGrpc(ctx context.Context, verifier auth.TokenVerifier, request a
 		return status.Error(codes.Internal, "failed to resolve method")
 	}
 
-	var authorization *auth.Authorization
+	var tokenClaims *auth.TokenClaims
 
 	token, err := grpc_auth.AuthFromMD(ctx, "Bearer")
 	if err != nil {
@@ -51,26 +51,23 @@ func checkPolicyGrpc(ctx context.Context, verifier auth.TokenVerifier, request a
 	}
 
 	if token != "" && verifier != nil {
-		authorization, err = verifier.VerifyAccessToken(ctx, token)
+		tokenClaims, err = verifier.VerifyAccessToken(ctx, token)
 		if err != nil {
+			tokenClaims = nil
 			log.Printf("token failed verification: %s", err.Error())
 		}
 	}
 
 	cert := getConnectionVerifiedCertificate(ctx)
 
-	input := struct {
-		Token       *auth.Authorization
-		Certificate *x509.Certificate
-		Request     any
-		Method      string
-		Service     string
-	}{
-		Token:       authorization,
-		Certificate: cert,
-		Method:      method,
-		Service:     service,
-		Request:     request,
+	input := Attributes{
+		Service:          service,
+		Method:           method,
+		Request:          request,
+		CertificateValid: cert != nil,
+		Certificate:      cert,
+		TokenValid:       tokenClaims != nil,
+		TokenClaims:      tokenClaims,
 	}
 
 	query := fmt.Sprintf("data.%s.allow", service)

@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package vanti.bsp.ew;
+
+option go_package = "github.com/vanti-dev/bsp-ew/pkg/testgen";
+
+/*
+A service used to enroll a Smart Core node into a centrally managed installation.
+Establishes a trust relationship between the node serving this API and the node calling it, using PKI.
+Operates on a "Trust on First Use" security policy - the network is assumed to be trustworthy during the enrollment
+procedure, but a PKI relationship is established which is resilient to insecure networks in the future.
+ */
+service EnrollmentApi {
+  rpc CreateEnrollment(CreateEnrollmentRequest) returns (Enrollment) {}
+  rpc DeleteEnrollment(DeleteEnrollmentRequest) returns (Enrollment) {}
+  rpc CompleteEnrollment(CompleteEnrollmentRequest) returns (Enrollment) {}
+}
+
+message CreateEnrollmentRequest {
+  /* The name that the node should adopt as its root device name. */
+  string node_name = 1;
+  /* The name of the device that will manage this node */
+  string manager_name = 2;
+}
+
+message DeleteEnrollmentRequest {
+
+}
+
+message Enrollment {
+  string id = 1;
+
+  enum Completion {
+    COMPLETION_UNSPECIFIED = 0;
+    INCOMPLETE = 1;
+    COMPLETE = 2;
+  }
+  Completion completion = 2;
+
+  /*
+  A Certificate Signing Request
+   */
+  bytes csr = 3;
+}
+
+message CompleteEnrollmentRequest {
+
+}

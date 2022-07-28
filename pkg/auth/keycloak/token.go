@@ -46,7 +46,7 @@ type TokenVerifier struct {
 	claimVerifier *auth.JWTClaimVerifier
 }
 
-func (v *TokenVerifier) VerifyAccessToken(ctx context.Context, token string) (*auth.Authorization, error) {
+func (v *TokenVerifier) VerifyAccessToken(ctx context.Context, token string) (*auth.TokenClaims, error) {
 	payloadBytes, err := v.keySet.VerifySignature(ctx, token)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (v *TokenVerifier) VerifyAccessToken(ctx context.Context, token string) (*a
 		return nil, err
 	}
 
-	return &auth.Authorization{
+	return &auth.TokenClaims{
 		Issuer:    payload.Issuer,
 		Subject:   payload.Subject,
 		Roles:     payload.AllRoles(),
