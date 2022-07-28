@@ -2,47 +2,79 @@ syntax = "proto3";
 
 package vanti.bsp.ew;
 
-option go_package = "github.com/vanti-dev/bsp-ew/pkg/testgen";
+option go_package = "github.com/vanti-dev/bsp-ew/pkg/gen";
 
 /*
 A service used to enroll a Smart Core node into a centrally managed installation.
-Establishes a trust relationship between the node serving this API and the node calling it, using PKI.
-Operates on a "Trust on First Use" security policy - the network is assumed to be trustworthy during the enrollment
-procedure, but a PKI relationship is established which is resilient to insecure networks in the future.
+Establishes a trust relationship between the node serving this API (the target node) and the node calling it
+(the management node), using PKI.
+
+Operates on a "Trust on First Use" security policy:
+  - When a target node is in enrollment mode (on first boot or after a DeleteEnrollment) it will accept incoming
+    CreateEnrollment calls. The target node may accept enrollments from any management node, or optionally may
+    accept only some requests (based on preconfigured policy). When in enrollment mode, the target node shall
+    serve gRPC with a self-signed TLS certificate.
+  - When a target node is in operating mode, its management node may cancel its enrollment by calling DeleteEnrollment.
+    The target node will then return to enrollment mode.
+    The target node will not accept any CreateEnrollment calls while it is in operating mode.
  */
 service EnrollmentApi {
+  rpc GetEnrollment(GetEnrollmentRequest) returns (Enrollment) {}
   rpc CreateEnrollment(CreateEnrollmentRequest) returns (Enrollment) {}
   rpc DeleteEnrollment(DeleteEnrollmentRequest) returns (Enrollment) {}
-  rpc CompleteEnrollment(CompleteEnrollmentRequest) returns (Enrollment) {}
 }
+
+/* Enrollment is metadata associated with the enrollment of a target node with a management node.
+
+The enrollment binds the target node to the management node's public key infrastructure.
+A given target node can have at most one Enrollment at a time, so an Enrollment does not need an identifier.
+
+The Enrollment Connection is the gRPC connection from the management node to the target node, opened for the purpose of
+calling CreateEnrollment.
+ */
+message Enrollment {
+  /* The Smart Core name that should be adopted by the target node as its root name when it accepts this enrollment. */
+  string target_name = 1;
+  /* The Smart Core root name of the node which will manage the target node */
+  string manager_name = 2;
+  /* The address where the management node's Smart Core gRPC server can be found, in the form "host:port".
+
+  The host must either be a DNS name or an IP address. When the target node connects to this address using gRPC with
+  TLS, the management node MUST use a certificate signed by one of the Certificate Authorities present in root_cas,
+  and that certificate MUST contain the host as a Subject Alternative Name. This is so the target node can verify
+  the identity of the management node.
+  */
+  string manager_address = 3;
+
+  /* An X.509 certificate issued by the management node to the target node, in DER-encoded ASN.1 format.
+  The certificate MUST NOT be wrapped in a PEM container.
+
+  The certificate MUST be signed by the one of the Certificate Authorities whose certificate is present in root_cas,
+  and it MUST be signed for the same public key as the target node's self-signed TLS certificate.
+
+  The certificate's Subject Common Name SHOULD be a human-readable name for the target node.
+  The certificate MUST contain target_name as a URI Subject Alternative Name in the form "smart-core:<target_name>"
+  If the enrollment connection was opened by resolving a DNS name, then the certificate MUST contain that DNS name as a
+  Subject Alternative Name.
+  If the enrollment connection was opened by directly connecting to an IP address, then the certificate MUST contain
+  that IP address as a Subject Alternative Name.
+   */
+  bytes certificate = 4;
+
+  /* One or more X.509 certificates, in DER-encoded ASN.1 format.
+
+  These are the Root Certificate Authorities for the enrollment. Each MUST be self-signed.
+  The target node SHOULD use these certificate authorities whenever it communicates with another Smart Core node,
+  to verify that the other node is also enrolled with the same manager.
+  The certificates MUST NOT be wrapped in a PEM container.
+   */
+  repeated bytes root_cas = 5;
+}
+
+message GetEnrollmentRequest {}
 
 message CreateEnrollmentRequest {
-  /* The name that the node should adopt as its root device name. */
-  string node_name = 1;
-  /* The name of the device that will manage this node */
-  string manager_name = 2;
+  Enrollment enrollment = 1;
 }
 
-message DeleteEnrollmentRequest {
-
-}
-
-message Enrollment {
-  string id = 1;
-
-  enum Completion {
-    COMPLETION_UNSPECIFIED = 0;
-    INCOMPLETE = 1;
-    COMPLETE = 2;
-  }
-  Completion completion = 2;
-
-  /*
-  A Certificate Signing Request
-   */
-  bytes csr = 3;
-}
-
-message CompleteEnrollmentRequest {
-
-}
+message DeleteEnrollmentRequest {}
