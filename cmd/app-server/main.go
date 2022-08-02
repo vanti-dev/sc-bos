@@ -38,6 +38,8 @@ var (
 	flagPostgresPassword string
 	flagPostgresDatabase string
 	flagPopulateDatabase bool
+	flagKeycloakAddress  string
+	flagKeycloakRealm    string
 )
 
 func init() {
@@ -50,6 +52,8 @@ func init() {
 	flag.StringVar(&flagPostgresPassword, "postgres-password", "postgres", "password for authenticating with postgres")
 	flag.StringVar(&flagPostgresDatabase, "postgres-db", "smart_core", "database name for connecting to postgres")
 	flag.BoolVar(&flagPopulateDatabase, "populate-db", false, "inserts some test data into the database and exits")
+	flag.StringVar(&flagKeycloakAddress, "keycloak-url", "http://localhost:8888", "root URL of Keycloak server")
+	flag.StringVar(&flagKeycloakRealm, "keycloak-realm", "smart-core", "realm ID to use for Keycloak authentication")
 }
 
 func run(ctx context.Context) error {
@@ -239,8 +243,8 @@ func populateDB(ctx context.Context, conn *pgx.Conn) error {
 
 func initKeycloakVerifier(ctx context.Context) (auth.TokenVerifier, error) {
 	authConfig := keycloak.Config{
-		URL:      "http://localhost:8888",
-		Realm:    "smart-core",
+		URL:      flagKeycloakAddress,
+		Realm:    flagKeycloakRealm,
 		ClientID: "sc-api",
 	}
 	authUrls, err := auth.DiscoverOIDCConfig(ctx, authConfig.Issuer())
