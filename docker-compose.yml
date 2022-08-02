@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   db:
-    image: postgres:14
+    image: docker.io/library/postgres:14
     restart: always
     environment:
       POSTGRES_USERNAME: postgres
@@ -14,7 +14,7 @@ services:
       - "./scripts/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d"
 
   pgadmin:
-    image: dpage/pgadmin4:6
+    image: docker.io/dpage/pgadmin4:6
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: "admin@example.com"
