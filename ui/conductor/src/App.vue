@@ -4,7 +4,7 @@
       <v-btn>...</v-btn>
       <v-app-bar-title>Smart Core</v-app-bar-title>
       <v-spacer/>
-      <v-btn>Account</v-btn>
+      <v-btn>{{ loginText }}</v-btn>
     </v-app-bar>
     Vue app
 
@@ -13,9 +13,19 @@
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {computed, ref} from 'vue';
+import {useAccountStore} from './stores/account.js';
 
 const count = ref(1);
+
+const accountStore = useAccountStore();
+const loginText = computed(() => {
+  if (accountStore.loggedIn) {
+    return accountStore.account.name;
+  } else {
+    return 'Log in';
+  }
+})
 </script>
 
 <style scoped>
