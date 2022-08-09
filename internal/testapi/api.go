@@ -14,7 +14,7 @@ type API struct {
 	data string
 }
 
-func (api *API) GetTest(ctx context.Context, request *gen.GetTestRequest) (*gen.Test, error) {
+func (api *API) GetTest(_ context.Context, _ *gen.GetTestRequest) (*gen.Test, error) {
 	api.m.RLock()
 	defer api.m.RUnlock()
 
@@ -22,7 +22,7 @@ func (api *API) GetTest(ctx context.Context, request *gen.GetTestRequest) (*gen.
 	return &gen.Test{Data: data}, nil
 }
 
-func (api *API) UpdateTest(ctx context.Context, request *gen.UpdateTestRequest) (*gen.Test, error) {
+func (api *API) UpdateTest(_ context.Context, request *gen.UpdateTestRequest) (*gen.Test, error) {
 	api.m.Lock()
 	defer api.m.Unlock()
 

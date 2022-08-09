@@ -38,8 +38,8 @@ func (t *JWTTime) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (t JWTTime) MarshalJSON() ([]byte, error) {
-	return json.Marshal(time.Time(t).Unix())
+func (t *JWTTime) MarshalJSON() ([]byte, error) {
+	return json.Marshal(time.Time(*t).Unix())
 }
 
 // JWTClaimVerifier checks that JWTCommonClaims are correct.

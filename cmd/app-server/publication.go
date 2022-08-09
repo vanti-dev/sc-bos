@@ -20,8 +20,6 @@ type PublicationServer struct {
 	conn *pgx.Conn
 }
 
-var _ traits.PublicationApiServer = (*PublicationServer)(nil)
-
 func (p *PublicationServer) CreatePublication(ctx context.Context, request *traits.CreatePublicationRequest) (*traits.Publication, error) {
 	input := request.GetPublication()
 
@@ -163,7 +161,7 @@ func (p *PublicationServer) DeletePublication(ctx context.Context, request *trai
 	return pub, nil
 }
 
-func (p *PublicationServer) PullPublication(request *traits.PullPublicationRequest, server traits.PublicationApi_PullPublicationServer) error {
+func (p *PublicationServer) PullPublication(_ *traits.PullPublicationRequest, _ traits.PublicationApi_PullPublicationServer) error {
 	return status.Error(codes.Unimplemented, "PullPublication not implemented")
 }
 
@@ -193,7 +191,7 @@ func (p *PublicationServer) ListPublications(ctx context.Context, request *trait
 	}, nil
 }
 
-func (p *PublicationServer) PullPublications(request *traits.PullPublicationsRequest, server traits.PublicationApi_PullPublicationsServer) error {
+func (p *PublicationServer) PullPublications(_ *traits.PullPublicationsRequest, _ traits.PublicationApi_PullPublicationsServer) error {
 	return status.Error(codes.Unimplemented, "PullPublications not implemented")
 }
 
