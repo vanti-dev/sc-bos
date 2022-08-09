@@ -171,6 +171,10 @@ func main() {
 }
 
 func connectDB(ctx context.Context) (*pgx.Conn, error) {
+	// The only valid way to construct a pgconn.Config is using a URL string, so we need to manually construct it even
+	// though we have all the parts separately.
+	// Constructing the config manually will cause a panic when we attempt to connect.
+	// See: documentation for pgconn.Config
 	connectURL := url.URL{
 		Scheme: "postgres",
 		Host:   flagPostgresAddress,
