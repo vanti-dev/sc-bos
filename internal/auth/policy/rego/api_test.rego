@@ -37,7 +37,7 @@ valid_write_data {
 
 # Other users can only write polite messages
 valid_write_data {
-  startswith(input.Request.test.data, "please")
+  startswith(input.request.test.data, "please")
 }
 
 default allow := false

@@ -1,11 +1,15 @@
 package policy
 
 import (
+	"context"
 	"embed"
 	"io/fs"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/open-policy-agent/opa/ast"
+	"github.com/open-policy-agent/opa/rego"
 )
 
 //go:embed rego
@@ -37,3 +41,39 @@ func init() {
 
 	RegoCompiler = ast.MustCompileModules(sources)
 }
+
+// LoadRegoCached loads a rego.PartialResult for the given query using the global RegoCompiler.
+// Results are cached; the partial evaluation is performed once the first time and re-used for subsequent calls.
+// If LoadRegoCached returns an error, then future calls with the same query will always return the same error.
+func LoadRegoCached(query string) (rego.PartialResult, error) {
+	regoCacheM.Lock()
+	entry, ok := regoCache[query]
+	if !ok {
+		entry = &regoCacheEntry{}
+		regoCache[query] = entry
+	}
+	regoCacheM.Unlock()
+
+	entry.once.Do(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		r := rego.New(
+			rego.Compiler(RegoCompiler),
+			rego.Query(query),
+		)
+		entry.partialResult, entry.err = r.PartialResult(ctx)
+	})
+	return entry.partialResult, entry.err
+}
+
+type regoCacheEntry struct {
+	once          sync.Once
+	partialResult rego.PartialResult
+	err           error
+}
+
+var (
+	regoCache  = make(map[string]*regoCacheEntry)
+	regoCacheM sync.Mutex
+)
