@@ -3,12 +3,10 @@ package policy
 import (
 	"context"
 	"crypto/x509"
-	"fmt"
 	"log"
 	"regexp"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	"github.com/open-policy-agent/opa/rego"
 	"github.com/vanti-dev/bsp-ew/internal/auth"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -70,21 +68,7 @@ func checkPolicyGrpc(ctx context.Context, verifier auth.TokenVerifier, request a
 		TokenClaims:      tokenClaims,
 	}
 
-	query := fmt.Sprintf("data.%s.allow", service)
-	r := rego.New(
-		rego.Compiler(RegoCompiler),
-		rego.Input(input),
-		rego.Query(query),
-	)
-	result, err := r.Eval(ctx)
-	if err != nil {
-		return err
-	}
-	if !result.Allowed() {
-		return status.Error(codes.PermissionDenied, "you are not authorized to perform this operation")
-	}
-
-	return nil
+	return CheckAttributes(ctx, input)
 }
 
 var grpcMethodRegexp = regexp.MustCompile("^/([^/]*)/([^/]*)$")
