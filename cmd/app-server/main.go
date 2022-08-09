@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -29,29 +30,25 @@ import (
 )
 
 var (
-	flagListenGRPC       string
-	flagListenHTTP       string
-	flagStaticDir        string
-	flagDisableAuth      bool
-	flagPostgresAddress  string
-	flagPostgresUsername string
-	flagPostgresPassword string
-	flagPostgresDatabase string
-	flagPopulateDatabase bool
-	flagKeycloakAddress  string
-	flagKeycloakRealm    string
+	flagListenGRPC      string
+	flagListenHTTP      string
+	flagStaticDir       string
+	flagDisableAuth     bool
+	flagDBURL           string
+	flagDBPasswordFile  string
+	flagPopulateDB      bool
+	flagKeycloakAddress string
+	flagKeycloakRealm   string
 )
 
 func init() {
-	flag.StringVar(&flagListenGRPC, "listen-grpc", "localhost:23557", "port to host gRPC server on")
-	flag.StringVar(&flagListenHTTP, "listen-http", "localhost:8080", "port to host HTTP server on")
+	flag.StringVar(&flagListenGRPC, "listen-grpc", ":23557", "address (host:port) to host gRPC server on")
+	flag.StringVar(&flagListenHTTP, "listen-http", ":80", "address (host:port) to host HTTP server on")
 	flag.StringVar(&flagStaticDir, "static-dir", "ui/dist", "path to static files directory")
 	flag.BoolVar(&flagDisableAuth, "disable-auth", false, "[INSECURE!] disable API call authorization checks")
-	flag.StringVar(&flagPostgresAddress, "postgres-addr", "localhost:5432", "host:port to connect to postgres on")
-	flag.StringVar(&flagPostgresUsername, "postgres-user", "postgres", "username for authenticating with postgres")
-	flag.StringVar(&flagPostgresPassword, "postgres-password", "postgres", "password for authenticating with postgres")
-	flag.StringVar(&flagPostgresDatabase, "postgres-db", "smart_core", "database name for connecting to postgres")
-	flag.BoolVar(&flagPopulateDatabase, "populate-db", false, "inserts some test data into the database and exits")
+	flag.StringVar(&flagDBURL, "db-url", "postgres://postgres:postgres@localhost:5432/smart_core", "PostgreSQL connection URL in libpq style")
+	flag.StringVar(&flagDBPasswordFile, "db-password-file", "", "path to a file containing the PostgreSQL password")
+	flag.BoolVar(&flagPopulateDB, "populate-db", false, "inserts some test data into the database and exits")
 	flag.StringVar(&flagKeycloakAddress, "keycloak-url", "http://localhost:8888", "root URL of Keycloak server")
 	flag.StringVar(&flagKeycloakRealm, "keycloak-realm", "smart-core", "realm ID to use for Keycloak authentication")
 }
@@ -65,7 +62,7 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if flagPopulateDatabase {
+	if flagPopulateDB {
 		return populateDB(ctx, dbConn)
 	}
 
@@ -171,22 +168,21 @@ func main() {
 }
 
 func connectDB(ctx context.Context) (*pgx.Conn, error) {
-	// The only valid way to construct a pgconn.Config is using a URL string, so we need to manually construct it even
-	// though we have all the parts separately.
-	// Constructing the config manually will cause a panic when we attempt to connect.
-	// See: documentation for pgconn.Config
-	connectURL := url.URL{
-		Scheme: "postgres",
-		Host:   flagPostgresAddress,
-		User:   url.UserPassword(flagPostgresUsername, flagPostgresPassword),
-		Path:   "/" + flagPostgresDatabase,
-	}
-	conn, err := pgx.Connect(ctx, connectURL.String())
+	connConfig, err := pgx.ParseConfig(flagDBURL)
 	if err != nil {
 		return nil, err
 	}
 
-	return conn, nil
+	if flagDBPasswordFile != "" {
+		passwordFile, err := ioutil.ReadFile(flagDBPasswordFile)
+		if err != nil {
+			return nil, err
+		}
+
+		connConfig.Password = strings.TrimSpace(string(passwordFile))
+	}
+
+	return pgx.ConnectConfig(ctx, connConfig)
 }
 
 func populateDB(ctx context.Context, conn *pgx.Conn) error {

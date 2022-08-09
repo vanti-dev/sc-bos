@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -16,6 +17,14 @@ import (
 	"github.com/go-jose/go-jose/v3"
 	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
 )
+
+var (
+	flagListenHTTP string
+)
+
+func init() {
+	flag.StringVar(&flagListenHTTP, "listen-http", ":80", "address (host:port) to host an HTTP server on")
+}
 
 func main() {
 	ctx, done := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -29,7 +38,10 @@ func main() {
 
 func run(ctx context.Context) error {
 	// Open HTTP Port
-	httpListener, httpPort := listen(8000)
+	httpListener, err := net.Listen("tcp", flagListenHTTP)
+	if err != nil {
+		return err
+	}
 	go func() {
 		<-ctx.Done()
 		err := httpListener.Close()
@@ -41,19 +53,8 @@ func run(ctx context.Context) error {
 	mux := http.NewServeMux()
 	mux.Handle("/oauth2/token", tenant.OAuth2TokenHandler(genTenantSecrets(), genTenantTokenSource()))
 
-	fmt.Printf("HTTP server listening on :%d\n", httpPort)
+	fmt.Println("HTTP server listening")
 	return http.Serve(httpListener, mux)
-}
-
-func listen(desiredPort int) (listener net.Listener, port int) {
-	listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", desiredPort))
-	if err != nil {
-		panic(err)
-	}
-
-	port = listener.Addr().(*net.TCPAddr).Port
-
-	return
 }
 
 func genTenantSecrets() tenant.SecretStore {
