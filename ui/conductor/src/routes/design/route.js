@@ -3,6 +3,6 @@ export default {
   path: '/design',
   component: () => import('./Design.vue'),
   meta: {
-    title: 'Design'
+    title: 'Designer'
   }
 }

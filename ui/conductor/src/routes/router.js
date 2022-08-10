@@ -4,6 +4,9 @@ import commission from './commission/route.js';
 import design from './design/route.js';
 import operate from './operate/route.js';
 import start from './start/route.js';
+import Vue from 'vue';
+
+Vue.use(VueRouter);
 
 function route(route) {
   if (Array.isArray(route)) {

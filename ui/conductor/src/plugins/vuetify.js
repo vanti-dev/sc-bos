@@ -21,7 +21,7 @@ const opts = {
         design: '#DAE343',
         commission: '#00BED6',
         operate: '#FFA400',
-        admin: '#00BED6',
+        admin: '#A2A2A2',
 
         error: '#FF6200',
         info: '#00BED6',
