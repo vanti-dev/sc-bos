@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"log"
 
-	"github.com/vanti-dev/bsp-ew/internal/pki"
+	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"

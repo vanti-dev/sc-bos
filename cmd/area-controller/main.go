@@ -17,8 +17,8 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
-	"github.com/vanti-dev/bsp-ew/internal/pki"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
+	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/multierr"
 	"golang.org/x/sync/errgroup"
@@ -51,7 +51,7 @@ func run(ctx context.Context) (errs error) {
 	}
 
 	// create private key if it doesn't exist
-	keyPEM, err := pki.LoadOrGenerateKeyPair(filepath.Join(flagDataDir, "private-key.pem"))
+	_, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(flagDataDir, "private-key.pem"))
 	if err != nil {
 		errs = multierr.Append(errs, err)
 		return

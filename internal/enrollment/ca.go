@@ -5,13 +5,11 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"io"
-	"math/big"
 	"net"
 	"net/url"
 	"time"
 
-	"github.com/vanti-dev/bsp-ew/internal/pki"
+	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 )
 
@@ -30,9 +28,7 @@ type CA struct {
 // Returns just the new certificate, in DER encoding.
 // For the equivalent function that returns the entire certificate chain, see CreateEnrollmentCertificateChain.
 func (ca *CA) CreateEnrollmentCertificate(enrollment *gen.Enrollment, pub crypto.PublicKey) (der []byte, err error) {
-	// generate a random 128 bit serial number
-	serial := make([]byte, 16)
-	_, err = io.ReadFull(rand.Reader, serial)
+	serial, err := pki.GenerateSerialNumber()
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +49,7 @@ func (ca *CA) CreateEnrollmentCertificate(enrollment *gen.Enrollment, pub crypto
 
 	now := ca.now()
 	template := &x509.Certificate{
-		SerialNumber: big.NewInt(0).SetBytes(serial),
+		SerialNumber: serial,
 		NotBefore:    now,
 		NotAfter:     now.Add(ca.validity()),
 		Subject:      pkix.Name{CommonName: enrollment.TargetName},
