@@ -1,7 +1,7 @@
 <template>
-  <v-menu v-bind="showMenu" bottom offset-y max-width="100%" tile>
-    <template #activator="{on, attr}">
-      <v-btn icon tile v-bind="attr" v-on="on" style="background: #FFFFFF1A">
+  <v-menu v-bind="showMenu" bottom offset-y max-width="100%" tile transition="slide-y-transition">
+    <template #activator="{on, attrs}">
+      <v-btn icon tile v-bind="attrs" v-on="on" style="background: #FFFFFF1A" :class="btnClass">
         <menu-icon :color="logoColor"/>
       </v-btn>
     </template>
@@ -31,6 +31,10 @@ import {ref} from 'vue';
 import MenuIcon from './MenuIcon.vue';
 import NavButton from './NavButton.vue';
 import {useTheme} from './theme.js';
+
+defineProps({
+  btnClass: [String, Object]
+});
 
 const {logoColor} = useTheme();
 
