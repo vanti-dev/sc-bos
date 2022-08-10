@@ -1,12 +1,13 @@
 <template>
-  <v-app>
+  <v-app class="app-root">
     <v-app-bar app height="60">
-      <app-menu/>
+      <app-menu btn-class="full-btn"/>
       <sc-logo :fill="logoColor" :outline="logoColor ? 'white' : undefined" style="height: 35px; margin-left: 16px"/>
       <span class="heading">Smart Core</span>
       <page-title/>
+
       <v-spacer/>
-      <v-btn>{{ loginText }}</v-btn>
+      <account-btn btn-class="full-btn mr-0"/>
     </v-app-bar>
 
 
@@ -17,36 +18,46 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
+import AccountBtn from './components/AccountBtn.vue';
 import AppMenu from './components/AppMenu.vue';
 import PageTitle from './components/PageTitle.vue';
 import ScLogo from './components/ScLogo.vue';
 import {useTheme} from './components/theme.js';
-import {useAccountStore} from './stores/account.js';
 
 const theme = useTheme();
 const logoColor = theme.logoColor;
-
-const accountStore = useAccountStore();
-const loginText = computed(() => {
-  if (accountStore.loggedIn) {
-    return accountStore.account.name;
-  } else {
-    return 'Log in';
-  }
-});
 </script>
 
 <style scoped>
-.v-app-bar ::v-deep(.v-toolbar__content > .v-btn.v-btn--icon:first-child) {
-  margin-left: -16px;
+.v-application {
+  background: #101820;
+}
+
+.v-app-bar {
+  background: #283037;
+}
+
+.v-app-bar ::v-deep(.v-toolbar__content) {
+  padding-right: 30px;
+}
+
+.v-app-bar ::v-deep(.v-toolbar__content > .v-btn.full-btn) {
   margin-top: -4px;
   margin-bottom: -4px;
   height: 60px;
-  width: 60px;
+  min-width: 60px;
+  width: auto;
 }
 
-.v-app-bar ::v-deep(.v-toolbar__content > .v-btn.v-btn--icon:first-child .v-btn__content) {
+.v-app-bar ::v-deep(.v-toolbar__content > .v-btn.full-btn:first-child) {
+  margin-left: -16px;
+}
+
+.v-app-bar ::v-deep(.v-toolbar__content > .v-btn.full-btn:last-child) {
+  margin-right: -16px;
+}
+
+.v-app-bar ::v-deep(.v-toolbar__content > .v-btn.full-btn .v-btn__content) {
   height: 100%
 }
 
