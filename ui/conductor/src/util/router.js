@@ -20,3 +20,15 @@ export function useRoute() {
 
   return reactive(/** @type {Route} */protoRoute)
 }
+
+/**
+ * @param {import('vue-router').Route} route
+ * @returns {string|undefined}
+ */
+export function routeTitle(route) {
+  for (let i = route.matched.length - 1; i >= 0; i--) {
+    const r = route.matched[i];
+    const title = r.meta?.['title'];
+    if (title) return title;
+  }
+}
