@@ -69,7 +69,7 @@ func CheckAttributes(ctx context.Context, attr Attributes) error {
 
 	for len(components) > 0 {
 		query := fmt.Sprintf("data.%s.allow", strings.Join(components, "."))
-		partial, err := LoadRegoCached(query)
+		partial, err := LoadRegoCached(ctx, query)
 		if err != nil {
 			return err
 		}
@@ -92,7 +92,7 @@ func CheckAttributes(ctx context.Context, attr Attributes) error {
 	}
 
 	// try evaluating the fallback policy
-	partial, err := LoadRegoCached("data.grpc_default")
+	partial, err := LoadRegoCached(ctx, "data.grpc_default")
 	if err != nil {
 		return err
 	}

@@ -29,7 +29,7 @@ func BenchmarkLoadRegoCached(b *testing.B) {
 	attr := exampleAttributes
 
 	for i := 0; i < b.N; i++ {
-		partial, err := LoadRegoCached("data.vanti.bsp.ew.TestApi.allow")
+		partial, err := LoadRegoCached(context.Background(), "data.vanti.bsp.ew.TestApi.allow")
 		if err != nil {
 			b.Fatal(err)
 		}
