@@ -2,15 +2,16 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -22,17 +23,19 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/db"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
+	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/multierr"
-	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 )
 
 var (
 	flagListenGRPC      string
-	flagListenHTTP      string
+	flagListenHTTPS     string
 	flagStaticDir       string
+	flagConfigDir       string
 	flagDisableAuth     bool
 	flagDBURL           string
 	flagDBPasswordFile  string
@@ -43,8 +46,9 @@ var (
 
 func init() {
 	flag.StringVar(&flagListenGRPC, "listen-grpc", ":23557", "address (host:port) to host gRPC server on")
-	flag.StringVar(&flagListenHTTP, "listen-http", ":80", "address (host:port) to host HTTP server on")
+	flag.StringVar(&flagListenHTTPS, "listen-https", ":80", "address (host:port) to host HTTPS server on")
 	flag.StringVar(&flagStaticDir, "static-dir", "ui/dist", "path to static files directory")
+	flag.StringVar(&flagConfigDir, "config-dir", ".data/app-server", "path to the configuration directory")
 	flag.BoolVar(&flagDisableAuth, "disable-auth", false, "[INSECURE!] disable API call authorization checks")
 	flag.StringVar(&flagDBURL, "db-url", "postgres://postgres:postgres@localhost:5432/smart_core", "PostgreSQL connection URL in libpq style")
 	flag.StringVar(&flagDBPasswordFile, "db-password-file", "", "path to a file containing the PostgreSQL password")
@@ -56,7 +60,16 @@ func init() {
 func run(ctx context.Context) error {
 	flag.Parse()
 
-	group, ctx := errgroup.WithContext(ctx)
+	privateKey, _, err := pki.LoadOrGeneratePrivateKey(filepath.Join(flagConfigDir, "private-key.pem"))
+	if err != nil {
+		return err
+	}
+
+	certSource := &pki.SelfSignedCertSource{PrivateKey: privateKey}
+
+	tlsConfig := &tls.Config{
+		GetCertificate: certSource.TLSConfigGetCertificate,
+	}
 
 	dbConn, err := connectDB(ctx)
 	if err != nil {
@@ -66,20 +79,9 @@ func run(ctx context.Context) error {
 		return populateDB(ctx, dbConn)
 	}
 
-	pubServer := &PublicationServer{conn: dbConn}
-
-	grpcListener, err := net.Listen("tcp", flagListenGRPC)
-	if err != nil {
-		return fmt.Errorf("can't listen on %q: %w", flagListenGRPC, err)
+	grpcServerOptions := []grpc.ServerOption{
+		grpc.Creds(credentials.NewTLS(tlsConfig)),
 	}
-
-	httpListener, err := net.Listen("tcp", flagListenHTTP)
-	if err != nil {
-		return fmt.Errorf("can't listen on %q: %w", flagListenHTTP, err)
-	}
-
-	// ===== Serve gGRPC ======
-	var grpcServerOptions []grpc.ServerOption
 	if !flagDisableAuth {
 		verifier, err := initKeycloakVerifier(ctx)
 		if err != nil {
@@ -91,57 +93,32 @@ func run(ctx context.Context) error {
 		)
 	}
 
+	servers := &Servers{
+		ShutdownTimeout: 15 * time.Second,
+		GRPC:            grpc.NewServer(grpcServerOptions...),
+		GRPCAddress:     flagListenGRPC,
+		HTTP: &http.Server{
+			Addr:      flagListenHTTPS,
+			TLSConfig: tlsConfig,
+		},
+	}
+
 	grpcServer := grpc.NewServer(grpcServerOptions...)
-	traits.RegisterPublicationApiServer(grpcServer, pubServer)
+	traits.RegisterPublicationApiServer(grpcServer, &PublicationServer{conn: dbConn})
 	gen.RegisterTestApiServer(grpcServer, testapi.NewAPI())
 	reflection.Register(grpcServer)
+
 	grpcWebWrapper := grpcweb.WrapServer(grpcServer)
-
-	// serve gRPC on the grpcListener
-	group.Go(func() error {
-		return grpcServer.Serve(grpcListener)
-	})
-	log.Printf("insecure gRPC server listening on %s", grpcListener.Addr().String())
-
-	// ===== Serve HTTP =====
 	staticFiles := http.FileServer(http.Dir(flagStaticDir))
-	httpHandler := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	servers.HTTP.Handler = http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if grpcWebWrapper.IsGrpcWebRequest(request) || grpcWebWrapper.IsAcceptableGrpcCorsRequest(request) {
 			grpcWebWrapper.ServeHTTP(writer, request)
 		} else {
 			staticFiles.ServeHTTP(writer, request)
 		}
 	})
-	group.Go(func() error {
-		return http.Serve(httpListener, httpHandler)
-	})
 
-	// ===== Handle Shutdowns =====
-	// immediately attempt graceful shutdown when context cancelled
-	stopped := make(chan struct{})
-	group.Go(func() error {
-		<-ctx.Done()
-		grpcServer.GracefulStop()
-		close(stopped)
-		return nil
-	})
-
-	// force shutdown 5s after context cancelled
-	group.Go(func() error {
-		<-ctx.Done()
-		log.Println("gRPC server will be force-closed in 5 seconds")
-		select {
-		case <-time.After(5 * time.Second):
-			grpcServer.Stop()
-		case <-stopped:
-		}
-		log.Println("gRPC server shut down")
-		err := httpListener.Close()
-		log.Println("HTTP server shut down")
-		return err
-	})
-
-	return group.Wait()
+	return servers.Serve(ctx)
 }
 
 func main() {

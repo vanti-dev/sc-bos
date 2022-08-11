@@ -17,7 +17,7 @@ var ErrInvalidPrivateKey = errors.New("invalid private key")
 
 // CreateSelfSignedCert generates a self-signed DER-encoded X.509 certificate suitable for TLS server authentication.
 // It is issued with a CN of localhost and SANs of localhost, plus all local interface IP addresses.
-func CreateSelfSignedCert(key crypto.PrivateKey) (derBytes []byte, err error) {
+func CreateSelfSignedCert(key crypto.PrivateKey, validity time.Duration) (derBytes []byte, err error) {
 	private, ok := key.(PrivateKey)
 	if !ok {
 		return nil, ErrInvalidPrivateKey
@@ -41,8 +41,8 @@ func CreateSelfSignedCert(key crypto.PrivateKey) (derBytes []byte, err error) {
 		DNSNames:              []string{"localhost"},
 		IPAddresses:           interfaceIPs,
 		NotBefore:             now.Add(-time.Hour), // a bit of leeway for clock skew
-		NotAfter:              now.Add(30 * 24 * time.Hour),
-		KeyUsage:              x509.KeyUsageKeyEncipherment,
+		NotAfter:              now.Add(validity),
+		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
 	}
@@ -77,7 +77,7 @@ func localInterfaceAddresses() ([]net.IP, error) {
 
 	var ips []net.IP
 	for _, addr := range addrs {
-		if addr, ok := addr.(*net.IPAddr); ok {
+		if addr, ok := addr.(*net.IPNet); ok {
 			ips = append(ips, addr.IP)
 		}
 	}
