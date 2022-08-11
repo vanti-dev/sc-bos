@@ -16,10 +16,14 @@ var ErrPermissionDenied = status.Error(codes.PermissionDenied, "you are not auth
 // Attributes is a collection of metadata which can be used by policies to decide whether to accept or reject
 // a protected operation.
 type Attributes struct {
-	Service string            `json:"service"` // gRPC service name, fully qualified
-	Method  string            `json:"method"`  // gRPC method name
-	Stream  *StreamAttributes `json:"stream"`  // details about streaming calls. nil for unary calls.
-	// gRPC request message for unary and server streaming calls. Always nil for client and bidirectional streaming calls
+	Service string `json:"service"` // gRPC service name, fully qualified
+	Method  string `json:"method"`  // gRPC method name
+	// Metadata about streams, for streaming calls. For unary calls, both IsServerStream and IsClientStream
+	// will be false.
+	Stream StreamAttributes `json:"stream"`
+	// gRPC request message for unary and server streaming calls.
+	// For client and bidirectional streaming calls, Request is initially nil, but will contain the latest stream
+	// message once Stream.Open is true.
 	Request any `json:"request"`
 
 	CertificateValid bool              `json:"certificate_valid"` // A cert is present and validated against the CA
@@ -33,10 +37,9 @@ type StreamAttributes struct {
 	IsClientStream bool `json:"is_client_stream"` // true for client streaming calls and bidirectional streaming calls
 	// Open is false when the policy is being evaluated to decide whether the streaming call is allowed to open.
 	// It is true when the streaming call is already open and the policy needs to check the latest incoming stream
-	// message, which will be present in Incoming. Always false for server streaming calls, as policy is evaluated only
-	// once, with the request.
-	Open     bool `json:"open"`
-	Incoming any  // for bidirectional / client streaming calls, the incoming stream message
+	// message, which will be present in the Request attribute. Always false for server streaming calls and unary calls,
+	// as policy is evaluated only once, with the request present.
+	Open bool `json:"open"`
 }
 
 // CheckAttributes will check a set of decision attributes against the global policy store.

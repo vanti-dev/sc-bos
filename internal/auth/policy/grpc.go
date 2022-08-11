@@ -17,7 +17,11 @@ import (
 
 func GRPCUnaryInterceptor(verifier auth.TokenVerifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
-		err = checkPolicyGrpc(ctx, verifier, req, nil)
+		err = checkPolicyGrpc(ctx, verifier, req, StreamAttributes{
+			IsServerStream: false,
+			IsClientStream: false,
+			Open:           false,
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -33,7 +37,7 @@ func GRPCStreamingInterceptor(verifier auth.TokenVerifier) grpc.StreamServerInte
 		// generated code will call RecvMsg to get this *before* control is transferred to the service implementation,
 		// so we can check then using the serverStreamInterceptor
 		if info.IsClientStream {
-			err := checkPolicyGrpc(ss.Context(), verifier, nil, &StreamAttributes{
+			err := checkPolicyGrpc(ss.Context(), verifier, nil, StreamAttributes{
 				IsServerStream: info.IsServerStream,
 				IsClientStream: info.IsClientStream,
 				Open:           false,
@@ -44,22 +48,15 @@ func GRPCStreamingInterceptor(verifier auth.TokenVerifier) grpc.StreamServerInte
 		}
 
 		cb := func(msg any) error {
-			streamAttrs := &StreamAttributes{
+			streamAttrs := StreamAttributes{
 				IsServerStream: info.IsServerStream,
 				IsClientStream: info.IsClientStream,
+				// Only client/bidirectional streams cause policies to be evaluated once the stream is already
+				// open.
+				Open: info.IsClientStream,
 			}
 
-			var request any
-			if info.IsClientStream {
-				// client and bidirectional streams don't have a request per se, they are just streams
-				streamAttrs.Open = true
-				streamAttrs.Incoming = msg
-			} else {
-				// server-only streams will only receive one message, and that is the request from the client
-				request = msg
-			}
-
-			return checkPolicyGrpc(ss.Context(), verifier, request, streamAttrs)
+			return checkPolicyGrpc(ss.Context(), verifier, msg, streamAttrs)
 		}
 		wrapped := &serverStreamInterceptor{
 			ServerStream: ss,
@@ -69,7 +66,7 @@ func GRPCStreamingInterceptor(verifier auth.TokenVerifier) grpc.StreamServerInte
 	}
 }
 
-func checkPolicyGrpc(ctx context.Context, verifier auth.TokenVerifier, request any, stream *StreamAttributes) error {
+func checkPolicyGrpc(ctx context.Context, verifier auth.TokenVerifier, request any, stream StreamAttributes) error {
 	service, method, ok := getGrpcServiceMethod(ctx)
 	if !ok {
 		return status.Error(codes.Internal, "failed to resolve method")
