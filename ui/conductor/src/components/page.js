@@ -3,7 +3,7 @@ import vuetify from '../plugins/vuetify.js';
 import {useRoute} from '../util/router.js';
 
 export function usePage() {
-  const currentRoute = useRoute();
+  const currentRoute = /** @type {Route} */ useRoute();
   const themeColor = computed(() => {
     if (!currentRoute) return undefined;
     for (let i = currentRoute.matched.length - 1; i >= 0; i--) {
@@ -19,7 +19,9 @@ export function usePage() {
       const title = r.meta?.['title'];
       if (title) return title;
     }
-  })
+  });
 
-  return {themeColor, pageTitle};
+  const hasSections = computed(() => currentRoute?.matched?.some(r => r.components?.sections));
+
+  return {themeColor, pageTitle, hasSections};
 }

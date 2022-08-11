@@ -6,11 +6,7 @@
       <span class="heading">Smart Core</span>
       <page-title/>
 
-      <v-divider vertical
-                 v-if="hasSections"
-                 class="mx-8"
-                 inset
-                 style="border-right-width: 1px; border-right-color: white"/>
+      <v-divider vertical v-if="hasSections" class="mx-8 section-divider" inset/>
       <router-view name="sections"/>
 
       <v-spacer/>
@@ -27,21 +23,13 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
 import AccountBtn from './components/AccountBtn.vue';
 import AppMenu from './components/AppMenu.vue';
 import {usePage} from './components/page.js';
 import PageTitle from './components/PageTitle.vue';
 import ScLogo from './components/ScLogo.vue';
-import {useRoute, useRouter} from './util/router.js';
 
-const {themeColor} = usePage();
-
-const router = useRouter();
-
-const route = useRoute();
-const hasSections = computed(() => route?.matched?.some(r => r.components?.sections));
-// const hasActions = computed(() => Boolean(route?.components?.actions));
+const {themeColor, hasSections} = usePage();
 </script>
 
 <style scoped>
@@ -80,5 +68,9 @@ const hasSections = computed(() => route?.matched?.some(r => r.components?.secti
 .heading {
   font-size: 22px;
   font-weight: 300;
+}
+
+.section-divider {
+  border-color: currentColor;
 }
 </style>
