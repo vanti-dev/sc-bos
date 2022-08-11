@@ -10,7 +10,7 @@ export function useRouter() {
 export function useRoute() {
   const currentRoute = computed(() => getCurrentInstance().proxy.$route)
 
-  const protoRoute = Object.keys(currentRoute.value).reduce(
+  const protoRoute = /** @type {import('vue-router').Route} */ Object.keys(currentRoute.value).reduce(
       (acc, key) => {
         acc[key] = computed(() => currentRoute.value[key])
         return acc
@@ -18,7 +18,7 @@ export function useRoute() {
       {}
   )
 
-  return reactive(/** @type {Route} */protoRoute)
+  return reactive(protoRoute)
 }
 
 /**

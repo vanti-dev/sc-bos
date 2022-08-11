@@ -3,7 +3,7 @@ import vuetify from '../plugins/vuetify.js';
 import {routeTitle, useRoute} from '../util/router.js';
 
 export function usePage() {
-  const currentRoute = /** @type {Route} */ useRoute();
+  const currentRoute = /** @type {import('vue-router').Route} */ useRoute();
   const themeColor = computed(() => {
     if (!currentRoute) return undefined;
     for (let i = currentRoute.matched.length - 1; i >= 0; i--) {
