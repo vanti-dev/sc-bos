@@ -1,5 +1,5 @@
 <template>
-
+  <span>Design spaces</span>
 </template>
 
 <script setup>

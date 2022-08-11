@@ -2,11 +2,20 @@
   <v-app class="app-root">
     <v-app-bar app height="60">
       <app-menu btn-class="full-btn"/>
-      <sc-logo :fill="logoColor" :outline="logoColor ? 'white' : undefined" style="height: 35px; margin-left: 16px"/>
+      <sc-logo :fill="themeColor" :outline="themeColor ? 'white' : undefined" style="height: 35px; margin-left: 16px"/>
       <span class="heading">Smart Core</span>
       <page-title/>
 
+      <v-divider vertical
+                 v-if="hasSections"
+                 class="mx-8"
+                 inset
+                 style="border-right-width: 1px; border-right-color: white"/>
+      <router-view name="sections"/>
+
       <v-spacer/>
+
+      <router-view name="actions"/>
       <account-btn btn-class="full-btn mr-0"/>
     </v-app-bar>
 
@@ -18,14 +27,21 @@
 </template>
 
 <script setup>
+import {computed} from 'vue';
 import AccountBtn from './components/AccountBtn.vue';
 import AppMenu from './components/AppMenu.vue';
+import {usePage} from './components/page.js';
 import PageTitle from './components/PageTitle.vue';
 import ScLogo from './components/ScLogo.vue';
-import {useTheme} from './components/theme.js';
+import {useRoute, useRouter} from './util/router.js';
 
-const theme = useTheme();
-const logoColor = theme.logoColor;
+const {themeColor} = usePage();
+
+const router = useRouter();
+
+const route = useRoute();
+const hasSections = computed(() => route?.matched?.some(r => r.components?.sections));
+// const hasActions = computed(() => Boolean(route?.components?.actions));
 </script>
 
 <style scoped>

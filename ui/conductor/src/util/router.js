@@ -18,5 +18,5 @@ export function useRoute() {
       {}
   )
 
-  return reactive(protoRoute)
+  return reactive(/** @type {Route} */protoRoute)
 }

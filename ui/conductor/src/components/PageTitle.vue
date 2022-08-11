@@ -1,14 +1,13 @@
 <template>
-  <span :class="{hasPageName}">{{ pageName }}</span>
+  <span :class="{hasPageTitle}">{{ pageTitle }}</span>
 </template>
 
 <script setup>
 import {computed} from 'vue';
-import {useRoute} from '../util/router.js';
+import {usePage} from './page.js';
 
-const route = useRoute();
-const pageName = computed(() => route?.meta?.title);
-const hasPageName = computed(() => Boolean(pageName.value));
+const {pageTitle} = usePage();
+const hasPageTitle = computed(() => Boolean(pageTitle));
 </script>
 
 <style scoped>
@@ -17,7 +16,7 @@ span {
   font-size: 22px;
 }
 
-.hasPageName {
+.hasPageTitle {
   margin-left: 16px;
 }
 </style>

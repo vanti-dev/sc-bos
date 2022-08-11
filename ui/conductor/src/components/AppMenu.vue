@@ -2,7 +2,7 @@
   <v-menu v-bind="showMenu" bottom offset-y max-width="100%" tile transition="slide-y-transition">
     <template #activator="{on, attrs}">
       <v-btn icon tile v-bind="attrs" v-on="on" style="background: #FFFFFF1A" :class="btnClass">
-        <menu-icon :color="logoColor"/>
+        <menu-icon :color="themeColor"/>
       </v-btn>
     </template>
     <v-card width="100vw" :light="$vuetify.theme.dark" tile class="menu-card">
@@ -30,13 +30,13 @@
 import {ref} from 'vue';
 import MenuIcon from './MenuIcon.vue';
 import NavButton from './NavButton.vue';
-import {useTheme} from './theme.js';
+import {usePage} from './page.js';
 
 defineProps({
   btnClass: [String, Object]
 });
 
-const {logoColor} = useTheme();
+const {themeColor} = usePage();
 
 const showMenu = ref(false);
 

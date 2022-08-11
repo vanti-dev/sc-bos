@@ -1,5 +1,5 @@
 <template>
-
+  <span>Design buildings</span>
 </template>
 
 <script setup>
