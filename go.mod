@@ -13,6 +13,7 @@ require (
 	github.com/smart-core-os/sc-golang v0.0.0-20220617135625-6c6576c43f86
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
+	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.0
@@ -45,7 +46,6 @@ require (
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
 	go.uber.org/atomic v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
-	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
 	golang.org/x/text v0.3.7 // indirect
