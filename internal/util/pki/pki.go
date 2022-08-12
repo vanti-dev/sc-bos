@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"io"
 	"math/big"
+
+	"go.uber.org/multierr"
 )
 
 func GetCertificateSmartCoreNames(cert *x509.Certificate) []string {
@@ -40,6 +42,28 @@ func ParseCertificateChainPEM(pemBytes []byte) (leaf *x509.Certificate, intermed
 		return nil, nil, errors.New("failed to parse intermediate certificates")
 	}
 
+	return
+}
+
+func ParseCertificatesPEM(pemBytes []byte) (certs []*x509.Certificate, errs error) {
+	for len(pemBytes) > 0 {
+		var block *pem.Block
+		block, pemBytes = pem.Decode(pemBytes)
+		if block == nil {
+			break
+		}
+
+		if block.Type != "CERTIFICATE" {
+			return
+		}
+		cert, err := x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			errs = multierr.Append(errs, err)
+			continue
+		}
+
+		certs = append(certs, cert)
+	}
 	return
 }
 

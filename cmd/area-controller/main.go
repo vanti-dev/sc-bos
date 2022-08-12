@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"crypto"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -17,6 +19,7 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
+	"github.com/vanti-dev/bsp-ew/internal/server"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
@@ -51,7 +54,7 @@ func run(ctx context.Context) (errs error) {
 	}
 
 	// create private key if it doesn't exist
-	_, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(flagDataDir, "private-key.pem"))
+	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(flagDataDir, "private-key.pem"))
 	if err != nil {
 		errs = multierr.Append(errs, err)
 		return
@@ -61,7 +64,7 @@ func run(ctx context.Context) (errs error) {
 	enrollment, err := LoadEnrollment(filepath.Join(flagDataDir, "enrollment"), keyPEM)
 	if errors.Is(err, ErrNotEnrolled) {
 		// switch to enrollment mode, so this node can be enrolled with a Smart Core app server
-		return runEnrollment(ctx, keyPEM)
+		return runEnrollment(ctx, key, keyPEM)
 	} else if err != nil {
 		return err
 	}
@@ -69,8 +72,41 @@ func run(ctx context.Context) (errs error) {
 	return runNormal(ctx, enrollment)
 }
 
-func runEnrollment(ctx context.Context, keyPEM []byte) error {
-	fmt.Println("TODO: enrollment mode")
+func runEnrollment(ctx context.Context, key crypto.PrivateKey, keyPEM []byte) error {
+	enrollmentServer := NewEnrollmentServer(filepath.Join(flagDataDir, "enrollment"), keyPEM)
+	certSource, err := pki.NewSelfSignedCertSource(key)
+	if err != nil {
+		return err
+	}
+	tlsConfig := &tls.Config{
+		GetCertificate: certSource.TLSConfigGetCertificate,
+	}
+
+	grpcServer := grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig)))
+	reflection.Register(grpcServer)
+	gen.RegisterEnrollmentApiServer(grpcServer, enrollmentServer)
+
+	srv := &server.Servers{
+		GRPC:        grpcServer,
+		GRPCAddress: flagListenGRPC,
+	}
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	go func() {
+		err := srv.Serve(ctx)
+		if err != nil {
+			log.Printf("server stopped: %s", err.Error())
+		}
+	}()
+	log.Println("gRPC serving; waiting for enrollment")
+
+	ok := enrollmentServer.Wait(ctx)
+	if ok {
+		log.Printf("area controller is now enrolled")
+	} else {
+		return errors.New("server stopped without an enrollment")
+	}
 	return nil
 }
 

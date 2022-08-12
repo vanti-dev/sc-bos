@@ -22,6 +22,7 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/auth/keycloak"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/db"
+	"github.com/vanti-dev/bsp-ew/internal/server"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
@@ -65,7 +66,10 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	certSource := &pki.SelfSignedCertSource{PrivateKey: privateKey}
+	certSource, err := pki.NewSelfSignedCertSource(privateKey)
+	if err != nil {
+		return err
+	}
 
 	tlsConfig := &tls.Config{
 		GetCertificate: certSource.TLSConfigGetCertificate,
@@ -93,7 +97,7 @@ func run(ctx context.Context) error {
 		)
 	}
 
-	servers := &Servers{
+	servers := &server.Servers{
 		ShutdownTimeout: 15 * time.Second,
 		GRPC:            grpc.NewServer(grpcServerOptions...),
 		GRPCAddress:     flagListenGRPC,

@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -32,13 +32,17 @@ func (s *Servers) Serve(ctx context.Context) error {
 		hardStop()
 	}()
 
-	group.Go(func() error {
-		return s.serveHTTPS(softCtx, hardCtx)
-	})
+	if s.HTTP != nil {
+		group.Go(func() error {
+			return s.serveHTTPS(softCtx, hardCtx)
+		})
+	}
 
-	group.Go(func() error {
-		return s.serveGRPC(softCtx, hardCtx)
-	})
+	if s.GRPC != nil {
+		group.Go(func() error {
+			return s.serveGRPC(softCtx, hardCtx)
+		})
+	}
 
 	return group.Wait()
 }
