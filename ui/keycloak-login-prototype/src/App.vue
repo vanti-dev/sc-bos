@@ -1,10 +1,10 @@
 <script setup>
-import {allScopes, keycloak} from "./auth"
-import {ref} from "vue"
-import GetTest from "./component/GetTest.vue"
-import UpdateTest from "./component/UpdateTest.vue";
+import {ref} from 'vue'
+import {allScopes, keycloak} from './auth'
+import GetTest from './component/GetTest.vue'
+import UpdateTest from './component/UpdateTest.vue';
 
-const selectedScopes = ref([])
+const selectedScopes = ref(['profile'])
 const accessToken = ref(null)
 
 const keycloakClaims = ref(null)
@@ -19,7 +19,7 @@ keycloak.init({})
     .catch(console.error)
 
 async function loginKeycloak() {
-  const scopes = selectedScopes.value.join(" ")
+  const scopes = selectedScopes.value.join(' ')
 
   try {
     await keycloak.login({
@@ -28,6 +28,10 @@ async function loginKeycloak() {
   } catch (e) {
     console.error(e)
   }
+}
+
+async function logoutKeycloak() {
+  return keycloak.logout();
 }
 </script>
 
@@ -54,6 +58,7 @@ async function loginKeycloak() {
   </div>
 
   <div v-if="accessToken !== null">
+    <button @click="logoutKeycloak">Log out</button>
     <GetTest :token="accessToken"/>
     <UpdateTest :token="accessToken"/>
   </div>
