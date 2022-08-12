@@ -1,10 +1,10 @@
 <script setup>
-import {reactive} from "vue"
-import {TestApiPromiseClient} from "@ew-auth-poc/ui-gen/src/test_grpc_web_pb"
-import {GetTestRequest} from "@ew-auth-poc/ui-gen/src/test_pb";
+import {TestApiPromiseClient} from '@bsp-ew/ui-gen/src/test_grpc_web_pb'
+import {GetTestRequest} from '@bsp-ew/ui-gen/src/test_pb';
+import {reactive} from 'vue'
 
 const props = defineProps(['token'])
-const client = new TestApiPromiseClient("http://localhost:8000", null, null)
+const client = new TestApiPromiseClient('http://localhost:8000', null, null)
 
 const result = reactive({
   data: null,

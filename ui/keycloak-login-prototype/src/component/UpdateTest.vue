@@ -1,14 +1,14 @@
 <script setup>
-import {ref} from "vue";
-import {TestApiPromiseClient} from "@ew-auth-poc/ui-gen/src/test_grpc_web_pb";
-import {Test, UpdateTestRequest} from "@ew-auth-poc/ui-gen/src/test_pb";
+import {TestApiPromiseClient} from '@bsp-ew/ui-gen/src/test_grpc_web_pb';
+import {Test, UpdateTestRequest} from '@bsp-ew/ui-gen/src/test_pb';
+import {ref} from 'vue';
 
-const props = defineProps(["token"])
+const props = defineProps(['token'])
 
-const data = ref("")
+const data = ref('')
 const error = ref(null)
 
-const client = new TestApiPromiseClient("http://localhost:8000", null, null)
+const client = new TestApiPromiseClient('http://localhost:8000', null, null)
 
 async function updateTest() {
   const token = props.token
