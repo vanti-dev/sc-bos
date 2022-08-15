@@ -1,11 +1,11 @@
-App Server executable
-=====================
+Building Controller executable
+==============================
 
 ## Configuration
-The App Server takes its configuration from a combination of command line arguments and configuration files.
+The Building Controller takes its configuration from a combination of command line arguments and configuration files.
 
 ### Config Directory
- - `system.json` - core configuration for the App Server - e.g. logging, database connection and so on
+ - `system.json` - core configuration for the Building Controller - e.g. logging, database connection and so on
  - `pki/`
    - `root.cert.pem` - Root CA certificate(s) for this Smart Core installation. Must be manually provided.
    - `enrollment-ca.cert.pem` - Intermediate CA certificate for enrolling controllers. Must be part of a chain starting

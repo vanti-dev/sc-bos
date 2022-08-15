@@ -6,8 +6,8 @@ This repository contains the software for the Smart Core installation at Enterpr
 ## System Architecture
 The system functionality is distributed among multiple components.
 
-### App Server
-The App Server is responsible for management of the Smart Core installation. It is written in Go and installed in a
+### Building Controller
+The Building Controller is responsible for management of the Smart Core installation. It is written in Go and installed in a
 virtual machine on a server. Over gRPC, it exposes both the Smart Core API (for device control and data collection) and
 custom project-specific APIs.
 
