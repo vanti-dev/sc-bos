@@ -33,40 +33,29 @@ import (
 )
 
 var (
-	flagListenGRPC      string
-	flagListenHTTPS     string
-	flagStaticDir       string
-	flagConfigDir       string
-	flagDisableAuth     bool
-	flagDBURL           string
-	flagDBPasswordFile  string
-	flagPopulateDB      bool
-	flagKeycloakAddress string
-	flagKeycloakRealm   string
+	flagConfigDir  string
+	flagPopulateDB bool
 )
 
 func init() {
-	flag.StringVar(&flagListenGRPC, "listen-grpc", ":23557", "address (host:port) to host gRPC server on")
-	flag.StringVar(&flagListenHTTPS, "listen-https", ":80", "address (host:port) to host HTTPS server on")
-	flag.StringVar(&flagStaticDir, "static-dir", "ui/dist", "path to static files directory")
 	flag.StringVar(&flagConfigDir, "config-dir", ".data/app-server", "path to the configuration directory")
-	flag.BoolVar(&flagDisableAuth, "disable-auth", false, "[INSECURE!] disable API call authorization checks")
-	flag.StringVar(&flagDBURL, "db-url", "postgres://postgres:postgres@localhost:5432/smart_core", "PostgreSQL connection URL in libpq style")
-	flag.StringVar(&flagDBPasswordFile, "db-password-file", "", "path to a file containing the PostgreSQL password")
 	flag.BoolVar(&flagPopulateDB, "populate-db", false, "inserts some test data into the database and exits")
-	flag.StringVar(&flagKeycloakAddress, "keycloak-url", "http://localhost:8888", "root URL of Keycloak server")
-	flag.StringVar(&flagKeycloakRealm, "keycloak-realm", "smart-core", "realm ID to use for Keycloak authentication")
 }
 
 func run(ctx context.Context) error {
 	flag.Parse()
-
-	privateKey, _, err := pki.LoadOrGeneratePrivateKey(filepath.Join(flagConfigDir, "private-key.pem"))
+	// load system config file
+	sysConfJSON, err := os.ReadFile(filepath.Join(flagConfigDir, "system.json"))
+	if err != nil {
+		return err
+	}
+	sysConf := DefaultSystemConfig()
+	err = json.Unmarshal(sysConfJSON, &sysConf)
 	if err != nil {
 		return err
 	}
 
-	certSource, err := pki.NewSelfSignedCertSource(privateKey)
+	certSource, err := pki.NewSelfSignedCertSource(nil)
 	if err != nil {
 		return err
 	}
@@ -75,7 +64,7 @@ func run(ctx context.Context) error {
 		GetCertificate: certSource.TLSConfigGetCertificate,
 	}
 
-	dbConn, err := connectDB(ctx)
+	dbConn, err := connectDB(ctx, sysConf)
 	if err != nil {
 		return err
 	}
@@ -86,8 +75,8 @@ func run(ctx context.Context) error {
 	grpcServerOptions := []grpc.ServerOption{
 		grpc.Creds(credentials.NewTLS(tlsConfig)),
 	}
-	if !flagDisableAuth {
-		verifier, err := initKeycloakVerifier(ctx)
+	if !sysConf.DisableAuth {
+		verifier, err := initKeycloakVerifier(ctx, sysConf)
 		if err != nil {
 			return fmt.Errorf("init keycloak token verifier: %w", err)
 		}
@@ -100,9 +89,9 @@ func run(ctx context.Context) error {
 	servers := &server.Servers{
 		ShutdownTimeout: 15 * time.Second,
 		GRPC:            grpc.NewServer(grpcServerOptions...),
-		GRPCAddress:     flagListenGRPC,
+		GRPCAddress:     sysConf.ListenGRPC,
 		HTTP: &http.Server{
-			Addr:      flagListenHTTPS,
+			Addr:      sysConf.ListenHTTPS,
 			TLSConfig: tlsConfig,
 		},
 	}
@@ -113,7 +102,7 @@ func run(ctx context.Context) error {
 	reflection.Register(grpcServer)
 
 	grpcWebWrapper := grpcweb.WrapServer(grpcServer)
-	staticFiles := http.FileServer(http.Dir(flagStaticDir))
+	staticFiles := http.FileServer(http.Dir(sysConf.StaticDir))
 	servers.HTTP.Handler = http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if grpcWebWrapper.IsGrpcWebRequest(request) || grpcWebWrapper.IsAcceptableGrpcCorsRequest(request) {
 			grpcWebWrapper.ServeHTTP(writer, request)
@@ -148,14 +137,14 @@ func main() {
 	os.Exit(code)
 }
 
-func connectDB(ctx context.Context) (*pgx.Conn, error) {
-	connConfig, err := pgx.ParseConfig(flagDBURL)
+func connectDB(ctx context.Context, sysConf SystemConfig) (*pgx.Conn, error) {
+	connConfig, err := pgx.ParseConfig(sysConf.DatabaseURL)
 	if err != nil {
 		return nil, err
 	}
 
-	if flagDBPasswordFile != "" {
-		passwordFile, err := ioutil.ReadFile(flagDBPasswordFile)
+	if sysConf.DatabasePasswordFile != "" {
+		passwordFile, err := ioutil.ReadFile(sysConf.DatabasePasswordFile)
 		if err != nil {
 			return nil, err
 		}
@@ -222,10 +211,10 @@ func populateDB(ctx context.Context, conn *pgx.Conn) error {
 	return err
 }
 
-func initKeycloakVerifier(ctx context.Context) (auth.TokenVerifier, error) {
+func initKeycloakVerifier(ctx context.Context, sysConf SystemConfig) (auth.TokenVerifier, error) {
 	authConfig := keycloak.Config{
-		URL:      flagKeycloakAddress,
-		Realm:    flagKeycloakRealm,
+		URL:      sysConf.KeycloakAddress,
+		Realm:    sysConf.KeycloakRealm,
 		ClientID: "sc-api",
 	}
 	authUrls, err := auth.DiscoverOIDCConfig(ctx, authConfig.Issuer())

@@ -13,6 +13,7 @@ require (
 	github.com/smart-core-os/sc-golang v0.0.0-20220617135625-6c6576c43f86
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
+	go.uber.org/zap v1.17.0
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 	google.golang.org/grpc v1.48.0
