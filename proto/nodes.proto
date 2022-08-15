@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package vanti.bsp.ew;
+
+option go_package = "github.com/vanti-dev/bsp-ew/pkg/gen";
+
+service NodeApi {
+  rpc CreateNodeRegistration(CreateNodeRegistrationRequest) returns (NodeRegistration) {}
+  rpc ListNodeRegistrations(ListNodeRegistrationsRequest) returns (ListNodeRegistrationsResponse) {}
+}
+
+message NodeRegistration {
+  string name = 1;
+  string address = 2;
+  string description = 4;
+}
+
+message CreateNodeRegistrationRequest {
+  NodeRegistration node_registration = 1;
+}
+
+message ListNodeRegistrationsRequest {
+
+}
+
+message ListNodeRegistrationsResponse {
+  repeated NodeRegistration node_registrations = 1;
+}

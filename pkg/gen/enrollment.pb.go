@@ -47,7 +47,7 @@ type Enrollment struct {
 	ManagerAddress string `protobuf:"bytes,4,opt,name=manager_address,json=managerAddress,proto3" json:"manager_address,omitempty"`
 	// An X.509 certificate chain issued by the management node to the target node, in DER-encoded ASN.1 in a PEM container.
 	//
-	//If more than once certificate is present, they should be concatenated.
+	//If more than one certificate is present, they should be concatenated.
 	//The certificate chain MUST be in leaf-first order; the leaf certificate is the certificate issued to the target node.
 	//The leaf certificate's public key MUST be the target node's public key.
 	//Each certificate in the chain MUST be signed by the next certificate in the chain.

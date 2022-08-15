@@ -23,3 +23,11 @@ CREATE TABLE acknowledgement
     rejected_reason TEXT,
     receipt_time    TIMESTAMPTZ NOT NULL
 );
+
+CREATE TABLE enrollment
+(
+    name            TEXT NOT NULL PRIMARY KEY,
+    description     TEXT,
+    address         TEXT NOT NULL,
+    cert            BYTEA NOT NULL
+);
