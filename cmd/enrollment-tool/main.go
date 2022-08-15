@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/vanti-dev/bsp-ew/internal/enrollment"
+	"github.com/vanti-dev/bsp-ew/internal/manage/enrollment"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"google.golang.org/protobuf/encoding/protojson"
 )

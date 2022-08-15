@@ -18,11 +18,11 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/jackc/pgx/v4"
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auth"
 	"github.com/vanti-dev/bsp-ew/internal/auth/keycloak"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/db"
-	"github.com/vanti-dev/bsp-ew/internal/server"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
@@ -86,7 +86,7 @@ func run(ctx context.Context) error {
 		)
 	}
 
-	servers := &server.Servers{
+	servers := &app.Servers{
 		ShutdownTimeout: 15 * time.Second,
 		GRPC:            grpc.NewServer(grpcServerOptions...),
 		GRPCAddress:     sysConf.ListenGRPC,

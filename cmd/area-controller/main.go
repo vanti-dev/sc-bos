@@ -18,8 +18,8 @@ import (
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
-	"github.com/vanti-dev/bsp-ew/internal/server"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
@@ -86,7 +86,7 @@ func runEnrollment(ctx context.Context, key crypto.PrivateKey, keyPEM []byte) er
 	reflection.Register(grpcServer)
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollmentServer)
 
-	srv := &server.Servers{
+	srv := &app.Servers{
 		GRPC:        grpcServer,
 		GRPCAddress: flagListenGRPC,
 	}
