@@ -21,8 +21,10 @@ type CertSource interface {
 	RotateNow() error
 }
 
-// NewSelfSignedCertSource creates
-func NewSelfSignedCertSource(key crypto.PrivateKey) (*SelfSignedCertSource, error) {
+// NewSelfSignedCertSource creates a CertSource that issues self-signed certificates using CreateSelfSignedCert.
+// The certificate is rotated lazily once half its lifetime has expired.
+// If key is nil, a new RSA private key is generated.
+func NewSelfSignedCertSource(key crypto.PrivateKey) (CertSource, error) {
 	var err error
 	if key == nil {
 		key, err = rsa.GenerateKey(rand.Reader, 4096)
@@ -31,140 +33,93 @@ func NewSelfSignedCertSource(key crypto.PrivateKey) (*SelfSignedCertSource, erro
 		}
 	}
 
-	certSource := &SelfSignedCertSource{
-		PrivateKey: key,
-	}
-	// pre-populate the certificate
-	err = certSource.RotateNow()
-	if err != nil {
-		return nil, err
-	}
-	return certSource, nil
-}
-
-// SelfSignedCertSource is a CertSource that issues self-signed certificates.
-// The certificate is issued to localhost and all local network interface addresses.
-// If key is nil, a new RSA private key is generated.
-type SelfSignedCertSource struct {
-	PrivateKey crypto.PrivateKey
-
-	m         sync.Mutex
-	cert      *tls.Certificate
-	refreshAt time.Time
-}
-
-func (cs *SelfSignedCertSource) TLSConfigGetCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	cs.m.Lock()
-	defer cs.m.Unlock()
-
-	if cs.cert != nil && time.Now().Before(cs.refreshAt) {
-		// cert is present and still valid
-		return cs.cert, nil
-	}
-
-	err := cs.rotateNow()
-	if err != nil {
-		log.Printf("failed to (re)generate self-signed certificate: %s", err.Error())
-		// keep using the old cert if possible
-		if cs.cert != nil {
-			return cs.cert, nil
-		} else {
-			return nil, err
+	return NewCertSource(func(old *tls.Certificate) (new *tls.Certificate, next time.Time, err error) {
+		log.Println("generating self-signed TLS certificate")
+		// we need to (re)generate the certificate
+		validity := 30 * 24 * time.Hour
+		next = time.Now().Add(validity / 2)
+		certDER, err := CreateSelfSignedCert(key, validity)
+		if err != nil {
+			return
 		}
-	}
-
-	return cs.cert, nil
+		new = &tls.Certificate{
+			Certificate: [][]byte{certDER},
+			PrivateKey:  key,
+		}
+		return
+	})
 }
 
-func (cs *SelfSignedCertSource) RotateNow() error {
-	cs.m.Lock()
-	defer cs.m.Unlock()
-	return cs.rotateNow()
-}
-
-func (cs *SelfSignedCertSource) rotateNow() error {
-	log.Println("generating self-signed TLS certificate")
-	// we need to (re)generate the certificate
-	validity := 30 * 24 * time.Hour
-	refreshAt := time.Now().Add(validity / 2)
-	certDER, err := CreateSelfSignedCert(cs.PrivateKey, validity)
-	if err != nil {
-		return err
-	}
-	cert := &tls.Certificate{
-		Certificate: [][]byte{certDER},
-		PrivateKey:  cs.PrivateKey,
-	}
-	cs.cert = cert
-	cs.refreshAt = refreshAt
-	return nil
-}
-
-// NewFileCertSource creates a FileCertSource and loads the certificate.
-func NewFileCertSource(certPath string, keyPath string) (*FileCertSource, error) {
-	cs := &FileCertSource{
-		CertificatePath: certPath,
-		PrivateKeyPath:  keyPath,
-	}
-	err := cs.RotateNow()
-	if err != nil {
-		return nil, err
-	}
-	return cs, nil
-}
-
-// FileCertSource is a CertSource that loads certificates from disk.
+// NewFileCertSource creates a CertSource that loads certificates from disk.
 // Certificates are automatically reloaded once the certificate expires.
-type FileCertSource struct {
-	PrivateKeyPath  string
-	CertificatePath string
+// The CertSource operates lazily - the files are only reloaded when the in-memory certificate expires, or
+// ReloadNow is called.
+func NewFileCertSource(certPath string, keyPath string) (CertSource, error) {
+	return NewCertSource(func(old *tls.Certificate) (new *tls.Certificate, next time.Time, err error) {
+		cert, err := tls.LoadX509KeyPair(certPath, keyPath)
+		if err != nil {
+			return
+		}
 
-	m    sync.Mutex
-	cert *tls.Certificate
+		// LoadX509KeyPair doesn't populate the Leaf property, but we will need it to check the expiry time next call
+		// (populating it also improves performance of connection establishment)
+		cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
+		if err != nil {
+			// failing ParseCertificate is impossible because LoadX509KeyPair calls it too, which must have succeeded if
+			// we reached here
+			panic(err)
+		}
+		// try reloading the certificate once the in-memory copy is one hour from expiry
+		return &cert, cert.Leaf.NotAfter.Add(-time.Hour), nil
+	})
 }
 
-func (cs *FileCertSource) TLSConfigGetCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	cs.m.Lock()
-	defer cs.m.Unlock()
+type CertRotation func(old *tls.Certificate) (new *tls.Certificate, next time.Time, err error)
 
-	// the cached certificate is not expired yet
-	if cs.cert != nil && time.Now().Before(cs.cert.Leaf.NotBefore) {
-		return cs.cert, nil
-	}
+type certSource struct {
+	m      sync.Mutex
+	cert   *tls.Certificate
+	next   time.Time
+	rotate CertRotation
+}
 
-	err := cs.rotateNow()
+func NewCertSource(rotate CertRotation) (CertSource, error) {
+	cert, next, err := rotate(nil)
 	if err != nil {
-		log.Printf("failed to load TLS cert: %s", err.Error())
-		// on failure, return the old certificate if there is one
-		if cs.cert != nil {
-			return cs.cert, nil
-		} else {
+		return nil, err
+	}
+	return &certSource{
+		cert:   cert,
+		next:   next,
+		rotate: rotate,
+	}, nil
+}
+
+func (c *certSource) TLSConfigGetCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	if c.next.Before(time.Now()) {
+		cert, next, err := c.rotate(c.cert)
+		if err != nil {
 			return nil, err
 		}
+		c.next = next
+		c.cert = cert
 	}
 
-	return cs.cert, nil
+	return c.cert, nil
 }
 
-func (cs *FileCertSource) RotateNow() error {
-	cs.m.Lock()
-	defer cs.m.Unlock()
-	return cs.rotateNow()
-}
+func (c *certSource) RotateNow() error {
+	c.m.Lock()
+	defer c.m.Unlock()
 
-func (cs *FileCertSource) rotateNow() error {
-	cert, err := tls.LoadX509KeyPair(cs.CertificatePath, cs.PrivateKeyPath)
+	cert, next, err := c.rotate(c.cert)
 	if err != nil {
 		return err
 	}
-	// LoadX509KeyPair doesn't populate the Leaf property, but we will need it to check the expiry time next call
-	// (populating it also improves performance of connection establishment)
-	cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
-	if err != nil {
-		// failing ParseCertificate is impossible because LoadX509KeyPair calls it too, which must have succeeded if
-		// we reached here
-		panic(err)
-	}
-	cs.cert = &cert
+	c.next = next
+	c.cert = cert
 	return nil
 }

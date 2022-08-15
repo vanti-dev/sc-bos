@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -23,6 +25,7 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/auth/keycloak"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/db"
+	"github.com/vanti-dev/bsp-ew/internal/manage/enrollment"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
@@ -38,12 +41,13 @@ var (
 )
 
 func init() {
-	flag.StringVar(&flagConfigDir, "config-dir", ".data/app-server", "path to the configuration directory")
+	flag.StringVar(&flagConfigDir, "config-dir", ".data/building-controller", "path to the configuration directory")
 	flag.BoolVar(&flagPopulateDB, "populate-db", false, "inserts some test data into the database and exits")
 }
 
 func run(ctx context.Context) error {
 	flag.Parse()
+
 	// load system config file
 	sysConfJSON, err := os.ReadFile(filepath.Join(flagConfigDir, "system.json"))
 	if err != nil {
@@ -55,15 +59,23 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	certSource, err := pki.NewSelfSignedCertSource(nil)
+	// load certificates
+	ca, err := loadEnrollmentCA(sysConf)
 	if err != nil {
 		return err
 	}
-
-	tlsConfig := &tls.Config{
-		GetCertificate: certSource.TLSConfigGetCertificate,
+	grpcCertSource, err := ca.LocalCertSource(pkix.Name{CommonName: "building-controller"}, true)
+	if err != nil {
+		return err
 	}
+	grpcTlsConfig := &tls.Config{GetCertificate: grpcCertSource.TLSConfigGetCertificate}
+	httpsCertSource, err := loadHTTPSCertSource(sysConf)
+	if err != nil {
+		return err
+	}
+	httpsTlsConfig := &tls.Config{GetCertificate: httpsCertSource.TLSConfigGetCertificate}
 
+	// connect (& optionally initialise) DB
 	dbConn, err := connectDB(ctx, sysConf)
 	if err != nil {
 		return err
@@ -73,7 +85,7 @@ func run(ctx context.Context) error {
 	}
 
 	grpcServerOptions := []grpc.ServerOption{
-		grpc.Creds(credentials.NewTLS(tlsConfig)),
+		grpc.Creds(credentials.NewTLS(grpcTlsConfig)),
 	}
 	if !sysConf.DisableAuth {
 		verifier, err := initKeycloakVerifier(ctx, sysConf)
@@ -92,16 +104,15 @@ func run(ctx context.Context) error {
 		GRPCAddress:     sysConf.ListenGRPC,
 		HTTP: &http.Server{
 			Addr:      sysConf.ListenHTTPS,
-			TLSConfig: tlsConfig,
+			TLSConfig: httpsTlsConfig,
 		},
 	}
 
-	grpcServer := grpc.NewServer(grpcServerOptions...)
-	traits.RegisterPublicationApiServer(grpcServer, &PublicationServer{conn: dbConn})
-	gen.RegisterTestApiServer(grpcServer, testapi.NewAPI())
-	reflection.Register(grpcServer)
+	reflection.Register(servers.GRPC)
+	traits.RegisterPublicationApiServer(servers.GRPC, &PublicationServer{conn: dbConn})
+	gen.RegisterTestApiServer(servers.GRPC, testapi.NewAPI())
 
-	grpcWebWrapper := grpcweb.WrapServer(grpcServer)
+	grpcWebWrapper := grpcweb.WrapServer(servers.GRPC)
 	staticFiles := http.FileServer(http.Dir(sysConf.StaticDir))
 	servers.HTTP.Handler = http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if grpcWebWrapper.IsGrpcWebRequest(request) || grpcWebWrapper.IsAcceptableGrpcCorsRequest(request) {
@@ -223,4 +234,35 @@ func initKeycloakVerifier(ctx context.Context, sysConf SystemConfig) (auth.Token
 	}
 	keySet := auth.NewRemoteKeySet(ctx, authUrls.JWKSURI)
 	return keycloak.NewTokenVerifier(&authConfig, keySet), nil
+}
+
+func loadEnrollmentCA(sysConf SystemConfig) (*enrollment.CA, error) {
+	certPath := filepath.Join(flagConfigDir, "pki", "enrollment-ca.cert.pem")
+	keyPath := filepath.Join(flagConfigDir, "pki", "enrollment-ca.key.pem")
+
+	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
+	if err != nil {
+		return nil, err
+	}
+	leaf, err := x509.ParseCertificate(cert.Certificate[0])
+	if err != nil {
+		return nil, err
+	}
+	return &enrollment.CA{
+		Certificate:   leaf,
+		PrivateKey:    cert.PrivateKey,
+		Intermediates: cert.Certificate[1:],
+		Now:           time.Now,
+		Validity:      time.Duration(sysConf.EnrollmentValidityDays) * 24 * time.Hour,
+	}, nil
+}
+
+func loadHTTPSCertSource(sysConf SystemConfig) (pki.CertSource, error) {
+	if sysConf.SelfSignedHTTPS {
+		return pki.NewSelfSignedCertSource(nil)
+	} else {
+		certPath := filepath.Join(flagConfigDir, "pki", "https.cert.pem")
+		keyPath := filepath.Join(flagConfigDir, "pki", "https.key.pem")
+		return pki.NewFileCertSource(certPath, keyPath)
+	}
 }
