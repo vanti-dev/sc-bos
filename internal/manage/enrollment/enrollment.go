@@ -7,7 +7,6 @@ import (
 	"errors"
 	"net"
 	"sync"
-	"time"
 
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"google.golang.org/grpc"
@@ -16,9 +15,6 @@ import (
 )
 
 func EnrollAreaController(ctx context.Context, enrollment *gen.Enrollment, ca *CA) (*gen.Enrollment, error) {
-	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
-	defer cancel()
-
 	enrollment = proto.Clone(enrollment).(*gen.Enrollment)
 
 	// when in enrollment mode, the target node will be using a self-signed cert we won't be able to

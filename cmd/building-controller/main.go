@@ -6,13 +6,13 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strings"
 	"time"
@@ -30,6 +30,7 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/multierr"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
@@ -47,6 +48,10 @@ func init() {
 
 func run(ctx context.Context) error {
 	flag.Parse()
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		return err
+	}
 
 	// load system config file
 	sysConfJSON, err := os.ReadFile(filepath.Join(flagConfigDir, "system.json"))
@@ -60,6 +65,14 @@ func run(ctx context.Context) error {
 	}
 
 	// load certificates
+	rootsPEM, err := os.ReadFile(filepath.Join(flagConfigDir, "pki", "roots.cert.pem"))
+	if err != nil {
+		return err
+	}
+	rootsPool := x509.NewCertPool()
+	if !rootsPool.AppendCertsFromPEM(rootsPEM) {
+		return errors.New("unable to parse any Root CA certificates")
+	}
 	ca, err := loadEnrollmentCA(sysConf)
 	if err != nil {
 		return err
@@ -68,7 +81,11 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	grpcTlsConfig := &tls.Config{GetCertificate: grpcCertSource.TLSConfigGetCertificate}
+	grpcTlsConfig := &tls.Config{
+		GetCertificate:       grpcCertSource.TLSConfigGetCertificate,
+		GetClientCertificate: grpcCertSource.TLSConfigGetClientCertificate,
+		RootCAs:              rootsPool,
+	}
 	httpsCertSource, err := loadHTTPSCertSource(sysConf)
 	if err != nil {
 		return err
@@ -111,6 +128,14 @@ func run(ctx context.Context) error {
 	reflection.Register(servers.GRPC)
 	traits.RegisterPublicationApiServer(servers.GRPC, &PublicationServer{conn: dbConn})
 	gen.RegisterTestApiServer(servers.GRPC, testapi.NewAPI())
+	gen.RegisterNodeApiServer(servers.GRPC, &NodeServer{
+		logger:      logger.Named("NodeServer"),
+		db:          dbConn,
+		ca:          ca,
+		managerName: "building-controller",
+		managerAddr: sysConf.CanonicalAddress,
+		rootsPEM:    rootsPEM,
+	})
 
 	grpcWebWrapper := grpcweb.WrapServer(servers.GRPC)
 	staticFiles := http.FileServer(http.Dir(sysConf.StaticDir))
@@ -126,26 +151,7 @@ func run(ctx context.Context) error {
 }
 
 func main() {
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer cancel()
-
-	errs := multierr.Errors(run(ctx))
-
-	var code int
-	switch len(errs) {
-	case 0:
-	case 1:
-		_, _ = fmt.Fprintf(os.Stderr, "fatal error: %s\n", errs[0].Error())
-		code = 1
-	default:
-		_, _ = fmt.Fprintln(os.Stderr, "fatal errors:")
-		for _, err := range errs {
-			_, _ = fmt.Fprintf(os.Stderr, "\t%s\n", err.Error())
-		}
-		code = 1
-	}
-
-	os.Exit(code)
+	app.RunUntilInterrupt(run)
 }
 
 func connectDB(ctx context.Context, sysConf SystemConfig) (*pgx.Conn, error) {

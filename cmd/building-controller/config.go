@@ -11,6 +11,7 @@ type SystemConfig struct {
 	KeycloakAddress        string `json:"keycloak-address"`
 	KeycloakRealm          string `json:"keycloak-realm"`
 	EnrollmentValidityDays int    `json:"enrollment-validity-days"`
+	CanonicalAddress       string `json:"canonical-address"`
 }
 
 func DefaultSystemConfig() SystemConfig {

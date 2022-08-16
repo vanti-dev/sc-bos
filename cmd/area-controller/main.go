@@ -12,7 +12,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strings"
 
@@ -185,24 +184,5 @@ func logPublication(pub *traits.Publication) {
 }
 
 func main() {
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer cancel()
-
-	errs := multierr.Errors(run(ctx))
-
-	var code int
-	switch len(errs) {
-	case 0:
-	case 1:
-		_, _ = fmt.Fprintf(os.Stderr, "fatal error: %s\n", errs[0].Error())
-		code = 1
-	default:
-		_, _ = fmt.Fprintln(os.Stderr, "fatal errors:")
-		for _, err := range errs {
-			_, _ = fmt.Fprintf(os.Stderr, "\t%s\n", err.Error())
-		}
-		code = 1
-	}
-
-	os.Exit(code)
+	app.RunUntilInterrupt(run)
 }

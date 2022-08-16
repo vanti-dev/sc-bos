@@ -10,11 +10,10 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
-	"os/signal"
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
+	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
 )
 
@@ -27,13 +26,7 @@ func init() {
 }
 
 func main() {
-	ctx, done := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer done()
-	err := run(ctx)
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "fatal error: %s\n", err.Error())
-		os.Exit(1)
-	}
+	app.RunUntilInterrupt(run)
 }
 
 func run(ctx context.Context) error {

@@ -12,10 +12,13 @@ import (
 )
 
 // A CertSource provides certificates for TLS.
+// Using a CertSource instead of a plain tls.Certificate allows a TLS server to rotate certificates without
+// restarting or dropping existing connections.
 type CertSource interface {
 	// TLSConfigGetCertificate can be used as the GetCertificate option in tls.Config
 	// This will cause the TLS server to use this CertSource.
 	TLSConfigGetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error)
+	TLSConfigGetClientCertificate(info *tls.CertificateRequestInfo) (*tls.Certificate, error)
 	// RotateNow attempts an immediate certificate rotation attempt, even if the current certificate is still valid.
 	// If no new certificate is available, this is not considered an error.
 	RotateNow() error
@@ -109,6 +112,10 @@ func (c *certSource) TLSConfigGetCertificate(_ *tls.ClientHelloInfo) (*tls.Certi
 	}
 
 	return c.cert, nil
+}
+
+func (c *certSource) TLSConfigGetClientCertificate(info *tls.CertificateRequestInfo) (*tls.Certificate, error) {
+	return c.TLSConfigGetCertificate(nil)
 }
 
 func (c *certSource) RotateNow() error {
