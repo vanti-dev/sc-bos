@@ -290,6 +290,24 @@ type Enrollment struct {
 	Cert        []byte
 }
 
+func GetEnrollment(ctx context.Context, tx pgx.Tx, name string) (en Enrollment, err error) {
+	// language=postgresql
+	query := `
+		SELECT description, address, cert
+		FROM enrollment
+		WHERE name = $1;
+    `
+
+	row := tx.QueryRow(ctx, query, name)
+	var descNull *string
+	err = row.Scan(&descNull, &en.Address, &en.Cert)
+	if descNull != nil {
+		en.Description = *descNull
+	}
+	en.Name = name
+	return
+}
+
 func AddEnrollment(ctx context.Context, tx pgx.Tx, en Enrollment) error {
 	// language=postgresql
 	query := `

@@ -5,14 +5,21 @@ package vanti.bsp.ew;
 option go_package = "github.com/vanti-dev/bsp-ew/pkg/gen";
 
 service NodeApi {
+  rpc GetNodeRegistration(GetNodeRegistrationRequest) returns (NodeRegistration) {}
   rpc CreateNodeRegistration(CreateNodeRegistrationRequest) returns (NodeRegistration) {}
   rpc ListNodeRegistrations(ListNodeRegistrationsRequest) returns (ListNodeRegistrationsResponse) {}
+
+  rpc TestNodeCommunication(TestNodeCommunicationRequest) returns (TestNodeCommunicationResponse) {}
 }
 
 message NodeRegistration {
   string name = 1;
   string address = 2;
   string description = 4;
+}
+
+message GetNodeRegistrationRequest {
+  string node_name = 1;
 }
 
 message CreateNodeRegistrationRequest {
@@ -25,4 +32,12 @@ message ListNodeRegistrationsRequest {
 
 message ListNodeRegistrationsResponse {
   repeated NodeRegistration node_registrations = 1;
+}
+
+message TestNodeCommunicationRequest {
+  string node_name = 1;
+}
+
+message TestNodeCommunicationResponse {
+  repeated string services = 1;
 }

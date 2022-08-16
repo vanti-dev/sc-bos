@@ -129,12 +129,13 @@ func run(ctx context.Context) error {
 	traits.RegisterPublicationApiServer(servers.GRPC, &PublicationServer{conn: dbConn})
 	gen.RegisterTestApiServer(servers.GRPC, testapi.NewAPI())
 	gen.RegisterNodeApiServer(servers.GRPC, &NodeServer{
-		logger:      logger.Named("NodeServer"),
-		db:          dbConn,
-		ca:          ca,
-		managerName: "building-controller",
-		managerAddr: sysConf.CanonicalAddress,
-		rootsPEM:    rootsPEM,
+		logger:        logger.Named("NodeServer"),
+		db:            dbConn,
+		ca:            ca,
+		managerName:   "building-controller",
+		managerAddr:   sysConf.CanonicalAddress,
+		rootsPEM:      rootsPEM,
+		testTLSConfig: grpcTlsConfig,
 	})
 
 	grpcWebWrapper := grpcweb.WrapServer(servers.GRPC)
