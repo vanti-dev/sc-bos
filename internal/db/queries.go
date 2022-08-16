@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"errors"
-	"log"
 	"time"
 
 	"github.com/jackc/pgx/v4"
@@ -46,10 +45,6 @@ func DeletePublication(ctx context.Context, tx pgx.Tx, id string, idempotent boo
 
 	if tag.RowsAffected() == 0 && !idempotent {
 		return status.Error(codes.NotFound, "publication not found")
-	}
-
-	if tag.RowsAffected() > 1 {
-		log.Printf("WARN: DeletePublication deleted %d rows", tag.RowsAffected())
 	}
 
 	return nil

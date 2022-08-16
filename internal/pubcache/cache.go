@@ -3,12 +3,12 @@ package pubcache
 import (
 	"context"
 	"errors"
-	"log"
 	"sync"
 	"time"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -27,6 +27,7 @@ const (
 // received publication updates into the Cache.
 // Do not copy a Cache or modify its fields once any methods have been called.
 type Cache struct {
+	logger  *zap.Logger
 	ctx     context.Context // Updating will stop when this ctx ends.
 	source  traits.PublicationApiClient
 	device  string
@@ -42,7 +43,7 @@ type Cache struct {
 // Background tasks are not started immediately, they will begin once Pull is called for the first time.
 // The Context ctx can be used to stop the Cache's background tasks.
 // Storage is optional; if nil, storage won't be used.
-func New(ctx context.Context, source traits.PublicationApiClient, device string, pubID string, storage Storage) *Cache {
+func New(ctx context.Context, source traits.PublicationApiClient, device string, pubID string, opts ...CacheOption) *Cache {
 	if ctx == nil {
 		panic("parameter ctx is required")
 	}
@@ -50,15 +51,19 @@ func New(ctx context.Context, source traits.PublicationApiClient, device string,
 		panic("parameter source is required")
 	}
 
-	return &Cache{
-		ctx:     ctx,
-		source:  source,
-		device:  device,
-		pubID:   pubID,
-		storage: storage,
+	c := &Cache{
+		logger: zap.NewNop(),
+		ctx:    ctx,
+		source: source,
+		device: device,
+		pubID:  pubID,
 
 		initialised: make(chan struct{}),
 	}
+	for _, o := range opts {
+		o(c)
+	}
+	return c
 }
 
 // Pull will return the current cached value of the publication, followed by all updates.
@@ -111,10 +116,10 @@ func (c *Cache) runBackground() {
 		if err == nil {
 			err = c.commitPublication(initial, false)
 			if err != nil {
-				log.Printf("failed to commit publication %q from storage: %v", c.pubID, err)
+				c.logger.Error("failed to commit publication from storage", zap.Error(err), zap.String("pub", c.pubID))
 			}
 		} else if !errors.Is(err, ErrPublicationNotFound) {
-			log.Printf("unexpected error looking up publication %q in storage: %v", c.pubID, err)
+			c.logger.Error("unexpected error looking up publication in storage", zap.Error(err), zap.String("pub", c.pubID))
 		}
 	}
 
@@ -221,14 +226,15 @@ func (c *Cache) runUpdate() error {
 	for {
 		err, started := c.pullPublication()
 		if status.Code(err) == codes.Unimplemented {
-			log.Printf("device does not support PullPublication, switching to poll at interval %s", PollInterval.String())
+			c.logger.Warn("device does not support PullPublication; switching to polling", zap.Duration("interval", PollInterval))
 			err, started = c.pollPublication()
 		}
 		if err != nil {
-			log.Printf("pull publication %q from %q error: %v", c.pubID, c.device, err)
+			c.logger.Error("Pull publication failed", zap.Error(err),
+				zap.String("pub", c.pubID), zap.String("device", c.device))
 		}
 
-		log.Printf("pull publication %q; backoff %s", c.pubID, backoff.String())
+		c.logger.Debug("pull publication backoff", zap.String("pub", c.pubID), zap.Duration("backoff", backoff))
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -244,5 +250,19 @@ func (c *Cache) runUpdate() error {
 				backoff = MaxBackoff
 			}
 		}
+	}
+}
+
+type CacheOption func(cache *Cache)
+
+func WithLogger(logger *zap.Logger) CacheOption {
+	return func(cache *Cache) {
+		cache.logger = logger
+	}
+}
+
+func WithStorage(storage Storage) CacheOption {
+	return func(cache *Cache) {
+		cache.storage = storage
 	}
 }

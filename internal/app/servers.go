@@ -2,16 +2,17 @@ package app
 
 import (
 	"context"
-	"log"
 	"net"
 	"net/http"
 	"time"
 
+	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 )
 
 type Servers struct {
+	Logger          *zap.Logger
 	ShutdownTimeout time.Duration // How long to wait for connections to close when the context is cancelled
 	GRPC            *grpc.Server
 	GRPCAddress     string // Address to pass to net.Listen for the gRPC server
@@ -26,9 +27,9 @@ func (s *Servers) Serve(ctx context.Context) error {
 	defer hardStop()
 	go func() {
 		<-softCtx.Done()
-		log.Printf("waiting up to %v for servers to stop gracefully", s.ShutdownTimeout)
+		s.Logger.Info("waiting for servers to stop", zap.Duration("timeout", s.ShutdownTimeout))
 		time.Sleep(s.ShutdownTimeout)
-		log.Println("forcing server stop now")
+		s.Logger.Warn("forcing servers to stop now")
 		hardStop()
 	}()
 

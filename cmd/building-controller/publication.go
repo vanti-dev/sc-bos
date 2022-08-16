@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 	"time"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/internal/db"
+	"github.com/vanti-dev/bsp-ew/internal/util/rpcutil"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -17,10 +18,12 @@ import (
 type PublicationServer struct {
 	traits.UnimplementedPublicationApiServer
 
-	conn *pgx.Conn
+	logger *zap.Logger
+	conn   *pgx.Conn
 }
 
 func (p *PublicationServer) CreatePublication(ctx context.Context, request *traits.CreatePublicationRequest) (*traits.Publication, error) {
+	logger := rpcutil.ServerLogger(ctx, p.logger)
 	input := request.GetPublication()
 
 	pubID := input.GetId()
@@ -68,7 +71,7 @@ func (p *PublicationServer) CreatePublication(ctx context.Context, request *trai
 	})
 
 	if err != nil {
-		log.Printf("failed to create publication %q: %s", input.GetId(), err.Error())
+		logger.Error("failed to create publication", zap.Error(err), zap.String("id", input.GetId()))
 		return nil, status.Error(codes.Internal, "database error")
 	}
 

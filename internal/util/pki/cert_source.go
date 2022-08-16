@@ -6,9 +6,10 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
-	"log"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 // A CertSource provides certificates for TLS.
@@ -27,7 +28,7 @@ type CertSource interface {
 // NewSelfSignedCertSource creates a CertSource that issues self-signed certificates using CreateSelfSignedCert.
 // The certificate is rotated lazily once half its lifetime has expired.
 // If key is nil, a new RSA private key is generated.
-func NewSelfSignedCertSource(key crypto.PrivateKey) (CertSource, error) {
+func NewSelfSignedCertSource(key crypto.PrivateKey, logger *zap.Logger) (CertSource, error) {
 	var err error
 	if key == nil {
 		key, err = rsa.GenerateKey(rand.Reader, 4096)
@@ -37,7 +38,7 @@ func NewSelfSignedCertSource(key crypto.PrivateKey) (CertSource, error) {
 	}
 
 	return NewCertSource(func(old *tls.Certificate) (new *tls.Certificate, next time.Time, err error) {
-		log.Println("generating self-signed TLS certificate")
+		logger.Info("generating self-signed TLS certificate")
 		// we need to (re)generate the certificate
 		validity := 30 * 24 * time.Hour
 		next = time.Now().Add(validity / 2)

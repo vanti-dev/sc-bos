@@ -9,10 +9,10 @@ import (
 	"errors"
 	"io/fs"
 	"io/ioutil"
-	"log"
 	"os"
 
 	"go.uber.org/multierr"
+	"go.uber.org/zap"
 )
 
 // PublicKey contains the method set that the standard library public key types (from crypto/*) all implement.
@@ -92,13 +92,13 @@ func SavePrivateKey(keyFile string, key crypto.PrivateKey) (pemBytes []byte, err
 
 // LoadOrGeneratePrivateKey will load a private key in PEM-encoded PKCS#8, PKCS#1 or EC format from a file.
 // If the file does not exist, a new 4096-bit RSA key in PKCS#8 format is generated and saved to the file.
-func LoadOrGeneratePrivateKey(keyFile string) (key PrivateKey, pemBytes []byte, err error) {
+func LoadOrGeneratePrivateKey(keyFile string, logger *zap.Logger) (key PrivateKey, pemBytes []byte, err error) {
 	key, pemBytes, err = LoadPrivateKey(keyFile)
 	if err == nil || !errors.Is(err, fs.ErrNotExist) {
 		return
 	}
 
-	log.Printf("generating new RSA private key in %q", keyFile)
+	logger.Info("generating new RSA private key", zap.String("path", keyFile))
 
 	key, err = rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {

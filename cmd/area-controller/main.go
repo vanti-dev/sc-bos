@@ -7,22 +7,19 @@ import (
 	"crypto/x509"
 	"errors"
 	"flag"
-	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/multierr"
+	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -46,14 +43,19 @@ func init() {
 func run(ctx context.Context) (errs error) {
 	flag.Parse()
 
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		return err
+	}
+
 	// create data dir if it doesn't exist
-	err := os.MkdirAll(flagDataDir, 0750)
+	err = os.MkdirAll(flagDataDir, 0750)
 	if err != nil {
 		errs = multierr.Append(errs, err)
 	}
 
 	// create private key if it doesn't exist
-	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(flagDataDir, "private-key.pem"))
+	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(flagDataDir, "private-key.pem"), logger)
 	if err != nil {
 		errs = multierr.Append(errs, err)
 		return
@@ -63,17 +65,17 @@ func run(ctx context.Context) (errs error) {
 	enrollment, err := LoadEnrollment(filepath.Join(flagDataDir, "enrollment"), keyPEM)
 	if errors.Is(err, ErrNotEnrolled) {
 		// switch to enrollment mode, so this node can be enrolled with a Smart Core app server
-		return runEnrollment(ctx, key, keyPEM)
+		return runEnrollment(ctx, logger, key, keyPEM)
 	} else if err != nil {
 		return err
 	}
 
-	return runNormal(ctx, enrollment)
+	return runNormal(ctx, logger, enrollment)
 }
 
-func runEnrollment(ctx context.Context, key crypto.PrivateKey, keyPEM []byte) error {
+func runEnrollment(ctx context.Context, logger *zap.Logger, key crypto.PrivateKey, keyPEM []byte) error {
 	enrollmentServer := NewEnrollmentServer(filepath.Join(flagDataDir, "enrollment"), keyPEM)
-	certSource, err := pki.NewSelfSignedCertSource(key)
+	certSource, err := pki.NewSelfSignedCertSource(key, logger)
 	if err != nil {
 		return err
 	}
@@ -95,21 +97,22 @@ func runEnrollment(ctx context.Context, key crypto.PrivateKey, keyPEM []byte) er
 	go func() {
 		err := srv.Serve(ctx)
 		if err != nil {
-			log.Printf("server stopped: %s", err.Error())
+			logger.Warn("server stopped", zap.Error(err))
 		}
 	}()
-	log.Println("gRPC serving; waiting for enrollment")
+	logger.Info("gRPC serving; waiting for enrollment")
 
 	ok := enrollmentServer.Wait(ctx)
 	if ok {
-		log.Printf("area controller is now enrolled")
+		logger.Info("area controller is now enrolled")
 	} else {
+		logger.Error("server stopped without an enrollment")
 		return errors.New("server stopped without an enrollment")
 	}
 	return nil
 }
 
-func runNormal(ctx context.Context, enrollment Enrollment) error {
+func runNormal(ctx context.Context, logger *zap.Logger, enrollment Enrollment) error {
 	clientRoot := x509.NewCertPool()
 	clientRoot.AddCert(enrollment.RootCA)
 
@@ -158,29 +161,6 @@ func runNormal(ctx context.Context, enrollment Enrollment) error {
 	})
 
 	return group.Wait()
-}
-
-func logPublication(pub *traits.Publication) {
-	fmt.Printf("\tAudience: %q\n", pub.GetAudience())
-	fmt.Printf("\tMedia Type: %q\n", pub.GetMediaType())
-	fmt.Printf("\tVersion: %q\n", pub.GetVersion())
-	body := pub.GetBody()
-	fmt.Printf("\tBody (%d bytes):\n", len(body))
-
-	bodyRunes := []rune(strings.ToValidUTF8(string(body), "."))
-	for len(bodyRunes) > 0 {
-		var lineRunes []rune
-		if len(bodyRunes) >= 64 {
-			lineRunes = bodyRunes[:64]
-			bodyRunes = bodyRunes[64:]
-		} else {
-			lineRunes = bodyRunes
-			bodyRunes = nil
-		}
-
-		fmt.Printf("\t\t%s\n", string(lineRunes))
-	}
-	fmt.Println()
 }
 
 func main() {

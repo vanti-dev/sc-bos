@@ -31,7 +31,7 @@ func TestCache_Pull(t *testing.T) {
 	modelServer := publication.NewModelServer(model)
 	modelClient := publication.WrapApi(modelServer)
 
-	cache := New(ctx, modelClient, "", id, nil)
+	cache := New(ctx, modelClient, "", id)
 
 	ch := cache.Pull(ctx)
 

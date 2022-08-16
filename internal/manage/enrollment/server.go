@@ -3,10 +3,11 @@ package enrollment
 import (
 	"context"
 	"crypto/x509"
-	"log"
 
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
+	"github.com/vanti-dev/bsp-ew/internal/util/rpcutil"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
+	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,6 +15,7 @@ import (
 
 type Server struct {
 	gen.UnimplementedEnrollmentApiServer
+	Logger *zap.Logger
 
 	pubKey pki.PublicKey
 }
@@ -23,6 +25,10 @@ func (e *Server) GetEnrollment(ctx context.Context, request *gen.GetEnrollmentRe
 }
 
 func (e *Server) CreateEnrollment(ctx context.Context, request *gen.CreateEnrollmentRequest) (*gen.Enrollment, error) {
+	logger := rpcutil.ServerLogger(ctx, e.Logger).With(
+		zap.String("manager_name", request.GetEnrollment().GetManagerName()),
+		zap.String("manager_addr", request.GetEnrollment().GetManagerAddress()),
+	)
 	enrollment := request.GetEnrollment()
 	if enrollment == nil {
 		return nil, status.Error(codes.InvalidArgument, "enrollment must be provided")
@@ -30,7 +36,7 @@ func (e *Server) CreateEnrollment(ctx context.Context, request *gen.CreateEnroll
 
 	leaf, intermediates, err := pki.ParseCertificateChainPEM(enrollment.Certificate)
 	if err != nil {
-		log.Printf("failed to parse certificate as a PEM cert chain: %s", err.Error())
+		logger.Error("failed to parse certificate as a PEM cert chain", zap.Error(err))
 		return nil, status.Error(codes.InvalidArgument, "certificate chain failed to parse")
 	}
 	if !slices.Contains(pki.GetCertificateSmartCoreNames(leaf), enrollment.TargetName) {
@@ -43,7 +49,7 @@ func (e *Server) CreateEnrollment(ctx context.Context, request *gen.CreateEnroll
 
 	roots := x509.NewCertPool()
 	if !roots.AppendCertsFromPEM(enrollment.RootCas) {
-		log.Printf("failed to parse root CA certificates")
+		logger.Error("failed to parse any root CA certificates")
 		return nil, status.Error(codes.InvalidArgument, "root_cas failed to parse")
 	}
 
@@ -52,7 +58,7 @@ func (e *Server) CreateEnrollment(ctx context.Context, request *gen.CreateEnroll
 		Roots:         roots,
 	})
 	if err != nil {
-		log.Printf("peer leaf certificate failed verification: %s", err.Error())
+		logger.Error("peer leaf certificate failed verification", zap.Error(err))
 		return nil, status.Error(codes.InvalidArgument, "leaf certificate failed verification")
 	}
 

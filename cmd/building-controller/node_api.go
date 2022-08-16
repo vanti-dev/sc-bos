@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/vanti-dev/bsp-ew/internal/db"
 	"github.com/vanti-dev/bsp-ew/internal/manage/enrollment"
+	"github.com/vanti-dev/bsp-ew/internal/util/rpcutil"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -30,6 +31,7 @@ type NodeServer struct {
 }
 
 func (n *NodeServer) GetNodeRegistration(ctx context.Context, request *gen.GetNodeRegistrationRequest) (*gen.NodeRegistration, error) {
+	logger := rpcutil.ServerLogger(ctx, n.logger)
 	var dbEnrollment db.Enrollment
 	err := n.db.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
 		dbEnrollment, err = db.GetEnrollment(ctx, tx, request.GetNodeName())
@@ -38,7 +40,7 @@ func (n *NodeServer) GetNodeRegistration(ctx context.Context, request *gen.GetNo
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, status.Error(codes.NotFound, "no node registration with specified node_name")
 	} else if err != nil {
-		n.logger.Error("GetEnrollment failed", zap.Error(err), zap.String("name", request.GetNodeName()))
+		logger.Error("GetEnrollment failed", zap.Error(err), zap.String("name", request.GetNodeName()))
 		return nil, status.Error(codes.Internal, "failed to retrieve enrollment")
 	}
 
@@ -50,6 +52,7 @@ func (n *NodeServer) GetNodeRegistration(ctx context.Context, request *gen.GetNo
 }
 
 func (n *NodeServer) CreateNodeRegistration(ctx context.Context, request *gen.CreateNodeRegistrationRequest) (*gen.NodeRegistration, error) {
+	logger := rpcutil.ServerLogger(ctx, n.logger)
 	nodeReg := request.GetNodeRegistration()
 	if nodeReg == nil {
 		return nil, status.Error(codes.InvalidArgument, "node_registration must be supplied")
@@ -63,7 +66,7 @@ func (n *NodeServer) CreateNodeRegistration(ctx context.Context, request *gen.Cr
 		RootCas:        n.rootsPEM,
 	}, n.ca)
 	if err != nil {
-		n.logger.Error("failed to enroll area controller", zap.Error(err),
+		logger.Error("failed to enroll area controller", zap.Error(err),
 			zap.String("target_address", nodeReg.Address))
 		return nil, status.Error(codes.Unknown, "target refused registration")
 	}
@@ -77,20 +80,21 @@ func (n *NodeServer) CreateNodeRegistration(ctx context.Context, request *gen.Cr
 		})
 	})
 	if err != nil {
-		n.logger.Error("db.AddEnrollment failed", zap.Error(err))
+		logger.Error("db.AddEnrollment failed", zap.Error(err))
 		return nil, status.Error(codes.DataLoss, "failed to save the enrollment - manual intervention required")
 	}
 	return nodeReg, nil
 }
 
 func (n *NodeServer) ListNodeRegistrations(ctx context.Context, request *gen.ListNodeRegistrationsRequest) (*gen.ListNodeRegistrationsResponse, error) {
+	logger := rpcutil.ServerLogger(ctx, n.logger)
 	var dbEnrollments []db.Enrollment
 	err := n.db.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
 		dbEnrollments, err = db.ListEnrollments(ctx, tx)
 		return
 	})
 	if err != nil {
-		n.logger.Error("db.ListEnrollments failed", zap.Error(err))
+		logger.Error("db.ListEnrollments failed", zap.Error(err))
 		return nil, status.Error(codes.Unavailable, "unable to retrieve enrollments")
 	}
 

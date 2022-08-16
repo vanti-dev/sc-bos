@@ -10,7 +10,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -64,6 +63,15 @@ func run(ctx context.Context) error {
 		return err
 	}
 
+	// connect (& optionally initialise) DB
+	dbConn, err := connectDB(ctx, sysConf)
+	if err != nil {
+		return err
+	}
+	if flagPopulateDB {
+		return populateDB(ctx, logger, dbConn)
+	}
+
 	// load certificates
 	rootsPEM, err := os.ReadFile(filepath.Join(flagConfigDir, "pki", "roots.cert.pem"))
 	if err != nil {
@@ -86,20 +94,11 @@ func run(ctx context.Context) error {
 		GetClientCertificate: grpcCertSource.TLSConfigGetClientCertificate,
 		RootCAs:              rootsPool,
 	}
-	httpsCertSource, err := loadHTTPSCertSource(sysConf)
+	httpsCertSource, err := loadHTTPSCertSource(sysConf, logger)
 	if err != nil {
 		return err
 	}
 	httpsTlsConfig := &tls.Config{GetCertificate: httpsCertSource.TLSConfigGetCertificate}
-
-	// connect (& optionally initialise) DB
-	dbConn, err := connectDB(ctx, sysConf)
-	if err != nil {
-		return err
-	}
-	if flagPopulateDB {
-		return populateDB(ctx, dbConn)
-	}
 
 	grpcServerOptions := []grpc.ServerOption{
 		grpc.Creds(credentials.NewTLS(grpcTlsConfig)),
@@ -116,6 +115,7 @@ func run(ctx context.Context) error {
 	}
 
 	servers := &app.Servers{
+		Logger:          logger.Named("server"),
 		ShutdownTimeout: 15 * time.Second,
 		GRPC:            grpc.NewServer(grpcServerOptions...),
 		GRPCAddress:     sysConf.ListenGRPC,
@@ -173,7 +173,7 @@ func connectDB(ctx context.Context, sysConf SystemConfig) (*pgx.Conn, error) {
 	return pgx.ConnectConfig(ctx, connConfig)
 }
 
-func populateDB(ctx context.Context, conn *pgx.Conn) error {
+func populateDB(ctx context.Context, logger *zap.Logger, conn *pgx.Conn) error {
 	deviceNames := []string{
 		"test/area-controller-1",
 		"test/area-controller-2",
@@ -222,9 +222,9 @@ func populateDB(ctx context.Context, conn *pgx.Conn) error {
 	})
 
 	if err != nil {
-		log.Printf("failed to populate database: %s", err.Error())
+		logger.Error("failed to populate database", zap.Error(err))
 	} else {
-		log.Println("database populated")
+		logger.Info("database populated")
 	}
 	return err
 }
@@ -264,9 +264,9 @@ func loadEnrollmentCA(sysConf SystemConfig) (*enrollment.CA, error) {
 	}, nil
 }
 
-func loadHTTPSCertSource(sysConf SystemConfig) (pki.CertSource, error) {
+func loadHTTPSCertSource(sysConf SystemConfig, logger *zap.Logger) (pki.CertSource, error) {
 	if sysConf.SelfSignedHTTPS {
-		return pki.NewSelfSignedCertSource(nil)
+		return pki.NewSelfSignedCertSource(nil, logger)
 	} else {
 		certPath := filepath.Join(flagConfigDir, "pki", "https.cert.pem")
 		keyPath := filepath.Join(flagConfigDir, "pki", "https.key.pem")
