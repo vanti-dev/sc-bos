@@ -108,9 +108,10 @@ func run(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("init keycloak token verifier: %w", err)
 		}
+		interceptor := policy.NewInterceptor(policy.WithTokenVerifier(verifier), policy.WithLogger(logger.Named("policy")))
 		grpcServerOptions = append(grpcServerOptions,
-			grpc.UnaryInterceptor(policy.GRPCUnaryInterceptor(verifier)),
-			grpc.StreamInterceptor(policy.GRPCStreamingInterceptor(verifier)),
+			grpc.UnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
+			grpc.StreamInterceptor(interceptor.GRPCStreamingInterceptor()),
 		)
 	}
 

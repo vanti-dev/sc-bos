@@ -2,19 +2,36 @@ package policy
 
 import (
 	"context"
+	"crypto/x509"
 	"log"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/vanti-dev/bsp-ew/internal/auth"
 	"github.com/vanti-dev/bsp-ew/internal/util/rpcutil"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func GRPCUnaryInterceptor(verifier auth.TokenVerifier) grpc.UnaryServerInterceptor {
+type Interceptor struct {
+	logger   *zap.Logger
+	verifier auth.TokenVerifier
+}
+
+func NewInterceptor(opts ...InterceptorOption) *Interceptor {
+	interceptor := &Interceptor{
+		logger: zap.NewNop(),
+	}
+	for _, o := range opts {
+		o(interceptor)
+	}
+	return interceptor
+}
+
+func (i *Interceptor) GRPCUnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
-		err = checkPolicyGrpc(ctx, verifier, req, StreamAttributes{
+		_, err = i.checkPolicyGrpc(ctx, nil, req, StreamAttributes{
 			IsServerStream: false,
 			IsClientStream: false,
 			Open:           false,
@@ -26,15 +43,17 @@ func GRPCUnaryInterceptor(verifier auth.TokenVerifier) grpc.UnaryServerIntercept
 	}
 }
 
-func GRPCStreamingInterceptor(verifier auth.TokenVerifier) grpc.StreamServerInterceptor {
+func (i *Interceptor) GRPCStreamingInterceptor() grpc.StreamServerInterceptor {
 	return func(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		// for client / bidirectional streams we don't have a request, so we'll evaluate the policy without one
 		// to check if it's OK to open the stream.
 		// This isn't necessary for server streams; the client will immediately send the request message, and the
 		// generated code will call RecvMsg to get this *before* control is transferred to the service implementation,
 		// so we can check then using the serverStreamInterceptor
+		var cachedCreds *verifiedCreds
 		if info.IsClientStream {
-			err := checkPolicyGrpc(ss.Context(), verifier, nil, StreamAttributes{
+			var err error
+			cachedCreds, err = i.checkPolicyGrpc(ss.Context(), nil, nil, StreamAttributes{
 				IsServerStream: info.IsServerStream,
 				IsClientStream: info.IsClientStream,
 				Open:           false,
@@ -53,7 +72,8 @@ func GRPCStreamingInterceptor(verifier auth.TokenVerifier) grpc.StreamServerInte
 				Open: info.IsClientStream,
 			}
 
-			return checkPolicyGrpc(ss.Context(), verifier, msg, streamAttrs)
+			_, err := i.checkPolicyGrpc(ss.Context(), cachedCreds, msg, streamAttrs)
+			return err
 		}
 		wrapped := &serverStreamInterceptor{
 			ServerStream: ss,
@@ -63,41 +83,70 @@ func GRPCStreamingInterceptor(verifier auth.TokenVerifier) grpc.StreamServerInte
 	}
 }
 
-func checkPolicyGrpc(ctx context.Context, verifier auth.TokenVerifier, request any, stream StreamAttributes) error {
+// Returns a set of verified credentials that can be used to speed up future calls to checkPolicyGrpc for the same
+// call (useful for streams). Pass nil creds the first time, then cache the creds.
+func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds, req any, stream StreamAttributes) (*verifiedCreds, error) {
 	service, method, ok := rpcutil.ServiceMethod(ctx)
 	if !ok {
-		return status.Error(codes.Internal, "failed to resolve method")
+		return nil, status.Error(codes.Internal, "failed to resolve method")
 	}
 
-	var tokenClaims *auth.TokenClaims
-
-	token, err := grpc_auth.AuthFromMD(ctx, "Bearer")
-	if err != nil {
-		log.Printf("no request bearer token: %s", err.Error())
-	}
-
-	if token != "" && verifier != nil {
-		tokenClaims, err = verifier.VerifyAccessToken(ctx, token)
+	if creds == nil {
+		token, err := grpc_auth.AuthFromMD(ctx, "Bearer")
 		if err != nil {
-			tokenClaims = nil
-			log.Printf("token failed verification: %s", err.Error())
+			log.Printf("no request bearer token: %s", err.Error())
+		}
+
+		var tokenClaims *auth.TokenClaims
+		if token != "" && i.verifier != nil {
+			tokenClaims, err = i.verifier.VerifyAccessToken(ctx, token)
+			if err != nil {
+				tokenClaims = nil
+				log.Printf("token failed verification: %s", err.Error())
+			}
+		}
+
+		cert := rpcutil.VerifiedCertFromServerContext(ctx)
+
+		creds = &verifiedCreds{
+			cert:        cert,
+			token:       token,
+			tokenClaims: tokenClaims,
 		}
 	}
-
-	cert := rpcutil.VerifiedCertFromServerContext(ctx)
 
 	input := Attributes{
 		Service:          service,
 		Method:           method,
 		Stream:           stream,
-		Request:          request,
-		CertificateValid: cert != nil,
-		Certificate:      cert,
-		TokenValid:       tokenClaims != nil,
-		TokenClaims:      tokenClaims,
+		Request:          req,
+		CertificateValid: creds.cert != nil,
+		Certificate:      creds.cert,
+		TokenValid:       creds.tokenClaims != nil,
+		TokenClaims:      creds.tokenClaims,
 	}
 
-	return CheckAttributes(ctx, input)
+	return creds, CheckAttributes(ctx, input)
+}
+
+type InterceptorOption func(interceptor *Interceptor)
+
+func WithLogger(logger *zap.Logger) InterceptorOption {
+	return func(interceptor *Interceptor) {
+		interceptor.logger = logger
+	}
+}
+
+func WithTokenVerifier(tv auth.TokenVerifier) InterceptorOption {
+	return func(interceptor *Interceptor) {
+		interceptor.verifier = tv
+	}
+}
+
+type verifiedCreds struct {
+	cert        *x509.Certificate
+	token       string
+	tokenClaims *auth.TokenClaims
 }
 
 // if we want to get the request of a server-to-client streaming call from within an interceptor, we need a way to

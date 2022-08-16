@@ -122,10 +122,11 @@ func runNormal(ctx context.Context, logger *zap.Logger, enrollment Enrollment) e
 		ClientCAs:    clientRoot,
 	}
 
+	interceptor := policy.NewInterceptor(policy.WithLogger(logger.Named("policy")))
 	grpcServer := grpc.NewServer(
 		grpc.Creds(credentials.NewTLS(tlsServerConfig)),
-		grpc.UnaryInterceptor(policy.GRPCUnaryInterceptor(nil)),
-		grpc.StreamInterceptor(policy.GRPCStreamingInterceptor(nil)),
+		grpc.UnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
+		grpc.StreamInterceptor(interceptor.GRPCStreamingInterceptor()),
 	)
 	reflection.Register(grpcServer)
 	gen.RegisterTestApiServer(grpcServer, testapi.NewAPI())

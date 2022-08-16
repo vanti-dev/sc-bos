@@ -13,6 +13,10 @@ import (
 
 // ServerLogger creates a sub-logger with fields derived from a gRPC server context.
 func ServerLogger(ctx context.Context, base *zap.Logger) *zap.Logger {
+	return base.With(ServerLoggerFields(ctx)...)
+}
+
+func ServerLoggerFields(ctx context.Context) []zap.Field {
 	fields := []zap.Field{zap.Namespace("grpc")}
 	if service, method, ok := ServiceMethod(ctx); ok {
 		fields = append(fields,
@@ -31,7 +35,7 @@ func ServerLogger(ctx context.Context, base *zap.Logger) *zap.Logger {
 		)
 	}
 
-	return base.With(fields...)
+	return fields
 }
 
 func SplitMethodPath(methodPath string) (service, method string, ok bool) {
