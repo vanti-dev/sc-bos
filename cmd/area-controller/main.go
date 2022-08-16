@@ -15,6 +15,7 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
+	"github.com/vanti-dev/bsp-ew/internal/manage/enrollment"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
@@ -62,19 +63,19 @@ func run(ctx context.Context) (errs error) {
 	}
 
 	// try to load an enrollment from disk
-	enrollment, err := LoadEnrollment(filepath.Join(flagDataDir, "enrollment"), keyPEM)
-	if errors.Is(err, ErrNotEnrolled) {
+	en, err := enrollment.LoadEnrollment(filepath.Join(flagDataDir, "enrollment"), keyPEM)
+	if errors.Is(err, enrollment.ErrNotEnrolled) {
 		// switch to enrollment mode, so this node can be enrolled with a Smart Core app server
 		return runEnrollment(ctx, logger, key, keyPEM)
 	} else if err != nil {
 		return err
 	}
 
-	return runNormal(ctx, logger, enrollment)
+	return runNormal(ctx, logger, en)
 }
 
 func runEnrollment(ctx context.Context, logger *zap.Logger, key crypto.PrivateKey, keyPEM []byte) error {
-	enrollmentServer := NewEnrollmentServer(filepath.Join(flagDataDir, "enrollment"), keyPEM)
+	enrollmentServer := enrollment.NewServer(filepath.Join(flagDataDir, "enrollment"), keyPEM, logger.Named(""))
 	certSource, err := pki.NewSelfSignedCertSource(key, logger)
 	if err != nil {
 		return err
@@ -88,6 +89,7 @@ func runEnrollment(ctx context.Context, logger *zap.Logger, key crypto.PrivateKe
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollmentServer)
 
 	srv := &app.Servers{
+		Logger:      logger.Named("server"),
 		GRPC:        grpcServer,
 		GRPCAddress: flagListenGRPC,
 	}
@@ -112,7 +114,7 @@ func runEnrollment(ctx context.Context, logger *zap.Logger, key crypto.PrivateKe
 	return nil
 }
 
-func runNormal(ctx context.Context, logger *zap.Logger, enrollment Enrollment) error {
+func runNormal(ctx context.Context, logger *zap.Logger, enrollment enrollment.Enrollment) error {
 	clientRoot := x509.NewCertPool()
 	clientRoot.AddCert(enrollment.RootCA)
 
