@@ -37,7 +37,7 @@ func NewSelfSignedCertSource(key crypto.PrivateKey, logger *zap.Logger) (CertSou
 		}
 	}
 
-	return NewCertSource(func(old *tls.Certificate) (new *tls.Certificate, next time.Time, err error) {
+	return NewCachedCertSource(func(old *tls.Certificate) (new *tls.Certificate, next time.Time, err error) {
 		logger.Info("generating self-signed TLS certificate")
 		// we need to (re)generate the certificate
 		validity := 30 * 24 * time.Hour
@@ -59,7 +59,7 @@ func NewSelfSignedCertSource(key crypto.PrivateKey, logger *zap.Logger) (CertSou
 // The CertSource operates lazily - the files are only reloaded when the in-memory certificate expires, or
 // ReloadNow is called.
 func NewFileCertSource(certPath string, keyPath string) (CertSource, error) {
-	return NewCertSource(func(old *tls.Certificate) (new *tls.Certificate, next time.Time, err error) {
+	return NewCachedCertSource(func(old *tls.Certificate) (new *tls.Certificate, next time.Time, err error) {
 		cert, err := tls.LoadX509KeyPair(certPath, keyPath)
 		if err != nil {
 			return
@@ -80,26 +80,28 @@ func NewFileCertSource(certPath string, keyPath string) (CertSource, error) {
 
 type CertRotation func(old *tls.Certificate) (new *tls.Certificate, next time.Time, err error)
 
-type certSource struct {
+type cachedCertSource struct {
 	m      sync.Mutex
 	cert   *tls.Certificate
 	next   time.Time
 	rotate CertRotation
 }
 
-func NewCertSource(rotate CertRotation) (CertSource, error) {
+// NewCachedCertSource creates a CertSource that invokes a function to retrieve a certificate and caches it for
+// future calls. The certificate is cached until the next time returned by the function is reached.
+func NewCachedCertSource(rotate CertRotation) (CertSource, error) {
 	cert, next, err := rotate(nil)
 	if err != nil {
 		return nil, err
 	}
-	return &certSource{
+	return &cachedCertSource{
 		cert:   cert,
 		next:   next,
 		rotate: rotate,
 	}, nil
 }
 
-func (c *certSource) TLSConfigGetCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
+func (c *cachedCertSource) TLSConfigGetCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	c.m.Lock()
 	defer c.m.Unlock()
 
@@ -115,11 +117,11 @@ func (c *certSource) TLSConfigGetCertificate(_ *tls.ClientHelloInfo) (*tls.Certi
 	return c.cert, nil
 }
 
-func (c *certSource) TLSConfigGetClientCertificate(info *tls.CertificateRequestInfo) (*tls.Certificate, error) {
+func (c *cachedCertSource) TLSConfigGetClientCertificate(info *tls.CertificateRequestInfo) (*tls.Certificate, error) {
 	return c.TLSConfigGetCertificate(nil)
 }
 
-func (c *certSource) RotateNow() error {
+func (c *cachedCertSource) RotateNow() error {
 	c.m.Lock()
 	defer c.m.Unlock()
 
@@ -131,3 +133,22 @@ func (c *certSource) RotateNow() error {
 	c.cert = cert
 	return nil
 }
+
+// SimpleCertSource is a CertSource that has no caching. It simply invokes itself every time a certificate is
+// requested.
+// RotateNow has no effect.
+type SimpleCertSource func() (*tls.Certificate, error)
+
+func (s SimpleCertSource) TLSConfigGetCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
+	return s()
+}
+
+func (s SimpleCertSource) TLSConfigGetClientCertificate(_ *tls.CertificateRequestInfo) (*tls.Certificate, error) {
+	return s()
+}
+
+func (s SimpleCertSource) RotateNow() error {
+	return nil
+}
+
+var _ CertSource = (SimpleCertSource)(nil)

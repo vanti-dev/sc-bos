@@ -101,7 +101,7 @@ func (ca *CA) CreateLocalCertificate(name pkix.Name, loopback bool, pub crypto.P
 // LocalCertSource creates a pki.CertSource that uses CreateLocalCertificate to create and automatically rotate
 // certificates.
 func (ca *CA) LocalCertSource(name pkix.Name, loopback bool) (pki.CertSource, error) {
-	return pki.NewCertSource(func(old *tls.Certificate) (new *tls.Certificate, next time.Time, err error) {
+	return pki.NewCachedCertSource(func(old *tls.Certificate) (new *tls.Certificate, next time.Time, err error) {
 		key, err := rsa.GenerateKey(rand.Reader, 4096)
 		if err != nil {
 			return
