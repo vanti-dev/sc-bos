@@ -11,12 +11,18 @@
       </v-btn>
     </template>
 
-    <v-card tile :light="$vuetify.theme.dark">
-      <v-card-text>
-        This is where the account menu would be
-      </v-card-text>
+    <v-card tile :light="$vuetify.theme.dark" class="text-center" min-width="300px">
+      <v-avatar size="64" style="background: #eee; padding: 40px; margin-top: 24px">
+        <v-icon size="64">mdi-account-circle-outline</v-icon>
+      </v-avatar>
+      <v-card-title class="justify-center">
+        {{ accountStore.fullName }}
+      </v-card-title>
+      <v-card-subtitle>
+        {{ accountStore.email }}
+      </v-card-subtitle>
       <v-card-actions>
-        <v-btn elevation="0" @click="logout">Log out</v-btn>
+        <v-btn elevation="0" @click="logout" block>Log out</v-btn>
       </v-card-actions>
     </v-card>
   </v-menu>

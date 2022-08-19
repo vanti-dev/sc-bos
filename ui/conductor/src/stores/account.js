@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia';
 import {events, keycloak} from '../api/keycloak.js';
-import {ref} from 'vue';
+import {computed, ref} from 'vue';
 
 export const useAccountStore = defineStore('accountStore', () => {
   const kcp = keycloak();
@@ -29,6 +29,9 @@ export const useAccountStore = defineStore('accountStore', () => {
     loggedIn,
     token,
     claims,
+
+    fullName: computed(() => claims.value?.name || ''),
+    email: computed(() => claims.value?.email || ''),
 
     login: (scopes) => {
       return kcp.then(kc => kc.login({scope: scopes.join(' ')}))
