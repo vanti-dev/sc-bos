@@ -42,15 +42,19 @@ type StreamAttributes struct {
 	Open bool `json:"open"`
 }
 
-// CheckAttributes will check a set of decision attributes against the global policy store.
-// It uses a hierarchical query system based on the service's name and package, evaluating policies from most specific
+type Policy interface {
+	EvalPolicy(ctx context.Context, query string, input Attributes) (rego.ResultSet, error)
+}
+
+// Validate will validate a set of decision attributes against a policy.
+// It uses a hierarchical query system based on the service's name and package, querying the policy from most specific
 // to least specific until the query returns a result.
-// If the policies permit the request, returns nil. If they deny the request, returns ErrPermissionDenied.
-// If the policies could not be evaluated successfully, returns an error.
+// If the policy permits the request, returns nil. If it denies the request, returns ErrPermissionDenied.
+// If the policy could not be evaluated successfully, returns an error.
 //
 // Services/protobuf packages are assumed to correspond to Rego packages of the same name; the gRPC service `foo.bar.Baz`
 // corresponds to the Rego package `foo.bar.Baz`. The package should contain a boolean rule named `allow`.
-// The policy accepts the request if and only if querying for `data.foo.bar.Baz.allow` returns a result set with only
+// The policy accepts the request if querying for `data.foo.bar.Baz.allow` returns a result set with only
 //`allow = true`. Otherwise, if the result set is empty then the next package up the hierarchy is tried, and if it's
 // not empty then returns ErrPermissionDenied.
 // If none of those queries return a result, we evaluate the query `data.grpc_default.allow` as a last resort.
@@ -63,18 +67,13 @@ type StreamAttributes struct {
 //   - data.foo.bar.allow
 //   - data.foo.allow
 //   - data.grpc_default.allow
-func CheckAttributes(ctx context.Context, attr Attributes) error {
+func Validate(ctx context.Context, policy Policy, attr Attributes) error {
 	// the component parts of the protobuf package name (+ service name)
 	components := strings.Split(attr.Service, ".")
 
 	for len(components) > 0 {
 		query := fmt.Sprintf("data.%s.allow", strings.Join(components, "."))
-		partial, err := LoadRegoCached(ctx, query)
-		if err != nil {
-			return err
-		}
-
-		result, err := partial.Rego(rego.Input(attr)).Eval(ctx)
+		result, err := policy.EvalPolicy(ctx, query, attr)
 		if err != nil {
 			return err
 		}
@@ -92,12 +91,7 @@ func CheckAttributes(ctx context.Context, attr Attributes) error {
 	}
 
 	// try evaluating the fallback policy
-	partial, err := LoadRegoCached(ctx, "data.grpc_default")
-	if err != nil {
-		return err
-	}
-
-	result, err := partial.Rego(rego.Input(attr)).Eval(ctx)
+	result, err := policy.EvalPolicy(ctx, "data.grpc_default", attr)
 	if err != nil {
 		return err
 	}

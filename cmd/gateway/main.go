@@ -10,6 +10,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
@@ -26,7 +27,7 @@ func init() {
 }
 
 func main() {
-	app.RunUntilInterrupt(run)
+	os.Exit(app.RunUntilInterrupt(run))
 }
 
 func run(ctx context.Context) error {

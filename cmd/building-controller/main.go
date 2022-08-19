@@ -30,6 +30,7 @@ import (
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
@@ -108,28 +109,21 @@ func run(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("init keycloak token verifier: %w", err)
 		}
-		interceptor := policy.NewInterceptor(policy.WithTokenVerifier(verifier), policy.WithLogger(logger.Named("policy")))
+		interceptor := policy.NewInterceptor(policy.Default(),
+			policy.WithTokenVerifier(verifier),
+			policy.WithLogger(logger.Named("policy")),
+		)
 		grpcServerOptions = append(grpcServerOptions,
 			grpc.UnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
 			grpc.StreamInterceptor(interceptor.GRPCStreamingInterceptor()),
 		)
 	}
 
-	servers := &app.Servers{
-		Logger:          logger.Named("server"),
-		ShutdownTimeout: 15 * time.Second,
-		GRPC:            grpc.NewServer(grpcServerOptions...),
-		GRPCAddress:     sysConf.ListenGRPC,
-		HTTP: &http.Server{
-			Addr:      sysConf.ListenHTTPS,
-			TLSConfig: httpsTlsConfig,
-		},
-	}
-
-	reflection.Register(servers.GRPC)
-	traits.RegisterPublicationApiServer(servers.GRPC, &PublicationServer{conn: dbConn})
-	gen.RegisterTestApiServer(servers.GRPC, testapi.NewAPI())
-	gen.RegisterNodeApiServer(servers.GRPC, &NodeServer{
+	grpcServer := grpc.NewServer(grpcServerOptions...)
+	reflection.Register(grpcServer)
+	traits.RegisterPublicationApiServer(grpcServer, &PublicationServer{conn: dbConn})
+	gen.RegisterTestApiServer(grpcServer, testapi.NewAPI())
+	gen.RegisterNodeApiServer(grpcServer, &NodeServer{
 		logger:        logger.Named("NodeServer"),
 		db:            dbConn,
 		ca:            ca,
@@ -139,21 +133,32 @@ func run(ctx context.Context) error {
 		testTLSConfig: grpcTlsConfig,
 	})
 
-	grpcWebWrapper := grpcweb.WrapServer(servers.GRPC)
+	grpcWebWrapper := grpcweb.WrapServer(grpcServer)
 	staticFiles := http.FileServer(http.Dir(sysConf.StaticDir))
-	servers.HTTP.Handler = http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if grpcWebWrapper.IsGrpcWebRequest(request) || grpcWebWrapper.IsAcceptableGrpcCorsRequest(request) {
-			grpcWebWrapper.ServeHTTP(writer, request)
-		} else {
-			staticFiles.ServeHTTP(writer, request)
-		}
-	})
+	httpServer := &http.Server{
+		Addr:      sysConf.ListenHTTPS,
+		TLSConfig: httpsTlsConfig,
+		Handler: http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			if grpcWebWrapper.IsGrpcWebRequest(request) || grpcWebWrapper.IsAcceptableGrpcCorsRequest(request) {
+				grpcWebWrapper.ServeHTTP(writer, request)
+			} else {
+				staticFiles.ServeHTTP(writer, request)
+			}
+		}),
+	}
 
-	return servers.Serve(ctx)
+	group, ctx := errgroup.WithContext(ctx)
+	group.Go(func() error {
+		return app.ServeGRPC(ctx, grpcServer, sysConf.ListenGRPC, 15*time.Second, logger.Named("server.grpc"))
+	})
+	group.Go(func() error {
+		return app.ServeHTTPS(ctx, httpServer, 15*time.Second, logger.Named("server.https"))
+	})
+	return group.Wait()
 }
 
 func main() {
-	app.RunUntilInterrupt(run)
+	os.Exit(app.RunUntilInterrupt(run))
 }
 
 func connectDB(ctx context.Context, sysConf SystemConfig) (*pgx.Conn, error) {

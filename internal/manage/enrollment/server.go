@@ -161,16 +161,11 @@ func Serve(ctx context.Context, logger *zap.Logger, server *Server, key crypto.P
 	reflection.Register(grpcServer)
 	gen.RegisterEnrollmentApiServer(grpcServer, server)
 
-	srv := &app.Servers{
-		Logger:      logger,
-		GRPC:        grpcServer,
-		GRPCAddress: listenGRPC,
-	}
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	go func() {
-		err := srv.Serve(ctx)
+		err := app.ServeGRPC(ctx, grpcServer, listenGRPC, 0, logger.Named("server.grpc"))
 		if err != nil {
 			logger.Warn("server stopped", zap.Error(err))
 		}

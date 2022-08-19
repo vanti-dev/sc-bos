@@ -16,12 +16,14 @@ import (
 
 type Interceptor struct {
 	logger   *zap.Logger
+	policy   Policy
 	verifier auth.TokenVerifier
 }
 
-func NewInterceptor(opts ...InterceptorOption) *Interceptor {
+func NewInterceptor(policy Policy, opts ...InterceptorOption) *Interceptor {
 	interceptor := &Interceptor{
 		logger: zap.NewNop(),
+		policy: policy,
 	}
 	for _, o := range opts {
 		o(interceptor)
@@ -126,7 +128,7 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 		TokenClaims:      creds.tokenClaims,
 	}
 
-	return creds, CheckAttributes(ctx, input)
+	return creds, Validate(ctx, i.policy, input)
 }
 
 type InterceptorOption func(interceptor *Interceptor)
