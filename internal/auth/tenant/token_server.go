@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-func OAuth2TokenHandler(store SecretStore, source *TokenSource) http.Handler {
-	if store == nil || source == nil {
+func OAuth2TokenHandler(secrets SecretSource, source *TokenSource) http.Handler {
+	if secrets == nil || source == nil {
 		panic("parameters must be non-nil")
 	}
 
@@ -43,7 +43,7 @@ func OAuth2TokenHandler(store SecretStore, source *TokenSource) http.Handler {
 		clientSecret := request.PostForm.Get("client_secret")
 
 		// lookup secret, and ensure it's for the matching client
-		secretData, err := store.Verify(ctx, clientSecret)
+		secretData, err := secrets.Verify(ctx, clientSecret)
 		if err != nil || secretData.ClientID != clientId {
 			writeTokenError(writer, errInvalidClient)
 			return

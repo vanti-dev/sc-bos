@@ -9,9 +9,13 @@ import (
 	"sync"
 )
 
-type SecretStore interface {
-	Enroll(ctx context.Context, data SecretData) (secret string, err error)
+type SecretSource interface {
 	Verify(ctx context.Context, secret string) (data SecretData, err error)
+}
+
+type SecretStore interface {
+	SecretSource
+	Enroll(ctx context.Context, data SecretData) (secret string, err error)
 	Invalidate(ctx context.Context, secret string) (present bool, err error)
 	InvalidateClient(ctx context.Context, clientID string) error
 }

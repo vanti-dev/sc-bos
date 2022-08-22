@@ -56,7 +56,7 @@ func main() {
 	os.Exit(app.RunUntilInterrupt(c.Run))
 }
 
-func genTenantSecrets(logger *zap.Logger) tenant.SecretStore {
+func genTenantSecrets(logger *zap.Logger) tenant.SecretSource {
 	store := tenant.NewMemorySecretStore(nil)
 	for i := 1; i <= 3; i++ {
 		clientId := fmt.Sprintf("tenant-%d", i)
