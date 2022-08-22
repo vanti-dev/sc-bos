@@ -91,7 +91,7 @@ func Validate(ctx context.Context, policy Policy, attr Attributes) error {
 	}
 
 	// try evaluating the fallback policy
-	result, err := policy.EvalPolicy(ctx, "data.grpc_default", attr)
+	result, err := policy.EvalPolicy(ctx, "data.grpc_default.allow", attr)
 	if err != nil {
 		return err
 	}

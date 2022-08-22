@@ -30,6 +30,13 @@ type cachedStatic struct {
 	cacheM   sync.Mutex
 }
 
+func newCachedStatic(compiler *ast.Compiler) *cachedStatic {
+	return &cachedStatic{
+		cache:    make(map[string]*regoCacheEntry),
+		compiler: compiler,
+	}
+}
+
 func (p *cachedStatic) EvalPolicy(ctx context.Context, query string, input Attributes) (rego.ResultSet, error) {
 	partial, err := p.loadPartialCached(ctx, query)
 	if err != nil {
@@ -109,7 +116,7 @@ func compileFS(sources fs.FS) (*ast.Compiler, error) {
 }
 
 var (
-	//go:embed rego
+	//go:embed default
 	defaultPolicyFS embed.FS
 	defaultCompiler *ast.Compiler
 )
@@ -123,8 +130,14 @@ func init() {
 }
 
 func Default() Policy {
-	return &cachedStatic{
-		cache:    make(map[string]*regoCacheEntry),
-		compiler: defaultCompiler,
+	return newCachedStatic(defaultCompiler)
+}
+
+func FromFS(f fs.FS) (Policy, error) {
+	compiler, err := compileFS(f)
+	if err != nil {
+		return nil, err
 	}
+
+	return newCachedStatic(compiler), nil
 }
