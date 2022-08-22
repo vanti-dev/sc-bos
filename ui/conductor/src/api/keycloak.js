@@ -52,7 +52,8 @@ async function newKeycloak() {
   kc.onAuthRefreshSuccess = () => events.dispatchEvent(new Event('authRefreshSuccess'));
   kc.onTokenExpired = () => events.dispatchEvent(new Event('tokenExpired'));
 
-  await kc.init(await initConfig());
+  const authenticated = await kc.init(await initConfig());
+  console.log('keycloak initialised: ', {authenticated});
   return kc;
 }
 
@@ -73,5 +74,7 @@ async function constructorConfig() {
  */
 async function initConfig() {
   // todo: get keycloak init config from somewhere non-hard-coded
-  return {}
+  return {
+    onLoad: 'check-sso'
+  }
 }
