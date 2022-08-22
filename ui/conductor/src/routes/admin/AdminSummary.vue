@@ -1,7 +1,7 @@
 <template>
-  <div>
-    The designer page
-  </div>
+  <v-container fluid>
+    Place admin summary here
+  </v-container>
 </template>
 
 <script setup>

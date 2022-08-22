@@ -1,6 +1,6 @@
 <template>
   <v-app class="app-root">
-    <v-app-bar app height="60">
+    <v-app-bar app height="60" :clipped-left="hasNav" elevation="0">
       <app-menu btn-class="full-btn"/>
       <sc-logo :fill="themeColor" :outline="themeColor ? 'white' : undefined" style="height: 35px; margin-left: 16px"/>
       <span class="heading">Smart Core</span>
@@ -15,6 +15,7 @@
       <account-btn btn-class="full-btn mr-0"/>
     </v-app-bar>
 
+    <router-view name="nav" v-if="hasNav"/>
 
     <v-main>
       <router-view/>
@@ -29,7 +30,7 @@ import {usePage} from './components/page.js';
 import PageTitle from './components/PageTitle.vue';
 import ScLogo from './components/ScLogo.vue';
 
-const {themeColor, hasSections} = usePage();
+const {themeColor, hasSections, hasNav} = usePage();
 </script>
 
 <style scoped>

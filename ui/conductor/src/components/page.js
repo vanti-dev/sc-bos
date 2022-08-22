@@ -18,6 +18,7 @@ export function usePage() {
   });
 
   const hasSections = computed(() => currentRoute?.matched?.some(r => r.components?.sections));
+  const hasNav = computed(() => currentRoute?.matched?.some(r => r.components?.nav));
 
-  return {themeColor, pageTitle, hasSections};
+  return {themeColor, pageTitle, hasSections, hasNav};
 }
