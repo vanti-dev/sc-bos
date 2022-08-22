@@ -95,3 +95,11 @@ export async function trackAction(logPrefix, tracker, action) {
     Vue.set(tracker, 'loading', false);
   }
 }
+
+/**
+ * @returns {ActionTracker<T>}
+ * @template {object} T
+ */
+export function newActionTracker() {
+  return {};
+}

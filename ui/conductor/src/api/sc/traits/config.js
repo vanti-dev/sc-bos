@@ -40,7 +40,7 @@ export async function grpcWebEndpoint() {
 
 function configAddress(config) {
   const address = (config.insecure ? config.httpAddress : (config.httpsAddress || config.httpAddress));
-  if (address[0] === ':') {
+  if (address?.[0] === ':') {
     // no host
     return location.hostname + address;
   }

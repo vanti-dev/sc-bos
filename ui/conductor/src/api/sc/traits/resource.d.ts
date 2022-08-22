@@ -18,6 +18,8 @@ export function pullResource<M extends Msg<V>, V>(logPrefix: string, resource: R
 
 export function trackAction<V, M extends Msg<V>>(logPrefix: string, tracker: ActionTracker<V>, action: Action<V, M>): Promise<V>
 
+export function newActionTracker<T>(): ActionTracker<T>
+
 export interface RemoteResource<M> {
   loading?: boolean;
   stream?: grpcWeb.ClientReadableStream<M>;

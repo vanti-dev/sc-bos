@@ -7,6 +7,7 @@ import {
   UpdatePublicationRequest
 } from '@smart-core-os/sc-api-grpc-web/traits/publication_pb.js';
 import {pullResource, setCollection, trackAction} from './resource.js';
+import {clientOptions} from '../../grpcweb.js';
 
 /**
  * @param {string} name
@@ -14,7 +15,7 @@ import {pullResource, setCollection, trackAction} from './resource.js';
  */
 export function pullPublications(name, resource) {
   pullResource('Publication', resource, endpoint => {
-    const api = new PublicationApiPromiseClient(endpoint);
+    const api = new PublicationApiPromiseClient(endpoint, null, clientOptions());
     const stream = api.pullPublications(new PullPublicationsRequest().setName(name));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
@@ -34,7 +35,7 @@ export function pullPublications(name, resource) {
  */
 export function createPublication(name, publication, tracker) {
   return trackAction('Publication.createPublication', tracker ?? {}, endpoint => {
-    const api = new PublicationApiPromiseClient(endpoint);
+    const api = new PublicationApiPromiseClient(endpoint, null, clientOptions());
     return api.createPublication(new CreatePublicationRequest()
         .setName(name)
         .setPublication(fromObject(publication)));
@@ -49,7 +50,7 @@ export function createPublication(name, publication, tracker) {
  */
 export async function updatePublication(name, publication, tracker) {
   return trackAction('Publication.updatePublication', tracker ?? {}, endpoint => {
-    const api = new PublicationApiPromiseClient(endpoint);
+    const api = new PublicationApiPromiseClient(endpoint, null, clientOptions());
     return api.updatePublication(new UpdatePublicationRequest()
         .setName(name)
         .setVersion(publication.version)
@@ -64,7 +65,7 @@ export async function updatePublication(name, publication, tracker) {
  */
 export async function acknowledgePublication(request, tracker) {
   return trackAction('Publication.acknowledgePublication', tracker ?? {}, endpoint => {
-    const api = new PublicationApiPromiseClient(endpoint);
+    const api = new PublicationApiPromiseClient(endpoint, null, clientOptions());
     return api.acknowledgePublication(new AcknowledgePublicationRequest()
         .setName(request.name)
         .setId(request.id)

@@ -1,6 +1,7 @@
 import {ModeApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/mode_grpc_web_pb.js';
 import {PullModeValuesRequest} from '@smart-core-os/sc-api-grpc-web/traits/mode_pb.js';
 import {pullResource, setValue} from './resource.js';
+import {clientOptions} from '../../grpcweb.js';
 
 /**
  * @param {string} name
@@ -8,7 +9,7 @@ import {pullResource, setValue} from './resource.js';
  */
 export function pullModeValues(name, resource) {
   pullResource('Mode.ModeValues', resource, endpoint => {
-    const api = new ModeApiPromiseClient(endpoint);
+    const api = new ModeApiPromiseClient(endpoint, null, clientOptions());
     const stream = api.pullModeValues(new PullModeValuesRequest().setName(name));
     stream.on('data', msg => {
       const changes = msg.getChangesList();

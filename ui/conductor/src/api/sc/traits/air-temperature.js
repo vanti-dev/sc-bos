@@ -1,6 +1,7 @@
 import {AirTemperatureApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_grpc_web_pb.js';
 import {PullAirTemperatureRequest} from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb.js';
 import {pullResource, setValue} from './resource.js';
+import {clientOptions} from '../../grpcweb.js';
 
 /**
  * @param {string} name
@@ -8,7 +9,7 @@ import {pullResource, setValue} from './resource.js';
  */
 export function pullAirTemperature(name, resource) {
   pullResource('AirTemperature', resource, endpoint => {
-    const api = new AirTemperatureApiPromiseClient(endpoint);
+    const api = new AirTemperatureApiPromiseClient(endpoint, null, clientOptions());
     const stream = api.pullAirTemperature(new PullAirTemperatureRequest().setName(name));
     stream.on('data', msg => {
       const changes = msg.getChangesList();

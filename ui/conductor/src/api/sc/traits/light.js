@@ -1,6 +1,7 @@
 import {LightApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/light_grpc_web_pb.js';
 import {PullBrightnessRequest} from '@smart-core-os/sc-api-grpc-web/traits/light_pb.js';
 import {pullResource, setValue} from './resource.js';
+import {clientOptions} from '../../grpcweb.js';
 
 /**
  * @param {string} name
@@ -8,7 +9,7 @@ import {pullResource, setValue} from './resource.js';
  */
 export function pullBrightness(name, resource) {
   pullResource('Light.Brightness', resource, endpoint => {
-    const api = new LightApiPromiseClient(endpoint);
+    const api = new LightApiPromiseClient(endpoint, null, clientOptions());
     const stream = api.pullBrightness(new PullBrightnessRequest().setName(name));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
