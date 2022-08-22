@@ -37,14 +37,14 @@ func (p *PublicationServer) CreatePublication(ctx context.Context, request *trai
 	var output *traits.Publication
 	err := p.conn.BeginFunc(ctx, func(tx pgx.Tx) error {
 		// Register the publication
-		err := db.RegisterPublication(ctx, tx, pubID, audience)
+		err := db.CreatePublication(ctx, tx, pubID, audience)
 		if err != nil {
 			return err
 		}
 
 		pubTime := time.Now().UTC()
 		// Create the initial version for the publication
-		version, err := db.AddPublicationVersion(ctx, tx, db.PublicationVersion{
+		version, err := db.CreatePublicationVersion(ctx, tx, db.PublicationVersion{
 			PublicationID: pubID,
 			PublishTime:   pubTime,
 			Body:          body,
@@ -113,7 +113,7 @@ func (p *PublicationServer) UpdatePublication(ctx context.Context, request *trai
 			}
 		}
 
-		versionID, err := db.AddPublicationVersion(ctx, tx, data)
+		versionID, err := db.CreatePublicationVersion(ctx, tx, data)
 		if err != nil {
 			return err
 		}
@@ -214,7 +214,7 @@ func (p *PublicationServer) AcknowledgePublication(ctx context.Context, request 
 
 	var updated *traits.Publication
 	err := p.conn.BeginFunc(ctx, func(tx pgx.Tx) error {
-		err := db.AcknowledgePublication(ctx, tx, request.GetId(), request.GetVersion(), time.Now(), accepted,
+		err := db.CreatePublicationAcknowledgement(ctx, tx, request.GetId(), request.GetVersion(), time.Now(), accepted,
 			request.GetReceiptRejectedReason(), request.GetAllowAcknowledged())
 		if err != nil {
 			return err

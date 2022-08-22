@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func RegisterPublication(ctx context.Context, tx pgx.Tx, id string, audience string) error {
+func CreatePublication(ctx context.Context, tx pgx.Tx, id string, audience string) error {
 	if id == "" {
 		return errors.New("publication ID cannot be empty")
 	}
@@ -59,7 +59,7 @@ type PublicationVersion struct {
 	Changelog     string
 }
 
-func AddPublicationVersion(ctx context.Context, tx pgx.Tx, data PublicationVersion) (id string, err error) {
+func CreatePublicationVersion(ctx context.Context, tx pgx.Tx, data PublicationVersion) (id string, err error) {
 	if data.ID != "" {
 		return "", errors.New("cannot add a publication version with a populated ID")
 	}
@@ -239,7 +239,7 @@ func GetAcknowledgement(ctx context.Context, tx pgx.Tx, versionID string) (*Ackn
 	return &ack, nil
 }
 
-func AcknowledgePublication(ctx context.Context, tx pgx.Tx, pubID, versionID string, t time.Time, accept bool,
+func CreatePublicationAcknowledgement(ctx context.Context, tx pgx.Tx, pubID, versionID string, t time.Time, accept bool,
 	reason string, idempotent bool) error {
 
 	// check that the version exists and is associated with the specified publication
@@ -276,74 +276,6 @@ func AcknowledgePublication(ctx context.Context, tx pgx.Tx, pubID, versionID str
 
 	_, err = tx.Exec(ctx, query, versionID, accept, reason, t)
 	return err
-}
-
-type Enrollment struct {
-	Name        string
-	Description string
-	Address     string
-	Cert        []byte
-}
-
-func GetEnrollment(ctx context.Context, tx pgx.Tx, name string) (en Enrollment, err error) {
-	// language=postgresql
-	query := `
-		SELECT description, address, cert
-		FROM enrollment
-		WHERE name = $1;
-    `
-
-	row := tx.QueryRow(ctx, query, name)
-	var descNull *string
-	err = row.Scan(&descNull, &en.Address, &en.Cert)
-	if descNull != nil {
-		en.Description = *descNull
-	}
-	en.Name = name
-	return
-}
-
-func AddEnrollment(ctx context.Context, tx pgx.Tx, en Enrollment) error {
-	// language=postgresql
-	query := `
-		INSERT INTO enrollment (name, description, address, cert) 
-		VALUES ($1, $2, $3, $4);
-	`
-
-	var descNull *string
-	if en.Description != "" {
-		descNull = &en.Description
-	}
-
-	_, err := tx.Exec(ctx, query, en.Name, descNull, en.Address, en.Cert)
-	return err
-}
-
-func ListEnrollments(ctx context.Context, tx pgx.Tx) ([]Enrollment, error) {
-	// language=postgresql
-	query := `
-		SELECT name, description, address, cert
-		FROM enrollment
-		ORDER BY name;
-	`
-
-	rows, err := tx.Query(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var enrollments []Enrollment
-	for rows.Next() {
-		var en Enrollment
-		err = rows.Scan(&en.Name, &en.Description, &en.Address, &en.Cert)
-		if err != nil {
-			return nil, err
-		}
-
-		enrollments = append(enrollments, en)
-	}
-	return enrollments, nil
 }
 
 type publicationVersionRow struct {

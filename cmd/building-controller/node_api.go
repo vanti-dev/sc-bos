@@ -72,7 +72,7 @@ func (n *NodeServer) CreateNodeRegistration(ctx context.Context, request *gen.Cr
 	}
 
 	err = n.db.BeginFunc(ctx, func(tx pgx.Tx) error {
-		return db.AddEnrollment(ctx, tx, db.Enrollment{
+		return db.CreateEnrollment(ctx, tx, db.Enrollment{
 			Name:        en.TargetName,
 			Description: nodeReg.Description,
 			Address:     en.TargetAddress,
@@ -80,7 +80,7 @@ func (n *NodeServer) CreateNodeRegistration(ctx context.Context, request *gen.Cr
 		})
 	})
 	if err != nil {
-		logger.Error("db.AddEnrollment failed", zap.Error(err))
+		logger.Error("db.CreateEnrollment failed", zap.Error(err))
 		return nil, status.Error(codes.DataLoss, "failed to save the enrollment - manual intervention required")
 	}
 	return nodeReg, nil

@@ -193,7 +193,7 @@ func populateDB(ctx context.Context, logger *zap.Logger, conn *pgx.Conn) error {
 		for _, name := range deviceNames {
 			// register a publication
 			id := name + ":config"
-			errs = multierr.Append(errs, db.RegisterPublication(ctx, tx, id, name))
+			errs = multierr.Append(errs, db.CreatePublication(ctx, tx, id, name))
 
 			// add some versions to it
 			for i := 1; i <= 3; i++ {
@@ -213,7 +213,7 @@ func populateDB(ctx context.Context, logger *zap.Logger, conn *pgx.Conn) error {
 					continue
 				}
 
-				_, err = db.AddPublicationVersion(ctx, tx, db.PublicationVersion{
+				_, err = db.CreatePublicationVersion(ctx, tx, db.PublicationVersion{
 					PublicationID: id,
 					PublishTime:   baseTime.Add(time.Duration(i) * time.Hour),
 					Body:          encoded,
