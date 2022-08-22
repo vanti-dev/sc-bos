@@ -7,8 +7,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
-	"net"
 	"net/http"
 	"os"
 	"time"
@@ -16,42 +14,49 @@ import (
 	"github.com/go-jose/go-jose/v3"
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
+	"go.uber.org/zap"
 )
 
 var (
-	flagListenHTTP string
+	flagListenGRPC  string
+	flagListenHTTPS string
+	flagDataDir     string
+	flagStaticDir   string
 )
 
 func init() {
-	flag.StringVar(&flagListenHTTP, "listen-http", ":80", "address (host:port) to host an HTTP server on")
+	flag.StringVar(&flagListenGRPC, "listen-grpc", ":23557", "address (host:port) to host a Smart Core gRPC server on")
+	flag.StringVar(&flagListenHTTPS, "listen-https", ":443", "address (host:port) to host a HTTPS server on")
+	flag.StringVar(&flagDataDir, "data-dir", ".data/gateway", "path to local data storage directory")
+	flag.StringVar(&flagStaticDir, "static-dir", "ui/dist", "path for HTTP static resources")
 }
 
 func main() {
-	os.Exit(app.RunUntilInterrupt(run))
-}
+	flag.Parse()
 
-func run(ctx context.Context) error {
-	// Open HTTP Port
-	httpListener, err := net.Listen("tcp", flagListenHTTP)
+	logger, err := zap.NewDevelopment()
 	if err != nil {
-		return err
+		panic(err)
 	}
-	go func() {
-		<-ctx.Done()
-		err := httpListener.Close()
-		if err != nil {
-			log.Printf("httpListener close error: %s", err.Error())
-		}
-	}()
+	tenantLogger := logger.Named("tenant.oauth")
 
-	mux := http.NewServeMux()
-	mux.Handle("/oauth2/token", tenant.OAuth2TokenHandler(genTenantSecrets(), genTenantTokenSource()))
+	c := &app.Controller{
+		Logger:      logger,
+		DataDir:     flagDataDir,
+		ListenGRPC:  flagListenGRPC,
+		ListenHTTPS: flagListenHTTPS,
+		Routes: map[string]http.Handler{
+			"/oauth2/token": tenant.OAuth2TokenHandler(
+				genTenantSecrets(tenantLogger),
+				genTenantTokenSource(tenantLogger),
+			),
+		},
+	}
 
-	fmt.Println("HTTP server listening")
-	return http.Serve(httpListener, mux)
+	os.Exit(app.RunUntilInterrupt(c.Run))
 }
 
-func genTenantSecrets() tenant.SecretStore {
+func genTenantSecrets(logger *zap.Logger) tenant.SecretStore {
 	store := tenant.NewMemorySecretStore(nil)
 	for i := 1; i <= 3; i++ {
 		clientId := fmt.Sprintf("tenant-%d", i)
@@ -61,12 +66,15 @@ func genTenantSecrets() tenant.SecretStore {
 			panic(err)
 		}
 
-		fmt.Printf("Created new tenant %s with secret %s\n", clientId, secret)
+		logger.Info("created new tenant",
+			zap.String("clientId", clientId),
+			zap.String("secret", secret),
+		)
 	}
 	return store
 }
 
-func genTenantTokenSource() *tenant.TokenSource {
+func genTenantTokenSource(logger *zap.Logger) *tenant.TokenSource {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		panic(err)
@@ -86,7 +94,7 @@ func genTenantTokenSource() *tenant.TokenSource {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("generated signing key %s\n", string(jwkBytes))
+	logger.Debug("generated signing key", zap.Any("key", json.RawMessage(jwkBytes)))
 
 	return &tenant.TokenSource{
 		Key:      signingKey,

@@ -2,20 +2,15 @@ package enrollment
 
 import (
 	"context"
-	"crypto"
 	"crypto/tls"
 	"errors"
 	"sync"
 
-	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/internal/util/rpcutil"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
 
@@ -146,38 +141,4 @@ func (es *Server) CertSource() pki.CertSource {
 		cert := es.enrollment.Cert
 		return &cert, nil
 	})
-}
-
-func Serve(ctx context.Context, logger *zap.Logger, server *Server, key crypto.PrivateKey, listenGRPC string) error {
-	certSource, err := pki.NewSelfSignedCertSource(key, logger)
-	if err != nil {
-		return err
-	}
-	tlsConfig := &tls.Config{
-		GetCertificate: certSource.TLSConfigGetCertificate,
-	}
-
-	grpcServer := grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig)))
-	reflection.Register(grpcServer)
-	gen.RegisterEnrollmentApiServer(grpcServer, server)
-
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	go func() {
-		err := app.ServeGRPC(ctx, grpcServer, listenGRPC, 0, logger.Named("server.grpc"))
-		if err != nil {
-			logger.Warn("server stopped", zap.Error(err))
-		}
-	}()
-	logger.Info("gRPC serving; waiting for enrollment")
-
-	_, ok := server.Wait(ctx)
-	if ok {
-		logger.Info("controller is now enrolled")
-	} else {
-		logger.Error("server stopped without an enrollment")
-		return ErrNotEnrolled
-	}
-	return nil
 }
