@@ -588,10 +588,10 @@ vue-demi@*:
   resolved "https://registry.yarnpkg.com/vue-demi/-/vue-demi-0.13.6.tgz#f9433cbd75e68a970dec066647f4ba6c08ced48f"
   integrity sha512-02NYpxgyGE2kKGegRPYlNQSL1UWfA/+JqvzhGCOYjhfbLWXU5QQX0+9pAm/R2sCOPKr5NBxVIab7fvFU0B1RxQ==
 
-vue-router@3:
-  version "3.5.4"
-  resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.5.4.tgz#c453c0b36bc75554de066fefc3f2a9c3212aca70"
-  integrity sha512-x+/DLAJZv2mcQ7glH2oV9ze8uPwcI+H+GgTgTmb5I55bCgY3+vXWIsqbYUzbBSZnwFHEJku4eoaH/x98veyymQ==
+vue-router@3.6:
+  version "3.6.2"
+  resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.6.2.tgz#f2fafe34645bbca3dac9bd3b91f65eccc013aa72"
+  integrity sha512-gpdFaRw98Hf+NeKe15+Y1p9XUvurA56U2QXb8CIrI9CVhCexn5PmJh/WrRuR5zvz4Hk41QIoLUCS0KBM5TVxaA==
 
 vue@2.7:
   version "2.7.8"

@@ -1,9 +1,10 @@
 import {computed} from 'vue';
+import {useRoute} from 'vue-router/composables';
 import vuetify from '../plugins/vuetify.js';
-import {routeTitle, useRoute} from '../util/router.js';
+import {routeTitle} from '../util/router.js';
 
 export function usePage() {
-  const currentRoute = /** @type {import('vue-router').Route} */ useRoute();
+  const currentRoute = useRoute();
   const themeColor = computed(() => {
     if (!currentRoute) return undefined;
     for (let i = currentRoute.matched.length - 1; i >= 0; i--) {

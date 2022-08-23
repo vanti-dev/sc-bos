@@ -5,16 +5,9 @@ import design from './design/route.js';
 import operate from './operate/route.js';
 import start from './start/route.js';
 import Vue, {nextTick} from 'vue';
-import {routeTitle} from '../util/router.js';
+import {route, routeTitle} from '../util/router.js';
 
 Vue.use(VueRouter);
-
-function route(route) {
-  if (Array.isArray(route)) {
-    return route;
-  }
-  return [route];
-}
 
 const router = new VueRouter({
   mode: 'history',

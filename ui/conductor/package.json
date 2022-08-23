@@ -15,7 +15,7 @@
     "keycloak-js" : "^19.0.1",
     "pinia" : "^2.0.17",
     "vue" : "2.7",
-    "vue-router" : "3",
+    "vue-router" : "3.6",
     "vuetify" : "^2.6.8"
   },
   "devDependencies" : {

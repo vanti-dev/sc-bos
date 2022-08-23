@@ -1,26 +1,3 @@
-// See https://github.com/vuejs/vue-router/issues/3760#issuecomment-1191774443
-
-// if using 2.6.x import from @vue/composition-api
-import {computed, getCurrentInstance, reactive} from 'vue'
-
-export function useRouter() {
-  return getCurrentInstance().proxy.$router
-}
-
-export function useRoute() {
-  const currentRoute = computed(() => getCurrentInstance().proxy.$route)
-
-  const protoRoute = /** @type {import('vue-router').Route} */ Object.keys(currentRoute.value).reduce(
-      (acc, key) => {
-        acc[key] = computed(() => currentRoute.value[key])
-        return acc
-      },
-      {}
-  )
-
-  return reactive(protoRoute)
-}
-
 /**
  * @param {import('vue-router').Route} route
  * @returns {string|undefined}
@@ -31,4 +8,15 @@ export function routeTitle(route) {
     const title = r.meta?.['title'];
     if (title) return title;
   }
+}
+
+/**
+ * @param {import('vue-router').RouteConfig | import('vue-router').RouteConfig[]} route
+ * @return {import('vue-router').RouteConfig[]}
+ */
+export function route(route) {
+  if (Array.isArray(route)) {
+    return route;
+  }
+  return [/** @type {import('vue-router').RouteConfig}*/ route];
 }
