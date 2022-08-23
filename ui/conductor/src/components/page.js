@@ -1,7 +1,7 @@
+import vuetify from '@/plugins/vuetify.js';
+import {routeTitle} from '@/util/router.js';
 import {computed} from 'vue';
 import {useRoute} from 'vue-router/composables';
-import vuetify from '../plugins/vuetify.js';
-import {routeTitle} from '../util/router.js';
 
 export function usePage() {
   const currentRoute = useRoute();

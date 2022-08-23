@@ -1,7 +1,7 @@
+import {clientOptions} from '@/api/grpcweb.js';
+import {pullResource, setValue} from '@/api/resource.js';
 import {ModeApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/mode_grpc_web_pb.js';
 import {PullModeValuesRequest} from '@smart-core-os/sc-api-grpc-web/traits/mode_pb.js';
-import {pullResource, setValue} from './resource.js';
-import {clientOptions} from '../../grpcweb.js';
 
 /**
  * @param {string} name

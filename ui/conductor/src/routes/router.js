@@ -1,11 +1,11 @@
-import VueRouter from 'vue-router';
-import admin from './admin/route.js';
-import commission from './commission/route.js';
-import design from './design/route.js';
-import operate from './operate/route.js';
-import start from './start/route.js';
+import admin from '@/routes/admin/route.js';
+import commission from '@/routes/commission/route.js';
+import design from '@/routes/design/route.js';
+import operate from '@/routes/operate/route.js';
+import start from '@/routes/start/route.js';
+import {route, routeTitle} from '@/util/router.js';
 import Vue, {nextTick} from 'vue';
-import {route, routeTitle} from '../util/router.js';
+import VueRouter from 'vue-router';
 
 Vue.use(VueRouter);
 

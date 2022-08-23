@@ -1,10 +1,10 @@
+import {apiToken} from '@/api/auth.js';
+import {ClientReadableStream} from 'grpc-web';
+
 /**
  * @param {import('grpc-web').GrpcWebClientBaseOptions} [options]
  * @returns {import('grpc-web').GrpcWebClientBaseOptions}
  */
-import {apiToken} from './auth.js';
-import {ClientReadableStream} from 'grpc-web';
-
 export function clientOptions(options = {}) {
   return {
     ...options,

@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import {usePage} from '../../components/page.js';
+import {usePage} from '@/components/page.js';
 
 const {themeColor} = usePage();
 </script>

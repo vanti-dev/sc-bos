@@ -1,7 +1,7 @@
+import {clientOptions} from '@/api/grpcweb.js';
+import {pullResource, setValue} from '@/api/resource.js';
 import {LightApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/light_grpc_web_pb.js';
 import {PullBrightnessRequest} from '@smart-core-os/sc-api-grpc-web/traits/light_pb.js';
-import {pullResource, setValue} from './resource.js';
-import {clientOptions} from '../../grpcweb.js';
 
 /**
  * @param {string} name

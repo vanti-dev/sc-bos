@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import ScLogo from './ScLogo.vue';
+import ScLogo from '@/components/ScLogo.vue';
 
 const props = defineProps({
   title: String,

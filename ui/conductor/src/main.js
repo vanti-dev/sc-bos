@@ -1,9 +1,9 @@
+import App from '@/App.vue'
+import pinia from '@/plugins/pinia.js';
+import vuetify from '@/plugins/vuetify.js';
+import router from '@/routes/router.js';
+import '@/style.css'
 import Vue from 'vue'
-import pinia from './plugins/pinia.js';
-import router from './routes/router.js';
-import vuetify from './plugins/vuetify.js';
-import './style.css'
-import App from './App.vue'
 
 const app = new Vue({
   pinia,

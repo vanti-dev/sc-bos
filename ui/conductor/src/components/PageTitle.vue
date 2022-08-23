@@ -3,8 +3,8 @@
 </template>
 
 <script setup>
+import {usePage} from '@/components/page.js';
 import {computed} from 'vue';
-import {usePage} from './page.js';
 
 const {pageTitle} = usePage();
 const hasPageTitle = computed(() => Boolean(pageTitle));

@@ -1,7 +1,9 @@
-import {AirQualitySensorApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_grpc_web_pb.js';
+import {clientOptions} from '@/api/grpcweb.js';
+import {pullResource, setValue} from '@/api/resource.js';
+import {
+  AirQualitySensorApiPromiseClient
+} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_grpc_web_pb.js';
 import {PullAirQualityRequest} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb.js';
-import {pullResource, setValue} from './resource.js';
-import {clientOptions} from '../../grpcweb.js';
 
 /**
  * @param {string} name

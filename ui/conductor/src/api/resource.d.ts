@@ -18,7 +18,9 @@ export function pullResource<M extends Msg<V>, V>(logPrefix: string, resource: R
 
 export function trackAction<V, M extends Msg<V>>(logPrefix: string, tracker: ActionTracker<V>, action: Action<V, M>): Promise<V>
 
-export function newActionTracker<T>(): ActionTracker<T>
+export function newActionTracker<T>(): ActionTracker<T>;
+export function newResourceValue<T, M extends Msg<T>>(): ResourceValue<T, M>;
+export function newResourceCollection<T, M extends Msg<T>>(): ResourceCollection<T, M>;
 
 export interface RemoteResource<M> {
   loading?: boolean;

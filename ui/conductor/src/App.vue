@@ -1,6 +1,6 @@
 <template>
   <v-app class="app-root">
-    <v-app-bar app height="60" :clipped-left="hasNav" elevation="0">
+    <v-app-bar app height="60" :clipped-left="hasNav" elevation="0" color="#283037" class="pr-7">
       <app-menu btn-class="full-btn"/>
       <sc-logo :fill="themeColor" :outline="themeColor ? 'white' : undefined" style="height: 35px; margin-left: 16px"/>
       <span class="heading">Smart Core</span>
@@ -24,11 +24,11 @@
 </template>
 
 <script setup>
-import AccountBtn from './components/AccountBtn.vue';
-import AppMenu from './components/AppMenu.vue';
-import {usePage} from './components/page.js';
-import PageTitle from './components/PageTitle.vue';
-import ScLogo from './components/ScLogo.vue';
+import AccountBtn from '@/components/AccountBtn.vue';
+import AppMenu from '@/components/AppMenu.vue';
+import {usePage} from '@/components/page.js';
+import PageTitle from '@/components/PageTitle.vue';
+import ScLogo from '@/components/ScLogo.vue';
 
 const {themeColor, hasSections, hasNav} = usePage();
 </script>
@@ -38,12 +38,8 @@ const {themeColor, hasSections, hasNav} = usePage();
   background: #101820;
 }
 
-.v-app-bar {
-  background: #283037;
-}
-
 .v-app-bar ::v-deep(.v-toolbar__content) {
-  padding-right: 30px;
+  padding-right: 0px;
 }
 
 .v-app-bar ::v-deep(.v-toolbar__content > .v-btn.full-btn) {
@@ -52,6 +48,8 @@ const {themeColor, hasSections, hasNav} = usePage();
   height: 60px;
   min-width: 60px;
   width: auto;
+
+  background-color: transparent;
 }
 
 .v-app-bar ::v-deep(.v-toolbar__content > .v-btn.full-btn:first-child) {

@@ -1,4 +1,4 @@
-import ChildOnlyPage from '../../components/ChildOnlyPage.vue';
+import ChildOnlyPage from '@/components/ChildOnlyPage.vue';
 
 export default {
   name: 'commission',

@@ -1,7 +1,7 @@
+import {clientOptions} from '@/api/grpcweb.js';
+import {pullResource, setValue} from '@/api/resource.js';
 import {AirTemperatureApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_grpc_web_pb.js';
 import {PullAirTemperatureRequest} from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb.js';
-import {pullResource, setValue} from './resource.js';
-import {clientOptions} from '../../grpcweb.js';
 
 /**
  * @param {string} name

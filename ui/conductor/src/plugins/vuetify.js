@@ -1,13 +1,16 @@
-import 'vuetify/dist/vuetify.min.css';
-import Vue from 'vue';
-import Vuetify from 'vuetify/lib/framework';
 import '@mdi/font/css/materialdesignicons.css';
+import Vue from 'vue';
+import 'vuetify/dist/vuetify.min.css';
+import Vuetify from 'vuetify/lib/framework';
 
 Vue.use(Vuetify);
 
 const opts = {
   theme: {
     dark: true,
+    options: {
+      customProperties: true,
+    },
     themes: {
       dark: {
         primary: '#00BED6',

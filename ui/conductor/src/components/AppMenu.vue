@@ -27,10 +27,10 @@
 </template>
 
 <script setup>
+import MenuIcon from '@/components/MenuIcon.vue';
+import NavButton from '@/components/NavButton.vue';
+import {usePage} from '@/components/page.js';
 import {ref} from 'vue';
-import MenuIcon from './MenuIcon.vue';
-import NavButton from './NavButton.vue';
-import {usePage} from './page.js';
 
 defineProps({
   btnClass: [String, Object]

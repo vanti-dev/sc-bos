@@ -1,5 +1,5 @@
+import {grpcWebEndpoint} from '@/api/config.js';
 import Vue from 'vue';
-import {grpcWebEndpoint} from './config.js';
 
 export function closeResource(resource) {
   if (resource?.stream?.close) resource.stream.close();
@@ -96,10 +96,14 @@ export async function trackAction(logPrefix, tracker, action) {
   }
 }
 
-/**
- * @returns {ActionTracker<T>}
- * @template {object} T
- */
 export function newActionTracker() {
+  return {};
+}
+
+export function newResourceValue() {
+  return {};
+}
+
+export function newResourceCollection() {
   return {};
 }

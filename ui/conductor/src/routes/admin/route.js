@@ -1,4 +1,6 @@
-import ChildOnlyPage from '../../components/ChildOnlyPage.vue';
+import ChildOnlyPage from '@/components/ChildOnlyPage.vue';
+import tenants from '@/routes/admin/tenant/route.js';
+import {route} from '@/util/router.js';
 
 export default {
   name: 'admin',
@@ -10,7 +12,7 @@ export default {
   },
   children: [
     {path: 'summary', component: () => import('./AdminSummary.vue')},
-    {path: 'tenants', component: () => import('./AdminTenants.vue')}
+      ...route(tenants)
   ],
   meta: {
     title: 'Administrator'

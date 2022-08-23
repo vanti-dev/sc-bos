@@ -1,5 +1,5 @@
+import {events, keycloak} from '@/api/keycloak.js';
 import {defineStore} from 'pinia';
-import {events, keycloak} from '../api/keycloak.js';
 import {computed, ref} from 'vue';
 
 export const useAccountStore = defineStore('accountStore', () => {

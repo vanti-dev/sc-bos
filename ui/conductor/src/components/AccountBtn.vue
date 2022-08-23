@@ -30,8 +30,8 @@
 
 <script setup>
 
+import {useAccountStore} from '@/stores/account.js';
 import {computed} from 'vue';
-import {useAccountStore} from '../stores/account.js';
 
 defineProps({
   btnClass: [String, Object]

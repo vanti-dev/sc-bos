@@ -1,4 +1,4 @@
-import {keycloak} from './keycloak.js';
+import {keycloak} from '@/api/keycloak.js';
 
 /**
  * @returns {Promise<string | null>}

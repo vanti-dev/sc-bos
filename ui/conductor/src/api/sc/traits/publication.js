@@ -1,3 +1,5 @@
+import {clientOptions} from '@/api/grpcweb.js';
+import {pullResource, setCollection, trackAction} from '@/api/resource.js';
 import {PublicationApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/publication_grpc_web_pb.js';
 import {
   AcknowledgePublicationRequest,
@@ -6,8 +8,6 @@ import {
   PullPublicationsRequest,
   UpdatePublicationRequest
 } from '@smart-core-os/sc-api-grpc-web/traits/publication_pb.js';
-import {pullResource, setCollection, trackAction} from './resource.js';
-import {clientOptions} from '../../grpcweb.js';
 
 /**
  * @param {string} name

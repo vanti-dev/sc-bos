@@ -1,7 +1,7 @@
+import {clientOptions} from '@/api/grpcweb.js';
+import {pullResource, setValue} from '@/api/resource.js';
 import {OccupancySensorApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_grpc_web_pb';
 import {PullOccupancyRequest} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
-import {pullResource, setValue} from './resource.js';
-import {clientOptions} from '../../grpcweb.js';
 
 /**
  * @param {string} name
