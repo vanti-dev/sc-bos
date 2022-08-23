@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
 	"time"
 
@@ -34,27 +33,28 @@ func main() {
 func run(ctx context.Context) error {
 	flag.Parse()
 
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		panic(err)
+	config := app.SystemConfig{
+		Logger:      zap.NewDevelopmentConfig(),
+		DataDir:     flagDataDir,
+		ListenGRPC:  flagListenGRPC,
+		ListenHTTPS: flagListenHTTPS,
 	}
 
-	tokenServer, err := tenant.NewTokenSever(genTenantSecrets(logger), "gateway", 5*time.Minute, logger.Named("tenant.oauth"))
+	controller, err := app.Bootstrap(ctx, config)
 	if err != nil {
 		return err
 	}
 
-	c := &app.Controller{
-		Logger:      logger,
-		DataDir:     flagDataDir,
-		ListenGRPC:  flagListenGRPC,
-		ListenHTTPS: flagListenHTTPS,
-		Routes: map[string]http.Handler{
-			"/oauth2/token": tokenServer,
-		},
+	tokenServer, err := tenant.NewTokenSever(
+		genTenantSecrets(controller.Logger), "gateway", 5*time.Minute, controller.Logger.Named("tenant.oauth"),
+	)
+	if err != nil {
+		return err
 	}
 
-	return c.Run(ctx)
+	controller.Mux.Handle("/oauth2/token", tokenServer)
+
+	return controller.Run(ctx)
 }
 
 func genTenantSecrets(logger *zap.Logger) tenant.SecretSource {

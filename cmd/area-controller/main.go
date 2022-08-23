@@ -1,14 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
-	"net/http"
 	"os"
 
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
-	"google.golang.org/grpc"
+	"go.uber.org/zap"
 )
 
 var (
@@ -26,18 +26,24 @@ func init() {
 }
 
 func main() {
+	os.Exit(app.RunUntilInterrupt(run))
+}
+
+func run(ctx context.Context) error {
 	flag.Parse()
-	c := &app.Controller{
+	config := app.SystemConfig{
+		Logger:      zap.NewDevelopmentConfig(),
 		DataDir:     flagDataDir,
 		ListenGRPC:  flagListenGRPC,
 		ListenHTTPS: flagListenHTTPS,
-		Routes: map[string]http.Handler{
-			"/": http.FileServer(http.Dir(flagStaticDir)),
-		},
-		RegisterServices: func(server *grpc.Server) {
-			gen.RegisterTestApiServer(server, testapi.NewAPI())
-		},
 	}
 
-	os.Exit(app.RunUntilInterrupt(c.Run))
+	controller, err := app.Bootstrap(ctx, config)
+	if err != nil {
+		return err
+	}
+
+	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
+
+	return controller.Run(ctx)
 }

@@ -21,64 +21,57 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-type Controller struct {
-	Logger           *zap.Logger
-	DataDir          string
-	ListenGRPC       string
-	ListenHTTPS      string
-	Routes           map[string]http.Handler
-	RegisterServices func(server *grpc.Server)
+type SystemConfig struct {
+	Logger      zap.Config
+	DataDir     string
+	ListenGRPC  string
+	ListenHTTPS string
 }
 
-func (c *Controller) Run(ctx context.Context) error {
-	logger := c.Logger
-	if logger == nil {
-		var err error
-		logger, err = zap.NewDevelopment()
-		if err != nil {
-			return err
-		}
+// Bootstrap will obtain a Controller in a ready-to-run state.
+// If there is no saved enrollment, then Bootstrap will start an enrollment server and wait for the enrollment to
+// complete.
+func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
+	logger, err := config.Logger.Build()
+	if err != nil {
+		return nil, err
 	}
 
 	// create data dir if it doesn't exist
-	err := os.MkdirAll(c.DataDir, 0750)
+	err = os.MkdirAll(config.DataDir, 0750)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// create private key if it doesn't exist
-	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(c.DataDir, "private-key.pem"), logger)
+	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(config.DataDir, "private-key.pem"), logger)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	enrollServer, err := enrollment.LoadOrCreateServer(filepath.Join(c.DataDir, "enrollment"), keyPEM, logger.Named("enrollment"))
+	enrollServer, err := enrollment.LoadOrCreateServer(filepath.Join(config.DataDir, "enrollment"), keyPEM, logger.Named("enrollment"))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// if the Area Controller is not already enrolled, we need to start it first in enrollment mode,
 	// then restart into normal mode.
-	if _, enrolled := enrollServer.Enrollment(); !enrolled {
+	en, enrolled := enrollServer.Enrollment()
+	if !enrolled {
 		logger.Info("not enrolled; switching into enrollment mode")
-		err = ServeEnrollment(ctx, logger.Named("enrollment"), enrollServer, key, c.ListenGRPC)
+		err = ServeEnrollment(ctx, logger.Named("enrollment"), enrollServer, key, config.ListenGRPC)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		logger.Info("switching from enrollment mode to normal mode")
+		en, enrolled = enrollServer.Enrollment()
+		if !enrolled {
+			panic("we just enrolled successfully, but it's somehow not saved")
+		}
 	}
 
-	return c.runNormal(ctx, logger, enrollServer)
-}
-
-func (c *Controller) runNormal(ctx context.Context, logger *zap.Logger, enrollServer *enrollment.Server) error {
-	en, ok := enrollServer.Enrollment()
-	if !ok {
-		return enrollment.ErrNotEnrolled
-	}
 	clientRoot := x509.NewCertPool()
 	clientRoot.AddCert(en.RootCA)
-
 	tlsServerConfig := &tls.Config{
 		GetCertificate: enrollServer.CertSource().TLSConfigGetCertificate,
 		ClientAuth:     tls.VerifyClientCertIfGiven,
@@ -93,18 +86,12 @@ func (c *Controller) runNormal(ctx context.Context, logger *zap.Logger, enrollSe
 	)
 	reflection.Register(grpcServer)
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
-	if c.RegisterServices != nil {
-		c.RegisterServices(grpcServer)
-	}
 
 	grpcWebServer := grpcweb.WrapServer(grpcServer)
-
 	mux := http.NewServeMux()
-	for path, handler := range c.Routes {
-		mux.Handle(path, handler)
-	}
+
 	httpServer := &http.Server{
-		Addr:      c.ListenHTTPS,
+		Addr:      config.ListenHTTPS,
 		TLSConfig: tlsServerConfig,
 		Handler: http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			if grpcWebServer.IsGrpcWebRequest(request) || grpcWebServer.IsAcceptableGrpcCorsRequest(request) {
@@ -115,15 +102,36 @@ func (c *Controller) runNormal(ctx context.Context, logger *zap.Logger, enrollSe
 		}),
 	}
 
+	return &Controller{
+		Logger:     logger,
+		Config:     config,
+		Enrollment: enrollServer,
+		Mux:        mux,
+		GRPC:       grpcServer,
+		HTTP:       httpServer,
+	}, nil
+}
+
+type Controller struct {
+	Logger     *zap.Logger
+	Config     SystemConfig
+	Enrollment *enrollment.Server
+
+	Mux  *http.ServeMux
+	GRPC *grpc.Server
+	HTTP *http.Server
+}
+
+func (c *Controller) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
-	if c.ListenGRPC != "" {
+	if c.Config.ListenGRPC != "" {
 		group.Go(func() error {
-			return ServeGRPC(ctx, grpcServer, c.ListenGRPC, 15*time.Second, logger.Named("server.grpc"))
+			return ServeGRPC(ctx, c.GRPC, c.Config.ListenGRPC, 15*time.Second, c.Logger.Named("server.grpc"))
 		})
 	}
-	if c.ListenHTTPS != "" {
+	if c.Config.ListenHTTPS != "" {
 		group.Go(func() error {
-			return ServeHTTPS(ctx, httpServer, 15*time.Second, logger.Named("server.https"))
+			return ServeHTTPS(ctx, c.HTTP, 15*time.Second, c.Logger.Named("server.https"))
 		})
 	}
 	return group.Wait()
