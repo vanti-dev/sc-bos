@@ -5,76 +5,127 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/vanti-dev/bsp-ew/internal/auth"
+	"github.com/vanti-dev/bsp-ew/internal/util/rpcutil"
+	"go.uber.org/zap"
 )
 
-func OAuth2TokenHandler(secrets SecretSource, source *TokenSource) http.Handler {
-	if secrets == nil || source == nil {
-		panic("parameters must be non-nil")
+type TokenServer struct {
+	logger  *zap.Logger
+	secrets SecretSource
+	tokens  *TokenSource
+}
+
+func NewTokenSever(secrets SecretSource, name string, validity time.Duration, logger *zap.Logger) (*TokenServer, error) {
+	key, err := generateKey()
+	if err != nil {
+		return nil, err
+	}
+	tokens := &TokenSource{
+		Key:      key,
+		Issuer:   name,
+		Validity: validity,
+		Now:      time.Now,
 	}
 
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		// time out operations after one minute
-		ctx, cancel := context.WithTimeout(request.Context(), time.Minute)
-		defer cancel()
+	return &TokenServer{
+		logger:  logger,
+		secrets: secrets,
+		tokens:  tokens,
+	}, nil
+}
 
-		writer.Header().Set("Cache-Control", "no-store")
+func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	// time out operations after one minute
+	ctx, cancel := context.WithTimeout(request.Context(), time.Minute)
+	defer cancel()
+	logger := rpcutil.HTTPLogger(request, s.logger)
 
-		// check and extract request parameters
-		if request.Method != http.MethodPost {
-			writeTokenError(writer, errInvalidRequest)
-			return
-		}
-		if err := request.ParseForm(); err != nil {
-			writeTokenError(writer, errInvalidRequest)
-			log.Printf("form parse error: %s", err.Error())
-			return
-		}
-		if request.PostForm.Get("grant_type") != "client_credentials" {
-			writeTokenError(writer, errUnsupportedGrantType)
-			return
-		}
-		if !request.PostForm.Has("client_id") || !request.PostForm.Has("client_secret") {
-			writeTokenError(writer, errInvalidRequest)
-		}
-		clientId := request.PostForm.Get("client_id")
-		clientSecret := request.PostForm.Get("client_secret")
+	writer.Header().Set("Cache-Control", "no-store")
 
-		// lookup secret, and ensure it's for the matching client
-		secretData, err := secrets.Verify(ctx, clientSecret)
-		if err != nil || secretData.ClientID != clientId {
-			writeTokenError(writer, errInvalidClient)
-			return
-		}
+	// check and extract request parameters
+	if request.Method != http.MethodPost {
+		writeTokenError(writer, errInvalidRequest, logger)
+		return
+	}
+	if err := request.ParseForm(); err != nil {
+		writeTokenError(writer, errInvalidRequest, logger)
+		logger.Error("form parse error", zap.Error(err))
+		return
+	}
+	if request.PostForm.Get("grant_type") != "client_credentials" {
+		writeTokenError(writer, errUnsupportedGrantType, logger)
+		return
+	}
+	if !request.PostForm.Has("client_id") || !request.PostForm.Has("client_secret") {
+		writeTokenError(writer, errInvalidRequest, logger)
+	}
+	clientId := request.PostForm.Get("client_id")
+	clientSecret := request.PostForm.Get("client_secret")
 
-		// generate an access token for the client
-		token, err := source.GenerateAccessToken(secretData.ClientID, "sc-api")
-		if err != nil {
-			writeTokenError(writer, errors.New("failed to generate token"))
-			log.Printf("failed to generate token for %q: %s", secretData.ClientID, err.Error())
-			return
-		}
+	// lookup secret, and ensure it's for the matching client
+	secretData, err := s.secrets.VerifySecret(ctx, clientSecret)
+	if err != nil || secretData.TenantID != clientId {
+		writeTokenError(writer, errInvalidClient, logger)
+		return
+	}
+	logger = logger.With(zap.String("tenant", secretData.TenantID))
 
-		// send response to the client
-		response := tokenSuccessResponse{
-			AccessToken: token,
-			TokenType:   "Bearer",
-			ExpiresIn:   int(source.Validity.Seconds()),
-		}
-		responseBytes, err := json.Marshal(response)
-		if err != nil {
-			writeTokenError(writer, errors.New("failed to marshal response"))
-			log.Printf("failed to marshal token response for %q: %s", secretData.ClientID, err.Error())
-			return
-		}
+	// generate an access token for the client
+	token, err := s.tokens.GenerateAccessToken(secretData)
+	if err != nil {
+		writeTokenError(writer, errors.New("failed to generate token"), logger)
+		logger.Error("token generation failed", zap.Error(err))
+		return
+	}
 
-		_, err = writer.Write(responseBytes)
-		if err != nil {
-			log.Printf("failed to write response body: %s", err.Error())
+	// send response to the client
+	response := tokenSuccessResponse{
+		AccessToken: token,
+		TokenType:   "Bearer",
+		ExpiresIn:   int(s.tokens.Validity.Seconds()),
+	}
+	responseBytes, err := json.Marshal(response)
+	if err != nil {
+		writeTokenError(writer, errors.New("failed to marshal response"), logger)
+		logger.Error("failed to marshal token response", zap.Error(err))
+		return
+	}
+
+	_, err = writer.Write(responseBytes)
+	if err != nil {
+		logger.Error("failed to write response body", zap.Error(err))
+	}
+}
+
+func (s *TokenServer) TokenValidator() auth.TokenValidator {
+	return s.tokens
+}
+
+func writeTokenError(writer http.ResponseWriter, err error, logger *zap.Logger) {
+	tokErr, ok := err.(tokenError)
+	if !ok {
+		tokErr = tokenError{
+			Code:             500,
+			ErrorName:        "internal",
+			ErrorDescription: err.Error(),
 		}
-	})
+	}
+
+	body, marshalErr := json.Marshal(tokErr)
+	if marshalErr != nil {
+		logger.Error("failed to marshal error response", zap.Error(err))
+		body = []byte(`{"error": "internal"}`)
+	}
+
+	writer.WriteHeader(tokErr.Code)
+	_, writeErr := writer.Write(body)
+	if writeErr != nil {
+		logger.Error("failed to write error body", zap.Error(err))
+	}
 }
 
 type tokenSuccessResponse struct {
@@ -105,26 +156,3 @@ var (
 	errInvalidClient        = tokenError{Code: 401, ErrorName: "invalid_client"}
 	errUnsupportedGrantType = tokenError{Code: 400, ErrorName: "unsupported_grant_type"}
 )
-
-func writeTokenError(writer http.ResponseWriter, err error) {
-	tokErr, ok := err.(tokenError)
-	if !ok {
-		tokErr = tokenError{
-			Code:             500,
-			ErrorName:        "internal",
-			ErrorDescription: err.Error(),
-		}
-	}
-
-	body, marshalErr := json.Marshal(tokErr)
-	if marshalErr != nil {
-		log.Printf("failed to marshal error response: %s", marshalErr.Error())
-		body = []byte(`{"error": "internal"}`)
-	}
-
-	writer.WriteHeader(tokErr.Code)
-	_, writeErr := writer.Write(body)
-	if writeErr != nil {
-		log.Printf("failed to write error body: %s", writeErr.Error())
-	}
-}

@@ -16,11 +16,9 @@ func BenchmarkPolicy(b *testing.B) {
 			Test: &gen.Test{Data: "please foobar"},
 		},
 		TokenValid: true,
-		TokenClaims: auth.TokenClaims{
-			Issuer:  "foobar",
-			Subject: "barfoo",
-			Roles:   []string{"Test.User"},
-			Scopes:  []string{"Test.Read", "Test.Write"},
+		TokenClaims: auth.Authorization{
+			Roles:  []string{"Test.User"},
+			Scopes: []string{"Test.Read", "Test.Write"},
 		},
 	}
 	run := func(b *testing.B, policy Policy) {

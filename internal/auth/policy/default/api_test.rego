@@ -11,7 +11,7 @@ token_has_role[role] {
   # we have a valid token
   input.token_valid
   # the access token contains that role
-  input.token_claims.Roles[_] = role
+  input.token_claims.roles[_] = role
 }
 
 token_has_scope[scope] {
@@ -20,7 +20,7 @@ token_has_scope[scope] {
   # we have a valid token
   input.token_valid
   # the access token contains that scope
-  input.token_claims.Scopes[_] = scope
+  input.token_claims.scopes[_] = scope
 }
 
 # service tokens don't use scopes

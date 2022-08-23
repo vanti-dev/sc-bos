@@ -42,8 +42,8 @@ func (t *JWTTime) MarshalJSON() ([]byte, error) {
 	return json.Marshal(time.Time(*t).Unix())
 }
 
-// JWTClaimVerifier checks that JWTCommonClaims are correct.
-type JWTClaimVerifier struct {
+// JWTClaimValidator checks that JWTCommonClaims are correct.
+type JWTClaimValidator struct {
 	// Now is used to obtain the current time, used for the purpose of checking the time-based claim exp and nbf.
 	// Optional - if nil, time.Now is used.
 	Now func() time.Time
@@ -55,7 +55,7 @@ type JWTClaimVerifier struct {
 	Issuer string
 }
 
-func (v *JWTClaimVerifier) Verify(claims JWTCommonClaims) error {
+func (v *JWTClaimValidator) ValidateClaims(claims JWTCommonClaims) error {
 	if v.Audience != "" && claims.Audience != v.Audience {
 		return ErrWrongAudience
 	}

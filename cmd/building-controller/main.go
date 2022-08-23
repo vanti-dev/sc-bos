@@ -105,7 +105,7 @@ func run(ctx context.Context) error {
 		grpc.Creds(credentials.NewTLS(grpcTlsConfig)),
 	}
 	if !sysConf.DisableAuth {
-		verifier, err := initKeycloakVerifier(ctx, sysConf)
+		verifier, err := initKeycloakValidator(ctx, sysConf)
 		if err != nil {
 			return fmt.Errorf("init keycloak token verifier: %w", err)
 		}
@@ -235,7 +235,7 @@ func populateDB(ctx context.Context, logger *zap.Logger, conn *pgx.Conn) error {
 	return err
 }
 
-func initKeycloakVerifier(ctx context.Context, sysConf SystemConfig) (auth.TokenVerifier, error) {
+func initKeycloakValidator(ctx context.Context, sysConf SystemConfig) (auth.TokenValidator, error) {
 	authConfig := keycloak.Config{
 		URL:      sysConf.KeycloakAddress,
 		Realm:    sysConf.KeycloakRealm,

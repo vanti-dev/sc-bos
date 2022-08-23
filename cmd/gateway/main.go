@@ -2,16 +2,12 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/rsa"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/go-jose/go-jose/v3"
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
 	"go.uber.org/zap"
@@ -32,13 +28,21 @@ func init() {
 }
 
 func main() {
+	os.Exit(app.RunUntilInterrupt(run))
+}
+
+func run(ctx context.Context) error {
 	flag.Parse()
 
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		panic(err)
 	}
-	tenantLogger := logger.Named("tenant.oauth")
+
+	tokenServer, err := tenant.NewTokenSever(genTenantSecrets(logger), "gateway", 5*time.Minute, logger.Named("tenant.oauth"))
+	if err != nil {
+		return err
+	}
 
 	c := &app.Controller{
 		Logger:      logger,
@@ -46,21 +50,18 @@ func main() {
 		ListenGRPC:  flagListenGRPC,
 		ListenHTTPS: flagListenHTTPS,
 		Routes: map[string]http.Handler{
-			"/oauth2/token": tenant.OAuth2TokenHandler(
-				genTenantSecrets(tenantLogger),
-				genTenantTokenSource(tenantLogger),
-			),
+			"/oauth2/token": tokenServer,
 		},
 	}
 
-	os.Exit(app.RunUntilInterrupt(c.Run))
+	return c.Run(ctx)
 }
 
 func genTenantSecrets(logger *zap.Logger) tenant.SecretSource {
 	store := tenant.NewMemorySecretStore(nil)
 	for i := 1; i <= 3; i++ {
 		clientId := fmt.Sprintf("tenant-%d", i)
-		data := tenant.SecretData{ClientID: clientId}
+		data := tenant.SecretData{TenantID: clientId}
 		secret, err := store.Enroll(context.TODO(), data)
 		if err != nil {
 			panic(err)
@@ -72,33 +73,4 @@ func genTenantSecrets(logger *zap.Logger) tenant.SecretSource {
 		)
 	}
 	return store
-}
-
-func genTenantTokenSource(logger *zap.Logger) *tenant.TokenSource {
-	key, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		panic(err)
-	}
-
-	signingKey := jose.SigningKey{
-		Algorithm: jose.RS256,
-		Key:       key,
-	}
-
-	jwk := jose.JSONWebKey{
-		Key:       key.Public(),
-		Algorithm: string(signingKey.Algorithm),
-		Use:       "sig",
-	}
-	jwkBytes, err := json.Marshal(jwk)
-	if err != nil {
-		panic(err)
-	}
-	logger.Debug("generated signing key", zap.Any("key", json.RawMessage(jwkBytes)))
-
-	return &tenant.TokenSource{
-		Key:      signingKey,
-		Issuer:   "http://localhost:8080",
-		Validity: 5 * time.Minute,
-	}
 }

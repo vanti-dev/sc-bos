@@ -17,7 +17,7 @@ import (
 type Interceptor struct {
 	logger   *zap.Logger
 	policy   Policy
-	verifier auth.TokenVerifier
+	verifier auth.TokenValidator
 }
 
 func NewInterceptor(policy Policy, opts ...InterceptorOption) *Interceptor {
@@ -99,9 +99,9 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 			log.Printf("no request bearer token: %s", err.Error())
 		}
 
-		var tokenClaims *auth.TokenClaims
+		var tokenClaims *auth.Authorization
 		if token != "" && i.verifier != nil {
-			tokenClaims, err = i.verifier.VerifyAccessToken(ctx, token)
+			tokenClaims, err = i.verifier.ValidateAccessToken(ctx, token)
 			if err != nil {
 				tokenClaims = nil
 				log.Printf("token failed verification: %s", err.Error())
@@ -139,7 +139,7 @@ func WithLogger(logger *zap.Logger) InterceptorOption {
 	}
 }
 
-func WithTokenVerifier(tv auth.TokenVerifier) InterceptorOption {
+func WithTokenVerifier(tv auth.TokenValidator) InterceptorOption {
 	return func(interceptor *Interceptor) {
 		interceptor.verifier = tv
 	}
@@ -148,7 +148,7 @@ func WithTokenVerifier(tv auth.TokenVerifier) InterceptorOption {
 type verifiedCreds struct {
 	cert        *x509.Certificate
 	token       string
-	tokenClaims *auth.TokenClaims
+	tokenClaims *auth.Authorization
 }
 
 // if we want to get the request of a server-to-client streaming call from within an interceptor, we need a way to

@@ -6,12 +6,17 @@ import (
 	"go.uber.org/multierr"
 )
 
-type TokenClaims struct {
-	Issuer    string   // A unique identifier for the entity that provided this authorization data. Should be a URL.
-	Subject   string   // A unique identifier for the entity that has been authorized access (e.g. a user or service)
-	Roles     []string // The names of the roles that the subject has been granted
-	Scopes    []string // The scopes that this authorization is limited to
-	IsService bool     // True if the subject is an application acting on its own behalf, false if it's a user
+const (
+	RoleTenant     = "tenant"
+	RoleController = "controller"
+	RoleUser       = "user"
+)
+
+type Authorization struct {
+	Roles     []string `json:"roles"`      // The names of the roles that the subject has been granted
+	Scopes    []string `json:"scopes"`     // The scopes that this authorization is limited to
+	Zones     []string `json:"zones"`      // The zones that this token is authorized for, for tenant tokens
+	IsService bool     `json:"is_service"` // True if the subject is an application acting on its own behalf, false if it's a user
 }
 
 func RequireAll(want []string, have []string) bool {
@@ -29,20 +34,20 @@ func RequireAll(want []string, have []string) bool {
 	return len(unsatisfied) == 0
 }
 
-type TokenVerifier interface {
-	VerifyAccessToken(ctx context.Context, token string) (*TokenClaims, error)
+type TokenValidator interface {
+	ValidateAccessToken(ctx context.Context, token string) (*Authorization, error)
 }
 
-func NewMultiTokenVerifier(verifiers ...TokenVerifier) TokenVerifier {
-	return multiTokenVerifier(verifiers)
+func NewMultiTokenValidator(verifiers ...TokenValidator) TokenValidator {
+	return multiTokenValidator(verifiers)
 }
 
-type multiTokenVerifier []TokenVerifier
+type multiTokenValidator []TokenValidator
 
-func (m multiTokenVerifier) VerifyAccessToken(ctx context.Context, token string) (*TokenClaims, error) {
+func (m multiTokenValidator) ValidateAccessToken(ctx context.Context, token string) (*Authorization, error) {
 	var errs error
 	for _, verifier := range m {
-		authz, err := verifier.VerifyAccessToken(ctx, token)
+		authz, err := verifier.ValidateAccessToken(ctx, token)
 		if err == nil {
 			return authz, nil
 		}

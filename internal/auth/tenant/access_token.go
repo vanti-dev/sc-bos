@@ -1,20 +1,19 @@
 package tenant
 
 import (
+	"context"
+	"crypto/rand"
 	"encoding/json"
+	"io"
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
 	"github.com/vanti-dev/bsp-ew/internal/auth"
 )
 
-type AccessTokenPayload struct {
-	Issuer     string       `json:"iss"`
-	Subject    string       `json:"sub"`
-	Audience   string       `json:"aud"`
-	Expiration auth.JWTTime `json:"exp"`
-	NotBefore  auth.JWTTime `json:"nbf"`
-	IssuedAt   auth.JWTTime `json:"iat"`
+type tokenPayload struct {
+	auth.JWTCommonClaims
+	Zones []string `json:"zones"`
 }
 
 type TokenSource struct {
@@ -24,7 +23,7 @@ type TokenSource struct {
 	Now      func() time.Time
 }
 
-func (ts *TokenSource) GenerateAccessToken(subject string, audience string) (token string, err error) {
+func (ts *TokenSource) GenerateAccessToken(data SecretData) (token string, err error) {
 	signer, err := jose.NewSigner(ts.Key, nil)
 	if err != nil {
 		return "", err
@@ -39,13 +38,16 @@ func (ts *TokenSource) GenerateAccessToken(subject string, audience string) (tok
 
 	expires := now.Add(ts.Validity)
 
-	payload := AccessTokenPayload{
-		Issuer:     ts.Issuer,
-		Subject:    subject,
-		Audience:   audience,
-		Expiration: auth.JWTTime(expires),
-		NotBefore:  auth.JWTTime(now),
-		IssuedAt:   auth.JWTTime(now),
+	payload := tokenPayload{
+		JWTCommonClaims: auth.JWTCommonClaims{
+			Issuer:     ts.Issuer,
+			Subject:    data.TenantID,
+			Audience:   ts.Issuer,
+			Expiration: auth.JWTTime(expires),
+			NotBefore:  auth.JWTTime(now),
+			IssuedAt:   auth.JWTTime(now),
+		},
+		Zones: data.Zones,
 	}
 
 	encoded, err := json.Marshal(payload)
@@ -59,4 +61,49 @@ func (ts *TokenSource) GenerateAccessToken(subject string, audience string) (tok
 	}
 
 	return jws.CompactSerialize()
+}
+
+func (ts *TokenSource) ValidateAccessToken(_ context.Context, token string) (*auth.Authorization, error) {
+	jws, err := jose.ParseSigned(token)
+	if err != nil {
+		return nil, err
+	}
+
+	payloadBytes, err := jws.Verify(ts.Key)
+	if err != nil {
+		return nil, err
+	}
+
+	var payload tokenPayload
+	err = json.Unmarshal(payloadBytes, &payload)
+	if err != nil {
+		return nil, err
+	}
+
+	err = (&auth.JWTClaimValidator{
+		Audience: ts.Issuer,
+		Issuer:   ts.Issuer,
+	}).ValidateClaims(payload.JWTCommonClaims)
+	if err != nil {
+		return nil, err
+	}
+
+	return &auth.Authorization{
+		Roles:     []string{auth.RoleTenant},
+		Zones:     payload.Zones,
+		IsService: true,
+	}, nil
+}
+
+func generateKey() (jose.SigningKey, error) {
+	key := make([]byte, 32)
+	_, err := io.ReadFull(rand.Reader, key)
+	if err != nil {
+		return jose.SigningKey{}, err
+	}
+
+	return jose.SigningKey{
+		Algorithm: jose.HS256,
+		Key:       nil,
+	}, nil
 }

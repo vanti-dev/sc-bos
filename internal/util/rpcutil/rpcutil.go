@@ -3,6 +3,7 @@ package rpcutil
 import (
 	"context"
 	"crypto/x509"
+	"net/http"
 	"regexp"
 
 	"go.uber.org/zap"
@@ -36,6 +37,20 @@ func ServerLoggerFields(ctx context.Context) []zap.Field {
 	}
 
 	return fields
+}
+
+func HTTPLoggerFields(request *http.Request) []zap.Field {
+	fields := []zap.Field{
+		zap.Namespace("http"),
+		zap.String("method", request.Method),
+		zap.String("url", request.RequestURI),
+		zap.String("peer", request.RemoteAddr),
+	}
+	return fields
+}
+
+func HTTPLogger(request *http.Request, base *zap.Logger) *zap.Logger {
+	return base.With(HTTPLoggerFields(request)...)
 }
 
 func SplitMethodPath(methodPath string) (service, method string, ok bool) {

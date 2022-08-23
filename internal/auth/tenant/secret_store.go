@@ -10,14 +10,12 @@ import (
 )
 
 type SecretSource interface {
-	Verify(ctx context.Context, secret string) (data SecretData, err error)
+	VerifySecret(ctx context.Context, secret string) (data SecretData, err error)
 }
 
-type SecretStore interface {
-	SecretSource
-	Enroll(ctx context.Context, data SecretData) (secret string, err error)
-	Invalidate(ctx context.Context, secret string) (present bool, err error)
-	InvalidateClient(ctx context.Context, clientID string) error
+type SecretData struct {
+	TenantID string
+	Zones    []string
 }
 
 // MemorySecretStore implements a primitive, in memory store for client secrets.
@@ -58,7 +56,7 @@ func (s *MemorySecretStore) Enroll(_ context.Context, data SecretData) (secret s
 	}
 }
 
-func (s *MemorySecretStore) Verify(_ context.Context, secret string) (data SecretData, err error) {
+func (s *MemorySecretStore) VerifySecret(_ context.Context, secret string) (data SecretData, err error) {
 	s.m.RLock()
 	defer s.m.RUnlock()
 
@@ -85,7 +83,7 @@ func (s *MemorySecretStore) InvalidateClient(_ context.Context, clientID string)
 	defer s.m.Unlock()
 
 	for secret, data := range s.store {
-		if data.ClientID == clientID {
+		if data.TenantID == clientID {
 			delete(s.store, secret)
 		}
 	}
@@ -96,10 +94,6 @@ func (s *MemorySecretStore) ensureInitialised() {
 	if s.store == nil {
 		s.store = make(map[string]SecretData)
 	}
-}
-
-type SecretData struct {
-	ClientID string
 }
 
 func genSecret() (secret string) {
