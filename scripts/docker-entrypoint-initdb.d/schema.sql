@@ -26,8 +26,30 @@ CREATE TABLE acknowledgement
 
 CREATE TABLE enrollment
 (
-    name            TEXT NOT NULL PRIMARY KEY,
-    description     TEXT,
-    address         TEXT NOT NULL,
-    cert            BYTEA NOT NULL
+    name        TEXT  NOT NULL PRIMARY KEY,
+    description TEXT,
+    address     TEXT  NOT NULL,
+    cert        BYTEA NOT NULL
+);
+
+CREATE TABLE tenant
+(
+    id   UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL
+);
+
+CREATE TABLE tenant_zone
+(
+    tenant UUID NOT NULL REFERENCES tenant (id),
+    zone   TEXT NOT NULL,
+
+    PRIMARY KEY (tenant, zone),
+    CONSTRAINT zone_not_empty CHECK (zone <> '')
+);
+
+CREATE TABLE tenant_secret
+(
+    id          UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant      UUID NOT NULL REFERENCES tenant(id) ON DELETE CASCADE,
+    secret_hash BYTEA NOT NULL
 );
