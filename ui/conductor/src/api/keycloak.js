@@ -75,6 +75,8 @@ async function constructorConfig() {
 async function initConfig() {
   // todo: get keycloak init config from somewhere non-hard-coded
   return {
-    onLoad: 'check-sso'
+    onLoad: 'check-sso',
+    silentCheckSsoRedirectUri: window.location.origin + "/silent-check-sso.html",
+    silentCheckSsoFallback: false
   }
 }
