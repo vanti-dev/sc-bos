@@ -28,7 +28,7 @@ message Secret {
   Tenant tenant = 2;
   // A SHA-256 hash of the secret string.
   // Output only.
-  string secret_hash = 3;
+  bytes secret_hash = 3;
   // The secret string that the tenant can use to authenticate themself.
   // Output only. Only present once, returned from CreateSecret or RegenerateSecret.
   string secret = 4;
