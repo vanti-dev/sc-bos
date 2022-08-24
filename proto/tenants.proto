@@ -34,12 +34,13 @@ message Secret {
   string secret = 4;
   string note = 5;
 
-  google.protobuf.Timestamp expiration_time = 6; // absent if there isn't one
-  google.protobuf.Timestamp first_use_time = 7;
-  google.protobuf.Timestamp last_use_time = 8;
+  google.protobuf.Timestamp create_time = 6;
+  google.protobuf.Timestamp expire_time = 7; // absent if there isn't one
+  google.protobuf.Timestamp first_use_time = 8;
+  google.protobuf.Timestamp last_use_time = 9;
 
   // Used to avoid read-modify-write conflicts
-  string etag = 9;
+  string etag = 10;
 }
 
 service TenantApi {

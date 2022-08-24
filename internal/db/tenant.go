@@ -109,15 +109,17 @@ func CreateTenantSecret(ctx context.Context, tx pgx.Tx, secret *gen.Secret) (*ge
 
 	// language=postgresql
 	query := `
-		INSERT INTO tenant_secret (id, tenant, secret_hash, note, expiration) VALUES (DEFAULT, $1, $2, $3, $4)
-		RETURNING id;
+		INSERT INTO tenant_secret (id, tenant, secret_hash, note, expire_time) VALUES (DEFAULT, $1, $2, $3, $4)
+		RETURNING id, create_time;
     `
 
-	row := tx.QueryRow(ctx, query, secret.Tenant.GetId(), secret.SecretHash, secret.Note, secret.ExpirationTime.AsTime())
-	err := row.Scan(&secret.Id)
+	row := tx.QueryRow(ctx, query, secret.Tenant.GetId(), secret.SecretHash, secret.Note, secret.ExpireTime.AsTime())
+	var createTime time.Time
+	err := row.Scan(&secret.Id, createTime)
 	if err != nil {
 		return nil, nil
 	}
+	secret.CreateTime = timestamppb.New(createTime)
 	return secret, nil
 }
 

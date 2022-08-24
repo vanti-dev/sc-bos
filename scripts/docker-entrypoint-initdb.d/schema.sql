@@ -54,7 +54,8 @@ CREATE TABLE tenant_secret
     note           TEXT        NOT NULL,
     tenant         UUID        NOT NULL REFERENCES tenant (id) ON DELETE CASCADE,
     secret_hash    BYTEA       NOT NULL,
-    expiration     TIMESTAMPTZ NOT NULL,
+    create_time    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expire_time    TIMESTAMPTZ NOT NULL,
     first_use_time TIMESTAMPTZ,
     last_use_time  TIMESTAMPTZ
 );
