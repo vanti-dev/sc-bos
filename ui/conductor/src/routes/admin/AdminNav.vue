@@ -1,6 +1,6 @@
 <template>
   <v-navigation-drawer app clipped floating color="transparent">
-    <v-list>
+    <v-list dense nav>
       <v-list-item to="/admin/summary">
         <v-list-item-content>
           Overview
