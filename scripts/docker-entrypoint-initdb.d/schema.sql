@@ -34,22 +34,27 @@ CREATE TABLE enrollment
 
 CREATE TABLE tenant
 (
-    id   UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name TEXT NOT NULL
+    id          UUID        NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title       TEXT        NOT NULL,
+    create_time TIMESTAMPTZ NOT NULL             DEFAULT now()
 );
 
 CREATE TABLE tenant_zone
 (
-    tenant UUID NOT NULL REFERENCES tenant (id),
-    zone   TEXT NOT NULL,
+    tenant    UUID NOT NULL REFERENCES tenant (id) ON DELETE CASCADE,
+    zone_name TEXT NOT NULL,
 
-    PRIMARY KEY (tenant, zone),
-    CONSTRAINT zone_not_empty CHECK (zone <> '')
+    PRIMARY KEY (tenant, zone_name),
+    CONSTRAINT zone_not_empty CHECK (zone_name <> '')
 );
 
 CREATE TABLE tenant_secret
 (
-    id          UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    tenant      UUID NOT NULL REFERENCES tenant(id) ON DELETE CASCADE,
-    secret_hash BYTEA NOT NULL
+    id             UUID        NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    note           TEXT        NOT NULL,
+    tenant         UUID        NOT NULL REFERENCES tenant (id) ON DELETE CASCADE,
+    secret_hash    BYTEA       NOT NULL,
+    expiration     TIMESTAMPTZ NOT NULL,
+    first_use_time TIMESTAMPTZ,
+    last_use_time  TIMESTAMPTZ
 );
