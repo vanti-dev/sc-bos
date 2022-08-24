@@ -9,12 +9,14 @@ import (
 	"io"
 
 	"github.com/jackc/pgx/v4"
+	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/bsp-ew/internal/db"
 	"github.com/vanti-dev/bsp-ew/internal/util/rpcutil"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
 type Server struct {
@@ -24,7 +26,19 @@ type Server struct {
 }
 
 func (s *Server) ListTenants(ctx context.Context, request *gen.ListTenantsRequest) (*gen.ListTenantsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	logger := rpcutil.ServerLogger(ctx, s.logger)
+
+	var tenants []*gen.Tenant
+	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
+		tenants, err = db.ListTenants(ctx, tx)
+		return
+	})
+	if err != nil {
+		logger.Error("db.ListTenants failed", zap.Error(err))
+		return nil, status.Error(codes.Internal, "database read failed")
+	}
+
+	return &gen.ListTenantsResponse{Tenants: tenants}, nil
 }
 
 func (s *Server) PullTenants(request *gen.PullTenantsRequest, server gen.TenantApi_PullTenantsServer) error {
@@ -32,6 +46,26 @@ func (s *Server) PullTenants(request *gen.PullTenantsRequest, server gen.TenantA
 }
 
 func (s *Server) CreateTenant(ctx context.Context, request *gen.CreateTenantRequest) (*gen.Tenant, error) {
+	logger := rpcutil.ServerLogger(ctx, s.logger)
+
+	var newTenant *gen.Tenant
+	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
+		newTenant, err = db.CreateTenant(ctx, tx, request.Tenant.Title)
+		if err != nil {
+			return
+		}
+
+		if zones := request.Tenant.GetZoneNames(); len(zones) > 0 {
+			err = db.AddTenantZones(ctx, tx, newTenant.Id, zones)
+		}
+
+		return
+	})
+	if err != nil {
+		logger.Error("tenant database transaction failed", zap.Error(err))
+		return nil, status.Error(codes.Internal, "database transaction failed")
+	}
+
 	return nil, status.Error(codes.Unimplemented, "unimplemented")
 }
 
@@ -54,11 +88,64 @@ func (s *Server) GetTenant(ctx context.Context, request *gen.GetTenantRequest) (
 }
 
 func (s *Server) UpdateTenant(ctx context.Context, request *gen.UpdateTenantRequest) (*gen.Tenant, error) {
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	logger := rpcutil.ServerLogger(ctx, s.logger).With(zap.String("tenant", request.GetTenant().GetId()))
+	tenant := request.Tenant
+	updater := masks.NewFieldUpdater(
+		masks.WithUpdateMask(request.UpdateMask),
+		masks.WithUpdateMaskFieldName("update_mask"),
+		masks.WithWritableFields(&fieldmaskpb.FieldMask{Paths: []string{
+			"title", "zone_names",
+		}}),
+	)
+	err := updater.Validate(tenant)
+	if err != nil {
+		logger.Error("mask validation failed", zap.Error(err), zap.Strings("paths", request.UpdateMask.GetPaths()))
+		return nil, err
+	}
+
+	err = s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
+		if rpcutil.MaskContains(request.UpdateMask, "title") {
+			err = db.UpdateTenantTitle(ctx, tx, tenant.Id, tenant.Title)
+			if err != nil {
+				return err
+			}
+		}
+
+		if rpcutil.MaskContains(request.UpdateMask, "zone_names") {
+			err = db.ReplaceTenantZones(ctx, tx, tenant.Id, tenant.ZoneNames)
+			if err != nil {
+				return err
+			}
+		}
+
+		tenant, err = db.GetTenant(ctx, tx, tenant.Id)
+		return
+	})
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, status.Error(codes.NotFound, "tenant not found")
+	} else if err != nil {
+		logger.Error("database transaction failed", zap.Error(err))
+		return nil, status.Error(codes.Internal, "database update failed")
+	}
+
+	return tenant, nil
 }
 
 func (s *Server) DeleteTenant(ctx context.Context, request *gen.DeleteTenantRequest) (*gen.DeleteTenantResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	logger := rpcutil.ServerLogger(ctx, s.logger).With(zap.String("id", request.Id))
+
+	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) error {
+		return db.DeleteTenant(ctx, tx, request.Id)
+	})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, status.Error(codes.NotFound, "tenant not found")
+	} else if err != nil {
+		logger.Error("db.DeleteTenant failed", zap.Error(err))
+		return nil, status.Error(codes.Internal, "database transaction failed")
+	}
+
+	return &gen.DeleteTenantResponse{}, nil
 }
 
 func (s *Server) PullTenant(request *gen.PullTenantRequest, server gen.TenantApi_PullTenantServer) error {
