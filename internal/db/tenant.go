@@ -199,6 +199,73 @@ func CreateTenantSecret(ctx context.Context, tx pgx.Tx, secret *gen.Secret) (*ge
 	return secret, nil
 }
 
+func GetTenantSecret(ctx context.Context, tx pgx.Tx, id string) (*gen.Secret, error) {
+	// language=postgresql
+	query := `
+		SELECT s.id, s.tenant, t.title, s.secret_hash, s.note, s.create_time, s.first_use_time, s.last_use_time
+		FROM tenant_secret s
+			INNER JOIN tenant t on s.tenant = t.id
+		WHERE s.id = $1;
+    `
+
+	row := tx.QueryRow(ctx, query, id)
+	secret := &gen.Secret{}
+	err := scanTenantSecret(row, secret)
+	if err != nil {
+		return nil, err
+	}
+	return secret, nil
+}
+
+// ListTenantSecrets returns all tenant secrets stored in the database.
+// If tenantID is non-empty, then only secrets associated with that tenant will be returned. If tenantID is empty
+// then secrets from all tenants are returned.
+func ListTenantSecrets(ctx context.Context, tx pgx.Tx, tenantID string) ([]*gen.Secret, error) {
+	// language=postgresql
+	query := `
+		SELECT s.id, s.tenant, t.title, s.secret_hash, s.note, s.create_time, s.first_use_time, s.last_use_time
+		FROM tenant_secret s
+			INNER JOIN tenant t on s.tenant = t.id
+		WHERE $1 = '' OR s.tenant = $1;
+    `
+
+	rows, err := tx.Query(ctx, query, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var secrets []*gen.Secret
+	for rows.Next() {
+		secret := &gen.Secret{}
+		err = scanTenantSecret(rows, secret)
+		if err != nil {
+			return nil, err
+		}
+		secrets = append(secrets, secret)
+	}
+	return secrets, nil
+}
+
+// reads out a secret from a DB row, in this order (tenant_secret s, tenant t):
+// s.id, s.tenant, t.title, s.secret_hash, s.note, s.create_time, s.first_use_time, s.last_use_time
+func scanTenantSecret(row pgx.Row, secret *gen.Secret) error {
+	if secret.Tenant == nil {
+		secret.Tenant = &gen.Tenant{}
+	}
+	var (
+		createTime, firstUseTime, lastUseTime *time.Time
+	)
+	err := row.Scan(&secret.Id, &secret.Tenant.Id, &secret.Tenant.Title, &secret.SecretHash, &secret.Note, &createTime,
+		&firstUseTime, &lastUseTime)
+	if err != nil {
+		return err
+	}
+	secret.CreateTime = nullableTimestamp(createTime)
+	secret.FirstUseTime = nullableTimestamp(firstUseTime)
+	secret.LastUseTime = nullableTimestamp(lastUseTime)
+	return nil
+}
+
 func DeleteTenantSecret(ctx context.Context, tx pgx.Tx, secretID string) error {
 	// language=postgresql
 	query := `
@@ -214,4 +281,11 @@ func DeleteTenantSecret(ctx context.Context, tx pgx.Tx, secretID string) error {
 		return pgx.ErrNoRows
 	}
 	return nil
+}
+
+func nullableTimestamp(t *time.Time) *timestamppb.Timestamp {
+	if t == nil {
+		return nil
+	}
+	return timestamppb.New(*t)
 }

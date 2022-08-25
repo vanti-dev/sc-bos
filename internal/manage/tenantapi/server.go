@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
+	"regexp"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
@@ -17,6 +18,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
+)
+
+var (
+	errDatabase       = status.Error(codes.Internal, "database transaction failed")
+	errTenantNotFound = status.Error(codes.NotFound, "tenant not found")
+	errSecretNotFound = status.Error(codes.NotFound, "secret not found")
 )
 
 type Server struct {
@@ -35,7 +42,7 @@ func (s *Server) ListTenants(ctx context.Context, request *gen.ListTenantsReques
 	})
 	if err != nil {
 		logger.Error("db.ListTenants failed", zap.Error(err))
-		return nil, status.Error(codes.Internal, "database read failed")
+		return nil, errDatabase
 	}
 
 	return &gen.ListTenantsResponse{Tenants: tenants}, nil
@@ -63,10 +70,10 @@ func (s *Server) CreateTenant(ctx context.Context, request *gen.CreateTenantRequ
 	})
 	if err != nil {
 		logger.Error("tenant database transaction failed", zap.Error(err))
-		return nil, status.Error(codes.Internal, "database transaction failed")
+		return nil, errDatabase
 	}
 
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	return newTenant, nil
 }
 
 func (s *Server) GetTenant(ctx context.Context, request *gen.GetTenantRequest) (*gen.Tenant, error) {
@@ -79,10 +86,10 @@ func (s *Server) GetTenant(ctx context.Context, request *gen.GetTenantRequest) (
 		return err
 	})
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, status.Error(codes.NotFound, "tenant not found")
+		return nil, errTenantNotFound
 	} else if err != nil {
 		logger.Error("db transaction failed", zap.Error(err))
-		return nil, status.Error(codes.Internal, "database read failed")
+		return nil, errDatabase
 	}
 	return tenant, nil
 }
@@ -123,10 +130,10 @@ func (s *Server) UpdateTenant(ctx context.Context, request *gen.UpdateTenantRequ
 	})
 
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, status.Error(codes.NotFound, "tenant not found")
+		return nil, errTenantNotFound
 	} else if err != nil {
 		logger.Error("database transaction failed", zap.Error(err))
-		return nil, status.Error(codes.Internal, "database update failed")
+		return nil, errDatabase
 	}
 
 	return tenant, nil
@@ -139,10 +146,10 @@ func (s *Server) DeleteTenant(ctx context.Context, request *gen.DeleteTenantRequ
 		return db.DeleteTenant(ctx, tx, request.Id)
 	})
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, status.Error(codes.NotFound, "tenant not found")
+		return nil, errTenantNotFound
 	} else if err != nil {
 		logger.Error("db.DeleteTenant failed", zap.Error(err))
-		return nil, status.Error(codes.Internal, "database transaction failed")
+		return nil, errDatabase
 	}
 
 	return &gen.DeleteTenantResponse{}, nil
@@ -159,10 +166,10 @@ func (s *Server) AddTenantZones(ctx context.Context, request *gen.AddTenantZones
 		return db.AddTenantZones(ctx, tx, request.TenantId, request.AddZoneNames)
 	})
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, status.Error(codes.NotFound, "tenant not found")
+		return nil, errTenantNotFound
 	} else if err != nil {
 		logger.Error("db transaction failed", zap.Error(err))
-		return nil, status.Error(codes.Internal, "database write failed")
+		return nil, errDatabase
 	}
 
 	return s.GetTenant(ctx, &gen.GetTenantRequest{Id: request.TenantId})
@@ -171,21 +178,53 @@ func (s *Server) AddTenantZones(ctx context.Context, request *gen.AddTenantZones
 func (s *Server) RemoveTenantZones(ctx context.Context, request *gen.RemoveTenantZonesRequest) (*gen.Tenant, error) {
 	logger := rpcutil.ServerLogger(ctx, s.logger)
 
-	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) error {
-		return db.RemoveTenantZones(ctx, tx, request.TenantId, request.RemoveZoneNames)
+	var tenant *gen.Tenant
+	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
+		err = db.RemoveTenantZones(ctx, tx, request.TenantId, request.RemoveZoneNames)
+		if err != nil {
+			return err
+		}
+
+		tenant, err = db.GetTenant(ctx, tx, request.TenantId)
+		return
 	})
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, status.Error(codes.NotFound, "tenant not found")
+		return nil, errTenantNotFound
 	} else if err != nil {
 		logger.Error("db transaction failed", zap.Error(err))
-		return nil, status.Error(codes.Internal, "database write failed")
+		return nil, errDatabase
 	}
 
-	return s.GetTenant(ctx, &gen.GetTenantRequest{Id: request.TenantId})
+	return tenant, nil
 }
 
 func (s *Server) ListSecrets(ctx context.Context, request *gen.ListSecretsRequest) (*gen.ListSecretsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	logger := rpcutil.ServerLogger(ctx, s.logger).With(
+		zap.Namespace("request"),
+		zap.String("filter", request.GetFilter()),
+		zap.Bool("include_hash", request.GetIncludeHash()),
+	)
+
+	var tenantID string
+	if request.Filter != "" {
+		groups := filterTenantRegexp.FindStringSubmatch(request.Filter)
+		if groups == nil {
+			return nil, status.Error(codes.InvalidArgument, "invalid filter")
+		}
+		tenantID = groups[1]
+	}
+
+	var secrets []*gen.Secret
+	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
+		secrets, err = db.ListTenantSecrets(ctx, tx, tenantID)
+		return
+	})
+	if err != nil {
+		logger.Error("db.ListTenantSecrets failed", zap.Error(err))
+		return nil, errDatabase
+	}
+
+	return &gen.ListSecretsResponse{Secrets: secrets}, nil
 }
 
 func (s *Server) PullSecrets(request *gen.PullSecretsRequest, server gen.TenantApi_PullSecretsServer) error {
@@ -218,7 +257,21 @@ func (s *Server) CreateSecret(ctx context.Context, request *gen.CreateSecretRequ
 }
 
 func (s *Server) GetSecret(ctx context.Context, request *gen.GetSecretRequest) (*gen.Secret, error) {
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	logger := rpcutil.ServerLogger(ctx, s.logger).With(zap.String("secret_id", request.GetId()))
+
+	var secret *gen.Secret
+	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
+		secret, err = db.GetTenantSecret(ctx, tx, request.Id)
+		return
+	})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, status.Error(codes.NotFound, "secret not found")
+	} else if err != nil {
+		logger.Error("db.GetTenantSecret failed", zap.Error(err))
+		return nil, status.Error(codes.Internal, "database transaction failed")
+	}
+
+	return secret, nil
 }
 
 func (s *Server) UpdateSecret(ctx context.Context, request *gen.UpdateSecretRequest) (*gen.Secret, error) {
@@ -265,3 +318,5 @@ func hashSecret(secret string) (hash []byte) {
 	sum := sha256.Sum256([]byte(secret))
 	return sum[:]
 }
+
+var filterTenantRegexp = regexp.MustCompile(`^\s*tenant\.id\s*=\s*"?([^\s"]+)"?\s*$`)
