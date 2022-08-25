@@ -1,4 +1,6 @@
 import {apiToken} from '@/api/auth.js';
+import {parseISO} from 'date-fns';
+import {Timestamp} from 'google-protobuf/google/protobuf/timestamp_pb';
 import {ClientReadableStream} from 'grpc-web';
 
 /**
@@ -64,6 +66,45 @@ class DelayedClientReadableStream {
   cancel() {
     this.other.then(o => o.cancel());
   }
+}
+
+/**
+ * @param proto
+ * @param obj
+ * @param props
+ */
+export function simpleFromObject(proto, obj, ...props) {
+  for (const prop of props) {
+    if (obj[prop]) {
+      proto[`set${prop[0].toUpperCase()}${prop.substring(1)}`](obj[prop]);
+    }
+  }
+}
+
+/**
+ * @param proto
+ * @param obj
+ * @param props
+ */
+export function timestampsFromObject(proto, obj, ...props) {
+  for (const prop of props) {
+    if (obj[prop]) {
+      proto[`set${prop[0].toUpperCase()}${prop.substring(1)}`](timestampsFromObject(obj[prop]));
+    }
+  }
+}
+
+/**
+ * @param {Timestamp.AsObject|string|Date} obj
+ * @return {Timestamp}
+ */
+export function timestampFromObject(obj) {
+  if (typeof obj === 'string') return timestampFromObject(parseISO(obj));
+  if (obj instanceof Date) return Timestamp.fromDate(obj);
+
+  return new Timestamp()
+      .setSeconds(obj.seconds)
+      .setNanos(obj.nanos);
 }
 
 

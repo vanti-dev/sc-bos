@@ -107,7 +107,7 @@ watch(tenantId, async (newVal, oldVal) => {
     return;
   }
 
-  tenant.value = await getTenant({tenantId: newVal});
+  tenant.value = await getTenant({id: newVal});
   secrets.value = await listSecrets({tenantId: newVal});
 }, {immediate: true});
 
