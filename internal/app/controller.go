@@ -87,7 +87,9 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	reflection.Register(grpcServer)
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
 
-	grpcWebServer := grpcweb.WrapServer(grpcServer)
+	grpcWebServer := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
+		return true
+	}))
 	mux := http.NewServeMux()
 
 	httpServer := &http.Server{

@@ -133,7 +133,9 @@ func run(ctx context.Context) error {
 		testTLSConfig: grpcTlsConfig,
 	})
 
-	grpcWebWrapper := grpcweb.WrapServer(grpcServer)
+	grpcWebWrapper := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
+		return true
+	}))
 	staticFiles := http.FileServer(http.Dir(sysConf.StaticDir))
 	httpServer := &http.Server{
 		Addr:      sysConf.ListenHTTPS,
