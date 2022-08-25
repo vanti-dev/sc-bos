@@ -130,6 +130,7 @@ message RemoveTenantZonesRequest {
 
 message ListSecretsRequest {
   bool include_hash = 1;
+  string filter = 2;
   // TODO: paging
 }
 message ListSecretsResponse {
