@@ -1,0 +1,58 @@
+---
+- name: Deploy code.
+  hosts: twincat_bsd
+  vars:
+    project_root: '{{ playbook_dir }}/../..'
+    temp_dir: /tmp/ibe-2022
+    install_dir: /usr/local/opt/areacontroller
+
+  tasks:
+    - name: Create temporary directory
+      file:
+        path: '{{ temp_dir }}'
+        state: directory
+
+    - name: Ensure directories are present
+      become: true
+      ansible.builtin.file:
+        path: '{{ item }}'
+        state: directory
+        owner: root
+        group: areacontroller
+        mode: u=rwx,g=rx,o=rx
+        recurse: yes
+      loop:
+        - '{{ install_dir }}/etc/rc.d'
+        - '{{ install_dir }}/static'
+        - '{{ install_dir }}/bin'
+
+#    - name: Extract Go code
+#      ansible.builtin.unarchive:
+#        src: '/tmp/ibe-2022-build/go-archive.tar'
+#        dest: '{{ temp_dir }}/'
+#
+#    - name: Build Go code
+#      ansible.builtin.command:
+#        chdir: '{{ temp_dir }}/go-archive'
+#        argv:
+#          - /usr/local/opt/go/bin/go
+#          - build
+#          - '-o'
+#          - '{{ temp_dir }}/{{ item }}'
+#          - "./cmd/{{ item }}"
+#      environment:
+#        CGO_ENABLED: '1'
+#        CGO_CFLAGS: '-I/usr/local/include'
+#        CGO_LDFLAGS: '-L/usr/local/lib'
+#      loop: "{{ controllers }}"
+#
+#    - name: Install Area Controller executables
+#      become: true
+#      ansible.builtin.copy:
+#        remote_src: yes
+#        src: '{{ temp_dir }}/{{ item }}'
+#        dest: '{{ install_dir }}/bin/{{ item }}'
+#        owner: root
+#        group: areacontroller
+#        mode: o=rwx,g=rx,o=rx
+#      loop: "{{ controllers }}"

@@ -1,0 +1,57 @@
+---
+- name: Deploy configuration files.
+  hosts: twincat_bsd
+  vars:
+    project_dir: "{{ playbook_dir }}/../.."
+    deploy_src_dir: '{{ playbook_dir }}/..'
+    install_dir: /usr/local/opt/areacontroller
+    controllers:
+      - areacontroller
+
+  tasks:
+#    - name: Stop the services (if it exists)
+#      become: true
+#      ansible.builtin.service:
+#        name: "{{ item }}"
+#        state: stopped
+#      loop: "{{ controllers }}"
+
+    - name: Ensure the rc.d directory is present
+      become: true
+      ansible.builtin.file:
+        path: '{{ install_dir }}/etc/rc.d'
+        state: directory
+        recurse: yes
+        owner: root
+        group: areacontroller
+        mode: u=rwX,g=rX,o=rX
+
+    - name: Copy the rc scripts
+      become: true
+      ansible.builtin.copy:
+        src: '{{ deploy_src_dir }}/freebsd/rc-script.sh'
+        dest: '{{ install_dir }}/etc/rc.d/areacontroller'
+        owner: root
+        group: areacontroller
+        mode: u=rwx,g=rx,o=rx
+
+    - name: Make symlink for the rc script
+      become: true
+      ansible.builtin.file:
+        path: "/usr/local/etc/rc.d/{{ item }}"
+        state: link
+        src: '{{ install_dir }}/etc/rc.d/{{ item }}'
+        owner: root
+        group: wheel
+        mode: u=rwx,g=rx,o=rx
+      loop: "{{ controllers }}"
+
+#    - name: Copy the config file
+#      become: true
+#      ansible.builtin.copy:
+#        src: '{{ project_dir }}/config/{{ item }}.yaml'
+#        dest: '{{ install_dir }}/etc/{{ item }}.yaml'
+#        owner: root
+#        group: areacontroller
+#        mode: u=rw,g=r,o=r
+#      loop: "{{ controllers }}"

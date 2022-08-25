@@ -1,0 +1,145 @@
+---
+- name: Prepare system for ansible
+  hosts: twincat_bsd
+  gather_facts: false
+  become: true
+  become_method: doas
+  tasks:
+    # it's necessary to perform an upgrade of pkg at least once before enabling the FreeBSD repo
+    - name: Upgrade pkg
+      raw: "pkg install -y pkg"
+
+    - name: Enable the upstream FreeBSD package repository.
+      raw: "sed -i.bak 's/enabled: no/enabled: yes/' /usr/local/etc/pkg/repos/FreeBSD.conf"
+
+    - name: Install python.
+      raw: "pkg install -y python"
+
+- name: Update packages & install dependencies
+  hosts: twincat_bsd
+  become: true
+  tasks:
+    - name: Update packages
+      community.general.pkgng:
+        name: '*'
+        state: latest
+
+    - name: Install system utilities.
+      community.general.pkgng:
+        name:
+          - rsync
+          - wget
+          - gtar
+        state: present
+
+    - name: Install application dependencies.
+      community.general.pkgng:
+        name:
+          - os-generic-userland-devtools
+        state: present
+
+    - name: Create opt directory for custom installed software
+      ansible.builtin.file:
+        path: /usr/local/opt
+        state: directory
+        owner: root
+        group: wheel
+        mode: 0755
+
+    - name: Download Go compiler
+      become: false
+      ansible.builtin.get_url:
+        url: 'https://go.dev/dl/go1.18.freebsd-amd64.tar.gz'
+        dest: '/tmp/go.tar.gz'
+        checksum: sha256:01cd67bbc12e659ff236ecebde1806f76452f7ca145c172d5ecdbf4f4803daae
+      register: download_go
+
+    - name: Extract Go compiler
+      when: download_go.changed
+      ansible.builtin.unarchive:
+        remote_src: true
+        src: '/tmp/go.tar.gz'
+        dest: /usr/local/opt/
+        owner: root
+        group: wheel
+        mode: u=rwX,g=rX,o=rX
+
+- name: Prepare daemon user and group
+  hosts: twincat_bsd
+  become: true
+  tasks:
+    - name: Create twincat group.
+      ansible.builtin.group:
+        name: twincat
+        state: present
+        system: yes
+
+    - name: Add Administrator to the twincat group
+      ansible.builtin.user:
+        name: Administrator
+        append: yes
+        groups:
+          - twincat
+
+    - name: Create areacontroller user.
+      ansible.builtin.user:
+        name: areacontroller
+        state: present
+        groups: twincat
+        create_home: no
+        home: /usr/local/opt/areacontroller
+        shell: /sbin/nologin
+
+    - name: Prepare areacontroller directory
+      ansible.builtin.file:
+        path: /usr/local/opt/areacontroller
+        state: directory
+        owner: root
+        group: areacontroller
+        mode: 0755
+
+- name: Operating system configuration
+  hosts: twincat_bsd
+  become: true
+  tasks:
+    - name: Make the tcpaldrv device owned by the twincat group
+      ansible.builtin.blockinfile:
+        path: /etc/devfs.conf
+        block: |
+          own   tcpaldrv    root:twincat
+          perm  tcpaldrv    0660
+      notify: Restart devfs
+
+    - name: Mount filesystems required by java
+      ansible.posix.mount:
+        state: mounted
+        backup: yes
+        fstype: "{{ item.fstype }}"
+        path: "{{ item.path }}"
+        src: "{{ item.src }}"
+      loop:
+        - { src: fdesc, path: /dev/fd, fstype: fdescfs }
+        - { src: proc, path: /proc, fstype: procfs }
+
+    - name: Open firewall ports
+      ansible.builtin.blockinfile:
+        path: /etc/pf.conf
+        block: |
+          # Allow access to Smart Core
+          pass in quick proto tcp to port 23557 keep state
+          # Allow access to the Web UI & grpc-web
+          pass in quick proto tcp to port 8443 keep state
+          # Allow BACnet packets
+          pass in quick proto udp to port 47808
+      notify: Restart pf
+
+  handlers:
+    - name: Restart devfs
+      ansible.builtin.service:
+        name: devfs
+        state: restarted
+
+    - name: Restart pf
+      ansible.builtin.service:
+        name: pf
+        state: restarted

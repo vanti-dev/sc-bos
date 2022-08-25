@@ -1,0 +1,11 @@
+all:
+  children:
+    # all freebsd hosts need some particular configuration to work with ansible
+    twincat_bsd:
+      hosts:
+        10.104.10.52:
+      vars:
+        #ansible_connection: paramiko
+        ansible_python_interpreter: /usr/local/bin/python
+        ansible_user: Administrator
+        ansible_become_method: doas
