@@ -14,7 +14,8 @@ const mockSecrets = [
     tenant: {id: '1', title: 'Lebank'},
     hash: null,
     note: 'Minimal Access',
-    expirationTime: add(now, {days: -3}),
+    createTime: add(now, {days: -20, seconds: 10}),
+    expireTime: add(now, {days: -3}),
     firstUseTime: add(now, {days: -10}),
     lastUseTime: null,
     scopeNames: ['lights', 'energy:read']
@@ -24,7 +25,8 @@ const mockSecrets = [
     tenant: {id: '2', title: 'Golden Games'},
     hash: null,
     note: 'Environmental',
-    expirationTime: add(now, {days: 4}),
+    createTime: add(now, {days: -20, seconds: 20}),
+    expireTime: add(now, {days: 4}),
     firstUseTime: add(now, {days: -10}),
     lastUseTime: add(now, {days: -1}),
     scopeNames: ['lights', 'hvac']
@@ -34,7 +36,8 @@ const mockSecrets = [
     tenant: {id: '3', title: 'Showbies'},
     hash: null,
     note: 'Full Access',
-    expirationTime: add(now, {days: 22}),
+    createTime: add(now, {days: -20, seconds: 30}),
+    expireTime: add(now, {days: 22}),
     firstUseTime: null,
     lastUseTime: add(now, {days: -3}),
     scopeNames: ['lights', 'energy']
@@ -44,7 +47,8 @@ const mockSecrets = [
     tenant: {id: '3', title: 'Showbies'},
     hash: null,
     note: 'Read-only',
-    expirationTime: null,
+    createTime: add(now, {days: -20, seconds: 40}),
+    expireTime: null,
     firstUseTime: null,
     lastUseTime: null,
     scopeNames: ['lights:read', 'energy:read']
@@ -90,4 +94,29 @@ export function listSecrets(request, tracker) {
       }
     };
   })
+}
+
+export function createSecret(request, tracker) {
+  const secret = request.secret;
+  if (!secret) throw new Error('request.secret must be specified');
+  return trackAction('Tenant.createSecret', tracker ?? {}, async endpoint => {
+    // fake a token, createTime, etc
+    if (!secret.tenant?.id) throw new Error('No tenant.id specified');
+    const tenant = mockTenants.find(n => n.id === secret.tenant.id);
+    if (!tenant) throw new Error(`Tenant with ID ${secret.tenant.id} not found`);
+
+    const saved = {...secret};
+    // normalise and inline some data
+    saved.id = Math.random().toString(16).substring(2);
+    saved.tenant.id = tenant.id;
+    saved.tenant.title = tenant.title;
+    saved.createTime = new Date();
+    mockSecrets.push(saved);
+    const returned = {...saved, token: Math.random().toString(16).substring(2)};
+    return {
+      toObject() {
+        return returned;
+      }
+    }
+  });
 }

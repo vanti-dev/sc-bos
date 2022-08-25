@@ -8,7 +8,8 @@ import {format, milliseconds} from 'date-fns';
 import {computed} from 'vue';
 
 const props = defineProps({
-  date: [String, Number, Date]
+  date: [String, Number, Date],
+  noRelative: Boolean
 })
 const relativeFormatter = new Intl.RelativeTimeFormat(undefined, {numeric: 'auto'});
 const absoluteFormatter = new Intl.DateTimeFormat(undefined, {weekday: 'short', day: 'numeric', month: 'short'});
@@ -28,7 +29,7 @@ const relativeDateThreshold = 7 * days;
 const {now} = useNow(DAY)
 const str = computed(() => {
   const dur = dateObj.value - now.value;
-  if (Math.abs(dur) < relativeDateThreshold) {
+  if (!props.noRelative && Math.abs(dur) < relativeDateThreshold) {
     return relativeFormatter.format(Math.round(dur / days), 'days');
   }
 

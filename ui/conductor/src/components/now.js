@@ -26,7 +26,7 @@ export function useNow(resolution = MINUTE) {
     handle = setTimeout(() => {
       now.value = new Date();
       updateNowWhenNeeded(now.value);
-    })
+    }, delay);
   }
 
   onMounted(() => {

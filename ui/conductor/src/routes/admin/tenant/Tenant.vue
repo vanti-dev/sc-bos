@@ -20,10 +20,24 @@
       <section-card class="mx-4 mt-4">
         <v-card-title><span>Secrets</span>
           <v-spacer/>
-          <theme-btn elevation="0">Generate new secret</theme-btn>
+          <v-slide-y-reverse-transition>
+            <theme-btn elevation="0" @click="addSecretBegin" v-if="!addingSecret">Generate new secret</theme-btn>
+          </v-slide-y-reverse-transition>
         </v-card-title>
+        <v-expand-transition>
+          <new-secret-form v-if="addingSecret" @commit="addSecretCommit" @rollback="addSecretRollback"/>
+        </v-expand-transition>
+        <v-expand-transition>
+          <v-alert type="info" tile v-if="createdSecret">
+            Make sure to copy your secret token now. You won't be able to see it again!
+          </v-alert>
+        </v-expand-transition>
         <v-list color="transparent">
-          <secret-list-item v-for="secret in secrets" :key="secret.id" :secret="secret"/>
+          <secret-token-list-item v-if="createdSecret"
+                                  :secret="createdSecret"
+                                  :key="createdSecret.id"
+                                  @hideToken="hideToken"/>
+          <secret-list-item v-for="secret in secretList" :key="secret.id" :secret="secret"/>
         </v-list>
       </section-card>
     </section-card>
@@ -31,10 +45,13 @@
 </template>
 
 <script setup>
-import {getTenant, listSecrets} from '@/api/ui/tenant.js';
+import {createSecret, getTenant, listSecrets} from '@/api/ui/tenant.js';
 import SectionCard from '@/components/SectionCard.vue';
 import ThemeBtn from '@/components/ThemeBtn.vue';
+import NewSecretForm from '@/routes/admin/tenant/NewSecretForm.vue';
 import SecretListItem from '@/routes/admin/tenant/SecretListItem.vue';
+import SecretTokenListItem from '@/routes/admin/tenant/SecretTokenListItem.vue';
+import {compareDesc} from 'date-fns';
 import {computed, ref, watch} from 'vue';
 import {useRoute} from 'vue-router/composables';
 
@@ -42,10 +59,41 @@ const route = useRoute();
 const tenantId = computed(() => route?.params.tenantId);
 const tenant = ref(null);
 const secrets = ref([]);
+const secretList = computed(() => {
+  // sorted by create time, excluding the createdSecret
+  let sorted = secrets.value.sort((a, b) => compareDesc(a.createTime, b.createTime));
+  if (createdSecret.value) {
+    sorted = sorted.filter(s => s !== createSecret.value)
+  }
+  return sorted;
+})
 
 const tenantTitle = computed(() => tenant.value?.title ?? '');
 const tenantZones = computed(() => tenant.value?.zones ?? []);
 
+const addingSecret = ref(false);
+const createdSecret = ref(null);
+
+function addSecretBegin() {
+  addingSecret.value = true;
+}
+
+function addSecretRollback() {
+  addingSecret.value = false;
+}
+
+async function addSecretCommit(secret) {
+  addingSecret.value = false;
+  secret.tenant = tenant.value;
+  createdSecret.value = await createSecret({secret});
+}
+
+async function hideToken() {
+  createdSecret.value = null;
+  secrets.value = await listSecrets({tenantId: tenant.value.id});
+}
+
+// fetch data for the tenant
 watch(tenantId, async (newVal, oldVal) => {
   if (!newVal) {
     tenant.value = null;
@@ -59,5 +107,4 @@ watch(tenantId, async (newVal, oldVal) => {
 </script>
 
 <style scoped>
-
 </style>

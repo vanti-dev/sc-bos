@@ -23,25 +23,35 @@
 
 <script setup>
 import RelativeDate from '@/components/RelativeDate.vue';
+import {MAX_INT32} from '@/util/number.js';
 import {computed, onBeforeUnmount, ref, watch} from 'vue';
 
 const props = defineProps({
-  secret: Object
+  secret: Object,
+  showToken: Boolean
 });
 
-const expireTime = computed(() => props.secret?.expirationTime);
+const expireTime = computed(() => props.secret?.expireTime);
 const expires = computed(() => Boolean(expireTime.value));
 
 const expired = ref(false);
 let expiredHandle = 0;
 watch(expireTime, t => {
   clearTimeout(expiredHandle);
-  const delay = expireTime.value?.getTime() - Date.now();
+  const delay = t?.getTime() - Date.now();
   if (delay < 0) {
     expired.value = true;
     return;
   }
   expired.value = false;
+
+  // WARNING: Browsers store setTimeout delays as 32-bit integers which means we can't schedule a delay of more than
+  // about 25 days.
+  if (delay > MAX_INT32) {
+    // If the user doesn't interact with their page for more than 25 days then this will break
+    return;
+  }
+
   expiredHandle = setTimeout(() => expired.value = true, delay);
 }, {immediate: true});
 onBeforeUnmount(() => {
