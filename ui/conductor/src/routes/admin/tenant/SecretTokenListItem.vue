@@ -15,7 +15,7 @@
     </v-list-item-content>
     <div>
       <v-btn outlined @click="emit('hideToken')">Done</v-btn>
-      <v-btn color="error" outlined class="ml-4">Delete</v-btn>
+      <v-btn color="error" outlined class="ml-4" @click="emit('delete', secret)">Delete</v-btn>
     </div>
   </v-list-item>
 </template>
@@ -27,7 +27,7 @@ import {onMounted, ref} from 'vue';
 const props = defineProps({
   secret: Object
 });
-const emit = defineEmits(['hideToken']);
+const emit = defineEmits(['hideToken', 'delete']);
 
 const clipboardCopySupported = ref(false);
 onMounted(() => {

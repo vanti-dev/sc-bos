@@ -120,3 +120,18 @@ export function createSecret(request, tracker) {
     }
   });
 }
+
+export function deleteSecret(request, tracker) {
+  const secretId = request.id;
+  if (!secretId) throw new Error('request.id must be specified');
+  return trackAction('Tenant.deleteSecret', tracker ?? {}, async endpoint => {
+    const index = mockSecrets.findIndex(s => s.id === secretId);
+    if (index < 0) throw new Error('Secret ' + secretId + ' not found');
+    mockSecrets.splice(index, 1);
+    return {
+      toObject() {
+        return {}
+      }
+    };
+  })
+}

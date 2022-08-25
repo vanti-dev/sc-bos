@@ -36,18 +36,21 @@
           <secret-token-list-item v-if="createdSecret"
                                   :secret="createdSecret"
                                   :key="createdSecret.id"
-                                  @hideToken="hideToken"/>
-          <secret-list-item v-for="secret in secretList" :key="secret.id" :secret="secret"/>
+                                  @hideToken="hideToken"
+                                  @delete="deleteSecretStart"/>
+          <secret-list-item v-for="secret in secretList" :key="secret.id" :secret="secret" @delete="deleteSecretStart"/>
         </v-list>
       </section-card>
     </section-card>
+    <delete-secret-dialog v-model="deleteSecretDialogOpen" @commit="deleteSecretCommit"/>
   </v-container>
 </template>
 
 <script setup>
-import {createSecret, getTenant, listSecrets} from '@/api/ui/tenant.js';
+import {createSecret, deleteSecret, getTenant, listSecrets} from '@/api/ui/tenant.js';
 import SectionCard from '@/components/SectionCard.vue';
 import ThemeBtn from '@/components/ThemeBtn.vue';
+import DeleteSecretDialog from '@/routes/admin/tenant/DeleteSecretDialog.vue';
 import NewSecretForm from '@/routes/admin/tenant/NewSecretForm.vue';
 import SecretListItem from '@/routes/admin/tenant/SecretListItem.vue';
 import SecretTokenListItem from '@/routes/admin/tenant/SecretTokenListItem.vue';
@@ -85,6 +88,9 @@ function addSecretRollback() {
 async function addSecretCommit(secret) {
   addingSecret.value = false;
   secret.tenant = tenant.value;
+  if (createdSecret.value) {
+    await hideToken();
+  }
   createdSecret.value = await createSecret({secret});
 }
 
@@ -103,7 +109,30 @@ watch(tenantId, async (newVal, oldVal) => {
 
   tenant.value = await getTenant({tenantId: newVal});
   secrets.value = await listSecrets({tenantId: newVal});
-}, {immediate: true})
+}, {immediate: true});
+
+const deleteSecretDialogOpen = ref(false);
+const deleteSecretDialogSecret = ref(null);
+
+function deleteSecretStart(secret) {
+  deleteSecretDialogSecret.value = secret;
+  deleteSecretDialogOpen.value = true;
+}
+
+async function deleteSecretCommit() {
+  if (!deleteSecretDialogSecret.value) return;
+
+  const id = deleteSecretDialogSecret.value.id;
+  await deleteSecret({id});
+  deleteSecretDialogSecret.value = null;
+  deleteSecretDialogOpen.value = false;
+  if (createdSecret.value?.id === id) {
+    createdSecret.value = null;
+  } else {
+    secrets.value = await listSecrets({tenantId: tenant.value.id});
+  }
+}
+
 </script>
 
 <style scoped>

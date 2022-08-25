@@ -16,7 +16,7 @@
     <div>
       <span v-if="!used">Never used</span>
       <span v-else>Last used <relative-date :date="useTime"/></span>
-      <v-btn color="error" outlined class="ml-4">Delete</v-btn>
+      <v-btn color="error" outlined class="ml-4" @click="emit('delete', secret)">Delete</v-btn>
     </div>
   </v-list-item>
 </template>
@@ -30,6 +30,7 @@ const props = defineProps({
   secret: Object,
   showToken: Boolean
 });
+const emit = defineEmits(['delete']);
 
 const expireTime = computed(() => props.secret?.expireTime);
 const expires = computed(() => Boolean(expireTime.value));
