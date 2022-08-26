@@ -189,7 +189,12 @@ func CreateTenantSecret(ctx context.Context, tx pgx.Tx, secret *gen.Secret) (*ge
 		RETURNING id, create_time;
     `
 
-	row := tx.QueryRow(ctx, query, secret.Tenant.GetId(), secret.SecretHash, secret.Note, secret.ExpireTime.AsTime())
+	var expireTime *time.Time
+	if secret.ExpireTime != nil {
+		t := secret.ExpireTime.AsTime()
+		expireTime = &t
+	}
+	row := tx.QueryRow(ctx, query, secret.Tenant.GetId(), secret.SecretHash, secret.Note, expireTime)
 	var createTime time.Time
 	err := row.Scan(&secret.Id, &createTime)
 	if err != nil {
