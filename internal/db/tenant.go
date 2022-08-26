@@ -86,7 +86,7 @@ func ListTenants(ctx context.Context, tx pgx.Tx) ([]*gen.Tenant, error) {
 	for rows.Next() {
 		tenant := &gen.Tenant{}
 		var createTime time.Time
-		err = rows.Scan(&tenant.Id, &tenant.Title, createTime, &tenant.ZoneNames)
+		err = rows.Scan(&tenant.Id, &tenant.Title, &createTime, &tenant.ZoneNames)
 		if err != nil {
 			return nil, err
 		}
@@ -132,7 +132,7 @@ func DeleteTenant(ctx context.Context, tx pgx.Tx, id string) error {
 // AddTenantZones will store an association between the given tenant and a set of zones.
 // Will fail if the tenant doesn't exist.
 func AddTenantZones(ctx context.Context, tx pgx.Tx, tenantID string, zones []string) error {
-	cols := []string{"tenant", "zone"}
+	cols := []string{"tenant", "zone_name"}
 	var rows [][]any
 	for _, zoneID := range zones {
 		rows = append(rows, []any{tenantID, zoneID})
@@ -191,7 +191,7 @@ func CreateTenantSecret(ctx context.Context, tx pgx.Tx, secret *gen.Secret) (*ge
 
 	row := tx.QueryRow(ctx, query, secret.Tenant.GetId(), secret.SecretHash, secret.Note, secret.ExpireTime.AsTime())
 	var createTime time.Time
-	err := row.Scan(&secret.Id, createTime)
+	err := row.Scan(&secret.Id, &createTime)
 	if err != nil {
 		return nil, nil
 	}
@@ -226,7 +226,7 @@ func ListTenantSecrets(ctx context.Context, tx pgx.Tx, tenantID string) ([]*gen.
 		SELECT s.id, s.tenant, t.title, s.secret_hash, s.note, s.create_time, s.first_use_time, s.last_use_time
 		FROM tenant_secret s
 			INNER JOIN tenant t on s.tenant = t.id
-		WHERE $1 = '' OR s.tenant = $1;
+		WHERE $1 = '' OR s.tenant = $1::UUID;
     `
 
 	rows, err := tx.Query(ctx, query, tenantID)

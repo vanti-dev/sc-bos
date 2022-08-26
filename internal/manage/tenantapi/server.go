@@ -242,6 +242,12 @@ func (s *Server) ListSecrets(ctx context.Context, request *gen.ListSecretsReques
 		logger.Error("db.ListTenantSecrets failed", zap.Error(err))
 		return nil, errDatabase
 	}
+	// unless specifically requested, censor the hashes
+	if !request.IncludeHash {
+		for i := range secrets {
+			secrets[i].SecretHash = nil
+		}
+	}
 
 	return &gen.ListSecretsResponse{Secrets: secrets}, nil
 }
@@ -272,7 +278,7 @@ func (s *Server) CreateSecret(ctx context.Context, request *gen.CreateSecretRequ
 		logger.Error("db transaction failed", zap.Error(err))
 		return nil, status.Error(codes.Internal, "database transaction failed")
 	}
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	return secret, nil
 }
 
 func (s *Server) GetSecret(ctx context.Context, request *gen.GetSecretRequest) (*gen.Secret, error) {
@@ -338,4 +344,6 @@ func hashSecret(secret string) (hash []byte) {
 	return sum[:]
 }
 
-var filterTenantRegexp = regexp.MustCompile(`^\s*tenant\.id\s*=\s*"?([^\s"]+)"?\s*$`)
+var filterTenantRegexp = regexp.MustCompile(
+	`^\s*tenant\.id\s*=\s*"?([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})"?\s*$`,
+)
