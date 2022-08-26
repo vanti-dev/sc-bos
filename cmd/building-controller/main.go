@@ -56,12 +56,7 @@ func run(ctx context.Context) error {
 	}
 
 	// load system config file
-	sysConfJSON, err := os.ReadFile(filepath.Join(flagConfigDir, "system.json"))
-	if err != nil {
-		return err
-	}
-	sysConf := DefaultSystemConfig()
-	err = json.Unmarshal(sysConfJSON, &sysConf)
+	sysConf, err := readSystemConfig()
 	if err != nil {
 		return err
 	}
@@ -165,6 +160,19 @@ func run(ctx context.Context) error {
 
 func main() {
 	os.Exit(app.RunUntilInterrupt(run))
+}
+
+func readSystemConfig() (SystemConfig, error) {
+	sysConfJSON, err := os.ReadFile(filepath.Join(flagConfigDir, "system.json"))
+	if err != nil {
+		return SystemConfig{}, err
+	}
+	sysConf := DefaultSystemConfig()
+	err = json.Unmarshal(sysConfJSON, &sysConf)
+	if err != nil {
+		return SystemConfig{}, err
+	}
+	return sysConf, nil
 }
 
 func connectDB(ctx context.Context, sysConf SystemConfig) (*pgxpool.Pool, error) {
