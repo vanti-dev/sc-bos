@@ -62,8 +62,8 @@ func (n *NodeServer) CreateNodeRegistration(ctx context.Context, request *gen.Cr
 	en, err := enrollment.EnrollAreaController(ctx, &gen.Enrollment{
 		TargetName:     nodeReg.Name,
 		TargetAddress:  nodeReg.Address,
-		ManagerName:    n.managerAddr,
-		ManagerAddress: n.managerName,
+		ManagerName:    n.managerName,
+		ManagerAddress: n.managerAddr,
 		RootCas:        n.rootsPEM,
 	}, n.ca)
 	if err != nil {

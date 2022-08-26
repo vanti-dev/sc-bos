@@ -38,8 +38,9 @@ func (t *JWTTime) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (t *JWTTime) MarshalJSON() ([]byte, error) {
-	return json.Marshal(time.Time(*t).Unix())
+//goland:noinspection GoMixedReceiverTypes
+func (t JWTTime) MarshalJSON() ([]byte, error) {
+	return json.Marshal(time.Time(t).Unix())
 }
 
 // JWTClaimValidator checks that JWTCommonClaims are correct.

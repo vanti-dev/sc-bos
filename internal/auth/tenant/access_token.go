@@ -69,7 +69,7 @@ func (ts *TokenSource) ValidateAccessToken(_ context.Context, token string) (*au
 		return nil, err
 	}
 
-	payloadBytes, err := jws.Verify(ts.Key)
+	payloadBytes, err := jws.Verify(ts.Key.Key)
 	if err != nil {
 		return nil, err
 	}
@@ -104,6 +104,6 @@ func generateKey() (jose.SigningKey, error) {
 
 	return jose.SigningKey{
 		Algorithm: jose.HS256,
-		Key:       nil,
+		Key:       key,
 	}, nil
 }

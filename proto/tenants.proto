@@ -61,6 +61,7 @@ service TenantApi {
 
   rpc CreateSecret(CreateSecretRequest) returns (Secret);
   rpc GetSecret(GetSecretRequest) returns (Secret);
+  rpc GetSecretByHash(GetSecretByHashRequest) returns (Secret);
   rpc UpdateSecret(UpdateSecretRequest) returns (Secret);
   rpc DeleteSecret(DeleteSecretRequest) returns (DeleteSecretResponse);
   rpc PullSecret(PullSecretRequest) returns (stream PullSecretResponse);
@@ -157,6 +158,10 @@ message CreateSecretRequest {
 message GetSecretRequest {
   string id = 1;
   bool include_hash = 2;
+}
+
+message GetSecretByHashRequest {
+  bytes secret_hash = 1;
 }
 
 message UpdateSecretRequest {

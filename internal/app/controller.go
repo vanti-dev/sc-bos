@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,9 +12,11 @@ import (
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
+	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
 	"github.com/vanti-dev/bsp-ew/internal/manage/enrollment"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -26,6 +29,9 @@ type SystemConfig struct {
 	DataDir     string
 	ListenGRPC  string
 	ListenHTTPS string
+
+	TenantOAuth bool          // If true, then tenant tokens will be issued and verified, backed by manager's TenantApi
+	Policy      policy.Policy // Override the policy used for RPC calls. Defaults to policy.Default
 }
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
@@ -70,15 +76,44 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		}
 	}
 
-	clientRoot := x509.NewCertPool()
-	clientRoot.AddCert(en.RootCA)
+	smartCoreRootCAs := x509.NewCertPool()
+	smartCoreRootCAs.AddCert(en.RootCA)
 	tlsServerConfig := &tls.Config{
 		GetCertificate: enrollServer.CertSource().TLSConfigGetCertificate,
 		ClientAuth:     tls.VerifyClientCertIfGiven,
-		ClientCAs:      clientRoot,
+		ClientCAs:      smartCoreRootCAs,
+	}
+	tlsClientConfig := &tls.Config{
+		RootCAs: smartCoreRootCAs,
 	}
 
-	interceptor := policy.NewInterceptor(policy.Default(), policy.WithLogger(logger.Named("policy")))
+	managerConn, err := grpc.DialContext(ctx, en.ManagerAddress,
+		grpc.WithTransportCredentials(credentials.NewTLS(tlsClientConfig)),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("dial manager: %w", err)
+	}
+
+	mux := http.NewServeMux()
+	interceptorOpts := []policy.InterceptorOption{policy.WithLogger(logger.Named("policy"))}
+	pol := policy.Default()
+	if config.Policy != nil {
+		pol = config.Policy
+	}
+	if config.TenantOAuth {
+		secrets := &tenant.RemoteSecretSource{
+			Logger: logger.Named("tenant.secrets"),
+			Client: gen.NewTenantApiClient(managerConn),
+		}
+		tokenServer, err := tenant.NewTokenSever(secrets, "gateway", 15*time.Minute, logger.Named("tenant.token"))
+		if err != nil {
+			return nil, err
+		}
+		mux.Handle("/oauth2/token", tokenServer)
+		interceptorOpts = append(interceptorOpts, policy.WithTokenVerifier(tokenServer.TokenValidator()))
+	}
+
+	interceptor := policy.NewInterceptor(pol, interceptorOpts...)
 	grpcServer := grpc.NewServer(
 		grpc.Creds(credentials.NewTLS(tlsServerConfig)),
 		grpc.UnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
@@ -90,7 +125,6 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	grpcWebServer := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
 		return true
 	}))
-	mux := http.NewServeMux()
 
 	httpServer := &http.Server{
 		Addr:      config.ListenHTTPS,
@@ -105,12 +139,14 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	}
 
 	return &Controller{
-		Logger:     logger,
-		Config:     config,
-		Enrollment: enrollServer,
-		Mux:        mux,
-		GRPC:       grpcServer,
-		HTTP:       httpServer,
+		Logger:          logger,
+		Config:          config,
+		Enrollment:      enrollServer,
+		Mux:             mux,
+		GRPC:            grpcServer,
+		HTTP:            httpServer,
+		ClientTLSConfig: tlsClientConfig,
+		ManagerConn:     managerConn,
 	}, nil
 }
 
@@ -122,9 +158,16 @@ type Controller struct {
 	Mux  *http.ServeMux
 	GRPC *grpc.Server
 	HTTP *http.Server
+
+	ClientTLSConfig *tls.Config
+	ManagerConn     *grpc.ClientConn
 }
 
-func (c *Controller) Run(ctx context.Context) error {
+func (c *Controller) Run(ctx context.Context) (err error) {
+	defer func() {
+		err = multierr.Append(err, c.ManagerConn.Close())
+	}()
+
 	group, ctx := errgroup.WithContext(ctx)
 	if c.Config.ListenGRPC != "" {
 		group.Go(func() error {
@@ -136,5 +179,6 @@ func (c *Controller) Run(ctx context.Context) error {
 			return ServeHTTPS(ctx, c.HTTP, 15*time.Second, c.Logger.Named("server.https"))
 		})
 	}
-	return group.Wait()
+	err = group.Wait()
+	return
 }

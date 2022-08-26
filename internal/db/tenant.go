@@ -222,6 +222,24 @@ func GetTenantSecret(ctx context.Context, tx pgx.Tx, id string) (*gen.Secret, er
 	return secret, nil
 }
 
+func GetTenantSecretByHash(ctx context.Context, tx pgx.Tx, hash []byte) (*gen.Secret, error) {
+	// language=postgresql
+	query := `
+		SELECT s.id, s.tenant, t.title, s.secret_hash, s.note, s.create_time, s.expire_time, s.first_use_time, s.last_use_time
+		FROM tenant_secret s
+			INNER JOIN tenant t on s.tenant = t.id
+		WHERE s.secret_hash = $1;
+    `
+
+	row := tx.QueryRow(ctx, query, hash)
+	secret := &gen.Secret{}
+	err := scanTenantSecret(row, secret)
+	if err != nil {
+		return nil, err
+	}
+	return secret, nil
+}
+
 // ListTenantSecrets returns all tenant secrets stored in the database.
 // If tenantID is non-empty, then only secrets associated with that tenant will be returned. If tenantID is empty
 // then secrets from all tenants are returned.

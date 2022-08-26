@@ -300,6 +300,24 @@ func (s *Server) GetSecret(ctx context.Context, request *gen.GetSecretRequest) (
 	return secret, nil
 }
 
+func (s *Server) GetSecretByHash(ctx context.Context, request *gen.GetSecretByHashRequest) (*gen.Secret, error) {
+	logger := rpcutil.ServerLogger(ctx, s.logger)
+
+	var secret *gen.Secret
+	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
+		secret, err = db.GetTenantSecretByHash(ctx, tx, request.SecretHash)
+		return
+	})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, status.Error(codes.NotFound, "secret not found")
+	} else if err != nil {
+		logger.Error("db.GetTenantSecretByHash failed", zap.Error(err))
+		return nil, status.Error(codes.Internal, "database transaction failed")
+	}
+
+	return secret, nil
+}
+
 func (s *Server) UpdateSecret(ctx context.Context, request *gen.UpdateSecretRequest) (*gen.Secret, error) {
 	return nil, status.Error(codes.Unimplemented, "unimplemented")
 }

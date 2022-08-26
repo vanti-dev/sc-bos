@@ -2,13 +2,16 @@ package main
 
 import (
 	"context"
+	"embed"
 	"flag"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/vanti-dev/bsp-ew/internal/app"
+	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
+	"github.com/vanti-dev/bsp-ew/internal/testapi"
+	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/zap"
 )
 
@@ -33,29 +36,31 @@ func main() {
 func run(ctx context.Context) error {
 	flag.Parse()
 
+	pol, err := policy.FromFS(policyFS)
+	if err != nil {
+		return err
+	}
+
 	config := app.SystemConfig{
 		Logger:      zap.NewDevelopmentConfig(),
 		DataDir:     flagDataDir,
 		ListenGRPC:  flagListenGRPC,
 		ListenHTTPS: flagListenHTTPS,
+		TenantOAuth: true,
+		Policy:      pol,
 	}
 
 	controller, err := app.Bootstrap(ctx, config)
 	if err != nil {
 		return err
 	}
-
-	tokenServer, err := tenant.NewTokenSever(
-		genTenantSecrets(controller.Logger), "gateway", 5*time.Minute, controller.Logger.Named("tenant.oauth"),
-	)
-	if err != nil {
-		return err
-	}
-
-	controller.Mux.Handle("/oauth2/token", tokenServer)
+	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
 
 	return controller.Run(ctx)
 }
+
+//go:embed policy
+var policyFS embed.FS
 
 func genTenantSecrets(logger *zap.Logger) tenant.SecretSource {
 	store := tenant.NewMemorySecretStore(nil)
