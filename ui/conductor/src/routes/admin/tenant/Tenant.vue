@@ -48,7 +48,9 @@
         </v-list>
       </section-card>
     </section-card>
-    <delete-secret-dialog v-model="deleteSecretDialogOpen" @commit="deleteSecretCommit"/>
+    <delete-secret-dialog v-model="deleteSecretDialogOpen"
+                          @commit="deleteSecretCommit"
+                          @rollback="deleteSecretRollback"/>
   </v-container>
 </template>
 
@@ -145,6 +147,11 @@ async function deleteSecretCommit() {
   } else {
     await listSecrets({tenantId: tenantTracker.response.id}, secretsTracker);
   }
+}
+
+function deleteSecretRollback() {
+  deleteSecretDialogSecret.value = null;
+  deleteSecretDialogOpen.value = false;
 }
 
 </script>
