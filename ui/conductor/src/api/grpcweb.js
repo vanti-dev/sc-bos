@@ -89,7 +89,7 @@ export function simpleFromObject(proto, obj, ...props) {
 export function timestampsFromObject(proto, obj, ...props) {
   for (const prop of props) {
     if (obj[prop]) {
-      proto[`set${prop[0].toUpperCase()}${prop.substring(1)}`](timestampsFromObject(obj[prop]));
+      proto[`set${prop[0].toUpperCase()}${prop.substring(1)}`](timestampFromObject(obj[prop]));
     }
   }
 }
