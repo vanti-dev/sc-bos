@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/internal/db"
 	"github.com/vanti-dev/bsp-ew/internal/util/rpcutil"
@@ -19,7 +20,7 @@ type PublicationServer struct {
 	traits.UnimplementedPublicationApiServer
 
 	logger *zap.Logger
-	conn   *pgx.Conn
+	conn   *pgxpool.Pool
 }
 
 func (p *PublicationServer) CreatePublication(ctx context.Context, request *traits.CreatePublicationRequest) (*traits.Publication, error) {

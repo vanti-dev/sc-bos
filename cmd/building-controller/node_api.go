@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/vanti-dev/bsp-ew/internal/db"
 	"github.com/vanti-dev/bsp-ew/internal/manage/enrollment"
 	"github.com/vanti-dev/bsp-ew/internal/util/rpcutil"
@@ -22,7 +23,7 @@ type NodeServer struct {
 	gen.UnimplementedNodeApiServer
 
 	logger        *zap.Logger
-	db            *pgx.Conn
+	db            *pgxpool.Pool
 	ca            *enrollment.CA
 	managerName   string
 	managerAddr   string

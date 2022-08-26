@@ -10,6 +10,7 @@ import (
 	"regexp"
 
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/bsp-ew/internal/db"
 	"github.com/vanti-dev/bsp-ew/internal/util/rpcutil"
@@ -28,7 +29,7 @@ var (
 
 type Server struct {
 	gen.UnimplementedTenantApiServer
-	dbConn *pgx.Conn
+	dbConn *pgxpool.Pool
 	logger *zap.Logger
 }
 
@@ -40,7 +41,7 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
-func NewServer(conn *pgx.Conn, options ...Option) *Server {
+func NewServer(conn *pgxpool.Pool, options ...Option) *Server {
 	s := &Server{
 		dbConn: conn,
 		logger: zap.NewNop(),

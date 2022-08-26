@@ -18,6 +18,7 @@ import (
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auth"
@@ -166,8 +167,8 @@ func main() {
 	os.Exit(app.RunUntilInterrupt(run))
 }
 
-func connectDB(ctx context.Context, sysConf SystemConfig) (*pgx.Conn, error) {
-	connConfig, err := pgx.ParseConfig(sysConf.DatabaseURL)
+func connectDB(ctx context.Context, sysConf SystemConfig) (*pgxpool.Pool, error) {
+	poolConfig, err := pgxpool.ParseConfig(sysConf.DatabaseURL)
 	if err != nil {
 		return nil, err
 	}
@@ -178,13 +179,13 @@ func connectDB(ctx context.Context, sysConf SystemConfig) (*pgx.Conn, error) {
 			return nil, err
 		}
 
-		connConfig.Password = strings.TrimSpace(string(passwordFile))
+		poolConfig.ConnConfig.Password = strings.TrimSpace(string(passwordFile))
 	}
 
-	return pgx.ConnectConfig(ctx, connConfig)
+	return pgxpool.ConnectConfig(ctx, poolConfig)
 }
 
-func populateDB(ctx context.Context, logger *zap.Logger, conn *pgx.Conn) error {
+func populateDB(ctx context.Context, logger *zap.Logger, conn *pgxpool.Pool) error {
 	deviceNames := []string{
 		"test/area-controller-1",
 		"test/area-controller-2",
