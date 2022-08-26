@@ -30,14 +30,15 @@
 </template>
 
 <script setup>
+import {timestampToDate} from '@/api/grpcweb.js';
 import {newActionTracker} from '@/api/resource.js';
 import {listTenants} from '@/api/ui/tenant.js';
 import MainCard from '@/components/SectionCard.vue';
-import {computed, onMounted, ref} from 'vue';
+import {ListTenantsResponse} from '@bsp-ew/ui-gen/src/tenants_pb.js';
+import {computed, onMounted, reactive, ref} from 'vue';
 import {useRouter} from 'vue-router/composables';
 
-const tenants = ref([]);
-const tenantsTracker = newActionTracker();
+const tenantsTracker = reactive(/** @type {ActionTracker<ListTenantsResponse.AsObject>} */newActionTracker());
 
 const search = ref('');
 
@@ -48,11 +49,15 @@ const headers = computed(() => {
   ]
 })
 const tenantRows = computed(() => {
-  return tenants.value;
+  if (!tenantsTracker.response) return [];
+  return tenantsTracker.response.tenantsList.map(t => ({
+    ...t,
+    createTime: t.createTime ? timestampToDate(t.createTime) : null
+  }))
 });
 
-onMounted(async () => {
-  tenants.value = await listTenants(null, tenantsTracker);
+onMounted(() => {
+  listTenants(null, tenantsTracker);
 });
 
 const router = useRouter();

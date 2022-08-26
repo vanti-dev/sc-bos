@@ -108,3 +108,17 @@ export function timestampFromObject(obj) {
 }
 
 
+/**
+ * @param {google_protobuf_timestamp_pb.Timestamp|google_protobuf_timestamp_pb.Timestamp.AsObject} ts
+ * @return {Date}
+ */
+export function timestampToDate(ts) {
+  if (ts instanceof Timestamp) return ts.toDate();
+  if (ts.hasOwnProperty('nanos') && ts.hasOwnProperty('seconds')) return timestampToDate(new Timestamp().setSeconds(ts.seconds).setNanos(ts.seconds));
+
+  // be kind
+  if (ts instanceof Date) return ts;
+  throw new Error('cannot convert ' + ts + ' to Date, unknown format');
+}
+
+

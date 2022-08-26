@@ -1,4 +1,4 @@
-import {clientOptions, simpleFromObject, timestampsFromObject} from '@/api/grpcweb.js';
+import {clientOptions, simpleFromObject, timestampsFromObject, timestampToDate} from '@/api/grpcweb.js';
 import {trackAction} from '@/api/resource.js';
 import {TenantApiPromiseClient} from '@bsp-ew/ui-gen/src/tenants_grpc_web_pb.js';
 import {
@@ -12,9 +12,9 @@ import {
 } from '@bsp-ew/ui-gen/src/tenants_pb.js';
 
 /**
- * @param {any} request
- * @param {ActionTracker<Tenant.AsObject>} tracker
- * @return {Promise<Tenant.AsObject>}
+ * @param {ListTenantsRequest.AsObject} request
+ * @param {ActionTracker<ListTenantsResponse.AsObject>} tracker
+ * @return {Promise<ListTenantsResponse.AsObject>}
  */
 export function listTenants(request, tracker) {
   return trackAction('Tenant.listTenants', tracker ?? {}, endpoint => {
@@ -80,6 +80,22 @@ function secretFromObject(obj) {
     proto.setTenant(tenantFromObject(obj.tenant));
   }
   return proto;
+}
+
+/**
+ * @param {Secret|Secret.AsObject|null} s
+ * @return {Secret.AsObject&{createTime?: Date, expireTime?:Date, lastUseTime?:Date, firstUseTime?:Date} | null}
+ */
+export function secretToObject(s) {
+  if (!s) return null;
+
+  const res = {...s};
+  for (const prop of ['createTime', 'expireTime', 'firstUseTime', 'lastUseTime']) {
+    if (s[prop]) {
+      res[prop] = timestampToDate(s[prop]);
+    }
+  }
+  return res;
 }
 
 /**

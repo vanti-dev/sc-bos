@@ -97,13 +97,30 @@ export async function trackAction(logPrefix, tracker, action) {
 }
 
 export function newActionTracker() {
-  return {};
+  return {
+    loading: false,
+    response: null,
+    error: null,
+    duration: 0
+  };
 }
 
 export function newResourceValue() {
-  return {};
+  return {
+    loading: false,
+    stream: null,
+    streamError: null,
+    updateTime: null,
+    value: null
+  };
 }
 
 export function newResourceCollection() {
-  return {};
+  return {
+    loading: false,
+    stream: null,
+    streamError: null,
+    updateTime: null,
+    value: {}
+  };
 }

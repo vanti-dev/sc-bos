@@ -5,7 +5,7 @@
     </v-list-item-icon>
     <v-list-item-content>
       <v-list-item-title class="d-flex align-baseline">
-        <span>{{ secret.token }}</span>
+        <span>{{ secret.secret }}</span>
         <v-btn @click="copyToClipboard" icon v-if="clipboardCopySupported" small class="ms-2" title="Copy to clipboard">
           <v-icon small v-if="clipboardCopyState === 'wait'">mdi-content-copy</v-icon>
           <v-icon small v-else-if="clipboardCopyState === 'ok'" color="success">mdi-check</v-icon>

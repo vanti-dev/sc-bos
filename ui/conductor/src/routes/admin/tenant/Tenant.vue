@@ -1,6 +1,9 @@
 <template>
   <v-container>
-    <section-card class="mt-7 pb-4">
+    <section-card class="mt-7 pb-4" :loading="tenantTracker.loading">
+      <v-alert v-if="tenantTracker.error" type="error" text class="rounded-b-0">
+        Unable to fetch tenant information: {{ tenantTracker.error.message }}
+      </v-alert>
       <v-card-title>{{ tenantTitle }}</v-card-title>
       <v-card-text>
         <v-combobox v-model="tenantZones" :items="['L3', 'L4']" multiple label="Occupies zones" hide-details outlined>
@@ -17,7 +20,10 @@
           </template>
         </v-combobox>
       </v-card-text>
-      <section-card class="mx-4 mt-4">
+      <section-card class="mx-4 mt-4" :loading="secretsTracker.loading">
+        <v-alert v-if="secretsTracker.error" type="error" text class="rounded-b-0">
+          Unable to fetch tenant secrets: {{ secretsTracker.error.message }}
+        </v-alert>
         <v-card-title><span>Secrets</span>
           <v-spacer/>
           <v-slide-y-reverse-transition>
@@ -47,35 +53,42 @@
 </template>
 
 <script setup>
-import {createSecret, deleteSecret, getTenant, listSecrets} from '@/api/ui/tenant.js';
+import {newActionTracker} from '@/api/resource.js';
+import {createSecret, deleteSecret, getTenant, listSecrets, secretToObject} from '@/api/ui/tenant.js';
 import SectionCard from '@/components/SectionCard.vue';
 import ThemeBtn from '@/components/ThemeBtn.vue';
 import DeleteSecretDialog from '@/routes/admin/tenant/DeleteSecretDialog.vue';
 import NewSecretForm from '@/routes/admin/tenant/NewSecretForm.vue';
 import SecretListItem from '@/routes/admin/tenant/SecretListItem.vue';
 import SecretTokenListItem from '@/routes/admin/tenant/SecretTokenListItem.vue';
+import {ListSecretsResponse, Secret, Tenant} from '@bsp-ew/ui-gen/src/tenants_pb.js';
 import {compareDesc} from 'date-fns';
-import {computed, ref, watch} from 'vue';
+import {computed, reactive, ref, watch} from 'vue';
 import {useRoute} from 'vue-router/composables';
 
 const route = useRoute();
 const tenantId = computed(() => route?.params.tenantId);
-const tenant = ref(null);
-const secrets = ref([]);
+
+const tenantTracker = reactive(/** @type {ActionTracker<Tenant.AsObject>} */ newActionTracker());
+const secretsTracker = reactive(/** @type {ActionTracker<ListSecretsResponse.AsObject>} */ newActionTracker());
+const createSecretTracker = reactive(/** @type {ActionTracker<Secret.AsObject>} */ newActionTracker());
+
 const secretList = computed(() => {
   // sorted by create time, excluding the createdSecret
-  let sorted = secrets.value.sort((a, b) => compareDesc(a.createTime, b.createTime));
-  if (createdSecret.value) {
-    sorted = sorted.filter(s => s !== createSecret.value)
+  let sorted = secretsTracker.response?.secretsList
+      .map(s => secretToObject(s))
+      .sort((a, b) => compareDesc(a.createTime, b.createTime));
+  if (createSecretTracker.response) {
+    sorted = sorted.filter(s => s.id !== createSecretTracker.response.id)
   }
   return sorted;
 })
 
-const tenantTitle = computed(() => tenant.value?.title ?? '');
-const tenantZones = computed(() => tenant.value?.zones ?? []);
+const tenantTitle = computed(() => tenantTracker.response?.title ?? '');
+const tenantZones = computed(() => tenantTracker.response?.zoneNamesList ?? []);
 
 const addingSecret = ref(false);
-const createdSecret = ref(null);
+const createdSecret = computed(() => secretToObject(createSecretTracker.response));
 
 function addSecretBegin() {
   addingSecret.value = true;
@@ -87,28 +100,29 @@ function addSecretRollback() {
 
 async function addSecretCommit(secret) {
   addingSecret.value = false;
-  secret.tenant = tenant.value;
-  if (createdSecret.value) {
+  secret.tenant = tenantTracker.response;
+  if (createSecretTracker.response) {
     await hideToken();
   }
-  createdSecret.value = await createSecret({secret});
+  await createSecret({secret}, createSecretTracker);
 }
 
-async function hideToken() {
-  createdSecret.value = null;
-  secrets.value = await listSecrets({tenantId: tenant.value.id});
+function hideToken() {
+  createSecretTracker.response = null;
+  listSecrets({tenantId: tenantTracker.response.id}, secretsTracker);
 }
 
 // fetch data for the tenant
-watch(tenantId, async (newVal, oldVal) => {
+watch(tenantId, (newVal, oldVal) => {
   if (!newVal) {
-    tenant.value = null;
-    secrets.value = [];
+    tenantTracker.response = null;
+    secretsTracker.response = null;
+    createSecretTracker.response = null;
     return;
   }
 
-  tenant.value = await getTenant({id: newVal});
-  secrets.value = await listSecrets({tenantId: newVal});
+  getTenant({id: newVal}, tenantTracker).catch(err => console.error(err));
+  listSecrets({tenantId: newVal}, secretsTracker).catch(err => console.error(err));
 }, {immediate: true});
 
 const deleteSecretDialogOpen = ref(false);
@@ -129,7 +143,7 @@ async function deleteSecretCommit() {
   if (createdSecret.value?.id === id) {
     createdSecret.value = null;
   } else {
-    secrets.value = await listSecrets({tenantId: tenant.value.id});
+    await listSecrets({tenantId: tenantTracker.response.id}, secretsTracker);
   }
 }
 
