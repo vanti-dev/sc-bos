@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
@@ -55,6 +57,10 @@ func run(ctx context.Context) error {
 		return err
 	}
 	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
+	traits.RegisterOnOffApiServer(controller.GRPC, onoff.NewApiRouter(
+		onoff.WithOnOffApiClientFactory(func(name string) (traits.OnOffApiClient, error) {
+			return traits.NewOnOffApiClient(controller.ManagerConn), nil
+		})))
 
 	return controller.Run(ctx)
 }

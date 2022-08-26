@@ -84,7 +84,8 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		ClientCAs:      smartCoreRootCAs,
 	}
 	tlsClientConfig := &tls.Config{
-		RootCAs: smartCoreRootCAs,
+		GetClientCertificate: enrollServer.CertSource().TLSConfigGetClientCertificate,
+		RootCAs:              smartCoreRootCAs,
 	}
 
 	managerConn, err := grpc.DialContext(ctx, en.ManagerAddress,

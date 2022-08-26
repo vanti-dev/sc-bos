@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -91,9 +92,20 @@ func main() {
 	}
 	client := gen.NewTestApiClient(conn)
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "authorization", "Bearer "+parsed.AccessToken)
+
 	res, err := client.GetTest(ctx, &gen.GetTestRequest{})
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "ERROR: call error: %s\n", err.Error())
+		_, _ = fmt.Fprintf(os.Stderr, "ERROR: call GetTest error: %s\n", err.Error())
+	} else {
+		fmt.Printf("test data: %s\n", res.Data)
 	}
-	fmt.Printf("got data: %s\n", res.Data)
+
+	name := "foo"
+	onOffClient := traits.NewOnOffApiClient(conn)
+	onOff, err := onOffClient.GetOnOff(ctx, &traits.GetOnOffRequest{Name: name})
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "ERROR: call GetOnOff error: %s\n", err.Error())
+	} else {
+		fmt.Printf("OnOff state of %q: %v\n", name, onOff.State)
+	}
 }

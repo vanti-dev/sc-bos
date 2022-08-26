@@ -73,7 +73,7 @@ message Enrollment {
   /* One or more X.509 certificates, in DER-encoded ASN.1 in a PEM container.
 
   If more than one certificate is present, they should be concatenated.
-  These are the Root Certificate Authorities for the enrollment. Each MUST be self-signed.
+  These are the Root Certificate Authorities for the enrollment. Each MUST be a CA certificate.
   The target node SHOULD use these certificate authorities whenever it communicates with another Smart Core node,
   to verify that the other node is also enrolled with the same manager.
    */

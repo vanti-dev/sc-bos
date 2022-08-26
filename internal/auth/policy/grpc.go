@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 )
 
@@ -128,7 +129,15 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 		TokenClaims:      creds.tokenClaims,
 	}
 
-	return creds, Validate(ctx, i.policy, input)
+	err := Validate(ctx, i.policy, input)
+	if err != nil {
+		addr := "unknown"
+		if p, ok := peer.FromContext(ctx); ok {
+			addr = p.Addr.String()
+		}
+		i.logger.Warn("request blocked by policy", zap.Any("attributes", input), zap.String("addr", addr))
+	}
+	return creds, err
 }
 
 type InterceptorOption func(interceptor *Interceptor)

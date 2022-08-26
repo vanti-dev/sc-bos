@@ -20,6 +20,7 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auth"
 	"github.com/vanti-dev/bsp-ew/internal/auth/keycloak"
@@ -91,6 +92,8 @@ func run(ctx context.Context) error {
 		GetCertificate:       grpcCertSource.TLSConfigGetCertificate,
 		GetClientCertificate: grpcCertSource.TLSConfigGetClientCertificate,
 		RootCAs:              rootsPool,
+		ClientCAs:            rootsPool,
+		ClientAuth:           tls.VerifyClientCertIfGiven,
 	}
 	httpsCertSource, err := loadHTTPSCertSource(sysConf, logger)
 	if err != nil {
@@ -131,6 +134,12 @@ func run(ctx context.Context) error {
 	})
 	gen.RegisterTenantApiServer(grpcServer, tenantapi.NewServer(dbConn,
 		tenantapi.WithLogger(logger.Named("tenantapi"))))
+	traits.RegisterOnOffApiServer(grpcServer, onoff.NewApiRouter(
+		onoff.WithOnOffApiClientFactory(func(name string) (traits.OnOffApiClient, error) {
+			model := onoff.NewModel(traits.OnOff_OFF)
+			return onoff.WrapApi(onoff.NewModelServer(model)), nil
+		}),
+	))
 
 	grpcWebWrapper := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
 		return true
