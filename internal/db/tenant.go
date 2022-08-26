@@ -202,7 +202,7 @@ func CreateTenantSecret(ctx context.Context, tx pgx.Tx, secret *gen.Secret) (*ge
 func GetTenantSecret(ctx context.Context, tx pgx.Tx, id string) (*gen.Secret, error) {
 	// language=postgresql
 	query := `
-		SELECT s.id, s.tenant, t.title, s.secret_hash, s.note, s.create_time, s.first_use_time, s.last_use_time
+		SELECT s.id, s.tenant, t.title, s.secret_hash, s.note, s.create_time, s.expire_time, s.first_use_time, s.last_use_time
 		FROM tenant_secret s
 			INNER JOIN tenant t on s.tenant = t.id
 		WHERE s.id = $1;
@@ -223,7 +223,7 @@ func GetTenantSecret(ctx context.Context, tx pgx.Tx, id string) (*gen.Secret, er
 func ListTenantSecrets(ctx context.Context, tx pgx.Tx, tenantID string) ([]*gen.Secret, error) {
 	// language=postgresql
 	query := `
-		SELECT s.id, s.tenant, t.title, s.secret_hash, s.note, s.create_time, s.first_use_time, s.last_use_time
+		SELECT s.id, s.tenant, t.title, s.secret_hash, s.note, s.create_time, s.expire_time, s.first_use_time, s.last_use_time
 		FROM tenant_secret s
 			INNER JOIN tenant t on s.tenant = t.id
 		WHERE $1 = '' OR s.tenant = $1::UUID;
@@ -247,20 +247,21 @@ func ListTenantSecrets(ctx context.Context, tx pgx.Tx, tenantID string) ([]*gen.
 }
 
 // reads out a secret from a DB row, in this order (tenant_secret s, tenant t):
-// s.id, s.tenant, t.title, s.secret_hash, s.note, s.create_time, s.first_use_time, s.last_use_time
+// s.id, s.tenant, t.title, s.secret_hash, s.note, s.create_time, s.expire_time, s.first_use_time, s.last_use_time
 func scanTenantSecret(row pgx.Row, secret *gen.Secret) error {
 	if secret.Tenant == nil {
 		secret.Tenant = &gen.Tenant{}
 	}
 	var (
-		createTime, firstUseTime, lastUseTime *time.Time
+		createTime, expireTime, firstUseTime, lastUseTime *time.Time
 	)
 	err := row.Scan(&secret.Id, &secret.Tenant.Id, &secret.Tenant.Title, &secret.SecretHash, &secret.Note, &createTime,
-		&firstUseTime, &lastUseTime)
+		&expireTime, &firstUseTime, &lastUseTime)
 	if err != nil {
 		return err
 	}
 	secret.CreateTime = nullableTimestamp(createTime)
+	secret.ExpireTime = nullableTimestamp(expireTime)
 	secret.FirstUseTime = nullableTimestamp(firstUseTime)
 	secret.LastUseTime = nullableTimestamp(lastUseTime)
 	return nil
