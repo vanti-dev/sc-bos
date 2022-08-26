@@ -32,6 +32,25 @@ type Server struct {
 	logger *zap.Logger
 }
 
+type Option func(server *Server)
+
+func WithLogger(logger *zap.Logger) Option {
+	return func(server *Server) {
+		server.logger = logger
+	}
+}
+
+func NewServer(conn *pgx.Conn, options ...Option) *Server {
+	s := &Server{
+		dbConn: conn,
+		logger: zap.NewNop(),
+	}
+	for _, opt := range options {
+		opt(s)
+	}
+	return s
+}
+
 func (s *Server) ListTenants(ctx context.Context, request *gen.ListTenantsRequest) (*gen.ListTenantsResponse, error) {
 	logger := rpcutil.ServerLogger(ctx, s.logger)
 

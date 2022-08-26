@@ -25,6 +25,7 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/db"
 	"github.com/vanti-dev/bsp-ew/internal/manage/enrollment"
+	"github.com/vanti-dev/bsp-ew/internal/manage/tenantapi"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
@@ -132,6 +133,8 @@ func run(ctx context.Context) error {
 		rootsPEM:      rootsPEM,
 		testTLSConfig: grpcTlsConfig,
 	})
+	gen.RegisterTenantApiServer(grpcServer, tenantapi.NewServer(dbConn,
+		tenantapi.WithLogger(logger.Named("tenantapi"))))
 
 	grpcWebWrapper := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
 		return true
