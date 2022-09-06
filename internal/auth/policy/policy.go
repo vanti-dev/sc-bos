@@ -51,6 +51,7 @@ type Policy interface {
 // to least specific until the query returns a result.
 // If the policy permits the request, returns nil. If it denies the request, returns ErrPermissionDenied.
 // If the policy could not be evaluated successfully, returns an error.
+// Returns the list of queries that were attempted before a decision was made.
 //
 // Services/protobuf packages are assumed to correspond to Rego packages of the same name; the gRPC service `foo.bar.Baz`
 // corresponds to the Rego package `foo.bar.Baz`. The package should contain a boolean rule named `allow`.
@@ -67,37 +68,33 @@ type Policy interface {
 //   - data.foo.bar.allow
 //   - data.foo.allow
 //   - data.grpc_default.allow
-func Validate(ctx context.Context, policy Policy, attr Attributes) error {
-	// the component parts of the protobuf package name (+ service name)
-	components := strings.Split(attr.Service, ".")
-
-	for len(components) > 0 {
-		query := fmt.Sprintf("data.%s.allow", strings.Join(components, "."))
+func Validate(ctx context.Context, policy Policy, attr Attributes) (tried []string, err error) {
+	queries := queryHierarchy(attr.Service)
+	for i, query := range queries {
 		result, err := policy.EvalPolicy(ctx, query, attr)
 		if err != nil {
-			return err
+			return queries[:i+1], err
 		}
 
 		if len(result) > 0 {
 			if result.Allowed() {
-				return nil
+				return queries[:i+1], nil
 			} else {
-				return ErrPermissionDenied
+				return queries[:i+1], ErrPermissionDenied
 			}
 		}
+	}
+	return queries, ErrPermissionDenied
+}
 
-		// if the result set is empty, we can try the next level up the hierarchy for a match
+func queryHierarchy(service string) (queries []string) {
+	components := strings.Split(service, ".")
+	for len(components) > 0 {
+		query := fmt.Sprintf("data.%s.allow", strings.Join(components, "."))
+		queries = append(queries, query)
+
 		components = components[:len(components)-1]
 	}
-
-	// try evaluating the fallback policy
-	result, err := policy.EvalPolicy(ctx, "data.grpc_default.allow", attr)
-	if err != nil {
-		return err
-	}
-
-	if !result.Allowed() {
-		return ErrPermissionDenied
-	}
-	return nil
+	queries = append(queries, "data.grpc_default.allow")
+	return
 }

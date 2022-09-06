@@ -97,7 +97,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 
 	mux := http.NewServeMux()
 	interceptorOpts := []policy.InterceptorOption{policy.WithLogger(logger.Named("policy"))}
-	pol := policy.Default()
+	pol := policy.Default(false)
 	if config.Policy != nil {
 		pol = config.Policy
 	}

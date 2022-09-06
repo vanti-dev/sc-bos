@@ -109,7 +109,7 @@ func run(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("init keycloak token verifier: %w", err)
 		}
-		interceptor := policy.NewInterceptor(policy.Default(),
+		interceptor := policy.NewInterceptor(policy.Default(false),
 			policy.WithTokenVerifier(verifier),
 			policy.WithLogger(logger.Named("policy")),
 		)

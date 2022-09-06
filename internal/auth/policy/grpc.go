@@ -129,13 +129,23 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 		TokenClaims:      creds.tokenClaims,
 	}
 
-	err := Validate(ctx, i.policy, input)
+	queries, err := Validate(ctx, i.policy, input)
+	addr := "unknown"
+	if p, ok := peer.FromContext(ctx); ok {
+		addr = p.Addr.String()
+	}
 	if err != nil {
-		addr := "unknown"
-		if p, ok := peer.FromContext(ctx); ok {
-			addr = p.Addr.String()
-		}
-		i.logger.Warn("request blocked by policy", zap.Any("attributes", input), zap.String("addr", addr))
+		i.logger.Warn("request blocked by policy",
+			zap.Any("attributes", input),
+			zap.String("addr", addr),
+			zap.Strings("queries", queries),
+		)
+	} else {
+		i.logger.Debug("request permitted by policy",
+			zap.Any("attributes", input),
+			zap.String("addr", addr),
+			zap.Strings("queries", queries),
+		)
 	}
 	return creds, err
 }

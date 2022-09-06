@@ -129,8 +129,12 @@ func init() {
 	defaultCompiler = compiler
 }
 
-func Default() Policy {
-	return newCachedStatic(defaultCompiler)
+func Default(cached bool) Policy {
+	if cached {
+		return newCachedStatic(defaultCompiler)
+	} else {
+		return &static{compiler: defaultCompiler}
+	}
 }
 
 func FromFS(f fs.FS) (Policy, error) {

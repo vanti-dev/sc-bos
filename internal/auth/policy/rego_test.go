@@ -35,12 +35,12 @@ func BenchmarkPolicy(b *testing.B) {
 	}
 
 	b.Run("static", func(b *testing.B) {
-		policy := &static{compiler: defaultCompiler}
+		policy := Default(false)
 		run(b, policy)
 	})
 
 	b.Run("cachedStatic", func(b *testing.B) {
-		policy := Default()
+		policy := Default(true)
 		run(b, policy)
 	})
 }

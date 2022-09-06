@@ -80,7 +80,7 @@ func TestValidate(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			policy := &mockPolicy{responses: c.responses}
-			err := Validate(context.Background(), policy, c.attr)
+			_, err := Validate(context.Background(), policy, c.attr)
 			if !errors.Is(err, c.expectErr) {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -127,7 +127,7 @@ func TestValidate_Integration(t *testing.T) {
 
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			err := Validate(context.Background(), policy, c.attr)
+			_, err := Validate(context.Background(), policy, c.attr)
 			if !errors.Is(err, c.expectErr) {
 				t.Errorf("unexpected error: %v", err)
 			}
