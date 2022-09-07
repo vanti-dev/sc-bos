@@ -139,7 +139,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		}),
 	}
 
-	return &Controller{
+	c := &Controller{
 		Logger:          logger,
 		Config:          config,
 		Enrollment:      enrollServer,
@@ -148,7 +148,9 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		HTTP:            httpServer,
 		ClientTLSConfig: tlsClientConfig,
 		ManagerConn:     managerConn,
-	}, nil
+	}
+	c.Defer(managerConn.Close)
+	return c, nil
 }
 
 type Controller struct {
@@ -162,11 +164,22 @@ type Controller struct {
 
 	ClientTLSConfig *tls.Config
 	ManagerConn     *grpc.ClientConn
+
+	deferred []Deferred
+}
+
+type Deferred func() error
+
+// Defer indicates that the given Deferred should be executed when the Controllers Run method returns.
+func (c *Controller) Defer(d Deferred) {
+	c.deferred = append(c.deferred, d)
 }
 
 func (c *Controller) Run(ctx context.Context) (err error) {
 	defer func() {
-		err = multierr.Append(err, c.ManagerConn.Close())
+		for _, d := range c.deferred {
+			err = multierr.Append(err, d())
+		}
 	}()
 
 	group, ctx := errgroup.WithContext(ctx)
