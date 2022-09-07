@@ -72,6 +72,13 @@ func run(ctx context.Context) error {
 	}
 
 	// load certificates
+
+	// roots.cert.pem contains the root certificates:
+	//  - sent to a controller as part of enrolment to allow that controller to trust our server+clients, and other enrolled controllers
+	//  - used as part of TLS validation by any grpc clients we create
+	//  - used as part of TLS validation against incoming connections to this server as part of mTLS
+	// Unless TLS validation has been explicitly disabled we only trust incoming client requests or servers whose cert
+	// has these roots.
 	rootsPEM, err := os.ReadFile(filepath.Join(flagConfigDir, "pki", "roots.cert.pem"))
 	if err != nil {
 		return err
@@ -80,10 +87,17 @@ func run(ctx context.Context) error {
 	if !rootsPool.AppendCertsFromPEM(rootsPEM) {
 		return errors.New("unable to parse any Root CA certificates")
 	}
+
+	// ca is responsible for managing the TLS trust for the collection of enrolled nodes.
+	// - It is used to issue new certs to controllers as they are enrolled
+	// - It is used to generate the server certificate we send to clients as part of the TLS handshake
+	// - It is used to generate the client certificate we send to servers as part of the mTLS handshake
 	ca, err := loadEnrollmentCA(sysConf)
 	if err != nil {
 		return err
 	}
+
+	// Setup tls.Config for our server apis and client requests
 	grpcCertSource, err := ca.LocalCertSource(pkix.Name{CommonName: "building-controller"}, true)
 	if err != nil {
 		return err
@@ -95,6 +109,7 @@ func run(ctx context.Context) error {
 		ClientCAs:            rootsPool,
 		ClientAuth:           tls.VerifyClientCertIfGiven,
 	}
+	// Setup the tls.Config for serving https apis - including grpc-web and hosting
 	httpsCertSource, err := loadHTTPSCertSource(sysConf, logger)
 	if err != nil {
 		return err
