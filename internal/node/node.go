@@ -9,41 +9,45 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Local represents a local smart core node.
+// Node represents a smart core node.
 // The node has collection of supported apis, represented by router.Router instances and configured via Support.
 // When new names are created they should call Announce and with the features relevant to the name.
 //
-// All supported APIs in a Local are routed based on a name.
-// Call Support to add new features to the Local.
+// All supported APIs in a Node are routed based on a name.
+// Call Support to add new features to the Node.
 // Calling Support after Register will not have any effect on the served apis.
-type Local struct {
+type Node struct {
 	name string
 
 	// children keeps track of all the names that have been announced to this node.
 	// Lazy, initialised when addChildTrait via Announce(HasTrait) or Register are called.
 	children *parent.Model
 	// routers holds all the APIs this node supports.
-	// Populated via Support(WithRouter).
+	// Populated via Support(Routing).
 	routers []router.Router
+	// clients holds instances of service clients returned by Client.
+	// Typically they are wrappers around each router instance.
+	// Populated via Support(Clients).
+	clients []any
 
 	Logger *zap.Logger
 }
 
-// New creates a new Local node with the given name.
-func New(name string) *Local {
-	return &Local{
+// New creates a new Node node with the given name.
+func New(name string) *Node {
+	return &Node{
 		name:   name,
 		Logger: zap.NewNop(),
 	}
 }
 
 // Name returns the device name for this node, how this node refers to itself.
-func (n *Local) Name() string {
+func (n *Node) Name() string {
 	return n.name
 }
 
 // Register implements server.GrpcApi and registers all supported routers with s.
-func (n *Local) Register(s *grpc.Server) {
+func (n *Node) Register(s *grpc.Server) {
 	n.parent() // force the parent api to be initialised
 	for _, r := range n.routers {
 		if api, ok := r.(server.GrpcApi); ok {
@@ -54,65 +58,88 @@ func (n *Local) Register(s *grpc.Server) {
 
 // Announce adds a new name with the given features to this node.
 // You may call Announce multiple times with the same name to add additional features, for example new traits.
-func (n *Local) Announce(name string, features ...Feature) {
+// Executing the returned Undo will undo any direct changes made.
+//
+// # A note on undoing
+//
+// The undo process is not perfect but best effort.
+// Hooks and callbacks may have been executed that have side effects that are not undone.
+func (n *Node) Announce(name string, features ...Feature) Undo {
 	a := &announcement{name: name}
 	for _, feature := range features {
 		feature.apply(a)
 	}
+
+	var undo []Undo
+	undo = append(undo, a.undo...)
+
 	for _, client := range a.clients {
-		n.addRoute(name, client)
+		undo = append(undo, n.addRoute(name, client))
 	}
 	log := n.Logger.Sugar()
 	for _, t := range a.traits {
 		log.Debugf("%v now implements %v\n", name, t.name)
 
 		if !t.noAddChildTrait && name != n.name {
-			n.addChildTrait(a.name, t.name)
+			undo = append(undo, n.addChildTrait(a.name, t.name))
 		}
 		for _, client := range t.clients {
-			n.addRoute(a.name, client)
+			undo = append(undo, n.addRoute(a.name, client))
 		}
 		if !t.noAddMetadata {
 			md := t.metadata
 			if md == nil {
 				md = AutoTraitMetadata
 			}
-			if err := n.addTraitMetadata(name, t.name, md); err != nil {
+			undoMd, err := n.addTraitMetadata(name, t.name, md)
+			if err != nil {
 				if err != MetadataTraitNotSupported {
 					log.Warnf("%v %v: %v", name, t.name, err)
 				}
 			}
+			undo = append(undo, undoMd)
 		}
 	}
+	return UndoAll(undo...)
 }
 
 // Support adds new supported functions to this node.
-func (n *Local) Support(functions ...Function) {
+func (n *Node) Support(functions ...Function) {
 	for _, function := range functions {
 		function.apply(n)
 	}
 }
 
-func (n *Local) addRouter(r ...router.Router) {
+func (n *Node) addRouter(r ...router.Router) {
 	n.routers = append(n.routers, r...)
 }
 
 // addRoute adds name->impl as a route to all routers that support the type impl.
-func (n *Local) addRoute(name string, impl interface{}) (added bool) {
+func (n *Node) addRoute(name string, impl interface{}) Undo {
+	var undo []Undo
 	for _, r := range n.routers {
 		if r.HoldsType(impl) {
 			r.Add(name, impl)
-			added = true
+			undo = append(undo, func() {
+				r.Remove(name)
+			})
 		}
 	}
-	return
+	return UndoAll(undo...)
 }
 
-func (n *Local) addChildTrait(name string, traitName ...trait.Name) {
+func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
 	n.parent().AddChildTrait(name, traitName...)
+	return func() {
+		// todo: remove child traits from n.parent()
+	}
 }
 
-func (n *Local) parent() *parent.Model {
+func (n *Node) addClient(c ...any) {
+	n.clients = append(n.clients, c...)
+}
+
+func (n *Node) parent() *parent.Model {
 	if n.children == nil {
 		// add this model as a device
 		n.children = parent.NewModel()

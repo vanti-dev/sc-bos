@@ -8,6 +8,7 @@ import (
 	"io"
 )
 
+// Remote represents a remote smart core node
 type Remote interface {
 	io.Closer
 	Target() string

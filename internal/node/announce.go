@@ -16,6 +16,7 @@ type announcement struct {
 	name    string
 	traits  []traitFeature
 	clients []interface{}
+	undo    []Undo
 }
 
 type traitFeature struct {
@@ -45,6 +46,7 @@ func (f featureFunc) apply(a *announcement) {
 }
 
 // HasClient indicates that the name implements non-trait apis as defined by these clients.
+// The clients are still added to routers and all requests on the clients should accept a Name.
 func HasClient(clients ...interface{}) Feature {
 	return featureFunc(func(a *announcement) {
 		a.clients = append(a.clients, clients...)
@@ -62,7 +64,7 @@ func HasTrait(name trait.Name, opt ...TraitOption) Feature {
 	})
 }
 
-// TraitOption controls how a Local behaves when presented with a new device trait.
+// TraitOption controls how a Node behaves when presented with a new device trait.
 type TraitOption func(t *traitFeature)
 
 // WithClients indicates that the trait is implemented by these client instances.
@@ -73,21 +75,21 @@ func WithClients(client ...interface{}) TraitOption {
 	}
 }
 
-// NoAddChildTrait instructs the Local not to add the trait to the nodes parent.Model.
+// NoAddChildTrait instructs the Node not to add the trait to the nodes parent.Model.
 func NoAddChildTrait() TraitOption {
 	return func(t *traitFeature) {
 		t.noAddChildTrait = true
 	}
 }
 
-// NoAddMetadata instructs the Local not to add the trait to the nodes traits.Metadata.
+// NoAddMetadata instructs the Node not to add the trait to the nodes traits.Metadata.
 func NoAddMetadata() TraitOption {
 	return func(t *traitFeature) {
 		t.noAddMetadata = true
 	}
 }
 
-// WithTraitMetadata instructs the Local to use the given metadata when adding the trait to the nodes traits.Metadata.
+// WithTraitMetadata instructs the Node to use the given metadata when adding the trait to the nodes traits.Metadata.
 // Metadata maps will be merged together, with conflicting keys in later calls overriding existing keys.
 func WithTraitMetadata(md map[string]string) TraitOption {
 	return func(t *traitFeature) {

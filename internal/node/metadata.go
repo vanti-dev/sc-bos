@@ -2,7 +2,6 @@ package node
 
 import (
 	"errors"
-
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/router"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
@@ -25,27 +24,29 @@ var AutoTraitMetadata = map[string]string{
 }
 var MetadataTraitNotSupported = errors.New("metadata is not supported")
 
-func (n *Local) addTraitMetadata(name string, traitName trait.Name, md map[string]string) error {
+func (n *Node) addTraitMetadata(name string, traitName trait.Name, md map[string]string) (Undo, error) {
 	metadataApiRouter := n.metadataApiRouter()
 	if metadataApiRouter == nil {
-		return MetadataTraitNotSupported
+		return NilUndo, MetadataTraitNotSupported
 	}
 	client, err := metadataApiRouter.Get(name)
 	if err != nil {
-		return err
+		return NilUndo, err
 	}
 	metadataModel, ok := wrap.UnwrapFully(client).(*metadata.Model)
 	if !ok {
-		return status.Errorf(codes.FailedPrecondition, "%v cannot auto-create trait %v", name, traitName)
+		return NilUndo, status.Errorf(codes.FailedPrecondition, "%v cannot auto-create trait %v", name, traitName)
 	}
 	_, err = metadataModel.UpdateTraitMetadata(&traits.TraitMetadata{
 		Name: string(traitName),
 		More: md,
 	})
-	return err
+	return func() {
+		// todo: remove any trait metadata from metadataModel
+	}, err
 }
 
-func (n *Local) metadataApiRouter() router.Router {
+func (n *Node) metadataApiRouter() router.Router {
 	metadataApiClient := metadata.WrapApi(traits.UnimplementedMetadataApiServer{})
 	for _, r := range n.routers {
 		if r.HoldsType(metadataApiClient) {
