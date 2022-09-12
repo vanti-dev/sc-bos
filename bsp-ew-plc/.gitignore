@@ -1,0 +1,16 @@
+*.tpy
+*.tmc
+*.suo
+_Boot/
+*.~*
+*.bak
+*.tclrs
+*.compileinfo
+*.imgcache
+
+#Twincat
+*~u
+_Boot
+_CompileInfo
+_Libraries
+TrialLicense.tclrs

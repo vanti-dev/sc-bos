@@ -1,0 +1,1162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_DALIBridge" Id="{ffc142fa-0e37-4262-99b6-8e517cc4b419}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_DALIBridge
+VAR_INPUT
+	// On rising edge, initialises the function block.
+	initialise				: BOOL := TRUE;
+	emergency				: BOOL := FALSE;
+END_VAR
+VAR_OUTPUT
+	// RPC client will watch for changes to this variable
+	// it contains the result of the last completed request
+	rpcResponse            	: ST_DALIBridgeResponse;
+	// RPC client will watch for changes to this to be notified about
+	// events that have occurred
+	notification            : ST_DALIBridgeNotification;
+END_VAR
+VAR
+	rtrigInitialise				: R_TRIG;
+	
+	// internal request handling state
+	requestFirstCycle       	: BOOL; 				// TRUE if this is the first cycle of a new request
+													// used to create a rising edge on the start of a request
+	activeRequest				: ST_DALIBridgeRequest;	// request being processed currently
+	activeRequestSequence   	: ULINT;				// sequence number of the current request
+	requestCounter          	: ULINT := 1;			// incremented to generate sequence numbers for requests
+
+	// notification handling
+	notificationAcked       	: BOOL := TRUE;			// true if it is OK to send a new notification
+	notificationCounter     	: ULINT := 1;
+	
+	// DALI command function blocks
+	communication				: I_DALICommunication := 0;
+	fbEmergencyPowerOn			: FB_DALI102RecallMaxLevel(0);
+	fbDirectArcPowerControl 	: FB_DALI102DirectArcPowerControl(0);
+	fbQueryActualLevel      	: FB_DALI102QueryActualLevel(0);
+	fbQueryStatus           	: FB_DALI102QueryStatus(0);
+	fbSetEventScheme        	: FB_DALI103SetEventScheme(0);
+	fbQueryEventScheme      	: FB_DALI103QueryEventScheme(0);
+	fbSetEventFilter        	: FB_DALI103SetEventFilter(0);
+	fbQueryEventFilter      	: FB_DALI103QueryEventFilter(0);
+	fbIdentifyDevice102     	: FB_DALI102IdentifyDevice(0);
+	fbIdentifyDevice103     	: FB_DALI103IdentifyDevice(0);
+	fbEnableInstance        	: FB_DALI103EnableInstance(0);
+	fbGoToScene					: FB_DALI102GoToScene(0);
+	fbSetFadeTime 				: FB_DALI102SetFadeTime(0);
+	fbQueryInputValue			: FB_DALI103QueryInputValue(0);
+	// Emergency Lighting Commands
+	fbQueryBatteryCharge        : FB_DALI202QueryBatteryCharge(0);
+	fbQueryDurationTestResult   : FB_DALI202QueryDurationTestResult(0);
+	fbQueryEmergencyMode        : FB_DALI202QueryEmergencyMode(0);
+	fbQueryEmergencyStatus      : FB_DALI202QueryEmergencyStatus(0);
+	fbQueryFailureStatus        : FB_DALI202QueryFailureStatus(0);
+	fbQueryRatedDuration        : FB_DALI202QueryRatedDuration(0);
+	fbQueryTestTiming           : FB_DALI202QueryTestTiming(0);
+	fbResetDurationTestDoneFlag : FB_DALI202ResetDurationTestDoneFlag(0);
+	fbResetFunctionTestDoneFlag : FB_DALI202ResetFunctionTestDoneFlag(0);
+	fbStartDurationTest         : FB_DALI202StartDurationTest(0);
+	fbStartFunctionTest 		: FB_DALI202StartFunctionTest(0);
+	fbStopTest                  : FB_DALI202StopTest(0);
+	fbSetDurationTestInterval   : FB_DALI202SetDurationTestInterval(0);
+	fbSetFunctionTestInterval   : FB_DALI202SetFunctionTestInterval(0);
+	fbStartIdentification202    : FB_DALI202StartIdentification(0);
+	
+	// input monitor function blocks
+	numInputEventListeners  	: INT := 0;
+	inputEventListenerParams 	: ARRAY [0..GVL_DALI.maxInputEventListeners-1] OF ST_DALIBridgeInputEventParams;
+	fbsGetInputNotification 	: ARRAY [0..GVL_DALI.maxInputEventListeners-1] OF FB_DALIGetInputNotification(0);
+	
+	// temporary / work variables
+	reinterpretEnum				: U_ReinterpretDALIEnum;
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// initialise function block when requested
+rtrigInitialise( clk := initialise );
+IF (rtrigInitialise.Q OR isFirstCycle()) THEN
+	ADSLOGSTR(
+		msgFmtStr := 'initialise FB_DALIBridge',
+		strArg := '',
+		msgCtrlMask := ADSLOG_MSGTYPE_LOG
+	);
+	initCommunication();
+	activeRequest.command := E_DALIBridgeCommand.idle;
+END_IF
+
+fbEmergencyPowerOn(
+	bStart := emergency,
+	nAddress := 0,
+	eAddressType := E_DALIAddressType.Broadcast,
+	eCommandPriority := E_DALICommandPriority.High
+);
+
+
+// work on the active request
+CASE activeRequest.command OF
+E_DALIBridgeCommand.directArcPowerControl:
+	fbDirectArcPowerControl( 
+		bStart 				:= requestFirstCycle,
+		nAddress 			:= activeRequest.address,
+		eAddressType 		:= activeRequest.addressType,
+		eCommandPriority 	:= E_DALICommandPriority.Middle,
+		nArcPowerLevel		:= activeRequest.data );
+	IF emergency THEN
+		cancelCommand();
+	ELSE
+		processResult(
+			busy 			:= fbDirectArcPowerControl.bBusy,
+			data 			:= 0,
+			bError 			:= fbDirectArcPowerControl.bError,
+			ipResultMessage := fbDirectArcPowerControl.ipResultMessage
+		);
+	END_IF;
+	
+E_DALIBridgeCommand.queryActualLevel:
+	fbQueryActualLevel( 
+		bStart 				:= requestFirstCycle,
+		nAddress 			:= activeRequest.address,
+		eAddressType 		:= activeRequest.addressType,
+		eCommandPriority 	:= E_DALICommandPriority.Middle );
+	processResult(
+		busy 			:= fbQueryActualLevel.bBusy,
+		data 			:= fbQueryActualLevel.nActualLevel,
+		bError 			:= fbQueryActualLevel.bError,
+		ipResultMessage := fbQueryActualLevel.ipResultMessage
+	);			
+
+E_DALIBridgeCommand.queryStatus:
+	fbQueryStatus( 
+		bStart 				:= requestFirstCycle,
+		nAddress 			:= activeRequest.address,
+		eAddressType 		:= activeRequest.addressType,
+		eCommandPriority 	:= E_DALICommandPriority.Middle 
+	);
+	processResult( 
+		busy 				:= fbQueryStatus.bBusy,
+		bError 				:= fbQueryStatus.bError,
+		data 				:= fbQueryStatus.nStatus,
+		ipResultMessage 	:= fbQueryStatus.ipResultMessage 
+	);	
+				   
+E_DALIBridgeCommand.setEventScheme:
+	// cast the data byte we got to the enum type required
+	reinterpretEnum.raw := activeRequest.data;
+	fbSetEventScheme(
+		bStart 					:= requestFirstCycle,
+		nAddress 				:= activeRequest.address,
+		eAddressType 			:= activeRequest.addressType,
+		nInstanceAddress 		:= activeRequest.instanceAddress,
+		eInstanceAddressType 	:= activeRequest.instanceAddressType,
+		eEventScheme 			:= reinterpretEnum.eventScheme,
+		eCommandPriority 		:= E_DALICommandPriority.Middle,
+	);
+	processResult(
+		busy 			:= fbSetEventScheme.bBusy,
+		bError 			:= fbSetEventScheme.bError,
+		data   			:= 0,
+		ipResultMessage := fbSetEventScheme.ipResultMessage,
+	);
+	
+E_DALIBridgeCommand.queryEventScheme:
+	fbQueryEventScheme(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType 			:= activeRequest.addressType,
+		nInstanceAddress		:= activeRequest.instanceAddress,
+		eInstanceAddressType	:= activeRequest.instanceAddressType,
+		eCommandPriority		:= E_DALICommandPriority.Middle
+	);
+	processResult(
+		busy			:= fbQueryEventScheme.bBusy,
+		bError			:= fbQueryEventScheme.bError,
+		data 			:= fbQueryEventScheme.eEventScheme,
+		ipResultMessage := fbQueryEventScheme.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.setEventFilter:
+	fbSetEventFilter(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType,
+		nInstanceAddress		:= activeRequest.instanceAddress,
+		eInstanceAddressType 	:= activeRequest.instanceAddressType,
+		nEventFilter 			:= activeRequest.data
+	);
+	processResult(
+		busy			:= fbSetEventFilter.bBusy,
+		bError			:= fbSetEventFilter.bError,
+		data			:= 0,
+		ipResultMessage := fbSetEventFilter.ipResultMessage	
+	);
+
+E_DALIBridgeCommand.queryEventFilter:
+	fbQueryEventFilter(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType,
+		nInstanceAddress		:= activeRequest.instanceAddress,
+		eInstanceAddressType	:= activeRequest.instanceAddressType,
+		eCommandPriority 		:= E_DALICommandPriority.Middle
+	);
+	processResult(
+		busy			:= fbQueryEventFilter.bBusy,
+		bError			:= fbQueryEventFilter.bError,
+		data 			:= DWORD_TO_BYTE(fbQueryEventFilter.nEventFilter),
+		ipResultMessage := fbQueryEventFilter.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.identifyDevice102:
+	fbIdentifyDevice102(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType,
+		eCommandPriority		:= E_DALICommandPriority.Middle
+	);
+	processResult(
+		busy			:= fbIdentifyDevice102.bBusy,
+		bError			:= fbIdentifyDevice102.bError,
+		data 			:= 0,
+		ipResultMessage := fbIdentifyDevice102.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.identifyDevice103:
+	fbIdentifyDevice103(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType,
+		eCommandPriority		:= E_DALICommandPriority.Middle
+	);
+	processResult(
+		busy			:= fbIdentifyDevice103.bBusy,
+		bError			:= fbIdentifyDevice103.bError,
+		data 			:= 0,
+		ipResultMessage := fbIdentifyDevice103.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.enableInstance:
+	fbEnableInstance(
+		bStart					:= requestFirstCycle,
+		nAddress 				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType,
+		nInstanceAddress		:= activeRequest.instanceAddress,
+		eInstanceAddressType	:= activeRequest.instanceAddressType,
+		eCommandPriority 		:= E_DALICommandPriority.Middle
+	);
+	processResult(
+		busy			:= fbEnableInstance.bBusy,
+		bError			:= fbEnableInstance.bError,
+		data			:= 0,
+		ipResultMessage := fbEnableInstance.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.goToScene:
+	fbGoToScene(
+		bStart 					:= requestFirstCycle,
+		nAddress 				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType,
+		nScene 					:= activeRequest.data,
+		eCommandPriority		:= E_DALICommandPriority.Middle
+	);
+	IF emergency THEN
+		cancelCommand();
+	ELSE
+		processResult(
+			busy			:= fbGoToScene.bBusy,
+			bError			:= fbGoToScene.bError,
+			data			:= 0,
+			ipResultMessage := fbGoToScene.ipResultMessage
+		);
+	END_IF
+	
+E_DALIBridgeCommand.setFadeTime:
+	reinterpretEnum.raw := activeRequest.data;
+	fbSetFadeTime(
+		bStart 					:= requestFirstCycle,
+		nAddress 				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType,
+		eFadeTime 				:= reinterpretEnum.fadeTime
+	);
+	processResult(
+		busy			:= fbSetFadeTime.bBusy,
+		bError 			:= fbSetFadeTime.bError,
+		data 			:= 0,
+		ipResultMessage := fbSetFadeTime.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.queryInputValue:
+	fbQueryInputValue(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType,
+		nInstanceAddress		:= activeRequest.instanceAddress,
+		eInstanceAddressType	:= activeRequest.instanceAddressType,
+		nResolution				:= 8,
+		eCommandPriority		:= E_DALICommandPriority.Middle
+	);
+	processResult(
+		busy					:= fbQueryInputValue.bBusy,
+		bError					:= fbQueryInputValue.bError,
+		data					:= fbQueryInputValue.nInputValue,
+		ipResultMessage			:= fbQueryInputValue.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.queryBatteryCharge:
+	fbQueryBatteryCharge(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType
+	);
+	processResult(
+		busy					:= fbQueryBatteryCharge.bBusy,
+		bError					:= fbQueryBatteryCharge.bError,
+		data					:= fbQueryBatteryCharge.nBatteryCharge,
+		ipResultMessage			:= fbQueryBatteryCharge.ipResultMessage
+	);	
+	
+E_DALIBridgeCommand.queryDurationTestResult:
+	fbQueryDurationTestResult(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType
+	);
+	processResult(
+		busy					:= fbQueryDurationTestResult.bBusy,
+		bError					:= fbQueryDurationTestResult.bError,
+		data					:= fbQueryDurationTestResult.nDurationTestResult,
+		ipResultMessage			:= fbQueryDurationTestResult.ipResultMessage
+	);	
+	
+E_DALIBridgeCommand.queryEmergencyMode:
+	fbQueryEmergencyMode(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType
+	);
+	processResult(
+		busy					:= fbQueryEmergencyMode.bBusy,
+		bError					:= fbQueryEmergencyMode.bError,
+		data					:= fbQueryEmergencyMode.nEmergencyMode,
+		ipResultMessage			:= fbQueryEmergencyMode.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.queryEmergencyStatus:
+	fbQueryEmergencyStatus(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType
+	);
+	processResult(
+		busy					:= fbQueryEmergencyStatus.bBusy,
+		bError					:= fbQueryEmergencyStatus.bError,
+		data					:= fbQueryEmergencyStatus.nEmergencyStatus,
+		ipResultMessage			:= fbQueryEmergencyStatus.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.queryFailureStatus:
+	fbQueryFailureStatus(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType
+	);
+	processResult(
+		busy					:= fbQueryFailureStatus.bBusy,
+		bError					:= fbQueryFailureStatus.bError,
+		data					:= fbQueryFailureStatus.nFailureStatus,
+		ipResultMessage			:= fbQueryFailureStatus.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.queryRatedDuration:
+	fbQueryRatedDuration(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType
+	);
+	processResult(
+		busy					:= fbQueryRatedDuration.bBusy,
+		bError					:= fbQueryRatedDuration.bError,
+		data					:= fbQueryRatedDuration.nRatedDuration,
+		ipResultMessage			:= fbQueryRatedDuration.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.queryTestTiming:
+	reinterpretEnum.raw := activeRequest.data;
+	fbQueryTestTiming(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType,
+		eTestTiming				:= reinterpretEnum.testTiming
+	);
+	processResult(
+		busy					:= fbQueryTestTiming.bBusy,
+		bError					:= fbQueryTestTiming.bError,
+		data					:= fbQueryTestTiming.nValue,
+		ipResultMessage			:= fbQueryTestTiming.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.resetDurationTestDoneFlag:
+	fbResetDurationTestDoneFlag(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType,
+	);
+	processResult(
+		busy					:= fbResetDurationTestDoneFlag.bBusy,
+		bError					:= fbResetDurationTestDoneFlag.bError,
+		data					:= 0,
+		ipResultMessage			:= fbResetDurationTestDoneFlag.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.resetFunctionTestDoneFlag:
+	fbResetFunctionTestDoneFlag(
+		bStart					:= requestFirstCycle,
+		nAddress				:= activeRequest.address,
+		eAddressType			:= activeRequest.addressType,
+	);
+	processResult(
+		busy					:= fbResetFunctionTestDoneFlag.bBusy,
+		bError					:= fbResetFunctionTestDoneFlag.bError,
+		data					:= 0,
+		ipResultMessage			:= fbResetFunctionTestDoneFlag.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.startDurationTest:
+	IF emergency THEN
+		cancelCommand();
+	ELSE
+		fbStartDurationTest(
+			bStart					:= requestFirstCycle,
+			nAddress				:= activeRequest.address,
+			eAddressType			:= activeRequest.addressType,
+		);
+		processResult(
+			busy					:= fbStartDurationTest.bBusy,
+			bError					:= fbStartDurationTest.bError,
+			data					:= 0,
+			ipResultMessage			:= fbStartDurationTest.ipResultMessage
+		);
+	END_IF
+	
+E_DALIBridgeCommand.startFunctionTest:
+	IF emergency THEN
+		cancelCommand();
+	ELSE
+		fbStartDurationTest(
+			bStart					:= requestFirstCycle,
+			nAddress				:= activeRequest.address,
+			eAddressType			:= activeRequest.addressType,
+		);
+		processResult(
+			busy					:= fbStartFunctionTest.bBusy,
+			bError					:= fbStartFunctionTest.bError,
+			data					:= 0,
+			ipResultMessage			:= fbStartFunctionTest.ipResultMessage
+		);
+	END_IF
+	
+E_DALIBridgeCommand.stopTest:
+	fbStartDurationTest(
+		bStart						:= requestFirstCycle,
+		nAddress					:= activeRequest.address,
+		eAddressType				:= activeRequest.addressType,
+	);
+	processResult(
+		busy						:= fbStopTest.bBusy,
+		bError						:= fbStopTest.bError,
+		data						:= 0,
+		ipResultMessage				:= fbStopTest.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.setDurationTestInterval:
+	fbSetDurationTestInterval(
+		bStart						:= requestFirstCycle,
+		nAddress					:= activeRequest.address,
+		eAddressType				:= activeRequest.addressType,
+		nDurationTestInterval		:= activeRequest.data
+	);
+	processResult(
+		busy						:= fbSetDurationTestInterval.bBusy,
+		bError						:= fbSetDurationTestInterval.bError,
+		data						:= 0,
+		ipResultMessage				:= fbSetDurationTestInterval.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.setFunctionTestInterval:
+	fbSetFunctionTestInterval(
+		bStart						:= requestFirstCycle,
+		nAddress					:= activeRequest.address,
+		eAddressType				:= activeRequest.addressType,
+		nFunctionTestInterval		:= activeRequest.data
+	);
+	processResult(
+		busy						:= fbSetFunctionTestInterval.bBusy,
+		bError						:= fbSetFunctionTestInterval.bError,
+		data						:= 0,
+		ipResultMessage				:= fbSetFunctionTestInterval.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.startIdentification202:
+	fbStartIdentification202(
+		bStart						:= requestFirstCycle,
+		nAddress					:= activeRequest.address,
+		eAddressType				:= activeRequest.addressType,
+	);
+	processResult(
+		busy						:= fbStartIdentification202.bBusy,
+		bError						:= fbStartIdentification202.bError,
+		data						:= 0,
+		ipResultMessage				:= fbStartIdentification202.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.testCommand:
+	processResult(
+		busy := FALSE,
+		data := 123,
+		bError := FALSE,
+		ipResultMessage := NULL
+	);
+
+ELSE
+	activeRequest.command := E_DALIBridgeCommand.idle;
+END_CASE
+
+processNotifications();
+
+requestFirstCycle := FALSE;]]></ST>
+    </Implementation>
+    <Method Name="cancelCommand" Id="{5fa73b9a-3876-4266-86fa-e7ba6d95daff}">
+      <Declaration><![CDATA[METHOD PRIVATE cancelCommand
+VAR_INPUT
+END_VAR
+
+VAR
+	tmpResponse: ST_DALIBridgeResponse;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// generate response
+tmpResponse.valid := TRUE;
+tmpResponse.data := 0;
+tmpResponse.error := TRUE;
+tmpResponse.message := 'Emergency in progress';
+tmpResponse.sequence := THIS^.activeRequestSequence;
+
+// return to the idle state, ready for a new request
+THIS^.activeRequest.command := E_DALIBridgeCommand.idle;
+// publish the response
+THIS^.rpcResponse := tmpResponse;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{3fe7f856-db30-4183-8199-2b42d44364a0}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	
+	communication : I_DALICommunication;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.communication := communication;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="initCommunication" Id="{dadfe2cb-ff34-4103-868f-559c34afb880}">
+      <Declaration><![CDATA[METHOD PRIVATE initCommunication
+VAR_INPUT
+END_VAR
+VAR
+	i : INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF communication = 0 THEN
+	RETURN;
+END_IF
+
+FOR i := 0 TO GVL_DALI.maxInputEventListeners-1 DO
+	fbsGetInputNotification[i].ipDALICommunication := communication;
+END_FOR
+
+fbEmergencyPowerOn.ipDALICommunication 		:= communication;
+fbDirectArcPowerControl.ipDALICommunication := communication;
+fbQueryActualLevel.ipDALICommunication 		:= communication;
+fbQueryStatus.ipDALICommunication 			:= communication;
+fbSetEventScheme.ipDALICommunication 		:= communication;
+fbQueryEventScheme.ipDALICommunication 		:= communication;
+fbSetEventFilter.ipDALICommunication 		:= communication;
+fbQueryEventFilter.ipDALICommunication 		:= communication;
+fbIdentifyDevice102.ipDALICommunication 	:= communication;
+fbIdentifyDevice103.ipDALICommunication 	:= communication;
+fbEnableInstance.ipDALICommunication 		:= communication;
+fbGoToScene.ipDALICommunication 			:= communication;
+fbSetFadeTime.ipDALICommunication 			:= communication;
+fbQueryInputValue.ipDALICommunication		:= communication;
+
+fbQueryBatteryCharge.ipDALICommunication    	:= communication;
+fbQueryDurationTestResult.ipDALICommunication 	:= communication;
+fbQueryEmergencyMode.ipDALICommunication        := communication;
+fbQueryEmergencyStatus.ipDALICommunication  	:= communication;
+fbQueryFailureStatus.ipDALICommunication		:= communication;
+fbQueryRatedDuration.ipDALICommunication		:= communication;
+fbQueryTestTiming.ipDALICommunication			:= communication;
+fbResetDurationTestDoneFlag.ipDALICommunication := communication;
+fbResetFunctionTestDoneFlag.ipDALICommunication := communication;
+fbStartDurationTest.ipDALICommunication 		:= communication;
+fbStartFunctionTest.ipDALICommunication 		:= communication;
+fbStopTest.ipDALICommunication					:= communication;
+fbSetDurationTestInterval.ipDALICommunication   := communication;
+fbSetFunctionTestInterval.ipDALICommunication   := communication;
+fbStartIdentification202.ipDALICommunication    := communication;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="isFirstCycle" Id="{b0d67c62-fcd8-4748-91f3-dac60a26c617}">
+      <Declaration><![CDATA[METHOD PRIVATE isFirstCycle : BOOL
+VAR_INPUT
+END_VAR
+VAR_INST
+	fbGetCurTaskIndex : GETCURTASKINDEX;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbGetCurTaskIndex();
+isFirstCycle := TwinCAT_SystemInfoVarList._TaskInfo[fbGetCurTaskIndex.index].FirstCycle;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="processNotifications" Id="{fb9a0b01-1c93-42dd-a720-0bd973fa4132}">
+      <Declaration><![CDATA[METHOD PRIVATE processNotifications : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	i 				: DINT;
+	eventsProcessed : BYTE := 0;
+	
+	currentParams   : REFERENCE TO ST_DALIBridgeInputEventParams;
+	currentFb 		: REFERENCE TO FB_DALIGetInputNotification;
+	currentEvent    : REFERENCE TO ST_DALIBridgeInputEvent;
+	
+	newNotif : ST_DALIBridgeNotification;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT notificationAcked THEN
+	// cannot process more notifications until the current notification has been ACKed
+	processNotifications := FALSE;
+	RETURN;
+END_IF
+
+newNotif.valid := FALSE;
+
+// for every active notification listener
+FOR i := 0 TO numInputEventListeners-1 DO
+	IF (eventsProcessed >= GVL_DALI.maxInputEventsPerNotification) THEN
+		// stop processing if the event buffer is full
+		EXIT;
+	END_IF	
+
+	currentFb REF= fbsGetInputNotification[i];
+	currentParams REF= inputEventListenerParams[i];
+	
+	// check for a new event
+	currentFb(
+		bEnable := TRUE,
+		eEventScheme := currentParams.eventScheme,
+		nAddressInfo1 := currentParams.addressInfo1,
+		nAddressInfo2 := currentParams.addressInfo2
+	);
+	
+	// don't add to event array if no new data was found
+	IF NOT currentFb.bNewData THEN
+		CONTINUE;
+	END_IF
+	
+	// populate the event entry
+	currentEvent REF= newNotif.inputEvents[eventsProcessed];
+	currentEvent.data := currentFb.nEventInfo;
+	currentEvent.error := currentFb.bError;
+	currentFb.ipResultMessage.RequestEventText(
+		nLangId := 1033,
+		sResult := currentEvent.message,
+		nResultSize := SIZEOF(currentEvent.message)
+	);
+	currentEvent.parameters := inputEventListenerParams[i];
+	currentEvent.status := currentFb.ipResultMessage.nEventId;
+	
+	eventsProcessed := eventsProcessed + 1;
+END_FOR
+
+IF (eventsProcessed > 0) THEN
+	newNotif.sequence := notificationCounter;
+	notificationCounter := notificationCounter + 1;
+	newNotif.nInputEvents := eventsProcessed;
+	newNotif.valid := TRUE;
+	
+	notification := newNotif;
+	notificationAcked := FALSE;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="processResult" Id="{cca05110-43f5-4212-9147-d3bde3145601}">
+      <Declaration><![CDATA[METHOD PRIVATE processResult
+VAR_INPUT
+	busy 			: BOOL;
+	data            : LWORD;
+	bError 			: BOOL;
+	ipResultMessage	: Tc3_EventLogger.I_TcMessage;
+END_VAR
+VAR
+	tmpResponse: ST_DALIBridgeResponse;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (busy) THEN
+	// continue executing the command function block until it is no longer busy
+	RETURN;
+END_IF
+
+// generate response
+tmpResponse.valid := TRUE;
+tmpResponse.data := data;
+tmpResponse.error := bError;
+tmpResponse.sequence := THIS^.activeRequestSequence;
+IF ipResultMessage = 0 THEN
+	ADSLOGSTR(
+		msgCtrlMask := ADSLOG_MSGTYPE_WARN,
+		msgFmtStr := 'FB_DALIBridge.processResult: ipResultMessage is null',
+		strArg := ''
+	);
+	tmpResponse.status := 0;
+	tmpResponse.message := 'ipResultMessage NULL';
+ELSE
+	tmpResponse.status := ipResultMessage.nEventId;
+	ipResultMessage.RequestEventText(1033, tmpResponse.message, SIZEOF(tmpResponse.message));
+END_IF
+
+// return to the idle state, ready for a new request
+THIS^.activeRequest.command := E_DALIBridgeCommand.idle;
+// publish the response
+THIS^.rpcResponse := tmpResponse;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="RpcAckNotification" Id="{dc28b8f3-8dfa-4b5b-bd83-dabfbd8da15d}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD PUBLIC RpcAckNotification : BOOL
+VAR_INPUT
+	// The notification sequence number to acknowledge
+	sequence : ULINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF notificationAcked THEN
+	// can't acknowledge a notification twice
+	RpcAckNotification := FALSE;
+	RETURN;
+END_IF
+
+IF sequence <> notification.sequence THEN
+	// attempt to acknowledge a notification with the wrong sequence number
+	RpcAckNotification := FALSE;
+	RETURN;
+END_IF
+
+RpcAckNotification := TRUE;
+notificationAcked := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="RpcAddInputEventListener" Id="{d5c6a362-c38a-4540-a829-e4b20d43f3e2}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD PUBLIC RpcAddInputEventListener : BOOL
+VAR_INPUT
+	parameters : ST_DALIBridgeInputEventParams;
+END_VAR
+VAR
+	i : INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ADSLOGSTR(
+		msgFmtStr := 'add event listener',
+		strArg := '',
+		msgCtrlMask := ADSLOG_MSGTYPE_LOG
+);
+
+FOR i := 0 TO numInputEventListeners-1 DO
+	IF (parameters.eventScheme = inputEventListenerParams[i].eventScheme
+		AND parameters.addressInfo1 = inputEventListenerParams[i].addressInfo1
+		AND parameters.addressInfo2 = inputEventListenerParams[i].addressInfo2) 
+	THEN
+		// the desired event listener is already enabled
+		RpcAddInputEventListener := TRUE;
+		RETURN;
+	END_IF
+END_FOR
+
+IF numInputEventListeners >= GVL_DALI.maxInputEventListeners THEN
+	// notification listeners are full
+	RpcAddInputEventListener := FALSE;
+	RETURN;
+END_IF
+
+inputEventListenerParams[numInputEventListeners] := parameters;
+numInputEventListeners := numInputEventListeners + 1;
+
+RpcAddInputEventListener := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="RpcHandshake" Id="{7652d85a-67d4-475a-a454-03bb952b224f}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD PUBLIC RpcHandshake
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+	protocolVersion : INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[protocolVersion := 1;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="RpcRequest" Id="{b02a3a11-596b-41f2-b6d4-925fca8b9554}">
+      <Declaration><![CDATA[(* Called by an external API consumer over RPC to start a DALI request.
+   Returns TRUE if the request was accepted. If the bridge is busy, then this returns FALSE
+   and the request will not be processed. *)
+{attribute 'TcRpcEnable' := '1'}
+METHOD PUBLIC RpcRequest : BOOL
+VAR_INPUT
+	// The DALI operation that the caller wants the DALI Bridge to perform.
+	request : ST_DALIBridgeRequest;
+END_VAR
+VAR_OUTPUT
+	// A sequence number that will allow the caller to identify the response value.
+	sequence : ULINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// reject request if bridge is busy processing a previous request
+IF (THIS^.activeRequest.command <> E_DALIBridgeCommand.idle) THEN
+	RpcRequest := FALSE;
+	RETURN;
+END_IF
+
+// save the request, so it will begin processing next cycle
+THIS^.activeRequest := request;
+THIS^.activeRequestSequence := THIS^.requestCounter;
+sequence := THIS^.activeRequestSequence;
+
+// advance sequence counter
+THIS^.requestCounter := THIS^.requestCounter + 1;
+
+// The next cycle will be the first cycle of the new request
+THIS^.requestFirstCycle := TRUE;
+
+RpcRequest := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="RpcReset" Id="{a44880d1-dc55-40e1-bf17-165ab4916b68}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD PUBLIC RpcReset
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[numInputEventListeners := 0;
+notificationAcked := TRUE;
+activeRequest.command := E_DALIBridgeCommand.idle;
+ADSLOGSTR(
+		msgFmtStr := 'reset FB_DALIBridge',
+		strArg := '',
+		msgCtrlMask := ADSLOG_MSGTYPE_LOG
+);]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_DALIBridge">
+      <LineId Id="306" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="138" Count="0" />
+      <LineId Id="314" Count="4" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="684" Count="0" />
+      <LineId Id="683" Count="0" />
+      <LineId Id="686" Count="4" />
+      <LineId Id="693" Count="0" />
+      <LineId Id="302" Count="0" />
+      <LineId Id="143" Count="0" />
+      <LineId Id="142" Count="0" />
+      <LineId Id="144" Count="0" />
+      <LineId Id="148" Count="0" />
+      <LineId Id="465" Count="0" />
+      <LineId Id="150" Count="3" />
+      <LineId Id="890" Count="1" />
+      <LineId Id="889" Count="0" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="179" Count="0" />
+      <LineId Id="183" Count="0" />
+      <LineId Id="180" Count="2" />
+      <LineId Id="893" Count="0" />
+      <LineId Id="244" Count="1" />
+      <LineId Id="248" Count="0" />
+      <LineId Id="466" Count="0" />
+      <LineId Id="250" Count="2" />
+      <LineId Id="255" Count="0" />
+      <LineId Id="467" Count="0" />
+      <LineId Id="257" Count="2" />
+      <LineId Id="468" Count="0" />
+      <LineId Id="262" Count="0" />
+      <LineId Id="261" Count="0" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="461" Count="0" />
+      <LineId Id="265" Count="2" />
+      <LineId Id="462" Count="0" />
+      <LineId Id="268" Count="0" />
+      <LineId Id="463" Count="0" />
+      <LineId Id="269" Count="2" />
+      <LineId Id="464" Count="0" />
+      <LineId Id="441" Count="1" />
+      <LineId Id="548" Count="1" />
+      <LineId Id="444" Count="1" />
+      <LineId Id="447" Count="4" />
+      <LineId Id="453" Count="0" />
+      <LineId Id="446" Count="0" />
+      <LineId Id="455" Count="1" />
+      <LineId Id="458" Count="2" />
+      <LineId Id="457" Count="0" />
+      <LineId Id="469" Count="3" />
+      <LineId Id="474" Count="4" />
+      <LineId Id="473" Count="0" />
+      <LineId Id="479" Count="9" />
+      <LineId Id="490" Count="4" />
+      <LineId Id="489" Count="0" />
+      <LineId Id="495" Count="1" />
+      <LineId Id="499" Count="2" />
+      <LineId Id="497" Count="0" />
+      <LineId Id="502" Count="0" />
+      <LineId Id="443" Count="0" />
+      <LineId Id="503" Count="9" />
+      <LineId Id="514" Count="2" />
+      <LineId Id="513" Count="0" />
+      <LineId Id="517" Count="3" />
+      <LineId Id="522" Count="2" />
+      <LineId Id="521" Count="0" />
+      <LineId Id="525" Count="7" />
+      <LineId Id="534" Count="10" />
+      <LineId Id="533" Count="0" />
+      <LineId Id="550" Count="3" />
+      <LineId Id="555" Count="3" />
+      <LineId Id="560" Count="0" />
+      <LineId Id="554" Count="0" />
+      <LineId Id="561" Count="1" />
+      <LineId Id="564" Count="2" />
+      <LineId Id="563" Count="0" />
+      <LineId Id="617" Count="3" />
+      <LineId Id="628" Count="3" />
+      <LineId Id="621" Count="0" />
+      <LineId Id="894" Count="2" />
+      <LineId Id="623" Count="4" />
+      <LineId Id="622" Count="0" />
+      <LineId Id="897" Count="0" />
+      <LineId Id="749" Count="1" />
+      <LineId Id="763" Count="0" />
+      <LineId Id="751" Count="6" />
+      <LineId Id="759" Count="3" />
+      <LineId Id="758" Count="0" />
+      <LineId Id="818" Count="16" />
+      <LineId Id="970" Count="2" />
+      <LineId Id="975" Count="1" />
+      <LineId Id="974" Count="0" />
+      <LineId Id="977" Count="9" />
+      <LineId Id="988" Count="1" />
+      <LineId Id="987" Count="0" />
+      <LineId Id="990" Count="0" />
+      <LineId Id="992" Count="4" />
+      <LineId Id="991" Count="0" />
+      <LineId Id="236" Count="0" />
+      <LineId Id="997" Count="0" />
+      <LineId Id="999" Count="0" />
+      <LineId Id="1002" Count="1" />
+      <LineId Id="1001" Count="0" />
+      <LineId Id="1004" Count="0" />
+      <LineId Id="1006" Count="4" />
+      <LineId Id="1005" Count="0" />
+      <LineId Id="1011" Count="2" />
+      <LineId Id="1015" Count="2" />
+      <LineId Id="1014" Count="0" />
+      <LineId Id="1019" Count="4" />
+      <LineId Id="1018" Count="0" />
+      <LineId Id="1024" Count="2" />
+      <LineId Id="1028" Count="1" />
+      <LineId Id="1027" Count="0" />
+      <LineId Id="1030" Count="0" />
+      <LineId Id="1032" Count="4" />
+      <LineId Id="1031" Count="0" />
+      <LineId Id="1037" Count="2" />
+      <LineId Id="1041" Count="1" />
+      <LineId Id="1040" Count="0" />
+      <LineId Id="1043" Count="0" />
+      <LineId Id="1045" Count="4" />
+      <LineId Id="1044" Count="0" />
+      <LineId Id="1050" Count="1" />
+      <LineId Id="1185" Count="0" />
+      <LineId Id="1052" Count="5" />
+      <LineId Id="1059" Count="4" />
+      <LineId Id="1058" Count="0" />
+      <LineId Id="1064" Count="2" />
+      <LineId Id="1069" Count="1" />
+      <LineId Id="1067" Count="0" />
+      <LineId Id="1071" Count="0" />
+      <LineId Id="1073" Count="4" />
+      <LineId Id="1072" Count="0" />
+      <LineId Id="1078" Count="1" />
+      <LineId Id="1081" Count="9" />
+      <LineId Id="1080" Count="0" />
+      <LineId Id="1091" Count="3" />
+      <LineId Id="1096" Count="1" />
+      <LineId Id="1100" Count="1" />
+      <LineId Id="1098" Count="1" />
+      <LineId Id="1102" Count="2" />
+      <LineId Id="1108" Count="0" />
+      <LineId Id="1105" Count="0" />
+      <LineId Id="1107" Count="0" />
+      <LineId Id="1095" Count="0" />
+      <LineId Id="1109" Count="0" />
+      <LineId Id="1111" Count="14" />
+      <LineId Id="1110" Count="0" />
+      <LineId Id="998" Count="0" />
+      <LineId Id="1128" Count="0" />
+      <LineId Id="1132" Count="13" />
+      <LineId Id="1147" Count="1" />
+      <LineId Id="1146" Count="0" />
+      <LineId Id="1149" Count="1" />
+      <LineId Id="1152" Count="4" />
+      <LineId Id="1151" Count="0" />
+      <LineId Id="1157" Count="0" />
+      <LineId Id="1159" Count="11" />
+      <LineId Id="1158" Count="0" />
+      <LineId Id="1171" Count="1" />
+      <LineId Id="1174" Count="3" />
+      <LineId Id="1179" Count="5" />
+      <LineId Id="1173" Count="0" />
+      <LineId Id="1127" Count="0" />
+      <LineId Id="237" Count="6" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="146" Count="1" />
+      <LineId Id="145" Count="0" />
+      <LineId Id="312" Count="0" />
+      <LineId Id="311" Count="0" />
+      <LineId Id="393" Count="0" />
+      <LineId Id="392" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DALIBridge.cancelCommand">
+      <LineId Id="6" Count="3" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="15" Count="3" />
+      <LineId Id="14" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DALIBridge.FB_init">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DALIBridge.initCommunication">
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="29" Count="1" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="5" Count="2" />
+      <LineId Id="15" Count="6" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="52" Count="13" />
+    </LineIds>
+    <LineIds Name="FB_DALIBridge.isFirstCycle">
+      <LineId Id="8" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DALIBridge.processNotifications">
+      <LineId Id="87" Count="50" />
+      <LineId Id="151" Count="2" />
+      <LineId Id="138" Count="0" />
+      <LineId Id="21" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DALIBridge.processResult">
+      <LineId Id="5" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="51" Count="1" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="78" Count="2" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="74" Count="2" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="58" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DALIBridge.RpcAckNotification">
+      <LineId Id="5" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="17" Count="1" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="21" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DALIBridge.RpcAddInputEventListener">
+      <LineId Id="44" Count="3" />
+      <LineId Id="42" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="20" Count="3" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="28" Count="1" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="33" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DALIBridge.RpcHandshake">
+      <LineId Id="5" Count="0" />
+      <LineId Id="10" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DALIBridge.RpcRequest">
+      <LineId Id="57" Count="12" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="42" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DALIBridge.RpcReset">
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="22" Count="3" />
+      <LineId Id="17" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

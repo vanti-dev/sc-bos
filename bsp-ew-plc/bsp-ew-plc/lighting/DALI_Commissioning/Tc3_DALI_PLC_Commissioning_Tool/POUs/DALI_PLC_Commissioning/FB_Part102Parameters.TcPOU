@@ -1,0 +1,497 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.10">
+  <POU Name="FB_Part102Parameters" Id="{f90b359b-adb1-4ca1-b422-4f21e0f96b96}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Part102Parameters
+VAR_INPUT
+	ipDALICommunication				:	I_DALICommunication;
+END_VAR
+VAR_OUTPUT
+	bBusy							:	BOOL;
+END_VAR
+VAR
+	{region "Visu"}
+	nAddressRange					:	BYTE; // 0: single short address / 1: address range
+	nStartAddress					:	BYTE;
+	nEndAddress						:	BYTE;
+	nSelectedAddress				:	INT := 255;
+	bRead							:	BOOL;
+	bWrite							:	BOOL;
+	bHideWaitSymbol					:	BOOL := TRUE;
+	aParameters						:	ARRAY [0..63] OF ST_DALI102Parameters;
+	{endregion}
+	i								:	INT;
+	nStep							:	INT;
+	nAddress						:	BYTE;
+	fb102QueryActualLevel			:	FB_DALI102QueryActualLevel(0);
+	fb102QueryMinLevel				:	FB_DALI102QueryMinLevel(0);
+	fb102QueryMaxLevel				:	FB_DALI102QueryMaxLevel(0);
+	fb102QueryFadeTimeFadeRate		:	FB_DALI102QueryFadeTimeFadeRate(0);
+	fb102QueryPowerOnLevel			: 	FB_DALI102QueryPowerOnLevel(0);
+	fb102QuerySystemFailureLevel  	: 	FB_DALI102QuerySystemFailureLevel(0);
+	fb102QueryPhysicalMinimum		: 	FB_DALI102QueryPhysicalMinimum(0); 
+	fb102QueryDeviceTypes			: 	FB_DALI102QueryDeviceTypes(0);
+
+	fb102DirectArcPowerControl		:	FB_DALI102DirectArcPowerControl(0);
+	fb102SetMinLevel				:	FB_DALI102SetMinLevel(0);
+	fb102SetMaxLevel				:	FB_DALI102SetMaxLevel(0);
+	fb102SetFadeTime				:	FB_DALI102SetFadeTime(0);
+	fb102SetFadeRate				:	FB_DALI102SetFadeRate(0);
+	fb102SetPowerOnLevel			: 	FB_DALI102SetPowerOnLevel(0);
+	fb102SetSystemFailureLevel  	: 	FB_DALI102SetSystemFailureLevel(0);
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[{region "Detect Commands"}
+IF (bRead AND (nStep = 0)) THEN
+	nStep := 10;
+	bRead := FALSE;
+	bHideWaitSymbol := FALSE;
+	IF (nAddressRange = 0) THEN // single short address
+		nAddress := TO_BYTE(nSelectedAddress);
+	ELSIF (nAddressRange = 1) THEN // address range
+		nAddress := nStartAddress;
+	END_IF
+END_IF
+
+IF (bWrite AND (nStep = 0)) THEN
+	nStep := 1000;
+	bWrite := FALSE;
+	bHideWaitSymbol := FALSE;
+	IF (nAddressRange = 0) THEN
+		nAddress := TO_BYTE(nSelectedAddress);
+	END_IF
+END_IF
+{endregion}
+{region "Avoid errors in line output"}
+IF (nSelectedAddress < 0) THEN
+	nSelectedAddress := 255;
+END_IF
+{endregion}
+{region "Manage Dialog Selection}
+IF (nStep = 0) THEN
+	bBusy := FALSE;
+ELSE
+	bBusy := TRUE;
+END_IF
+{endregion}
+{region "Execute Commands"}
+CASE nStep OF
+0:
+{region "Init"}
+	bRead := FALSE;
+	bWrite := FALSE;
+	bHideWaitSymbol := TRUE;
+
+	fb102QueryActualLevel.ipDALICommunication := ipDALICommunication;
+	fb102QueryMinLevel.ipDALICommunication := ipDALICommunication;
+	fb102QueryMaxLevel.ipDALICommunication := ipDALICommunication;
+	fb102QueryFadeTimeFadeRate.ipDALICommunication := ipDALICommunication;
+	fb102QueryPowerOnLevel.ipDALICommunication := ipDALICommunication;
+	fb102QuerySystemFailureLevel.ipDALICommunication := ipDALICommunication;
+	fb102QueryPhysicalMinimum.ipDALICommunication := ipDALICommunication;
+	fb102QueryDeviceTypes.ipDALICommunication := ipDALICommunication;
+	fb102DirectArcPowerControl.ipDALICommunication := ipDALICommunication;
+	fb102SetMinLevel.ipDALICommunication := ipDALICommunication;
+	fb102SetMaxLevel.ipDALICommunication := ipDALICommunication;
+	fb102SetFadeTime.ipDALICommunication := ipDALICommunication;
+	fb102SetFadeRate.ipDALICommunication := ipDALICommunication;
+	fb102SetPowerOnLevel.ipDALICommunication := ipDALICommunication;
+	fb102SetSystemFailureLevel.ipDALICommunication := ipDALICommunication;
+{endregion}
+{region "Read"}
+10:
+{region "Query Actual Level"}
+	fb102QueryActualLevel(bStart := TRUE,
+						  nAddress := nAddress,
+						  eAddressType := E_DALIAddressType.Short,
+						  eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fb102QueryActualLevel.bBusy) THEN
+		nStep := 20;
+		fb102QueryActualLevel(bStart := FALSE);
+		IF (NOT fb102QueryActualLevel.bError) THEN
+			aParameters[nAddress].nActualLevel := fb102QueryActualLevel.nActualLevel;
+		END_IF
+
+		IF (fb102QueryActualLevel.ipResultMessage.nEventId = TC_EVENTS.TcDALIEventClass.NoResponseFromTheDALIDevice.nEventId) THEN 
+			aParameters[nAddress].nActualLevel := 0;
+			aParameters[nAddress].eFadeRate := 255;
+			aParameters[nAddress].eFadeTime := 255;
+			aParameters[nAddress].nMaxLevel := 0;
+			aParameters[nAddress].nMinLevel := 0;
+			aParameters[nAddress].nPhysicalMinimum := 0;
+			aParameters[nAddress].nPowerOnLevel := 0;
+			aParameters[nAddress].nSystemFailureLevel := 0;
+			aParameters[nAddress].sDeviceTypes := '';
+			IF (nAddressRange = 1) THEN
+				nAddress := nAddress+1;
+				IF (nAddress <= nEndAddress) THEN
+					nStep := 10;
+				ELSE
+					nStep := 0;
+				END_IF
+			ELSE 
+				nStep := 0;
+			END_IF
+		END_IF
+	END_IF
+{endregion}
+20:
+{region "Query Min Level"}
+	fb102QueryMinLevel(bStart := TRUE,
+					   nAddress := nAddress,
+					   eAddressType := E_DALIAddressType.Short,
+					   eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fb102QueryMinLevel.bBusy) THEN
+		IF (not fb102QueryMinLevel.bError) THEN
+			aParameters[nAddress].nMinLevel := fb102QueryMinLevel.nMinLevel;
+		END_IF
+		fb102QueryMinLevel(bStart := FALSE);
+		nStep := 30;
+	END_IF
+{endregion}
+30:
+{region "Query Max Level"}
+	fb102QueryMaxLevel(bStart := TRUE,
+					   nAddress := nAddress,
+					   eAddressType := E_DALIAddressType.Short,
+					   eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fb102QueryMaxLevel.bBusy) THEN
+		IF (NOT fb102QueryMaxLevel.bError) THEN
+			aParameters[nAddress].nMaxLevel := fb102QueryMaxLevel.nMaxLevel;
+		END_IF
+		fb102QueryMaxLevel(bStart := FALSE);
+		nStep := 40;
+	END_IF
+{endregion}
+40:
+{region "Query Fade Time Fade Rate"}
+	fb102QueryFadeTimeFadeRate(bStart := TRUE,
+							   nAddress := nAddress,
+							   eAddressType := E_DALIAddressType.Short,
+							   eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fb102QueryFadeTimeFadeRate.bBusy) THEN
+		IF(NOT fb102QueryFadeTimeFadeRate.bError) THEN
+			aParameters[nAddress].eFadeRate := fb102QueryFadeTimeFadeRate.eFadeRate;
+			aParameters[nAddress].eFadeTime := fb102QueryFadeTimeFadeRate.eFadeTime;
+		END_IF
+		fb102QueryFadeTimeFadeRate(bStart := FALSE);
+		nStep := 50;
+	END_IF
+{endregion}
+50:
+{region "Query PowerOn Level"}
+	fb102QueryPowerOnLevel(bStart := TRUE,
+						   nAddress := nAddress,
+						   eAddressType := E_DALIAddressType.Short,
+						   eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fb102QueryPowerOnLevel.bBusy) THEN
+		IF (NOT fb102QueryPowerOnLevel.bError) THEN
+			aParameters[nAddress].nPowerOnLevel := fb102QueryPowerOnLevel.nPowerOnLevel;
+		END_IF
+		fb102QueryPowerOnLevel(bStart := FALSE);
+		nStep := 60;
+	END_IF
+{endregion}
+60:
+{region "Query System Failure Level"}
+	fb102QuerySystemFailureLevel(bStart := TRUE,
+								 nAddress := nAddress,
+								 eAddressType := E_DALIAddressType.Short,
+								 eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fb102QuerySystemFailureLevel.bBusy) THEN
+		IF (NOT fb102QuerySystemFailureLevel.bError) THEN
+			aParameters[nAddress].nSystemFailureLevel := fb102QuerySystemFailureLevel.nSystemFailureLevel;
+		END_IF
+		fb102QuerySystemFailureLevel(bStart := FALSE);
+		nStep := 70;
+	END_IF
+{endregion}
+70:
+{region "Query Physical Minimum"}
+	fb102QueryPhysicalMinimum(bStart := TRUE,
+							  nAddress := nAddress,
+							  eAddressType := E_DALIAddressType.Short,
+							  eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fb102QueryPhysicalMinimum.bBusy) THEN
+		IF (NOT fb102QueryPhysicalMinimum.bError) THEN
+			aParameters[nAddress].nPhysicalMinimum := fb102QueryPhysicalMinimum.nPhysicalMinimum;
+		END_IF
+		fb102QueryPhysicalMinimum(bStart := FALSE);
+		nStep := 80;
+	END_IF
+{endregion}
+80:
+{region "Query Device Types"}
+	fb102QueryDeviceTypes(bStart := TRUE,
+						  nAddress := nAddress,
+						  eAddressType := E_DALIAddressType.Short,
+						  eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fb102QueryDeviceTypes.bBusy) THEN
+		fb102QueryDeviceTypes(bStart := FALSE);
+		IF ( NOT fb102QueryDeviceTypes.bError) THEN
+			aParameters[nAddress].sDeviceTypes := '';
+			FOR i := 1 TO 20 DO
+				IF (fb102QueryDeviceTypes.aDeviceTypes[i] > 0) THEN
+					IF (fb102QueryDeviceTypes.aDeviceTypes[i] <> 255) THEN
+						IF (aParameters[nAddress].sDeviceTypes <> '') THEN
+							aParameters[nAddress].sDeviceTypes := CONCAT(aParameters[nAddress].sDeviceTypes, ', ');
+						END_IF
+						aParameters[nAddress].sDeviceTypes := CONCAT(aParameters[nAddress].sDeviceTypes, TO_STRING(TO_INT(fb102QueryDeviceTypes.aDeviceTypes[i])));
+					END_IF
+				END_IF
+			END_FOR
+		END_IF
+		IF (nAddressRange = 1) THEN // address range
+			nAddress := nAddress + 1;
+			IF (nAddress <= nEndAddress) THEN
+				nStep := 10;
+			ELSE
+				nStep := 0;
+			END_IF
+		ELSE
+			nStep := 0;
+		END_IF
+	END_IF
+{endregion}
+{endregion}
+{region "Write"}
+1000:
+{region "Direct Arc Power Control"}
+	fb102DirectArcPowerControl(bStart := TRUE,
+							   nAddress := nAddress,
+							   eAddressType := E_DALIAddressType.Short,
+							   eCommandPriority := E_DALICommandPriority.Middle,
+							   nArcPowerLevel := aParameters[nAddress].nActualLevel);
+	IF (NOT fb102DirectArcPowerControl.bBusy) THEN
+		fb102DirectArcPowerControl(bStart := FALSE);
+		nStep := 1010;
+	END_IF
+{endregion}
+1010:
+{region "Set Min Level"}
+	fb102SetMinLevel(bStart := TRUE,
+					 nAddress := nAddress,
+					 eAddressType := E_DALIAddressType.Short,
+					 eCommandPriority := E_DALICommandPriority.Middle,
+					 nMinLevel := aParameters[nAddress].nMinLevel);
+	IF (NOT fb102SetMinLevel.bBusy) THEN
+		fb102SetMinLevel(bStart := FALSE);
+		nStep := 1020;
+	END_IF
+{endregion}
+1020:
+{region "Set Max Level"}
+	fb102SetMaxLevel(bStart := TRUE,
+					 nAddress := nAddress,
+					 eAddressType := E_DALIAddressType.Short,
+					 eCommandPriority := E_DALICommandPriority.Middle,
+					 nMaxLevel := aParameters[nAddress].nMaxLevel);
+	IF (NOT fb102SetMaxLevel.bBusy) THEN
+		fb102SetMaxLevel(bStart := FALSE);
+		nStep := 1030;
+	END_IF
+{endregion}
+1030:
+{region "Set Fade Time"}
+	fb102SetFadeTime(bStart := TRUE,
+					 nAddress := nAddress,
+					 eAddressType := E_DALIAddressType.Short,
+					 eCommandPriority := E_DALICommandPriority.Middle,
+					 eFadeTime := aParameters[nAddress].eFadeTime);
+	IF (NOT fb102SetFadeTime.bBusy) THEN
+		fb102SetFadeTime(bStart := FALSE);
+		nStep := 1040;
+	END_IF
+{endregion}
+1040:
+{region "Set Fade Rate"}
+	fb102SetFadeRate(bStart := TRUE,
+					 nAddress := nAddress,
+					 eAddressType := E_DALIAddressType.Short,
+					 eCommandPriority := E_DALICommandPriority.Middle,
+					 eFadeRate := aParameters[nAddress].eFadeRate);
+	IF (NOT fb102SetFadeRate.bBusy) THEN
+		fb102SetFadeRate(bStart := FALSE);
+		nStep := 1050;
+	END_IF
+{endregion}
+1050:
+{region "Set Power On Level"}
+	fb102SetPowerOnLevel(bStart := TRUE,
+						 nAddress := nAddress,
+						 eAddressType := E_DALIAddressType.Short,
+						 eCommandPriority := E_DALICommandPriority.Middle,
+						 nPowerOnLevel := aParameters[nAddress].nPowerOnLevel);
+	IF (NOT fb102SetPowerOnLevel.bBusy) THEN
+		fb102SetPowerOnLevel(bStart := FALSE);
+		nStep := 1060;
+	END_IF
+{endregion}
+1060:
+{region "Set System Failure Level"}
+	fb102SetSystemFailureLevel(bStart := TRUE,
+							   nAddress := nAddress,
+							   eAddressType := E_DALIAddressType.Short,
+							   eCommandPriority := E_DALICommandPriority.Middle,
+							   nSystemFailureLevel := aParameters[nAddress].nSystemFailureLevel);
+	IF (NOT fb102SetSystemFailureLevel.bBusy) THEN
+		fb102SetSystemFailureLevel(bStart := FALSE);
+		IF (nAddressRange = 1) THEN // address range
+			nAddress := nAddress + 1;
+			IF (nAddress <= nEndAddress) THEN
+				nStep := 1000;
+			ELSE
+				nStep := 0;
+			END_IF
+		ELSE
+			nStep := 0;
+		END_IF
+	END_IF
+{endregion}
+ELSE
+	nStep := 0;
+END_CASE
+{endregion}]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Part102Parameters">
+      <LineId Id="130" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="496" Count="0" />
+      <LineId Id="505" Count="1" />
+      <LineId Id="542" Count="1" />
+      <LineId Id="507" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="63" Count="3" />
+      <LineId Id="497" Count="0" />
+      <LineId Id="509" Count="2" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="1087" Count="0" />
+      <LineId Id="1083" Count="2" />
+      <LineId Id="1088" Count="0" />
+      <LineId Id="1037" Count="5" />
+      <LineId Id="399" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="35" Count="1" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="47" Count="1" />
+      <LineId Id="495" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="486" Count="6" />
+      <LineId Id="485" Count="0" />
+      <LineId Id="678" Count="5" />
+      <LineId Id="676" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="76" Count="2" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="1133" Count="1" />
+      <LineId Id="500" Count="1" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="886" Count="0" />
+      <LineId Id="894" Count="5" />
+      <LineId Id="901" Count="1" />
+      <LineId Id="891" Count="1" />
+      <LineId Id="1152" Count="8" />
+      <LineId Id="1151" Count="0" />
+      <LineId Id="512" Count="1" />
+      <LineId Id="977" Count="0" />
+      <LineId Id="515" Count="6" />
+      <LineId Id="524" Count="1" />
+      <LineId Id="528" Count="1" />
+      <LineId Id="978" Count="0" />
+      <LineId Id="530" Count="6" />
+      <LineId Id="539" Count="2" />
+      <LineId Id="527" Count="0" />
+      <LineId Id="979" Count="0" />
+      <LineId Id="559" Count="6" />
+      <LineId Id="572" Count="0" />
+      <LineId Id="568" Count="3" />
+      <LineId Id="573" Count="0" />
+      <LineId Id="575" Count="0" />
+      <LineId Id="577" Count="2" />
+      <LineId Id="582" Count="0" />
+      <LineId Id="586" Count="3" />
+      <LineId Id="592" Count="2" />
+      <LineId Id="981" Count="0" />
+      <LineId Id="595" Count="4" />
+      <LineId Id="604" Count="2" />
+      <LineId Id="608" Count="2" />
+      <LineId Id="982" Count="0" />
+      <LineId Id="611" Count="5" />
+      <LineId Id="619" Count="0" />
+      <LineId Id="622" Count="1" />
+      <LineId Id="625" Count="1" />
+      <LineId Id="983" Count="0" />
+      <LineId Id="627" Count="4" />
+      <LineId Id="645" Count="1" />
+      <LineId Id="653" Count="1" />
+      <LineId Id="657" Count="0" />
+      <LineId Id="659" Count="0" />
+      <LineId Id="644" Count="0" />
+      <LineId Id="635" Count="1" />
+      <LineId Id="840" Count="3" />
+      <LineId Id="1199" Count="0" />
+      <LineId Id="844" Count="0" />
+      <LineId Id="1200" Count="0" />
+      <LineId Id="846" Count="1" />
+      <LineId Id="1245" Count="0" />
+      <LineId Id="848" Count="0" />
+      <LineId Id="637" Count="1" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="1242" Count="0" />
+      <LineId Id="992" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="984" Count="0" />
+      <LineId Id="685" Count="2" />
+      <LineId Id="809" Count="0" />
+      <LineId Id="688" Count="0" />
+      <LineId Id="692" Count="5" />
+      <LineId Id="985" Count="0" />
+      <LineId Id="698" Count="2" />
+      <LineId Id="810" Count="0" />
+      <LineId Id="701" Count="0" />
+      <LineId Id="705" Count="5" />
+      <LineId Id="986" Count="0" />
+      <LineId Id="711" Count="2" />
+      <LineId Id="811" Count="0" />
+      <LineId Id="714" Count="0" />
+      <LineId Id="718" Count="5" />
+      <LineId Id="987" Count="0" />
+      <LineId Id="724" Count="2" />
+      <LineId Id="827" Count="0" />
+      <LineId Id="727" Count="0" />
+      <LineId Id="732" Count="2" />
+      <LineId Id="812" Count="0" />
+      <LineId Id="814" Count="1" />
+      <LineId Id="988" Count="0" />
+      <LineId Id="816" Count="2" />
+      <LineId Id="828" Count="0" />
+      <LineId Id="819" Count="0" />
+      <LineId Id="824" Count="2" />
+      <LineId Id="735" Count="2" />
+      <LineId Id="989" Count="0" />
+      <LineId Id="738" Count="2" />
+      <LineId Id="829" Count="0" />
+      <LineId Id="741" Count="0" />
+      <LineId Id="745" Count="5" />
+      <LineId Id="990" Count="0" />
+      <LineId Id="751" Count="2" />
+      <LineId Id="830" Count="0" />
+      <LineId Id="754" Count="0" />
+      <LineId Id="758" Count="0" />
+      <LineId Id="831" Count="8" />
+      <LineId Id="759" Count="1" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="38" Count="2" />
+      <LineId Id="400" Count="0" />
+      <LineId Id="309" Count="14" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

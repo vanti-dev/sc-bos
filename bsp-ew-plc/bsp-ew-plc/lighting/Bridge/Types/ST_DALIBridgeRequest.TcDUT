@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.10">
+  <DUT Name="ST_DALIBridgeRequest" Id="{f152530a-88cf-405c-8caf-641f6434cb9b}">
+    <Declaration><![CDATA[TYPE ST_DALIBridgeRequest :
+STRUCT
+	command 			: E_DALIBridgeCommand := E_DALIBridgeCommand.idle;
+	address 			: BYTE;
+	addressType 		: E_DALIAddressType;
+	instanceAddress 	: BYTE;
+	instanceAddressType : E_DALIInstanceAddressType;
+	data            	: BYTE;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

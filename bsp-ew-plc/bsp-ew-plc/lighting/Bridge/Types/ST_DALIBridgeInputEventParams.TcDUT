@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.10">
+  <DUT Name="ST_DALIBridgeInputEventParams" Id="{bb798eac-7d3b-455f-8734-19a4f56fe226}">
+    <Declaration><![CDATA[TYPE ST_DALIBridgeInputEventParams :
+STRUCT
+	eventScheme 	: E_DALIEventScheme;
+	addressInfo1 	: BYTE;
+	addressInfo2 	: BYTE;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="MAIN" Id="{2314465b-fd04-462d-9225-7e86962c8e3f}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[DALI_Commissioning();
+
+Tc3_DALI.GVL.eEventTraceLevel := TcEventSeverity.Verbose;
+
+GVL_DALI_Bus.kl6821_01_bridge(
+	emergency := FALSE,
+	rpcResponse => GVL_DALI_Bus.kl6821_01_rpcResp,
+	notification => GVL_DALI_Bus.kl6821_01_notif
+);]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="2" Count="0" />
+      <LineId Id="7" Count="6" />
+      <LineId Id="6" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,249 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.10">
+  <POU Name="FB_Part102Scenes" Id="{2b9f12c9-9f17-40cf-98f1-2f78b9803cb2}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Part102Scenes
+VAR_INPUT
+	ipDALICommunication		:	I_DALICommunication;
+END_VAR
+VAR_OUTPUT
+	bBusy					:	BOOL;
+END_VAR
+VAR
+	{region "Visu"}
+	nScene					:	BYTE;
+	bGoToScene				:	BOOL;
+	bSwitchOff				:	BOOL;
+	bRead					:	BOOL;
+	bWrite		 			:	BOOL;
+	aScene					:	ARRAY [0..63] OF BYTE;
+	aNoShortAddress			:	ARRAY [0..63] OF BOOL;
+	bHideWaitSymbol			:	BOOL := TRUE;
+	{endregion}
+	nStep					:	INT; // Running index
+	nAddress				:	INT;
+	aFont					:	ARRAY [0..63] OF DWORD;
+
+	fb102QuerySceneLevel	:	FB_DALI102QuerySceneLevel(0);
+	fb102SetScene			:	FB_DALI102SetScene(0);
+	fb102GoToScene			:	FB_DALI102GoToScene(0);
+	fb102Off				:	FB_DALI102Off(0);
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[{region "Detect Commands"}
+IF (bRead AND (nStep = 0)) THEN 
+	nStep := 10;
+	bRead := FALSE;
+	bHideWaitSymbol := FALSE;
+END_IF
+
+IF (bWrite AND (nStep = 0)) THEN 
+	nStep := 20;
+	bWrite := FALSE;
+	bHideWaitSymbol := FALSE;
+END_IF
+
+IF (bGoToScene AND (nStep = 0)) THEN 
+	nStep := 30;
+	bGoToScene := FALSE;
+	bHideWaitSymbol := FALSE;
+END_IF
+
+IF (bSwitchOff AND (nStep = 0)) THEN
+	nStep := 40;
+	bSwitchOff := FALSE;
+	bHideWaitSymbol := FALSE;
+END_IF
+{endregion}
+{region "Manage Dialog Selection}
+IF (nStep = 0) THEN
+	bBusy := FALSE;
+ELSE
+	bBusy := TRUE;
+END_IF
+{endregion}
+{region "Execute Commands"}
+CASE nStep OF
+0:
+{region "Init"}
+	bRead := FALSE;	
+	bWrite := FALSE;
+	bGoToScene := FALSE;
+	bSwitchOff := FALSE;
+	bHideWaitSymbol := TRUE;
+	nAddress := 0;
+
+	fb102QuerySceneLevel.ipDALICommunication := ipDALICommunication;
+	fb102SetScene.ipDALICommunication := ipDALICommunication;
+	fb102GoToScene.ipDALICommunication := ipDALICommunication;
+	fb102Off.ipDALICommunication := ipDALICommunication;
+{endregion}
+10:
+{region "Query Scene Level"}
+	fb102QuerySceneLevel(bStart := TRUE, 
+						 nAddress := TO_BYTE(nAddress),
+						 eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+						 eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+						 nScene := nScene,
+						 nSceneLevel=> aScene[nAddress]);
+	IF (NOT fb102QuerySceneLevel.bBusy) THEN
+		fb102QuerySceneLevel (bStart:= FALSE);
+		IF (fb102QuerySceneLevel.ipResultMessage.nEventId = TC_EVENTS.TcDALIEventClass.NoResponseFromTheDALIDevice.nEventId) THEN // Deletes not existing short addresses from display
+			aNoShortAddress[nAddress] := TRUE;
+			aFont[nAddress] := 16#FF505050;
+		ELSE
+			aNoShortAddress[nAddress] := FALSE;
+			aFont[nAddress] := 16#FFFFFFFF;
+		END_IF
+		nAddress := nAddress + 1;
+		IF (nAddress > 63)THEN
+			nStep := 0;
+		END_IF
+	END_IF
+{endregion}
+20:
+{region "Set Scene"}
+	IF (aNoShortAddress[nAddress] = TRUE) THEN
+		nAddress := nAddress + 1;
+		IF (nAddress > 63)THEN
+			nStep := 0;
+		END_IF
+	ELSE
+		fb102SetScene(bStart := TRUE,
+					  nAddress := TO_BYTE(nAddress),
+					  eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+					  eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+					  nSceneLevel := aScene[nAddress],
+					  nScene := nScene);
+		IF (NOT fb102SetScene.bBusy) THEN
+			fb102SetScene(bStart := FALSE);
+			nAddress := nAddress + 1;
+			IF (nAddress > 63)THEN
+				nStep := 0;
+			END_IF
+		END_IF
+	END_IF
+{endregion}
+30:
+{region "Go To Scene"}
+	IF (aNoShortAddress[nAddress] = TRUE) THEN
+		nAddress := nAddress + 1;
+		IF (nAddress > 63)THEN
+			nStep := 0;
+		END_IF
+	ELSE
+		fb102GoToScene(bStart := TRUE,
+					   nAddress := TO_BYTE(nAddress),
+					   eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+					   eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+					   nScene := nScene);
+		IF (NOT fb102GoToScene.bBusy) THEN
+			fb102GoToScene(bStart := FALSE);
+			nAddress := nAddress + 1;
+			IF (nAddress > 63)THEN
+				nStep := 0;
+			END_IF
+		END_IF
+	END_IF
+{endregion}
+40:
+{region "Switch Off"}
+	fb102Off(bStart := TRUE,
+			 nAddress := TO_BYTE(nAddress),
+			 eAddressType := Tc3_DALI.E_DALIAddressType.Broadcast,
+			 eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle);
+	IF (NOT fb102Off.bBusy) THEN
+		fb102Off(bStart := FALSE);
+		nStep := 0;
+	END_IF
+{endregion}
+END_CASE
+{endregion}]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Part102Scenes">
+      <LineId Id="46" Count="0" />
+      <LineId Id="49" Count="1" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="235" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="54" Count="3" />
+      <LineId Id="236" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="60" Count="2" />
+      <LineId Id="237" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="64" Count="3" />
+      <LineId Id="239" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="346" Count="5" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="71" Count="1" />
+      <LineId Id="74" Count="5" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="82" Count="2" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="112" Count="2" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="117" Count="1" />
+      <LineId Id="122" Count="1" />
+      <LineId Id="229" Count="0" />
+      <LineId Id="124" Count="1" />
+      <LineId Id="230" Count="0" />
+      <LineId Id="126" Count="1" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="240" Count="0" />
+      <LineId Id="244" Count="0" />
+      <LineId Id="249" Count="1" />
+      <LineId Id="248" Count="0" />
+      <LineId Id="245" Count="0" />
+      <LineId Id="242" Count="0" />
+      <LineId Id="136" Count="2" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="141" Count="1" />
+      <LineId Id="157" Count="3" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="246" Count="0" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="313" Count="0" />
+      <LineId Id="254" Count="1" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="256" Count="1" />
+      <LineId Id="168" Count="0" />
+      <LineId Id="170" Count="2" />
+      <LineId Id="164" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="176" Count="0" />
+      <LineId Id="178" Count="1" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="258" Count="0" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="105" Count="1" />
+      <LineId Id="184" Count="3" />
+      <LineId Id="195" Count="1" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="188" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="70" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
