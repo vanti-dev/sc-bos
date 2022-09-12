@@ -809,7 +809,7 @@ VAR_OUTPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[protocolVersion := 1;
+        <ST><![CDATA[protocolVersion := 2;
 ]]></ST>
       </Implementation>
     </Method>

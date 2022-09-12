@@ -11,9 +11,10 @@ require (
 	github.com/open-policy-agent/opa v0.42.2
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.38
 	github.com/smart-core-os/sc-golang v0.0.0-20220617135625-6c6576c43f86
+	github.com/vanti-dev/twincat3-ads-go v0.2.3
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
-	go.uber.org/zap v1.17.0
+	go.uber.org/zap v1.19.1
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.0
@@ -52,5 +53,5 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220107163113-42d7afdf6368 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	nhooyr.io/websocket v1.8.6 // indirect
+	nhooyr.io/websocket v1.8.7 // indirect
 )
