@@ -45,7 +45,6 @@ VAR
 	fbGoToScene					: FB_DALI102GoToScene(0);
 	fbSetFadeTime 				: FB_DALI102SetFadeTime(0);
 	fbQueryInputValue			: FB_DALI103QueryInputValue(0);
-	// Emergency Lighting Commands
 	fbQueryBatteryCharge        : FB_DALI202QueryBatteryCharge(0);
 	fbQueryDurationTestResult   : FB_DALI202QueryDurationTestResult(0);
 	fbQueryEmergencyMode        : FB_DALI202QueryEmergencyMode(0);
@@ -61,6 +60,9 @@ VAR
 	fbSetDurationTestInterval   : FB_DALI202SetDurationTestInterval(0);
 	fbSetFunctionTestInterval   : FB_DALI202SetFunctionTestInterval(0);
 	fbStartIdentification202    : FB_DALI202StartIdentification(0);
+	fbQueryGroups               : FB_DALI102QueryGroups(0);
+	fbAddToGroup				: FB_DALI102AddToGroup(0);
+	fbRemoveFromGroup			: FB_DALI102RemoveFromGroup(0);
 	
 	// input monitor function blocks
 	numInputEventListeners  	: INT := 0;
@@ -507,6 +509,47 @@ E_DALIBridgeCommand.startIdentification202:
 		bError						:= fbStartIdentification202.bError,
 		data						:= 0,
 		ipResultMessage				:= fbStartIdentification202.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.queryGroups:
+	fbQueryGroups(
+		bStart						:= requestFirstCycle,
+		nAddress 					:= activeRequest.address,
+		eAddressType				:= activeRequest.addressType
+	);
+	processResult(
+		busy						:= fbQueryGroups.bBusy,
+		bError						:= fbQueryGroups.bError,
+		data						:= fbQueryGroups.nGroups,
+		ipResultMessage				:= fbQueryGroups.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.addToGroup:
+	fbAddToGroup(
+		bStart 						:= requestFirstCycle,
+		nAddress 					:= activeRequest.address,
+		eAddressType				:= activeRequest.addressType,
+		nGroup						:= activeRequest.data
+	);
+	processResult(
+		busy						:= fbAddToGroup.bBusy,
+		bError						:= fbAddToGroup.bError,
+		data						:= 0,
+		ipResultMessage				:= fbAddToGroup.ipResultMessage
+	);
+	
+E_DALIBridgeCommand.removeFromGroup:
+	fbRemoveFromGroup(
+		bStart						:= requestFirstCycle,
+		nAddress 					:= activeRequest.address,
+		eAddressType 				:= activeRequest.addressType,
+		nGroup						:= activeRequest.data
+	);
+	processResult(
+		busy						:= fbRemoveFromGroup.bBusy,
+		bError						:= fbRemoveFromGroup.bError,
+		data						:= 0,
+		ipResultMessage				:= fbRemoveFromGroup.ipResultMessage
 	);
 	
 E_DALIBridgeCommand.testCommand:
@@ -1033,6 +1076,20 @@ ADSLOGSTR(
       <LineId Id="1174" Count="3" />
       <LineId Id="1179" Count="5" />
       <LineId Id="1173" Count="0" />
+      <LineId Id="1259" Count="3" />
+      <LineId Id="1264" Count="1" />
+      <LineId Id="1263" Count="0" />
+      <LineId Id="1266" Count="1" />
+      <LineId Id="1269" Count="1" />
+      <LineId Id="1272" Count="0" />
+      <LineId Id="1268" Count="0" />
+      <LineId Id="1273" Count="4" />
+      <LineId Id="1279" Count="0" />
+      <LineId Id="1282" Count="11" />
+      <LineId Id="1296" Count="2" />
+      <LineId Id="1294" Count="0" />
+      <LineId Id="1300" Count="4" />
+      <LineId Id="1299" Count="0" />
       <LineId Id="1127" Count="0" />
       <LineId Id="237" Count="6" />
       <LineId Id="149" Count="0" />

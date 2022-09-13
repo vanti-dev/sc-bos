@@ -36,6 +36,10 @@ const (
 	SetDurationTestInterval
 	SetFunctionTestInterval
 
+	QueryGroups
+	AddToGroup
+	RemoveFromGroup
+
 	TestCommand Command = 100
 )
 
