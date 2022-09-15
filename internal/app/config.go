@@ -2,27 +2,14 @@ package app
 
 import (
 	"encoding/json"
+
+	"github.com/vanti-dev/bsp-ew/internal/driver"
 )
 
 type ControllerConfig struct {
-	Drivers    []RawDriverConfig     `json:"drivers"`
+	Drivers    []driver.RawConfig    `json:"drivers"`
 	Automation []RawAutomationConfig `json:"automation"`
 	Spaces     []RawSpaceConfig      `json:"spaces"`
-}
-
-type BaseDriverConfig struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-}
-
-type RawDriverConfig struct {
-	BaseDriverConfig
-	Raw json.RawMessage `json:"-"`
-}
-
-func (c *RawDriverConfig) UnmarshalJSON(buf []byte) error {
-	c.Raw = buf
-	return json.Unmarshal(buf, &c.BaseDriverConfig)
 }
 
 type BaseAutomationConfig struct {
