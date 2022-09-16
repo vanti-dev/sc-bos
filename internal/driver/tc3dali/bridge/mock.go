@@ -38,6 +38,13 @@ func (m *Mock) ExecuteCommand(ctx context.Context, request Request) (data uint32
 	case SetFadeTime:
 		// we don't implement this
 		return 0, nil
+	case QueryGroups:
+		groups, err := m.queryGroups(request)
+		return uint32(groups), err
+	case AddToGroup:
+		return 0, m.addToGroup(request)
+	case RemoveFromGroup:
+		return 0, m.removeFromGroup(request)
 	}
 
 	return 0, MockErrUnimplemented
@@ -79,6 +86,30 @@ func (m *Mock) goToScene(request Request) error {
 		}
 	}
 
+	return nil
+}
+
+func (m *Mock) queryGroups(request Request) (groups uint16, err error) {
+	gear, err := m.getSingleControlGear(request)
+	if err != nil {
+		return 0, err
+	}
+	return gear.GroupMembership, nil
+}
+
+func (m *Mock) addToGroup(request Request) error {
+	gear := m.getTargetControlGear(request)
+	for _, g := range gear {
+		g.GroupMembership |= 1 << request.Data
+	}
+	return nil
+}
+
+func (m *Mock) removeFromGroup(request Request) error {
+	gear := m.getTargetControlGear(request)
+	for _, g := range gear {
+		g.GroupMembership &= ^(1 << request.Data)
+	}
 	return nil
 }
 

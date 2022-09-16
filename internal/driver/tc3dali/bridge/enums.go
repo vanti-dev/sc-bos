@@ -121,3 +121,13 @@ func (ft FadeTime) AsDuration() (duration time.Duration, ok bool) {
 	}
 	return
 }
+
+const (
+	InstanceTypeGeneric              uint8 = 0
+	InstanceTypePushButton           uint8 = 1
+	InstanceTypeAbsolute             uint8 = 2
+	InstanceTypeOccupancy            uint8 = 3
+	InstanceTypeLight                uint8 = 4
+	InstanceTypeColour               uint8 = 5
+	InstanceTypeGeneralPurposeSensor uint8 = 6
+)
