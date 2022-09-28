@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="DALI_COMM" Id="{5ac38050-9b14-4875-9d9e-9070976fdbca}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM DALI_COMM
+VAR
+	commLL		: ARRAY[1..GVL_IO.maxLLBus] OF Tc3_DALI.FB_KL6821Communication;
+	
+	commT1		: ARRAY[1..GVL_IO.maxT1Bus] OF Tc3_DALI.FB_KL6821Communication;
+	commT2		: ARRAY[1..GVL_IO.maxT2Bus] OF Tc3_DALI.FB_KL6821Communication;
+	commT3		: ARRAY[1..GVL_IO.maxT3Bus] OF Tc3_DALI.FB_KL6821Communication;
+	commT4		: ARRAY[1..GVL_IO.maxT4Bus] OF Tc3_DALI.FB_KL6821Communication;
+	commLS		: Tc3_DALI.FB_KL6821Communication;
+	
+	i : INT;
+END_VAR
+VAR CONSTANT
+	
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[FOR i := 1 TO GVL_Variant.numLLBus DO
+	commLL[i](
+		stInData	:= GVL_IO.kl6821_LL_in[i],
+		stOutData	:= GVL_IO.kl6821_LL_out[i],
+	);
+END_FOR
+
+FOR i := 1 TO GVL_Variant.numT1Bus DO
+	commT1[i](
+		stInData	:= GVL_IO.kl6821_T1_in[i],
+		stOutData	:= GVL_IO.kl6821_T1_out[i]
+	);
+END_FOR
+
+FOR i := 1 TO GVL_Variant.numT2Bus DO
+	commT2[i](
+		stInData	:= GVL_IO.kl6821_T2_in[i],
+		stOutData	:= GVL_IO.kl6821_T2_out[i]
+	);
+END_FOR
+
+FOR i := 1 TO GVL_Variant.numT3Bus DO
+	commT3[i](
+		stInData	:= GVL_IO.kl6821_T3_in[i],
+		stOutData	:= GVL_IO.kl6821_T3_out[i]
+	);
+END_FOR
+
+FOR i := 1 TO GVL_Variant.numT4Bus DO
+	commT4[i](
+		stInData	:= GVL_IO.kl6821_T4_in[i],
+		stOutData	:= GVL_IO.kl6821_T4_out[i]
+	);
+END_FOR
+
+IF GVL_Variant.hasLSBus THEN
+	commLS(
+		stInData	:= GVL_IO.kl6821_LS_in,
+		stOutData	:= GVL_IO.kl6821_LS_out
+	);
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="DALI_COMM">
+      <LineId Id="13" Count="1" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="35" Count="2" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="39" Count="5" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="46" Count="5" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="53" Count="5" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="62" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

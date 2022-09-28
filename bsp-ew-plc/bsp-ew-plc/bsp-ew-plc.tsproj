@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32">
+<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32" TcProjectVariant="Lab" TcVersionFixed="true">
 	<Project ProjectGUID="{8A4AA6E1-50A8-4AB8-9E4E-C5373DBE0714}" TargetNetId="5.109.178.55.1.1" Target64Bit="true" RelativeTargetNetId="true" RelativeIpAddresses="true" ShowHideConfigurations="#x106">
 		<System>
 			<Tasks>
@@ -17,7 +17,47 @@
 		<Plc>
 			<Project File="lighting.xti"/>
 		</Plc>
-		<Io/>
+		<Io>
+			<Device File="Device 1 (EtherCAT).xti" Id="1"/>
+		</Io>
+		<Variants SpecificLocalBootFolder="true">
+			<Variant>
+				<Name>Floor_00</Name>
+			</Variant>
+			<Variant>
+				<Name>Floor_01</Name>
+			</Variant>
+			<Variant>
+				<Name>Floor_02</Name>
+			</Variant>
+			<Variant>
+				<Name>Floor_03</Name>
+			</Variant>
+			<Variant>
+				<Name>Floor_04</Name>
+			</Variant>
+			<Variant>
+				<Name>Floor_05</Name>
+			</Variant>
+			<Variant>
+				<Name>Floor_06</Name>
+			</Variant>
+			<Variant>
+				<Name>Floor_07</Name>
+			</Variant>
+			<Variant>
+				<Name>Floor_08</Name>
+			</Variant>
+			<Variant>
+				<Name>Floor_09</Name>
+			</Variant>
+			<Variant>
+				<Name>Floor_10</Name>
+			</Variant>
+			<Variant>
+				<Name>Lab</Name>
+			</Variant>
+		</Variants>
 	</Project>
 	<Mappings>
 		<MappingInfo Identifier="{00000000-2001-0850-0020-500810000403}" Id="#x02030010"/>

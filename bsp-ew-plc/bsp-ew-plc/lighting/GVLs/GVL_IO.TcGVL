@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <GVL Name="GVL_IO" Id="{304709df-13f3-4315-9037-d8c37b80e499}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	kl6821_LL_in		AT %I*	: ARRAY[1..maxLLBus] OF Tc3_DALI.ST_KL6821InData;
+	kl6821_LL_out		AT %Q*	: ARRAY[1..maxLLBus] OF Tc3_DALI.ST_KL6821OutData;
+	
+	kl6821_T1_in		AT %I*	: ARRAY[1..maxT1Bus] OF Tc3_DALI.ST_KL6821InData;
+	kl6821_T1_out		AT %Q*	: ARRAY[1..maxT1Bus] OF Tc3_DALI.ST_KL6821OutData;
+	
+	kl6821_T2_in		AT %I*	: ARRAY[1..maxT2Bus] OF Tc3_DALI.ST_KL6821InData;
+	kl6821_T2_out		AT %Q*	: ARRAY[1..maxT2Bus] OF Tc3_DALI.ST_KL6821OutData;
+	
+	kl6821_T3_in		AT %I*	: ARRAY[1..maxT3Bus] OF Tc3_DALI.ST_KL6821InData;
+	kl6821_T3_out		AT %Q*	: ARRAY[1..maxT3Bus] OF Tc3_DALI.ST_KL6821OutData;
+	
+	kl6821_T4_in		AT %I*	: ARRAY[1..maxT4Bus] OF Tc3_DALI.ST_KL6821InData;
+	kl6821_T4_out		AT %Q*	: ARRAY[1..maxT4Bus] OF Tc3_DALI.ST_KL6821OutData;
+	
+	kl6821_LS_in		AT %I*	: Tc3_DALI.ST_KL6821InData;
+	kl6821_LS_out		AT %Q*	: Tc3_DALI.ST_KL6821OutData;
+END_VAR
+VAR_GLOBAL CONSTANT
+	maxLLBus : INT := 6;
+	maxT1Bus : INT := 2;
+	maxT2Bus : INT := 3;
+	maxT3Bus : INT := 2;
+	maxT4Bus : INT := 2;
+END_VAR
+]]></Declaration>
+  </GVL>
+</TcPlcObject>

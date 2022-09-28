@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32" ClassName="CNestedPlcProjDef">
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32" ClassName="CNestedPlcProjDef" TcProjectVariant="Lab">
 	<DataTypes>
 		<DataType>
 			<Name GUID="{9A955222-AEEB-8157-F0A3-131368033DED}" Namespace="Tc3_DALI" AutoDeleteType="true">ST_KL6821InData</Name>
@@ -28,12 +28,30 @@
 			</SubItem>
 		</DataType>
 		<DataType>
-			<Name IecBaseType="true">ARRAY [1..10] OF Tc3_DALI.ST_KL6821InData</Name>
-			<BitSize>480</BitSize>
+			<Name GUID="{30E5A974-58AB-1776-AC6D-3F2C3D82CCD4}" IecBaseType="true" AutoDeleteType="true">ARRAY [1..6] OF Tc3_DALI.ST_KL6821InData</Name>
+			<BitSize>288</BitSize>
 			<BaseType GUID="{9A955222-AEEB-8157-F0A3-131368033DED}" Namespace="Tc3_DALI">ST_KL6821InData</BaseType>
 			<ArrayInfo>
 				<LBound>1</LBound>
-				<Elements>10</Elements>
+				<Elements>6</Elements>
+			</ArrayInfo>
+		</DataType>
+		<DataType>
+			<Name GUID="{FEE7D94C-09A8-FABA-5B36-1CBB6A6AD895}" IecBaseType="true" AutoDeleteType="true">ARRAY [1..2] OF Tc3_DALI.ST_KL6821InData</Name>
+			<BitSize>96</BitSize>
+			<BaseType GUID="{9A955222-AEEB-8157-F0A3-131368033DED}" Namespace="Tc3_DALI">ST_KL6821InData</BaseType>
+			<ArrayInfo>
+				<LBound>1</LBound>
+				<Elements>2</Elements>
+			</ArrayInfo>
+		</DataType>
+		<DataType>
+			<Name GUID="{AD957531-325E-FB98-7DC5-54938C9B146B}" IecBaseType="true" AutoDeleteType="true">ARRAY [1..3] OF Tc3_DALI.ST_KL6821InData</Name>
+			<BitSize>144</BitSize>
+			<BaseType GUID="{9A955222-AEEB-8157-F0A3-131368033DED}" Namespace="Tc3_DALI">ST_KL6821InData</BaseType>
+			<ArrayInfo>
+				<LBound>1</LBound>
+				<Elements>3</Elements>
 			</ArrayInfo>
 		</DataType>
 		<DataType>
@@ -63,31 +81,106 @@
 			</SubItem>
 		</DataType>
 		<DataType>
-			<Name IecBaseType="true">ARRAY [1..10] OF Tc3_DALI.ST_KL6821OutData</Name>
-			<BitSize>480</BitSize>
+			<Name GUID="{1B85928A-10E8-CA47-AE1E-D30D3E918DF0}" IecBaseType="true" AutoDeleteType="true">ARRAY [1..6] OF Tc3_DALI.ST_KL6821OutData</Name>
+			<BitSize>288</BitSize>
 			<BaseType GUID="{C1BBA315-9EAB-EFD9-416A-6FE4EE9659A6}" Namespace="Tc3_DALI">ST_KL6821OutData</BaseType>
 			<ArrayInfo>
 				<LBound>1</LBound>
-				<Elements>10</Elements>
+				<Elements>6</Elements>
+			</ArrayInfo>
+		</DataType>
+		<DataType>
+			<Name GUID="{EF13495F-0C44-C5C2-CA05-110EAA9B171A}" IecBaseType="true" AutoDeleteType="true">ARRAY [1..2] OF Tc3_DALI.ST_KL6821OutData</Name>
+			<BitSize>96</BitSize>
+			<BaseType GUID="{C1BBA315-9EAB-EFD9-416A-6FE4EE9659A6}" Namespace="Tc3_DALI">ST_KL6821OutData</BaseType>
+			<ArrayInfo>
+				<LBound>1</LBound>
+				<Elements>2</Elements>
+			</ArrayInfo>
+		</DataType>
+		<DataType>
+			<Name GUID="{5ECA7CAC-B4B8-EC8E-959C-C09B5B0E745F}" IecBaseType="true" AutoDeleteType="true">ARRAY [1..3] OF Tc3_DALI.ST_KL6821OutData</Name>
+			<BitSize>144</BitSize>
+			<BaseType GUID="{C1BBA315-9EAB-EFD9-416A-6FE4EE9659A6}" Namespace="Tc3_DALI">ST_KL6821OutData</BaseType>
+			<ArrayInfo>
+				<LBound>1</LBound>
+				<Elements>3</Elements>
 			</ArrayInfo>
 		</DataType>
 	</DataTypes>
-	<Project GUID="{A884BF0E-0148-4053-89C1-291560DE0349}" Name="lighting" PrjFilePath="..\..\lighting\lighting.plcproj" TmcFilePath="..\..\lighting\lighting.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{BCFED884-3760-09AB-F302-E372AF25AF1A}">
+	<Project GUID="{A884BF0E-0148-4053-89C1-291560DE0349}" Name="lighting" PrjFilePath="..\..\lighting\lighting.plcproj" TmcFilePath="..\..\lighting\lighting.tmc" EnableImplicitDefines="true" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
+		<ProjectVariant PvUseDefine="true">
+			<Variant>
+				<Name>Floor_00</Name>
+				<Name>Floor_01</Name>
+				<Name>Floor_02</Name>
+				<Name>Floor_03</Name>
+				<Name>Floor_04</Name>
+				<Name>Floor_05</Name>
+				<Name>Floor_06</Name>
+				<Name>Floor_07</Name>
+				<Name>Floor_08</Name>
+				<Name>Floor_09</Name>
+				<Name>Floor_10</Name>
+				<Name>Lab</Name>
+				<Defines></Defines>
+			</Variant>
+		</ProjectVariant>
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="1" TmcPath="lighting\lighting.tmc" TmcHash="{1FE42F28-117C-AC8B-A9F6-D0B34C9DE5C3}">
 			<Name>lighting Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 			<Vars VarGrpType="1">
 				<Name>PlcCommunication Inputs</Name>
 				<Var>
-					<Name>GVL.aKL6821InData</Name>
-					<Type GUID="{E95B92DE-0133-21A0-5504-D294F156BBAB}">ARRAY [1..10] OF Tc3_DALI.ST_KL6821InData</Type>
+					<Name>GVL_IO.kl6821_LL_in</Name>
+					<Type GUID="{30E5A974-58AB-1776-AC6D-3F2C3D82CCD4}">ARRAY [1..6] OF Tc3_DALI.ST_KL6821InData</Type>
+				</Var>
+				<Var>
+					<Name>GVL_IO.kl6821_T1_in</Name>
+					<Type GUID="{FEE7D94C-09A8-FABA-5B36-1CBB6A6AD895}">ARRAY [1..2] OF Tc3_DALI.ST_KL6821InData</Type>
+				</Var>
+				<Var>
+					<Name>GVL_IO.kl6821_T2_in</Name>
+					<Type GUID="{AD957531-325E-FB98-7DC5-54938C9B146B}">ARRAY [1..3] OF Tc3_DALI.ST_KL6821InData</Type>
+				</Var>
+				<Var>
+					<Name>GVL_IO.kl6821_T3_in</Name>
+					<Type GUID="{FEE7D94C-09A8-FABA-5B36-1CBB6A6AD895}">ARRAY [1..2] OF Tc3_DALI.ST_KL6821InData</Type>
+				</Var>
+				<Var>
+					<Name>GVL_IO.kl6821_T4_in</Name>
+					<Type GUID="{FEE7D94C-09A8-FABA-5B36-1CBB6A6AD895}">ARRAY [1..2] OF Tc3_DALI.ST_KL6821InData</Type>
+				</Var>
+				<Var>
+					<Name>GVL_IO.kl6821_LS_in</Name>
+					<Type GUID="{9A955222-AEEB-8157-F0A3-131368033DED}" Namespace="Tc3_DALI">ST_KL6821InData</Type>
 				</Var>
 			</Vars>
 			<Vars VarGrpType="2" AreaNo="1">
 				<Name>PlcCommunication Outputs</Name>
 				<Var>
-					<Name>GVL.aKL6821OutData</Name>
-					<Type GUID="{E2395D60-938D-4F2D-84D7-2EEAB90AE31D}">ARRAY [1..10] OF Tc3_DALI.ST_KL6821OutData</Type>
+					<Name>GVL_IO.kl6821_LL_out</Name>
+					<Type GUID="{1B85928A-10E8-CA47-AE1E-D30D3E918DF0}">ARRAY [1..6] OF Tc3_DALI.ST_KL6821OutData</Type>
+				</Var>
+				<Var>
+					<Name>GVL_IO.kl6821_T1_out</Name>
+					<Type GUID="{EF13495F-0C44-C5C2-CA05-110EAA9B171A}">ARRAY [1..2] OF Tc3_DALI.ST_KL6821OutData</Type>
+				</Var>
+				<Var>
+					<Name>GVL_IO.kl6821_T2_out</Name>
+					<Type GUID="{5ECA7CAC-B4B8-EC8E-959C-C09B5B0E745F}">ARRAY [1..3] OF Tc3_DALI.ST_KL6821OutData</Type>
+				</Var>
+				<Var>
+					<Name>GVL_IO.kl6821_T3_out</Name>
+					<Type GUID="{EF13495F-0C44-C5C2-CA05-110EAA9B171A}">ARRAY [1..2] OF Tc3_DALI.ST_KL6821OutData</Type>
+				</Var>
+				<Var>
+					<Name>GVL_IO.kl6821_T4_out</Name>
+					<Type GUID="{EF13495F-0C44-C5C2-CA05-110EAA9B171A}">ARRAY [1..2] OF Tc3_DALI.ST_KL6821OutData</Type>
+				</Var>
+				<Var>
+					<Name>GVL_IO.kl6821_LS_out</Name>
+					<Type GUID="{C1BBA315-9EAB-EFD9-416A-6FE4EE9659A6}" Namespace="Tc3_DALI">ST_KL6821OutData</Type>
 				</Var>
 			</Vars>
 			<Contexts>
@@ -109,21 +202,99 @@
 					<Priority>20</Priority>
 					<CycleTime>10000000</CycleTime>
 				</Context>
-				<Context>
-					<Id NeedCalleeCall="true">2</Id>
-					<Name>VISU_TASK</Name>
-					<ManualConfig>
-						<OTCID>#x02010060</OTCID>
-					</ManualConfig>
-					<Priority>30</Priority>
-					<CycleTime>80000000</CycleTime>
-				</Context>
 			</Contexts>
 			<TaskPouOids>
 				<TaskPouOid Prio="19" OTCID="#x08502001"/>
 				<TaskPouOid Prio="20" OTCID="#x08502002"/>
-				<TaskPouOid Prio="30" OTCID="#x08502003"/>
 			</TaskPouOids>
 		</Instance>
 	</Project>
+	<Mappings>
+		<OwnerA Name="lighting Instance">
+			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Junction 1 (EK1122)^Tenant 1 Coupler (BK1150)">
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T1_in[1]^aData" VarB="T1 Bus 1 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T1_in[1]^aData" VarB="T1 Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T1_in[1]^aData" VarB="T1 Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T1_in[1]^aData" VarB="T1 Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T1_in[1]^nStatus" VarB="T1 Bus 1 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T1_in[2]^aData" VarB="T1 Bus 2 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T1_in[2]^aData" VarB="T1 Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T1_in[2]^aData" VarB="T1 Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T1_in[2]^aData" VarB="T1 Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T1_in[2]^nStatus" VarB="T1 Bus 2 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T1_out[1]^aData" VarB="T1 Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T1_out[1]^aData" VarB="T1 Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T1_out[1]^aData" VarB="T1 Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T1_out[1]^aData" VarB="T1 Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T1_out[1]^nCtrl" VarB="T1 Bus 1 (KL6821)^Channel 1^Ctrl"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T1_out[2]^aData" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T1_out[2]^aData" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T1_out[2]^aData" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T1_out[2]^aData" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T1_out[2]^nCtrl" VarB="T1 Bus 2 (KL6821)^Channel 1^Ctrl"/>
+			</OwnerB>
+			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Landlord Coupler (BK1250)">
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[1]^nStatus" VarB="LL Bus 1 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[2]^nStatus" VarB="LL Bus 2 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[3]^nStatus" VarB="LL Bus 3 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[4]^nStatus" VarB="LL Bus 4 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[5]^nStatus" VarB="LL Bus 5 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[6]^nStatus" VarB="LL Bus 6 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[1]^nCtrl" VarB="LL Bus 1 (KL6821)^Channel 1^Ctrl"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[2]^nCtrl" VarB="LL Bus 2 (KL6821)^Channel 1^Ctrl"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[3]^nCtrl" VarB="LL Bus 3 (KL6821)^Channel 1^Ctrl"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[4]^nCtrl" VarB="LL Bus 4 (KL6821)^Channel 1^Ctrl"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[5]^nCtrl" VarB="LL Bus 5 (KL6821)^Channel 1^Ctrl"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[6]^nCtrl" VarB="LL Bus 6 (KL6821)^Channel 1^Ctrl"/>
+			</OwnerB>
+		</OwnerA>
+	</Mappings>
 </TcSmItem>

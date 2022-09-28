@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <GVL Name="GVL_Variant" Id="{25f77e8c-9d9b-49ca-a72e-eba1634b01ee}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL CONSTANT
+	{IF defined(Floor_00)}
+		numLLBus 	: INT := 6;
+		numT1Bus	: INT := 2;
+		numT2Bus	: INT := 3;
+		numT3Bus	: INT := 0;
+		numT4Bus	: INT := 4;
+		hasLSBus	: BOOL := FALSE;
+	{ELSIF defined(Floor_01)}
+		numLLBus 	: INT := 0;
+		numT1Bus	: INT := 2;
+		numT2Bus	: INT := 2;
+		numT3Bus	: INT := 2;
+		numT4Bus	: INT := 1;
+		hasLSBus	: BOOL := TRUE;
+	{ELSIF defined(Floor_02)}
+		numLLBus 	: INT := 3;
+		numT1Bus	: INT := 2;
+		numT2Bus	: INT := 2;
+		numT3Bus	: INT := 2;
+		numT4Bus	: INT := 2;
+		hasLSBus	: BOOL := FALSE;
+	{ELSIF defined(Floor_03)}
+		numLLBus 	: INT := 0;
+		numT1Bus	: INT := 2;
+		numT2Bus	: INT := 2;
+		numT3Bus	: INT := 2;
+		numT4Bus	: INT := 2;
+		hasLSBus	: BOOL := FALSE;
+	{ELSIF defined(Floor_04)}
+		numLLBus 	: INT := 3;
+		numT1Bus	: INT := 2;
+		numT2Bus	: INT := 2;
+		numT3Bus	: INT := 2;
+		numT4Bus	: INT := 2;
+		hasLSBus	: BOOL := TRUE;
+	{ELSIF defined(Floor_05)}
+		numLLBus 	: INT := 0;
+		numT1Bus	: INT := 2;
+		numT2Bus	: INT := 2;
+		numT3Bus	: INT := 2;
+		numT4Bus	: INT := 2;
+		hasLSBus	: BOOL := FALSE;
+	{ELSIF defined(Floor_06)}
+		numLLBus 	: INT := 2;
+		numT1Bus	: INT := 2;
+		numT2Bus	: INT := 2;
+		numT3Bus	: INT := 2;
+		numT4Bus	: INT := 2;
+		hasLSBus	: BOOL := FALSE;
+	{ELSIF defined(Floor_07)}
+		numLLBus 	: INT := 0;
+		numT1Bus	: INT := 2;
+		numT2Bus	: INT := 2;
+		numT3Bus	: INT := 2;
+		numT4Bus	: INT := 2;
+		hasLSBus	: BOOL := TRUE;
+	{ELSIF defined(Floor_08)}
+		numLLBus 	: INT := 3;
+		numT1Bus	: INT := 2;
+		numT2Bus	: INT := 2;
+		numT3Bus	: INT := 2;
+		numT4Bus	: INT := 1;
+		hasLSBus	: BOOL := FALSE;
+	{ELSIF defined(Floor_09)}
+		numLLBus 	: INT := 0;
+		numT1Bus	: INT := 2;
+		numT2Bus	: INT := 2;
+		numT3Bus	: INT := 2;
+		numT4Bus	: INT := 1;
+		hasLSBus	: BOOL := FALSE;
+	{ELSIF defined(Floor_10)}
+		numLLBus 	: INT := 4;
+		numT1Bus	: INT := 0;
+		numT2Bus	: INT := 0;
+		numT3Bus	: INT := 0;
+		numT4Bus	: INT := 0;
+		hasLSBus	: BOOL := FALSE;
+	{ELSIF defined(Lab)}
+		numLLBus 	: INT := 0;
+		numT1Bus	: INT := 2;
+		numT2Bus	: INT := 0;
+		numT3Bus	: INT := 0;
+		numT4Bus	: INT := 0;
+		hasLSBus	: BOOL := FALSE;
+	{ELSE}
+		numLLBus 	: INT := 0;
+		numT1Bus	: INT := 0;
+		numT2Bus	: INT := 0;
+		numT3Bus	: INT := 0;
+		numT4Bus	: INT := 0;
+		hasLSBus	: BOOL := FALSE;
+	{END_IF}
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

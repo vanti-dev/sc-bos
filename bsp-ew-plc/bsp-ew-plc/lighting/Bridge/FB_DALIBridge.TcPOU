@@ -66,8 +66,8 @@ VAR
 	
 	// input monitor function blocks
 	numInputEventListeners  	: INT := 0;
-	inputEventListenerParams 	: ARRAY [0..GVL_DALI.maxInputEventListeners-1] OF ST_DALIBridgeInputEventParams;
-	fbsGetInputNotification 	: ARRAY [0..GVL_DALI.maxInputEventListeners-1] OF FB_DALIGetInputNotification(0);
+	inputEventListenerParams 	: ARRAY [0..GVL_DALIBridge.maxInputEventListeners-1] OF ST_DALIBridgeInputEventParams;
+	fbsGetInputNotification 	: ARRAY [0..GVL_DALIBridge.maxInputEventListeners-1] OF FB_DALIGetInputNotification(0);
 	
 	// temporary / work variables
 	reinterpretEnum				: U_ReinterpretDALIEnum;
@@ -615,7 +615,7 @@ END_VAR]]></Declaration>
 	RETURN;
 END_IF
 
-FOR i := 0 TO GVL_DALI.maxInputEventListeners-1 DO
+FOR i := 0 TO GVL_DALIBridge.maxInputEventListeners-1 DO
 	fbsGetInputNotification[i].ipDALICommunication := communication;
 END_FOR
 
@@ -688,7 +688,7 @@ newNotif.valid := FALSE;
 
 // for every active notification listener
 FOR i := 0 TO numInputEventListeners-1 DO
-	IF (eventsProcessed >= GVL_DALI.maxInputEventsPerNotification) THEN
+	IF (eventsProcessed >= GVL_DALIBridge.maxInputEventsPerNotification) THEN
 		// stop processing if the event buffer is full
 		EXIT;
 	END_IF	
@@ -830,7 +830,7 @@ FOR i := 0 TO numInputEventListeners-1 DO
 	END_IF
 END_FOR
 
-IF numInputEventListeners >= GVL_DALI.maxInputEventListeners THEN
+IF numInputEventListeners >= GVL_DALIBridge.maxInputEventListeners THEN
 	// notification listeners are full
 	RpcAddInputEventListener := FALSE;
 	RETURN;
@@ -1111,21 +1111,8 @@ ADSLOGSTR(
       <LineId Id="7" Count="0" />
     </LineIds>
     <LineIds Name="FB_DALIBridge.initCommunication">
-      <LineId Id="8" Count="0" />
-      <LineId Id="10" Count="1" />
-      <LineId Id="26" Count="0" />
-      <LineId Id="25" Count="0" />
-      <LineId Id="29" Count="1" />
-      <LineId Id="37" Count="0" />
-      <LineId Id="9" Count="0" />
-      <LineId Id="5" Count="2" />
-      <LineId Id="15" Count="6" />
-      <LineId Id="31" Count="0" />
-      <LineId Id="38" Count="0" />
-      <LineId Id="44" Count="0" />
-      <LineId Id="51" Count="0" />
-      <LineId Id="50" Count="0" />
-      <LineId Id="52" Count="13" />
+      <LineId Id="71" Count="36" />
+      <LineId Id="65" Count="0" />
     </LineIds>
     <LineIds Name="FB_DALIBridge.isFirstCycle">
       <LineId Id="8" Count="0" />
@@ -1176,24 +1163,7 @@ ADSLOGSTR(
       <LineId Id="21" Count="0" />
     </LineIds>
     <LineIds Name="FB_DALIBridge.RpcAddInputEventListener">
-      <LineId Id="44" Count="3" />
-      <LineId Id="42" Count="1" />
-      <LineId Id="5" Count="0" />
-      <LineId Id="15" Count="0" />
-      <LineId Id="20" Count="3" />
-      <LineId Id="17" Count="0" />
-      <LineId Id="19" Count="0" />
-      <LineId Id="18" Count="0" />
-      <LineId Id="16" Count="0" />
-      <LineId Id="25" Count="0" />
-      <LineId Id="24" Count="0" />
-      <LineId Id="26" Count="0" />
-      <LineId Id="28" Count="1" />
-      <LineId Id="27" Count="0" />
-      <LineId Id="31" Count="0" />
-      <LineId Id="30" Count="0" />
-      <LineId Id="32" Count="0" />
-      <LineId Id="34" Count="0" />
+      <LineId Id="55" Count="25" />
       <LineId Id="33" Count="0" />
     </LineIds>
     <LineIds Name="FB_DALIBridge.RpcHandshake">

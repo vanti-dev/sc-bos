@@ -5,7 +5,7 @@
     <CycleTime>2000</CycleTime>
     <Priority>19</Priority>
     <PouCall>
-      <Name>Communication</Name>
+      <Name>DALI_COMM</Name>
     </PouCall>
     <TaskFBGuid>{7c5c2d0c-f828-4661-861b-121cbbbfb991}</TaskFBGuid>
     <Fb_init>{f827f0fa-d68f-470e-b605-dced135eaf93}</Fb_init>
