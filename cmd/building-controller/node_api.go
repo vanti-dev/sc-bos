@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -24,10 +25,9 @@ type NodeServer struct {
 
 	logger        *zap.Logger
 	db            *pgxpool.Pool
-	ca            *enrollment.CA
 	managerName   string
 	managerAddr   string
-	rootsPEM      []byte
+	authority     pki.Source // trust authority for the cohort of smart core nodes
 	testTLSConfig *tls.Config
 }
 
@@ -64,8 +64,7 @@ func (n *NodeServer) CreateNodeRegistration(ctx context.Context, request *gen.Cr
 		TargetAddress:  nodeReg.Address,
 		ManagerName:    n.managerName,
 		ManagerAddress: n.managerAddr,
-		RootCas:        n.rootsPEM,
-	}, n.ca)
+	}, n.authority)
 	if err != nil {
 		logger.Error("failed to enroll area controller", zap.Error(err),
 			zap.String("target_address", nodeReg.Address))

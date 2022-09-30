@@ -3,6 +3,7 @@ package enrollment
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"sync"
 
@@ -122,23 +123,22 @@ func (es *Server) Enrollment() (enrollment Enrollment, ok bool) {
 	}
 }
 
-// CertSource provides a certificate source that provides the latest known enrollment certificate.
+// Certs implements pki.Source and provides a certificate source that provides the latest known enrollment certificate.
 // If the certificate source is used while this Server has no enrollment, an error will be returned.
 // This is therefore not suitable for use in enrollment mode - use a self-signed certificate source (with the enrollment
 // private key) instead.
-func (es *Server) CertSource() pki.CertSource {
-	return pki.SimpleCertSource(func() (*tls.Certificate, error) {
-		es.m.Lock()
-		defer es.m.Unlock()
+func (es *Server) Certs() (*tls.Certificate, []*x509.Certificate, error) {
+	es.m.Lock()
+	defer es.m.Unlock()
 
-		// check that we are enrolled
-		select {
-		case <-es.done:
-		default:
-			return nil, ErrNotEnrolled
-		}
+	// check that we are enrolled
+	select {
+	case <-es.done:
+	default:
+		return nil, nil, ErrNotEnrolled
+	}
 
-		cert := es.enrollment.Cert
-		return &cert, nil
-	})
+	cert := es.enrollment.Cert
+	roots := []*x509.Certificate{es.enrollment.RootCA}
+	return &cert, roots, nil
 }

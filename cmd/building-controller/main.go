@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
+	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -26,7 +27,6 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/auth/keycloak"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/db"
-	"github.com/vanti-dev/bsp-ew/internal/manage/enrollment"
 	"github.com/vanti-dev/bsp-ew/internal/manage/tenantapi"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
@@ -73,48 +73,20 @@ func run(ctx context.Context) error {
 
 	// load certificates
 
-	// roots.cert.pem contains the root certificates:
-	//  - sent to a controller as part of enrolment to allow that controller to trust our server+clients, and other enrolled controllers
-	//  - used as part of TLS validation by any grpc clients we create
-	//  - used as part of TLS validation against incoming connections to this server as part of mTLS
-	// Unless TLS validation has been explicitly disabled we only trust incoming client requests or servers whose cert
-	// has these roots.
-	rootsPEM, err := os.ReadFile(filepath.Join(flagConfigDir, "pki", "roots.cert.pem"))
-	if err != nil {
-		return err
-	}
-	rootsPool := x509.NewCertPool()
-	if !rootsPool.AppendCertsFromPEM(rootsPEM) {
-		return errors.New("unable to parse any Root CA certificates")
-	}
-
-	// ca is responsible for managing the TLS trust for the collection of enrolled nodes.
-	// - It is used to issue new certs to controllers as they are enrolled
-	// - It is used to generate the server certificate we send to clients as part of the TLS handshake
-	// - It is used to generate the client certificate we send to servers as part of the mTLS handshake
-	ca, err := loadEnrollmentCA(sysConf)
-	if err != nil {
-		return err
-	}
+	// serverAuthority is used as a source for trust and certificates between smart core nodes.
+	// The certs this source produces should be CA certs (have the CA flag set) to allow them to sign child certificates.
+	// These child certs will actually be used for our server and for issuance to other nodes as part of enrollment
+	serverAuthority := loadServerAuthority()
 
 	// Setup tls.Config for our server apis and client requests
-	grpcCertSource, err := ca.LocalCertSource(pkix.Name{CommonName: "building-controller"}, true)
-	if err != nil {
-		return err
-	}
-	grpcTlsConfig := &tls.Config{
-		GetCertificate:       grpcCertSource.TLSConfigGetCertificate,
-		GetClientCertificate: grpcCertSource.TLSConfigGetClientCertificate,
-		RootCAs:              rootsPool,
-		ClientCAs:            rootsPool,
-		ClientAuth:           tls.VerifyClientCertIfGiven,
-	}
+	grpcTlsConfig := pki.TLSConfig(serverCerts(sysConf, serverAuthority))
+
 	// Setup the tls.Config for serving https apis - including grpc-web and hosting
-	httpsCertSource, err := loadHTTPSCertSource(sysConf, logger)
+	httpsCertSource, err := loadHTTPSCertSource(sysConf, serverAuthority)
 	if err != nil {
 		return err
 	}
-	httpsTlsConfig := &tls.Config{GetCertificate: httpsCertSource.TLSConfigGetCertificate}
+	httpsTlsConfig := pki.TLSConfig(httpsCertSource)
 
 	grpcServerOptions := []grpc.ServerOption{
 		grpc.Creds(credentials.NewTLS(grpcTlsConfig)),
@@ -129,8 +101,8 @@ func run(ctx context.Context) error {
 			policy.WithLogger(logger.Named("policy")),
 		)
 		grpcServerOptions = append(grpcServerOptions,
-			grpc.UnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
-			grpc.StreamInterceptor(interceptor.GRPCStreamingInterceptor()),
+			grpc.ChainUnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
+			grpc.ChainStreamInterceptor(interceptor.GRPCStreamingInterceptor()),
 		)
 	}
 
@@ -141,10 +113,9 @@ func run(ctx context.Context) error {
 	gen.RegisterNodeApiServer(grpcServer, &NodeServer{
 		logger:        logger.Named("NodeServer"),
 		db:            dbConn,
-		ca:            ca,
+		authority:     serverAuthority,
 		managerName:   "building-controller",
 		managerAddr:   sysConf.CanonicalAddress,
-		rootsPEM:      rootsPEM,
 		testTLSConfig: grpcTlsConfig,
 	})
 	gen.RegisterTenantApiServer(grpcServer, tenantapi.NewServer(dbConn,
@@ -287,33 +258,55 @@ func initKeycloakValidator(ctx context.Context, sysConf SystemConfig) (auth.Toke
 	return keycloak.NewTokenVerifier(&authConfig, keySet), nil
 }
 
-func loadEnrollmentCA(sysConf SystemConfig) (*enrollment.CA, error) {
-	certPath := filepath.Join(flagConfigDir, "pki", "enrollment-ca.cert.pem")
-	keyPath := filepath.Join(flagConfigDir, "pki", "enrollment-ca.key.pem")
-
-	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
-	if err != nil {
-		return nil, err
-	}
-	leaf, err := x509.ParseCertificate(cert.Certificate[0])
-	if err != nil {
-		return nil, err
-	}
-	return &enrollment.CA{
-		Certificate:   leaf,
-		PrivateKey:    cert.PrivateKey,
-		Intermediates: cert.Certificate[1:],
-		Now:           time.Now,
-		Validity:      time.Duration(sysConf.EnrollmentValidityDays) * 24 * time.Hour,
-	}, nil
+func loadServerAuthority() pki.Source {
+	return pki.FSSource(
+		filepath.Join(flagConfigDir, "pki", "enrollment-ca.cert.pem"),
+		filepath.Join(flagConfigDir, "pki", "enrollment-ca.key.pem"),
+		filepath.Join(flagConfigDir, "pki", "roots.cert.pem"),
+	)
 }
 
-func loadHTTPSCertSource(sysConf SystemConfig, logger *zap.Logger) (pki.CertSource, error) {
+// serverCerts creates a new pki.Source that mints new certificates (with server auth usage) using the given authority.
+func serverCerts(sysConf SystemConfig, authority pki.Source) pki.Source {
+	validity := time.Duration(sysConf.EnrollmentValidityDays) * 24 * time.Hour
+	keyPair := func() (*x509.Certificate, pki.PrivateKey, error) {
+		key, err := rsa.GenerateKey(rand.Reader, 4096)
+		if err != nil {
+			return nil, nil, err
+		}
+		cert := &x509.Certificate{
+			Subject:     pkix.Name{CommonName: "building-controller"},
+			KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
+			ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		}
+		return cert, key, nil
+	}
+
+	return pki.CacheSource(
+		pki.AuthoritySourceFn(authority, keyPair, pki.WithIfaces(), pki.WithExpireAfter(validity)),
+		expire.AfterProgress(0.5),
+	)
+}
+
+func loadHTTPSCertSource(sysConf SystemConfig, authority pki.Source) (pki.Source, error) {
 	if sysConf.SelfSignedHTTPS {
-		return pki.NewSelfSignedCertSource(nil, logger)
+		key, err := rsa.GenerateKey(rand.Reader, 4096)
+		if err != nil {
+			return nil, err
+		}
+		template := &x509.Certificate{
+			Subject:     pkix.Name{CommonName: "localhost"},
+			KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
+			ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		}
+		source := pki.AuthoritySource(authority, template, key, pki.WithIfaces())
+		source = pki.CacheSource(source, expire.BeforeInvalid(30*time.Minute))
+		return source, nil
 	} else {
 		certPath := filepath.Join(flagConfigDir, "pki", "https.cert.pem")
 		keyPath := filepath.Join(flagConfigDir, "pki", "https.key.pem")
-		return pki.NewFileCertSource(certPath, keyPath)
+		source := pki.FSSource(certPath, keyPath, "")
+		source = pki.CacheSource(source, expire.BeforeInvalid(30*time.Minute))
+		return source, nil
 	}
 }

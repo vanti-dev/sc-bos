@@ -2,11 +2,9 @@ package app
 
 import (
 	"context"
-	"crypto"
-	"crypto/tls"
-
 	"github.com/vanti-dev/bsp-ew/internal/manage/enrollment"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
+	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -14,14 +12,9 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-func ServeEnrollment(ctx context.Context, logger *zap.Logger, server *enrollment.Server, key crypto.PrivateKey, listenGRPC string) error {
-	certSource, err := pki.NewSelfSignedCertSource(key, logger)
-	if err != nil {
-		return err
-	}
-	tlsConfig := &tls.Config{
-		GetCertificate: certSource.TLSConfigGetCertificate,
-	}
+func ServeEnrollment(ctx context.Context, logger *zap.Logger, server *enrollment.Server, key pki.PrivateKey, listenGRPC string) error {
+	certSource := pki.CacheSource(pki.SelfSignedSource(key, pki.WithIfaces()), expire.AfterProgress(0.5))
+	tlsConfig := pki.TLSConfig(certSource)
 
 	grpcServer := grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig)))
 	reflection.Register(grpcServer)

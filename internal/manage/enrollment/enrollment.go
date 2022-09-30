@@ -4,11 +4,13 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sync"
@@ -20,7 +22,12 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func EnrollAreaController(ctx context.Context, enrollment *gen.Enrollment, ca *CA) (*gen.Enrollment, error) {
+// EnrollAreaController sets up the PKI for a remote Smart Core node.
+// This connects to the remote node specified by enrollment.TargetAddress,
+// constructs a new client certificate signed using the certificate and key from authority,
+// and invokes CreateEnrollment on the target with this information.
+// The Certificate and RootCAs will be computed from the authority and will be ignored if provided in enrollment.
+func EnrollAreaController(ctx context.Context, enrollment *gen.Enrollment, authority pki.Source) (*gen.Enrollment, error) {
 	enrollment = proto.Clone(enrollment).(*gen.Enrollment)
 
 	// when in enrollment mode, the target node will be using a self-signed cert we won't be able to
@@ -43,11 +50,20 @@ func EnrollAreaController(ctx context.Context, enrollment *gen.Enrollment, ca *C
 	}
 	peerPublicKey := peerCerts[0].PublicKey
 
-	certDER, err := ca.CreateEnrollmentCertificate(enrollment, peerPublicKey)
+	authorityCert, roots, err := authority.Certs()
 	if err != nil {
 		return nil, err
 	}
-	enrollment.Certificate = ca.EncodeCertificateChain(certDER)
+
+	enrollment.RootCas = pki.EncodeCertificates(roots)
+
+	certTemplate := newTargetCertificate(enrollment)
+	enrollment.Certificate, err = pki.CreateCertificateChain(authorityCert, certTemplate, peerPublicKey,
+		pki.WithAuthority(enrollment.TargetAddress),
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	client := gen.NewEnrollmentApiClient(conn)
 	_, err = client.CreateEnrollment(ctx, &gen.CreateEnrollmentRequest{
@@ -58,6 +74,18 @@ func EnrollAreaController(ctx context.Context, enrollment *gen.Enrollment, ca *C
 	}
 
 	return enrollment, nil
+}
+
+func newTargetCertificate(enrollment *gen.Enrollment) *x509.Certificate {
+	return &x509.Certificate{
+		Subject:     pkix.Name{CommonName: enrollment.TargetName},
+		KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
+		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		URIs: []*url.URL{{
+			Scheme: "smart-core",
+			Opaque: enrollment.TargetName,
+		}},
+	}
 }
 
 type certInterceptor struct {
@@ -99,6 +127,15 @@ type Enrollment struct {
 	Cert   tls.Certificate   `json:"-"`
 }
 
+func (e Enrollment) Equal(other Enrollment) bool {
+	if e.RootDeviceName != other.RootDeviceName ||
+		e.ManagerName != other.ManagerName ||
+		e.ManagerAddress != other.ManagerAddress {
+		return false
+	}
+	return string(e.Cert.Certificate[0]) == string(other.Cert.Certificate[0])
+}
+
 var ErrNotEnrolled = errors.New("node is not enrolled")
 
 const (
@@ -110,10 +147,10 @@ const (
 // LoadEnrollment will load a previously saved Enrollment from a directory on disk. The directory should have
 // the following structure:
 //
-//     <root>
-//       - enrollment.json - JSON-encoded Enrollment structure
-//       - root-ca.crt - Root CA for the enrollment, PEM-encoded X.509 certificate
-//       - cert.crt - Certificate chain for keyPEM, with the Root CA at the top of the chain
+//	<root>
+//	  - enrollment.json - JSON-encoded Enrollment structure
+//	  - root-ca.crt - Root CA for the enrollment, PEM-encoded X.509 certificate
+//	  - cert.crt - Certificate chain for keyPEM, with the Root CA at the top of the chain
 //
 // This node's private key must be passed in, in PEM-wrapped PKCS#1 or PKCS#8 format.
 func LoadEnrollment(dir string, keyPEM []byte) (Enrollment, error) {
@@ -137,7 +174,7 @@ func LoadEnrollment(dir string, keyPEM []byte) (Enrollment, error) {
 	}
 	rootCaBlock, _ := pem.Decode(rootCaPem)
 	if rootCaBlock == nil {
-		return enrollment, errors.New("ca.pem is not valid PEM data")
+		return enrollment, errors.New("CA.pem is not valid PEM data")
 	}
 	if rootCaBlock.Type != "CERTIFICATE" {
 		return enrollment, fmt.Errorf("expected PEM type 'CERTIFICATE' but got %q", rootCaBlock.Type)

@@ -5,46 +5,33 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/pem"
-	"errors"
-	"fmt"
 	"io"
 	"math/big"
 
 	"go.uber.org/multierr"
 )
 
-func GetCertificateSmartCoreNames(cert *x509.Certificate) []string {
-	var names []string
-	for _, uri := range cert.URIs {
-		if uri.Scheme == "smart-core" {
-			names = append(names, uri.Opaque)
+// SaveCertificateChain writes derCerts as pem encoded CERTIFICATE blocks to certFile.
+// Returns the written bytes.
+func SaveCertificateChain(certFile string, derCerts [][]byte) (pemBytes []byte, err error) {
+	var buf bytes.Buffer
+
+	for _, derCert := range derCerts {
+		err = pem.Encode(&buf, &pem.Block{
+			Type:  "CERTIFICATE",
+			Bytes: derCert,
+		})
+		if err != nil {
+			return
 		}
 	}
-	return names
-}
 
-func ParseCertificateChainPEM(pemBytes []byte) (leaf *x509.Certificate, intermediates *x509.CertPool, err error) {
-	block, pemBytes := pem.Decode(pemBytes)
-	if block == nil {
-		return nil, nil, errors.New("invalid leaf certificate PEM")
-	}
-	if block.Type != "CERTIFICATE" {
-		return nil, nil, fmt.Errorf("expected CERTIFICATE block, found %q", block.Type)
-	}
-	leaf, err = x509.ParseCertificate(block.Bytes)
-	if err != nil {
-		return
-	}
-
-	intermediates = x509.NewCertPool()
-	ok := intermediates.AppendCertsFromPEM(pemBytes)
-	if !ok {
-		return nil, nil, errors.New("failed to parse intermediate certificates")
-	}
-
+	pemBytes = buf.Bytes()
+	err = writeFileNoTruncate(certFile, pemBytes, 0640)
 	return
 }
 
+// ParseCertificatesPEM parses and returns any CERTIFICATE blocks found in the pem encoded pemBytes.
 func ParseCertificatesPEM(pemBytes []byte) (certs []*x509.Certificate, errs error) {
 	for len(pemBytes) > 0 {
 		var block *pem.Block
@@ -84,6 +71,23 @@ func EncodePEMSequence(contents [][]byte, blockType string) (encoded []byte) {
 	}
 
 	return buf.Bytes()
+}
+
+func EncodeCertificates(certs []*x509.Certificate) []byte {
+	out := &bytes.Buffer{}
+	block := &pem.Block{Type: "CERTIFICATE"}
+	for _, cert := range certs {
+		if len(cert.Raw) == 0 {
+			continue
+		}
+		block.Bytes = cert.Raw
+		// writing to a memory buffer shouldn't return any errors
+		err := pem.Encode(out, block)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return out.Bytes()
 }
 
 // GenerateSerialNumber generates a random unsigned 128-bit integer using a cryptographically secure source of random

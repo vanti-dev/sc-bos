@@ -2,17 +2,14 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"errors"
 	"flag"
 	"fmt"
-	"os"
-	"time"
-
 	"github.com/vanti-dev/bsp-ew/internal/manage/enrollment"
+	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"google.golang.org/protobuf/encoding/protojson"
+	"os"
 )
 
 var (
@@ -49,35 +46,15 @@ func run() error {
 	if flagCert == "" || flagKey == "" {
 		return errors.New("cert and key options must be specified")
 	}
-	pair, err := tls.LoadX509KeyPair(flagCert, flagKey)
-	if err != nil {
-		return fmt.Errorf("load cert and key: %w", err)
-	}
-	pair.Leaf, err = x509.ParseCertificate(pair.Certificate[0])
-	if err != nil {
-		return err
-	}
+	authority := pki.FSSource(flagCert, flagKey, flagCA)
 
-	rootsPEM, err := os.ReadFile(flagCA)
-	if err != nil {
-		return err
-	}
-
-	ca := &enrollment.CA{
-		Certificate:   pair.Leaf,
-		PrivateKey:    pair.PrivateKey,
-		Intermediates: pair.Certificate[1:],
-		Now:           time.Now,
-		Validity:      30 * 24 * time.Hour,
-	}
 	en := &gen.Enrollment{
 		TargetName:     flagName,
 		TargetAddress:  flagAddr,
 		ManagerName:    flagManagerName,
 		ManagerAddress: flagManagerAddr,
-		RootCas:        rootsPEM,
 	}
-	en, err = enrollment.EnrollAreaController(context.Background(), en, ca)
+	en, err := enrollment.EnrollAreaController(context.Background(), en, authority)
 	fmt.Println(protojson.Format(en))
 	return err
 }

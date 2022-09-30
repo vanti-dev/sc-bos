@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 	"crypto/tls"
-	"crypto/x509"
 	"fmt"
+	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -76,17 +76,14 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		}
 	}
 
-	smartCoreRootCAs := x509.NewCertPool()
-	smartCoreRootCAs.AddCert(en.RootCA)
-	tlsServerConfig := &tls.Config{
-		GetCertificate: enrollServer.CertSource().TLSConfigGetCertificate,
-		ClientAuth:     tls.VerifyClientCertIfGiven,
-		ClientCAs:      smartCoreRootCAs,
-	}
-	tlsClientConfig := &tls.Config{
-		GetClientCertificate: enrollServer.CertSource().TLSConfigGetClientCertificate,
-		RootCAs:              smartCoreRootCAs,
-	}
+	certSource := pki.ChainSource(
+		enrollServer,
+		pki.CacheSource(pki.FSSource(filepath.Join(config.DataDir, "cert.pem"), filepath.Join(config.DataDir, "private-key.pem"), ""), expire.BeforeInvalid(time.Hour)),
+		pki.CacheSource(pki.SelfSignedSource(key, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()), expire.AfterProgress(0.5)),
+	)
+	tlsServerConfig := pki.TLSConfig(certSource)
+	tlsServerConfig.ClientAuth = tls.VerifyClientCertIfGiven
+	tlsClientConfig := pki.TLSConfig(certSource)
 
 	managerConn, err := grpc.DialContext(ctx, en.ManagerAddress,
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsClientConfig)),
