@@ -2,11 +2,19 @@ package pki
 
 import (
 	"bytes"
+	"crypto"
+	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/rand"
+	"crypto/rsa"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
+	"fmt"
 	"io"
 	"math/big"
+	"os"
 
 	"go.uber.org/multierr"
 )
@@ -52,6 +60,25 @@ func ParseCertificatesPEM(pemBytes []byte) (certs []*x509.Certificate, errs erro
 		certs = append(certs, cert)
 	}
 	return
+}
+
+// DecodePEMBlocks returns all PEM blocks in pemBytes with blockType type.
+func DecodePEMBlocks(pemBytes []byte, blockType string) [][]byte {
+	var matched [][]byte
+	for len(pemBytes) > 0 {
+		var block *pem.Block
+		block, pemBytes = pem.Decode(pemBytes)
+		if block == nil {
+			break
+		}
+
+		if block.Type != blockType {
+			continue
+		}
+
+		matched = append(matched, block.Bytes)
+	}
+	return matched
 }
 
 func EncodePEMSequence(contents [][]byte, blockType string) (encoded []byte) {
@@ -100,4 +127,72 @@ func GenerateSerialNumber() (*big.Int, error) {
 		return nil, err
 	}
 	return big.NewInt(0).SetBytes(blob), nil
+}
+
+// LoadX509Cert reads an x509 certificate chain (leaf first) from certPath and combines it with privateKey to form a tls.Certificate.
+// This is like tls.LoadX509KeyPair except the private key is already known.
+// Leaf will be populated with the first certificate in certPath.
+func LoadX509Cert(certPath string, privateKey crypto.PrivateKey) (tls.Certificate, error) {
+	fail := func(err error) (tls.Certificate, error) {
+		return tls.Certificate{}, err
+	}
+
+	certPem, err := os.ReadFile(certPath)
+	if err != nil {
+		return fail(err)
+	}
+	cert := tls.Certificate{}
+	cert.Certificate = DecodePEMBlocks(certPem, "CERTIFICATE")
+	cert.PrivateKey = privateKey
+
+	if len(cert.Certificate) == 0 {
+		return fail(fmt.Errorf("no certificates in %v", certPem))
+	}
+
+	cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
+	if err != nil {
+		return fail(err)
+	}
+	if err := ValidKeyPair(cert.Leaf.PublicKey, privateKey); err != nil {
+		return fail(err)
+	}
+
+	return cert, nil
+}
+
+// ValidKeyPair checks whether the given public and private keys are a valid pair, that is to say they use the same
+// algorithm configured with the same parameters.
+// If the keys are not a valid pair a non-nil error will be returned.
+func ValidKeyPair(public crypto.PublicKey, private crypto.PrivateKey) error {
+	// Code copied from tls.X509KeyPair
+	switch pub := public.(type) {
+	case *rsa.PublicKey:
+		priv, ok := private.(*rsa.PrivateKey)
+		if !ok {
+			return errors.New("tls: private key type does not match public key type")
+		}
+		if pub.N.Cmp(priv.N) != 0 {
+			return errors.New("tls: private key does not match public key")
+		}
+	case *ecdsa.PublicKey:
+		priv, ok := private.(*ecdsa.PrivateKey)
+		if !ok {
+			return errors.New("tls: private key type does not match public key type")
+		}
+		if pub.X.Cmp(priv.X) != 0 || pub.Y.Cmp(priv.Y) != 0 {
+			return errors.New("tls: private key does not match public key")
+		}
+	case ed25519.PublicKey:
+		priv, ok := private.(ed25519.PrivateKey)
+		if !ok {
+			return errors.New("tls: private key type does not match public key type")
+		}
+		if !bytes.Equal(priv.Public().(ed25519.PublicKey), pub) {
+			return errors.New("tls: private key does not match public key")
+		}
+	default:
+		return errors.New("tls: unknown public key algorithm")
+	}
+
+	return nil
 }

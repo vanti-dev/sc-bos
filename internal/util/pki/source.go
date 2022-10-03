@@ -72,6 +72,17 @@ func (c *cachedSource) expired() bool {
 	return true
 }
 
+// FuncSource adapts f to implement Source.
+func FuncSource(f func() (cert *tls.Certificate, roots []*x509.Certificate, err error)) Source {
+	return funcSource(f)
+}
+
+type funcSource func() (cert *tls.Certificate, roots []*x509.Certificate, err error)
+
+func (f funcSource) Certs() (cert *tls.Certificate, roots []*x509.Certificate, err error) {
+	return f()
+}
+
 // FSSource returns a Source that reads the cert+private keypair and roots from files in PEM format on the filesystem.
 // Each call to Certs will read the files.
 // rootsFile can be empty in which case no roots will be read or returned from Source.Certs.

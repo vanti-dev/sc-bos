@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
+	"errors"
 	"fmt"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
 	"net/http"
@@ -76,9 +78,15 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		}
 	}
 
+	// We read certificates from a few sources, choosing the first that succeeds.
+	// First we attempt to use cohort enrollment as our source of certs/roots.
+	// If that fails we attempt to read from files in the data dir (server-cert.pem, private-key.pem, and roots.pem).
+	// If all that fails we mint a new self signed certificate.
 	certSource := pki.ChainSource(
 		enrollServer,
-		pki.CacheSource(pki.FSSource(filepath.Join(config.DataDir, "cert.pem"), filepath.Join(config.DataDir, "private-key.pem"), ""), expire.BeforeInvalid(time.Hour)),
+		pki.CacheSource(pki.FuncSource(func() (*tls.Certificate, []*x509.Certificate, error) {
+			return readCertAndRoots(config, key)
+		}), expire.BeforeInvalid(time.Hour)),
 		pki.CacheSource(pki.SelfSignedSource(key, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()), expire.AfterProgress(0.5)),
 	)
 	tlsServerConfig := pki.TLSConfig(certSource)
@@ -148,6 +156,27 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	}
 	c.Defer(managerConn.Close)
 	return c, nil
+}
+
+func readCertAndRoots(config SystemConfig, key pki.PrivateKey) (*tls.Certificate, []*x509.Certificate, error) {
+	certPath := filepath.Join(config.DataDir, "server-cert.pem")
+	cert, err := pki.LoadX509Cert(certPath, key)
+	if err != nil {
+		return nil, nil, err
+	}
+	rootsPem, err := os.ReadFile(filepath.Join(config.DataDir, "roots.pem"))
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			// we ignore that roots doesn't exist, this just means we don't trust other nodes
+			return &cert, nil, nil
+		}
+		return nil, nil, err
+	}
+	roots, err := pki.ParseCertificatesPEM(rootsPem)
+	if err != nil {
+		return nil, nil, err
+	}
+	return &cert, roots, nil
 }
 
 type Controller struct {
