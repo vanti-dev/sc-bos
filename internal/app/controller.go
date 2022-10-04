@@ -72,9 +72,9 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		}), expire.BeforeInvalid(time.Hour)),
 		pki.CacheSource(pki.SelfSignedSource(key, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()), expire.AfterProgress(0.5)),
 	)
-	tlsServerConfig := pki.TLSConfig(certSource)
+	tlsServerConfig := pki.TLSServerConfig(certSource)
 	tlsServerConfig.ClientAuth = tls.VerifyClientCertIfGiven
-	tlsClientConfig := pki.TLSConfig(certSource)
+	tlsClientConfig := pki.TLSClientConfig(certSource)
 
 	// manager represents a delayed connection to the cohort manager.
 	// Invoking manager when not enrolled returns nil, but when we are enrolled it returns a connection

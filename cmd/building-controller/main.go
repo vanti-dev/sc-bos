@@ -78,18 +78,18 @@ func run(ctx context.Context) error {
 	// These child certs will actually be used for our server and for issuance to other nodes as part of enrollment
 	serverAuthority := loadServerAuthority()
 
-	// Setup tls.Config for our server apis and client requests
-	grpcTlsConfig := pki.TLSConfig(serverCerts(sysConf, serverAuthority))
+	// Setup tls.Config for our server apis
+	grpcTlsServerConfig := pki.TLSServerConfig(serverCerts(sysConf, serverAuthority))
 
 	// Setup the tls.Config for serving https apis - including grpc-web and hosting
 	httpsCertSource, err := loadHTTPSCertSource(sysConf, serverAuthority)
 	if err != nil {
 		return err
 	}
-	httpsTlsConfig := pki.TLSConfig(httpsCertSource)
+	httpsTlsConfig := pki.TLSServerConfig(httpsCertSource)
 
 	grpcServerOptions := []grpc.ServerOption{
-		grpc.Creds(credentials.NewTLS(grpcTlsConfig)),
+		grpc.Creds(credentials.NewTLS(grpcTlsServerConfig)),
 	}
 	if !sysConf.DisableAuth {
 		verifier, err := initKeycloakValidator(ctx, sysConf)
@@ -116,7 +116,7 @@ func run(ctx context.Context) error {
 		authority:     serverAuthority,
 		managerName:   "building-controller",
 		managerAddr:   sysConf.CanonicalAddress,
-		testTLSConfig: grpcTlsConfig,
+		testTLSConfig: grpcTlsServerConfig,
 	})
 	gen.RegisterTenantApiServer(grpcServer, tenantapi.NewServer(dbConn,
 		tenantapi.WithLogger(logger.Named("tenantapi"))))

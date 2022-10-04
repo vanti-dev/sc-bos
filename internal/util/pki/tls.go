@@ -3,24 +3,42 @@ package pki
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 )
 
-// TLSConfig returns a *tls.Config whose client and server certs and roots are backed by source.
-func TLSConfig(source Source) *tls.Config {
+// TLSServerConfig returns a *tls.Config for use by a server using source to provide the server cert.
+// If the returned tls.Config requires validation of client certificates then sources roots will be used to validate
+// the client certificates.
+func TLSServerConfig(source Source) *tls.Config {
 	r := &resolver{
+		server: true,
 		source: source,
 		config: new(tls.Config),
 	}
 
 	r.config.GetCertificate = r.getCertificate
+	r.config.VerifyConnection = r.verifyConnection
+
+	return r.config
+}
+
+// TLSClientConfig returns a *tls.Config for use by a client using sources roots to validate the server certificate.
+// If the server requests a client certificate then sources cert will be used.
+func TLSClientConfig(source Source) *tls.Config {
+	r := &resolver{
+		source: source,
+		config: new(tls.Config),
+	}
+
 	r.config.GetClientCertificate = r.getClientCertificate
-	r.config.InsecureSkipVerify = true // we do the verify ourselves via verifyConnection
+	r.config.InsecureSkipVerify = true
 	r.config.VerifyConnection = r.verifyConnection
 
 	return r.config
 }
 
 type resolver struct {
+	server bool
 	config *tls.Config
 	source Source
 }
@@ -41,9 +59,8 @@ func (r *resolver) verifyConnection(cs tls.ConnectionState) error {
 		return err
 	}
 
-	if r.config.ClientAuth < tls.VerifyClientCertIfGiven &&
-		len(cs.PeerCertificates) == 0 {
-		return nil
+	if skip, err := r.skipVerify(cs); skip || err != nil {
+		return err
 	}
 
 	pool := x509.NewCertPool()
@@ -60,7 +77,7 @@ func (r *resolver) verifyConnection(cs tls.ConnectionState) error {
 		opts.CurrentTime = r.config.Time()
 	}
 
-	if r.config.ClientAuth >= tls.VerifyClientCertIfGiven {
+	if r.server {
 		opts.KeyUsages = []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}
 	}
 
@@ -72,4 +89,32 @@ func (r *resolver) verifyConnection(cs tls.ConnectionState) error {
 
 	_, err = cs.PeerCertificates[0].Verify(opts)
 	return err
+}
+
+func (r *resolver) skipVerify(cs tls.ConnectionState) (bool, error) {
+	// If we represent a client and the server has no certs then this is an error
+	if !r.server && len(cs.PeerCertificates) == 0 {
+		return false, errors.New("tls: no server certs")
+	}
+
+	if r.server {
+		switch r.config.ClientAuth {
+		case tls.NoClientCert, tls.RequestClientCert:
+			return true, nil
+		case tls.RequireAnyClientCert:
+			if len(cs.PeerCertificates) == 0 {
+				return true, errors.New("tls: no client cert")
+			}
+			return true, nil
+		case tls.VerifyClientCertIfGiven:
+			return len(cs.PeerCertificates) == 0, nil
+		case tls.RequireAndVerifyClientCert:
+			if len(cs.PeerCertificates) == 0 {
+				return false, errors.New("tls: no client cert")
+			}
+			return false, nil
+		}
+	}
+
+	return false, nil
 }
