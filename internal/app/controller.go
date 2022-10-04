@@ -31,8 +31,9 @@ type SystemConfig struct {
 	ListenGRPC  string
 	ListenHTTPS string
 
-	TenantOAuth bool          // If true, then tenant tokens will be issued and verified, backed by manager's TenantApi
-	Policy      policy.Policy // Override the policy used for RPC calls. Defaults to policy.Default
+	TenantOAuth   bool          // If true, then tenant tokens will be issued and verified, backed by manager's TenantApi
+	Policy        policy.Policy // Override the policy used for RPC calls. Defaults to policy.Default
+	DisablePolicy bool          // Unsafe, disables any policy checking for the server
 }
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
@@ -82,57 +83,66 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	manager, closeManager := RemoteManager(enrollServer, grpc.WithTransportCredentials(credentials.NewTLS(tlsClientConfig)))
 
 	mux := http.NewServeMux()
-	interceptorOpts := []policy.InterceptorOption{policy.WithLogger(logger.Named("policy"))}
-	pol := policy.Default(false)
-	if config.Policy != nil {
-		pol = config.Policy
-	}
-	if config.TenantOAuth {
-		// localVerifier verifies tenant access using information contained in a local file
-		localVerifier, err := LocalTenantVerifier(config)
-		if err != nil {
-			if !errors.Is(err, os.ErrNotExist) {
-				// if the file exists, but we can't read it, we should let someone know
+
+	var grpcOpts []grpc.ServerOption
+	grpcOpts = append(grpcOpts, grpc.Creds(credentials.NewTLS(tlsServerConfig)))
+
+	// Configure how we authenticate requests
+	if !config.DisablePolicy {
+		interceptorOpts := []policy.InterceptorOption{policy.WithLogger(logger.Named("policy"))}
+		pol := policy.Default(false)
+		if config.Policy != nil {
+			pol = config.Policy
+		}
+
+		if config.TenantOAuth {
+			// localVerifier verifies tenant access using information contained in a local file
+			localVerifier, err := LocalTenantVerifier(config)
+			if err != nil {
+				if !errors.Is(err, os.ErrNotExist) {
+					// if the file exists, but we can't read it, we should let someone know
+					return nil, err
+				}
+				// reading the local tenant data failed, we return this error each time as part of the secret verification
+				err := err
+				localVerifier = tenant.SecretSourceFunc(func(ctx context.Context, secret string) (tenant.SecretData, error) {
+					return tenant.SecretData{}, err
+				})
+			}
+
+			// remoteVerifier verifies tenant access using a remote service defined via TenantApiClient and managerConn
+			loggerR := logger.Named("tenant.secrets")
+			remoteVerifier := tenant.SecretSourceFunc(func(ctx context.Context, secret string) (data tenant.SecretData, err error) {
+				conn, err := manager()
+				if err != nil {
+					return data, err
+				}
+				if conn == nil {
+					return data, errors.New("no remote verifier")
+				}
+				return tenant.RemoteVerify(ctx, secret, gen.NewTenantApiClient(conn), loggerR)
+			})
+
+			secrets := tenant.FirstSuccessfulSecret([]tenant.SecretSource{
+				localVerifier,
+				remoteVerifier,
+			})
+			tokenServer, err := tenant.NewTokenSever(secrets, "gateway", 15*time.Minute, logger.Named("tenant.token"))
+			if err != nil {
 				return nil, err
 			}
-			// reading the local tenant data failed, we return this error each time as part of the secret verification
-			err := err
-			localVerifier = tenant.SecretSourceFunc(func(ctx context.Context, secret string) (tenant.SecretData, error) {
-				return tenant.SecretData{}, err
-			})
+			mux.Handle("/oauth2/token", tokenServer)
+			interceptorOpts = append(interceptorOpts, policy.WithTokenVerifier(tokenServer.TokenValidator()))
 		}
 
-		// remoteVerifier verifies tenant access using a remote service defined via TenantApiClient and managerConn
-		loggerR := logger.Named("tenant.secrets")
-		remoteVerifier := tenant.SecretSourceFunc(func(ctx context.Context, secret string) (data tenant.SecretData, err error) {
-			conn, err := manager()
-			if err != nil {
-				return data, err
-			}
-			if conn == nil {
-				return data, errors.New("no remote verifier")
-			}
-			return tenant.RemoteVerify(ctx, secret, gen.NewTenantApiClient(conn), loggerR)
-		})
-
-		secrets := tenant.FirstSuccessfulSecret([]tenant.SecretSource{
-			localVerifier,
-			remoteVerifier,
-		})
-		tokenServer, err := tenant.NewTokenSever(secrets, "gateway", 15*time.Minute, logger.Named("tenant.token"))
-		if err != nil {
-			return nil, err
-		}
-		mux.Handle("/oauth2/token", tokenServer)
-		interceptorOpts = append(interceptorOpts, policy.WithTokenVerifier(tokenServer.TokenValidator()))
+		interceptor := policy.NewInterceptor(pol, interceptorOpts...)
+		grpcOpts = append(grpcOpts,
+			grpc.ChainUnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
+			grpc.ChainStreamInterceptor(interceptor.GRPCStreamingInterceptor()),
+		)
 	}
 
-	interceptor := policy.NewInterceptor(pol, interceptorOpts...)
-	grpcServer := grpc.NewServer(
-		grpc.Creds(credentials.NewTLS(tlsServerConfig)),
-		grpc.UnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
-		grpc.StreamInterceptor(interceptor.GRPCStreamingInterceptor()),
-	)
+	grpcServer := grpc.NewServer(grpcOpts...)
 	reflection.Register(grpcServer)
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
 

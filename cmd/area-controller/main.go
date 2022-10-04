@@ -16,6 +16,8 @@ var (
 	flagListenHTTPS string
 	flagDataDir     string
 	flagStaticDir   string
+
+	flagDisablePolicy bool
 )
 
 func init() {
@@ -23,6 +25,8 @@ func init() {
 	flag.StringVar(&flagListenHTTPS, "listen-https", ":443", "address (host:port) to host a HTTPS server on")
 	flag.StringVar(&flagDataDir, "data-dir", ".data/area-controller-01", "path to local data storage directory")
 	flag.StringVar(&flagStaticDir, "static-dir", "ui/dist", "path for HTTP static resources")
+
+	flag.BoolVar(&flagDisablePolicy, "insecure-disable-policy", false, "Insecure! Disable checking requests against the security policy. This option opens up the server to any request.")
 }
 
 func main() {
@@ -32,10 +36,11 @@ func main() {
 func run(ctx context.Context) error {
 	flag.Parse()
 	config := app.SystemConfig{
-		Logger:      zap.NewDevelopmentConfig(),
-		DataDir:     flagDataDir,
-		ListenGRPC:  flagListenGRPC,
-		ListenHTTPS: flagListenHTTPS,
+		Logger:        zap.NewDevelopmentConfig(),
+		DataDir:       flagDataDir,
+		ListenGRPC:    flagListenGRPC,
+		ListenHTTPS:   flagListenHTTPS,
+		DisablePolicy: flagDisablePolicy,
 	}
 
 	controller, err := app.Bootstrap(ctx, config)
