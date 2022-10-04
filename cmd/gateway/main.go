@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"embed"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -59,7 +60,14 @@ func run(ctx context.Context) error {
 	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
 	traits.RegisterOnOffApiServer(controller.GRPC, onoff.NewApiRouter(
 		onoff.WithOnOffApiClientFactory(func(name string) (traits.OnOffApiClient, error) {
-			return traits.NewOnOffApiClient(controller.ManagerConn), nil
+			conn, err := controller.ManagerConn()
+			if err != nil {
+				return nil, err
+			}
+			if conn == nil {
+				return nil, errors.New("no manager conn")
+			}
+			return traits.NewOnOffApiClient(conn), nil
 		})))
 
 	return controller.Run(ctx)

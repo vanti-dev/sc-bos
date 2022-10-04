@@ -16,24 +16,30 @@ type RemoteSecretSource struct {
 }
 
 func (r *RemoteSecretSource) VerifySecret(ctx context.Context, secretStr string) (data SecretData, err error) {
+	return RemoteVerify(ctx, secretStr, r.Client, r.Logger)
+}
+
+var _ SecretSource = (*RemoteSecretSource)(nil)
+
+func RemoteVerify(ctx context.Context, secretStr string, client gen.TenantApiClient, logger *zap.Logger) (data SecretData, err error) {
 	hash := sha256.Sum256([]byte(secretStr))
 
-	secretRecord, err := r.Client.GetSecretByHash(ctx, &gen.GetSecretByHashRequest{
+	secretRecord, err := client.GetSecretByHash(ctx, &gen.GetSecretByHashRequest{
 		SecretHash: hash[:],
 	})
 	if err != nil {
 		if status.Code(err) != codes.NotFound {
-			r.Logger.Error("failed to retrieve secret", zap.Error(err))
+			logger.Error("failed to retrieve secret", zap.Error(err))
 		}
 		return
 	}
 
-	tenant, err := r.Client.GetTenant(ctx, &gen.GetTenantRequest{
+	tenant, err := client.GetTenant(ctx, &gen.GetTenantRequest{
 		Id: secretRecord.Tenant.GetId(),
 	})
 	if err != nil {
 		if status.Code(err) != codes.NotFound {
-			r.Logger.Error("failed to retrieve tenant", zap.Error(err),
+			logger.Error("failed to retrieve tenant", zap.Error(err),
 				zap.String("tenant_id", secretRecord.Tenant.GetId()))
 		}
 		return
@@ -45,5 +51,3 @@ func (r *RemoteSecretSource) VerifySecret(ctx context.Context, secretStr string)
 	}
 	return
 }
-
-var _ SecretSource = (*RemoteSecretSource)(nil)

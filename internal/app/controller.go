@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
-	"fmt"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
 	"net/http"
 	"os"
@@ -62,22 +61,6 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		return nil, err
 	}
 
-	// if the Area Controller is not already enrolled, we need to start it first in enrollment mode,
-	// then restart into normal mode.
-	en, enrolled := enrollServer.Enrollment()
-	if !enrolled {
-		logger.Info("not enrolled; switching into enrollment mode")
-		err = ServeEnrollment(ctx, logger.Named("enrollment"), enrollServer, key, config.ListenGRPC)
-		if err != nil {
-			return nil, err
-		}
-		logger.Info("switching from enrollment mode to normal mode")
-		en, enrolled = enrollServer.Enrollment()
-		if !enrolled {
-			panic("we just enrolled successfully, but it's somehow not saved")
-		}
-	}
-
 	// We read certificates from a few sources, choosing the first that succeeds.
 	// First we attempt to use cohort enrollment as our source of certs/roots.
 	// If that fails we attempt to read from files in the data dir (server-cert.pem, private-key.pem, and roots.pem).
@@ -93,12 +76,10 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	tlsServerConfig.ClientAuth = tls.VerifyClientCertIfGiven
 	tlsClientConfig := pki.TLSConfig(certSource)
 
-	managerConn, err := grpc.DialContext(ctx, en.ManagerAddress,
-		grpc.WithTransportCredentials(credentials.NewTLS(tlsClientConfig)),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("dial manager: %w", err)
-	}
+	// manager represents a delayed connection to the cohort manager.
+	// Invoking manager when not enrolled returns nil, but when we are enrolled it returns a connection
+	// using the given options to the ManagerAddress of the enrollment.
+	manager, closeManager := RemoteManager(enrollServer, grpc.WithTransportCredentials(credentials.NewTLS(tlsClientConfig)))
 
 	mux := http.NewServeMux()
 	interceptorOpts := []policy.InterceptorOption{policy.WithLogger(logger.Named("policy"))}
@@ -107,10 +88,37 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		pol = config.Policy
 	}
 	if config.TenantOAuth {
-		secrets := &tenant.RemoteSecretSource{
-			Logger: logger.Named("tenant.secrets"),
-			Client: gen.NewTenantApiClient(managerConn),
+		// localVerifier verifies tenant access using information contained in a local file
+		localVerifier, err := LocalTenantVerifier(config)
+		if err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				// if the file exists, but we can't read it, we should let someone know
+				return nil, err
+			}
+			// reading the local tenant data failed, we return this error each time as part of the secret verification
+			err := err
+			localVerifier = tenant.SecretSourceFunc(func(ctx context.Context, secret string) (tenant.SecretData, error) {
+				return tenant.SecretData{}, err
+			})
 		}
+
+		// remoteVerifier verifies tenant access using a remote service defined via TenantApiClient and managerConn
+		loggerR := logger.Named("tenant.secrets")
+		remoteVerifier := tenant.SecretSourceFunc(func(ctx context.Context, secret string) (data tenant.SecretData, err error) {
+			conn, err := manager()
+			if err != nil {
+				return data, err
+			}
+			if conn == nil {
+				return data, errors.New("no remote verifier")
+			}
+			return tenant.RemoteVerify(ctx, secret, gen.NewTenantApiClient(conn), loggerR)
+		})
+
+		secrets := tenant.FirstSuccessfulSecret([]tenant.SecretSource{
+			localVerifier,
+			remoteVerifier,
+		})
 		tokenServer, err := tenant.NewTokenSever(secrets, "gateway", 15*time.Minute, logger.Named("tenant.token"))
 		if err != nil {
 			return nil, err
@@ -152,9 +160,9 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		GRPC:            grpcServer,
 		HTTP:            httpServer,
 		ClientTLSConfig: tlsClientConfig,
-		ManagerConn:     managerConn,
+		ManagerConn:     manager,
 	}
-	c.Defer(managerConn.Close)
+	c.Defer(closeManager)
 	return c, nil
 }
 
@@ -189,7 +197,7 @@ type Controller struct {
 	HTTP *http.Server
 
 	ClientTLSConfig *tls.Config
-	ManagerConn     *grpc.ClientConn
+	ManagerConn     func() (*grpc.ClientConn, error)
 
 	deferred []Deferred
 }
