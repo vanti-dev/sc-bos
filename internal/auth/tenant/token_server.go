@@ -62,6 +62,7 @@ func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 	}
 	if !request.PostForm.Has("client_id") || !request.PostForm.Has("client_secret") {
 		writeTokenError(writer, errInvalidRequest, logger)
+		return
 	}
 	clientId := request.PostForm.Get("client_id")
 	clientSecret := request.PostForm.Get("client_secret")
