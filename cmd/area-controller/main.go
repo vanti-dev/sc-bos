@@ -43,7 +43,7 @@ func run(ctx context.Context) error {
 		DisablePolicy: flagDisablePolicy,
 	}
 
-	controller, err := app.Bootstrap(ctx, config)
+	controller, err := app.Bootstrap(config)
 	if err != nil {
 		return err
 	}

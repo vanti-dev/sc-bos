@@ -39,7 +39,7 @@ type SystemConfig struct {
 // Bootstrap will obtain a Controller in a ready-to-run state.
 // If there is no saved enrollment, then Bootstrap will start an enrollment server and wait for the enrollment to
 // complete.
-func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
+func Bootstrap(config SystemConfig) (*Controller, error) {
 	logger, err := config.Logger.Build()
 	if err != nil {
 		return nil, err
