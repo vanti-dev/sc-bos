@@ -73,19 +73,21 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		}), expire.BeforeInvalid(time.Hour)),
 		pki.CacheSource(pki.SelfSignedSource(key, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()), expire.AfterProgress(0.5)),
 	)
-	tlsServerConfig := pki.TLSServerConfig(certSource)
-	tlsServerConfig.ClientAuth = tls.VerifyClientCertIfGiven
-	tlsClientConfig := pki.TLSClientConfig(certSource)
+	tlsGRPCServerConfig := pki.TLSServerConfig(certSource)
+	tlsGRPCServerConfig.ClientAuth = tls.VerifyClientCertIfGiven
+	tlsGRPCClientConfig := pki.TLSClientConfig(certSource)
+
+	tlsHTTPServerConfig := pki.TLSServerConfig(certSource)
 
 	// manager represents a delayed connection to the cohort manager.
 	// Invoking manager when not enrolled returns nil, but when we are enrolled it returns a connection
 	// using the given options to the ManagerAddress of the enrollment.
-	manager, closeManager := RemoteManager(enrollServer, grpc.WithTransportCredentials(credentials.NewTLS(tlsClientConfig)))
+	manager, closeManager := RemoteManager(enrollServer, grpc.WithTransportCredentials(credentials.NewTLS(tlsGRPCClientConfig)))
 
 	mux := http.NewServeMux()
 
 	var grpcOpts []grpc.ServerOption
-	grpcOpts = append(grpcOpts, grpc.Creds(credentials.NewTLS(tlsServerConfig)))
+	grpcOpts = append(grpcOpts, grpc.Creds(credentials.NewTLS(tlsGRPCServerConfig)))
 
 	// Configure how we authenticate requests
 	if !config.DisablePolicy {
@@ -152,7 +154,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 
 	httpServer := &http.Server{
 		Addr:      config.ListenHTTPS,
-		TLSConfig: tlsServerConfig,
+		TLSConfig: tlsHTTPServerConfig,
 		Handler: http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			if grpcWebServer.IsGrpcWebRequest(request) || grpcWebServer.IsAcceptableGrpcCorsRequest(request) {
 				grpcWebServer.ServeHTTP(writer, request)
@@ -169,7 +171,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		Mux:             mux,
 		GRPC:            grpcServer,
 		HTTP:            httpServer,
-		ClientTLSConfig: tlsClientConfig,
+		ClientTLSConfig: tlsGRPCClientConfig,
 		ManagerConn:     manager,
 	}
 	c.Defer(closeManager)
