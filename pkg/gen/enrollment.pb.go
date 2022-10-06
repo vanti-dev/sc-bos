@@ -40,33 +40,33 @@ type Enrollment struct {
 	ManagerName string `protobuf:"bytes,3,opt,name=manager_name,json=managerName,proto3" json:"manager_name,omitempty"`
 	// The address where the management node's Smart Core gRPC server can be found, in the form "host:port".
 	//
-	//The host must either be a DNS name or an IP address. When the target node connects to this address using gRPC with
-	//TLS, the management node MUST use a certificate signed by one of the Certificate Authorities present in root_cas,
-	//and that certificate MUST contain the host as a Subject Alternative Name. This is so the target node can verify
-	//the identity of the management node.
+	// The host must either be a DNS name or an IP address. When the target node connects to this address using gRPC with
+	// TLS, the management node MUST use a certificate signed by one of the Certificate Authorities present in root_cas,
+	// and that certificate MUST contain the host as a Subject Alternative Name. This is so the target node can verify
+	// the identity of the management node.
 	ManagerAddress string `protobuf:"bytes,4,opt,name=manager_address,json=managerAddress,proto3" json:"manager_address,omitempty"`
 	// An X.509 certificate chain issued by the management node to the target node, in DER-encoded ASN.1 in a PEM container.
 	//
-	//If more than one certificate is present, they should be concatenated.
-	//The certificate chain MUST be in leaf-first order; the leaf certificate is the certificate issued to the target node.
-	//The leaf certificate's public key MUST be the target node's public key.
-	//Each certificate in the chain MUST be signed by the next certificate in the chain.
-	//The final certificate in the chain MUST be signed by the one of the Certificate Authorities whose certificate is
-	//present in root_cas.
+	// If more than one certificate is present, they should be concatenated.
+	// The certificate chain MUST be in leaf-first order; the leaf certificate is the certificate issued to the target node.
+	// The leaf certificate's public key MUST be the target node's public key.
+	// Each certificate in the chain MUST be signed by the next certificate in the chain.
+	// The final certificate in the chain MUST be signed by the one of the Certificate Authorities whose certificate is
+	// present in root_cas.
 	//
-	//The leaf certificate's Subject Common Name SHOULD be a human-readable name for the target node.
-	//The leaf certificate MUST contain target_name as a URI Subject Alternative Name in the form "smart-core:<target_name>"
-	//If the enrollment connection was opened by resolving a DNS name, then the leaf certificate MUST contain that DNS name
-	//as a Subject Alternative Name.
-	//If the enrollment connection was opened by directly connecting to an IP address, then the leaf certificate MUST
-	//contain that IP address as a Subject Alternative Name.
+	// The leaf certificate's Subject Common Name SHOULD be a human-readable name for the target node.
+	// The leaf certificate MUST contain target_name as a URI Subject Alternative Name in the form "smart-core:<target_name>"
+	// If the enrollment connection was opened by resolving a DNS name, then the leaf certificate MUST contain that DNS name
+	// as a Subject Alternative Name.
+	// If the enrollment connection was opened by directly connecting to an IP address, then the leaf certificate MUST
+	// contain that IP address as a Subject Alternative Name.
 	Certificate []byte `protobuf:"bytes,5,opt,name=certificate,proto3" json:"certificate,omitempty"`
 	// One or more X.509 certificates, in DER-encoded ASN.1 in a PEM container.
 	//
-	//If more than one certificate is present, they should be concatenated.
-	//These are the Root Certificate Authorities for the enrollment. Each MUST be self-signed.
-	//The target node SHOULD use these certificate authorities whenever it communicates with another Smart Core node,
-	//to verify that the other node is also enrolled with the same manager.
+	// If more than one certificate is present, they should be concatenated.
+	// These are the Root Certificate Authorities for the enrollment. Each MUST be a CA certificate.
+	// The target node SHOULD use these certificate authorities whenever it communicates with another Smart Core node,
+	// to verify that the other node is also enrolled with the same manager.
 	RootCas []byte `protobuf:"bytes,6,opt,name=root_cas,json=rootCas,proto3" json:"root_cas,omitempty"`
 }
 
