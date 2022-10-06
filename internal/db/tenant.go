@@ -204,6 +204,7 @@ func CreateTenantSecret(ctx context.Context, tx pgx.Tx, secret *gen.Secret) (*ge
 	return secret, nil
 }
 
+// GetTenantSecret returns a gen.Secret by secret id.
 func GetTenantSecret(ctx context.Context, tx pgx.Tx, id string) (*gen.Secret, error) {
 	// language=postgresql
 	query := `
