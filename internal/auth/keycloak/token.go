@@ -3,12 +3,12 @@ package keycloak
 import (
 	"context"
 	"encoding/json"
-
+	"github.com/go-jose/go-jose/v3/jwt"
 	"github.com/vanti-dev/bsp-ew/internal/auth"
 )
 
 type accessTokenPayload struct {
-	auth.JWTCommonClaims
+	jwt.Claims
 	Roles          []string                  `json:"roles"`
 	Scopes         auth.JWTScopes            `json:"scope"`
 	ResourceAccess map[string]resourceAccess `json:"resource_access"`
@@ -34,16 +34,16 @@ type resourceAccess struct {
 func NewTokenVerifier(config *Config, keySet auth.KeySet) *TokenValidator {
 	return &TokenValidator{
 		keySet: keySet,
-		claimVerifier: &auth.JWTClaimValidator{
-			Audience: config.ClientID,
+		expected: jwt.Expected{
+			Audience: jwt.Audience{config.ClientID},
 			Issuer:   config.Issuer(),
 		},
 	}
 }
 
 type TokenValidator struct {
-	keySet        auth.KeySet
-	claimVerifier *auth.JWTClaimValidator
+	keySet   auth.KeySet
+	expected jwt.Expected
 }
 
 func (v *TokenValidator) ValidateAccessToken(ctx context.Context, token string) (*auth.Authorization, error) {
@@ -58,7 +58,7 @@ func (v *TokenValidator) ValidateAccessToken(ctx context.Context, token string) 
 		return nil, err
 	}
 
-	err = v.claimVerifier.ValidateClaims(payload.JWTCommonClaims)
+	err = payload.Claims.Validate(v.expected)
 	if err != nil {
 		return nil, err
 	}

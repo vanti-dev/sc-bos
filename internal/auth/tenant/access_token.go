@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/json"
+	"github.com/go-jose/go-jose/v3/jwt"
 	"io"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 )
 
 type tokenPayload struct {
-	auth.JWTCommonClaims
+	jwt.Claims
 	Zones []string `json:"zones"`
 }
 
@@ -39,13 +40,13 @@ func (ts *TokenSource) GenerateAccessToken(data SecretData) (token string, err e
 	expires := now.Add(ts.Validity)
 
 	payload := tokenPayload{
-		JWTCommonClaims: auth.JWTCommonClaims{
-			Issuer:     ts.Issuer,
-			Subject:    data.TenantID,
-			Audience:   ts.Issuer,
-			Expiration: auth.JWTTime(expires),
-			NotBefore:  auth.JWTTime(now),
-			IssuedAt:   auth.JWTTime(now),
+		Claims: jwt.Claims{
+			Issuer:    ts.Issuer,
+			Subject:   data.TenantID,
+			Audience:  jwt.Audience{ts.Issuer},
+			Expiry:    jwt.NewNumericDate(expires),
+			NotBefore: jwt.NewNumericDate(now),
+			IssuedAt:  jwt.NewNumericDate(now),
 		},
 		Zones: data.Zones,
 	}
@@ -80,10 +81,10 @@ func (ts *TokenSource) ValidateAccessToken(_ context.Context, token string) (*au
 		return nil, err
 	}
 
-	err = (&auth.JWTClaimValidator{
-		Audience: ts.Issuer,
+	err = payload.Claims.Validate(jwt.Expected{
+		Audience: jwt.Audience{ts.Issuer},
 		Issuer:   ts.Issuer,
-	}).ValidateClaims(payload.JWTCommonClaims)
+	})
 	if err != nil {
 		return nil, err
 	}
