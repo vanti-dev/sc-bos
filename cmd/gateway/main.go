@@ -5,14 +5,12 @@ import (
 	"embed"
 	"errors"
 	"flag"
-	"fmt"
 	"os"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
-	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/zap"
@@ -75,21 +73,3 @@ func run(ctx context.Context) error {
 
 //go:embed policy
 var policyFS embed.FS
-
-func genTenantSecrets(logger *zap.Logger) tenant.SecretSource {
-	store := tenant.NewMemorySecretStore(nil)
-	for i := 1; i <= 3; i++ {
-		clientId := fmt.Sprintf("tenant-%d", i)
-		data := tenant.SecretData{TenantID: clientId}
-		secret, err := store.Enroll(context.TODO(), data)
-		if err != nil {
-			panic(err)
-		}
-
-		logger.Info("created new tenant",
-			zap.String("clientId", clientId),
-			zap.String("secret", secret),
-		)
-	}
-	return store
-}

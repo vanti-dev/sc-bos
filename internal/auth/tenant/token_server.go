@@ -14,12 +14,12 @@ import (
 )
 
 type TokenServer struct {
-	logger  *zap.Logger
-	secrets SecretSource
-	tokens  *TokenSource
+	logger   *zap.Logger
+	verifier Verifier
+	tokens   *TokenSource
 }
 
-func NewTokenSever(secrets SecretSource, name string, validity time.Duration, logger *zap.Logger) (*TokenServer, error) {
+func NewTokenSever(verifier Verifier, name string, validity time.Duration, logger *zap.Logger) (*TokenServer, error) {
 	key, err := generateKey()
 	if err != nil {
 		return nil, err
@@ -32,9 +32,9 @@ func NewTokenSever(secrets SecretSource, name string, validity time.Duration, lo
 	}
 
 	return &TokenServer{
-		logger:  logger,
-		secrets: secrets,
-		tokens:  tokens,
+		logger:   logger,
+		verifier: verifier,
+		tokens:   tokens,
 	}, nil
 }
 
@@ -68,8 +68,8 @@ func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 	clientSecret := request.PostForm.Get("client_secret")
 
 	// lookup secret, and ensure it's for the matching client
-	secretData, err := s.secrets.VerifySecret(ctx, clientSecret)
-	if err != nil || secretData.TenantID != clientId {
+	secretData, err := s.verifier.Verify(ctx, clientId, clientSecret)
+	if err != nil {
 		writeTokenError(writer, errInvalidClient, logger)
 		return
 	}

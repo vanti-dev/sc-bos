@@ -105,14 +105,13 @@ func Bootstrap(config SystemConfig) (*Controller, error) {
 				}
 				// reading the local tenant data failed, we return this error each time as part of the secret verification
 				err := err
-				localVerifier = tenant.SecretSourceFunc(func(ctx context.Context, secret string) (tenant.SecretData, error) {
+				localVerifier = tenant.VerifierFunc(func(ctx context.Context, id, secret string) (tenant.SecretData, error) {
 					return tenant.SecretData{}, err
 				})
 			}
 
 			// remoteVerifier verifies tenant access using a remote service defined via TenantApiClient and managerConn
-			loggerR := logger.Named("tenant.secrets")
-			remoteVerifier := tenant.SecretSourceFunc(func(ctx context.Context, secret string) (data tenant.SecretData, err error) {
+			remoteVerifier := tenant.VerifierFunc(func(ctx context.Context, id, secret string) (data tenant.SecretData, err error) {
 				conn, err := manager()
 				if err != nil {
 					return data, err
@@ -120,14 +119,14 @@ func Bootstrap(config SystemConfig) (*Controller, error) {
 				if conn == nil {
 					return data, errors.New("no remote verifier")
 				}
-				return tenant.RemoteVerify(ctx, secret, gen.NewTenantApiClient(conn), loggerR)
+				return tenant.RemoteVerify(ctx, id, secret, gen.NewTenantApiClient(conn))
 			})
 
-			secrets := tenant.FirstSuccessfulSecret([]tenant.SecretSource{
+			verifier := tenant.FirstSuccessfulVerifier([]tenant.Verifier{
 				localVerifier,
 				remoteVerifier,
 			})
-			tokenServer, err := tenant.NewTokenSever(secrets, "gateway", 15*time.Minute, logger.Named("tenant.token"))
+			tokenServer, err := tenant.NewTokenSever(verifier, "gateway", 15*time.Minute, logger.Named("tenant.token"))
 			if err != nil {
 				return nil, err
 			}

@@ -3,9 +3,9 @@ package tenantapi
 import (
 	"context"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"github.com/vanti-dev/bsp-ew/internal/util/pass"
 	"io"
 	"regexp"
 
@@ -267,7 +267,10 @@ func (s *Server) CreateSecret(ctx context.Context, request *gen.CreateSecretRequ
 		logger.Error("secret generation failed", zap.Error(err))
 		return nil, status.Error(codes.Internal, "secret generation failed")
 	}
-	secret.SecretHash = hashSecret(secret.Secret)
+	secret.SecretHash, err = pass.Hash([]byte(secret.Secret))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "secret hashing failed %w", err)
+	}
 
 	err = s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
 		secret, err = db.CreateTenantSecret(ctx, tx, secret)
@@ -282,6 +285,29 @@ func (s *Server) CreateSecret(ctx context.Context, request *gen.CreateSecretRequ
 	return secret, nil
 }
 
+func (s *Server) VerifySecret(ctx context.Context, request *gen.VerifySecretRequest) (*gen.Secret, error) {
+	if request.TenantId == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing tenant_id")
+	}
+
+	var secrets []*gen.Secret
+	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
+		secrets, err = db.ListTenantSecrets(ctx, tx, request.TenantId)
+		return
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "db: %w", err)
+	}
+
+	for _, s := range secrets {
+		if err := pass.Compare(s.SecretHash, []byte(request.Secret)); err == nil {
+			s.SecretHash = nil
+			return s, nil
+		}
+	}
+	return nil, status.Error(codes.Unauthenticated, "unknown pass")
+}
+
 func (s *Server) GetSecret(ctx context.Context, request *gen.GetSecretRequest) (*gen.Secret, error) {
 	logger := rpcutil.ServerLogger(ctx, s.logger).With(zap.String("secret_id", request.GetId()))
 
@@ -294,24 +320,6 @@ func (s *Server) GetSecret(ctx context.Context, request *gen.GetSecretRequest) (
 		return nil, status.Error(codes.NotFound, "secret not found")
 	} else if err != nil {
 		logger.Error("db.GetTenantSecret failed", zap.Error(err))
-		return nil, status.Error(codes.Internal, "database transaction failed")
-	}
-
-	return secret, nil
-}
-
-func (s *Server) GetSecretByHash(ctx context.Context, request *gen.GetSecretByHashRequest) (*gen.Secret, error) {
-	logger := rpcutil.ServerLogger(ctx, s.logger)
-
-	var secret *gen.Secret
-	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
-		secret, err = db.GetTenantSecretByHash(ctx, tx, request.SecretHash)
-		return
-	})
-	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, status.Error(codes.NotFound, "secret not found")
-	} else if err != nil {
-		logger.Error("db.GetTenantSecretByHash failed", zap.Error(err))
 		return nil, status.Error(codes.Internal, "database transaction failed")
 	}
 
@@ -356,11 +364,6 @@ func genSecret() (string, error) {
 	encoding.Encode(encoded, secretBytes)
 
 	return string(encoded), nil
-}
-
-func hashSecret(secret string) (hash []byte) {
-	sum := sha256.Sum256([]byte(secret))
-	return sum[:]
 }
 
 var filterTenantRegexp = regexp.MustCompile(
