@@ -56,31 +56,36 @@ func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 		logger.Error("form parse error", zap.Error(err))
 		return
 	}
-	if request.PostForm.Get("grant_type") != "client_credentials" {
-		writeTokenError(writer, errUnsupportedGrantType, logger)
-		return
+
+	var err error
+	switch request.PostForm.Get("grant_type") {
+	case "client_credentials":
+		err = s.clientCredentialsFlow(ctx, writer, request)
+	default:
+		err = errUnsupportedGrantType
 	}
-	if !request.PostForm.Has("client_id") || !request.PostForm.Has("client_secret") {
-		writeTokenError(writer, errInvalidRequest, logger)
-		return
+
+	if err != nil {
+		writeTokenError(writer, err, logger)
 	}
-	clientId := request.PostForm.Get("client_id")
-	clientSecret := request.PostForm.Get("client_secret")
+}
+
+func (s *TokenServer) clientCredentialsFlow(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
+	clientId, clientSecret, err := s.clientCreds(request)
+	if err != nil {
+		return err
+	}
 
 	// lookup secret, and ensure it's for the matching client
 	secretData, err := s.verifier.Verify(ctx, clientId, clientSecret)
 	if err != nil {
-		writeTokenError(writer, errInvalidClient, logger)
-		return
+		return errInvalidClient
 	}
-	logger = logger.With(zap.String("tenant", secretData.TenantID))
 
 	// generate an access token for the client
 	token, err := s.tokens.GenerateAccessToken(secretData)
 	if err != nil {
-		writeTokenError(writer, errors.New("failed to generate token"), logger)
-		logger.Error("token generation failed", zap.Error(err))
-		return
+		return errors.New("failed to generate token")
 	}
 
 	// send response to the client
@@ -91,15 +96,23 @@ func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 	}
 	responseBytes, err := json.Marshal(response)
 	if err != nil {
-		writeTokenError(writer, errors.New("failed to marshal response"), logger)
-		logger.Error("failed to marshal token response", zap.Error(err))
-		return
+		return errors.New("failed to marshal response")
 	}
 
 	_, err = writer.Write(responseBytes)
 	if err != nil {
-		logger.Error("failed to write response body", zap.Error(err))
+		return errors.New("failed to write response body")
 	}
+	return nil
+}
+
+func (s *TokenServer) clientCreds(request *http.Request) (clientID string, clientSecret string, err error) {
+	if !request.PostForm.Has("client_id") || !request.PostForm.Has("client_secret") {
+		return "", "", errInvalidRequest
+	}
+	clientID = request.PostForm.Get("client_id")
+	clientSecret = request.PostForm.Get("client_secret")
+	return clientID, clientSecret, nil
 }
 
 func (s *TokenServer) TokenValidator() auth.TokenValidator {
