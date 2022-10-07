@@ -3,7 +3,6 @@ package tenant
 import (
 	"context"
 	"crypto/rand"
-	"encoding/json"
 	"github.com/go-jose/go-jose/v3/jwt"
 	"io"
 	"time"
@@ -12,9 +11,8 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/auth"
 )
 
-type tokenPayload struct {
-	jwt.Claims
-	Zones []string `json:"zones"`
+type tokenClaims struct {
+	Zones []string `json:"zones,omitempty"`
 }
 
 type TokenSource struct {
@@ -39,59 +37,42 @@ func (ts *TokenSource) GenerateAccessToken(data SecretData) (token string, err e
 
 	expires := now.Add(ts.Validity)
 
-	payload := tokenPayload{
-		Claims: jwt.Claims{
-			Issuer:    ts.Issuer,
-			Subject:   data.TenantID,
-			Audience:  jwt.Audience{ts.Issuer},
-			Expiry:    jwt.NewNumericDate(expires),
-			NotBefore: jwt.NewNumericDate(now),
-			IssuedAt:  jwt.NewNumericDate(now),
-		},
-		Zones: data.Zones,
+	jwtClaims := jwt.Claims{
+		Issuer:    ts.Issuer,
+		Subject:   data.TenantID,
+		Audience:  jwt.Audience{ts.Issuer},
+		Expiry:    jwt.NewNumericDate(expires),
+		NotBefore: jwt.NewNumericDate(now),
+		IssuedAt:  jwt.NewNumericDate(now),
 	}
-
-	encoded, err := json.Marshal(payload)
-	if err != nil {
-		return "", err
-	}
-
-	jws, err := signer.Sign(encoded)
-	if err != nil {
-		return "", err
-	}
-
-	return jws.CompactSerialize()
+	customClaims := tokenClaims{Zones: data.Zones}
+	return jwt.Signed(signer).
+		Claims(jwtClaims).
+		Claims(customClaims).
+		CompactSerialize()
 }
 
 func (ts *TokenSource) ValidateAccessToken(_ context.Context, token string) (*auth.Authorization, error) {
-	jws, err := jose.ParseSigned(token)
+	tok, err := jwt.ParseSigned(token)
 	if err != nil {
 		return nil, err
 	}
-
-	payloadBytes, err := jws.Verify(ts.Key.Key)
+	var jwtClaims jwt.Claims
+	var customClaims tokenClaims
+	err = tok.Claims(ts.Key.Key, &jwtClaims, &customClaims)
 	if err != nil {
 		return nil, err
 	}
-
-	var payload tokenPayload
-	err = json.Unmarshal(payloadBytes, &payload)
-	if err != nil {
-		return nil, err
-	}
-
-	err = payload.Claims.Validate(jwt.Expected{
+	err = jwtClaims.Validate(jwt.Expected{
 		Audience: jwt.Audience{ts.Issuer},
 		Issuer:   ts.Issuer,
 	})
 	if err != nil {
 		return nil, err
 	}
-
 	return &auth.Authorization{
 		Roles:     []string{auth.RoleTenant},
-		Zones:     payload.Zones,
+		Zones:     customClaims.Zones,
 		IsService: true,
 	}, nil
 }
