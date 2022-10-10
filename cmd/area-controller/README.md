@@ -9,10 +9,12 @@ This command runs an Area Controller instance.
 - `self-signed.crt` - self-signed X.509 certificate for `private-key.pem` - used before controller has enrolled
 - `roots.pem` - certificates representing the roots of trust, used before enrollment
 - `tenants.json` - a json list of tenants and their hashed secrets. Used when Tenant OAuth is enabled but no manager
+- `users.json` - a json list of users and their hashed secrets. Used to authenticate requests locally using a
+  username/password
   node is available to ask.
 - `enrollment/`
-   - `enrollment.json` - data file generated upon enrollment
-   - `ca.crt` - Root CA for the Smart Core installation
-   - `cert.crt` - X.509 certificate for `../private-key.pem` signed by the Root CA
+  - `enrollment.json` - data file generated upon enrollment
+  - `ca.crt` - Root CA for the Smart Core installation
+  - `cert.crt` - X.509 certificate for `../private-key.pem` signed by the Root CA
 - `cache/`
    - `publications/` - cache of management server publications, including configuration
