@@ -1,7 +1,6 @@
 package tc3dali
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -35,8 +34,17 @@ type ADSConfig struct {
 type NetID ads.NetId
 
 func (n *NetID) UnmarshalJSON(buf []byte) error {
-	_, err := fmt.Fscanf(bytes.NewBuffer(buf), "%d.%d.%d.%d.%d.%d", &n[0], &n[1], &n[2], &n[3], &n[4], &n[5])
-	return err
+	parsed, err := ParseNetID(string(buf))
+	if err != nil {
+		return err
+	}
+	*n = parsed
+	return nil
+}
+
+func ParseNetID(raw string) (n NetID, err error) {
+	_, err = fmt.Sscanf(raw, "%d.%d.%d.%d.%d.%d", &n[0], &n[1], &n[2], &n[3], &n[4], &n[5])
+	return
 }
 
 type BusConfig struct {
