@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -19,19 +21,18 @@ import (
 )
 
 func TestServeHTTPS(t *testing.T) {
-	certSource, err := pki.NewSelfSignedCertSource(nil, zap.NewNop())
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		t.Fatal(err)
 	}
+	certSource := pki.SelfSignedSource(privateKey)
 
 	gotRequest := make(chan struct{})
 	finishHandler := make(chan struct{})
 	defer close(finishHandler) // so the handler doesn't run forever
 	server := &http.Server{
-		Addr: "localhost:20427",
-		TLSConfig: &tls.Config{
-			GetCertificate: certSource.TLSConfigGetCertificate,
-		},
+		Addr:      "localhost:20427",
+		TLSConfig: pki.TLSServerConfig(certSource),
 		Handler: http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			close(gotRequest)
 			<-finishHandler
@@ -87,14 +88,13 @@ func TestServeHTTPS(t *testing.T) {
 }
 
 func TestServeGRPC(t *testing.T) {
-	certSource, err := pki.NewSelfSignedCertSource(nil, zap.NewNop())
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		t.Fatal(err)
 	}
+	certSource := pki.SelfSignedSource(privateKey)
 
-	server := grpc.NewServer(grpc.Creds(credentials.NewTLS(&tls.Config{
-		GetCertificate: certSource.TLSConfigGetCertificate,
-	})))
+	server := grpc.NewServer(grpc.Creds(credentials.NewTLS(pki.TLSServerConfig(certSource))))
 	reflection.Register(server) // we don't need reflection for the test, it's just a convenient service to use
 
 	serveCtx, cancelServe := context.WithCancel(context.Background())
