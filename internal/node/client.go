@@ -9,5 +9,6 @@ func Client[C any](n *Node) (C, error) {
 			return t, nil
 		}
 	}
-	return nil, fmt.Errorf("no such client type %T", *new(C))
+	var c C
+	return c, fmt.Errorf("no such client type %T", c)
 }
