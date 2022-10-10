@@ -5,9 +5,10 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
-	"github.com/vanti-dev/bsp-ew/internal/util/pass"
 	"io"
 	"regexp"
+
+	"github.com/vanti-dev/bsp-ew/internal/util/pass"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -269,7 +270,7 @@ func (s *Server) CreateSecret(ctx context.Context, request *gen.CreateSecretRequ
 	}
 	secret.SecretHash, err = pass.Hash([]byte(secret.Secret))
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "secret hashing failed %w", err)
+		return nil, status.Errorf(codes.Internal, "secret hashing failed: %s", err.Error())
 	}
 
 	err = s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
@@ -296,7 +297,7 @@ func (s *Server) VerifySecret(ctx context.Context, request *gen.VerifySecretRequ
 		return
 	})
 	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "db: %w", err)
+		return nil, status.Errorf(codes.Unauthenticated, "db: %s", err.Error())
 	}
 
 	for _, s := range secrets {
