@@ -14,28 +14,55 @@ import (
 )
 
 type TokenServer struct {
-	logger   *zap.Logger
-	verifier Verifier
-	tokens   *TokenSource
+	tokens *TokenSource
+	logger *zap.Logger
+
+	clientCredentialVerifier Verifier
+	clientCredentialValidity time.Duration
+
+	passwordVerifier Verifier
+	passwordValidity time.Duration
 }
 
-func NewTokenSever(verifier Verifier, name string, validity time.Duration, logger *zap.Logger) (*TokenServer, error) {
+func NewTokenServer(name string, opts ...TokenServerOption) (*TokenServer, error) {
 	key, err := generateKey()
 	if err != nil {
 		return nil, err
 	}
 	tokens := &TokenSource{
-		Key:      key,
-		Issuer:   name,
-		Validity: validity,
-		Now:      time.Now,
+		Key:    key,
+		Issuer: name,
+		Now:    time.Now,
 	}
 
-	return &TokenServer{
-		logger:   logger,
-		verifier: verifier,
-		tokens:   tokens,
-	}, nil
+	s := &TokenServer{tokens: tokens}
+	for _, opt := range opts {
+		opt(s)
+	}
+
+	return s, nil
+}
+
+type TokenServerOption func(ts *TokenServer)
+
+func WithLogger(logger *zap.Logger) TokenServerOption {
+	return func(ts *TokenServer) {
+		ts.logger = logger
+	}
+}
+
+func WithClientCredentialFlow(v Verifier, validity time.Duration) TokenServerOption {
+	return func(ts *TokenServer) {
+		ts.clientCredentialVerifier = v
+		ts.clientCredentialValidity = validity
+	}
+}
+
+func WithPasswordFlow(v Verifier, validity time.Duration) TokenServerOption {
+	return func(ts *TokenServer) {
+		ts.passwordVerifier = v
+		ts.passwordValidity = validity
+	}
 }
 
 func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -61,6 +88,8 @@ func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 	switch request.PostForm.Get("grant_type") {
 	case "client_credentials":
 		err = s.clientCredentialsFlow(ctx, writer, request)
+	case "password":
+		err = s.passwordFlow(ctx, writer, request)
 	default:
 		err = errUnsupportedGrantType
 	}
@@ -71,19 +100,22 @@ func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 }
 
 func (s *TokenServer) clientCredentialsFlow(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
+	if s.clientCredentialVerifier == nil {
+		return errUnsupportedGrantType
+	}
 	clientId, clientSecret, err := s.clientCreds(request)
 	if err != nil {
 		return err
 	}
 
 	// lookup secret, and ensure it's for the matching client
-	secretData, err := s.verifier.Verify(ctx, clientId, clientSecret)
+	secretData, err := s.clientCredentialVerifier.Verify(ctx, clientId, clientSecret)
 	if err != nil {
 		return errInvalidClient
 	}
 
 	// generate an access token for the client
-	token, err := s.tokens.GenerateAccessToken(secretData)
+	token, err := s.tokens.GenerateAccessToken(secretData, s.clientCredentialValidity)
 	if err != nil {
 		return errors.New("failed to generate token")
 	}
@@ -92,7 +124,46 @@ func (s *TokenServer) clientCredentialsFlow(ctx context.Context, writer http.Res
 	response := tokenSuccessResponse{
 		AccessToken: token,
 		TokenType:   "Bearer",
-		ExpiresIn:   int(s.tokens.Validity.Seconds()),
+		ExpiresIn:   int(s.clientCredentialValidity.Seconds()),
+	}
+	responseBytes, err := json.Marshal(response)
+	if err != nil {
+		return errors.New("failed to marshal response")
+	}
+
+	_, err = writer.Write(responseBytes)
+	if err != nil {
+		return errors.New("failed to write response body")
+	}
+	return nil
+}
+
+func (s *TokenServer) passwordFlow(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
+	if s.passwordVerifier == nil {
+		return errUnsupportedGrantType
+	}
+	username, password, err := s.userCreds(request)
+	if err != nil {
+		return err
+	}
+
+	// lookup secret, and ensure it's for the matching client
+	secretData, err := s.passwordVerifier.Verify(ctx, username, password)
+	if err != nil {
+		return errInvalidClient
+	}
+
+	// generate an access token for the client
+	token, err := s.tokens.GenerateAccessToken(secretData, s.passwordValidity)
+	if err != nil {
+		return errors.New("failed to generate token")
+	}
+
+	// send response to the client
+	response := tokenSuccessResponse{
+		AccessToken: token,
+		TokenType:   "Bearer",
+		ExpiresIn:   int(s.passwordValidity.Seconds()),
 	}
 	responseBytes, err := json.Marshal(response)
 	if err != nil {
@@ -113,6 +184,15 @@ func (s *TokenServer) clientCreds(request *http.Request) (clientID string, clien
 	clientID = request.PostForm.Get("client_id")
 	clientSecret = request.PostForm.Get("client_secret")
 	return clientID, clientSecret, nil
+}
+
+func (s *TokenServer) userCreds(request *http.Request) (username string, password string, err error) {
+	if !request.PostForm.Has("username") || !request.PostForm.Has("password") {
+		return "", "", errInvalidRequest
+	}
+	username = request.PostForm.Get("username")
+	password = request.PostForm.Get("password")
+	return username, password, nil
 }
 
 func (s *TokenServer) TokenValidator() auth.TokenValidator {

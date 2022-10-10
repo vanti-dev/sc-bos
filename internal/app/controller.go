@@ -96,37 +96,23 @@ func Bootstrap(config SystemConfig) (*Controller, error) {
 		}
 
 		if config.TenantOAuth {
-			// localVerifier verifies tenant access using information contained in a local file
-			localVerifier, err := LocalTenantVerifier(config)
+			clientVerifier, err := clientVerifier(config, manager)
+			if err != nil {
+				return nil, err
+			}
+
+			passwordVerifier, err := passwordVerifier(config)
 			if err != nil {
 				if !errors.Is(err, os.ErrNotExist) {
 					// if the file exists, but we can't read it, we should let someone know
 					return nil, err
 				}
-				// reading the local tenant data failed, we return this error each time as part of the secret verification
-				err := err
-				localVerifier = tenant.VerifierFunc(func(ctx context.Context, id, secret string) (tenant.SecretData, error) {
-					return tenant.SecretData{}, err
-				})
+				passwordVerifier = tenant.NeverVerify(err)
 			}
-
-			// remoteVerifier verifies tenant access using a remote service defined via TenantApiClient and managerConn
-			remoteVerifier := tenant.VerifierFunc(func(ctx context.Context, id, secret string) (data tenant.SecretData, err error) {
-				conn, err := manager()
-				if err != nil {
-					return data, err
-				}
-				if conn == nil {
-					return data, errors.New("no remote verifier")
-				}
-				return tenant.RemoteVerify(ctx, id, secret, gen.NewTenantApiClient(conn))
-			})
-
-			verifier := tenant.FirstSuccessfulVerifier([]tenant.Verifier{
-				localVerifier,
-				remoteVerifier,
-			})
-			tokenServer, err := tenant.NewTokenSever(verifier, "gateway", 15*time.Minute, logger.Named("tenant.token"))
+			tokenServer, err := tenant.NewTokenServer("gateway", tenant.WithLogger(logger.Named("tenant.token")),
+				tenant.WithClientCredentialFlow(clientVerifier, 15*time.Minute),
+				tenant.WithPasswordFlow(passwordVerifier, 24*time.Hour),
+			)
 			if err != nil {
 				return nil, err
 			}

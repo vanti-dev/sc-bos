@@ -16,13 +16,12 @@ type tokenClaims struct {
 }
 
 type TokenSource struct {
-	Key      jose.SigningKey
-	Issuer   string
-	Validity time.Duration
-	Now      func() time.Time
+	Key    jose.SigningKey
+	Issuer string
+	Now    func() time.Time
 }
 
-func (ts *TokenSource) GenerateAccessToken(data SecretData) (token string, err error) {
+func (ts *TokenSource) GenerateAccessToken(data SecretData, validity time.Duration) (token string, err error) {
 	signer, err := jose.NewSigner(ts.Key, nil)
 	if err != nil {
 		return "", err
@@ -35,7 +34,7 @@ func (ts *TokenSource) GenerateAccessToken(data SecretData) (token string, err e
 		now = time.Now()
 	}
 
-	expires := now.Add(ts.Validity)
+	expires := now.Add(validity)
 
 	jwtClaims := jwt.Claims{
 		Issuer:    ts.Issuer,

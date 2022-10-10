@@ -24,6 +24,13 @@ func (v VerifierFunc) Verify(ctx context.Context, id, secret string) (SecretData
 	return v(ctx, id, secret)
 }
 
+// NeverVerify returns a Verifier that always returns the given error.
+func NeverVerify(err error) Verifier {
+	return VerifierFunc(func(_ context.Context, _, _ string) (SecretData, error) {
+		return SecretData{}, err
+	})
+}
+
 // FirstSuccessfulVerifier implements Verifier returning the first successful response from member Verifiers.
 // Each Verifier will be invoked in separate go routines in parallel.
 // The first Verifier to return a non-error will attempt to cancel the remaining Verifier.Verify invocations.
