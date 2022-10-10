@@ -5,7 +5,10 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/resolver"
+	"google.golang.org/grpc/resolver/manual"
 	"io"
+	"sync"
 )
 
 // Remote represents a remote smart core node
@@ -15,15 +18,125 @@ type Remote interface {
 	Connect(ctx context.Context) (*grpc.ClientConn, error)
 }
 
-// Dial calls grpc.Dial and returns it as a Remote.
-// The call to grpc.Dial may happen upon first call to Remote.Connect or may happen as part of this call.
-func Dial(ctx context.Context, target string, opts ...grpc.DialOption) (Remote, error) {
-	dialOpts := &dialOptions{}
-	for _, opt := range opts {
-		if nOpt, ok := opt.(DialOption); ok {
-			nOpt.applyOpts(dialOpts)
-		}
+// Dial calls grpc.DialContext and returns it as a Remote.
+func Dial(ctx context.Context, target string, opts ...grpc.DialOption) Remote {
+	conn, err := dial(ctx, target, opts...)
+	return &eagerRemote{
+		target:  target,
+		conn:    conn,
+		dialErr: err,
 	}
+}
+
+// eagerRemote implements Remote by requiring an existing grpc.ClientConn.
+type eagerRemote struct {
+	target string
+
+	conn    *grpc.ClientConn
+	dialErr error
+}
+
+func (r *eagerRemote) Close() error {
+	if r.conn == nil {
+		return nil
+	}
+	return r.conn.Close()
+}
+
+func (r *eagerRemote) Target() string {
+	return r.target
+}
+
+func (r *eagerRemote) Connect(_ context.Context) (*grpc.ClientConn, error) {
+	return r.conn, r.dialErr
+}
+
+// DialChan returns a Remote that connects to the last received target from targets.
+// Remote.Connect will return the same grpc.ClientConn, the underlying connection will be replaced each time targets
+// emits a value.
+//
+// Do not use grpc.WithBlock option with DialChan.
+func DialChan(ctx context.Context, targets <-chan string, opts ...grpc.DialOption) Remote {
+	res := manual.NewBuilderWithScheme("DialChan")
+	opts = append(opts, grpc.WithResolvers(res))
+	conn, err := dial(ctx, "DialChan:ignored", opts...)
+	remote := &chanRemote{
+		targets:  targets,
+		resolver: res,
+		conn:     conn,
+		dialErr:  err,
+
+		closed: make(chan struct{}),
+	}
+	if err == nil { // only start if the conn was a success
+		remote.start()
+	}
+	return remote
+}
+
+type chanRemote struct {
+	targets <-chan string
+
+	resolver *manual.Resolver
+	conn     *grpc.ClientConn
+	dialErr  error
+
+	targetMu sync.Mutex
+	target   string
+
+	closed    chan struct{}
+	closeErr  error
+	closeOnce sync.Once
+}
+
+func (c *chanRemote) start() {
+	go func() {
+		for {
+			select {
+			case target, ok := <-c.targets:
+				if !ok {
+					// we don't close here, instead we're saying if the target chan closes we make no more updates
+					// to the address.
+					return
+				}
+
+				c.targetMu.Lock()
+				c.target = target
+				c.targetMu.Unlock()
+
+				// let the conn know that the address has changed
+				c.resolver.UpdateState(resolver.State{Addresses: []resolver.Address{
+					{Addr: target},
+				}})
+			case <-c.closed:
+				return
+			}
+		}
+	}()
+}
+
+func (c *chanRemote) Close() error {
+	c.closeOnce.Do(func() {
+		if c.conn != nil {
+			c.closeErr = c.conn.Close()
+		}
+		close(c.closed)
+	})
+	return c.closeErr
+}
+
+func (c *chanRemote) Target() string {
+	c.targetMu.Lock()
+	defer c.targetMu.Unlock()
+	return c.target
+}
+
+func (c *chanRemote) Connect(_ context.Context) (*grpc.ClientConn, error) {
+	return c.conn, c.dialErr
+}
+
+func dial(ctx context.Context, target string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
+	dialOpts := processOpts(opts)
 
 	conn, err := grpc.DialContext(ctx, target, opts...)
 	if err != nil {
@@ -41,12 +154,17 @@ func Dial(ctx context.Context, target string, opts ...grpc.DialOption) (Remote, 
 			}
 		}()
 	}
+	return conn, err
+}
 
-	return &remoteNode{
-		target:  target,
-		conn:    conn,
-		dialErr: err,
-	}, nil
+func processOpts(opts []grpc.DialOption) *dialOptions {
+	dialOpts := &dialOptions{}
+	for _, opt := range opts {
+		if nOpt, ok := opt.(DialOption); ok {
+			nOpt.applyOpts(dialOpts)
+		}
+	}
+	return dialOpts
 }
 
 type dialOptions struct {
@@ -83,26 +201,4 @@ func WithLogStateChange(logger *zap.Logger) grpc.DialOption {
 	return newDialOption(func(n *dialOptions) {
 		n.stateChangeLogger = logger
 	})
-}
-
-type remoteNode struct {
-	target string
-
-	conn    *grpc.ClientConn
-	dialErr error
-}
-
-func (r *remoteNode) Close() error {
-	if r.conn == nil {
-		return nil
-	}
-	return r.conn.Close()
-}
-
-func (r *remoteNode) Target() string {
-	return r.target
-}
-
-func (r *remoteNode) Connect(ctx context.Context) (*grpc.ClientConn, error) {
-	return r.conn, r.dialErr
 }
