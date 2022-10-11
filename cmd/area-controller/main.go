@@ -12,21 +12,20 @@ import (
 )
 
 var (
-	flagListenGRPC  string
-	flagListenHTTPS string
-	flagDataDir     string
-	flagStaticDir   string
-
-	flagDisablePolicy bool
+	flagStaticDir string
 )
 
+var systemConfig app.SystemConfig
+
 func init() {
-	flag.StringVar(&flagListenGRPC, "listen-grpc", ":23557", "address (host:port) to host a Smart Core gRPC server on")
-	flag.StringVar(&flagListenHTTPS, "listen-https", ":443", "address (host:port) to host a HTTPS server on")
-	flag.StringVar(&flagDataDir, "data-dir", ".data/area-controller-01", "path to local data storage directory")
+	flag.StringVar(&systemConfig.ListenGRPC, "listen-grpc", ":23557", "address (host:port) to host a Smart Core gRPC server on")
+	flag.StringVar(&systemConfig.ListenHTTPS, "listen-https", ":443", "address (host:port) to host a HTTPS server on")
+	flag.StringVar(&systemConfig.DataDir, "data-dir", ".data/area-controller-01", "path to local data storage directory")
 	flag.StringVar(&flagStaticDir, "static-dir", "ui/dist", "path for HTTP static resources")
 
-	flag.BoolVar(&flagDisablePolicy, "insecure-disable-policy", false, "Insecure! Disable checking requests against the security policy. This option opens up the server to any request.")
+	flag.BoolVar(&systemConfig.DisablePolicy, "insecure-disable-policy", false, "Insecure! Disable checking requests against the security policy. This option opens up the server to any request.")
+	flag.BoolVar(&systemConfig.LocalOAuth, "local-auth", false, "Enable issuing password tokens based on credentials found in users.json")
+	flag.BoolVar(&systemConfig.TenantOAuth, "tenant-auth", false, "enable issuing client tokens based on credentials found in tenants.json or verified via the enrollment manager node")
 }
 
 func main() {
@@ -35,15 +34,9 @@ func main() {
 
 func run(ctx context.Context) error {
 	flag.Parse()
-	config := app.SystemConfig{
-		Logger:        zap.NewDevelopmentConfig(),
-		DataDir:       flagDataDir,
-		ListenGRPC:    flagListenGRPC,
-		ListenHTTPS:   flagListenHTTPS,
-		DisablePolicy: flagDisablePolicy,
-	}
+	systemConfig.Logger = zap.NewDevelopmentConfig()
 
-	controller, err := app.Bootstrap(config)
+	controller, err := app.Bootstrap(systemConfig)
 	if err != nil {
 		return err
 	}
