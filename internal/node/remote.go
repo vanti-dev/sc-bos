@@ -57,9 +57,15 @@ func (r *eagerRemote) Connect(_ context.Context) (*grpc.ClientConn, error) {
 //
 // Do not use grpc.WithBlock option with DialChan.
 func DialChan(ctx context.Context, targets <-chan string, opts ...grpc.DialOption) Remote {
-	res := manual.NewBuilderWithScheme("DialChan")
+	// A note about scheme names:
+	// The manual resolver will return the scheme name exactly as we give it, but when looking up resolvers in dial
+	// grpc explicitly lower cases the parsed target scheme so if we don't use lower case here then it won't find it!
+	res := manual.NewBuilderWithScheme("dialchan")
+	// This is required, even though it's empty, as any operation on the conn will block until at least one call to
+	// res.CC.UpdateState. This does this for us when the resolver builders Build method is called during dial.
+	res.InitialState(resolver.State{})
 	opts = append(opts, grpc.WithResolvers(res))
-	conn, err := dial(ctx, "DialChan:ignored", opts...)
+	conn, err := dial(ctx, "dialchan:ignored", opts...)
 	remote := &chanRemote{
 		targets:  targets,
 		resolver: res,
