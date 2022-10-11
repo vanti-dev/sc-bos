@@ -36,7 +36,7 @@ func run(ctx context.Context) error {
 	flag.Parse()
 	systemConfig.Logger = zap.NewDevelopmentConfig()
 
-	controller, err := app.Bootstrap(systemConfig)
+	controller, err := app.Bootstrap(ctx, systemConfig)
 	if err != nil {
 		return err
 	}

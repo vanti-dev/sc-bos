@@ -51,7 +51,7 @@ func run(ctx context.Context) error {
 		Policy:      pol,
 	}
 
-	controller, err := app.Bootstrap(config)
+	controller, err := app.Bootstrap(ctx, config)
 	if err != nil {
 		return err
 	}

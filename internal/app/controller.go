@@ -43,7 +43,7 @@ type SystemConfig struct {
 }
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
-func Bootstrap(config SystemConfig) (*Controller, error) {
+func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	logger, err := config.Logger.Build()
 	if err != nil {
 		return nil, err
