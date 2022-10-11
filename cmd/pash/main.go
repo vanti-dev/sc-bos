@@ -5,6 +5,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"github.com/vanti-dev/bsp-ew/internal/util/pass"
 	"golang.org/x/term"
@@ -12,21 +13,68 @@ import (
 	"syscall"
 )
 
+var (
+	check string
+)
+
+func init() {
+	flag.StringVar(&check, "check", "", "Check a password hash instead of generating them")
+}
+
 func main() {
-	if term.IsTerminal(int(syscall.Stdin)) {
+	flag.Parse()
+
+	if len(check) > 0 {
+		checkHash([]byte(check))
+		return
+	}
+
+	if term.IsTerminal(syscall.Stdin) {
 		readFromStdin()
 	} else {
 		readFromScanner(bufio.NewScanner(os.Stdin))
 	}
 }
 
+func checkHash(hash []byte) {
+	input, err := readOnePass()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Err reading password: %v\n", err)
+		os.Exit(1)
+	}
+
+	err = pass.Compare(hash, input)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintf(os.Stderr, "Read hash: '%v'\n", string(hash))
+		os.Exit(2)
+	}
+
+	fmt.Println("Success")
+}
+
+func readOnePass() ([]byte, error) {
+	if term.IsTerminal(syscall.Stdin) {
+		fmt.Print("Password: ")
+		input, err := term.ReadPassword(syscall.Stdin)
+		fmt.Println()
+		return input, err
+	} else {
+		scanner := bufio.NewScanner(os.Stdin)
+		if !scanner.Scan() {
+			return nil, scanner.Err()
+		}
+		return scanner.Bytes(), nil
+	}
+}
+
 func readFromStdin() {
 	for {
 		fmt.Print("Password: ")
-		input, err := term.ReadPassword(int(syscall.Stdin))
+		input, err := term.ReadPassword(syscall.Stdin)
 		fmt.Println()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Err reading password: %v", err)
+			fmt.Fprintf(os.Stderr, "Err reading password: %v\n", err)
 			os.Exit(1)
 		}
 		printPassHash(input)
