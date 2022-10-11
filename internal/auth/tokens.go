@@ -38,6 +38,12 @@ type TokenValidator interface {
 	ValidateAccessToken(ctx context.Context, token string) (*Authorization, error)
 }
 
+type TokenValidatorFunc func(ctx context.Context, token string) (*Authorization, error)
+
+func (t TokenValidatorFunc) ValidateAccessToken(ctx context.Context, token string) (*Authorization, error) {
+	return t(ctx, token)
+}
+
 func NewMultiTokenValidator(verifiers ...TokenValidator) TokenValidator {
 	return multiTokenValidator(verifiers)
 }

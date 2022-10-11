@@ -31,7 +31,13 @@ type SystemConfig struct {
 	ListenGRPC  string
 	ListenHTTPS string
 
-	TenantOAuth   bool          // If true, then tenant tokens will be issued and verified, backed by manager's TenantApi
+	// TenantOAuth, if true, means the controller will support issuing tokens using the OAuth client_credentials flow
+	// with credentials read from tenants.json or verified using the manager node
+	TenantOAuth bool
+	// LocalOAuth, if true, means the controller will support issuing tokens using the OAuth password flow with
+	// credentials read from users.json
+	LocalOAuth bool
+
 	Policy        policy.Policy // Override the policy used for RPC calls. Defaults to policy.Default
 	DisablePolicy bool          // Unsafe, disables any policy checking for the server
 }
@@ -88,39 +94,43 @@ func Bootstrap(config SystemConfig) (*Controller, error) {
 	grpcOpts = append(grpcOpts, grpc.Creds(credentials.NewTLS(tlsGRPCServerConfig)))
 
 	// Configure how we authenticate requests
-	if !config.DisablePolicy {
-		interceptorOpts := []policy.InterceptorOption{policy.WithLogger(logger.Named("policy"))}
-		pol := policy.Default(false)
-		if config.Policy != nil {
-			pol = config.Policy
-		}
-
+	policyInterceptorOpts := []policy.InterceptorOption{policy.WithLogger(logger.Named("policy"))}
+	if shouldSetupTokenServer(config) {
+		// Setup the OAuth server for issuing and validating tokens
+		tokenServerOpts := []tenant.TokenServerOption{tenant.WithLogger(logger.Named("token.server"))}
 		if config.TenantOAuth {
-			clientVerifier, err := clientVerifier(config, manager)
+			verifier, err := clientVerifier(config, manager)
 			if err != nil {
 				return nil, err
 			}
-
-			passwordVerifier, err := passwordVerifier(config)
+			tokenServerOpts = append(tokenServerOpts, tenant.WithClientCredentialFlow(verifier, 15*time.Minute))
+		}
+		if config.LocalOAuth {
+			verifier, err := passwordVerifier(config)
 			if err != nil {
 				if !errors.Is(err, os.ErrNotExist) {
 					// if the file exists, but we can't read it, we should let someone know
 					return nil, err
 				}
-				passwordVerifier = tenant.NeverVerify(err)
+			} else {
+				tokenServerOpts = append(tokenServerOpts, tenant.WithPasswordFlow(verifier, 24*time.Hour))
 			}
-			tokenServer, err := tenant.NewTokenServer("gateway", tenant.WithLogger(logger.Named("tenant.token")),
-				tenant.WithClientCredentialFlow(clientVerifier, 15*time.Minute),
-				tenant.WithPasswordFlow(passwordVerifier, 24*time.Hour),
-			)
-			if err != nil {
-				return nil, err
-			}
-			mux.Handle("/oauth2/token", tokenServer)
-			interceptorOpts = append(interceptorOpts, policy.WithTokenVerifier(tokenServer.TokenValidator()))
 		}
 
-		interceptor := policy.NewInterceptor(pol, interceptorOpts...)
+		tokenServer, err := tenant.NewTokenServer("gateway", tokenServerOpts...)
+		if err != nil {
+			return nil, err
+		}
+		mux.Handle("/oauth2/token", tokenServer)
+		policyInterceptorOpts = append(policyInterceptorOpts, policy.WithTokenVerifier(tokenServer.TokenValidator()))
+	}
+	if !config.DisablePolicy {
+		pol := policy.Default(false)
+		if config.Policy != nil {
+			pol = config.Policy
+		}
+
+		interceptor := policy.NewInterceptor(pol, policyInterceptorOpts...)
 		grpcOpts = append(grpcOpts,
 			grpc.ChainUnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
 			grpc.ChainStreamInterceptor(interceptor.GRPCStreamingInterceptor()),
@@ -159,6 +169,10 @@ func Bootstrap(config SystemConfig) (*Controller, error) {
 	}
 	c.Defer(closeManager)
 	return c, nil
+}
+
+func shouldSetupTokenServer(config SystemConfig) bool {
+	return config.TenantOAuth || config.LocalOAuth
 }
 
 func readCertAndRoots(config SystemConfig, key pki.PrivateKey) (*tls.Certificate, []*x509.Certificate, error) {
