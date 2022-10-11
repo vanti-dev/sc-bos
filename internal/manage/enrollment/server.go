@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"github.com/vanti-dev/bsp-ew/internal/util/minibus"
 	"sync"
 
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
@@ -24,6 +25,8 @@ type Server struct {
 	m          sync.Mutex
 	enrollment Enrollment
 	done       chan struct{}
+
+	managerAddressChanged minibus.Bus[string]
 }
 
 // NewServer creates an enrollment server, without attempting to load an existing enrollment.
@@ -97,6 +100,7 @@ func (es *Server) CreateEnrollment(ctx context.Context, request *gen.CreateEnrol
 	}
 
 	es.enrollment = enrollment
+	es.managerAddressChanged.Send(context.Background(), enrollment.ManagerAddress)
 	close(es.done)
 	return request.GetEnrollment(), nil
 }
@@ -141,4 +145,25 @@ func (es *Server) Certs() (*tls.Certificate, []*x509.Certificate, error) {
 	cert := es.enrollment.Cert
 	roots := []*x509.Certificate{es.enrollment.RootCA}
 	return &cert, roots, nil
+}
+
+// ManagerAddress returns a chan that emits the manager address whenever it changes.
+// Cancel the given context to stop listening for changes.
+func (es *Server) ManagerAddress(ctx context.Context) <-chan string {
+	changes := es.managerAddressChanged.Listen(ctx)
+	en, ok := es.Enrollment()
+	if !ok {
+		return changes
+	}
+
+	// send the initial data right away
+	out := make(chan string, 1)
+	out <- en.ManagerAddress
+	go func() {
+		defer close(out)
+		for addr := range changes {
+			out <- addr
+		}
+	}()
+	return out
 }

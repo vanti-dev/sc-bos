@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/go-jose/go-jose/v3/json"
 	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
+	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/multierr"
-	"google.golang.org/grpc"
 	"os"
 	"path/filepath"
 )
@@ -30,7 +30,7 @@ type secretConfig struct {
 	Hash string `json:"hash,omitempty"`
 }
 
-func clientVerifier(config SystemConfig, manager func() (*grpc.ClientConn, error)) (tenant.Verifier, error) {
+func clientVerifier(config SystemConfig, manager node.Remote) (tenant.Verifier, error) {
 	localTenants, err := loadVerifier(config, tenantsFilename)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
@@ -43,7 +43,7 @@ func clientVerifier(config SystemConfig, manager func() (*grpc.ClientConn, error
 
 	// remoteTenants verifies tenant access using a remote service defined via TenantApiClient and managerConn
 	remoteTenants := tenant.VerifierFunc(func(ctx context.Context, id, secret string) (data tenant.SecretData, err error) {
-		conn, err := manager()
+		conn, err := manager.Connect(ctx)
 		if err != nil {
 			return data, err
 		}

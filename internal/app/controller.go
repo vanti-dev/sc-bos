@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
 	"net/http"
 	"os"
@@ -84,9 +85,10 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	tlsHTTPServerConfig := pki.TLSServerConfig(certSource)
 
 	// manager represents a delayed connection to the cohort manager.
-	// Invoking manager when not enrolled returns nil, but when we are enrolled it returns a connection
-	// using the given options to the ManagerAddress of the enrollment.
-	manager, closeManager := RemoteManager(enrollServer, grpc.WithTransportCredentials(credentials.NewTLS(tlsGRPCClientConfig)))
+	// Using the manager connection when we aren't enrolled will result in RPC calls returning 'not resolved' errors or similar.
+	// As soon as we get enrolled those connections will be updated with the current manager address and will start to work.
+	manager := node.DialChan(ctx, enrollServer.ManagerAddress(ctx),
+		grpc.WithTransportCredentials(credentials.NewTLS(tlsGRPCClientConfig)))
 
 	mux := http.NewServeMux()
 
@@ -167,7 +169,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		ClientTLSConfig: tlsGRPCClientConfig,
 		ManagerConn:     manager,
 	}
-	c.Defer(closeManager)
+	c.Defer(manager.Close)
 	return c, nil
 }
 
@@ -206,7 +208,7 @@ type Controller struct {
 	HTTP *http.Server
 
 	ClientTLSConfig *tls.Config
-	ManagerConn     func() (*grpc.ClientConn, error)
+	ManagerConn     node.Remote
 
 	deferred []Deferred
 }

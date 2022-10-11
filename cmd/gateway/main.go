@@ -58,7 +58,7 @@ func run(ctx context.Context) error {
 	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
 	traits.RegisterOnOffApiServer(controller.GRPC, onoff.NewApiRouter(
 		onoff.WithOnOffApiClientFactory(func(name string) (traits.OnOffApiClient, error) {
-			conn, err := controller.ManagerConn()
+			conn, err := controller.ManagerConn.Connect(ctx)
 			if err != nil {
 				return nil, err
 			}
