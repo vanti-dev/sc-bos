@@ -4,18 +4,24 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"errors"
-	"github.com/vanti-dev/bsp-ew/internal/node"
-	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/vanti-dev/bsp-ew/internal/node"
+	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
+
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/smart-core-os/sc-golang/pkg/router"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
+	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/manage/enrollment"
+	"github.com/vanti-dev/bsp-ew/internal/task"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/multierr"
@@ -25,6 +31,13 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 )
+
+const LocalConfigFileName = "area-controller.local.json"
+
+type Router interface {
+	router.Router
+	Register(server *grpc.Server)
+}
 
 type SystemConfig struct {
 	Logger      zap.Config
@@ -41,6 +54,9 @@ type SystemConfig struct {
 
 	Policy        policy.Policy // Override the policy used for RPC calls. Defaults to policy.Default
 	DisablePolicy bool          // Unsafe, disables any policy checking for the server
+
+	DriverFactories map[string]driver.Factory
+	Routers         []Router
 }
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
@@ -54,6 +70,30 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	err = os.MkdirAll(config.DataDir, 0750)
 	if err != nil {
 		return nil, err
+	}
+
+	// load the local config file if possible
+	// TODO: pull config from manager publication
+	var localConfig ControllerConfig
+	localConfigPath := filepath.Join(config.DataDir, LocalConfigFileName)
+	rawLocalConfig, err := os.ReadFile(localConfigPath)
+	if err == nil {
+		err = json.Unmarshal(rawLocalConfig, &localConfig)
+		if err != nil {
+			return nil, fmt.Errorf("local config JSON unmarshal: %w", err)
+		}
+	} else {
+		logger.Warn("failed to load local config from file", zap.Error(err),
+			zap.String("path", localConfigPath))
+	}
+
+	services := driver.Services{
+		Logger: logger,
+		Node:   node.New(localConfig.Name),
+		Tasks:  &task.Group{},
+	}
+	for _, r := range config.Routers {
+		services.Node.Support(node.Routing(r))
 	}
 
 	// create private key if it doesn't exist
@@ -142,6 +182,9 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	grpcServer := grpc.NewServer(grpcOpts...)
 	reflection.Register(grpcServer)
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
+	for _, r := range config.Routers {
+		r.Register(grpcServer)
+	}
 
 	grpcWebServer := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
 		return true
@@ -160,14 +203,15 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	}
 
 	c := &Controller{
-		Logger:          logger,
-		Config:          config,
-		Enrollment:      enrollServer,
-		Mux:             mux,
-		GRPC:            grpcServer,
-		HTTP:            httpServer,
-		ClientTLSConfig: tlsGRPCClientConfig,
-		ManagerConn:     manager,
+		Services:         services,
+		SystemConfig:     config,
+		ControllerConfig: localConfig,
+		Enrollment:       enrollServer,
+		Mux:              mux,
+		GRPC:             grpcServer,
+		HTTP:             httpServer,
+		ClientTLSConfig:  tlsGRPCClientConfig,
+		ManagerConn:      manager,
 	}
 	c.Defer(manager.Close)
 	return c, nil
@@ -199,9 +243,10 @@ func readCertAndRoots(config SystemConfig, key pki.PrivateKey) (*tls.Certificate
 }
 
 type Controller struct {
-	Logger     *zap.Logger
-	Config     SystemConfig
-	Enrollment *enrollment.Server
+	driver.Services
+	SystemConfig     SystemConfig
+	ControllerConfig ControllerConfig
+	Enrollment       *enrollment.Server
 
 	Mux  *http.ServeMux
 	GRPC *grpc.Server
@@ -228,16 +273,32 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	}()
 
 	group, ctx := errgroup.WithContext(ctx)
-	if c.Config.ListenGRPC != "" {
+	if c.SystemConfig.ListenGRPC != "" {
 		group.Go(func() error {
-			return ServeGRPC(ctx, c.GRPC, c.Config.ListenGRPC, 15*time.Second, c.Logger.Named("server.grpc"))
+			return ServeGRPC(ctx, c.GRPC, c.SystemConfig.ListenGRPC, 15*time.Second, c.Logger.Named("server.grpc"))
 		})
 	}
-	if c.Config.ListenHTTPS != "" {
+	if c.SystemConfig.ListenHTTPS != "" {
 		group.Go(func() error {
 			return ServeHTTPS(ctx, c.HTTP, 15*time.Second, c.Logger.Named("server.https"))
 		})
 	}
+
+	results := driver.Build(ctx, c.Services, c.SystemConfig.DriverFactories, c.ControllerConfig.Drivers)
+	loaded, failed := summariseResults(results)
+	c.Logger.Info("driver loading complete", zap.Int("loaded", loaded), zap.Int("failed", failed))
+
 	err = group.Wait()
+	return
+}
+
+func summariseResults(results map[string]driver.BuildResult) (loaded int, failed int) {
+	for _, result := range results {
+		if result.Err == nil {
+			loaded++
+		} else {
+			failed++
+		}
+	}
 	return
 }

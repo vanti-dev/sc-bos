@@ -7,6 +7,7 @@ import (
 )
 
 type ControllerConfig struct {
+	Name       string                `json:"name"`
 	Drivers    []driver.RawConfig    `json:"drivers"`
 	Automation []RawAutomationConfig `json:"automation"`
 	Spaces     []RawSpaceConfig      `json:"spaces"`

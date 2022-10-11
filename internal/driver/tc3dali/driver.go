@@ -34,7 +34,13 @@ type ADSConfig struct {
 type NetID ads.NetId
 
 func (n *NetID) UnmarshalJSON(buf []byte) error {
-	parsed, err := ParseNetID(string(buf))
+	var str string
+	err := json.Unmarshal(buf, &str)
+	if err != nil {
+		return err
+	}
+
+	parsed, err := ParseNetID(str)
 	if err != nil {
 		return err
 	}
@@ -81,6 +87,8 @@ func (c *ControlDeviceConfig) hasInstance(want InstanceType) bool {
 	return false
 }
 
+const DriverName = "tc3dali"
+
 func Factory(ctx context.Context, services driver.Services, rawConfig json.RawMessage) (driver.Driver, error) {
 	var config Config
 	err := json.Unmarshal(rawConfig, &config)
@@ -91,12 +99,17 @@ func Factory(ctx context.Context, services driver.Services, rawConfig json.RawMe
 	// TODO: validate and normalise the config
 	port, err := adsdll.Connect()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("adsdll.Connect: %w", err)
 	}
 	dev, err := device.Open(port, ads.Addr{
 		NetId: ads.NetId(config.ADS.NetID),
 		Port:  config.ADS.Port,
 	})
+	if err != nil {
+		services.Logger.Error("failed to connect to ADS PLC Device", zap.Error(err),
+			zap.Uint8s("netID", config.ADS.NetID[:]), zap.Uint16("port", config.ADS.Port))
+		return nil, fmt.Errorf("device.Open: %w", err)
+	}
 
 	for _, bus := range config.Buses {
 		services.Tasks.Spawn(ctx, bus.Name, BusTask(bus, dev, services))

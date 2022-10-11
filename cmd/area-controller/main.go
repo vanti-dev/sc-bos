@@ -5,7 +5,12 @@ import (
 	"flag"
 	"os"
 
+	"github.com/smart-core-os/sc-golang/pkg/trait/light"
+	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/vanti-dev/bsp-ew/internal/app"
+	"github.com/vanti-dev/bsp-ew/internal/driver"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/zap"
@@ -35,6 +40,14 @@ func main() {
 func run(ctx context.Context) error {
 	flag.Parse()
 	systemConfig.Logger = zap.NewDevelopmentConfig()
+	systemConfig.DriverFactories = map[string]driver.Factory{
+		tc3dali.DriverName: tc3dali.Factory,
+	}
+	systemConfig.Routers = []app.Router{
+		light.NewApiRouter(),
+		occupancysensor.NewApiRouter(),
+		parent.NewApiRouter(),
+	}
 
 	controller, err := app.Bootstrap(ctx, systemConfig)
 	if err != nil {
