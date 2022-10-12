@@ -1,0 +1,10 @@
+{
+  "ads": {
+    "netID": "5.109.178.55.1.1",
+    "port": 851
+  },
+  "prefixes": [
+    "GVL_Bridges.bus_T1_1",
+    "GVL_Bridges.bus_T1_2"
+  ]
+}

@@ -79,11 +79,11 @@ func run(ctx context.Context) error {
 	// Driver setup
 	services := driver.Services{
 		Logger: logger.Named("tc3dali"),
-		Node:   node.New("dali-test"),
+		Node:   node.New("dali-integration-test"),
 		Tasks:  &task.Group{},
 	}
 	busConfig := tc3dali.BusConfig{
-		Name:         "dali-test/bus/1",
+		Name:         "dali-integration-test/bus/1",
 		BridgePrefix: flagBusPrefix,
 	}
 	busTask := tc3dali.BusTask(busConfig, dev, services)

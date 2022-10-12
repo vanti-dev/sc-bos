@@ -1,4 +1,4 @@
-# cmd/tools/dali-test
+# cmd/tools/dali-integration-test
 
 This program can be used as an end-to-end test of the Smart Core to DALI bridging functionality.
 
