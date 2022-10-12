@@ -7,10 +7,10 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"os"
+
 	"github.com/vanti-dev/bsp-ew/internal/util/pass"
 	"golang.org/x/term"
-	"os"
-	"syscall"
 )
 
 var (
@@ -29,7 +29,7 @@ func main() {
 		return
 	}
 
-	if term.IsTerminal(syscall.Stdin) {
+	if term.IsTerminal(int(os.Stdin.Fd())) {
 		readFromStdin()
 	} else {
 		readFromScanner(bufio.NewScanner(os.Stdin))
@@ -39,14 +39,14 @@ func main() {
 func checkHash(hash []byte) {
 	input, err := readOnePass()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Err reading password: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Err reading password: %v\n", err)
 		os.Exit(1)
 	}
 
 	err = pass.Compare(hash, input)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		fmt.Fprintf(os.Stderr, "Read hash: '%v'\n", string(hash))
+		_, _ = fmt.Fprintln(os.Stderr, err)
+		_, _ = fmt.Fprintf(os.Stderr, "Read hash: '%v'\n", string(hash))
 		os.Exit(2)
 	}
 
@@ -54,9 +54,9 @@ func checkHash(hash []byte) {
 }
 
 func readOnePass() ([]byte, error) {
-	if term.IsTerminal(syscall.Stdin) {
+	if term.IsTerminal(int(os.Stdin.Fd())) {
 		fmt.Print("Password: ")
-		input, err := term.ReadPassword(syscall.Stdin)
+		input, err := term.ReadPassword(int(os.Stdin.Fd()))
 		fmt.Println()
 		return input, err
 	} else {
@@ -71,10 +71,10 @@ func readOnePass() ([]byte, error) {
 func readFromStdin() {
 	for {
 		fmt.Print("Password: ")
-		input, err := term.ReadPassword(syscall.Stdin)
+		input, err := term.ReadPassword(int(os.Stdin.Fd()))
 		fmt.Println()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Err reading password: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "Err reading password: %v\n", err)
 			os.Exit(1)
 		}
 		printPassHash(input)
@@ -94,7 +94,7 @@ func readFromScanner(s *bufio.Scanner) {
 func printPassHash(input []byte) {
 	hash, err := pass.Hash(input)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Hash error: %v", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Hash error: %v", err)
 		return
 	}
 	printHash(hash)
