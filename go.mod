@@ -10,7 +10,7 @@ require (
 	github.com/jackc/pgx/v4 v4.17.0
 	github.com/open-policy-agent/opa v0.42.2
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.38
-	github.com/smart-core-os/sc-golang v0.0.0-20220617135625-6c6576c43f86
+	github.com/smart-core-os/sc-golang v0.0.0-20221013111224-70c68d71382c
 	github.com/vanti-dev/twincat3-ads-go v0.2.3
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
