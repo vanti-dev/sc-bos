@@ -100,7 +100,7 @@ func (es *Server) CreateEnrollment(ctx context.Context, request *gen.CreateEnrol
 	}
 
 	es.enrollment = enrollment
-	es.managerAddressChanged.Send(context.Background(), enrollment.ManagerAddress)
+	go es.managerAddressChanged.Send(context.Background(), enrollment.ManagerAddress)
 	close(es.done)
 	return request.GetEnrollment(), nil
 }
