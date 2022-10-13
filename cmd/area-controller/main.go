@@ -11,6 +11,7 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali"
+	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/zap"
@@ -43,16 +44,17 @@ func run(ctx context.Context) error {
 	systemConfig.DriverFactories = map[string]driver.Factory{
 		tc3dali.DriverName: tc3dali.Factory,
 	}
-	systemConfig.Routers = []app.Router{
-		light.NewApiRouter(),
-		occupancysensor.NewApiRouter(),
-		parent.NewApiRouter(),
-	}
 
 	controller, err := app.Bootstrap(ctx, systemConfig)
 	if err != nil {
 		return err
 	}
+
+	controller.Node.Support(node.Routing(
+		light.NewApiRouter(),
+		occupancysensor.NewApiRouter(),
+		parent.NewApiRouter(),
+	))
 
 	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
 

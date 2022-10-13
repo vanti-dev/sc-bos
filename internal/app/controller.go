@@ -16,7 +16,6 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/smart-core-os/sc-golang/pkg/router"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
@@ -33,11 +32,6 @@ import (
 )
 
 const LocalConfigFileName = "area-controller.local.json"
-
-type Router interface {
-	router.Router
-	Register(server *grpc.Server)
-}
 
 type SystemConfig struct {
 	Logger      zap.Config
@@ -56,7 +50,6 @@ type SystemConfig struct {
 	DisablePolicy bool          // Unsafe, disables any policy checking for the server
 
 	DriverFactories map[string]driver.Factory
-	Routers         []Router
 }
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
@@ -91,9 +84,6 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		Logger: logger,
 		Node:   node.New(localConfig.Name),
 		Tasks:  &task.Group{},
-	}
-	for _, r := range config.Routers {
-		services.Node.Support(node.Routing(r))
 	}
 
 	// create private key if it doesn't exist
@@ -182,9 +172,6 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	grpcServer := grpc.NewServer(grpcOpts...)
 	reflection.Register(grpcServer)
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
-	for _, r := range config.Routers {
-		r.Register(grpcServer)
-	}
 
 	grpcWebServer := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
 		return true
@@ -271,6 +258,10 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 			err = multierr.Append(err, d())
 		}
 	}()
+
+	// we delay registering the node servers until now, so that the caller can call c.Node.Support in between
+	// Bootstrap and Run and have all these added correctly.
+	c.Node.Register(c.GRPC)
 
 	group, ctx := errgroup.WithContext(ctx)
 	if c.SystemConfig.ListenGRPC != "" {
