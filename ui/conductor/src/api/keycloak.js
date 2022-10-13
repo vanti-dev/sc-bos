@@ -1,4 +1,4 @@
-import Keycloak from 'keycloak-js';
+import Keycloak from "keycloak-js";
 
 /**
  * @type {Promise<Keycloak> | null}
@@ -36,24 +36,25 @@ export function keycloak() {
 async function newKeycloak() {
   const kc = new Keycloak(await constructorConfig());
   // setup event handling
-  kc.onReady = authenticated => {
-    const e = new Event('ready');
+  kc.onReady = (authenticated) => {
+    const e = new Event("ready");
     e.authenticated = authenticated;
-    events.dispatchEvent(e)
-  }
-  kc.onAuthError = errorData => {
-    const e = new Event('authError');
+    events.dispatchEvent(e);
+  };
+  kc.onAuthError = (errorData) => {
+    const e = new Event("authError");
     e.errorData = errorData;
     events.dispatchEvent(e);
-  }
-  kc.onAuthLogout = () => events.dispatchEvent(new Event('authLogout'));
-  kc.onAuthSuccess = () => events.dispatchEvent(new Event('authSuccess'));
-  kc.onAuthRefreshError = () => events.dispatchEvent(new Event('authRefreshError'));
-  kc.onAuthRefreshSuccess = () => events.dispatchEvent(new Event('authRefreshSuccess'));
-  kc.onTokenExpired = () => events.dispatchEvent(new Event('tokenExpired'));
+  };
+  kc.onAuthLogout = () => events.dispatchEvent(new Event("authLogout"));
+  kc.onAuthSuccess = () => events.dispatchEvent(new Event("authSuccess"));
+  kc.onAuthRefreshError = () =>
+    events.dispatchEvent(new Event("authRefreshError"));
+  kc.onAuthRefreshSuccess = () =>
+    events.dispatchEvent(new Event("authRefreshSuccess"));
+  kc.onTokenExpired = () => events.dispatchEvent(new Event("tokenExpired"));
 
   const authenticated = await kc.init(await initConfig());
-  console.log('keycloak initialised: ', {authenticated});
   return kc;
 }
 
@@ -63,10 +64,10 @@ async function newKeycloak() {
 async function constructorConfig() {
   // todo: get keycloak config from somewhere non-hard-coded
   return {
-    realm: 'smart-core',
-    url: 'http://localhost:8888/',
-    clientId: 'sc-apps'
-  }
+    realm: "smart-core",
+    url: "http://localhost:8888/",
+    clientId: "sc-apps",
+  };
 }
 
 /**
@@ -75,8 +76,9 @@ async function constructorConfig() {
 async function initConfig() {
   // todo: get keycloak init config from somewhere non-hard-coded
   return {
-    onLoad: 'check-sso',
-    silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
+    onLoad: "check-sso",
+    silentCheckSsoRedirectUri:
+      window.location.origin + "/silent-check-sso.html",
     silentCheckSsoFallback: false,
-  }
+  };
 }
