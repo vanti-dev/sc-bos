@@ -1,12 +1,14 @@
 package node
 
 import (
+	"fmt"
 	"github.com/smart-core-os/sc-golang/pkg/router"
 	"github.com/smart-core-os/sc-golang/pkg/server"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"reflect"
 )
 
 // Node represents a smart core node.
@@ -108,6 +110,35 @@ func (n *Node) Support(functions ...Function) {
 	for _, function := range functions {
 		function.apply(n)
 	}
+}
+
+// Client sets into the pointer p a client, if one is available, or returns an error.
+// Clients are configured on this node via Support(Clients).
+// Argument p should be a pointer to a variable of the required client type.
+//
+// Example
+//
+//	var client traits.OnOffApiClient
+//	err := n.Client(&client)
+func (n *Node) Client(p any) error {
+	v := reflect.ValueOf(p)
+	if v.Kind() != reflect.Pointer {
+		return fmt.Errorf("%T is not a pointer", p)
+	}
+	elem := v.Elem()
+	et := elem.Type()
+	if !elem.CanSet() {
+		return fmt.Errorf("%T can not be set", p)
+	}
+
+	for _, client := range n.clients {
+		if reflect.TypeOf(client).AssignableTo(et) {
+			elem.Set(reflect.ValueOf(client))
+			return nil
+		}
+	}
+
+	return fmt.Errorf("no client of type %v", elem)
 }
 
 func (n *Node) addRouter(r ...router.Router) {
