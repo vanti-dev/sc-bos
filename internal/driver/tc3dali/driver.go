@@ -17,6 +17,7 @@ import (
 	"github.com/vanti-dev/twincat3-ads-go/pkg/ads"
 	"github.com/vanti-dev/twincat3-ads-go/pkg/adsdll"
 	"github.com/vanti-dev/twincat3-ads-go/pkg/device"
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
 
@@ -101,18 +102,30 @@ func Factory(ctx context.Context, services driver.Services, rawConfig json.RawMe
 	if err != nil {
 		return nil, fmt.Errorf("adsdll.Connect: %w", err)
 	}
-	dev, err := device.Open(port, ads.Addr{
-		NetId: ads.NetId(config.ADS.NetID),
-		Port:  config.ADS.Port,
-	})
-	if err != nil {
-		services.Logger.Error("failed to connect to ADS PLC Device", zap.Error(err),
-			zap.Uint8s("netID", config.ADS.NetID[:]), zap.Uint16("port", config.ADS.Port))
-		return nil, fmt.Errorf("device.Open: %w", err)
+
+	var (
+		spawned int
+		errs    error
+	)
+	for _, bus := range config.Buses {
+		// create a new device.Device for each bus, because Device isn't safe for concurrent access
+		dev, err := device.Open(port, ads.Addr{
+			NetId: ads.NetId(config.ADS.NetID),
+			Port:  config.ADS.Port,
+		})
+		if err != nil {
+			errs = multierr.Append(errs, err)
+			services.Logger.Error("failed to connect to ADS PLC Device", zap.Error(err),
+				zap.Uint8s("netID", config.ADS.NetID[:]), zap.Uint16("port", config.ADS.Port))
+			continue
+		}
+		services.Tasks.Spawn(ctx, bus.Name, BusTask(bus, dev, services))
+		spawned++
 	}
 
-	for _, bus := range config.Buses {
-		services.Tasks.Spawn(ctx, bus.Name, BusTask(bus, dev, services))
+	// if we wanted to run some DALI buses, but all failed, return failure for the driver
+	if len(config.Buses) > 0 && spawned == 0 {
+		return nil, errs
 	}
 
 	return &driverImpl{
