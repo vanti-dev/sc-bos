@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32" ClassName="CBk11x0Def" SubType="9081" TcProjectVariant="Lab">
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32" ClassName="CBk11x0Def" SubType="9081" TcProjectVariant="Floor_01">
 	<ImageDatas>
 		<ImageData Id="1000">424dd6020000000000003600000028000000100000000e0000000100180000000000a0020000120b0000120b00000000000000000000ff00ffff00ffff00ffff00ffff00ffff00ff0000c00000c00000c00000c00000c00000c00000c0ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc6c6c6000000c6c6c60000c0c6c6c6000000808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc6c6c600ffffc6c6c60000c0c6c6c600ffff808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc6c6c6c6c6c6c6c6c60000c0c6c6c6c6c6c6808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc6c6c6000000c6c6c60000c0c6c6c6000000808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc6c6c6ff0000c6c6c60000c0c6c6c6ff0000808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc6c6c6c6c6c6c6c6c60000c0c6c6c6c6c6c6808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c6000000c6c6c60000c0c6c6c6000000808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c60000ffc6c6c60000c0c6c6c60000ff808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c6c6c6c6c6c6c60000c0c6c6c6c6c6c6808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c6000000c6c6c60000c0c6c6c6000000808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c6c6c6c6c6c6c60000c0c6c6c6c6c6c6808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c6008400c6c6c60000c0c6c6c6008400808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c6c6c6c6c6c6c60000c0c6c6c6c6c6c6808080ff00ffff00ffff00ff</ImageData>
 	</ImageDatas>
@@ -9,7 +9,6 @@
 		<ProjectVariant PvUseDisable="true">
 			<Variant>
 				<Name>Floor_00</Name>
-				<Name>Floor_01</Name>
 				<Name>Floor_02</Name>
 				<Name>Floor_03</Name>
 				<Name>Floor_04</Name>
@@ -23,6 +22,7 @@
 				<PortABoxInfo>#x02000009</PortABoxInfo>
 			</Variant>
 			<Variant>
+				<Name>Floor_01</Name>
 				<Name>Lab</Name>
 				<Disable>1</Disable>
 				<PortABoxInfo>#x02000009</PortABoxInfo>
@@ -41,7 +41,7 @@
 0x0080 = Communication error (Outputs)
 ]]></Comment>
 				<Type>UINT</Type>
-				<BitOffs>424</BitOffs>
+				<BitOffs>776</BitOffs>
 			</Var>
 		</Vars>
 		<Vars VarGrpType="2">
@@ -52,7 +52,7 @@
 0x0020 = Show K-Bus overrun
 ]]></Comment>
 				<Type>UINT</Type>
-				<BitOffs>424</BitOffs>
+				<BitOffs>776</BitOffs>
 			</Var>
 		</Vars>
 		<BusCoupler ComplexTermSupport="true" NewHardware="true">
@@ -584,7 +584,7 @@
 				<ImageId>32</ImageId>
 			</Term>
 		</BusCoupler>
-		<EtherCAT SlaveType="3" AdsServerAddress="000000000207ed03" PdiType="#x0008" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="51" FoeType="1" VendorId="#x00000002" ProductCode="#x04e22c22" RevisionNo="#x00130000" InfoDataAddr="true" InfoDataNetId="true" TimeoutStateChange1="5000" TimeoutMailbox2="6000" GenerateOwnNetId="true" PortPhys="3">
+		<EtherCAT SlaveType="3" AdsServerAddress="000000000207f103" PdiType="#x0008" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="51" FoeType="1" VendorId="#x00000002" ProductCode="#x04e22c22" RevisionNo="#x00130000" InfoDataAddr="true" InfoDataNetId="true" TimeoutStateChange1="5000" TimeoutMailbox2="6000" GenerateOwnNetId="true" PortPhys="3">
 			<SyncMan>001e00012600010001000000400000010001001e26010000</SyncMan>
 			<SyncMan>001f00012200010002000000400000010001001f22010000</SyncMan>
 			<SyncMan>001002002400010003000000000000000000001024010000</SyncMan>

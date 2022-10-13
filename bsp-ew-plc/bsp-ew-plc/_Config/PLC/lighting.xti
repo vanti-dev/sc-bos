@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32" ClassName="CNestedPlcProjDef" TcProjectVariant="Lab">
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32" ClassName="CNestedPlcProjDef" TcProjectVariant="Floor_01">
 	<DataTypes>
 		<DataType>
 			<Name GUID="{9A955222-AEEB-8157-F0A3-131368033DED}" Namespace="Tc3_DALI" AutoDeleteType="true">ST_KL6821InData</Name>
@@ -112,7 +112,6 @@
 		<ProjectVariant PvUseDefine="true">
 			<Variant>
 				<Name>Floor_00</Name>
-				<Name>Floor_01</Name>
 				<Name>Floor_02</Name>
 				<Name>Floor_03</Name>
 				<Name>Floor_04</Name>
@@ -122,11 +121,15 @@
 				<Name>Floor_08</Name>
 				<Name>Floor_09</Name>
 				<Name>Floor_10</Name>
+				<Defines/>
+			</Variant>
+			<Variant>
+				<Name>Floor_01</Name>
 				<Name>Lab</Name>
 				<Defines></Defines>
 			</Variant>
 		</ProjectVariant>
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="1" TmcPath="lighting\lighting.tmc" TmcHash="{1FE42F28-117C-AC8B-A9F6-D0B34C9DE5C3}">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="1" TmcPath="lighting\lighting.tmc" TmcHash="{94C219E8-7E6B-08AB-F45F-2CEAD6792BA4}">
 			<Name>lighting Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 			<Vars VarGrpType="1">
@@ -232,6 +235,94 @@
 				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T1_out[2]^aData" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
 				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T1_out[2]^aData" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
 				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T1_out[2]^nCtrl" VarB="T1 Bus 2 (KL6821)^Channel 1^Ctrl"/>
+			</OwnerB>
+			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Junction 1 (EK1122)^Tenant 2 Coupler (BK1150)">
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[1]^aData" VarB="T2 Bus 1 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[1]^aData" VarB="T2 Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[1]^aData" VarB="T2 Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[1]^aData" VarB="T2 Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[1]^nStatus" VarB="T2 Bus 1 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[2]^aData" VarB="T2 Bus 2 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[2]^aData" VarB="T2 Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[2]^aData" VarB="T2 Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[2]^aData" VarB="T2 Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[2]^nStatus" VarB="T2 Bus 2 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[3]^aData" VarB="T2 Bus 3 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[3]^aData" VarB="T2 Bus 3 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[3]^aData" VarB="T2 Bus 3 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[3]^aData" VarB="T2 Bus 3 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T2_in[3]^nStatus" VarB="T2 Bus 3 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[1]^aData" VarB="T2 Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[1]^aData" VarB="T2 Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[1]^aData" VarB="T2 Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[1]^aData" VarB="T2 Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[1]^nCtrl" VarB="T2 Bus 1 (KL6821)^Channel 1^Ctrl"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[2]^aData" VarB="T2 Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[2]^aData" VarB="T2 Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[2]^aData" VarB="T2 Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[2]^aData" VarB="T2 Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[2]^nCtrl" VarB="T2 Bus 2 (KL6821)^Channel 1^Ctrl"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[3]^aData" VarB="T2 Bus 3 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[3]^aData" VarB="T2 Bus 3 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[3]^aData" VarB="T2 Bus 3 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[3]^aData" VarB="T2 Bus 3 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T2_out[3]^nCtrl" VarB="T2 Bus 3 (KL6821)^Channel 1^Ctrl"/>
+			</OwnerB>
+			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Junction 2  (EK1122)^Tenant 3 Coupler (BK1150)">
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T3_in[1]^aData" VarB="T3 Bus 1 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T3_in[1]^aData" VarB="T3 Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T3_in[1]^aData" VarB="T3 Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T3_in[1]^aData" VarB="T3 Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T3_in[1]^nStatus" VarB="T3 Bus 1 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T3_in[2]^aData" VarB="T3 Bus 2 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T3_in[2]^aData" VarB="T3 Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T3_in[2]^aData" VarB="T3 Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T3_in[2]^aData" VarB="T3 Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T3_in[2]^nStatus" VarB="T3 Bus 2 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T3_out[1]^aData" VarB="T3 Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T3_out[1]^aData" VarB="T3 Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T3_out[1]^aData" VarB="T3 Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T3_out[1]^aData" VarB="T3 Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T3_out[1]^nCtrl" VarB="T3 Bus 1 (KL6821)^Channel 1^Ctrl"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T3_out[2]^aData" VarB="T3 Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T3_out[2]^aData" VarB="T3 Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T3_out[2]^aData" VarB="T3 Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T3_out[2]^aData" VarB="T3 Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T3_out[2]^nCtrl" VarB="T3 Bus 2 (KL6821)^Channel 1^Ctrl"/>
+			</OwnerB>
+			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Junction 2  (EK1122)^Tenant 4 Coupler (BK1150)">
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T4_in[1]^aData" VarB="T4 Bus 1 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T4_in[1]^aData" VarB="T4 Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T4_in[1]^aData" VarB="T4 Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T4_in[1]^aData" VarB="T4 Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T4_in[1]^nStatus" VarB="T4 Bus 1 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T4_in[2]^aData" VarB="T4 Bus 2 (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T4_in[2]^aData" VarB="T4 Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T4_in[2]^aData" VarB="T4 Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T4_in[2]^aData" VarB="T4 Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_T4_in[2]^nStatus" VarB="T4 Bus 2 (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T4_out[1]^aData" VarB="T4 Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T4_out[1]^aData" VarB="T4 Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T4_out[1]^aData" VarB="T4 Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T4_out[1]^aData" VarB="T4 Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T4_out[1]^nCtrl" VarB="T4 Bus 1 (KL6821)^Channel 1^Ctrl"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T4_out[2]^aData" VarB="T4 Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T4_out[2]^aData" VarB="T4 Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T4_out[2]^aData" VarB="T4 Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T4_out[2]^aData" VarB="T4 Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_T4_out[2]^nCtrl" VarB="T4 Bus 2 (KL6821)^Channel 1^Ctrl"/>
+			</OwnerB>
+			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Junction 3 (EK1122)^Life Safety Coupler (BK1150)">
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LS_in^aData" VarB="LS Bus (KL6821)^Channel 1^Data In 0" Size="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LS_in^aData" VarB="LS Bus (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LS_in^aData" VarB="LS Bus (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LS_in^aData" VarB="LS Bus (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LS_in^nStatus" VarB="LS Bus (KL6821)^Channel 1^State"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LS_out^aData" VarB="LS Bus (KL6821)^Channel 1^Data Out 0" Size="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LS_out^aData" VarB="LS Bus (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LS_out^aData" VarB="LS Bus (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LS_out^aData" VarB="LS Bus (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
+				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LS_out^nCtrl" VarB="LS Bus (KL6821)^Channel 1^Ctrl"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Landlord Coupler (BK1250)">
 				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 0" Size="8"/>
