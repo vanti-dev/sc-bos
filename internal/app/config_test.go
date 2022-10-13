@@ -3,13 +3,11 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/vanti-dev/bsp-ew/internal/driver"
 )
 
-func ExampleControllerConfig() {
+func ExampleBaseDriverConfig() {
 	type ExampleDriverConfig struct {
-		driver.BaseConfig
+		BaseDriverConfig
 		Property string `json:"property"`
 	}
 
@@ -29,17 +27,17 @@ func ExampleControllerConfig() {
 		panic(err)
 	}
 
-	for _, d := range config.Drivers {
-		switch d.Type {
+	for _, driver := range config.Drivers {
+		switch driver.Type {
 		case "example":
 			var exampleConfig ExampleDriverConfig
-			err := json.Unmarshal(d.Raw, &exampleConfig)
+			err := json.Unmarshal(driver.Raw, &exampleConfig)
 			if err != nil {
 				panic(err)
 			}
-			fmt.Printf("ExampleDriver name=%q property=%q\n", d.Name, exampleConfig.Property)
+			fmt.Printf("ExampleDriver name=%q property=%q\n", driver.Name, exampleConfig.Property)
 		default:
-			fmt.Printf("unknown driver type %q\n", d.Type)
+			fmt.Printf("unknown driver type %q\n", driver.Type)
 		}
 	}
 	// Output: ExampleDriver name="foo" property="bar"
