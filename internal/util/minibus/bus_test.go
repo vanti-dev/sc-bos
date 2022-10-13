@@ -23,7 +23,7 @@ func TestBus_OneToMany(t *testing.T) {
 	go func() {
 		defer stopListen()
 		for i := 0; i < 100; i++ {
-			sent := <-bus.Send(context.Background(), i)
+			sent := bus.Send(context.Background(), i)
 			if sent != numListeners {
 				t.Logf("Sent != expected, want %v, got %v", numListeners, sent)
 			}
@@ -57,7 +57,10 @@ func TestBus_DontWaitForSend(t *testing.T) {
 	events := bus.Listen(context.Background())
 	assertWillBlock(t, events)
 
-	waitForSend := bus.Send(context.Background(), "foo")
+	waitForSend := make(chan int, 1)
+	go func() {
+		waitForSend <- bus.Send(context.Background(), "foo")
+	}()
 	assertWillBlock(t, waitForSend)
 
 	assertChanVal(t, events, "foo")
