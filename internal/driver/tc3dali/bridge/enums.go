@@ -4,42 +4,42 @@ import "time"
 
 // EventScheme is an enumeration of the combinations of metadata that DALI control devices can send with their events.
 // Only two identifiers can be sent per event, and the EventScheme selects which ones will be present.
+// This enum exactly matches the TC3 enum documented at
+// https://infosys.beckhoff.com/content/1033/tcplclib_tc3_dali/5643252875.html?id=5542922191822951473
 type EventScheme byte
 
 const (
-	// EventSchemeInstance - instance type & instance number
-	EventSchemeInstance EventScheme = iota
-	// EventSchemeDevice - device short address & instance type
-	EventSchemeDevice
-	// EventSchemeDeviceInstance - device short address & instance number
-	EventSchemeDeviceInstance
-	// EventSchemeDeviceGroup - device group & instance type
-	EventSchemeDeviceGroup
-	// EventSchemeInstanceGroup - instance group & instance type
-	EventSchemeInstanceGroup
-	EventSchemeUnknown EventScheme = 255
+	EventSchemeInstance       EventScheme = 0 // instance type & instance number
+	EventSchemeDevice         EventScheme = 1 // device short address & instance type
+	EventSchemeDeviceInstance EventScheme = 2 // device short address & instance number
+	EventSchemeDeviceGroup    EventScheme = 3 // device group & instance type
+	EventSchemeInstanceGroup  EventScheme = 4 // instance group & instance type
+	EventSchemeUnknown        EventScheme = 255
 )
 
+// FadeTime is an enumeration of how long changing level will take.
+// This enum exactly matches the TC3 equivalent documented at
+// https://infosys.beckhoff.com/content/1033/tcplclib_tc3_dali/6430577547.html?id=7861596685241704773
 type FadeTime byte
 
 const (
-	FadeTimeDisabled FadeTime = iota
-	FadeTime00707ms
-	FadeTime01000ms
-	FadeTime01400ms
-	FadeTime02000ms
-	FadeTime02800ms
-	FadeTime04000ms
-	FadeTime05700ms
-	FadeTime08000ms
-	FadeTime11300ms
-	FadeTime16000ms
-	FadeTime22600ms
-	FadeTime32000ms
-	FadeTime45300ms
-	FadeTime64000ms
-	FadeTime90500ms
-	FadeTimeUnknown FadeTime = 255
+	FadeTimeDisabled FadeTime = 0
+	FadeTime00707ms  FadeTime = 1
+	FadeTime01000ms  FadeTime = 2
+	FadeTime01400ms  FadeTime = 3
+	FadeTime02000ms  FadeTime = 4
+	FadeTime02800ms  FadeTime = 5
+	FadeTime04000ms  FadeTime = 6
+	FadeTime05700ms  FadeTime = 7
+	FadeTime08000ms  FadeTime = 8
+	FadeTime11300ms  FadeTime = 9
+	FadeTime16000ms  FadeTime = 10
+	FadeTime22600ms  FadeTime = 11
+	FadeTime32000ms  FadeTime = 12
+	FadeTime45300ms  FadeTime = 13
+	FadeTime64000ms  FadeTime = 14
+	FadeTime90500ms  FadeTime = 15
+	FadeTimeUnknown  FadeTime = 255
 )
 
 func DurationToFadeTime(d time.Duration) (fadeTime FadeTime, ok bool) {
@@ -122,6 +122,9 @@ func (ft FadeTime) AsDuration() (duration time.Duration, ok bool) {
 	return
 }
 
+// The constants for the different types of control devices (input devices)
+// See https://infosys.beckhoff.com/english.php?content=../content/1033/tcplclib_tc3_dali/9185112587.html&id=5259714273337466114
+// for a reference
 const (
 	InstanceTypeGeneric              uint8 = 0
 	InstanceTypePushButton           uint8 = 1

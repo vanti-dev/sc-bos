@@ -20,8 +20,11 @@ import (
 )
 
 type Config struct {
-	ADS      tc3dali.ADSConfig `json:"ads"`
-	Prefixes []string          `json:"prefixes"`
+	ADS       tc3dali.ADSConfig `json:"ads"`
+	Prefixes  []string          `json:"prefixes"`
+	LowLevel  uint8             `json:"lowLevel"`
+	HighLevel uint8             `json:"highLevel"`
+	Delay     string            `json:"delay"`
 }
 
 var (
@@ -46,16 +49,15 @@ func main() {
 	}
 }
 
-const (
-	levelLow  uint8 = 50
-	levelHigh uint8 = 150
-	delay           = 2 * time.Second
-)
-
 func run(ctx context.Context) error {
 	config, err := loadConfig()
 	if err != nil {
 		return err
+	}
+
+	delay, err := time.ParseDuration(config.Delay)
+	if err != nil {
+		return fmt.Errorf("invalid delay duration value %q: %w", config.Delay, err)
 	}
 
 	// connect to PLC device
@@ -95,7 +97,7 @@ func run(ctx context.Context) error {
 	}
 
 	// prepare by setting all buses to low level
-	err = sendBroadcastLevel(ctx, levelLow, bridges...)
+	err = sendBroadcastLevel(ctx, config.LowLevel, bridges...)
 	if err != nil {
 		return err
 	}
@@ -116,7 +118,7 @@ func run(ctx context.Context) error {
 		for i, b := range bridges {
 			fmt.Printf("highlighting bus %d - %q\n", i, config.Prefixes[i])
 
-			err = sendBroadcastLevel(ctx, levelHigh, b)
+			err = sendBroadcastLevel(ctx, config.HighLevel, b)
 			if err != nil {
 				return err
 			}
@@ -127,7 +129,7 @@ func run(ctx context.Context) error {
 				return ctx.Err()
 			}
 
-			err = sendBroadcastLevel(ctx, levelLow, b)
+			err = sendBroadcastLevel(ctx, config.LowLevel, b)
 			if err != nil {
 				return err
 			}
@@ -150,6 +152,11 @@ func loadConfig() (config Config, err error) {
 	if err != nil {
 		return config, fmt.Errorf("read config from %q: %w", flagConfig, err)
 	}
+
+	// set defaults
+	config.Delay = "2s"
+	config.LowLevel = 50
+	config.HighLevel = 200
 
 	err = json.Unmarshal(raw, &config)
 	if err != nil {

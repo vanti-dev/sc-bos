@@ -102,7 +102,7 @@ func (s *controlDeviceServer) handleInputEvent(event bridge.InputEvent, err erro
 	}
 
 	// only process occupancy events
-	occupied := (event.Data & (1 << 1)) != 0
+	occupied := extractEventOccupancy(event)
 	var occupancy *traits.Occupancy
 	if occupied {
 		occupancy = &traits.Occupancy{State: traits.Occupancy_OCCUPIED}
@@ -167,6 +167,14 @@ func (s *controlDeviceServer) ensureEventsEnabled(ctx context.Context) error {
 	return nil
 }
 
+// Determines if this event, received from an occupancy sensor, indicates the sensor detects an occupied space
+// or an unoccupied space.
+// See https://infosys.beckhoff.com/english.php?content=../content/1033/tcplclib_tc3_dali/6777329803.html&id=5128453449526025647
+// for documentation of the bit fields in this event.
+func extractEventOccupancy(event bridge.InputEvent) (occupied bool) {
+	return (event.Data & (1 << 1)) != 0
+}
+
 func occupancyFromInputValue(inputValue uint8) traits.Occupancy_State {
 	switch inputValue {
 	case 0x00, 0x55:
@@ -177,6 +185,9 @@ func occupancyFromInputValue(inputValue uint8) traits.Occupancy_State {
 	return traits.Occupancy_STATE_UNSPECIFIED
 }
 
+// The values of the event filter bit fields that an occupancy sensor control device will send to the DALI bus.
+// Documented in the "Event filter" table at
+// https://infosys.beckhoff.com/content/1033/tcplclib_tc3_dali/6777329803.html?id=5128453449526025647
 const (
 	eventFilterOccupied   uint8 = 1 << 0
 	eventFilterVacant     uint8 = 1 << 1
