@@ -34,6 +34,7 @@ type ADSConfig struct {
 
 type NetID ads.NetId
 
+//goland:noinspection GoMixedReceiverTypes
 func (n *NetID) UnmarshalJSON(buf []byte) error {
 	var str string
 	err := json.Unmarshal(buf, &str)
@@ -47,6 +48,11 @@ func (n *NetID) UnmarshalJSON(buf []byte) error {
 	}
 	*n = parsed
 	return nil
+}
+
+//goland:noinspection GoMixedReceiverTypes
+func (n NetID) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%d.%d.%d.%d.%d.%d", n[0], n[1], n[2], n[3], n[4], n[5])), nil
 }
 
 func ParseNetID(raw string) (n NetID, err error) {
@@ -76,7 +82,7 @@ type ControlDeviceConfig struct {
 type InstanceType string
 
 const (
-	InstanceTypeOccupancySensor = "occupancySensor"
+	InstanceTypeOccupancySensor InstanceType = "occupancySensor"
 )
 
 func (c *ControlDeviceConfig) hasInstance(want InstanceType) bool {
@@ -157,14 +163,21 @@ func BusTask(config BusConfig, dev device.Device, services driver.Services) task
 			services.Logger.Error("DALI bus bridge initialisation failure", zap.Error(err),
 				zap.String("busName", config.Name),
 				zap.String("prefix", config.BridgePrefix))
+			return
 		}
 
-		err = RunBus(ctx, config, busBridge, services)
+		err = InitBus(ctx, config, busBridge, services)
 		return
 	}
 }
 
-func RunBus(ctx context.Context, config BusConfig, busBridge bridge.Dali, services driver.Services) error {
+// InitBus exposes the DALI devices on a single DALI bus over Smart Core, by registering them with services.Node.
+// It exposes the following devices:
+//   - The bus itself,  implementing the Light trait with DALI broadcast commands
+//   - Each control gear, implementing Light
+//   - Each declared control gear group, implementing Light
+//   - Each occupancy control device, implementing OccupancySensor
+func InitBus(ctx context.Context, config BusConfig, busBridge bridge.Dali, services driver.Services) error {
 	busServer := &controlGearServer{
 		bus:      busBridge,
 		addrType: bridge.Broadcast,

@@ -21,7 +21,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
-	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/testing/protocmp"
 )
 
 func TestRunBus(t *testing.T) {
@@ -51,9 +51,9 @@ func TestRunBus(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go func() {
-		err := RunBus(ctx, config, mockDali, services)
+		err := InitBus(ctx, config, mockDali, services)
 		if err != nil && !errors.Is(err, context.Canceled) {
-			t.Errorf("unexpected RunBus error: %s", err.Error())
+			t.Errorf("unexpected InitBus error: %s", err.Error())
 		}
 	}()
 
@@ -99,7 +99,7 @@ func TestRunBus(t *testing.T) {
 		{Name: "TestFactory/dali/bus/groups/4", Traits: []*traits.Trait{{Name: string(trait.Light)}}},
 	}
 	diff := cmp.Diff(expected, res.Children,
-		cmp.Comparer(proto.Equal),
+		protocmp.Transform(),
 		cmpopts.EquateEmpty(),
 		cmpopts.SortSlices(func(x, y *traits.Child) bool {
 			return x.GetName() < y.GetName()
