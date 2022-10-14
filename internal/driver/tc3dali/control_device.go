@@ -129,6 +129,10 @@ func (s *controlDeviceServer) ensureEventsEnabled(ctx context.Context) error {
 		return nil
 	}
 
+	// Enable the Occupancy instance on the device.
+	// The device won't send any Occupancy-related events until the Occupancy instance has been enabled.
+	// This is idempotent.
+	// This one needs to be done first, the other commands can happen in any order.
 	_, err := s.bus.ExecuteCommand(ctx, bridge.Request{
 		Command:             bridge.EnableInstance,
 		AddressType:         bridge.Short,
@@ -139,6 +143,11 @@ func (s *controlDeviceServer) ensureEventsEnabled(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("EnableInstance: %w", err)
 	}
+	// Set the event filter. The event filter determines which kinds of events will be sent to the DALI bus.
+	// We enable events when the area becomes occupied an unoccupied, plus repeat events which are fired occasionally
+	// when there have been no changes for a while - this helps in case we miss the original event.
+	// Other events are not enabled because they cause bus congestion for no benefit.
+	// This is idempotent.
 	_, err = s.bus.ExecuteCommand(ctx, bridge.Request{
 		Command:             bridge.SetEventFilter,
 		AddressType:         bridge.Short,
@@ -150,6 +159,8 @@ func (s *controlDeviceServer) ensureEventsEnabled(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("SetEventFilter: %w", err)
 	}
+	// Tell the PLC program to listen for events from this device. When the PLC receives a matching event,
+	// it will place the event in the queue so we can detect it from Go. This is idempotent.
 	err = s.bus.EnableInputEventListener(bridge.InputEventParameters{
 		Scheme:       bridge.EventSchemeDevice,
 		AddressInfo1: s.shortAddr,
@@ -158,6 +169,8 @@ func (s *controlDeviceServer) ensureEventsEnabled(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("EnableInputEventListener: %w", err)
 	}
+	// The callback will be called when the bridge.Dali instance receives any new event from the Go program.
+	// This is not idempotent - if we register twice we'll receive each event twice.
 	err = s.bus.OnInputEvent(s.handleInputEvent)
 	if err != nil {
 		return fmt.Errorf("register event handler: %w", err)
