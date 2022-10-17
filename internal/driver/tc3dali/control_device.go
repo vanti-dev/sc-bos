@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"sync"
 	"time"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -27,8 +26,7 @@ type controlDeviceServer struct {
 	occupancy *resource.Value
 	logger    *zap.Logger
 
-	m             sync.Mutex
-	eventsEnabled bool
+	enableEventsOnce *once
 }
 
 func (s *controlDeviceServer) GetOccupancy(ctx context.Context, _ *traits.GetOccupancyRequest) (*traits.Occupancy, error) {
@@ -118,66 +116,62 @@ func (s *controlDeviceServer) handleInputEvent(event bridge.InputEvent, err erro
 }
 
 func (s *controlDeviceServer) ensureEventsEnabled(ctx context.Context) error {
-	// limit the context duration to make sure we can't hold the mutex forever even in the worst case
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	s.m.Lock()
-	defer s.m.Unlock()
-
-	if s.eventsEnabled {
+	err, done := s.enableEventsOnce.Do(ctx, func() error {
+		// Enable the Occupancy instance on the device.
+		// The device won't send any Occupancy-related events until the Occupancy instance has been enabled.
+		// This is idempotent.
+		// This one needs to be done first, the other commands can happen in any order.
+		_, err := s.bus.ExecuteCommand(ctx, bridge.Request{
+			Command:             bridge.EnableInstance,
+			AddressType:         bridge.Short,
+			Address:             s.shortAddr,
+			InstanceAddressType: bridge.IATInstanceType,
+			InstanceAddress:     bridge.InstanceTypeOccupancy,
+		})
+		if err != nil {
+			return fmt.Errorf("EnableInstance: %w", err)
+		}
+		// Set the event filter. The event filter determines which kinds of events will be sent to the DALI bus.
+		// We enable events when the area becomes occupied an unoccupied, plus repeat events which are fired occasionally
+		// when there have been no changes for a while - this helps in case we miss the original event.
+		// Other events are not enabled because they cause bus congestion for no benefit.
+		// This is idempotent.
+		_, err = s.bus.ExecuteCommand(ctx, bridge.Request{
+			Command:             bridge.SetEventFilter,
+			AddressType:         bridge.Short,
+			Address:             s.shortAddr,
+			InstanceAddressType: bridge.IATInstanceType,
+			InstanceAddress:     bridge.InstanceTypeOccupancy,
+			Data:                eventFilterOccupied | eventFilterVacant | eventFilterRepeat,
+		})
+		if err != nil {
+			return fmt.Errorf("SetEventFilter: %w", err)
+		}
+		// Tell the PLC program to listen for events from this device. When the PLC receives a matching event,
+		// it will place the event in the queue so we can detect it from Go. This is idempotent.
+		err = s.bus.EnableInputEventListener(bridge.InputEventParameters{
+			Scheme:       bridge.EventSchemeDevice,
+			AddressInfo1: s.shortAddr,
+			AddressInfo2: bridge.InstanceTypeOccupancy,
+		})
+		if err != nil {
+			return fmt.Errorf("EnableInputEventListener: %w", err)
+		}
+		// The callback will be called when the bridge.Dali instance receives any new event from the Go program.
+		// This is not idempotent - if we register twice we'll receive each event twice.
+		err = s.bus.OnInputEvent(s.handleInputEvent)
+		if err != nil {
+			return fmt.Errorf("register event handler: %w", err)
+		}
 		return nil
-	}
-
-	// Enable the Occupancy instance on the device.
-	// The device won't send any Occupancy-related events until the Occupancy instance has been enabled.
-	// This is idempotent.
-	// This one needs to be done first, the other commands can happen in any order.
-	_, err := s.bus.ExecuteCommand(ctx, bridge.Request{
-		Command:             bridge.EnableInstance,
-		AddressType:         bridge.Short,
-		Address:             s.shortAddr,
-		InstanceAddressType: bridge.IATInstanceType,
-		InstanceAddress:     bridge.InstanceTypeOccupancy,
 	})
-	if err != nil {
-		return fmt.Errorf("EnableInstance: %w", err)
+	if !done {
+		return ctx.Err()
 	}
-	// Set the event filter. The event filter determines which kinds of events will be sent to the DALI bus.
-	// We enable events when the area becomes occupied an unoccupied, plus repeat events which are fired occasionally
-	// when there have been no changes for a while - this helps in case we miss the original event.
-	// Other events are not enabled because they cause bus congestion for no benefit.
-	// This is idempotent.
-	_, err = s.bus.ExecuteCommand(ctx, bridge.Request{
-		Command:             bridge.SetEventFilter,
-		AddressType:         bridge.Short,
-		Address:             s.shortAddr,
-		InstanceAddressType: bridge.IATInstanceType,
-		InstanceAddress:     bridge.InstanceTypeOccupancy,
-		Data:                eventFilterOccupied | eventFilterVacant | eventFilterRepeat,
-	})
-	if err != nil {
-		return fmt.Errorf("SetEventFilter: %w", err)
-	}
-	// Tell the PLC program to listen for events from this device. When the PLC receives a matching event,
-	// it will place the event in the queue so we can detect it from Go. This is idempotent.
-	err = s.bus.EnableInputEventListener(bridge.InputEventParameters{
-		Scheme:       bridge.EventSchemeDevice,
-		AddressInfo1: s.shortAddr,
-		AddressInfo2: bridge.InstanceTypeOccupancy,
-	})
-	if err != nil {
-		return fmt.Errorf("EnableInputEventListener: %w", err)
-	}
-	// The callback will be called when the bridge.Dali instance receives any new event from the Go program.
-	// This is not idempotent - if we register twice we'll receive each event twice.
-	err = s.bus.OnInputEvent(s.handleInputEvent)
-	if err != nil {
-		return fmt.Errorf("register event handler: %w", err)
-	}
-
-	s.eventsEnabled = true
-	return nil
+	return err
 }
 
 // Determines if this event, received from an occupancy sensor, indicates the sensor detects an occupied space

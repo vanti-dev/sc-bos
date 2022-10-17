@@ -223,7 +223,8 @@ func InitBus(ctx context.Context, config BusConfig, busBridge bridge.Dali, servi
 			occupancy: resource.NewValue(resource.WithInitialValue(&traits.Occupancy{
 				State: traits.Occupancy_STATE_UNSPECIFIED,
 			})),
-			logger: services.Logger.Named("control-device").With(zap.String("sc-device-name", deviceName)),
+			logger:           services.Logger.Named("control-device").With(zap.String("sc-device-name", deviceName)),
+			enableEventsOnce: newOnce(),
 		}
 		services.Node.Announce(deviceName,
 			node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensor.WrapApi(devServer))),
