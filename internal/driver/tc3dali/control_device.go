@@ -135,7 +135,7 @@ func (s *controlDeviceServer) ensureEventsEnabled(ctx context.Context) error {
 			return fmt.Errorf("EnableInstance: %w", err)
 		}
 		// Set the event filter. The event filter determines which kinds of events will be sent to the DALI bus.
-		// We enable events when the area becomes occupied an unoccupied, plus repeat events which are fired occasionally
+		// We enable events when the area becomes occupied and unoccupied, plus repeat events which are fired occasionally
 		// when there have been no changes for a while - this helps in case we miss the original event.
 		// Other events are not enabled because they cause bus congestion for no benefit.
 		// This is idempotent.

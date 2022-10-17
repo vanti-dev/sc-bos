@@ -25,7 +25,7 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
-func TestRunBus(t *testing.T) {
+func TestInitBus(t *testing.T) {
 	services := driver.Services{
 		Logger: zap.NewNop(),
 		Node:   node.New("TestFactory"),
