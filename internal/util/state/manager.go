@@ -15,6 +15,11 @@ type Manager[T comparable] struct {
 	notifyChan chan struct{}
 }
 
+// NewManager returns a new Manager with an initial state.
+func NewManager[T comparable](initialState T) *Manager[T] {
+	return &Manager[T]{state: initialState}
+}
+
 // Update updates the state if the current state isn't terminal.
 // If there's a change it notifies goroutines waiting on state change to happen.
 func (sm *Manager[T]) Update(state T) {
