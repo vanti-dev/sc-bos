@@ -52,7 +52,8 @@ func (n *NetID) UnmarshalJSON(buf []byte) error {
 
 //goland:noinspection GoMixedReceiverTypes
 func (n NetID) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("%d.%d.%d.%d.%d.%d", n[0], n[1], n[2], n[3], n[4], n[5])), nil
+	str := fmt.Sprintf("%d.%d.%d.%d.%d.%d", n[0], n[1], n[2], n[3], n[4], n[5])
+	return json.Marshal(str)
 }
 
 func ParseNetID(raw string) (n NetID, err error) {
