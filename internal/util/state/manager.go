@@ -10,8 +10,17 @@ import (
 type Manager[T comparable] struct {
 	// This code is "heavily inspired" by grpc.connectivityStateManager and grpc.ClientConn.WaitForStateChange
 
-	mu         sync.Mutex
-	state      T
+	mu    sync.Mutex
+	state T
+
+	// notifyChan is a one-shot chan we use to notify anybody who is waiting for a state change via closing the chan.
+	//
+	// This field will transition between two states
+	// 1. nil: meaning nobody is waiting to be notified of changes
+	// 2. empty: meaning at least one party wants to be notified. Every waiting party gets the same empty chan in response to GetNotifyChan
+	//
+	// When an Update happens notifyChan is closed and set to nil. This notifies all waiting parties at the same
+	// time and as notifyChan is now nil we know nobody new is waiting.
 	notifyChan chan struct{}
 }
 
