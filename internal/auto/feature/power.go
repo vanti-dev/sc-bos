@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/bsp-ew/internal/auto"
+	"github.com/vanti-dev/bsp-ew/internal/auto/runstate"
 	"github.com/vanti-dev/bsp-ew/internal/util/state"
 	"github.com/vanti-dev/bsp-ew/internal/util/times"
 	"go.uber.org/multierr"
@@ -14,7 +14,7 @@ import (
 )
 
 type TurnOffScreensOutsideWorkingHours struct {
-	sm     *state.Manager[auto.RunState]
+	sm     *state.Manager[runstate.RunState]
 	smOnce sync.Once
 
 	offBefore, onBefore time.Duration // relative to the start of a day
@@ -31,12 +31,12 @@ type TurnOffScreensOutsideWorkingHours struct {
 }
 
 func (t *TurnOffScreensOutsideWorkingHours) Start(_ context.Context) error {
-	t.state().Update(auto.RunStateStarting)
+	t.state().Update(runstate.Starting)
 	t.runningCtx, t.stop = context.WithCancel(context.Background())
 
 	go func() {
-		t.state().Update(auto.RunStateRunning)
-		defer t.state().Update(auto.RunStateStopped)
+		t.state().Update(runstate.Running)
+		defer t.state().Update(runstate.Stopped)
 		now := t.now()
 
 		for {
@@ -74,17 +74,17 @@ func (t *TurnOffScreensOutsideWorkingHours) Stop() error {
 	return nil
 }
 
-func (t *TurnOffScreensOutsideWorkingHours) WaitForStateChange(ctx context.Context, sourceState auto.RunState) error {
+func (t *TurnOffScreensOutsideWorkingHours) WaitForStateChange(ctx context.Context, sourceState runstate.RunState) error {
 	return t.state().WaitForStateChange(ctx, sourceState)
 }
 
-func (t *TurnOffScreensOutsideWorkingHours) CurrentState() auto.RunState {
+func (t *TurnOffScreensOutsideWorkingHours) CurrentState() runstate.RunState {
 	return t.state().CurrentState()
 }
 
-func (t *TurnOffScreensOutsideWorkingHours) state() *state.Manager[auto.RunState] {
+func (t *TurnOffScreensOutsideWorkingHours) state() *state.Manager[runstate.RunState] {
 	t.smOnce.Do(func() {
-		t.sm = state.NewManager(auto.RunStateIdle)
+		t.sm = state.NewManager(runstate.Idle)
 	})
 	return t.sm
 }

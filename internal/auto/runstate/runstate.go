@@ -1,4 +1,4 @@
-package auto
+package runstate
 
 // RunState describes the states an automation can be in
 //
@@ -6,17 +6,17 @@ package auto
 type RunState int
 
 const (
-	RunStateIdle RunState = iota
-	RunStateStarting
-	RunStateRunning
-	RunStateTransientFailure
-	RunStateStopped
-	RunStateFailed
+	Idle RunState = iota
+	Starting
+	Running
+	TransientFailure
+	Stopped
+	Failed
 )
 
 func (r RunState) IsTerminal() bool {
 	switch r {
-	case RunStateFailed, RunStateStopped:
+	case Failed, Stopped:
 		return true
 	default:
 		return false
