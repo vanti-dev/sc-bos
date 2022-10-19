@@ -26,33 +26,31 @@
         - '{{ install_dir }}/static'
         - '{{ install_dir }}/bin'
 
-#    - name: Extract Go code
-#      ansible.builtin.unarchive:
-#        src: '/tmp/ibe-2022-build/go-archive.tar'
-#        dest: '{{ temp_dir }}/'
-#
-#    - name: Build Go code
-#      ansible.builtin.command:
-#        chdir: '{{ temp_dir }}/go-archive'
-#        argv:
-#          - /usr/local/opt/go/bin/go
-#          - build
-#          - '-o'
-#          - '{{ temp_dir }}/{{ item }}'
-#          - "./cmd/{{ item }}"
-#      environment:
-#        CGO_ENABLED: '1'
-#        CGO_CFLAGS: '-I/usr/local/include'
-#        CGO_LDFLAGS: '-L/usr/local/lib'
-#      loop: "{{ controllers }}"
-#
-#    - name: Install Area Controller executables
-#      become: true
-#      ansible.builtin.copy:
-#        remote_src: yes
-#        src: '{{ temp_dir }}/{{ item }}'
-#        dest: '{{ install_dir }}/bin/{{ item }}'
-#        owner: root
-#        group: areacontroller
-#        mode: o=rwx,g=rx,o=rx
-#      loop: "{{ controllers }}"
+    - name: Extract Go code
+      ansible.builtin.unarchive:
+        src: '/tmp/bsp-ew-build/area-controller.tar'
+        dest: '{{ temp_dir }}/'
+
+    - name: Build Go code
+      ansible.builtin.command:
+        chdir: '{{ temp_dir }}/area-controller'
+        argv:
+          - /usr/local/opt/go/bin/go
+          - build
+          - '-o'
+          - '{{ temp_dir }}/areacontroller'
+          - "./cmd/area-controller"
+      environment:
+        CGO_ENABLED: '1'
+        CGO_CFLAGS: '-I/usr/local/include'
+        CGO_LDFLAGS: '-L/usr/local/lib'
+
+    - name: Install Area Controller executables
+      become: true
+      ansible.builtin.copy:
+        remote_src: yes
+        src: '{{ temp_dir }}/areacontroller'
+        dest: '{{ install_dir }}/bin/areacontroller'
+        owner: root
+        group: areacontroller
+        mode: o=rwx,g=rx,o=rx

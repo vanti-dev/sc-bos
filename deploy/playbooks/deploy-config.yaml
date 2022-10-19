@@ -5,16 +5,13 @@
     project_dir: "{{ playbook_dir }}/../.."
     deploy_src_dir: '{{ playbook_dir }}/..'
     install_dir: /usr/local/opt/areacontroller
-    controllers:
-      - areacontroller
 
   tasks:
-#    - name: Stop the services (if it exists)
-#      become: true
-#      ansible.builtin.service:
-#        name: "{{ item }}"
-#        state: stopped
-#      loop: "{{ controllers }}"
+    - name: Stop the services (if it exists)
+      become: true
+      ansible.builtin.service:
+        name: "areacontroller"
+        state: stopped
 
     - name: Ensure the rc.d directory is present
       become: true
@@ -38,20 +35,34 @@
     - name: Make symlink for the rc script
       become: true
       ansible.builtin.file:
-        path: "/usr/local/etc/rc.d/{{ item }}"
+        path: "/usr/local/etc/rc.d/areacontroller"
         state: link
-        src: '{{ install_dir }}/etc/rc.d/{{ item }}'
+        src: '{{ install_dir }}/etc/rc.d/areacontroller'
         owner: root
         group: wheel
         mode: u=rwx,g=rx,o=rx
-      loop: "{{ controllers }}"
 
-#    - name: Copy the config file
-#      become: true
-#      ansible.builtin.copy:
-#        src: '{{ project_dir }}/config/{{ item }}.yaml'
-#        dest: '{{ install_dir }}/etc/{{ item }}.yaml'
-#        owner: root
-#        group: areacontroller
-#        mode: u=rw,g=r,o=r
-#      loop: "{{ controllers }}"
+    - name: Ensure the data directory is present
+      become: true
+      ansible.builtin.file:
+        path: '{{ install_dir }}/data'
+        state: directory
+        owner: areacontroller
+        group: areacontroller
+        mode: u=rwX,g=rX,o=
+
+    - name: Copy the config file
+      become: true
+      ansible.builtin.copy:
+        src: '{{ project_dir }}/config/{{ floor }}/area-controller.local.json'
+        dest: '{{ install_dir }}/data/area-controller.local.json'
+        owner: root
+        group: areacontroller
+        mode: u=rw,g=r,o=r
+
+    - name: Set daemon flags
+      become: true
+      community.general.sysrc:
+        name: areacontroller_flags
+        state: present
+        value: "-data-dir /usr/local/opt/areacontroller/data -static-dir /usr/local/opt/areacontroller/static -listen-https :8443"

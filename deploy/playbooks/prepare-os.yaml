@@ -49,9 +49,9 @@
     - name: Download Go compiler
       become: false
       ansible.builtin.get_url:
-        url: 'https://go.dev/dl/go1.18.freebsd-amd64.tar.gz'
+        url: 'https://go.dev/dl/go1.19.2.freebsd-amd64.tar.gz'
         dest: '/tmp/go.tar.gz'
-        checksum: sha256:01cd67bbc12e659ff236ecebde1806f76452f7ca145c172d5ecdbf4f4803daae
+        checksum: sha256:d74c88430484d14826ec21161e3b9336bd021f502b6594c4dd00e9ec730ee51d
       register: download_go
 
     - name: Extract Go compiler
@@ -109,17 +109,6 @@
           own   tcpaldrv    root:twincat
           perm  tcpaldrv    0660
       notify: Restart devfs
-
-    - name: Mount filesystems required by java
-      ansible.posix.mount:
-        state: mounted
-        backup: yes
-        fstype: "{{ item.fstype }}"
-        path: "{{ item.path }}"
-        src: "{{ item.src }}"
-      loop:
-        - { src: fdesc, path: /dev/fd, fstype: fdescfs }
-        - { src: proc, path: /proc, fstype: procfs }
 
     - name: Open firewall ports
       ansible.builtin.blockinfile:

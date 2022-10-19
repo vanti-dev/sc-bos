@@ -4,6 +4,9 @@ all:
     twincat_bsd:
       hosts:
         10.104.10.52:
+          floor: lab
+        10.104.10.99:
+          floor: floor-01
       vars:
         #ansible_connection: paramiko
         ansible_python_interpreter: /usr/local/bin/python
