@@ -1,0 +1,425 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Part102Commands" Id="{328fc89b-dfec-4d64-8cb9-6d2bf91758ca}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Part102Commands
+VAR_INPUT
+	ipDALICommunication		:	I_DALICommunication;
+END_VAR
+VAR_OUTPUT
+	bBusy					:	BOOL;
+END_VAR
+VAR
+	{region "Visu"}
+	eAddressType			:	E_DALIAddressType;
+	nShortAddress			:	BYTE := 255;
+	nGroupAddress			:	BYTE := 255;
+	bRecallMaxLevel			:	BOOL;
+	bRecallMinLevel			:	BOOL;
+	bOff					:	BOOL;
+	bUp						:	BOOL;
+	bStepUp					:	BOOL;
+	bOnAndStepUp			:	BOOL;
+	bStepDownAndOff			:	BOOL;
+	bDown					:	BOOL;
+	bStepDown				:	BOOL;
+	bGotoScene				:	BOOL;
+	nScene					:	BYTE;
+	sActualLevel			:	STRING(5);
+	sControlGearFailure		:	STRING(5);
+	sLampFailure			:	STRING(5);
+	sFadeRunning			:	STRING(5);
+	sResetState				:	STRING(5);
+	bIdentify202			: 	BOOL;
+	{endregion}
+	nStep					:	INT;
+	nStepQuery				:	INT;
+	tonDelay				:	TON;
+	nAddress				:	BYTE := 255;
+	fbRecallMaxLevel		:	FB_DALI102RecallMaxLevel(0);
+	fbRecallMinLevel		:	FB_DALI102RecallMinLevel(0);
+	fbOff					:	FB_DALI102Off(0);
+	fbUp					:	FB_DALI102Up(0);
+	fbStepUp				:	FB_DALI102StepUp(0);
+	fbOnAndStepUp			:	FB_DALI102OnAndStepUp(0);
+	fbStepDownAndOff		:	FB_DALI102StepDownAndOff(0);
+	fbDown					:	FB_DALI102Down(0);
+	fbStepDown				:	FB_DALI102StepDown(0);
+	fbGotoScene				:	FB_DALI102GotoScene(0);
+	fbQueryActualLevel		:	FB_DALI102QueryActualLevel(0);
+	fbQueryStatus			:	FB_DALI102QueryStatus(0);
+	fbStartIdentification	: 	FB_DALI202StartIdentification(0);
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[{region "Detect Commands"}
+IF (bRecallMaxLevel AND (nStep = 0)) THEN
+	nStep := 10;
+	bRecallMaxLevel := FALSE;
+END_IF
+
+IF (bRecallMinLevel AND (nStep = 0)) THEN
+	nStep := 20;
+	bRecallMinLevel := FALSE;
+END_IF
+
+IF (bOff AND (nStep = 0)) THEN
+	nStep := 30;
+	bOff := FALSE;
+END_IF
+
+IF (bUp AND (nStep = 0)) THEN
+	nStep := 40;
+	bUp := FALSE;
+END_IF
+
+IF (bStepUp AND (nStep = 0)) THEN
+	nStep := 50;
+	bStepUp := FALSE;
+END_IF
+
+IF (bOnAndStepUp AND (nStep = 0)) THEN
+	nStep := 60;
+	bOnAndStepUp := FALSE;
+END_IF
+
+IF (bStepDownAndOff AND (nStep = 0)) THEN
+	nStep := 70;
+	bStepDownAndOff := FALSE;
+END_IF
+
+IF (bDown AND (nStep = 0)) THEN
+	nStep := 80;
+	bDown := FALSE;
+END_IF
+
+IF (bStepDown AND (nStep = 0)) THEN
+	nStep := 90;
+	bStepDown := FALSE;
+END_IF
+
+IF (bGotoScene AND (nStep = 0)) THEN
+	nStep := 100;
+	bGotoScene := FALSE;
+END_IF
+	 
+IF (bIdentify202 AND (nStep = 0)) THEN
+	nStep := 110;
+	bIdentify202 := FALSE;		 
+END_IF
+{endregion}
+{region "Manage Dialog Selection}
+IF (nStep = 0) THEN
+	bBusy := FALSE;
+ELSE
+	bBusy := TRUE;
+END_IF
+{endregion}
+{region "Execute Commands"}
+nAddress := SEL(eAddressType = E_DALIAddressType.Short, nGroupAddress, nShortAddress);
+CASE nStep OF
+0:
+{region "Init"}
+	bRecallMaxLevel := FALSE;
+	bRecallMinLevel := FALSE;
+	bOff := FALSE;
+	bUp := FALSE;
+	bStepUp := FALSE;
+	bOnAndStepUp := FALSE;
+	bStepDownAndOff := FALSE;
+	bDown := FALSE;
+	bStepDown := FALSE;
+	bGotoScene := FALSE;
+
+	fbRecallMaxLevel.ipDALICommunication := ipDALICommunication;
+	fbRecallMinLevel.ipDALICommunication := ipDALICommunication;
+	fbOff.ipDALICommunication := ipDALICommunication;
+	fbUp.ipDALICommunication := ipDALICommunication;
+	fbStepUp.ipDALICommunication := ipDALICommunication;
+	fbOnAndStepUp.ipDALICommunication := ipDALICommunication;
+	fbStepDownAndOff.ipDALICommunication := ipDALICommunication;
+	fbDown.ipDALICommunication := ipDALICommunication;
+	fbStepDown.ipDALICommunication := ipDALICommunication;
+	fbGotoScene.ipDALICommunication := ipDALICommunication;
+	fbQueryActualLevel.ipDALICommunication := ipDALICommunication;
+	fbQueryStatus.ipDALICommunication := ipDALICommunication;
+	fbStartIdentification.ipDALICommunication := ipDALICommunication;
+{endregion}
+10:
+{region "Recall Max Level"}
+	fbRecallMaxLevel(bStart := TRUE,
+					 nAddress := nAddress,
+					 eAddressType := eAddressType,
+					 eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fbRecallMaxLevel.bBusy) THEN
+		fbRecallMaxLevel(bStart := FALSE);
+		nStep := 0;
+	END_IF
+{endregion}
+20:
+{region "Recall Min Level"}
+	fbRecallMinLevel(bStart := TRUE,
+					 nAddress := nAddress,
+					 eAddressType := eAddressType,
+					 eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fbRecallMinLevel.bBusy) THEN
+		fbRecallMinLevel(bStart := FALSE);
+		nStep := 0;
+	END_IF
+{endregion}
+30:
+{region "Off"}
+	fbOff(bStart := TRUE,
+		  nAddress := nAddress,
+		  eAddressType := eAddressType,
+		  eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fbOff.bBusy) THEN
+		fbOff(bStart := FALSE);
+		nStep := 0;
+	END_IF
+{endregion}
+40:
+{region "Up"}
+	fbUp(bStart := TRUE,
+		 nAddress := nAddress,
+		 eAddressType := eAddressType,
+		 eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fbUp.bBusy) THEN
+		fbUp(bStart := FALSE);
+		nStep := 0;
+	END_IF
+{endregion}
+50:
+{region "Step Up"}
+	fbStepUp(bStart := TRUE,
+			 nAddress := nAddress,
+			 eAddressType := eAddressType,
+			 eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fbStepUp.bBusy) THEN
+		fbStepUp(bStart := FALSE);
+		nStep := 0;
+	END_IF
+{endregion}
+60:
+{region "On and Step Up"}
+	fbOnAndStepUp(bStart := TRUE,
+				  nAddress := nAddress,
+				  eAddressType := eAddressType,
+				  eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fbOnAndStepUp.bBusy) THEN
+		fbOnAndStepUp(bStart := FALSE);
+		nStep := 0;
+	END_IF
+{endregion}
+70:
+{region "Step Down and Step Off"}
+	fbStepDownAndOff(bStart := TRUE,
+					 nAddress := nAddress,
+					 eAddressType := eAddressType,
+					 eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fbStepDownAndOff.bBusy) THEN
+		fbStepDownAndOff(bStart := FALSE);
+		nStep := 0;
+	END_IF
+{endregion}
+80:
+{region "Down"}
+	fbDown(bStart := TRUE,
+		   nAddress := nAddress,
+		   eAddressType := eAddressType,
+		   eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fbDown.bBusy) THEN
+		fbDown(bStart := FALSE);
+		nStep := 0;
+	END_IF
+{endregion}
+90:
+{region "Step Down"}
+	fbStepDown(bStart := TRUE,
+			   nAddress := nAddress,
+			   eAddressType := eAddressType,
+			   eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fbStepDown.bBusy) THEN
+		fbStepDown(bStart := FALSE);
+		nStep := 0;
+	END_IF
+{endregion}
+100:
+{region "Goto Scene"}
+	fbGotoScene(bStart := TRUE,
+				nAddress := nAddress,
+				eAddressType := eAddressType,
+				eCommandPriority := E_DALICommandPriority.Middle,
+				nScene := nScene);
+	IF (NOT fbGotoScene.bBusy) THEN
+		fbGotoScene(bStart := FALSE);
+		nStep := 0;
+	END_IF
+{endregion}
+110:
+{region "Start Identification"}
+	fbStartIdentification(bStart := TRUE,
+							nAddress := nAddress,
+							eAddressType := eAddressType,
+							eCommandPriority := E_DALICommandPriority.Middle
+	);	 
+    IF (NOT fbStartIdentification.bBusy) THEN
+		fbStartIdentification(bStart := FALSE);
+		nStep := 0;  
+    END_IF
+ {endregion}
+ELSE
+	nStep := 0;
+END_CASE
+{endregion}
+
+{region "Query Actual Level / Query Status"}
+CASE nStepQuery OF
+0:
+	tonDelay(IN := TRUE, PT := T#1S);
+	IF (tonDelay.Q) THEN
+		tonDelay(IN := FALSE);
+		IF ((nAddress <> 255) AND (eAddressType = E_DALIAddressType.Short)) THEN
+			nStepQuery := 10;
+		ELSE
+			sActualLevel := '???';
+			sControlGearFailure := '???';
+			sLampFailure := '???';
+			sFadeRunning := '???';
+			sResetState := '???';
+		END_IF
+	END_IF
+
+10:
+	fbQueryActualLevel(bStart := TRUE,
+					   nAddress := nAddress,
+					   eAddressType := eAddressType,
+					   eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fbQueryActualLevel.bBusy) THEN
+		IF (NOT fbQueryActualLevel.bError) THEN
+			sActualLevel := TO_STRING(fbQueryActualLevel.nActualLevel);
+		ELSE
+			sActualLevel := '???';
+		END_IF
+		fbQueryActualLevel(bStart := FALSE);
+		nStepQuery := 20;
+	END_IF
+
+20:
+	fbQueryStatus(bStart := TRUE,
+				  nAddress := nAddress,
+				  eAddressType := eAddressType,
+				  eCommandPriority := E_DALICommandPriority.Middle);
+	IF (NOT fbQueryStatus.bBusy) THEN
+		IF (NOT fbQueryStatus.bError) THEN
+			sControlGearFailure := SEL(fbQueryStatus.nStatus.0, 'False', 'True');
+			sLampFailure := SEL(fbQueryStatus.nStatus.1, 'False', 'True');
+			sFadeRunning := SEL(fbQueryStatus.nStatus.4, 'False', 'True');
+			sResetState := SEL(fbQueryStatus.nStatus.5, 'False', 'True');
+		ELSE
+			sControlGearFailure := '???';
+			sLampFailure := '???';
+			sFadeRunning := '???';
+			sResetState := '???';
+		END_IF
+		fbQueryStatus(bStart := FALSE);
+		nStepQuery := 0;
+	END_IF
+
+ELSE
+	nStepQuery := 0;
+END_CASE
+{endregion}]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Part102Commands">
+      <LineId Id="130" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="63" Count="9" />
+      <LineId Id="332" Count="0" />
+      <LineId Id="334" Count="33" />
+      <LineId Id="613" Count="2" />
+      <LineId Id="617" Count="0" />
+      <LineId Id="616" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="547" Count="5" />
+      <LineId Id="399" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="402" Count="0" />
+      <LineId Id="35" Count="1" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="47" Count="9" />
+      <LineId Id="102" Count="3" />
+      <LineId Id="115" Count="5" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="272" Count="0" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="600" Count="0" />
+      <LineId Id="41" Count="1" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="76" Count="2" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="84" Count="8" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="94" Count="7" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="135" Count="10" />
+      <LineId Id="147" Count="10" />
+      <LineId Id="159" Count="10" />
+      <LineId Id="171" Count="10" />
+      <LineId Id="183" Count="10" />
+      <LineId Id="195" Count="10" />
+      <LineId Id="207" Count="5" />
+      <LineId Id="218" Count="0" />
+      <LineId Id="213" Count="4" />
+      <LineId Id="601" Count="2" />
+      <LineId Id="605" Count="5" />
+      <LineId Id="612" Count="0" />
+      <LineId Id="611" Count="0" />
+      <LineId Id="604" Count="0" />
+      <LineId Id="38" Count="2" />
+      <LineId Id="400" Count="0" />
+      <LineId Id="240" Count="0" />
+      <LineId Id="220" Count="3" />
+      <LineId Id="274" Count="0" />
+      <LineId Id="276" Count="0" />
+      <LineId Id="445" Count="0" />
+      <LineId Id="277" Count="0" />
+      <LineId Id="490" Count="0" />
+      <LineId Id="495" Count="0" />
+      <LineId Id="491" Count="3" />
+      <LineId Id="446" Count="0" />
+      <LineId Id="275" Count="0" />
+      <LineId Id="224" Count="1" />
+      <LineId Id="256" Count="4" />
+      <LineId Id="369" Count="0" />
+      <LineId Id="281" Count="0" />
+      <LineId Id="370" Count="0" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="371" Count="0" />
+      <LineId Id="261" Count="1" />
+      <LineId Id="239" Count="0" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="264" Count="4" />
+      <LineId Id="374" Count="1" />
+      <LineId Id="388" Count="2" />
+      <LineId Id="381" Count="1" />
+      <LineId Id="393" Count="1" />
+      <LineId Id="392" Count="0" />
+      <LineId Id="383" Count="0" />
+      <LineId Id="269" Count="2" />
+      <LineId Id="253" Count="2" />
+      <LineId Id="219" Count="0" />
+      <LineId Id="241" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
