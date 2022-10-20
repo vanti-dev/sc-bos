@@ -4,6 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
+	"os"
+	"time"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
@@ -14,8 +18,6 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/task"
 	"go.uber.org/zap"
-	"log"
-	"os"
 )
 
 var (
@@ -38,11 +40,17 @@ func run(ctx context.Context) error {
 		return err
 	}
 	rootNode := node.New("lighting-power")
+	lightRouter := light.NewApiRouter()
+	parentRouter := parent.NewApiRouter()
 	rootNode.Support(
 		node.Routing(
-			light.NewApiRouter(),
+			lightRouter,
 			occupancysensor.NewApiRouter(),
-			parent.NewApiRouter(),
+			parentRouter,
+		),
+		node.Clients(
+			light.WrapApi(lightRouter),
+			parent.WrapApi(parentRouter),
 		),
 	)
 	services := driver.Services{
@@ -59,6 +67,8 @@ func run(ctx context.Context) error {
 	if err := rootNode.Client(&lightClient); err != nil {
 		return err
 	}
+
+	time.Sleep(5 * time.Second)
 
 	targetLevel := float32(*level)
 	return forEachChild(ctx, rootNode, func(child *traits.Child) error {
