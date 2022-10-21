@@ -122,6 +122,13 @@
           pass in quick proto udp to port 47808
       notify: Restart pf
 
+    - name: Set static IP on X001
+      community.general.sysrc:
+        name: ifconfig_igb0
+        state: present
+        value: 'inet {{ x001_ip }} netmask 255.255.255.0'
+      notify: Restart network
+
   handlers:
     - name: Restart devfs
       ansible.builtin.service:
@@ -132,3 +139,11 @@
       ansible.builtin.service:
         name: pf
         state: restarted
+
+    - name: Restart network
+      ansible.builtin.service:
+        name: '{{ item }}'
+        state: restarted
+      loop:
+        - netif
+        - routing

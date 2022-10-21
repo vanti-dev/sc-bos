@@ -31,7 +31,7 @@
         src: '/tmp/bsp-ew-build/area-controller.tar'
         dest: '{{ temp_dir }}/'
 
-    - name: Build Go code
+    - name: Build Go code - Area Controller
       ansible.builtin.command:
         chdir: '{{ temp_dir }}/area-controller'
         argv:
@@ -45,12 +45,29 @@
         CGO_CFLAGS: '-I/usr/local/include'
         CGO_LDFLAGS: '-L/usr/local/lib'
 
-    - name: Install Area Controller executables
+    - name: Build cmd/daylight-power
+      ansible.builtin.command:
+        chdir: '{{ temp_dir }}/area_controller'
+        argv:
+          - /usr/local/opt/go/bin/go
+          - build
+          - '-o'
+          - '{{ temp_dir }}/daylight-power'
+          - './cmd/daylight-power'
+      environment:
+        CGO_ENABLED: '1'
+        CGO_CFLAGS: '-I/usr/local/include'
+        CGO_LDFLAGS: '-L/usr/local/lib'
+
+    - name: Install executables
       become: true
       ansible.builtin.copy:
         remote_src: yes
-        src: '{{ temp_dir }}/areacontroller'
-        dest: '{{ install_dir }}/bin/areacontroller'
+        src: '{{ temp_dir }}/{{ item }}'
+        dest: '{{ install_dir }}/bin/{{ item }}'
         owner: root
         group: areacontroller
         mode: o=rwx,g=rx,o=rx
+      loop:
+        - 'areacontroller'
+        - 'daylight-power'

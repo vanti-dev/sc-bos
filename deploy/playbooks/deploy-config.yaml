@@ -6,6 +6,9 @@
     deploy_src_dir: '{{ playbook_dir }}/..'
     install_dir: /usr/local/opt/areacontroller
 
+    areacontroller_enabled: no
+    daylight_power_cron_enabled: no
+
   tasks:
     - name: Stop the services (if it exists)
       become: true
@@ -51,11 +54,20 @@
         group: areacontroller
         mode: u=rwX,g=rX,o=
 
-    - name: Copy the config file
+    - name: Copy the area controller config file
       become: true
       ansible.builtin.copy:
         src: '{{ project_dir }}/config/{{ floor }}/area-controller.local.json'
         dest: '{{ install_dir }}/data/area-controller.local.json'
+        owner: root
+        group: areacontroller
+        mode: u=rw,g=r,o=r
+
+    - name: Copy the daylight-power config file
+      become: true
+      ansible.builtin.copy:
+        src: '{{ project_dir }}/config/{{ floor }}/daylight-power.json'
+        dest: '{{ install_dir }}/etc/daylight-power.json'
         owner: root
         group: areacontroller
         mode: u=rw,g=r,o=r
@@ -66,3 +78,30 @@
         name: areacontroller_flags
         state: present
         value: "-data-dir /usr/local/opt/areacontroller/data -static-dir /usr/local/opt/areacontroller/static -listen-https :8443"
+
+    - name: Enable and start areacontroller service
+      become: true
+      ansible.builtin.service:
+        name: areacontroller
+        state: started
+        enabled: yes
+      when: areacontroller_enabled | bool
+
+    - name: Add cron jobs for daylight-power
+      become: true
+      ansible.builtin.cron:
+        user: areacontroller
+        disabled: "{{ daylight_power_cron_enabled | ternary('no', 'yes') }}"
+        name: '{{ item.name }}'
+        hour: '{{ item.hour }}'
+        minute: '{{ item.minute }}'
+        job: '/usr/local/opt/areacontroller/bin/daylight-power -dali /usr/local/opt/areaconroller/etc/daylight-power.json -level {{ item.level }}'
+      loop:
+        - name: Power On Lights
+          hour: 6
+          minute: 0
+          level: 80
+        - name: Power Off Lights
+          hour: 18
+          minute: 0
+          level: 0
