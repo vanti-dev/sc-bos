@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32" ClassName="CDevEtherCATDef" SubType="111">
-	<Device Id="1" DevType="111" DevFlags="#x0003" AmsPort="28673" AmsNetId="0.0.0.0.2.1" RemoteName="Device 1 (EtherCAT)" InfoImageId="2">
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32" ClassName="CDevEtherCATDef" SubType="111" TcProjectVariant="Floor_01">
+	<Device Id="1" DevType="111" DevFlags="#x0003" AmsPort="28673" AmsNetId="5.109.178.35.2.1" RemoteName="Device 1 (EtherCAT)" InfoImageId="2">
 		<Name>__FILENAME__</Name>
 		<AddressInfo>
 			<Ccat>
@@ -27,7 +27,7 @@
 				</Identification>
 			</Ccat>
 		</AddressInfo>
-		<Image Id="1" AddrType="9" ImageType="3">
+		<Image Id="1" ImageFlags="#x00000010" AddrType="9" ImageType="3">
 			<Name>Image</Name>
 		</Image>
 		<Box File="Term 1 (EK1200).xti" Id="1">

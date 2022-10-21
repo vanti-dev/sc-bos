@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32" ClassName="CNestedPlcProjDef" TcProjectVariant="Floor_01">
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.35" ClassName="CNestedPlcProjDef" TcProjectVariant="Floor_01">
 	<DataTypes>
 		<DataType>
 			<Name GUID="{9A955222-AEEB-8157-F0A3-131368033DED}" Namespace="Tc3_DALI" AutoDeleteType="true">ST_KL6821InData</Name>
@@ -121,11 +121,11 @@
 				<Name>Floor_08</Name>
 				<Name>Floor_09</Name>
 				<Name>Floor_10</Name>
+				<Name>Lab</Name>
 				<Defines/>
 			</Variant>
 			<Variant>
 				<Name>Floor_01</Name>
-				<Name>Lab</Name>
 				<Defines></Defines>
 			</Variant>
 		</ProjectVariant>
@@ -323,68 +323,6 @@
 				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LS_out^aData" VarB="LS Bus (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
 				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LS_out^aData" VarB="LS Bus (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
 				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LS_out^nCtrl" VarB="LS Bus (KL6821)^Channel 1^Ctrl"/>
-			</OwnerB>
-			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Landlord Coupler (BK1250)">
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 0" Size="8"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[1]^nStatus" VarB="LL Bus 1 (KL6821)^Channel 1^State"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 0" Size="8"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[2]^nStatus" VarB="LL Bus 2 (KL6821)^Channel 1^State"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 0" Size="8"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[3]^nStatus" VarB="LL Bus 3 (KL6821)^Channel 1^State"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 0" Size="8"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[4]^nStatus" VarB="LL Bus 4 (KL6821)^Channel 1^State"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 0" Size="8"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[5]^nStatus" VarB="LL Bus 5 (KL6821)^Channel 1^State"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 0" Size="8"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="8"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="16"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="24"/>
-				<Link VarA="PlcCommunication Inputs^GVL_IO.kl6821_LL_in[6]^nStatus" VarB="LL Bus 6 (KL6821)^Channel 1^State"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[1]^aData" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[1]^nCtrl" VarB="LL Bus 1 (KL6821)^Channel 1^Ctrl"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[2]^aData" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[2]^nCtrl" VarB="LL Bus 2 (KL6821)^Channel 1^Ctrl"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 0" Size="8"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[3]^aData" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[3]^nCtrl" VarB="LL Bus 3 (KL6821)^Channel 1^Ctrl"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 0" Size="8"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[4]^aData" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[4]^nCtrl" VarB="LL Bus 4 (KL6821)^Channel 1^Ctrl"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 0" Size="8"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[5]^aData" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[5]^nCtrl" VarB="LL Bus 5 (KL6821)^Channel 1^Ctrl"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 0" Size="8"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="8"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="16"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[6]^aData" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="24"/>
-				<Link VarA="PlcCommunication Outputs^GVL_IO.kl6821_LL_out[6]^nCtrl" VarB="LL Bus 6 (KL6821)^Channel 1^Ctrl"/>
 			</OwnerB>
 		</OwnerA>
 	</Mappings>
