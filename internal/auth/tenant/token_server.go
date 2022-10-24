@@ -83,7 +83,7 @@ func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 		writeTokenError(writer, err, logger)
 		return
 	}
-	if err := request.ParseForm(); err != nil {
+	if err := request.ParseMultipartForm(0); err != nil {
 		writeTokenError(writer, errInvalidRequest, logger)
 		logger.Error("form parse error", zap.Error(err))
 		return
@@ -115,14 +115,15 @@ func verifyPostBodyType(request *http.Request) error {
 	if err != nil {
 		return err
 	}
-	if ct != "application/x-www-form-urlencoded" {
-		return tokenError{
-			Code:             400,
-			ErrorName:        "incorrect_content_type",
-			ErrorDescription: fmt.Sprintf("Content-Type is not application/x-www-form-urlencoded: %v", ct),
-		}
+	switch ct {
+	case "application/x-www-form-urlencoded", "multipart/form-data":
+		return nil
 	}
-	return nil
+	return tokenError{
+		Code:             400,
+		ErrorName:        "incorrect_content_type",
+		ErrorDescription: fmt.Sprintf("Content-Type is not application/x-www-form-urlencoded or multipart/form-data: %v", ct),
+	}
 }
 
 func (s *TokenServer) clientCredentialsFlow(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
