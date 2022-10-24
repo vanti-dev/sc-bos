@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
+	bactypes "github.com/vanti-dev/gobacnet/types"
 	"io"
 	"net/netip"
 	"os"
@@ -45,10 +46,10 @@ type Discovery struct {
 }
 
 type Device struct {
-	Name  string `json:"name,omitempty"`
-	Title string `json:"title,omitempty"`
-	Comm  *Comm  `json:"comm,omitempty"`
-	ID    int    `json:"id,omitempty"`
+	Name  string                  `json:"name,omitempty"`
+	Title string                  `json:"title,omitempty"`
+	Comm  *Comm                   `json:"comm,omitempty"`
+	ID    bactypes.ObjectInstance `json:"id,omitempty"`
 
 	COV *COV `json:"cov,omitempty"`
 
