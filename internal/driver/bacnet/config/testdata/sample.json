@@ -1,0 +1,62 @@
+{
+  "name": "hvac",
+  "type": "bacnet",
+  "discovery": {
+    "min": 0,
+    "chunk": 1000000,
+    "chunkDelay": "1s"
+  },
+  "forceDiscovery": false,
+  "includeDiscoveredDevices": true,
+  "cov": {
+    "method": "auto",
+    "pollDelay": "10s"
+  },
+  "devices": [
+    {
+      "name": "level3",
+      "title": "Level 3 HVAC",
+      "comm": {"ip": "10.11.100.1:47808"},
+      "id": 10000,
+      "cov": {},
+      "objects": [
+        {
+          "id": "AnalogInput:0",
+          "name": "indoorTemp",
+          "title": "Level 3 HVAC Indoor Temp",
+          "cov": {},
+          "priorities": [
+            {
+              "level": 9,
+              "name": "user"
+            },
+            {
+              "level": 12,
+              "name": "auto"
+            }
+          ],
+          "properties": [
+            {
+              "name": "fault",
+              "id": 103
+            },
+            {
+              "id": "units"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "traits": [
+    {
+      "kind": "smartcore.traits.Lighting",
+      "airTemperature": {
+        "ambientTemperature": {
+          "ref": "device/1000/object/indoorTemp"
+        },
+        "temperatureGoal": {"ref": "device/1000/object/AnalogValue:2"}
+      }
+    }
+  ]
+}

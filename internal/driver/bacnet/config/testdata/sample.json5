@@ -1,0 +1,149 @@
+{
+  // Name is used as a common prefix for all Smart Core names announced by this driver.
+  name: 'hvac',
+  type: 'bacnet',
+  // Discovery allows us to adjust how device discovery works, if we have to use it.
+  discovery: {
+    // Min device identifier we search for.
+    // Optional, defaults to 0.
+    min: 0,
+    // Max device identifier we search for
+    // Optional, defaults to 0x3FFFFF the maximum allowed Object_Identifier
+    max: 0x3FFFFF, // 4194304
+    // When scanning for all devices, how large should the WhoIs windows be.
+    // For example if set to 1,000,000 a total of 5 WhoIs requests will be sent:
+    // [0-999,999] + [1,000,000-1,999,999] + ... + [4,000,000-4,194,304]
+    //
+    // Chunks will always be sent sequentially, never in parallel.
+    // Sending parallel requests is equivalent to doubling the chunk size.
+    chunk: 1000000,
+    // How long should we wait between one WhoIs request/response completing and sending another WhoIs request.
+    // Defaults to 0.
+    // Format is that accepted by Go [time.ParseDuration](https://pkg.go.dev/time#ParseDuration).
+    chunkDelay: "1s"
+  },
+  // Force discovery forces the driver to run discovery by broadcasting WhoIs requests on the network.
+  // When false discovery may still be triggered if any configured devices do not specify either comm or id properties.
+  // Defaults to false, unless required to populate explicit device properties no discovery will be performed.
+  forceDiscovery: false,
+  // For any devices discovered by discovery expose them for access via this driver.
+  // When this is true this has the effect equivalent to configuring a devices entry for each IAm response we receive
+  // when sending a WhoIs request as part of discovery.
+  // Any settings provided as part of manual devices entries will override any automatically included devices.
+  //
+  // Note, a true value here does not imply discovery will be run - use forceDiscovery:true for that. Instead if
+  // discovery happens to be run while filling in missing fields in devices then any newly discovered devices will be
+  // included in this driver.
+  includeDiscoveredDevices: true,
+  // cov allows us to configure how we subscribe to change of value and publish those changes over the Smart Core API
+  cov: {
+    // Method allows us to choose how to discover changes.
+    // - "auto" if the device supports the COV service then it will be used, otherwise the value will be polled
+    // - "poll" polling will be used even if COV is supported
+    // - "cov" if supported COV will be used, otherwise subscriptions will return an error response
+    // - "local" only changes made locally, via Update type methods, will be sent to listeners
+    // - "none" change notification will not be enabled and errors will be returned from any Pull requests
+    method: "auto",
+    // If polling is used to gather COV changes, how long between polls should we wait.
+    // This is counted from the end of one poll request to the start of the next
+    pollDelay: "10s"
+  },
+  // These are BACnet devices - aka systems on the network that speak the BACnet protocol.
+  // For each device at least one of name, comm, or id should be provided.
+  // Each device is announced with a name suffix ./device/{name | id}
+  devices: [
+    {
+      // A name for the device.
+      // The name is used to construct the Smart Core name for the device and as an ancestor for object names.
+      // Optional, if absent 'D${id}' will be used
+      name: 'level3',
+      // A human readable name for the device.
+      // Optional, if absent Object_Name will be read and used.
+      title: 'Level 3 HVAC',
+      // How should we communicate with this BACnet device.
+      // Optional. If absent then discovery mechanisms like WhoIs will be used to discover the comm settings.
+      comm: {ip: "10.11.100.1:47808"},
+      // The object identifier of the bacnet device, the id of the object that is of type Device.
+      // As per the BACnet spec 12.11 there should be only one such object per BACnet device.
+      // Optional, if absent discovery mechanisms like WhoIs will be used to discover the Device Object id.
+      //
+      // It is highly recommended that the device id is provided, without it the driver needs to use discovery across
+      // the entire range of available device ids [0-0x3FFFFF] to find this number. This discovery request will be
+      // issued if _any_ device has an absent id.
+      //
+      // Note: BACnet specifies that device ids be unique per BACnet network.
+      id: 10000,
+      // cov overrides the driver level cov settings for all objects in this device
+      cov: {},
+      // Each object represents a data point on the device.
+      // For example 'Indoor Temperature'
+      // Each object will appear as a Smart Core name with a suffix ./obj/{name | id}
+      objects: [
+        {
+          // The BACnet Object Identifier in short form for the object.
+          // This takes the format of the name or id of the object type followed by ':' followed by the instance number.
+          // These are equivalent: AnalogValue:5, 2:5
+          // Long names are the PascalCase version of the constants in gobacknet package objecttypes, which are derived
+          // from the BACnet spec directly.
+          id: 'AnalogInput:0',
+          // Name describes how others refer to this object.
+          // It will be used in the Smart Core name.
+          // Optional, if absent then id will be used.
+          name: 'indoorTemp',
+          // A human readable name for the device.
+          // Optional but recommended, if absent Object_Name will be read and used.
+          // This property is generally used to distinguish this object from others in config.
+          title: 'Level 3 HVAC Indoor Temp',
+          // cov overrides the driver and device level cov settings for this object
+          cov: {},
+          // Priorities defines additional priority names that the driver exposes for present value property.
+          // Each priority will announce with a name suffix ./priority/{name | level}
+          priorities: [
+            {
+              // Level specifies which slot in the priority array written values will be set to.
+              level: 9,
+              name: 'user'
+            },
+            {
+              level: 12,
+              name: 'auto'
+            }
+          ],
+          // Properties describes values, other than present_value, that get exposed by the driver.
+          // Present value is always associated with the object itself.
+          // Each property is announced with a name suffix ./prop/{name | id}
+          properties: [
+            {
+              // The Smart Core name this property will have.
+              // Optional, if absent the name associated with id will be used.
+              name: 'fault',
+              // The BACnet property id or name.
+              id: 103 // reliability
+            },
+            {
+              id: 'units' // 117
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  // Traits defines how objects are combined together to implement named device traits.
+  traits: [
+    {
+      // The name of a trait
+      kind: 'smartcore.traits.Lighting',
+      // A resource type that the trait exposes via its api.
+      // The structure of this object follows the structure of the resource,
+      // each property defines which object the value for that property comes from
+      airTemperature: {
+        ambientTemperature: {
+          ref: 'device/1000/object/indoorTemp'
+          // There's room here to customise how the data is mapped and fetched
+          // For example by defining ranges, cov settings, read/write permission, etc
+        },
+        temperatureGoal: {ref: 'device/1000/object/AnalogValue:2'}
+      }
+    }
+  ]
+}
