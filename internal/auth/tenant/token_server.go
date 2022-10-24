@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"mime"
 	"net/http"
 	"time"
 
@@ -78,6 +79,10 @@ func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 		writeTokenError(writer, errInvalidRequest, logger)
 		return
 	}
+	if err := verifyPostBodyType(request); err != nil {
+		writeTokenError(writer, err, logger)
+		return
+	}
 	if err := request.ParseForm(); err != nil {
 		writeTokenError(writer, errInvalidRequest, logger)
 		logger.Error("form parse error", zap.Error(err))
@@ -97,6 +102,27 @@ func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 	if err != nil {
 		writeTokenError(writer, err, logger)
 	}
+}
+
+func verifyPostBodyType(request *http.Request) error {
+	ct := request.Header.Get("Content-Type")
+	// RFC 7231, section 3.1.1.5 - empty type
+	//   MAY be treated as application/octet-stream
+	if ct == "" {
+		ct = "application/octet-stream"
+	}
+	ct, _, err := mime.ParseMediaType(ct)
+	if err != nil {
+		return err
+	}
+	if ct != "application/x-www-form-urlencoded" {
+		return tokenError{
+			Code:             400,
+			ErrorName:        "incorrect_content_type",
+			ErrorDescription: fmt.Sprintf("Content-Type is not application/x-www-form-urlencoded: %v", ct),
+		}
+	}
+	return nil
 }
 
 func (s *TokenServer) clientCredentialsFlow(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
