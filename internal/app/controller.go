@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/rs/cors"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
 	"github.com/vanti-dev/bsp-ew/internal/auto"
@@ -159,7 +160,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		if err != nil {
 			return nil, err
 		}
-		mux.Handle("/oauth2/token", tokenServer)
+		mux.Handle("/oauth2/token", cors.Default().Handler(tokenServer))
 		policyInterceptorOpts = append(policyInterceptorOpts, policy.WithTokenVerifier(tokenServer.TokenValidator()))
 	}
 	if !config.DisablePolicy {
