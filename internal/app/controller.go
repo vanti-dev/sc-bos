@@ -76,8 +76,12 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 			return nil, fmt.Errorf("local config JSON unmarshal: %w", err)
 		}
 	} else {
-		logger.Warn("failed to load local config from file", zap.Error(err),
-			zap.String("path", localConfigPath))
+		if !errors.Is(err, os.ErrNotExist) {
+			logger.Warn("failed to load local config from file", zap.Error(err),
+				zap.String("path", localConfigPath))
+		} else {
+			logger.Debug("failed to load local config from file", zap.Error(err), zap.String("path", localConfigPath))
+		}
 	}
 
 	services := driver.Services{
