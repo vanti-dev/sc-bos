@@ -31,9 +31,10 @@ func NewManager[T comparable](initialState T) *Manager[T] {
 
 // Update updates the state if the current state isn't terminal.
 // If there's a change it notifies goroutines waiting on state change to happen.
-func (sm *Manager[T]) Update(state T) {
+func (sm *Manager[T]) Update(state T) (old T) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
+	old = sm.state
 	if IsTerminal(sm.state) {
 		return
 	}
@@ -46,6 +47,7 @@ func (sm *Manager[T]) Update(state T) {
 		close(sm.notifyChan)
 		sm.notifyChan = nil
 	}
+	return
 }
 
 // GetNotifyChan returns a chan that can be used to be notified when the state changes.
