@@ -9,7 +9,21 @@ import (
 // Typically announcing the same name more than once will combine the features of the existing name with the new features.
 type Announcer interface {
 	// Announce signals that the name exists and has the given features.
-	Announce(name string, features ...Feature)
+	Announce(name string, features ...Feature) Undo
+}
+
+// AnnouncerFunc allows adapting a func of the correct signature to implement Announcer
+type AnnouncerFunc func(name string, features ...Feature) Undo
+
+func (a AnnouncerFunc) Announce(name string, features ...Feature) Undo {
+	return a(name, features...)
+}
+
+// AnnounceWithNamePrefix returns an Announcer whose Announce method acts like `Announce(prefix+name, features...)`
+func AnnounceWithNamePrefix(prefix string, a Announcer) Announcer {
+	return AnnouncerFunc(func(name string, features ...Feature) Undo {
+		return a.Announce(prefix+name, features...)
+	})
 }
 
 type announcement struct {
