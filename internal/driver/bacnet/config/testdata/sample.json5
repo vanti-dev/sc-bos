@@ -77,7 +77,8 @@
       cov: {},
       // Each object represents a data point on the device.
       // For example 'Indoor Temperature'
-      // Each object will appear as a Smart Core name with a suffix ./obj/{name | id}
+      // Each object will appear as a Smart Core name with a suffix ./obj/{name | id}.
+      // The id will be in normalised form when used for the device name
       objects: [
         {
           // The BACnet Object Identifier in short form for the object.
