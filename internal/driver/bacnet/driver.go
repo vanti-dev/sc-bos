@@ -70,15 +70,17 @@ func (d *Driver) Name() string {
 func (d *Driver) Start(ctx context.Context) error {
 	d.stopCtx, d.stop = context.WithCancel(context.Background())
 	go func() {
-		select {
-		case cfg := <-d.configC:
-			d.config = cfg
-			err := d.applyConfig(cfg)
-			if err != nil {
-				d.logger.Error("failed to apply config update", zap.Error(err))
+		for {
+			select {
+			case cfg := <-d.configC:
+				d.config = cfg
+				err := d.applyConfig(cfg)
+				if err != nil {
+					d.logger.Error("failed to apply config update", zap.Error(err))
+				}
+			case <-d.stopCtx.Done():
+				return
 			}
-		case <-d.stopCtx.Done():
-			return
 		}
 	}()
 
