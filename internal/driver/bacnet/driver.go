@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/adapt"
@@ -19,29 +20,32 @@ import (
 
 const DriverName = "bacnet"
 
+// Driver brings BACnet devices into Smart Core.
 type Driver struct {
 	announcer node.Announcer // Any device we setup gets announced here
 	logger    *zap.Logger
 
-	status *state.Manager[driver.Status]
-
-	config config.Root // The config that was used to setup the device into its current state
-
-	client *gobacnet.Client // How we interact with bacnet systems
+	status *state.Manager[driver.Status] // allows us to implement Stateful
+	config config.Root                   // The config that was used to setup the device into its current state
+	client *gobacnet.Client              // How we interact with bacnet systems
 
 	configC chan config.Root
 	stopCtx context.Context
 	stop    context.CancelFunc
 }
 
-func Factory(ctx context.Context, services driver.Services, rawConfig json.RawMessage) (out driver.Driver, err error) {
+func NewDriver(services driver.Services) *Driver {
 	announcer := node.AnnounceWithNamePrefix("bacnet/", services.Node)
-	d := &Driver{
+	return &Driver{
 		announcer: announcer,
 		logger:    services.Logger.Named("bacnet"),
-		status:    state.NewManager(driver.StatusActive),
-		configC:   make(chan config.Root, 5),
+		status:    state.NewManager(driver.StatusInactive),
 	}
+}
+
+// Factory creates a new Driver and calls Start then Configure on it.
+func Factory(ctx context.Context, services driver.Services, rawConfig json.RawMessage) (out driver.Driver, err error) {
+	d := NewDriver(services)
 
 	err = d.Start(ctx)
 	if err != nil {
@@ -53,6 +57,12 @@ func Factory(ctx context.Context, services driver.Services, rawConfig json.RawMe
 		if err != nil {
 			_ = d.Stop()
 		}
+	}()
+
+	// assume that people are using the ctx to stop the driver
+	go func() {
+		<-ctx.Done()
+		_ = d.Stop()
 	}()
 
 	err = d.Configure(rawConfig)
@@ -67,17 +77,34 @@ func (d *Driver) Name() string {
 	return d.config.Name
 }
 
-func (d *Driver) Start(ctx context.Context) error {
+// Start makes this driver available to be configured.
+// Call Stop when you're done with the driver to free up resources.
+//
+// Start must be called before Configure.
+// Once started Configure and Stop may be called from any go routine.
+func (d *Driver) Start(_ context.Context) error {
+	// We implement a main loop pattern to avoid locks.
+	// Methods like Configure and Stop both push messages onto channels
+	// which we select on in a loop using a single go routine, avoiding any
+	// locking issues (that we have to deal with ourselves).
+
+	d.configC = make(chan config.Root, 5)
 	d.stopCtx, d.stop = context.WithCancel(context.Background())
 	go func() {
+		d.status.Update(driver.StatusActive)
+		defer d.status.Update(driver.StatusInactive)
+
 		for {
 			select {
 			case cfg := <-d.configC:
-				d.config = cfg
+				d.status.Update(driver.StatusLoading)
 				err := d.applyConfig(cfg)
+				d.status.Update(driver.StatusActive)
 				if err != nil {
 					d.logger.Error("failed to apply config update", zap.Error(err))
+					continue
 				}
+				d.config = cfg
 			case <-d.stopCtx.Done():
 				return
 			}
@@ -87,7 +114,14 @@ func (d *Driver) Start(ctx context.Context) error {
 	return nil
 }
 
+// Configure instructs the driver to setup and announce any devices found in configData.
+// configData should be an encoded JSON object matching config.Root.
+//
+// Configure must not be called before Start, but once Started can be called concurrently.
 func (d *Driver) Configure(configData []byte) error {
+	if d.configC == nil {
+		return errors.New("not started")
+	}
 	c, err := config.Read(bytes.NewReader(configData))
 	if err != nil {
 		return err
@@ -96,14 +130,33 @@ func (d *Driver) Configure(configData []byte) error {
 	return nil
 }
 
+// Stop stops the driver and releases resources.
+// Stop races with Start before Start has completed, but can be called concurrently once started.
 func (d *Driver) Stop() error {
+	if d.stop == nil {
+		// not started
+		return nil
+	}
 	d.stop()
 	return nil
 }
 
+func (d *Driver) WaitForStateChange(ctx context.Context, sourceState driver.Status) error {
+	return d.status.WaitForStateChange(ctx, sourceState)
+}
+
+func (d *Driver) CurrentState() driver.Status {
+	return d.status.CurrentState()
+}
+
 func (d *Driver) applyConfig(cfg config.Root) error {
+	// todo: make this process atomic
+	// todo: allow more than one config change, i.e. Undo announcements we need to remove on config change
+
 	var err error
+	// todo: support re-setting up the client if config changes
 	if d.client == nil {
+		// todo: allow configuration of the iface we use to setup the client
 		client, err := gobacnet.NewClient("bridge100", 0)
 		if err != nil {
 			return err
@@ -126,7 +179,7 @@ func (d *Driver) applyConfig(cfg config.Root) error {
 
 		for _, object := range device.Objects {
 			switch object.ID.Type {
-			case objecttype.BinaryValue:
+			case objecttype.BinaryValue, objecttype.BinaryOutput, objecttype.BinaryInput:
 				impl := adapt.BinaryValue(d.client, bacDevice, object)
 				impl.AnnounceSelf(announcer)
 			default:
