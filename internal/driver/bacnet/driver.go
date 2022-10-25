@@ -156,14 +156,14 @@ func (d *Driver) applyConfig(cfg config.Root) error {
 	var err error
 	// todo: support re-setting up the client if config changes
 	if d.client == nil {
-		// todo: allow configuration of the iface we use to setup the client
-		client, err := gobacnet.NewClient("bridge100", 0)
+		client, err := gobacnet.NewClient(cfg.LocalInterface, int(cfg.LocalPort))
 		if err != nil {
 			return err
 		}
 		d.client = client
 		if address, err := client.LocalUDPAddress(); err == nil {
-			d.logger.Debug("bacnet client configured", zap.Stringer("local", address))
+			d.logger.Debug("bacnet client configured", zap.Stringer("local", address),
+				zap.String("localInterface", cfg.LocalInterface), zap.Uint16("localPort", cfg.LocalPort))
 		}
 	}
 

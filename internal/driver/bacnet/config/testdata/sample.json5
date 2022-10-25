@@ -2,6 +2,11 @@
   // Name is used as a common prefix for all Smart Core names announced by this driver.
   name: 'hvac',
   type: 'bacnet',
+  // The BACnet client will use this network interface when discovering broadcast addresses.
+  localInterface: 'eth0',
+  // The port the BACnet client accepts UDP response messages on.
+  // The driver will bind to all network interfaces on this port
+  localPort: 47808,
   // Discovery allows us to adjust how device discovery works, if we have to use it.
   discovery: {
     // Min device identifier we search for.

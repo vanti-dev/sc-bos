@@ -13,6 +13,9 @@ import (
 type Root struct {
 	driver.BaseConfig
 
+	LocalInterface string `json:"localInterface,omitempty"`
+	LocalPort      uint16 `json:"localPort,omitempty"`
+
 	Discovery                *Discovery `json:"discovery,omitempty"`
 	ForceDiscovery           bool       `json:"forceDiscovery,omitempty"`
 	IncludeDiscoveredDevices bool       `json:"includeDiscoveredDevices,omitempty"`
