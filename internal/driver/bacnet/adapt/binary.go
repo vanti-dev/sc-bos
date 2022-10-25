@@ -12,6 +12,7 @@ import (
 	bactypes "github.com/vanti-dev/gobacnet/types"
 )
 
+// BinaryValue adapts a binary bacnet object as smart core traits.
 func BinaryValue(client *gobacnet.Client, device bactypes.Device, object config.Object) SelfAnnouncer {
 	model := onoff.NewModel(traits.OnOff_STATE_UNSPECIFIED)
 	return &binaryOnOff{

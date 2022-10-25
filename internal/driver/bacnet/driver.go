@@ -9,6 +9,7 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/adapt"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
+	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/rpc"
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/util/state"
 	"github.com/vanti-dev/gobacnet"
@@ -19,6 +20,15 @@ import (
 )
 
 const DriverName = "bacnet"
+
+// Register makes sure this driver and its device apis are available in the given node.
+func Register(supporter node.Supporter) {
+	r := rpc.NewBacnetDriverServiceRouter()
+	supporter.Support(
+		node.Routing(r),
+		node.Clients(rpc.WrapBacnetDriverService(r)),
+	)
+}
 
 // Driver brings BACnet devices into Smart Core.
 type Driver struct {
@@ -174,9 +184,12 @@ func (d *Driver) applyConfig(cfg config.Root) error {
 			continue
 		}
 
-		prefix := fmt.Sprintf("device/%v/obj/", adapt.DeviceName(device))
-		announcer := node.AnnounceWithNamePrefix(prefix, d.announcer)
+		deviceName := adapt.DeviceName(device)
+		announcer := node.AnnounceWithNamePrefix("device/", d.announcer)
+		adapt.Device(deviceName, d.client, bacDevice).AnnounceSelf(announcer)
 
+		prefix := fmt.Sprintf("device/%v/obj/", deviceName)
+		announcer = node.AnnounceWithNamePrefix(prefix, d.announcer)
 		for _, object := range device.Objects {
 			switch object.ID.Type {
 			case objecttype.BinaryValue, objecttype.BinaryOutput, objecttype.BinaryInput:
