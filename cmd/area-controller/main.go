@@ -7,9 +7,11 @@ import (
 
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
+	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali"
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
@@ -43,6 +45,7 @@ func run(ctx context.Context) error {
 	systemConfig.Logger = zap.NewDevelopmentConfig()
 	systemConfig.DriverFactories = map[string]driver.Factory{
 		tc3dali.DriverName: tc3dali.Factory,
+		bacnet.DriverName:  bacnet.Factory,
 	}
 
 	controller, err := app.Bootstrap(ctx, systemConfig)
@@ -53,8 +56,11 @@ func run(ctx context.Context) error {
 	controller.Node.Support(node.Routing(
 		light.NewApiRouter(),
 		occupancysensor.NewApiRouter(),
+		onoff.NewApiRouter(),
 		parent.NewApiRouter(),
 	))
+
+	bacnet.Register(controller.Node)
 
 	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
 
