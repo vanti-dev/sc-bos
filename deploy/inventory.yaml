@@ -3,19 +3,29 @@ all:
     # all freebsd hosts need some particular configuration to work with ansible
     twincat_bsd:
       hosts:
-        10.104.10.52:
+        lab:
+          ansible_host: "10.104.10.52"
           floor: lab
           x001_ip: 10.123.1.100
-        192.168.8.241:
+        floor-01:
+          ansible_host: "192.168.8.241"
           floor: floor-01
           x001_ip: 10.123.1.11
-        10.104.10.72:
+        floor-02:
+          ansible_host: "10.104.10.72"
           floor: floor-02
           x001_ip: 10.123.1.12
-        10.104.10.127:
+        floor-03:
+          ansible_host: "10.104.10.127"
           floor: floor-03
       vars:
         #ansible_connection: paramiko
         ansible_python_interpreter: /usr/local/bin/python
         ansible_user: Administrator
         ansible_become_method: doas
+    # Helper groups of the above hosts so we can say '-l prod' to deploy to all prod
+    prod:
+      hosts:
+        floor-01:
+        floor-02:
+        floor-03:
