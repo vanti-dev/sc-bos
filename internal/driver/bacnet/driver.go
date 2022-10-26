@@ -178,6 +178,7 @@ func (d *Driver) applyConfig(cfg config.Root) error {
 	}
 
 	for _, device := range cfg.Devices {
+		logger := d.logger.With(zap.Uint32("deviceId", uint32(device.ID)))
 		bacDevice, e := d.findDevice(device)
 		if e != nil {
 			err = multierr.Append(err, e)
@@ -195,21 +196,35 @@ func (d *Driver) applyConfig(cfg config.Root) error {
 		// This will be a combination of configured objects and those we discover on the device.
 		objects, e := d.fetchObjects(cfg, device, bacDevice)
 		if e != nil {
-			d.logger.Warn("Failed discovering objects", zap.Stringer("deviceId", bacDevice.ID), zap.Error(e))
+			logger.Warn("Failed discovering objects", zap.Error(e))
 		}
 
 		for _, object := range objects {
-			switch object.ID.Type {
-			case objecttype.Device:
+			logger := logger.With(zap.Stringer("object", object))
+			// Device types are handled separately
+			if object.ID.Type == objecttype.Device {
+				// We're assuming that devices in the wild follow the spec
+				// which says each network device has exactly one bacnet device.
+				// We check for this explicitly to make sure our assumptions hold
 				if bactypes.ObjectID(object.ID) != bacDevice.ID {
-					d.logger.Error("BACnet device with multiple advertised devices!", zap.Stringer("deviceId", bacDevice.ID), zap.Stringer("objectId", object.ID))
+					logger.Error("BACnet device with multiple advertised devices!")
 				}
-			case objecttype.BinaryValue, objecttype.BinaryOutput, objecttype.BinaryInput:
-				impl := adapt.BinaryValue(d.client, bacDevice, object)
-				impl.AnnounceSelf(announcer)
-			default:
-				d.logger.Debug("Unsupported object type", zap.Stringer("deviceId", bacDevice.ID), zap.Stringer("objectId", object.ID))
+				continue
 			}
+			impl, err := adapt.Object(d.client, bacDevice, object)
+			if errors.Is(err, adapt.ErrNoDefault) {
+				logger.Debug("No default adaptation trait for object")
+				continue
+			}
+			if errors.Is(err, adapt.ErrNoAdaptation) {
+				logger.Error("No adaptation from object to trait", zap.Stringer("trait", object.Trait))
+				continue
+			}
+			if err != nil {
+				logger.Error("Error adapting object", zap.Error(err))
+				continue
+			}
+			impl.AnnounceSelf(announcer)
 		}
 	}
 

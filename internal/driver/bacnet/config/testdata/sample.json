@@ -25,6 +25,7 @@
           "name": "indoorTemp",
           "title": "Level 3 HVAC Indoor Temp",
           "cov": {},
+          "trait": "smartcore.traits.OnOff",
           "priorities": [
             {
               "level": 9,

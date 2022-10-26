@@ -110,6 +110,13 @@
           title: 'Level 3 HVAC Indoor Temp',
           // cov overrides the driver and device level cov settings for this object
           cov: {},
+          // Specify how this object should be interpreted in the world of Smart Core.
+          // This is should only be used if the object closely matches the trait semantics, for example if a BinaryValue
+          // object represents a heating coils on or off state, then 'smartcore.traits.OnOff' is appropriate.
+          //
+          // Supported combinations of object type and smart core trait is subject to change, check the adapt package
+          // for which combinations are available.
+          trait: 'smartcore.traits.OnOff',
           // Priorities defines additional priority names that the driver exposes for present value property.
           // Each priority will announce with a name suffix ./priority/{name | level}
           priorities: [

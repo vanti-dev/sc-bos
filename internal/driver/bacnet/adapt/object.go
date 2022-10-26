@@ -3,7 +3,23 @@ package adapt
 import (
 	"fmt"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
+	"github.com/vanti-dev/gobacnet"
+	bactypes "github.com/vanti-dev/gobacnet/types"
+	"github.com/vanti-dev/gobacnet/types/objecttype"
 )
+
+// Object adapts a bacnet object into one or more smart core named traits.
+func Object(client *gobacnet.Client, device bactypes.Device, object config.Object) (SelfAnnouncer, error) {
+	switch object.ID.Type {
+	case objecttype.BinaryValue, objecttype.BinaryOutput, objecttype.BinaryInput:
+		return BinaryObject(client, device, object)
+	}
+
+	if object.Trait == "" {
+		return nil, ErrNoDefault
+	}
+	return nil, ErrNoAdaptation
+}
 
 // DeviceName returns the smart core name we should use for the configured object.
 func DeviceName(o config.Device) string {
