@@ -11,7 +11,7 @@ require (
 	github.com/open-policy-agent/opa v0.42.2
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.38
 	github.com/smart-core-os/sc-golang v0.0.0-20221013111224-70c68d71382c
-	github.com/vanti-dev/gobacnet v0.0.0-20220329145518-278960946f35
+	github.com/vanti-dev/gobacnet v0.0.0-20221024154753-4861ab8551a7
 	github.com/vanti-dev/twincat3-ads-go v0.2.3
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
@@ -58,5 +58,3 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )
-
-replace github.com/vanti-dev/gobacnet => ../gobacnet
