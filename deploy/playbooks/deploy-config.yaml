@@ -102,8 +102,8 @@
           minute: 0
           level: 90
         - name: Power Off Lights
-          hour: 17
-          minute: 15
+          hour: 18
+          minute: 0
           level: 0
       notify: Restart cron
 
