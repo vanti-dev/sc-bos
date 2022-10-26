@@ -13,7 +13,7 @@ import (
 )
 
 // BinaryObject adapts a binary bacnet object as smart core traits.
-func BinaryObject(client *gobacnet.Client, device bactypes.Device, object config.Object) (SelfAnnouncer, error) {
+func BinaryObject(client *gobacnet.Client, device bactypes.Device, object config.Object) (node.SelfAnnouncer, error) {
 	switch object.Trait {
 	case "":
 		return nil, ErrNoDefault

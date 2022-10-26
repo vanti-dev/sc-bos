@@ -15,7 +15,7 @@ import (
 )
 
 // Device adapts a bacnet Device into a Smart Core traits and other apis.
-func Device(name string, client *gobacnet.Client, device bactypes.Device) SelfAnnouncer {
+func Device(name string, client *gobacnet.Client, device bactypes.Device) node.SelfAnnouncer {
 	return &DeviceBacnetService{
 		name:   name,
 		client: client,

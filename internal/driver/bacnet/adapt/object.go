@@ -3,13 +3,14 @@ package adapt
 import (
 	"fmt"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
+	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/gobacnet"
 	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
 )
 
 // Object adapts a bacnet object into one or more smart core named traits.
-func Object(client *gobacnet.Client, device bactypes.Device, object config.Object) (SelfAnnouncer, error) {
+func Object(client *gobacnet.Client, device bactypes.Device, object config.Object) (node.SelfAnnouncer, error) {
 	switch object.ID.Type {
 	case objecttype.BinaryValue, objecttype.BinaryOutput, objecttype.BinaryInput:
 		return BinaryObject(client, device, object)

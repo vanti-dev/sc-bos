@@ -12,6 +12,11 @@ type Announcer interface {
 	Announce(name string, features ...Feature) Undo
 }
 
+// SelfAnnouncer is a complement to node.Announcer allowing a type to announce itself.
+type SelfAnnouncer interface {
+	AnnounceSelf(a Announcer) Undo
+}
+
 // AnnouncerFunc allows adapting a func of the correct signature to implement Announcer
 type AnnouncerFunc func(name string, features ...Feature) Undo
 
