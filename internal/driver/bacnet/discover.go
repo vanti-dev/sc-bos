@@ -33,10 +33,15 @@ func (d *Driver) findDevice(device config.Device) (bactypes.Device, error) {
 	return bacDevices[0], nil
 }
 
-func (d *Driver) fetchObjects(cfg config.Root, device config.Device, bacDevice bactypes.Device) (map[bactypes.ObjectID]config.Object, error) {
-	objects := make(map[bactypes.ObjectID]config.Object, len(device.Objects))
+func (d *Driver) fetchObjects(cfg config.Root, device config.Device, bacDevice bactypes.Device) (map[bactypes.ObjectID]configObject, error) {
+	objects := make(map[bactypes.ObjectID]configObject, len(device.Objects))
 	for _, object := range device.Objects {
-		objects[bactypes.ObjectID(object.ID)] = object
+		objects[bactypes.ObjectID(object.ID)] = configObject{
+			co: object,
+			bo: &bactypes.Object{
+				ID: bactypes.ObjectID(object.ID),
+			},
+		}
 	}
 
 	discoverObjects := cfg.DiscoverObjects
@@ -54,21 +59,30 @@ func (d *Driver) fetchObjects(cfg config.Root, device config.Device, bacDevice b
 			for _, object := range objectsOfType {
 				if known, found := objects[object.ID]; found {
 					// copy any additional data into the object config
-					if known.Title == "" {
-						known.Title = firstNonEmpty(object.Description, object.Name)
+					if known.co.Title == "" {
+						known.co.Title = firstNonEmpty(object.Description, object.Name)
 					}
+					known.bo = &object
 					objects[object.ID] = known
 					continue
 				}
-				objects[object.ID] = config.Object{
-					ID:    config.ObjectID(object.ID),
-					Title: firstNonEmpty(object.Description, object.Name),
+				objects[object.ID] = configObject{
+					co: config.Object{
+						ID:    config.ObjectID(object.ID),
+						Title: firstNonEmpty(object.Description, object.Name),
+					},
+					bo: &object,
 				}
 			}
 		}
 	}
 
 	return objects, nil
+}
+
+type configObject struct {
+	co config.Object
+	bo *bactypes.Object
 }
 
 func firstNonEmpty(strs ...string) string {

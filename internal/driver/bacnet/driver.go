@@ -9,11 +9,11 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/adapt"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
+	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/known"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/rpc"
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/util/state"
 	"github.com/vanti-dev/gobacnet"
-	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -42,6 +42,8 @@ type Driver struct {
 	configC chan config.Root
 	stopCtx context.Context
 	stop    context.CancelFunc
+
+	devices *known.Map
 }
 
 func NewDriver(services driver.Services) *Driver {
@@ -50,6 +52,7 @@ func NewDriver(services driver.Services) *Driver {
 		announcer: announcer,
 		logger:    services.Logger.Named("bacnet"),
 		status:    state.NewManager(driver.StatusInactive),
+		devices:   known.NewMap(),
 	}
 }
 
@@ -177,6 +180,9 @@ func (d *Driver) applyConfig(cfg config.Root) error {
 		}
 	}
 
+	d.devices.Clear()
+
+	// setup all our devices and objects...
 	for _, device := range cfg.Devices {
 		logger := d.logger.With(zap.Uint32("deviceId", uint32(device.ID)))
 		bacDevice, e := d.findDevice(device)
@@ -186,6 +192,8 @@ func (d *Driver) applyConfig(cfg config.Root) error {
 		}
 
 		deviceName := adapt.DeviceName(device)
+		d.devices.StoreDevice(deviceName, bacDevice)
+
 		announcer := node.AnnounceWithNamePrefix("device/", d.announcer)
 		adapt.Device(deviceName, d.client, bacDevice).AnnounceSelf(announcer)
 
@@ -200,24 +208,29 @@ func (d *Driver) applyConfig(cfg config.Root) error {
 		}
 
 		for _, object := range objects {
-			logger := logger.With(zap.Stringer("object", object))
+			co, bo := object.co, object.bo
+			logger := logger.With(zap.Stringer("object", co))
 			// Device types are handled separately
-			if object.ID.Type == objecttype.Device {
+			if bo.ID.Type == objecttype.Device {
 				// We're assuming that devices in the wild follow the spec
 				// which says each network device has exactly one bacnet device.
 				// We check for this explicitly to make sure our assumptions hold
-				if bactypes.ObjectID(object.ID) != bacDevice.ID {
+				if bo.ID != bacDevice.ID {
 					logger.Error("BACnet device with multiple advertised devices!")
 				}
 				continue
 			}
-			impl, err := adapt.Object(d.client, bacDevice, object)
+
+			// no error, we added the device before we entered the loop so it should exist
+			_ = d.devices.StoreObject(bacDevice, adapt.ObjectName(co), *bo)
+
+			impl, err := adapt.Object(d.client, bacDevice, co)
 			if errors.Is(err, adapt.ErrNoDefault) {
 				logger.Debug("No default adaptation trait for object")
 				continue
 			}
 			if errors.Is(err, adapt.ErrNoAdaptation) {
-				logger.Error("No adaptation from object to trait", zap.Stringer("trait", object.Trait))
+				logger.Error("No adaptation from object to trait", zap.Stringer("trait", co.Trait))
 				continue
 			}
 			if err != nil {
