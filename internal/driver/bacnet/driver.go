@@ -10,6 +10,7 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/adapt"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/known"
+	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/merge"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/rpc"
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/util/state"
@@ -239,6 +240,22 @@ func (d *Driver) applyConfig(cfg config.Root) error {
 			}
 			impl.AnnounceSelf(announcer)
 		}
+	}
+
+	// Combine objects together into traits...
+	announcer := node.AnnounceWithNamePrefix("traits/", d.announcer)
+	for _, trait := range cfg.Traits {
+		logger := d.logger.With(zap.Stringer("trait", trait.Kind), zap.String("name", trait.Name))
+		impl, err := merge.IntoTrait(d.client, d.devices, trait)
+		if errors.Is(err, merge.ErrTraitNotSupported) {
+			logger.Error("Cannot combine into trait, not supported")
+			continue
+		}
+		if err != nil {
+			logger.Error("Cannot combine into trait", zap.Error(err))
+			continue
+		}
+		impl.AnnounceSelf(announcer)
 	}
 
 	return err
