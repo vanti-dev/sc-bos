@@ -7,8 +7,8 @@
   },
   "buses": [
     {
-      "name": "ns/bsp/sites/enterprise-wharf/floors/1/dali/bus/T4_1",
-      "bridgePrefix": "GVL_Bridges.bus_T4_1"
+      "name": "ns/bsp/sites/enterprise-wharf/floors/1/dali/bus/T1_1",
+      "bridgePrefix": "GVL_Bridges.bus_T1_1"
     },
 
     {

@@ -6,12 +6,14 @@ all:
         10.104.10.52:
           floor: lab
           x001_ip: 10.123.1.100
-        10.104.10.99:
+        192.168.8.241:
           floor: floor-01
           x001_ip: 10.123.1.11
         10.104.10.72:
           floor: floor-02
           x001_ip: 10.123.1.12
+        10.104.10.127:
+          floor: floor-03
       vars:
         #ansible_connection: paramiko
         ansible_python_interpreter: /usr/local/bin/python
