@@ -33,33 +33,40 @@ func (o *ObjectID) UnmarshalJSON(bytes []byte) error {
 		return err
 	}
 
+	oid, err := ObjectIDFromString(str)
+	if err != nil {
+		return err
+	}
+	*o = oid
+	return nil
+}
+
+func ObjectIDFromString(str string) (ObjectID, error) {
 	parts := strings.SplitN(str, ":", 2)
 	if len(parts) != 2 {
-		return fmt.Errorf("expecting {type}:{instance}, got %s", str)
+		return ObjectID{}, fmt.Errorf("expecting {type}:{instance}, got %s", str)
 	}
 	typeStr, idStr := parts[0], parts[1]
 	idInt, err := strconv.ParseInt(idStr, 10, 32)
 	if err != nil {
-		return fmt.Errorf("instance is not an int: %w", err)
+		return ObjectID{}, fmt.Errorf("instance is not an int: %w", err)
 	}
 	typeId, err := strconv.ParseInt(typeStr, 10, 16)
 	if err == nil {
-		*o = ObjectID{
+		return ObjectID{
 			Type:     bactypes.ObjectType(typeId),
 			Instance: bactypes.ObjectInstance(idInt),
-		}
-		return nil
+		}, nil
 	}
 
 	fromString, ok := objecttype.FromString(typeStr)
 	if !ok {
-		return fmt.Errorf("object type is unknown and not an int %w", err)
+		return ObjectID{}, fmt.Errorf("object type is unknown and not an int %w", err)
 	}
-	*o = ObjectID{
+	return ObjectID{
 		Type:     fromString,
 		Instance: bactypes.ObjectInstance(idInt),
-	}
-	return nil
+	}, nil
 }
 
 type PropertyID property.ID

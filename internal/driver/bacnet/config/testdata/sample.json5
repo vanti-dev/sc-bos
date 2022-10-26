@@ -150,20 +150,27 @@
     }
   ],
   // Traits defines how objects are combined together to implement named device traits.
+  // Each trait is announce with a name suffix './traits/{name}'
   traits: [
     {
+      // A smart core name for this instance.
+      name: 'floorTemp',
       // The name of a trait
-      kind: 'smartcore.traits.Lighting',
-      // A resource type that the trait exposes via its api.
-      // The structure of this object follows the structure of the resource,
-      // each property defines which object the value for that property comes from
-      airTemperature: {
-        ambientTemperature: {
-          ref: 'device/1000/object/indoorTemp'
-          // There's room here to customise how the data is mapped and fetched
-          // For example by defining ranges, cov settings, read/write permission, etc
-        },
-        temperatureGoal: {ref: 'device/1000/object/AnalogValue:2'}
+      kind: 'smartcore.traits.AirTemperature',
+      // Each trait implements their own config reading based on how they work.
+      // Typically they configure some sources for their data using a Value Reference type.
+      ambientTemperature: {
+        // Object references an object configured above by either name or id.
+        object: 1234,
+        // Device references an device in object by either name or id.
+        device: 'AnalogInput:0'
+
+        // There's room here to customise how the data is mapped and fetched
+        // For example by defining ranges, cov settings, read/write permission, etc
+      },
+      temperatureGoal: {
+        object: 'level3',
+        device: 'setPoint'
       }
     }
   ]

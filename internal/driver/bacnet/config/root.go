@@ -24,7 +24,8 @@ type Root struct {
 
 	COV *COV `json:"cov,omitempty"`
 
-	Devices []Device `json:"devices,omitempty"`
+	Devices []Device   `json:"devices,omitempty"`
+	Traits  []RawTrait `json:"traits,omitempty"`
 }
 
 // ReadFile reads from the named file a config Root.

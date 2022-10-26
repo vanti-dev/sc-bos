@@ -51,12 +51,17 @@
   ],
   "traits": [
     {
-      "kind": "smartcore.traits.Lighting",
+      "name": "floorTemp",
+      "kind": "smartcore.traits.AirTemperature",
       "airTemperature": {
         "ambientTemperature": {
-          "ref": "device/1000/object/indoorTemp"
+          "device": "named",
+          "object": "named"
         },
-        "temperatureGoal": {"ref": "device/1000/object/AnalogValue:2"}
+        "temperatureGoal": {
+          "device": 1234,
+          "object": "AnalogValue:2"
+        }
       }
     }
   ]
