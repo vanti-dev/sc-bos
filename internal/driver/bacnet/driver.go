@@ -13,10 +13,10 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/util/state"
 	"github.com/vanti-dev/gobacnet"
+	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
-	"log"
 )
 
 const DriverName = "bacnet"
@@ -190,13 +190,25 @@ func (d *Driver) applyConfig(cfg config.Root) error {
 
 		prefix := fmt.Sprintf("device/%v/obj/", deviceName)
 		announcer = node.AnnounceWithNamePrefix(prefix, d.announcer)
-		for _, object := range device.Objects {
+
+		// Collect all the object that we will be announcing.
+		// This will be a combination of configured objects and those we discover on the device.
+		objects, e := d.fetchObjects(cfg, device, bacDevice)
+		if e != nil {
+			d.logger.Warn("Failed discovering objects", zap.Stringer("deviceId", bacDevice.ID), zap.Error(e))
+		}
+
+		for _, object := range objects {
 			switch object.ID.Type {
+			case objecttype.Device:
+				if bactypes.ObjectID(object.ID) != bacDevice.ID {
+					d.logger.Error("BACnet device with multiple advertised devices!", zap.Stringer("deviceId", bacDevice.ID), zap.Stringer("objectId", object.ID))
+				}
 			case objecttype.BinaryValue, objecttype.BinaryOutput, objecttype.BinaryInput:
 				impl := adapt.BinaryValue(d.client, bacDevice, object)
 				impl.AnnounceSelf(announcer)
 			default:
-				log.Printf("Unsupported object type: %v", object.ID.Type)
+				d.logger.Debug("Unsupported object type", zap.Stringer("deviceId", bacDevice.ID), zap.Stringer("objectId", object.ID))
 			}
 		}
 	}

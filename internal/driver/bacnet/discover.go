@@ -32,3 +32,50 @@ func (d *Driver) findDevice(device config.Device) (bactypes.Device, error) {
 	}
 	return bacDevices[0], nil
 }
+
+func (d *Driver) fetchObjects(cfg config.Root, device config.Device, bacDevice bactypes.Device) (map[bactypes.ObjectID]config.Object, error) {
+	objects := make(map[bactypes.ObjectID]config.Object, len(device.Objects))
+	for _, object := range device.Objects {
+		objects[bactypes.ObjectID(object.ID)] = object
+	}
+
+	discoverObjects := cfg.DiscoverObjects
+	if device.DiscoverObjects != nil {
+		discoverObjects = *device.DiscoverObjects
+	}
+
+	if discoverObjects {
+		hasObjects, err := d.client.Objects(bacDevice)
+		if err != nil {
+			return objects, fmt.Errorf("read objects %w", err)
+		}
+
+		for _, objectsOfType := range hasObjects.Objects {
+			for _, object := range objectsOfType {
+				if known, found := objects[object.ID]; found {
+					// copy any additional data into the object config
+					if known.Title == "" {
+						known.Title = firstNonEmpty(object.Description, object.Name)
+					}
+					objects[object.ID] = known
+					continue
+				}
+				objects[object.ID] = config.Object{
+					ID:    config.ObjectID(object.ID),
+					Title: firstNonEmpty(object.Description, object.Name),
+				}
+			}
+		}
+	}
+
+	return objects, nil
+}
+
+func firstNonEmpty(strs ...string) string {
+	for _, str := range strs {
+		if str != "" {
+			return str
+		}
+	}
+	return ""
+}

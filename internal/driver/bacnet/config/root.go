@@ -20,6 +20,8 @@ type Root struct {
 	ForceDiscovery           bool       `json:"forceDiscovery,omitempty"`
 	IncludeDiscoveredDevices bool       `json:"includeDiscoveredDevices,omitempty"`
 
+	DiscoverObjects bool `json:"discoverObjects,omitempty"`
+
 	COV *COV `json:"cov,omitempty"`
 
 	Devices []Device `json:"devices,omitempty"`
@@ -56,7 +58,8 @@ type Device struct {
 
 	COV *COV `json:"cov,omitempty"`
 
-	Objects []Object `json:"objects,omitempty"`
+	DiscoverObjects *bool    `json:"discoverObjects,omitempty"`
+	Objects         []Object `json:"objects,omitempty"`
 }
 
 type Comm struct {

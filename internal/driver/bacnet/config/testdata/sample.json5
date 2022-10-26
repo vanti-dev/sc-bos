@@ -40,6 +40,10 @@
   // discovery happens to be run while filling in missing fields in devices then any newly discovered devices will be
   // included in this driver.
   includeDiscoveredDevices: true,
+  // For any devices the driver knows about, discover and process all objects advertised by those devices.
+  // Can be overridden at the device level.
+  // Defaults to false, meaning only configured objects will be processed.
+  discoverObjects: true,
   // cov allows us to configure how we subscribe to change of value and publish those changes over the Smart Core API
   cov: {
     // Method allows us to choose how to discover changes.
@@ -80,6 +84,10 @@
       id: 10000,
       // cov overrides the driver level cov settings for all objects in this device
       cov: {},
+      // Discover and process all the objects under this device.
+      // If present overrides the value in the root driver discoverDevices property.
+      // Defaults to absent, meaning used the driver setting.
+      discoverObjects: true,
       // Each object represents a data point on the device.
       // For example 'Indoor Temperature'
       // Each object will appear as a Smart Core name with a suffix ./obj/{name | id}.
