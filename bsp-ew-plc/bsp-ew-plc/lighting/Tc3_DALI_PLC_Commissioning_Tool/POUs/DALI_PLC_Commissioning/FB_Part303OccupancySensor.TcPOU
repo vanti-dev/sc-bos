@@ -1,0 +1,751 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Part303OccupancySensor" Id="{eeefa5db-3643-4787-840e-4d4b7a78151c}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Part303OccupancySensor
+VAR_INPUT
+	ipDALICommunication			:	I_DALICommunication;
+END_VAR
+VAR_OUTPUT
+	bBusy						:	BOOL;
+END_VAR
+VAR
+	{region "Visu"}
+	sInputValue					:	STRING (50);
+	nInstanceError				:	BYTE;
+	nResolution					:	BYTE;
+	eEventScheme				:	E_DALIEventScheme;
+	nEventFilter				:	DWORD;
+	nHold						:	UINT(1..2538);
+	nHoldIntern					:	BYTE;
+	nReport						:	BYTE(0..255);
+	nDeadtime					:	UINT(0..12750);
+	nDeadtimeIntern				:	BYTE;
+	sCatching					:	STRING (20);
+	bEnable						:	BOOL;
+	bCancelHoldTimer			:	BOOL;
+	bCatchmovement				:	BOOL;
+	bRead						:	BOOL;
+	bWrite						:	BOOL;
+	bOccupied					:	BOOL;
+	bVacant						:	BOOL;
+	bRepeat						:	BOOL;
+	bMovement					:	BOOL;
+	bNoMovement					:	BOOL;
+	bNoHoldTimer				:	BOOL;
+	bNoReportTimer				:	BOOL;
+	bNoDeadtimeTimer			:	BOOL;
+	eEventPriority				:	E_DALIEventPriority := E_DALIEventPriority.MiddleLow;
+	{endregion}
+	nStep						:	INT;
+	nAddress					:	BYTE;
+	nInstanceAddress			:	BYTE;
+	bHideWaitSymbol				:	BOOL := TRUE;
+	nAddressInfo01				:	BYTE;
+	nAddressInfo02				:	BYTE;
+
+	fbGetInputNotification		:	FB_DALIGetInputNotification(0);
+	fb103StartQuiescentMode		:	FB_DALI103StartQuiescentMode(0);
+	fb103StopQuiescentMode		:	FB_DALI103StopQuiescentMode(0);
+	fb103QueryInstanceError		:	FB_DALI103QueryInstanceError(0);
+	fb103QueryInstanceStatus	:	FB_DALI103QueryInstanceStatus(0);
+	fb103QueryResolution		:	FB_DALI103QueryResolution(0);
+	fb103QueryInputValue 		:	FB_DALI103QueryInputValue(0);
+	fb103QueryEventScheme 		:	FB_DALI103QueryEventScheme(0);
+	fb103QueryEventFilter 		:	FB_DALI103QueryEventFilter(0);
+	fb103QueryEventPriority		:	FB_DALI103QueryEventPriority(0);
+	fb303QueryCatching			:	FB_DALI303QueryCatching(0);
+	fb303QueryHoldTimer			:	FB_DALI303QueryHoldTimer(0);
+	fb303QueryReportTimer		:	FB_DALI303QueryReportTimer(0);
+	fb303QueryDeadtimeTimer		:	FB_DALI303QueryDeadtimeTimer(0);
+	fb103EnableInstance			:	FB_DALI103EnableInstance(0);
+	fb103DisableInstance		:	FB_DALI103DisableInstance(0);
+	fb103SetEventScheme			:	FB_DALI103SetEventScheme(0);
+	fb103SetEventFilter			:	FB_DALI103SetEventFilter(0);
+	fb103SetEventPriority		:	FB_DALI103SetEventPriority(0);
+	fb303SetHoldTimer			:	FB_DALI303SetHoldTimer(0);
+	fb303SetReportTimer			:	FB_DALI303SetReportTimer(0);
+	fb303SetDeadtimeTimer		:	FB_DALI303SetDeadtimeTimer(0);
+	fb303CancelHoldTimer		:	FB_DALI303CancelHoldTimer(0);
+	fb303CatchMovement			:	FB_DALI303CatchMovement(0);
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[{region "Detect Commands"}
+IF (bRead AND (nStep = 0)) THEN
+	nStep := 5;
+	bRead := FALSE;
+	bHideWaitSymbol := FALSE;
+END_IF
+
+IF (bWrite AND (nStep = 0)) THEN
+	nStep := 1000;
+	bWrite := FALSE;
+	bHideWaitSymbol := FALSE;
+END_IF
+{endregion}
+{region "Manage Dialog Selection}
+IF (nStep = 0) THEN
+	bBusy := FALSE;
+ELSE
+	bBusy := TRUE;
+END_IF
+{endregion}
+{region "Execute Commands"}
+CASE nStep OF
+0:
+{region "Init"}
+	bRead := FALSE;
+	bWrite := FALSE;
+	bHideWaitSymbol := TRUE;
+
+	fbGetInputNotification.ipDALICommunication := ipDALICommunication;
+	fb103StartQuiescentMode.ipDALICommunication := ipDALICommunication;
+	fb103StopQuiescentMode.ipDALICommunication := ipDALICommunication;
+	fb103QueryInstanceError.ipDALICommunication := ipDALICommunication;
+	fb103QueryInstanceStatus.ipDALICommunication := ipDALICommunication;
+	fb103QueryResolution.ipDALICommunication := ipDALICommunication;
+	fb103QueryInputValue.ipDALICommunication := ipDALICommunication;
+	fb103QueryEventScheme.ipDALICommunication := ipDALICommunication;
+	fb103QueryEventFilter.ipDALICommunication := ipDALICommunication;
+	fb103QueryEventPriority.ipDALICommunication := ipDALICommunication;
+	fb303QueryCatching.ipDALICommunication := ipDALICommunication;
+	fb303QueryHoldTimer.ipDALICommunication := ipDALICommunication;
+	fb303QueryReportTimer.ipDALICommunication := ipDALICommunication;
+	fb303QueryDeadtimeTimer.ipDALICommunication := ipDALICommunication;
+	fb103EnableInstance.ipDALICommunication := ipDALICommunication;
+	fb103DisableInstance.ipDALICommunication := ipDALICommunication;
+	fb103SetEventScheme.ipDALICommunication := ipDALICommunication;
+	fb103SetEventFilter.ipDALICommunication := ipDALICommunication;
+	fb103SetEventPriority.ipDALICommunication := ipDALICommunication;
+	fb303SetHoldTimer.ipDALICommunication := ipDALICommunication;
+	fb303SetReportTimer.ipDALICommunication := ipDALICommunication;
+	fb303SetDeadtimeTimer.ipDALICommunication := ipDALICommunication;
+	fb303CancelHoldTimer.ipDALICommunication := ipDALICommunication;
+	fb303CatchMovement.ipDALICommunication := ipDALICommunication;
+
+	{region "Read Notifications"}
+	CASE eEventScheme OF
+	0:
+		nAddressInfo01 := 3;
+		nAddressInfo02 := nInstanceAddress;
+	1:
+		nAddressInfo01 := nAddress;
+		nAddressInfo02 := 3;
+	2:
+		nAddressInfo01 := nAddress;
+		nAddressInfo02 := nInstanceAddress;
+	END_CASE
+
+	fbGetInputNotification(bEnable := TRUE,
+						   eEventScheme := eEventScheme,
+						   nAddressInfo1 := nAddressInfo01,
+						   nAddressInfo2 := nAddressInfo02);
+	IF (fbGetInputNotification.nEventInfo = 8) THEN
+		sInputValue := 'Vacant and no movement';
+	ELSIF (fbGetInputNotification.nEventInfo = 9) THEN
+		sInputValue := 'Vacant and movement';
+	ELSIF (fbGetInputNotification.nEventInfo = 10) THEN
+		sInputValue := 'Occupied and no movement';
+	ELSIF (fbGetInputNotification.nEventInfo = 11) THEN
+		sInputValue := 'Occupied and movement';
+	END_IF
+	{endregion}
+{endregion}
+{region "Read"}
+5:
+{region "Start Qiescent Mode"}
+	fb103StartQuiescentMode(bStart := TRUE,
+							eAddressType := Tc3_DALI.E_DALIAddressType.Broadcast,
+							eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle);
+	IF (NOT fb103StartQuiescentMode.bBusy) THEN
+		fb103StartQuiescentMode(bStart:= FALSE);
+		nStep := 10;
+	END_IF
+{endregion}
+10:
+{region "Query Instance Error"}
+	fb103QueryInstanceError(bStart := TRUE,
+							nAddress := nAddress,
+							eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+							nInstanceAddress := nInstanceAddress,
+							eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+							eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+							nInstanceError=> nInstanceError);
+	IF (NOT fb103QueryInstanceError.bBusy) THEN
+		fb103QueryInstanceError(bStart := FALSE);
+		nStep := 20;
+	END_IF
+{endregion}
+20:
+{region "Query Instance Status"}
+	fb103QueryInstanceStatus(bStart := TRUE,
+							 nAddress := nAddress,
+							 eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+							 nInstanceAddress := nInstanceAddress,
+							 eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+							 eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle);
+	IF (NOT fb103QueryInstanceStatus.bBusy) THEN
+		fb103QueryInstanceStatus(bStart := FALSE);
+		IF (fb103QueryInstanceStatus.nInstanceStatus.1) THEN
+			bEnable := TRUE;
+		END_IF
+		nStep := 30;
+	END_IF
+30:
+{region "Query Resolution"}
+	fb103QueryResolution(bStart := TRUE,
+						 nAddress := nAddress,
+						 eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+						 nInstanceAddress := nInstanceAddress,
+						 eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+						 eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+						 nResolution=> nResolution);
+	IF (NOT fb103QueryResolution.bBusy) THEN
+		fb103QueryResolution(bStart:= FALSE);
+		nStep := 40;
+	END_IF
+{endregion}
+40:
+{region "Query Input Value"}
+	fb103QueryInputValue(bStart := TRUE,
+						 nAddress := nAddress,
+						 eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+						 nInstanceAddress := nInstanceAddress,
+						 eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+						 eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+						 nResolution := nResolution);
+	IF (NOT fb103QueryInputValue.bBusy) THEN
+		fb103QueryInputValue(bStart:= FALSE);
+		IF (fb103QueryInputValue.nInputValue = 0) THEN
+			sInputValue := 'Vacant and no movement';
+		ELSIF (fb103QueryInputValue.nInputValue = 1) THEN
+			sInputValue := 'Vacant and movement';
+		ELSIF (fb103QueryInputValue.nInputValue = 2) THEN
+			sInputValue := 'Occupied and no movement';
+		ELSIF (fb103QueryInputValue.nInputValue = 3) THEN
+			sInputValue := 'Occupied and movement';
+		END_IF
+		nStep := 50;
+	END_IF
+{endregion}
+50:
+{region "Query Event Scheme"}
+	fb103QueryEventScheme(bStart := TRUE,
+						  nAddress := nAddress,
+						  eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+						  nInstanceAddress := nInstanceAddress,
+						  eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+						  eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+						  eEventScheme=> eEventScheme);
+	IF (NOT fb103QueryEventScheme.bBusy) THEN
+		fb103QueryEventScheme(bStart := FALSE);
+		nStep := 60;
+	END_IF
+{endregion}
+60:
+{region "Query Event Filter"}
+	fb103QueryEventFilter(bStart := TRUE,
+						  nAddress := nAddress,
+						  eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+						  nInstanceAddress := nInstanceAddress,
+						  eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+						  eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+						  nEventFilter=> nEventFilter);
+	IF (NOT fb103QueryEventFilter.bBusy) THEN
+		fb103QueryEventFilter(bStart := FALSE);
+		bOccupied := nEventFilter.0;
+		bVacant := nEventFilter.1;
+		bRepeat := nEventFilter.2;
+		bMovement := nEventFilter.3;
+		bNoMovement := nEventFilter.4;
+		nStep := 70;
+	END_IF
+{endregion}
+70: 
+{region "Query Catching"}
+	fb303QueryCatching(bStart := TRUE,
+					   nAddress := nAddress,
+					   eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+					   nInstanceAddress := nInstanceAddress,
+					   eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+					   eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle);
+	IF (NOT fb303QueryCatching.bBusy) THEN
+		fb303QueryCatching(bStart := FALSE);
+		IF (fb303QueryCatching.bCatching) THEN
+			sCatching := 'Active';
+		ELSE
+			sCatching := 'Inactive';
+		END_IF
+		nStep := 80;
+	END_IF
+80:
+{region "Query Hold Timer"}
+	fb303QueryHoldTimer(bStart := TRUE,
+						nAddress := nAddress,
+						eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+						nInstanceAddress := nInstanceAddress,
+						eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+						eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+						nHold=> nHoldIntern);
+	nHold := nHoldIntern * 10;
+	IF (NOT fb303QueryHoldTimer.bBusy) THEN
+		fb303QueryHoldTimer(bStart := FALSE);
+		nStep := 90;
+	END_IF
+{endregion}
+90:
+{region "Query Report Timer"}
+	fb303QueryReportTimer(bStart := TRUE,
+						  nAddress := nAddress,
+						  eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+						  nInstanceAddress := nInstanceAddress,
+						  eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+						  eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+						  nReport=> nReport);
+	IF (NOT fb303QueryReportTimer.bBusy) THEN
+		fb303QueryReportTimer(bStart:= FALSE);
+		nStep := 100;
+	END_IF
+{endregion}
+100:
+{region "Query Deadtime Timer"}
+	fb303QueryDeadtimeTimer(bStart := TRUE,
+							nAddress := nAddress,
+							eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+							nInstanceAddress := nInstanceAddress,
+							eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+							eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+							nDeadtime=> nDeadtimeIntern);
+	nDeadtime := (nDeadtimeIntern * 50);
+	IF (NOT fb303QueryDeadtimeTimer.bBusy) THEN
+		fb303QueryDeadtimeTimer(bStart := FALSE);
+		nStep := 110;
+	END_IF
+{endregion}
+110:
+{region "Query Event Priority"}
+	fb103QueryEventPriority(bStart := TRUE,
+							nAddress := nAddress,
+							eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+							nInstanceAddress := nInstanceAddress,
+							eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+							eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+							eEventPriority=> eEventPriority);
+	IF (NOT fb103QueryEventPriority.bBusy) THEN
+		fb103QueryEventPriority(bStart := FALSE);
+		nStep := 120;
+	END_IF 
+{endregion}
+120:
+{region "Stop Qiescent Mode"}
+	fb103StopQuiescentMode(bStart:= TRUE,
+						   eAddressType:= Tc3_DALI.E_DALIAddressType.Broadcast,
+						   eCommandPriority:= Tc3_DALI.E_DALICommandPriority.Middle);
+	IF (NOT fb103StopQuiescentMode.bBusy) THEN
+		fb103StopQuiescentMode(bStart:= FALSE);
+		nStep := 0;
+	END_IF
+{endregion}
+
+{region "Write"}
+1000:
+{region "Enable Instance"}
+	IF (bEnable) THEN	
+		fb103EnableInstance(bStart := TRUE,
+							nAddress := nAddress,
+							eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+							nInstanceAddress := nInstanceAddress,
+							eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+							eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle);
+		IF (NOT fb103EnableInstance.bBusy) THEN
+			fb103EnableInstance(bStart := FALSE);
+			nStep := 1010;
+		END_IF
+	ELSE
+		fb103DisableInstance(bStart := TRUE,
+							 nAddress := nAddress,
+							 eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+							 nInstanceAddress := nInstanceAddress,
+							 eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+							 eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle);
+		IF (NOT fb103DisableInstance.bBusy) THEN
+			fb103DisableInstance(bStart := FALSE);
+			nStep := 0;
+		END_IF
+	END_IF
+{endregion}
+1010:
+{region "Set Event Scheme"}
+	fb103SetEventScheme(bStart := TRUE,
+						nAddress := nAddress,
+						eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+						nInstanceAddress := nInstanceAddress,
+						eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+						eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+						eEventScheme := eEventScheme);
+	IF (NOT fb103SetEventScheme.bBusy) THEN
+		fb103SetEventScheme(bStart := FALSE);
+		nStep := 1020;
+	END_IF
+{endregion}
+1020:
+{region "Set Event Filter"}
+	nEventFilter.0 := bOccupied;
+	nEventFilter.1 := bVacant;
+	nEventFilter.2 := bRepeat;
+	nEventFilter.3 := bMovement;
+	nEventFilter.4 := bNoMovement;
+	fb103SetEventFilter(bStart := TRUE,
+						nAddress := nAddress,
+						eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+						nInstanceAddress := nInstanceAddress,
+						eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+						eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+						nEventFilter := nEventFilter);
+	IF (NOT fb103SetEventFilter.bBusy) THEN
+		fb103SetEventFilter(bStart := FALSE);
+		nStep := 1030;
+	END_IF
+{endregion}
+1030:
+{region "Set Hold Timer"}
+	IF (bNoHoldTimer) THEN
+		nStep := 1040;
+	ELSE
+		fb303SetHoldTimer(bStart := TRUE,
+						  nAddress := nAddress,
+						  eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+						  nInstanceAddress := nInstanceAddress,
+						  eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+						  eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+						  nHold := TO_BYTE(nHold / 10));
+		IF (NOT fb303SetHoldTimer.bBusy) THEN
+			fb303SetHoldTimer(bStart := FALSE);
+			nStep := 1040;
+		END_IF
+	END_IF
+{endregion}
+1040:
+{region "Set Report Timer"}
+	IF (bNoReportTimer) THEN
+		nStep := 1050;
+	ELSE
+		fb303SetReportTimer(bStart := TRUE,
+							nAddress := nAddress,
+							eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+							nInstanceAddress := nInstanceAddress,
+							eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+							eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+							nReport := nReport);
+		IF (NOT fb303SetReportTimer.bBusy) THEN
+			fb303SetReportTimer(bStart := FALSE);
+			nStep := 1050;
+		END_IF
+	END_IF
+{endregion}
+1050:
+{region "Set Deadtime Timer"}
+	IF (bNoDeadtimeTimer) THEN
+		nStep := 1060;
+	ELSE
+		fb303SetDeadtimeTimer(bStart := TRUE,
+							  nAddress := nAddress,
+							  eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+							  nInstanceAddress := nInstanceAddress,
+							  eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+							  eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+							  nDeadtime := TO_BYTE(nDeadtime / 50));
+		IF (NOT fb303SetDeadtimeTimer.bBusy) THEN
+			fb303SetDeadtimeTimer(bStart := FALSE);
+			nStep := 1060;
+		END_IF
+	END_IF
+{endregion}
+1060:
+{region "Set Event Priority"}
+	fb103SetEventPriority(bStart := TRUE,
+						  nAddress := nAddress,
+						  eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+						  nInstanceAddress := nInstanceAddress,
+						  eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+						  eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+						  eEventPriority := eEventPriority);
+	IF (NOT fb103SetEventPriority.bBusy) THEN
+		fb103SetEventPriority(bStart := FALSE);
+		nStep := 0;
+	END_IF
+{endregion}
+END_CASE
+{endregion}
+{endregion}
+
+{region "Cancel Hold Timer"}
+IF (bCancelHoldTimer) THEN
+	fb303CancelHoldTimer(bStart := TRUE);
+END_IF
+fb303CancelHoldTimer(nAddress := nAddress,
+					 eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+					 nInstanceAddress := nInstanceAddress,
+					 eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+					 eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle);
+IF (NOT fb303CancelHoldTimer.bBusy) THEN
+	bCancelHoldTimer := FALSE;
+	fb303CancelHoldTimer(bStart := FALSE);
+END_IF
+{endregion}
+
+{region "Catch Movement"}
+IF (bCatchMovement) THEN
+	fb303CatchMovement(bStart := TRUE);
+END_IF
+fb303CatchMovement(nAddress := nAddress,
+				   eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+				   nInstanceAddress := nInstanceAddress,
+				   eInstanceAddressType := Tc3_DALI.E_DALIInstanceAddressType.InstanceNumber,
+				   eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle);
+IF (NOT fb303CatchMovement.bBusy) THEN
+	bCatchMovement := FALSE;
+	fb303CatchMovement(bStart := FALSE);
+END_IF
+{endregion}
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Part303OccupancySensor">
+      <LineId Id="68" Count="4" />
+      <LineId Id="79" Count="5" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="1036" Count="5" />
+      <LineId Id="92" Count="8" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="2230" Count="0" />
+      <LineId Id="1635" Count="0" />
+      <LineId Id="1634" Count="0" />
+      <LineId Id="1579" Count="0" />
+      <LineId Id="114" Count="3" />
+      <LineId Id="1284" Count="0" />
+      <LineId Id="1867" Count="0" />
+      <LineId Id="118" Count="2" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="1649" Count="0" />
+      <LineId Id="123" Count="1" />
+      <LineId Id="1285" Count="0" />
+      <LineId Id="125" Count="2" />
+      <LineId Id="104" Count="0" />
+      <LineId Id="1868" Count="0" />
+      <LineId Id="1977" Count="0" />
+      <LineId Id="1979" Count="16" />
+      <LineId Id="2003" Count="7" />
+      <LineId Id="2001" Count="0" />
+      <LineId Id="1978" Count="0" />
+      <LineId Id="105" Count="1" />
+      <LineId Id="1606" Count="0" />
+      <LineId Id="1608" Count="0" />
+      <LineId Id="1616" Count="1" />
+      <LineId Id="1619" Count="0" />
+      <LineId Id="1610" Count="0" />
+      <LineId Id="1620" Count="0" />
+      <LineId Id="1622" Count="0" />
+      <LineId Id="1621" Count="0" />
+      <LineId Id="1607" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="143" Count="0" />
+      <LineId Id="147" Count="5" />
+      <LineId Id="419" Count="1" />
+      <LineId Id="1200" Count="0" />
+      <LineId Id="421" Count="0" />
+      <LineId Id="142" Count="0" />
+      <LineId Id="1581" Count="1" />
+      <LineId Id="1587" Count="0" />
+      <LineId Id="1594" Count="3" />
+      <LineId Id="1592" Count="0" />
+      <LineId Id="1599" Count="6" />
+      <LineId Id="975" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="947" Count="0" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="336" Count="2" />
+      <LineId Id="136" Count="1" />
+      <LineId Id="426" Count="1" />
+      <LineId Id="1196" Count="0" />
+      <LineId Id="425" Count="0" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="974" Count="0" />
+      <LineId Id="166" Count="0" />
+      <LineId Id="948" Count="0" />
+      <LineId Id="365" Count="0" />
+      <LineId Id="340" Count="2" />
+      <LineId Id="174" Count="1" />
+      <LineId Id="432" Count="1" />
+      <LineId Id="1712" Count="1" />
+      <LineId Id="1716" Count="1" />
+      <LineId Id="1719" Count="3" />
+      <LineId Id="1718" Count="0" />
+      <LineId Id="1188" Count="0" />
+      <LineId Id="431" Count="0" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="973" Count="0" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="949" Count="0" />
+      <LineId Id="343" Count="3" />
+      <LineId Id="185" Count="1" />
+      <LineId Id="438" Count="1" />
+      <LineId Id="441" Count="0" />
+      <LineId Id="437" Count="0" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="972" Count="0" />
+      <LineId Id="187" Count="0" />
+      <LineId Id="950" Count="0" />
+      <LineId Id="347" Count="3" />
+      <LineId Id="194" Count="0" />
+      <LineId Id="159" Count="0" />
+      <LineId Id="444" Count="1" />
+      <LineId Id="521" Count="0" />
+      <LineId Id="526" Count="0" />
+      <LineId Id="531" Count="0" />
+      <LineId Id="536" Count="0" />
+      <LineId Id="541" Count="0" />
+      <LineId Id="447" Count="0" />
+      <LineId Id="443" Count="0" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="1727" Count="0" />
+      <LineId Id="1869" Count="0" />
+      <LineId Id="1881" Count="4" />
+      <LineId Id="1880" Count="0" />
+      <LineId Id="1886" Count="1" />
+      <LineId Id="1890" Count="1" />
+      <LineId Id="1895" Count="1" />
+      <LineId Id="1893" Count="0" />
+      <LineId Id="1888" Count="1" />
+      <LineId Id="1723" Count="0" />
+      <LineId Id="703" Count="0" />
+      <LineId Id="958" Count="0" />
+      <LineId Id="714" Count="3" />
+      <LineId Id="713" Count="0" />
+      <LineId Id="197" Count="0" />
+      <LineId Id="1342" Count="0" />
+      <LineId Id="452" Count="1" />
+      <LineId Id="455" Count="0" />
+      <LineId Id="450" Count="0" />
+      <LineId Id="160" Count="0" />
+      <LineId Id="970" Count="0" />
+      <LineId Id="729" Count="0" />
+      <LineId Id="959" Count="0" />
+      <LineId Id="730" Count="3" />
+      <LineId Id="719" Count="0" />
+      <LineId Id="718" Count="0" />
+      <LineId Id="458" Count="1" />
+      <LineId Id="1201" Count="0" />
+      <LineId Id="2364" Count="0" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="969" Count="0" />
+      <LineId Id="745" Count="0" />
+      <LineId Id="960" Count="0" />
+      <LineId Id="746" Count="3" />
+      <LineId Id="735" Count="0" />
+      <LineId Id="744" Count="0" />
+      <LineId Id="1344" Count="0" />
+      <LineId Id="464" Count="1" />
+      <LineId Id="467" Count="0" />
+      <LineId Id="463" Count="0" />
+      <LineId Id="164" Count="0" />
+      <LineId Id="1258" Count="11" />
+      <LineId Id="1257" Count="0" />
+      <LineId Id="976" Count="0" />
+      <LineId Id="1623" Count="0" />
+      <LineId Id="1625" Count="2" />
+      <LineId Id="1629" Count="4" />
+      <LineId Id="1624" Count="0" />
+      <LineId Id="1563" Count="0" />
+      <LineId Id="139" Count="1" />
+      <LineId Id="835" Count="0" />
+      <LineId Id="951" Count="0" />
+      <LineId Id="255" Count="0" />
+      <LineId Id="385" Count="3" />
+      <LineId Id="263" Count="0" />
+      <LineId Id="476" Count="2" />
+      <LineId Id="475" Count="0" />
+      <LineId Id="836" Count="0" />
+      <LineId Id="1639" Count="8" />
+      <LineId Id="1638" Count="0" />
+      <LineId Id="838" Count="0" />
+      <LineId Id="240" Count="0" />
+      <LineId Id="968" Count="0" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="952" Count="0" />
+      <LineId Id="390" Count="3" />
+      <LineId Id="272" Count="1" />
+      <LineId Id="482" Count="2" />
+      <LineId Id="481" Count="0" />
+      <LineId Id="245" Count="0" />
+      <LineId Id="967" Count="0" />
+      <LineId Id="571" Count="1" />
+      <LineId Id="577" Count="0" />
+      <LineId Id="582" Count="0" />
+      <LineId Id="587" Count="0" />
+      <LineId Id="592" Count="0" />
+      <LineId Id="274" Count="0" />
+      <LineId Id="395" Count="3" />
+      <LineId Id="282" Count="1" />
+      <LineId Id="488" Count="1" />
+      <LineId Id="491" Count="0" />
+      <LineId Id="487" Count="0" />
+      <LineId Id="242" Count="0" />
+      <LineId Id="966" Count="0" />
+      <LineId Id="611" Count="0" />
+      <LineId Id="954" Count="0" />
+      <LineId Id="612" Count="0" />
+      <LineId Id="610" Count="0" />
+      <LineId Id="284" Count="0" />
+      <LineId Id="400" Count="3" />
+      <LineId Id="292" Count="1" />
+      <LineId Id="494" Count="1" />
+      <LineId Id="497" Count="0" />
+      <LineId Id="493" Count="0" />
+      <LineId Id="613" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="965" Count="0" />
+      <LineId Id="615" Count="0" />
+      <LineId Id="955" Count="0" />
+      <LineId Id="616" Count="0" />
+      <LineId Id="614" Count="0" />
+      <LineId Id="304" Count="0" />
+      <LineId Id="405" Count="3" />
+      <LineId Id="312" Count="1" />
+      <LineId Id="501" Count="2" />
+      <LineId Id="499" Count="0" />
+      <LineId Id="617" Count="0" />
+      <LineId Id="248" Count="0" />
+      <LineId Id="964" Count="0" />
+      <LineId Id="619" Count="0" />
+      <LineId Id="956" Count="0" />
+      <LineId Id="620" Count="0" />
+      <LineId Id="618" Count="0" />
+      <LineId Id="314" Count="0" />
+      <LineId Id="410" Count="3" />
+      <LineId Id="322" Count="0" />
+      <LineId Id="254" Count="0" />
+      <LineId Id="507" Count="2" />
+      <LineId Id="511" Count="0" />
+      <LineId Id="621" Count="0" />
+      <LineId Id="253" Count="0" />
+      <LineId Id="1271" Count="12" />
+      <LineId Id="1270" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="961" Count="1" />
+      <LineId Id="1504" Count="0" />
+      <LineId Id="1403" Count="0" />
+      <LineId Id="1405" Count="0" />
+      <LineId Id="1480" Count="1" />
+      <LineId Id="1490" Count="3" />
+      <LineId Id="1489" Count="0" />
+      <LineId Id="1488" Count="0" />
+      <LineId Id="1501" Count="1" />
+      <LineId Id="1496" Count="0" />
+      <LineId Id="1503" Count="0" />
+      <LineId Id="1898" Count="13" />
+      <LineId Id="1897" Count="0" />
+      <LineId Id="2297" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

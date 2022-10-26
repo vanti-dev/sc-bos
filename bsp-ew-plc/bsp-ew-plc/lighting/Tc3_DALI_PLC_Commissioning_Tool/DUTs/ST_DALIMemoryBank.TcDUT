@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_DALIMemoryBank" Id="{57babaf8-e52d-4b65-b291-6554c1922237}">
+    <Declaration><![CDATA[TYPE ST_DALIMemoryBank :
+STRUCT
+	sOffset			:	STRING(20);
+	sName			:	STRING(255);
+	nValueDec		:	BYTE;
+	nValueHex		:	STRING(20);
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,777 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Part102MemoryPages" Id="{d45c64f5-f5f3-424c-8edc-33bdaddd42be}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Part102MemoryPages
+VAR_INPUT
+	ipDALICommunication				:	I_DALICommunication;
+END_VAR
+VAR_OUTPUT
+	bBusy							:	BOOL;
+END_VAR
+VAR
+	{region "Visu"}
+	bRead							:	BOOL;
+	bWrite							:	BOOL;
+	bHideWaitSymbol					:	BOOL := TRUE;
+	aMemoryBank						:	ARRAY [0..254] OF ST_DALIMemoryBank;
+	{endregion}
+	aValues							:	ARRAY [0..254] OF BYTE;
+	nStep							:	INT;
+	nAddress						:	BYTE;
+	nMemoryBank						:	BYTE;
+	nOffset							:	INT := 0;
+	aNoValue						:	ARRAY [0..254] OF BOOL;
+	nNoValue						:	BYTE;
+
+	fb102ReadMemoryLocation			:	FB_DALI102ReadMemoryLocation(0);
+	fb102WriteMemoryLocationNoReply	:	FB_DALI102WriteMemoryLocationNoReply(0);
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF (bRead AND (nStep = 0)) THEN
+	nStep := 10;
+	bRead := FALSE;
+	bHideWaitSymbol := FALSE;
+END_IF
+
+IF (bWrite AND (nStep = 0)) THEN
+	nStep := 1000;
+	bWrite := FALSE;
+	bHideWaitSymbol := FALSE;
+END_IF
+
+{region "Manage Dialog Selection}
+IF (nStep = 0) THEN
+	bBusy := FALSE;
+ELSE
+	bBusy := TRUE;
+END_IF
+{endregion}
+
+{region "Execute Commands"}
+CASE nStep OF
+0:
+{region "Init"}
+	bRead := FALSE;
+	bWrite := FALSE;
+	bHideWaitSymbol := TRUE;
+
+	fb102ReadMemoryLocation.ipDALICommunication := ipDALICommunication;
+	fb102WriteMemoryLocationNoReply.ipDALICommunication := ipDALICommunication;
+{endregion}
+{region "Read"}
+10:
+{region "Read values from selected memory bank"}
+	fb102ReadMemoryLocation(bStart := TRUE,
+							nAddress := nAddress,
+							eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+							eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+							nMemoryBank := nMemoryBank,
+							nOffset := INT_TO_BYTE(nOffset),
+							nValue=> aValues[nOffset]);
+	IF (NOT fb102ReadMemoryLocation.bBusy) THEN
+		aMemoryBank[nOffset].nValueDec := aValues[nOffset];
+		aMemoryBank[nOffset].nValueHex := CONCAT('0x', BYTE_TO_HEXSTR(aValues[nOffset], 2, FALSE));
+		nOffset	:= nOffset + 1;
+		IF (nOffset > aValues[0]) THEN
+			nOffset := 0;
+			nStep := 20;
+		END_IF
+		fb102ReadMemoryLocation(bStart := FALSE);
+	END_IF
+{endregion}
+20:
+{region "Hide unused rows in table"}
+	FOR nNoValue := (aValues[0] + 1) TO 254 DO
+		aNoValue[nNoValue] := TRUE;
+	END_FOR
+	FOR nNoValue := 0 TO (aValues[0]) DO
+		aNoValue[nNoValue] := FALSE;
+	END_FOR
+nStep := 0;
+{endregion}
+1000:
+{region "Change Value"}
+	IF (nMemoryBank >= 1) THEN
+		aValues[nOffset] := aMemoryBank[nOffset].nValueDec;
+		fb102WriteMemoryLocationNoReply(bStart := TRUE,
+										nAddress := nAddress,
+										eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+										eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+										nMemoryBank := nMemoryBank,
+										nOffset := INT_TO_BYTE(nOffset),
+										nValue := aValues[nOffset]);
+		IF (NOT fb102WriteMemoryLocationNoReply.bBusy) THEN
+			nStep := 1010;
+			fb102WriteMemoryLocationNoReply(bStart := FALSE);
+		END_IF
+	ELSE 
+		nStep := 0;
+	END_IF
+{endregion}
+1010:
+{region "read changed value"}
+	fb102ReadMemoryLocation(bStart := TRUE,
+							nAddress := nAddress,
+							eAddressType := Tc3_DALI.E_DALIAddressType.Short,
+							eCommandPriority := Tc3_DALI.E_DALICommandPriority.Middle,
+							nMemoryBank := nMemoryBank,
+							nOffset := INT_TO_BYTE(nOffset),
+							nValue=> aValues[nOffset]);
+	IF (NOT fb102ReadMemoryLocation.bBusy) THEN
+		aMemoryBank[nOffset].nValueDec := aValues[nOffset];
+		aMemoryBank[nOffset].nValueHex := CONCAT ('0x', BYTE_TO_HEXSTR(aValues[nOffset], 2, FALSE));
+		nStep := 0;
+		fb102ReadMemoryLocation(bStart := FALSE);
+	END_IF
+{endregion}
+END_CASE
+
+// Filling the according filds of the Array Memory Bank for the HMI display
+// Writing clear text for offset description
+aMemoryBank[0].sOffset := '0 (0x00)';
+aMemoryBank[1].sOffset := '1 (0x01)';
+aMemoryBank[2].sOffset := '2 (0x02)';
+aMemoryBank[3].sOffset := '3 (0x03)';
+aMemoryBank[4].sOffset := '4 (0x04)';
+aMemoryBank[5].sOffset := '5 (0x05)';
+aMemoryBank[6].sOffset := '6 (0x06)';
+aMemoryBank[7].sOffset := '7 (0x07)';
+aMemoryBank[8].sOffset := '8 (0x08)';
+aMemoryBank[9].sOffset := '9 (0x09)';
+aMemoryBank[10].sOffset := '10 (0x0A)';
+aMemoryBank[11].sOffset := '11 (0x0B)';
+aMemoryBank[12].sOffset := '12 (0x0C)';
+aMemoryBank[13].sOffset := '13 (0x0D)';
+aMemoryBank[14].sOffset := '14 (0x0E)';
+aMemoryBank[15].sOffset := '15 (0x0F)';
+aMemoryBank[16].sOffset := '16 (0x10)';
+aMemoryBank[17].sOffset := '17 (0x11)';
+aMemoryBank[18].sOffset := '18 (0x12)';
+aMemoryBank[19].sOffset := '19 (0x13)';
+aMemoryBank[20].sOffset := '20 (0x14)';
+aMemoryBank[21].sOffset := '21 (0x15)';
+aMemoryBank[22].sOffset := '22 (0x16)';
+aMemoryBank[23].sOffset := '23 (0x17)';
+aMemoryBank[24].sOffset := '24 (0x18)';
+aMemoryBank[25].sOffset := '25 (0x19)';
+aMemoryBank[26].sOffset := '26 (0x1A)';
+aMemoryBank[27].sOffset := '27 (0x1B)';
+aMemoryBank[28].sOffset := '28 (0x1C)';
+aMemoryBank[29].sOffset := '29 (0x1D)';
+aMemoryBank[30].sOffset := '30 (0x1E)';
+aMemoryBank[31].sOffset := '31 (0x1F)';
+aMemoryBank[32].sOffset := '32 (0x20)';
+aMemoryBank[33].sOffset := '33 (0x21)';
+aMemoryBank[34].sOffset := '34 (0x22)';
+aMemoryBank[35].sOffset := '35 (0x23)';
+aMemoryBank[36].sOffset := '36 (0x24)';
+aMemoryBank[37].sOffset := '37 (0x25)';
+aMemoryBank[38].sOffset := '38 (0x26)';
+aMemoryBank[39].sOffset := '39 (0x27)';
+aMemoryBank[40].sOffset := '40 (0x28)';
+aMemoryBank[41].sOffset := '41 (0x29)';
+aMemoryBank[42].sOffset := '42 (0x2A)';
+aMemoryBank[42].sOffset := '43 (0x2B)';
+aMemoryBank[44].sOffset := '44 (0x2C)';
+aMemoryBank[45].sOffset := '45 (0x2D)';
+aMemoryBank[46].sOffset := '46 (0x2E)';
+aMemoryBank[47].sOffset := '47 (0x2F)';
+aMemoryBank[48].sOffset := '48 (0x30)';
+aMemoryBank[49].sOffset := '49 (0x31)';
+aMemoryBank[50].sOffset := '50 (0x32)';
+aMemoryBank[51].sOffset := '51 (0x33)';
+aMemoryBank[52].sOffset := '52 (0x34)';
+aMemoryBank[53].sOffset := '53 (0x35)';
+aMemoryBank[54].sOffset := '54 (0x36)';
+aMemoryBank[55].sOffset := '55 (0x37)';
+aMemoryBank[56].sOffset := '56 (0x38)';
+aMemoryBank[57].sOffset := '57 (0x39)';
+aMemoryBank[58].sOffset := '58 (0x3A)';
+aMemoryBank[59].sOffset := '59 (0x3B)';
+aMemoryBank[60].sOffset := '60 (0x3C)';
+aMemoryBank[61].sOffset := '61 (0x3D)';
+aMemoryBank[62].sOffset := '62 (0x3F)';
+aMemoryBank[63].sOffset := '63 (0x3D)';
+aMemoryBank[64].sOffset := '64 (0x40)';
+aMemoryBank[65].sOffset := '65 (0x41)';
+aMemoryBank[66].sOffset := '66 (0x42)';
+aMemoryBank[67].sOffset := '67 (0x43)';
+aMemoryBank[68].sOffset := '68 (0x44)';
+aMemoryBank[69].sOffset := '69 (0x45)';
+aMemoryBank[70].sOffset := '70 (0x46)';
+aMemoryBank[71].sOffset := '71 (0x47)';
+aMemoryBank[72].sOffset := '72 (0x48)';
+aMemoryBank[73].sOffset := '73 (0x49)';
+aMemoryBank[74].sOffset := '74 (0x4A)';
+aMemoryBank[75].sOffset := '75 (0x4B)';
+aMemoryBank[76].sOffset := '76 (0x4C)';
+aMemoryBank[77].sOffset := '77 (0x4D)';
+aMemoryBank[78].sOffset := '78 (0x4E)';
+aMemoryBank[79].sOffset := '79 (0x4F)';
+aMemoryBank[80].sOffset := '80 (0x50)';
+aMemoryBank[81].sOffset := '81 (0x51)';
+aMemoryBank[82].sOffset := '82 (0x52)';
+aMemoryBank[83].sOffset := '83 (0x53)';
+aMemoryBank[84].sOffset := '84 (0x54)';
+aMemoryBank[85].sOffset := '85 (0x55)';
+aMemoryBank[86].sOffset := '86 (0x56)';
+aMemoryBank[87].sOffset := '87 (0x57)';
+aMemoryBank[88].sOffset := '88 (0x58)';
+aMemoryBank[89].sOffset := '89 (0x59)';
+aMemoryBank[90].sOffset := '90 (0x5A)';
+aMemoryBank[91].sOffset := '91 (0x5B)';
+aMemoryBank[92].sOffset := '92 (0x5C)';
+aMemoryBank[93].sOffset := '93 (0x5D)';
+aMemoryBank[94].sOffset := '94 (0x5E)';
+aMemoryBank[95].sOffset := '95 (0x5F)';
+aMemoryBank[96].sOffset := '96 (0x60)';
+aMemoryBank[97].sOffset := '97 (0x61)';
+aMemoryBank[98].sOffset := '98 (0x62)';
+aMemoryBank[99].sOffset := '99 (0x63)';
+aMemoryBank[100].sOffset := '100 (0x64)';
+aMemoryBank[101].sOffset := '101 (0x65)';
+aMemoryBank[102].sOffset := '102 (0x66)';
+aMemoryBank[103].sOffset := '103 (0x67)';
+aMemoryBank[104].sOffset := '104 (0x68)';
+aMemoryBank[105].sOffset := '105 (0x69)';
+aMemoryBank[106].sOffset := '106 (0x6A)';
+aMemoryBank[107].sOffset := '107 (0x6B)';
+aMemoryBank[108].sOffset := '108 (0x6C)';
+aMemoryBank[109].sOffset := '109 (0x6D)';
+aMemoryBank[110].sOffset := '110 (0x6E)';
+aMemoryBank[111].sOffset := '111 (0x6F)';
+aMemoryBank[112].sOffset := '112 (0x70)';
+aMemoryBank[113].sOffset := '113 (0x71)';
+aMemoryBank[114].sOffset := '114 (0x72)';
+aMemoryBank[115].sOffset := '115 (0x73)';
+aMemoryBank[116].sOffset := '116 (0x74)';
+aMemoryBank[117].sOffset := '117 (0x75)';
+aMemoryBank[118].sOffset := '118 (0x76)';
+aMemoryBank[119].sOffset := '119 (0x77)';
+aMemoryBank[120].sOffset := '120 (0x78)';
+aMemoryBank[121].sOffset := '121 (0x79)';
+aMemoryBank[122].sOffset := '122 (0x7A)';
+aMemoryBank[123].sOffset := '123 (0x7B)';
+aMemoryBank[124].sOffset := '124 (0x7C)';
+aMemoryBank[125].sOffset := '125 (0x7D)';
+aMemoryBank[126].sOffset := '126 (0x7E)';
+aMemoryBank[127].sOffset := '127 (0x7F)';
+aMemoryBank[128].sOffset := '128 (0x80)';
+aMemoryBank[129].sOffset := '129 (0x81)';
+aMemoryBank[130].sOffset := '130 (0x82)';
+aMemoryBank[131].sOffset := '131 (0x83)';
+aMemoryBank[132].sOffset := '132 (0x84)';
+aMemoryBank[133].sOffset := '133 (0x85)';
+aMemoryBank[134].sOffset := '134 (0x86)';
+aMemoryBank[135].sOffset := '135 (0x87)';
+aMemoryBank[136].sOffset := '136 (0x88)';
+aMemoryBank[137].sOffset := '137 (0x89)';
+aMemoryBank[138].sOffset := '138 (0x8A)';
+aMemoryBank[139].sOffset := '139 (0x8B)';
+aMemoryBank[140].sOffset := '140 (0x8C)';
+aMemoryBank[141].sOffset := '141 (0x8D)';
+aMemoryBank[142].sOffset := '142 (0x8E)';
+aMemoryBank[143].sOffset := '143 (0x8F)';
+aMemoryBank[144].sOffset := '144 (0x90)';
+aMemoryBank[145].sOffset := '145 (0x91)';
+aMemoryBank[146].sOffset := '146 (0x92)';
+aMemoryBank[147].sOffset := '147 (0x93)';
+aMemoryBank[148].sOffset := '148 (0x94)';
+aMemoryBank[149].sOffset := '149 (0x95)';
+aMemoryBank[150].sOffset := '150 (0x96)';
+aMemoryBank[151].sOffset := '151 (0x97)';
+aMemoryBank[152].sOffset := '152 (0x98)';
+aMemoryBank[153].sOffset := '153 (0x99)';
+aMemoryBank[154].sOffset := '154 (0x9A)';
+aMemoryBank[155].sOffset := '155 (0x9B)';
+aMemoryBank[156].sOffset := '156 (0x9C)';
+aMemoryBank[157].sOffset := '157 (0x9D)';
+aMemoryBank[158].sOffset := '158 (0x9E)';
+aMemoryBank[159].sOffset := '159 (0x9F)';
+aMemoryBank[160].sOffset := '160 (0xA0)';
+aMemoryBank[161].sOffset := '161 (0xA1)';
+aMemoryBank[162].sOffset := '162 (0xA2)';
+aMemoryBank[163].sOffset := '163 (0xA3)';
+aMemoryBank[164].sOffset := '164 (0xA4)';
+aMemoryBank[165].sOffset := '165 (0xA5)';
+aMemoryBank[166].sOffset := '166 (0xA6)';
+aMemoryBank[167].sOffset := '167 (0xA7)';
+aMemoryBank[168].sOffset := '168 (0xA8)';
+aMemoryBank[169].sOffset := '169 (0xA9)';
+aMemoryBank[170].sOffset := '170 (0xAA)';
+aMemoryBank[171].sOffset := '171 (0xAB)';
+aMemoryBank[172].sOffset := '172 (0xAC)';
+aMemoryBank[173].sOffset := '173 (0xAD)';
+aMemoryBank[174].sOffset := '174 (0xAE)';
+aMemoryBank[175].sOffset := '175 (0xAF)';
+aMemoryBank[176].sOffset := '176 (0xB0)';
+aMemoryBank[177].sOffset := '177 (0xB1)';
+aMemoryBank[178].sOffset := '178 (0xB2)';
+aMemoryBank[179].sOffset := '179 (0xB3)';
+aMemoryBank[180].sOffset := '180 (0xB4)';
+aMemoryBank[181].sOffset := '181 (0xB5)';
+aMemoryBank[182].sOffset := '182 (0xB6)';
+aMemoryBank[183].sOffset := '183 (0xB7)';
+aMemoryBank[184].sOffset := '184 (0xB8)';
+aMemoryBank[185].sOffset := '185 (0xB9)';
+aMemoryBank[186].sOffset := '186 (0xBA)';
+aMemoryBank[187].sOffset := '187 (0xBB)';
+aMemoryBank[188].sOffset := '188 (0xBC)';
+aMemoryBank[189].sOffset := '189 (0xBD)';
+aMemoryBank[190].sOffset := '190 (0xDE)';
+aMemoryBank[191].sOffset := '191 (0xBF)';
+aMemoryBank[192].sOffset := '192 (0xC0)';
+aMemoryBank[193].sOffset := '193 (0xC1)';
+aMemoryBank[194].sOffset := '194 (0xC3)';
+aMemoryBank[195].sOffset := '195 (0xC4)';
+aMemoryBank[196].sOffset := '196 (0xC5)';
+aMemoryBank[197].sOffset := '197 (0xC6)';
+aMemoryBank[198].sOffset := '198 (0xC7)';
+aMemoryBank[199].sOffset := '199 (0xC8)';
+aMemoryBank[200].sOffset := '200 (0xC9)';
+aMemoryBank[201].sOffset := '201 (0xCA)';
+aMemoryBank[202].sOffset := '202 (0xCB)';
+aMemoryBank[203].sOffset := '203 (0xCC)';
+aMemoryBank[204].sOffset := '204 (0xCD)';
+aMemoryBank[205].sOffset := '205 (0xCE)';
+aMemoryBank[206].sOffset := '206 (0xCF)';
+aMemoryBank[207].sOffset := '207 (0xD0)';
+aMemoryBank[208].sOffset := '208 (0xD1)';
+aMemoryBank[209].sOffset := '209 (0xD2)';
+aMemoryBank[210].sOffset := '210 (0xD3)';
+aMemoryBank[211].sOffset := '211 (0xD4)';
+aMemoryBank[212].sOffset := '212 (0xD5)';
+aMemoryBank[213].sOffset := '213 (0xD6)';
+aMemoryBank[214].sOffset := '214 (0xD7)';
+aMemoryBank[215].sOffset := '215 (0xD8)';
+aMemoryBank[216].sOffset := '216 (0xD9)';
+aMemoryBank[217].sOffset := '217 (0xDA)';
+aMemoryBank[218].sOffset := '218 (0xDB)';
+aMemoryBank[219].sOffset := '219 (0xDC)';
+aMemoryBank[220].sOffset := '220 (0xDD)';
+aMemoryBank[221].sOffset := '221 (0xDE)';
+aMemoryBank[222].sOffset := '222 (0xDF)';
+aMemoryBank[223].sOffset := '223 (0xE0)';
+aMemoryBank[224].sOffset := '224 (0xE1)';
+aMemoryBank[225].sOffset := '225 (0xE2)';
+aMemoryBank[226].sOffset := '226 (0xE3)';
+aMemoryBank[227].sOffset := '227 (0xE4)';
+aMemoryBank[228].sOffset := '228 (0xE5)';
+aMemoryBank[229].sOffset := '229 (0xE6)';
+aMemoryBank[230].sOffset := '230 (0xE7)';
+aMemoryBank[231].sOffset := '231 (0xE8)';
+aMemoryBank[232].sOffset := '232 (0xE9)';
+aMemoryBank[233].sOffset := '233 (0xEA)';
+aMemoryBank[234].sOffset := '234 (0xEB)';
+aMemoryBank[235].sOffset := '235 (0xEC)';
+aMemoryBank[236].sOffset := '236 (0xED)';
+aMemoryBank[237].sOffset := '237 (0xEE)';
+aMemoryBank[238].sOffset := '238 (0xEF)';
+aMemoryBank[239].sOffset := '239 (0xF0)';
+aMemoryBank[240].sOffset := '240 (0xF1)';
+aMemoryBank[241].sOffset := '241 (0xF2)';
+aMemoryBank[242].sOffset := '242 (0xF3)';
+aMemoryBank[243].sOffset := '243 (0xF4)';
+aMemoryBank[244].sOffset := '244 (0xF5)';
+aMemoryBank[245].sOffset := '245 (0xF6)';
+aMemoryBank[246].sOffset := '246 (0xF7)';
+aMemoryBank[247].sOffset := '247 (0xF8)';
+aMemoryBank[248].sOffset := '248 (0xF9)';
+aMemoryBank[249].sOffset := '249 (0xFA)';
+aMemoryBank[250].sOffset := '250 (0xFB)';
+aMemoryBank[251].sOffset := '251 (0xFC)';
+aMemoryBank[252].sOffset := '252 (0xFD)';
+aMemoryBank[253].sOffset := '253 (0xFE)';
+aMemoryBank[254].sOffset := '254 (0xFF)';
+
+// Writing clear text for field description
+IF (nMemoryBank = 0) THEN
+	aMemoryBank[0].sName := ' Address of last accessible memory location (read only)';
+	aMemoryBank[1].sName := ' Reserved-not implemented ';
+	aMemoryBank[2].sName := ' Number of last accessible memory bank (read only)';
+	aMemoryBank[3].sName := ' GTIN byte 0 (MSB) (read only)';
+	aMemoryBank[4].sName := ' GTIN byte 1 (read only)';
+	aMemoryBank[5].sName := ' GTIN byte 2 (read only)';
+	aMemoryBank[6].sName := ' GTIN byte 3 (read only)';
+	aMemoryBank[7].sName := ' GTIN byte 4 (read only)';
+	aMemoryBank[8].sName := ' GTIN byte 5 (LSB) (read only)';
+	aMemoryBank[9].sName := ' Firmware Version (major) (read only)';
+	aMemoryBank[10].sName := ' Firmware Version (m)(read only)';
+	aMemoryBank[11].sName := ' Identification number byte 0 (MSB) (read only)';
+	aMemoryBank[12].sName := ' Identification number byte 1 (read only)';
+	aMemoryBank[13].sName := ' Identification number byte 2 (read only)';
+	aMemoryBank[14].sName := ' Identification number byte 3 (read only)';
+	aMemoryBank[15].sName := ' Identification number byte 4 (read only)';
+	aMemoryBank[16].sName := ' Identification number byte 5 (read only)';
+	aMemoryBank[17].sName := ' Identification number byte 6 (read only)';
+	aMemoryBank[18].sName := ' Identification number byte 7 (LSB) (read only)';
+	aMemoryBank[19].sName := ' Hardware version (major)(read only)'; 
+	aMemoryBank[20].sName := ' Hardware version (minor)(read only)'; 
+	aMemoryBank[21].sName := ' 101 version number (read only)';
+	aMemoryBank[22].sName := ' 102 version number of all integrated control gear (read only)';
+	aMemoryBank[23].sName := ' 103 version number of all integrates control devices (read only)';
+	aMemoryBank[24].sName := ' Number of logical control device units in the bus unit (read only)';
+	aMemoryBank[25].sName := ' Number of logical control gear units in the bus unit(read only)';
+	aMemoryBank[26].sName := ' Index number of this logical control gear unit (read only)';
+END_IF
+IF (nMemoryBank = 1) THEN
+	aMemoryBank[0].sName := ' Address of last accessible memory location (read only)';
+	aMemoryBank[1].sName := ' Indicator byte (manufacturer defined) ';
+	aMemoryBank[2].sName := ' Memory bank 1 lock byte';
+	aMemoryBank[3].sName := ' OEM GTIN byte 0 (MSB) (read only)';
+	aMemoryBank[4].sName := ' OEM GTIN byte 1 (read only)';
+	aMemoryBank[5].sName := ' OEM GTIN byte 2 (read only)';
+	aMemoryBank[6].sName := ' OEM GTIN byte 3 (read only)';
+	aMemoryBank[7].sName := ' OEM GTIN byte 4 (read only)';
+	aMemoryBank[8].sName := ' OEM GTIN byte 5 (LSB) (read only)';
+	aMemoryBank[9].sName := ' OEM identification number byte 0 (MSB)';
+	aMemoryBank[10].sName := ' OEM identification number byte 1';
+	aMemoryBank[11].sName := ' OEM identification number byte 2';
+	aMemoryBank[12].sName := ' OEM identification number byte 3';
+	aMemoryBank[13].sName := ' OEM identification number byte 4';
+	aMemoryBank[14].sName := ' OEM identification number byte 5';
+	aMemoryBank[15].sName := ' OEM identification number byte 6';
+	aMemoryBank[16].sName := ' OEM identification number byte 7 (LSB)';
+END_IF
+IF (nMemoryBank >= 1) THEN
+	aMemoryBank[17].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[18].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[19].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[20].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[21].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[22].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[23].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[24].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[25].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[26].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[27].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[28].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[29].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[30].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[31].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[32].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[33].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[34].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[35].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[36].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[37].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[38].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[39].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[40].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[41].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[42].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[42].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[44].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[45].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[46].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[47].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[48].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[49].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[50].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[51].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[52].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[53].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[54].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[55].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[56].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[57].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[58].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[59].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[60].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[61].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[62].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[63].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[64].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[65].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[66].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[67].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[68].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[69].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[70].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[71].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[72].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[73].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[74].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[75].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[76].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[77].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[78].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[79].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[80].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[81].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[82].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[83].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[84].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[85].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[86].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[87].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[88].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[89].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[90].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[91].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[92].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[93].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[94].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[95].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[96].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[97].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[98].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[99].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[100].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[101].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[102].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[103].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[104].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[105].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[106].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[107].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[108].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[109].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[110].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[111].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[112].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[113].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[114].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[115].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[116].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[117].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[118].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[119].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[120].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[121].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[122].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[123].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[124].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[125].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[126].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[127].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[128].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[129].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[130].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[131].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[132].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[133].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[134].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[135].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[136].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[137].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[138].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[139].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[140].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[141].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[142].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[143].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[144].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[145].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[146].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[147].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[148].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[149].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[150].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[151].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[152].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[153].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[154].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[155].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[156].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[157].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[158].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[159].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[160].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[161].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[162].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[163].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[164].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[165].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[166].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[167].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[168].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[169].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[170].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[171].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[172].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[173].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[174].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[175].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[176].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[177].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[178].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[179].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[180].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[181].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[182].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[183].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[184].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[185].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[186].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[187].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[188].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[189].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[190].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[191].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[192].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[193].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[194].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[195].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[196].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[197].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[198].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[199].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[200].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[201].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[202].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[203].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[204].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[205].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[206].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[207].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[208].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[209].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[210].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[211].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[212].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[213].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[214].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[215].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[216].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[217].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[218].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[219].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[220].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[221].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[222].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[223].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[224].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[225].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[226].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[227].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[228].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[229].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[230].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[231].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[232].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[233].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[234].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[235].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[236].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[237].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[238].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[239].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[240].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[241].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[242].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[243].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[244].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[245].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[246].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[247].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[248].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[249].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[250].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[251].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[252].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[253].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[254].sName := ' Additional control gear information (lockable)';
+END_IF
+IF (nMemoryBank >= 2) THEN
+	aMemoryBank[0].sName := ' Address of last accessible memory location (read only)';
+	aMemoryBank[1].sName := ' Indicator byte (manufacturer defined) ';
+	aMemoryBank[2].sName := ' Memory bank lock byte';
+	aMemoryBank[3].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[4].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[5].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[6].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[7].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[8].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[9].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[10].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[11].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[12].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[13].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[14].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[15].sName := ' Additional control gear information (lockable)';
+	aMemoryBank[16].sName := ' Additional control gear information (lockable)'; 
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Part102MemoryPages">
+      <LineId Id="103" Count="2" />
+      <LineId Id="17" Count="1" />
+      <LineId Id="107" Count="3" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="117" Count="6" />
+      <LineId Id="327" Count="0" />
+      <LineId Id="125" Count="7" />
+      <LineId Id="115" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="137" Count="1" />
+      <LineId Id="135" Count="0" />
+      <LineId Id="567" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="139" Count="4" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="153" Count="1" />
+      <LineId Id="324" Count="0" />
+      <LineId Id="323" Count="0" />
+      <LineId Id="291" Count="0" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="165" Count="0" />
+      <LineId Id="164" Count="0" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="568" Count="0" />
+      <LineId Id="565" Count="0" />
+      <LineId Id="569" Count="3" />
+      <LineId Id="579" Count="1" />
+      <LineId Id="578" Count="0" />
+      <LineId Id="581" Count="0" />
+      <LineId Id="566" Count="0" />
+      <LineId Id="1077" Count="0" />
+      <LineId Id="1122" Count="0" />
+      <LineId Id="1079" Count="0" />
+      <LineId Id="1099" Count="0" />
+      <LineId Id="1080" Count="0" />
+      <LineId Id="1082" Count="4" />
+      <LineId Id="1078" Count="0" />
+      <LineId Id="1088" Count="0" />
+      <LineId Id="1092" Count="0" />
+      <LineId Id="1096" Count="0" />
+      <LineId Id="1087" Count="0" />
+      <LineId Id="1101" Count="0" />
+      <LineId Id="1100" Count="0" />
+      <LineId Id="1102" Count="0" />
+      <LineId Id="1123" Count="0" />
+      <LineId Id="1103" Count="0" />
+      <LineId Id="1124" Count="0" />
+      <LineId Id="1105" Count="9" />
+      <LineId Id="1118" Count="0" />
+      <LineId Id="1121" Count="0" />
+      <LineId Id="1104" Count="0" />
+      <LineId Id="1125" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="1151" Count="0" />
+      <LineId Id="447" Count="28" />
+      <LineId Id="615" Count="25" />
+      <LineId Id="614" Count="0" />
+      <LineId Id="642" Count="52" />
+      <LineId Id="641" Count="0" />
+      <LineId Id="696" Count="106" />
+      <LineId Id="695" Count="0" />
+      <LineId Id="804" Count="37" />
+      <LineId Id="803" Count="0" />
+      <LineId Id="1152" Count="0" />
+      <LineId Id="476" Count="29" />
+      <LineId Id="507" Count="17" />
+      <LineId Id="1071" Count="1" />
+      <LineId Id="525" Count="9" />
+      <LineId Id="843" Count="154" />
+      <LineId Id="1070" Count="0" />
+      <LineId Id="999" Count="70" />
+      <LineId Id="842" Count="0" />
+      <LineId Id="535" Count="0" />
+      <LineId Id="537" Count="17" />
+      <LineId Id="169" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

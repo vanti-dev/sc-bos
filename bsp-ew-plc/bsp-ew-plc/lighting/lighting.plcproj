@@ -45,11 +45,13 @@
     <Compile Include="Bridge\Types\U_ReinterpretDALIEnum.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="GVLs\GVL_Bridges.TcGVL">
+    <Compile Include="BRIDGE_TASK.TcTTO">
       <SubType>Code</SubType>
-      <LinkAlways>true</LinkAlways>
     </Compile>
-    <Compile Include="GVLs\GVL_IO.TcGVL">
+    <Compile Include="GlobalTextList.TcGTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GVLs\GVL_Bridges.TcGVL">
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
     </Compile>
@@ -57,16 +59,207 @@
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
     </Compile>
-    <Compile Include="PlcCommunication.TcTTO">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="PlcTask.TcTTO">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="POUs\DALI_COMM.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="POUs\MAIN.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\COMM_TASK.TcTTO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\DUTs\E_DALIExtendedFadeTime.TcTLEO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\DUTs\ST_DALI102Parameters.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\DUTs\ST_DALI103Parameters.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\DUTs\ST_DALIMemoryBank.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\GlobalTextList_1.TcGTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\GVLs\GVL.TcGVL">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\GVLs\GVL_Internal.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\ImagePool.TcIPO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\Communication.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_Commissioning.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part102Addressing.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part102Commands.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part102Groups.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part102MemoryPages.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part102Parameters.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part102Scenes.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part102SetFading.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part103Addressing.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part103MemoryPages.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part103Parameters.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part207ParametersLED.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part207StatusLED.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part300GenericDevice.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part301PushButton.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part302AbsoluteInputDevice.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part303OccupancySensor.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning\FB_Part304LightSensor.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\MAIN_Comissioning.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\Version\Global_Version.TcGVL">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\TextLists\CommandOnTerminalEvent.TcTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\TextLists\DimmingCurve.TcTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\TextLists\EventPriority.TcTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\TextLists\EventScheme.TcTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\TextLists\ExtendedFadeTime.TcTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\TextLists\FadeRate.TcTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\TextLists\FadeTime.TcTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\TextLists\FastFadeTime.TcTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\TextLists\TextList_Dialogs.TcTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_KL6821Configuration.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part102Addressing.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part102Commands.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part102Groups.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part102MemoryBank.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part102Parameters.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part102Scenes.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part102SetFading.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part103Addressing.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part103MemoryBank.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part103Parameters.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part207Parameters.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part207Status.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part300GenericDevice.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part301PushButton.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part302AbsoluteInputDevice.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part303OccupancySensor.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning\Visu_Part304LightSensor.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Tc3_DALI_PLC_Commissioning_Tool\VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="Tc3_DALI_PLC_Commissioning_Tool\VISU_TASK.TcTTO">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -75,9 +268,60 @@
     <Folder Include="GVLs" />
     <Folder Include="Bridge" />
     <Folder Include="Bridge\Types" />
+    <Folder Include="Tc3_DALI_PLC_Commissioning_Tool" />
     <Folder Include="POUs" />
+    <Folder Include="Tc3_DALI_PLC_Commissioning_Tool\DUTs" />
+    <Folder Include="Tc3_DALI_PLC_Commissioning_Tool\GVLs" />
+    <Folder Include="Tc3_DALI_PLC_Commissioning_Tool\POUs" />
+    <Folder Include="Tc3_DALI_PLC_Commissioning_Tool\POUs\DALI_PLC_Commissioning" />
+    <Folder Include="Tc3_DALI_PLC_Commissioning_Tool\Version" />
+    <Folder Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs" />
+    <Folder Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\TextLists" />
+    <Folder Include="Tc3_DALI_PLC_Commissioning_Tool\VISUs\Visu_DALICommissioning" />
   </ItemGroup>
   <ItemGroup>
+    <PlaceholderReference Include="System_VisuElemMeter">
+      <DefaultResolution>VisuElemMeter, 3.5.13.0 (System)</DefaultResolution>
+      <Namespace>VisuElemMeter</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElems">
+      <DefaultResolution>VisuElems, 3.5.13.40 (System)</DefaultResolution>
+      <Namespace>VisuElems</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElemsSpecialControls">
+      <DefaultResolution>VisuElemsSpecialControls, 3.5.13.0 (System)</DefaultResolution>
+      <Namespace>VisuElemsSpecialControls</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElemsWinControls">
+      <DefaultResolution>VisuElemsWinControls, 3.5.13.20 (System)</DefaultResolution>
+      <Namespace>VisuElemsWinControls</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElemTextEditor">
+      <DefaultResolution>VisuElemTextEditor, 3.5.13.0 (System)</DefaultResolution>
+      <Namespace>VisuElemTextEditor</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="system_visuinputs">
+      <DefaultResolution>visuinputs, 3.5.13.0 (system)</DefaultResolution>
+      <Namespace>visuinputs</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuNativeControl">
+      <DefaultResolution>VisuNativeControl, 3.5.13.0 (System)</DefaultResolution>
+      <Namespace>VisuNativeControl</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
     <PlaceholderReference Include="Tc2_Standard">
       <DefaultResolution>Tc2_Standard, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc2_Standard</Namespace>
@@ -97,6 +341,10 @@
     <PlaceholderReference Include="Tc3_Module">
       <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc3_Module</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="VisuDialogs">
+      <DefaultResolution>VisuDialogs, * (System)</DefaultResolution>
+      <Namespace>VisuDialogs</Namespace>
     </PlaceholderReference>
   </ItemGroup>
   <ItemGroup>

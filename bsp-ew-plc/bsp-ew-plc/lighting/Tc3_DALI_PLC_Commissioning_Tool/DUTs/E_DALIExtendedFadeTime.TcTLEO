@@ -1,0 +1,431 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <EnumerationTextList Name="E_DALIExtendedFadeTime" Id="{ac38bbfc-184c-4046-930a-6ec149e0c74c}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_DALIExtendedFadeTime :
+(
+	NoFade := 0,
+	onehundred := 1,
+	twohundred := 2,
+	threehundred := 3,
+	fourhundred := 4,
+	fivehundred := 5,
+	sixhundred := 6,
+	sevenhundred := 7,
+	eighthundred := 8,
+	ninehundred := 9,
+	onethousand := 10,
+	onethousandonehundred := 11,
+	onethousandtwohundred := 12,
+	onethousandthreehundred := 13,
+	onethousandfourhundred := 14,
+	onethousandfivehundred := 15,
+	onethousandsixhundred	:= 16,
+	onesecond := 17,
+	twoseconds := 18,
+	threeseconds := 19,
+	fourseconds := 20,
+	fiveseconds := 21,
+	sixseconds := 22,
+	sevenseconds := 23,
+	eightseconds := 24,
+	nineseconds := 25,
+	tenseconds := 26,
+	elevenseconds := 27,
+	twelveseconds := 28,
+	thirteenseconds := 29,
+	fourteenseconds := 30,
+	fifteenseconds := 31,
+	sixteenseconds := 32,
+	ten1seconds := 33,
+	twentyseconds := 34,
+	thirtyseconds := 35,
+	fourtyseconds := 36,
+	fiftyseconds := 37,
+	sixtyseconds := 38,
+	seventyseconds := 39,
+	eightyseconds := 40,
+	ninetyseconds := 41,
+	onehundredseconds := 42,
+	onehundredtenseconds := 43,
+	onehundredtwentyseconds := 44,
+	onehundredthirtyseconds := 45,
+	onehundredfourtyseconds := 46,
+	onehundredfiftyseconds := 47,
+	onehundredsixtyseconds := 48,
+	oneminute := 49,
+	twominutes := 50,
+	threeminutes := 51,
+	fourminutes := 52,
+	fiveminutes := 53,
+	sixminutes := 54,
+	sevenminutes := 55,
+	eightminutes := 56,
+	nineminutes := 57,
+	tenminutes := 58,
+	elevenminutes := 59,
+	twelveminutes := 60,
+	thirteenminutes := 61,
+	fourteenminutes := 62,
+	fifteenminutes := 63,
+	sixteenminutes := 64,
+	unknown := 255
+);
+END_TYPE]]></Declaration>
+    <XmlArchive>
+      <Data>
+        <o xml:space="preserve" t="TextListEnumerationTextListObject">
+          <l n="TextList" t="ArrayList" cet="TextListRow">
+            <o>
+              <v n="TextID">"NoFade"</v>
+              <v n="TextDefault">"0"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onehundred"</v>
+              <v n="TextDefault">"1"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"twohundred"</v>
+              <v n="TextDefault">"2"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"threehundred"</v>
+              <v n="TextDefault">"3"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"fourhundred"</v>
+              <v n="TextDefault">"4"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"fivehundred"</v>
+              <v n="TextDefault">"5"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"sixhundred"</v>
+              <v n="TextDefault">"6"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"sevenhundred"</v>
+              <v n="TextDefault">"7"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"eighthundred"</v>
+              <v n="TextDefault">"8"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"ninehundred"</v>
+              <v n="TextDefault">"9"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onethousand"</v>
+              <v n="TextDefault">"10"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onethousandonehundred"</v>
+              <v n="TextDefault">"11"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onethousandtwohundred"</v>
+              <v n="TextDefault">"12"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onethousandthreehundred"</v>
+              <v n="TextDefault">"13"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onethousandfourhundred"</v>
+              <v n="TextDefault">"14"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onethousandfivehundred"</v>
+              <v n="TextDefault">"15"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onethousandsixhundred"</v>
+              <v n="TextDefault">"16"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onesecond"</v>
+              <v n="TextDefault">"17"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"twoseconds"</v>
+              <v n="TextDefault">"18"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"threeseconds"</v>
+              <v n="TextDefault">"19"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"fourseconds"</v>
+              <v n="TextDefault">"20"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"fiveseconds"</v>
+              <v n="TextDefault">"21"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"sixseconds"</v>
+              <v n="TextDefault">"22"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"sevenseconds"</v>
+              <v n="TextDefault">"23"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"eightseconds"</v>
+              <v n="TextDefault">"24"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"nineseconds"</v>
+              <v n="TextDefault">"25"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"tenseconds"</v>
+              <v n="TextDefault">"26"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"elevenseconds"</v>
+              <v n="TextDefault">"27"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"twelveseconds"</v>
+              <v n="TextDefault">"28"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"thirteenseconds"</v>
+              <v n="TextDefault">"29"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"fourteenseconds"</v>
+              <v n="TextDefault">"30"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"fifteenseconds"</v>
+              <v n="TextDefault">"31"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"sixteenseconds"</v>
+              <v n="TextDefault">"32"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"ten1seconds"</v>
+              <v n="TextDefault">"33"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"twentyseconds"</v>
+              <v n="TextDefault">"34"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"thirtyseconds"</v>
+              <v n="TextDefault">"35"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"fourtyseconds"</v>
+              <v n="TextDefault">"36"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"fiftyseconds"</v>
+              <v n="TextDefault">"37"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"sixtyseconds"</v>
+              <v n="TextDefault">"38"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"seventyseconds"</v>
+              <v n="TextDefault">"39"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"eightyseconds"</v>
+              <v n="TextDefault">"40"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"ninetyseconds"</v>
+              <v n="TextDefault">"41"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onehundredseconds"</v>
+              <v n="TextDefault">"42"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onehundredtenseconds"</v>
+              <v n="TextDefault">"43"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onehundredtwentyseconds"</v>
+              <v n="TextDefault">"44"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onehundredthirtyseconds"</v>
+              <v n="TextDefault">"45"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onehundredfourtyseconds"</v>
+              <v n="TextDefault">"46"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onehundredfiftyseconds"</v>
+              <v n="TextDefault">"47"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"onehundredsixtyseconds"</v>
+              <v n="TextDefault">"48"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"oneminute"</v>
+              <v n="TextDefault">"49"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"twominutes"</v>
+              <v n="TextDefault">"50"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"threeminutes"</v>
+              <v n="TextDefault">"51"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"fourminutes"</v>
+              <v n="TextDefault">"52"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"fiveminutes"</v>
+              <v n="TextDefault">"53"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"sixminutes"</v>
+              <v n="TextDefault">"54"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"sevenminutes"</v>
+              <v n="TextDefault">"55"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"eightminutes"</v>
+              <v n="TextDefault">"56"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"nineminutes"</v>
+              <v n="TextDefault">"57"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"tenminutes"</v>
+              <v n="TextDefault">"58"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"elevenminutes"</v>
+              <v n="TextDefault">"59"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"twelveminutes"</v>
+              <v n="TextDefault">"60"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"thirteenminutes"</v>
+              <v n="TextDefault">"61"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"fourteenminutes"</v>
+              <v n="TextDefault">"62"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"fifteenminutes"</v>
+              <v n="TextDefault">"63"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"sixteenminutes"</v>
+              <v n="TextDefault">"64"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"unknown"</v>
+              <v n="TextDefault">"255"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">""</v>
+              <v n="TextDefault">""</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+          </l>
+          <l n="Languages" t="ArrayList" />
+          <v n="GuidInit">{5dc8b3fc-8131-4dee-8332-4a9340ac1cf0}</v>
+          <v n="GuidReInit">{1f5da425-ef92-418b-bda7-b34312fae7fd}</v>
+          <v n="GuidExitX">{b7f45799-b852-4dff-8074-e50515156677}</v>
+        </o>
+      </Data>
+      <TypeList>
+        <Type n="ArrayList">System.Collections.ArrayList</Type>
+        <Type n="Guid">System.Guid</Type>
+        <Type n="String">System.String</Type>
+        <Type n="TextListEnumerationTextListObject">{4b60233c-f940-4beb-b331-82133b520151}</Type>
+        <Type n="TextListRow">{53da1be7-ad25-47c3-b0e8-e26286dad2e0}</Type>
+      </TypeList>
+    </XmlArchive>
+  </EnumerationTextList>
+</TcPlcObject>

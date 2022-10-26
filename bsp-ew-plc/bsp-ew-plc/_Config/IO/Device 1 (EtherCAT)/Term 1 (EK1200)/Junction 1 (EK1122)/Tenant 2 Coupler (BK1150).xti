@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32" ClassName="CBk11x0Def" SubType="9081" TcProjectVariant="Lab">
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.35" ClassName="CBk11x0Def" SubType="9081" TcProjectVariant="Floor_01">
 	<ImageDatas>
 		<ImageData Id="1000">424de6000000000000007600000028000000100000000e000000010004000000000070000000c40e0000c40e0000100000001000000000000000ff0000000084000084848400c6c6c6000000ff00ff00ff0000ffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff0066333333333336666644444340403666664004434747366666405443444436666640044340403666664004434141366666400453444436666640042340403666664444444545366600044544444436660644454440403666004555554444366606444544424236660004454444443666</ImageData>
 	</ImageDatas>
-	<Box Id="4" Disabled="true" BoxType="9081" AmsPort="28929">
+	<Box Id="4" BoxType="9081" AmsPort="28929">
 		<Name>__FILENAME__</Name>
 		<ImageId>1000</ImageId>
 		<ProjectVariant PvUseDisable="true">
@@ -191,7 +191,7 @@
 					</Var>
 				</Vars>
 			</Term>
-			<Term Id="8" TermType="#x1aa5" Fieldbus="7">
+			<Term Id="8" Disabled="true" TermType="#x1aa5" Fieldbus="7">
 				<Name>T2 Bus 3 (KL6821)</Name>
 				<ImageId>32</ImageId>
 				<ProjectVariant PvUseDisable="true">
@@ -283,11 +283,11 @@
 				<ImageId>32</ImageId>
 			</Term>
 		</BusCoupler>
-		<EtherCAT SlaveType="3" AdsServerAddress="000000000205eb03" PdiType="#x0e08" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="51" FoeType="1" VendorId="#x00000002" ProductCode="#x047e2c22" RevisionNo="#x00130000" InfoDataAddr="true" InfoDataNetId="true" TimeoutStateChange1="5000" TimeoutMailbox2="6000" GenerateOwnNetId="true" InitializeOwnNetId="true" PortPhys="17">
+		<EtherCAT SlaveType="3" AdsServerAddress="000000000205eb03" FixedAdsServerNetId="true" PdiType="#x0e08" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="51" FoeType="1" VendorId="#x00000002" ProductCode="#x047e2c22" RevisionNo="#x00130000" InfoDataAddr="true" InfoDataNetId="true" TimeoutStateChange1="5000" TimeoutMailbox2="6000" GenerateOwnNetId="true" InitializeOwnNetId="true" PortPhys="17">
 			<SyncMan>001e00012600010001000000400000010001001e26010000</SyncMan>
 			<SyncMan>001f00012200010002000000400000010001001f22010000</SyncMan>
-			<SyncMan>001014002400010003000000000000000000001024010000</SyncMan>
-			<SyncMan>001714000000010004000000000000000000001700010000</SyncMan>
+			<SyncMan>00100e002400010003000000000000000000001024010000</SyncMan>
+			<SyncMan>00170e000000010004000000000000000000001700010000</SyncMan>
 			<Fmmu>0000000000000000001000020100000001000000000000000000000000000000</Fmmu>
 			<Fmmu>0000000000000000001700010100000002000000000000000000000000000000</Fmmu>
 			<Fmmu>00000000000000000d0800010100000003000000000000000000000000000000</Fmmu>

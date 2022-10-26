@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="Communication" Id="{cf2c9d6e-7b21-4611-b8d7-177e88cdaea4}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM Communication
+VAR_INPUT
+END_VAR
+VAR
+	aKL6821Communication			:	ARRAY [1..GVL_Internal.nNumberOfDALI_Lines] OF FB_KL6821Communication;
+	eCommandKBusWatchdog			:	E_DALIConfigurationCommand;
+	eCommandDI1RisingEdge			:	E_DALIConfigurationCommand;
+	eCommandDI1FallingEdge			:	E_DALIConfigurationCommand;
+	eCommandDI2RisingEdge			:	E_DALIConfigurationCommand;
+	eCommandDI2FallingEdge			:	E_DALIConfigurationCommand;
+	InitTrig						:	R_TRIG;
+	nStep							:	INT;
+	bInitialize						:	BOOL;
+	bDefaultValues					:	BOOL;
+	bResetInactiveProcessImage		:	BOOL;
+	bDoNotLockProcessImage			:	BOOL;
+	bInternalPowerSupplyDisabled	:	BOOL;
+	bFirstCycle						:	BOOL := TRUE;
+	rTrigInternalPowerSupply		:	R_TRig;
+	fTrigInternalPowerSupply		:	f_TRig;
+	nTerminal						:	INT := 1;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[tc3_DALI.GVL.eEventTraceLevel := TcEventSeverity.Verbose;
+IF bFirstCycle THEN
+	nStep := 5;
+END_IF
+
+InitTrig (CLK := bInitialize);
+IF (InitTrig.Q) THEN
+	nStep := 10;
+END_IF
+
+InitTrig (CLK := bDefaultValues);
+IF (InitTrig.Q) THEN
+	nStep := 20;
+end_if
+
+InitTrig (CLK := bResetInactiveProcessImage);
+IF (InitTrig.Q) THEN
+	nStep := 30;
+END_IF
+
+rTrigInternalPowerSupply (CLK := bInternalPowerSupplyDisabled);
+fTrigInternalPowerSupply (CLK := bInternalPowerSupplyDisabled);
+IF (rTrigInternalPowerSupply.Q OR fTrigInternalPowerSupply.Q) THEN
+	nStep := 40;
+END_IF
+
+CASE nStep OF
+0:;
+5: // Initialization
+	FOR nTerminal := 1 TO GVL_Internal.nNumberOfDALI_Lines DO
+		eCommandKBusWatchdog := aKL6821Communication[nTerminal].eCommandKBusWatchdog;
+		eCommandDI1RisingEdge := aKL6821Communication[nTerminal].eCommandDI1RisingEdge;
+		eCommandDI1FallingEdge := aKL6821Communication[nTerminal].eCommandDI1FallingEdge;
+		eCommandDI2RisingEdge := aKL6821Communication[nTerminal].eCommandDI2RisingEdge;
+		eCommandDI2FallingEdge := aKL6821Communication[nTerminal].eCommandDI2FallingEdge;
+		bDoNotLockProcessImage := aKL6821Communication[nTerminal].bDoNotLockProcessImage;
+		bInternalPowerSupplyDisabled := aKL6821Communication[nTerminal].bDisableInternalPowerSupply;
+	END_FOR
+	bFirstCycle := FALSE;
+	nStep := 0;
+10: // Write changed parameters from visu to specific KL6821
+	aKL6821Communication[GVL_Internal.nDALILine].eCommandKBusWatchdog := eCommandKBusWatchdog;
+	aKL6821Communication[GVL_Internal.nDALILine].eCommandDI1RisingEdge := eCommandDI1RisingEdge;
+	aKL6821Communication[GVL_Internal.nDALILine].eCommandDI1FallingEdge := eCommandDI1FallingEdge;
+	aKL6821Communication[GVL_Internal.nDALILine].eCommandDI2RisingEdge := eCommandDI2RisingEdge;
+	aKL6821Communication[GVL_Internal.nDALILine].eCommandDI2FallingEdge := eCommandDI2FallingEdge;
+	aKL6821Communication[GVL_Internal.nDALILine].bDoNotLockProcessImage := bDoNotLockProcessImage;
+	bInitialize := FALSE;
+	aKL6821Communication[GVL_Internal.nDALILine].bInitialise := TRUE;
+	nStep := 0;
+20: // Set default values to specific KL6821 from visu
+	eCommandKBusWatchdog := aKL6821Communication[GVL_Internal.nDALILine].eCommandKBusWatchdog := E_DALIConfigurationCommand.DoNothing;
+	eCommandDI1RisingEdge := aKL6821Communication[GVL_Internal.nDALILine].eCommandDI1RisingEdge := E_DALIConfigurationCommand.Off;
+	eCommandDI1FallingEdge := aKL6821Communication[GVL_Internal.nDALILine].eCommandDI1FallingEdge := E_DALIConfigurationCommand.DoNothing;
+	eCommandDI2RisingEdge := aKL6821Communication[GVL_Internal.nDALILine].eCommandDI2RisingEdge := E_DALIConfigurationCommand.RecallMaxLevel;
+	eCommandDI2FallingEdge := aKL6821Communication[GVL_Internal.nDALILine].eCommandDI2FallingEdge := E_DALIConfigurationCommand.DoNothing;
+	aKL6821Communication[GVL_Internal.nDALILine].bDoNotLockProcessImage := FALSE;
+	bDefaultValues := FALSE;
+	aKL6821Communication[GVL_Internal.nDALILine].bInitialise := TRUE;
+	nStep := 0;
+30: // Reset inactive process image on specific Kl6821 from visu
+	bResetInactiveProcessImage := FALSE;
+	aKL6821Communication[GVL_Internal.nDALILine].bResetInactiveProcessImage := TRUE;
+	nStep := 0;
+40: // Enable or disable internal power supply of specific KL6821
+	aKL6821Communication[GVL_Internal.nDALILine].bDisableInternalPowerSupply := bInternalPowerSupplyDisabled;
+	aKL6821Communication[GVL_Internal.nDALILine].bInitialise := TRUE;
+	nStep := 0;
+END_CASE
+
+FOR nTerminal := 1 TO GVL_Internal.nNumberOfDALI_Lines DO
+aKL6821Communication[nTerminal](stInData := GVL.aKL6821InData[nTerminal], stOutData := GVL.aKL6821OutData[nTerminal]);		
+END_FOR
+
+IF (NOT aKL6821Communication[GVL_Internal.nDALILine].bInitialising) THEN
+	aKL6821Communication[GVL_Internal.nDALILine].bInitialise := FALSE;
+END_IF
+IF (NOT aKL6821Communication[GVL_Internal.nDALILine].bProcessImageInactive) THEN
+	aKL6821Communication[GVL_Internal.nDALILine].bResetInactiveProcessImage := FALSE;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="Communication">
+      <LineId Id="357" Count="0" />
+      <LineId Id="283" Count="2" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="81" Count="13" />
+      <LineId Id="299" Count="1" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="301" Count="2" />
+      <LineId Id="434" Count="0" />
+      <LineId Id="96" Count="2" />
+      <LineId Id="327" Count="0" />
+      <LineId Id="330" Count="5" />
+      <LineId Id="328" Count="1" />
+      <LineId Id="292" Count="1" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="102" Count="4" />
+      <LineId Id="260" Count="0" />
+      <LineId Id="226" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="238" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="115" Count="4" />
+      <LineId Id="261" Count="0" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="206" Count="0" />
+      <LineId Id="122" Count="1" />
+      <LineId Id="225" Count="0" />
+      <LineId Id="220" Count="0" />
+      <LineId Id="295" Count="0" />
+      <LineId Id="298" Count="0" />
+      <LineId Id="304" Count="1" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="456" Count="0" />
+      <LineId Id="458" Count="1" />
+      <LineId Id="457" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="235" Count="1" />
+      <LineId Id="234" Count="0" />
+      <LineId Id="240" Count="1" />
+      <LineId Id="239" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
