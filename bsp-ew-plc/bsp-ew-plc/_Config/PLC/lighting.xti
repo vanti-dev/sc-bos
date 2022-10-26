@@ -93,7 +93,7 @@
 				<Defines></Defines>
 			</Variant>
 		</ProjectVariant>
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="1" TmcPath="lighting\lighting.tmc" TmcHash="{52A9C2ED-9B2F-E17D-257C-1BDE87180E01}">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="1" TmcPath="lighting\lighting.tmc" TmcHash="{FE276B68-FB6E-CFF5-59B3-06F7F6961A77}">
 			<Name>lighting Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 			<Vars VarGrpType="1">

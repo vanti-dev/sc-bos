@@ -346,6 +346,11 @@
       <DefaultResolution>VisuDialogs, * (System)</DefaultResolution>
       <Namespace>VisuDialogs</Namespace>
     </PlaceholderReference>
+    <PlaceholderReference Include="VisuUserManagement">
+      <DefaultResolution>VisuUserMgmt, * (System)</DefaultResolution>
+      <Namespace>VisuUserManagement</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+    </PlaceholderReference>
   </ItemGroup>
   <ItemGroup>
     <LibraryReference Include="Tc3_DALI,3.10.5.6,Beckhoff Automation GmbH">

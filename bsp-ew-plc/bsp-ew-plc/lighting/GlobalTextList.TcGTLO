@@ -739,6 +739,16 @@ For changing use decimal value."</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"1077"</v>
+              <v n="TextDefault">"Login"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1294"</v>
+              <v n="TextDefault">"Logout"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"523"</v>
               <v n="TextDefault">"Long press repeat"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -789,6 +799,11 @@ For changing use decimal value."</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"2294"</v>
+              <v n="TextDefault">"None"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"572"</v>
               <v n="TextDefault">"Occupied"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -821,6 +836,11 @@ For changing use decimal value."</v>
             <o>
               <v n="TextID">"277"</v>
               <v n="TextDefault">"Open Circuit:"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1714"</v>
+              <v n="TextDefault">"Operator"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
