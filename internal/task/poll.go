@@ -6,6 +6,7 @@ import (
 )
 
 // Poll creates a task that calls a function at a regular interval while it is running.
+// The action will not be run until the returned Intermittent.Attach is called.
 func Poll(action func(context.Context), interval time.Duration) *Intermittent {
 	if interval <= 0 {
 		panic("invalid interval")

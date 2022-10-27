@@ -18,6 +18,8 @@ type StopFn = func()
 // Intermittent manages the lifecycle of a long-running background operation that needs to outlive a single context.
 // A context can be attached to the Intermittent by calling Attach, which will start the background operation if it is not
 // already running. Once all attached contexts are cancelled, the background operation will be stopped.
+//
+// Attach is safe for use by multiple go routines.
 type Intermittent struct {
 	operation StartFn
 
@@ -30,6 +32,10 @@ func NewIntermittent(operation StartFn) *Intermittent {
 	return &Intermittent{operation: operation}
 }
 
+// Attach adds ensures that the background task will remain running for at least as long as listener is not done.
+// If the background task is not running it will be started.
+//
+// Returns an error iff the background task is started by this call and when starting it returns an error.
 func (t *Intermittent) Attach(listener context.Context) error {
 	t.m.Lock()
 	defer t.m.Unlock()
