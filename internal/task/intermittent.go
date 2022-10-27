@@ -1,0 +1,65 @@
+package task
+
+import (
+	"context"
+	"sync"
+)
+
+// StartFn is called by an Intermittent to start a background operation.
+// The provided context.Context init can be used for initialisation - it is simply the context passed to Intermittent.Attach.
+// However, it is not suitable for long-running background operations - create a long-running context using
+// context.WithCancel(context.Background()).
+// If starting the background operations succeeds, then a StartFn should return a stop function and err should be nil.
+// The stop function will be called when the background operation needs to stop.
+// If starting the background operation fails, then return a non-nil err; the value of the stop function is ignored.
+type StartFn = func(init context.Context) (stop StopFn, err error)
+type StopFn = func()
+
+// Intermittent manages the lifecycle of a long-running background operation that needs to outlive a single context.
+// A context can be attached to the Intermittent by calling Attach, which will start the background operation if it is not
+// already running. Once all attached contexts are cancelled, the background operation will be stopped.
+type Intermittent struct {
+	operation StartFn
+
+	m         sync.Mutex // protects the following state
+	listeners int
+	stop      StopFn
+}
+
+func NewIntermittent(operation StartFn) *Intermittent {
+	return &Intermittent{operation: operation}
+}
+
+func (t *Intermittent) Attach(listener context.Context) error {
+	t.m.Lock()
+	defer t.m.Unlock()
+
+	if t.listeners == 0 {
+		stop, err := t.operation(listener)
+		if err != nil {
+			return err
+		}
+
+		// convert nil stop functions into no-ops
+		if stop == nil {
+			stop = func() {}
+		}
+		t.stop = stop
+	}
+
+	t.listeners++
+
+	go func() {
+		// wait for the listener to be cancelled
+		<-listener.Done()
+		t.m.Lock()
+		defer t.m.Unlock()
+
+		t.listeners--
+		if t.listeners == 0 {
+			t.stop()
+		}
+	}()
+
+	return nil
+}
