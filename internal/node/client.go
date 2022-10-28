@@ -60,3 +60,10 @@ type Clienter interface {
 	//	err := n.Client(&client)
 	Client(p any) error
 }
+
+// ClientFunc adapts a func of the correct signature to implement Clienter.
+type ClientFunc func(p any) error
+
+func (c ClientFunc) Client(p any) error {
+	return c(p)
+}
