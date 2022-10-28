@@ -19,7 +19,7 @@
       raw: "pkg upgrade -y"
 
     - name: Install python.
-      raw: "pkg install -y python"
+      raw: "pkg install -y python3"
 
 - name: Update packages & install dependencies
   hosts: twincat_bsd

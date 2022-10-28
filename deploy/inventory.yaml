@@ -19,9 +19,13 @@ all:
           ansible_host: "10.104.10.58"
           floor: floor-03
           x001_ip: 10.1.104.13
+        floor-05:
+          ansible_host: "10.104.10.93"
+          floor: floor-05
+          x001_ip: 10.1.104.15
       vars:
         #ansible_connection: paramiko
-        ansible_python_interpreter: /usr/local/bin/python
+        ansible_python_interpreter: /usr/local/bin/python3
         ansible_user: Administrator
         ansible_become_method: doas
     # Helper groups of the above hosts so we can say '-l prod' to deploy to all prod

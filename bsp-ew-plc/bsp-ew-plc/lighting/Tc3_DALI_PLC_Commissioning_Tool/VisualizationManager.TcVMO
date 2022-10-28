@@ -645,7 +645,7 @@
               <v n="ClientSizeY">1024</v>
               <v n="ForceWebVisuClient">false</v>
               <v n="Antialiasing">true</v>
-              <v n="ClientOperationType" t="eDefaultInputSetting">Keyboard</v>
+              <v n="ClientOperationType" t="eDefaultInputSetting">Touchscreen</v>
               <v n="ScaleTypeIsotropic">true</v>
               <v n="UseScalingOptionsForDialogs">true</v>
             </o>

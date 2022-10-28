@@ -1820,7 +1820,7 @@
                 <v n="VisualElementIdentifier">"GenElemInst_5"</v>
                 <n n="VisualElementOfflinePaintCommands" />
                 <n n="VisualElementFrameInformation" />
-                <d n="VisualElementInputActions" t="Hashtable" ckt="String" cvt="IInputAction[]">
+                <d n="VisualElementInputActions" t="Hashtable" ckt="String" cvt="VisuUserMgmtInputAction[]">
                   <v>OnMouseClick</v>
                   <a cet="VisuUserMgmtInputAction">
                     <o>
@@ -1979,12 +1979,12 @@
                       <v n="Value">"Logout"</v>
                     </o>
                     <o>
-                      <v n="Id">823443203L</v>
-                      <v n="Value">"1294"</v>
-                    </o>
-                    <o>
                       <v n="Id">2597686782L</v>
                       <v n="Value">false</v>
+                    </o>
+                    <o>
+                      <v n="Id">823443203L</v>
+                      <v n="Value">"1294"</v>
                     </o>
                   </l>
                 </o>
@@ -1994,7 +1994,7 @@
                 <v n="VisualElementIdentifier">"GenElemInst_6"</v>
                 <n n="VisualElementOfflinePaintCommands" />
                 <n n="VisualElementFrameInformation" />
-                <d n="VisualElementInputActions" t="Hashtable" ckt="String" cvt="IInputAction[]">
+                <d n="VisualElementInputActions" t="Hashtable" ckt="String" cvt="VisuUserMgmtInputAction[]">
                   <v>OnMouseClick</v>
                   <a cet="VisuUserMgmtInputAction">
                     <o>
@@ -2225,7 +2225,6 @@
         <Type n="Guid">System.Guid</Type>
         <Type n="Hashtable">System.Collections.Hashtable</Type>
         <Type n="HotkeyConfiguration">{6b108d46-58af-4e41-a3f4-174d8f160cc4}</Type>
-        <Type n="IInputAction[]">_3S.CoDeSys.VisualElem.IInputAction[], VisualElem, Version=3.5.13.0, Culture=neutral, PublicKeyToken=null</Type>
         <Type n="Int16">System.Int16</Type>
         <Type n="Int32">System.Int32</Type>
         <Type n="Int64">System.Int64</Type>
@@ -2255,6 +2254,7 @@
         <Type n="VisualObjectSizeManager">{5f612b0e-b404-455f-8177-27864e9f5332}</Type>
         <Type n="VisuUserMgmtDialogType">{736384f6-db22-43b1-93c0-d647f94c4fca}</Type>
         <Type n="VisuUserMgmtInputAction">{90722319-5366-4489-810a-357c35644546}</Type>
+        <Type n="VisuUserMgmtInputAction[]">_3S.CoDeSys.VisualElem.VisuUserMgmtInputAction[], VisualElem.plugin, Version=3.5.13.32, Culture=neutral, PublicKeyToken=null</Type>
       </TypeList>
     </XmlArchive>
   </Visu>
