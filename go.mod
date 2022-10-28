@@ -8,6 +8,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/jackc/pgx/v4 v4.17.0
+	github.com/olebedev/emitter v0.0.0-20190110104742-e8d1457e6aee
 	github.com/open-policy-agent/opa v0.42.2
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.38
 	github.com/smart-core-os/sc-golang v0.0.0-20221013111224-70c68d71382c
