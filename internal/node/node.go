@@ -1,6 +1,7 @@
 package node
 
 import (
+	"fmt"
 	"github.com/smart-core-os/sc-golang/pkg/router"
 	"github.com/smart-core-os/sc-golang/pkg/server"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
@@ -78,7 +79,7 @@ func (n *Node) Announce(name string, features ...Feature) Undo {
 	}
 	log := n.Logger.Sugar()
 	for _, t := range a.traits {
-		log.Debugf("%v now implements %v\n", name, t.name)
+		log.Debugf("%v now implements %v", name, t.name)
 
 		if !t.noAddChildTrait && name != n.name {
 			undo = append(undo, n.addChildTrait(a.name, t.name))
@@ -117,13 +118,18 @@ func (n *Node) addRouter(r ...router.Router) {
 // addRoute adds name->impl as a route to all routers that support the type impl.
 func (n *Node) addRoute(name string, impl interface{}) Undo {
 	var undo []Undo
+	var addCount int
 	for _, r := range n.routers {
 		if r.HoldsType(impl) {
+			addCount++
 			r.Add(name, impl)
 			undo = append(undo, func() {
 				r.Remove(name)
 			})
 		}
+	}
+	if addCount == 0 {
+		n.Logger.Warn(fmt.Sprintf("no router for %s typed %T", name, impl))
 	}
 	return UndoAll(undo...)
 }
