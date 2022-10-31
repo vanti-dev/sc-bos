@@ -2,12 +2,15 @@ package config
 
 import (
 	"encoding/json"
+	"github.com/vanti-dev/bsp-ew/internal/auto"
 	"time"
 )
 
 // Root represent the configuration parameters available for the lighting automation.
 // This should be convertable to/from json.
 type Root struct {
+	auto.Config
+
 	OccupancySensors []string `json:"occupancySensors,omitempty"`
 	Lights           []string `json:"lights,omitempty"`
 
