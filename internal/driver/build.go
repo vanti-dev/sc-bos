@@ -18,9 +18,10 @@ type BuildResult struct {
 
 func Build(ctx context.Context, services Services, factories map[string]Factory, configs []RawConfig) map[string]BuildResult {
 	results := make(map[string]BuildResult)
+	logger := services.Logger.Named("driver")
 
 	for _, config := range configs {
-		logger := services.Logger.With(
+		logger := logger.With(
 			zap.Namespace("driver"),
 			zap.String("type", config.Type),
 			zap.String("name", config.Name),
