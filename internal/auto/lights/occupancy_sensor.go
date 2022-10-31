@@ -48,5 +48,5 @@ func (o *occupancyTransition) Patch(s *ReadState) {
 type clearOccupancyTransition string
 
 func (c clearOccupancyTransition) Patch(s *ReadState) {
-	s.Occupancy[string(c)] = nil
+	delete(s.Occupancy, string(c))
 }
