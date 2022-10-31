@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
-	"log"
+	"go.uber.org/zap"
 )
 
 // Patcher represents a single patch that adjusts ReadState.
@@ -61,7 +61,7 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, changes cha
 				}
 				if err != nil {
 					// todo: handle error, the subscription has failed without us asking it to stop. Retry?
-					log.Printf("Subscription [%s] ended before it should %s", source.name, err)
+					b.logger.Warn("Subscription ended before it should", zap.String("source", source.name), zap.Error(err))
 				}
 			}()
 		}

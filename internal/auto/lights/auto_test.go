@@ -7,6 +7,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
 	"github.com/vanti-dev/bsp-ew/internal/node"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"testing"
 	"time"
@@ -32,7 +33,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 
 	testActions := newTestActions(t)
 
-	automation := PirsTurnLightsOn(clients)
+	automation := PirsTurnLightsOn(clients, zap.NewNop())
 	automation.makeActions = func(_ node.Clienter) (actions, error) { return testActions, nil }
 
 	now := time.Unix(0, 0)

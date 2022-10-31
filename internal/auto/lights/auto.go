@@ -5,12 +5,14 @@ import (
 	"github.com/olebedev/emitter"
 	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
 	"github.com/vanti-dev/bsp-ew/internal/node"
+	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"time"
 )
 
 // BrightnessAutomation implements turning lights on or off based on occupancy readings from PIRs and other devices.
 type BrightnessAutomation struct {
+	logger  *zap.Logger
 	clients node.Clienter // clients are not got until Start
 	config  config.Root   // storing config here allows Configure to be called before Start
 
@@ -22,8 +24,9 @@ type BrightnessAutomation struct {
 }
 
 // PirsTurnLightsOn creates an automation that controls light brightness based on PIR occupancy status.
-func PirsTurnLightsOn(clients node.Clienter) *BrightnessAutomation {
+func PirsTurnLightsOn(clients node.Clienter, logger *zap.Logger) *BrightnessAutomation {
 	return &BrightnessAutomation{
+		logger:      logger,
 		clients:     clients,
 		bus:         emitter.New(1),
 		makeActions: newActions,
@@ -155,6 +158,9 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 		case <-ctx.Done():
 			return ctx.Err()
 		case readState := <-readStates:
+			// update logger state
+			b.logger = b.logger.With(zap.String("name", readState.Config.Name))
+
 			lastReadState = readState
 			err := processStateFn(readState)
 			if err != nil {
