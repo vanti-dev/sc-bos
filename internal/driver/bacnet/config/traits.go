@@ -5,9 +5,18 @@ import (
 	"errors"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/known"
+	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
 )
 
+// Trait is the common configuration for bacnet device traits.
+// Specific implementations that pull objects together into a trait should embed this type into their specific config
+// types.
+//
+//	type OnOffConfig struct {
+//	  Trait
+//	  Value *ValueSource `json:"value,omitempty"`
+//	}
 type Trait struct {
 	Name string     `json:"name,omitempty"`
 	Kind trait.Name `json:"kind,omitempty"`
@@ -30,22 +39,30 @@ func (c *RawTrait) UnmarshalJSON(buf []byte) error {
 	return json.Unmarshal(buf, &c.Trait)
 }
 
+// ValueSource configures a single object property as the source of some trait value.
 type ValueSource struct {
-	Device *DeviceRef `json:"device,omitempty"`
-	Object *ObjectRef `json:"object,omitempty"`
+	Device   *DeviceRef  `json:"device,omitempty"`
+	Object   *ObjectRef  `json:"object,omitempty"`
+	Property *PropertyID `json:"property,omitempty"`
 }
 
-func (vs ValueSource) Lookup(ctx known.Context) (bactypes.Device, bactypes.Object, error) {
+// Lookup finds the gobacnet device, object, and property this ValueSource refers to.
+func (vs ValueSource) Lookup(ctx known.Context) (bactypes.Device, bactypes.Object, property.ID, error) {
+	p := property.PresentValue
+	if vs.Property != nil {
+		p = property.ID(*vs.Property)
+	}
+
 	if vs.Device == nil || vs.Object == nil {
-		return bactypes.Device{}, bactypes.Object{}, errors.New("missing device or object")
+		return bactypes.Device{}, bactypes.Object{}, p, errors.New("missing device or object")
 	}
 
 	device, err := vs.Device.Lookup(ctx)
 	if err != nil {
-		return device, bactypes.Object{}, err
+		return device, bactypes.Object{}, p, err
 	}
 	object, err := vs.Object.Lookup(device, ctx)
-	return device, object, err
+	return device, object, p, err
 }
 
 type DeviceRef struct {
