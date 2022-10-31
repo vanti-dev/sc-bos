@@ -3,10 +3,14 @@ package bacnet
 import (
 	"github.com/vanti-dev/gobacnet"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+	"os"
 	"testing"
 )
 
 func TestYabeRoom(t *testing.T) {
+	if _, ok := os.LookupEnv("YABE"); !ok {
+		t.Skip("Skipping test that relies on YABE room simulator")
+	}
 	client, err := gobacnet.NewClient("bridge100", 0)
 	if err != nil {
 		t.Fatalf("NewClient error %v", err)
