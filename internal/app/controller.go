@@ -90,6 +90,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		Node:   node.New(localConfig.Name),
 		Tasks:  &task.Group{},
 	}
+	services.Node.Logger = logger.Named("node")
 
 	// create private key if it doesn't exist
 	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(config.DataDir, "private-key.pem"), logger)
