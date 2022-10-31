@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
   <EnumerationTextList Name="E_DALIBridgeCommand" Id="{ace459ee-9ad7-4807-a32a-2eb1c3024f91}">
     <Declaration><![CDATA[{attribute 'qualified_only'}
 {attribute 'strict'}

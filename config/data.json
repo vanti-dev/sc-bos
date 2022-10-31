@@ -1,0 +1,23 @@
+{
+  "floors": [
+    {
+      "floor": 4,
+      "netID": "5.109.178.55.1.1",
+      "hasLifeSafety": true,
+      "t1Count": 2,
+      "t2Count": 2,
+      "t3Count": 2,
+      "t4Count": 2,
+      "landlordCount":3
+    },
+    {
+      "floor": 6,
+      "netID": "5.109.178.55.1.1",
+      "t1Count": 2,
+      "t2Count": 2,
+      "t3Count": 2,
+      "t4Count": 2,
+      "landlordCount": 3
+    }
+  ]
+}

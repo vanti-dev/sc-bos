@@ -12,9 +12,6 @@
     - name: Enable the upstream FreeBSD package repository.
       raw: "sed -i.bak 's/enabled: no/enabled: yes/' /usr/local/etc/pkg/repos/FreeBSD.conf"
 
-    - name: Update package repositories
-      raw: "pkg update"
-
     - name: Upgrade packages
       raw: "pkg upgrade -y"
 
@@ -24,6 +21,8 @@
 - name: Update packages & install dependencies
   hosts: twincat_bsd
   become: true
+  vars:
+    go_version: 1.19.2
   tasks:
     - name: Update packages
       community.general.pkgng:
@@ -59,8 +58,8 @@
     - name: Download Go compiler
       become: false
       ansible.builtin.get_url:
-        url: 'https://go.dev/dl/go1.19.2.freebsd-amd64.tar.gz'
-        dest: '/tmp/go.tar.gz'
+        url: 'https://go.dev/dl/go{{ go_version }}.freebsd-amd64.tar.gz'
+        dest: '/tmp/go{{ go_version }}.tar.gz'
         checksum: sha256:d74c88430484d14826ec21161e3b9336bd021f502b6594c4dd00e9ec730ee51d
       register: download_go
 
@@ -68,7 +67,7 @@
       when: download_go.changed
       ansible.builtin.unarchive:
         remote_src: true
-        src: '/tmp/go.tar.gz'
+        src: '/tmp/go{{ go_version }}.tar.gz'
         dest: /usr/local/opt/
         owner: root
         group: wheel

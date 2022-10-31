@@ -7,7 +7,7 @@
     install_dir: /usr/local/opt/areacontroller
 
     areacontroller_enabled: no
-    daylight_power_cron_enabled: no
+    daylight_power_cron_enabled: yes
 
   tasks:
     - name: Stop the services (if it exists)
@@ -83,28 +83,35 @@
       become: true
       ansible.builtin.service:
         name: areacontroller
-        state: started
-        enabled: yes
-      when: areacontroller_enabled | bool
+        state: "{{ areacontroller_enabled | bool | ternary('started', 'stopped') }}"
+        enabled: "{{ areacontroller_enabled | bool }}"
 
     - name: Add cron jobs for daylight-power
       become: true
       ansible.builtin.cron:
         user: Administrator
-        disabled: "{{ daylight_power_cron_enabled | ternary('no', 'yes') }}"
+        disabled: "{{ daylight_power_cron_enabled | bool | ternary('no', 'yes') }}"
         name: '{{ item.name }}'
         hour: '{{ item.hour }}'
         minute: '{{ item.minute }}'
         job: '/usr/local/opt/areacontroller/bin/daylight-power -dali /usr/local/opt/areacontroller/etc/daylight-power.json -level {{ item.level }} 2>&1 >> /var/log/daylight-power.log'
       loop:
         - name: Power On Lights
-          hour: 5
+          hour: 6
           minute: 0
           level: 90
         - name: Power Off Lights
-          hour: 18
+          hour: 19
           minute: 0
           level: 0
+        - name: Test Low
+          hour: 13
+          minute: 57
+          level: 70
+        - name: Test On
+          hour: 13
+          minute: 59
+          level: 90
       notify: Restart cron
 
   handlers:

@@ -3,7 +3,7 @@
   hosts: twincat_bsd
   vars:
     project_root: '{{ playbook_dir }}/../..'
-    temp_dir: /tmp/ibe-2022
+    temp_dir: /tmp/sc-build
     install_dir: /usr/local/opt/areacontroller
 
   tasks:
