@@ -9,6 +9,11 @@ type Supporter interface {
 	Support(functions ...Function)
 }
 
+// SelfSupporter inverts the receiver for Supporter.
+type SelfSupporter interface {
+	AddSupport(supporter Supporter)
+}
+
 // Function represents something that is supported by a type.
 // For example an API might be represented as a Function and added to a server.
 type Function interface {
