@@ -12,16 +12,16 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/vanti-dev/bsp-ew/internal/node"
-	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
-
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
+	"github.com/vanti-dev/bsp-ew/internal/auto"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/manage/enrollment"
+	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/task"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
+	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -49,7 +49,8 @@ type SystemConfig struct {
 	Policy        policy.Policy // Override the policy used for RPC calls. Defaults to policy.Default
 	DisablePolicy bool          // Unsafe, disables any policy checking for the server
 
-	DriverFactories map[string]driver.Factory
+	DriverFactories map[string]driver.Factory // keyed by driver name
+	AutoFactories   map[string]auto.Factory   // keyed by automation type
 }
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
@@ -263,6 +264,13 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 		}
 	}()
 
+	// if any automation exposes apis on the node, allow them to add that support
+	for _, factory := range c.SystemConfig.AutoFactories {
+		if api, ok := factory.(node.SelfSupporter); ok {
+			api.AddSupport(c.Node)
+		}
+	}
+
 	// we delay registering the node servers until now, so that the caller can call c.Node.Support in between
 	// Bootstrap and Run and have all these added correctly.
 	c.Node.Register(c.GRPC)
@@ -279,11 +287,17 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 		})
 	}
 
+	// load and start the drivers
 	results := driver.Build(ctx, c.Services, c.SystemConfig.DriverFactories, c.ControllerConfig.Drivers)
 	loaded, failed := summariseResults(results)
-	c.Logger.Info("driver loading complete", zap.Int("loaded", loaded), zap.Int("failed", failed))
+	c.Logger.Named("driver").Info("driver loading complete", zap.Int("loaded", loaded), zap.Int("failed", failed))
 
-	err = group.Wait()
+	// load and start the automations
+	if err := c.startAutomations(ctx); err != nil {
+		return err
+	}
+
+	err = multierr.Append(err, group.Wait())
 	return
 }
 
@@ -296,4 +310,29 @@ func summariseResults(results map[string]driver.BuildResult) (loaded int, failed
 		}
 	}
 	return
+}
+
+func (c *Controller) startAutomations(ctx context.Context) (err error) {
+	autoServices := &auto.Services{
+		Logger: c.Logger.Named("auto"),
+		Node:   c.Node,
+	}
+	for _, autoConfig := range c.ControllerConfig.Automation {
+		f, ok := c.SystemConfig.AutoFactories[autoConfig.Type]
+		if !ok {
+			err = multierr.Append(err, fmt.Errorf("unsupported automation type %v", autoConfig.Type))
+			continue
+		}
+		impl := f.New(autoServices)
+		// todo: keep track of running automations so we can update config and/or stop them
+		if e := impl.Start(ctx); e != nil {
+			err = multierr.Append(err, fmt.Errorf("start %s %w", autoConfig.Name, e))
+		}
+		if auto.Configurable(impl) {
+			if e := auto.Configure(impl, autoConfig.Raw); e != nil {
+				err = multierr.Append(err, fmt.Errorf("configure %s %w", autoConfig.Name, e))
+			}
+		}
+	}
+	return err
 }

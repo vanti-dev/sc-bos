@@ -10,6 +10,8 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/vanti-dev/bsp-ew/internal/app"
+	"github.com/vanti-dev/bsp-ew/internal/auto"
+	"github.com/vanti-dev/bsp-ew/internal/auto/lights"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali"
@@ -47,22 +49,43 @@ func run(ctx context.Context) error {
 		tc3dali.DriverName: tc3dali.Factory,
 		bacnet.DriverName:  bacnet.Factory,
 	}
+	systemConfig.AutoFactories = map[string]auto.Factory{
+		lights.AutoType: lights.Factory,
+	}
 
 	controller, err := app.Bootstrap(ctx, systemConfig)
 	if err != nil {
 		return err
 	}
 
-	controller.Node.Support(node.Routing(
-		light.NewApiRouter(),
-		occupancysensor.NewApiRouter(),
-		onoff.NewApiRouter(),
-		parent.NewApiRouter(),
-	))
+	addNodeAPIs(controller.Node)
 
 	bacnet.Register(controller.Node)
 
 	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
 
 	return controller.Run(ctx)
+}
+
+func addNodeAPIs(supporter node.Supporter) {
+	{
+		r := light.NewApiRouter()
+		c := light.WrapApi(r)
+		supporter.Support(node.Routing(r), node.Clients(c))
+	}
+	{
+		r := occupancysensor.NewApiRouter()
+		c := occupancysensor.WrapApi(r)
+		supporter.Support(node.Routing(r), node.Clients(c))
+	}
+	{
+		r := onoff.NewApiRouter()
+		c := onoff.WrapApi(r)
+		supporter.Support(node.Routing(r), node.Clients(c))
+	}
+	{
+		r := parent.NewApiRouter()
+		c := parent.WrapApi(r)
+		supporter.Support(node.Routing(r), node.Clients(c))
+	}
 }
