@@ -5,6 +5,7 @@ import (
 	"flag"
 	"os"
 
+	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
@@ -68,6 +69,11 @@ func run(ctx context.Context) error {
 }
 
 func addNodeAPIs(supporter node.Supporter) {
+	{
+		r := airtemperature.NewApiRouter()
+		c := airtemperature.WrapApi(r)
+		supporter.Support(node.Routing(r), node.Clients(c))
+	}
 	{
 		r := light.NewApiRouter()
 		c := light.WrapApi(r)
