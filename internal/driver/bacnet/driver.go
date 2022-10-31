@@ -243,7 +243,7 @@ func (d *Driver) applyConfig(cfg config.Root) error {
 	}
 
 	// Combine objects together into traits...
-	announcer := node.AnnounceWithNamePrefix("traits/", d.announcer)
+	announcer := node.AnnounceWithNamePrefix("trait/", d.announcer)
 	for _, trait := range cfg.Traits {
 		logger := d.logger.With(zap.Stringer("trait", trait.Kind), zap.String("name", trait.Name))
 		impl, err := merge.IntoTrait(d.client, d.devices, trait)

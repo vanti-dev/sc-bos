@@ -150,7 +150,7 @@
     }
   ],
   // Traits defines how objects are combined together to implement named device traits.
-  // Each trait is announce with a name suffix './traits/{name}'
+  // Each trait is announce with a name suffix './trait/{name}'
   traits: [
     {
       // A smart core name for this instance.
