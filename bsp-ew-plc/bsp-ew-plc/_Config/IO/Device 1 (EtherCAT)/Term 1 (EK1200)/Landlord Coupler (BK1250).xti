@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.35" ClassName="CBk11x0Def" SubType="9081" TcProjectVariant="Floor_07">
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.35" ClassName="CBk11x0Def" SubType="9081" TcProjectVariant="Floor_08">
 	<ImageDatas>
 		<ImageData Id="1000">424dd6020000000000003600000028000000100000000e0000000100180000000000a0020000120b0000120b00000000000000000000ff00ffff00ffff00ffff00ffff00ffff00ff0000c00000c00000c00000c00000c00000c00000c0ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc6c6c6000000c6c6c60000c0c6c6c6000000808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc6c6c600ffffc6c6c60000c0c6c6c600ffff808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc6c6c6c6c6c6c6c6c60000c0c6c6c6c6c6c6808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc6c6c6000000c6c6c60000c0c6c6c6000000808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc6c6c6ff0000c6c6c60000c0c6c6c6ff0000808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc6c6c6c6c6c6c6c6c60000c0c6c6c6c6c6c6808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c6000000c6c6c60000c0c6c6c6000000808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c60000ffc6c6c60000c0c6c6c60000ff808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c6c6c6c6c6c6c60000c0c6c6c6c6c6c6808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c6000000c6c6c60000c0c6c6c6000000808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c6c6c6c6c6c6c60000c0c6c6c6c6c6c6808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c6008400c6c6c60000c0c6c6c6008400808080ff00ffff00ffff00ff007bff007bff007bff007bff007bff007bffc6c6c6c6c6c6c6c6c60000c0c6c6c6c6c6c6808080ff00ffff00ffff00ff</ImageData>
 	</ImageDatas>
-	<Box Id="6" Disabled="true" BoxType="9081" AmsPort="28930">
+	<Box Id="6" BoxType="9081" AmsPort="28930">
 		<Name>__FILENAME__</Name>
 		<ImageId>1000</ImageId>
 		<ProjectVariant PvUseDisable="true">
@@ -45,7 +45,7 @@
 0x0080 = Communication error (Outputs)
 ]]></Comment>
 				<Type>UINT</Type>
-				<BitOffs>824</BitOffs>
+				<BitOffs>712</BitOffs>
 			</Var>
 		</Vars>
 		<Vars VarGrpType="2">
@@ -56,7 +56,7 @@
 0x0020 = Show K-Bus overrun
 ]]></Comment>
 				<Type>UINT</Type>
-				<BitOffs>824</BitOffs>
+				<BitOffs>712</BitOffs>
 			</Var>
 		</Vars>
 		<BusCoupler ComplexTermSupport="true" NewHardware="true">
@@ -89,61 +89,61 @@
 					<Var>
 						<Name>State</Name>
 						<Type>UINT</Type>
-						<BitOffs>840</BitOffs>
+						<BitOffs>728</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 0</Name>
 						<Type>USINT</Type>
-						<BitOffs>856</BitOffs>
+						<BitOffs>744</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 1</Name>
 						<Type>USINT</Type>
-						<BitOffs>864</BitOffs>
+						<BitOffs>752</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 2</Name>
 						<Type>USINT</Type>
-						<BitOffs>872</BitOffs>
+						<BitOffs>760</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 3</Name>
 						<Type>USINT</Type>
-						<BitOffs>880</BitOffs>
+						<BitOffs>768</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Ctrl</Name>
 						<Type>UINT</Type>
-						<BitOffs>840</BitOffs>
+						<BitOffs>728</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 0</Name>
 						<Type>USINT</Type>
-						<BitOffs>856</BitOffs>
+						<BitOffs>744</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 1</Name>
 						<Type>USINT</Type>
-						<BitOffs>864</BitOffs>
+						<BitOffs>752</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 2</Name>
 						<Type>USINT</Type>
-						<BitOffs>872</BitOffs>
+						<BitOffs>760</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 3</Name>
 						<Type>USINT</Type>
-						<BitOffs>880</BitOffs>
+						<BitOffs>768</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 				</Vars>
@@ -176,61 +176,61 @@
 					<Var>
 						<Name>State</Name>
 						<Type>UINT</Type>
-						<BitOffs>888</BitOffs>
+						<BitOffs>776</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 0</Name>
 						<Type>USINT</Type>
-						<BitOffs>904</BitOffs>
+						<BitOffs>792</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 1</Name>
 						<Type>USINT</Type>
-						<BitOffs>912</BitOffs>
+						<BitOffs>800</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 2</Name>
 						<Type>USINT</Type>
-						<BitOffs>920</BitOffs>
+						<BitOffs>808</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 3</Name>
 						<Type>USINT</Type>
-						<BitOffs>928</BitOffs>
+						<BitOffs>816</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Ctrl</Name>
 						<Type>UINT</Type>
-						<BitOffs>888</BitOffs>
+						<BitOffs>776</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 0</Name>
 						<Type>USINT</Type>
-						<BitOffs>904</BitOffs>
+						<BitOffs>792</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 1</Name>
 						<Type>USINT</Type>
-						<BitOffs>912</BitOffs>
+						<BitOffs>800</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 2</Name>
 						<Type>USINT</Type>
-						<BitOffs>920</BitOffs>
+						<BitOffs>808</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 3</Name>
 						<Type>USINT</Type>
-						<BitOffs>928</BitOffs>
+						<BitOffs>816</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 				</Vars>
@@ -263,66 +263,66 @@
 					<Var>
 						<Name>State</Name>
 						<Type>UINT</Type>
-						<BitOffs>936</BitOffs>
+						<BitOffs>824</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 0</Name>
 						<Type>USINT</Type>
-						<BitOffs>952</BitOffs>
+						<BitOffs>840</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 1</Name>
 						<Type>USINT</Type>
-						<BitOffs>960</BitOffs>
+						<BitOffs>848</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 2</Name>
 						<Type>USINT</Type>
-						<BitOffs>968</BitOffs>
+						<BitOffs>856</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 3</Name>
 						<Type>USINT</Type>
-						<BitOffs>976</BitOffs>
+						<BitOffs>864</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Ctrl</Name>
 						<Type>UINT</Type>
-						<BitOffs>936</BitOffs>
+						<BitOffs>824</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 0</Name>
 						<Type>USINT</Type>
-						<BitOffs>952</BitOffs>
+						<BitOffs>840</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 1</Name>
 						<Type>USINT</Type>
-						<BitOffs>960</BitOffs>
+						<BitOffs>848</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 2</Name>
 						<Type>USINT</Type>
-						<BitOffs>968</BitOffs>
+						<BitOffs>856</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 3</Name>
 						<Type>USINT</Type>
-						<BitOffs>976</BitOffs>
+						<BitOffs>864</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 				</Vars>
 			</Term>
-			<Term Id="12" TermType="#x1aa5" Fieldbus="7">
+			<Term Id="12" Disabled="true" TermType="#x1aa5" Fieldbus="7">
 				<Name>LL Bus 4 (KL6821)</Name>
 				<ImageId>32</ImageId>
 				<ProjectVariant PvUseDisable="true">
@@ -331,7 +331,6 @@
 						<Name>Floor_03</Name>
 						<Name>Floor_05</Name>
 						<Name>Floor_07</Name>
-						<Name>Floor_08</Name>
 						<Name>Floor_09</Name>
 						<Name>Floor_10</Name>
 						<Disable>0</Disable>
@@ -341,6 +340,7 @@
 						<Name>Floor_02</Name>
 						<Name>Floor_04</Name>
 						<Name>Floor_06</Name>
+						<Name>Floor_08</Name>
 						<Name>Lab</Name>
 						<Disable>1</Disable>
 					</Variant>
@@ -350,66 +350,66 @@
 					<Var>
 						<Name>State</Name>
 						<Type>UINT</Type>
-						<BitOffs>984</BitOffs>
+						<BitOffs>872</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 0</Name>
 						<Type>USINT</Type>
-						<BitOffs>1000</BitOffs>
+						<BitOffs>888</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 1</Name>
 						<Type>USINT</Type>
-						<BitOffs>1008</BitOffs>
+						<BitOffs>896</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 2</Name>
 						<Type>USINT</Type>
-						<BitOffs>1016</BitOffs>
+						<BitOffs>904</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 3</Name>
 						<Type>USINT</Type>
-						<BitOffs>1024</BitOffs>
+						<BitOffs>912</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Ctrl</Name>
 						<Type>UINT</Type>
-						<BitOffs>984</BitOffs>
+						<BitOffs>872</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 0</Name>
 						<Type>USINT</Type>
-						<BitOffs>1000</BitOffs>
+						<BitOffs>888</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 1</Name>
 						<Type>USINT</Type>
-						<BitOffs>1008</BitOffs>
+						<BitOffs>896</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 2</Name>
 						<Type>USINT</Type>
-						<BitOffs>1016</BitOffs>
+						<BitOffs>904</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 3</Name>
 						<Type>USINT</Type>
-						<BitOffs>1024</BitOffs>
+						<BitOffs>912</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 				</Vars>
 			</Term>
-			<Term Id="15" TermType="#x1aa5" Fieldbus="7">
+			<Term Id="15" Disabled="true" TermType="#x1aa5" Fieldbus="7">
 				<Name>LL Bus 5 (KL6821)</Name>
 				<ImageId>32</ImageId>
 				<ProjectVariant PvUseDisable="true">
@@ -418,7 +418,6 @@
 						<Name>Floor_03</Name>
 						<Name>Floor_05</Name>
 						<Name>Floor_07</Name>
-						<Name>Floor_08</Name>
 						<Name>Floor_09</Name>
 						<Name>Floor_10</Name>
 						<Disable>0</Disable>
@@ -428,6 +427,7 @@
 						<Name>Floor_02</Name>
 						<Name>Floor_04</Name>
 						<Name>Floor_06</Name>
+						<Name>Floor_08</Name>
 						<Name>Lab</Name>
 						<Disable>1</Disable>
 					</Variant>
@@ -437,66 +437,66 @@
 					<Var>
 						<Name>State</Name>
 						<Type>UINT</Type>
-						<BitOffs>1032</BitOffs>
+						<BitOffs>872</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 0</Name>
 						<Type>USINT</Type>
-						<BitOffs>1048</BitOffs>
+						<BitOffs>888</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 1</Name>
 						<Type>USINT</Type>
-						<BitOffs>1056</BitOffs>
+						<BitOffs>896</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 2</Name>
 						<Type>USINT</Type>
-						<BitOffs>1064</BitOffs>
+						<BitOffs>904</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 3</Name>
 						<Type>USINT</Type>
-						<BitOffs>1072</BitOffs>
+						<BitOffs>912</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Ctrl</Name>
 						<Type>UINT</Type>
-						<BitOffs>1032</BitOffs>
+						<BitOffs>872</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 0</Name>
 						<Type>USINT</Type>
-						<BitOffs>1048</BitOffs>
+						<BitOffs>888</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 1</Name>
 						<Type>USINT</Type>
-						<BitOffs>1056</BitOffs>
+						<BitOffs>896</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 2</Name>
 						<Type>USINT</Type>
-						<BitOffs>1064</BitOffs>
+						<BitOffs>904</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 3</Name>
 						<Type>USINT</Type>
-						<BitOffs>1072</BitOffs>
+						<BitOffs>912</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 				</Vars>
 			</Term>
-			<Term Id="16" TermType="#x1aa5" Fieldbus="7">
+			<Term Id="16" Disabled="true" TermType="#x1aa5" Fieldbus="7">
 				<Name>LL Bus 6 (KL6821)</Name>
 				<ImageId>32</ImageId>
 				<ProjectVariant PvUseDisable="true">
@@ -505,7 +505,6 @@
 						<Name>Floor_03</Name>
 						<Name>Floor_05</Name>
 						<Name>Floor_07</Name>
-						<Name>Floor_08</Name>
 						<Name>Floor_09</Name>
 						<Name>Floor_10</Name>
 						<Disable>0</Disable>
@@ -515,6 +514,7 @@
 						<Name>Floor_02</Name>
 						<Name>Floor_04</Name>
 						<Name>Floor_06</Name>
+						<Name>Floor_08</Name>
 						<Name>Lab</Name>
 						<Disable>1</Disable>
 					</Variant>
@@ -524,61 +524,61 @@
 					<Var>
 						<Name>State</Name>
 						<Type>UINT</Type>
-						<BitOffs>1080</BitOffs>
+						<BitOffs>872</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 0</Name>
 						<Type>USINT</Type>
-						<BitOffs>1096</BitOffs>
+						<BitOffs>888</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 1</Name>
 						<Type>USINT</Type>
-						<BitOffs>1104</BitOffs>
+						<BitOffs>896</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 2</Name>
 						<Type>USINT</Type>
-						<BitOffs>1112</BitOffs>
+						<BitOffs>904</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Data In 3</Name>
 						<Type>USINT</Type>
-						<BitOffs>1120</BitOffs>
+						<BitOffs>912</BitOffs>
 						<InOut>0</InOut>
 					</Var>
 					<Var>
 						<Name>Ctrl</Name>
 						<Type>UINT</Type>
-						<BitOffs>1080</BitOffs>
+						<BitOffs>872</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 0</Name>
 						<Type>USINT</Type>
-						<BitOffs>1096</BitOffs>
+						<BitOffs>888</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 1</Name>
 						<Type>USINT</Type>
-						<BitOffs>1104</BitOffs>
+						<BitOffs>896</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 2</Name>
 						<Type>USINT</Type>
-						<BitOffs>1112</BitOffs>
+						<BitOffs>904</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 					<Var>
 						<Name>Data Out 3</Name>
 						<Type>USINT</Type>
-						<BitOffs>1120</BitOffs>
+						<BitOffs>912</BitOffs>
 						<InOut>1</InOut>
 					</Var>
 				</Vars>
@@ -588,11 +588,11 @@
 				<ImageId>32</ImageId>
 			</Term>
 		</BusCoupler>
-		<EtherCAT SlaveType="3" AdsServerAddress="000000000207f103" FixedAdsServerNetId="true" PdiType="#x0008" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="51" FoeType="1" VendorId="#x00000002" ProductCode="#x04e22c22" RevisionNo="#x00130000" InfoDataAddr="true" InfoDataNetId="true" TimeoutStateChange1="5000" TimeoutMailbox2="6000" GenerateOwnNetId="true" PortPhys="3">
+		<EtherCAT SlaveType="3" AdsServerAddress="000000000207ef03" FixedAdsServerNetId="true" PdiType="#x0008" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="51" FoeType="1" VendorId="#x00000002" ProductCode="#x04e22c22" RevisionNo="#x00130000" InfoDataAddr="true" InfoDataNetId="true" TimeoutStateChange1="5000" TimeoutMailbox2="6000" GenerateOwnNetId="true" PortPhys="3">
 			<SyncMan>001e00012600010001000000400000010001001e26010000</SyncMan>
 			<SyncMan>001f00012200010002000000400000010001001f22010000</SyncMan>
-			<SyncMan>001026002400010003000000000000000000001024010000</SyncMan>
-			<SyncMan>001726000000010004000000000000000000001700010000</SyncMan>
+			<SyncMan>001014002400010003000000000000000000001024010000</SyncMan>
+			<SyncMan>001714000000010004000000000000000000001700010000</SyncMan>
 			<Fmmu>0000000000000000001000020100000001000000000000000000000000000000</Fmmu>
 			<Fmmu>0000000000000000001700010100000002000000000000000000000000000000</Fmmu>
 			<Fmmu>00000000000000000d0800010100000003000000000000000000000000000000</Fmmu>

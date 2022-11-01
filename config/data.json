@@ -27,6 +27,15 @@
       "t3Count": 2,
       "t4Count": 2,
       "hasLifeSafety": true
+    },
+    {
+      "floor": 8,
+      "netID": "5.109.178.73.1.1",
+      "t1Count": 2,
+      "t2Count": 2,
+      "t3Count": 2,
+      "t4Count": 1,
+      "landlordCount": 3
     }
   ]
 }
