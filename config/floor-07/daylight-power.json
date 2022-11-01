@@ -1,0 +1,46 @@
+{
+    "name": "dali",
+    "type": "tc3dali",
+    "ads": {
+        "netID": "5.109.182.239.1.1",
+        "port": 851
+    },
+    "buses": [
+        {
+            "name": "ns/bsp/sites/enterprise-wharf/floors/7/dali/bus/T1_1",
+            "bridgePrefix": "GVL_Bridges.bus_T1_1"
+        },
+        {
+            "name": "ns/bsp/sites/enterprise-wharf/floors/7/dali/bus/T1_2",
+            "bridgePrefix": "GVL_Bridges.bus_T1_2"
+        },
+        {
+            "name": "ns/bsp/sites/enterprise-wharf/floors/7/dali/bus/T2_1",
+            "bridgePrefix": "GVL_Bridges.bus_T2_1"
+        },
+        {
+            "name": "ns/bsp/sites/enterprise-wharf/floors/7/dali/bus/T2_2",
+            "bridgePrefix": "GVL_Bridges.bus_T2_2"
+        },
+        {
+            "name": "ns/bsp/sites/enterprise-wharf/floors/7/dali/bus/T3_1",
+            "bridgePrefix": "GVL_Bridges.bus_T3_1"
+        },
+        {
+            "name": "ns/bsp/sites/enterprise-wharf/floors/7/dali/bus/T3_2",
+            "bridgePrefix": "GVL_Bridges.bus_T3_2"
+        },
+        {
+            "name": "ns/bsp/sites/enterprise-wharf/floors/7/dali/bus/T4_1",
+            "bridgePrefix": "GVL_Bridges.bus_T4_1"
+        },
+        {
+            "name": "ns/bsp/sites/enterprise-wharf/floors/7/dali/bus/T4_2",
+            "bridgePrefix": "GVL_Bridges.bus_T4_2"
+        },
+        {
+            "name": "ns/bsp/sites/enterprise-wharf/floors/7/dali/bus/LS",
+            "bridgePrefix": "GVL_Bridges.bus_LS"
+        }
+    ]
+}

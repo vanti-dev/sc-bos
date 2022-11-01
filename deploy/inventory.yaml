@@ -31,6 +31,10 @@ all:
           ansible_host: "10.104.10.133"
           floor: floor-06
           x001_ip: 10.1.104.16
+        floor-07:
+          ansible_host: "10.104.10.81"
+          floor: floor-07
+          x001_ip: 10.1.104.17
       vars:
         #ansible_connection: paramiko
         ansible_python_interpreter: /usr/local/bin/python3
@@ -42,3 +46,7 @@ all:
         floor-01:
         floor-02:
         floor-03:
+        floor-04:
+        floor-05:
+        floor-06:
+        floor-07:
