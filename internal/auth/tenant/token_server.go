@@ -79,13 +79,8 @@ func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 		writeTokenError(writer, errInvalidRequest, logger)
 		return
 	}
-	if err := verifyPostBodyType(request); err != nil {
+	if err := parsePostForm(request); err != nil {
 		writeTokenError(writer, err, logger)
-		return
-	}
-	if err := request.ParseMultipartForm(0); err != nil {
-		writeTokenError(writer, errInvalidRequest, logger)
-		logger.Error("form parse error", zap.Error(err))
 		return
 	}
 
@@ -104,7 +99,7 @@ func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 	}
 }
 
-func verifyPostBodyType(request *http.Request) error {
+func parsePostForm(request *http.Request) error {
 	ct := request.Header.Get("Content-Type")
 	// RFC 7231, section 3.1.1.5 - empty type
 	//   MAY be treated as application/octet-stream
@@ -116,8 +111,10 @@ func verifyPostBodyType(request *http.Request) error {
 		return err
 	}
 	switch ct {
-	case "application/x-www-form-urlencoded", "multipart/form-data":
-		return nil
+	case "application/x-www-form-urlencoded":
+		return request.ParseForm()
+	case "multipart/form-data":
+		return request.ParseMultipartForm(0)
 	}
 	return tokenError{
 		Code:             400,
