@@ -1,0 +1,26 @@
+{
+    "name": "dali",
+    "type": "tc3dali",
+    "ads": {
+        "netID": "5.109.178.53.1.1",
+        "port": 851
+    },
+    "buses": [
+        {
+            "name": "ns/bsp/sites/enterprise-wharf/floors/10/dali/bus/LL_1",
+            "bridgePrefix": "GVL_Bridges.bus_LL1"
+        },
+        {
+            "name": "ns/bsp/sites/enterprise-wharf/floors/10/dali/bus/LL_2",
+            "bridgePrefix": "GVL_Bridges.bus_LL2"
+        },
+        {
+            "name": "ns/bsp/sites/enterprise-wharf/floors/10/dali/bus/LL_3",
+            "bridgePrefix": "GVL_Bridges.bus_LL3"
+        },
+        {
+            "name": "ns/bsp/sites/enterprise-wharf/floors/10/dali/bus/LL_4",
+            "bridgePrefix": "GVL_Bridges.bus_LL4"
+        }
+    ]
+}

@@ -36,6 +36,19 @@
       "t3Count": 2,
       "t4Count": 1,
       "landlordCount": 3
+    },
+    {
+      "floor": 9,
+      "netID": "5.109.183.9.1.1",
+      "t1Count": 2,
+      "t2Count": 2,
+      "t3Count": 2,
+      "t4Count": 1
+    },
+    {
+      "floor": 10,
+      "netID": "5.109.178.53.1.1",
+      "landlordCount": 4
     }
   ]
 }
