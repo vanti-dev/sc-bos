@@ -76,7 +76,7 @@ func run(ctx context.Context) error {
 }
 
 func genFloor(floorData floor, name string) (o daliOutput) {
-	o.Name = name
+	o.Name = "dali"
 	o.Type = "tc3dali"
 	o.ADS = daliAds{
 		NetID: floorData.NetID,

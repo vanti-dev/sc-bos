@@ -2,7 +2,7 @@
     "name": "ns/bsp/sites/enterprise-wharf/floors/4",
     "drivers": [
         {
-            "name": "ns/bsp/sites/enterprise-wharf/floors/4",
+            "name": "dali",
             "type": "tc3dali",
             "ads": {
                 "netID": "5.109.178.55.1.1",
