@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	bactypes "github.com/vanti-dev/gobacnet/types"
@@ -42,6 +43,11 @@ func ReadFile(name string) (root Root, err error) {
 func Read(r io.Reader) (root Root, err error) {
 	err = json.NewDecoder(r).Decode(&root)
 	return
+}
+
+// ReadBytes decodes bytes into a config Root.
+func ReadBytes(data []byte) (root Root, err error) {
+	return Read(bytes.NewReader(data))
 }
 
 type Discovery struct {
