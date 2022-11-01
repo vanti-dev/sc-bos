@@ -25,7 +25,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Private repo auth
-        run:
+        run: |
           git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/smart-core-os".insteadOf "https://github.com/smart-core-os"
           git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/vanti-dev".insteadOf "https://github.com/vanti-dev"
       - name: Test
