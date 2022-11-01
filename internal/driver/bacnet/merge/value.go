@@ -2,6 +2,7 @@ package merge
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/known"
@@ -26,6 +27,10 @@ func readProperty(_ context.Context, client *gobacnet.Client, known known.Contex
 	res, err := client.ReadProperty(device, req)
 	if err != nil {
 		return nil, err
+	}
+	if len(res.Object.Properties) == 0 {
+		// Shouldn't happen, but has on occasion. I guess it depends how the device responds to our request
+		return nil, errors.New("zero length object properties")
 	}
 	return res.Object.Properties[0].Data, nil
 }
