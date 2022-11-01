@@ -1,3 +1,5 @@
+//go:build !notc3dali
+
 package main
 
 import (
