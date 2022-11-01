@@ -5,39 +5,38 @@
 {attribute 'strict'}
 TYPE E_DALIBridgeCommand :
 (
-	idle,
-	directArcPowerControl,
-	queryActualLevel,
-	queryStatus,
-	setEventScheme,
-	queryEventScheme,
-	setEventFilter,
-	queryEventFilter,
-	identifyDevice102,
-	identifyDevice103,
-	enableInstance,
-	goToScene,
-	setFadeTime,
-	queryInputValue,
-	
-	queryBatteryCharge,
-	queryDurationTestResult,
-	queryEmergencyMode,
-	queryEmergencyStatus,
-	queryFailureStatus,
-	queryRatedDuration,
-	queryTestTiming,
-	resetDurationTestDoneFlag,
-	resetFunctionTestDoneFlag,
-	startDurationTest,
-	startFunctionTest,
-	stopTest,
-	setDurationTestInterval,
-	setFunctionTestInterval,
-	startIdentification202,
-	queryGroups,
-	addToGroup,
-	removeFromGroup,
+	idle						:= 0,
+	directArcPowerControl		:= 1,
+	queryActualLevel			:= 2,
+	queryStatus					:= 3,
+	setEventScheme				:= 4,
+	queryEventScheme			:= 5,
+	setEventFilter				:= 6,
+	queryEventFilter			:= 7,
+	identifyDevice102			:= 8,
+	identifyDevice103			:= 9,
+	enableInstance				:= 10,
+	goToScene					:= 11,
+	setFadeTime					:= 12,
+	queryInputValue				:= 13,
+	queryBatteryCharge			:= 14,
+	queryDurationTestResult		:= 15,
+	queryEmergencyMode			:= 16,
+	queryEmergencyStatus		:= 17,
+	queryFailureStatus			:= 18,
+	queryRatedDuration			:= 19,
+	queryTestTiming				:= 20,
+	resetDurationTestDoneFlag	:= 21,
+	resetFunctionTestDoneFlag	:= 22,
+	startDurationTest			:= 23,
+	startFunctionTest			:= 24,
+	stopTest					:= 25,
+	setDurationTestInterval		:= 26,
+	setFunctionTestInterval		:= 27,
+	startIdentification202		:= 28,
+	queryGroups					:= 29,
+	addToGroup					:= 30,
+	removeFromGroup				:= 31,
 	
 	testCommand := 100
 );
@@ -49,162 +48,162 @@ END_TYPE
           <l n="TextList" t="ArrayList" cet="TextListRow">
             <o>
               <v n="TextID">"idle"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"0"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"directArcPowerControl"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"1"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"queryActualLevel"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"2"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"queryStatus"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"3"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"setEventScheme"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"4"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"queryEventScheme"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"5"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"setEventFilter"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"6"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"queryEventFilter"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"7"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"identifyDevice102"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"8"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"identifyDevice103"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"9"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"enableInstance"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"10"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"goToScene"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"11"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"setFadeTime"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"12"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"queryInputValue"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"13"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"queryBatteryCharge"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"14"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"queryDurationTestResult"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"15"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"queryEmergencyMode"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"16"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"queryEmergencyStatus"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"17"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"queryFailureStatus"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"18"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"queryRatedDuration"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"19"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"queryTestTiming"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"20"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"resetDurationTestDoneFlag"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"21"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"resetFunctionTestDoneFlag"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"22"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"startDurationTest"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"23"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"startFunctionTest"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"24"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"stopTest"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"25"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"setDurationTestInterval"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"26"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"setFunctionTestInterval"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"27"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"startIdentification202"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"28"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"queryGroups"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"29"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"addToGroup"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"30"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
               <v n="TextID">"removeFromGroup"</v>
-              <v n="TextDefault">""</v>
+              <v n="TextDefault">"31"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>

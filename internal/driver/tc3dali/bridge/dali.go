@@ -8,37 +8,37 @@ import (
 type Command int
 
 const (
-	DirectArcPowerControl Command = 1 + iota
-	QueryActualLevel
-	QueryStatus
-	SetEventScheme
-	QueryEventScheme
-	SetEventFilter
-	QueryEventFilter
-	IdentifyDevice102
-	IdentifyDevice103
-	EnableInstance
-	GoToScene
-	SetFadeTime
-	QueryInputValue
-
-	QueryBatteryCharge
-	QueryDurationTestResult
-	QueryEmergencyMode
-	QueryEmergencyStatus
-	QueryRatedDuration
-	QueryTestTiming
-	ResetDurationTestDoneFlag
-	ResetFunctionTestDoneFlag
-	StartDurationTest
-	StartFunctionTest
-	StopTest
-	SetDurationTestInterval
-	SetFunctionTestInterval
-
-	QueryGroups
-	AddToGroup
-	RemoveFromGroup
+	DirectArcPowerControl     Command = 1
+	QueryActualLevel          Command = 2
+	QueryStatus               Command = 3
+	SetEventScheme            Command = 4
+	QueryEventScheme          Command = 5
+	SetEventFilter            Command = 6
+	QueryEventFilter          Command = 7
+	IdentifyDevice102         Command = 8
+	IdentifyDevice103         Command = 9
+	EnableInstance            Command = 10
+	GoToScene                 Command = 11
+	SetFadeTime               Command = 12
+	QueryInputValue           Command = 13
+	QueryBatteryCharge        Command = 14
+	QueryDurationTestResult   Command = 15
+	QueryEmergencyMode        Command = 16
+	QueryEmergencyStatus      Command = 17
+	QueryFailureStatus        Command = 18
+	QueryRatedDuration        Command = 19
+	QueryTestTiming           Command = 20
+	ResetDurationTestDoneFlag Command = 21
+	ResetFunctionTestDoneFlag Command = 22
+	StartDurationTest         Command = 23
+	StartFunctionTest         Command = 24
+	StopTest                  Command = 25
+	SetDurationTestInterval   Command = 26
+	SetFunctionTestInterval   Command = 27
+	StartIdentification202    Command = 28
+	QueryGroups               Command = 29
+	AddToGroup                Command = 30
+	RemoveFromGroup           Command = 31
 
 	TestCommand Command = 100
 )
