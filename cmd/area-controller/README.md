@@ -63,3 +63,39 @@ Finally we can turn on the OAuth password flow for the area controller via the `
 ```shell
 go run github.com/vanti-dev/bsp-ew/cmd/area-controller --local-auth
 ```
+
+## Building and Running
+
+The area controller can be built, run, and tested using standard `go build`, `go run`, or `go test` commands
+
+```shell
+go run github.com/vanti-dev/bsp-ew/cmd/area-controller
+```
+
+### Special considerations
+
+The tc3dali driver, used for communication between the go program and the host Beckhoff Twincat system, requires the
+existence of some libraries to exist on the host machine during build. These libraries get installed on your system when
+you install Beckhoff Twincat XAE Shell, and are installed by default on the Beckhoff PLCs.
+
+You configure the `go build` command to include these libraries via these environment variables:
+
+```
+CGO_ENABLED='1' 
+CGO_CFLAGS='-I/usr/local/include'
+CGO_LDFLAGS='-L/usr/local/lib'
+```
+
+If you are building on a system that does not have these libraries, or the libraries cannot be found you will receive a
+build error like the this:
+
+```
+# github.com/vanti-dev/bsp-ew/internal/driver/tc3dali
+internal/driver/tc3dali/impl.go:26:22: undefined: adsdll.Connect
+```
+
+You may disable the `tc3dali` driver by passing `--tags notc3dali` to the build or run or test commands:
+
+```shell
+go run --tags notc3dali github.com/vanti-dev/bsp-ew/cmd/area-controller
+```
