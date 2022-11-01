@@ -6,8 +6,6 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
 )
 
-type InstanceType byte
-
 type notification struct {
 	Valid          bool         `tc3ads:"valid"`
 	Sequence       uint64       `tc3ads:"sequence"`

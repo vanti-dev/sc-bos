@@ -14,6 +14,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/bridge"
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/task"
 	"github.com/vanti-dev/twincat3-ads-go/pkg/ads"
@@ -88,7 +89,19 @@ func run(ctx context.Context) error {
 		Name:         "dali-integration-test/bus/1",
 		BridgePrefix: flagBusPrefix,
 	}
-	busTask := tc3dali.BusTask(busConfig, dev, services)
+	bridgeConfig := bridge.Config{
+		Device:                  dev,
+		Logger:                  services.Logger,
+		BridgeFBName:            busConfig.BridgePrefix + tc3dali.BridgeSuffix,
+		ResponseMailboxName:     busConfig.BridgePrefix + tc3dali.ResponseMailboxSuffix,
+		NotificationMailboxName: busConfig.BridgePrefix + tc3dali.NotificationMailboxSuffix,
+		UsePolling:              false,
+	}
+	bus, err := bridgeConfig.Connect()
+	if err != nil {
+		return fmt.Errorf("bridgeConfig.Connect: %w", err)
+	}
+	busTask := tc3dali.BusTask(busConfig, bus, services)
 
 	// gRPC setup
 	server := grpc.NewServer()

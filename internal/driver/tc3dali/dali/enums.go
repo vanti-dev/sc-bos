@@ -122,6 +122,8 @@ func (ft FadeTime) AsDuration() (duration time.Duration, ok bool) {
 	return
 }
 
+type InstanceType byte
+
 // The constants for the different types of control devices (input devices)
 // See https://infosys.beckhoff.com/english.php?content=../content/1033/tcplclib_tc3_dali/9185112587.html&id=5259714273337466114
 // for a reference

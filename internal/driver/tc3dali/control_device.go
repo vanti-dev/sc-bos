@@ -8,7 +8,6 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/bridge"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -95,7 +94,7 @@ func (s *controlDeviceServer) handleInputEvent(event dali.InputEvent, err error)
 
 	// only process events if they are for this control device
 	if event.Scheme != dali.EventSchemeDevice || event.DeviceShortAddress() != s.shortAddr ||
-		event.InstanceType() != bridge.InstanceType(dali.InstanceTypeOccupancy) {
+		event.InstanceType() != dali.InstanceType(dali.InstanceTypeOccupancy) {
 
 		return
 	}

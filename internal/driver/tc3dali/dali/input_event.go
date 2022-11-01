@@ -2,8 +2,6 @@ package dali
 
 import (
 	"fmt"
-
-	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/bridge"
 )
 
 // InputEventParameters determines which identification data is bundled with event notifications from control devices.
@@ -24,12 +22,12 @@ func InputEventParametersForInstance(deviceShortAddress byte, instance byte) Inp
 	}
 }
 
-func (p InputEventParameters) InstanceType() bridge.InstanceType {
+func (p InputEventParameters) InstanceType() InstanceType {
 	switch p.Scheme {
 	case EventSchemeInstance:
-		return bridge.InstanceType(p.AddressInfo1)
+		return InstanceType(p.AddressInfo1)
 	case EventSchemeDevice, EventSchemeDeviceGroup, EventSchemeInstanceGroup:
-		return bridge.InstanceType(p.AddressInfo2)
+		return InstanceType(p.AddressInfo2)
 	}
 	panic(fmt.Sprintf("EventScheme %v does not contain an InstanceType", p.Scheme))
 }

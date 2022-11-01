@@ -3,11 +3,16 @@
 package tc3dali
 
 import (
-	"context"
-	"github.com/vanti-dev/bsp-ew/internal/driver"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
+	"go.uber.org/zap"
 )
 
-func applyConfig(_ context.Context, services driver.Services, _ Config) error {
-	services.Logger.Warn("tc3dali driver disabled")
-	return nil
+func newBusBuilder(_ ADSConfig) (busBuilder, error) {
+	return &mockBusBuilder{}, nil
+}
+
+type mockBusBuilder struct{}
+
+func (bb *mockBusBuilder) buildBus(config BusConfig, logger *zap.Logger) (dali.Dali, error) {
+	return dali.NewMock(logger), nil
 }

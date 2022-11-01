@@ -3,8 +3,15 @@ package tc3dali
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/twincat3-ads-go/pkg/ads"
+)
+
+const (
+	BridgeSuffix              = "_bridge"
+	ResponseMailboxSuffix     = "_response"
+	NotificationMailboxSuffix = "_notification"
 )
 
 type Config struct {
