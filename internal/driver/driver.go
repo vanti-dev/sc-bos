@@ -1,9 +1,6 @@
 package driver
 
 import (
-	"context"
-	"encoding/json"
-
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/task"
 	"go.uber.org/zap"
@@ -16,10 +13,11 @@ type Services struct {
 }
 
 type Driver interface {
-	Name() string
 }
 
-type Factory func(ctx context.Context, services Services, config json.RawMessage) (Driver, error)
+type Factory interface {
+	New(services Services) task.Starter
+}
 
 type Status string
 

@@ -58,8 +58,11 @@ func run(ctx context.Context) error {
 		Tasks:  &task.Group{},
 		Node:   rootNode,
 	}
-	_, err = tc3dali.Factory(ctx, services, daliConfig)
-	if err != nil {
+	daliDriver := tc3dali.NewDriver(services)
+	if err := daliDriver.Start(ctx); err != nil {
+		return err
+	}
+	if err := daliDriver.Configure(daliConfig); err != nil {
 		return err
 	}
 

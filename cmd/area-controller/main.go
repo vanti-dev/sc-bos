@@ -61,8 +61,6 @@ func run(ctx context.Context) error {
 
 	addNodeAPIs(controller.Node)
 
-	bacnet.Register(controller.Node)
-
 	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
 
 	return controller.Run(ctx)

@@ -2,7 +2,6 @@ package bacnet
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
@@ -12,6 +11,7 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/merge"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/rpc"
 	"github.com/vanti-dev/bsp-ew/internal/node"
+	"github.com/vanti-dev/bsp-ew/internal/task"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
 	"go.uber.org/multierr"
@@ -19,6 +19,18 @@ import (
 )
 
 const DriverName = "bacnet"
+
+var Factory driver.Factory = factory{}
+
+type factory struct{}
+
+func (_ factory) New(services driver.Services) task.Starter {
+	return NewDriver(services)
+}
+
+func (_ factory) AddSupport(supporter node.Supporter) {
+	Register(supporter)
+}
 
 // Register makes sure this driver and its device apis are available in the given node.
 func Register(supporter node.Supporter) {
@@ -49,36 +61,6 @@ func NewDriver(services driver.Services) *Driver {
 	d.Logger = services.Logger.Named("bacnet")
 	d.ReadConfig = config.ReadBytes
 	return d
-}
-
-// Factory creates a new Driver and calls Start then Configure on it.
-func Factory(ctx context.Context, services driver.Services, rawConfig json.RawMessage) (out driver.Driver, err error) {
-	d := NewDriver(services)
-
-	err = d.Start(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// now the driver is started, make sure we stop it if we happen to fail while setting up the driver.
-	defer func() {
-		if err != nil {
-			_ = d.Stop()
-		}
-	}()
-
-	// assume that people are using the ctx to stop the driver
-	go func() {
-		<-ctx.Done()
-		_ = d.Stop()
-	}()
-
-	err = d.Configure(rawConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	return d, nil
 }
 
 func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {

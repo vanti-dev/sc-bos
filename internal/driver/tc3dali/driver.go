@@ -2,37 +2,24 @@ package tc3dali
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-
 	"github.com/vanti-dev/bsp-ew/internal/driver"
+	"github.com/vanti-dev/bsp-ew/internal/task"
 )
 
 const DriverName = "tc3dali"
 
-func Factory(ctx context.Context, services driver.Services, rawConfig json.RawMessage) (driver.Driver, error) {
-	var config Config
-	err := json.Unmarshal(rawConfig, &config)
-	if err != nil {
-		return nil, fmt.Errorf("invalid config: %w", err)
-	}
+var Factory driver.Factory = factory{}
 
-	err = applyConfig(ctx, services, config)
-	if err != nil {
-		return nil, err
-	}
+type factory struct{}
 
-	return &driverImpl{
-		config: config,
-	}, nil
+func (_ factory) New(services driver.Services) task.Starter {
+	return NewDriver(services)
 }
 
-var _ driver.Factory = Factory
-
-type driverImpl struct {
-	config Config
-}
-
-func (d *driverImpl) Name() string {
-	return d.config.Name
+func NewDriver(services driver.Services) *driver.Lifecycle[Config] {
+	d := driver.NewLifecycle(func(ctx context.Context, cfg Config) error {
+		return applyConfig(ctx, services, cfg)
+	})
+	d.Logger = services.Logger.Named("tc3dali")
+	return d
 }

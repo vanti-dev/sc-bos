@@ -265,6 +265,12 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 		}
 	}()
 
+	// if any driver exposes apis on the node, allow them to add that support
+	for _, factory := range c.SystemConfig.DriverFactories {
+		if api, ok := factory.(node.SelfSupporter); ok {
+			api.AddSupport(c.Node)
+		}
+	}
 	// if any automation exposes apis on the node, allow them to add that support
 	for _, factory := range c.SystemConfig.AutoFactories {
 		if api, ok := factory.(node.SelfSupporter); ok {
@@ -289,10 +295,9 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	}
 
 	// load and start the drivers
-	results := driver.Build(ctx, c.Services, c.SystemConfig.DriverFactories, c.ControllerConfig.Drivers)
-	loaded, failed := summariseResults(results)
-	c.Logger.Named("driver").Info("driver loading complete", zap.Int("loaded", loaded), zap.Int("failed", failed))
-
+	if err := c.startDrivers(ctx); err != nil {
+		return err
+	}
 	// load and start the automations
 	if err := c.startAutomations(ctx); err != nil {
 		return err
@@ -302,15 +307,47 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	return
 }
 
-func summariseResults(results map[string]driver.BuildResult) (loaded int, failed int) {
-	for _, result := range results {
-		if result.Err == nil {
-			loaded++
-		} else {
-			failed++
+func (c *Controller) startDrivers(ctx context.Context) (err error) {
+	driverServices := driver.Services{
+		Logger: c.Logger.Named("auto"),
+		Node:   c.Node,
+		Tasks:  &task.Group{},
+	}
+
+	var started []task.Starter
+	go func() {
+		<-ctx.Done()
+		var err error
+		for _, impl := range started {
+			if task.Stoppable(impl) {
+				err = multierr.Append(err, task.Stop(impl))
+			}
+		}
+		if err != nil {
+			c.Logger.Warn("Failed to cleanly stop drivers after ctx done", zap.Error(err))
+		}
+	}()
+
+	for _, driverConfig := range c.ControllerConfig.Drivers {
+		f, ok := c.SystemConfig.DriverFactories[driverConfig.Type]
+		if !ok {
+			err = multierr.Append(err, fmt.Errorf("unsupported driver type %v", driverConfig.Type))
+			continue
+		}
+		impl := f.New(driverServices)
+		if e := impl.Start(ctx); e != nil {
+			err = multierr.Append(err, fmt.Errorf("start %s %w", driverConfig.Name, e))
+		}
+		// keep track so we can stop them if ctx ends
+		started = append(started, impl)
+
+		if task.Configurable(impl) {
+			if e := task.Configure(impl, driverConfig.Raw); e != nil {
+				err = multierr.Append(err, fmt.Errorf("configure %s %w", driverConfig.Name, e))
+			}
 		}
 	}
-	return
+	return err
 }
 
 func (c *Controller) startAutomations(ctx context.Context) (err error) {
@@ -318,6 +355,21 @@ func (c *Controller) startAutomations(ctx context.Context) (err error) {
 		Logger: c.Logger.Named("auto"),
 		Node:   c.Node,
 	}
+
+	var started []task.Starter
+	go func() {
+		<-ctx.Done()
+		var err error
+		for _, impl := range started {
+			if task.Stoppable(impl) {
+				err = multierr.Append(err, task.Stop(impl))
+			}
+		}
+		if err != nil {
+			c.Logger.Warn("Failed to cleanly stop automations after ctx done", zap.Error(err))
+		}
+	}()
+
 	for _, autoConfig := range c.ControllerConfig.Automation {
 		f, ok := c.SystemConfig.AutoFactories[autoConfig.Type]
 		if !ok {
@@ -325,10 +377,12 @@ func (c *Controller) startAutomations(ctx context.Context) (err error) {
 			continue
 		}
 		impl := f.New(autoServices)
-		// todo: keep track of running automations so we can update config and/or stop them
 		if e := impl.Start(ctx); e != nil {
 			err = multierr.Append(err, fmt.Errorf("start %s %w", autoConfig.Name, e))
 		}
+		// keep track so we can stop them if ctx ends
+		started = append(started, impl)
+
 		if task.Configurable(impl) {
 			if e := task.Configure(impl, autoConfig.Raw); e != nil {
 				err = multierr.Append(err, fmt.Errorf("configure %s %w", autoConfig.Name, e))
