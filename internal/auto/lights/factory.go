@@ -7,6 +7,6 @@ import (
 
 const AutoType = "lights"
 
-var Factory = auto.FactoryFunc(func(services *auto.Services) task.Starter {
+var Factory = auto.FactoryFunc(func(services auto.Services) task.Starter {
 	return PirsTurnLightsOn(services.Node, services.Logger.Named("lights"))
 })

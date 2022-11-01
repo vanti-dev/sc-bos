@@ -314,7 +314,7 @@ func summariseResults(results map[string]driver.BuildResult) (loaded int, failed
 }
 
 func (c *Controller) startAutomations(ctx context.Context) (err error) {
-	autoServices := &auto.Services{
+	autoServices := auto.Services{
 		Logger: c.Logger.Named("auto"),
 		Node:   c.Node,
 	}
