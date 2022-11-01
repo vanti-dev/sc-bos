@@ -9,6 +9,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/bridge"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -20,7 +21,7 @@ import (
 // for details on the operation of such sensors.
 type controlDeviceServer struct {
 	traits.UnimplementedOccupancySensorApiServer
-	bus       bridge.Dali
+	bus       dali.Dali
 	shortAddr uint8
 
 	occupancy *resource.Value
@@ -30,12 +31,12 @@ type controlDeviceServer struct {
 }
 
 func (s *controlDeviceServer) GetOccupancy(ctx context.Context, _ *traits.GetOccupancyRequest) (*traits.Occupancy, error) {
-	data, err := s.bus.ExecuteCommand(ctx, bridge.Request{
-		Command:             bridge.QueryInputValue,
-		AddressType:         bridge.Short,
+	data, err := s.bus.ExecuteCommand(ctx, dali.Request{
+		Command:             dali.QueryInputValue,
+		AddressType:         dali.Short,
 		Address:             s.shortAddr,
-		InstanceAddressType: bridge.IATInstanceType,
-		InstanceAddress:     bridge.InstanceTypeOccupancy,
+		InstanceAddressType: dali.IATInstanceType,
+		InstanceAddress:     dali.InstanceTypeOccupancy,
 	})
 	if err != nil {
 		return nil, err
@@ -87,14 +88,14 @@ func (s *controlDeviceServer) PullOccupancy(req *traits.PullOccupancyRequest, se
 	return nil
 }
 
-func (s *controlDeviceServer) handleInputEvent(event bridge.InputEvent, err error) {
+func (s *controlDeviceServer) handleInputEvent(event dali.InputEvent, err error) {
 	if err != nil || event.Err != nil {
 		// this event doesn't contain any useful data
 	}
 
 	// only process events if they are for this control device
-	if event.Scheme != bridge.EventSchemeDevice || event.DeviceShortAddress() != s.shortAddr ||
-		event.InstanceType() != bridge.InstanceType(bridge.InstanceTypeOccupancy) {
+	if event.Scheme != dali.EventSchemeDevice || event.DeviceShortAddress() != s.shortAddr ||
+		event.InstanceType() != bridge.InstanceType(dali.InstanceTypeOccupancy) {
 
 		return
 	}
@@ -124,12 +125,12 @@ func (s *controlDeviceServer) ensureEventsEnabled(ctx context.Context) error {
 		// The device won't send any Occupancy-related events until the Occupancy instance has been enabled.
 		// This is idempotent.
 		// This one needs to be done first, the other commands can happen in any order.
-		_, err := s.bus.ExecuteCommand(ctx, bridge.Request{
-			Command:             bridge.EnableInstance,
-			AddressType:         bridge.Short,
+		_, err := s.bus.ExecuteCommand(ctx, dali.Request{
+			Command:             dali.EnableInstance,
+			AddressType:         dali.Short,
 			Address:             s.shortAddr,
-			InstanceAddressType: bridge.IATInstanceType,
-			InstanceAddress:     bridge.InstanceTypeOccupancy,
+			InstanceAddressType: dali.IATInstanceType,
+			InstanceAddress:     dali.InstanceTypeOccupancy,
 		})
 		if err != nil {
 			return fmt.Errorf("EnableInstance: %w", err)
@@ -139,12 +140,12 @@ func (s *controlDeviceServer) ensureEventsEnabled(ctx context.Context) error {
 		// when there have been no changes for a while - this helps in case we miss the original event.
 		// Other events are not enabled because they cause bus congestion for no benefit.
 		// This is idempotent.
-		_, err = s.bus.ExecuteCommand(ctx, bridge.Request{
-			Command:             bridge.SetEventFilter,
-			AddressType:         bridge.Short,
+		_, err = s.bus.ExecuteCommand(ctx, dali.Request{
+			Command:             dali.SetEventFilter,
+			AddressType:         dali.Short,
 			Address:             s.shortAddr,
-			InstanceAddressType: bridge.IATInstanceType,
-			InstanceAddress:     bridge.InstanceTypeOccupancy,
+			InstanceAddressType: dali.IATInstanceType,
+			InstanceAddress:     dali.InstanceTypeOccupancy,
 			Data:                eventFilterOccupied | eventFilterVacant | eventFilterRepeat,
 		})
 		if err != nil {
@@ -152,10 +153,10 @@ func (s *controlDeviceServer) ensureEventsEnabled(ctx context.Context) error {
 		}
 		// Tell the PLC program to listen for events from this device. When the PLC receives a matching event,
 		// it will place the event in the queue so we can detect it from Go. This is idempotent.
-		err = s.bus.EnableInputEventListener(bridge.InputEventParameters{
-			Scheme:       bridge.EventSchemeDevice,
+		err = s.bus.EnableInputEventListener(dali.InputEventParameters{
+			Scheme:       dali.EventSchemeDevice,
 			AddressInfo1: s.shortAddr,
-			AddressInfo2: bridge.InstanceTypeOccupancy,
+			AddressInfo2: dali.InstanceTypeOccupancy,
 		})
 		if err != nil {
 			return fmt.Errorf("EnableInputEventListener: %w", err)
@@ -178,7 +179,7 @@ func (s *controlDeviceServer) ensureEventsEnabled(ctx context.Context) error {
 // or an unoccupied space.
 // See https://infosys.beckhoff.com/english.php?content=../content/1033/tcplclib_tc3_dali/6777329803.html&id=5128453449526025647
 // for documentation of the bit fields in this event.
-func extractEventOccupancy(event bridge.InputEvent) (occupied bool) {
+func extractEventOccupancy(event dali.InputEvent) (occupied bool) {
 	return (event.Data & (1 << 1)) != 0
 }
 

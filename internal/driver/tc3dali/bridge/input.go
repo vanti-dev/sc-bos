@@ -2,6 +2,8 @@ package bridge
 
 import (
 	"fmt"
+
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
 )
 
 type InstanceType byte
@@ -13,7 +15,7 @@ type notification struct {
 	InputEvents    []inputEvent `tc3ads:"inputEvents"`
 }
 
-func (n *notification) Decode() ([]InputEvent, error) {
+func (n *notification) Decode() ([]dali.InputEvent, error) {
 	if !n.Valid {
 		return nil, ErrInvalid
 	}
@@ -21,7 +23,7 @@ func (n *notification) Decode() ([]InputEvent, error) {
 		return nil, ErrMalformed
 	}
 	rawEvents := n.InputEvents[:n.NumInputEvents]
-	var events []InputEvent
+	var events []dali.InputEvent
 	for _, rawEvent := range rawEvents {
 		events = append(events, rawEvent.Decode())
 	}
@@ -29,19 +31,19 @@ func (n *notification) Decode() ([]InputEvent, error) {
 }
 
 type inputEvent struct {
-	Parameters InputEventParameters `tc3ads:"parameters"`
-	Error      bool                 `tc3ads:"error"`
-	Status     uint32               `tc3ads:"status"`
-	Message    string               `tc3ads:"message"`
-	Data       uint16               `tc3ads:"data"`
+	Parameters dali.InputEventParameters `tc3ads:"parameters"`
+	Error      bool                      `tc3ads:"error"`
+	Status     uint32                    `tc3ads:"status"`
+	Message    string                    `tc3ads:"message"`
+	Data       uint16                    `tc3ads:"data"`
 }
 
-func (e *inputEvent) Decode() InputEvent {
+func (e *inputEvent) Decode() dali.InputEvent {
 	var err error
 	if e.Error {
 		err = fmt.Errorf("%d: %s", e.Status, e.Message)
 	}
-	return InputEvent{
+	return dali.InputEvent{
 		InputEventParameters: e.Parameters,
 		Err:                  err,
 		Data:                 e.Data,

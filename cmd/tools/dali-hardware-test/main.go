@@ -14,6 +14,7 @@ import (
 
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/bridge"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
 	"github.com/vanti-dev/twincat3-ads-go/pkg/ads"
 	"github.com/vanti-dev/twincat3-ads-go/pkg/adsdll"
 	"github.com/vanti-dev/twincat3-ads-go/pkg/device"
@@ -82,7 +83,7 @@ func run(ctx context.Context) error {
 	}
 
 	// initialise bridge connections
-	bridges := make([]bridge.Dali, 0, len(config.Prefixes))
+	bridges := make([]dali.Dali, 0, len(config.Prefixes))
 	for _, prefix := range config.Prefixes {
 		bridgeConfig := &bridge.Config{
 			Device:                  dev,
@@ -167,14 +168,14 @@ func loadConfig() (config Config, err error) {
 	return
 }
 
-func sendBroadcastLevel(ctx context.Context, level uint8, bridges ...bridge.Dali) error {
+func sendBroadcastLevel(ctx context.Context, level uint8, bridges ...dali.Dali) error {
 	var group errgroup.Group
 	for _, b := range bridges {
 		b := b
 		group.Go(func() error {
-			_, err := b.ExecuteCommand(ctx, bridge.Request{
-				Command:     bridge.DirectArcPowerControl,
-				AddressType: bridge.Broadcast,
+			_, err := b.ExecuteCommand(ctx, dali.Request{
+				Command:     dali.DirectArcPowerControl,
+				AddressType: dali.Broadcast,
 				Data:        level,
 			})
 			return err

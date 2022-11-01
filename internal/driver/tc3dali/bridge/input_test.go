@@ -5,13 +5,14 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
 )
 
 func TestNotification_Decode(t *testing.T) {
 	type testCase struct {
 		input     notification
 		expectErr error
-		expect    []InputEvent
+		expect    []dali.InputEvent
 	}
 
 	cases := map[string]testCase{
@@ -41,14 +42,14 @@ func TestNotification_Decode(t *testing.T) {
 				NumInputEvents: 1,
 				InputEvents: []inputEvent{
 					{
-						Parameters: InputEventParametersForInstance(0x12, 0x34),
+						Parameters: dali.InputEventParametersForInstance(0x12, 0x34),
 						Error:      false,
 						Status:     0,
 						Message:    "",
 						Data:       1234,
 					},
 					{
-						Parameters: InputEventParametersForInstance(0x12, 0x34),
+						Parameters: dali.InputEventParametersForInstance(0x12, 0x34),
 						Error:      false,
 						Status:     0,
 						Message:    "",
@@ -56,9 +57,9 @@ func TestNotification_Decode(t *testing.T) {
 					},
 				},
 			},
-			expect: []InputEvent{
+			expect: []dali.InputEvent{
 				{
-					InputEventParameters: InputEventParametersForInstance(0x12, 0x34),
+					InputEventParameters: dali.InputEventParametersForInstance(0x12, 0x34),
 					Err:                  nil,
 					Data:                 1234,
 				},
@@ -84,34 +85,34 @@ func TestNotification_Decode(t *testing.T) {
 func TestInputEvent_Decode(t *testing.T) {
 	type testCase struct {
 		input  inputEvent
-		expect InputEvent
+		expect dali.InputEvent
 	}
 
 	cases := map[string]testCase{
 		"Error": {
 			input: inputEvent{
-				Parameters: InputEventParametersForInstance(0x12, 0x34),
+				Parameters: dali.InputEventParametersForInstance(0x12, 0x34),
 				Error:      true,
 				Status:     123,
 				Message:    "Message",
 				Data:       1234,
 			},
-			expect: InputEvent{
-				InputEventParameters: InputEventParametersForInstance(0x12, 0x34),
+			expect: dali.InputEvent{
+				InputEventParameters: dali.InputEventParametersForInstance(0x12, 0x34),
 				Err:                  cmpopts.AnyError,
 				Data:                 1234,
 			},
 		},
 		"OK": {
 			input: inputEvent{
-				Parameters: InputEventParametersForInstance(0x12, 0x34),
+				Parameters: dali.InputEventParametersForInstance(0x12, 0x34),
 				Error:      false,
 				Status:     0,
 				Message:    "Message",
 				Data:       1234,
 			},
-			expect: InputEvent{
-				InputEventParameters: InputEventParametersForInstance(0x12, 0x34),
+			expect: dali.InputEvent{
+				InputEventParameters: dali.InputEventParametersForInstance(0x12, 0x34),
 				Err:                  nil,
 				Data:                 1234,
 			},

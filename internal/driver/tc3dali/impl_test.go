@@ -5,6 +5,9 @@ package tc3dali
 import (
 	"context"
 	"errors"
+	"net"
+	"testing"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -13,7 +16,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
-	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/bridge"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/task"
 	"go.uber.org/zap"
@@ -21,8 +24,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/testing/protocmp"
-	"net"
-	"testing"
 )
 
 func TestInitBus(t *testing.T) {
@@ -48,7 +49,7 @@ func TestInitBus(t *testing.T) {
 		},
 	}
 
-	mockDali := bridge.NewMock(zap.NewNop())
+	mockDali := dali.NewMock(zap.NewNop())
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go func() {

@@ -1,4 +1,4 @@
-package bridge
+package dali
 
 import "fmt"
 

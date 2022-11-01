@@ -5,6 +5,7 @@ package tc3dali
 import (
 	"context"
 	"fmt"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
@@ -12,6 +13,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/bridge"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/task"
 	"github.com/vanti-dev/twincat3-ads-go/pkg/ads"
@@ -83,10 +85,10 @@ func BusTask(config BusConfig, dev device.Device, services driver.Services) task
 //   - Each control gear, implementing Light
 //   - Each declared control gear group, implementing Light
 //   - Each occupancy control device, implementing OccupancySensor
-func InitBus(ctx context.Context, config BusConfig, busBridge bridge.Dali, services driver.Services) error {
+func InitBus(ctx context.Context, config BusConfig, busBridge dali.Dali, services driver.Services) error {
 	busServer := &controlGearServer{
 		bus:      busBridge,
-		addrType: bridge.Broadcast,
+		addrType: dali.Broadcast,
 	}
 	services.Node.Announce(config.Name,
 		node.HasTrait(trait.Light, node.WithClients(light.WrapApi(busServer))),
@@ -104,7 +106,7 @@ func InitBus(ctx context.Context, config BusConfig, busBridge bridge.Dali, servi
 
 		gearServer := &controlGearServer{
 			bus:      busBridge,
-			addrType: bridge.Short,
+			addrType: dali.Short,
 			addr:     gear.ShortAddress,
 		}
 		services.Node.Announce(gearName,
@@ -142,7 +144,7 @@ func InitBus(ctx context.Context, config BusConfig, busBridge bridge.Dali, servi
 		groupServer := &controlGearServer{
 			bus:      busBridge,
 			addr:     group,
-			addrType: bridge.Group,
+			addrType: dali.Group,
 		}
 		services.Node.Announce(groupName,
 			node.HasTrait(trait.Light, node.WithClients(light.WrapApi(groupServer))),

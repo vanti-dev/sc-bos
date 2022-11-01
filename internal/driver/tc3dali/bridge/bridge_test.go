@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
 )
 
 func TestAdsResponse_AsError(t *testing.T) {
@@ -60,7 +61,7 @@ func TestAdsResponse_AsError(t *testing.T) {
 				Status:  123,
 				Message: "foo",
 			},
-			expect: Error{
+			expect: dali.Error{
 				Status:  123,
 				Message: "foo",
 			},

@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
 	"github.com/vanti-dev/twincat3-ads-go/pkg/ads"
 	"github.com/vanti-dev/twincat3-ads-go/pkg/ads/types"
 	"github.com/vanti-dev/twincat3-ads-go/pkg/device"
@@ -37,7 +38,7 @@ type Config struct {
 }
 
 // Connect establishes a connection to the DALI bridge on the PLC Device.
-func (c *Config) Connect() (Dali, error) {
+func (c *Config) Connect() (dali.Dali, error) {
 	bridgeFb, err := c.Device.VariableByName(c.BridgeFBName)
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func (c *Config) Connect() (Dali, error) {
 	return connectBridge(c.Device, bridgeFb, responseMailbox, notifMailbox, c.Logger, c.UsePolling)
 }
 
-func connectBridge(dev device.Device, bridgeFb device.Variable, resMailbox device.Variable, notifMailbox device.Variable, logger *zap.Logger, poll bool) (Dali, error) {
+func connectBridge(dev device.Device, bridgeFb device.Variable, resMailbox device.Variable, notifMailbox device.Variable, logger *zap.Logger, poll bool) (dali.Dali, error) {
 
 	// check that the bridge implements the version of the protocl we expect
 	protocolVersion, err := handshake(bridgeFb)
@@ -165,12 +166,12 @@ type daliBridge struct {
 
 	stateL             sync.RWMutex // protects the below state variables
 	closers            []io.Closer  // things to close when the daliBridge closes
-	inputEventHandlers []InputEventHandler
+	inputEventHandlers []dali.InputEventHandler
 	firstHandler       sync.Once // triggered when at least 1 hander has been added
 	logger             *zap.Logger
 }
 
-func (b *daliBridge) EnableInputEventListener(params InputEventParameters) error {
+func (b *daliBridge) EnableInputEventListener(params dali.InputEventParameters) error {
 	var ok bool
 	err := b.rpcAddInputEventListener.Call(
 		[]interface{}{params},
@@ -185,7 +186,7 @@ func (b *daliBridge) EnableInputEventListener(params InputEventParameters) error
 	return nil
 }
 
-func (b *daliBridge) OnInputEvent(handler InputEventHandler) error {
+func (b *daliBridge) OnInputEvent(handler dali.InputEventHandler) error {
 	b.stateL.Lock()
 	defer b.stateL.Unlock()
 
@@ -209,7 +210,7 @@ func (b *daliBridge) Close() error {
 	return err
 }
 
-func (b *daliBridge) ExecuteCommand(ctx context.Context, request Request) (data uint32, err error) {
+func (b *daliBridge) ExecuteCommand(ctx context.Context, request dali.Request) (data uint32, err error) {
 	b.commandL.Lock()
 	defer b.commandL.Unlock()
 
@@ -439,7 +440,7 @@ func (b *daliBridge) handleNotification(data notification) {
 		go func() {
 			defer close(done)
 			for _, handler := range b.inputEventHandlers {
-				var dummy InputEvent
+				var dummy dali.InputEvent
 				handler(dummy, err)
 			}
 		}()
@@ -480,7 +481,7 @@ func (r *bridgeResponse) AsError() error {
 	if !r.IsError || r.Status == 0 {
 		return nil
 	}
-	return Error{Status: r.Status, Message: r.Message}
+	return dali.Error{Status: r.Status, Message: r.Message}
 }
 
 type bridgeRequest struct {

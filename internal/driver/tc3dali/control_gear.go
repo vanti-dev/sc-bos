@@ -5,7 +5,7 @@ import (
 	"math"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/bridge"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -13,19 +13,19 @@ import (
 
 type controlGearServer struct {
 	traits.UnimplementedLightApiServer
-	bus      bridge.Dali
+	bus      dali.Dali
 	addr     uint8
-	addrType bridge.AddressType
+	addrType dali.AddressType
 	logger   *zap.Logger
 }
 
 func (s *controlGearServer) GetBrightness(ctx context.Context, req *traits.GetBrightnessRequest) (*traits.Brightness, error) {
-	if s.addrType != bridge.Short {
+	if s.addrType != dali.Short {
 		return nil, status.Error(codes.Unimplemented, "GetBrightness only supported for control gear")
 	}
 
-	data, err := s.bus.ExecuteCommand(ctx, bridge.Request{
-		Command:     bridge.QueryActualLevel,
+	data, err := s.bus.ExecuteCommand(ctx, dali.Request{
+		Command:     dali.QueryActualLevel,
 		AddressType: s.addrType,
 		Address:     s.addr,
 	})
@@ -61,8 +61,8 @@ func (s *controlGearServer) UpdateBrightness(ctx context.Context, req *traits.Up
 		return nil, status.Error(codes.InvalidArgument, "invalid 'brightness.level_percent' value")
 	}
 
-	_, err := s.bus.ExecuteCommand(ctx, bridge.Request{
-		Command:     bridge.DirectArcPowerControl,
+	_, err := s.bus.ExecuteCommand(ctx, dali.Request{
+		Command:     dali.DirectArcPowerControl,
 		AddressType: s.addrType,
 		Address:     s.addr,
 		Data:        level,
