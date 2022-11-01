@@ -329,8 +329,8 @@ func (c *Controller) startAutomations(ctx context.Context) (err error) {
 		if e := impl.Start(ctx); e != nil {
 			err = multierr.Append(err, fmt.Errorf("start %s %w", autoConfig.Name, e))
 		}
-		if auto.Configurable(impl) {
-			if e := auto.Configure(impl, autoConfig.Raw); e != nil {
+		if task.Configurable(impl) {
+			if e := task.Configure(impl, autoConfig.Raw); e != nil {
 				err = multierr.Append(err, fmt.Errorf("configure %s %w", autoConfig.Name, e))
 			}
 		}
