@@ -10,6 +10,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/rpc"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,6 +23,8 @@ import (
 // for details on the operation of such sensors.
 type controlDeviceServer struct {
 	traits.UnimplementedOccupancySensorApiServer
+	rpc.UnimplementedDaliApiServer
+
 	bus       dali.Dali
 	shortAddr uint8
 
@@ -110,9 +113,24 @@ func (s *controlDeviceServer) PullOccupancy(req *traits.PullOccupancyRequest, se
 	return nil
 }
 
+func (s *controlDeviceServer) Identify(ctx context.Context, request *rpc.IdentifyRequest) (*rpc.IdentifyResponse, error) {
+	_, err := s.bus.ExecuteCommand(ctx, dali.Request{
+		Command:             dali.IdentifyDevice103,
+		AddressType:         dali.Short,
+		Address:             s.shortAddr,
+		InstanceAddressType: dali.IATInstanceType,
+		InstanceAddress:     dali.InstanceTypeOccupancy,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &rpc.IdentifyResponse{}, nil
+}
+
 func (s *controlDeviceServer) handleInputEvent(event dali.InputEvent, err error) {
 	if err != nil || event.Err != nil {
 		// this event doesn't contain any useful data
+		return
 	}
 
 	// only process events if they are for this control device

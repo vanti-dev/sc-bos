@@ -9,6 +9,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/rpc"
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/task"
 	"go.uber.org/multierr"
@@ -25,12 +26,25 @@ func (_ factory) New(services driver.Services) task.Starter {
 	return NewDriver(services)
 }
 
+func (_ factory) AddSupport(supporter node.Supporter) {
+	Register(supporter)
+}
+
 func NewDriver(services driver.Services) *task.Lifecycle[Config] {
 	d := task.NewLifecycle(func(ctx context.Context, cfg Config) error {
 		return applyConfig(ctx, services, cfg)
 	})
 	d.Logger = services.Logger.Named("tc3dali")
 	return d
+}
+
+// Register makes sure this driver and its device apis are available in the given node.
+func Register(supporter node.Supporter) {
+	r := rpc.NewDaliApiRouter()
+	supporter.Support(
+		node.Routing(r),
+		node.Clients(rpc.WrapDaliApi(r)),
+	)
 }
 
 type busBuilder interface {
@@ -100,14 +114,26 @@ func InitBus(ctx context.Context, config BusConfig, busBridge dali.Dali, service
 			knownGroups[g] = struct{}{}
 		}
 
-		gearServer := &controlGearServer{
-			bus:      busBridge,
-			addrType: dali.Short,
-			addr:     gear.ShortAddress,
+		if gear.Emergency {
+			gearServer := &emergencyLightServer{
+				bus:       busBridge,
+				shortAddr: gear.ShortAddress,
+			}
+			services.Node.Announce(gearName,
+				node.HasClient(rpc.WrapDaliApi(gearServer)),
+			)
+		} else {
+			gearServer := &controlGearServer{
+				bus:      busBridge,
+				addrType: dali.Short,
+				addr:     gear.ShortAddress,
+			}
+			services.Node.Announce(gearName,
+				node.HasTrait(trait.Light, node.WithClients(light.WrapApi(gearServer))),
+				node.HasClient(rpc.WrapDaliApi(gearServer)),
+			)
 		}
-		services.Node.Announce(gearName,
-			node.HasTrait(trait.Light, node.WithClients(light.WrapApi(gearServer))),
-		)
+
 	}
 
 	for _, dev := range config.ControlDevices {

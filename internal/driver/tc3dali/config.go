@@ -63,6 +63,7 @@ type BusConfig struct {
 
 type ControlGearConfig struct {
 	Name         string  `json:"name"`
+	Emergency    bool    `json:"emergency"`
 	ShortAddress uint8   `json:"shortAddress"`
 	Groups       []uint8 `json:"groups"`
 }

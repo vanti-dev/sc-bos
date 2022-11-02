@@ -6,6 +6,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/rpc"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -13,6 +14,8 @@ import (
 
 type controlGearServer struct {
 	traits.UnimplementedLightApiServer
+	rpc.UnimplementedDaliApiServer
+
 	bus      dali.Dali
 	addr     uint8
 	addrType dali.AddressType
@@ -71,6 +74,65 @@ func (s *controlGearServer) UpdateBrightness(ctx context.Context, req *traits.Up
 		return nil, err
 	}
 	return &traits.Brightness{LevelPercent: brightness.LevelPercent}, nil
+}
+
+func (s *controlGearServer) AddToGroup(ctx context.Context, request *rpc.AddToGroupRequest) (*rpc.AddToGroupResponse, error) {
+	if request.Group < 0 || request.Group > 15 {
+		return nil, status.Error(codes.InvalidArgument, "group out of range")
+	}
+
+	_, err := s.bus.ExecuteCommand(ctx, dali.Request{
+		Command:     dali.AddToGroup,
+		AddressType: s.addrType,
+		Address:     s.addr,
+		Data:        byte(request.Group),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &rpc.AddToGroupResponse{}, nil
+}
+
+func (s *controlGearServer) RemoveFromGroup(ctx context.Context, request *rpc.RemoveFromGroupRequest) (*rpc.RemoveFromGroupResponse, error) {
+	if request.Group < 0 || request.Group > 15 {
+		return nil, status.Error(codes.InvalidArgument, "group out of range")
+	}
+
+	_, err := s.bus.ExecuteCommand(ctx, dali.Request{
+		Command:     dali.RemoveFromGroup,
+		AddressType: s.addrType,
+		Address:     s.addr,
+		Data:        byte(request.Group),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &rpc.RemoveFromGroupResponse{}, nil
+}
+
+func (s *controlGearServer) GetGroupMembership(ctx context.Context, request *rpc.GetGroupMembershipRequest) (*rpc.GetGroupMembershipResponse, error) {
+	if s.addrType != dali.Short {
+		return nil, status.Errorf(codes.Unimplemented, "query operations only supported for individual control gear")
+	}
+
+	data, err := s.bus.ExecuteCommand(ctx, dali.Request{
+		Command:     dali.QueryGroups,
+		AddressType: s.addrType,
+		Address:     s.addr,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var groups []int32
+	for i := int32(0); i < 16; i++ {
+		mask := uint32(1) << i
+		if data&mask != 0 {
+			groups = append(groups, i)
+		}
+	}
+
+	return &rpc.GetGroupMembershipResponse{Groups: groups}, nil
 }
 
 func daliLevelToPercent(level uint8) (percent float32, ok bool) {
