@@ -149,3 +149,12 @@ func (r *DaliApiRouter) GetTestResult(ctx context.Context, request *GetTestResul
 
 	return child.GetTestResult(ctx, request)
 }
+
+func (r *DaliApiRouter) DeleteTestResult(ctx context.Context, request *DeleteTestResultRequest) (*TestResult, error) {
+	child, err := r.GetDaliApiClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.DeleteTestResult(ctx, request)
+}

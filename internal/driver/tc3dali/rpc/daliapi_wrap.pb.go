@@ -61,3 +61,7 @@ func (w *daliApiWrapper) StopTest(ctx context.Context, req *StopTestRequest, _ .
 func (w *daliApiWrapper) GetTestResult(ctx context.Context, req *GetTestResultRequest, _ ...grpc.CallOption) (*TestResult, error) {
 	return w.server.GetTestResult(ctx, req)
 }
+
+func (w *daliApiWrapper) DeleteTestResult(ctx context.Context, req *DeleteTestResultRequest, _ ...grpc.CallOption) (*TestResult, error) {
+	return w.server.DeleteTestResult(ctx, req)
+}

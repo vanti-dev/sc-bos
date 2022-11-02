@@ -19,6 +19,7 @@ service DaliApi {
   rpc StartTest(StartTestRequest) returns (StartTestResponse);
   rpc StopTest(StopTestRequest) returns (StopTestResponse);
   rpc GetTestResult(GetTestResultRequest) returns (TestResult);
+  rpc DeleteTestResult(DeleteTestResultRequest) returns (TestResult);
 }
 
 message GetGroupMembershipRequest {
@@ -60,6 +61,16 @@ message EmergencyStatus {
     HARDWIRED_SWITCH = 9;
   }
 
+  enum Failure {
+    FAILURE_UNSPECIFIED = 0;
+    CIRCUIT_FAILURE = 1;
+    BATTERY_DURATION_FAILURE = 2;
+    BATTERY_FAILURE = 3;
+    LAMP_FAILURE = 4;
+    FUNCTION_TEST_FAILED = 5;
+    DURATION_TEST_FAILED = 6;
+  }
+
   repeated Mode active_modes = 1;
 
   repeated Test pending_tests = 2;
@@ -68,10 +79,9 @@ message EmergencyStatus {
 
   bool inhibit_active = 5;
   bool identification_active = 6;
-  bool circuit_failure = 7;
-  bool battery_failure = 8;
-  bool lamp_failure = 9;
-  float battery_level_percent = 10;
+  float battery_level_percent = 7;
+
+  repeated Failure failures = 8;
 }
 
 message GetEmergencyStatusRequest {
@@ -108,10 +118,8 @@ message UpdateTestIntervalResponse {
 
 message TestResult {
   Test test = 1;
-  google.protobuf.Timestamp completed_after = 2;
-  google.protobuf.Timestamp completed_before = 3;
   bool pass = 4;
-  google.protobuf.Duration duration = 5;
+  google.protobuf.Duration duration = 5; // only present for duration tests
   string etag = 6;
 }
 
@@ -120,9 +128,8 @@ message GetTestResultRequest {
   Test test = 2;
 }
 
-message AcknowledgeTestResultRequest {
+message DeleteTestResultRequest {
   string name = 1;
-  Test test = 2;
-  string etag = 3;
+  Test test = 2;    // which kind of test result are we trying to delete?
+  string etag = 3;  // if present, the delete operation will fail unless the provided etag matches the stored etag
 }
-message AcknowledgeTestResultResponse {}

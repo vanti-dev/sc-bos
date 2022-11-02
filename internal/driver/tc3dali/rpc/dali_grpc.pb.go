@@ -28,6 +28,7 @@ type DaliApiClient interface {
 	StartTest(ctx context.Context, in *StartTestRequest, opts ...grpc.CallOption) (*StartTestResponse, error)
 	StopTest(ctx context.Context, in *StopTestRequest, opts ...grpc.CallOption) (*StopTestResponse, error)
 	GetTestResult(ctx context.Context, in *GetTestResultRequest, opts ...grpc.CallOption) (*TestResult, error)
+	DeleteTestResult(ctx context.Context, in *DeleteTestResultRequest, opts ...grpc.CallOption) (*TestResult, error)
 }
 
 type daliApiClient struct {
@@ -110,6 +111,15 @@ func (c *daliApiClient) GetTestResult(ctx context.Context, in *GetTestResultRequ
 	return out, nil
 }
 
+func (c *daliApiClient) DeleteTestResult(ctx context.Context, in *DeleteTestResultRequest, opts ...grpc.CallOption) (*TestResult, error) {
+	out := new(TestResult)
+	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.driver.dali.DaliApi/DeleteTestResult", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DaliApiServer is the server API for DaliApi service.
 // All implementations must embed UnimplementedDaliApiServer
 // for forward compatibility
@@ -124,6 +134,7 @@ type DaliApiServer interface {
 	StartTest(context.Context, *StartTestRequest) (*StartTestResponse, error)
 	StopTest(context.Context, *StopTestRequest) (*StopTestResponse, error)
 	GetTestResult(context.Context, *GetTestResultRequest) (*TestResult, error)
+	DeleteTestResult(context.Context, *DeleteTestResultRequest) (*TestResult, error)
 	mustEmbedUnimplementedDaliApiServer()
 }
 
@@ -154,6 +165,9 @@ func (UnimplementedDaliApiServer) StopTest(context.Context, *StopTestRequest) (*
 }
 func (UnimplementedDaliApiServer) GetTestResult(context.Context, *GetTestResultRequest) (*TestResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTestResult not implemented")
+}
+func (UnimplementedDaliApiServer) DeleteTestResult(context.Context, *DeleteTestResultRequest) (*TestResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteTestResult not implemented")
 }
 func (UnimplementedDaliApiServer) mustEmbedUnimplementedDaliApiServer() {}
 
@@ -312,6 +326,24 @@ func _DaliApi_GetTestResult_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DaliApi_DeleteTestResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteTestResultRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaliApiServer).DeleteTestResult(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vanti.bsp.ew.driver.dali.DaliApi/DeleteTestResult",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaliApiServer).DeleteTestResult(ctx, req.(*DeleteTestResultRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DaliApi_ServiceDesc is the grpc.ServiceDesc for DaliApi service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -350,6 +382,10 @@ var DaliApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTestResult",
 			Handler:    _DaliApi_GetTestResult_Handler,
+		},
+		{
+			MethodName: "DeleteTestResult",
+			Handler:    _DaliApi_DeleteTestResult_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
