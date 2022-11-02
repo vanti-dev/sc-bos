@@ -53,7 +53,7 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, changes cha
 			// I guess not, lets start watching
 			ctx, stop := context.WithCancel(ctx)
 			runningSources[name] = stop
-			source := &OccupancySensorPatches{name: name, client: occupancySensorClient, logger: b.logger}
+			source := &OccupancySensorPatches{name: name, client: occupancySensorClient, logger: b.logger.With(zap.String("name", name))}
 			go func() {
 				err := source.Subscribe(ctx, changes)
 				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {

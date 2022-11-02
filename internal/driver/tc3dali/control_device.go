@@ -2,6 +2,7 @@ package tc3dali
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -64,6 +65,9 @@ func (s *controlDeviceServer) PullOccupancy(req *traits.PullOccupancyRequest, se
 	defer cancel()
 	err := s.ensureEventsEnabled(ctx)
 	if err != nil {
+		if errors.Is(err, dali.ErrCommandUnimplemented) {
+			return status.Error(codes.Unimplemented, err.Error())
+		}
 		s.logger.Error("failed to enable occupancy events for sensor", zap.Error(err))
 		return status.Error(codes.Unavailable, "cannot communicate with occupancy sensor")
 	}

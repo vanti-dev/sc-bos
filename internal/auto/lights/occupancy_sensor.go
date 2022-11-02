@@ -39,19 +39,22 @@ func (o *OccupancySensorPatches) Subscribe(ctx context.Context, changes chan<- P
 			return o.poll(ctx, changes)
 		} else {
 			err := o.pull(ctx, changes)
-			if o.shouldReturn(err) {
-				return err
-			}
-			if o.fallBackToPolling(err) {
-				poll = true
-				delay = 0
-				errCount = 0
-				continue // skip the wait
-			}
 			if err != nil {
-				errCount++
-				if errCount == 5 {
-					o.logger.Warn("occupancy subscriptions are failing, will keep retrying", zap.Error(err))
+				if o.shouldReturn(err) {
+					return err
+				}
+				if o.fallBackToPolling(err) {
+					o.logger.Debug("pull not supported, polling instead")
+					poll = true
+					delay = 0
+					errCount = 0
+					continue // skip the wait
+				}
+				if err != nil {
+					errCount++
+					if errCount == 5 {
+						o.logger.Warn("occupancy subscriptions are failing, will keep retrying", zap.Error(err))
+					}
 				}
 			} else {
 				errCount = 0

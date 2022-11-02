@@ -10,7 +10,6 @@ import (
 var (
 	MockErrInvalidAddressType = errors.New("invalid address type")
 	MockErrNoSuchControlGear  = errors.New("no control gear with the given ID")
-	MockErrUnimplemented      = errors.New("command unimplemented")
 )
 
 type Mock struct {
@@ -47,7 +46,7 @@ func (m *Mock) ExecuteCommand(ctx context.Context, request Request) (data uint32
 		return 0, m.removeFromGroup(request)
 	}
 
-	return 0, MockErrUnimplemented
+	return 0, ErrCommandUnimplemented
 }
 
 func (m *Mock) queryActualLevel(request Request) (actualLevel byte, err error) {

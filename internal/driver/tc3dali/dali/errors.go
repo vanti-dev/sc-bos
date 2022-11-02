@@ -1,6 +1,9 @@
 package dali
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type Error struct {
 	Status  uint32
@@ -10,3 +13,7 @@ type Error struct {
 func (e Error) Error() string {
 	return fmt.Sprintf("(%d) %s", e.Status, e.Message)
 }
+
+var (
+	ErrCommandUnimplemented = errors.New("command unimplemented")
+)
