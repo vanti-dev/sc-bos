@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package vanti.bsp.ew.driver.axiomx;
+
+option go_package = "github.com/vanti-dev/bsp-ew/internal/driver/axiomxa/rpc";
+
+service AxiomXDriverService {
+  rpc SaveQRCredential(SaveQRCredentialRequest) returns (SaveQRCredentialResponse);
+}
+
+message SaveQRCredentialRequest{
+  string name = 1;
+  bytes qr_body = 2;
+  string account = 3;
+}
+
+message SaveQRCredentialResponse {}
