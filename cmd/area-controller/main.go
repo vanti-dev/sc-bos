@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/vanti-dev/bsp-ew/internal/driver/axiomxa"
 	"os"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
@@ -47,8 +48,9 @@ func run(ctx context.Context) error {
 	flag.Parse()
 	systemConfig.Logger = zap.NewDevelopmentConfig()
 	systemConfig.DriverFactories = map[string]driver.Factory{
-		tc3dali.DriverName: tc3dali.Factory,
+		axiomxa.DriverName: axiomxa.Factory,
 		bacnet.DriverName:  bacnet.Factory,
+		tc3dali.DriverName: tc3dali.Factory,
 	}
 	systemConfig.AutoFactories = map[string]auto.Factory{
 		lights.AutoType: lights.Factory,
