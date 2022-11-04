@@ -86,6 +86,13 @@
         state: "{{ areacontroller_enabled | bool | ternary('started', 'stopped') }}"
         enabled: "{{ areacontroller_enabled | bool }}"
 
+    - name: Ensure daylight-power log file present
+      become: true
+      ansible.builtin.file:
+        path: /var/log/daylight-power.log
+        state: touch
+        owner: Administrator
+
     - name: Add cron jobs for daylight-power
       become: true
       ansible.builtin.cron:
