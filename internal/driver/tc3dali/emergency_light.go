@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali"
+	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/dali/dali202"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/rpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -107,39 +108,6 @@ func (s *emergencyLightServer) StopTest(ctx context.Context, request *rpc.StopTe
 	return &rpc.StopTestResponse{}, nil
 }
 
-const (
-	statusBitInhibit uint8 = 1 << iota
-	statusBitFunctionTestDone
-	statusBitDurationTestDone
-	statusBitBatteryFull
-	statusBitFunctionTestPending
-	statusBitDurationTestPending
-	statusBitIdentificationActive
-	statusBitPhysicallySelected
-)
-
-const (
-	modeBitRestActive uint8 = 1 << iota
-	modeBitNormalModeActive
-	modeBitEmergencyModeActive
-	modeBitExtendedEmergencyModeActive
-	modeBitFunctionTestInProgress
-	modeBitDurationTestInProgress
-	modeBitHardwiredInhibit
-	modeBitHardwiredSwitch
-)
-
-const (
-	failureBitCircuit uint8 = 1 << iota
-	failureBitBatteryDuration
-	failureBitBattery
-	failureBitEmergencyLamp
-	failureBitFunctionMaxDelayExceeded
-	failureBitDurationMaxDelayExceeded
-	failureBitFunctionTest
-	failureBitDurationTest
-)
-
 var errInvalidTest = status.Error(codes.InvalidArgument, "invalid test specified")
 
 func (s *emergencyLightServer) GetTestResult(ctx context.Context, request *rpc.GetTestResultRequest) (*rpc.TestResult, error) {
@@ -151,11 +119,11 @@ func (s *emergencyLightServer) GetTestResult(ctx context.Context, request *rpc.G
 	)
 	switch request.GetTest() {
 	case rpc.Test_FUNCTION_TEST:
-		doneMask = statusBitFunctionTestDone
-		failureMask = failureBitFunctionTest
+		doneMask = dali202.StatusBitFunctionTestDone
+		failureMask = dali202.FailureBitFunctionTest
 	case rpc.Test_DURATION_TEST:
-		doneMask = statusBitDurationTestDone
-		failureMask = failureBitDurationTest
+		doneMask = dali202.StatusBitDurationTestDone
+		failureMask = dali202.FailureBitDurationTest
 		requestDuration = true
 	default:
 		return nil, errInvalidTest
@@ -240,36 +208,36 @@ func (s *emergencyLightServer) DeleteTestResult(ctx context.Context, request *rp
 
 func decodeEmergencyStatus(rawStatus, rawMode, rawBattery, rawFailure uint8) *rpc.EmergencyStatus {
 	dest := &rpc.EmergencyStatus{
-		InhibitActive:        rawStatus&statusBitInhibit != 0,
-		IdentificationActive: rawStatus&statusBitIdentificationActive != 0,
+		InhibitActive:        rawStatus&dali202.StatusBitInhibit != 0,
+		IdentificationActive: rawStatus&dali202.StatusBitIdentificationActive != 0,
 		ActiveModes:          decodeEmergencyMode(rawMode),
 		Failures:             decodeFailures(rawFailure),
 	}
 
-	if rawStatus&statusBitFunctionTestPending != 0 {
+	if rawStatus&dali202.StatusBitFunctionTestPending != 0 {
 		dest.PendingTests = append(dest.PendingTests, rpc.Test_FUNCTION_TEST)
 	}
-	if rawStatus&statusBitDurationTestPending != 0 {
+	if rawStatus&dali202.StatusBitDurationTestPending != 0 {
 		dest.PendingTests = append(dest.PendingTests, rpc.Test_DURATION_TEST)
 	}
 
-	if rawStatus&statusBitFunctionTestDone != 0 {
+	if rawStatus&dali202.StatusBitFunctionTestDone != 0 {
 		dest.ResultsAvailable = append(dest.ResultsAvailable, rpc.Test_FUNCTION_TEST)
 	}
-	if rawStatus&statusBitDurationTestDone != 0 {
+	if rawStatus&dali202.StatusBitDurationTestDone != 0 {
 		dest.ResultsAvailable = append(dest.ResultsAvailable, rpc.Test_DURATION_TEST)
 	}
 
-	if rawFailure&failureBitFunctionMaxDelayExceeded != 0 {
+	if rawFailure&dali202.FailureBitFunctionMaxDelayExceeded != 0 {
 		dest.OverdueTests = append(dest.OverdueTests, rpc.Test_FUNCTION_TEST)
 	}
-	if rawFailure&failureBitDurationMaxDelayExceeded != 0 {
+	if rawFailure&dali202.FailureBitDurationMaxDelayExceeded != 0 {
 		dest.OverdueTests = append(dest.OverdueTests, rpc.Test_DURATION_TEST)
 	}
 
 	if level, ok := decodeBatteryLevel(rawBattery); ok {
 		dest.BatteryLevelPercent = level
-	} else if rawStatus&statusBitBatteryFull != 0 {
+	} else if rawStatus&dali202.StatusBitBatteryFull != 0 {
 		dest.BatteryLevelPercent = 100
 	}
 
@@ -277,28 +245,28 @@ func decodeEmergencyStatus(rawStatus, rawMode, rawBattery, rawFailure uint8) *rp
 }
 
 func decodeEmergencyMode(rawMode uint8) (modes []rpc.EmergencyStatus_Mode) {
-	if rawMode&modeBitRestActive != 0 {
+	if rawMode&dali202.ModeBitRestActive != 0 {
 		modes = append(modes, rpc.EmergencyStatus_REST)
 	}
-	if rawMode&modeBitNormalModeActive != 0 {
+	if rawMode&dali202.ModeBitNormalModeActive != 0 {
 		modes = append(modes, rpc.EmergencyStatus_NORMAL)
 	}
-	if rawMode&modeBitEmergencyModeActive != 0 {
+	if rawMode&dali202.ModeBitEmergencyModeActive != 0 {
 		modes = append(modes, rpc.EmergencyStatus_EMERGENCY)
 	}
-	if rawMode&modeBitExtendedEmergencyModeActive != 0 {
+	if rawMode&dali202.ModeBitExtendedEmergencyModeActive != 0 {
 		modes = append(modes, rpc.EmergencyStatus_EXTENDED_EMERGENCY)
 	}
-	if rawMode&modeBitFunctionTestInProgress != 0 {
+	if rawMode&dali202.ModeBitFunctionTestInProgress != 0 {
 		modes = append(modes, rpc.EmergencyStatus_FUNCTION_TEST_ACTIVE)
 	}
-	if rawMode&modeBitDurationTestInProgress != 0 {
+	if rawMode&dali202.ModeBitDurationTestInProgress != 0 {
 		modes = append(modes, rpc.EmergencyStatus_DURATION_TEST_ACTIVE)
 	}
-	if rawMode&modeBitHardwiredInhibit != 0 {
+	if rawMode&dali202.ModeBitHardwiredInhibit != 0 {
 		modes = append(modes, rpc.EmergencyStatus_HARDWIRED_INHIBIT)
 	}
-	if rawMode&modeBitHardwiredSwitch != 0 {
+	if rawMode&dali202.ModeBitHardwiredSwitch != 0 {
 		modes = append(modes, rpc.EmergencyStatus_HARDWIRED_SWITCH)
 	}
 	return
@@ -312,22 +280,22 @@ func decodeBatteryLevel(rawLevel uint8) (percent float32, ok bool) {
 }
 
 func decodeFailures(rawFailure uint8) (failures []rpc.EmergencyStatus_Failure) {
-	if rawFailure&failureBitCircuit != 0 {
+	if rawFailure&dali202.FailureBitCircuit != 0 {
 		failures = append(failures, rpc.EmergencyStatus_CIRCUIT_FAILURE)
 	}
-	if rawFailure&failureBitBatteryDuration != 0 {
+	if rawFailure&dali202.FailureBitBatteryDuration != 0 {
 		failures = append(failures, rpc.EmergencyStatus_BATTERY_DURATION_FAILURE)
 	}
-	if rawFailure&failureBitBattery != 0 {
+	if rawFailure&dali202.FailureBitBattery != 0 {
 		failures = append(failures, rpc.EmergencyStatus_BATTERY_FAILURE)
 	}
-	if rawFailure&failureBitEmergencyLamp != 0 {
+	if rawFailure&dali202.FailureBitEmergencyLamp != 0 {
 		failures = append(failures, rpc.EmergencyStatus_LAMP_FAILURE)
 	}
-	if rawFailure&failureBitFunctionTest != 0 {
+	if rawFailure&dali202.FailureBitFunctionTest != 0 {
 		failures = append(failures, rpc.EmergencyStatus_FUNCTION_TEST_FAILED)
 	}
-	if rawFailure&failureBitDurationTest != 0 {
+	if rawFailure&dali202.FailureBitDurationTest != 0 {
 		failures = append(failures, rpc.EmergencyStatus_DURATION_TEST_FAILED)
 	}
 	return
