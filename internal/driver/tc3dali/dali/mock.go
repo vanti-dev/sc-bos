@@ -73,6 +73,12 @@ func (m *Mock) ExecuteCommand(ctx context.Context, request Request) (data uint32
 			return 0, err
 		}
 		return uint32(cg.DurationTestResult), nil
+	case QueryBatteryCharge:
+		cg, err := m.getSingleControlGear(request)
+		if err != nil {
+			return 0, err
+		}
+		return uint32(cg.BatteryLevel), nil
 	case StartFunctionTest:
 		m.startTest(request, dali202.ModeBitFunctionTestInProgress)
 		return 0, nil
@@ -82,7 +88,12 @@ func (m *Mock) ExecuteCommand(ctx context.Context, request Request) (data uint32
 	case StopTest:
 		m.stopTest(request)
 		return 0, nil
-
+	case ResetFunctionTestDoneFlag:
+		m.clearFunctionTest(request)
+		return 0, nil
+	case ResetDurationTestDoneFlag:
+		m.clearDurationTest(request)
+		return 0, nil
 	}
 
 	return 0, ErrCommandUnimplemented
@@ -261,7 +272,7 @@ func newMockControlGear(shortAddr uint8) *MockControlGear {
 	// by default make every control gear a member of group 0
 	mcg.GroupMembership |= 1 << 0
 	mcg.EmergencyMode = dali202.ModeBitNormalModeActive
-	mcg.BatteryLevel = 100
+	mcg.BatteryLevel = 254
 	return mcg
 }
 
@@ -284,6 +295,39 @@ func (m *MockControlGear) SetBatteryLevel(level uint8) {
 	} else {
 		m.EmergencyStatus &= ^dali202.StatusBitBatteryFull
 	}
+}
+
+func (m *MockControlGear) CompleteDurationTest(success bool, result uint8) (ok bool) {
+	if m.EmergencyMode&dali202.ModeBitDurationTestInProgress == 0 {
+		// duration test must be in progress to complete test
+		return false
+	}
+	m.EmergencyMode = dali202.ModeBitNormalModeActive
+	m.EmergencyStatus |= dali202.StatusBitDurationTestDone
+	if success {
+		m.EmergencyFailure &= ^dali202.FailureBitDurationTest
+	} else {
+		m.EmergencyFailure |= dali202.FailureBitDurationTest
+	}
+	m.DurationTestResult = result
+
+	return true
+}
+
+func (m *MockControlGear) CompleteFunctionTest(success bool) (ok bool) {
+	if m.EmergencyMode&dali202.ModeBitFunctionTestInProgress == 0 {
+		// duration test must be in progress to complete test
+		return false
+	}
+	m.EmergencyMode = dali202.ModeBitNormalModeActive
+	m.EmergencyStatus |= dali202.StatusBitFunctionTestDone
+	if success {
+		m.EmergencyFailure &= ^dali202.FailureBitFunctionTest
+	} else {
+		m.EmergencyFailure |= dali202.FailureBitFunctionTest
+	}
+
+	return true
 }
 
 func (m *MockControlGear) IsGroupMember(groupNum uint8) bool {
