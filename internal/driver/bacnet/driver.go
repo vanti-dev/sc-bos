@@ -45,7 +45,7 @@ func Register(supporter node.Supporter) {
 type Driver struct {
 	announcer node.Announcer // Any device we setup gets announced here
 
-	*driver.Lifecycle[config.Root]
+	*task.Lifecycle[config.Root]
 	client *gobacnet.Client // How we interact with bacnet systems
 
 	devices *known.Map
@@ -57,7 +57,7 @@ func NewDriver(services driver.Services) *Driver {
 		announcer: announcer,
 		devices:   known.NewMap(),
 	}
-	d.Lifecycle = driver.NewLifecycle(d.applyConfig)
+	d.Lifecycle = task.NewLifecycle(d.applyConfig)
 	d.Logger = services.Logger.Named("bacnet")
 	d.ReadConfig = config.ReadBytes
 	return d

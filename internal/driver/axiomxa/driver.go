@@ -21,7 +21,7 @@ func (f factory) New(services driver.Services) task.Starter {
 	d := &Driver{
 		announcer: services.Node,
 	}
-	d.Lifecycle = driver.NewLifecycle(d.applyConfig)
+	d.Lifecycle = task.NewLifecycle(d.applyConfig)
 	d.Logger = services.Logger.Named(DriverName)
 	d.ReadConfig = config.ReadBytes
 	return d
@@ -33,7 +33,7 @@ func (f factory) AddSupport(supporter node.Supporter) {
 }
 
 type Driver struct {
-	*driver.Lifecycle[config.Root]
+	*task.Lifecycle[config.Root]
 	announcer node.Announcer
 }
 

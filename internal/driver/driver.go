@@ -18,12 +18,3 @@ type Driver interface {
 type Factory interface {
 	New(services Services) task.Starter
 }
-
-type Status string
-
-const (
-	StatusInactive Status = "inactive" // Stopped driver. State after calling Stop
-	StatusLoading  Status = "loading"  // The driver is loading configuration. State while Configure is running
-	StatusActive   Status = "active"   // The driver has valid config and is serving requests. State after calling Start
-	StatusError    Status = "error"    // The driver failed to start. If start fails, the driver will be in this state.
-)
