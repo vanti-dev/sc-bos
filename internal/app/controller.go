@@ -14,6 +14,7 @@ import (
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/rs/cors"
+	"github.com/timshannon/bolthold"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
 	"github.com/vanti-dev/bsp-ew/internal/auth/tenant"
 	"github.com/vanti-dev/bsp-ew/internal/auto"
@@ -96,12 +97,15 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		}
 	}
 
-	services := driver.Services{
-		Logger: logger,
-		Node:   node.New(localConfig.Name),
-		Tasks:  &task.Group{},
+	// initialise services
+	rootNode := node.New(localConfig.Name)
+	rootNode.Logger = logger.Named("node")
+	dbPath := filepath.Join(config.DataDir, "db.bolt")
+	db, err := bolthold.Open(dbPath, 0750, nil)
+	if err != nil {
+		logger.Warn("failed to open local database file - some system components may fail", zap.Error(err),
+			zap.String("path", dbPath))
 	}
-	services.Node.Logger = logger.Named("node")
 
 	// create private key if it doesn't exist
 	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(config.DataDir, "private-key.pem"), logger)
@@ -207,10 +211,13 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	}
 
 	c := &Controller{
-		Services:         services,
 		SystemConfig:     config,
 		ControllerConfig: localConfig,
 		Enrollment:       enrollServer,
+		Logger:           logger,
+		Node:             rootNode,
+		Tasks:            &task.Group{},
+		Database:         db,
 		Mux:              mux,
 		GRPC:             grpcServer,
 		HTTP:             httpServer,
@@ -247,10 +254,15 @@ func readCertAndRoots(config SystemConfig, key pki.PrivateKey) (*tls.Certificate
 }
 
 type Controller struct {
-	driver.Services
 	SystemConfig     SystemConfig
 	ControllerConfig ControllerConfig
 	Enrollment       *enrollment.Server
+
+	// services for drivers/automations
+	Logger   *zap.Logger
+	Node     *node.Node
+	Tasks    *task.Group
+	Database *bolthold.Store
 
 	Mux  *http.ServeMux
 	GRPC *grpc.Server

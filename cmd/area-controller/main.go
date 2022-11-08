@@ -3,10 +3,13 @@ package main
 import (
 	"context"
 	"flag"
+	"os"
+
 	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
 	"github.com/vanti-dev/bsp-ew/internal/auto/export"
 	"github.com/vanti-dev/bsp-ew/internal/driver/axiomxa"
-	"os"
+
+	"github.com/vanti-dev/bsp-ew/internal/auto/testlight"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
@@ -51,8 +54,9 @@ func run(ctx context.Context) error {
 		tc3dali.DriverName: tc3dali.Factory,
 	}
 	systemConfig.AutoFactories = map[string]auto.Factory{
-		lights.AutoType: lights.Factory,
-		"export-mqtt":   export.MQTTFactory,
+		lights.AutoType:    lights.Factory,
+		testlight.AutoType: testlight.Factory,
+		"export-mqtt":      export.MQTTFactory,
 	}
 
 	controller, err := app.Bootstrap(ctx, systemConfig)

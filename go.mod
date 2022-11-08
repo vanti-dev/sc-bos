@@ -15,6 +15,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.38
 	github.com/smart-core-os/sc-golang v0.0.0-20221102114322-c9e09bcc2642
+	github.com/timshannon/bolthold v0.0.0-20210913165410-232392fc8a6a
 	github.com/vanti-dev/gobacnet v0.0.0-20221024154753-4861ab8551a7
 	github.com/vanti-dev/twincat3-ads-go v0.2.3
 	go.etcd.io/bbolt v1.3.6

@@ -1,14 +1,16 @@
 package auto
 
 import (
+	"github.com/timshannon/bolthold"
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/task"
 	"go.uber.org/zap"
 )
 
 type Services struct {
-	Logger *zap.Logger
-	Node   *node.Node // for advertising devices
+	Logger   *zap.Logger
+	Node     *node.Node // for advertising devices
+	Database *bolthold.Store
 }
 
 // Factory constructs new automation instances.
