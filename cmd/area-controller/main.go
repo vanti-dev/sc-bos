@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
 	"github.com/vanti-dev/bsp-ew/internal/driver/axiomxa"
 	"os"
 
@@ -72,6 +73,11 @@ func addNodeAPIs(supporter node.Supporter) {
 	{
 		r := airtemperature.NewApiRouter()
 		c := airtemperature.WrapApi(r)
+		supporter.Support(node.Routing(r), node.Clients(c))
+	}
+	{
+		r := brightnesssensor.NewApiRouter()
+		c := brightnesssensor.WrapApi(r)
 		supporter.Support(node.Routing(r), node.Clients(c))
 	}
 	{
