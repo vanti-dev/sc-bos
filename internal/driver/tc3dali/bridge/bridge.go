@@ -83,10 +83,6 @@ func connectBridge(dev device.Device, bridgeFb device.Variable, resMailbox devic
 	if err != nil {
 		return nil, err
 	}
-	err = reset.Call(nil, nil) // reset bridge to default state
-	if err != nil {
-		return nil, fmt.Errorf("RpcReset: %w", err)
-	}
 
 	request, err := bridgeFb.MethodByName("RpcRequest",
 		[]types.DataType{requestType},
@@ -120,11 +116,16 @@ func connectBridge(dev device.Device, bridgeFb device.Variable, resMailbox devic
 		rpcRequest:               request,
 		rpcAddInputEventListener: addInputEventListener,
 		rcpAckNotification:       ackNotification,
+		rpcReset:                 reset,
 		requestType:              requestType,
 		requests:                 make(chan bridgeRequest),
 		ctx:                      ctx,
 		done:                     done,
 		logger:                   logger,
+	}
+	err = instance.reset()
+	if err != nil {
+		return nil, fmt.Errorf("RpcReset: %w", err)
 	}
 
 	err = instance.startRequestResponseWorker()
@@ -153,6 +154,7 @@ type daliBridge struct {
 	rpcRequest               device.Method
 	rpcAddInputEventListener device.Method
 	rcpAckNotification       device.Method
+	rpcReset                 device.Method
 	requestType              types.DataType
 
 	commandL sync.Mutex // used to prevent simultaneous command execution (the bridge does not support it)
@@ -237,6 +239,7 @@ func (b *daliBridge) ExecuteCommand(ctx context.Context, request dali.Request) (
 	}
 	select {
 	case <-ctx.Done():
+		_ = b.reset()
 		return 0, ctx.Err()
 	case res := <-resCh:
 		return res.Data, res.AsError()
@@ -463,6 +466,10 @@ func (b *daliBridge) handleNotification(data notification) {
 			b.logger.Warn("running event handlers took longer than a second", zap.Duration("duration", time.Since(start)))
 		}
 	}
+}
+
+func (b *daliBridge) reset() error {
+	return b.rpcReset.Call(nil, nil)
 }
 
 type bridgeResponse struct {
