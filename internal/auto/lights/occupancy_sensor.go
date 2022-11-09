@@ -2,12 +2,8 @@ package lights
 
 import (
 	"context"
-	"errors"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"go.uber.org/zap"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"time"
 )
 
 // OccupancySensorPatches contributes patches for changing the state based on occupancy sensor readings.
@@ -22,64 +18,7 @@ func (o *OccupancySensorPatches) Subscribe(ctx context.Context, changes chan<- P
 	defer func() {
 		changes <- clearOccupancyTransition(o.name)
 	}()
-
-	poll := false
-	initialDelay, maxDelay := 100*time.Millisecond, 10*time.Second
-	var delay time.Duration
-	var errCount int
-
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-		}
-
-		if poll {
-			return o.poll(ctx, changes)
-		} else {
-			err := o.pull(ctx, changes)
-			if err != nil {
-				if o.shouldReturn(err) {
-					return err
-				}
-				if o.fallBackToPolling(err) {
-					o.logger.Debug("pull not supported, polling instead")
-					poll = true
-					delay = 0
-					errCount = 0
-					continue // skip the wait
-				}
-				if err != nil {
-					errCount++
-					if errCount == 5 {
-						o.logger.Warn("occupancy subscriptions are failing, will keep retrying", zap.Error(err))
-					}
-				}
-			} else {
-				errCount = 0
-				delay = 0
-			}
-		}
-
-		if delay == 0 {
-			delay = initialDelay
-		} else {
-			delay = time.Duration(float64(delay) * 1.2)
-			if delay > maxDelay {
-				delay = maxDelay
-			}
-		}
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(delay):
-		}
-	}
-}
-
-func (o *OccupancySensorPatches) shouldReturn(err error) bool {
-	return errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)
+	return subscribe(ctx, o, changes, withLogger(o.logger.Named("occupancy")))
 }
 
 func (o *OccupancySensorPatches) pull(ctx context.Context, changes chan<- Patcher) error {
@@ -102,35 +41,16 @@ func (o *OccupancySensorPatches) pull(ctx context.Context, changes chan<- Patche
 }
 
 func (o *OccupancySensorPatches) poll(ctx context.Context, changes chan<- Patcher) error {
-	ticker := time.NewTicker(500 * time.Millisecond)
-	defer ticker.Stop()
-	for {
-		res, err := o.client.GetOccupancy(ctx, &traits.GetOccupancyRequest{Name: o.name})
-		if err != nil {
-			// todo: log
-		} else {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case changes <- getOccupancyPatcher{o.name, res}:
-			}
-		}
-
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-ticker.C:
-		}
+	res, err := o.client.GetOccupancy(ctx, &traits.GetOccupancyRequest{Name: o.name})
+	if err != nil {
+		return err
 	}
-}
-
-func (o *OccupancySensorPatches) fallBackToPolling(err error) bool {
-	if grpcError, ok := status.FromError(err); ok {
-		if grpcError.Code() == codes.Unimplemented {
-			return true
-		}
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case changes <- getOccupancyPatcher{o.name, res}:
+		return nil
 	}
-	return false
 }
 
 type pullOccupancyTransition traits.PullOccupancyResponse
