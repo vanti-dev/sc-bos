@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
 	"github.com/vanti-dev/bsp-ew/internal/node"
@@ -25,6 +27,10 @@ func TestPirsTurnLightsOn(t *testing.T) {
 			r.Add("pir01", occupancysensor.WrapApi(occupancysensor.NewModelServer(pir01)))
 			r.Add("pir02", occupancysensor.WrapApi(occupancysensor.NewModelServer(pir02)))
 			*v = occupancysensor.WrapApi(r)
+		case *traits.LightApiClient:
+			*v = light.WrapApi(light.NewApiRouter())
+		case *traits.BrightnessSensorApiClient:
+			*v = brightnesssensor.WrapApi(brightnesssensor.NewApiRouter())
 		default:
 			return errors.New("unsupported lightClient type")
 		}

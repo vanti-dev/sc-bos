@@ -11,15 +11,31 @@ import (
 type Root struct {
 	auto.Config
 
-	OccupancySensors []string `json:"occupancySensors,omitempty"`
-	Lights           []string `json:"lights,omitempty"`
+	OccupancySensors  []string `json:"occupancySensors,omitempty"`
+	Lights            []string `json:"lights,omitempty"`
+	BrightnessSensors []string `json:"brightnessSensors,omitempty"`
 
 	// UnoccupiedOffDelay configures how long we wait after the most recent occupancy sensor reported unoccupied before
 	// we turn the light off.
 	UnoccupiedOffDelay time.Duration `json:"unoccupiedOffDelay,omitempty"`
+	// DaylightDimming configures how the brightness measured in the space affects the luminosity of the lights that
+	// are on.
+	DaylightDimming *DaylightDimming `json:"daylightDimming,omitempty"`
 
 	// Now returns the current time. It's configurable for testing purposes, typically for testing the logic.
 	Now func() time.Time `json:"-"`
+}
+
+type DaylightDimming struct {
+	// Thresholds configures a mapping between measured lux levels and output brightness of lights.
+	// With Thresholds you can say "below 300 lux set brightness to 80%, below 700 lux set to 50%".
+	// The threshold with the highest BelowLux value below the measured lux level will be selected.
+	Thresholds []LevelThreshold `json:"thresholds,omitempty"`
+}
+
+type LevelThreshold struct {
+	BelowLux     float32 `json:"aboveLux,omitempty"`
+	LevelPercent float32 `json:"levelPercent,omitempty"`
 }
 
 func Read(data []byte) (Root, error) {

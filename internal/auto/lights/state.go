@@ -12,11 +12,14 @@ type ReadState struct {
 	Config config.Root
 
 	Occupancy map[string]*traits.Occupancy
+	// used for daylight dimming
+	AmbientBrightness map[string]*traits.AmbientBrightness
 }
 
 func NewReadState() *ReadState {
 	return &ReadState{
-		Occupancy: make(map[string]*traits.Occupancy),
+		Occupancy:         make(map[string]*traits.Occupancy),
+		AmbientBrightness: make(map[string]*traits.AmbientBrightness),
 	}
 }
 
@@ -26,6 +29,9 @@ func (s *ReadState) Clone() *ReadState {
 	// assume values in the map are immutable!
 	for name, val := range s.Occupancy {
 		clone.Occupancy[name] = val
+	}
+	for name, val := range s.AmbientBrightness {
+		clone.AmbientBrightness[name] = val
 	}
 	return clone
 }

@@ -35,6 +35,10 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, changes cha
 	if err := b.clients.Client(&occupancySensorClient); err != nil {
 		return fmt.Errorf("%w traits.OccupancySensorApiClient", err)
 	}
+	var brightnessSensorClient traits.BrightnessSensorApiClient
+	if err := b.clients.Client(&brightnessSensorClient); err != nil {
+		return fmt.Errorf("%w traits.BrightnessSensorApiClient", err)
+	}
 
 	// Setup the sources that we can pull patches from.
 	type source struct {
@@ -48,7 +52,13 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, changes cha
 		{
 			names: func(cfg config.Root) []string { return cfg.OccupancySensors },
 			new: func(name string, logger *zap.Logger) subscriber {
-				return &OccupancySensorPatches{name: name, client: occupancySensorClient, logger: logger.With(zap.String("name", name))}
+				return &OccupancySensorPatches{name: name, client: occupancySensorClient, logger: logger}
+			},
+		},
+		{
+			names: func(cfg config.Root) []string { return cfg.BrightnessSensors },
+			new: func(name string, logger *zap.Logger) subscriber {
+				return &BrightnessSensorPatches{name: name, client: brightnessSensorClient, logger: logger}
 			},
 		},
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"testing"
@@ -102,6 +103,63 @@ func Test_processState(t *testing.T) {
 			t.Fatalf("TTL want %v, got %v", 5*time.Minute, ttl)
 		}
 		actions.assertNoMoreCalls()
+	})
+
+	t.Run("threshold brightness", func(t *testing.T) {
+		dd := config.DaylightDimming{
+			Thresholds: []config.LevelThreshold{
+				{BelowLux: 10, LevelPercent: 100},
+				{BelowLux: 200, LevelPercent: 70},
+				{BelowLux: 1000, LevelPercent: 50},
+				{BelowLux: 10_000, LevelPercent: 30},
+				{BelowLux: 30_000, LevelPercent: 1},
+				{LevelPercent: 0},
+			},
+		}
+		tests := []struct {
+			name string
+			want float32
+			lux  []float32
+		}{
+			{"no readings", 100, []float32{}},
+			{"0 reading", 100, []float32{0}},
+			{"average", 100, []float32{3, 4, 5}},
+			{"just below threshold", 100, []float32{9.999}},
+			{"on threshold", 70, []float32{10}},
+			{"50%", 50, []float32{1000 - 1}},
+			{"30%", 30, []float32{10_000 - 1}},
+			{"1%", 1, []float32{30_000 - 1}},
+			{"off", 0, []float32{30_000}},
+			{"very bright", 0, []float32{100_000}},
+		}
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				readState := NewReadState()
+				writeState := NewWriteState()
+				actions := newTestActions(t)
+
+				readState.Config.DaylightDimming = &dd
+				readState.Config.OccupancySensors = []string{"pir01"}
+				readState.Config.Lights = []string{"light01"}
+				readState.Occupancy["pir01"] = &traits.Occupancy{State: traits.Occupancy_OCCUPIED}
+
+				readState.Config.BrightnessSensors = make([]string, len(tt.lux))
+				for i, lux := range tt.lux {
+					name := fmt.Sprintf("bri%02d", i)
+					readState.Config.BrightnessSensors[i] = name
+					readState.AmbientBrightness[name] = &traits.AmbientBrightness{BrightnessLux: lux}
+				}
+
+				ttl, err := processState(context.Background(), readState, writeState, actions)
+				assertNoTTLOrErr(t, ttl, err)
+				actions.assertNextCall(&traits.UpdateBrightnessRequest{
+					Name: "light01",
+					Brightness: &traits.Brightness{
+						LevelPercent: tt.want,
+					},
+				})
+			})
+		}
 	})
 }
 
