@@ -20,6 +20,10 @@ func (p PatchFunc) Patch(s *ReadState) {
 	p(s)
 }
 
+type subscriber interface {
+	Subscribe(ctx context.Context, changes chan<- Patcher) error
+}
+
 // setupReadSources configures the automation to pull events from the configured devices and emit patches into changes.
 // Any configuration changes, via Configure, are recognised and the event sources updated.
 //
@@ -32,43 +36,66 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, changes cha
 		return fmt.Errorf("%w traits.OccupancySensorApiClient", err)
 	}
 
-	// runningSources, keyed by device name, tracks which sources are currently running.
-	// The value can be called to cancel the context used to start that source.
-	runningSources := make(map[string]context.CancelFunc)
+	// Setup the sources that we can pull patches from.
+	type source struct {
+		new   func(name string, logger *zap.Logger) subscriber
+		names func(cfg config.Root) []string
+		// runningSources, keyed by device name, tracks which sources are currently running.
+		// The value can be called to cancel the context used to start that source.
+		runningSources map[string]context.CancelFunc
+	}
+	sources := []source{
+		{
+			names: func(cfg config.Root) []string { return cfg.OccupancySensors },
+			new: func(name string, logger *zap.Logger) subscriber {
+				return &OccupancySensorPatches{name: name, client: occupancySensorClient, logger: logger.With(zap.String("name", name))}
+			},
+		},
+	}
+
+	// cancel everything if we're returning.
 	defer func() {
-		// cancel everything if we're returning.
-		for _, cancelFunc := range runningSources {
-			cancelFunc()
+		for _, source := range sources {
+			for _, cancelFunc := range source.runningSources {
+				cancelFunc()
+			}
 		}
 	}()
 
 	processConfig := func(cfg config.Root) {
-		sourcesToStop := shallowCopyMap(runningSources)
-		for _, name := range cfg.OccupancySensors {
-			// are we already watching this name?
-			if _, ok := sourcesToStop[name]; ok {
-				delete(sourcesToStop, name)
-				continue
+		for _, source := range sources {
+			names := source.names(cfg)
+			if source.runningSources == nil && len(names) > 0 {
+				source.runningSources = make(map[string]context.CancelFunc, len(names))
 			}
-			// I guess not, lets start watching
-			ctx, stop := context.WithCancel(ctx)
-			runningSources[name] = stop
-			source := &OccupancySensorPatches{name: name, client: occupancySensorClient, logger: b.logger.With(zap.String("name", name))}
-			go func() {
-				err := source.Subscribe(ctx, changes)
-				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-					return
+			sourcesToStop := shallowCopyMap(source.runningSources)
+			for _, name := range names {
+				// are we already watching this name?
+				if _, ok := sourcesToStop[name]; ok {
+					delete(sourcesToStop, name)
+					continue
 				}
-				if err != nil {
-					// todo: handle error, the subscription has failed without us asking it to stop. Retry?
-					b.logger.Warn("Subscription ended before it should", zap.String("source", source.name), zap.Error(err))
-				}
-			}()
-		}
+				// I guess not, lets start watching
+				ctx, stop := context.WithCancel(ctx)
+				source.runningSources[name] = stop
+				logger := b.logger.With(zap.String("name", name))
+				impl := source.new(name, logger)
+				go func() {
+					err := impl.Subscribe(ctx, changes)
+					if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+						return
+					}
+					if err != nil {
+						// todo: handle error, the subscription has failed without us asking it to stop.
+						logger.Warn("Subscription ended before it should", zap.Error(err))
+					}
+				}()
+			}
 
-		// stop any sources that are no longer in the config
-		for _, cancelFunc := range sourcesToStop {
-			cancelFunc()
+			// stop any sources that are no longer in the config
+			for _, cancelFunc := range sourcesToStop {
+				cancelFunc()
+			}
 		}
 
 		// update the config in the ReadState too
