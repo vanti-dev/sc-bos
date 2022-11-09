@@ -28,8 +28,8 @@ func (f factory) New(services driver.Services) task.Starter {
 }
 
 func (f factory) AddSupport(supporter node.Supporter) {
-	r := rpc.NewAxiomXDriverServiceRouter()
-	supporter.Support(node.Routing(r), node.Clients(rpc.WrapAxiomXDriverService(r)))
+	r := rpc.NewAxiomXaDriverServiceRouter()
+	supporter.Support(node.Routing(r), node.Clients(rpc.WrapAxiomXaDriverService(r)))
 }
 
 type Driver struct {
@@ -49,7 +49,7 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 		config: cfg,
 		logger: d.Logger.Named("server"),
 	}
-	d.announcer.Announce(cfg.Name, node.HasClient(rpc.WrapAxiomXDriverService(httpImpl)))
+	d.announcer.Announce(cfg.Name, node.HasClient(rpc.WrapAxiomXaDriverService(httpImpl)))
 
 	return nil
 }

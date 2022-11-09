@@ -14,7 +14,7 @@ import (
 )
 
 type server struct {
-	rpc.UnimplementedAxiomXDriverServiceServer
+	rpc.UnimplementedAxiomXaDriverServiceServer
 	logger *zap.Logger
 	config config.Root
 }
