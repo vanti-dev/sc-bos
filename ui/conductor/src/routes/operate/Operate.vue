@@ -1,12 +1,11 @@
 <template>
   <div>
-    The operator page
+    <Table />
   </div>
 </template>
 
-<script setup>
+<script>
+import Table from "@/components/Operate/Table.vue";
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
