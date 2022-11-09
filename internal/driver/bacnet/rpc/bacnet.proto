@@ -12,6 +12,9 @@ service BacnetDriverService {
   rpc ReadPropertyMultiple(ReadPropertyMultipleRequest) returns (ReadPropertyMultipleResponse);
   rpc WriteProperty(WritePropertyRequest) returns (WritePropertyResponse);
   rpc WritePropertyMultiple(WritePropertyMultipleRequest) returns (WritePropertyMultipleResponse);
+
+  // Returns the objects configured for the configured device, which might be a subset of those actually available.
+  rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse);
 }
 
 message ObjectIdentifier {
@@ -137,4 +140,12 @@ message WritePropertyMultipleRequest {
 }
 
 message WritePropertyMultipleResponse {
+}
+
+message ListObjectsRequest {
+  string name = 1;
+}
+
+message ListObjectsResponse {
+  repeated ObjectIdentifier objects = 1;
 }

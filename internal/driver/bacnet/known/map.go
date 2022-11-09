@@ -109,6 +109,21 @@ func (m *Map) Clear() {
 	m.devicesByName = nil
 }
 
+func (m *Map) ListObjects(device bactypes.Device) ([]bactypes.Object, error) {
+	d, ok := m.devicesByID[device.ID.Instance]
+	if !ok {
+		return nil, ErrUnknownDevice
+	}
+	if len(d.objectsByID) == 0 {
+		return nil, nil
+	}
+	res := make([]bactypes.Object, 0, len(d.objectsByID))
+	for _, o := range d.objectsByID {
+		res = append(res, o.bacObject)
+	}
+	return res, nil
+}
+
 func (m *Map) LookupDeviceByID(id bactypes.ObjectInstance) (bactypes.Device, error) {
 	d, ok := m.devicesByID[id]
 	if !ok {

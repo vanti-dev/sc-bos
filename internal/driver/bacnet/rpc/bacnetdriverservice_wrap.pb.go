@@ -44,3 +44,7 @@ func (w *bacnetDriverServiceWrapper) WriteProperty(ctx context.Context, req *Wri
 func (w *bacnetDriverServiceWrapper) WritePropertyMultiple(ctx context.Context, req *WritePropertyMultipleRequest, _ ...grpc.CallOption) (*WritePropertyMultipleResponse, error) {
 	return w.server.WritePropertyMultiple(ctx, req)
 }
+
+func (w *bacnetDriverServiceWrapper) ListObjects(ctx context.Context, req *ListObjectsRequest, _ ...grpc.CallOption) (*ListObjectsResponse, error) {
+	return w.server.ListObjects(ctx, req)
+}

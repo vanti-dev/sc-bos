@@ -112,3 +112,12 @@ func (r *BacnetDriverServiceRouter) WritePropertyMultiple(ctx context.Context, r
 
 	return child.WritePropertyMultiple(ctx, request)
 }
+
+func (r *BacnetDriverServiceRouter) ListObjects(ctx context.Context, request *ListObjectsRequest) (*ListObjectsResponse, error) {
+	child, err := r.GetBacnetDriverServiceClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.ListObjects(ctx, request)
+}

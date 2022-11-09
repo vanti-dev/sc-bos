@@ -26,6 +26,8 @@ type BacnetDriverServiceClient interface {
 	ReadPropertyMultiple(ctx context.Context, in *ReadPropertyMultipleRequest, opts ...grpc.CallOption) (*ReadPropertyMultipleResponse, error)
 	WriteProperty(ctx context.Context, in *WritePropertyRequest, opts ...grpc.CallOption) (*WritePropertyResponse, error)
 	WritePropertyMultiple(ctx context.Context, in *WritePropertyMultipleRequest, opts ...grpc.CallOption) (*WritePropertyMultipleResponse, error)
+	// Returns the objects configured for the configured device, which might be a subset of those actually available.
+	ListObjects(ctx context.Context, in *ListObjectsRequest, opts ...grpc.CallOption) (*ListObjectsResponse, error)
 }
 
 type bacnetDriverServiceClient struct {
@@ -72,6 +74,15 @@ func (c *bacnetDriverServiceClient) WritePropertyMultiple(ctx context.Context, i
 	return out, nil
 }
 
+func (c *bacnetDriverServiceClient) ListObjects(ctx context.Context, in *ListObjectsRequest, opts ...grpc.CallOption) (*ListObjectsResponse, error) {
+	out := new(ListObjectsResponse)
+	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.driver.bacnet.BacnetDriverService/ListObjects", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BacnetDriverServiceServer is the server API for BacnetDriverService service.
 // All implementations must embed UnimplementedBacnetDriverServiceServer
 // for forward compatibility
@@ -80,6 +91,8 @@ type BacnetDriverServiceServer interface {
 	ReadPropertyMultiple(context.Context, *ReadPropertyMultipleRequest) (*ReadPropertyMultipleResponse, error)
 	WriteProperty(context.Context, *WritePropertyRequest) (*WritePropertyResponse, error)
 	WritePropertyMultiple(context.Context, *WritePropertyMultipleRequest) (*WritePropertyMultipleResponse, error)
+	// Returns the objects configured for the configured device, which might be a subset of those actually available.
+	ListObjects(context.Context, *ListObjectsRequest) (*ListObjectsResponse, error)
 	mustEmbedUnimplementedBacnetDriverServiceServer()
 }
 
@@ -98,6 +111,9 @@ func (UnimplementedBacnetDriverServiceServer) WriteProperty(context.Context, *Wr
 }
 func (UnimplementedBacnetDriverServiceServer) WritePropertyMultiple(context.Context, *WritePropertyMultipleRequest) (*WritePropertyMultipleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method WritePropertyMultiple not implemented")
+}
+func (UnimplementedBacnetDriverServiceServer) ListObjects(context.Context, *ListObjectsRequest) (*ListObjectsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListObjects not implemented")
 }
 func (UnimplementedBacnetDriverServiceServer) mustEmbedUnimplementedBacnetDriverServiceServer() {}
 
@@ -184,6 +200,24 @@ func _BacnetDriverService_WritePropertyMultiple_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BacnetDriverService_ListObjects_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListObjectsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BacnetDriverServiceServer).ListObjects(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vanti.bsp.ew.driver.bacnet.BacnetDriverService/ListObjects",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BacnetDriverServiceServer).ListObjects(ctx, req.(*ListObjectsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BacnetDriverService_ServiceDesc is the grpc.ServiceDesc for BacnetDriverService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +240,10 @@ var BacnetDriverService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "WritePropertyMultiple",
 			Handler:    _BacnetDriverService_WritePropertyMultiple_Handler,
+		},
+		{
+			MethodName: "ListObjects",
+			Handler:    _BacnetDriverService_ListObjects_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

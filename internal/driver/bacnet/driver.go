@@ -96,7 +96,7 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 		d.devices.StoreDevice(deviceName, bacDevice)
 
 		announcer := node.AnnounceWithNamePrefix("device/", d.announcer)
-		adapt.Device(deviceName, d.client, bacDevice).AnnounceSelf(announcer)
+		adapt.Device(deviceName, d.client, bacDevice, d.devices).AnnounceSelf(announcer)
 
 		prefix := fmt.Sprintf("device/%v/obj/", deviceName)
 		announcer = node.AnnounceWithNamePrefix(prefix, d.announcer)

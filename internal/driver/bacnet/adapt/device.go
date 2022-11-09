@@ -3,6 +3,7 @@ package adapt
 import (
 	"context"
 	"fmt"
+	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/known"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/rpc"
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/gobacnet"
@@ -14,11 +15,12 @@ import (
 )
 
 // Device adapts a bacnet Device into a Smart Core traits and other apis.
-func Device(name string, client *gobacnet.Client, device bactypes.Device) node.SelfAnnouncer {
+func Device(name string, client *gobacnet.Client, device bactypes.Device, known known.Context) node.SelfAnnouncer {
 	return &DeviceBacnetService{
 		name:   name,
 		client: client,
 		device: device,
+		known:  known,
 	}
 }
 
@@ -32,6 +34,7 @@ type DeviceBacnetService struct {
 	name   string
 	client *gobacnet.Client
 	device bactypes.Device
+	known  known.Context
 }
 
 func (d *DeviceBacnetService) AnnounceSelf(a node.Announcer) node.Undo {
@@ -128,6 +131,19 @@ func (d *DeviceBacnetService) WriteProperty(ctx context.Context, request *rpc.Wr
 func (d *DeviceBacnetService) WritePropertyMultiple(ctx context.Context, request *rpc.WritePropertyMultipleRequest) (*rpc.WritePropertyMultipleResponse, error) {
 	// client doesn't implement WritePropertyMultiple! :(
 	return d.UnimplementedBacnetDriverServiceServer.WritePropertyMultiple(ctx, request)
+}
+
+func (d *DeviceBacnetService) ListObjects(_ context.Context, _ *rpc.ListObjectsRequest) (*rpc.ListObjectsResponse, error) {
+	objects, err := d.known.ListObjects(d.device)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "device has been forgotten")
+	}
+
+	response := &rpc.ListObjectsResponse{}
+	for _, object := range objects {
+		response.Objects = append(response.Objects, ObjectIDToProto(object.ID))
+	}
+	return response, nil
 }
 
 func (d *DeviceBacnetService) propertyFromProtoForRead(reference *rpc.PropertyReference) bactypes.Property {
