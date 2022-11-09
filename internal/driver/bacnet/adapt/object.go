@@ -3,6 +3,7 @@ package adapt
 import (
 	"fmt"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
+	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/rpc"
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/gobacnet"
 	bactypes "github.com/vanti-dev/gobacnet/types"
@@ -36,4 +37,18 @@ func ObjectName(o config.Object) string {
 		return o.Name
 	}
 	return o.ID.String()
+}
+
+func ObjectIDFromProto(identifier *rpc.ObjectIdentifier) bactypes.ObjectID {
+	return bactypes.ObjectID{
+		Type:     objecttype.ObjectType(identifier.Type),
+		Instance: bactypes.ObjectInstance(identifier.Instance),
+	}
+}
+
+func ObjectIDToProto(id bactypes.ObjectID) *rpc.ObjectIdentifier {
+	return &rpc.ObjectIdentifier{
+		Type:     uint32(id.Type),
+		Instance: uint32(id.Instance),
+	}
 }

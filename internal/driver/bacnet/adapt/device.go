@@ -8,7 +8,6 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
-	"github.com/vanti-dev/gobacnet/types/objecttype"
 	"go.uber.org/multierr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -46,7 +45,7 @@ func (d *DeviceBacnetService) ReadProperty(ctx context.Context, request *rpc.Rea
 
 	readProperty, err := d.client.ReadProperty(d.device, bactypes.ReadPropertyData{
 		Object: bactypes.Object{
-			ID:         d.objectIDFromProto(request.ObjectIdentifier),
+			ID:         ObjectIDFromProto(request.ObjectIdentifier),
 			Properties: []bactypes.Property{d.propertyFromProtoForRead(request.PropertyReference)},
 		},
 	})
@@ -63,7 +62,7 @@ func (d *DeviceBacnetService) ReadProperty(ctx context.Context, request *rpc.Rea
 		return nil, status.Errorf(codes.Internal, "Reading property %v", err)
 	}
 	return &rpc.ReadPropertyResponse{
-		ObjectIdentifier: d.objectIDToProto(readProperty.Object.ID),
+		ObjectIdentifier: ObjectIDToProto(readProperty.Object.ID),
 		Result:           result,
 	}, nil
 }
@@ -72,7 +71,7 @@ func (d *DeviceBacnetService) ReadPropertyMultiple(ctx context.Context, request 
 	bacReq := bactypes.ReadMultipleProperty{}
 	for _, spec := range request.ReadSpecifications {
 		obj := bactypes.Object{
-			ID: d.objectIDFromProto(spec.ObjectIdentifier),
+			ID: ObjectIDFromProto(spec.ObjectIdentifier),
 		}
 		if len(spec.PropertyReferences) == 0 {
 			obj.Properties = append(obj.Properties, d.defaultReadProperty())
@@ -94,7 +93,7 @@ func (d *DeviceBacnetService) ReadPropertyMultiple(ctx context.Context, request 
 	res := &rpc.ReadPropertyMultipleResponse{}
 	for _, object := range readProperties.Objects {
 		item := &rpc.ReadPropertyMultipleResponse_ReadResult{
-			ObjectIdentifier: d.objectIDToProto(object.ID),
+			ObjectIdentifier: ObjectIDToProto(object.ID),
 		}
 		for _, p := range object.Properties {
 			result, e := d.propertyToProtoReadResult(p)
@@ -119,7 +118,7 @@ func (d *DeviceBacnetService) WriteProperty(ctx context.Context, request *rpc.Wr
 	}
 	data := bactypes.ReadPropertyData{
 		Object: bactypes.Object{
-			ID:         d.objectIDFromProto(request.ObjectIdentifier),
+			ID:         ObjectIDFromProto(request.ObjectIdentifier),
 			Properties: []bactypes.Property{writeProp},
 		},
 	}
@@ -129,20 +128,6 @@ func (d *DeviceBacnetService) WriteProperty(ctx context.Context, request *rpc.Wr
 func (d *DeviceBacnetService) WritePropertyMultiple(ctx context.Context, request *rpc.WritePropertyMultipleRequest) (*rpc.WritePropertyMultipleResponse, error) {
 	// client doesn't implement WritePropertyMultiple! :(
 	return d.UnimplementedBacnetDriverServiceServer.WritePropertyMultiple(ctx, request)
-}
-
-func (d *DeviceBacnetService) objectIDFromProto(identifier *rpc.ObjectIdentifier) bactypes.ObjectID {
-	return bactypes.ObjectID{
-		Type:     objecttype.ObjectType(identifier.Type),
-		Instance: bactypes.ObjectInstance(identifier.Instance),
-	}
-}
-
-func (d *DeviceBacnetService) objectIDToProto(id bactypes.ObjectID) *rpc.ObjectIdentifier {
-	return &rpc.ObjectIdentifier{
-		Type:     uint32(id.Type),
-		Instance: uint32(id.Instance),
-	}
 }
 
 func (d *DeviceBacnetService) propertyFromProtoForRead(reference *rpc.PropertyReference) bactypes.Property {
@@ -211,7 +196,7 @@ func (d *DeviceBacnetService) propertyValueToProto(p bactypes.Property) (*rpc.Pr
 	case bactypes.Time:
 		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Time{Time: d.timeToProto(v)}}, nil
 	case bactypes.ObjectID:
-		return &rpc.PropertyValue{Value: &rpc.PropertyValue_ObjectIdentifier{ObjectIdentifier: d.objectIDToProto(v)}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_ObjectIdentifier{ObjectIdentifier: ObjectIDToProto(v)}}, nil
 	}
 
 	return nil, fmt.Errorf("unknown bacnet type %v (%T)", p.Data, p.Data)
@@ -248,7 +233,7 @@ func (d *DeviceBacnetService) propertyValueFromProto(p *rpc.PropertyValue) (any,
 	case *rpc.PropertyValue_Time:
 		return d.timeFromProto(v.Time), nil
 	case *rpc.PropertyValue_ObjectIdentifier:
-		return d.objectIDFromProto(v.ObjectIdentifier), nil
+		return ObjectIDFromProto(v.ObjectIdentifier), nil
 	}
 
 	return nil, fmt.Errorf("unknown proto oneof type %v (%T)", p.Value, p.Value)
