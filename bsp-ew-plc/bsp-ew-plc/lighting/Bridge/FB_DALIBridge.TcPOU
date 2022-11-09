@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
   <POU Name="FB_DALIBridge" Id="{ffc142fa-0e37-4262-99b6-8e517cc4b419}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_DALIBridge
 VAR_INPUT
@@ -63,6 +63,7 @@ VAR
 	fbQueryGroups               : FB_DALI102QueryGroups(0);
 	fbAddToGroup				: FB_DALI102AddToGroup(0);
 	fbRemoveFromGroup			: FB_DALI102RemoveFromGroup(0);
+	fbEnableDeviceType			: FB_DALI102EnableDeviceType(0);
 	
 	// input monitor function blocks
 	numInputEventListeners  	: INT := 0;
@@ -552,6 +553,19 @@ E_DALIBridgeCommand.removeFromGroup:
 		ipResultMessage				:= fbRemoveFromGroup.ipResultMessage
 	);
 	
+E_DALIBridgeCommand.enabledDeviceType:
+	reinterpretEnum.raw				:= activeRequest.data;
+	fbEnableDeviceType(
+		bStart						:= requestFirstCycle,
+		eDeviceType					:= reinterpretEnum.deviceType
+	);
+	processResult(
+		busy						:= fbEnableDeviceType.bBusy,
+		bError						:= fbEnableDeviceType.bError,
+		ipResultMessage				:= fbEnableDeviceType.ipResultMessage,
+		data						:= 0
+	);
+	
 E_DALIBridgeCommand.testCommand:
 	processResult(
 		busy := FALSE,
@@ -633,7 +647,6 @@ fbEnableInstance.ipDALICommunication 		:= communication;
 fbGoToScene.ipDALICommunication 			:= communication;
 fbSetFadeTime.ipDALICommunication 			:= communication;
 fbQueryInputValue.ipDALICommunication		:= communication;
-
 fbQueryBatteryCharge.ipDALICommunication    	:= communication;
 fbQueryDurationTestResult.ipDALICommunication 	:= communication;
 fbQueryEmergencyMode.ipDALICommunication        := communication;
@@ -648,7 +661,11 @@ fbStartFunctionTest.ipDALICommunication 		:= communication;
 fbStopTest.ipDALICommunication					:= communication;
 fbSetDurationTestInterval.ipDALICommunication   := communication;
 fbSetFunctionTestInterval.ipDALICommunication   := communication;
-fbStartIdentification202.ipDALICommunication    := communication;]]></ST>
+fbStartIdentification202.ipDALICommunication    := communication;
+fbQueryGroups.ipDALICommunication				:= communication;
+fbAddToGroup.ipDALICommunication				:= communication;
+fbRemoveFromGroup.ipDALICommunication			:= communication;
+fbEnableDeviceType.ipDALICommunication			:= communication;]]></ST>
       </Implementation>
     </Method>
     <Method Name="isFirstCycle" Id="{b0d67c62-fcd8-4748-91f3-dac60a26c617}">
@@ -1091,6 +1108,9 @@ ADSLOGSTR(
       <LineId Id="1300" Count="4" />
       <LineId Id="1299" Count="0" />
       <LineId Id="1127" Count="0" />
+      <LineId Id="1379" Count="0" />
+      <LineId Id="1382" Count="10" />
+      <LineId Id="1378" Count="0" />
       <LineId Id="237" Count="6" />
       <LineId Id="149" Count="0" />
       <LineId Id="146" Count="1" />
@@ -1111,8 +1131,10 @@ ADSLOGSTR(
       <LineId Id="7" Count="0" />
     </LineIds>
     <LineIds Name="FB_DALIBridge.initCommunication">
-      <LineId Id="71" Count="36" />
+      <LineId Id="71" Count="21" />
+      <LineId Id="94" Count="13" />
       <LineId Id="65" Count="0" />
+      <LineId Id="113" Count="3" />
     </LineIds>
     <LineIds Name="FB_DALIBridge.isFirstCycle">
       <LineId Id="8" Count="0" />

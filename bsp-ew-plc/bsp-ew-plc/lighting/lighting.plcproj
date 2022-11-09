@@ -16,6 +16,7 @@
     <Implicit_Jitter_Distribution>{6b7f88da-2a6b-48a1-a284-cb186394d736}</Implicit_Jitter_Distribution>
     <LibraryReferences>{4cd8e030-ec9f-4560-964f-9ad7a720e57b}</LibraryReferences>
     <CompilerDefines />
+    <Released>false</Released>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Bridge\FB_DALIBridge.TcPOU">

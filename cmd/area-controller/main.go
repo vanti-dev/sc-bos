@@ -9,8 +9,6 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/auto/export"
 	"github.com/vanti-dev/bsp-ew/internal/driver/axiomxa"
 
-	"github.com/vanti-dev/bsp-ew/internal/auto/testlight"
-
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
@@ -19,6 +17,7 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auto"
 	"github.com/vanti-dev/bsp-ew/internal/auto/lights"
+	"github.com/vanti-dev/bsp-ew/internal/auto/testlight"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali"

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
   <GVL Name="GVL_Variant" Id="{25f77e8c-9d9b-49ca-a72e-eba1634b01ee}">
     <Declaration><![CDATA[{attribute 'qualified_only'}
 VAR_GLOBAL CONSTANT
@@ -81,12 +81,12 @@ VAR_GLOBAL CONSTANT
 		numT4Bus	: INT := 0;
 		hasLSBus	: BOOL := FALSE;
 	{ELSIF defined(Lab)}
-		numLLBus 	: INT := 0;
-		numT1Bus	: INT := 2;
+		numLLBus 	: INT := 6;
+		numT1Bus	: INT := 0;
 		numT2Bus	: INT := 0;
 		numT3Bus	: INT := 0;
 		numT4Bus	: INT := 0;
-		hasLSBus	: BOOL := FALSE;
+		hasLSBus	: BOOL := TRUE;
 	{ELSE}
 		numLLBus 	: INT := 0;
 		numT1Bus	: INT := 0;

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
   <DUT Name="U_ReinterpretDALIEnum" Id="{4b3b4271-a73b-4033-bd66-391eb231e809}">
     <Declaration><![CDATA[TYPE U_ReinterpretDALIEnum :
 UNION
@@ -7,6 +7,7 @@ UNION
 	eventScheme 	: E_DALIEventScheme;
 	fadeTime		: E_DALIFadeTime;
 	testTiming      : E_DALITestTiming;
+	deviceType		: E_DALIDeviceType;
 END_UNION
 END_TYPE
 ]]></Declaration>

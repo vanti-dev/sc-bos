@@ -39,6 +39,7 @@ const (
 	QueryGroups               Command = 29
 	AddToGroup                Command = 30
 	RemoveFromGroup           Command = 31
+	EnableDeviceType          Command = 32
 
 	TestCommand Command = 100
 )

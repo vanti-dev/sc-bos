@@ -37,6 +37,7 @@ TYPE E_DALIBridgeCommand :
 	queryGroups					:= 29,
 	addToGroup					:= 30,
 	removeFromGroup				:= 31,
+	enabledDeviceType			:= 32,
 	
 	testCommand := 100
 );
@@ -204,6 +205,11 @@ END_TYPE
             <o>
               <v n="TextID">"removeFromGroup"</v>
               <v n="TextDefault">"31"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"enabledDeviceType"</v>
+              <v n="TextDefault">"32"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
