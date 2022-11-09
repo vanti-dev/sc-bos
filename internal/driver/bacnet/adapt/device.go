@@ -60,7 +60,7 @@ func (d *DeviceBacnetService) ReadProperty(ctx context.Context, request *rpc.Rea
 		return nil, status.Errorf(codes.Internal, "Error(%d) from BACnet device", readProperty.ErrorCode)
 	}
 
-	result, err := d.propertyToProtoReadResult(readProperty.Object.Properties[0])
+	result, err := PropertyToProtoReadResult(readProperty.Object.Properties[0])
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Reading property %v", err)
 	}
@@ -99,7 +99,7 @@ func (d *DeviceBacnetService) ReadPropertyMultiple(ctx context.Context, request 
 			ObjectIdentifier: ObjectIDToProto(object.ID),
 		}
 		for _, p := range object.Properties {
-			result, e := d.propertyToProtoReadResult(p)
+			result, e := PropertyToProtoReadResult(p)
 			if e != nil {
 				err = multierr.Append(err, e)
 				continue
@@ -174,7 +174,7 @@ func (d *DeviceBacnetService) propertyFromProtoForWrite(reference *rpc.PropertyW
 	return p, err
 }
 
-func (d *DeviceBacnetService) propertyToProto(p bactypes.Property) *rpc.PropertyReference {
+func PropertyToProto(p bactypes.Property) *rpc.PropertyReference {
 	res := &rpc.PropertyReference{
 		Identifier: uint32(p.ID),
 	}
@@ -184,7 +184,7 @@ func (d *DeviceBacnetService) propertyToProto(p bactypes.Property) *rpc.Property
 	return res
 }
 
-func (d *DeviceBacnetService) propertyValueToProto(p bactypes.Property) (*rpc.PropertyValue, error) {
+func PropertyValueToProto(p bactypes.Property) (*rpc.PropertyValue, error) {
 	// Property.Data doesn't distinguish between 8, 16, 32 bit data, they are all 32.
 	// It also doesn't support 64 bit data, so we don't either.
 	// It also doesn't support bit_string, it returns an error that we should catch earlier in the request.
@@ -208,9 +208,9 @@ func (d *DeviceBacnetService) propertyValueToProto(p bactypes.Property) (*rpc.Pr
 	case string:
 		return &rpc.PropertyValue{Value: &rpc.PropertyValue_CharacterString{CharacterString: v}}, nil
 	case bactypes.Date:
-		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Date{Date: d.dateToProto(v)}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Date{Date: DateToProto(v)}}, nil
 	case bactypes.Time:
-		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Time{Time: d.timeToProto(v)}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Time{Time: TimeToProto(v)}}, nil
 	case bactypes.ObjectID:
 		return &rpc.PropertyValue{Value: &rpc.PropertyValue_ObjectIdentifier{ObjectIdentifier: ObjectIDToProto(v)}}, nil
 	}
@@ -255,7 +255,7 @@ func (d *DeviceBacnetService) propertyValueFromProto(p *rpc.PropertyValue) (any,
 	return nil, fmt.Errorf("unknown proto oneof type %v (%T)", p.Value, p.Value)
 }
 
-func (d *DeviceBacnetService) dateToProto(date bactypes.Date) *rpc.PropertyValue_DateValue {
+func DateToProto(date bactypes.Date) *rpc.PropertyValue_DateValue {
 	return &rpc.PropertyValue_DateValue{
 		Year:       uint32(date.Year),
 		Month:      uint32(date.Month),
@@ -273,7 +273,7 @@ func (d *DeviceBacnetService) dateFromProto(date *rpc.PropertyValue_DateValue) b
 	}
 }
 
-func (d *DeviceBacnetService) timeToProto(time bactypes.Time) *rpc.PropertyValue_TimeValue {
+func TimeToProto(time bactypes.Time) *rpc.PropertyValue_TimeValue {
 	octetToProto := func(o int) *uint32 {
 		if o == bactypes.UnspecifiedTime {
 			return nil
@@ -308,13 +308,13 @@ func (d *DeviceBacnetService) timeFromProto(time *rpc.PropertyValue_TimeValue) b
 	return t
 }
 
-func (d *DeviceBacnetService) propertyToProtoReadResult(p bactypes.Property) (*rpc.PropertyReadResult, error) {
-	value, err := d.propertyValueToProto(p)
+func PropertyToProtoReadResult(p bactypes.Property) (*rpc.PropertyReadResult, error) {
+	value, err := PropertyValueToProto(p)
 	if err != nil {
 		return nil, err
 	}
 	return &rpc.PropertyReadResult{
-		PropertyReference: d.propertyToProto(p),
+		PropertyReference: PropertyToProto(p),
 		Value:             value,
 	}, nil
 }
