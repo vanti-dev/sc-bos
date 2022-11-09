@@ -3,7 +3,6 @@ package lights
 import (
 	"context"
 	"errors"
-	"fmt"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -119,12 +118,26 @@ func subscribe(ctx context.Context, poller pullPoller, changes chan<- Patcher, o
 }
 
 func runPoll(ctx context.Context, poller pullPoller, changes chan<- Patcher, conf subscribeOpts) error {
+	pollDelay := conf.pollDelay
+	errCount := 0
 	ticker := time.NewTicker(conf.pollDelay)
 	defer ticker.Stop()
 	for {
 		err := poller.poll(ctx, changes)
 		if err != nil {
-			conf.logger.Warn(fmt.Sprintf("poll failed, will try again in %v", conf.pollDelay), zap.Error(err))
+			errCount++
+			pollDelay = time.Duration(float64(pollDelay) * 1.2)
+			if pollDelay > conf.fallbackMaxDelay {
+				pollDelay = conf.fallbackMaxDelay
+			}
+			if errCount == 5 {
+				conf.logger.Warn("poll is failing, will try keep retrying", zap.Error(err))
+			}
+		} else {
+			if pollDelay != conf.pollDelay {
+				pollDelay = conf.pollDelay
+				ticker.Reset(conf.pollDelay)
+			}
 		}
 		select {
 		case <-ctx.Done():
