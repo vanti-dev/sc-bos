@@ -66,6 +66,7 @@ func Configurable(s any) bool {
 
 // RunConfigFunc is called when a drivers config changes and should apply those changes.
 // The ctx will be cancelled if the driver stops or the config is replaced.
+// RunConfigFunc should only block while cfg is being applied, any long running tasks should run in separate go routines.
 type RunConfigFunc[C any] func(ctx context.Context, cfg C) error
 
 // Lifecycle manages the lifecycle of a driver as per task.Starter, task.Configurer, and task.Stopper.
