@@ -18,6 +18,7 @@ func NewMQTTExport(services auto.Services) task.Starter {
 	e := &mqttExport{services: services}
 	e.Lifecycle = task.NewLifecycle(e.applyConfig)
 	e.Logger = services.Logger.Named("export.mqtt")
+	e.services.Logger = e.Logger
 	return e
 }
 
@@ -54,7 +55,8 @@ func newMqttClient(cfg config.Root) (mqtt.Client, error) {
 }
 
 var supportedSources = map[string]func(source.Services) task.Starter{
-	"bacnet": source.NewBacnet,
+	"bacnet":     source.NewBacnet,
+	"smart-core": source.NewSmartCore,
 }
 
 func configureSources(ctx context.Context, services source.Services, cfgs []config.RawSource) error {
