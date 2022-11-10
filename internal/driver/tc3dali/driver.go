@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
@@ -123,15 +121,10 @@ func InitBus(ctx context.Context, config BusConfig, busBridge dali.Dali, service
 			deviceName = fmt.Sprintf("%s/control-device/%d", config.Name, dev.ShortAddress)
 		}
 
-		devServer := &controlDeviceServer{
-			bus:       busBridge,
-			shortAddr: dev.ShortAddress,
-			occupancy: resource.NewValue(resource.WithInitialValue(&traits.Occupancy{
-				State: traits.Occupancy_STATE_UNSPECIFIED,
-			})),
-			logger:           services.Logger.Named("control-device").With(zap.String("sc-device-name", deviceName)),
-			enableEventsOnce: newOnce(),
-		}
+		devServer := newControlDeviceServer(
+			busBridge, dev.ShortAddress,
+			services.Logger.Named("control-device").With(zap.String("sc-device-name", deviceName)),
+		)
 		services.Node.Announce(deviceName,
 			node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensor.WrapApi(devServer))),
 		)

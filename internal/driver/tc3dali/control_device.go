@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -28,6 +29,21 @@ type controlDeviceServer struct {
 	logger    *zap.Logger
 
 	enableEventsOnce *once
+}
+
+func newControlDeviceServer(bus dali.Dali, shortAddr uint8, logger *zap.Logger) *controlDeviceServer {
+	return &controlDeviceServer{
+		bus:       bus,
+		shortAddr: shortAddr,
+		occupancy: resource.NewValue(
+			resource.WithInitialValue(&traits.Occupancy{
+				State: traits.Occupancy_STATE_UNSPECIFIED,
+			}),
+			resource.WithNoDuplicates(),
+		),
+		logger:           logger,
+		enableEventsOnce: newOnce(),
+	}
 }
 
 func (s *controlDeviceServer) GetOccupancy(ctx context.Context, _ *traits.GetOccupancyRequest) (*traits.Occupancy, error) {
@@ -115,7 +131,17 @@ func (s *controlDeviceServer) handleInputEvent(event dali.InputEvent, err error)
 		occupancy = &traits.Occupancy{State: traits.Occupancy_UNOCCUPIED}
 	}
 
-	_, err = s.occupancy.Set(occupancy)
+	_, err = s.occupancy.Set(occupancy, resource.InterceptBefore(func(old, new proto.Message) {
+		oldO := old.(*traits.Occupancy)
+		newO := new.(*traits.Occupancy)
+
+		// only update the state_change_time if the new state is actually different
+		if newO.State != oldO.State {
+			newO.StateChangeTime = timestamppb.Now()
+		} else {
+			newO.StateChangeTime = oldO.StateChangeTime
+		}
+	}))
 	if err != nil {
 		s.logger.Warn("failed to update occupancy resource after event received",
 			zap.Error(err), zap.String("state", occupancy.State.String()))
@@ -127,6 +153,8 @@ func (s *controlDeviceServer) ensureEventsEnabled(ctx context.Context) error {
 	defer cancel()
 
 	err, done := s.enableEventsOnce.Do(ctx, func() error {
+		s.logger.Debug("enabling occupancy events for DALI control device",
+			zap.Uint8("shortAddr", s.shortAddr))
 		// Enable the Occupancy instance on the device.
 		// The device won't send any Occupancy-related events until the Occupancy instance has been enabled.
 		// This is idempotent.
