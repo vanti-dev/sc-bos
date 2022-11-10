@@ -14,7 +14,6 @@ import (
 type BrightnessAutomation struct {
 	logger  *zap.Logger
 	clients node.Clienter // clients are not got until Start
-	config  config.Root   // storing config here allows Configure to be called before Start
 
 	// bus emits "stop" and "config" events triggered by Stop and Configure.
 	bus *emitter.Emitter
@@ -83,7 +82,6 @@ func (b *BrightnessAutomation) Start(_ context.Context) error {
 	// readStates is how state changes are communicates to the func that processes those state changes.
 	readStates := make(chan *ReadState)
 	initialState := NewReadState()
-	initialState.Config = b.config
 
 	// collect and collate the state changes
 	group.Go(func() error {
@@ -109,8 +107,7 @@ func (b *BrightnessAutomation) Configure(configData []byte) error {
 }
 
 func (b *BrightnessAutomation) configure(cfg config.Root) error {
-	b.config = cfg
-	b.bus.Emit("config", cfg) // don't wait
+	<-b.bus.Emit("config", cfg) // wait for anyone who is listening to apply that config
 	return nil
 }
 

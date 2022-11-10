@@ -130,7 +130,6 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 		return sourceCount
 	}
 
-	processConfig(b.config)
 	for {
 		select {
 		case <-ctx.Done():
