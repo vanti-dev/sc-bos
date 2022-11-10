@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/adapt"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
@@ -74,6 +75,7 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 		if err != nil {
 			return err
 		}
+		client.Log.SetLevel(logrus.InfoLevel)
 		d.client = client
 		if address, err := client.LocalUDPAddress(); err == nil {
 			d.Logger.Debug("bacnet client configured", zap.Stringer("local", address),
@@ -127,7 +129,7 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 
 			impl, err := adapt.Object(d.client, bacDevice, co)
 			if errors.Is(err, adapt.ErrNoDefault) {
-				logger.Debug("No default adaptation trait for object")
+				// logger.Debug("No default adaptation trait for object")
 				continue
 			}
 			if errors.Is(err, adapt.ErrNoAdaptation) {
