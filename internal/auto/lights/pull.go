@@ -125,6 +125,10 @@ func runPoll(ctx context.Context, poller pullPoller, changes chan<- Patcher, con
 	for {
 		err := poller.poll(ctx, changes)
 		if err != nil {
+			if status.Code(err) == codes.Unimplemented {
+				return err
+			}
+
 			errCount++
 			pollDelay = time.Duration(float64(pollDelay) * 1.2)
 			if pollDelay > conf.fallbackMaxDelay {

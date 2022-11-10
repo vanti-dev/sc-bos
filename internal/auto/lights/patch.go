@@ -8,6 +8,8 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Patcher represents a single patch that adjusts ReadState.
@@ -97,6 +99,12 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 					err := impl.Subscribe(ctx, changes)
 					if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 						return
+					}
+					if s, ok := status.FromError(err); ok {
+						if s.Code() == codes.Unimplemented {
+							logger.Warn(fmt.Sprintf("Subscription does not implement required features: %v", s.Message()))
+							return
+						}
 					}
 					if err != nil {
 						// todo: handle error, the subscription has failed without us asking it to stop.
