@@ -14,11 +14,21 @@ service DaliApi {
   rpc GetGroupMembership(GetGroupMembershipRequest) returns (GetGroupMembershipResponse);
 
   // Emergency Light commands
+
+
   rpc GetEmergencyStatus(GetEmergencyStatusRequest) returns (EmergencyStatus);
+  // Start identification for the light; typically this will flash an indicator LED for a few seconds.
   rpc Identify(IdentifyRequest) returns (IdentifyResponse);
+  // Attempt to start a function or duration test.
   rpc StartTest(StartTestRequest) returns (StartTestResponse);
+  // Stop any test that is in progress.
   rpc StopTest(StopTestRequest) returns (StopTestResponse);
+  // Retrieve the results (pass/fail) of the most recent function or duration test to be performed.
   rpc GetTestResult(GetTestResultRequest) returns (TestResult);
+  // Can be used to clear a test pass from the light's internal memory. Only passes can be deleted in this way -
+  // a failure will stick until it's replaced with a pass.
+  //
+  // Useful to make sure you don't record the same test multiple times.
   rpc DeleteTestResult(DeleteTestResultRequest) returns (TestResult);
 }
 

@@ -138,11 +138,6 @@ func (s *emergencyLightServer) GetTestResult(ctx context.Context, request *rpc.G
 	if err != nil {
 		return nil, fmt.Errorf("QueryEmergencyStatus: %w", err)
 	}
-	if uint8(rawStatus)&doneMask == 0 {
-		// test not complete, no data to return
-		return nil, status.Error(codes.NotFound, "test results not present - a test must be run first")
-	}
-
 	// get the results of the test i.e. did it succeed or fail, and how long did the battery last for duration tests
 	rawFailure, err := s.bus.ExecuteCommand(ctx, dali.Request{
 		Command:     dali.QueryFailureStatus,
@@ -153,9 +148,21 @@ func (s *emergencyLightServer) GetTestResult(ctx context.Context, request *rpc.G
 		return nil, fmt.Errorf("QueryFailureStatus: %w", err)
 	}
 
-	result := &rpc.TestResult{
-		Test: request.GetTest(),
-		Pass: uint8(rawFailure)&failureMask == 0,
+	var result *rpc.TestResult
+	if uint8(rawFailure)&failureMask != 0 {
+		// the test failed, report failure
+		result = &rpc.TestResult{
+			Test: request.GetTest(),
+			Pass: false,
+		}
+	} else if uint8(rawStatus)&doneMask != 0 {
+		result = &rpc.TestResult{
+			Test: request.GetTest(),
+			Pass: true,
+		}
+	} else {
+		// test not complete, no data to return
+		return nil, status.Error(codes.NotFound, "test results not present - a test must be run first")
 	}
 
 	if requestDuration {
@@ -182,6 +189,11 @@ func (s *emergencyLightServer) DeleteTestResult(ctx context.Context, request *rp
 	})
 	if err != nil {
 		return nil, err
+	}
+	// we can't make the emergency light forget a test failure, so don't try
+	// the only way to clear the failed test result is to run another test which passes
+	if !result.Pass {
+		return nil, status.Error(codes.FailedPrecondition, "test failure cannot be cleared until a test passes")
 	}
 
 	var command dali.Command

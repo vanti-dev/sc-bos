@@ -105,35 +105,37 @@ func (a *EmergencyTestAutomation) process(ctx context.Context, name string, test
 	// we have successfully scanned for new data, so update last scan time
 	lastScan, _, err := updateScanTime(a.db, name, test, scanTime)
 	if err != nil {
-		a.logger.Warn("failed to update last scan time - test CompletedAfter times may be inaccurate",
+		a.logger.Warn("failed to update last scan time - test After times may be inaccurate",
 			zap.Error(err), zap.String("deviceName", name), zap.Any("test", test))
 	}
 
 	if result != nil {
 		// store the test in the database
-		var achievedDuration time.Duration
-		if result.Duration != nil {
-			achievedDuration = result.Duration.AsDuration()
+		record := TestResultRecord{
+			Name:     name,
+			Kind:     test,
+			After:    lastScan,
+			Before:   scanTime,
+			TestPass: result.Pass,
 		}
-		err = a.db.Insert(bolthold.NextSequence(), TestResultRecord{
-			Name:             name,
-			Kind:             test,
-			CompletedAfter:   lastScan,
-			CompletedBefore:  scanTime,
-			Success:          result.Pass,
-			AchievedDuration: achievedDuration,
-		})
+		if result.Duration != nil {
+			record.AchievedDuration = result.Duration.AsDuration()
+		}
+		err = saveTestResult(a.db, record)
 		if err != nil {
 			return fmt.Errorf("store test result: %w", err)
 		}
 
-		// clear the test result from the emergency light now we have safely captured it
-		_, err = client.DeleteTestResult(ctx, &rpc.DeleteTestResultRequest{
-			Name: name,
-			Test: test,
-		})
-		if err != nil {
-			return fmt.Errorf("DeleteTestResult: %w", err)
+		if record.TestPass {
+			// clear the test result from the emergency light now we have safely captured it
+			// this can only be done for passes; failure status can only be cleared by a subsequent pass
+			_, err = client.DeleteTestResult(ctx, &rpc.DeleteTestResultRequest{
+				Name: name,
+				Test: test,
+			})
+			if err != nil {
+				return fmt.Errorf("DeleteTestResult: %w", err)
+			}
 		}
 	}
 
