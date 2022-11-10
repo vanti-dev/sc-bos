@@ -2,10 +2,11 @@ package lights
 
 import (
 	"context"
-	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
 	"sort"
 	"time"
+
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
 )
 
 // processState executes clientActions based on both read and write states.
@@ -41,7 +42,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	// 10 minutes.
 	lastOccupiedTime := lastUnoccupiedTime(readState)
 	if !lastOccupiedTime.IsZero() {
-		unoccupiedDelayBeforeDarkness := readState.Config.UnoccupiedOffDelay
+		unoccupiedDelayBeforeDarkness := readState.Config.UnoccupiedOffDelay.Duration
 
 		now := readState.Config.Now()
 		sinceUnoccupied := now.Sub(lastOccupiedTime)

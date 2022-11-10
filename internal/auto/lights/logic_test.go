@@ -3,13 +3,14 @@ package lights
 import (
 	"context"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"testing"
-	"time"
 )
 
 func Test_processState(t *testing.T) {
@@ -62,7 +63,7 @@ func Test_processState(t *testing.T) {
 		now := time.Unix(0, 0)
 
 		readState.Config.Now = func() time.Time { return now }
-		readState.Config.UnoccupiedOffDelay = 10 * time.Minute
+		readState.Config.UnoccupiedOffDelay = config.Duration{Duration: 10 * time.Minute}
 		readState.Config.OccupancySensors = []string{"pir01"}
 		readState.Config.Lights = []string{"light01"}
 		readState.Occupancy["pir01"] = &traits.Occupancy{
@@ -87,7 +88,7 @@ func Test_processState(t *testing.T) {
 		now := time.Unix(0, 0)
 
 		readState.Config.Now = func() time.Time { return now }
-		readState.Config.UnoccupiedOffDelay = 10 * time.Minute
+		readState.Config.UnoccupiedOffDelay = config.Duration{Duration: 10 * time.Minute}
 		readState.Config.OccupancySensors = []string{"pir01"}
 		readState.Config.Lights = []string{"light01"}
 		readState.Occupancy["pir01"] = &traits.Occupancy{

@@ -3,6 +3,9 @@ package lights
 import (
 	"context"
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
@@ -11,8 +14,6 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"testing"
-	"time"
 )
 
 func TestPirsTurnLightsOn(t *testing.T) {
@@ -48,7 +49,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	cfg.Now = func() time.Time { return now }
 	cfg.OccupancySensors = []string{"pir01", "pir02"}
 	cfg.Lights = []string{"light01", "light02"}
-	cfg.UnoccupiedOffDelay = 10 * time.Minute
+	cfg.UnoccupiedOffDelay = config.Duration{Duration: 10 * time.Minute}
 
 	if err := automation.Start(context.Background()); err != nil {
 		t.Fatalf("Start: %v", err)
