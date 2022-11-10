@@ -57,6 +57,7 @@ func (d *Driver) fetchObjects(cfg config.Root, device config.Device, bacDevice b
 
 		for _, objectsOfType := range hasObjects.Objects {
 			for _, object := range objectsOfType {
+				object := object
 				if known, found := objects[object.ID]; found {
 					// copy any additional data into the object config
 					if known.co.Title == "" {
