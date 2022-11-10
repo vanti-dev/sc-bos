@@ -3,6 +3,7 @@ package lights
 import (
 	"context"
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/bsp-ew/internal/util/pull"
 	"go.uber.org/zap"
 )
 
@@ -18,10 +19,10 @@ func (o *OccupancySensorPatches) Subscribe(ctx context.Context, changes chan<- P
 	defer func() {
 		changes <- clearOccupancyTransition(o.name)
 	}()
-	return subscribe(ctx, o, changes, withLogger(o.logger.Named("occupancy")))
+	return pull.Changes[Patcher](ctx, o, changes, pull.WithLogger(o.logger.Named("occupancy")))
 }
 
-func (o *OccupancySensorPatches) pull(ctx context.Context, changes chan<- Patcher) error {
+func (o *OccupancySensorPatches) Pull(ctx context.Context, changes chan<- Patcher) error {
 	stream, err := o.client.PullOccupancy(ctx, &traits.PullOccupancyRequest{Name: o.name})
 	if err != nil {
 		return err
@@ -40,7 +41,7 @@ func (o *OccupancySensorPatches) pull(ctx context.Context, changes chan<- Patche
 	}
 }
 
-func (o *OccupancySensorPatches) poll(ctx context.Context, changes chan<- Patcher) error {
+func (o *OccupancySensorPatches) Poll(ctx context.Context, changes chan<- Patcher) error {
 	res, err := o.client.GetOccupancy(ctx, &traits.GetOccupancyRequest{Name: o.name})
 	if err != nil {
 		return err

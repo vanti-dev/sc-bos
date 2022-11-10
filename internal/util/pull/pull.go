@@ -1,4 +1,4 @@
-package lights
+package pull
 
 import (
 	"context"
@@ -9,12 +9,39 @@ import (
 	"time"
 )
 
-type pullPoller interface {
-	pull(ctx context.Context, changes chan<- Patcher) error
-	poll(ctx context.Context, changes chan<- Patcher) error
+type Fetcher[C any] interface {
+	Pull(ctx context.Context, changes chan<- C) error
+	Poll(ctx context.Context, changes chan<- C) error
 }
 
-type subscribeOpts struct {
+type Option func(opts *changeOpts)
+
+func WithLogger(logger *zap.Logger) Option {
+	return func(opts *changeOpts) {
+		opts.logger = logger
+	}
+}
+
+func WithPullFallback(initial, max time.Duration) Option {
+	return func(opts *changeOpts) {
+		opts.fallbackInitialDelay = initial
+		opts.fallbackMaxDelay = max
+	}
+}
+
+func WithPollDelay(delay time.Duration) Option {
+	return func(opts *changeOpts) {
+		opts.pollDelay = delay
+	}
+}
+
+var defaultChangeOpts = []Option{
+	WithLogger(zap.NewNop()),
+	WithPullFallback(100*time.Millisecond, 10*time.Second),
+	WithPollDelay(time.Second),
+}
+
+type changeOpts struct {
 	logger    *zap.Logger
 	pollDelay time.Duration
 
@@ -22,36 +49,9 @@ type subscribeOpts struct {
 	fallbackMaxDelay     time.Duration
 }
 
-type subscribeOption func(opts *subscribeOpts)
-
-func withLogger(logger *zap.Logger) subscribeOption {
-	return func(opts *subscribeOpts) {
-		opts.logger = logger
-	}
-}
-
-func withPullFallback(initial, max time.Duration) subscribeOption {
-	return func(opts *subscribeOpts) {
-		opts.fallbackInitialDelay = initial
-		opts.fallbackMaxDelay = max
-	}
-}
-
-func withPollDelay(delay time.Duration) subscribeOption {
-	return func(opts *subscribeOpts) {
-		opts.pollDelay = delay
-	}
-}
-
-var defaultSubscribeOptions = []subscribeOption{
-	withLogger(zap.NewNop()),
-	withPullFallback(100*time.Millisecond, 10*time.Second),
-	withPollDelay(time.Second),
-}
-
-func calcOpts(opts ...subscribeOption) subscribeOpts {
-	out := &subscribeOpts{}
-	for _, opt := range defaultSubscribeOptions {
+func calcOpts(opts ...Option) changeOpts {
+	out := &changeOpts{}
+	for _, opt := range defaultChangeOpts {
 		opt(out)
 	}
 	for _, opt := range opts {
@@ -60,7 +60,8 @@ func calcOpts(opts ...subscribeOption) subscribeOpts {
 	return *out
 }
 
-func subscribe(ctx context.Context, poller pullPoller, changes chan<- Patcher, opts ...subscribeOption) error {
+// Changes calls Pull on poller unless it's not supported, in which case it polls.
+func Changes[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, opts ...Option) error {
 	conf := calcOpts(opts...)
 
 	poll := false
@@ -77,7 +78,7 @@ func subscribe(ctx context.Context, poller pullPoller, changes chan<- Patcher, o
 		if poll {
 			return runPoll(ctx, poller, changes, conf)
 		} else {
-			err := poller.pull(ctx, changes)
+			err := poller.Pull(ctx, changes)
 			if err != nil {
 				if shouldReturn(err) {
 					return err
@@ -92,7 +93,7 @@ func subscribe(ctx context.Context, poller pullPoller, changes chan<- Patcher, o
 				if err != nil {
 					errCount++
 					if errCount == 5 {
-						conf.logger.Warn("subscriptions are failing, will keep retrying", zap.Error(err))
+						conf.logger.Warn("updates are failing, will keep retrying", zap.Error(err))
 					}
 				}
 			} else {
@@ -117,13 +118,13 @@ func subscribe(ctx context.Context, poller pullPoller, changes chan<- Patcher, o
 	}
 }
 
-func runPoll(ctx context.Context, poller pullPoller, changes chan<- Patcher, conf subscribeOpts) error {
+func runPoll[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, conf changeOpts) error {
 	pollDelay := conf.pollDelay
 	errCount := 0
 	ticker := time.NewTicker(conf.pollDelay)
 	defer ticker.Stop()
 	for {
-		err := poller.poll(ctx, changes)
+		err := poller.Poll(ctx, changes)
 		if err != nil {
 			if status.Code(err) == codes.Unimplemented {
 				return err

@@ -3,6 +3,7 @@ package lights
 import (
 	"context"
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/bsp-ew/internal/util/pull"
 	"go.uber.org/zap"
 )
 
@@ -18,10 +19,10 @@ func (o *BrightnessSensorPatches) Subscribe(ctx context.Context, changes chan<- 
 	defer func() {
 		changes <- clearAmbientBrightnessTransition(o.name)
 	}()
-	return subscribe(ctx, o, changes, withLogger(o.logger.Named("brightness")))
+	return pull.Changes[Patcher](ctx, o, changes, pull.WithLogger(o.logger.Named("brightness")))
 }
 
-func (o *BrightnessSensorPatches) pull(ctx context.Context, changes chan<- Patcher) error {
+func (o *BrightnessSensorPatches) Pull(ctx context.Context, changes chan<- Patcher) error {
 	stream, err := o.client.PullAmbientBrightness(ctx, &traits.PullAmbientBrightnessRequest{Name: o.name})
 	if err != nil {
 		return err
@@ -40,7 +41,7 @@ func (o *BrightnessSensorPatches) pull(ctx context.Context, changes chan<- Patch
 	}
 }
 
-func (o *BrightnessSensorPatches) poll(ctx context.Context, changes chan<- Patcher) error {
+func (o *BrightnessSensorPatches) Poll(ctx context.Context, changes chan<- Patcher) error {
 	res, err := o.client.GetAmbientBrightness(ctx, &traits.GetAmbientBrightnessRequest{Name: o.name})
 	if err != nil {
 		return err
