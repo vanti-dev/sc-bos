@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
+	"github.com/vanti-dev/bsp-ew/internal/auto/export"
 	"github.com/vanti-dev/bsp-ew/internal/driver/axiomxa"
 	"os"
 
@@ -55,6 +56,7 @@ func run(ctx context.Context) error {
 	}
 	systemConfig.AutoFactories = map[string]auto.Factory{
 		lights.AutoType: lights.Factory,
+		"export-mqtt":   export.MQTTFactory,
 	}
 
 	controller, err := app.Bootstrap(ctx, systemConfig)
