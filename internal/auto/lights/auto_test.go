@@ -50,12 +50,12 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	cfg.Lights = []string{"light01", "light02"}
 	cfg.UnoccupiedOffDelay = 10 * time.Minute
 
-	if err := automation.configure(cfg); err != nil {
-		t.Fatalf("Configure: %v", err)
-	}
-
 	if err := automation.Start(context.Background()); err != nil {
 		t.Fatalf("Start: %v", err)
+	}
+
+	if err := automation.configure(cfg); err != nil {
+		t.Fatalf("Configure: %v", err)
 	}
 
 	processComplete := automation.bus.On("process-complete")

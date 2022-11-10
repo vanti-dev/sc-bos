@@ -28,7 +28,6 @@ func PirsTurnLightsOn(clients node.Clienter, logger *zap.Logger) *BrightnessAuto
 	return &BrightnessAutomation{
 		logger:      logger,
 		clients:     clients,
-		bus:         emitter.New(1),
 		makeActions: newActions,
 		newTimer: func(duration time.Duration) (<-chan time.Time, func() bool) {
 			t := time.NewTimer(duration)
@@ -40,6 +39,11 @@ func PirsTurnLightsOn(clients node.Clienter, logger *zap.Logger) *BrightnessAuto
 // Start implements Starter and initialises this automation.
 // Start may be called before or after Configure.
 func (b *BrightnessAutomation) Start(_ context.Context) error {
+	if b.bus != nil {
+		b.bus.Off("*")
+	} else {
+		b.bus = emitter.New(1)
+	}
 	// We make the actions impl here so that we can create the automation before clients are available,
 	// so long as they're available before Start is called.
 	actions, err := b.makeActions(b.clients)
@@ -51,8 +55,8 @@ func (b *BrightnessAutomation) Start(_ context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	// make sure we stop the group when Stop is called
+	stopCalled := b.bus.On("stop")
 	group.Go(func() error {
-		stopCalled := b.bus.On("stop")
 		defer b.bus.Off("stop", stopCalled)
 		for {
 			select {
@@ -69,8 +73,10 @@ func (b *BrightnessAutomation) Start(_ context.Context) error {
 
 	// "actions" the subscriptions. This causes any Pull or Poll or other even sources to start running and placing
 	// state changes into the changes chan.
+	configChanged := b.bus.On("config")
 	group.Go(func() error {
-		return b.setupReadSources(ctx, changes)
+		defer b.bus.Off("config", configChanged)
+		return b.setupReadSources(ctx, configChanged, changes)
 	})
 
 	// readStates receives state that should be processed, for example to work out if lights should be turned on.

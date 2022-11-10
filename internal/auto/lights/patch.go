@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/olebedev/emitter"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
 	"go.uber.org/zap"
@@ -25,10 +26,10 @@ type subscriber interface {
 }
 
 // setupReadSources configures the automation to pull events from the configured devices and emit patches into changes.
-// Any configuration changes, via Configure, are recognised and the event sources updated.
+// Any configuration changes, via Configure, should be sent via configChanged chan which matches the return type for Emitter.On.
 //
 // Blocks until fatal errors in the subscriptions or ctx is done.
-func (b *BrightnessAutomation) setupReadSources(ctx context.Context, changes chan<- Patcher) error {
+func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChanged <-chan emitter.Event, changes chan<- Patcher) error {
 	// eagerly fetch the clients we might be using.
 	// While the config might mean we don't use them, better to have the system fail early just in case
 	var occupancySensorClient traits.OccupancySensorApiClient
@@ -72,7 +73,7 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, changes cha
 		}
 	}()
 
-	processConfig := func(cfg config.Root) {
+	processConfig := func(cfg config.Root) (sourceCount int) {
 		for _, source := range sources {
 			names := source.names(cfg)
 			if source.runningSources == nil && len(names) > 0 {
@@ -80,6 +81,8 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, changes cha
 			}
 			sourcesToStop := shallowCopyMap(source.runningSources)
 			for _, name := range names {
+				sourceCount++
+
 				// are we already watching this name?
 				if _, ok := sourcesToStop[name]; ok {
 					delete(sourcesToStop, name)
@@ -112,10 +115,9 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, changes cha
 		changes <- PatchFunc(func(s *ReadState) {
 			s.Config = cfg
 		})
-	}
 
-	configChanged := b.bus.On("config")
-	defer b.bus.Off("config", configChanged)
+		return sourceCount
+	}
 
 	processConfig(b.config)
 	for {
@@ -123,7 +125,9 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, changes cha
 		case <-ctx.Done():
 			return ctx.Err()
 		case e := <-configChanged:
-			processConfig(e.Args[0].(config.Root))
+			if sc := processConfig(e.Args[0].(config.Root)); sc == 0 {
+				b.logger.Debug("no sources configured, automation will do nothing")
+			}
 		}
 	}
 }
