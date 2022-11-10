@@ -46,7 +46,7 @@ func (n *Node) Client(p any) error {
 		}
 	}
 
-	return fmt.Errorf("no client of type %v", elem)
+	return fmt.Errorf("no client of type %v", et)
 }
 
 // Clienter represents a type that can respond with an API client.

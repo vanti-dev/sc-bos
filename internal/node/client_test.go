@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"strings"
 	"testing"
 )
 
@@ -78,6 +79,10 @@ func TestNode_Client(t *testing.T) {
 		err := n.Client(&client)
 		if err == nil {
 			t.Fatalf("Expected err, got none")
+		}
+		want := "traits.OnOffApiClient"
+		if !strings.Contains(err.Error(), want) {
+			t.Fatalf("Expecting error to mention the type we're missing: should contain %s, got %s", want, err)
 		}
 	})
 }
