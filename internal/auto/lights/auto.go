@@ -164,9 +164,6 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 		case <-ctx.Done():
 			return ctx.Err()
 		case readState := <-readStates:
-			// update logger state
-			b.logger = b.logger.With(zap.String("name", readState.Config.Name))
-
 			lastReadState = readState
 			err := processStateFn(readState)
 			if err != nil {

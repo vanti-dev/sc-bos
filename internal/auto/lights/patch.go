@@ -76,6 +76,8 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 	}()
 
 	processConfig := func(cfg config.Root) (sourceCount int) {
+		logger := b.logger.With(zap.String("auto", cfg.Name))
+		logger.Debug("config changed", zap.Any("cfg", cfg))
 		for _, source := range sources {
 			names := source.names(cfg)
 			if source.runningSources == nil && len(names) > 0 {
@@ -84,16 +86,17 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 			sourcesToStop := shallowCopyMap(source.runningSources)
 			for _, name := range names {
 				sourceCount++
+				logger := logger.With(zap.String("source", name))
 
 				// are we already watching this name?
 				if _, ok := sourcesToStop[name]; ok {
+					logger.Debug("named source already running")
 					delete(sourcesToStop, name)
 					continue
 				}
 				// I guess not, lets start watching
 				ctx, stop := context.WithCancel(ctx)
 				source.runningSources[name] = stop
-				logger := b.logger.With(zap.String("name", name))
 				impl := source.new(name, logger)
 				go func() {
 					err := impl.Subscribe(ctx, changes)
