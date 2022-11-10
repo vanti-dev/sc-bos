@@ -39,6 +39,9 @@ func (s *controlDeviceServer) GetOccupancy(ctx context.Context, _ *traits.GetOcc
 		InstanceAddress:     dali.InstanceTypeOccupancy,
 	})
 	if err != nil {
+		if errors.Is(err, dali.ErrCommandUnimplemented) {
+			return nil, status.Errorf(codes.Unimplemented, "dali %v", err)
+		}
 		return nil, err
 	}
 
@@ -66,7 +69,7 @@ func (s *controlDeviceServer) PullOccupancy(req *traits.PullOccupancyRequest, se
 	err := s.ensureEventsEnabled(ctx)
 	if err != nil {
 		if errors.Is(err, dali.ErrCommandUnimplemented) {
-			return status.Error(codes.Unimplemented, err.Error())
+			return status.Errorf(codes.Unimplemented, "dali %v", err)
 		}
 		s.logger.Error("failed to enable occupancy events for sensor", zap.Error(err))
 		return status.Error(codes.Unavailable, "cannot communicate with occupancy sensor")
