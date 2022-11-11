@@ -32,12 +32,12 @@ export const useOperateStore = defineStore("operateStore", () => {
       model: "Philips LED 1245812",
     },
     {
-       device_id: "LIT-L02_12-005",
+      device_id: "LIT-L02_12-005",
       location: "L02_12",
       status: "On",
       battery_status: "80%",
       model: "Philips LED 1245812",
-    }
+    },
   ]);
 
   const headers = ref([
@@ -55,9 +55,17 @@ export const useOperateStore = defineStore("operateStore", () => {
 
   const selected = ref([]);
 
+  const meetings = ref([
+    ["Meeting Room 6.01", "mdi-account-multiple-outline"],
+    ["Meeting Room 6.01", "mdi-account-multiple-outline"],
+  ]);
+
+
+
   return {
     lights,
     headers,
     selected,
+    meetings
   };
 });
