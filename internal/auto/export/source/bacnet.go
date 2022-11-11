@@ -42,6 +42,12 @@ func (b *bacnet) applyConfig(ctx context.Context, cfg config.BacnetSource) error
 	go func() {
 		tick := time.NewTicker(delay)
 		defer tick.Stop()
+
+		sent := allowDuplicates()
+		if cfg.Duplicates.TrackDuplicates() {
+			sent = trackDuplicates(cfg.Duplicates.Cmp())
+		}
+
 		for {
 			select {
 			case <-ctx.Done():
@@ -50,7 +56,7 @@ func (b *bacnet) applyConfig(ctx context.Context, cfg config.BacnetSource) error
 				t := timing{}
 				ctx := context.WithValue(ctx, timingKey, t)
 				totalDone := t.time("total")
-				err := b.publishAll(ctx, cfg, bacnetDriverClient)
+				err := b.publishAll(ctx, cfg, bacnetDriverClient, sent)
 				if err != nil {
 					b.Logger.Warn("Errors publishing changes", zap.Error(err))
 				}
@@ -65,7 +71,7 @@ func (b *bacnet) applyConfig(ctx context.Context, cfg config.BacnetSource) error
 	return nil
 }
 
-func (b *bacnet) publishAll(ctx context.Context, cfg config.BacnetSource, client rpc.BacnetDriverServiceClient) error {
+func (b *bacnet) publishAll(ctx context.Context, cfg config.BacnetSource, client rpc.BacnetDriverServiceClient, sent *duplicates) error {
 	t, ok := ctx.Value(timingKey).(timing)
 	if !ok {
 		t = timing{} // will be thrown away
@@ -86,7 +92,7 @@ func (b *bacnet) publishAll(ctx context.Context, cfg config.BacnetSource, client
 		readDone()
 
 		publishDone := t.time("publish")
-		err = b.publishResults(ctx, device.Name, response)
+		err = b.publishResults(ctx, device.Name, response, sent)
 		if err != nil {
 			allErrs = multierr.Append(allErrs, err)
 			continue
@@ -129,7 +135,7 @@ func (b *bacnet) deviceToReadRequest(ctx context.Context, device config.BacnetDe
 	return readRequest, nil
 }
 
-func (b *bacnet) publishResults(ctx context.Context, topicPrefix string, response *rpc.ReadPropertyMultipleResponse) error {
+func (b *bacnet) publishResults(ctx context.Context, topicPrefix string, response *rpc.ReadPropertyMultipleResponse, sent *duplicates) error {
 	var allErrs error
 	for _, result := range response.ReadResults {
 		objId := adapt.ObjectIDFromProto(result.ObjectIdentifier)
@@ -141,13 +147,19 @@ func (b *bacnet) publishResults(ctx context.Context, topicPrefix string, respons
 				"prop", propId.String(),
 			}
 			topic := strings.Join(topicParts, "/")
-			jsonData, err := protojson.Marshal(readResult.Value)
-			if err != nil {
-				allErrs = multierr.Append(allErrs, err)
-			}
-			err = b.services.Publisher.Publish(ctx, topic, string(jsonData))
-			if err != nil {
-				allErrs = multierr.Append(allErrs, err)
+
+			if commit, publish := sent.Changed(topic, readResult.Value); publish {
+				data, err := protojson.Marshal(readResult.Value)
+				if err != nil {
+					allErrs = multierr.Append(allErrs, err)
+					continue
+				}
+				err = b.services.Publisher.Publish(ctx, topic, string(data))
+				if err != nil {
+					allErrs = multierr.Append(allErrs, err)
+					continue
+				}
+				commit()
 			}
 		}
 	}

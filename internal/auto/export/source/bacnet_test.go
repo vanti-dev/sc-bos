@@ -45,7 +45,7 @@ func TestBacnet_PublishAll(t *testing.T) {
 			{Name: "dev01"},
 		},
 	}
-	err := b.publishAll(context.Background(), cfg, rpc.WrapBacnetDriverService(server))
+	err := b.publishAll(context.Background(), cfg, rpc.WrapBacnetDriverService(server), nil)
 	if err != nil {
 		t.Fatal(err)
 	}

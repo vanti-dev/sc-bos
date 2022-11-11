@@ -43,6 +43,11 @@ func (s *smartCore) applyConfig(ctx context.Context, cfg config.SmartCoreSource)
 		return err
 	}
 
+	sent := allowDuplicates()
+	if cfg.Duplicates.TrackDuplicates() {
+		sent = trackDuplicates(cfg.Duplicates.Cmp())
+	}
+
 	children, err := parentClient.ListChildren(ctx, &traits.ListChildrenRequest{})
 	if err != nil {
 		return err
@@ -61,7 +66,7 @@ func (s *smartCore) applyConfig(ctx context.Context, cfg config.SmartCoreSource)
 			switch traitName {
 			case trait.Light:
 				tasks.Go(func() error {
-					return publishLightBrightness(ctx, name, lightClient, s.services.Publisher, logger)
+					return publishLightBrightness(ctx, name, lightClient, s.services.Publisher, sent, logger)
 				})
 			}
 		}
@@ -82,7 +87,7 @@ func (s *smartCore) applyConfig(ctx context.Context, cfg config.SmartCoreSource)
 	return nil
 }
 
-func publishLightBrightness(ctx context.Context, name string, lightClient traits.LightApiClient, publisher Publisher, logger *zap.Logger) error {
+func publishLightBrightness(ctx context.Context, name string, lightClient traits.LightApiClient, publisher Publisher, sent *duplicates, logger *zap.Logger) error {
 	puller := &lightBrightnessPuller{
 		client: lightClient,
 		name:   name,
@@ -100,15 +105,18 @@ func publishLightBrightness(ctx context.Context, name string, lightClient traits
 	})
 	tasks.Go(func() error {
 		for change := range changes {
-			data, err := protojson.MarshalOptions{
-				EmitUnpopulated: true,
-			}.Marshal(change.Brightness)
-			if err != nil {
-				return err
-			}
-			err = publisher.Publish(ctx, name, string(data))
-			if err != nil {
-				return err
+			if commit, publish := sent.Changed(name, change.Brightness); publish {
+				data, err := protojson.MarshalOptions{
+					EmitUnpopulated: true,
+				}.Marshal(change.Brightness)
+				if err != nil {
+					return err
+				}
+				err = publisher.Publish(ctx, name, string(data))
+				if err != nil {
+					return err
+				}
+				commit()
 			}
 		}
 		return nil
