@@ -21,7 +21,7 @@
 <script>
 import { useOperateStore } from "@/stores/operate.js";
 import { storeToRefs } from "pinia";
-import Filters from "@/components/Operate/Filters.vue";
+import Filters from "./Filters.vue";
 
 export default {
   setup() {
