@@ -40,12 +40,12 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	// if it's been unoccupied for more than 10 minutes.
 	// If it hasn't been 10 minutes yet, it waits some time and turns the lights off when it has been
 	// 10 minutes.
-	lastOccupiedTime := lastUnoccupiedTime(readState)
-	if !lastOccupiedTime.IsZero() {
+	becameUnoccupied := lastUnoccupiedTime(readState)
+	if !becameUnoccupied.IsZero() {
 		unoccupiedDelayBeforeDarkness := readState.Config.UnoccupiedOffDelay.Duration
 
 		now := readState.Config.Now()
-		sinceUnoccupied := now.Sub(lastOccupiedTime)
+		sinceUnoccupied := now.Sub(becameUnoccupied)
 		if sinceUnoccupied >= unoccupiedDelayBeforeDarkness {
 			// we've been unoccupied for long enough, turn things off now
 			return 0, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, readState.Config.Lights...)
