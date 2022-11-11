@@ -44,14 +44,7 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 	}
 
 	// Setup the sources that we can pull patches from.
-	type source struct {
-		new   func(name string, logger *zap.Logger) subscriber
-		names func(cfg config.Root) []string
-		// runningSources, keyed by device name, tracks which sources are currently running.
-		// The value can be called to cancel the context used to start that source.
-		runningSources map[string]context.CancelFunc
-	}
-	sources := []source{
+	sources := []*source{
 		{
 			names: func(cfg config.Root) []string { return cfg.OccupancySensors },
 			new: func(name string, logger *zap.Logger) subscriber {
@@ -75,71 +68,78 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 		}
 	}()
 
-	processConfig := func(cfg config.Root) (sourceCount int) {
-		logger := b.logger.With(zap.String("auto", cfg.Name))
-		logger.Debug("config changed", zap.Any("cfg", cfg))
-		for _, source := range sources {
-			names := source.names(cfg)
-			if source.runningSources == nil && len(names) > 0 {
-				source.runningSources = make(map[string]context.CancelFunc, len(names))
-			}
-			sourcesToStop := shallowCopyMap(source.runningSources)
-			for _, name := range names {
-				sourceCount++
-				logger := logger.With(zap.String("source", name))
-
-				// are we already watching this name?
-				if _, ok := sourcesToStop[name]; ok {
-					logger.Debug("named source already running")
-					delete(sourcesToStop, name)
-					continue
-				}
-				// I guess not, lets start watching
-				ctx, stop := context.WithCancel(ctx)
-				source.runningSources[name] = stop
-				impl := source.new(name, logger)
-				go func() {
-					err := impl.Subscribe(ctx, changes)
-					if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-						return
-					}
-					if s, ok := status.FromError(err); ok {
-						if s.Code() == codes.Unimplemented {
-							logger.Warn(fmt.Sprintf("Subscription does not implement required features: %v", s.Message()))
-							return
-						}
-					}
-					if err != nil {
-						// todo: handle error, the subscription has failed without us asking it to stop.
-						logger.Warn("Subscription ended before it should", zap.Error(err))
-					}
-				}()
-			}
-
-			// stop any sources that are no longer in the config
-			for _, cancelFunc := range sourcesToStop {
-				cancelFunc()
-			}
-		}
-
-		// update the config in the ReadState too
-		changes <- PatchFunc(func(s *ReadState) {
-			s.Config = cfg
-		})
-
-		return sourceCount
-	}
-
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case e := <-configChanged:
-			if sc := processConfig(e.Args[0].(config.Root)); sc == 0 {
+			if sc := b.processConfig(ctx, e.Args[0].(config.Root), sources, changes); sc == 0 {
 				b.logger.Debug("no sources configured, automation will do nothing")
 			}
 		}
 	}
+}
+
+type source struct {
+	new   func(name string, logger *zap.Logger) subscriber
+	names func(cfg config.Root) []string
+	// runningSources, keyed by device name, tracks which sources are currently running.
+	// The value can be called to cancel the context used to start that source.
+	runningSources map[string]context.CancelFunc
+}
+
+func (b *BrightnessAutomation) processConfig(ctx context.Context, cfg config.Root, sources []*source, changes chan<- Patcher) (sourceCount int) {
+	logger := b.logger.With(zap.String("auto", cfg.Name))
+	for _, source := range sources {
+		names := source.names(cfg)
+		if source.runningSources == nil && len(names) > 0 {
+			source.runningSources = make(map[string]context.CancelFunc, len(names))
+		}
+		sourcesToStop := shallowCopyMap(source.runningSources)
+		for _, name := range names {
+			sourceCount++
+			logger := logger.With(zap.String("source", name))
+
+			// are we already watching this name?
+			if _, ok := sourcesToStop[name]; ok {
+				delete(sourcesToStop, name)
+				continue
+			}
+			// I guess not, lets start watching
+			ctx, stop := context.WithCancel(ctx)
+			source.runningSources[name] = stop
+			impl := source.new(name, logger)
+			go func() {
+				err := impl.Subscribe(ctx, changes)
+				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+					return
+				}
+				if s, ok := status.FromError(err); ok {
+					if s.Code() == codes.Unimplemented {
+						logger.Warn(fmt.Sprintf("Subscription does not implement required features: %v", s.Message()))
+						return
+					}
+				}
+				if err != nil {
+					// todo: handle error, the subscription has failed without us asking it to stop.
+					logger.Warn("Subscription ended before it should", zap.Error(err))
+				}
+			}()
+		}
+
+		// stop any sources that are no longer in the config
+		for name, cancelFunc := range sourcesToStop {
+			cancelFunc()
+			delete(source.runningSources, name)
+		}
+	}
+
+	// update the config in the ReadState too
+	changes <- PatchFunc(func(s *ReadState) {
+		s.Config = cfg
+	})
+
+	return sourceCount
 }
 
 func shallowCopyMap[K comparable, V any](m map[K]V) map[K]V {
