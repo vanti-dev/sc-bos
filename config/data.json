@@ -1,6 +1,12 @@
 {
   "floors": [
     {
+      "floor": 0,
+      "netID": "5.109.178.55.1.1",
+      "hasLifeSafety": true,
+      "landlordCount": 6
+    },
+    {
       "floor": 4,
       "netID": "5.109.178.55.1.1",
       "hasLifeSafety": true,

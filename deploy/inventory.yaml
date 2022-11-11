@@ -6,7 +6,7 @@ all:
         lab:
           ansible_host: "10.104.10.52"
           floor: lab
-          x001_ip: 10.123.1.100
+          x001_ip: 10.1.104.10
         floor-01:
           ansible_host: "192.168.8.241"
           floor: floor-01
