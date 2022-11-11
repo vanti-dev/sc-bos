@@ -10,7 +10,10 @@ import (
 )
 
 // processState executes clientActions based on both read and write states.
-// Here is where the logic that says "when PIRs report occupied, turn lights on".
+// Here is where the logic that says "when PIRs report occupied, turn lights on" lives.
+//
+// Returning a non-zero duration indicates that processing should be rerun after this delay even if ReadState doesn't
+// change.
 func processState(ctx context.Context, readState *ReadState, writeState *WriteState, actions actions) (time.Duration, error) {
 	// Work out what we need to do to apply the given writeState and make those changes for as long as ctx is valid
 
