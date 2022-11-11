@@ -21,7 +21,6 @@
 <script>
 import { useOperateStore } from "@/stores/operate.js";
 import { storeToRefs } from "pinia";
-import Filters from "./Filters.vue";
 
 export default {
   setup() {
@@ -49,7 +48,7 @@ export default {
   background-color: #283139;
   color: white;
   width: 100%;
-  height: 93vh;
+  height: 85vh;
   position: relative;
 }
 .v-data-table ::v-deep(.v-data-footer) {
