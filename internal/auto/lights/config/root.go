@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"github.com/vanti-dev/bsp-ew/internal/util/jsontypes"
 	"time"
 
 	"github.com/vanti-dev/bsp-ew/internal/auto"
@@ -18,7 +19,7 @@ type Root struct {
 
 	// UnoccupiedOffDelay configures how long we wait after the most recent occupancy sensor reported unoccupied before
 	// we turn the light off.
-	UnoccupiedOffDelay Duration `json:"unoccupiedOffDelay,omitempty"`
+	UnoccupiedOffDelay jsontypes.Duration `json:"unoccupiedOffDelay,omitempty"`
 	// DaylightDimming configures how the brightness measured in the space affects the luminosity of the lights that
 	// are on.
 	DaylightDimming *DaylightDimming `json:"daylightDimming,omitempty"`
@@ -39,30 +40,6 @@ type LevelThreshold struct {
 	LevelPercent float32 `json:"levelPercent,omitempty"`
 }
 
-type Duration struct {
-	time.Duration
-}
-
-//goland:noinspection GoMixedReceiverTypes
-func (d *Duration) UnmarshalJSON(raw []byte) error {
-	var str string
-	err := json.Unmarshal(raw, &str)
-	if err != nil {
-		return err
-	}
-	parsed, err := time.ParseDuration(str)
-	if err != nil {
-		return err
-	}
-	d.Duration = parsed
-	return nil
-}
-
-//goland:noinspection GoMixedReceiverTypes
-func (d Duration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(d.String())
-}
-
 func Read(data []byte) (Root, error) {
 	root := Default()
 	err := json.Unmarshal(data, &root)
@@ -72,6 +49,6 @@ func Read(data []byte) (Root, error) {
 func Default() Root {
 	return Root{
 		Now:                time.Now,
-		UnoccupiedOffDelay: Duration{10 * time.Minute},
+		UnoccupiedOffDelay: jsontypes.Duration{Duration: 10 * time.Minute},
 	}
 }
