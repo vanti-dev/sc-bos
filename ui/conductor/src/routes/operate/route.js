@@ -1,5 +1,5 @@
 import ChildOnlyPageV from "@/components/ChildOnlyPage.vue";
-import lighting from "@/routes/operate/lighting/route.js";
+import lighting from "@/routes/operate/systems/lighting/route.js";
 import { route } from "@/util/router.js";
 
 export default {

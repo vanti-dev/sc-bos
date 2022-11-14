@@ -2,17 +2,12 @@
   <div class="d-flex pa-2">
     <Search />
     <Status />
-    <Building />
-    <Type />
+    <Model />
   </div>
 </template>
 
 <script>
 import { useLightingStore } from "@/stores/operate/lighting.js";
-import Search from "./Filters/Search.vue";
-import Type from "./Filters/Type.vue";
-import Status from "./Filters/Status.vue";
-import Building from "./Filters/Building.vue";
 
 export default {
   setup() {

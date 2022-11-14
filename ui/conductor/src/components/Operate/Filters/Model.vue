@@ -1,14 +1,28 @@
 <template>
-  <v-select :items="['All']" label="Type" class="pr-md-4" outlined></v-select>
+  <v-select
+    v-model="model"
+    :items="[
+      'All',
+      'Philips LED 1245812',
+      'Philips LED 1245813',
+      'Philips LED 1245814',
+    ]"
+    label="Type"
+    class="pr-md-4"
+    outlined
+  ></v-select>
 </template>
 
 <script>
 import { useLightingStore } from "@/stores/operate/lighting.js";
+import { storeToRefs } from "pinia";
 export default {
   setup() {
     const store = useLightingStore();
 
-    return { store };
+    const { model } = storeToRefs(store);
+
+    return { store, model };
   },
 };
 </script>

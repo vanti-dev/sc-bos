@@ -5,7 +5,7 @@
       <v-data-table
         v-model="selected"
         :headers="headers"
-        :items="lights"
+        :items="filteredLights"
         item-key="device_id"
         show-select
         class="table"
@@ -32,7 +32,7 @@ import { storeToRefs } from "pinia";
 
 const store = useLightingStore();
 
-const { headers, lights, selected } = storeToRefs(store);
+const { headers, selected, filteredLights } = storeToRefs(store);
 
 const getColor = (status) => {
   if (status == "On") {

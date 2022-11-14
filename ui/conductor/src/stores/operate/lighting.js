@@ -8,7 +8,7 @@ export const useLightingStore = defineStore("lightingStore", () => {
       location: "L02_12",
       status: "On",
       battery_status: "100%",
-      model: "Philips LED 1245812",
+      model: "Philips LED 1245813",
     },
     {
       device_id: "LIT-L02_12-002",
@@ -22,7 +22,7 @@ export const useLightingStore = defineStore("lightingStore", () => {
       location: "L02_12",
       status: "On",
       battery_status: "-",
-      model: "Philips LED 1245812",
+      model: "Philips LED 1245814",
     },
     {
       device_id: "LIT-L02_12-004",
@@ -60,10 +60,33 @@ export const useLightingStore = defineStore("lightingStore", () => {
     ["Meeting Room 6.01", "mdi-account-multiple-outline"],
   ]);
 
+  const status = ref("All");
+
+  const model = ref("All");
+
+  //filter for model or status
+
+  const filteredLights = computed(() =>
+    lights.value.filter((light) => {
+      if (status.value === "All" && model.value === "All") {
+        return true;
+      } else if (status.value === "All") {
+        return light.model === model.value;
+      } else if (model.value === "All") {
+        return light.status === status.value;
+      } else {
+        return light.status === status.value && light.model === model.value;
+      }
+    })
+  );
+
   return {
     lights,
     headers,
     selected,
     meetings,
+    status,
+    model,
+    filteredLights,
   };
 });
