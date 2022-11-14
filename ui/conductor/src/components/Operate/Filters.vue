@@ -1,10 +1,10 @@
 <template>
-  <v-layout row wrap ma-4 pt-4>
-    <v-flex xs12 sm12 md6 lg6 xl6><Search /> </v-flex>
-    <v-flex xs12 sm12 md2 lg2 xl2><Status /> </v-flex>
-    <v-flex xs12 sm12 md2 lg2 xl2><Building /></v-flex>
-    <v-flex xs12 sm12 md2 lg2 xl2> <Type /></v-flex>
-  </v-layout>
+  <div class="d-flex pa-2">
+    <Search />
+    <Status />
+    <Building />
+    <Type />
+  </div>
 </template>
 
 <script>

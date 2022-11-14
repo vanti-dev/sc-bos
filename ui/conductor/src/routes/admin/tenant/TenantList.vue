@@ -2,26 +2,31 @@
   <v-container fluid class="pa-7">
     <main-card>
       <v-card-actions>
-        <v-text-field label="Search tenants"
-                      outlined
-                      background-color="#ffffff1a"
-                      hide-details
-                      prepend-inner-icon="mdi-magnify"
-                      v-model="search"/>
+        <v-text-field
+          label="Search tenants"
+          outlined
+          background-color="#ffffff1a"
+          hide-details
+          prepend-inner-icon="mdi-magnify"
+          v-model="search"
+        />
       </v-card-actions>
       <v-data-table
-          class="table"
-          :headers="headers"
-          :items="tenantRows"
-          :search="search"
-          sort-by="title"
-          show-select
-          :header-props="{sortIcon:'mdi-arrow-up-drop-circle-outline'}"
-          :loading="tenantsTracker.loading"
-          @click:row="showTenant">
-        <template #item.zones="{index, value}">
+        class="table"
+        :headers="headers"
+        :items="tenantRows"
+        :search="search"
+        sort-by="title"
+        show-select
+        :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
+        :loading="tenantsTracker.loading"
+        @click:row="showTenant"
+      >
+        <template #item.zones="{ index, value }">
           <span class="d-inline-flex justify-start" style="gap: 8px">
-            <v-chip v-for="zone in value" :key="index + zone" small outlined>{{ zone }}</v-chip>
+            <v-chip v-for="zone in value" :key="index + zone" small outlined>{{
+              zone
+            }}</v-chip>
           </span>
         </template>
       </v-data-table>
@@ -30,30 +35,32 @@
 </template>
 
 <script setup>
-import {timestampToDate} from '@/api/grpcweb.js';
-import {newActionTracker} from '@/api/resource.js';
-import {listTenants} from '@/api/ui/tenant.js';
-import MainCard from '@/components/SectionCard.vue';
-import {ListTenantsResponse} from '@bsp-ew/ui-gen/src/tenants_pb.js';
-import {computed, onMounted, reactive, ref} from 'vue';
-import {useRouter} from 'vue-router/composables';
+import { timestampToDate } from "@/api/grpcweb.js";
+import { newActionTracker } from "@/api/resource.js";
+import { listTenants } from "@/api/ui/tenant.js";
+import MainCard from "@/components/SectionCard.vue";
+import { ListTenantsResponse } from "@bsp-ew/ui-gen/src/tenants_pb.js";
+import { computed, onMounted, reactive, ref } from "vue";
+import { useRouter } from "vue-router/composables";
 
-const tenantsTracker = reactive(/** @type {ActionTracker<ListTenantsResponse.AsObject>} */newActionTracker());
+const tenantsTracker = reactive(
+  /** @type {ActionTracker<ListTenantsResponse.AsObject>} */ newActionTracker()
+);
 
-const search = ref('');
+const search = ref("");
 
 const headers = computed(() => {
   return [
-    {text: 'Name', value: 'title'},
-    {text: 'Zones', value: 'zones'}
-  ]
-})
+    { text: "Name", value: "title" },
+    { text: "Zones", value: "zones" },
+  ];
+});
 const tenantRows = computed(() => {
   if (!tenantsTracker.response) return [];
-  return tenantsTracker.response.tenantsList.map(t => ({
+  return tenantsTracker.response.tenantsList.map((t) => ({
     ...t,
-    createTime: t.createTime ? timestampToDate(t.createTime) : null
-  }))
+    createTime: t.createTime ? timestampToDate(t.createTime) : null,
+  }));
 });
 
 onMounted(() => {
@@ -80,7 +87,11 @@ function showTenant(item) {
 }
 
 /* This selector is the one used by vuetify to match hovered table rows. We are more specific because of the scoped styles */
-.table > ::v-deep(.v-data-table__wrapper > table > tbody > tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper)) {
+.table
+  > ::v-deep(.v-data-table__wrapper
+    > table
+    > tbody
+    > tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper)) {
   background-color: #ffffff1a;
 }
 </style>

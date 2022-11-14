@@ -1,10 +1,10 @@
 <template>
-  <div class="bgColor px-8">
-    <div class="ma-4">
-      <p class="font-weight-bold text-overline">Site Operations</p>
-    </div>
-    <v-divider></v-divider>
+  <v-navigation-drawer app clipped floating color="transparent">
     <v-list color="#111721" dense nav>
+      <v-list-item to="/operate/summary">
+        <v-list-item-content> Site Operations </v-list-item-content>
+      </v-list-item>
+      <v-divider></v-divider>
       <v-subheader class="subheading text-uppercase font-weight-bold">
         Status
       </v-subheader>
@@ -66,7 +66,7 @@
         Systems
       </v-subheader>
       <v-list-item-group>
-        <v-list-item>
+        <v-list-item to="/operate/lighting">
           <v-list-item-icon>
             <v-icon>mdi-lightbulb-variant-outline</v-icon>
           </v-list-item-icon>
@@ -140,25 +140,17 @@
         </v-list-item>
       </v-list-item-group>
     </v-list>
-  </div>
+  </v-navigation-drawer>
 </template>
 
 <script>
-import { useLightingStore } from "@/stores/operate/lighting.js";
-import { storeToRefs } from "pinia";
-
 export default {
-  setup() {
-    const store = useLightingStore();
-    const { meetings } = storeToRefs(store);
-
-    return { store, meetings };
-  },
+  name: "OperateNav",
 };
 </script>
 
-<style lang="scss" scoped>
-.bgColor {
-  background: #111721;
+<style scoped>
+::v-deep(.v-list-item--active) {
+  color: var(--v-primary-base);
 }
 </style>
