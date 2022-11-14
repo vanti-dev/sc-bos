@@ -13,11 +13,13 @@
 
 <script>
 import { useLightingStore } from "@/stores/operate/lighting.js";
+import { storeToRefs } from "pinia";
 export default {
   setup() {
     const store = useLightingStore();
+    const { search } = storeToRefs(store);
 
-    return { store };
+    return { store, search };
   },
 };
 </script>

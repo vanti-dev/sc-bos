@@ -64,6 +64,8 @@ export const useLightingStore = defineStore("lightingStore", () => {
 
   const model = ref("All");
 
+  const search = ref("");
+
   //filter for model or status
 
   const filteredLights = computed(() =>
@@ -87,6 +89,7 @@ export const useLightingStore = defineStore("lightingStore", () => {
     meetings,
     status,
     model,
+    search,
     filteredLights,
   };
 });

@@ -7,6 +7,7 @@
         :headers="headers"
         :items="filteredLights"
         item-key="device_id"
+        :search="search"
         show-select
         class="table"
       >
@@ -32,7 +33,7 @@ import { storeToRefs } from "pinia";
 
 const store = useLightingStore();
 
-const { headers, selected, filteredLights } = storeToRefs(store);
+const { headers, selected, filteredLights, search } = storeToRefs(store);
 
 const getColor = (status) => {
   if (status == "On") {
