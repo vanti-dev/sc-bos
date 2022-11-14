@@ -1,5 +1,6 @@
 <template>
   <v-container fluid class="pa-7">
+    <BulkAction />
     <main-card>
       <v-data-table
         v-model="selected"

@@ -1,3 +1,3 @@
 export default [
-  { path: "lighting", component: () => import("./LightingTable.vue") },
+  { path: "systems/lighting", component: () => import("./LightingTable.vue") },
 ];

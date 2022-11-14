@@ -4,7 +4,7 @@
       <v-list-item to="/operate/summary">
         <v-list-item-content> Site Operations </v-list-item-content>
       </v-list-item>
-      <v-divider></v-divider>
+      <v-divider class="my-2"></v-divider>
       <v-subheader class="subheading text-uppercase font-weight-bold">
         Status
       </v-subheader>
@@ -60,13 +60,13 @@
         </v-list-item>
       </v-list-item-group>
 
-      <v-divider></v-divider>
+      <v-divider class="my-2"></v-divider>
 
       <v-subheader class="subheading text-uppercase font-weight-bold">
         Systems
       </v-subheader>
       <v-list-item-group>
-        <v-list-item to="/operate/lighting">
+        <v-list-item to="/operate/systems/lighting">
           <v-list-item-icon>
             <v-icon>mdi-lightbulb-variant-outline</v-icon>
           </v-list-item-icon>
@@ -106,7 +106,7 @@
         </v-list-item>
       </v-list-item-group>
 
-      <v-divider></v-divider>
+      <v-divider class="my-2"></v-divider>
 
       <v-subheader class="subheading text-uppercase font-weight-bold">
         Reports
