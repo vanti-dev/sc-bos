@@ -7,13 +7,13 @@
 </template>
 
 <script>
-import { useOperateStore } from "@/stores/operate.js";
+import { useLightingStore } from "@/stores/operate/lighting.js";
 import System from "./Header/System.vue";
 import OS from "./Header/OS.vue";
 
 export default {
   setup() {
-    const store = useOperateStore();
+    const store = useLightingStore();
 
     return { store };
   },

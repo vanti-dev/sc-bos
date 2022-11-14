@@ -3,10 +3,10 @@
 </template>
 
 <script>
-import { useOperateStore } from "@/stores/operate.js";
+import { useLightingStore } from "@/stores/operate/lighting.js";
 export default {
   setup() {
-    const store = useOperateStore();
+    const store = useLightingStore();
 
     return { store };
   },

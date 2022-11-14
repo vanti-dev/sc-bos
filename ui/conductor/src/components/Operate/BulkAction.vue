@@ -15,12 +15,12 @@
 </template>
 
 <script>
-import { useOperateStore } from "@/stores/operate.js";
+import { useLightingStore } from "@/stores/operate/lighting.js";
 import { storeToRefs } from "pinia";
 
 export default {
   setup() {
-    const store = useOperateStore();
+    const store = useLightingStore();
 
     const { selected } = storeToRefs(store);
 

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
-export const useOperateStore = defineStore("operateStore", () => {
+export const useLightingStore = defineStore("lightingStore", () => {
   const lights = ref([
     {
       device_id: "LIT-L02_12-001",
@@ -60,12 +60,10 @@ export const useOperateStore = defineStore("operateStore", () => {
     ["Meeting Room 6.01", "mdi-account-multiple-outline"],
   ]);
 
-
-
   return {
     lights,
     headers,
     selected,
-    meetings
+    meetings,
   };
 });

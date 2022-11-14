@@ -4,7 +4,7 @@
       <p class="font-weight-bold text-overline">Site Operations</p>
     </div>
     <v-divider></v-divider>
-    <v-list color="#111721" dense>
+    <v-list color="#111721" dense nav>
       <v-subheader class="subheading text-uppercase font-weight-bold">
         Status
       </v-subheader>
@@ -144,12 +144,12 @@
 </template>
 
 <script>
-import { useOperateStore } from "@/stores/operate.js";
+import { useLightingStore } from "@/stores/operate/lighting.js";
 import { storeToRefs } from "pinia";
 
 export default {
   setup() {
-    const store = useOperateStore();
+    const store = useLightingStore();
     const { meetings } = storeToRefs(store);
 
     return { store, meetings };
