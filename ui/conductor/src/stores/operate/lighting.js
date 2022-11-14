@@ -82,6 +82,18 @@ export const useLightingStore = defineStore("lightingStore", () => {
     })
   );
 
+  const bulkAction = (action) => {
+    if (action === "On") {
+      selected.value.forEach((light) => {
+        light.status = "On";
+      });
+    } else if (action === "Off") {
+      selected.value.forEach((light) => {
+        light.status = "Off";
+      });
+    }
+  };
+
   return {
     lights,
     headers,
@@ -91,5 +103,6 @@ export const useLightingStore = defineStore("lightingStore", () => {
     model,
     search,
     filteredLights,
+    bulkAction,
   };
 });

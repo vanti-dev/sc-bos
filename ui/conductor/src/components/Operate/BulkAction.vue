@@ -8,8 +8,12 @@
   >
     <v-card-subtitle> Bulk Actions</v-card-subtitle>
     <v-card-actions>
-      <v-btn color="green" class="mr-2">Turn On</v-btn>
-      <v-btn color="red" class="mr-2">Turn Off</v-btn>
+      <v-btn color="green" class="mr-2" @click="store.bulkAction('On')"
+        >Turn On</v-btn
+      >
+      <v-btn color="red" class="mr-2" @click="store.bulkAction('Off')"
+        >Turn Off</v-btn
+      >
     </v-card-actions>
   </v-card>
 </template>
@@ -24,7 +28,7 @@ export default {
 
     const { selected } = storeToRefs(store);
 
-    return { selected };
+    return { store, selected };
   },
 };
 </script>
