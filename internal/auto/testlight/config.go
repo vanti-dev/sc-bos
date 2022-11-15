@@ -9,8 +9,8 @@ import (
 
 type Config struct {
 	Devices       []string           `json:"devices"`
-	PollInterval  jsontypes.Duration // The minimum interval from polling one light to another.
-	CycleInterval jsontypes.Duration // How often to poll all lights
+	PollInterval  jsontypes.Duration `json:"pollInterval"`  // The minimum interval from polling one light to another.
+	CycleInterval jsontypes.Duration `json:"cycleInterval"` // How often to poll all lights
 }
 
 func DefaultConfig() Config {

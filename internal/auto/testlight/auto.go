@@ -9,9 +9,12 @@ import (
 
 	"github.com/timshannon/bolthold"
 	"github.com/vanti-dev/bsp-ew/internal/auto"
+	"github.com/vanti-dev/bsp-ew/internal/auto/runstate"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali/rpc"
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/task"
+	"github.com/vanti-dev/bsp-ew/internal/util/minibus"
+	"github.com/vanti-dev/bsp-ew/internal/util/state"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -25,11 +28,17 @@ var Factory = auto.FactoryFunc(func(services auto.Services) task.Starter {
 })
 
 func ScanEmergencyTests(clients node.Clienter, db *bolthold.Store, logger *zap.Logger) *EmergencyTestAutomation {
+	configSend := make(chan Config)
 	return &EmergencyTestAutomation{
 		logger:  logger,
 		db:      db,
 		clients: clients,
-		config:  DefaultConfig(),
+		state:   state.NewManager(runstate.Idle),
+
+		config:            DefaultConfig(),
+		stop:              func() {},
+		configChangesSend: configSend,
+		configChangesRecv: minibus.DropExcess(configSend),
 	}
 }
 
@@ -37,56 +46,88 @@ type EmergencyTestAutomation struct {
 	logger  *zap.Logger
 	db      *bolthold.Store
 	clients node.Clienter
-	config  Config
+	state   *state.Manager[runstate.RunState]
 
-	stateM  sync.Mutex
-	running bool
-	cancel  context.CancelFunc
+	m                 sync.Mutex
+	config            Config
+	stop              context.CancelFunc
+	configChangesSend chan<- Config
+	configChangesRecv <-chan Config
+}
+
+func (a *EmergencyTestAutomation) CurrentState() runstate.RunState {
+	return a.state.CurrentState()
+}
+
+func (a *EmergencyTestAutomation) WaitForStateChange(ctx context.Context, source runstate.RunState) error {
+	return a.state.WaitForStateChange(ctx, source)
 }
 
 func (a *EmergencyTestAutomation) Start(_ context.Context) error {
-	a.stateM.Lock()
-	defer a.stateM.Unlock()
-	if a.running {
+	a.m.Lock()
+	defer a.m.Unlock()
+	if s := a.state.CurrentState(); s == runstate.Running || s == runstate.Starting {
 		return errors.New("already running")
 	}
 
-	runctx, cancel := context.WithCancel(context.Background())
-	a.running = true
-	a.cancel = cancel
+	ctx, cancel := context.WithCancel(context.Background())
+	a.stop = cancel
+	initialConfig := a.config
+	_ = a.state.Update(runstate.Starting)
 	go func() {
-		a.run(runctx)
+		defer a.state.Update(runstate.Stopped)
 
-		a.stateM.Lock()
-		defer a.stateM.Unlock()
-		a.running = false
-		a.cancel = nil
+		r := &runner{
+			logger:        a.logger,
+			db:            a.db,
+			clients:       a.clients,
+			config:        initialConfig,
+			configUpdates: a.configChangesRecv,
+		}
+		a.state.Update(runstate.Running)
+		r.run(ctx)
 	}()
+
 	return nil
 }
 
 func (a *EmergencyTestAutomation) Stop() error {
-	a.stateM.Lock()
-	defer a.stateM.Unlock()
-	if !a.running {
+	a.m.Lock()
+	defer a.m.Unlock()
+	if s := a.state.CurrentState(); s != runstate.Running && s != runstate.Starting {
 		return errors.New("not running")
 	}
-	a.cancel()
+	a.stop()
 	return nil
 }
 
 func (a *EmergencyTestAutomation) Configure(raw []byte) error {
-	config, err := DecodeConfig(raw)
+	parsed, err := DecodeConfig(raw)
 	if err != nil {
 		return err
 	}
-	a.config = config
+
+	a.m.Lock()
+	a.config = parsed
+	a.m.Unlock()
+
+	// due to using minibus.DropExcess, this will never block a long time
+	a.configChangesSend <- parsed
+
 	return nil
 }
 
-func (a *EmergencyTestAutomation) process(ctx context.Context, name string, test rpc.Test) error {
+type runner struct {
+	logger        *zap.Logger
+	db            *bolthold.Store
+	clients       node.Clienter
+	config        Config
+	configUpdates <-chan Config
+}
+
+func (r *runner) process(ctx context.Context, name string, test rpc.Test) error {
 	var client rpc.DaliApiClient
-	err := a.clients.Client(&client)
+	err := r.clients.Client(&client)
 	if err != nil {
 		return err
 	}
@@ -103,13 +144,18 @@ func (a *EmergencyTestAutomation) process(ctx context.Context, name string, test
 	}
 
 	// we have successfully scanned for new data, so update last scan time
-	lastScan, _, err := updateScanTime(a.db, name, test, scanTime)
+	lastScan, _, err := updateScanTime(r.db, name, test, scanTime)
 	if err != nil {
-		a.logger.Warn("failed to update last scan time - test After times may be inaccurate",
+		r.logger.Warn("failed to update last scan time - test After times may be inaccurate",
 			zap.Error(err), zap.String("deviceName", name), zap.Any("test", test))
 	}
 
 	if result != nil {
+		r.logger.Debug("emergency light has some test data",
+			zap.String("deviceName", name),
+			zap.String("test", test.String()),
+			zap.Bool("pass", result.Pass))
+
 		// store the test in the database
 		record := TestResultRecord{
 			Name:     name,
@@ -121,7 +167,7 @@ func (a *EmergencyTestAutomation) process(ctx context.Context, name string, test
 		if result.Duration != nil {
 			record.AchievedDuration = result.Duration.AsDuration()
 		}
-		err = saveTestResult(a.db, record)
+		err = saveTestResult(r.db, record)
 		if err != nil {
 			return fmt.Errorf("store test result: %w", err)
 		}
@@ -142,14 +188,14 @@ func (a *EmergencyTestAutomation) process(ctx context.Context, name string, test
 	return nil
 }
 
-func (a *EmergencyTestAutomation) runOneLoop(ctx context.Context, test rpc.Test) error {
+func (r *runner) runOneLoop(ctx context.Context, test rpc.Test) error {
 	var errs error
 
-	ticker := time.NewTicker(a.config.PollInterval.Duration)
+	ticker := time.NewTicker(r.config.PollInterval.Duration)
 	defer ticker.Stop()
 
-	for _, name := range a.config.Devices {
-		err := a.process(ctx, name, test)
+	for _, name := range r.config.Devices {
+		err := r.process(ctx, name, test)
 		if err != nil {
 			errs = multierr.Append(errs, fmt.Errorf("%q: %w", name, err))
 		}
@@ -164,24 +210,28 @@ func (a *EmergencyTestAutomation) runOneLoop(ctx context.Context, test rpc.Test)
 	return errs
 }
 
-func (a *EmergencyTestAutomation) run(ctx context.Context) {
-	ticker := time.NewTicker(a.config.CycleInterval.Duration)
+func (r *runner) run(ctx context.Context) {
+	ticker := time.NewTicker(r.config.CycleInterval.Duration)
 	defer ticker.Stop()
 	for {
-		err := a.runOneLoop(ctx, rpc.Test_DURATION_TEST)
+		err := r.runOneLoop(ctx, rpc.Test_DURATION_TEST)
 		if err != nil {
-			a.logger.Error("errors retrieving duration test results", zap.Error(err))
+			r.logger.Error("errors retrieving duration test results", zap.Error(err))
 		}
 
-		err = a.runOneLoop(ctx, rpc.Test_FUNCTION_TEST)
+		err = r.runOneLoop(ctx, rpc.Test_FUNCTION_TEST)
 		if err != nil {
-			a.logger.Error("errors retrieving function test results", zap.Error(err))
+			r.logger.Error("errors retrieving function test results", zap.Error(err))
 		}
 
 		select {
 		case <-ctx.Done():
-			a.logger.Info("EmergencyTestAutomation stopping because its context was cancelled")
+			r.logger.Info("EmergencyTestAutomation stopping because its context was cancelled")
 			return
+		case newConfig := <-r.configUpdates:
+			r.logger.Debug("EmergencyTestAutomation got a config update")
+			r.config = newConfig
+			ticker.Reset(r.config.CycleInterval.Duration)
 		case <-ticker.C:
 		}
 
