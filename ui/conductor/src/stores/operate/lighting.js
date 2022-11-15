@@ -7,14 +7,16 @@ export const useLightingStore = defineStore("lightingStore", () => {
       device_id: "LIT-L02_12-001",
       location: "L02_12",
       status: "On",
-      battery_status: "100%",
+      battery_status: "100",
+      brightness: "100",
       model: "Philips LED 1245813",
     },
     {
       device_id: "LIT-L02_12-002",
       location: "L02_12",
       status: "Off",
-      battery_status: "100%",
+      battery_status: "10",
+      brightness: "100",
       model: "Philips LED 1245812",
     },
     {
@@ -22,20 +24,23 @@ export const useLightingStore = defineStore("lightingStore", () => {
       location: "L02_12",
       status: "On",
       battery_status: "-",
+      brightness: "60",
       model: "Philips LED 1245814",
     },
     {
       device_id: "LIT-L02_12-004",
       location: "L02_12",
       status: "On",
-      battery_status: "80%",
+      battery_status: "80",
+      brightness: "100",
       model: "Philips LED 1245812",
     },
     {
       device_id: "LIT-L02_12-005",
       location: "L02_12",
       status: "On",
-      battery_status: "80%",
+      battery_status: "80",
+      brightness: "50",
       model: "Philips LED 1245812",
     },
   ]);
@@ -143,6 +148,25 @@ export const useLightingStore = defineStore("lightingStore", () => {
     selectedItem.value = selected;
   };
 
+  const increaseBrightness = () => {
+    if (selectedItem.value.brightness < 100) {
+      selectedItem.value.brightness++;
+    }
+  };
+  const decreaseBrightness = () => {
+    if (selectedItem.value.brightness > 0) {
+      selectedItem.value.brightness--;
+    }
+  };
+
+  const turnOff = () => {
+    selectedItem.value.status = "Off";
+  };
+
+  const turnOn = () => {
+    selectedItem.value.status = "On";
+  };
+
   return {
     lights,
     headers,
@@ -158,5 +182,9 @@ export const useLightingStore = defineStore("lightingStore", () => {
     toggleDrawer,
     selectedItem,
     setSelectedItem,
+    increaseBrightness,
+    decreaseBrightness,
+    turnOff,
+    turnOn,
   };
 });

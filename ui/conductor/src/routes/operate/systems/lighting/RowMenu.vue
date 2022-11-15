@@ -10,8 +10,8 @@
     elevation="0"
   >
     <v-list dense tile>
-      <div class="d-flex justify-space-between align-center pa-1 px-2">
-        <p class="mb-0">LIT-L02_12-001</p>
+      <div class="d-flex justify-space-between align-center py-1 pl-2">
+        <p class="mb-0">{{ selectedItem.device_id }}</p>
         <div>
           <v-btn flat plain small> <v-icon>mdi-cog</v-icon></v-btn>
           <v-btn @click.stop="drawer = !drawer" flat plain small>
@@ -36,7 +36,7 @@
 
       <v-divider></v-divider>
 
-      <v-subheader>STATE</v-subheader>
+      <v-subheader>STATUS</v-subheader>
 
       <v-layout row column class="pa-2">
         <v-flex class="px-3">
@@ -45,24 +45,37 @@
               <p class="mb-0 text-caption">Brightness</p>
             </v-col>
             <v-col>
-              <p class="text-right mb-0 text-caption">60%</p>
+              <p class="text-right mb-0 text-caption">
+                {{ selectedItem.brightness }} %
+              </p>
             </v-col>
           </v-row>
           <v-progress-linear
-            value="60"
+            :value="`${selectedItem.brightness}`"
             color="amber"
             height="15"
           ></v-progress-linear>
         </v-flex>
         <v-flex class="d-flex">
           <v-col class="d-flex">
-            <v-btn class="mr-2" color="green" small> ON </v-btn>
-            <v-btn color="red" small> OFF </v-btn>
+            <v-btn @click="store.turnOn()" class="mr-2" color="green" small>
+              ON
+            </v-btn>
+            <v-btn @click="store.turnOff()" color="red" small> OFF </v-btn>
           </v-col>
           <v-spacer></v-spacer>
           <v-col class="d-flex">
-            <v-btn class="mr-2" color="orange" small> UP</v-btn>
-            <v-btn color="orange" small> DOWN </v-btn>
+            <v-btn
+              @click="store.increaseBrightness()"
+              class="mr-2"
+              color="orange"
+              small
+            >
+              UP</v-btn
+            >
+            <v-btn @click="store.decreaseBrightness()" color="orange" small>
+              DOWN
+            </v-btn>
           </v-col>
         </v-flex>
       </v-layout>
@@ -77,12 +90,14 @@
               <p class="mb-0 text-caption">Battery Level</p>
             </v-col>
             <v-col>
-              <p class="text-right mb-0 text-caption">60%</p>
+              <p class="text-right mb-0 text-caption">
+                {{ selectedItem.battery_status }}%
+              </p>
             </v-col>
           </v-row>
 
           <v-progress-linear
-            value="60"
+            :value="`${selectedItem.battery_status}`"
             color="amber"
             height="15"
           ></v-progress-linear>
