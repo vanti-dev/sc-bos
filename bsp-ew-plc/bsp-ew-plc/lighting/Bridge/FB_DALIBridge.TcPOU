@@ -444,7 +444,7 @@ E_DALIBridgeCommand.startFunctionTest:
 	IF emergency THEN
 		cancelCommand();
 	ELSE
-		fbStartDurationTest(
+		fbStartFunctionTest(
 			bStart					:= requestFirstCycle,
 			nAddress				:= activeRequest.address,
 			eAddressType			:= activeRequest.addressType,
@@ -458,7 +458,7 @@ E_DALIBridgeCommand.startFunctionTest:
 	END_IF
 	
 E_DALIBridgeCommand.stopTest:
-	fbStartDurationTest(
+	fbStopTest(
 		bStart						:= requestFirstCycle,
 		nAddress					:= activeRequest.address,
 		eAddressType				:= activeRequest.addressType,
