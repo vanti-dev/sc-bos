@@ -48,7 +48,7 @@
           </v-list-item>
         </v-list-group>
 
-        <v-list-item>
+        <v-list-item to="/operate/notifications">
           <v-list-item-icon>
             <v-icon>mdi-bell-outline</v-icon>
           </v-list-item-icon>
@@ -80,7 +80,7 @@
         Analytics
       </v-subheader>
       <v-list-item-group>
-        <v-list-item>
+        <v-list-item to="/operate/analytics/usage">
           <v-list-item-icon>
             <v-icon>mdi-lightning-bolt-outline</v-icon>
           </v-list-item-icon>
@@ -88,7 +88,7 @@
             <v-list-item-title>Energy Usage</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item>
+        <v-list-item to="/operate/analytics/occupancy">
           <v-list-item-icon>
             <v-icon>mdi-account-group-outline</v-icon>
           </v-list-item-icon>
@@ -96,7 +96,7 @@
             <v-list-item-title>Occupancy</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item>
+        <v-list-item to="/operate/analytics/environment">
           <v-list-item-icon>
             <v-icon>mdi-tune-vertical</v-icon>
           </v-list-item-icon>
@@ -114,7 +114,7 @@
         <v-icon>mdi-plus-box</v-icon>
       </v-subheader>
       <v-list-item-group>
-        <v-list-item>
+        <v-list-item to="/operate/reports/usage">
           <v-list-item-icon>
             <v-icon>mdi-lightning-bolt-outline</v-icon>
           </v-list-item-icon>
@@ -122,7 +122,7 @@
             <v-list-item-title>Energy Usage</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item>
+        <v-list-item to="/operate/reports/occupancy">
           <v-list-item-icon>
             <v-icon>mdi-account-group-outline</v-icon>
           </v-list-item-icon>
@@ -130,7 +130,7 @@
             <v-list-item-title>Occupancy</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item>
+        <v-list-item to="/operate/reports/environment">
           <v-list-item-icon>
             <v-icon>mdi-tune-vertical</v-icon>
           </v-list-item-icon>
@@ -140,7 +140,7 @@
         </v-list-item>
       </v-list-item-group>
     </v-list>
-    <Footer/>
+    <Footer />
   </v-navigation-drawer>
 </template>
 

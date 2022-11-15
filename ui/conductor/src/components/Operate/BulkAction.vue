@@ -1,7 +1,7 @@
 <template>
   <v-card
     class="pa-2 d-flex"
-    flat
+    text
     z-index="10"
     color="#111721"
     v-if="selected.length > 1"

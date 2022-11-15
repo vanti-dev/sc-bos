@@ -6,15 +6,15 @@
     right
     width="300px"
     class="bgColor"
-    flat
+    text
     elevation="0"
   >
     <v-list dense tile>
       <div class="d-flex justify-space-between align-center py-1 pl-2">
         <p class="mb-0">{{ selectedItem.device_id }}</p>
         <div>
-          <v-btn flat plain small> <v-icon>mdi-cog</v-icon></v-btn>
-          <v-btn @click.stop="drawer = !drawer" flat plain small>
+          <v-btn text plain small> <v-icon>mdi-cog</v-icon></v-btn>
+          <v-btn @click.stop="drawer = !drawer" text plain small>
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </div>

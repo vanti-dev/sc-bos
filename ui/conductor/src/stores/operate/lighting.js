@@ -23,7 +23,7 @@ export const useLightingStore = defineStore("lightingStore", () => {
       device_id: "LIT-L02_12-003",
       location: "L02_12",
       status: "On",
-      battery_status: "-",
+      battery_status: "0",
       brightness: "60",
       model: "Philips LED 1245814",
     },
