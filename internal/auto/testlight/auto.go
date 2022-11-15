@@ -145,7 +145,7 @@ func (a *EmergencyTestAutomation) process(ctx context.Context, name string, test
 func (a *EmergencyTestAutomation) runOneLoop(ctx context.Context, test rpc.Test) error {
 	var errs error
 
-	ticker := time.NewTicker(a.config.Interval)
+	ticker := time.NewTicker(a.config.PollInterval.Duration)
 	defer ticker.Stop()
 
 	for _, name := range a.config.Devices {
@@ -165,13 +165,9 @@ func (a *EmergencyTestAutomation) runOneLoop(ctx context.Context, test rpc.Test)
 }
 
 func (a *EmergencyTestAutomation) run(ctx context.Context) {
+	ticker := time.NewTicker(a.config.CycleInterval.Duration)
+	defer ticker.Stop()
 	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-		}
-
 		err := a.runOneLoop(ctx, rpc.Test_DURATION_TEST)
 		if err != nil {
 			a.logger.Error("errors retrieving duration test results", zap.Error(err))
@@ -181,5 +177,13 @@ func (a *EmergencyTestAutomation) run(ctx context.Context) {
 		if err != nil {
 			a.logger.Error("errors retrieving function test results", zap.Error(err))
 		}
+
+		select {
+		case <-ctx.Done():
+			a.logger.Info("EmergencyTestAutomation stopping because its context was cancelled")
+			return
+		case <-ticker.C:
+		}
+
 	}
 }
