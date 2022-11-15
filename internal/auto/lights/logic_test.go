@@ -3,13 +3,13 @@ package lights
 import (
 	"context"
 	"fmt"
-	"github.com/vanti-dev/bsp-ew/internal/util/jsontypes"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
+	"github.com/vanti-dev/bsp-ew/internal/util/jsontypes"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+// Duration wraps a time.Duration.
+// It marshals / unmarshals to a string with the time.ParseDuration format.
 type Duration struct {
 	time.Duration
 }

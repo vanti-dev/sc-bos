@@ -2,10 +2,10 @@ package config
 
 import (
 	"encoding/json"
-	"github.com/vanti-dev/bsp-ew/internal/util/jsontypes"
 	"time"
 
 	"github.com/vanti-dev/bsp-ew/internal/auto"
+	"github.com/vanti-dev/bsp-ew/internal/util/jsontypes"
 )
 
 // Root represent the configuration parameters available for the lighting automation.
