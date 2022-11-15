@@ -55,6 +55,8 @@ export const useLightingStore = defineStore("lightingStore", () => {
 
   const selected = ref([]);
 
+  const selectedItem = ref({});
+
   const meetings = ref([
     ["Meeting Room 6.01", "mdi-account-multiple-outline"],
     ["Meeting Room 6.01", "mdi-account-multiple-outline"],
@@ -66,7 +68,46 @@ export const useLightingStore = defineStore("lightingStore", () => {
 
   const search = ref("");
 
-  //filter for model or status
+  const drawer = ref(false);
+
+  const items = ref([
+    {
+      title: "Building",
+      content: "Upper Gough Street",
+    },
+    {
+      title: "Floor",
+      content: "LO1",
+    },
+    {
+      title: "Zone",
+      content: "L02_12",
+    },
+    {
+      title: "Manufacturer",
+      content: "Philips",
+    },
+    {
+      title: "Model",
+      content: "LED 1245812",
+    },
+    {
+      title: "Installed on",
+      content: "12.09.22",
+    },
+    {
+      title: "Serial Number",
+      content: "12348a7a595",
+    },
+    {
+      title: "DALI Address",
+      content: "1234",
+    },
+    {
+      title: "DALI Controller",
+      content: "1234",
+    },
+  ]);
 
   const filteredLights = computed(() =>
     lights.value.filter((light) => {
@@ -94,15 +135,28 @@ export const useLightingStore = defineStore("lightingStore", () => {
     }
   };
 
+  const toggleDrawer = () => {
+    drawer.value = !drawer.value;
+  };
+
+  const setSelectedItem = (selected) => {
+    selectedItem.value = selected;
+  };
+
   return {
     lights,
     headers,
     selected,
     meetings,
+    items,
     status,
     model,
     search,
     filteredLights,
     bulkAction,
+    drawer,
+    toggleDrawer,
+    selectedItem,
+    setSelectedItem,
   };
 });

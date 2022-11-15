@@ -1,33 +1,38 @@
 <template>
   <v-container fluid class="pa-7">
     <BulkAction />
-    <main-card>
-      <v-data-table
-        v-model="selected"
-        :headers="headers"
-        :items="filteredLights"
-        item-key="device_id"
-        :search="search"
-        show-select
-        class="table"
-      >
-        <template v-slot:top>
-          <Filters />
-        </template>
-        <template v-slot:item.status="{ item }">
-          <p
-            :class="getColor(item.status)"
-            class="font-weight-bold text-uppercase"
-          >
-            {{ item.status }}
-          </p>
-        </template>
-      </v-data-table>
-    </main-card>
+    <v-sheet>
+      <main-card>
+        <v-data-table
+          v-model="selected"
+          :headers="headers"
+          :items="filteredLights"
+          item-key="device_id"
+          :search="search"
+          @click:row="rowClick"
+          show-select
+          class="table"
+        >
+          <template v-slot:top>
+            <Filters />
+          </template>
+          <template v-slot:item.status="{ item }">
+            <p
+              :class="getColor(item.status)"
+              class="font-weight-bold text-uppercase"
+            >
+              {{ item.status }}
+            </p>
+          </template>
+        </v-data-table>
+      </main-card>
+      <RowMenu />
+    </v-sheet>
   </v-container>
 </template>
 <script setup>
 import MainCard from "@/components/SectionCard.vue";
+import RowMenu from "./RowMenu.vue";
 import { useLightingStore } from "@/stores/operate/lighting.js";
 import { storeToRefs } from "pinia";
 
@@ -43,6 +48,11 @@ const getColor = (status) => {
   } else {
     return "orange--text";
   }
+};
+
+const rowClick = (item, row) => {
+  store.toggleDrawer();
+  store.setSelectedItem(item);
 };
 </script>
 
@@ -67,4 +77,13 @@ const getColor = (status) => {
     > tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper)) {
   background-color: #ffffff1a;
 }
+
+.bgColor {
+  background: #111721;
+}
+.v-list-header {
+  background: #111721;
+  color: #fff;
+}
+$list-item-content-padding: 0px;
 </style>
