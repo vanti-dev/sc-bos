@@ -10,8 +10,10 @@
           item-key="device_id"
           :search="search"
           @click:row="rowClick"
+          :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
           show-select
           class="table"
+         
         >
           <template v-slot:top>
             <Filters />
@@ -56,9 +58,9 @@ const rowClick = (item, row) => {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .table {
-  background-color: transparent;
+  background-color: #292F36;
 }
 
 ::v-deep(.v-data-table-header__icon) {
@@ -75,7 +77,7 @@ const rowClick = (item, row) => {
     > table
     > tbody
     > tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper)) {
-  background-color: #ffffff1a;
+  background-color: #292F36;
 }
 
 .bgColor {
@@ -86,4 +88,12 @@ const rowClick = (item, row) => {
   color: #fff;
 }
 $list-item-content-padding: 0px;
+
+
+.v-data-table ::v-deep(.v-data-footer) {
+  background: #3f454a !important;
+  border-radius: 0px 0px 5px 5px;
+  border: none;
+  width: 100%;
+}
 </style>
