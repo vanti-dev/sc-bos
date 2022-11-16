@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.35" ClassName="CNestedPlcProjDef" TcProjectVariant="Lab">
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.35" ClassName="CNestedPlcProjDef" TcProjectVariant="Floor_04">
 	<DataTypes>
 		<DataType>
 			<Name GUID="{9A955222-AEEB-8157-F0A3-131368033DED}" Namespace="Tc3_DALI" AutoDeleteType="true">ST_KL6821InData</Name>
@@ -77,34 +77,34 @@
 			<Variant>
 				<Name>Floor_00</Name>
 				<Name>Floor_01</Name>
-				<Name>Floor_02</Name>
 				<Name>Floor_03</Name>
-				<Name>Floor_04</Name>
-				<Name>Floor_05</Name>
 				<Name>Floor_06</Name>
 				<Name>Floor_07</Name>
 				<Name>Floor_08</Name>
 				<Name>Floor_09</Name>
 				<Name>Floor_10</Name>
+				<Name>Lab</Name>
 				<Defines/>
 			</Variant>
 			<Variant>
-				<Name>Lab</Name>
+				<Name>Floor_02</Name>
+				<Name>Floor_04</Name>
+				<Name>Floor_05</Name>
 				<Defines></Defines>
 			</Variant>
 		</ProjectVariant>
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="1" TmcPath="lighting\lighting.tmc" TmcHash="{536F7AAF-5B5F-D5D1-D38F-68A06E25766D}">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="1" TmcPath="lighting\lighting.tmc" TmcHash="{B8491508-76D8-0DBB-5ADE-CC5AF4763771}">
 			<Name>lighting Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 			<Vars VarGrpType="1">
-				<Name>BRIDGE_TASK Inputs</Name>
+				<Name>COMM_TASK Inputs</Name>
 				<Var>
 					<Name>GVL.aKL6821InData</Name>
 					<Type GUID="{8718FCE9-D154-6DA3-19B6-0CCB0FA47678}">ARRAY [1..16] OF Tc3_DALI.ST_KL6821InData</Type>
 				</Var>
 			</Vars>
 			<Vars VarGrpType="2" AreaNo="1">
-				<Name>BRIDGE_TASK Outputs</Name>
+				<Name>COMM_TASK Outputs</Name>
 				<Var>
 					<Name>GVL.aKL6821OutData</Name>
 					<Type GUID="{EC584125-41B0-ACC4-C56D-B42E0BAEF45C}">ARRAY [1..16] OF Tc3_DALI.ST_KL6821OutData</Type>
@@ -271,21 +271,21 @@
 			<Contexts>
 				<Context>
 					<Id NeedCalleeCall="true">0</Id>
-					<Name>BRIDGE_TASK</Name>
-					<ManualConfig>
-						<OTCID>#x02010030</OTCID>
-					</ManualConfig>
-					<Priority>1</Priority>
-					<CycleTime>8000000</CycleTime>
-				</Context>
-				<Context>
-					<Id NeedCalleeCall="true">1</Id>
 					<Name>COMM_TASK</Name>
 					<ManualConfig>
 						<OTCID>#x02010040</OTCID>
 					</ManualConfig>
 					<Priority>2</Priority>
 					<CycleTime>2000000</CycleTime>
+				</Context>
+				<Context>
+					<Id NeedCalleeCall="true">1</Id>
+					<Name>BRIDGE_TASK</Name>
+					<ManualConfig>
+						<OTCID>#x02010030</OTCID>
+					</ManualConfig>
+					<Priority>3</Priority>
+					<CycleTime>8000000</CycleTime>
 				</Context>
 				<Context>
 					<Id NeedCalleeCall="true">2</Id>
@@ -298,8 +298,8 @@
 				</Context>
 			</Contexts>
 			<TaskPouOids>
-				<TaskPouOid Prio="1" OTCID="#x08502001"/>
 				<TaskPouOid Prio="2" OTCID="#x08502002"/>
+				<TaskPouOid Prio="3" OTCID="#x08502001"/>
 				<TaskPouOid Prio="30" OTCID="#x08502004"/>
 			</TaskPouOids>
 		</Instance>
@@ -307,176 +307,176 @@
 	<Mappings>
 		<OwnerA Name="lighting Instance">
 			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Junction 1 (EK1122)^Tenant 1 Coupler (BK1150)">
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[1]" VarB="T1 Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[2]" VarB="T1 Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Junction 1 (EK1122)^Tenant 2 Coupler (BK1150)">
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[4]^aData[0]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data In 0"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[4]^aData[1]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data In 1"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[4]^aData[2]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data In 2"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[4]^aData[3]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data In 3"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[4]^nStatus" VarB="T2 Bus 2 (KL6821)^Channel 1^State"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[3]" VarB="T2 Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[4]" VarB="T2 Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[5]" VarB="T2 Bus 3 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Junction 2  (EK1122)^Tenant 3 Coupler (BK1150)">
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[6]" VarB="T3 Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[7]" VarB="T3 Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Junction 2  (EK1122)^Tenant 4 Coupler (BK1150)">
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[8]" VarB="T4 Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[9]" VarB="T4 Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Junction 3 (EK1122)^Life Safety Coupler (BK1150)">
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[10]" VarB="LS Bus (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[10]" VarB="LS Bus (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[10]" VarB="LS Bus (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[10]" VarB="LS Bus (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[10]" VarB="LS Bus (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[10]" VarB="LS Bus (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[10]" VarB="LS Bus (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[10]" VarB="LS Bus (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[10]" VarB="LS Bus (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[10]" VarB="LS Bus (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[10]" VarB="LS Bus (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[10]" VarB="LS Bus (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[10]" VarB="LS Bus (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[10]" VarB="LS Bus (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[10]" VarB="LS Bus (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[10]" VarB="LS Bus (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[10]" VarB="LS Bus (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[10]" VarB="LS Bus (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[10]" VarB="LS Bus (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[10]" VarB="LS Bus (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
 			</OwnerB>
 			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Landlord Coupler (BK1250)">
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Inputs^GVL.aKL6821InData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^State" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Ctrl" Size="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
-				<Link VarA="BRIDGE_TASK Outputs^GVL.aKL6821OutData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data In 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Inputs^GVL.aKL6821InData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^State" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[11]" VarB="LL Bus 1 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[12]" VarB="LL Bus 2 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[13]" VarB="LL Bus 3 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[14]" VarB="LL Bus 4 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[15]" VarB="LL Bus 5 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Ctrl" Size="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 0" Size="8" OffsA="16"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 1" Size="8" OffsA="24"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 2" Size="8" OffsA="32"/>
+				<Link VarA="COMM_TASK Outputs^GVL.aKL6821OutData[16]" VarB="LL Bus 6 (KL6821)^Channel 1^Data Out 3" Size="8" OffsA="40"/>
 			</OwnerB>
 		</OwnerA>
 	</Mappings>
