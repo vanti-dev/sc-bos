@@ -13,7 +13,6 @@
           :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
           show-select
           class="table"
-         
         >
           <template v-slot:top>
             <Filters />
@@ -23,7 +22,7 @@
               :class="getColor(item.status)"
               class="font-weight-bold text-uppercase"
             >
-              {{ item.status }}
+              {{ item.status }}ß
             </p>
           </template>
         </v-data-table>
@@ -34,6 +33,7 @@
 </template>
 <script setup>
 import MainCard from "@/components/SectionCard.vue";
+
 import RowMenu from "./RowMenu.vue";
 import { useLightingStore } from "@/stores/operate/lighting.js";
 import { storeToRefs } from "pinia";
@@ -60,7 +60,7 @@ const rowClick = (item, row) => {
 
 <style lang="scss" scoped>
 .table {
-  background-color: #292F36;
+  background-color: #292f36;
 }
 
 ::v-deep(.v-data-table-header__icon) {
@@ -77,7 +77,7 @@ const rowClick = (item, row) => {
     > table
     > tbody
     > tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper)) {
-  background-color: #292F36;
+  background-color: #292f36;
 }
 
 .bgColor {
@@ -88,7 +88,6 @@ const rowClick = (item, row) => {
   color: #fff;
 }
 $list-item-content-padding: 0px;
-
 
 .v-data-table ::v-deep(.v-data-footer) {
   background: #3f454a !important;

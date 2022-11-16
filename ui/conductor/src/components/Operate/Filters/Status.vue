@@ -1,10 +1,11 @@
 <template>
   <v-select
     v-model="status"
-    :items="['All', 'On', 'Off']"
+    :items="statuses"
     label="Status"
     class="pr-md-4"
     outlined
+    style="width: 100px"
   ></v-select>
 </template>
 
@@ -14,9 +15,9 @@ import { storeToRefs } from "pinia";
 export default {
   setup() {
     const store = useLightingStore();
-    const { status } = storeToRefs(store);
+    const { status, statuses } = storeToRefs(store);
 
-    return { store, status };
+    return { store, status, statuses };
   },
 };
 </script>

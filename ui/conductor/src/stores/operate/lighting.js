@@ -114,6 +114,15 @@ export const useLightingStore = defineStore("lightingStore", () => {
     },
   ]);
 
+  const models = ref([
+    "All",
+    "Philips LED 1245812",
+    "Philips LED 1245813",
+    "Philips LED 1245814",
+  ]);
+
+  const statuses = ref(["All", "On", "Off"]);
+
   const filteredLights = computed(() =>
     lights.value.filter((light) => {
       if (status.value === "All" && model.value === "All") {
@@ -176,6 +185,8 @@ export const useLightingStore = defineStore("lightingStore", () => {
     status,
     model,
     search,
+    models,
+    statuses,
     filteredLights,
     bulkAction,
     drawer,

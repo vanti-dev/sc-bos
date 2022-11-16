@@ -1,15 +1,11 @@
 <template>
   <v-select
     v-model="model"
-    :items="[
-      'All',
-      'Philips LED 1245812',
-      'Philips LED 1245813',
-      'Philips LED 1245814',
-    ]"
+    :items="models"
     label="Type"
     class="pr-md-4"
     outlined
+    style="width: 100px"
   ></v-select>
 </template>
 
@@ -20,9 +16,9 @@ export default {
   setup() {
     const store = useLightingStore();
 
-    const { model } = storeToRefs(store);
+    const { model, models } = storeToRefs(store);
 
-    return { store, model };
+    return { store, model, models };
   },
 };
 </script>
