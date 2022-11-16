@@ -3,7 +3,7 @@
   <Task Name="BRIDGE_TASK" Id="{6d01292e-03ac-4775-861d-4aab640d4c1e}">
     <!--CycleTime in micro seconds.-->
     <CycleTime>8000</CycleTime>
-    <Priority>1</Priority>
+    <Priority>3</Priority>
     <PouCall>
       <Name>MAIN</Name>
     </PouCall>
