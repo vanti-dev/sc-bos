@@ -4,23 +4,23 @@ all:
     twincat_bsd:
       hosts:
         lab:
-          ansible_host: "10.104.10.52"
+          ansible_host: "10.1.104.10"
           floor: lab
           x001_ip: 10.1.104.10
         floor-01:
-          ansible_host: "192.168.8.241"
+          ansible_host: "10.1.104.11"
           floor: floor-01
           x001_ip: 10.1.104.11
         floor-02:
-          ansible_host: "192.168.8.162"
+          ansible_host: "10.1.104.12"
           floor: floor-02
           x001_ip: 10.1.104.12
         floor-03:
-          ansible_host: "192.168.8.131"
+          ansible_host: "10.1.104.13"
           floor: floor-03
           x001_ip: 10.1.104.13
         floor-04:
-          ansible_host: "192.168.8.101"
+          ansible_host: "10.1.104.14"
           floor: floor-04
           x001_ip: 10.1.104.14
         floor-05:
