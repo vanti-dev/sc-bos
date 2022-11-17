@@ -43,6 +43,46 @@ export const useLightingStore = defineStore("lightingStore", () => {
       brightness: "50",
       model: "Philips LED 1245812",
     },
+    {
+      device_id: "LIT-L02_12-006",
+      location: "L02_12",
+      status: "On",
+      battery_status: "80",
+      brightness: "100",
+      model: "Philips LED 1245812",
+    },
+    {
+      device_id: "LIT-L02_12-007",
+      location: "L02_12",
+      status: "On",
+      battery_status: "80",
+      brightness: "100",
+      model: "Philips LED 1245812",
+    },
+    {
+      device_id: "LIT-L02_12-008",
+      location: "L02_12",
+      status: "On",
+      battery_status: "80",
+      brightness: "100",
+      model: "Philips LED 1245812",
+    },
+    {
+      device_id: "LIT-L02_12-009",
+      location: "L02_12",
+      status: "On",
+      battery_status: "80",
+      brightness: "100",
+      model: "Philips LED 1245812",
+    },
+    {
+      device_id: "LIT-L02_12-010",
+      location: "L02_12",
+      status: "On",
+      battery_status: "80",
+      brightness: "100",
+      model: "Philips LED 1245812",
+    },
   ]);
 
   const headers = ref([
@@ -142,10 +182,12 @@ export const useLightingStore = defineStore("lightingStore", () => {
       selected.value.forEach((light) => {
         light.status = "On";
       });
+      selected.value = [];
     } else if (action === "Off") {
       selected.value.forEach((light) => {
         light.status = "Off";
       });
+      selected.value = [];
     }
   };
 

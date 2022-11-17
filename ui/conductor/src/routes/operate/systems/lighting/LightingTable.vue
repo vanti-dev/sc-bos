@@ -5,7 +5,7 @@
       <v-card color="transparent" flat elevation-0>
         <v-card-text> System: Lighting </v-card-text>
       </v-card>
-      <v-card outlined color="#292F35">
+      <v-card color="#292F35">
         <v-card-text> Smart Core OS: Online </v-card-text>
       </v-card>
     </div>

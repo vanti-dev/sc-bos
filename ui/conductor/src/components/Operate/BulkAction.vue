@@ -1,9 +1,9 @@
 <template>
   <v-card
-    class="pa-2 d-flex"
-    text
-    z-index="10"
-    color="#111721"
+    class="pa-2 mb-2 d-flex"
+    color="#292F35"
+    outlined
+    elevation="0"
     v-if="selected.length > 1"
   >
     <v-card-subtitle> Bulk Actions</v-card-subtitle>

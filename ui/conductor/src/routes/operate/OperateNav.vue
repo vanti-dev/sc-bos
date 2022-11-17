@@ -5,7 +5,7 @@
         <v-list-item-content> Site Operations </v-list-item-content>
       </v-list-item>
       <v-divider class="my-2"></v-divider>
-      <v-subheader class=" text-uppercase font-weight-bold">
+      <v-subheader class="text-uppercase font-weight-bold">
         Status
       </v-subheader>
       <v-list-item-group>
@@ -15,7 +15,7 @@
               <v-icon>mdi-domain</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-              <v-list-item-title>Buildings Overview</v-list-item-title>
+              <v-list-item-title>Buildings</v-list-item-title>
             </v-list-item-content>
           </template>
 
@@ -29,23 +29,58 @@
               </v-list-item-content>
             </template>
             <v-list-item>
-              <v-list-item-icon>
-                <v-icon>mdi-laptop-account</v-icon>
-              </v-list-item-icon>
               <v-list-item-content>
-                <v-list-item-title>Meeting Room 6.01</v-list-item-title>
+                <v-list-item-title class="text-caption"
+                  >Meeting Room 6.01</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="text-caption"
+                  >Meeting Room 6.01</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="text-caption"
+                  >Meeting Room 6.01</v-list-item-title
+                >
               </v-list-item-content>
             </v-list-item>
           </v-list-group>
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon>mdi-selection-multiple-marker</v-icon>
-            </v-list-item-icon>
-
-            <v-list-item-content>
-              <v-list-item-title>Floor 2</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
+          <v-list-group no-action sub-group>
+            <template v-slot:activator>
+              <v-list-item-icon>
+                <v-icon>mdi-selection-multiple-marker</v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title>Floor 2</v-list-item-title>
+              </v-list-item-content>
+            </template>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="text-caption"
+                  >Meeting Room 6.01</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="text-caption"
+                  >Meeting Room 6.01</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="text-caption"
+                  >Meeting Room 6.01</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-group>
         </v-list-group>
 
         <v-list-item to="/operate/notifications">
@@ -60,9 +95,7 @@
         </v-list-item>
       </v-list-item-group>
 
-
-
-      <v-subheader class=" text-uppercase font-weight-bold">
+      <v-subheader class="text-uppercase font-weight-bold">
         Systems
       </v-subheader>
       <v-list-item-group>
@@ -76,7 +109,7 @@
         </v-list-item>
       </v-list-item-group>
 
-      <v-subheader class=" text-uppercase font-weight-bold  ">
+      <v-subheader class="text-uppercase font-weight-bold">
         Analytics
       </v-subheader>
       <v-list-item-group>
@@ -106,8 +139,7 @@
         </v-list-item>
       </v-list-item-group>
 
-
-      <v-subheader class=" text-uppercase font-weight-bold">
+      <v-subheader class="text-uppercase font-weight-bold">
         Reports
         <v-spacer />
         <v-icon>mdi-plus-box</v-icon>
@@ -150,7 +182,6 @@ export default {
 </script>
 
 <style scoped>
-
 ::v-deep(.v-list-item--active) {
   color: var(--v-primary-base);
 }
