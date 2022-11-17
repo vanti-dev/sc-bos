@@ -1,6 +1,14 @@
 <template>
   <v-container fluid class="pa-7">
     <BulkAction />
+    <div class="d-flex justify-space-between mb-2">
+      <v-card color="transparent" flat elevation-0>
+        <v-card-text> System: Lighting </v-card-text>
+      </v-card>
+      <v-card outlined color="#292F35">
+        <v-card-text> Smart Core OS: Online </v-card-text>
+      </v-card>
+    </div>
     <v-sheet>
       <main-card>
         <v-data-table
@@ -22,7 +30,7 @@
               :class="getColor(item.status)"
               class="font-weight-bold text-uppercase"
             >
-              {{ item.status }}ß
+              {{ item.status }}
             </p>
           </template>
         </v-data-table>
