@@ -49,7 +49,7 @@ export const useLightingStore = defineStore("lightingStore", () => {
       status: "On",
       battery_status: "80",
       brightness: "100",
-      model: "Philips LED 1245812",
+      model: "Philips LED 1245818",
     },
     {
       device_id: "LIT-L02_12-007",
@@ -57,7 +57,7 @@ export const useLightingStore = defineStore("lightingStore", () => {
       status: "On",
       battery_status: "80",
       brightness: "100",
-      model: "Philips LED 1245812",
+      model: "Philips LED 1245819",
     },
     {
       device_id: "LIT-L02_12-008",
@@ -65,7 +65,7 @@ export const useLightingStore = defineStore("lightingStore", () => {
       status: "On",
       battery_status: "80",
       brightness: "100",
-      model: "Philips LED 1245812",
+      model: "Philips LED 1245810",
     },
     {
       device_id: "LIT-L02_12-009",
@@ -81,7 +81,7 @@ export const useLightingStore = defineStore("lightingStore", () => {
       status: "On",
       battery_status: "80",
       brightness: "100",
-      model: "Philips LED 1245812",
+      model: "Philips LED 1245817",
     },
   ]);
 
@@ -154,12 +154,10 @@ export const useLightingStore = defineStore("lightingStore", () => {
     },
   ]);
 
-  const models = ref([
-    "All",
-    "Philips LED 1245812",
-    "Philips LED 1245813",
-    "Philips LED 1245814",
-  ]);
+  const models = ref([]);
+
+  models.value = [...new Set(lights.value.map((light) => light.model))];
+  models.value.unshift("All");
 
   const statuses = ref(["All", "On", "Off"]);
 
