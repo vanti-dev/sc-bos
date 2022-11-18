@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package vanti.bsp.ew;
+
+option go_package = "github.com/vanti-dev/bsp-ew/pkg/gen";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+service EmergencyLightingApi {
+  rpc GetEmergencyLight(GetEmergencyLightRequest) returns (EmergencyLight);
+  rpc ListEmergencyLights(ListEmergencyLightsRequest) returns (ListEmergencyLightsResponse);
+
+  rpc ListEmergencyLightEvents(ListEmergencyLightEventsRequest) returns (ListEmergencyLightEventsResponse);
+}
+
+// Resource Types
+
+enum EmergencyLightFailure {
+  FAILURE_UNSPECIFIED = 0;
+  DURATION_TEST_FAILED = 1;   // the most recent duration test failed
+  FUNCTION_TEST_FAILED = 2;   // the most recent function test failed
+  BATTERY_FAILURE = 3;        // there is a problem with the emergency battery
+  LAMP_FAILURE = 4;           // there is a problem with the emergency lamp
+  COMMUNICATION_FAILURE = 5;  // the system is unable to communicate with the emergency light
+}
+
+message EmergencyLight {
+  // The Smart Core device name of the emergency light.
+  string name = 1;
+  // The last time this data was updated.
+  google.protobuf.Timestamp update_time = 2;
+  repeated EmergencyLightFailure failures = 3;
+}
+
+message EmergencyLightingEvent {
+  string name = 1; // Smart Core device name of the light this entry applies to
+  string id = 2;   // An opaque, unique identifier for this log entry
+  google.protobuf.Timestamp timestamp = 3;
+
+  oneof event {
+    DurationTestPass duration_test_pass = 4;
+    FunctionTestPass function_test_pass = 5;
+    StatusReport status_report = 6;
+  }
+
+  message DurationTestPass {
+    google.protobuf.Duration achieved_duration = 1;
+  }
+  message FunctionTestPass {
+
+  }
+  message StatusReport {
+    repeated EmergencyLightFailure failures = 1;
+  }
+}
+
+// RPC Requests & Responses
+
+message GetEmergencyLightRequest {
+  string name = 1;
+}
+
+message ListEmergencyLightsRequest {
+  // The maximum number of emergency light names to return at once. The service may choose to return fewer.
+  // If unspecified, defaults to 50.
+  int32 page_size = 1;
+
+  // Page token from a previous ListEmergencyLists call. Provide to get the next page.
+  // If omitted, the first page is supplied.
+  string page_token = 2;
+}
+message ListEmergencyLightsResponse {
+  repeated EmergencyLight emergency_lights = 1;
+  string next_page_token = 2;
+}
+
+message ListEmergencyLightEventsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  // TODO: add filtering support
+}
+message ListEmergencyLightEventsResponse {
+  repeated EmergencyLightingEvent events = 1;
+  string next_page_token = 2;
+}
