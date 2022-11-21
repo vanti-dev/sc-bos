@@ -2,7 +2,7 @@
   <v-text-field
     v-model="search"
     prepend-inner-icon="mdi-magnify"
-    label="Search Spaces"
+    label="Search ID , Location "
     single-line
     hide-details
     width="100%"

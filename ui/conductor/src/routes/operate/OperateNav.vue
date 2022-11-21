@@ -22,7 +22,7 @@
           <v-list-group no-action sub-group>
             <template v-slot:activator>
               <v-list-item-icon>
-                <v-icon>mdi-selection-multiple-marker</v-icon>
+                <v-icon>mdi-floor-plan</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
                 <v-list-item-title>Floor 1</v-list-item-title>
@@ -53,7 +53,7 @@
           <v-list-group no-action sub-group>
             <template v-slot:activator>
               <v-list-item-icon>
-                <v-icon>mdi-selection-multiple-marker</v-icon>
+                <v-icon>mdi-floor-plan</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
                 <v-list-item-title>Floor 2</v-list-item-title>
