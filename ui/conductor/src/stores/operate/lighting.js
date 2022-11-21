@@ -109,6 +109,8 @@ export const useLightingStore = defineStore("lightingStore", () => {
 
   const status = ref("All");
 
+  const smartCoreStatus = ref("Online");
+
   const model = ref("All");
 
   const search = ref("");
@@ -216,6 +218,8 @@ export const useLightingStore = defineStore("lightingStore", () => {
     selectedItem.value.status = "On";
   };
 
+  const checkStatus = (status) => {};
+
   return {
     lights,
     headers,
@@ -223,6 +227,7 @@ export const useLightingStore = defineStore("lightingStore", () => {
     meetings,
     items,
     status,
+    smartCoreStatus,
     model,
     search,
     models,
