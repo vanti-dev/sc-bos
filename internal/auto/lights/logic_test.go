@@ -3,6 +3,7 @@ package lights
 import (
 	"context"
 	"fmt"
+	"github.com/vanti-dev/bsp-ew/internal/util/jsontypes"
 	"testing"
 	"time"
 
@@ -63,7 +64,7 @@ func Test_processState(t *testing.T) {
 		now := time.Unix(0, 0)
 
 		readState.Config.Now = func() time.Time { return now }
-		readState.Config.UnoccupiedOffDelay = config.Duration{Duration: 10 * time.Minute}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
 		readState.Config.OccupancySensors = []string{"pir01"}
 		readState.Config.Lights = []string{"light01"}
 		readState.Occupancy["pir01"] = &traits.Occupancy{
@@ -88,7 +89,7 @@ func Test_processState(t *testing.T) {
 		now := time.Unix(0, 0)
 
 		readState.Config.Now = func() time.Time { return now }
-		readState.Config.UnoccupiedOffDelay = config.Duration{Duration: 10 * time.Minute}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
 		readState.Config.OccupancySensors = []string{"pir01"}
 		readState.Config.Lights = []string{"light01"}
 		readState.Occupancy["pir01"] = &traits.Occupancy{

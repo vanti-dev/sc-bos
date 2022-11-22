@@ -3,6 +3,7 @@ package lights
 import (
 	"context"
 	"errors"
+	"github.com/vanti-dev/bsp-ew/internal/util/jsontypes"
 	"testing"
 	"time"
 
@@ -49,7 +50,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	cfg.Now = func() time.Time { return now }
 	cfg.OccupancySensors = []string{"pir01", "pir02"}
 	cfg.Lights = []string{"light01", "light02"}
-	cfg.UnoccupiedOffDelay = config.Duration{Duration: 10 * time.Minute}
+	cfg.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
 
 	if err := automation.Start(context.Background()); err != nil {
 		t.Fatalf("Start: %v", err)
