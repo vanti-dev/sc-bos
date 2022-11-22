@@ -1,6 +1,5 @@
 <template>
   <v-container fluid class="pa-7">
-    <BulkAction />
     <Header />
     <v-sheet>
       <main-card>
@@ -16,7 +15,8 @@
           class="table"
         >
           <template v-slot:top>
-            <Filters />
+            <Filters v-if="selected.length <= 1" />
+            <BulkAction v-else />
           </template>
           <template v-slot:item.status="{ item }">
             <p
