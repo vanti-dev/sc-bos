@@ -16,13 +16,14 @@ service EmergencyLightingApi {
 
 // Resource Types
 
-enum EmergencyLightFailure {
-  FAILURE_UNSPECIFIED = 0;
+enum EmergencyLightFault {
+  FAULT_UNSPECIFIED = 0;
   DURATION_TEST_FAILED = 1;   // the most recent duration test failed
   FUNCTION_TEST_FAILED = 2;   // the most recent function test failed
-  BATTERY_FAILURE = 3;        // there is a problem with the emergency battery
-  LAMP_FAILURE = 4;           // there is a problem with the emergency lamp
+  BATTERY_FAULT = 3;          // there is a problem with the emergency battery
+  LAMP_FAULT = 4;             // there is a problem with the emergency lamp
   COMMUNICATION_FAILURE = 5;  // the system is unable to communicate with the emergency light
+  OTHER_FAULT = 6;
 }
 
 message EmergencyLight {
@@ -30,7 +31,7 @@ message EmergencyLight {
   string name = 1;
   // The last time this data was updated.
   google.protobuf.Timestamp update_time = 2;
-  repeated EmergencyLightFailure failures = 3;
+  repeated EmergencyLightFault faults = 3;
 }
 
 message EmergencyLightingEvent {
@@ -51,7 +52,7 @@ message EmergencyLightingEvent {
 
   }
   message StatusReport {
-    repeated EmergencyLightFailure failures = 1;
+    repeated EmergencyLightFault faults = 1;
   }
 }
 
