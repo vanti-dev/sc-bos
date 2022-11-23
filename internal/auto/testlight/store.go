@@ -74,7 +74,7 @@ func saveStatusReport(db *bolthold.Store, tx *bbolt.Tx, name string, timestamp t
 		Timestamp: timestamp,
 		Kind:      StatusReportEvent,
 		StatusReport: &gen.EmergencyLightingEvent_StatusReport{
-			Faults: faults,
+			Faults: sortDeduplicateFaults(faults),
 		},
 	}
 	err = db.TxInsert(tx, id, record)
@@ -99,7 +99,7 @@ func updateLatestStatus(db *bolthold.Store, tx *bbolt.Tx, name string, now time.
 	record := LatestStatusRecord{
 		Name:       name,
 		LastUpdate: now,
-		Faults:     faults,
+		Faults:     sortDeduplicateFaults(faults), // normalise to produce a consistent order without duplicates
 	}
 
 	err = db.TxUpsert(tx, name, record)
