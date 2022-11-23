@@ -320,9 +320,10 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 
 func (c *Controller) startDrivers(ctx context.Context) (err error) {
 	driverServices := driver.Services{
-		Logger: c.Logger.Named("driver"),
-		Node:   c.Node,
-		Tasks:  &task.Group{},
+		Logger:          c.Logger.Named("driver"),
+		Node:            c.Node,
+		Tasks:           &task.Group{},
+		ClientTLSConfig: c.ClientTLSConfig,
 	}
 
 	var started []task.Starter
