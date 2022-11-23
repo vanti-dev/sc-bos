@@ -11,17 +11,12 @@
   />
 </template>
 
-<script>
+<script setup>
 import { useLightingStore } from "@/stores/operate/lighting.js";
 import { storeToRefs } from "pinia";
-export default {
-  setup() {
-    const store = useLightingStore();
-    const { search } = storeToRefs(store);
 
-    return { store, search };
-  },
-};
+const store = useLightingStore();
+const { search } = storeToRefs(store);
 </script>
 
 <style lang="scss" scoped>

@@ -18,19 +18,13 @@
   </v-card>
 </template>
 
-<script>
+<script setup>
 import { useLightingStore } from "@/stores/operate/lighting.js";
 import { storeToRefs } from "pinia";
 
-export default {
-  setup() {
-    const store = useLightingStore();
+const store = useLightingStore();
 
-    const { selected } = storeToRefs(store);
-
-    return { store, selected };
-  },
-};
+const { selected } = storeToRefs(store);
 </script>
 
 <style lang="scss" scoped></style>

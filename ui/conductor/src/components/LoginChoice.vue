@@ -38,15 +38,10 @@
   </v-card>
 </template>
 
-<script>
+<script setup>
 import { useAccountStore } from "@/stores/account.js";
-export default {
-  setup() {
-    const store = useAccountStore();
 
-    return { store };
-  },
-};
+const store = useAccountStore();
 </script>
 
 <style lang="scss" scoped></style>

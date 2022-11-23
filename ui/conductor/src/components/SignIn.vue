@@ -3,19 +3,13 @@
   <LoginChoice v-else />
 </template>
 
-<script>
+<script setup>
 import { useAccountStore } from "@/stores/account.js";
 import { storeToRefs } from "pinia";
 
-export default {
-  setup() {
-    const store = useAccountStore();
+const store = useAccountStore();
 
-    const { loginForm } = storeToRefs(store);
-
-    return { loginForm };
-  },
-};
+const { loginForm } = storeToRefs(store);
 </script>
 
 <style lang="scss" scoped></style>

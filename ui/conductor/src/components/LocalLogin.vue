@@ -61,35 +61,29 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { useAccountStore } from "@/stores/account.js";
 import { storeToRefs } from "pinia";
 import { ref } from "vue";
 
-export default {
-  setup() {
-    const store = useAccountStore();
-    const password = ref("");
-    const username = ref("");
-    const { snackbar } = storeToRefs(store);
+const store = useAccountStore();
+const password = ref("");
+const username = ref("");
+const { snackbar } = storeToRefs(store);
 
-    const rules = {
-      required: (value) => !!value || "Required.",
-    };
+const rules = {
+  required: (value) => !!value || "Required.",
+};
 
-    const login = () => {
-      //check if username and password are entered
-      if (username.value && password.value) {
-        store
-          .loginLocal(username.value, password.value)
-          .catch((err) => console.error("unable to log in", err));
-      } else {
-        console.error("username and password are required");
-      }
-    };
-
-    return { username, password, store, login, snackbar, rules };
-  },
+const login = () => {
+  //check if username and password are entered
+  if (username.value && password.value) {
+    store
+      .loginLocal(username.value, password.value)
+      .catch((err) => console.error("unable to log in", err));
+  } else {
+    console.error("username and password are required");
+  }
 };
 </script>
 

@@ -9,17 +9,12 @@
   ></v-select>
 </template>
 
-<script>
+<script setup>
 import { useLightingStore } from "@/stores/operate/lighting.js";
 import { storeToRefs } from "pinia";
-export default {
-  setup() {
-    const store = useLightingStore();
-    const { status, statuses } = storeToRefs(store);
 
-    return { store, status, statuses };
-  },
-};
+const store = useLightingStore();
+const { status, statuses } = storeToRefs(store);
 </script>
 
 <style lang="scss" scoped>

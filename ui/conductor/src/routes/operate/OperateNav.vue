@@ -175,11 +175,8 @@
   </v-navigation-drawer>
 </template>
 
-<script>
+<script setup>
 import Footer from "@/components/Footer.vue";
-export default {
-  name: "OperateNav",
-};
 </script>
 
 <style scoped>
