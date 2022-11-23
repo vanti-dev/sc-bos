@@ -24,7 +24,7 @@ all:
           floor: floor-04
           x001_ip: 10.1.104.14
         floor-05:
-          ansible_host: "192.168.8.205"
+          ansible_host: "10.1.104.15"
           floor: floor-05
           x001_ip: 10.1.104.15
         floor-06:

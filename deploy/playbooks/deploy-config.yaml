@@ -93,6 +93,20 @@
         state: touch
         owner: Administrator
 
+    - name: Remove old cron jobs
+      become: true
+      ansible.builtin.cron:
+        user: Administrator
+        state: absent
+        name: '{{ item }}'
+      loop:
+        - 'Power Off Lights (night)'
+        - 'Test On'
+        - 'Test Low'
+        - 'Test Off'
+        - 'Test Config on'
+        - 'Test Config off'
+
     - name: Add cron jobs for daylight-power
       become: true
       ansible.builtin.cron:
@@ -106,19 +120,11 @@
         - name: Power On Lights
           hour: 6
           minute: 0
-          level: 90
-        - name: Power Off Lights (night)
-          hour: '19-23,23,0-6'
+          level: 100
+        - name: Power Off Lights
+          hour: '19-23,23,0-5'
           minute: '*/5'
           level: 0
-        - name: Test Low
-          hour: 13
-          minute: 57
-          level: 70
-        - name: Test On
-          hour: 13
-          minute: 59
-          level: 90
       notify: Restart cron
 
   handlers:
