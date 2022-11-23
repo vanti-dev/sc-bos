@@ -73,17 +73,16 @@ CASE nStep OF
 {endregion}
 10:
 {region "RandomAddressing"}
+	fb103Addressing.nOptions := 0;
+
 	IF bNewInstallation THEN
-		fb103Addressing.nOptions := Tc3_DALI.GVL.cCompleteNewInstallation;
+		fb103Addressing.nOptions := fb103Addressing.nOptions OR Tc3_DALI.GVL.cCompleteNewInstallation;
 	END_IF
 
 	IF bOpticalFeedback THEN
-		fb103Addressing.nOptions := Tc3_DALI.GVL.cOpticalFeedback;
+		fb103Addressing.nOptions := fb103Addressing.nOptions OR Tc3_DALI.GVL.cOpticalFeedback;
 	END_IF
 
-	IF bNewInstallation AND bOpticalFeedback THEN
-		fb103Addressing.nOptions := Tc3_DALI.GVL.cCompleteNewInstallation OR Tc3_DALI.GVL.cOpticalFeedback;
-	END_IF
 	fb103Addressing(bStart := TRUE,
 					nStartWithShortAddress := nStartAddress);
 	IF (NOT fb103Addressing.bBusy) THEN
@@ -163,7 +162,11 @@ END_CASE]]></ST>
       <LineId Id="36" Count="9" />
       <LineId Id="223" Count="0" />
       <LineId Id="47" Count="2" />
-      <LineId Id="51" Count="13" />
+      <LineId Id="51" Count="2" />
+      <LineId Id="283" Count="0" />
+      <LineId Id="282" Count="0" />
+      <LineId Id="54" Count="5" />
+      <LineId Id="63" Count="1" />
       <LineId Id="66" Count="7" />
       <LineId Id="75" Count="4" />
       <LineId Id="81" Count="6" />

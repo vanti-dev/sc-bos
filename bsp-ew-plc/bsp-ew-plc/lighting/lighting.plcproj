@@ -353,7 +353,7 @@
     </PlaceholderReference>
   </ItemGroup>
   <ItemGroup>
-    <LibraryReference Include="Tc3_DALI,3.10.5.6,Beckhoff Automation GmbH">
+    <LibraryReference Include="Tc3_DALI,3.13.0.0,Beckhoff Automation GmbH">
       <Namespace>Tc3_DALI</Namespace>
     </LibraryReference>
   </ItemGroup>
