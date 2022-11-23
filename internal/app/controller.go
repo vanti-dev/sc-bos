@@ -36,9 +36,11 @@ const LocalConfigFileName = "area-controller.local.json"
 
 type SystemConfig struct {
 	Logger      zap.Config
-	DataDir     string
 	ListenGRPC  string
 	ListenHTTPS string
+
+	DataDir             string
+	LocalConfigFileName string // defaults to LocalConfigFileName
 
 	// TenantOAuth, if true, means the controller will support issuing tokens using the OAuth client_credentials flow
 	// with credentials read from tenants.json or verified using the manager node
@@ -52,6 +54,14 @@ type SystemConfig struct {
 
 	DriverFactories map[string]driver.Factory // keyed by driver name
 	AutoFactories   map[string]auto.Factory   // keyed by automation type
+}
+
+func (sc SystemConfig) LocalConfigPath() string {
+	s := sc.LocalConfigFileName
+	if s == "" {
+		s = LocalConfigFileName
+	}
+	return filepath.Join(sc.DataDir, s)
 }
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
@@ -70,7 +80,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	// load the local config file if possible
 	// TODO: pull config from manager publication
 	var localConfig ControllerConfig
-	localConfigPath := filepath.Join(config.DataDir, LocalConfigFileName)
+	localConfigPath := config.LocalConfigPath()
 	rawLocalConfig, err := os.ReadFile(localConfigPath)
 	if err == nil {
 		err = json.Unmarshal(rawLocalConfig, &localConfig)
