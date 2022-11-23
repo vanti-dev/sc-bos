@@ -34,7 +34,9 @@
 </template>
 <script setup>
 import MainCard from "@/components/SectionCard.vue";
-
+import Header from "@/components/operate/Header.vue";
+import Filters from "@/components/operate/Filters.vue";
+import BulkAction from "@/components/operate/BulkAction.vue";
 import RowMenu from "./RowMenu.vue";
 import { useLightingStore } from "@/stores/operate/lighting.js";
 import { storeToRefs } from "pinia";
