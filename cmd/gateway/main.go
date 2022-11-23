@@ -3,11 +3,17 @@ package main
 import (
 	"context"
 	"embed"
-	"errors"
 	"flag"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
+	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/light"
+	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
+	"github.com/vanti-dev/bsp-ew/internal/driver"
+	"github.com/vanti-dev/bsp-ew/internal/driver/proxy"
+	"github.com/vanti-dev/bsp-ew/internal/node"
 	"os"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auth/policy"
@@ -16,18 +22,16 @@ import (
 	"go.uber.org/zap"
 )
 
-var (
-	flagListenGRPC  string
-	flagListenHTTPS string
-	flagDataDir     string
-	flagStaticDir   string
-)
+var systemConfig app.SystemConfig
 
 func init() {
-	flag.StringVar(&flagListenGRPC, "listen-grpc", ":23557", "address (host:port) to host a Smart Core gRPC server on")
-	flag.StringVar(&flagListenHTTPS, "listen-https", ":443", "address (host:port) to host a HTTPS server on")
-	flag.StringVar(&flagDataDir, "data-dir", ".data/gateway", "path to local data storage directory")
-	flag.StringVar(&flagStaticDir, "static-dir", "ui/dist", "path for HTTP static resources")
+	flag.StringVar(&systemConfig.ListenGRPC, "listen-grpc", ":23557", "address (host:port) to host a Smart Core gRPC server on")
+	flag.StringVar(&systemConfig.ListenHTTPS, "listen-https", ":443", "address (host:port) to host a HTTPS server on")
+	flag.StringVar(&systemConfig.DataDir, "data-dir", ".data/gateway", "path to local data storage directory")
+
+	flag.BoolVar(&systemConfig.DisablePolicy, "insecure-disable-policy", false, "Insecure! Disable checking requests against the security policy. This option opens up the server to any request.")
+	flag.BoolVar(&systemConfig.LocalOAuth, "local-auth", false, "Enable issuing password tokens based on credentials found in users.json")
+	flag.BoolVar(&systemConfig.TenantOAuth, "tenant-auth", true, "enable issuing client tokens based on credentials found in tenants.json or verified via the enrollment manager node")
 }
 
 func main() {
@@ -42,33 +46,56 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	config := app.SystemConfig{
-		Logger:      zap.NewDevelopmentConfig(),
-		DataDir:     flagDataDir,
-		ListenGRPC:  flagListenGRPC,
-		ListenHTTPS: flagListenHTTPS,
-		TenantOAuth: true,
-		Policy:      pol,
+	systemConfig.LocalConfigFileName = "gateway.local.json"
+	systemConfig.Logger = zap.NewDevelopmentConfig()
+	systemConfig.Policy = pol
+	systemConfig.DriverFactories = map[string]driver.Factory{
+		proxy.DriverName: proxy.Factory,
 	}
 
-	controller, err := app.Bootstrap(ctx, config)
+	controller, err := app.Bootstrap(ctx, systemConfig)
 	if err != nil {
 		return err
 	}
+
+	addNodeAPIs(controller.Node)
+
 	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
-	traits.RegisterOnOffApiServer(controller.GRPC, onoff.NewApiRouter(
-		onoff.WithOnOffApiClientFactory(func(name string) (traits.OnOffApiClient, error) {
-			conn, err := controller.ManagerConn.Connect(ctx)
-			if err != nil {
-				return nil, err
-			}
-			if conn == nil {
-				return nil, errors.New("no manager conn")
-			}
-			return traits.NewOnOffApiClient(conn), nil
-		})))
 
 	return controller.Run(ctx)
+}
+
+func addNodeAPIs(supporter node.Supporter) {
+	{
+		r := airtemperature.NewApiRouter()
+		c := airtemperature.WrapApi(r)
+		supporter.Support(node.Routing(r), node.Clients(c))
+	}
+	{
+		r := brightnesssensor.NewApiRouter()
+		c := brightnesssensor.WrapApi(r)
+		supporter.Support(node.Routing(r), node.Clients(c))
+	}
+	{
+		r := light.NewApiRouter()
+		c := light.WrapApi(r)
+		supporter.Support(node.Routing(r), node.Clients(c))
+	}
+	{
+		r := occupancysensor.NewApiRouter()
+		c := occupancysensor.WrapApi(r)
+		supporter.Support(node.Routing(r), node.Clients(c))
+	}
+	{
+		r := onoff.NewApiRouter()
+		c := onoff.WrapApi(r)
+		supporter.Support(node.Routing(r), node.Clients(c))
+	}
+	{
+		r := parent.NewApiRouter()
+		c := parent.WrapApi(r)
+		supporter.Support(node.Routing(r), node.Clients(c))
+	}
 }
 
 //go:embed policy
