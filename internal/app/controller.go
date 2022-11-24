@@ -376,9 +376,10 @@ func (c *Controller) startDrivers(ctx context.Context) (err error) {
 
 func (c *Controller) startAutomations(ctx context.Context) (err error) {
 	autoServices := auto.Services{
-		Logger:   c.Logger.Named("auto"),
-		Node:     c.Node,
-		Database: c.Database,
+		Logger:       c.Logger.Named("auto"),
+		Node:         c.Node,
+		Database:     c.Database,
+		GRPCServices: c.GRPC,
 	}
 
 	var started []task.Starter

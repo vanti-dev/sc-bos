@@ -5,12 +5,14 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/task"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
 
 type Services struct {
-	Logger   *zap.Logger
-	Node     *node.Node // for advertising devices
-	Database *bolthold.Store
+	Logger       *zap.Logger
+	Node         *node.Node // for advertising devices
+	Database     *bolthold.Store
+	GRPCServices grpc.ServiceRegistrar // for registering non-routed services
 }
 
 // Factory constructs new automation instances.

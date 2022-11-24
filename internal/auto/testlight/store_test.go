@@ -17,7 +17,7 @@ import (
 )
 
 func TestUpdateLatestStatus(t *testing.T) {
-	db, cleanup := prepareTestDB()
+	db, cleanup := prepareEmptyTestDB()
 	defer cleanup()
 
 	deviceName := "ns/test/example"
@@ -103,7 +103,119 @@ func TestUpdateLatestStatus(t *testing.T) {
 	})
 }
 
-func prepareTestDB() (store *bolthold.Store, cleanup func()) {
+func TestFindEventsPaged(t *testing.T) {
+	db, cleanup := prepareEmptyTestDB()
+	defer cleanup()
+	expectedEvents := testEvents()
+	addEvents(t, db, expectedEvents)
+
+	// get all the events
+	page, token, err := findEventsPaged(db, "", 10)
+	if err != nil {
+		t.Errorf("get all events: %s", err.Error())
+	} else {
+		if token != "" {
+			t.Errorf("got an unexpected next page token: %q", token)
+		}
+
+		diff := cmp.Diff(expectedEvents, page, protocmp.Transform(), cmpopts.EquateEmpty())
+		if diff != "" {
+			t.Errorf("get all events: mismatch (-want +got):\n%s", diff)
+		}
+	}
+
+	// get the first event
+	page, token, err = findEventsPaged(db, "", 1)
+	if err != nil {
+		t.Errorf("get first event: %s", err.Error())
+	} else {
+		if token == "" {
+			t.Error("missing next page token")
+		}
+
+		diff := cmp.Diff(expectedEvents[:1], page, protocmp.Transform(), cmpopts.EquateEmpty())
+		if diff != "" {
+			t.Errorf("get all events: mismatch (-want +got):\n%s", diff)
+		}
+	}
+	// use token to get the next two events
+	page, token, err = findEventsPaged(db, token, 2)
+	if err != nil {
+		t.Errorf("get first event: %s", err.Error())
+	} else {
+		if token != "" {
+			t.Errorf("got an unexpected next page token: %q", token)
+		}
+
+		diff := cmp.Diff(expectedEvents[1:], page, protocmp.Transform(), cmpopts.EquateEmpty())
+		if diff != "" {
+			t.Errorf("get all events: mismatch (-want +got):\n%s", diff)
+		}
+	}
+}
+
+func addEvents(t *testing.T, db *bolthold.Store, events []EventRecord) {
+	err := db.Bolt().Update(func(tx *bbolt.Tx) error {
+		for _, event := range events {
+			err := db.TxInsert(tx, event.ID, event)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("can't add events to test db: %s", err.Error())
+	}
+}
+
+func testEvents() []EventRecord {
+	t := time.Date(2022, time.November, 24, 0, 15, 0, 0, time.UTC)
+	nextT := func() (out time.Time) {
+		out = t
+		t = t.Add(time.Hour)
+		return
+	}
+
+	var id uint64
+	nextID := func() (out uint64) {
+		out = id
+		id += 1
+		return
+	}
+
+	name1 := "ns/test/emergency-light-1"
+	name2 := "ns/test/emergency-light-2"
+
+	return []EventRecord{
+		{
+			ID:        nextID(),
+			Name:      name1,
+			Timestamp: t,
+			Kind:      FunctionTestPassEvent,
+		},
+		{
+			ID:        nextID(),
+			Name:      name1,
+			Timestamp: nextT(),
+			Kind:      StatusReportEvent,
+			StatusReport: &gen.EmergencyLightingEvent_StatusReport{
+				Faults: []gen.EmergencyLightFault{},
+			},
+		},
+		{
+			ID:        nextID(),
+			Name:      name2,
+			Timestamp: nextT(),
+			Kind:      StatusReportEvent,
+			StatusReport: &gen.EmergencyLightingEvent_StatusReport{
+				Faults: []gen.EmergencyLightFault{gen.EmergencyLightFault_COMMUNICATION_FAILURE},
+			},
+		},
+	}
+}
+
+func prepareEmptyTestDB() (store *bolthold.Store, cleanup func()) {
 	f, err := os.CreateTemp("", "*.bolt")
 	if err != nil {
 		panic(fmt.Errorf("failed to create temp file for test db: %w", err))

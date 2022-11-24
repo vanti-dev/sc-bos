@@ -2,12 +2,14 @@ package testlight
 
 import (
 	"errors"
+	"strconv"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/timshannon/bolthold"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.etcd.io/bbolt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
 
@@ -19,15 +21,15 @@ type LatestStatusRecord struct {
 }
 
 type EventRecord struct {
-	ID        string    `boltholdKey:"ID"`
+	ID        uint64    `boltholdKey:"ID"`
 	Name      string    `boltholdIndex:"Name"`
 	Timestamp time.Time `boltholdIndex:"Timestamp"`
 
 	// use a separate Kind field so it's indexable
 	Kind             EventKind `boltholdIndex:"Kind"`
 	StatusReport     *gen.EmergencyLightingEvent_StatusReport
-	FunctionTestPass *gen.EmergencyLightingEvent_FunctionTestPass
 	DurationTestPass *gen.EmergencyLightingEvent_DurationTestPass
+	// no structure require for function test passes; that carries no data (and therefore can't be serialised)
 }
 
 type EventKind int
@@ -38,23 +40,18 @@ const (
 	DurationTestPassEvent
 )
 
-func saveFunctionTestPass(db *bolthold.Store, tx *bbolt.Tx, name string, timestamp time.Time) (id string, err error) {
-	id = genUUIDKey()
+func saveFunctionTestPass(db *bolthold.Store, tx *bbolt.Tx, name string, timestamp time.Time) (err error) {
 	record := EventRecord{
-		ID:               id,
-		Name:             name,
-		Timestamp:        timestamp,
-		Kind:             FunctionTestPassEvent,
-		FunctionTestPass: &gen.EmergencyLightingEvent_FunctionTestPass{},
+		Name:      name,
+		Timestamp: timestamp,
+		Kind:      FunctionTestPassEvent,
 	}
-	err = db.TxInsert(tx, id, record)
+	err = db.TxInsert(tx, bolthold.NextSequence(), record)
 	return
 }
 
-func saveDurationTestPass(db *bolthold.Store, tx *bbolt.Tx, name string, timestamp time.Time, result time.Duration) (id string, err error) {
-	id = genUUIDKey()
+func saveDurationTestPass(db *bolthold.Store, tx *bbolt.Tx, name string, timestamp time.Time, result time.Duration) (err error) {
 	record := EventRecord{
-		ID:        id,
 		Name:      name,
 		Timestamp: timestamp,
 		Kind:      DurationTestPassEvent,
@@ -62,14 +59,12 @@ func saveDurationTestPass(db *bolthold.Store, tx *bbolt.Tx, name string, timesta
 			AchievedDuration: durationpb.New(result),
 		},
 	}
-	err = db.TxInsert(tx, id, record)
+	err = db.TxInsert(tx, bolthold.NextSequence(), record)
 	return
 }
 
-func saveStatusReport(db *bolthold.Store, tx *bbolt.Tx, name string, timestamp time.Time, faults []gen.EmergencyLightFault) (id string, err error) {
-	id = genUUIDKey()
+func saveStatusReport(db *bolthold.Store, tx *bbolt.Tx, name string, timestamp time.Time, faults []gen.EmergencyLightFault) (err error) {
 	record := EventRecord{
-		ID:        id,
 		Name:      name,
 		Timestamp: timestamp,
 		Kind:      StatusReportEvent,
@@ -77,7 +72,7 @@ func saveStatusReport(db *bolthold.Store, tx *bbolt.Tx, name string, timestamp t
 			Faults: sortDeduplicateFaults(faults),
 		},
 	}
-	err = db.TxInsert(tx, id, record)
+	err = db.TxInsert(tx, bolthold.NextSequence(), record)
 	return
 }
 
@@ -106,6 +101,55 @@ func updateLatestStatus(db *bolthold.Store, tx *bbolt.Tx, name string, now time.
 	return
 }
 
-func genUUIDKey() string {
-	return uuid.New().String()
+func findLatestStatusPaged(db *bolthold.Store, pageToken string, pageSize int) (page []LatestStatusRecord, nextToken string, err error) {
+	if pageSize <= 0 || pageSize > maxPageSize {
+		pageSize = maxPageSize
+	}
+
+	err = db.Find(&page,
+		// this still works when request.PageToken=="", because all other strings are greater than the empty string
+		bolthold.Where(bolthold.Key).Gt(pageToken).
+			Limit(pageSize+1), // include one more, so we can tell if another page is required
+	)
+	if err != nil {
+		return
+	}
+
+	more := len(page) > pageSize
+	if more {
+		page = page[:pageSize]
+		nextToken = page[len(page)-1].Name
+	}
+	return
+}
+
+func findEventsPaged(db *bolthold.Store, pageToken string, pageSize int) (page []EventRecord, nextToken string, err error) {
+	if pageSize <= 0 || pageSize > maxPageSize {
+		pageSize = maxPageSize
+	}
+
+	query := &bolthold.Query{}
+	if pageToken != "" {
+		var boundaryId uint64
+		boundaryId, err = strconv.ParseUint(pageToken, 10, 64)
+		if err != nil {
+			err = status.Errorf(codes.InvalidArgument, "invalid page_token: %s", err.Error())
+			return
+		}
+		query = query.And(bolthold.Key).Gt(boundaryId)
+	}
+
+	err = db.Find(&page,
+		query.Limit(pageSize+1), // include one more, so we can tell if another page is required
+	)
+	if err != nil {
+		return
+	}
+
+	more := len(page) > pageSize
+	if more {
+		page = page[:pageSize]
+		nextToken = strconv.FormatUint(page[len(page)-1].ID, 10)
+	}
+	return
 }

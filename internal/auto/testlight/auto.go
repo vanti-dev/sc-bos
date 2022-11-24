@@ -19,6 +19,7 @@ import (
 	"go.etcd.io/bbolt"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -26,16 +27,22 @@ import (
 const AutoType = "testlights"
 
 var Factory = auto.FactoryFunc(func(services auto.Services) task.Starter {
-	return ScanEmergencyTests(services.Node, services.Database, services.Logger)
+	return ScanEmergencyTests(services.Node, services.Database, services.GRPCServices, services.Logger)
 })
 
-func ScanEmergencyTests(clients node.Clienter, db *bolthold.Store, logger *zap.Logger) *EmergencyTestAutomation {
+func ScanEmergencyTests(clients node.Clienter, db *bolthold.Store, registrar grpc.ServiceRegistrar, logger *zap.Logger) *EmergencyTestAutomation {
 	configSend := make(chan Config)
 	return &EmergencyTestAutomation{
 		logger:  logger,
 		db:      db,
 		clients: clients,
 		state:   state.NewManager(runstate.Idle),
+
+		registrar: registrar,
+		server: &server{
+			db:     db,
+			logger: logger.Named("server"),
+		},
 
 		config:            DefaultConfig(),
 		stop:              func() {},
@@ -49,6 +56,10 @@ type EmergencyTestAutomation struct {
 	db      *bolthold.Store
 	clients node.Clienter
 	state   *state.Manager[runstate.RunState]
+
+	server       *server
+	registerOnce sync.Once
+	registrar    grpc.ServiceRegistrar
 
 	m                 sync.Mutex
 	config            Config
@@ -66,6 +77,10 @@ func (a *EmergencyTestAutomation) WaitForStateChange(ctx context.Context, source
 }
 
 func (a *EmergencyTestAutomation) Start(_ context.Context) error {
+	a.registerOnce.Do(func() {
+		a.server.register(a.registrar)
+	})
+
 	a.m.Lock()
 	defer a.m.Unlock()
 	if s := a.state.CurrentState(); s == runstate.Running || s == runstate.Starting {
@@ -150,7 +165,7 @@ func (r *runner) process(ctx context.Context, name string) error {
 
 		// if the status has changed, record it in the log
 		if statusChanged {
-			_, err = saveStatusReport(r.db, tx, name, scanTime, result.faults)
+			err = saveStatusReport(r.db, tx, name, scanTime, result.faults)
 			if err != nil {
 				logger.Error("failed to save emergency light status report", zap.Error(err))
 				return err
@@ -159,14 +174,14 @@ func (r *runner) process(ctx context.Context, name string) error {
 
 		// record any test passes
 		if result.functionTestPass {
-			_, err = saveFunctionTestPass(r.db, tx, name, scanTime)
+			err = saveFunctionTestPass(r.db, tx, name, scanTime)
 			if err != nil {
 				logger.Error("failed to save emergency light function test pass", zap.Error(err))
 				return err
 			}
 		}
 		if result.durationTestPass {
-			_, err = saveDurationTestPass(r.db, tx, name, scanTime, result.durationTestResult)
+			err = saveDurationTestPass(r.db, tx, name, scanTime, result.durationTestResult)
 			if err != nil {
 				logger.Error("failed to save emergency light duration test pass", zap.Error(err),
 					zap.Duration("result", result.durationTestResult))
