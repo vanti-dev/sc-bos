@@ -91,7 +91,6 @@ export const useLightingStore = defineStore("lightingStore", () => {
     {
       text: "Device ID",
       align: "start",
-      sortable: false,
       value: "device_id",
     },
     { text: "Location", value: "location" },
