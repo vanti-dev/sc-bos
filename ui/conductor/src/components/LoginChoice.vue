@@ -44,4 +44,3 @@ import { useAccountStore } from "@/stores/account.js";
 const store = useAccountStore();
 </script>
 
-<style lang="scss" scoped></style>

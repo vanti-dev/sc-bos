@@ -69,4 +69,4 @@ function toggleLoginDialog() {
 }
 </script>
 
-<style scoped></style>
+

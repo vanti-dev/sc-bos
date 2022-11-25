@@ -27,4 +27,4 @@ const store = useLightingStore();
 const { selected } = storeToRefs(store);
 </script>
 
-<style lang="scss" scoped></style>
+

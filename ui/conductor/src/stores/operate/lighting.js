@@ -155,8 +155,6 @@ export const useLightingStore = defineStore("lightingStore", () => {
 
   const search = ref("");
 
-
-
   const models = computed(() => {
     return [...new Set(lights.value.map((light) => light.model))];
   });

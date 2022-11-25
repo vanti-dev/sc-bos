@@ -15,4 +15,3 @@ import Model from "./Filters/Model.vue";
 const store = useLightingStore();
 </script>
 
-<style lang="scss" scoped></style>
