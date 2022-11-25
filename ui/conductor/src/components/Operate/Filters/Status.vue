@@ -5,6 +5,7 @@
     label="Status"
     class="pr-md-4"
     outlined
+     hide-details="auto"
     style="width: 100px"
   ></v-select>
 </template>
