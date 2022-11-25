@@ -104,11 +104,6 @@ export const useLightingStore = defineStore("lightingStore", () => {
   //a object for storing the selected light for a particular operation
   const selectedItem = ref({});
 
-  const meetings = ref([
-    ["Meeting Room 6.01", "mdi-account-multiple-outline"],
-    ["Meeting Room 6.01", "mdi-account-multiple-outline"],
-  ]);
-
   const status = ref("All");
 
   const smartCoreStatus = ref("Online");
@@ -226,7 +221,6 @@ export const useLightingStore = defineStore("lightingStore", () => {
     lights,
     headers,
     selected,
-    meetings,
     items,
     status,
     smartCoreStatus,
