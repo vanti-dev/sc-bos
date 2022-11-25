@@ -171,7 +171,9 @@
         </v-list-item>
       </v-list-item-group>
     </v-list>
-    <NavFooter />
+    <template v-slot:append>
+      <NavFooter />
+    </template>
   </v-navigation-drawer>
 </template>
 
