@@ -98,8 +98,10 @@ export const useLightingStore = defineStore("lightingStore", () => {
     { text: "Model", value: "model" },
   ]);
 
+  //an array for storing the selected lights for a particular operation
   const selected = ref([]);
 
+  //a object for storing the selected light for a particular operation
   const selectedItem = ref({});
 
   const meetings = ref([
