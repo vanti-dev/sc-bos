@@ -171,12 +171,12 @@
         </v-list-item>
       </v-list-item-group>
     </v-list>
-    <Footer />
+    <NavFooter />
   </v-navigation-drawer>
 </template>
 
 <script setup>
-import Footer from "@/components/Footer.vue";
+import NavFooter from "@/components/NavFooter.vue";
 </script>
 
 <style scoped>

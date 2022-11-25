@@ -7,18 +7,3 @@
   </v-footer>
 </template>
 
-<script>
-export default {
-  name: "ConductorFooter",
-
-  data() {
-    return {};
-  },
-
-  mounted() {},
-
-  methods: {},
-};
-</script>
-
-<style lang="scss" scoped></style>
