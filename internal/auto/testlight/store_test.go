@@ -169,6 +169,21 @@ func addEvents(t *testing.T, db *bolthold.Store, events []EventRecord) {
 	}
 }
 
+func addLatestStatus(t *testing.T, db *bolthold.Store, latestStatuses []LatestStatusRecord) {
+	err := db.Bolt().Update(func(tx *bbolt.Tx) error {
+		for _, status := range latestStatuses {
+			err := db.TxInsert(tx, status.Name, status)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("can't add status records to test db: %s", err.Error())
+	}
+}
+
 func testEvents() []EventRecord {
 	t := time.Date(2022, time.November, 24, 0, 15, 0, 0, time.UTC)
 	nextT := func() (out time.Time) {

@@ -12,6 +12,8 @@ service EmergencyLightingApi {
   rpc ListEmergencyLights(ListEmergencyLightsRequest) returns (ListEmergencyLightsResponse);
 
   rpc ListEmergencyLightEvents(ListEmergencyLightEventsRequest) returns (ListEmergencyLightEventsResponse);
+
+  rpc GetReportCSV(GetReportCSVRequest) returns (ReportCSV);
 }
 
 // Resource Types
@@ -84,4 +86,12 @@ message ListEmergencyLightEventsRequest {
 message ListEmergencyLightEventsResponse {
   repeated EmergencyLightingEvent events = 1;
   string next_page_token = 2;
+}
+
+message GetReportCSVRequest {
+  // Add a header to the generated CSV as the first row.
+  bool include_header = 1;
+}
+message ReportCSV {
+  bytes csv = 1;
 }

@@ -21,6 +21,7 @@ type EmergencyLightingApiClient interface {
 	GetEmergencyLight(ctx context.Context, in *GetEmergencyLightRequest, opts ...grpc.CallOption) (*EmergencyLight, error)
 	ListEmergencyLights(ctx context.Context, in *ListEmergencyLightsRequest, opts ...grpc.CallOption) (*ListEmergencyLightsResponse, error)
 	ListEmergencyLightEvents(ctx context.Context, in *ListEmergencyLightEventsRequest, opts ...grpc.CallOption) (*ListEmergencyLightEventsResponse, error)
+	GetReportCSV(ctx context.Context, in *GetReportCSVRequest, opts ...grpc.CallOption) (*ReportCSV, error)
 }
 
 type emergencyLightingApiClient struct {
@@ -58,6 +59,15 @@ func (c *emergencyLightingApiClient) ListEmergencyLightEvents(ctx context.Contex
 	return out, nil
 }
 
+func (c *emergencyLightingApiClient) GetReportCSV(ctx context.Context, in *GetReportCSVRequest, opts ...grpc.CallOption) (*ReportCSV, error) {
+	out := new(ReportCSV)
+	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.EmergencyLightingApi/GetReportCSV", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EmergencyLightingApiServer is the server API for EmergencyLightingApi service.
 // All implementations must embed UnimplementedEmergencyLightingApiServer
 // for forward compatibility
@@ -65,6 +75,7 @@ type EmergencyLightingApiServer interface {
 	GetEmergencyLight(context.Context, *GetEmergencyLightRequest) (*EmergencyLight, error)
 	ListEmergencyLights(context.Context, *ListEmergencyLightsRequest) (*ListEmergencyLightsResponse, error)
 	ListEmergencyLightEvents(context.Context, *ListEmergencyLightEventsRequest) (*ListEmergencyLightEventsResponse, error)
+	GetReportCSV(context.Context, *GetReportCSVRequest) (*ReportCSV, error)
 	mustEmbedUnimplementedEmergencyLightingApiServer()
 }
 
@@ -80,6 +91,9 @@ func (UnimplementedEmergencyLightingApiServer) ListEmergencyLights(context.Conte
 }
 func (UnimplementedEmergencyLightingApiServer) ListEmergencyLightEvents(context.Context, *ListEmergencyLightEventsRequest) (*ListEmergencyLightEventsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListEmergencyLightEvents not implemented")
+}
+func (UnimplementedEmergencyLightingApiServer) GetReportCSV(context.Context, *GetReportCSVRequest) (*ReportCSV, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReportCSV not implemented")
 }
 func (UnimplementedEmergencyLightingApiServer) mustEmbedUnimplementedEmergencyLightingApiServer() {}
 
@@ -148,6 +162,24 @@ func _EmergencyLightingApi_ListEmergencyLightEvents_Handler(srv interface{}, ctx
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EmergencyLightingApi_GetReportCSV_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetReportCSVRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EmergencyLightingApiServer).GetReportCSV(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vanti.bsp.ew.EmergencyLightingApi/GetReportCSV",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EmergencyLightingApiServer).GetReportCSV(ctx, req.(*GetReportCSVRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EmergencyLightingApi_ServiceDesc is the grpc.ServiceDesc for EmergencyLightingApi service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -166,6 +198,10 @@ var EmergencyLightingApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListEmergencyLightEvents",
 			Handler:    _EmergencyLightingApi_ListEmergencyLightEvents_Handler,
+		},
+		{
+			MethodName: "GetReportCSV",
+			Handler:    _EmergencyLightingApi_GetReportCSV_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

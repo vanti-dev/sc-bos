@@ -1,6 +1,7 @@
 package testlight
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"strconv"
@@ -76,6 +77,25 @@ func (s *server) ListEmergencyLightEvents(ctx context.Context, request *gen.List
 		res.Events = append(res.Events, translateEventRecord(record))
 	}
 	return res, nil
+}
+
+func (s *server) GetReportCSV(ctx context.Context, request *gen.GetReportCSVRequest) (*gen.ReportCSV, error) {
+	report, err := GenerateReport(s.db)
+	if err != nil {
+		s.logger.Error("failed to generate report", zap.Error(err))
+		return nil, errDatabase
+	}
+
+	var buf bytes.Buffer
+	err = WriteReportCSV(&buf, report, request.IncludeHeader)
+	if err != nil {
+		s.logger.Error("failed to write report as a CSV", zap.Error(err), zap.Int("count", len(report)))
+		return nil, status.Error(codes.Internal, "failed to convert report to CSV")
+	}
+
+	return &gen.ReportCSV{
+		Csv: buf.Bytes(),
+	}, nil
 }
 
 func translateStatusRecord(record LatestStatusRecord) *gen.EmergencyLight {
