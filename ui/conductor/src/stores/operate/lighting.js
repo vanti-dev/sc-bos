@@ -2,6 +2,8 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
 export const useLightingStore = defineStore("lightingStore", () => {
+
+  //state data for lighting
   const lights = ref([
     {
       device_id: "LIT-L02_12-001",
@@ -98,60 +100,60 @@ export const useLightingStore = defineStore("lightingStore", () => {
     { text: "Model", value: "model" },
   ]);
 
+  const items = ref([
+      {
+        title: "Building",
+        content: "Upper Gough Street",
+      },
+      {
+        title: "Floor",
+        content: "LO1",
+      },
+      {
+        title: "Zone",
+        content: "L02_12",
+      },
+      {
+        title: "Manufacturer",
+        content: "Philips",
+      },
+      {
+        title: "Model",
+        content: "LED 1245812",
+      },
+      {
+        title: "Installed on",
+        content: "12.09.22",
+      },
+      {
+        title: "Serial Number",
+        content: "12348a7a595",
+      },
+      {
+        title: "DALI Address",
+        content: "1234",
+      },
+      {
+        title: "DALI Controller",
+        content: "1234",
+      },
+    ]);
+
   //an array for storing the selected lights for a particular operation
   const selected = ref([]);
 
   //a object for storing the selected light for a particular operation
   const selectedItem = ref({});
 
-  const status = ref("All");
-
+  //state for availability of Smart Core
   const smartCoreStatus = ref("Online");
+
+  //state for filters for the table
+  const status = ref("All");
 
   const model = ref("All");
 
   const search = ref("");
-
-  const drawer = ref(false);
-
-  const items = ref([
-    {
-      title: "Building",
-      content: "Upper Gough Street",
-    },
-    {
-      title: "Floor",
-      content: "LO1",
-    },
-    {
-      title: "Zone",
-      content: "L02_12",
-    },
-    {
-      title: "Manufacturer",
-      content: "Philips",
-    },
-    {
-      title: "Model",
-      content: "LED 1245812",
-    },
-    {
-      title: "Installed on",
-      content: "12.09.22",
-    },
-    {
-      title: "Serial Number",
-      content: "12348a7a595",
-    },
-    {
-      title: "DALI Address",
-      content: "1234",
-    },
-    {
-      title: "DALI Controller",
-      content: "1234",
-    },
-  ]);
 
   const models = ref([]);
 
@@ -159,6 +161,9 @@ export const useLightingStore = defineStore("lightingStore", () => {
   models.value.unshift("All");
 
   const statuses = ref(["All", "On", "Off"]);
+
+  //state for the drawer for the light details
+  const drawer = ref(false);
 
   const filteredLights = computed(() =>
     lights.value.filter((light) => {
@@ -214,8 +219,6 @@ export const useLightingStore = defineStore("lightingStore", () => {
   const turnOn = () => {
     selectedItem.value.status = "On";
   };
-
-  const checkStatus = (status) => {};
 
   return {
     lights,
