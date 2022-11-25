@@ -19,12 +19,12 @@
             <BulkAction class="mb-2" v-else />
           </template>
           <template v-slot:item.status="{ item }">
-            <p
+            <span
               :class="getColor(item.status)"
               class="font-weight-bold text-uppercase"
             >
               {{ item.status }}
-            </p>
+            </span>
           </template>
         </v-data-table>
       </main-card>
