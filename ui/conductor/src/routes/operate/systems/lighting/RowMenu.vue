@@ -21,7 +21,7 @@
       </div>
       <v-divider></v-divider>
       <v-subheader>INFORMATION</v-subheader>
-      <v-list-item v-for="item in items" :key="item.title" link>
+      <v-list-item v-for="item in lightData" :key="item.title" link>
         <v-list-item-content>
           <v-list-item-title class="text-caption">{{
             item.title
@@ -174,7 +174,7 @@ import { storeToRefs } from "pinia";
 
 const store = useLightingStore();
 
-const { search, drawer, selectedItem, items } = storeToRefs(store);
+const { search, drawer, selectedItem, lightData } = storeToRefs(store);
 </script>
 
 <style scoped>

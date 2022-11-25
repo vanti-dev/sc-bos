@@ -100,7 +100,7 @@ export const useLightingStore = defineStore("lightingStore", () => {
     { text: "Model", value: "model" },
   ]);
 
-  const items = ref([
+  const lightData = ref([
       {
         title: "Building",
         content: "Upper Gough Street",
@@ -224,7 +224,7 @@ export const useLightingStore = defineStore("lightingStore", () => {
     lights,
     headers,
     selected,
-    items,
+    lightData,
     status,
     smartCoreStatus,
     model,
