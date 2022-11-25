@@ -44,7 +44,7 @@ target to send it to and the system replaces the template keywords and sends the
 
 Here are some of the available template placeholder values (called inserts):
 
-- `TIMESTAMP`:  Date & Time of the event, acquired from the event message.
+- `TIMESTAMP`:  Date & Time of the event, acquired from the event message. In dd/mm/yyyy hh:MM:ss format
 - `EVENTID`:    Identification number associated with the event.
 - `EVENTDES`:   Description of the event, acquired from the event message.
 - `NETWORKID`:  Identification number associated with the network of the event.
