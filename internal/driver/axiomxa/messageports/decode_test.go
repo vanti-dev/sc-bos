@@ -5,12 +5,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func ExampleUnmarshal() {
 	var count int
 	var name string
-	data := []byte("23 apples")
+	data := []byte("23,apples")
 
 	Unmarshal(data, &count, &name)
 
@@ -48,8 +49,9 @@ func TestUnmarshal(t *testing.T) {
 		{"default", []byte("hello"), []any{interface{}("hello")}, false},
 		{"text", []byte("hello"), []any{textUnmarshaler("tm:hello")}, false},
 		{"binary", []byte("hello"), []any{binaryUnmarshaler("bm:hello")}, false},
-		{"too much data", []byte("hello world"), []any{"hello"}, false},
+		{"too much data", []byte("hello,world"), []any{"hello"}, false},
 		{"too many targets", []byte("hello"), []any{"hello", ""}, false},
+		{"time", []byte("02/11/2022 12:52:30"), []any{Time{time.Date(2022, 11, 2, 12, 52, 30, 0, time.UTC)}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

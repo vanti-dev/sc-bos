@@ -8,6 +8,8 @@ import (
 	"strconv"
 )
 
+const Separator = ","
+
 // An InvalidUnmarshalError describes an invalid argument passed to Unmarshal.
 // (The argument to Unmarshal must be a non-nil pointer.)
 type InvalidUnmarshalError struct {
@@ -29,9 +31,15 @@ func (e *InvalidUnmarshalError) Error() string {
 // If any entry in dst is nil or not a pointer then returns InvalidUnmarshalError.
 //
 // Unmarshal does not touch values in dst that do not have corresponding data.
-//
 // If unmarshalling into an interface value, Unmarshal stores a string in the interface value.
+//
+// Unmarshal splits data values using Separator.
 func Unmarshal(data []byte, dst ...any) error {
+	return UnmarshalSep(Separator, data, dst...)
+}
+
+// UnmarshalSep is like Unmarshal but using the given separator.
+func UnmarshalSep(separator string, data []byte, dst ...any) error {
 	// some simple validation so we don't fill some values and not others
 	for _, v := range dst {
 		rv := reflect.ValueOf(v)
@@ -39,7 +47,7 @@ func Unmarshal(data []byte, dst ...any) error {
 			return &InvalidUnmarshalError{Type: reflect.TypeOf(v)}
 		}
 	}
-	words := bytes.Split(data, []byte(" "))
+	words := bytes.Split(data, []byte(separator))
 	n := len(words)
 	if n > len(dst) {
 		n = len(dst)
