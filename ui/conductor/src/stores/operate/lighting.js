@@ -144,9 +144,6 @@ export const useLightingStore = defineStore("lightingStore", () => {
   //a object for storing the selected light for a particular operation
   const selectedItem = ref({});
 
-  //state for availability of Smart Core
-  const smartCoreStatus = ref("Online");
-
   //state for filters for the table
   const status = ref("All");
 
@@ -226,7 +223,6 @@ export const useLightingStore = defineStore("lightingStore", () => {
     selected,
     lightData,
     status,
-    smartCoreStatus,
     model,
     search,
     models,

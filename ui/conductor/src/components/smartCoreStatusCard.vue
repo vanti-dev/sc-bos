@@ -9,10 +9,10 @@
 
 
 <script setup>
-import { useLightingStore } from "@/stores/operate/lighting.js";
+import { useSmartCoreStore } from "@/stores/smartcore/smartcore.js";
 import { storeToRefs } from "pinia";
 
-const store = useLightingStore();
+const store = useSmartCoreStore();
 
 const { smartCoreStatus } = storeToRefs(store);
 </script>
