@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-form @submit.prevent="login">
-      <v-card color="#283037" class="pa-4">
+      <v-card class="pa-4 card">
         <div class="d-flex justify-end">
           <v-btn @click="store.toggleLoginDialog()" text dense>
             <v-icon> mdi-close </v-icon>

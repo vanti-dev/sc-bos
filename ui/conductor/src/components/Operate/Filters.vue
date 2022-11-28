@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex pa-2">
-    <Search />
-    <Status />
+    <Search class="mr-4" />
+    <Status class="mr-4" />
     <Model />
   </div>
 </template>

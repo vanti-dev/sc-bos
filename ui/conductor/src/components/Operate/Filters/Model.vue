@@ -3,9 +3,9 @@
     v-model="model"
     :items="models"
     label="Type"
-    class="pr-md-4"
+    class=" sectionText" 
     outlined
-     hide-details="auto"
+    hide-details="auto"
     style="width: 100px"
   ></v-select>
 </template>
@@ -18,11 +18,3 @@ const store = useLightingStore();
 
 const { model, models } = storeToRefs(store);
 </script>
-
-<style lang="scss" scoped>
-.v-text-field--outlined ::v-deep(.v-input__control > .v-input__slot) {
-  background-color: #3f454a;
-  color: white;
-  width: 100%;
-}
-</style>

@@ -1,6 +1,6 @@
 <template>
   <v-navigation-drawer app clipped floating color="transparent">
-    <v-list color="#111721" dense nav>
+    <v-list class="bg" dense nav>
       <v-list-item to="/operate/summary">
         <v-list-item-content> Site Operations </v-list-item-content>
       </v-list-item>
@@ -91,7 +91,7 @@
             <v-list-item-title>Notifications</v-list-item-title>
           </v-list-item-content>
 
-          <v-chip color="#33BFD6" class="font-weight-bold text"> 4 </v-chip>
+          <v-chip  class="font-weight-bold text primary"> 4 </v-chip>
         </v-list-item>
       </v-list-item-group>
 

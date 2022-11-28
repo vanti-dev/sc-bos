@@ -12,7 +12,7 @@
           @click:row="rowClick"
           :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
           show-select
-          class="table"
+          class="card"
         >
           <template v-slot:top>
             <Filters v-if="selected.length <= 1" />
@@ -62,9 +62,6 @@ const rowClick = (item, row) => {
 </script>
 
 <style lang="scss" scoped>
-.table {
-  background-color: #292f36;
-}
 
 ::v-deep(.v-data-table-header__icon) {
   margin-left: 8px;
@@ -83,17 +80,8 @@ const rowClick = (item, row) => {
   background-color: #292f36;
 }
 
-.bgColor {
-  background: #111721;
-}
-.v-list-header {
-  background: #111721;
-  color: #fff;
-}
-$list-item-content-padding: 0px;
-
 .v-data-table ::v-deep(.v-data-footer) {
-  background: #3f454a !important;
+  background: #5C6165 !important;
   border-radius: 0px 0px 5px 5px;
   border: none;
   width: 100%;

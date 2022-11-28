@@ -5,7 +5,6 @@
     temporary
     right
     width="300px"
-    class="bgColor"
     text
     elevation="0"
   >
