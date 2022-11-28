@@ -81,7 +81,7 @@ const rowClick = (item, row) => {
 }
 
 .v-data-table ::v-deep(.v-data-footer) {
-  background: #5C6165 !important;
+  background: #3F454B !important;
   border-radius: 0px 0px 5px 5px;
   border: none;
   width: 100%;
