@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 )
 
@@ -19,11 +20,6 @@ func ReadBytes(data []byte) (root Root, err error) {
 
 type HTTP struct {
 	BaseURL string `json:"baseUrl,omitempty"`
-}
-
-type MessagePorts struct {
-	LocalAddress string `json:"localAddress,omitempty"` // [<host>]:<port>, as accepted by tcp.Listen
-	PathPrefix   string `json:"pathPrefix,omitempty"`
 }
 
 type Database struct {
