@@ -16,8 +16,8 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auto"
+	"github.com/vanti-dev/bsp-ew/internal/auto/elreport"
 	"github.com/vanti-dev/bsp-ew/internal/auto/lights"
-	"github.com/vanti-dev/bsp-ew/internal/auto/testlight"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet"
 	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali"
@@ -53,9 +53,9 @@ func run(ctx context.Context) error {
 		tc3dali.DriverName: tc3dali.Factory,
 	}
 	systemConfig.AutoFactories = map[string]auto.Factory{
-		lights.AutoType:    lights.Factory,
-		testlight.AutoType: testlight.Factory,
-		"export-mqtt":      export.MQTTFactory,
+		lights.AutoType:   lights.Factory,
+		elreport.AutoType: elreport.Factory,
+		"export-mqtt":     export.MQTTFactory,
 	}
 
 	controller, err := app.Bootstrap(ctx, systemConfig)

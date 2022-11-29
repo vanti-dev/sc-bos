@@ -1,4 +1,4 @@
-package testlight
+package elreport
 
 import (
 	"testing"

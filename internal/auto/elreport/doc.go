@@ -1,4 +1,5 @@
-// Package testlight implements automatic test data retrieval from DALI Part 202 Emergency lighting fixtures.
+// Package elreport ("Emergency Lighting Report") implements automatic test data retrieval from DALI Part 202 Emergency
+// lighting fixtures.
 // Test results are stored locally persistently, and cleared from the light as soon as they are read.
 //
 // The automation polls the lights in cycles. The interval between cycles is set in configuration.
@@ -16,4 +17,4 @@
 // of the status, rather than a discrete event.
 // The latest status value received from each light is also stored in the database, to allow easy "is this light OK?"
 // queries, and to determine when the status has changed.
-package testlight
+package elreport
