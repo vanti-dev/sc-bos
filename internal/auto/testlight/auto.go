@@ -142,6 +142,7 @@ type runner struct {
 	configUpdates <-chan Config
 }
 
+// process polls a single emergency light for new data, and saves that data to the database where required.
 func (r *runner) process(ctx context.Context, name string) error {
 	var client rpc.DaliApiClient
 	err := r.clients.Client(&client)
@@ -192,7 +193,7 @@ func (r *runner) process(ctx context.Context, name string) error {
 		return nil
 	})
 	if err != nil {
-		r.logger.Error("database transaction error", zap.Error(err))
+		logger.Error("database transaction error", zap.Error(err))
 		return err
 	}
 
@@ -222,6 +223,9 @@ func (r *runner) process(ctx context.Context, name string) error {
 	return errs
 }
 
+// runOneLoop will poll every emergency light in r.config.Devices for updates status & test data.
+// Lights are polled at intervals r.config.PollInterval, to leave clear time in between where other commands can get
+// through, as this polling can wait a little while without issue.
 func (r *runner) runOneLoop(ctx context.Context) error {
 	var errs error
 
@@ -244,18 +248,19 @@ func (r *runner) runOneLoop(ctx context.Context) error {
 	return errs
 }
 
+// run repeatedly calls r.runOneLoop, with an interval of r.Config.CycleInterval between each call
+// stops once ctx is cancelled.
 func (r *runner) run(ctx context.Context) {
 	ticker := time.NewTicker(r.config.CycleInterval.Duration)
 	defer ticker.Stop()
 	for {
 		err := r.runOneLoop(ctx)
 		if err != nil {
-			r.logger.Error("errors polling for emergency test results", zap.Error(err))
+			r.logger.Warn("errors polling for emergency test results", zap.Error(err))
 		}
 
 		select {
 		case <-ctx.Done():
-			r.logger.Info("EmergencyTestAutomation stopping because its context was cancelled")
 			return
 		case newConfig := <-r.configUpdates:
 			r.logger.Debug("EmergencyTestAutomation got a config update")
@@ -275,8 +280,7 @@ type pollResult struct {
 	durationTestResult time.Duration // non-zero if durationTestPass is true
 }
 
-// gets new data from an emergency light
-// if communication fails completely, no error is returned
+// pollDaliEmergency gets new data from an emergency light
 func pollDaliEmergency(ctx context.Context, client rpc.DaliApiClient, name string) pollResult {
 	var result pollResult
 
@@ -284,7 +288,7 @@ func pollDaliEmergency(ctx context.Context, client rpc.DaliApiClient, name strin
 	emStatus, err := client.GetEmergencyStatus(ctx, &rpc.GetEmergencyStatusRequest{Name: name})
 	if err != nil {
 		result.faults = []gen.EmergencyLightFault{gen.EmergencyLightFault_COMMUNICATION_FAILURE}
-		result.errors = err
+		result.errors = multierr.Append(result.errors, err)
 		return result
 	} else {
 		result.faults = translateFaults(emStatus.Failures)

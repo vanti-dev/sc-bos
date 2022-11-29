@@ -106,6 +106,7 @@ func findLatestStatusPaged(db *bolthold.Store, pageToken string, pageSize int) (
 		pageSize = maxPageSize
 	}
 
+	// data is returned in key order by the database by default
 	err = db.Find(&page,
 		// this still works when request.PageToken=="", because all other strings are greater than the empty string
 		bolthold.Where(bolthold.Key).Gt(pageToken).
@@ -139,6 +140,7 @@ func findEventsPaged(db *bolthold.Store, pageToken string, pageSize int) (page [
 		query = query.And(bolthold.Key).Gt(boundaryId)
 	}
 
+	// data is returned in key order by the database by default
 	err = db.Find(&page,
 		query.Limit(pageSize+1), // include one more, so we can tell if another page is required
 	)

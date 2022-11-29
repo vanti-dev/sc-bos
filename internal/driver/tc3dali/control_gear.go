@@ -78,7 +78,7 @@ func (s *controlGearServer) UpdateBrightness(ctx context.Context, req *traits.Up
 
 func (s *controlGearServer) AddToGroup(ctx context.Context, request *rpc.AddToGroupRequest) (*rpc.AddToGroupResponse, error) {
 	if request.Group < 0 || request.Group > 15 {
-		return nil, status.Error(codes.InvalidArgument, "group out of range")
+		return nil, status.Errorf(codes.InvalidArgument, "group %d out of range 0-15", request.Group)
 	}
 
 	_, err := s.bus.ExecuteCommand(ctx, dali.Request{
