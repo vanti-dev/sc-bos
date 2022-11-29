@@ -1,7 +1,7 @@
 import '@mdi/font/css/materialdesignicons.css';
 import Vue from 'vue';
-import 'vuetify/dist/vuetify.min.css';
-import Vuetify from 'vuetify/lib/framework';
+import Vuetify from 'vuetify/lib';
+
 
 Vue.use(Vuetify);
 

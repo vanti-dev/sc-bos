@@ -3,7 +3,7 @@
     v-model="model"
     :items="models"
     label="Type"
-    class=" sectionText" 
+    class="sectionText" 
     outlined
     hide-details="auto"
     style="width: 100px"

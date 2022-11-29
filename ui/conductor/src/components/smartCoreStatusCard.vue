@@ -1,5 +1,5 @@
 <template>
-      <v-card class="card">
+      <v-card >
       <v-card-text>
         Smart Core OS:
         <span class="font-weight-bold">{{ smartCoreStatus }}</span>

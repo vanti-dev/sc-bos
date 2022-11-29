@@ -1,5 +1,5 @@
 <template>
-  <v-card  class="pa-4 card">
+  <v-card  class="pa-4 ">
     <div class="d-flex justify-end">
       <v-btn @click="store.toggleLoginDialog()" text dense>
         <v-icon> mdi-close </v-icon>

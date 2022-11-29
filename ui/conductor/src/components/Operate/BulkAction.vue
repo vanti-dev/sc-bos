@@ -1,6 +1,6 @@
 <template>
   <v-card
-    class="pa-2 d-flex card"
+    class="pa-2 d-flex "
     elevation="0"
     v-if="selected.length > 1"
   >

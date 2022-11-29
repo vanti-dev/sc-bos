@@ -7,7 +7,7 @@
     hide-details
     width="100%"
     outlined
-    class="textarea  sectionText"
+    class="textarea sectionText"
   />
 </template>
 

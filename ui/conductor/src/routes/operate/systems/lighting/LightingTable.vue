@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="pa-7">
     <Header />
-    <v-sheet>
+    <v-sheet class="rounded-lg">
       <main-card>
         <v-data-table
           v-model="selected"
@@ -12,7 +12,7 @@
           @click:row="rowClick"
           :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
           show-select
-          class="card"
+
         >
           <template v-slot:top>
             <Filters v-if="selected.length <= 1" />

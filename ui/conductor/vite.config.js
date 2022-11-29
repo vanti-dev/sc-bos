@@ -25,19 +25,27 @@ for (const dep of ['@bsp-ew/ui-gen']) {
 // https://vitejs.dev/config/
 export default defineConfig({
   optimizeDeps: {
-    include: optimizeDepsInclude
+    include: optimizeDepsInclude,
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@import "@/sass/variables.scss";\n`,
+      },
+      sass: {
+        additionalData: `@import "@/sass/variables.scss"\n`,
+      },
+    },
   },
   plugins: [
     vue(),
     Components({
-      resolvers: [
-        VuetifyResolver()
-      ]
-    })
+      resolvers: [VuetifyResolver()],
+    }),
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
-  }
+  },
 });
