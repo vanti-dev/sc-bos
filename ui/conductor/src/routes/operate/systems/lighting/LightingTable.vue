@@ -16,7 +16,7 @@
         >
           <template v-slot:top>
             <Filters v-if="selected.length <= 1" />
-            <BulkAction class="mb-2" v-else />
+            <BulkAction  v-else />
           </template>
           <template v-slot:item.status="{ item }">
             <span

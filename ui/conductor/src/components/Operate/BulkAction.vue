@@ -1,8 +1,9 @@
 <template>
   <v-card
-    class="pa-2 d-flex "
+    class="pa-2 d-flex"
     elevation="0"
     v-if="selected.length > 1"
+    height="72px"
   >
     <v-card-subtitle> Bulk Actions</v-card-subtitle>
     <v-card-actions>
@@ -24,5 +25,3 @@ const store = useLightingStore();
 
 const { selected } = storeToRefs(store);
 </script>
-
-

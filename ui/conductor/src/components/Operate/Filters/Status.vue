@@ -5,7 +5,7 @@
     label="Status"
     class="sectionText"
     outlined
-     hide-details="auto"
+    hide-details="auto"
     style="width: 100px"
   ></v-select>
 </template>
@@ -17,5 +17,3 @@ import { storeToRefs } from "pinia";
 const store = useLightingStore();
 const { status, statuses } = storeToRefs(store);
 </script>
-
-
