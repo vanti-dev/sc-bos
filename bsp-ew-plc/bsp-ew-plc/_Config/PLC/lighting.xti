@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.35" ClassName="CNestedPlcProjDef" TcProjectVariant="Floor_04">
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.35" ClassName="CNestedPlcProjDef" TcProjectVariant="Floor_08">
 	<DataTypes>
 		<DataType>
 			<Name GUID="{9A955222-AEEB-8157-F0A3-131368033DED}" Namespace="Tc3_DALI" AutoDeleteType="true">ST_KL6821InData</Name>
@@ -76,24 +76,24 @@
 		<ProjectVariant PvUseDefine="true">
 			<Variant>
 				<Name>Floor_00</Name>
-				<Name>Floor_01</Name>
-				<Name>Floor_03</Name>
-				<Name>Floor_06</Name>
 				<Name>Floor_07</Name>
-				<Name>Floor_08</Name>
 				<Name>Floor_09</Name>
 				<Name>Floor_10</Name>
 				<Name>Lab</Name>
 				<Defines/>
 			</Variant>
 			<Variant>
+				<Name>Floor_01</Name>
 				<Name>Floor_02</Name>
+				<Name>Floor_03</Name>
 				<Name>Floor_04</Name>
 				<Name>Floor_05</Name>
+				<Name>Floor_06</Name>
+				<Name>Floor_08</Name>
 				<Defines></Defines>
 			</Variant>
 		</ProjectVariant>
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="1" TmcPath="lighting\lighting.tmc" TmcHash="{B8491508-76D8-0DBB-5ADE-CC5AF4763771}">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="1" TmcPath="lighting\lighting.tmc" TmcHash="{476125E6-25BF-FC79-85AC-62D99C594237}">
 			<Name>lighting Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 			<Vars VarGrpType="1">
