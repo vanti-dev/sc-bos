@@ -1,0 +1,198 @@
+syntax = "proto3";
+
+package vanti.bsp.ew;
+
+option go_package = "github.com/vanti-dev/bsp-ew/pkg/gen";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "types/change.proto";
+
+// AlertApi describes the common interactions a client would perform against a list of alerts.
+service AlertApi {
+  rpc ListAlerts(ListAlertsRequest) returns (ListAlertsResponse);
+  rpc PullAlerts(PullAlertsRequest) returns (stream PullAlertsResponse);
+
+  // Acknowledge an existing alert.
+  // Acknowledgement allows tracking of which alerts have been seen by an actor that may be able to react to the alert.
+  rpc AcknowledgeAlert(AcknowledgeAlertRequest) returns (Alert);
+  rpc UnacknowledgeAlert(AcknowledgeAlertRequest) returns (Alert);
+}
+
+// AlertAdminApi allows for API access to the internal features of an alert management device.
+// This API is typically only accessed by an administrator or internally by devices and automations that need to create
+// automations in the system.
+service AlertAdminApi {
+  rpc CreateAlert(CreateAlertRequest) returns (Alert);
+  rpc UpdateAlert(UpdateAlertRequest) returns (Alert);
+  rpc DeleteAlert(DeleteAlertRequest) returns (DeleteAlertResponse);
+}
+
+// Alert describes an event in the system that can be acknowledged
+message Alert {
+  // A unique id identifying this alert within the device.
+  // Assigned by the device when the alert is created.
+  // ID is used by update methods like AcknowledgeAlert to identify which alert to update.
+  string id = 1;
+  // A human readable description of the alert condition.
+  string description = 2;
+  // The time the alert was created.
+  // Output only, set by the device when the alert is created.
+  google.protobuf.Timestamp create_time = 3;
+
+  message Acknowledgement {
+    google.protobuf.Timestamp acknowledge_time = 1;
+
+    // there's room here for additional properties, like who acknowledged it, that we don't need right now
+  }
+  // Present if the alert has been acknowledged.
+  // Acknowledgement is an indication that somebody is now aware that this alert exists.
+  Acknowledgement acknowledgement = 5;
+
+  enum Severity {
+    SEVERITY_UNSPECIFIED = 0;
+    INFO = 9;
+    WARNING = 13;
+    SEVERE = 17;
+    LIFE_SAFETY = 21;
+  }
+  Severity severity = 6;
+
+  // Properties describing where the alert originated.
+
+  string floor = 7;  // the floor the alert relates to, typically the floor the source is located on.
+  string zone = 8;   // the spacial zone the alert relates to, typically the zone the source is located in.
+  string source = 9; // the originator of the alert
+
+  // Query allows filtering for list and pull requests.
+  // If multiple fields are present they are ANDed together.
+  message Query {
+    // Don't return alerts that were created before this time
+    google.protobuf.Timestamp created_not_before = 1;
+    // Don't return alerts that were created after this time
+    google.protobuf.Timestamp created_not_after = 2;
+    // Don't return alerts that have a severity below this value.
+    // Common values are specified by the Severity enum.
+    sint32 severity_not_below = 3;
+    // Don't return alerts that have a severity above this value.
+    // Common values are specified by the Severity enum.
+    sint32 severity_not_above = 4;
+
+    // Only return alerts that match this floor.
+    string floor = 5;
+    // Only return alerts that match this zone.
+    string zone = 6;
+    // Only return alerts that match this source.
+    string source = 7;
+  }
+}
+
+message ListAlertsRequest {
+  string name = 1;
+
+  // Fields to fetch relative to the Alert type
+  google.protobuf.FieldMask read_mask = 2;
+
+  // The maximum number of modes to return.
+  // The service may return fewer than this value.
+  // If unspecified, at most 50 items will be returned.
+  // The maximum value is 1000; values above 1000 will be coerced to 1000.
+  int32 page_size = 3;
+  // A page token, received from a previous `ListModesResponse` call.
+  // Provide this to retrieve the subsequent page.
+  string page_token = 4;
+
+  // todo: string filter = 5;
+
+  // Query allows filtering of the alerts returned by this request.
+  // When paging the query should match for each page or INVALID_ARGUMENT will be returned.
+  Alert.Query query = 6;
+}
+
+message ListAlertsResponse {
+  repeated Alert alerts = 1;
+
+  // A token, which can be sent as `page_token` to retrieve the next page.
+  // If this field is omitted, there are no subsequent pages.
+  string next_page_token = 2;
+  // If non-zero this is the total number of alerts after filtering is applied.
+  // This may be an estimate.
+  int32 total_size = 3;
+}
+
+message PullAlertsRequest {
+  // Name of the device to fetch the state for
+  string name = 1;
+  // Fields to fetch relative to the ElectricMode type
+  google.protobuf.FieldMask read_mask = 2;
+  // When true the device will only send changes to the resource value.
+  // The default behaviour is to send the current value immediately followed by any updates as they happen.
+  bool updates_only = 3;
+
+  // todo: string filter = 4;
+
+  // Query allows filtering of the alerts returned by this request.
+  // When paging the query should match for each page or INVALID_ARGUMENT will be returned.
+  // If an alert changes to become included or excluded from this query then it will act as though it were added/removed,
+  // that is to say the update type will ADDED or REMOVED not UPDATED.
+  Alert.Query query = 5;
+}
+
+
+message PullAlertsResponse {
+  // The list of changes which have occurred
+  repeated Change changes = 1;
+
+  message Change {
+    // The name of the device that emitted this change
+    string name = 1;
+    // The type of change (e.g. ADD, UPDATE, etc...)
+    smartcore.types.ChangeType type = 2;
+    // The new value to use for ADD|UPDATE changes
+    Alert new_value = 3;
+    // The old value to use for UPDATE|REMOVE changes
+    Alert old_value = 4;
+    // When the change occurred
+    google.protobuf.Timestamp change_time = 5;
+  }
+}
+
+message AcknowledgeAlertRequest {
+  // Name of the device exposing this trait.
+  string name = 1;
+  // The id of the alert.
+  string id = 2;
+
+  // When true, acknowledging an alert that is already acknowledged will not result in an error.
+  // Similarly un-acknowledging an alert that is not acknowledged will not result in an error.
+  bool allow_acknowledged = 3;
+  // When true, acknowledging an alert that does not exist will not result in an error
+  bool allow_missing = 4;
+}
+
+message CreateAlertRequest {
+  // Name of the device exposing this trait.
+  string name = 1;
+  Alert alert = 2;
+}
+
+message UpdateAlertRequest {
+  // Name of the device exposing this trait.
+  string name = 1;
+  // The new properties of the alert.
+  // Alert.id must be present.
+  Alert alert = 2;
+  // Fields to update relative to the Alert type
+  google.protobuf.FieldMask update_mask = 3;
+}
+
+message DeleteAlertRequest {
+  // Name of the device exposing this trait.
+  string name = 1;
+  // The id of the alert.
+  string id = 2;
+  // If set to true, and no alert with the given id exists, the request will succeed but no action will be taken.
+  bool allow_missing = 4;
+}
+
+message DeleteAlertResponse {}
