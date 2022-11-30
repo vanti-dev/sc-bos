@@ -7,7 +7,6 @@
     width="300px"
     text
     elevation="0"
-
   >
     <v-list dense tile>
       <div class="d-flex justify-space-between align-center py-1 pl-2">

@@ -18,5 +18,3 @@ import { storeToRefs } from "pinia";
 const store = useLightingStore();
 const { search } = storeToRefs(store);
 </script>
-
- 

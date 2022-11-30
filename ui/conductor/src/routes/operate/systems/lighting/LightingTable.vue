@@ -12,11 +12,10 @@
           @click:row="rowClick"
           :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
           show-select
-
         >
           <template v-slot:top>
             <Filters v-if="selected.length <= 1" />
-            <BulkAction  v-else />
+            <BulkAction v-else />
           </template>
           <template v-slot:item.status="{ item }">
             <span
@@ -62,7 +61,6 @@ const rowClick = (item, row) => {
 </script>
 
 <style lang="scss" scoped>
-
 ::v-deep(.v-data-table-header__icon) {
   margin-left: 8px;
 }
@@ -81,7 +79,7 @@ const rowClick = (item, row) => {
 }
 
 .v-data-table ::v-deep(.v-data-footer) {
-  background: #3F454B !important;
+  background: #3f454b !important;
   border-radius: 0px 0px 5px 5px;
   border: none;
   width: 100%;
