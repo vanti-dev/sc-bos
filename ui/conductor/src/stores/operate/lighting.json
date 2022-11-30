@@ -1,0 +1,82 @@
+[
+  {
+    "device_id": "LIT-L02_12-001",
+    "location": "L02_12",
+    "status": "On",
+    "battery_status": "100",
+    "brightness": "100",
+    "model": "Philips LED 1245813"
+  },
+  {
+    "device_id": "LIT-L02_12-002",
+    "location": "L02_12",
+    "status": "Off",
+    "battery_status": "10",
+    "brightness": "100",
+    "model": "Philips LED 1245812"
+  },
+  {
+    "device_id": "LIT-L02_12-003",
+    "location": "L02_12",
+    "status": "On",
+    "battery_status": "0",
+    "brightness": "60",
+    "model": "Philips LED 1245814"
+  },
+  {
+    "device_id": "LIT-L02_12-004",
+    "location": "L02_12",
+    "status": "On",
+    "battery_status": "80",
+    "brightness": "100",
+    "model": "Philips LED 1245812"
+  },
+  {
+    "device_id": "LIT-L02_12-005",
+    "location": "L02_12",
+    "status": "On",
+    "battery_status": "80",
+    "brightness": "50",
+    "model": "Philips LED 1245812"
+  },
+  {
+    "device_id": "LIT-L02_12-006",
+    "location": "L02_12",
+    "status": "On",
+    "battery_status": "80",
+    "brightness": "100",
+    "model": "Philips LED 1245818"
+  },
+  {
+    "device_id": "LIT-L02_12-007",
+    "location": "L02_12",
+    "status": "On",
+    "battery_status": "80",
+    "brightness": "100",
+    "model": "Philips LED 1245819"
+  },
+  {
+    "device_id": "LIT-L02_12-008",
+    "location": "L02_12",
+    "status": "On",
+    "battery_status": "80",
+    "brightness": "100",
+    "model": "Philips LED 1245810"
+  },
+  {
+    "device_id": "LIT-L02_12-009",
+    "location": "L02_12",
+    "status": "On",
+    "battery_status": "80",
+    "brightness": "100",
+    "model": "Philips LED 1245812"
+  },
+  {
+    "device_id": "LIT-L02_12-010",
+    "location": "L02_12",
+    "status": "On",
+    "battery_status": "80",
+    "brightness": "100",
+    "model": "Philips LED 1245817"
+  }
+]
