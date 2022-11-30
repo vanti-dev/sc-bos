@@ -1,3 +1,4 @@
+import {setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setCollection, trackAction} from '@/api/resource.js';
 import {PublicationApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/publication_grpc_web_pb.js';
@@ -81,23 +82,21 @@ export async function acknowledgePublication(request, tracker) {
  * @returns {Publication}
  */
 export function fromObject(obj) {
+  if (!obj) return undefined;
+
   const publication = new Publication();
-  for (const prop of ['id', 'body', 'mediaType', 'version']) {
-    if (obj.hasOwnProperty(prop)) {
-      publication['set' + prop[0].toUpperCase() + prop.substring(1)](obj[prop]);
-    }
-  }
-
-  if (obj.hasOwnProperty('audience')) {
-    const src = obj.audience;
-    const audience = new Publication.Audience();
-    publication.setAudience(audience);
-    for (const prop of ['name', 'receipt', 'receiptRejectedReason']) {
-      if (src.hasOwnProperty(prop)) {
-        audience['set' + prop[0].toUpperCase() + prop.substring(1)](src[prop]);
-      }
-    }
-  }
-
+  setProperties(publication, obj, 'id', 'body', 'mediaType', 'version');
+  publication.setAudience(audienceFromObject(obj.audience));
   return publication;
+}
+
+/**
+ * @param {Publication.Audience.AsObject} obj
+ * @return {undefined|Publication.Audience}
+ */
+export function audienceFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new Publication.Audience();
+  setProperties(dst, obj, 'name', 'receipt', 'receiptRejectedReason');
+  return dst
 }
