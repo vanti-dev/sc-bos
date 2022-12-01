@@ -5,6 +5,7 @@ import {tweenFromObject} from '@/api/sc/types/tween.js';
 import {LightApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/light_grpc_web_pb.js';
 import {
   Brightness,
+  GetBrightnessRequest,
   LightPreset,
   PullBrightnessRequest,
   UpdateBrightnessRequest
@@ -29,6 +30,18 @@ export function pullBrightness(name, resource) {
 }
 
 /**
+ * @param {GetBrightnessRequest.AsObject} request
+ * @param {ActionTracker<Brightness.AsObject>} tracker
+ * @return {Promise<Brightness.AsObject>}
+ */
+export function getBrightness(request, tracker) {
+  return trackAction('Light.getBrightness', tracker ?? {}, endpoint => {
+    const api = new LightApiPromiseClient(endpoint, null, clientOptions());
+    return api.getBrightness(getBrightnessRequestFromObject(request));
+  })
+}
+
+/**
  * @param {UpdateBrightnessRequest.AsObject} request
  * @param {ActionTracker<Brightness.AsObject>} tracker
  * @return {Promise<Brightness.AsObject>}
@@ -38,6 +51,20 @@ export function updateBrightness(request, tracker) {
     const api = new LightApiPromiseClient(endpoint, null, clientOptions());
     return api.updateBrightness(updateBrightnessRequestFromObject(request));
   })
+}
+
+/**
+ *
+ * @param {GetBrightnessRequest.AsObject} obj
+ * @return {GetBrightnessRequest}
+ */
+export function getBrightnessRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const dst = new GetBrightnessRequest();
+  setProperties(dst, obj, 'name');
+  dst.setUpdateMask(fieldMaskFromObject(obj.readMask));
+  return dst;
 }
 
 /**
