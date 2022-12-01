@@ -10,7 +10,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -177,7 +176,7 @@ func connectDB(ctx context.Context, sysConf SystemConfig) (*pgxpool.Pool, error)
 	}
 
 	if sysConf.DatabasePasswordFile != "" {
-		passwordFile, err := ioutil.ReadFile(sysConf.DatabasePasswordFile)
+		passwordFile, err := os.ReadFile(sysConf.DatabasePasswordFile)
 		if err != nil {
 			return nil, err
 		}

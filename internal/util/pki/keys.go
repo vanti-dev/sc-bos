@@ -8,7 +8,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"io/fs"
-	"io/ioutil"
 	"os"
 
 	"go.uber.org/multierr"
@@ -38,7 +37,7 @@ var (
 // LoadPrivateKey will load a private key from a PEM file, in PKCS#8, PKCS#1 or EC format.
 // Both the loaded key and the raw PEM read from the file are returned.
 func LoadPrivateKey(keyFile string) (key PrivateKey, pemBytes []byte, err error) {
-	pemBytes, err = ioutil.ReadFile(keyFile)
+	pemBytes, err = os.ReadFile(keyFile)
 	if err != nil {
 		return
 	}

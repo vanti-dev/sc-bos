@@ -3,7 +3,7 @@ package fetch
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -28,7 +28,7 @@ func JSON(ctx context.Context, url string, into any, options ...Option) error {
 		return HTTPError{response.StatusCode, response.Status}
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}
