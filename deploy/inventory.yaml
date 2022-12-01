@@ -32,11 +32,11 @@ all:
           floor: floor-06
           x001_ip: 10.1.104.16
         floor-07:
-          ansible_host: "10.104.10.81"
+          ansible_host: "10.1.104.17"
           floor: floor-07
           x001_ip: 10.1.104.17
         floor-08:
-          ansible_host: "10.104.10.137"
+          ansible_host: "10.1.104.18"
           floor: floor-08
           x001_ip: 10.1.104.18
         floor-09:
