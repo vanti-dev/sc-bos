@@ -53,6 +53,7 @@ export function timestampFromObject(obj) {
  * @return {Date}
  */
 export function timestampToDate(ts) {
+  if (!ts) return undefined;
   if (ts instanceof Timestamp) return ts.toDate();
   if (ts.hasOwnProperty('nanos') && ts.hasOwnProperty('seconds')) return timestampToDate(new Timestamp().setSeconds(ts.seconds).setNanos(ts.seconds));
 
