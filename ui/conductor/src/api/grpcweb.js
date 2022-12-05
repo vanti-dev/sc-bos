@@ -1,6 +1,4 @@
 import {apiToken} from '@/api/auth.js';
-import {parseISO} from 'date-fns';
-import {Timestamp} from 'google-protobuf/google/protobuf/timestamp_pb';
 import {ClientReadableStream} from 'grpc-web';
 
 /**
@@ -67,58 +65,3 @@ class DelayedClientReadableStream {
     this.other.then(o => o.cancel());
   }
 }
-
-/**
- * @param proto
- * @param obj
- * @param props
- */
-export function simpleFromObject(proto, obj, ...props) {
-  for (const prop of props) {
-    if (obj[prop]) {
-      proto[`set${prop[0].toUpperCase()}${prop.substring(1)}`](obj[prop]);
-    }
-  }
-}
-
-/**
- * @param proto
- * @param obj
- * @param props
- */
-export function timestampsFromObject(proto, obj, ...props) {
-  for (const prop of props) {
-    if (obj[prop]) {
-      proto[`set${prop[0].toUpperCase()}${prop.substring(1)}`](timestampFromObject(obj[prop]));
-    }
-  }
-}
-
-/**
- * @param {Timestamp.AsObject|string|Date} obj
- * @return {Timestamp}
- */
-export function timestampFromObject(obj) {
-  if (typeof obj === 'string') return timestampFromObject(parseISO(obj));
-  if (obj instanceof Date) return Timestamp.fromDate(obj);
-
-  return new Timestamp()
-      .setSeconds(obj.seconds)
-      .setNanos(obj.nanos);
-}
-
-
-/**
- * @param {google_protobuf_timestamp_pb.Timestamp|google_protobuf_timestamp_pb.Timestamp.AsObject} ts
- * @return {Date}
- */
-export function timestampToDate(ts) {
-  if (ts instanceof Timestamp) return ts.toDate();
-  if (ts.hasOwnProperty('nanos') && ts.hasOwnProperty('seconds')) return timestampToDate(new Timestamp().setSeconds(ts.seconds).setNanos(ts.seconds));
-
-  // be kind
-  if (ts instanceof Date) return ts;
-  throw new Error('cannot convert ' + ts + ' to Date, unknown format');
-}
-
-

@@ -74,13 +74,12 @@ function client(endpoint) {
  * @return {Secret}
  */
 function secretFromObject(obj) {
-  const proto = new Secret();
-  simpleFromObject(proto, obj, 'id', 'secret', 'etag', 'note', 'secretHash');
-  timestampsFromObject(proto, obj, 'expireTime', 'firstUseTime', 'lastUseTime');
-  if (obj.tenant) {
-    proto.setTenant(tenantFromObject(obj.tenant));
-  }
-  return proto;
+  if (!obj) return undefined;
+  const dst = new Secret();
+  setProperties(dst, obj, 'id', 'secret', 'etag', 'note', 'secretHash');
+  convertProperties(dst, obj, timestampFromObject, 'expireTime', 'firstUseTime', 'lastUseTime');
+  dst.setTenant(tenantFromObject(obj.tenant));
+  return dst;
 }
 
 /**
@@ -104,8 +103,9 @@ export function secretToObject(s) {
  * @return {Tenant}
  */
 function tenantFromObject(obj) {
-  const proto = new Tenant();
-  simpleFromObject(proto, obj, 'id', 'title', 'etag', 'zoneNamesList');
-  timestampsFromObject(proto, obj, 'createTime');
-  return proto;
+  if (!obj) return undefined;
+  const dst = new Tenant();
+  setProperties(dst, obj, 'id', 'title', 'etag', 'zoneNamesList');
+  dst.setCreateTime(timestampFromObject(obj.createTime));
+  return dst;
 }

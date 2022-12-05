@@ -1,3 +1,8 @@
+import {parseISO} from 'date-fns';
+import {Duration} from 'google-protobuf/google/protobuf/duration_pb.js';
+import {FieldMask} from 'google-protobuf/google/protobuf/field_mask_pb.js';
+import {Timestamp} from 'google-protobuf/google/protobuf/timestamp_pb.js';
+
 /**
  * Copy props from src into dst. Src is a JS object and dst is a protobuf message.
  * This function calls setSomeProp for each prop, which should be camelCase versions of the proto property names.
@@ -6,15 +11,54 @@
  * @param {Object} src
  * @param {string} props
  */
-import {Duration} from 'google-protobuf/google/protobuf/duration_pb.js';
-import {FieldMask} from 'google-protobuf/google/protobuf/field_mask_pb.js';
-
 export function setProperties(dst, src, ...props) {
+  convertProperties(dst, src, v => v, ...props);
+}
+
+/**
+ * Copy props from src into dst calling conv on each. Src is a JS object and dst is a protobuf message.
+ * This function calls setSomeProp for each prop, which should be camelCase versions of the proto property names.
+ *
+ * @param {import('google-protobuf').Message} dst
+ * @param {Object} src
+ * @param {function(v:any):any} conv
+ * @param {string} props
+ */
+export function convertProperties(dst, src, conv, ...props) {
   for (const prop of props) {
     if (src.hasOwnProperty(prop)) {
-      dst['set' + prop[0].toUpperCase() + prop.substring(1)](src[prop]);
+      dst['set' + prop[0].toUpperCase() + prop.substring(1)](conv(src[prop]));
     }
   }
+}
+
+/**
+ * Convert a js object representing a Timestamp into a protobuf Timestamp.
+ *
+ * @param {Timestamp.AsObject|string|Date} obj
+ * @return {Timestamp}
+ */
+export function timestampFromObject(obj) {
+  if (!obj) return undefined;
+  if (typeof obj === 'string') return timestampFromObject(parseISO(obj));
+  if (obj instanceof Date) return Timestamp.fromDate(obj);
+
+  return new Timestamp()
+      .setSeconds(obj.seconds)
+      .setNanos(obj.nanos);
+}
+
+/**
+ * @param {google_protobuf_timestamp_pb.Timestamp|google_protobuf_timestamp_pb.Timestamp.AsObject} ts
+ * @return {Date}
+ */
+export function timestampToDate(ts) {
+  if (ts instanceof Timestamp) return ts.toDate();
+  if (ts.hasOwnProperty('nanos') && ts.hasOwnProperty('seconds')) return timestampToDate(new Timestamp().setSeconds(ts.seconds).setNanos(ts.seconds));
+
+  // be kind
+  if (ts instanceof Date) return ts;
+  throw new Error('cannot convert ' + ts + ' to Date, unknown format');
 }
 
 /**
