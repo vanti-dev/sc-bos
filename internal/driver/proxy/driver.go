@@ -148,6 +148,10 @@ func (p *proxy) announceChange(announced announcedTraits, change *traits.PullChi
 	childName := change.GetNewValue().GetName() // nil safe way to get the name
 	for _, tn := range needAnnouncing {
 		client := newApiClientForTrait(p.conn, tn)
+		if client == nil {
+			p.logger.Warn(fmt.Sprintf("remote child implements unknown trait %s", tn))
+			continue
+		}
 		undo := p.announcer.Announce(childName, node.HasTrait(tn, node.WithClients(client)))
 		announced.add(childName, tn, undo)
 	}

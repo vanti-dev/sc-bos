@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"fmt"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"google.golang.org/grpc"
@@ -9,6 +8,7 @@ import (
 
 // newApiClientForTrait returns the *ApiClient implementation for the named trait.
 // For example passing trait.OnOff would return traits.NewOnOffApiClient.
+// Returns nil if the trait is not known.
 func newApiClientForTrait(conn *grpc.ClientConn, t trait.Name) any {
 	// todo: I feel this should really live in sc-golang somewhere
 
@@ -70,5 +70,5 @@ func newApiClientForTrait(conn *grpc.ClientConn, t trait.Name) any {
 	case trait.Vending:
 		return traits.NewVendingApiClient(conn)
 	}
-	panic(fmt.Errorf("unknown trait name %v", t))
+	return nil
 }
