@@ -1,4 +1,4 @@
-// source: enrollment.proto
+// source: proto/enrollment.proto
 /**
  * @fileoverview
  * @enhanceable
@@ -105,6 +105,7 @@ if (goog.DEBUG && !COMPILED) {
    */
   proto.vanti.bsp.ew.DeleteEnrollmentRequest.displayName = 'proto.vanti.bsp.ew.DeleteEnrollmentRequest';
 }
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {

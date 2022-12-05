@@ -1,4 +1,4 @@
-// source: nodes.proto
+// source: proto/nodes.proto
 /**
  * @fileoverview
  * @enhanceable
@@ -171,6 +171,7 @@ if (goog.DEBUG && !COMPILED) {
    */
   proto.vanti.bsp.ew.TestNodeCommunicationResponse.displayName = 'proto.vanti.bsp.ew.TestNodeCommunicationResponse';
 }
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -731,12 +732,14 @@ proto.vanti.bsp.ew.ListNodeRegistrationsRequest.serializeBinaryToWriter = functi
 };
 
 
+
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
 proto.vanti.bsp.ew.ListNodeRegistrationsResponse.repeatedFields_ = [1];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -1014,6 +1017,7 @@ proto.vanti.bsp.ew.TestNodeCommunicationRequest.prototype.getNodeName = function
 proto.vanti.bsp.ew.TestNodeCommunicationRequest.prototype.setNodeName = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
+
 
 
 /**

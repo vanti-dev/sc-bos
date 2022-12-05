@@ -8,10 +8,13 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
+	"github.com/vanti-dev/bsp-ew/internal/util/minibus"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"strings"
@@ -46,7 +49,10 @@ func NewServerFromPool(ctx context.Context, pool *pgxpool.Pool) (*Server, error)
 		return nil, fmt.Errorf("setup %w", err)
 	}
 
-	return &Server{pool: pool}, nil
+	return &Server{
+		pool: pool,
+		bus:  &minibus.Bus[*gen.PullAlertsResponse_Change]{},
+	}, nil
 }
 
 type Server struct {
@@ -54,6 +60,7 @@ type Server struct {
 	gen.UnimplementedAlertAdminApiServer
 
 	pool *pgxpool.Pool
+	bus  *minibus.Bus[*gen.PullAlertsResponse_Change]
 }
 
 func (s *Server) CreateAlert(ctx context.Context, request *gen.CreateAlertRequest) (*gen.Alert, error) {
@@ -75,6 +82,15 @@ func (s *Server) CreateAlert(ctx context.Context, request *gen.CreateAlertReques
 	}
 
 	alert.CreateTime = timestamppb.New(createTime)
+
+	// notify
+	go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
+		Name:       request.Name,
+		Type:       types.ChangeType_ADD,
+		ChangeTime: alert.CreateTime,
+		NewValue:   alert,
+	})
+
 	return alert, nil
 }
 
@@ -111,6 +127,7 @@ func (s *Server) UpdateAlert(ctx context.Context, request *gen.UpdateAlertReques
 		return nil, status.Error(codes.InvalidArgument, "no fields to update")
 	}
 
+	original := &gen.Alert{}
 	updated := &gen.Alert{}
 
 	setStr := ""
@@ -123,9 +140,13 @@ func (s *Server) UpdateAlert(ctx context.Context, request *gen.UpdateAlertReques
 	args := append([]any{alert.Id}, values...)
 	sql := fmt.Sprintf(`UPDATE alerts SET %s WHERE id=$1`, setStr)
 	err := s.pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		// record the original value which will be used for event notifications
+		if err := readAlertById(ctx, tx, alert.Id, original); err != nil {
+			return err
+		}
 		res, err := tx.Exec(ctx, sql, args...)
 		if err != nil {
-			return dbErrToStatus(err)
+			return err
 		}
 		rows := res.RowsAffected()
 		if rows == 0 {
@@ -140,6 +161,15 @@ func (s *Server) UpdateAlert(ctx context.Context, request *gen.UpdateAlertReques
 		return nil, dbErrToStatus(err)
 	}
 
+	// notify
+	go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
+		Name:       request.Name,
+		Type:       types.ChangeType_UPDATE,
+		ChangeTime: timestamppb.Now(),
+		OldValue:   original,
+		NewValue:   updated,
+	})
+
 	return updated, nil
 }
 
@@ -147,7 +177,27 @@ func (s *Server) DeleteAlert(ctx context.Context, request *gen.DeleteAlertReques
 	if request.Id == "" {
 		return nil, status.Error(codes.InvalidArgument, "id empty")
 	}
-	tag, err := s.pool.Exec(ctx, `DELETE FROM alerts WHERE id=$1`, request.Id)
+	existing := &gen.Alert{}
+	err := s.pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		// We do extra work to get the old value so we can include it in bus events.
+		// Without this any filtered PullAlerts call wouldn't be able to correctly include the event in responses.
+		err := readAlertById(ctx, tx, request.Id, existing)
+		if err != nil {
+			return err
+		}
+		tag, err := tx.Exec(ctx, `DELETE FROM alerts WHERE id=$1`, request.Id)
+		if err != nil {
+			return err
+		}
+		if tag.RowsAffected() == 0 {
+			if request.AllowMissing {
+				return nil
+			}
+			return status.Error(codes.NotFound, request.Id)
+		}
+		return nil
+	})
+
 	if err != nil {
 		err := dbErrToStatus(err)
 		if status.Code(err) == codes.NotFound && request.AllowMissing {
@@ -155,12 +205,15 @@ func (s *Server) DeleteAlert(ctx context.Context, request *gen.DeleteAlertReques
 		}
 		return nil, err
 	}
-	if tag.RowsAffected() == 0 {
-		if request.AllowMissing {
-			return &gen.DeleteAlertResponse{}, nil
-		}
-		return nil, status.Error(codes.NotFound, request.Id)
-	}
+
+	// notify
+	go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
+		Name:       request.Name,
+		Type:       types.ChangeType_REMOVE,
+		ChangeTime: timestamppb.Now(),
+		OldValue:   existing,
+	})
+
 	return &gen.DeleteAlertResponse{}, nil
 }
 
@@ -271,8 +324,16 @@ func (s *Server) ListAlerts(ctx context.Context, request *gen.ListAlertsRequest)
 }
 
 func (s *Server) PullAlerts(request *gen.PullAlertsRequest, server gen.AlertApi_PullAlertsServer) error {
-	// todo: PullAlerts
-	return s.UnimplementedAlertApiServer.PullAlerts(request, server)
+	filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
+	for change := range s.bus.Listen(server.Context()) {
+		change := convertChangeForQuery(request.Query, change)
+		change = filter.FilterClone(change).(*gen.PullAlertsResponse_Change)
+		err := server.Send(&gen.PullAlertsResponse{Changes: []*gen.PullAlertsResponse_Change{change}})
+		if err != nil {
+			return err
+		}
+	}
+	return server.Context().Err()
 }
 
 func (s *Server) AcknowledgeAlert(ctx context.Context, request *gen.AcknowledgeAlertRequest) (*gen.Alert, error) {
@@ -280,9 +341,9 @@ func (s *Server) AcknowledgeAlert(ctx context.Context, request *gen.AcknowledgeA
 		return nil, status.Error(codes.InvalidArgument, "id empty")
 	}
 
+	existing := &gen.Alert{}
 	updated := &gen.Alert{}
 	err := s.pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		existing := &gen.Alert{}
 		err := readAlertById(ctx, tx, request.Id, existing)
 		if err != nil {
 			return err
@@ -312,6 +373,17 @@ func (s *Server) AcknowledgeAlert(ctx context.Context, request *gen.AcknowledgeA
 		return nil, err
 	}
 
+	if existing != updated {
+		// notify
+		go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
+			Name:       request.Name,
+			Type:       types.ChangeType_UPDATE,
+			ChangeTime: timestamppb.Now(),
+			OldValue:   existing,
+			NewValue:   updated,
+		})
+	}
+
 	return updated, nil
 }
 
@@ -320,9 +392,9 @@ func (s *Server) UnacknowledgeAlert(ctx context.Context, request *gen.Acknowledg
 		return nil, status.Error(codes.InvalidArgument, "id empty")
 	}
 
+	existing := &gen.Alert{}
 	updated := &gen.Alert{}
 	err := s.pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		existing := &gen.Alert{}
 		err := readAlertById(ctx, tx, request.Id, existing)
 		if err != nil {
 			return err
@@ -350,6 +422,17 @@ func (s *Server) UnacknowledgeAlert(ctx context.Context, request *gen.Acknowledg
 			return &gen.Alert{}, nil
 		}
 		return nil, err
+	}
+
+	if existing != updated {
+		// notify
+		go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
+			Name:       request.Name,
+			Type:       types.ChangeType_UPDATE,
+			ChangeTime: timestamppb.Now(),
+			OldValue:   existing,
+			NewValue:   updated,
+		})
 	}
 
 	return updated, nil
@@ -416,4 +499,77 @@ func fieldMaskIncludesPath(m *fieldmaskpb.FieldMask, p string) bool {
 	}
 	i := fieldmaskpb.Intersect(m, &fieldmaskpb.FieldMask{Paths: []string{p}})
 	return len(i.Paths) > 0
+}
+
+func convertChangeForQuery(q *gen.Alert_Query, change *gen.PullAlertsResponse_Change) *gen.PullAlertsResponse_Change {
+	if q == nil {
+		return change
+	}
+
+	res := proto.Clone(change).(*gen.PullAlertsResponse_Change)
+	if change.OldValue != nil && !alertMatchesQuery(q, change.OldValue) {
+		res.OldValue = nil
+	}
+	if change.NewValue != nil && !alertMatchesQuery(q, change.NewValue) {
+		res.NewValue = nil
+	}
+	if res.OldValue == nil && res.NewValue == nil {
+		return nil // change should be ignored
+	}
+	if res.NewValue == nil {
+		// delete
+		res.Type = types.ChangeType_REMOVE
+		return res
+	}
+	if res.OldValue == nil {
+		// create
+		res.Type = types.ChangeType_ADD
+		return res
+	}
+	// else update
+	res.Type = types.ChangeType_UPDATE
+	return res
+}
+
+func alertMatchesQuery(q *gen.Alert_Query, a *gen.Alert) bool {
+	if q == nil {
+		return true
+	}
+	if a == nil {
+		return false
+	}
+
+	if q.CreatedNotBefore != nil {
+		if a.CreateTime == nil {
+			return false
+		}
+		if a.CreateTime.AsTime().Before(q.CreatedNotBefore.AsTime()) {
+			return false
+		}
+	}
+	if q.CreatedNotAfter != nil {
+		if a.CreateTime == nil {
+			return false
+		}
+		if a.CreateTime.AsTime().After(q.CreatedNotAfter.AsTime()) {
+			return false
+		}
+	}
+	if q.SeverityNotBelow != 0 && int32(a.Severity) < q.SeverityNotBelow {
+		return false
+	}
+	if q.SeverityNotAbove != 0 && int32(a.Severity) > q.SeverityNotAbove {
+		return false
+	}
+	if q.Floor != "" && q.Floor != a.Floor {
+		return false
+	}
+	if q.Zone != "" && q.Zone != a.Zone {
+		return false
+	}
+	if q.Source != "" && q.Source != a.Source {
+		return false
+	}
+
+	return true
 }

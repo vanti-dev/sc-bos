@@ -11,6 +11,7 @@
 // @ts-nocheck
 
 
+
 const grpc = {};
 grpc.web = require('grpc-web');
 
@@ -38,11 +39,11 @@ proto.vanti.bsp.ew.TestApiClient =
       this.client_ = new grpc.web.GrpcWebClientBase(options);
 
       /**
-   * @private @const {string} The hostname
-   */
-  this.hostname_ = hostname;
+       * @private @const {string} The hostname
+       */
+      this.hostname_ = hostname;
 
-};
+    };
 
 
 /**
@@ -64,11 +65,11 @@ proto.vanti.bsp.ew.TestApiPromiseClient =
       this.client_ = new grpc.web.GrpcWebClientBase(options);
 
       /**
-   * @private @const {string} The hostname
-   */
-  this.hostname_ = hostname;
+       * @private @const {string} The hostname
+       */
+      this.hostname_ = hostname;
 
-};
+    };
 
 
 /**

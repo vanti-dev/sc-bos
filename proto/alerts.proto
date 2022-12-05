@@ -125,9 +125,8 @@ message PullAlertsRequest {
   string name = 1;
   // Fields to fetch relative to the ElectricMode type
   google.protobuf.FieldMask read_mask = 2;
-  // When true the device will only send changes to the resource value.
-  // The default behaviour is to send the current value immediately followed by any updates as they happen.
-  bool updates_only = 3;
+  // updates_only is not supported because we don't want pullAlerts to return every alert when the value is false.
+  // bool updates_only = 3;
 
   // todo: string filter = 4;
 

@@ -1,7 +1,6 @@
 import * as jspb from 'google-protobuf'
 
 
-
 export class Test extends jspb.Message {
   getData(): string;
   setData(value: string): Test;

@@ -63,7 +63,7 @@ import DeleteSecretDialog from '@/routes/admin/tenant/DeleteSecretDialog.vue';
 import NewSecretForm from '@/routes/admin/tenant/NewSecretForm.vue';
 import SecretListItem from '@/routes/admin/tenant/SecretListItem.vue';
 import SecretTokenListItem from '@/routes/admin/tenant/SecretTokenListItem.vue';
-import {ListSecretsResponse, Secret, Tenant} from '@bsp-ew/ui-gen/src/tenants_pb.js';
+import {ListSecretsResponse, Secret, Tenant} from '@bsp-ew/ui-gen/proto/tenants_pb.js';
 import {compareDesc} from 'date-fns';
 import {computed, reactive, ref, watch} from 'vue';
 import {useRoute} from 'vue-router/composables';

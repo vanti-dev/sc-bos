@@ -1,4 +1,4 @@
-// source: test.proto
+// source: proto/test.proto
 /**
  * @fileoverview
  * @enhanceable
@@ -156,9 +156,9 @@ proto.vanti.bsp.ew.Test.deserializeBinaryFromReader = function(msg, reader) {
         var value = /** @type {string} */ (reader.readString());
         msg.setData(value);
         break;
-    default:
-      reader.skipField();
-      break;
+      default:
+        reader.skipField();
+        break;
     }
   }
   return msg;

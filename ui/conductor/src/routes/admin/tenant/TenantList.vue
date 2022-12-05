@@ -35,13 +35,13 @@
 </template>
 
 <script setup>
-import { timestampToDate } from "@/api/grpcweb.js";
-import { newActionTracker } from "@/api/resource.js";
-import { listTenants } from "@/api/ui/tenant.js";
-import MainCard from "@/components/SectionCard.vue";
-import { ListTenantsResponse } from "@bsp-ew/ui-gen/src/tenants_pb.js";
-import { computed, onMounted, reactive, ref } from "vue";
-import { useRouter } from "vue-router/composables";
+import {timestampToDate} from '@/api/convpb.js';
+import {newActionTracker} from '@/api/resource.js';
+import {listTenants} from '@/api/ui/tenant.js';
+import MainCard from '@/components/SectionCard.vue';
+import {ListTenantsResponse} from '@bsp-ew/ui-gen/proto/tenants_pb.js';
+import {computed, onMounted, reactive, ref} from 'vue';
+import {useRouter} from 'vue-router/composables';
 
 const tenantsTracker = reactive(
   /** @type {ActionTracker<ListTenantsResponse.AsObject>} */ newActionTracker()

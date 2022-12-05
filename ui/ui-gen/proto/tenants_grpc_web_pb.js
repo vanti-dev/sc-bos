@@ -11,6 +11,7 @@
 // @ts-nocheck
 
 
+
 const grpc = {};
 grpc.web = require('grpc-web');
 
@@ -790,6 +791,67 @@ proto.vanti.bsp.ew.tenants.TenantApiPromiseClient.prototype.createSecret =
           request,
           metadata || {},
           methodDescriptor_TenantApi_CreateSecret);
+    };
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.vanti.bsp.ew.tenants.VerifySecretRequest,
+ *   !proto.vanti.bsp.ew.tenants.Secret>}
+ */
+const methodDescriptor_TenantApi_VerifySecret = new grpc.web.MethodDescriptor(
+    '/vanti.bsp.ew.tenants.TenantApi/VerifySecret',
+    grpc.web.MethodType.UNARY,
+    proto.vanti.bsp.ew.tenants.VerifySecretRequest,
+    proto.vanti.bsp.ew.tenants.Secret,
+    /**
+     * @param {!proto.vanti.bsp.ew.tenants.VerifySecretRequest} request
+     * @return {!Uint8Array}
+     */
+    function(request) {
+      return request.serializeBinary();
+    },
+    proto.vanti.bsp.ew.tenants.Secret.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.vanti.bsp.ew.tenants.VerifySecretRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.vanti.bsp.ew.tenants.Secret)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.vanti.bsp.ew.tenants.Secret>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.vanti.bsp.ew.tenants.TenantApiClient.prototype.verifySecret =
+    function(request, metadata, callback) {
+      return this.client_.rpcCall(this.hostname_ +
+          '/vanti.bsp.ew.tenants.TenantApi/VerifySecret',
+          request,
+          metadata || {},
+          methodDescriptor_TenantApi_VerifySecret,
+          callback);
+    };
+
+
+/**
+ * @param {!proto.vanti.bsp.ew.tenants.VerifySecretRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.vanti.bsp.ew.tenants.Secret>}
+ *     Promise that resolves to the response
+ */
+proto.vanti.bsp.ew.tenants.TenantApiPromiseClient.prototype.verifySecret =
+    function(request, metadata) {
+      return this.client_.unaryCall(this.hostname_ +
+          '/vanti.bsp.ew.tenants.TenantApi/VerifySecret',
+          request,
+          metadata || {},
+          methodDescriptor_TenantApi_VerifySecret);
     };
 
 
