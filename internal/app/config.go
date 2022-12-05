@@ -8,10 +8,11 @@ import (
 )
 
 type ControllerConfig struct {
-	Name       string             `json:"name"`
-	Drivers    []driver.RawConfig `json:"drivers"`
-	Automation []auto.RawConfig   `json:"automation"`
-	Spaces     []RawSpaceConfig   `json:"spaces"`
+	Name       string                     `json:"name"`
+	Drivers    []driver.RawConfig         `json:"drivers"`
+	Automation []auto.RawConfig           `json:"automation"`
+	Spaces     []RawSpaceConfig           `json:"spaces"`
+	Systems    map[string]json.RawMessage `json:"systems,omitempty"`
 }
 
 type BaseSpaceConfig struct {

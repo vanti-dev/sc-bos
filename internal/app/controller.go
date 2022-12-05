@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/vanti-dev/bsp-ew/internal/system"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -55,6 +56,7 @@ type SystemConfig struct {
 
 	DriverFactories map[string]driver.Factory // keyed by driver name
 	AutoFactories   map[string]auto.Factory   // keyed by automation type
+	SystemFactories map[string]system.Factory // keyed by system type
 }
 
 func (sc SystemConfig) LocalConfigPath() string {
@@ -288,18 +290,9 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 		}
 	}()
 
-	// if any driver exposes apis on the node, allow them to add that support
-	for _, factory := range c.SystemConfig.DriverFactories {
-		if api, ok := factory.(node.SelfSupporter); ok {
-			api.AddSupport(c.Node)
-		}
-	}
-	// if any automation exposes apis on the node, allow them to add that support
-	for _, factory := range c.SystemConfig.AutoFactories {
-		if api, ok := factory.(node.SelfSupporter); ok {
-			api.AddSupport(c.Node)
-		}
-	}
+	addFactorySupport(c.Node, c.SystemConfig.DriverFactories)
+	addFactorySupport(c.Node, c.SystemConfig.AutoFactories)
+	addFactorySupport(c.Node, c.SystemConfig.SystemFactories)
 
 	// we delay registering the node servers until now, so that the caller can call c.Node.Support in between
 	// Bootstrap and Run and have all these added correctly.
@@ -317,6 +310,10 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 		})
 	}
 
+	// load and start the systems
+	if err := c.startSystems(ctx); err != nil {
+		return err
+	}
 	// load and start the drivers
 	if err := c.startDrivers(ctx); err != nil {
 		return err
@@ -328,6 +325,16 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 
 	err = multierr.Append(err, group.Wait())
 	return
+}
+
+// addFactorySupport is used to register factories with a node to expose custom factory APIs.
+// This checks each value in m and if that value has an API, via node.SelfSupporter, then it is registered with s.
+func addFactorySupport[M ~map[K]F, K comparable, F any](s node.Supporter, m M) {
+	for _, factory := range m {
+		if api, ok := any(factory).(node.SelfSupporter); ok {
+			api.AddSupport(s)
+		}
+	}
 }
 
 func (c *Controller) startDrivers(ctx context.Context) (err error) {
@@ -412,6 +419,48 @@ func (c *Controller) startAutomations(ctx context.Context) (err error) {
 		if task.Configurable(impl) {
 			if e := task.Configure(impl, autoConfig.Raw); e != nil {
 				err = multierr.Append(err, fmt.Errorf("configure %s %w", autoConfig.Name, e))
+			}
+		}
+	}
+	return err
+}
+
+func (c *Controller) startSystems(ctx context.Context) (err error) {
+	services := system.Services{
+		Logger: c.Logger.Named("system"),
+		Node:   c.Node,
+	}
+
+	var started []task.Starter
+	go func() {
+		<-ctx.Done()
+		var err error
+		for _, impl := range started {
+			if task.Stoppable(impl) {
+				err = multierr.Append(err, task.Stop(impl))
+			}
+		}
+		if err != nil {
+			c.Logger.Warn("Failed to cleanly stop systems after ctx done", zap.Error(err))
+		}
+	}()
+
+	for k, cfg := range c.ControllerConfig.Systems {
+		f, ok := c.SystemConfig.SystemFactories[k]
+		if !ok {
+			err = multierr.Append(err, fmt.Errorf("unsupported system type %v", k))
+			continue
+		}
+		impl := f.New(services)
+		if e := impl.Start(ctx); e != nil {
+			err = multierr.Append(err, fmt.Errorf("start %s %w", k, e))
+		}
+		// keep track so we can stop them if ctx ends
+		started = append(started, impl)
+
+		if task.Configurable(impl) {
+			if e := task.Configure(impl, cfg); e != nil {
+				err = multierr.Append(err, fmt.Errorf("configure %s %w", k, e))
 			}
 		}
 	}

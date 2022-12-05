@@ -6,9 +6,9 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/go-jose/go-jose/v3 v3.0.0
 	github.com/google/go-cmp v0.5.8
-	github.com/google/uuid v1.2.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/improbable-eng/grpc-web v0.15.0
+	github.com/jackc/pgconn v1.13.0
 	github.com/jackc/pgx/v4 v4.17.0
 	github.com/olebedev/emitter v0.0.0-20190110104742-e8d1457e6aee
 	github.com/open-policy-agent/opa v0.42.2
@@ -39,7 +39,6 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
-	github.com/jackc/pgconn v1.13.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.1 // indirect

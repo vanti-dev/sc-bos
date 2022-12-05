@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/vanti-dev/bsp-ew/internal/system"
+	"github.com/vanti-dev/bsp-ew/internal/system/alerts"
 	"os"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
@@ -56,6 +58,9 @@ func run(ctx context.Context) error {
 		lights.AutoType:   lights.Factory,
 		elreport.AutoType: elreport.Factory,
 		"export-mqtt":     export.MQTTFactory,
+	}
+	systemConfig.SystemFactories = map[string]system.Factory{
+		"alerts": alerts.Factory,
 	}
 
 	controller, err := app.Bootstrap(ctx, systemConfig)
