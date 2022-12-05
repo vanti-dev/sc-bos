@@ -9,11 +9,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -28,7 +26,9 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/db"
 	"github.com/vanti-dev/bsp-ew/internal/manage/tenantapi"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
+	"github.com/vanti-dev/bsp-ew/internal/util/pgxutil"
 	"github.com/vanti-dev/bsp-ew/internal/util/pki"
+	"github.com/vanti-dev/bsp-ew/internal/util/pki/expire"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -170,21 +170,7 @@ func readSystemConfig() (SystemConfig, error) {
 }
 
 func connectDB(ctx context.Context, sysConf SystemConfig) (*pgxpool.Pool, error) {
-	poolConfig, err := pgxpool.ParseConfig(sysConf.DatabaseURL)
-	if err != nil {
-		return nil, err
-	}
-
-	if sysConf.DatabasePasswordFile != "" {
-		passwordFile, err := os.ReadFile(sysConf.DatabasePasswordFile)
-		if err != nil {
-			return nil, err
-		}
-
-		poolConfig.ConnConfig.Password = strings.TrimSpace(string(passwordFile))
-	}
-
-	return pgxpool.ConnectConfig(ctx, poolConfig)
+	return pgxutil.Connect(ctx, pgxutil.ConnectConfig{URI: sysConf.DatabaseURL, PasswordFile: sysConf.DatabasePasswordFile})
 }
 
 func populateDB(ctx context.Context, logger *zap.Logger, conn *pgxpool.Pool) error {
