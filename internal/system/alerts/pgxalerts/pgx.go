@@ -327,7 +327,15 @@ func (s *Server) PullAlerts(request *gen.PullAlertsRequest, server gen.AlertApi_
 	filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 	for change := range s.bus.Listen(server.Context()) {
 		change := convertChangeForQuery(request.Query, change)
-		change = filter.FilterClone(change).(*gen.PullAlertsResponse_Change)
+		if change == nil {
+			continue
+		}
+		if change.OldValue != nil {
+			change.OldValue = filter.FilterClone(change.OldValue).(*gen.Alert)
+		}
+		if change.NewValue != nil {
+			change.NewValue = filter.FilterClone(change.NewValue).(*gen.Alert)
+		}
 		err := server.Send(&gen.PullAlertsResponse{Changes: []*gen.PullAlertsResponse_Change{change}})
 		if err != nil {
 			return err
