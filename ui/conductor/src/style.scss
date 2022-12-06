@@ -1,0 +1,39 @@
+@import "vuetify/src/styles/styles.sass";
+@import "vuetify/src/components/VTextField/_variables.scss";
+
+/*
+Change the default styles for filled text fields, including selects,
+to have a border all around instead of just at the bottom
+*/
+
+.v-text-field--filled {
+    border-radius: $text-field-border-radius;
+}
+
+.v-text-field--filled:not(.v-text-field--outlined):before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border-style: solid;
+    border-width: $text-field-outlined-fieldset-border-width;
+    opacity: 0.24;
+    // These are copied from VTextField fieldset styles, where the outline border styles come from
+    transition-duration: 0.15s;
+    transition-property: color, opacity;
+    transition-timing-function: map-get($transition, 'fast-in-fast-out');
+}
+
+.v-text-field--filled:hover:before {
+    opacity: 0.5;
+}
+
+.v-text-field--filled.v-input--is-focused:before {
+    opacity: 1;
+    border: $text-field-outlined-fieldset-border;
+}
+
+.v-text-field--filled .v-input__slot:before,
+.v-text-field--filled .v-input__slot:after {
+    display: none;
+}
