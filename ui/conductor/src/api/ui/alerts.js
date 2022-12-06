@@ -42,7 +42,7 @@ export function pullAlerts(request, resource) {
 
 /**
  * @param {AcknowledgeAlertRequest.AsObject} request
- * @param {ActionTracker<Alert.AsObject>} tracker
+ * @param {ActionTracker<Alert.AsObject>} [tracker]
  * @return {Promise<Alert.AsObject>}
  */
 export function acknowledgeAlert(request, tracker) {
@@ -54,7 +54,7 @@ export function acknowledgeAlert(request, tracker) {
 
 /**
  * @param {AcknowledgeAlertRequest.AsObject} request
- * @param {ActionTracker<Alert.AsObject>} tracker
+ * @param {ActionTracker<Alert.AsObject>} [tracker]
  * @return {Promise<Alert.AsObject>}
  */
 export function unacknowledgeAlert(request, tracker) {
