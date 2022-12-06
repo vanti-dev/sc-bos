@@ -20,6 +20,8 @@ for (const dep of ['@bsp-ew/ui-gen']) {
   const protoFiles = glob.sync(join(protoDirRoot, '!(node_modules)/**/*_pb.js'))
       .map(p => dep + '/' + relative(protoDirRoot, p));
   optimizeDepsInclude.push(...protoFiles);
+  // remove the .js extension so import statements without .js still use the bundle
+  optimizeDepsInclude.push(...protoFiles.map(f => f.substring(0, f.length - 3)));
 }
 
 // https://vitejs.dev/config/

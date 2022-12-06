@@ -1,14 +1,14 @@
 import {setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setCollection, trackAction} from '@/api/resource.js';
-import {PublicationApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/publication_grpc_web_pb.js';
+import {PublicationApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/publication_grpc_web_pb';
 import {
   AcknowledgePublicationRequest,
   CreatePublicationRequest,
   Publication,
   PullPublicationsRequest,
   UpdatePublicationRequest
-} from '@smart-core-os/sc-api-grpc-web/traits/publication_pb.js';
+} from '@smart-core-os/sc-api-grpc-web/traits/publication_pb';
 
 /**
  * @param {string} name

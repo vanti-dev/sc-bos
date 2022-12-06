@@ -1,7 +1,7 @@
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setCollection} from '@/api/resource.js';
-import {ParentApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/parent_grpc_web_pb.js';
-import {PullChildrenRequest} from '@smart-core-os/sc-api-grpc-web/traits/parent_pb.js';
+import {ParentApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/parent_grpc_web_pb';
+import {PullChildrenRequest} from '@smart-core-os/sc-api-grpc-web/traits/parent_pb';
 
 /**
  * @param {string} name

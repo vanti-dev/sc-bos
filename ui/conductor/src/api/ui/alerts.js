@@ -1,14 +1,14 @@
 import {convertProperties, fieldMaskFromObject, setProperties, timestampFromObject} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setCollection, trackAction} from '@/api/resource.js';
-import {AlertApiPromiseClient} from '@bsp-ew/ui-gen/proto/alerts_grpc_web_pb.js';
+import {AlertApiPromiseClient} from '@bsp-ew/ui-gen/proto/alerts_grpc_web_pb';
 import {
   AcknowledgeAlertRequest,
   Alert,
   ListAlertsRequest,
   ListAlertsResponse,
   PullAlertsRequest
-} from '@bsp-ew/ui-gen/proto/alerts_pb.js';
+} from '@bsp-ew/ui-gen/proto/alerts_pb';
 
 /**
  * @param {ListAlertsRequest.AsObject} request

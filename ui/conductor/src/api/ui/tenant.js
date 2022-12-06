@@ -1,7 +1,7 @@
 import {convertProperties, setProperties, timestampFromObject, timestampToDate} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {trackAction} from '@/api/resource.js';
-import {TenantApiPromiseClient} from '@bsp-ew/ui-gen/proto/tenants_grpc_web_pb.js';
+import {TenantApiPromiseClient} from '@bsp-ew/ui-gen/proto/tenants_grpc_web_pb';
 import {
   CreateSecretRequest,
   DeleteSecretRequest,
@@ -10,7 +10,7 @@ import {
   ListTenantsRequest,
   Secret,
   Tenant
-} from '@bsp-ew/ui-gen/proto/tenants_pb.js';
+} from '@bsp-ew/ui-gen/proto/tenants_pb';
 
 /**
  * @param {ListTenantsRequest.AsObject} request

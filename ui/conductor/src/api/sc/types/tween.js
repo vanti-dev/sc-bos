@@ -1,5 +1,5 @@
 import {durationFromObject, setProperties} from '@/api/convpb.js';
-import {Tween} from '@smart-core-os/sc-api-grpc-web/types/tween_pb.js';
+import {Tween} from '@smart-core-os/sc-api-grpc-web/types/tween_pb';
 
 /**
  * Convert a JS object representing a Tween into a protobuf Tween.

@@ -1,7 +1,7 @@
 import {parseISO} from 'date-fns';
-import {Duration} from 'google-protobuf/google/protobuf/duration_pb.js';
-import {FieldMask} from 'google-protobuf/google/protobuf/field_mask_pb.js';
-import {Timestamp} from 'google-protobuf/google/protobuf/timestamp_pb.js';
+import {Duration} from 'google-protobuf/google/protobuf/duration_pb';
+import {FieldMask} from 'google-protobuf/google/protobuf/field_mask_pb';
+import {Timestamp} from 'google-protobuf/google/protobuf/timestamp_pb';
 
 /**
  * Copy props from src into dst. Src is a JS object and dst is a protobuf message.

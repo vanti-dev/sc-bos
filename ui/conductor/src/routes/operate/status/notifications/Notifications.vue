@@ -24,7 +24,7 @@
 import {timestampToDate} from '@/api/convpb.js';
 import {newActionTracker, newResourceCollection} from '@/api/resource.js';
 import {acknowledgeAlert, listAlerts, pullAlerts, unacknowledgeAlert} from '@/api/ui/alerts';
-import {Alert, ListAlertsResponse} from '@bsp-ew/ui-gen/proto/alerts_pb.js';
+import {Alert, ListAlertsResponse} from '@bsp-ew/ui-gen/proto/alerts_pb';
 import {computed, onBeforeMount, reactive, set} from 'vue';
 
 const SeverityStrings = {};
