@@ -1,12 +1,12 @@
 <template>
   <v-select
-    v-model="status"
-    :items="statuses"
-    label="Status"
-    class="sectionText"
-    outlined
-    hide-details="auto"
-    style="width: 100px"
+      v-model="status"
+      :items="statuses"
+      label="Status"
+      class="sectionText"
+      filled
+      hide-details="auto"
+      style="width: 100px"
   ></v-select>
 </template>
 

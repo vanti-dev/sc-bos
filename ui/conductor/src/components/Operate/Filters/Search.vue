@@ -1,13 +1,12 @@
 <template>
   <v-text-field
-    v-model="search"
-    prepend-inner-icon="mdi-magnify"
-    label="Search ID, Location "
-    single-line
-    hide-details
-    width="100%"
-    outlined
-    class="textarea sectionText"
+      v-model="search"
+      prepend-inner-icon="mdi-magnify"
+      label="Search ID, Location "
+      hide-details
+      width="100%"
+      filled
+      class="textarea sectionText"
   />
 </template>
 
