@@ -1,5 +1,6 @@
 import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource.js';
 import {acknowledgeAlert, listAlerts, pullAlerts, unacknowledgeAlert} from '@/api/ui/alerts.js';
+import {Collection} from '@/util/query.js';
 import {Alert, ListAlertsResponse} from '@bsp-ew/ui-gen/proto/alerts_pb';
 import {acceptHMRUpdate, defineStore} from 'pinia';
 import {computed, reactive, set, watch} from 'vue';
@@ -58,10 +59,25 @@ export const useNotifications = defineStore('notifications', () => {
     return Boolean(alert.acknowledgement);
   }
 
+  function newCollection() {
+    const listFn = async (query, tracker, pageToken, recordFn) => {
+      const page = await listAlerts({name: name.value, pageToken, query, pageSize: 100}, tracker);
+      for (let alert of page.alertsList) {
+        recordFn(alert, alert.id);
+      }
+      return page.nextPageToken
+    }
+    const pullFn = (query, resources) => {
+      pullAlerts({name: name.value, query}, resources);
+    }
+    return new Collection(listFn, pullFn);
+  }
+
   return {
     name,
     alerts,
     loading: computed(() => alerts.loading || fetchingPage.loading),
+    newCollection,
     severityData,
     setAcknowledged,
     isAcknowledged

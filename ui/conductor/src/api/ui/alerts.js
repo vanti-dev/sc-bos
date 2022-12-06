@@ -105,7 +105,7 @@ function pullAlertsRequestFromObject(obj) {
 function alertQueryFromObject(obj) {
   if (!obj) return undefined;
   const dst = new Alert.Query();
-  setProperties(dst, obj, 'floor', 'zone', 'source', 'severityNotBefore', 'severityNotAfter');
+  setProperties(dst, obj, 'floor', 'zone', 'source', 'severityNotBefore', 'severityNotAfter', 'acknowledged');
   convertProperties(dst, obj, timestampFromObject, 'createdNotBefore', 'createdNotAfter');
   return dst;
 }
