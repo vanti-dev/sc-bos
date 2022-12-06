@@ -6,10 +6,18 @@ import {acceptHMRUpdate, defineStore} from 'pinia';
 import {computed, reactive, set, watch} from 'vue';
 
 
-const SeverityStrings = {};
-for (const [name, val] of Object.entries(Alert.Severity)) {
-  SeverityStrings[val] = name;
-}
+const SeverityStrings = {
+  [Alert.Severity.INFO]: 'INFO',
+  [Alert.Severity.WARNING]: 'WARN',
+  [Alert.Severity.SEVERE]: 'ALERT',
+  [Alert.Severity.LIFE_SAFETY]: 'DANGER'
+};
+const SeverityColor = {
+  [Alert.Severity.INFO]: 'info',
+  [Alert.Severity.WARNING]: 'warning',
+  [Alert.Severity.SEVERE]: 'error',
+  [Alert.Severity.LIFE_SAFETY]: 'error'
+};
 
 export const useNotifications = defineStore('notifications', () => {
   // todo: get the name from somewhere
@@ -39,10 +47,10 @@ export const useNotifications = defineStore('notifications', () => {
         if (i < severity) {
           str += '+' + (severity - i);
         }
-        return str;
+        return {text: str, color: `${SeverityColor[i]}--text`};
       }
     }
-    return 'unspecified';
+    return {text: 'unspecified', color: 'gray--text'};
   }
 
   function setAcknowledged(e, alert) {
