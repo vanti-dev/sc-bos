@@ -84,6 +84,11 @@ message Alert {
     string zone = 6;
     // Only return alerts that match this source.
     string source = 7;
+
+    // When true, only include alerts that have an acknowledgement.
+    // When false, only include alerts that don't have an acknowledgement.
+    // When absent, acknowledgement does not affect whether an alert is returned or not.
+    optional bool acknowledged = 8;
   }
 }
 

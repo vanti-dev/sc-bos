@@ -296,6 +296,7 @@ if (goog.DEBUG && !COMPILED) {
 proto.vanti.bsp.ew.EmergencyLight.repeatedFields_ = [3];
 
 
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
   /**
    * Creates an object representation of this proto.
@@ -551,6 +552,7 @@ proto.vanti.bsp.ew.EmergencyLightingEvent.EventCase = {
 proto.vanti.bsp.ew.EmergencyLightingEvent.prototype.getEventCase = function() {
   return /** @type {proto.vanti.bsp.ew.EmergencyLightingEvent.EventCase} */(jspb.Message.computeOneofCase(this, proto.vanti.bsp.ew.EmergencyLightingEvent.oneofGroups_[0]));
 };
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -974,12 +976,14 @@ proto.vanti.bsp.ew.EmergencyLightingEvent.FunctionTestPass.serializeBinaryToWrit
 };
 
 
+
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
 proto.vanti.bsp.ew.EmergencyLightingEvent.StatusReport.repeatedFields_ = [1];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -1598,12 +1602,14 @@ proto.vanti.bsp.ew.ListEmergencyLightsRequest.prototype.setPageToken = function(
 };
 
 
+
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
 proto.vanti.bsp.ew.ListEmergencyLightsResponse.repeatedFields_ = [1];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -1943,12 +1949,14 @@ proto.vanti.bsp.ew.ListEmergencyLightEventsRequest.prototype.setPageToken = func
 };
 
 
+
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
 proto.vanti.bsp.ew.ListEmergencyLightEventsResponse.repeatedFields_ = [1];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {

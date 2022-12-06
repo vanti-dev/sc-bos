@@ -1,6 +1,7 @@
 import * as jspb from 'google-protobuf'
 
 
+
 export class Enrollment extends jspb.Message {
   getTargetName(): string;
   setTargetName(value: string): Enrollment;

@@ -1028,6 +1028,7 @@ proto.vanti.bsp.ew.TestNodeCommunicationRequest.prototype.setNodeName = function
 proto.vanti.bsp.ew.TestNodeCommunicationResponse.repeatedFields_ = [1];
 
 
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
   /**
    * Creates an object representation of this proto.

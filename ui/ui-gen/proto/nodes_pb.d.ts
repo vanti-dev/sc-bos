@@ -1,6 +1,7 @@
 import * as jspb from 'google-protobuf'
 
 
+
 export class NodeRegistration extends jspb.Message {
   getName(): string;
   setName(value: string): NodeRegistration;

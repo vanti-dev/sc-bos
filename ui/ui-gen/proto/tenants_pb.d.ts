@@ -535,9 +535,7 @@ export class CreateSecretRequest extends jspb.Message {
   toObject(includeInstance?: boolean): CreateSecretRequest.AsObject;
   static toObject(includeInstance: boolean, msg: CreateSecretRequest): CreateSecretRequest.AsObject;
   static serializeBinaryToWriter(message: CreateSecretRequest, writer: jspb.BinaryWriter): void;
-
   static deserializeBinary(bytes: Uint8Array): CreateSecretRequest;
-
   static deserializeBinaryFromReader(message: CreateSecretRequest, reader: jspb.BinaryReader): CreateSecretRequest;
 }
 
@@ -549,23 +547,16 @@ export namespace CreateSecretRequest {
 
 export class VerifySecretRequest extends jspb.Message {
   getTenantId(): string;
-
   setTenantId(value: string): VerifySecretRequest;
 
   getSecret(): string;
-
   setSecret(value: string): VerifySecretRequest;
 
   serializeBinary(): Uint8Array;
-
   toObject(includeInstance?: boolean): VerifySecretRequest.AsObject;
-
   static toObject(includeInstance: boolean, msg: VerifySecretRequest): VerifySecretRequest.AsObject;
-
   static serializeBinaryToWriter(message: VerifySecretRequest, writer: jspb.BinaryWriter): void;
-
   static deserializeBinary(bytes: Uint8Array): VerifySecretRequest;
-
   static deserializeBinaryFromReader(message: VerifySecretRequest, reader: jspb.BinaryReader): VerifySecretRequest;
 }
 
@@ -578,20 +569,16 @@ export namespace VerifySecretRequest {
 
 export class GetSecretRequest extends jspb.Message {
   getId(): string;
-
   setId(value: string): GetSecretRequest;
 
   getIncludeHash(): boolean;
-
   setIncludeHash(value: boolean): GetSecretRequest;
 
   serializeBinary(): Uint8Array;
-
   toObject(includeInstance?: boolean): GetSecretRequest.AsObject;
   static toObject(includeInstance: boolean, msg: GetSecretRequest): GetSecretRequest.AsObject;
   static serializeBinaryToWriter(message: GetSecretRequest, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): GetSecretRequest;
-
   static deserializeBinaryFromReader(message: GetSecretRequest, reader: jspb.BinaryReader): GetSecretRequest;
 }
 
@@ -604,23 +591,15 @@ export namespace GetSecretRequest {
 
 export class GetSecretByHashRequest extends jspb.Message {
   getSecretHash(): Uint8Array | string;
-
   getSecretHash_asU8(): Uint8Array;
-
   getSecretHash_asB64(): string;
-
   setSecretHash(value: Uint8Array | string): GetSecretByHashRequest;
 
   serializeBinary(): Uint8Array;
-
   toObject(includeInstance?: boolean): GetSecretByHashRequest.AsObject;
-
   static toObject(includeInstance: boolean, msg: GetSecretByHashRequest): GetSecretByHashRequest.AsObject;
-
   static serializeBinaryToWriter(message: GetSecretByHashRequest, writer: jspb.BinaryWriter): void;
-
   static deserializeBinary(bytes: Uint8Array): GetSecretByHashRequest;
-
   static deserializeBinaryFromReader(message: GetSecretByHashRequest, reader: jspb.BinaryReader): GetSecretByHashRequest;
 }
 
@@ -632,17 +611,12 @@ export namespace GetSecretByHashRequest {
 
 export class UpdateSecretRequest extends jspb.Message {
   getSecret(): Secret | undefined;
-
   setSecret(value?: Secret): UpdateSecretRequest;
-
   hasSecret(): boolean;
-
   clearSecret(): UpdateSecretRequest;
 
   serializeBinary(): Uint8Array;
-
   toObject(includeInstance?: boolean): UpdateSecretRequest.AsObject;
-
   static toObject(includeInstance: boolean, msg: UpdateSecretRequest): UpdateSecretRequest.AsObject;
   static serializeBinaryToWriter(message: UpdateSecretRequest, writer: jspb.BinaryWriter): void;
   static deserializeBinary(bytes: Uint8Array): UpdateSecretRequest;

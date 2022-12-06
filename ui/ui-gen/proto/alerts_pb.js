@@ -312,6 +312,7 @@ if (goog.DEBUG && !COMPILED) {
 }
 
 
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
   /**
    * Creates an object representation of this proto.
@@ -704,7 +705,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
       severityNotAbove: jspb.Message.getFieldWithDefault(msg, 4, 0),
       floor: jspb.Message.getFieldWithDefault(msg, 5, ''),
       zone: jspb.Message.getFieldWithDefault(msg, 6, ''),
-      source: jspb.Message.getFieldWithDefault(msg, 7, '')
+      source: jspb.Message.getFieldWithDefault(msg, 7, ''),
+      acknowledged: jspb.Message.getBooleanFieldWithDefault(msg, 8, false)
     };
 
     if (includeInstance) {
@@ -770,6 +772,10 @@ proto.vanti.bsp.ew.Alert.Query.deserializeBinaryFromReader = function(msg, reade
       case 7:
         var value = /** @type {string} */ (reader.readString());
         msg.setSource(value);
+        break;
+      case 8:
+        var value = /** @type {boolean} */ (reader.readBool());
+        msg.setAcknowledged(value);
         break;
       default:
         reader.skipField();
@@ -848,6 +854,13 @@ proto.vanti.bsp.ew.Alert.Query.serializeBinaryToWriter = function(message, write
   if (f.length > 0) {
     writer.writeString(
         7,
+        f
+    );
+  }
+  f = /** @type {boolean} */ (jspb.Message.getField(message, 8));
+  if (f != null) {
+    writer.writeBool(
+        8,
         f
     );
   }
@@ -1015,6 +1028,42 @@ proto.vanti.bsp.ew.Alert.Query.prototype.getSource = function() {
  */
 proto.vanti.bsp.ew.Alert.Query.prototype.setSource = function(value) {
   return jspb.Message.setProto3StringField(this, 7, value);
+};
+
+
+/**
+ * optional bool acknowledged = 8;
+ * @return {boolean}
+ */
+proto.vanti.bsp.ew.Alert.Query.prototype.getAcknowledged = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 8, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.vanti.bsp.ew.Alert.Query} returns this
+ */
+proto.vanti.bsp.ew.Alert.Query.prototype.setAcknowledged = function(value) {
+  return jspb.Message.setField(this, 8, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.vanti.bsp.ew.Alert.Query} returns this
+ */
+proto.vanti.bsp.ew.Alert.Query.prototype.clearAcknowledged = function() {
+  return jspb.Message.setField(this, 8, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.vanti.bsp.ew.Alert.Query.prototype.hasAcknowledged = function() {
+  return jspb.Message.getField(this, 8) != null;
 };
 
 
@@ -1489,12 +1538,14 @@ proto.vanti.bsp.ew.ListAlertsRequest.prototype.hasQuery = function() {
 };
 
 
+
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
 proto.vanti.bsp.ew.ListAlertsResponse.repeatedFields_ = [1];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -1936,12 +1987,14 @@ proto.vanti.bsp.ew.PullAlertsRequest.prototype.hasQuery = function() {
 };
 
 
+
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
 proto.vanti.bsp.ew.PullAlertsResponse.repeatedFields_ = [1];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {

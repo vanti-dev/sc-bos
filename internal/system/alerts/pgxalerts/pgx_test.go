@@ -122,6 +122,8 @@ func Test_convertChangeForQuery(t *testing.T) {
 }
 
 func Test_alertMatchesQuery(t *testing.T) {
+	ack := true
+	noAck := false
 	tests := []struct {
 		name string
 		q    *gen.Alert_Query
@@ -139,6 +141,10 @@ func Test_alertMatchesQuery(t *testing.T) {
 		{"source yes", &gen.Alert_Query{Source: "1"}, &gen.Alert{Source: "1"}, true},
 		{"source no", &gen.Alert_Query{Source: "1"}, &gen.Alert{Source: "2"}, false},
 		{"source absent", &gen.Alert_Query{Source: "1"}, &gen.Alert{}, false},
+		{"acknowledged yes", &gen.Alert_Query{Acknowledged: &ack}, &gen.Alert{Acknowledgement: &gen.Alert_Acknowledgement{}}, true},
+		{"acknowledged no", &gen.Alert_Query{Acknowledged: &ack}, &gen.Alert{}, false},
+		{"not acknowledged yes", &gen.Alert_Query{Acknowledged: &noAck}, &gen.Alert{}, true},
+		{"not acknowledged no", &gen.Alert_Query{Acknowledged: &noAck}, &gen.Alert{Acknowledgement: &gen.Alert_Acknowledgement{}}, false},
 		{"create_time before", &gen.Alert_Query{CreatedNotBefore: timestamppb.New(time.Unix(100, 1))}, &gen.Alert{CreateTime: timestamppb.New(time.Unix(100, 0))}, false},
 		{"create_time start", &gen.Alert_Query{CreatedNotBefore: timestamppb.New(time.Unix(100, 0))}, &gen.Alert{CreateTime: timestamppb.New(time.Unix(100, 0))}, true},
 		{"create_time after", &gen.Alert_Query{CreatedNotBefore: timestamppb.New(time.Unix(100, 0))}, &gen.Alert{CreateTime: timestamppb.New(time.Unix(100, 1))}, true},

@@ -268,6 +268,13 @@ func (s *Server) ListAlerts(ctx context.Context, request *gen.ListAlertsRequest)
 			args = append(args, q.Source)
 			argIdx += 1
 		}
+		if q.Acknowledged != nil {
+			if *q.Acknowledged {
+				where = append(where, `ack_time IS NOT NULL`)
+			} else {
+				where = append(where, `ack_time IS NULL`)
+			}
+		}
 	}
 
 	sql := selectAlertSQL
@@ -577,6 +584,16 @@ func alertMatchesQuery(q *gen.Alert_Query, a *gen.Alert) bool {
 	}
 	if q.Source != "" && q.Source != a.Source {
 		return false
+	}
+
+	if q.Acknowledged != nil {
+		wantAck := *q.Acknowledged
+		if wantAck && a.Acknowledgement == nil {
+			return false
+		}
+		if !wantAck && a.Acknowledgement != nil {
+			return false
+		}
 	}
 
 	return true
