@@ -52,6 +52,10 @@ all:
         ansible_python_interpreter: /usr/local/bin/python3
         ansible_user: Administrator
         ansible_become_method: doas
+
+        # config control
+        areacontroller_enabled: no
+        daylight_power_cron_enabled: yes
     # Helper groups of the above hosts so we can say '-l prod' to deploy to all prod
     prod:
       hosts:

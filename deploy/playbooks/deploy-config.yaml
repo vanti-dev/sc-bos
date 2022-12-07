@@ -6,9 +6,6 @@
     deploy_src_dir: '{{ playbook_dir }}/..'
     install_dir: /usr/local/opt/areacontroller
 
-    areacontroller_enabled: no
-    daylight_power_cron_enabled: yes
-
   tasks:
     - name: Stop the services (if it exists)
       become: true
