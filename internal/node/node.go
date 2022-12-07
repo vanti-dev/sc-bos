@@ -101,6 +101,17 @@ func (n *Node) Announce(name string, features ...Feature) Undo {
 			undo = append(undo, undoMd)
 		}
 	}
+
+	if a.metadata != nil {
+		undoMd, err := n.mergeMetadata(name, a.metadata)
+		if err != nil {
+			if err != MetadataTraitNotSupported {
+				log.Warnf("%v metadata: %v", name, err)
+			}
+		}
+		undo = append(undo, undoMd)
+	}
+
 	return UndoAll(undo...)
 }
 

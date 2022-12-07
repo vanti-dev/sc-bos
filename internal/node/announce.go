@@ -1,6 +1,7 @@
 package node
 
 import (
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 )
 
@@ -32,10 +33,11 @@ func AnnounceWithNamePrefix(prefix string, a Announcer) Announcer {
 }
 
 type announcement struct {
-	name    string
-	traits  []traitFeature
-	clients []interface{}
-	undo    []Undo
+	name     string
+	traits   []traitFeature
+	clients  []interface{}
+	metadata *traits.Metadata
+	undo     []Undo
 }
 
 type traitFeature struct {
@@ -80,6 +82,16 @@ func HasTrait(name trait.Name, opt ...TraitOption) Feature {
 			option(&feature)
 		}
 		a.traits = append(a.traits, feature)
+	})
+}
+
+// HasMetadata merges the given metadata into any existing metadata held against the device name.
+// Merging metadata is not transitive, two calls to Announce causes the second call to overwrite the first for all common fields.
+//
+// See metadata.Model.MergeMetadata for more details.
+func HasMetadata(md *traits.Metadata) Feature {
+	return featureFunc(func(a *announcement) {
+		a.metadata = md
 	})
 }
 

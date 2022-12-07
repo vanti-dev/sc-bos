@@ -24,18 +24,21 @@ var AutoTraitMetadata = map[string]string{
 }
 var MetadataTraitNotSupported = errors.New("metadata is not supported")
 
-func (n *Node) addTraitMetadata(name string, traitName trait.Name, md map[string]string) (Undo, error) {
-	metadataApiRouter := n.metadataApiRouter()
-	if metadataApiRouter == nil {
-		return NilUndo, MetadataTraitNotSupported
-	}
-	client, err := metadataApiRouter.Get(name)
+func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
+	metadataModel, err := n.metadataModel(name)
 	if err != nil {
 		return NilUndo, err
 	}
-	metadataModel, ok := wrap.UnwrapFully(client).(*metadata.Model)
-	if !ok {
-		return NilUndo, status.Errorf(codes.FailedPrecondition, "%v cannot auto-create trait %v", name, traitName)
+	_, err = metadataModel.MergeMetadata(md)
+	return func() {
+		// todo: undo applying the metadata to the device
+	}, err
+}
+
+func (n *Node) addTraitMetadata(name string, traitName trait.Name, md map[string]string) (Undo, error) {
+	metadataModel, err := n.metadataModel(name)
+	if err != nil {
+		return NilUndo, err
 	}
 	_, err = metadataModel.UpdateTraitMetadata(&traits.TraitMetadata{
 		Name: string(traitName),
@@ -54,4 +57,20 @@ func (n *Node) metadataApiRouter() router.Router {
 		}
 	}
 	return nil
+}
+
+func (n *Node) metadataModel(name string) (*metadata.Model, error) {
+	metadataApiRouter := n.metadataApiRouter()
+	if metadataApiRouter == nil {
+		return nil, MetadataTraitNotSupported
+	}
+	client, err := metadataApiRouter.Get(name)
+	if err != nil {
+		return nil, err
+	}
+	metadataModel, ok := wrap.UnwrapFully(client).(*metadata.Model)
+	if !ok {
+		return nil, status.Errorf(codes.FailedPrecondition, "%v cannot store node metadata", name)
+	}
+	return metadataModel, nil
 }
