@@ -34,6 +34,15 @@
         src: '/tmp/bsp-ew-build/area-controller.tar'
         dest: '{{ temp_dir }}/'
 
+    - name: Extract Conductor UI
+      become: true
+      ansible.builtin.unarchive:
+        src: '/tmp/bsp-ew-build/conductor.tar'
+        dest: '{{ install_dir }}/static'
+        owner: root
+        group: areacontroller
+        mode: u=rwX,g=rX,o=rX
+
     - name: Build Go code - Area Controller
       ansible.builtin.command:
         chdir: '{{ temp_dir }}/area-controller'

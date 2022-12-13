@@ -74,7 +74,7 @@
       community.general.sysrc:
         name: areacontroller_flags
         state: present
-        value: "-data-dir /usr/local/opt/areacontroller/data -listen-https :8443"
+        value: "-data-dir {{ install_dir }}/data -static-dir {{ install_dir }}/static -listen-https :8443"
 
     - name: Enable log rotation for the areacontroller service
       become: true

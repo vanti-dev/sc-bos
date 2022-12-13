@@ -42,6 +42,7 @@ type SystemConfig struct {
 	ListenHTTPS string
 
 	DataDir             string
+	StaticDir           string // hosts static files from this directory over HTTP if StaticDir is non-empty
 	LocalConfigFileName string // defaults to LocalConfigFileName
 
 	// TenantOAuth, if true, means the controller will support issuing tokens using the OAuth client_credentials flow
@@ -144,6 +145,9 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsGRPCClientConfig)))
 
 	mux := http.NewServeMux()
+	if config.StaticDir != "" {
+		mux.Handle("/", http.FileServer(http.Dir(config.StaticDir)))
+	}
 
 	var grpcOpts []grpc.ServerOption
 	grpcOpts = append(grpcOpts, grpc.Creds(credentials.NewTLS(tlsGRPCServerConfig)))
