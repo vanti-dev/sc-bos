@@ -7,10 +7,13 @@
     install_dir: /usr/local/opt/areacontroller
 
   tasks:
-    - name: Create temporary directory
+    - name: Create or empty temporary directory
       file:
         path: '{{ temp_dir }}'
-        state: directory
+        state: '{{ item }}'
+      loop: # delete then recreate to ensure it's empty - old source files cause problems
+        - absent
+        - directory
 
     - name: Ensure directories are present
       become: true

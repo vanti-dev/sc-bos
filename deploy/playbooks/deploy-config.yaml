@@ -74,9 +74,26 @@
       community.general.sysrc:
         name: areacontroller_flags
         state: present
-        value: "-data-dir /usr/local/opt/areacontroller/data -static-dir /usr/local/opt/areacontroller/static -listen-https :8443"
+        value: "-data-dir /usr/local/opt/areacontroller/data -listen-https :8443"
 
-    - name: Enable and start areacontroller service
+    - name: Enable log rotation for the areacontroller service
+      become: true
+      block:
+        - name: Ensure newsyslog config directory present
+          ansible.builtin.file:
+            path: '/usr/local/etc/newsyslog.conf.d'
+            state: directory
+            owner: root
+            mode: u=rwX,g=rX,o=rX
+
+        - name: Copy newsyslog config file
+          ansible.builtin.copy:
+            src: '{{ deploy_src_dir }}/freebsd/newsyslog.conf.d/areacontroller.conf'
+            dest: '/usr/local/etc/newsyslog.conf.d/areacontroller.conf'
+            owner: root
+            mode: u=rw,g=r,o=r
+
+    - name: "{{ areacontroller_enabled | bool | ternary('Enable and start', 'Disable and stop') }} areacontroller service"
       become: true
       ansible.builtin.service:
         name: areacontroller

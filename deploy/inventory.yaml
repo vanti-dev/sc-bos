@@ -4,9 +4,11 @@ all:
     twincat_bsd:
       hosts:
         lab:
-          ansible_host: "10.1.104.10"
+          ansible_host: "10.104.10.52"
           floor: lab
           x001_ip: 10.1.104.10
+          areacontroller_enabled: yes
+          daylight_power_cron_enabled: no
         floor-01:
           ansible_host: "10.1.104.11"
           floor: floor-01

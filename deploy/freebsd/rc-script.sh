@@ -15,7 +15,7 @@ load_rc_config $name
 : "${areacontroller_enable:="no"}"
 : "${areacontroller_user:="areacontroller"}"
 : "${areacontroller_group:="areacontroller"}"
-: "${areacontroller_flags:="-data-dir /usr/local/opt/areacontroller/data -static-dir /usr/local/opt/areacontroller/static"}"
+: "${areacontroller_flags:="-data-dir /usr/local/opt/areacontroller/data"}"
 : "${areacontroller_log:="/var/log/areacontroller.log"}"
 
 areacontroller_cmd="/usr/local/opt/areacontroller/bin/areacontroller ${areacontroller_flags}"
