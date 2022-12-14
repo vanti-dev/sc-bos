@@ -22,7 +22,6 @@ import (
 	"github.com/vanti-dev/bsp-ew/internal/auto/lights"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet"
-	"github.com/vanti-dev/bsp-ew/internal/driver/tc3dali"
 	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/bsp-ew/internal/testapi"
 	"github.com/vanti-dev/bsp-ew/pkg/gen"
@@ -53,7 +52,6 @@ func run(ctx context.Context) error {
 	systemConfig.DriverFactories = map[string]driver.Factory{
 		axiomxa.DriverName: axiomxa.Factory,
 		bacnet.DriverName:  bacnet.Factory,
-		tc3dali.DriverName: tc3dali.Factory,
 	}
 	systemConfig.AutoFactories = map[string]auto.Factory{
 		lights.AutoType:   lights.Factory,
