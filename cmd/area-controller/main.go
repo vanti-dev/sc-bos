@@ -12,6 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts"
+	"github.com/vanti-dev/sc-bos/pkg/testapi"
 	"os"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
@@ -21,7 +22,6 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/vanti-dev/sc-bos/internal/app"
-	"github.com/vanti-dev/sc-bos/internal/testapi"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"go.uber.org/zap"
 )
