@@ -18,7 +18,6 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/vanti-dev/bsp-ew/internal/app"
 	"github.com/vanti-dev/bsp-ew/internal/auto"
-	"github.com/vanti-dev/bsp-ew/internal/auto/elreport"
 	"github.com/vanti-dev/bsp-ew/internal/auto/lights"
 	"github.com/vanti-dev/bsp-ew/internal/driver"
 	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet"
@@ -54,9 +53,8 @@ func run(ctx context.Context) error {
 		bacnet.DriverName:  bacnet.Factory,
 	}
 	systemConfig.AutoFactories = map[string]auto.Factory{
-		lights.AutoType:   lights.Factory,
-		elreport.AutoType: elreport.Factory,
-		"export-mqtt":     export.MQTTFactory,
+		lights.AutoType: lights.Factory,
+		"export-mqtt":   export.MQTTFactory,
 	}
 	systemConfig.SystemFactories = map[string]system.Factory{
 		"alerts": alerts.Factory,
