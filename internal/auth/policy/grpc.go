@@ -6,8 +6,8 @@ import (
 	"log"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	"github.com/vanti-dev/bsp-ew/internal/auth"
-	"github.com/vanti-dev/bsp-ew/internal/util/rpcutil"
+	"github.com/vanti-dev/sc-bos/internal/auth"
+	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

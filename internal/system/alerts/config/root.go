@@ -1,6 +1,6 @@
 package config
 
-import "github.com/vanti-dev/bsp-ew/internal/util/pgxutil"
+import "github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 
 type Root struct {
 	Storage *Storage `json:"storage,omitempty"`

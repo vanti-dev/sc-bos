@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vanti-dev/bsp-ew/internal/util/pki"
+	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

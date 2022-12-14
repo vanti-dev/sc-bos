@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/olebedev/emitter"
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
+	"github.com/vanti-dev/sc-bos/internal/auto/lights/config"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

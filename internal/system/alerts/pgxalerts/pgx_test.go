@@ -3,7 +3,7 @@ package pgxalerts
 import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/smart-core-os/sc-api/go/types"
-	"github.com/vanti-dev/bsp-ew/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"

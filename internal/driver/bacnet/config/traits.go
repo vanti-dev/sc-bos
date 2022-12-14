@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/known"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/known"
 )
 
 // Trait is the common configuration for bacnet device traits.

@@ -3,7 +3,7 @@ package lights
 import (
 	"context"
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/bsp-ew/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"go.uber.org/zap"
 )
 

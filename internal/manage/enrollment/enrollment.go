@@ -15,8 +15,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/vanti-dev/bsp-ew/internal/util/pki"
-	"github.com/vanti-dev/bsp-ew/pkg/gen"
+	"github.com/vanti-dev/sc-bos/internal/util/pki"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/proto"

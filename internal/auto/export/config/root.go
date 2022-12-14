@@ -3,7 +3,7 @@ package config
 import (
 	"encoding/json"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
-	"github.com/vanti-dev/bsp-ew/internal/auto"
+	"github.com/vanti-dev/sc-bos/internal/auto"
 	"google.golang.org/protobuf/proto"
 	"time"
 )

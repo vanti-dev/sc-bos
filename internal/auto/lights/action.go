@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/bsp-ew/internal/node"
+	"github.com/vanti-dev/sc-bos/internal/node"
 )
 
 // actions defines the only side effects the automation can have.

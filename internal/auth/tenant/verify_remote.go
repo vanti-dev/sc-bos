@@ -2,7 +2,7 @@ package tenant
 
 import (
 	"context"
-	"github.com/vanti-dev/bsp-ew/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 // RemoteVerifier implements Verifier by calling TenantApiClient.VerifySecret.

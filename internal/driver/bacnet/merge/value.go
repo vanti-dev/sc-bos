@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
-	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/known"
 	"github.com/vanti-dev/gobacnet"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/config"
+	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/known"
 )
 
 func readProperty(_ context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource) (any, error) {

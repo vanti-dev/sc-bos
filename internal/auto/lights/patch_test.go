@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/google/go-cmp/cmp"
-	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
+	"github.com/vanti-dev/sc-bos/internal/auto/lights/config"
 	"go.uber.org/zap"
 	"sort"
 	"testing"

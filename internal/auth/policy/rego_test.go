@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/vanti-dev/bsp-ew/internal/auth"
-	"github.com/vanti-dev/bsp-ew/pkg/gen"
+	"github.com/vanti-dev/sc-bos/internal/auth"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 func BenchmarkPolicy(b *testing.B) {

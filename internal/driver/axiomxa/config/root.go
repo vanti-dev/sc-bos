@@ -3,7 +3,7 @@ package config
 import (
 	"encoding/json"
 
-	"github.com/vanti-dev/bsp-ew/internal/driver"
+	"github.com/vanti-dev/sc-bos/internal/driver"
 )
 
 type Root struct {

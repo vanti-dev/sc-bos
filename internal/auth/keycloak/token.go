@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/go-jose/go-jose/v3/jwt"
-	"github.com/vanti-dev/bsp-ew/internal/auth"
+	"github.com/vanti-dev/sc-bos/internal/auth"
 )
 
 type accessTokenPayload struct {

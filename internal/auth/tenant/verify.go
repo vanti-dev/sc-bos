@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/vanti-dev/bsp-ew/internal/util/pass"
+	"github.com/vanti-dev/sc-bos/internal/util/pass"
 	"go.uber.org/multierr"
 	"sync"
 )

@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/bsp-ew/internal/driver"
+	"github.com/vanti-dev/sc-bos/internal/driver"
 )
 
 // Root describes the configuration available to the proxy driver.

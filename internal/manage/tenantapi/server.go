@@ -8,14 +8,14 @@ import (
 	"io"
 	"regexp"
 
-	"github.com/vanti-dev/bsp-ew/internal/util/pass"
+	"github.com/vanti-dev/sc-bos/internal/util/pass"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
-	"github.com/vanti-dev/bsp-ew/internal/db"
-	"github.com/vanti-dev/bsp-ew/internal/util/rpcutil"
-	"github.com/vanti-dev/bsp-ew/pkg/gen"
+	"github.com/vanti-dev/sc-bos/internal/db"
+	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

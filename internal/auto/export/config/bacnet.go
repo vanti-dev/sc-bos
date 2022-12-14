@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
+	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/config"
 )
 
 type BacnetSource struct {

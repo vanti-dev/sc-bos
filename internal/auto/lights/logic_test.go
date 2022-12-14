@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
-	"github.com/vanti-dev/bsp-ew/internal/util/jsontypes"
+	"github.com/vanti-dev/sc-bos/internal/auto/lights/config"
+	"github.com/vanti-dev/sc-bos/internal/util/jsontypes"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

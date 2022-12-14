@@ -2,8 +2,8 @@ package auto
 
 import (
 	"github.com/timshannon/bolthold"
-	"github.com/vanti-dev/bsp-ew/internal/node"
-	"github.com/vanti-dev/bsp-ew/internal/task"
+	"github.com/vanti-dev/sc-bos/internal/node"
+	"github.com/vanti-dev/sc-bos/internal/task"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )

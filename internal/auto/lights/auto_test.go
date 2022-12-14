@@ -10,9 +10,9 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
-	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
-	"github.com/vanti-dev/bsp-ew/internal/node"
-	"github.com/vanti-dev/bsp-ew/internal/util/jsontypes"
+	"github.com/vanti-dev/sc-bos/internal/auto/lights/config"
+	"github.com/vanti-dev/sc-bos/internal/node"
+	"github.com/vanti-dev/sc-bos/internal/util/jsontypes"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

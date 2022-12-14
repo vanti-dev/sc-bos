@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
+	"github.com/vanti-dev/sc-bos/internal/auto/lights/config"
 )
 
 // processState executes clientActions based on both read and write states.

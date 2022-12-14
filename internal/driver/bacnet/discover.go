@@ -2,8 +2,8 @@ package bacnet
 
 import (
 	"fmt"
-	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/config"
 	"net"
 )
 

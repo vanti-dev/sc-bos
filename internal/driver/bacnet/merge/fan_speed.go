@@ -7,10 +7,10 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/fanspeed"
-	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
-	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/known"
-	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/gobacnet"
+	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/config"
+	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/known"
+	"github.com/vanti-dev/sc-bos/internal/node"
 	"math"
 	"time"
 )

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/vanti-dev/bsp-ew/internal/manage/enrollment"
-	"github.com/vanti-dev/bsp-ew/internal/util/pki"
-	"github.com/vanti-dev/bsp-ew/pkg/gen"
+	"github.com/vanti-dev/sc-bos/internal/manage/enrollment"
+	"github.com/vanti-dev/sc-bos/internal/util/pki"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/protobuf/encoding/protojson"
 	"os"
 )

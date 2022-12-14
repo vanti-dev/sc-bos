@@ -5,11 +5,11 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
-	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
-	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/config"
+	"github.com/vanti-dev/sc-bos/internal/node"
 )
 
 // BinaryObject adapts a binary bacnet object as smart core traits.

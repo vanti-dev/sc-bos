@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/vanti-dev/bsp-ew/internal/driver"
+	"github.com/vanti-dev/sc-bos/internal/driver"
 )
 
 func ExampleControllerConfig() {

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
-	"github.com/vanti-dev/bsp-ew/internal/util/fetch"
+	"github.com/vanti-dev/sc-bos/internal/util/fetch"
 	"go.uber.org/multierr"
 )
 
@@ -161,7 +161,6 @@ func (job *keySetFetchJob) complete(result jose.JSONWebKeySet, err error) {
 
 // verifies that a JWS is signed by a key from a key set.
 // The key ID recorded in the JWS must match one of the keys in the key set.
-//
 func verifyJWSWithKeySet(jws *jose.JSONWebSignature, keySet jose.JSONWebKeySet) (payload []byte, err error) {
 	// check there is exactly one signature
 	switch len(jws.Signatures) {

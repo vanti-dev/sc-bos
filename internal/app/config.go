@@ -2,9 +2,9 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/vanti-dev/bsp-ew/internal/auto"
+	"github.com/vanti-dev/sc-bos/internal/auto"
 
-	"github.com/vanti-dev/bsp-ew/internal/driver"
+	"github.com/vanti-dev/sc-bos/internal/driver"
 )
 
 type ControllerConfig struct {

@@ -3,7 +3,7 @@ package lights
 import (
 	"context"
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/bsp-ew/internal/auto/lights/config"
+	"github.com/vanti-dev/sc-bos/internal/auto/lights/config"
 )
 
 // ReadState models everything we have read from the system.

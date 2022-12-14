@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/vanti-dev/bsp-ew/internal/util/pass"
+	"github.com/vanti-dev/sc-bos/internal/util/pass"
 	"golang.org/x/term"
 )
 

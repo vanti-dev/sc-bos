@@ -3,8 +3,8 @@ package config
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/vanti-dev/bsp-ew/internal/driver"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+	"github.com/vanti-dev/sc-bos/internal/driver"
 	"io"
 	"net/netip"
 	"os"

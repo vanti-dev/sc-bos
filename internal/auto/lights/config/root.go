@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/vanti-dev/bsp-ew/internal/auto"
-	"github.com/vanti-dev/bsp-ew/internal/util/jsontypes"
+	"github.com/vanti-dev/sc-bos/internal/auto"
+	"github.com/vanti-dev/sc-bos/internal/util/jsontypes"
 )
 
 // Root represent the configuration parameters available for the lighting automation.

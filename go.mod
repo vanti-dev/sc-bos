@@ -1,4 +1,4 @@
-module github.com/vanti-dev/bsp-ew
+module github.com/vanti-dev/sc-bos
 
 go 1.18
 

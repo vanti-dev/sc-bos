@@ -2,12 +2,12 @@ package adapt
 
 import (
 	"fmt"
-	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/config"
-	"github.com/vanti-dev/bsp-ew/internal/driver/bacnet/rpc"
-	"github.com/vanti-dev/bsp-ew/internal/node"
 	"github.com/vanti-dev/gobacnet"
 	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
+	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/config"
+	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/rpc"
+	"github.com/vanti-dev/sc-bos/internal/node"
 )
 
 // Object adapts a bacnet object into one or more smart core named traits.

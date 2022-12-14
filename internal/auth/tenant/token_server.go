@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/vanti-dev/bsp-ew/internal/auth"
-	"github.com/vanti-dev/bsp-ew/internal/util/rpcutil"
+	"github.com/vanti-dev/sc-bos/internal/auth"
+	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"go.uber.org/zap"
 )
 

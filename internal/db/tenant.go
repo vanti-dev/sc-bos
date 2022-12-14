@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4"
-	"github.com/vanti-dev/bsp-ew/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
