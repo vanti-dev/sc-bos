@@ -9,8 +9,8 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
-	"github.com/vanti-dev/sc-bos/internal/driver"
-	"github.com/vanti-dev/sc-bos/internal/driver/proxy"
+	"github.com/vanti-dev/sc-bos/pkg/driver"
+	"github.com/vanti-dev/sc-bos/pkg/driver/proxy"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"os"
 

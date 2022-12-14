@@ -1,0 +1,242 @@
+package proxy
+
+import (
+	"context"
+	"crypto/tls"
+	"errors"
+	"fmt"
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/vanti-dev/sc-bos/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/driver"
+	"github.com/vanti-dev/sc-bos/pkg/driver/proxy/config"
+	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/task"
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+)
+
+const DriverName = "proxy"
+
+var Factory driver.Factory = factory{}
+
+type factory struct{}
+
+func (f factory) New(services driver.Services) task.Starter {
+	d := &Driver{
+		announcer:       services.Node,
+		clientTLSConfig: services.ClientTLSConfig,
+	}
+	d.Lifecycle = task.NewLifecycle(d.applyConfig)
+	d.Logger = services.Logger.Named(DriverName)
+	return d
+}
+
+type Driver struct {
+	*task.Lifecycle[config.Root]
+	announcer       node.Announcer
+	clientTLSConfig *tls.Config // base config used to dial nodes
+
+	proxies []*proxy // all the nodes we proxy
+}
+
+func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
+	// todo: support incremental updates to the config, i.e. a nodes trait list has updated
+	var allErrs error
+
+	// close all existing connections and unregister all proxied traits
+	for _, p := range d.proxies {
+		allErrs = multierr.Append(allErrs, p.Close())
+	}
+	d.proxies = nil
+	if allErrs != nil {
+		d.Logger.Warn("Failed to cleanly close existing proxies", zap.Error(allErrs))
+		allErrs = nil
+	}
+
+	// For each node we create a proxy instance which manages the discovery of children exposed by that node.
+	for _, n := range cfg.Nodes {
+		conn, err := grpc.DialContext(ctx, n.Host,
+			grpc.WithTransportCredentials(credentials.NewTLS(proxyTLSConfig(d.clientTLSConfig, n))),
+		)
+		if err != nil {
+			// dial shouldn't fail, connections are lazy. If we do see an error here make sure we surface it!
+			allErrs = multierr.Append(allErrs, fmt.Errorf("dial %v %w", n.Host, err))
+			continue
+		}
+
+		ctx, shutdown := context.WithCancel(ctx)
+		proxy := &proxy{
+			config:    n,
+			conn:      conn,
+			announcer: d.announcer,
+			logger:    d.Logger.Named(n.Host),
+			shutdown:  shutdown,
+		}
+		d.proxies = append(d.proxies, proxy)
+
+		// list, announce, and subscribe to updates to the list of children on the server
+		go func() {
+			err := proxy.AnnounceChildren(ctx)
+			if errors.Is(err, context.Canceled) {
+				return
+			}
+			if err != nil {
+				d.Logger.Warn("Announcing children error", zap.Error(err))
+			}
+		}()
+	}
+	return allErrs
+}
+
+// proxyTLSConfig overlays any node specific TLS config onto the controller managed TLS config.
+func proxyTLSConfig(tlsConfig *tls.Config, n config.Node) *tls.Config {
+	if n.TLS.InsecureNoClientCert || n.TLS.InsecureSkipVerify {
+		tlsConfig = tlsConfig.Clone()
+		if n.TLS.InsecureSkipVerify {
+			tlsConfig.InsecureSkipVerify = true
+			tlsConfig.VerifyConnection = nil
+		}
+		if n.TLS.InsecureNoClientCert {
+			tlsConfig.Certificates = nil
+			tlsConfig.GetClientCertificate = nil
+		}
+	}
+	return tlsConfig
+}
+
+// proxy manages updates to the announced traits of any proxied devices for a single node.
+// At a high level it subscribes to changes in the nodes children,
+// when new children are added it announces them on this node,
+// when children are removed it removes them from this node too.
+type proxy struct {
+	config    config.Node
+	conn      *grpc.ClientConn // used if the proxy updates its children
+	announcer node.Announcer
+	logger    *zap.Logger
+
+	shutdown context.CancelFunc
+}
+
+// AnnounceChildren queries the nodes Parent trait for children and syncs those children with the announcer.
+// AnnounceChildren blocks until either we give up getting children or ctx is done.
+// A best effort is made to fetch children and updates, trying PullChildren and ListChildren as needed.
+// Network level errors will be retried. If the server responds with codes.Unimplemented for both Pull and List calls
+// then AnnounceChildren will give up and return an error.
+func (p *proxy) AnnounceChildren(ctx context.Context) error {
+	changes := make(chan *traits.PullChildrenResponse_Change)
+	defer close(changes)
+
+	go p.announceChanges(changes)
+
+	fetcher := &childrenFetcher{name: p.config.Name, client: traits.NewParentApiClient(p.conn)}
+	return pull.Changes[*traits.PullChildrenResponse_Change](ctx, fetcher, changes, pull.WithLogger(p.logger))
+}
+
+func (p *proxy) announceChanges(changes <-chan *traits.PullChildrenResponse_Change) {
+	announced := announcedTraits{}
+	defer announced.deleteAll()
+	for change := range changes {
+		p.announceChange(announced, change)
+	}
+}
+
+func (p *proxy) announceChange(announced announcedTraits, change *traits.PullChildrenResponse_Change) {
+	needAnnouncing := announced.updateChild(change.OldValue, change.NewValue)
+	childName := change.GetNewValue().GetName() // nil safe way to get the name
+	for _, tn := range needAnnouncing {
+		client := newApiClientForTrait(p.conn, tn)
+		if client == nil {
+			p.logger.Warn(fmt.Sprintf("remote child implements unknown trait %s", tn))
+			continue
+		}
+		undo := p.announcer.Announce(childName, node.HasTrait(tn, node.WithClients(client)))
+		announced.add(childName, tn, undo)
+	}
+}
+
+func (p *proxy) Close() error {
+	p.shutdown()
+	return p.conn.Close()
+}
+
+// childTrait is used as a map key to uniquely identify a child+trait pair.
+type childTrait struct {
+	name  string
+	trait trait.Name
+}
+
+// announcedTraits is a helper type representing child traits that have been announced already.
+// This tracks the node.Undo so we can clean up when traits need to be forgotten.
+type announcedTraits map[childTrait]node.Undo
+
+func (a announcedTraits) add(name string, tn trait.Name, undo node.Undo) {
+	a[childTrait{name: name, trait: tn}] = undo
+}
+
+// updateChild compares oldChild and newChild and undoes and deletes any child traits that no longer exist.
+// oldChild and/or newChild may be nil.
+// updateChild returns any traits that newChild has that `a` does not know about.
+func (a announcedTraits) updateChild(oldChild, newChild *traits.Child) []trait.Name {
+	if oldChild != nil && newChild == nil {
+		a.deleteChild(oldChild)
+		return nil
+	}
+
+	if newChild == nil {
+		return nil // both old and new are nil, nothing to do
+	}
+
+	var needAnnouncing []trait.Name
+	var needDeleting map[trait.Name]struct{}
+	if oldChild != nil {
+		needDeleting = make(map[trait.Name]struct{}, len(oldChild.Traits))
+		for _, t := range oldChild.Traits {
+			needDeleting[trait.Name(t.Name)] = struct{}{}
+		}
+	}
+	for _, t := range newChild.Traits {
+		tn := trait.Name(t.Name)
+		delete(needDeleting, tn)
+
+		key := childTrait{
+			name:  newChild.Name,
+			trait: tn,
+		}
+		if _, ok := a[key]; ok {
+			continue // we already know the child has this trait, don't announce and don't remove
+		}
+
+		// announce a new client trait
+		needAnnouncing = append(needAnnouncing, tn)
+	}
+	for tn, _ := range needDeleting {
+		a.deleteChildTrait(oldChild.Name, tn)
+	}
+	return needAnnouncing
+}
+
+// deleteChild undoes and removes all the traits child has.
+func (a announcedTraits) deleteChild(child *traits.Child) {
+	for _, t := range child.Traits {
+		a.deleteChildTrait(child.Name, trait.Name(t.Name))
+	}
+}
+
+func (a announcedTraits) deleteChildTrait(name string, tn trait.Name) {
+	key := childTrait{name: name, trait: tn}
+	old, ok := a[key]
+	if ok {
+		old()
+		delete(a, key)
+	}
+}
+
+func (a announcedTraits) deleteAll() {
+	for k, undo := range a {
+		undo()
+		delete(a, k)
+	}
+}

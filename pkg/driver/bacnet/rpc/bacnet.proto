@@ -1,0 +1,151 @@
+syntax = "proto3";
+
+package vanti.bsp.ew.driver.bacnet;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc";
+
+// Exposes low level bacnet services for configured devices.
+// The driver will be configured with a mapping from Smart Core names to bacnet devices, these names are used by these
+// rpc requests.
+service BacnetDriverService {
+  rpc ReadProperty(ReadPropertyRequest) returns (ReadPropertyResponse);
+  rpc ReadPropertyMultiple(ReadPropertyMultipleRequest) returns (ReadPropertyMultipleResponse);
+  rpc WriteProperty(WritePropertyRequest) returns (WritePropertyResponse);
+  rpc WritePropertyMultiple(WritePropertyMultipleRequest) returns (WritePropertyMultipleResponse);
+
+  // Returns the objects configured for the configured device, which might be a subset of those actually available.
+  rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse);
+}
+
+message ObjectIdentifier {
+  uint32 type = 1;
+  uint32 instance = 2;
+}
+
+// Defines which property of the object we should read or write.
+// If the property is an array type then also which array index to read or write.
+//
+// Default to 85 (Present Value) if not specified as part of the read or write request.
+message PropertyReference {
+  uint32 identifier = 1;
+  optional uint32 array_index = 2;
+}
+
+message PropertyValue {
+  // Represents a BACnet Date type.
+  message DateValue {
+    // 0 means absent, not year 0.
+    uint32 year = 1;
+    // January = 1
+    // 13 means odd months.
+    // 14 means even months.
+    uint32 month = 2;
+    // 32 means last day of month.
+    // 33 means odd days of month.
+    // 34 means even days of month.
+    uint32 day_of_month = 3;
+    // Monday = 1
+    uint32 day_of_week = 4;
+  }
+
+  // Represents a BACnet Time type.
+  message TimeValue {
+    // 24hr time
+    optional uint32 hour = 1;
+    optional uint32 minute = 2;
+    optional uint32 second = 3;
+    optional uint32 hundredths_of_second = 4;
+  }
+
+
+  oneof value {
+    bool null = 1;
+    bool boolean = 2;
+    uint32 unsigned32 = 3;
+    uint64 unsigned64 = 4;
+    int32 integer32 = 5;
+    int64 integer64 = 6;
+    float real = 7;
+    double double = 8;
+    bytes octet_string = 9;
+    string character_string = 10;
+    bytes bit_string = 11;
+    uint64 enumerated = 12;
+    DateValue date = 13;
+    TimeValue time = 14;
+    ObjectIdentifier object_identifier = 15;
+  }
+}
+
+message PropertyReadResult {
+  PropertyReference property_reference = 1;
+  PropertyValue value = 2;
+
+  // todo: maybe put access error here too
+}
+
+message PropertyWriteValue {
+  PropertyReference property_reference = 1;
+  PropertyValue value = 2;
+  // 1-16, 0 means absent.
+  uint32 priority = 3;
+}
+
+message ReadPropertyRequest {
+  string name = 1;
+  ObjectIdentifier object_identifier = 2;
+  PropertyReference property_reference = 3;
+}
+
+message ReadPropertyResponse {
+  ObjectIdentifier object_identifier = 1;
+  PropertyReadResult result = 2;
+}
+
+message ReadPropertyMultipleRequest {
+  string name = 1;
+  message ReadSpecification {
+    ObjectIdentifier object_identifier = 1;
+    repeated PropertyReference property_references = 2;
+  }
+  repeated ReadSpecification read_specifications = 2;
+}
+
+message ReadPropertyMultipleResponse {
+  message ReadResult {
+    ObjectIdentifier object_identifier = 1;
+    repeated PropertyReadResult results = 2;
+  }
+  repeated ReadResult read_results = 1;
+}
+
+message WritePropertyRequest {
+  string name = 1;
+  ObjectIdentifier object_identifier = 2;
+  PropertyWriteValue write_value = 3;
+}
+
+message WritePropertyResponse {
+}
+
+message WritePropertyMultipleRequest {
+  string name = 1;
+
+  message WriteSpecification {
+    ObjectIdentifier object_identifier = 2;
+    repeated PropertyWriteValue write_values = 3;
+  }
+
+  repeated WriteSpecification write_specifications = 2;
+}
+
+message WritePropertyMultipleResponse {
+}
+
+message ListObjectsRequest {
+  string name = 1;
+}
+
+message ListObjectsResponse {
+  repeated ObjectIdentifier objects = 1;
+}

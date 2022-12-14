@@ -3,8 +3,7 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/vanti-dev/sc-bos/internal/driver"
+	"github.com/vanti-dev/sc-bos/pkg/driver"
 )
 
 func ExampleControllerConfig() {
