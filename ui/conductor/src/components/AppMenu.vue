@@ -5,23 +5,22 @@
         <menu-icon :color="themeColor"/>
       </v-btn>
     </template>
-    <v-card width="100vw" :light="$vuetify.theme.dark" tile class="menu-card">
-      <nav-button :to="{name:'design'}"
-                  :color="$vuetify.theme.currentTheme.design"
-                  title="Designer"
-                  subtitle="Create our buildings, floors, floor plans, and spaces."/>
-      <nav-button :to="{name:'commission'}"
-                  :color="$vuetify.theme.currentTheme.commission"
-                  title="Commissioner"
-                  subtitle="Configure your devices and set their job roles within spaces."/>
-      <nav-button :to="{name:'operate'}"
-                  :color="$vuetify.theme.currentTheme.operate"
-                  title="Operator"
-                  subtitle="Get a holistic view of the health of your environment and access analytics."/>
-      <nav-button :to="{name:'admin'}"
-                  :color="$vuetify.theme.currentTheme.admin"
-                  title="Administrator"
-                  subtitle="Generate tenant virtual ID cards, create users and set their permission levels."/>
+    <v-card :light="$vuetify.theme.dark" tile width="100vw">
+      <nav-button :to="{name:'auth'}"
+                  subtitle=""
+                  title="Auth"/>
+      <nav-button :to="{name:'devices'}"
+                  subtitle=""
+                  title="Devices"/>
+      <nav-button :to="{name:'ops'}"
+                  subtitle=""
+                  title="Operations"/>
+      <nav-button :to="{name:'site-settings'}"
+                  subtitle=""
+                  title="Site Settings"/>
+      <nav-button :to="{name:'workflows'}"
+                  subtitle=""
+                  title="Workflows & Automations"/>
     </v-card>
   </v-menu>
 </template>
