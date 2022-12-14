@@ -34,7 +34,7 @@ func NewEmergencyLightingApiClient(cc grpc.ClientConnInterface) EmergencyLightin
 
 func (c *emergencyLightingApiClient) GetEmergencyLight(ctx context.Context, in *GetEmergencyLightRequest, opts ...grpc.CallOption) (*EmergencyLight, error) {
 	out := new(EmergencyLight)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.EmergencyLightingApi/GetEmergencyLight", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.EmergencyLightingApi/GetEmergencyLight", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (c *emergencyLightingApiClient) GetEmergencyLight(ctx context.Context, in *
 
 func (c *emergencyLightingApiClient) ListEmergencyLights(ctx context.Context, in *ListEmergencyLightsRequest, opts ...grpc.CallOption) (*ListEmergencyLightsResponse, error) {
 	out := new(ListEmergencyLightsResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.EmergencyLightingApi/ListEmergencyLights", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.EmergencyLightingApi/ListEmergencyLights", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (c *emergencyLightingApiClient) ListEmergencyLights(ctx context.Context, in
 
 func (c *emergencyLightingApiClient) ListEmergencyLightEvents(ctx context.Context, in *ListEmergencyLightEventsRequest, opts ...grpc.CallOption) (*ListEmergencyLightEventsResponse, error) {
 	out := new(ListEmergencyLightEventsResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.EmergencyLightingApi/ListEmergencyLightEvents", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.EmergencyLightingApi/ListEmergencyLightEvents", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (c *emergencyLightingApiClient) ListEmergencyLightEvents(ctx context.Contex
 
 func (c *emergencyLightingApiClient) GetReportCSV(ctx context.Context, in *GetReportCSVRequest, opts ...grpc.CallOption) (*ReportCSV, error) {
 	out := new(ReportCSV)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.EmergencyLightingApi/GetReportCSV", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.EmergencyLightingApi/GetReportCSV", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func _EmergencyLightingApi_GetEmergencyLight_Handler(srv interface{}, ctx contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.EmergencyLightingApi/GetEmergencyLight",
+		FullMethod: "/smartcore.bos.EmergencyLightingApi/GetEmergencyLight",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EmergencyLightingApiServer).GetEmergencyLight(ctx, req.(*GetEmergencyLightRequest))
@@ -136,7 +136,7 @@ func _EmergencyLightingApi_ListEmergencyLights_Handler(srv interface{}, ctx cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.EmergencyLightingApi/ListEmergencyLights",
+		FullMethod: "/smartcore.bos.EmergencyLightingApi/ListEmergencyLights",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EmergencyLightingApiServer).ListEmergencyLights(ctx, req.(*ListEmergencyLightsRequest))
@@ -154,7 +154,7 @@ func _EmergencyLightingApi_ListEmergencyLightEvents_Handler(srv interface{}, ctx
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.EmergencyLightingApi/ListEmergencyLightEvents",
+		FullMethod: "/smartcore.bos.EmergencyLightingApi/ListEmergencyLightEvents",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EmergencyLightingApiServer).ListEmergencyLightEvents(ctx, req.(*ListEmergencyLightEventsRequest))
@@ -172,7 +172,7 @@ func _EmergencyLightingApi_GetReportCSV_Handler(srv interface{}, ctx context.Con
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.EmergencyLightingApi/GetReportCSV",
+		FullMethod: "/smartcore.bos.EmergencyLightingApi/GetReportCSV",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EmergencyLightingApiServer).GetReportCSV(ctx, req.(*GetReportCSVRequest))
@@ -184,7 +184,7 @@ func _EmergencyLightingApi_GetReportCSV_Handler(srv interface{}, ctx context.Con
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var EmergencyLightingApi_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "vanti.bsp.ew.EmergencyLightingApi",
+	ServiceName: "smartcore.bos.EmergencyLightingApi",
 	HandlerType: (*EmergencyLightingApiServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

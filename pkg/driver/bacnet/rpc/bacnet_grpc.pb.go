@@ -36,7 +36,7 @@ func NewBacnetDriverServiceClient(cc grpc.ClientConnInterface) BacnetDriverServi
 
 func (c *bacnetDriverServiceClient) ReadProperty(ctx context.Context, in *ReadPropertyRequest, opts ...grpc.CallOption) (*ReadPropertyResponse, error) {
 	out := new(ReadPropertyResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.driver.bacnet.BacnetDriverService/ReadProperty", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.driver.bacnet.BacnetDriverService/ReadProperty", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (c *bacnetDriverServiceClient) ReadProperty(ctx context.Context, in *ReadPr
 
 func (c *bacnetDriverServiceClient) ReadPropertyMultiple(ctx context.Context, in *ReadPropertyMultipleRequest, opts ...grpc.CallOption) (*ReadPropertyMultipleResponse, error) {
 	out := new(ReadPropertyMultipleResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.driver.bacnet.BacnetDriverService/ReadPropertyMultiple", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.driver.bacnet.BacnetDriverService/ReadPropertyMultiple", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (c *bacnetDriverServiceClient) ReadPropertyMultiple(ctx context.Context, in
 
 func (c *bacnetDriverServiceClient) WriteProperty(ctx context.Context, in *WritePropertyRequest, opts ...grpc.CallOption) (*WritePropertyResponse, error) {
 	out := new(WritePropertyResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.driver.bacnet.BacnetDriverService/WriteProperty", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.driver.bacnet.BacnetDriverService/WriteProperty", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *bacnetDriverServiceClient) WriteProperty(ctx context.Context, in *Write
 
 func (c *bacnetDriverServiceClient) WritePropertyMultiple(ctx context.Context, in *WritePropertyMultipleRequest, opts ...grpc.CallOption) (*WritePropertyMultipleResponse, error) {
 	out := new(WritePropertyMultipleResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.driver.bacnet.BacnetDriverService/WritePropertyMultiple", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.driver.bacnet.BacnetDriverService/WritePropertyMultiple", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (c *bacnetDriverServiceClient) WritePropertyMultiple(ctx context.Context, i
 
 func (c *bacnetDriverServiceClient) ListObjects(ctx context.Context, in *ListObjectsRequest, opts ...grpc.CallOption) (*ListObjectsResponse, error) {
 	out := new(ListObjectsResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.driver.bacnet.BacnetDriverService/ListObjects", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.driver.bacnet.BacnetDriverService/ListObjects", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func _BacnetDriverService_ReadProperty_Handler(srv interface{}, ctx context.Cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.driver.bacnet.BacnetDriverService/ReadProperty",
+		FullMethod: "/smartcore.bos.driver.bacnet.BacnetDriverService/ReadProperty",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BacnetDriverServiceServer).ReadProperty(ctx, req.(*ReadPropertyRequest))
@@ -152,7 +152,7 @@ func _BacnetDriverService_ReadPropertyMultiple_Handler(srv interface{}, ctx cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.driver.bacnet.BacnetDriverService/ReadPropertyMultiple",
+		FullMethod: "/smartcore.bos.driver.bacnet.BacnetDriverService/ReadPropertyMultiple",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BacnetDriverServiceServer).ReadPropertyMultiple(ctx, req.(*ReadPropertyMultipleRequest))
@@ -170,7 +170,7 @@ func _BacnetDriverService_WriteProperty_Handler(srv interface{}, ctx context.Con
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.driver.bacnet.BacnetDriverService/WriteProperty",
+		FullMethod: "/smartcore.bos.driver.bacnet.BacnetDriverService/WriteProperty",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BacnetDriverServiceServer).WriteProperty(ctx, req.(*WritePropertyRequest))
@@ -188,7 +188,7 @@ func _BacnetDriverService_WritePropertyMultiple_Handler(srv interface{}, ctx con
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.driver.bacnet.BacnetDriverService/WritePropertyMultiple",
+		FullMethod: "/smartcore.bos.driver.bacnet.BacnetDriverService/WritePropertyMultiple",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BacnetDriverServiceServer).WritePropertyMultiple(ctx, req.(*WritePropertyMultipleRequest))
@@ -206,7 +206,7 @@ func _BacnetDriverService_ListObjects_Handler(srv interface{}, ctx context.Conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.driver.bacnet.BacnetDriverService/ListObjects",
+		FullMethod: "/smartcore.bos.driver.bacnet.BacnetDriverService/ListObjects",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BacnetDriverServiceServer).ListObjects(ctx, req.(*ListObjectsRequest))
@@ -218,7 +218,7 @@ func _BacnetDriverService_ListObjects_Handler(srv interface{}, ctx context.Conte
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var BacnetDriverService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "vanti.bsp.ew.driver.bacnet.BacnetDriverService",
+	ServiceName: "smartcore.bos.driver.bacnet.BacnetDriverService",
 	HandlerType: (*BacnetDriverServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

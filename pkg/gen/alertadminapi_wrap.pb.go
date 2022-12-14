@@ -3,8 +3,9 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	"context"
+
+	"google.golang.org/grpc"
 )
 
 // WrapAlertAdminApi	adapts a gen.AlertAdminApiServer	and presents it as a gen.AlertAdminApiClient

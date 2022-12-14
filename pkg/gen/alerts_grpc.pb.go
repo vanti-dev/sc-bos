@@ -36,7 +36,7 @@ func NewAlertApiClient(cc grpc.ClientConnInterface) AlertApiClient {
 
 func (c *alertApiClient) ListAlerts(ctx context.Context, in *ListAlertsRequest, opts ...grpc.CallOption) (*ListAlertsResponse, error) {
 	out := new(ListAlertsResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.AlertApi/ListAlerts", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.AlertApi/ListAlerts", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (c *alertApiClient) ListAlerts(ctx context.Context, in *ListAlertsRequest, 
 }
 
 func (c *alertApiClient) PullAlerts(ctx context.Context, in *PullAlertsRequest, opts ...grpc.CallOption) (AlertApi_PullAlertsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &AlertApi_ServiceDesc.Streams[0], "/vanti.bsp.ew.AlertApi/PullAlerts", opts...)
+	stream, err := c.cc.NewStream(ctx, &AlertApi_ServiceDesc.Streams[0], "/smartcore.bos.AlertApi/PullAlerts", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (x *alertApiPullAlertsClient) Recv() (*PullAlertsResponse, error) {
 
 func (c *alertApiClient) AcknowledgeAlert(ctx context.Context, in *AcknowledgeAlertRequest, opts ...grpc.CallOption) (*Alert, error) {
 	out := new(Alert)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.AlertApi/AcknowledgeAlert", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.AlertApi/AcknowledgeAlert", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (c *alertApiClient) AcknowledgeAlert(ctx context.Context, in *AcknowledgeAl
 
 func (c *alertApiClient) UnacknowledgeAlert(ctx context.Context, in *AcknowledgeAlertRequest, opts ...grpc.CallOption) (*Alert, error) {
 	out := new(Alert)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.AlertApi/UnacknowledgeAlert", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.AlertApi/UnacknowledgeAlert", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ func _AlertApi_ListAlerts_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.AlertApi/ListAlerts",
+		FullMethod: "/smartcore.bos.AlertApi/ListAlerts",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AlertApiServer).ListAlerts(ctx, req.(*ListAlertsRequest))
@@ -184,7 +184,7 @@ func _AlertApi_AcknowledgeAlert_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.AlertApi/AcknowledgeAlert",
+		FullMethod: "/smartcore.bos.AlertApi/AcknowledgeAlert",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AlertApiServer).AcknowledgeAlert(ctx, req.(*AcknowledgeAlertRequest))
@@ -202,7 +202,7 @@ func _AlertApi_UnacknowledgeAlert_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.AlertApi/UnacknowledgeAlert",
+		FullMethod: "/smartcore.bos.AlertApi/UnacknowledgeAlert",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AlertApiServer).UnacknowledgeAlert(ctx, req.(*AcknowledgeAlertRequest))
@@ -214,7 +214,7 @@ func _AlertApi_UnacknowledgeAlert_Handler(srv interface{}, ctx context.Context, 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AlertApi_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "vanti.bsp.ew.AlertApi",
+	ServiceName: "smartcore.bos.AlertApi",
 	HandlerType: (*AlertApiServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -259,7 +259,7 @@ func NewAlertAdminApiClient(cc grpc.ClientConnInterface) AlertAdminApiClient {
 
 func (c *alertAdminApiClient) CreateAlert(ctx context.Context, in *CreateAlertRequest, opts ...grpc.CallOption) (*Alert, error) {
 	out := new(Alert)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.AlertAdminApi/CreateAlert", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.AlertAdminApi/CreateAlert", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -268,7 +268,7 @@ func (c *alertAdminApiClient) CreateAlert(ctx context.Context, in *CreateAlertRe
 
 func (c *alertAdminApiClient) UpdateAlert(ctx context.Context, in *UpdateAlertRequest, opts ...grpc.CallOption) (*Alert, error) {
 	out := new(Alert)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.AlertAdminApi/UpdateAlert", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.AlertAdminApi/UpdateAlert", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -277,7 +277,7 @@ func (c *alertAdminApiClient) UpdateAlert(ctx context.Context, in *UpdateAlertRe
 
 func (c *alertAdminApiClient) DeleteAlert(ctx context.Context, in *DeleteAlertRequest, opts ...grpc.CallOption) (*DeleteAlertResponse, error) {
 	out := new(DeleteAlertResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.AlertAdminApi/DeleteAlert", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.AlertAdminApi/DeleteAlert", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -330,7 +330,7 @@ func _AlertAdminApi_CreateAlert_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.AlertAdminApi/CreateAlert",
+		FullMethod: "/smartcore.bos.AlertAdminApi/CreateAlert",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AlertAdminApiServer).CreateAlert(ctx, req.(*CreateAlertRequest))
@@ -348,7 +348,7 @@ func _AlertAdminApi_UpdateAlert_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.AlertAdminApi/UpdateAlert",
+		FullMethod: "/smartcore.bos.AlertAdminApi/UpdateAlert",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AlertAdminApiServer).UpdateAlert(ctx, req.(*UpdateAlertRequest))
@@ -366,7 +366,7 @@ func _AlertAdminApi_DeleteAlert_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.AlertAdminApi/DeleteAlert",
+		FullMethod: "/smartcore.bos.AlertAdminApi/DeleteAlert",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AlertAdminApiServer).DeleteAlert(ctx, req.(*DeleteAlertRequest))
@@ -378,7 +378,7 @@ func _AlertAdminApi_DeleteAlert_Handler(srv interface{}, ctx context.Context, de
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AlertAdminApi_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "vanti.bsp.ew.AlertAdminApi",
+	ServiceName: "smartcore.bos.AlertAdminApi",
 	HandlerType: (*AlertAdminApiServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

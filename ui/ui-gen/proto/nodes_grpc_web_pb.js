@@ -1,5 +1,5 @@
 /**
- * @fileoverview gRPC-Web generated client stub for vanti.bsp.ew
+ * @fileoverview gRPC-Web generated client stub for smartcore.bos
  * @enhanceable
  * @public
  */
@@ -16,305 +16,380 @@ const grpc = {};
 grpc.web = require('grpc-web');
 
 const proto = {};
-proto.vanti = {};
-proto.vanti.bsp = {};
-proto.vanti.bsp.ew = require('./nodes_pb.js');
+proto.smartcore = {};
+proto.smartcore.bos = require('./nodes_pb.js');
 
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
  */
-proto.vanti.bsp.ew.NodeApiClient =
+proto.smartcore.bos.NodeApiClient =
     function(hostname, credentials, options) {
-      if (!options) options = {};
-      options.format = 'text';
+  if (!options) options = {};
+  options['format'] = 'text';
 
-      /**
-       * @private @const {!grpc.web.GrpcWebClientBase} The client
-       */
-      this.client_ = new grpc.web.GrpcWebClientBase(options);
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
 
-      /**
-       * @private @const {string} The hostname
-       */
-      this.hostname_ = hostname;
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
 
-    };
+};
 
 
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
  */
-proto.vanti.bsp.ew.NodeApiPromiseClient =
+proto.smartcore.bos.NodeApiPromiseClient =
     function(hostname, credentials, options) {
-      if (!options) options = {};
-      options.format = 'text';
+  if (!options) options = {};
+  options['format'] = 'text';
 
-      /**
-       * @private @const {!grpc.web.GrpcWebClientBase} The client
-       */
-      this.client_ = new grpc.web.GrpcWebClientBase(options);
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
 
-      /**
-       * @private @const {string} The hostname
-       */
-      this.hostname_ = hostname;
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
 
-    };
+};
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.vanti.bsp.ew.GetNodeRegistrationRequest,
- *   !proto.vanti.bsp.ew.NodeRegistration>}
+ *   !proto.smartcore.bos.GetNodeRegistrationRequest,
+ *   !proto.smartcore.bos.NodeRegistration>}
  */
 const methodDescriptor_NodeApi_GetNodeRegistration = new grpc.web.MethodDescriptor(
-    '/vanti.bsp.ew.NodeApi/GetNodeRegistration',
-    grpc.web.MethodType.UNARY,
-    proto.vanti.bsp.ew.GetNodeRegistrationRequest,
-    proto.vanti.bsp.ew.NodeRegistration,
-    /**
-     * @param {!proto.vanti.bsp.ew.GetNodeRegistrationRequest} request
-     * @return {!Uint8Array}
-     */
-    function(request) {
-      return request.serializeBinary();
-    },
-    proto.vanti.bsp.ew.NodeRegistration.deserializeBinary
+  '/smartcore.bos.NodeApi/GetNodeRegistration',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.GetNodeRegistrationRequest,
+  proto.smartcore.bos.NodeRegistration,
+  /**
+   * @param {!proto.smartcore.bos.GetNodeRegistrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.NodeRegistration.deserializeBinary
 );
 
 
 /**
- * @param {!proto.vanti.bsp.ew.GetNodeRegistrationRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.vanti.bsp.ew.NodeRegistration)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.vanti.bsp.ew.NodeRegistration>|undefined}
- *     The XHR Node Readable Stream
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.GetNodeRegistrationRequest,
+ *   !proto.smartcore.bos.NodeRegistration>}
  */
-proto.vanti.bsp.ew.NodeApiClient.prototype.getNodeRegistration =
-    function(request, metadata, callback) {
-      return this.client_.rpcCall(this.hostname_ +
-          '/vanti.bsp.ew.NodeApi/GetNodeRegistration',
-          request,
-          metadata || {},
-          methodDescriptor_NodeApi_GetNodeRegistration,
-          callback);
-    };
+const methodInfo_NodeApi_GetNodeRegistration = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.NodeRegistration,
+  /**
+   * @param {!proto.smartcore.bos.GetNodeRegistrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.NodeRegistration.deserializeBinary
+);
 
 
 /**
- * @param {!proto.vanti.bsp.ew.GetNodeRegistrationRequest} request The
+ * @param {!proto.smartcore.bos.GetNodeRegistrationRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.vanti.bsp.ew.NodeRegistration>}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.NodeRegistration)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.NodeRegistration>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.NodeApiClient.prototype.getNodeRegistration =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.NodeApi/GetNodeRegistration',
+      request,
+      metadata || {},
+      methodDescriptor_NodeApi_GetNodeRegistration,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.GetNodeRegistrationRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.NodeRegistration>}
  *     Promise that resolves to the response
  */
-proto.vanti.bsp.ew.NodeApiPromiseClient.prototype.getNodeRegistration =
+proto.smartcore.bos.NodeApiPromiseClient.prototype.getNodeRegistration =
     function(request, metadata) {
-      return this.client_.unaryCall(this.hostname_ +
-          '/vanti.bsp.ew.NodeApi/GetNodeRegistration',
-          request,
-          metadata || {},
-          methodDescriptor_NodeApi_GetNodeRegistration);
-    };
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.NodeApi/GetNodeRegistration',
+      request,
+      metadata || {},
+      methodDescriptor_NodeApi_GetNodeRegistration);
+};
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.vanti.bsp.ew.CreateNodeRegistrationRequest,
- *   !proto.vanti.bsp.ew.NodeRegistration>}
+ *   !proto.smartcore.bos.CreateNodeRegistrationRequest,
+ *   !proto.smartcore.bos.NodeRegistration>}
  */
 const methodDescriptor_NodeApi_CreateNodeRegistration = new grpc.web.MethodDescriptor(
-    '/vanti.bsp.ew.NodeApi/CreateNodeRegistration',
-    grpc.web.MethodType.UNARY,
-    proto.vanti.bsp.ew.CreateNodeRegistrationRequest,
-    proto.vanti.bsp.ew.NodeRegistration,
-    /**
-     * @param {!proto.vanti.bsp.ew.CreateNodeRegistrationRequest} request
-     * @return {!Uint8Array}
-     */
-    function(request) {
-      return request.serializeBinary();
-    },
-    proto.vanti.bsp.ew.NodeRegistration.deserializeBinary
+  '/smartcore.bos.NodeApi/CreateNodeRegistration',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.CreateNodeRegistrationRequest,
+  proto.smartcore.bos.NodeRegistration,
+  /**
+   * @param {!proto.smartcore.bos.CreateNodeRegistrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.NodeRegistration.deserializeBinary
 );
 
 
 /**
- * @param {!proto.vanti.bsp.ew.CreateNodeRegistrationRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.vanti.bsp.ew.NodeRegistration)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.vanti.bsp.ew.NodeRegistration>|undefined}
- *     The XHR Node Readable Stream
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.CreateNodeRegistrationRequest,
+ *   !proto.smartcore.bos.NodeRegistration>}
  */
-proto.vanti.bsp.ew.NodeApiClient.prototype.createNodeRegistration =
-    function(request, metadata, callback) {
-      return this.client_.rpcCall(this.hostname_ +
-          '/vanti.bsp.ew.NodeApi/CreateNodeRegistration',
-          request,
-          metadata || {},
-          methodDescriptor_NodeApi_CreateNodeRegistration,
-          callback);
-    };
+const methodInfo_NodeApi_CreateNodeRegistration = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.NodeRegistration,
+  /**
+   * @param {!proto.smartcore.bos.CreateNodeRegistrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.NodeRegistration.deserializeBinary
+);
 
 
 /**
- * @param {!proto.vanti.bsp.ew.CreateNodeRegistrationRequest} request The
+ * @param {!proto.smartcore.bos.CreateNodeRegistrationRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.vanti.bsp.ew.NodeRegistration>}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.NodeRegistration)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.NodeRegistration>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.NodeApiClient.prototype.createNodeRegistration =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.NodeApi/CreateNodeRegistration',
+      request,
+      metadata || {},
+      methodDescriptor_NodeApi_CreateNodeRegistration,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.CreateNodeRegistrationRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.NodeRegistration>}
  *     Promise that resolves to the response
  */
-proto.vanti.bsp.ew.NodeApiPromiseClient.prototype.createNodeRegistration =
+proto.smartcore.bos.NodeApiPromiseClient.prototype.createNodeRegistration =
     function(request, metadata) {
-      return this.client_.unaryCall(this.hostname_ +
-          '/vanti.bsp.ew.NodeApi/CreateNodeRegistration',
-          request,
-          metadata || {},
-          methodDescriptor_NodeApi_CreateNodeRegistration);
-    };
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.NodeApi/CreateNodeRegistration',
+      request,
+      metadata || {},
+      methodDescriptor_NodeApi_CreateNodeRegistration);
+};
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.vanti.bsp.ew.ListNodeRegistrationsRequest,
- *   !proto.vanti.bsp.ew.ListNodeRegistrationsResponse>}
+ *   !proto.smartcore.bos.ListNodeRegistrationsRequest,
+ *   !proto.smartcore.bos.ListNodeRegistrationsResponse>}
  */
 const methodDescriptor_NodeApi_ListNodeRegistrations = new grpc.web.MethodDescriptor(
-    '/vanti.bsp.ew.NodeApi/ListNodeRegistrations',
-    grpc.web.MethodType.UNARY,
-    proto.vanti.bsp.ew.ListNodeRegistrationsRequest,
-    proto.vanti.bsp.ew.ListNodeRegistrationsResponse,
-    /**
-     * @param {!proto.vanti.bsp.ew.ListNodeRegistrationsRequest} request
-     * @return {!Uint8Array}
-     */
-    function(request) {
-      return request.serializeBinary();
-    },
-    proto.vanti.bsp.ew.ListNodeRegistrationsResponse.deserializeBinary
+  '/smartcore.bos.NodeApi/ListNodeRegistrations',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.ListNodeRegistrationsRequest,
+  proto.smartcore.bos.ListNodeRegistrationsResponse,
+  /**
+   * @param {!proto.smartcore.bos.ListNodeRegistrationsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ListNodeRegistrationsResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.vanti.bsp.ew.ListNodeRegistrationsRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.vanti.bsp.ew.ListNodeRegistrationsResponse)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.vanti.bsp.ew.ListNodeRegistrationsResponse>|undefined}
- *     The XHR Node Readable Stream
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.ListNodeRegistrationsRequest,
+ *   !proto.smartcore.bos.ListNodeRegistrationsResponse>}
  */
-proto.vanti.bsp.ew.NodeApiClient.prototype.listNodeRegistrations =
-    function(request, metadata, callback) {
-      return this.client_.rpcCall(this.hostname_ +
-          '/vanti.bsp.ew.NodeApi/ListNodeRegistrations',
-          request,
-          metadata || {},
-          methodDescriptor_NodeApi_ListNodeRegistrations,
-          callback);
-    };
+const methodInfo_NodeApi_ListNodeRegistrations = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.ListNodeRegistrationsResponse,
+  /**
+   * @param {!proto.smartcore.bos.ListNodeRegistrationsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ListNodeRegistrationsResponse.deserializeBinary
+);
 
 
 /**
- * @param {!proto.vanti.bsp.ew.ListNodeRegistrationsRequest} request The
+ * @param {!proto.smartcore.bos.ListNodeRegistrationsRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.vanti.bsp.ew.ListNodeRegistrationsResponse>}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.ListNodeRegistrationsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListNodeRegistrationsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.NodeApiClient.prototype.listNodeRegistrations =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.NodeApi/ListNodeRegistrations',
+      request,
+      metadata || {},
+      methodDescriptor_NodeApi_ListNodeRegistrations,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.ListNodeRegistrationsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.ListNodeRegistrationsResponse>}
  *     Promise that resolves to the response
  */
-proto.vanti.bsp.ew.NodeApiPromiseClient.prototype.listNodeRegistrations =
+proto.smartcore.bos.NodeApiPromiseClient.prototype.listNodeRegistrations =
     function(request, metadata) {
-      return this.client_.unaryCall(this.hostname_ +
-          '/vanti.bsp.ew.NodeApi/ListNodeRegistrations',
-          request,
-          metadata || {},
-          methodDescriptor_NodeApi_ListNodeRegistrations);
-    };
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.NodeApi/ListNodeRegistrations',
+      request,
+      metadata || {},
+      methodDescriptor_NodeApi_ListNodeRegistrations);
+};
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.vanti.bsp.ew.TestNodeCommunicationRequest,
- *   !proto.vanti.bsp.ew.TestNodeCommunicationResponse>}
+ *   !proto.smartcore.bos.TestNodeCommunicationRequest,
+ *   !proto.smartcore.bos.TestNodeCommunicationResponse>}
  */
 const methodDescriptor_NodeApi_TestNodeCommunication = new grpc.web.MethodDescriptor(
-    '/vanti.bsp.ew.NodeApi/TestNodeCommunication',
-    grpc.web.MethodType.UNARY,
-    proto.vanti.bsp.ew.TestNodeCommunicationRequest,
-    proto.vanti.bsp.ew.TestNodeCommunicationResponse,
-    /**
-     * @param {!proto.vanti.bsp.ew.TestNodeCommunicationRequest} request
-     * @return {!Uint8Array}
-     */
-    function(request) {
-      return request.serializeBinary();
-    },
-    proto.vanti.bsp.ew.TestNodeCommunicationResponse.deserializeBinary
+  '/smartcore.bos.NodeApi/TestNodeCommunication',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.TestNodeCommunicationRequest,
+  proto.smartcore.bos.TestNodeCommunicationResponse,
+  /**
+   * @param {!proto.smartcore.bos.TestNodeCommunicationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.TestNodeCommunicationResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.vanti.bsp.ew.TestNodeCommunicationRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.vanti.bsp.ew.TestNodeCommunicationResponse)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.vanti.bsp.ew.TestNodeCommunicationResponse>|undefined}
- *     The XHR Node Readable Stream
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.TestNodeCommunicationRequest,
+ *   !proto.smartcore.bos.TestNodeCommunicationResponse>}
  */
-proto.vanti.bsp.ew.NodeApiClient.prototype.testNodeCommunication =
-    function(request, metadata, callback) {
-      return this.client_.rpcCall(this.hostname_ +
-          '/vanti.bsp.ew.NodeApi/TestNodeCommunication',
-          request,
-          metadata || {},
-          methodDescriptor_NodeApi_TestNodeCommunication,
-          callback);
-    };
+const methodInfo_NodeApi_TestNodeCommunication = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.TestNodeCommunicationResponse,
+  /**
+   * @param {!proto.smartcore.bos.TestNodeCommunicationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.TestNodeCommunicationResponse.deserializeBinary
+);
 
 
 /**
- * @param {!proto.vanti.bsp.ew.TestNodeCommunicationRequest} request The
+ * @param {!proto.smartcore.bos.TestNodeCommunicationRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.vanti.bsp.ew.TestNodeCommunicationResponse>}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.TestNodeCommunicationResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.TestNodeCommunicationResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.NodeApiClient.prototype.testNodeCommunication =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.NodeApi/TestNodeCommunication',
+      request,
+      metadata || {},
+      methodDescriptor_NodeApi_TestNodeCommunication,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.TestNodeCommunicationRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.TestNodeCommunicationResponse>}
  *     Promise that resolves to the response
  */
-proto.vanti.bsp.ew.NodeApiPromiseClient.prototype.testNodeCommunication =
+proto.smartcore.bos.NodeApiPromiseClient.prototype.testNodeCommunication =
     function(request, metadata) {
-      return this.client_.unaryCall(this.hostname_ +
-          '/vanti.bsp.ew.NodeApi/TestNodeCommunication',
-          request,
-          metadata || {},
-          methodDescriptor_NodeApi_TestNodeCommunication);
-    };
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.NodeApi/TestNodeCommunication',
+      request,
+      metadata || {},
+      methodDescriptor_NodeApi_TestNodeCommunication);
+};
 
 
-module.exports = proto.vanti.bsp.ew;
+module.exports = proto.smartcore.bos;
 

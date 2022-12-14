@@ -51,7 +51,7 @@ func NewTenantApiClient(cc grpc.ClientConnInterface) TenantApiClient {
 
 func (c *tenantApiClient) ListTenants(ctx context.Context, in *ListTenantsRequest, opts ...grpc.CallOption) (*ListTenantsResponse, error) {
 	out := new(ListTenantsResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/ListTenants", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/ListTenants", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (c *tenantApiClient) ListTenants(ctx context.Context, in *ListTenantsReques
 }
 
 func (c *tenantApiClient) PullTenants(ctx context.Context, in *PullTenantsRequest, opts ...grpc.CallOption) (TenantApi_PullTenantsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TenantApi_ServiceDesc.Streams[0], "/vanti.bsp.ew.tenants.TenantApi/PullTenants", opts...)
+	stream, err := c.cc.NewStream(ctx, &TenantApi_ServiceDesc.Streams[0], "/smartcore.bos.tenants.TenantApi/PullTenants", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (x *tenantApiPullTenantsClient) Recv() (*PullTenantsResponse, error) {
 
 func (c *tenantApiClient) CreateTenant(ctx context.Context, in *CreateTenantRequest, opts ...grpc.CallOption) (*Tenant, error) {
 	out := new(Tenant)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/CreateTenant", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/CreateTenant", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (c *tenantApiClient) CreateTenant(ctx context.Context, in *CreateTenantRequ
 
 func (c *tenantApiClient) GetTenant(ctx context.Context, in *GetTenantRequest, opts ...grpc.CallOption) (*Tenant, error) {
 	out := new(Tenant)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/GetTenant", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/GetTenant", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (c *tenantApiClient) GetTenant(ctx context.Context, in *GetTenantRequest, o
 
 func (c *tenantApiClient) UpdateTenant(ctx context.Context, in *UpdateTenantRequest, opts ...grpc.CallOption) (*Tenant, error) {
 	out := new(Tenant)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/UpdateTenant", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/UpdateTenant", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func (c *tenantApiClient) UpdateTenant(ctx context.Context, in *UpdateTenantRequ
 
 func (c *tenantApiClient) DeleteTenant(ctx context.Context, in *DeleteTenantRequest, opts ...grpc.CallOption) (*DeleteTenantResponse, error) {
 	out := new(DeleteTenantResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/DeleteTenant", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/DeleteTenant", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func (c *tenantApiClient) DeleteTenant(ctx context.Context, in *DeleteTenantRequ
 }
 
 func (c *tenantApiClient) PullTenant(ctx context.Context, in *PullTenantRequest, opts ...grpc.CallOption) (TenantApi_PullTenantClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TenantApi_ServiceDesc.Streams[1], "/vanti.bsp.ew.tenants.TenantApi/PullTenant", opts...)
+	stream, err := c.cc.NewStream(ctx, &TenantApi_ServiceDesc.Streams[1], "/smartcore.bos.tenants.TenantApi/PullTenant", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (x *tenantApiPullTenantClient) Recv() (*PullTenantResponse, error) {
 
 func (c *tenantApiClient) AddTenantZones(ctx context.Context, in *AddTenantZonesRequest, opts ...grpc.CallOption) (*Tenant, error) {
 	out := new(Tenant)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/AddTenantZones", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/AddTenantZones", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func (c *tenantApiClient) AddTenantZones(ctx context.Context, in *AddTenantZones
 
 func (c *tenantApiClient) RemoveTenantZones(ctx context.Context, in *RemoveTenantZonesRequest, opts ...grpc.CallOption) (*Tenant, error) {
 	out := new(Tenant)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/RemoveTenantZones", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/RemoveTenantZones", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +178,7 @@ func (c *tenantApiClient) RemoveTenantZones(ctx context.Context, in *RemoveTenan
 
 func (c *tenantApiClient) ListSecrets(ctx context.Context, in *ListSecretsRequest, opts ...grpc.CallOption) (*ListSecretsResponse, error) {
 	out := new(ListSecretsResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/ListSecrets", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/ListSecrets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func (c *tenantApiClient) ListSecrets(ctx context.Context, in *ListSecretsReques
 }
 
 func (c *tenantApiClient) PullSecrets(ctx context.Context, in *PullSecretsRequest, opts ...grpc.CallOption) (TenantApi_PullSecretsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TenantApi_ServiceDesc.Streams[2], "/vanti.bsp.ew.tenants.TenantApi/PullSecrets", opts...)
+	stream, err := c.cc.NewStream(ctx, &TenantApi_ServiceDesc.Streams[2], "/smartcore.bos.tenants.TenantApi/PullSecrets", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +219,7 @@ func (x *tenantApiPullSecretsClient) Recv() (*PullSecretsResponse, error) {
 
 func (c *tenantApiClient) CreateSecret(ctx context.Context, in *CreateSecretRequest, opts ...grpc.CallOption) (*Secret, error) {
 	out := new(Secret)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/CreateSecret", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/CreateSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +228,7 @@ func (c *tenantApiClient) CreateSecret(ctx context.Context, in *CreateSecretRequ
 
 func (c *tenantApiClient) VerifySecret(ctx context.Context, in *VerifySecretRequest, opts ...grpc.CallOption) (*Secret, error) {
 	out := new(Secret)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/VerifySecret", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/VerifySecret", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -237,7 +237,7 @@ func (c *tenantApiClient) VerifySecret(ctx context.Context, in *VerifySecretRequ
 
 func (c *tenantApiClient) GetSecret(ctx context.Context, in *GetSecretRequest, opts ...grpc.CallOption) (*Secret, error) {
 	out := new(Secret)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/GetSecret", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/GetSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func (c *tenantApiClient) GetSecret(ctx context.Context, in *GetSecretRequest, o
 
 func (c *tenantApiClient) UpdateSecret(ctx context.Context, in *UpdateSecretRequest, opts ...grpc.CallOption) (*Secret, error) {
 	out := new(Secret)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/UpdateSecret", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/UpdateSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +255,7 @@ func (c *tenantApiClient) UpdateSecret(ctx context.Context, in *UpdateSecretRequ
 
 func (c *tenantApiClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*DeleteSecretResponse, error) {
 	out := new(DeleteSecretResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/DeleteSecret", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/DeleteSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +263,7 @@ func (c *tenantApiClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequ
 }
 
 func (c *tenantApiClient) PullSecret(ctx context.Context, in *PullSecretRequest, opts ...grpc.CallOption) (TenantApi_PullSecretClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TenantApi_ServiceDesc.Streams[3], "/vanti.bsp.ew.tenants.TenantApi/PullSecret", opts...)
+	stream, err := c.cc.NewStream(ctx, &TenantApi_ServiceDesc.Streams[3], "/smartcore.bos.tenants.TenantApi/PullSecret", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -296,7 +296,7 @@ func (x *tenantApiPullSecretClient) Recv() (*PullSecretResponse, error) {
 
 func (c *tenantApiClient) RegenerateSecret(ctx context.Context, in *RegenerateSecretRequest, opts ...grpc.CallOption) (*Secret, error) {
 	out := new(Secret)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.tenants.TenantApi/RegenerateSecret", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.tenants.TenantApi/RegenerateSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -412,7 +412,7 @@ func _TenantApi_ListTenants_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/ListTenants",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/ListTenants",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).ListTenants(ctx, req.(*ListTenantsRequest))
@@ -451,7 +451,7 @@ func _TenantApi_CreateTenant_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/CreateTenant",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/CreateTenant",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).CreateTenant(ctx, req.(*CreateTenantRequest))
@@ -469,7 +469,7 @@ func _TenantApi_GetTenant_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/GetTenant",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/GetTenant",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).GetTenant(ctx, req.(*GetTenantRequest))
@@ -487,7 +487,7 @@ func _TenantApi_UpdateTenant_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/UpdateTenant",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/UpdateTenant",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).UpdateTenant(ctx, req.(*UpdateTenantRequest))
@@ -505,7 +505,7 @@ func _TenantApi_DeleteTenant_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/DeleteTenant",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/DeleteTenant",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).DeleteTenant(ctx, req.(*DeleteTenantRequest))
@@ -544,7 +544,7 @@ func _TenantApi_AddTenantZones_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/AddTenantZones",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/AddTenantZones",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).AddTenantZones(ctx, req.(*AddTenantZonesRequest))
@@ -562,7 +562,7 @@ func _TenantApi_RemoveTenantZones_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/RemoveTenantZones",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/RemoveTenantZones",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).RemoveTenantZones(ctx, req.(*RemoveTenantZonesRequest))
@@ -580,7 +580,7 @@ func _TenantApi_ListSecrets_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/ListSecrets",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/ListSecrets",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).ListSecrets(ctx, req.(*ListSecretsRequest))
@@ -619,7 +619,7 @@ func _TenantApi_CreateSecret_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/CreateSecret",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/CreateSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).CreateSecret(ctx, req.(*CreateSecretRequest))
@@ -637,7 +637,7 @@ func _TenantApi_VerifySecret_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/VerifySecret",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/VerifySecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).VerifySecret(ctx, req.(*VerifySecretRequest))
@@ -655,7 +655,7 @@ func _TenantApi_GetSecret_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/GetSecret",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/GetSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).GetSecret(ctx, req.(*GetSecretRequest))
@@ -673,7 +673,7 @@ func _TenantApi_UpdateSecret_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/UpdateSecret",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/UpdateSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).UpdateSecret(ctx, req.(*UpdateSecretRequest))
@@ -691,7 +691,7 @@ func _TenantApi_DeleteSecret_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/DeleteSecret",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/DeleteSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).DeleteSecret(ctx, req.(*DeleteSecretRequest))
@@ -730,7 +730,7 @@ func _TenantApi_RegenerateSecret_Handler(srv interface{}, ctx context.Context, d
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.tenants.TenantApi/RegenerateSecret",
+		FullMethod: "/smartcore.bos.tenants.TenantApi/RegenerateSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantApiServer).RegenerateSecret(ctx, req.(*RegenerateSecretRequest))
@@ -742,7 +742,7 @@ func _TenantApi_RegenerateSecret_Handler(srv interface{}, ctx context.Context, d
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var TenantApi_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "vanti.bsp.ew.tenants.TenantApi",
+	ServiceName: "smartcore.bos.tenants.TenantApi",
 	HandlerType: (*TenantApiServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

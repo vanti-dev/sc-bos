@@ -93,35 +93,24 @@ export namespace Alert {
     setSeverityNotAbove(value: number): Query;
 
     getFloor(): string;
-
     setFloor(value: string): Query;
 
     getZone(): string;
-
     setZone(value: string): Query;
 
     getSource(): string;
-
     setSource(value: string): Query;
 
     getAcknowledged(): boolean;
-
     setAcknowledged(value: boolean): Query;
 
-    hasAcknowledged(): boolean;
-
-    clearAcknowledged(): Query;
+    getAcknowledgedCase(): Query.AcknowledgedCase;
 
     serializeBinary(): Uint8Array;
-
     toObject(includeInstance?: boolean): Query.AsObject;
-
     static toObject(includeInstance: boolean, msg: Query): Query.AsObject;
-
     static serializeBinaryToWriter(message: Query, writer: jspb.BinaryWriter): void;
-
     static deserializeBinary(bytes: Uint8Array): Query;
-
     static deserializeBinaryFromReader(message: Query, reader: jspb.BinaryReader): Query;
   }
 
@@ -134,17 +123,17 @@ export namespace Alert {
       floor: string,
       zone: string,
       source: string,
-      acknowledged?: boolean,
+      acknowledged: boolean,
     }
 
-    export enum AcknowledgedCase {
+    export enum AcknowledgedCase { 
       _ACKNOWLEDGED_NOT_SET = 0,
       ACKNOWLEDGED = 8,
     }
   }
 
 
-  export enum Severity {
+  export enum Severity { 
     SEVERITY_UNSPECIFIED = 0,
     INFO = 9,
     WARNING = 13,
@@ -430,6 +419,7 @@ export class DeleteAlertResponse extends jspb.Message {
 }
 
 export namespace DeleteAlertResponse {
-  export type AsObject = {}
+  export type AsObject = {
+  }
 }
 

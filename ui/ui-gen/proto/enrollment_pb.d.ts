@@ -54,7 +54,8 @@ export class GetEnrollmentRequest extends jspb.Message {
 }
 
 export namespace GetEnrollmentRequest {
-  export type AsObject = {}
+  export type AsObject = {
+  }
 }
 
 export class CreateEnrollmentRequest extends jspb.Message {
@@ -87,6 +88,7 @@ export class DeleteEnrollmentRequest extends jspb.Message {
 }
 
 export namespace DeleteEnrollmentRequest {
-  export type AsObject = {}
+  export type AsObject = {
+  }
 }
 

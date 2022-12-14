@@ -33,7 +33,7 @@ func NewEnrollmentApiClient(cc grpc.ClientConnInterface) EnrollmentApiClient {
 
 func (c *enrollmentApiClient) GetEnrollment(ctx context.Context, in *GetEnrollmentRequest, opts ...grpc.CallOption) (*Enrollment, error) {
 	out := new(Enrollment)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.EnrollmentApi/GetEnrollment", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.EnrollmentApi/GetEnrollment", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (c *enrollmentApiClient) GetEnrollment(ctx context.Context, in *GetEnrollme
 
 func (c *enrollmentApiClient) CreateEnrollment(ctx context.Context, in *CreateEnrollmentRequest, opts ...grpc.CallOption) (*Enrollment, error) {
 	out := new(Enrollment)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.EnrollmentApi/CreateEnrollment", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.EnrollmentApi/CreateEnrollment", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (c *enrollmentApiClient) CreateEnrollment(ctx context.Context, in *CreateEn
 
 func (c *enrollmentApiClient) DeleteEnrollment(ctx context.Context, in *DeleteEnrollmentRequest, opts ...grpc.CallOption) (*Enrollment, error) {
 	out := new(Enrollment)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.EnrollmentApi/DeleteEnrollment", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.EnrollmentApi/DeleteEnrollment", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func _EnrollmentApi_GetEnrollment_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.EnrollmentApi/GetEnrollment",
+		FullMethod: "/smartcore.bos.EnrollmentApi/GetEnrollment",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EnrollmentApiServer).GetEnrollment(ctx, req.(*GetEnrollmentRequest))
@@ -122,7 +122,7 @@ func _EnrollmentApi_CreateEnrollment_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.EnrollmentApi/CreateEnrollment",
+		FullMethod: "/smartcore.bos.EnrollmentApi/CreateEnrollment",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EnrollmentApiServer).CreateEnrollment(ctx, req.(*CreateEnrollmentRequest))
@@ -140,7 +140,7 @@ func _EnrollmentApi_DeleteEnrollment_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.EnrollmentApi/DeleteEnrollment",
+		FullMethod: "/smartcore.bos.EnrollmentApi/DeleteEnrollment",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EnrollmentApiServer).DeleteEnrollment(ctx, req.(*DeleteEnrollmentRequest))
@@ -152,7 +152,7 @@ func _EnrollmentApi_DeleteEnrollment_Handler(srv interface{}, ctx context.Contex
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var EnrollmentApi_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "vanti.bsp.ew.EnrollmentApi",
+	ServiceName: "smartcore.bos.EnrollmentApi",
 	HandlerType: (*EnrollmentApiServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

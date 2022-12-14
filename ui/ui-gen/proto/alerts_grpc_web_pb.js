@@ -1,5 +1,5 @@
 /**
- * @fileoverview gRPC-Web generated client stub for vanti.bsp.ew
+ * @fileoverview gRPC-Web generated client stub for smartcore.bos
  * @enhanceable
  * @public
  */
@@ -22,535 +22,667 @@ var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/time
 
 var types_change_pb = require('@smart-core-os/sc-api-grpc-web/types/change_pb.js')
 const proto = {};
-proto.vanti = {};
-proto.vanti.bsp = {};
-proto.vanti.bsp.ew = require('./alerts_pb.js');
+proto.smartcore = {};
+proto.smartcore.bos = require('./alerts_pb.js');
 
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
  */
-proto.vanti.bsp.ew.AlertApiClient =
+proto.smartcore.bos.AlertApiClient =
     function(hostname, credentials, options) {
-      if (!options) options = {};
-      options.format = 'text';
+  if (!options) options = {};
+  options['format'] = 'text';
 
-      /**
-       * @private @const {!grpc.web.GrpcWebClientBase} The client
-       */
-      this.client_ = new grpc.web.GrpcWebClientBase(options);
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
 
-      /**
-       * @private @const {string} The hostname
-       */
-      this.hostname_ = hostname;
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
 
-    };
+};
 
 
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
  */
-proto.vanti.bsp.ew.AlertApiPromiseClient =
+proto.smartcore.bos.AlertApiPromiseClient =
     function(hostname, credentials, options) {
-      if (!options) options = {};
-      options.format = 'text';
+  if (!options) options = {};
+  options['format'] = 'text';
 
-      /**
-       * @private @const {!grpc.web.GrpcWebClientBase} The client
-       */
-      this.client_ = new grpc.web.GrpcWebClientBase(options);
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
 
-      /**
-       * @private @const {string} The hostname
-       */
-      this.hostname_ = hostname;
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
 
-    };
+};
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.vanti.bsp.ew.ListAlertsRequest,
- *   !proto.vanti.bsp.ew.ListAlertsResponse>}
+ *   !proto.smartcore.bos.ListAlertsRequest,
+ *   !proto.smartcore.bos.ListAlertsResponse>}
  */
 const methodDescriptor_AlertApi_ListAlerts = new grpc.web.MethodDescriptor(
-    '/vanti.bsp.ew.AlertApi/ListAlerts',
-    grpc.web.MethodType.UNARY,
-    proto.vanti.bsp.ew.ListAlertsRequest,
-    proto.vanti.bsp.ew.ListAlertsResponse,
-    /**
-     * @param {!proto.vanti.bsp.ew.ListAlertsRequest} request
-     * @return {!Uint8Array}
-     */
-    function(request) {
-      return request.serializeBinary();
-    },
-    proto.vanti.bsp.ew.ListAlertsResponse.deserializeBinary
+  '/smartcore.bos.AlertApi/ListAlerts',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.ListAlertsRequest,
+  proto.smartcore.bos.ListAlertsResponse,
+  /**
+   * @param {!proto.smartcore.bos.ListAlertsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ListAlertsResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.vanti.bsp.ew.ListAlertsRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.vanti.bsp.ew.ListAlertsResponse)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.vanti.bsp.ew.ListAlertsResponse>|undefined}
- *     The XHR Node Readable Stream
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.ListAlertsRequest,
+ *   !proto.smartcore.bos.ListAlertsResponse>}
  */
-proto.vanti.bsp.ew.AlertApiClient.prototype.listAlerts =
-    function(request, metadata, callback) {
-      return this.client_.rpcCall(this.hostname_ +
-          '/vanti.bsp.ew.AlertApi/ListAlerts',
-          request,
-          metadata || {},
-          methodDescriptor_AlertApi_ListAlerts,
-          callback);
-    };
+const methodInfo_AlertApi_ListAlerts = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.ListAlertsResponse,
+  /**
+   * @param {!proto.smartcore.bos.ListAlertsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ListAlertsResponse.deserializeBinary
+);
 
 
 /**
- * @param {!proto.vanti.bsp.ew.ListAlertsRequest} request The
+ * @param {!proto.smartcore.bos.ListAlertsRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.vanti.bsp.ew.ListAlertsResponse>}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.ListAlertsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListAlertsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AlertApiClient.prototype.listAlerts =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AlertApi/ListAlerts',
+      request,
+      metadata || {},
+      methodDescriptor_AlertApi_ListAlerts,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.ListAlertsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.ListAlertsResponse>}
  *     Promise that resolves to the response
  */
-proto.vanti.bsp.ew.AlertApiPromiseClient.prototype.listAlerts =
+proto.smartcore.bos.AlertApiPromiseClient.prototype.listAlerts =
     function(request, metadata) {
-      return this.client_.unaryCall(this.hostname_ +
-          '/vanti.bsp.ew.AlertApi/ListAlerts',
-          request,
-          metadata || {},
-          methodDescriptor_AlertApi_ListAlerts);
-    };
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AlertApi/ListAlerts',
+      request,
+      metadata || {},
+      methodDescriptor_AlertApi_ListAlerts);
+};
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.vanti.bsp.ew.PullAlertsRequest,
- *   !proto.vanti.bsp.ew.PullAlertsResponse>}
+ *   !proto.smartcore.bos.PullAlertsRequest,
+ *   !proto.smartcore.bos.PullAlertsResponse>}
  */
 const methodDescriptor_AlertApi_PullAlerts = new grpc.web.MethodDescriptor(
-    '/vanti.bsp.ew.AlertApi/PullAlerts',
-    grpc.web.MethodType.SERVER_STREAMING,
-    proto.vanti.bsp.ew.PullAlertsRequest,
-    proto.vanti.bsp.ew.PullAlertsResponse,
-    /**
-     * @param {!proto.vanti.bsp.ew.PullAlertsRequest} request
-     * @return {!Uint8Array}
-     */
-    function(request) {
-      return request.serializeBinary();
-    },
-    proto.vanti.bsp.ew.PullAlertsResponse.deserializeBinary
+  '/smartcore.bos.AlertApi/PullAlerts',
+  grpc.web.MethodType.SERVER_STREAMING,
+  proto.smartcore.bos.PullAlertsRequest,
+  proto.smartcore.bos.PullAlertsResponse,
+  /**
+   * @param {!proto.smartcore.bos.PullAlertsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.PullAlertsResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.vanti.bsp.ew.PullAlertsRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
- *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.vanti.bsp.ew.PullAlertsResponse>}
- *     The XHR Node Readable Stream
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.PullAlertsRequest,
+ *   !proto.smartcore.bos.PullAlertsResponse>}
  */
-proto.vanti.bsp.ew.AlertApiClient.prototype.pullAlerts =
-    function(request, metadata) {
-      return this.client_.serverStreaming(this.hostname_ +
-          '/vanti.bsp.ew.AlertApi/PullAlerts',
-          request,
-          metadata || {},
-          methodDescriptor_AlertApi_PullAlerts);
-    };
+const methodInfo_AlertApi_PullAlerts = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.PullAlertsResponse,
+  /**
+   * @param {!proto.smartcore.bos.PullAlertsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.PullAlertsResponse.deserializeBinary
+);
 
 
 /**
- * @param {!proto.vanti.bsp.ew.PullAlertsRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {!proto.smartcore.bos.PullAlertsRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.vanti.bsp.ew.PullAlertsResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullAlertsResponse>}
  *     The XHR Node Readable Stream
  */
-proto.vanti.bsp.ew.AlertApiPromiseClient.prototype.pullAlerts =
+proto.smartcore.bos.AlertApiClient.prototype.pullAlerts =
     function(request, metadata) {
-      return this.client_.serverStreaming(this.hostname_ +
-          '/vanti.bsp.ew.AlertApi/PullAlerts',
-          request,
-          metadata || {},
-          methodDescriptor_AlertApi_PullAlerts);
-    };
+  return this.client_.serverStreaming(this.hostname_ +
+      '/smartcore.bos.AlertApi/PullAlerts',
+      request,
+      metadata || {},
+      methodDescriptor_AlertApi_PullAlerts);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.PullAlertsRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullAlertsResponse>}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AlertApiPromiseClient.prototype.pullAlerts =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/smartcore.bos.AlertApi/PullAlerts',
+      request,
+      metadata || {},
+      methodDescriptor_AlertApi_PullAlerts);
+};
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.vanti.bsp.ew.AcknowledgeAlertRequest,
- *   !proto.vanti.bsp.ew.Alert>}
+ *   !proto.smartcore.bos.AcknowledgeAlertRequest,
+ *   !proto.smartcore.bos.Alert>}
  */
 const methodDescriptor_AlertApi_AcknowledgeAlert = new grpc.web.MethodDescriptor(
-    '/vanti.bsp.ew.AlertApi/AcknowledgeAlert',
-    grpc.web.MethodType.UNARY,
-    proto.vanti.bsp.ew.AcknowledgeAlertRequest,
-    proto.vanti.bsp.ew.Alert,
-    /**
-     * @param {!proto.vanti.bsp.ew.AcknowledgeAlertRequest} request
-     * @return {!Uint8Array}
-     */
-    function(request) {
-      return request.serializeBinary();
-    },
-    proto.vanti.bsp.ew.Alert.deserializeBinary
+  '/smartcore.bos.AlertApi/AcknowledgeAlert',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.AcknowledgeAlertRequest,
+  proto.smartcore.bos.Alert,
+  /**
+   * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Alert.deserializeBinary
 );
 
 
 /**
- * @param {!proto.vanti.bsp.ew.AcknowledgeAlertRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.vanti.bsp.ew.Alert)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.vanti.bsp.ew.Alert>|undefined}
- *     The XHR Node Readable Stream
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.AcknowledgeAlertRequest,
+ *   !proto.smartcore.bos.Alert>}
  */
-proto.vanti.bsp.ew.AlertApiClient.prototype.acknowledgeAlert =
-    function(request, metadata, callback) {
-      return this.client_.rpcCall(this.hostname_ +
-          '/vanti.bsp.ew.AlertApi/AcknowledgeAlert',
-          request,
-          metadata || {},
-          methodDescriptor_AlertApi_AcknowledgeAlert,
-          callback);
-    };
+const methodInfo_AlertApi_AcknowledgeAlert = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.Alert,
+  /**
+   * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Alert.deserializeBinary
+);
 
 
 /**
- * @param {!proto.vanti.bsp.ew.AcknowledgeAlertRequest} request The
+ * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.vanti.bsp.ew.Alert>}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.Alert)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Alert>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AlertApiClient.prototype.acknowledgeAlert =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AlertApi/AcknowledgeAlert',
+      request,
+      metadata || {},
+      methodDescriptor_AlertApi_AcknowledgeAlert,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.Alert>}
  *     Promise that resolves to the response
  */
-proto.vanti.bsp.ew.AlertApiPromiseClient.prototype.acknowledgeAlert =
+proto.smartcore.bos.AlertApiPromiseClient.prototype.acknowledgeAlert =
     function(request, metadata) {
-      return this.client_.unaryCall(this.hostname_ +
-          '/vanti.bsp.ew.AlertApi/AcknowledgeAlert',
-          request,
-          metadata || {},
-          methodDescriptor_AlertApi_AcknowledgeAlert);
-    };
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AlertApi/AcknowledgeAlert',
+      request,
+      metadata || {},
+      methodDescriptor_AlertApi_AcknowledgeAlert);
+};
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.vanti.bsp.ew.AcknowledgeAlertRequest,
- *   !proto.vanti.bsp.ew.Alert>}
+ *   !proto.smartcore.bos.AcknowledgeAlertRequest,
+ *   !proto.smartcore.bos.Alert>}
  */
 const methodDescriptor_AlertApi_UnacknowledgeAlert = new grpc.web.MethodDescriptor(
-    '/vanti.bsp.ew.AlertApi/UnacknowledgeAlert',
-    grpc.web.MethodType.UNARY,
-    proto.vanti.bsp.ew.AcknowledgeAlertRequest,
-    proto.vanti.bsp.ew.Alert,
-    /**
-     * @param {!proto.vanti.bsp.ew.AcknowledgeAlertRequest} request
-     * @return {!Uint8Array}
-     */
-    function(request) {
-      return request.serializeBinary();
-    },
-    proto.vanti.bsp.ew.Alert.deserializeBinary
+  '/smartcore.bos.AlertApi/UnacknowledgeAlert',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.AcknowledgeAlertRequest,
+  proto.smartcore.bos.Alert,
+  /**
+   * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Alert.deserializeBinary
 );
 
 
 /**
- * @param {!proto.vanti.bsp.ew.AcknowledgeAlertRequest} request The
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.AcknowledgeAlertRequest,
+ *   !proto.smartcore.bos.Alert>}
+ */
+const methodInfo_AlertApi_UnacknowledgeAlert = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.Alert,
+  /**
+   * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Alert.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.vanti.bsp.ew.Alert)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.Alert)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.vanti.bsp.ew.Alert>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Alert>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.vanti.bsp.ew.AlertApiClient.prototype.unacknowledgeAlert =
+proto.smartcore.bos.AlertApiClient.prototype.unacknowledgeAlert =
     function(request, metadata, callback) {
-      return this.client_.rpcCall(this.hostname_ +
-          '/vanti.bsp.ew.AlertApi/UnacknowledgeAlert',
-          request,
-          metadata || {},
-          methodDescriptor_AlertApi_UnacknowledgeAlert,
-          callback);
-    };
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AlertApi/UnacknowledgeAlert',
+      request,
+      metadata || {},
+      methodDescriptor_AlertApi_UnacknowledgeAlert,
+      callback);
+};
 
 
 /**
- * @param {!proto.vanti.bsp.ew.AcknowledgeAlertRequest} request The
+ * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.vanti.bsp.ew.Alert>}
+ * @return {!Promise<!proto.smartcore.bos.Alert>}
  *     Promise that resolves to the response
  */
-proto.vanti.bsp.ew.AlertApiPromiseClient.prototype.unacknowledgeAlert =
+proto.smartcore.bos.AlertApiPromiseClient.prototype.unacknowledgeAlert =
     function(request, metadata) {
-      return this.client_.unaryCall(this.hostname_ +
-          '/vanti.bsp.ew.AlertApi/UnacknowledgeAlert',
-          request,
-          metadata || {},
-          methodDescriptor_AlertApi_UnacknowledgeAlert);
-    };
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AlertApi/UnacknowledgeAlert',
+      request,
+      metadata || {},
+      methodDescriptor_AlertApi_UnacknowledgeAlert);
+};
 
 
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
  */
-proto.vanti.bsp.ew.AlertAdminApiClient =
+proto.smartcore.bos.AlertAdminApiClient =
     function(hostname, credentials, options) {
-      if (!options) options = {};
-      options.format = 'text';
+  if (!options) options = {};
+  options['format'] = 'text';
 
-      /**
-       * @private @const {!grpc.web.GrpcWebClientBase} The client
-       */
-      this.client_ = new grpc.web.GrpcWebClientBase(options);
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
 
-      /**
-       * @private @const {string} The hostname
-       */
-      this.hostname_ = hostname;
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
 
-    };
+};
 
 
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
  */
-proto.vanti.bsp.ew.AlertAdminApiPromiseClient =
+proto.smartcore.bos.AlertAdminApiPromiseClient =
     function(hostname, credentials, options) {
-      if (!options) options = {};
-      options.format = 'text';
+  if (!options) options = {};
+  options['format'] = 'text';
 
-      /**
-       * @private @const {!grpc.web.GrpcWebClientBase} The client
-       */
-      this.client_ = new grpc.web.GrpcWebClientBase(options);
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
 
-      /**
-       * @private @const {string} The hostname
-       */
-      this.hostname_ = hostname;
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
 
-    };
+};
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.vanti.bsp.ew.CreateAlertRequest,
- *   !proto.vanti.bsp.ew.Alert>}
+ *   !proto.smartcore.bos.CreateAlertRequest,
+ *   !proto.smartcore.bos.Alert>}
  */
 const methodDescriptor_AlertAdminApi_CreateAlert = new grpc.web.MethodDescriptor(
-    '/vanti.bsp.ew.AlertAdminApi/CreateAlert',
-    grpc.web.MethodType.UNARY,
-    proto.vanti.bsp.ew.CreateAlertRequest,
-    proto.vanti.bsp.ew.Alert,
-    /**
-     * @param {!proto.vanti.bsp.ew.CreateAlertRequest} request
-     * @return {!Uint8Array}
-     */
-    function(request) {
-      return request.serializeBinary();
-    },
-    proto.vanti.bsp.ew.Alert.deserializeBinary
+  '/smartcore.bos.AlertAdminApi/CreateAlert',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.CreateAlertRequest,
+  proto.smartcore.bos.Alert,
+  /**
+   * @param {!proto.smartcore.bos.CreateAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Alert.deserializeBinary
 );
 
 
 /**
- * @param {!proto.vanti.bsp.ew.CreateAlertRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.vanti.bsp.ew.Alert)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.vanti.bsp.ew.Alert>|undefined}
- *     The XHR Node Readable Stream
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.CreateAlertRequest,
+ *   !proto.smartcore.bos.Alert>}
  */
-proto.vanti.bsp.ew.AlertAdminApiClient.prototype.createAlert =
-    function(request, metadata, callback) {
-      return this.client_.rpcCall(this.hostname_ +
-          '/vanti.bsp.ew.AlertAdminApi/CreateAlert',
-          request,
-          metadata || {},
-          methodDescriptor_AlertAdminApi_CreateAlert,
-          callback);
-    };
+const methodInfo_AlertAdminApi_CreateAlert = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.Alert,
+  /**
+   * @param {!proto.smartcore.bos.CreateAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Alert.deserializeBinary
+);
 
 
 /**
- * @param {!proto.vanti.bsp.ew.CreateAlertRequest} request The
+ * @param {!proto.smartcore.bos.CreateAlertRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.vanti.bsp.ew.Alert>}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.Alert)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Alert>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AlertAdminApiClient.prototype.createAlert =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AlertAdminApi/CreateAlert',
+      request,
+      metadata || {},
+      methodDescriptor_AlertAdminApi_CreateAlert,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.CreateAlertRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.Alert>}
  *     Promise that resolves to the response
  */
-proto.vanti.bsp.ew.AlertAdminApiPromiseClient.prototype.createAlert =
+proto.smartcore.bos.AlertAdminApiPromiseClient.prototype.createAlert =
     function(request, metadata) {
-      return this.client_.unaryCall(this.hostname_ +
-          '/vanti.bsp.ew.AlertAdminApi/CreateAlert',
-          request,
-          metadata || {},
-          methodDescriptor_AlertAdminApi_CreateAlert);
-    };
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AlertAdminApi/CreateAlert',
+      request,
+      metadata || {},
+      methodDescriptor_AlertAdminApi_CreateAlert);
+};
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.vanti.bsp.ew.UpdateAlertRequest,
- *   !proto.vanti.bsp.ew.Alert>}
+ *   !proto.smartcore.bos.UpdateAlertRequest,
+ *   !proto.smartcore.bos.Alert>}
  */
 const methodDescriptor_AlertAdminApi_UpdateAlert = new grpc.web.MethodDescriptor(
-    '/vanti.bsp.ew.AlertAdminApi/UpdateAlert',
-    grpc.web.MethodType.UNARY,
-    proto.vanti.bsp.ew.UpdateAlertRequest,
-    proto.vanti.bsp.ew.Alert,
-    /**
-     * @param {!proto.vanti.bsp.ew.UpdateAlertRequest} request
-     * @return {!Uint8Array}
-     */
-    function(request) {
-      return request.serializeBinary();
-    },
-    proto.vanti.bsp.ew.Alert.deserializeBinary
+  '/smartcore.bos.AlertAdminApi/UpdateAlert',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.UpdateAlertRequest,
+  proto.smartcore.bos.Alert,
+  /**
+   * @param {!proto.smartcore.bos.UpdateAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Alert.deserializeBinary
 );
 
 
 /**
- * @param {!proto.vanti.bsp.ew.UpdateAlertRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.vanti.bsp.ew.Alert)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.vanti.bsp.ew.Alert>|undefined}
- *     The XHR Node Readable Stream
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.UpdateAlertRequest,
+ *   !proto.smartcore.bos.Alert>}
  */
-proto.vanti.bsp.ew.AlertAdminApiClient.prototype.updateAlert =
-    function(request, metadata, callback) {
-      return this.client_.rpcCall(this.hostname_ +
-          '/vanti.bsp.ew.AlertAdminApi/UpdateAlert',
-          request,
-          metadata || {},
-          methodDescriptor_AlertAdminApi_UpdateAlert,
-          callback);
-    };
+const methodInfo_AlertAdminApi_UpdateAlert = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.Alert,
+  /**
+   * @param {!proto.smartcore.bos.UpdateAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Alert.deserializeBinary
+);
 
 
 /**
- * @param {!proto.vanti.bsp.ew.UpdateAlertRequest} request The
+ * @param {!proto.smartcore.bos.UpdateAlertRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.vanti.bsp.ew.Alert>}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.Alert)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Alert>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AlertAdminApiClient.prototype.updateAlert =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AlertAdminApi/UpdateAlert',
+      request,
+      metadata || {},
+      methodDescriptor_AlertAdminApi_UpdateAlert,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.UpdateAlertRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.Alert>}
  *     Promise that resolves to the response
  */
-proto.vanti.bsp.ew.AlertAdminApiPromiseClient.prototype.updateAlert =
+proto.smartcore.bos.AlertAdminApiPromiseClient.prototype.updateAlert =
     function(request, metadata) {
-      return this.client_.unaryCall(this.hostname_ +
-          '/vanti.bsp.ew.AlertAdminApi/UpdateAlert',
-          request,
-          metadata || {},
-          methodDescriptor_AlertAdminApi_UpdateAlert);
-    };
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AlertAdminApi/UpdateAlert',
+      request,
+      metadata || {},
+      methodDescriptor_AlertAdminApi_UpdateAlert);
+};
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.vanti.bsp.ew.DeleteAlertRequest,
- *   !proto.vanti.bsp.ew.DeleteAlertResponse>}
+ *   !proto.smartcore.bos.DeleteAlertRequest,
+ *   !proto.smartcore.bos.DeleteAlertResponse>}
  */
 const methodDescriptor_AlertAdminApi_DeleteAlert = new grpc.web.MethodDescriptor(
-    '/vanti.bsp.ew.AlertAdminApi/DeleteAlert',
-    grpc.web.MethodType.UNARY,
-    proto.vanti.bsp.ew.DeleteAlertRequest,
-    proto.vanti.bsp.ew.DeleteAlertResponse,
-    /**
-     * @param {!proto.vanti.bsp.ew.DeleteAlertRequest} request
-     * @return {!Uint8Array}
-     */
-    function(request) {
-      return request.serializeBinary();
-    },
-    proto.vanti.bsp.ew.DeleteAlertResponse.deserializeBinary
+  '/smartcore.bos.AlertAdminApi/DeleteAlert',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.DeleteAlertRequest,
+  proto.smartcore.bos.DeleteAlertResponse,
+  /**
+   * @param {!proto.smartcore.bos.DeleteAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.DeleteAlertResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.vanti.bsp.ew.DeleteAlertRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.vanti.bsp.ew.DeleteAlertResponse)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.vanti.bsp.ew.DeleteAlertResponse>|undefined}
- *     The XHR Node Readable Stream
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.DeleteAlertRequest,
+ *   !proto.smartcore.bos.DeleteAlertResponse>}
  */
-proto.vanti.bsp.ew.AlertAdminApiClient.prototype.deleteAlert =
-    function(request, metadata, callback) {
-      return this.client_.rpcCall(this.hostname_ +
-          '/vanti.bsp.ew.AlertAdminApi/DeleteAlert',
-          request,
-          metadata || {},
-          methodDescriptor_AlertAdminApi_DeleteAlert,
-          callback);
-    };
+const methodInfo_AlertAdminApi_DeleteAlert = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.DeleteAlertResponse,
+  /**
+   * @param {!proto.smartcore.bos.DeleteAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.DeleteAlertResponse.deserializeBinary
+);
 
 
 /**
- * @param {!proto.vanti.bsp.ew.DeleteAlertRequest} request The
+ * @param {!proto.smartcore.bos.DeleteAlertRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.vanti.bsp.ew.DeleteAlertResponse>}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.DeleteAlertResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.DeleteAlertResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AlertAdminApiClient.prototype.deleteAlert =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AlertAdminApi/DeleteAlert',
+      request,
+      metadata || {},
+      methodDescriptor_AlertAdminApi_DeleteAlert,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.DeleteAlertRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.DeleteAlertResponse>}
  *     Promise that resolves to the response
  */
-proto.vanti.bsp.ew.AlertAdminApiPromiseClient.prototype.deleteAlert =
+proto.smartcore.bos.AlertAdminApiPromiseClient.prototype.deleteAlert =
     function(request, metadata) {
-      return this.client_.unaryCall(this.hostname_ +
-          '/vanti.bsp.ew.AlertAdminApi/DeleteAlert',
-          request,
-          metadata || {},
-          methodDescriptor_AlertAdminApi_DeleteAlert);
-    };
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AlertAdminApi/DeleteAlert',
+      request,
+      metadata || {},
+      methodDescriptor_AlertAdminApi_DeleteAlert);
+};
 
 
-module.exports = proto.vanti.bsp.ew;
+module.exports = proto.smartcore.bos;
 

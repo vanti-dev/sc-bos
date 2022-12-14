@@ -76,7 +76,8 @@ export class ListNodeRegistrationsRequest extends jspb.Message {
 }
 
 export namespace ListNodeRegistrationsRequest {
-  export type AsObject = {}
+  export type AsObject = {
+  }
 }
 
 export class ListNodeRegistrationsResponse extends jspb.Message {

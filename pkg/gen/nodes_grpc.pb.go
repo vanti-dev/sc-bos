@@ -34,7 +34,7 @@ func NewNodeApiClient(cc grpc.ClientConnInterface) NodeApiClient {
 
 func (c *nodeApiClient) GetNodeRegistration(ctx context.Context, in *GetNodeRegistrationRequest, opts ...grpc.CallOption) (*NodeRegistration, error) {
 	out := new(NodeRegistration)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.NodeApi/GetNodeRegistration", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.NodeApi/GetNodeRegistration", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (c *nodeApiClient) GetNodeRegistration(ctx context.Context, in *GetNodeRegi
 
 func (c *nodeApiClient) CreateNodeRegistration(ctx context.Context, in *CreateNodeRegistrationRequest, opts ...grpc.CallOption) (*NodeRegistration, error) {
 	out := new(NodeRegistration)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.NodeApi/CreateNodeRegistration", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.NodeApi/CreateNodeRegistration", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (c *nodeApiClient) CreateNodeRegistration(ctx context.Context, in *CreateNo
 
 func (c *nodeApiClient) ListNodeRegistrations(ctx context.Context, in *ListNodeRegistrationsRequest, opts ...grpc.CallOption) (*ListNodeRegistrationsResponse, error) {
 	out := new(ListNodeRegistrationsResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.NodeApi/ListNodeRegistrations", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.NodeApi/ListNodeRegistrations", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (c *nodeApiClient) ListNodeRegistrations(ctx context.Context, in *ListNodeR
 
 func (c *nodeApiClient) TestNodeCommunication(ctx context.Context, in *TestNodeCommunicationRequest, opts ...grpc.CallOption) (*TestNodeCommunicationResponse, error) {
 	out := new(TestNodeCommunicationResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.NodeApi/TestNodeCommunication", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.NodeApi/TestNodeCommunication", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func _NodeApi_GetNodeRegistration_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.NodeApi/GetNodeRegistration",
+		FullMethod: "/smartcore.bos.NodeApi/GetNodeRegistration",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(NodeApiServer).GetNodeRegistration(ctx, req.(*GetNodeRegistrationRequest))
@@ -136,7 +136,7 @@ func _NodeApi_CreateNodeRegistration_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.NodeApi/CreateNodeRegistration",
+		FullMethod: "/smartcore.bos.NodeApi/CreateNodeRegistration",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(NodeApiServer).CreateNodeRegistration(ctx, req.(*CreateNodeRegistrationRequest))
@@ -154,7 +154,7 @@ func _NodeApi_ListNodeRegistrations_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.NodeApi/ListNodeRegistrations",
+		FullMethod: "/smartcore.bos.NodeApi/ListNodeRegistrations",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(NodeApiServer).ListNodeRegistrations(ctx, req.(*ListNodeRegistrationsRequest))
@@ -172,7 +172,7 @@ func _NodeApi_TestNodeCommunication_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.NodeApi/TestNodeCommunication",
+		FullMethod: "/smartcore.bos.NodeApi/TestNodeCommunication",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(NodeApiServer).TestNodeCommunication(ctx, req.(*TestNodeCommunicationRequest))
@@ -184,7 +184,7 @@ func _NodeApi_TestNodeCommunication_Handler(srv interface{}, ctx context.Context
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var NodeApi_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "vanti.bsp.ew.NodeApi",
+	ServiceName: "smartcore.bos.NodeApi",
 	HandlerType: (*NodeApiServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

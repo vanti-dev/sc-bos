@@ -31,7 +31,7 @@ func NewAxiomXaDriverServiceClient(cc grpc.ClientConnInterface) AxiomXaDriverSer
 
 func (c *axiomXaDriverServiceClient) SaveQRCredential(ctx context.Context, in *SaveQRCredentialRequest, opts ...grpc.CallOption) (*SaveQRCredentialResponse, error) {
 	out := new(SaveQRCredentialResponse)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.driver.axiomxa.AxiomXaDriverService/SaveQRCredential", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.driver.axiomxa.AxiomXaDriverService/SaveQRCredential", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func _AxiomXaDriverService_SaveQRCredential_Handler(srv interface{}, ctx context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.driver.axiomxa.AxiomXaDriverService/SaveQRCredential",
+		FullMethod: "/smartcore.bos.driver.axiomxa.AxiomXaDriverService/SaveQRCredential",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AxiomXaDriverServiceServer).SaveQRCredential(ctx, req.(*SaveQRCredentialRequest))
@@ -88,7 +88,7 @@ func _AxiomXaDriverService_SaveQRCredential_Handler(srv interface{}, ctx context
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AxiomXaDriverService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "vanti.bsp.ew.driver.axiomxa.AxiomXaDriverService",
+	ServiceName: "smartcore.bos.driver.axiomxa.AxiomXaDriverService",
 	HandlerType: (*AxiomXaDriverServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

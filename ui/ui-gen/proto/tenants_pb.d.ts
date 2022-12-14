@@ -118,7 +118,8 @@ export class ListTenantsRequest extends jspb.Message {
 }
 
 export namespace ListTenantsRequest {
-  export type AsObject = {}
+  export type AsObject = {
+  }
 }
 
 export class ListTenantsResponse extends jspb.Message {
@@ -298,7 +299,8 @@ export class DeleteTenantResponse extends jspb.Message {
 }
 
 export namespace DeleteTenantResponse {
-  export type AsObject = {}
+  export type AsObject = {
+  }
 }
 
 export class PullTenantRequest extends jspb.Message {
@@ -657,7 +659,8 @@ export class DeleteSecretResponse extends jspb.Message {
 }
 
 export namespace DeleteSecretResponse {
-  export type AsObject = {}
+  export type AsObject = {
+  }
 }
 
 export class PullSecretRequest extends jspb.Message {

@@ -112,7 +112,8 @@ export namespace EmergencyLightingEvent {
   }
 
   export namespace FunctionTestPass {
-    export type AsObject = {}
+    export type AsObject = {
+    }
   }
 
 
@@ -137,7 +138,7 @@ export namespace EmergencyLightingEvent {
   }
 
 
-  export enum EventCase {
+  export enum EventCase { 
     EVENT_NOT_SET = 0,
     DURATION_TEST_PASS = 4,
     FUNCTION_TEST_PASS = 5,
@@ -293,7 +294,7 @@ export namespace ReportCSV {
   }
 }
 
-export enum EmergencyLightFault {
+export enum EmergencyLightFault { 
   FAULT_UNSPECIFIED = 0,
   DURATION_TEST_FAILED = 1,
   FUNCTION_TEST_FAILED = 2,

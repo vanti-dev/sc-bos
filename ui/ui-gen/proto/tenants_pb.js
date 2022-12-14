@@ -13,47 +13,45 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = (function() {
-  return this || window || global || self || Function('return this')();
-}).call(null);
+var global = Function('return this')();
 
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 goog.object.extend(proto, google_protobuf_timestamp_pb);
 var google_protobuf_field_mask_pb = require('google-protobuf/google/protobuf/field_mask_pb.js');
 goog.object.extend(proto, google_protobuf_field_mask_pb);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.AddTenantZonesRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.CreateSecretRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.CreateTenantRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.DeleteSecretRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.DeleteSecretResponse', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.DeleteTenantRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.DeleteTenantResponse', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.GetSecretByHashRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.GetSecretRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.GetTenantRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.ListSecretsRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.ListSecretsResponse', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.ListTenantsRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.ListTenantsResponse', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.PullSecretRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.PullSecretResponse', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.PullSecretResponse.Change', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.PullSecretsRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.PullSecretsResponse', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.PullTenantRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.PullTenantResponse', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.PullTenantResponse.Change', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.PullTenantsRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.PullTenantsResponse', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.RegenerateSecretRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.Secret', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.Tenant', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.UpdateSecretRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.UpdateTenantRequest', null, global);
-goog.exportSymbol('proto.vanti.bsp.ew.tenants.VerifySecretRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.AddTenantZonesRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.CreateSecretRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.CreateTenantRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.DeleteSecretRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.DeleteSecretResponse', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.DeleteTenantRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.DeleteTenantResponse', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.GetSecretByHashRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.GetSecretRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.GetTenantRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.ListSecretsRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.ListSecretsResponse', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.ListTenantsRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.ListTenantsResponse', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.PullSecretRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.PullSecretResponse', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.PullSecretResponse.Change', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.PullSecretsRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.PullSecretsResponse', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.PullSecretsResponse.Change', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.PullTenantRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.PullTenantResponse', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.PullTenantResponse.Change', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.PullTenantsRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.PullTenantsResponse', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.PullTenantsResponse.Change', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.RegenerateSecretRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.RemoveTenantZonesRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.Secret', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.Tenant', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.UpdateSecretRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.UpdateTenantRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.tenants.VerifySecretRequest', null, global);
 /**
  * Generated by JsPbCodeGenerator.
  * @param {Array=} opt_data Optional initial data array, typically from a
@@ -64,16 +62,16 @@ goog.exportSymbol('proto.vanti.bsp.ew.tenants.VerifySecretRequest', null, global
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.Tenant = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.vanti.bsp.ew.tenants.Tenant.repeatedFields_, null);
+proto.smartcore.bos.tenants.Tenant = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.smartcore.bos.tenants.Tenant.repeatedFields_, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.Tenant, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.Tenant, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.Tenant.displayName = 'proto.vanti.bsp.ew.tenants.Tenant';
+  proto.smartcore.bos.tenants.Tenant.displayName = 'proto.smartcore.bos.tenants.Tenant';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -85,16 +83,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.Secret = function(opt_data) {
+proto.smartcore.bos.tenants.Secret = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.Secret, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.Secret, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.Secret.displayName = 'proto.vanti.bsp.ew.tenants.Secret';
+  proto.smartcore.bos.tenants.Secret.displayName = 'proto.smartcore.bos.tenants.Secret';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -106,16 +104,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.ListTenantsRequest = function(opt_data) {
+proto.smartcore.bos.tenants.ListTenantsRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.ListTenantsRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.ListTenantsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.ListTenantsRequest.displayName = 'proto.vanti.bsp.ew.tenants.ListTenantsRequest';
+  proto.smartcore.bos.tenants.ListTenantsRequest.displayName = 'proto.smartcore.bos.tenants.ListTenantsRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -127,16 +125,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.ListTenantsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.vanti.bsp.ew.tenants.ListTenantsResponse.repeatedFields_, null);
+proto.smartcore.bos.tenants.ListTenantsResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.smartcore.bos.tenants.ListTenantsResponse.repeatedFields_, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.ListTenantsResponse, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.ListTenantsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.ListTenantsResponse.displayName = 'proto.vanti.bsp.ew.tenants.ListTenantsResponse';
+  proto.smartcore.bos.tenants.ListTenantsResponse.displayName = 'proto.smartcore.bos.tenants.ListTenantsResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -148,16 +146,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.PullTenantsRequest = function(opt_data) {
+proto.smartcore.bos.tenants.PullTenantsRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.PullTenantsRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.PullTenantsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.PullTenantsRequest.displayName = 'proto.vanti.bsp.ew.tenants.PullTenantsRequest';
+  proto.smartcore.bos.tenants.PullTenantsRequest.displayName = 'proto.smartcore.bos.tenants.PullTenantsRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -169,16 +167,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.vanti.bsp.ew.tenants.PullTenantsResponse.repeatedFields_, null);
+proto.smartcore.bos.tenants.PullTenantsResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.smartcore.bos.tenants.PullTenantsResponse.repeatedFields_, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.PullTenantsResponse, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.PullTenantsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.PullTenantsResponse.displayName = 'proto.vanti.bsp.ew.tenants.PullTenantsResponse';
+  proto.smartcore.bos.tenants.PullTenantsResponse.displayName = 'proto.smartcore.bos.tenants.PullTenantsResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -190,16 +188,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change = function(opt_data) {
+proto.smartcore.bos.tenants.PullTenantsResponse.Change = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.PullTenantsResponse.Change, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.displayName = 'proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change';
+  proto.smartcore.bos.tenants.PullTenantsResponse.Change.displayName = 'proto.smartcore.bos.tenants.PullTenantsResponse.Change';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -211,16 +209,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.CreateTenantRequest = function(opt_data) {
+proto.smartcore.bos.tenants.CreateTenantRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.CreateTenantRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.CreateTenantRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.CreateTenantRequest.displayName = 'proto.vanti.bsp.ew.tenants.CreateTenantRequest';
+  proto.smartcore.bos.tenants.CreateTenantRequest.displayName = 'proto.smartcore.bos.tenants.CreateTenantRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -232,16 +230,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.GetTenantRequest = function(opt_data) {
+proto.smartcore.bos.tenants.GetTenantRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.GetTenantRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.GetTenantRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.GetTenantRequest.displayName = 'proto.vanti.bsp.ew.tenants.GetTenantRequest';
+  proto.smartcore.bos.tenants.GetTenantRequest.displayName = 'proto.smartcore.bos.tenants.GetTenantRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -253,16 +251,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.UpdateTenantRequest = function(opt_data) {
+proto.smartcore.bos.tenants.UpdateTenantRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.UpdateTenantRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.UpdateTenantRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.UpdateTenantRequest.displayName = 'proto.vanti.bsp.ew.tenants.UpdateTenantRequest';
+  proto.smartcore.bos.tenants.UpdateTenantRequest.displayName = 'proto.smartcore.bos.tenants.UpdateTenantRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -274,16 +272,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.DeleteTenantRequest = function(opt_data) {
+proto.smartcore.bos.tenants.DeleteTenantRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.DeleteTenantRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.DeleteTenantRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.DeleteTenantRequest.displayName = 'proto.vanti.bsp.ew.tenants.DeleteTenantRequest';
+  proto.smartcore.bos.tenants.DeleteTenantRequest.displayName = 'proto.smartcore.bos.tenants.DeleteTenantRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -295,16 +293,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.DeleteTenantResponse = function(opt_data) {
+proto.smartcore.bos.tenants.DeleteTenantResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.DeleteTenantResponse, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.DeleteTenantResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.DeleteTenantResponse.displayName = 'proto.vanti.bsp.ew.tenants.DeleteTenantResponse';
+  proto.smartcore.bos.tenants.DeleteTenantResponse.displayName = 'proto.smartcore.bos.tenants.DeleteTenantResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -316,16 +314,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.PullTenantRequest = function(opt_data) {
+proto.smartcore.bos.tenants.PullTenantRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.PullTenantRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.PullTenantRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.PullTenantRequest.displayName = 'proto.vanti.bsp.ew.tenants.PullTenantRequest';
+  proto.smartcore.bos.tenants.PullTenantRequest.displayName = 'proto.smartcore.bos.tenants.PullTenantRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -337,16 +335,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.vanti.bsp.ew.tenants.PullTenantResponse.repeatedFields_, null);
+proto.smartcore.bos.tenants.PullTenantResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.smartcore.bos.tenants.PullTenantResponse.repeatedFields_, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.PullTenantResponse, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.PullTenantResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.PullTenantResponse.displayName = 'proto.vanti.bsp.ew.tenants.PullTenantResponse';
+  proto.smartcore.bos.tenants.PullTenantResponse.displayName = 'proto.smartcore.bos.tenants.PullTenantResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -358,16 +356,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.Change = function(opt_data) {
+proto.smartcore.bos.tenants.PullTenantResponse.Change = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.PullTenantResponse.Change, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.PullTenantResponse.Change, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.displayName = 'proto.vanti.bsp.ew.tenants.PullTenantResponse.Change';
+  proto.smartcore.bos.tenants.PullTenantResponse.Change.displayName = 'proto.smartcore.bos.tenants.PullTenantResponse.Change';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -379,16 +377,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.AddTenantZonesRequest = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.repeatedFields_, null);
+proto.smartcore.bos.tenants.AddTenantZonesRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.smartcore.bos.tenants.AddTenantZonesRequest.repeatedFields_, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.AddTenantZonesRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.AddTenantZonesRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.displayName = 'proto.vanti.bsp.ew.tenants.AddTenantZonesRequest';
+  proto.smartcore.bos.tenants.AddTenantZonesRequest.displayName = 'proto.smartcore.bos.tenants.AddTenantZonesRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -400,16 +398,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.repeatedFields_, null);
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.smartcore.bos.tenants.RemoveTenantZonesRequest.repeatedFields_, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.RemoveTenantZonesRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.displayName = 'proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest';
+  proto.smartcore.bos.tenants.RemoveTenantZonesRequest.displayName = 'proto.smartcore.bos.tenants.RemoveTenantZonesRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -421,16 +419,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.ListSecretsRequest = function(opt_data) {
+proto.smartcore.bos.tenants.ListSecretsRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.ListSecretsRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.ListSecretsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.ListSecretsRequest.displayName = 'proto.vanti.bsp.ew.tenants.ListSecretsRequest';
+  proto.smartcore.bos.tenants.ListSecretsRequest.displayName = 'proto.smartcore.bos.tenants.ListSecretsRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -442,16 +440,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.ListSecretsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.vanti.bsp.ew.tenants.ListSecretsResponse.repeatedFields_, null);
+proto.smartcore.bos.tenants.ListSecretsResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.smartcore.bos.tenants.ListSecretsResponse.repeatedFields_, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.ListSecretsResponse, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.ListSecretsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.ListSecretsResponse.displayName = 'proto.vanti.bsp.ew.tenants.ListSecretsResponse';
+  proto.smartcore.bos.tenants.ListSecretsResponse.displayName = 'proto.smartcore.bos.tenants.ListSecretsResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -463,16 +461,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.PullSecretsRequest = function(opt_data) {
+proto.smartcore.bos.tenants.PullSecretsRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.PullSecretsRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.PullSecretsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.PullSecretsRequest.displayName = 'proto.vanti.bsp.ew.tenants.PullSecretsRequest';
+  proto.smartcore.bos.tenants.PullSecretsRequest.displayName = 'proto.smartcore.bos.tenants.PullSecretsRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -484,16 +482,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.vanti.bsp.ew.tenants.PullSecretsResponse.repeatedFields_, null);
+proto.smartcore.bos.tenants.PullSecretsResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.smartcore.bos.tenants.PullSecretsResponse.repeatedFields_, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.PullSecretsResponse, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.PullSecretsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.PullSecretsResponse.displayName = 'proto.vanti.bsp.ew.tenants.PullSecretsResponse';
+  proto.smartcore.bos.tenants.PullSecretsResponse.displayName = 'proto.smartcore.bos.tenants.PullSecretsResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -505,16 +503,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change = function(opt_data) {
+proto.smartcore.bos.tenants.PullSecretsResponse.Change = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.PullSecretsResponse.Change, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.displayName = 'proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change';
+  proto.smartcore.bos.tenants.PullSecretsResponse.Change.displayName = 'proto.smartcore.bos.tenants.PullSecretsResponse.Change';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -526,16 +524,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.CreateSecretRequest = function(opt_data) {
+proto.smartcore.bos.tenants.CreateSecretRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.CreateSecretRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.CreateSecretRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.CreateSecretRequest.displayName = 'proto.vanti.bsp.ew.tenants.CreateSecretRequest';
+  proto.smartcore.bos.tenants.CreateSecretRequest.displayName = 'proto.smartcore.bos.tenants.CreateSecretRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -547,16 +545,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.VerifySecretRequest = function(opt_data) {
+proto.smartcore.bos.tenants.VerifySecretRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.VerifySecretRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.VerifySecretRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.VerifySecretRequest.displayName = 'proto.vanti.bsp.ew.tenants.VerifySecretRequest';
+  proto.smartcore.bos.tenants.VerifySecretRequest.displayName = 'proto.smartcore.bos.tenants.VerifySecretRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -568,16 +566,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.GetSecretRequest = function(opt_data) {
+proto.smartcore.bos.tenants.GetSecretRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.GetSecretRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.GetSecretRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.GetSecretRequest.displayName = 'proto.vanti.bsp.ew.tenants.GetSecretRequest';
+  proto.smartcore.bos.tenants.GetSecretRequest.displayName = 'proto.smartcore.bos.tenants.GetSecretRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -589,16 +587,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.GetSecretByHashRequest = function(opt_data) {
+proto.smartcore.bos.tenants.GetSecretByHashRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.GetSecretByHashRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.GetSecretByHashRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.displayName = 'proto.vanti.bsp.ew.tenants.GetSecretByHashRequest';
+  proto.smartcore.bos.tenants.GetSecretByHashRequest.displayName = 'proto.smartcore.bos.tenants.GetSecretByHashRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -610,16 +608,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.UpdateSecretRequest = function(opt_data) {
+proto.smartcore.bos.tenants.UpdateSecretRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.UpdateSecretRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.UpdateSecretRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.UpdateSecretRequest.displayName = 'proto.vanti.bsp.ew.tenants.UpdateSecretRequest';
+  proto.smartcore.bos.tenants.UpdateSecretRequest.displayName = 'proto.smartcore.bos.tenants.UpdateSecretRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -631,16 +629,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.DeleteSecretRequest = function(opt_data) {
+proto.smartcore.bos.tenants.DeleteSecretRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.DeleteSecretRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.DeleteSecretRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.DeleteSecretRequest.displayName = 'proto.vanti.bsp.ew.tenants.DeleteSecretRequest';
+  proto.smartcore.bos.tenants.DeleteSecretRequest.displayName = 'proto.smartcore.bos.tenants.DeleteSecretRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -652,16 +650,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.DeleteSecretResponse = function(opt_data) {
+proto.smartcore.bos.tenants.DeleteSecretResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.DeleteSecretResponse, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.DeleteSecretResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.DeleteSecretResponse.displayName = 'proto.vanti.bsp.ew.tenants.DeleteSecretResponse';
+  proto.smartcore.bos.tenants.DeleteSecretResponse.displayName = 'proto.smartcore.bos.tenants.DeleteSecretResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -673,16 +671,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.PullSecretRequest = function(opt_data) {
+proto.smartcore.bos.tenants.PullSecretRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.PullSecretRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.PullSecretRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.PullSecretRequest.displayName = 'proto.vanti.bsp.ew.tenants.PullSecretRequest';
+  proto.smartcore.bos.tenants.PullSecretRequest.displayName = 'proto.smartcore.bos.tenants.PullSecretRequest';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -694,16 +692,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.vanti.bsp.ew.tenants.PullSecretResponse.repeatedFields_, null);
+proto.smartcore.bos.tenants.PullSecretResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.smartcore.bos.tenants.PullSecretResponse.repeatedFields_, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.PullSecretResponse, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.PullSecretResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.PullSecretResponse.displayName = 'proto.vanti.bsp.ew.tenants.PullSecretResponse';
+  proto.smartcore.bos.tenants.PullSecretResponse.displayName = 'proto.smartcore.bos.tenants.PullSecretResponse';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -715,16 +713,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.Change = function(opt_data) {
+proto.smartcore.bos.tenants.PullSecretResponse.Change = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.PullSecretResponse.Change, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.PullSecretResponse.Change, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.displayName = 'proto.vanti.bsp.ew.tenants.PullSecretResponse.Change';
+  proto.smartcore.bos.tenants.PullSecretResponse.Change.displayName = 'proto.smartcore.bos.tenants.PullSecretResponse.Change';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -736,16 +734,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.vanti.bsp.ew.tenants.RegenerateSecretRequest = function(opt_data) {
+proto.smartcore.bos.tenants.RegenerateSecretRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.vanti.bsp.ew.tenants.RegenerateSecretRequest, jspb.Message);
+goog.inherits(proto.smartcore.bos.tenants.RegenerateSecretRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.displayName = 'proto.vanti.bsp.ew.tenants.RegenerateSecretRequest';
+  proto.smartcore.bos.tenants.RegenerateSecretRequest.displayName = 'proto.smartcore.bos.tenants.RegenerateSecretRequest';
 }
 
 /**
@@ -753,104 +751,104 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.vanti.bsp.ew.tenants.Tenant.repeatedFields_ = [4];
+proto.smartcore.bos.tenants.Tenant.repeatedFields_ = [4];
 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.Tenant.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.Tenant.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.Tenant.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.Tenant.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.Tenant} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.Tenant.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    title: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    createTime: (f = msg.getCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    zoneNamesList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
+    etag: jspb.Message.getFieldWithDefault(msg, 10, "")
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.Tenant} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.Tenant.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, ''),
-      title: jspb.Message.getFieldWithDefault(msg, 2, ''),
-      createTime: (f = msg.getCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-      zoneNamesList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
-      etag: jspb.Message.getFieldWithDefault(msg, 10, '')
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.Tenant}
+ * @return {!proto.smartcore.bos.tenants.Tenant}
  */
-proto.vanti.bsp.ew.tenants.Tenant.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.Tenant.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.Tenant;
-  return proto.vanti.bsp.ew.tenants.Tenant.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.Tenant;
+  return proto.smartcore.bos.tenants.Tenant.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.Tenant} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.Tenant} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.Tenant}
+ * @return {!proto.smartcore.bos.tenants.Tenant}
  */
-proto.vanti.bsp.ew.tenants.Tenant.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.Tenant.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setTitle(value);
-        break;
-      case 3:
-        var value = new google_protobuf_timestamp_pb.Timestamp;
-        reader.readMessage(value, google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-        msg.setCreateTime(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addZoneNames(value);
-        break;
-      case 10:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setEtag(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTitle(value);
+      break;
+    case 3:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setCreateTime(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addZoneNames(value);
+      break;
+    case 10:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setEtag(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -861,9 +859,9 @@ proto.vanti.bsp.ew.tenants.Tenant.deserializeBinaryFromReader = function(msg, re
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.Tenant.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.Tenant.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.Tenant.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -871,46 +869,46 @@ proto.vanti.bsp.ew.tenants.Tenant.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.Tenant} message
+ * @param {!proto.smartcore.bos.tenants.Tenant} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.Tenant.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.Tenant.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
     writer.writeString(
-        1,
-        f
+      1,
+      f
     );
   }
   f = message.getTitle();
   if (f.length > 0) {
     writer.writeString(
-        2,
-        f
+      2,
+      f
     );
   }
   f = message.getCreateTime();
   if (f != null) {
     writer.writeMessage(
-        3,
-        f,
-        google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+      3,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
   f = message.getZoneNamesList();
   if (f.length > 0) {
     writer.writeRepeatedString(
-        4,
-        f
+      4,
+      f
     );
   }
   f = message.getEtag();
   if (f.length > 0) {
     writer.writeString(
-        10,
-        f
+      10,
+      f
     );
   }
 };
@@ -920,16 +918,16 @@ proto.vanti.bsp.ew.tenants.Tenant.serializeBinaryToWriter = function(message, wr
  * optional string id = 1;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.getId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ''));
+proto.smartcore.bos.tenants.Tenant.prototype.getId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.Tenant} returns this
+ * @return {!proto.smartcore.bos.tenants.Tenant} returns this
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.setId = function(value) {
+proto.smartcore.bos.tenants.Tenant.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -938,16 +936,16 @@ proto.vanti.bsp.ew.tenants.Tenant.prototype.setId = function(value) {
  * optional string title = 2;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.getTitle = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ''));
+proto.smartcore.bos.tenants.Tenant.prototype.getTitle = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.Tenant} returns this
+ * @return {!proto.smartcore.bos.tenants.Tenant} returns this
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.setTitle = function(value) {
+proto.smartcore.bos.tenants.Tenant.prototype.setTitle = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -956,26 +954,26 @@ proto.vanti.bsp.ew.tenants.Tenant.prototype.setTitle = function(value) {
  * optional google.protobuf.Timestamp create_time = 3;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.getCreateTime = function() {
+proto.smartcore.bos.tenants.Tenant.prototype.getCreateTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-      jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 3));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 3));
 };
 
 
 /**
  * @param {?proto.google.protobuf.Timestamp|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.Tenant} returns this
- */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.setCreateTime = function(value) {
+ * @return {!proto.smartcore.bos.tenants.Tenant} returns this
+*/
+proto.smartcore.bos.tenants.Tenant.prototype.setCreateTime = function(value) {
   return jspb.Message.setWrapperField(this, 3, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.Tenant} returns this
+ * @return {!proto.smartcore.bos.tenants.Tenant} returns this
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.clearCreateTime = function() {
+proto.smartcore.bos.tenants.Tenant.prototype.clearCreateTime = function() {
   return this.setCreateTime(undefined);
 };
 
@@ -984,7 +982,7 @@ proto.vanti.bsp.ew.tenants.Tenant.prototype.clearCreateTime = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.hasCreateTime = function() {
+proto.smartcore.bos.tenants.Tenant.prototype.hasCreateTime = function() {
   return jspb.Message.getField(this, 3) != null;
 };
 
@@ -993,16 +991,16 @@ proto.vanti.bsp.ew.tenants.Tenant.prototype.hasCreateTime = function() {
  * repeated string zone_names = 4;
  * @return {!Array<string>}
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.getZoneNamesList = function() {
+proto.smartcore.bos.tenants.Tenant.prototype.getZoneNamesList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
 };
 
 
 /**
  * @param {!Array<string>} value
- * @return {!proto.vanti.bsp.ew.tenants.Tenant} returns this
+ * @return {!proto.smartcore.bos.tenants.Tenant} returns this
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.setZoneNamesList = function(value) {
+proto.smartcore.bos.tenants.Tenant.prototype.setZoneNamesList = function(value) {
   return jspb.Message.setField(this, 4, value || []);
 };
 
@@ -1010,18 +1008,18 @@ proto.vanti.bsp.ew.tenants.Tenant.prototype.setZoneNamesList = function(value) {
 /**
  * @param {string} value
  * @param {number=} opt_index
- * @return {!proto.vanti.bsp.ew.tenants.Tenant} returns this
+ * @return {!proto.smartcore.bos.tenants.Tenant} returns this
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.addZoneNames = function(value, opt_index) {
+proto.smartcore.bos.tenants.Tenant.prototype.addZoneNames = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.vanti.bsp.ew.tenants.Tenant} returns this
+ * @return {!proto.smartcore.bos.tenants.Tenant} returns this
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.clearZoneNamesList = function() {
+proto.smartcore.bos.tenants.Tenant.prototype.clearZoneNamesList = function() {
   return this.setZoneNamesList([]);
 };
 
@@ -1030,143 +1028,146 @@ proto.vanti.bsp.ew.tenants.Tenant.prototype.clearZoneNamesList = function() {
  * optional string etag = 10;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.getEtag = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ''));
+proto.smartcore.bos.tenants.Tenant.prototype.getEtag = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.Tenant} returns this
+ * @return {!proto.smartcore.bos.tenants.Tenant} returns this
  */
-proto.vanti.bsp.ew.tenants.Tenant.prototype.setEtag = function(value) {
+proto.smartcore.bos.tenants.Tenant.prototype.setEtag = function(value) {
   return jspb.Message.setProto3StringField(this, 10, value);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.Secret.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.Secret.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.Secret.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.Secret.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.Secret} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.Secret.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    tenant: (f = msg.getTenant()) && proto.smartcore.bos.tenants.Tenant.toObject(includeInstance, f),
+    secretHash: msg.getSecretHash_asB64(),
+    secret: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    note: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    createTime: (f = msg.getCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    expireTime: (f = msg.getExpireTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    firstUseTime: (f = msg.getFirstUseTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    lastUseTime: (f = msg.getLastUseTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    etag: jspb.Message.getFieldWithDefault(msg, 10, "")
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.Secret} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.Secret.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, ''),
-      tenant: (f = msg.getTenant()) && proto.vanti.bsp.ew.tenants.Tenant.toObject(includeInstance, f),
-      secretHash: msg.getSecretHash_asB64(),
-      secret: jspb.Message.getFieldWithDefault(msg, 4, ''),
-      note: jspb.Message.getFieldWithDefault(msg, 5, ''),
-      createTime: (f = msg.getCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-      expireTime: (f = msg.getExpireTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-      firstUseTime: (f = msg.getFirstUseTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-      lastUseTime: (f = msg.getLastUseTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-      etag: jspb.Message.getFieldWithDefault(msg, 10, '')
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.Secret}
+ * @return {!proto.smartcore.bos.tenants.Secret}
  */
-proto.vanti.bsp.ew.tenants.Secret.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.Secret.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.Secret;
-  return proto.vanti.bsp.ew.tenants.Secret.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.Secret;
+  return proto.smartcore.bos.tenants.Secret.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.Secret} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.Secret} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.Secret}
+ * @return {!proto.smartcore.bos.tenants.Secret}
  */
-proto.vanti.bsp.ew.tenants.Secret.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.Secret.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      case 2:
-        var value = new proto.vanti.bsp.ew.tenants.Tenant;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.Tenant.deserializeBinaryFromReader);
-        msg.setTenant(value);
-        break;
-      case 3:
-        var value = /** @type {!Uint8Array} */ (reader.readBytes());
-        msg.setSecretHash(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setSecret(value);
-        break;
-      case 5:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setNote(value);
-        break;
-      case 6:
-        var value = new google_protobuf_timestamp_pb.Timestamp;
-        reader.readMessage(value, google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-        msg.setCreateTime(value);
-        break;
-      case 7:
-        var value = new google_protobuf_timestamp_pb.Timestamp;
-        reader.readMessage(value, google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-        msg.setExpireTime(value);
-        break;
-      case 8:
-        var value = new google_protobuf_timestamp_pb.Timestamp;
-        reader.readMessage(value, google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-        msg.setFirstUseTime(value);
-        break;
-      case 9:
-        var value = new google_protobuf_timestamp_pb.Timestamp;
-        reader.readMessage(value, google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-        msg.setLastUseTime(value);
-        break;
-      case 10:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setEtag(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
+      var value = new proto.smartcore.bos.tenants.Tenant;
+      reader.readMessage(value,proto.smartcore.bos.tenants.Tenant.deserializeBinaryFromReader);
+      msg.setTenant(value);
+      break;
+    case 3:
+      var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setSecretHash(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSecret(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setNote(value);
+      break;
+    case 6:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setCreateTime(value);
+      break;
+    case 7:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setExpireTime(value);
+      break;
+    case 8:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setFirstUseTime(value);
+      break;
+    case 9:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setLastUseTime(value);
+      break;
+    case 10:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setEtag(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1177,9 +1178,9 @@ proto.vanti.bsp.ew.tenants.Secret.deserializeBinaryFromReader = function(msg, re
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.Secret.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.Secret.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.Secret.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -1187,85 +1188,85 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.Secret} message
+ * @param {!proto.smartcore.bos.tenants.Secret} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.Secret.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.Secret.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
     writer.writeString(
-        1,
-        f
+      1,
+      f
     );
   }
   f = message.getTenant();
   if (f != null) {
     writer.writeMessage(
-        2,
-        f,
-        proto.vanti.bsp.ew.tenants.Tenant.serializeBinaryToWriter
+      2,
+      f,
+      proto.smartcore.bos.tenants.Tenant.serializeBinaryToWriter
     );
   }
   f = message.getSecretHash_asU8();
   if (f.length > 0) {
     writer.writeBytes(
-        3,
-        f
+      3,
+      f
     );
   }
   f = message.getSecret();
   if (f.length > 0) {
     writer.writeString(
-        4,
-        f
+      4,
+      f
     );
   }
   f = message.getNote();
   if (f.length > 0) {
     writer.writeString(
-        5,
-        f
+      5,
+      f
     );
   }
   f = message.getCreateTime();
   if (f != null) {
     writer.writeMessage(
-        6,
-        f,
-        google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+      6,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
   f = message.getExpireTime();
   if (f != null) {
     writer.writeMessage(
-        7,
-        f,
-        google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+      7,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
   f = message.getFirstUseTime();
   if (f != null) {
     writer.writeMessage(
-        8,
-        f,
-        google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+      8,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
   f = message.getLastUseTime();
   if (f != null) {
     writer.writeMessage(
-        9,
-        f,
-        google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+      9,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
   f = message.getEtag();
   if (f.length > 0) {
     writer.writeString(
-        10,
-        f
+      10,
+      f
     );
   }
 };
@@ -1275,44 +1276,44 @@ proto.vanti.bsp.ew.tenants.Secret.serializeBinaryToWriter = function(message, wr
  * optional string id = 1;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.getId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ''));
+proto.smartcore.bos.tenants.Secret.prototype.getId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.setId = function(value) {
+proto.smartcore.bos.tenants.Secret.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
 /**
  * optional Tenant tenant = 2;
- * @return {?proto.vanti.bsp.ew.tenants.Tenant}
+ * @return {?proto.smartcore.bos.tenants.Tenant}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.getTenant = function() {
-  return /** @type{?proto.vanti.bsp.ew.tenants.Tenant} */ (
-      jspb.Message.getWrapperField(this, proto.vanti.bsp.ew.tenants.Tenant, 2));
+proto.smartcore.bos.tenants.Secret.prototype.getTenant = function() {
+  return /** @type{?proto.smartcore.bos.tenants.Tenant} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.tenants.Tenant, 2));
 };
 
 
 /**
- * @param {?proto.vanti.bsp.ew.tenants.Tenant|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
- */
-proto.vanti.bsp.ew.tenants.Secret.prototype.setTenant = function(value) {
+ * @param {?proto.smartcore.bos.tenants.Tenant|undefined} value
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
+*/
+proto.smartcore.bos.tenants.Secret.prototype.setTenant = function(value) {
   return jspb.Message.setWrapperField(this, 2, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.clearTenant = function() {
+proto.smartcore.bos.tenants.Secret.prototype.clearTenant = function() {
   return this.setTenant(undefined);
 };
 
@@ -1321,7 +1322,7 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.clearTenant = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.hasTenant = function() {
+proto.smartcore.bos.tenants.Secret.prototype.hasTenant = function() {
   return jspb.Message.getField(this, 2) != null;
 };
 
@@ -1330,8 +1331,8 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.hasTenant = function() {
  * optional bytes secret_hash = 3;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.getSecretHash = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ''));
+proto.smartcore.bos.tenants.Secret.prototype.getSecretHash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
 
@@ -1340,7 +1341,7 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.getSecretHash = function() {
  * This is a type-conversion wrapper around `getSecretHash()`
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.getSecretHash_asB64 = function() {
+proto.smartcore.bos.tenants.Secret.prototype.getSecretHash_asB64 = function() {
   return /** @type {string} */ (jspb.Message.bytesAsB64(
       this.getSecretHash()));
 };
@@ -1353,7 +1354,7 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.getSecretHash_asB64 = function() {
  * This is a type-conversion wrapper around `getSecretHash()`
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.getSecretHash_asU8 = function() {
+proto.smartcore.bos.tenants.Secret.prototype.getSecretHash_asU8 = function() {
   return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
       this.getSecretHash()));
 };
@@ -1361,9 +1362,9 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.getSecretHash_asU8 = function() {
 
 /**
  * @param {!(string|Uint8Array)} value
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.setSecretHash = function(value) {
+proto.smartcore.bos.tenants.Secret.prototype.setSecretHash = function(value) {
   return jspb.Message.setProto3BytesField(this, 3, value);
 };
 
@@ -1372,16 +1373,16 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.setSecretHash = function(value) {
  * optional string secret = 4;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.getSecret = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ''));
+proto.smartcore.bos.tenants.Secret.prototype.getSecret = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.setSecret = function(value) {
+proto.smartcore.bos.tenants.Secret.prototype.setSecret = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
@@ -1390,16 +1391,16 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.setSecret = function(value) {
  * optional string note = 5;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.getNote = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ''));
+proto.smartcore.bos.tenants.Secret.prototype.getNote = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.setNote = function(value) {
+proto.smartcore.bos.tenants.Secret.prototype.setNote = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
@@ -1408,26 +1409,26 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.setNote = function(value) {
  * optional google.protobuf.Timestamp create_time = 6;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.getCreateTime = function() {
+proto.smartcore.bos.tenants.Secret.prototype.getCreateTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-      jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 6));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 6));
 };
 
 
 /**
  * @param {?proto.google.protobuf.Timestamp|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
- */
-proto.vanti.bsp.ew.tenants.Secret.prototype.setCreateTime = function(value) {
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
+*/
+proto.smartcore.bos.tenants.Secret.prototype.setCreateTime = function(value) {
   return jspb.Message.setWrapperField(this, 6, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.clearCreateTime = function() {
+proto.smartcore.bos.tenants.Secret.prototype.clearCreateTime = function() {
   return this.setCreateTime(undefined);
 };
 
@@ -1436,7 +1437,7 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.clearCreateTime = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.hasCreateTime = function() {
+proto.smartcore.bos.tenants.Secret.prototype.hasCreateTime = function() {
   return jspb.Message.getField(this, 6) != null;
 };
 
@@ -1445,26 +1446,26 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.hasCreateTime = function() {
  * optional google.protobuf.Timestamp expire_time = 7;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.getExpireTime = function() {
+proto.smartcore.bos.tenants.Secret.prototype.getExpireTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-      jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 7));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 7));
 };
 
 
 /**
  * @param {?proto.google.protobuf.Timestamp|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
- */
-proto.vanti.bsp.ew.tenants.Secret.prototype.setExpireTime = function(value) {
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
+*/
+proto.smartcore.bos.tenants.Secret.prototype.setExpireTime = function(value) {
   return jspb.Message.setWrapperField(this, 7, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.clearExpireTime = function() {
+proto.smartcore.bos.tenants.Secret.prototype.clearExpireTime = function() {
   return this.setExpireTime(undefined);
 };
 
@@ -1473,7 +1474,7 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.clearExpireTime = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.hasExpireTime = function() {
+proto.smartcore.bos.tenants.Secret.prototype.hasExpireTime = function() {
   return jspb.Message.getField(this, 7) != null;
 };
 
@@ -1482,26 +1483,26 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.hasExpireTime = function() {
  * optional google.protobuf.Timestamp first_use_time = 8;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.getFirstUseTime = function() {
+proto.smartcore.bos.tenants.Secret.prototype.getFirstUseTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-      jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 8));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 8));
 };
 
 
 /**
  * @param {?proto.google.protobuf.Timestamp|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
- */
-proto.vanti.bsp.ew.tenants.Secret.prototype.setFirstUseTime = function(value) {
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
+*/
+proto.smartcore.bos.tenants.Secret.prototype.setFirstUseTime = function(value) {
   return jspb.Message.setWrapperField(this, 8, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.clearFirstUseTime = function() {
+proto.smartcore.bos.tenants.Secret.prototype.clearFirstUseTime = function() {
   return this.setFirstUseTime(undefined);
 };
 
@@ -1510,7 +1511,7 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.clearFirstUseTime = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.hasFirstUseTime = function() {
+proto.smartcore.bos.tenants.Secret.prototype.hasFirstUseTime = function() {
   return jspb.Message.getField(this, 8) != null;
 };
 
@@ -1519,26 +1520,26 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.hasFirstUseTime = function() {
  * optional google.protobuf.Timestamp last_use_time = 9;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.getLastUseTime = function() {
+proto.smartcore.bos.tenants.Secret.prototype.getLastUseTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-      jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 9));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 9));
 };
 
 
 /**
  * @param {?proto.google.protobuf.Timestamp|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
- */
-proto.vanti.bsp.ew.tenants.Secret.prototype.setLastUseTime = function(value) {
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
+*/
+proto.smartcore.bos.tenants.Secret.prototype.setLastUseTime = function(value) {
   return jspb.Message.setWrapperField(this, 9, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.clearLastUseTime = function() {
+proto.smartcore.bos.tenants.Secret.prototype.clearLastUseTime = function() {
   return this.setLastUseTime(undefined);
 };
 
@@ -1547,7 +1548,7 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.clearLastUseTime = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.hasLastUseTime = function() {
+proto.smartcore.bos.tenants.Secret.prototype.hasLastUseTime = function() {
   return jspb.Message.getField(this, 9) != null;
 };
 
@@ -1556,87 +1557,92 @@ proto.vanti.bsp.ew.tenants.Secret.prototype.hasLastUseTime = function() {
  * optional string etag = 10;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.getEtag = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ''));
+proto.smartcore.bos.tenants.Secret.prototype.getEtag = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.Secret} returns this
+ * @return {!proto.smartcore.bos.tenants.Secret} returns this
  */
-proto.vanti.bsp.ew.tenants.Secret.prototype.setEtag = function(value) {
+proto.smartcore.bos.tenants.Secret.prototype.setEtag = function(value) {
   return jspb.Message.setProto3StringField(this, 10, value);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.ListTenantsRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.ListTenantsRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.ListTenantsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.ListTenantsRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.ListTenantsRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.ListTenantsRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.ListTenantsRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.ListTenantsRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {};
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.ListTenantsRequest}
+ * @return {!proto.smartcore.bos.tenants.ListTenantsRequest}
  */
-proto.vanti.bsp.ew.tenants.ListTenantsRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.ListTenantsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.ListTenantsRequest;
-  return proto.vanti.bsp.ew.tenants.ListTenantsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.ListTenantsRequest;
+  return proto.smartcore.bos.tenants.ListTenantsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.ListTenantsRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.ListTenantsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.ListTenantsRequest}
+ * @return {!proto.smartcore.bos.tenants.ListTenantsRequest}
  */
-proto.vanti.bsp.ew.tenants.ListTenantsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.ListTenantsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      default:
-        reader.skipField();
-        break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1647,9 +1653,9 @@ proto.vanti.bsp.ew.tenants.ListTenantsRequest.deserializeBinaryFromReader = func
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.ListTenantsRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.ListTenantsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.ListTenantsRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.ListTenantsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -1657,11 +1663,11 @@ proto.vanti.bsp.ew.tenants.ListTenantsRequest.prototype.serializeBinary = functi
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.ListTenantsRequest} message
+ * @param {!proto.smartcore.bos.tenants.ListTenantsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.ListTenantsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.ListTenantsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
 };
 
@@ -1672,85 +1678,85 @@ proto.vanti.bsp.ew.tenants.ListTenantsRequest.serializeBinaryToWriter = function
  * @private {!Array<number>}
  * @const
  */
-proto.vanti.bsp.ew.tenants.ListTenantsResponse.repeatedFields_ = [1];
+proto.smartcore.bos.tenants.ListTenantsResponse.repeatedFields_ = [1];
 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.ListTenantsResponse.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.ListTenantsResponse.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.ListTenantsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.ListTenantsResponse.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.ListTenantsResponse} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.ListTenantsResponse.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    tenantsList: jspb.Message.toObjectList(msg.getTenantsList(),
+    proto.smartcore.bos.tenants.Tenant.toObject, includeInstance)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.ListTenantsResponse} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.ListTenantsResponse.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      tenantsList: jspb.Message.toObjectList(msg.getTenantsList(),
-          proto.vanti.bsp.ew.tenants.Tenant.toObject, includeInstance)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.ListTenantsResponse}
+ * @return {!proto.smartcore.bos.tenants.ListTenantsResponse}
  */
-proto.vanti.bsp.ew.tenants.ListTenantsResponse.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.ListTenantsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.ListTenantsResponse;
-  return proto.vanti.bsp.ew.tenants.ListTenantsResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.ListTenantsResponse;
+  return proto.smartcore.bos.tenants.ListTenantsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.ListTenantsResponse} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.ListTenantsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.ListTenantsResponse}
+ * @return {!proto.smartcore.bos.tenants.ListTenantsResponse}
  */
-proto.vanti.bsp.ew.tenants.ListTenantsResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.ListTenantsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new proto.vanti.bsp.ew.tenants.Tenant;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.Tenant.deserializeBinaryFromReader);
-        msg.addTenants(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new proto.smartcore.bos.tenants.Tenant;
+      reader.readMessage(value,proto.smartcore.bos.tenants.Tenant.deserializeBinaryFromReader);
+      msg.addTenants(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1761,9 +1767,9 @@ proto.vanti.bsp.ew.tenants.ListTenantsResponse.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.ListTenantsResponse.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.ListTenantsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.ListTenantsResponse.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.ListTenantsResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -1771,18 +1777,18 @@ proto.vanti.bsp.ew.tenants.ListTenantsResponse.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.ListTenantsResponse} message
+ * @param {!proto.smartcore.bos.tenants.ListTenantsResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.ListTenantsResponse.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.ListTenantsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getTenantsList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
-        1,
-        f,
-        proto.vanti.bsp.ew.tenants.Tenant.serializeBinaryToWriter
+      1,
+      f,
+      proto.smartcore.bos.tenants.Tenant.serializeBinaryToWriter
     );
   }
 };
@@ -1790,115 +1796,118 @@ proto.vanti.bsp.ew.tenants.ListTenantsResponse.serializeBinaryToWriter = functio
 
 /**
  * repeated Tenant tenants = 1;
- * @return {!Array<!proto.vanti.bsp.ew.tenants.Tenant>}
+ * @return {!Array<!proto.smartcore.bos.tenants.Tenant>}
  */
-proto.vanti.bsp.ew.tenants.ListTenantsResponse.prototype.getTenantsList = function() {
-  return /** @type{!Array<!proto.vanti.bsp.ew.tenants.Tenant>} */ (
-      jspb.Message.getRepeatedWrapperField(this, proto.vanti.bsp.ew.tenants.Tenant, 1));
+proto.smartcore.bos.tenants.ListTenantsResponse.prototype.getTenantsList = function() {
+  return /** @type{!Array<!proto.smartcore.bos.tenants.Tenant>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.smartcore.bos.tenants.Tenant, 1));
 };
 
 
 /**
- * @param {!Array<!proto.vanti.bsp.ew.tenants.Tenant>} value
- * @return {!proto.vanti.bsp.ew.tenants.ListTenantsResponse} returns this
- */
-proto.vanti.bsp.ew.tenants.ListTenantsResponse.prototype.setTenantsList = function(value) {
+ * @param {!Array<!proto.smartcore.bos.tenants.Tenant>} value
+ * @return {!proto.smartcore.bos.tenants.ListTenantsResponse} returns this
+*/
+proto.smartcore.bos.tenants.ListTenantsResponse.prototype.setTenantsList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.vanti.bsp.ew.tenants.Tenant=} opt_value
+ * @param {!proto.smartcore.bos.tenants.Tenant=} opt_value
  * @param {number=} opt_index
- * @return {!proto.vanti.bsp.ew.tenants.Tenant}
+ * @return {!proto.smartcore.bos.tenants.Tenant}
  */
-proto.vanti.bsp.ew.tenants.ListTenantsResponse.prototype.addTenants = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.vanti.bsp.ew.tenants.Tenant, opt_index);
+proto.smartcore.bos.tenants.ListTenantsResponse.prototype.addTenants = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.smartcore.bos.tenants.Tenant, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.vanti.bsp.ew.tenants.ListTenantsResponse} returns this
+ * @return {!proto.smartcore.bos.tenants.ListTenantsResponse} returns this
  */
-proto.vanti.bsp.ew.tenants.ListTenantsResponse.prototype.clearTenantsList = function() {
+proto.smartcore.bos.tenants.ListTenantsResponse.prototype.clearTenantsList = function() {
   return this.setTenantsList([]);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.PullTenantsRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.PullTenantsRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.PullTenantsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.PullTenantsRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.PullTenantsRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.PullTenantsRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 1, false)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.PullTenantsRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.PullTenantsRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 1, false)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsRequest}
+ * @return {!proto.smartcore.bos.tenants.PullTenantsRequest}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.PullTenantsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.PullTenantsRequest;
-  return proto.vanti.bsp.ew.tenants.PullTenantsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.PullTenantsRequest;
+  return proto.smartcore.bos.tenants.PullTenantsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantsRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.PullTenantsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsRequest}
+ * @return {!proto.smartcore.bos.tenants.PullTenantsRequest}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.PullTenantsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {boolean} */ (reader.readBool());
-        msg.setUpdatesOnly(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setUpdatesOnly(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1909,9 +1918,9 @@ proto.vanti.bsp.ew.tenants.PullTenantsRequest.deserializeBinaryFromReader = func
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.PullTenantsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.PullTenantsRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.PullTenantsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -1919,17 +1928,17 @@ proto.vanti.bsp.ew.tenants.PullTenantsRequest.prototype.serializeBinary = functi
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantsRequest} message
+ * @param {!proto.smartcore.bos.tenants.PullTenantsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.PullTenantsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.PullTenantsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getUpdatesOnly();
   if (f) {
     writer.writeBool(
-        1,
-        f
+      1,
+      f
     );
   }
 };
@@ -1939,16 +1948,16 @@ proto.vanti.bsp.ew.tenants.PullTenantsRequest.serializeBinaryToWriter = function
  * optional bool updates_only = 1;
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsRequest.prototype.getUpdatesOnly = function() {
+proto.smartcore.bos.tenants.PullTenantsRequest.prototype.getUpdatesOnly = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 1, false));
 };
 
 
 /**
  * @param {boolean} value
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.PullTenantsRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.PullTenantsRequest.prototype.setUpdatesOnly = function(value) {
+proto.smartcore.bos.tenants.PullTenantsRequest.prototype.setUpdatesOnly = function(value) {
   return jspb.Message.setProto3BooleanField(this, 1, value);
 };
 
@@ -1959,85 +1968,85 @@ proto.vanti.bsp.ew.tenants.PullTenantsRequest.prototype.setUpdatesOnly = functio
  * @private {!Array<number>}
  * @const
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.repeatedFields_ = [1];
+proto.smartcore.bos.tenants.PullTenantsResponse.repeatedFields_ = [1];
 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.PullTenantsResponse.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.PullTenantsResponse.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.PullTenantsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.PullTenantsResponse.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.PullTenantsResponse} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.PullTenantsResponse.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+    proto.smartcore.bos.tenants.PullTenantsResponse.Change.toObject, includeInstance)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.PullTenantsResponse} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.PullTenantsResponse.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      changesList: jspb.Message.toObjectList(msg.getChangesList(),
-          proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.toObject, includeInstance)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsResponse}
+ * @return {!proto.smartcore.bos.tenants.PullTenantsResponse}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.PullTenantsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.PullTenantsResponse;
-  return proto.vanti.bsp.ew.tenants.PullTenantsResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.PullTenantsResponse;
+  return proto.smartcore.bos.tenants.PullTenantsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantsResponse} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.PullTenantsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsResponse}
+ * @return {!proto.smartcore.bos.tenants.PullTenantsResponse}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.PullTenantsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.deserializeBinaryFromReader);
-        msg.addChanges(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new proto.smartcore.bos.tenants.PullTenantsResponse.Change;
+      reader.readMessage(value,proto.smartcore.bos.tenants.PullTenantsResponse.Change.deserializeBinaryFromReader);
+      msg.addChanges(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -2048,9 +2057,9 @@ proto.vanti.bsp.ew.tenants.PullTenantsResponse.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.PullTenantsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.PullTenantsResponse.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.PullTenantsResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2058,103 +2067,106 @@ proto.vanti.bsp.ew.tenants.PullTenantsResponse.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantsResponse} message
+ * @param {!proto.smartcore.bos.tenants.PullTenantsResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.PullTenantsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getChangesList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
-        1,
-        f,
-        proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.serializeBinaryToWriter
+      1,
+      f,
+      proto.smartcore.bos.tenants.PullTenantsResponse.Change.serializeBinaryToWriter
     );
   }
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.PullTenantsResponse.Change.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.PullTenantsResponse.Change} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    tenant: (f = msg.getTenant()) && proto.smartcore.bos.tenants.Tenant.toObject(includeInstance, f)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-      tenant: (f = msg.getTenant()) && proto.vanti.bsp.ew.tenants.Tenant.toObject(includeInstance, f)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change}
+ * @return {!proto.smartcore.bos.tenants.PullTenantsResponse.Change}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change;
-  return proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.PullTenantsResponse.Change;
+  return proto.smartcore.bos.tenants.PullTenantsResponse.Change.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.PullTenantsResponse.Change} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change}
+ * @return {!proto.smartcore.bos.tenants.PullTenantsResponse.Change}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new google_protobuf_timestamp_pb.Timestamp;
-        reader.readMessage(value, google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-        msg.setChangeTime(value);
-        break;
-      case 2:
-        var value = new proto.vanti.bsp.ew.tenants.Tenant;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.Tenant.deserializeBinaryFromReader);
-        msg.setTenant(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setChangeTime(value);
+      break;
+    case 2:
+      var value = new proto.smartcore.bos.tenants.Tenant;
+      reader.readMessage(value,proto.smartcore.bos.tenants.Tenant.deserializeBinaryFromReader);
+      msg.setTenant(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -2165,9 +2177,9 @@ proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.deserializeBinaryFromReade
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.PullTenantsResponse.Change.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2175,26 +2187,26 @@ proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.prototype.serializeBinary 
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change} message
+ * @param {!proto.smartcore.bos.tenants.PullTenantsResponse.Change} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getChangeTime();
   if (f != null) {
     writer.writeMessage(
-        1,
-        f,
-        google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+      1,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
   f = message.getTenant();
   if (f != null) {
     writer.writeMessage(
-        2,
-        f,
-        proto.vanti.bsp.ew.tenants.Tenant.serializeBinaryToWriter
+      2,
+      f,
+      proto.smartcore.bos.tenants.Tenant.serializeBinaryToWriter
     );
   }
 };
@@ -2204,26 +2216,26 @@ proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.serializeBinaryToWriter = 
  * optional google.protobuf.Timestamp change_time = 1;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.prototype.getChangeTime = function() {
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.prototype.getChangeTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-      jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 1));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 1));
 };
 
 
 /**
  * @param {?proto.google.protobuf.Timestamp|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change} returns this
- */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.prototype.setChangeTime = function(value) {
+ * @return {!proto.smartcore.bos.tenants.PullTenantsResponse.Change} returns this
+*/
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.prototype.setChangeTime = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change} returns this
+ * @return {!proto.smartcore.bos.tenants.PullTenantsResponse.Change} returns this
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.prototype.clearChangeTime = function() {
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.prototype.clearChangeTime = function() {
   return this.setChangeTime(undefined);
 };
 
@@ -2232,35 +2244,35 @@ proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.prototype.clearChangeTime 
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.prototype.hasChangeTime = function() {
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.prototype.hasChangeTime = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
 
 /**
  * optional Tenant tenant = 2;
- * @return {?proto.vanti.bsp.ew.tenants.Tenant}
+ * @return {?proto.smartcore.bos.tenants.Tenant}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.prototype.getTenant = function() {
-  return /** @type{?proto.vanti.bsp.ew.tenants.Tenant} */ (
-      jspb.Message.getWrapperField(this, proto.vanti.bsp.ew.tenants.Tenant, 2));
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.prototype.getTenant = function() {
+  return /** @type{?proto.smartcore.bos.tenants.Tenant} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.tenants.Tenant, 2));
 };
 
 
 /**
- * @param {?proto.vanti.bsp.ew.tenants.Tenant|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change} returns this
- */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.prototype.setTenant = function(value) {
+ * @param {?proto.smartcore.bos.tenants.Tenant|undefined} value
+ * @return {!proto.smartcore.bos.tenants.PullTenantsResponse.Change} returns this
+*/
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.prototype.setTenant = function(value) {
   return jspb.Message.setWrapperField(this, 2, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change} returns this
+ * @return {!proto.smartcore.bos.tenants.PullTenantsResponse.Change} returns this
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.prototype.clearTenant = function() {
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.prototype.clearTenant = function() {
   return this.setTenant(undefined);
 };
 
@@ -2269,123 +2281,126 @@ proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.prototype.clearTenant = fu
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change.prototype.hasTenant = function() {
+proto.smartcore.bos.tenants.PullTenantsResponse.Change.prototype.hasTenant = function() {
   return jspb.Message.getField(this, 2) != null;
 };
 
 
 /**
  * repeated Change changes = 1;
- * @return {!Array<!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change>}
+ * @return {!Array<!proto.smartcore.bos.tenants.PullTenantsResponse.Change>}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.prototype.getChangesList = function() {
-  return /** @type{!Array<!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change>} */ (
-      jspb.Message.getRepeatedWrapperField(this, proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change, 1));
+proto.smartcore.bos.tenants.PullTenantsResponse.prototype.getChangesList = function() {
+  return /** @type{!Array<!proto.smartcore.bos.tenants.PullTenantsResponse.Change>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.smartcore.bos.tenants.PullTenantsResponse.Change, 1));
 };
 
 
 /**
- * @param {!Array<!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change>} value
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsResponse} returns this
- */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.prototype.setChangesList = function(value) {
+ * @param {!Array<!proto.smartcore.bos.tenants.PullTenantsResponse.Change>} value
+ * @return {!proto.smartcore.bos.tenants.PullTenantsResponse} returns this
+*/
+proto.smartcore.bos.tenants.PullTenantsResponse.prototype.setChangesList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change=} opt_value
+ * @param {!proto.smartcore.bos.tenants.PullTenantsResponse.Change=} opt_value
  * @param {number=} opt_index
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change}
+ * @return {!proto.smartcore.bos.tenants.PullTenantsResponse.Change}
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.prototype.addChanges = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.vanti.bsp.ew.tenants.PullTenantsResponse.Change, opt_index);
+proto.smartcore.bos.tenants.PullTenantsResponse.prototype.addChanges = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.smartcore.bos.tenants.PullTenantsResponse.Change, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantsResponse} returns this
+ * @return {!proto.smartcore.bos.tenants.PullTenantsResponse} returns this
  */
-proto.vanti.bsp.ew.tenants.PullTenantsResponse.prototype.clearChangesList = function() {
+proto.smartcore.bos.tenants.PullTenantsResponse.prototype.clearChangesList = function() {
   return this.setChangesList([]);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.CreateTenantRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.CreateTenantRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.CreateTenantRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.CreateTenantRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.CreateTenantRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.CreateTenantRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    tenant: (f = msg.getTenant()) && proto.smartcore.bos.tenants.Tenant.toObject(includeInstance, f)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.CreateTenantRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.CreateTenantRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      tenant: (f = msg.getTenant()) && proto.vanti.bsp.ew.tenants.Tenant.toObject(includeInstance, f)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.CreateTenantRequest}
+ * @return {!proto.smartcore.bos.tenants.CreateTenantRequest}
  */
-proto.vanti.bsp.ew.tenants.CreateTenantRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.CreateTenantRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.CreateTenantRequest;
-  return proto.vanti.bsp.ew.tenants.CreateTenantRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.CreateTenantRequest;
+  return proto.smartcore.bos.tenants.CreateTenantRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.CreateTenantRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.CreateTenantRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.CreateTenantRequest}
+ * @return {!proto.smartcore.bos.tenants.CreateTenantRequest}
  */
-proto.vanti.bsp.ew.tenants.CreateTenantRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.CreateTenantRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new proto.vanti.bsp.ew.tenants.Tenant;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.Tenant.deserializeBinaryFromReader);
-        msg.setTenant(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new proto.smartcore.bos.tenants.Tenant;
+      reader.readMessage(value,proto.smartcore.bos.tenants.Tenant.deserializeBinaryFromReader);
+      msg.setTenant(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -2396,9 +2411,9 @@ proto.vanti.bsp.ew.tenants.CreateTenantRequest.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.CreateTenantRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.CreateTenantRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.CreateTenantRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.CreateTenantRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2406,18 +2421,18 @@ proto.vanti.bsp.ew.tenants.CreateTenantRequest.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.CreateTenantRequest} message
+ * @param {!proto.smartcore.bos.tenants.CreateTenantRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.CreateTenantRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.CreateTenantRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getTenant();
   if (f != null) {
     writer.writeMessage(
-        1,
-        f,
-        proto.vanti.bsp.ew.tenants.Tenant.serializeBinaryToWriter
+      1,
+      f,
+      proto.smartcore.bos.tenants.Tenant.serializeBinaryToWriter
     );
   }
 };
@@ -2425,28 +2440,28 @@ proto.vanti.bsp.ew.tenants.CreateTenantRequest.serializeBinaryToWriter = functio
 
 /**
  * optional Tenant tenant = 1;
- * @return {?proto.vanti.bsp.ew.tenants.Tenant}
+ * @return {?proto.smartcore.bos.tenants.Tenant}
  */
-proto.vanti.bsp.ew.tenants.CreateTenantRequest.prototype.getTenant = function() {
-  return /** @type{?proto.vanti.bsp.ew.tenants.Tenant} */ (
-      jspb.Message.getWrapperField(this, proto.vanti.bsp.ew.tenants.Tenant, 1));
+proto.smartcore.bos.tenants.CreateTenantRequest.prototype.getTenant = function() {
+  return /** @type{?proto.smartcore.bos.tenants.Tenant} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.tenants.Tenant, 1));
 };
 
 
 /**
- * @param {?proto.vanti.bsp.ew.tenants.Tenant|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.CreateTenantRequest} returns this
- */
-proto.vanti.bsp.ew.tenants.CreateTenantRequest.prototype.setTenant = function(value) {
+ * @param {?proto.smartcore.bos.tenants.Tenant|undefined} value
+ * @return {!proto.smartcore.bos.tenants.CreateTenantRequest} returns this
+*/
+proto.smartcore.bos.tenants.CreateTenantRequest.prototype.setTenant = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.CreateTenantRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.CreateTenantRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.CreateTenantRequest.prototype.clearTenant = function() {
+proto.smartcore.bos.tenants.CreateTenantRequest.prototype.clearTenant = function() {
   return this.setTenant(undefined);
 };
 
@@ -2455,84 +2470,87 @@ proto.vanti.bsp.ew.tenants.CreateTenantRequest.prototype.clearTenant = function(
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.CreateTenantRequest.prototype.hasTenant = function() {
+proto.smartcore.bos.tenants.CreateTenantRequest.prototype.hasTenant = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.GetTenantRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.GetTenantRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.GetTenantRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.GetTenantRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.GetTenantRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.GetTenantRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.GetTenantRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.GetTenantRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, '')
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.GetTenantRequest}
+ * @return {!proto.smartcore.bos.tenants.GetTenantRequest}
  */
-proto.vanti.bsp.ew.tenants.GetTenantRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.GetTenantRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.GetTenantRequest;
-  return proto.vanti.bsp.ew.tenants.GetTenantRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.GetTenantRequest;
+  return proto.smartcore.bos.tenants.GetTenantRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.GetTenantRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.GetTenantRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.GetTenantRequest}
+ * @return {!proto.smartcore.bos.tenants.GetTenantRequest}
  */
-proto.vanti.bsp.ew.tenants.GetTenantRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.GetTenantRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -2543,9 +2561,9 @@ proto.vanti.bsp.ew.tenants.GetTenantRequest.deserializeBinaryFromReader = functi
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.GetTenantRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.GetTenantRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.GetTenantRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.GetTenantRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2553,17 +2571,17 @@ proto.vanti.bsp.ew.tenants.GetTenantRequest.prototype.serializeBinary = function
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.GetTenantRequest} message
+ * @param {!proto.smartcore.bos.tenants.GetTenantRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.GetTenantRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.GetTenantRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
     writer.writeString(
-        1,
-        f
+      1,
+      f
     );
   }
 };
@@ -2573,100 +2591,103 @@ proto.vanti.bsp.ew.tenants.GetTenantRequest.serializeBinaryToWriter = function(m
  * optional string id = 1;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.GetTenantRequest.prototype.getId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ''));
+proto.smartcore.bos.tenants.GetTenantRequest.prototype.getId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.GetTenantRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.GetTenantRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.GetTenantRequest.prototype.setId = function(value) {
+proto.smartcore.bos.tenants.GetTenantRequest.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.UpdateTenantRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.UpdateTenantRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.UpdateTenantRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.UpdateTenantRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.UpdateTenantRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    tenant: (f = msg.getTenant()) && proto.smartcore.bos.tenants.Tenant.toObject(includeInstance, f),
+    updateMask: (f = msg.getUpdateMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.UpdateTenantRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.UpdateTenantRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      tenant: (f = msg.getTenant()) && proto.vanti.bsp.ew.tenants.Tenant.toObject(includeInstance, f),
-      updateMask: (f = msg.getUpdateMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.UpdateTenantRequest}
+ * @return {!proto.smartcore.bos.tenants.UpdateTenantRequest}
  */
-proto.vanti.bsp.ew.tenants.UpdateTenantRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.UpdateTenantRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.UpdateTenantRequest;
-  return proto.vanti.bsp.ew.tenants.UpdateTenantRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.UpdateTenantRequest;
+  return proto.smartcore.bos.tenants.UpdateTenantRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.UpdateTenantRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.UpdateTenantRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.UpdateTenantRequest}
+ * @return {!proto.smartcore.bos.tenants.UpdateTenantRequest}
  */
-proto.vanti.bsp.ew.tenants.UpdateTenantRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.UpdateTenantRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new proto.vanti.bsp.ew.tenants.Tenant;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.Tenant.deserializeBinaryFromReader);
-        msg.setTenant(value);
-        break;
-      case 2:
-        var value = new google_protobuf_field_mask_pb.FieldMask;
-        reader.readMessage(value, google_protobuf_field_mask_pb.FieldMask.deserializeBinaryFromReader);
-        msg.setUpdateMask(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new proto.smartcore.bos.tenants.Tenant;
+      reader.readMessage(value,proto.smartcore.bos.tenants.Tenant.deserializeBinaryFromReader);
+      msg.setTenant(value);
+      break;
+    case 2:
+      var value = new google_protobuf_field_mask_pb.FieldMask;
+      reader.readMessage(value,google_protobuf_field_mask_pb.FieldMask.deserializeBinaryFromReader);
+      msg.setUpdateMask(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -2677,9 +2698,9 @@ proto.vanti.bsp.ew.tenants.UpdateTenantRequest.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.UpdateTenantRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.UpdateTenantRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.UpdateTenantRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2687,26 +2708,26 @@ proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.UpdateTenantRequest} message
+ * @param {!proto.smartcore.bos.tenants.UpdateTenantRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.UpdateTenantRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.UpdateTenantRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getTenant();
   if (f != null) {
     writer.writeMessage(
-        1,
-        f,
-        proto.vanti.bsp.ew.tenants.Tenant.serializeBinaryToWriter
+      1,
+      f,
+      proto.smartcore.bos.tenants.Tenant.serializeBinaryToWriter
     );
   }
   f = message.getUpdateMask();
   if (f != null) {
     writer.writeMessage(
-        2,
-        f,
-        google_protobuf_field_mask_pb.FieldMask.serializeBinaryToWriter
+      2,
+      f,
+      google_protobuf_field_mask_pb.FieldMask.serializeBinaryToWriter
     );
   }
 };
@@ -2714,28 +2735,28 @@ proto.vanti.bsp.ew.tenants.UpdateTenantRequest.serializeBinaryToWriter = functio
 
 /**
  * optional Tenant tenant = 1;
- * @return {?proto.vanti.bsp.ew.tenants.Tenant}
+ * @return {?proto.smartcore.bos.tenants.Tenant}
  */
-proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.getTenant = function() {
-  return /** @type{?proto.vanti.bsp.ew.tenants.Tenant} */ (
-      jspb.Message.getWrapperField(this, proto.vanti.bsp.ew.tenants.Tenant, 1));
+proto.smartcore.bos.tenants.UpdateTenantRequest.prototype.getTenant = function() {
+  return /** @type{?proto.smartcore.bos.tenants.Tenant} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.tenants.Tenant, 1));
 };
 
 
 /**
- * @param {?proto.vanti.bsp.ew.tenants.Tenant|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.UpdateTenantRequest} returns this
- */
-proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.setTenant = function(value) {
+ * @param {?proto.smartcore.bos.tenants.Tenant|undefined} value
+ * @return {!proto.smartcore.bos.tenants.UpdateTenantRequest} returns this
+*/
+proto.smartcore.bos.tenants.UpdateTenantRequest.prototype.setTenant = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.UpdateTenantRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.UpdateTenantRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.clearTenant = function() {
+proto.smartcore.bos.tenants.UpdateTenantRequest.prototype.clearTenant = function() {
   return this.setTenant(undefined);
 };
 
@@ -2744,7 +2765,7 @@ proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.clearTenant = function(
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.hasTenant = function() {
+proto.smartcore.bos.tenants.UpdateTenantRequest.prototype.hasTenant = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -2753,26 +2774,26 @@ proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.hasTenant = function() 
  * optional google.protobuf.FieldMask update_mask = 2;
  * @return {?proto.google.protobuf.FieldMask}
  */
-proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.getUpdateMask = function() {
+proto.smartcore.bos.tenants.UpdateTenantRequest.prototype.getUpdateMask = function() {
   return /** @type{?proto.google.protobuf.FieldMask} */ (
-      jspb.Message.getWrapperField(this, google_protobuf_field_mask_pb.FieldMask, 2));
+    jspb.Message.getWrapperField(this, google_protobuf_field_mask_pb.FieldMask, 2));
 };
 
 
 /**
  * @param {?proto.google.protobuf.FieldMask|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.UpdateTenantRequest} returns this
- */
-proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.setUpdateMask = function(value) {
+ * @return {!proto.smartcore.bos.tenants.UpdateTenantRequest} returns this
+*/
+proto.smartcore.bos.tenants.UpdateTenantRequest.prototype.setUpdateMask = function(value) {
   return jspb.Message.setWrapperField(this, 2, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.UpdateTenantRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.UpdateTenantRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.clearUpdateMask = function() {
+proto.smartcore.bos.tenants.UpdateTenantRequest.prototype.clearUpdateMask = function() {
   return this.setUpdateMask(undefined);
 };
 
@@ -2781,84 +2802,87 @@ proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.clearUpdateMask = funct
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.UpdateTenantRequest.prototype.hasUpdateMask = function() {
+proto.smartcore.bos.tenants.UpdateTenantRequest.prototype.hasUpdateMask = function() {
   return jspb.Message.getField(this, 2) != null;
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.DeleteTenantRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.DeleteTenantRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.DeleteTenantRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.DeleteTenantRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.DeleteTenantRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.DeleteTenantRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.DeleteTenantRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.DeleteTenantRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, '')
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.DeleteTenantRequest}
+ * @return {!proto.smartcore.bos.tenants.DeleteTenantRequest}
  */
-proto.vanti.bsp.ew.tenants.DeleteTenantRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.DeleteTenantRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.DeleteTenantRequest;
-  return proto.vanti.bsp.ew.tenants.DeleteTenantRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.DeleteTenantRequest;
+  return proto.smartcore.bos.tenants.DeleteTenantRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.DeleteTenantRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.DeleteTenantRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.DeleteTenantRequest}
+ * @return {!proto.smartcore.bos.tenants.DeleteTenantRequest}
  */
-proto.vanti.bsp.ew.tenants.DeleteTenantRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.DeleteTenantRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -2869,9 +2893,9 @@ proto.vanti.bsp.ew.tenants.DeleteTenantRequest.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.DeleteTenantRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.DeleteTenantRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.DeleteTenantRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.DeleteTenantRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2879,17 +2903,17 @@ proto.vanti.bsp.ew.tenants.DeleteTenantRequest.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.DeleteTenantRequest} message
+ * @param {!proto.smartcore.bos.tenants.DeleteTenantRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.DeleteTenantRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.DeleteTenantRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
     writer.writeString(
-        1,
-        f
+      1,
+      f
     );
   }
 };
@@ -2899,87 +2923,92 @@ proto.vanti.bsp.ew.tenants.DeleteTenantRequest.serializeBinaryToWriter = functio
  * optional string id = 1;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.DeleteTenantRequest.prototype.getId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ''));
+proto.smartcore.bos.tenants.DeleteTenantRequest.prototype.getId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.DeleteTenantRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.DeleteTenantRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.DeleteTenantRequest.prototype.setId = function(value) {
+proto.smartcore.bos.tenants.DeleteTenantRequest.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.DeleteTenantResponse.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.DeleteTenantResponse.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.DeleteTenantResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.DeleteTenantResponse.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.DeleteTenantResponse} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.DeleteTenantResponse.toObject = function(includeInstance, msg) {
+  var f, obj = {
+
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.DeleteTenantResponse} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.DeleteTenantResponse.toObject = function(includeInstance, msg) {
-    var f, obj = {};
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.DeleteTenantResponse}
+ * @return {!proto.smartcore.bos.tenants.DeleteTenantResponse}
  */
-proto.vanti.bsp.ew.tenants.DeleteTenantResponse.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.DeleteTenantResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.DeleteTenantResponse;
-  return proto.vanti.bsp.ew.tenants.DeleteTenantResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.DeleteTenantResponse;
+  return proto.smartcore.bos.tenants.DeleteTenantResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.DeleteTenantResponse} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.DeleteTenantResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.DeleteTenantResponse}
+ * @return {!proto.smartcore.bos.tenants.DeleteTenantResponse}
  */
-proto.vanti.bsp.ew.tenants.DeleteTenantResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.DeleteTenantResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      default:
-        reader.skipField();
-        break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -2990,9 +3019,9 @@ proto.vanti.bsp.ew.tenants.DeleteTenantResponse.deserializeBinaryFromReader = fu
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.DeleteTenantResponse.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.DeleteTenantResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.DeleteTenantResponse.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.DeleteTenantResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3000,88 +3029,91 @@ proto.vanti.bsp.ew.tenants.DeleteTenantResponse.prototype.serializeBinary = func
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.DeleteTenantResponse} message
+ * @param {!proto.smartcore.bos.tenants.DeleteTenantResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.DeleteTenantResponse.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.DeleteTenantResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.PullTenantRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.PullTenantRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.PullTenantRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.PullTenantRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.PullTenantRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.PullTenantRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 1, false)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.PullTenantRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.PullTenantRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 1, false)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantRequest}
+ * @return {!proto.smartcore.bos.tenants.PullTenantRequest}
  */
-proto.vanti.bsp.ew.tenants.PullTenantRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.PullTenantRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.PullTenantRequest;
-  return proto.vanti.bsp.ew.tenants.PullTenantRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.PullTenantRequest;
+  return proto.smartcore.bos.tenants.PullTenantRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.PullTenantRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantRequest}
+ * @return {!proto.smartcore.bos.tenants.PullTenantRequest}
  */
-proto.vanti.bsp.ew.tenants.PullTenantRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.PullTenantRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {boolean} */ (reader.readBool());
-        msg.setUpdatesOnly(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setUpdatesOnly(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -3092,9 +3124,9 @@ proto.vanti.bsp.ew.tenants.PullTenantRequest.deserializeBinaryFromReader = funct
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.PullTenantRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.PullTenantRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.PullTenantRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.PullTenantRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3102,17 +3134,17 @@ proto.vanti.bsp.ew.tenants.PullTenantRequest.prototype.serializeBinary = functio
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantRequest} message
+ * @param {!proto.smartcore.bos.tenants.PullTenantRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.PullTenantRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.PullTenantRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getUpdatesOnly();
   if (f) {
     writer.writeBool(
-        1,
-        f
+      1,
+      f
     );
   }
 };
@@ -3122,16 +3154,16 @@ proto.vanti.bsp.ew.tenants.PullTenantRequest.serializeBinaryToWriter = function(
  * optional bool updates_only = 1;
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullTenantRequest.prototype.getUpdatesOnly = function() {
+proto.smartcore.bos.tenants.PullTenantRequest.prototype.getUpdatesOnly = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 1, false));
 };
 
 
 /**
  * @param {boolean} value
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.PullTenantRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.PullTenantRequest.prototype.setUpdatesOnly = function(value) {
+proto.smartcore.bos.tenants.PullTenantRequest.prototype.setUpdatesOnly = function(value) {
   return jspb.Message.setProto3BooleanField(this, 1, value);
 };
 
@@ -3142,85 +3174,85 @@ proto.vanti.bsp.ew.tenants.PullTenantRequest.prototype.setUpdatesOnly = function
  * @private {!Array<number>}
  * @const
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.repeatedFields_ = [1];
+proto.smartcore.bos.tenants.PullTenantResponse.repeatedFields_ = [1];
 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.PullTenantResponse.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.PullTenantResponse.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.PullTenantResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.PullTenantResponse.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.PullTenantResponse} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.PullTenantResponse.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+    proto.smartcore.bos.tenants.PullTenantResponse.Change.toObject, includeInstance)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.PullTenantResponse} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.PullTenantResponse.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      changesList: jspb.Message.toObjectList(msg.getChangesList(),
-          proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.toObject, includeInstance)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantResponse}
+ * @return {!proto.smartcore.bos.tenants.PullTenantResponse}
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.PullTenantResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.PullTenantResponse;
-  return proto.vanti.bsp.ew.tenants.PullTenantResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.PullTenantResponse;
+  return proto.smartcore.bos.tenants.PullTenantResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantResponse} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.PullTenantResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantResponse}
+ * @return {!proto.smartcore.bos.tenants.PullTenantResponse}
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.PullTenantResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new proto.vanti.bsp.ew.tenants.PullTenantResponse.Change;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.deserializeBinaryFromReader);
-        msg.addChanges(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new proto.smartcore.bos.tenants.PullTenantResponse.Change;
+      reader.readMessage(value,proto.smartcore.bos.tenants.PullTenantResponse.Change.deserializeBinaryFromReader);
+      msg.addChanges(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -3231,9 +3263,9 @@ proto.vanti.bsp.ew.tenants.PullTenantResponse.deserializeBinaryFromReader = func
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.PullTenantResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.PullTenantResponse.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.PullTenantResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3241,103 +3273,106 @@ proto.vanti.bsp.ew.tenants.PullTenantResponse.prototype.serializeBinary = functi
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantResponse} message
+ * @param {!proto.smartcore.bos.tenants.PullTenantResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.PullTenantResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getChangesList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
-        1,
-        f,
-        proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.serializeBinaryToWriter
+      1,
+      f,
+      proto.smartcore.bos.tenants.PullTenantResponse.Change.serializeBinaryToWriter
     );
   }
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.PullTenantResponse.Change.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.PullTenantResponse.Change.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.PullTenantResponse.Change} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.PullTenantResponse.Change.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    tenant: (f = msg.getTenant()) && proto.smartcore.bos.tenants.Tenant.toObject(includeInstance, f)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-      tenant: (f = msg.getTenant()) && proto.vanti.bsp.ew.tenants.Tenant.toObject(includeInstance, f)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change}
+ * @return {!proto.smartcore.bos.tenants.PullTenantResponse.Change}
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.PullTenantResponse.Change.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.PullTenantResponse.Change;
-  return proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.PullTenantResponse.Change;
+  return proto.smartcore.bos.tenants.PullTenantResponse.Change.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.PullTenantResponse.Change} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change}
+ * @return {!proto.smartcore.bos.tenants.PullTenantResponse.Change}
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.PullTenantResponse.Change.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new google_protobuf_timestamp_pb.Timestamp;
-        reader.readMessage(value, google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-        msg.setChangeTime(value);
-        break;
-      case 2:
-        var value = new proto.vanti.bsp.ew.tenants.Tenant;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.Tenant.deserializeBinaryFromReader);
-        msg.setTenant(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setChangeTime(value);
+      break;
+    case 2:
+      var value = new proto.smartcore.bos.tenants.Tenant;
+      reader.readMessage(value,proto.smartcore.bos.tenants.Tenant.deserializeBinaryFromReader);
+      msg.setTenant(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -3348,9 +3383,9 @@ proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.deserializeBinaryFromReader
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.PullTenantResponse.Change.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.PullTenantResponse.Change.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3358,26 +3393,26 @@ proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.prototype.serializeBinary =
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change} message
+ * @param {!proto.smartcore.bos.tenants.PullTenantResponse.Change} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.PullTenantResponse.Change.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getChangeTime();
   if (f != null) {
     writer.writeMessage(
-        1,
-        f,
-        google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+      1,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
   f = message.getTenant();
   if (f != null) {
     writer.writeMessage(
-        2,
-        f,
-        proto.vanti.bsp.ew.tenants.Tenant.serializeBinaryToWriter
+      2,
+      f,
+      proto.smartcore.bos.tenants.Tenant.serializeBinaryToWriter
     );
   }
 };
@@ -3387,26 +3422,26 @@ proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.serializeBinaryToWriter = f
  * optional google.protobuf.Timestamp change_time = 1;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.prototype.getChangeTime = function() {
+proto.smartcore.bos.tenants.PullTenantResponse.Change.prototype.getChangeTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-      jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 1));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 1));
 };
 
 
 /**
  * @param {?proto.google.protobuf.Timestamp|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change} returns this
- */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.prototype.setChangeTime = function(value) {
+ * @return {!proto.smartcore.bos.tenants.PullTenantResponse.Change} returns this
+*/
+proto.smartcore.bos.tenants.PullTenantResponse.Change.prototype.setChangeTime = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change} returns this
+ * @return {!proto.smartcore.bos.tenants.PullTenantResponse.Change} returns this
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.prototype.clearChangeTime = function() {
+proto.smartcore.bos.tenants.PullTenantResponse.Change.prototype.clearChangeTime = function() {
   return this.setChangeTime(undefined);
 };
 
@@ -3415,35 +3450,35 @@ proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.prototype.clearChangeTime =
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.prototype.hasChangeTime = function() {
+proto.smartcore.bos.tenants.PullTenantResponse.Change.prototype.hasChangeTime = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
 
 /**
  * optional Tenant tenant = 2;
- * @return {?proto.vanti.bsp.ew.tenants.Tenant}
+ * @return {?proto.smartcore.bos.tenants.Tenant}
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.prototype.getTenant = function() {
-  return /** @type{?proto.vanti.bsp.ew.tenants.Tenant} */ (
-      jspb.Message.getWrapperField(this, proto.vanti.bsp.ew.tenants.Tenant, 2));
+proto.smartcore.bos.tenants.PullTenantResponse.Change.prototype.getTenant = function() {
+  return /** @type{?proto.smartcore.bos.tenants.Tenant} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.tenants.Tenant, 2));
 };
 
 
 /**
- * @param {?proto.vanti.bsp.ew.tenants.Tenant|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change} returns this
- */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.prototype.setTenant = function(value) {
+ * @param {?proto.smartcore.bos.tenants.Tenant|undefined} value
+ * @return {!proto.smartcore.bos.tenants.PullTenantResponse.Change} returns this
+*/
+proto.smartcore.bos.tenants.PullTenantResponse.Change.prototype.setTenant = function(value) {
   return jspb.Message.setWrapperField(this, 2, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change} returns this
+ * @return {!proto.smartcore.bos.tenants.PullTenantResponse.Change} returns this
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.prototype.clearTenant = function() {
+proto.smartcore.bos.tenants.PullTenantResponse.Change.prototype.clearTenant = function() {
   return this.setTenant(undefined);
 };
 
@@ -3452,45 +3487,45 @@ proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.prototype.clearTenant = fun
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.Change.prototype.hasTenant = function() {
+proto.smartcore.bos.tenants.PullTenantResponse.Change.prototype.hasTenant = function() {
   return jspb.Message.getField(this, 2) != null;
 };
 
 
 /**
  * repeated Change changes = 1;
- * @return {!Array<!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change>}
+ * @return {!Array<!proto.smartcore.bos.tenants.PullTenantResponse.Change>}
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.prototype.getChangesList = function() {
-  return /** @type{!Array<!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change>} */ (
-      jspb.Message.getRepeatedWrapperField(this, proto.vanti.bsp.ew.tenants.PullTenantResponse.Change, 1));
+proto.smartcore.bos.tenants.PullTenantResponse.prototype.getChangesList = function() {
+  return /** @type{!Array<!proto.smartcore.bos.tenants.PullTenantResponse.Change>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.smartcore.bos.tenants.PullTenantResponse.Change, 1));
 };
 
 
 /**
- * @param {!Array<!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change>} value
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantResponse} returns this
- */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.prototype.setChangesList = function(value) {
+ * @param {!Array<!proto.smartcore.bos.tenants.PullTenantResponse.Change>} value
+ * @return {!proto.smartcore.bos.tenants.PullTenantResponse} returns this
+*/
+proto.smartcore.bos.tenants.PullTenantResponse.prototype.setChangesList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change=} opt_value
+ * @param {!proto.smartcore.bos.tenants.PullTenantResponse.Change=} opt_value
  * @param {number=} opt_index
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantResponse.Change}
+ * @return {!proto.smartcore.bos.tenants.PullTenantResponse.Change}
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.prototype.addChanges = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.vanti.bsp.ew.tenants.PullTenantResponse.Change, opt_index);
+proto.smartcore.bos.tenants.PullTenantResponse.prototype.addChanges = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.smartcore.bos.tenants.PullTenantResponse.Change, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.vanti.bsp.ew.tenants.PullTenantResponse} returns this
+ * @return {!proto.smartcore.bos.tenants.PullTenantResponse} returns this
  */
-proto.vanti.bsp.ew.tenants.PullTenantResponse.prototype.clearChangesList = function() {
+proto.smartcore.bos.tenants.PullTenantResponse.prototype.clearChangesList = function() {
   return this.setChangesList([]);
 };
 
@@ -3501,88 +3536,88 @@ proto.vanti.bsp.ew.tenants.PullTenantResponse.prototype.clearChangesList = funct
  * @private {!Array<number>}
  * @const
  */
-proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.repeatedFields_ = [2];
+proto.smartcore.bos.tenants.AddTenantZonesRequest.repeatedFields_ = [2];
 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.AddTenantZonesRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.AddTenantZonesRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.AddTenantZonesRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.AddTenantZonesRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    tenantId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    addZoneNamesList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.AddTenantZonesRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      tenantId: jspb.Message.getFieldWithDefault(msg, 1, ''),
-      addZoneNamesList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.AddTenantZonesRequest}
+ * @return {!proto.smartcore.bos.tenants.AddTenantZonesRequest}
  */
-proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.AddTenantZonesRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.AddTenantZonesRequest;
-  return proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.AddTenantZonesRequest;
+  return proto.smartcore.bos.tenants.AddTenantZonesRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.AddTenantZonesRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.AddTenantZonesRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.AddTenantZonesRequest}
+ * @return {!proto.smartcore.bos.tenants.AddTenantZonesRequest}
  */
-proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.AddTenantZonesRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setTenantId(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addAddZoneNames(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTenantId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addAddZoneNames(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -3593,9 +3628,9 @@ proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.deserializeBinaryFromReader = f
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.AddTenantZonesRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.AddTenantZonesRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3603,24 +3638,24 @@ proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.prototype.serializeBinary = fun
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.AddTenantZonesRequest} message
+ * @param {!proto.smartcore.bos.tenants.AddTenantZonesRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.AddTenantZonesRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getTenantId();
   if (f.length > 0) {
     writer.writeString(
-        1,
-        f
+      1,
+      f
     );
   }
   f = message.getAddZoneNamesList();
   if (f.length > 0) {
     writer.writeRepeatedString(
-        2,
-        f
+      2,
+      f
     );
   }
 };
@@ -3630,16 +3665,16 @@ proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.serializeBinaryToWriter = funct
  * optional string tenant_id = 1;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.prototype.getTenantId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ''));
+proto.smartcore.bos.tenants.AddTenantZonesRequest.prototype.getTenantId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.AddTenantZonesRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.AddTenantZonesRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.prototype.setTenantId = function(value) {
+proto.smartcore.bos.tenants.AddTenantZonesRequest.prototype.setTenantId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -3648,16 +3683,16 @@ proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.prototype.setTenantId = functio
  * repeated string add_zone_names = 2;
  * @return {!Array<string>}
  */
-proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.prototype.getAddZoneNamesList = function() {
+proto.smartcore.bos.tenants.AddTenantZonesRequest.prototype.getAddZoneNamesList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 2));
 };
 
 
 /**
  * @param {!Array<string>} value
- * @return {!proto.vanti.bsp.ew.tenants.AddTenantZonesRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.AddTenantZonesRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.prototype.setAddZoneNamesList = function(value) {
+proto.smartcore.bos.tenants.AddTenantZonesRequest.prototype.setAddZoneNamesList = function(value) {
   return jspb.Message.setField(this, 2, value || []);
 };
 
@@ -3665,18 +3700,18 @@ proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.prototype.setAddZoneNamesList =
 /**
  * @param {string} value
  * @param {number=} opt_index
- * @return {!proto.vanti.bsp.ew.tenants.AddTenantZonesRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.AddTenantZonesRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.prototype.addAddZoneNames = function(value, opt_index) {
+proto.smartcore.bos.tenants.AddTenantZonesRequest.prototype.addAddZoneNames = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 2, value, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.vanti.bsp.ew.tenants.AddTenantZonesRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.AddTenantZonesRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.prototype.clearAddZoneNamesList = function() {
+proto.smartcore.bos.tenants.AddTenantZonesRequest.prototype.clearAddZoneNamesList = function() {
   return this.setAddZoneNamesList([]);
 };
 
@@ -3687,88 +3722,88 @@ proto.vanti.bsp.ew.tenants.AddTenantZonesRequest.prototype.clearAddZoneNamesList
  * @private {!Array<number>}
  * @const
  */
-proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.repeatedFields_ = [3];
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest.repeatedFields_ = [3];
 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.RemoveTenantZonesRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.RemoveTenantZonesRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    tenantId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    removeZoneNamesList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      tenantId: jspb.Message.getFieldWithDefault(msg, 1, ''),
-      removeZoneNamesList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest}
+ * @return {!proto.smartcore.bos.tenants.RemoveTenantZonesRequest}
  */
-proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest;
-  return proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.RemoveTenantZonesRequest;
+  return proto.smartcore.bos.tenants.RemoveTenantZonesRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.RemoveTenantZonesRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest}
+ * @return {!proto.smartcore.bos.tenants.RemoveTenantZonesRequest}
  */
-proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setTenantId(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addRemoveZoneNames(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTenantId(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addRemoveZoneNames(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -3779,9 +3814,9 @@ proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.deserializeBinaryFromReader 
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.RemoveTenantZonesRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3789,24 +3824,24 @@ proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.prototype.serializeBinary = 
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest} message
+ * @param {!proto.smartcore.bos.tenants.RemoveTenantZonesRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getTenantId();
   if (f.length > 0) {
     writer.writeString(
-        1,
-        f
+      1,
+      f
     );
   }
   f = message.getRemoveZoneNamesList();
   if (f.length > 0) {
     writer.writeRepeatedString(
-        3,
-        f
+      3,
+      f
     );
   }
 };
@@ -3816,16 +3851,16 @@ proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.serializeBinaryToWriter = fu
  * optional string tenant_id = 1;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.prototype.getTenantId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ''));
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest.prototype.getTenantId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.RemoveTenantZonesRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.prototype.setTenantId = function(value) {
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest.prototype.setTenantId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -3834,16 +3869,16 @@ proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.prototype.setTenantId = func
  * repeated string remove_zone_names = 3;
  * @return {!Array<string>}
  */
-proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.prototype.getRemoveZoneNamesList = function() {
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest.prototype.getRemoveZoneNamesList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
 };
 
 
 /**
  * @param {!Array<string>} value
- * @return {!proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.RemoveTenantZonesRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.prototype.setRemoveZoneNamesList = function(value) {
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest.prototype.setRemoveZoneNamesList = function(value) {
   return jspb.Message.setField(this, 3, value || []);
 };
 
@@ -3851,100 +3886,103 @@ proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.prototype.setRemoveZoneNames
 /**
  * @param {string} value
  * @param {number=} opt_index
- * @return {!proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.RemoveTenantZonesRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.prototype.addRemoveZoneNames = function(value, opt_index) {
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest.prototype.addRemoveZoneNames = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.RemoveTenantZonesRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.RemoveTenantZonesRequest.prototype.clearRemoveZoneNamesList = function() {
+proto.smartcore.bos.tenants.RemoveTenantZonesRequest.prototype.clearRemoveZoneNamesList = function() {
   return this.setRemoveZoneNamesList([]);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.ListSecretsRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.ListSecretsRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.ListSecretsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.ListSecretsRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.ListSecretsRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.ListSecretsRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    includeHash: jspb.Message.getBooleanFieldWithDefault(msg, 1, false),
+    filter: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.ListSecretsRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.ListSecretsRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      includeHash: jspb.Message.getBooleanFieldWithDefault(msg, 1, false),
-      filter: jspb.Message.getFieldWithDefault(msg, 2, '')
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.ListSecretsRequest}
+ * @return {!proto.smartcore.bos.tenants.ListSecretsRequest}
  */
-proto.vanti.bsp.ew.tenants.ListSecretsRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.ListSecretsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.ListSecretsRequest;
-  return proto.vanti.bsp.ew.tenants.ListSecretsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.ListSecretsRequest;
+  return proto.smartcore.bos.tenants.ListSecretsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.ListSecretsRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.ListSecretsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.ListSecretsRequest}
+ * @return {!proto.smartcore.bos.tenants.ListSecretsRequest}
  */
-proto.vanti.bsp.ew.tenants.ListSecretsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.ListSecretsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {boolean} */ (reader.readBool());
-        msg.setIncludeHash(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setFilter(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setIncludeHash(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setFilter(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -3955,9 +3993,9 @@ proto.vanti.bsp.ew.tenants.ListSecretsRequest.deserializeBinaryFromReader = func
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.ListSecretsRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.ListSecretsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.ListSecretsRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.ListSecretsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3965,24 +4003,24 @@ proto.vanti.bsp.ew.tenants.ListSecretsRequest.prototype.serializeBinary = functi
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.ListSecretsRequest} message
+ * @param {!proto.smartcore.bos.tenants.ListSecretsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.ListSecretsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.ListSecretsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getIncludeHash();
   if (f) {
     writer.writeBool(
-        1,
-        f
+      1,
+      f
     );
   }
   f = message.getFilter();
   if (f.length > 0) {
     writer.writeString(
-        2,
-        f
+      2,
+      f
     );
   }
 };
@@ -3992,16 +4030,16 @@ proto.vanti.bsp.ew.tenants.ListSecretsRequest.serializeBinaryToWriter = function
  * optional bool include_hash = 1;
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.ListSecretsRequest.prototype.getIncludeHash = function() {
+proto.smartcore.bos.tenants.ListSecretsRequest.prototype.getIncludeHash = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 1, false));
 };
 
 
 /**
  * @param {boolean} value
- * @return {!proto.vanti.bsp.ew.tenants.ListSecretsRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.ListSecretsRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.ListSecretsRequest.prototype.setIncludeHash = function(value) {
+proto.smartcore.bos.tenants.ListSecretsRequest.prototype.setIncludeHash = function(value) {
   return jspb.Message.setProto3BooleanField(this, 1, value);
 };
 
@@ -4010,16 +4048,16 @@ proto.vanti.bsp.ew.tenants.ListSecretsRequest.prototype.setIncludeHash = functio
  * optional string filter = 2;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.ListSecretsRequest.prototype.getFilter = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ''));
+proto.smartcore.bos.tenants.ListSecretsRequest.prototype.getFilter = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.ListSecretsRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.ListSecretsRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.ListSecretsRequest.prototype.setFilter = function(value) {
+proto.smartcore.bos.tenants.ListSecretsRequest.prototype.setFilter = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -4030,85 +4068,85 @@ proto.vanti.bsp.ew.tenants.ListSecretsRequest.prototype.setFilter = function(val
  * @private {!Array<number>}
  * @const
  */
-proto.vanti.bsp.ew.tenants.ListSecretsResponse.repeatedFields_ = [1];
+proto.smartcore.bos.tenants.ListSecretsResponse.repeatedFields_ = [1];
 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.ListSecretsResponse.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.ListSecretsResponse.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.ListSecretsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.ListSecretsResponse.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.ListSecretsResponse} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.ListSecretsResponse.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    secretsList: jspb.Message.toObjectList(msg.getSecretsList(),
+    proto.smartcore.bos.tenants.Secret.toObject, includeInstance)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.ListSecretsResponse} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.ListSecretsResponse.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      secretsList: jspb.Message.toObjectList(msg.getSecretsList(),
-          proto.vanti.bsp.ew.tenants.Secret.toObject, includeInstance)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.ListSecretsResponse}
+ * @return {!proto.smartcore.bos.tenants.ListSecretsResponse}
  */
-proto.vanti.bsp.ew.tenants.ListSecretsResponse.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.ListSecretsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.ListSecretsResponse;
-  return proto.vanti.bsp.ew.tenants.ListSecretsResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.ListSecretsResponse;
+  return proto.smartcore.bos.tenants.ListSecretsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.ListSecretsResponse} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.ListSecretsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.ListSecretsResponse}
+ * @return {!proto.smartcore.bos.tenants.ListSecretsResponse}
  */
-proto.vanti.bsp.ew.tenants.ListSecretsResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.ListSecretsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new proto.vanti.bsp.ew.tenants.Secret;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.Secret.deserializeBinaryFromReader);
-        msg.addSecrets(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new proto.smartcore.bos.tenants.Secret;
+      reader.readMessage(value,proto.smartcore.bos.tenants.Secret.deserializeBinaryFromReader);
+      msg.addSecrets(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -4119,9 +4157,9 @@ proto.vanti.bsp.ew.tenants.ListSecretsResponse.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.ListSecretsResponse.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.ListSecretsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.ListSecretsResponse.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.ListSecretsResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4129,18 +4167,18 @@ proto.vanti.bsp.ew.tenants.ListSecretsResponse.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.ListSecretsResponse} message
+ * @param {!proto.smartcore.bos.tenants.ListSecretsResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.ListSecretsResponse.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.ListSecretsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getSecretsList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
-        1,
-        f,
-        proto.vanti.bsp.ew.tenants.Secret.serializeBinaryToWriter
+      1,
+      f,
+      proto.smartcore.bos.tenants.Secret.serializeBinaryToWriter
     );
   }
 };
@@ -4148,120 +4186,123 @@ proto.vanti.bsp.ew.tenants.ListSecretsResponse.serializeBinaryToWriter = functio
 
 /**
  * repeated Secret secrets = 1;
- * @return {!Array<!proto.vanti.bsp.ew.tenants.Secret>}
+ * @return {!Array<!proto.smartcore.bos.tenants.Secret>}
  */
-proto.vanti.bsp.ew.tenants.ListSecretsResponse.prototype.getSecretsList = function() {
-  return /** @type{!Array<!proto.vanti.bsp.ew.tenants.Secret>} */ (
-      jspb.Message.getRepeatedWrapperField(this, proto.vanti.bsp.ew.tenants.Secret, 1));
+proto.smartcore.bos.tenants.ListSecretsResponse.prototype.getSecretsList = function() {
+  return /** @type{!Array<!proto.smartcore.bos.tenants.Secret>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.smartcore.bos.tenants.Secret, 1));
 };
 
 
 /**
- * @param {!Array<!proto.vanti.bsp.ew.tenants.Secret>} value
- * @return {!proto.vanti.bsp.ew.tenants.ListSecretsResponse} returns this
- */
-proto.vanti.bsp.ew.tenants.ListSecretsResponse.prototype.setSecretsList = function(value) {
+ * @param {!Array<!proto.smartcore.bos.tenants.Secret>} value
+ * @return {!proto.smartcore.bos.tenants.ListSecretsResponse} returns this
+*/
+proto.smartcore.bos.tenants.ListSecretsResponse.prototype.setSecretsList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.vanti.bsp.ew.tenants.Secret=} opt_value
+ * @param {!proto.smartcore.bos.tenants.Secret=} opt_value
  * @param {number=} opt_index
- * @return {!proto.vanti.bsp.ew.tenants.Secret}
+ * @return {!proto.smartcore.bos.tenants.Secret}
  */
-proto.vanti.bsp.ew.tenants.ListSecretsResponse.prototype.addSecrets = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.vanti.bsp.ew.tenants.Secret, opt_index);
+proto.smartcore.bos.tenants.ListSecretsResponse.prototype.addSecrets = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.smartcore.bos.tenants.Secret, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.vanti.bsp.ew.tenants.ListSecretsResponse} returns this
+ * @return {!proto.smartcore.bos.tenants.ListSecretsResponse} returns this
  */
-proto.vanti.bsp.ew.tenants.ListSecretsResponse.prototype.clearSecretsList = function() {
+proto.smartcore.bos.tenants.ListSecretsResponse.prototype.clearSecretsList = function() {
   return this.setSecretsList([]);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.PullSecretsRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.PullSecretsRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.PullSecretsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.PullSecretsRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.PullSecretsRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.PullSecretsRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    includeHash: jspb.Message.getBooleanFieldWithDefault(msg, 1, false),
+    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 2, false)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.PullSecretsRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.PullSecretsRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      includeHash: jspb.Message.getBooleanFieldWithDefault(msg, 1, false),
-      updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 2, false)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsRequest}
+ * @return {!proto.smartcore.bos.tenants.PullSecretsRequest}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.PullSecretsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.PullSecretsRequest;
-  return proto.vanti.bsp.ew.tenants.PullSecretsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.PullSecretsRequest;
+  return proto.smartcore.bos.tenants.PullSecretsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretsRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.PullSecretsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsRequest}
+ * @return {!proto.smartcore.bos.tenants.PullSecretsRequest}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.PullSecretsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {boolean} */ (reader.readBool());
-        msg.setIncludeHash(value);
-        break;
-      case 2:
-        var value = /** @type {boolean} */ (reader.readBool());
-        msg.setUpdatesOnly(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setIncludeHash(value);
+      break;
+    case 2:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setUpdatesOnly(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -4272,9 +4313,9 @@ proto.vanti.bsp.ew.tenants.PullSecretsRequest.deserializeBinaryFromReader = func
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.PullSecretsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.PullSecretsRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.PullSecretsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4282,24 +4323,24 @@ proto.vanti.bsp.ew.tenants.PullSecretsRequest.prototype.serializeBinary = functi
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretsRequest} message
+ * @param {!proto.smartcore.bos.tenants.PullSecretsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.PullSecretsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.PullSecretsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getIncludeHash();
   if (f) {
     writer.writeBool(
-        1,
-        f
+      1,
+      f
     );
   }
   f = message.getUpdatesOnly();
   if (f) {
     writer.writeBool(
-        2,
-        f
+      2,
+      f
     );
   }
 };
@@ -4309,16 +4350,16 @@ proto.vanti.bsp.ew.tenants.PullSecretsRequest.serializeBinaryToWriter = function
  * optional bool include_hash = 1;
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsRequest.prototype.getIncludeHash = function() {
+proto.smartcore.bos.tenants.PullSecretsRequest.prototype.getIncludeHash = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 1, false));
 };
 
 
 /**
  * @param {boolean} value
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.PullSecretsRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.PullSecretsRequest.prototype.setIncludeHash = function(value) {
+proto.smartcore.bos.tenants.PullSecretsRequest.prototype.setIncludeHash = function(value) {
   return jspb.Message.setProto3BooleanField(this, 1, value);
 };
 
@@ -4327,16 +4368,16 @@ proto.vanti.bsp.ew.tenants.PullSecretsRequest.prototype.setIncludeHash = functio
  * optional bool updates_only = 2;
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsRequest.prototype.getUpdatesOnly = function() {
+proto.smartcore.bos.tenants.PullSecretsRequest.prototype.getUpdatesOnly = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 2, false));
 };
 
 
 /**
  * @param {boolean} value
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.PullSecretsRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.PullSecretsRequest.prototype.setUpdatesOnly = function(value) {
+proto.smartcore.bos.tenants.PullSecretsRequest.prototype.setUpdatesOnly = function(value) {
   return jspb.Message.setProto3BooleanField(this, 2, value);
 };
 
@@ -4347,85 +4388,85 @@ proto.vanti.bsp.ew.tenants.PullSecretsRequest.prototype.setUpdatesOnly = functio
  * @private {!Array<number>}
  * @const
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.repeatedFields_ = [1];
+proto.smartcore.bos.tenants.PullSecretsResponse.repeatedFields_ = [1];
 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.PullSecretsResponse.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.PullSecretsResponse.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.PullSecretsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.PullSecretsResponse.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.PullSecretsResponse} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.PullSecretsResponse.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+    proto.smartcore.bos.tenants.PullSecretsResponse.Change.toObject, includeInstance)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.PullSecretsResponse} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.PullSecretsResponse.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      changesList: jspb.Message.toObjectList(msg.getChangesList(),
-          proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.toObject, includeInstance)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsResponse}
+ * @return {!proto.smartcore.bos.tenants.PullSecretsResponse}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.PullSecretsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.PullSecretsResponse;
-  return proto.vanti.bsp.ew.tenants.PullSecretsResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.PullSecretsResponse;
+  return proto.smartcore.bos.tenants.PullSecretsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretsResponse} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.PullSecretsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsResponse}
+ * @return {!proto.smartcore.bos.tenants.PullSecretsResponse}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.PullSecretsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.deserializeBinaryFromReader);
-        msg.addChanges(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new proto.smartcore.bos.tenants.PullSecretsResponse.Change;
+      reader.readMessage(value,proto.smartcore.bos.tenants.PullSecretsResponse.Change.deserializeBinaryFromReader);
+      msg.addChanges(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -4436,9 +4477,9 @@ proto.vanti.bsp.ew.tenants.PullSecretsResponse.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.PullSecretsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.PullSecretsResponse.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.PullSecretsResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4446,103 +4487,106 @@ proto.vanti.bsp.ew.tenants.PullSecretsResponse.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretsResponse} message
+ * @param {!proto.smartcore.bos.tenants.PullSecretsResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.PullSecretsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getChangesList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
-        1,
-        f,
-        proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.serializeBinaryToWriter
+      1,
+      f,
+      proto.smartcore.bos.tenants.PullSecretsResponse.Change.serializeBinaryToWriter
     );
   }
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.PullSecretsResponse.Change.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.PullSecretsResponse.Change} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    secret: (f = msg.getSecret()) && proto.smartcore.bos.tenants.Secret.toObject(includeInstance, f)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-      secret: (f = msg.getSecret()) && proto.vanti.bsp.ew.tenants.Secret.toObject(includeInstance, f)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change}
+ * @return {!proto.smartcore.bos.tenants.PullSecretsResponse.Change}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change;
-  return proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.PullSecretsResponse.Change;
+  return proto.smartcore.bos.tenants.PullSecretsResponse.Change.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.PullSecretsResponse.Change} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change}
+ * @return {!proto.smartcore.bos.tenants.PullSecretsResponse.Change}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new google_protobuf_timestamp_pb.Timestamp;
-        reader.readMessage(value, google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-        msg.setChangeTime(value);
-        break;
-      case 2:
-        var value = new proto.vanti.bsp.ew.tenants.Secret;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.Secret.deserializeBinaryFromReader);
-        msg.setSecret(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setChangeTime(value);
+      break;
+    case 2:
+      var value = new proto.smartcore.bos.tenants.Secret;
+      reader.readMessage(value,proto.smartcore.bos.tenants.Secret.deserializeBinaryFromReader);
+      msg.setSecret(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -4553,9 +4597,9 @@ proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.deserializeBinaryFromReade
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.PullSecretsResponse.Change.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4563,26 +4607,26 @@ proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.prototype.serializeBinary 
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change} message
+ * @param {!proto.smartcore.bos.tenants.PullSecretsResponse.Change} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getChangeTime();
   if (f != null) {
     writer.writeMessage(
-        1,
-        f,
-        google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+      1,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
   f = message.getSecret();
   if (f != null) {
     writer.writeMessage(
-        2,
-        f,
-        proto.vanti.bsp.ew.tenants.Secret.serializeBinaryToWriter
+      2,
+      f,
+      proto.smartcore.bos.tenants.Secret.serializeBinaryToWriter
     );
   }
 };
@@ -4592,26 +4636,26 @@ proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.serializeBinaryToWriter = 
  * optional google.protobuf.Timestamp change_time = 1;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.prototype.getChangeTime = function() {
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.prototype.getChangeTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-      jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 1));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 1));
 };
 
 
 /**
  * @param {?proto.google.protobuf.Timestamp|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change} returns this
- */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.prototype.setChangeTime = function(value) {
+ * @return {!proto.smartcore.bos.tenants.PullSecretsResponse.Change} returns this
+*/
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.prototype.setChangeTime = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change} returns this
+ * @return {!proto.smartcore.bos.tenants.PullSecretsResponse.Change} returns this
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.prototype.clearChangeTime = function() {
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.prototype.clearChangeTime = function() {
   return this.setChangeTime(undefined);
 };
 
@@ -4620,35 +4664,35 @@ proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.prototype.clearChangeTime 
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.prototype.hasChangeTime = function() {
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.prototype.hasChangeTime = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
 
 /**
  * optional Secret secret = 2;
- * @return {?proto.vanti.bsp.ew.tenants.Secret}
+ * @return {?proto.smartcore.bos.tenants.Secret}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.prototype.getSecret = function() {
-  return /** @type{?proto.vanti.bsp.ew.tenants.Secret} */ (
-      jspb.Message.getWrapperField(this, proto.vanti.bsp.ew.tenants.Secret, 2));
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.prototype.getSecret = function() {
+  return /** @type{?proto.smartcore.bos.tenants.Secret} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.tenants.Secret, 2));
 };
 
 
 /**
- * @param {?proto.vanti.bsp.ew.tenants.Secret|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change} returns this
- */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.prototype.setSecret = function(value) {
+ * @param {?proto.smartcore.bos.tenants.Secret|undefined} value
+ * @return {!proto.smartcore.bos.tenants.PullSecretsResponse.Change} returns this
+*/
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.prototype.setSecret = function(value) {
   return jspb.Message.setWrapperField(this, 2, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change} returns this
+ * @return {!proto.smartcore.bos.tenants.PullSecretsResponse.Change} returns this
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.prototype.clearSecret = function() {
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.prototype.clearSecret = function() {
   return this.setSecret(undefined);
 };
 
@@ -4657,123 +4701,126 @@ proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.prototype.clearSecret = fu
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change.prototype.hasSecret = function() {
+proto.smartcore.bos.tenants.PullSecretsResponse.Change.prototype.hasSecret = function() {
   return jspb.Message.getField(this, 2) != null;
 };
 
 
 /**
  * repeated Change changes = 1;
- * @return {!Array<!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change>}
+ * @return {!Array<!proto.smartcore.bos.tenants.PullSecretsResponse.Change>}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.prototype.getChangesList = function() {
-  return /** @type{!Array<!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change>} */ (
-      jspb.Message.getRepeatedWrapperField(this, proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change, 1));
+proto.smartcore.bos.tenants.PullSecretsResponse.prototype.getChangesList = function() {
+  return /** @type{!Array<!proto.smartcore.bos.tenants.PullSecretsResponse.Change>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.smartcore.bos.tenants.PullSecretsResponse.Change, 1));
 };
 
 
 /**
- * @param {!Array<!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change>} value
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsResponse} returns this
- */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.prototype.setChangesList = function(value) {
+ * @param {!Array<!proto.smartcore.bos.tenants.PullSecretsResponse.Change>} value
+ * @return {!proto.smartcore.bos.tenants.PullSecretsResponse} returns this
+*/
+proto.smartcore.bos.tenants.PullSecretsResponse.prototype.setChangesList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change=} opt_value
+ * @param {!proto.smartcore.bos.tenants.PullSecretsResponse.Change=} opt_value
  * @param {number=} opt_index
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change}
+ * @return {!proto.smartcore.bos.tenants.PullSecretsResponse.Change}
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.prototype.addChanges = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.vanti.bsp.ew.tenants.PullSecretsResponse.Change, opt_index);
+proto.smartcore.bos.tenants.PullSecretsResponse.prototype.addChanges = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.smartcore.bos.tenants.PullSecretsResponse.Change, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretsResponse} returns this
+ * @return {!proto.smartcore.bos.tenants.PullSecretsResponse} returns this
  */
-proto.vanti.bsp.ew.tenants.PullSecretsResponse.prototype.clearChangesList = function() {
+proto.smartcore.bos.tenants.PullSecretsResponse.prototype.clearChangesList = function() {
   return this.setChangesList([]);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.CreateSecretRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.CreateSecretRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.CreateSecretRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.CreateSecretRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.CreateSecretRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.CreateSecretRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    secret: (f = msg.getSecret()) && proto.smartcore.bos.tenants.Secret.toObject(includeInstance, f)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.CreateSecretRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.CreateSecretRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      secret: (f = msg.getSecret()) && proto.vanti.bsp.ew.tenants.Secret.toObject(includeInstance, f)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.CreateSecretRequest}
+ * @return {!proto.smartcore.bos.tenants.CreateSecretRequest}
  */
-proto.vanti.bsp.ew.tenants.CreateSecretRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.CreateSecretRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.CreateSecretRequest;
-  return proto.vanti.bsp.ew.tenants.CreateSecretRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.CreateSecretRequest;
+  return proto.smartcore.bos.tenants.CreateSecretRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.CreateSecretRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.CreateSecretRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.CreateSecretRequest}
+ * @return {!proto.smartcore.bos.tenants.CreateSecretRequest}
  */
-proto.vanti.bsp.ew.tenants.CreateSecretRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.CreateSecretRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new proto.vanti.bsp.ew.tenants.Secret;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.Secret.deserializeBinaryFromReader);
-        msg.setSecret(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new proto.smartcore.bos.tenants.Secret;
+      reader.readMessage(value,proto.smartcore.bos.tenants.Secret.deserializeBinaryFromReader);
+      msg.setSecret(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -4784,9 +4831,9 @@ proto.vanti.bsp.ew.tenants.CreateSecretRequest.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.CreateSecretRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.CreateSecretRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.CreateSecretRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.CreateSecretRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4794,18 +4841,18 @@ proto.vanti.bsp.ew.tenants.CreateSecretRequest.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.CreateSecretRequest} message
+ * @param {!proto.smartcore.bos.tenants.CreateSecretRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.CreateSecretRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.CreateSecretRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getSecret();
   if (f != null) {
     writer.writeMessage(
-        1,
-        f,
-        proto.vanti.bsp.ew.tenants.Secret.serializeBinaryToWriter
+      1,
+      f,
+      proto.smartcore.bos.tenants.Secret.serializeBinaryToWriter
     );
   }
 };
@@ -4813,28 +4860,28 @@ proto.vanti.bsp.ew.tenants.CreateSecretRequest.serializeBinaryToWriter = functio
 
 /**
  * optional Secret secret = 1;
- * @return {?proto.vanti.bsp.ew.tenants.Secret}
+ * @return {?proto.smartcore.bos.tenants.Secret}
  */
-proto.vanti.bsp.ew.tenants.CreateSecretRequest.prototype.getSecret = function() {
-  return /** @type{?proto.vanti.bsp.ew.tenants.Secret} */ (
-      jspb.Message.getWrapperField(this, proto.vanti.bsp.ew.tenants.Secret, 1));
+proto.smartcore.bos.tenants.CreateSecretRequest.prototype.getSecret = function() {
+  return /** @type{?proto.smartcore.bos.tenants.Secret} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.tenants.Secret, 1));
 };
 
 
 /**
- * @param {?proto.vanti.bsp.ew.tenants.Secret|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.CreateSecretRequest} returns this
- */
-proto.vanti.bsp.ew.tenants.CreateSecretRequest.prototype.setSecret = function(value) {
+ * @param {?proto.smartcore.bos.tenants.Secret|undefined} value
+ * @return {!proto.smartcore.bos.tenants.CreateSecretRequest} returns this
+*/
+proto.smartcore.bos.tenants.CreateSecretRequest.prototype.setSecret = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.CreateSecretRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.CreateSecretRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.CreateSecretRequest.prototype.clearSecret = function() {
+proto.smartcore.bos.tenants.CreateSecretRequest.prototype.clearSecret = function() {
   return this.setSecret(undefined);
 };
 
@@ -4843,89 +4890,92 @@ proto.vanti.bsp.ew.tenants.CreateSecretRequest.prototype.clearSecret = function(
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.CreateSecretRequest.prototype.hasSecret = function() {
+proto.smartcore.bos.tenants.CreateSecretRequest.prototype.hasSecret = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.VerifySecretRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.VerifySecretRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.VerifySecretRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.VerifySecretRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.VerifySecretRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.VerifySecretRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    tenantId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    secret: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.VerifySecretRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.VerifySecretRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      tenantId: jspb.Message.getFieldWithDefault(msg, 1, ''),
-      secret: jspb.Message.getFieldWithDefault(msg, 2, '')
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.VerifySecretRequest}
+ * @return {!proto.smartcore.bos.tenants.VerifySecretRequest}
  */
-proto.vanti.bsp.ew.tenants.VerifySecretRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.VerifySecretRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.VerifySecretRequest;
-  return proto.vanti.bsp.ew.tenants.VerifySecretRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.VerifySecretRequest;
+  return proto.smartcore.bos.tenants.VerifySecretRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.VerifySecretRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.VerifySecretRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.VerifySecretRequest}
+ * @return {!proto.smartcore.bos.tenants.VerifySecretRequest}
  */
-proto.vanti.bsp.ew.tenants.VerifySecretRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.VerifySecretRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setTenantId(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setSecret(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTenantId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSecret(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -4936,9 +4986,9 @@ proto.vanti.bsp.ew.tenants.VerifySecretRequest.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.VerifySecretRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.VerifySecretRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.VerifySecretRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.VerifySecretRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4946,24 +4996,24 @@ proto.vanti.bsp.ew.tenants.VerifySecretRequest.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.VerifySecretRequest} message
+ * @param {!proto.smartcore.bos.tenants.VerifySecretRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.VerifySecretRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.VerifySecretRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getTenantId();
   if (f.length > 0) {
     writer.writeString(
-        1,
-        f
+      1,
+      f
     );
   }
   f = message.getSecret();
   if (f.length > 0) {
     writer.writeString(
-        2,
-        f
+      2,
+      f
     );
   }
 };
@@ -4973,16 +5023,16 @@ proto.vanti.bsp.ew.tenants.VerifySecretRequest.serializeBinaryToWriter = functio
  * optional string tenant_id = 1;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.VerifySecretRequest.prototype.getTenantId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ''));
+proto.smartcore.bos.tenants.VerifySecretRequest.prototype.getTenantId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.VerifySecretRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.VerifySecretRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.VerifySecretRequest.prototype.setTenantId = function(value) {
+proto.smartcore.bos.tenants.VerifySecretRequest.prototype.setTenantId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -4991,98 +5041,101 @@ proto.vanti.bsp.ew.tenants.VerifySecretRequest.prototype.setTenantId = function(
  * optional string secret = 2;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.VerifySecretRequest.prototype.getSecret = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ''));
+proto.smartcore.bos.tenants.VerifySecretRequest.prototype.getSecret = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.VerifySecretRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.VerifySecretRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.VerifySecretRequest.prototype.setSecret = function(value) {
+proto.smartcore.bos.tenants.VerifySecretRequest.prototype.setSecret = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.GetSecretRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.GetSecretRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.GetSecretRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.GetSecretRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.GetSecretRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.GetSecretRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    includeHash: jspb.Message.getBooleanFieldWithDefault(msg, 2, false)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.GetSecretRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.GetSecretRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, ''),
-      includeHash: jspb.Message.getBooleanFieldWithDefault(msg, 2, false)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.GetSecretRequest}
+ * @return {!proto.smartcore.bos.tenants.GetSecretRequest}
  */
-proto.vanti.bsp.ew.tenants.GetSecretRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.GetSecretRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.GetSecretRequest;
-  return proto.vanti.bsp.ew.tenants.GetSecretRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.GetSecretRequest;
+  return proto.smartcore.bos.tenants.GetSecretRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.GetSecretRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.GetSecretRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.GetSecretRequest}
+ * @return {!proto.smartcore.bos.tenants.GetSecretRequest}
  */
-proto.vanti.bsp.ew.tenants.GetSecretRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.GetSecretRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      case 2:
-        var value = /** @type {boolean} */ (reader.readBool());
-        msg.setIncludeHash(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setIncludeHash(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -5093,9 +5146,9 @@ proto.vanti.bsp.ew.tenants.GetSecretRequest.deserializeBinaryFromReader = functi
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.GetSecretRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.GetSecretRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.GetSecretRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.GetSecretRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -5103,24 +5156,24 @@ proto.vanti.bsp.ew.tenants.GetSecretRequest.prototype.serializeBinary = function
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.GetSecretRequest} message
+ * @param {!proto.smartcore.bos.tenants.GetSecretRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.GetSecretRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.GetSecretRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
     writer.writeString(
-        1,
-        f
+      1,
+      f
     );
   }
   f = message.getIncludeHash();
   if (f) {
     writer.writeBool(
-        2,
-        f
+      2,
+      f
     );
   }
 };
@@ -5130,16 +5183,16 @@ proto.vanti.bsp.ew.tenants.GetSecretRequest.serializeBinaryToWriter = function(m
  * optional string id = 1;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.GetSecretRequest.prototype.getId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ''));
+proto.smartcore.bos.tenants.GetSecretRequest.prototype.getId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.GetSecretRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.GetSecretRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.GetSecretRequest.prototype.setId = function(value) {
+proto.smartcore.bos.tenants.GetSecretRequest.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -5148,93 +5201,96 @@ proto.vanti.bsp.ew.tenants.GetSecretRequest.prototype.setId = function(value) {
  * optional bool include_hash = 2;
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.GetSecretRequest.prototype.getIncludeHash = function() {
+proto.smartcore.bos.tenants.GetSecretRequest.prototype.getIncludeHash = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 2, false));
 };
 
 
 /**
  * @param {boolean} value
- * @return {!proto.vanti.bsp.ew.tenants.GetSecretRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.GetSecretRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.GetSecretRequest.prototype.setIncludeHash = function(value) {
+proto.smartcore.bos.tenants.GetSecretRequest.prototype.setIncludeHash = function(value) {
   return jspb.Message.setProto3BooleanField(this, 2, value);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.GetSecretByHashRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.GetSecretByHashRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.GetSecretByHashRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.GetSecretByHashRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    secretHash: msg.getSecretHash_asB64()
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.GetSecretByHashRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      secretHash: msg.getSecretHash_asB64()
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.GetSecretByHashRequest}
+ * @return {!proto.smartcore.bos.tenants.GetSecretByHashRequest}
  */
-proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.GetSecretByHashRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.GetSecretByHashRequest;
-  return proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.GetSecretByHashRequest;
+  return proto.smartcore.bos.tenants.GetSecretByHashRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.GetSecretByHashRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.GetSecretByHashRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.GetSecretByHashRequest}
+ * @return {!proto.smartcore.bos.tenants.GetSecretByHashRequest}
  */
-proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.GetSecretByHashRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {!Uint8Array} */ (reader.readBytes());
-        msg.setSecretHash(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setSecretHash(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -5245,9 +5301,9 @@ proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.deserializeBinaryFromReader = 
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.GetSecretByHashRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.GetSecretByHashRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -5255,17 +5311,17 @@ proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.prototype.serializeBinary = fu
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.GetSecretByHashRequest} message
+ * @param {!proto.smartcore.bos.tenants.GetSecretByHashRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.GetSecretByHashRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getSecretHash_asU8();
   if (f.length > 0) {
     writer.writeBytes(
-        1,
-        f
+      1,
+      f
     );
   }
 };
@@ -5275,8 +5331,8 @@ proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.serializeBinaryToWriter = func
  * optional bytes secret_hash = 1;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.prototype.getSecretHash = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ''));
+proto.smartcore.bos.tenants.GetSecretByHashRequest.prototype.getSecretHash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
@@ -5285,7 +5341,7 @@ proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.prototype.getSecretHash = func
  * This is a type-conversion wrapper around `getSecretHash()`
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.prototype.getSecretHash_asB64 = function() {
+proto.smartcore.bos.tenants.GetSecretByHashRequest.prototype.getSecretHash_asB64 = function() {
   return /** @type {string} */ (jspb.Message.bytesAsB64(
       this.getSecretHash()));
 };
@@ -5298,7 +5354,7 @@ proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.prototype.getSecretHash_asB64 
  * This is a type-conversion wrapper around `getSecretHash()`
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.prototype.getSecretHash_asU8 = function() {
+proto.smartcore.bos.tenants.GetSecretByHashRequest.prototype.getSecretHash_asU8 = function() {
   return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
       this.getSecretHash()));
 };
@@ -5306,87 +5362,90 @@ proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.prototype.getSecretHash_asU8 =
 
 /**
  * @param {!(string|Uint8Array)} value
- * @return {!proto.vanti.bsp.ew.tenants.GetSecretByHashRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.GetSecretByHashRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.GetSecretByHashRequest.prototype.setSecretHash = function(value) {
+proto.smartcore.bos.tenants.GetSecretByHashRequest.prototype.setSecretHash = function(value) {
   return jspb.Message.setProto3BytesField(this, 1, value);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.UpdateSecretRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.UpdateSecretRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.UpdateSecretRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.UpdateSecretRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.UpdateSecretRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.UpdateSecretRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    secret: (f = msg.getSecret()) && proto.smartcore.bos.tenants.Secret.toObject(includeInstance, f)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.UpdateSecretRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.UpdateSecretRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      secret: (f = msg.getSecret()) && proto.vanti.bsp.ew.tenants.Secret.toObject(includeInstance, f)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.UpdateSecretRequest}
+ * @return {!proto.smartcore.bos.tenants.UpdateSecretRequest}
  */
-proto.vanti.bsp.ew.tenants.UpdateSecretRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.UpdateSecretRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.UpdateSecretRequest;
-  return proto.vanti.bsp.ew.tenants.UpdateSecretRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.UpdateSecretRequest;
+  return proto.smartcore.bos.tenants.UpdateSecretRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.UpdateSecretRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.UpdateSecretRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.UpdateSecretRequest}
+ * @return {!proto.smartcore.bos.tenants.UpdateSecretRequest}
  */
-proto.vanti.bsp.ew.tenants.UpdateSecretRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.UpdateSecretRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new proto.vanti.bsp.ew.tenants.Secret;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.Secret.deserializeBinaryFromReader);
-        msg.setSecret(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new proto.smartcore.bos.tenants.Secret;
+      reader.readMessage(value,proto.smartcore.bos.tenants.Secret.deserializeBinaryFromReader);
+      msg.setSecret(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -5397,9 +5456,9 @@ proto.vanti.bsp.ew.tenants.UpdateSecretRequest.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.UpdateSecretRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.UpdateSecretRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.UpdateSecretRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.UpdateSecretRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -5407,18 +5466,18 @@ proto.vanti.bsp.ew.tenants.UpdateSecretRequest.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.UpdateSecretRequest} message
+ * @param {!proto.smartcore.bos.tenants.UpdateSecretRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.UpdateSecretRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.UpdateSecretRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getSecret();
   if (f != null) {
     writer.writeMessage(
-        1,
-        f,
-        proto.vanti.bsp.ew.tenants.Secret.serializeBinaryToWriter
+      1,
+      f,
+      proto.smartcore.bos.tenants.Secret.serializeBinaryToWriter
     );
   }
 };
@@ -5426,28 +5485,28 @@ proto.vanti.bsp.ew.tenants.UpdateSecretRequest.serializeBinaryToWriter = functio
 
 /**
  * optional Secret secret = 1;
- * @return {?proto.vanti.bsp.ew.tenants.Secret}
+ * @return {?proto.smartcore.bos.tenants.Secret}
  */
-proto.vanti.bsp.ew.tenants.UpdateSecretRequest.prototype.getSecret = function() {
-  return /** @type{?proto.vanti.bsp.ew.tenants.Secret} */ (
-      jspb.Message.getWrapperField(this, proto.vanti.bsp.ew.tenants.Secret, 1));
+proto.smartcore.bos.tenants.UpdateSecretRequest.prototype.getSecret = function() {
+  return /** @type{?proto.smartcore.bos.tenants.Secret} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.tenants.Secret, 1));
 };
 
 
 /**
- * @param {?proto.vanti.bsp.ew.tenants.Secret|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.UpdateSecretRequest} returns this
- */
-proto.vanti.bsp.ew.tenants.UpdateSecretRequest.prototype.setSecret = function(value) {
+ * @param {?proto.smartcore.bos.tenants.Secret|undefined} value
+ * @return {!proto.smartcore.bos.tenants.UpdateSecretRequest} returns this
+*/
+proto.smartcore.bos.tenants.UpdateSecretRequest.prototype.setSecret = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.UpdateSecretRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.UpdateSecretRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.UpdateSecretRequest.prototype.clearSecret = function() {
+proto.smartcore.bos.tenants.UpdateSecretRequest.prototype.clearSecret = function() {
   return this.setSecret(undefined);
 };
 
@@ -5456,84 +5515,87 @@ proto.vanti.bsp.ew.tenants.UpdateSecretRequest.prototype.clearSecret = function(
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.UpdateSecretRequest.prototype.hasSecret = function() {
+proto.smartcore.bos.tenants.UpdateSecretRequest.prototype.hasSecret = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.DeleteSecretRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.DeleteSecretRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.DeleteSecretRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.DeleteSecretRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.DeleteSecretRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.DeleteSecretRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.DeleteSecretRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.DeleteSecretRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, '')
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.DeleteSecretRequest}
+ * @return {!proto.smartcore.bos.tenants.DeleteSecretRequest}
  */
-proto.vanti.bsp.ew.tenants.DeleteSecretRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.DeleteSecretRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.DeleteSecretRequest;
-  return proto.vanti.bsp.ew.tenants.DeleteSecretRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.DeleteSecretRequest;
+  return proto.smartcore.bos.tenants.DeleteSecretRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.DeleteSecretRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.DeleteSecretRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.DeleteSecretRequest}
+ * @return {!proto.smartcore.bos.tenants.DeleteSecretRequest}
  */
-proto.vanti.bsp.ew.tenants.DeleteSecretRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.DeleteSecretRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -5544,9 +5606,9 @@ proto.vanti.bsp.ew.tenants.DeleteSecretRequest.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.DeleteSecretRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.DeleteSecretRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.DeleteSecretRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.DeleteSecretRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -5554,17 +5616,17 @@ proto.vanti.bsp.ew.tenants.DeleteSecretRequest.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.DeleteSecretRequest} message
+ * @param {!proto.smartcore.bos.tenants.DeleteSecretRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.DeleteSecretRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.DeleteSecretRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
     writer.writeString(
-        1,
-        f
+      1,
+      f
     );
   }
 };
@@ -5574,87 +5636,92 @@ proto.vanti.bsp.ew.tenants.DeleteSecretRequest.serializeBinaryToWriter = functio
  * optional string id = 1;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.DeleteSecretRequest.prototype.getId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ''));
+proto.smartcore.bos.tenants.DeleteSecretRequest.prototype.getId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.DeleteSecretRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.DeleteSecretRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.DeleteSecretRequest.prototype.setId = function(value) {
+proto.smartcore.bos.tenants.DeleteSecretRequest.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.DeleteSecretResponse.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.DeleteSecretResponse.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.DeleteSecretResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.DeleteSecretResponse.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.DeleteSecretResponse} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.DeleteSecretResponse.toObject = function(includeInstance, msg) {
+  var f, obj = {
+
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.DeleteSecretResponse} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.DeleteSecretResponse.toObject = function(includeInstance, msg) {
-    var f, obj = {};
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.DeleteSecretResponse}
+ * @return {!proto.smartcore.bos.tenants.DeleteSecretResponse}
  */
-proto.vanti.bsp.ew.tenants.DeleteSecretResponse.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.DeleteSecretResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.DeleteSecretResponse;
-  return proto.vanti.bsp.ew.tenants.DeleteSecretResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.DeleteSecretResponse;
+  return proto.smartcore.bos.tenants.DeleteSecretResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.DeleteSecretResponse} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.DeleteSecretResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.DeleteSecretResponse}
+ * @return {!proto.smartcore.bos.tenants.DeleteSecretResponse}
  */
-proto.vanti.bsp.ew.tenants.DeleteSecretResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.DeleteSecretResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      default:
-        reader.skipField();
-        break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -5665,9 +5732,9 @@ proto.vanti.bsp.ew.tenants.DeleteSecretResponse.deserializeBinaryFromReader = fu
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.DeleteSecretResponse.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.DeleteSecretResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.DeleteSecretResponse.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.DeleteSecretResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -5675,98 +5742,101 @@ proto.vanti.bsp.ew.tenants.DeleteSecretResponse.prototype.serializeBinary = func
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.DeleteSecretResponse} message
+ * @param {!proto.smartcore.bos.tenants.DeleteSecretResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.DeleteSecretResponse.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.DeleteSecretResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.PullSecretRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.PullSecretRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.PullSecretRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.PullSecretRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.PullSecretRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.PullSecretRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    includeHash: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
+    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.PullSecretRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.PullSecretRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, ''),
-      includeHash: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
-      updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretRequest}
+ * @return {!proto.smartcore.bos.tenants.PullSecretRequest}
  */
-proto.vanti.bsp.ew.tenants.PullSecretRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.PullSecretRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.PullSecretRequest;
-  return proto.vanti.bsp.ew.tenants.PullSecretRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.PullSecretRequest;
+  return proto.smartcore.bos.tenants.PullSecretRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.PullSecretRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretRequest}
+ * @return {!proto.smartcore.bos.tenants.PullSecretRequest}
  */
-proto.vanti.bsp.ew.tenants.PullSecretRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.PullSecretRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      case 2:
-        var value = /** @type {boolean} */ (reader.readBool());
-        msg.setIncludeHash(value);
-        break;
-      case 3:
-        var value = /** @type {boolean} */ (reader.readBool());
-        msg.setUpdatesOnly(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setIncludeHash(value);
+      break;
+    case 3:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setUpdatesOnly(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -5777,9 +5847,9 @@ proto.vanti.bsp.ew.tenants.PullSecretRequest.deserializeBinaryFromReader = funct
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.PullSecretRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.PullSecretRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.PullSecretRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.PullSecretRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -5787,31 +5857,31 @@ proto.vanti.bsp.ew.tenants.PullSecretRequest.prototype.serializeBinary = functio
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretRequest} message
+ * @param {!proto.smartcore.bos.tenants.PullSecretRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.PullSecretRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.PullSecretRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
     writer.writeString(
-        1,
-        f
+      1,
+      f
     );
   }
   f = message.getIncludeHash();
   if (f) {
     writer.writeBool(
-        2,
-        f
+      2,
+      f
     );
   }
   f = message.getUpdatesOnly();
   if (f) {
     writer.writeBool(
-        3,
-        f
+      3,
+      f
     );
   }
 };
@@ -5821,16 +5891,16 @@ proto.vanti.bsp.ew.tenants.PullSecretRequest.serializeBinaryToWriter = function(
  * optional string id = 1;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.PullSecretRequest.prototype.getId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ''));
+proto.smartcore.bos.tenants.PullSecretRequest.prototype.getId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.PullSecretRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.PullSecretRequest.prototype.setId = function(value) {
+proto.smartcore.bos.tenants.PullSecretRequest.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -5839,16 +5909,16 @@ proto.vanti.bsp.ew.tenants.PullSecretRequest.prototype.setId = function(value) {
  * optional bool include_hash = 2;
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullSecretRequest.prototype.getIncludeHash = function() {
+proto.smartcore.bos.tenants.PullSecretRequest.prototype.getIncludeHash = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 2, false));
 };
 
 
 /**
  * @param {boolean} value
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.PullSecretRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.PullSecretRequest.prototype.setIncludeHash = function(value) {
+proto.smartcore.bos.tenants.PullSecretRequest.prototype.setIncludeHash = function(value) {
   return jspb.Message.setProto3BooleanField(this, 2, value);
 };
 
@@ -5857,16 +5927,16 @@ proto.vanti.bsp.ew.tenants.PullSecretRequest.prototype.setIncludeHash = function
  * optional bool updates_only = 3;
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullSecretRequest.prototype.getUpdatesOnly = function() {
+proto.smartcore.bos.tenants.PullSecretRequest.prototype.getUpdatesOnly = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 3, false));
 };
 
 
 /**
  * @param {boolean} value
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.PullSecretRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.PullSecretRequest.prototype.setUpdatesOnly = function(value) {
+proto.smartcore.bos.tenants.PullSecretRequest.prototype.setUpdatesOnly = function(value) {
   return jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
@@ -5877,85 +5947,85 @@ proto.vanti.bsp.ew.tenants.PullSecretRequest.prototype.setUpdatesOnly = function
  * @private {!Array<number>}
  * @const
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.repeatedFields_ = [1];
+proto.smartcore.bos.tenants.PullSecretResponse.repeatedFields_ = [1];
 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.PullSecretResponse.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.PullSecretResponse.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.PullSecretResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.PullSecretResponse.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.PullSecretResponse} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.PullSecretResponse.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+    proto.smartcore.bos.tenants.PullSecretResponse.Change.toObject, includeInstance)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.PullSecretResponse} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.PullSecretResponse.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      changesList: jspb.Message.toObjectList(msg.getChangesList(),
-          proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.toObject, includeInstance)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretResponse}
+ * @return {!proto.smartcore.bos.tenants.PullSecretResponse}
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.PullSecretResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.PullSecretResponse;
-  return proto.vanti.bsp.ew.tenants.PullSecretResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.PullSecretResponse;
+  return proto.smartcore.bos.tenants.PullSecretResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretResponse} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.PullSecretResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretResponse}
+ * @return {!proto.smartcore.bos.tenants.PullSecretResponse}
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.PullSecretResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new proto.vanti.bsp.ew.tenants.PullSecretResponse.Change;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.deserializeBinaryFromReader);
-        msg.addChanges(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new proto.smartcore.bos.tenants.PullSecretResponse.Change;
+      reader.readMessage(value,proto.smartcore.bos.tenants.PullSecretResponse.Change.deserializeBinaryFromReader);
+      msg.addChanges(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -5966,9 +6036,9 @@ proto.vanti.bsp.ew.tenants.PullSecretResponse.deserializeBinaryFromReader = func
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.PullSecretResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.PullSecretResponse.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.PullSecretResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -5976,103 +6046,106 @@ proto.vanti.bsp.ew.tenants.PullSecretResponse.prototype.serializeBinary = functi
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretResponse} message
+ * @param {!proto.smartcore.bos.tenants.PullSecretResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.PullSecretResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getChangesList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
-        1,
-        f,
-        proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.serializeBinaryToWriter
+      1,
+      f,
+      proto.smartcore.bos.tenants.PullSecretResponse.Change.serializeBinaryToWriter
     );
   }
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.PullSecretResponse.Change.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.PullSecretResponse.Change.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.PullSecretResponse.Change} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.PullSecretResponse.Change.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    secret: (f = msg.getSecret()) && proto.smartcore.bos.tenants.Secret.toObject(includeInstance, f)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-      secret: (f = msg.getSecret()) && proto.vanti.bsp.ew.tenants.Secret.toObject(includeInstance, f)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change}
+ * @return {!proto.smartcore.bos.tenants.PullSecretResponse.Change}
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.PullSecretResponse.Change.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.PullSecretResponse.Change;
-  return proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.PullSecretResponse.Change;
+  return proto.smartcore.bos.tenants.PullSecretResponse.Change.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.PullSecretResponse.Change} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change}
+ * @return {!proto.smartcore.bos.tenants.PullSecretResponse.Change}
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.PullSecretResponse.Change.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new google_protobuf_timestamp_pb.Timestamp;
-        reader.readMessage(value, google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-        msg.setChangeTime(value);
-        break;
-      case 2:
-        var value = new proto.vanti.bsp.ew.tenants.Secret;
-        reader.readMessage(value, proto.vanti.bsp.ew.tenants.Secret.deserializeBinaryFromReader);
-        msg.setSecret(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setChangeTime(value);
+      break;
+    case 2:
+      var value = new proto.smartcore.bos.tenants.Secret;
+      reader.readMessage(value,proto.smartcore.bos.tenants.Secret.deserializeBinaryFromReader);
+      msg.setSecret(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -6083,9 +6156,9 @@ proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.deserializeBinaryFromReader
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.PullSecretResponse.Change.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.PullSecretResponse.Change.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -6093,26 +6166,26 @@ proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.prototype.serializeBinary =
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change} message
+ * @param {!proto.smartcore.bos.tenants.PullSecretResponse.Change} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.PullSecretResponse.Change.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getChangeTime();
   if (f != null) {
     writer.writeMessage(
-        1,
-        f,
-        google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+      1,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
   f = message.getSecret();
   if (f != null) {
     writer.writeMessage(
-        2,
-        f,
-        proto.vanti.bsp.ew.tenants.Secret.serializeBinaryToWriter
+      2,
+      f,
+      proto.smartcore.bos.tenants.Secret.serializeBinaryToWriter
     );
   }
 };
@@ -6122,26 +6195,26 @@ proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.serializeBinaryToWriter = f
  * optional google.protobuf.Timestamp change_time = 1;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.prototype.getChangeTime = function() {
+proto.smartcore.bos.tenants.PullSecretResponse.Change.prototype.getChangeTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-      jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 1));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 1));
 };
 
 
 /**
  * @param {?proto.google.protobuf.Timestamp|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change} returns this
- */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.prototype.setChangeTime = function(value) {
+ * @return {!proto.smartcore.bos.tenants.PullSecretResponse.Change} returns this
+*/
+proto.smartcore.bos.tenants.PullSecretResponse.Change.prototype.setChangeTime = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change} returns this
+ * @return {!proto.smartcore.bos.tenants.PullSecretResponse.Change} returns this
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.prototype.clearChangeTime = function() {
+proto.smartcore.bos.tenants.PullSecretResponse.Change.prototype.clearChangeTime = function() {
   return this.setChangeTime(undefined);
 };
 
@@ -6150,35 +6223,35 @@ proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.prototype.clearChangeTime =
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.prototype.hasChangeTime = function() {
+proto.smartcore.bos.tenants.PullSecretResponse.Change.prototype.hasChangeTime = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
 
 /**
  * optional Secret secret = 2;
- * @return {?proto.vanti.bsp.ew.tenants.Secret}
+ * @return {?proto.smartcore.bos.tenants.Secret}
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.prototype.getSecret = function() {
-  return /** @type{?proto.vanti.bsp.ew.tenants.Secret} */ (
-      jspb.Message.getWrapperField(this, proto.vanti.bsp.ew.tenants.Secret, 2));
+proto.smartcore.bos.tenants.PullSecretResponse.Change.prototype.getSecret = function() {
+  return /** @type{?proto.smartcore.bos.tenants.Secret} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.tenants.Secret, 2));
 };
 
 
 /**
- * @param {?proto.vanti.bsp.ew.tenants.Secret|undefined} value
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change} returns this
- */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.prototype.setSecret = function(value) {
+ * @param {?proto.smartcore.bos.tenants.Secret|undefined} value
+ * @return {!proto.smartcore.bos.tenants.PullSecretResponse.Change} returns this
+*/
+proto.smartcore.bos.tenants.PullSecretResponse.Change.prototype.setSecret = function(value) {
   return jspb.Message.setWrapperField(this, 2, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change} returns this
+ * @return {!proto.smartcore.bos.tenants.PullSecretResponse.Change} returns this
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.prototype.clearSecret = function() {
+proto.smartcore.bos.tenants.PullSecretResponse.Change.prototype.clearSecret = function() {
   return this.setSecret(undefined);
 };
 
@@ -6187,122 +6260,125 @@ proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.prototype.clearSecret = fun
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.Change.prototype.hasSecret = function() {
+proto.smartcore.bos.tenants.PullSecretResponse.Change.prototype.hasSecret = function() {
   return jspb.Message.getField(this, 2) != null;
 };
 
 
 /**
  * repeated Change changes = 1;
- * @return {!Array<!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change>}
+ * @return {!Array<!proto.smartcore.bos.tenants.PullSecretResponse.Change>}
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.prototype.getChangesList = function() {
-  return /** @type{!Array<!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change>} */ (
-      jspb.Message.getRepeatedWrapperField(this, proto.vanti.bsp.ew.tenants.PullSecretResponse.Change, 1));
+proto.smartcore.bos.tenants.PullSecretResponse.prototype.getChangesList = function() {
+  return /** @type{!Array<!proto.smartcore.bos.tenants.PullSecretResponse.Change>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.smartcore.bos.tenants.PullSecretResponse.Change, 1));
 };
 
 
 /**
- * @param {!Array<!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change>} value
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretResponse} returns this
- */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.prototype.setChangesList = function(value) {
+ * @param {!Array<!proto.smartcore.bos.tenants.PullSecretResponse.Change>} value
+ * @return {!proto.smartcore.bos.tenants.PullSecretResponse} returns this
+*/
+proto.smartcore.bos.tenants.PullSecretResponse.prototype.setChangesList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change=} opt_value
+ * @param {!proto.smartcore.bos.tenants.PullSecretResponse.Change=} opt_value
  * @param {number=} opt_index
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretResponse.Change}
+ * @return {!proto.smartcore.bos.tenants.PullSecretResponse.Change}
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.prototype.addChanges = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.vanti.bsp.ew.tenants.PullSecretResponse.Change, opt_index);
+proto.smartcore.bos.tenants.PullSecretResponse.prototype.addChanges = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.smartcore.bos.tenants.PullSecretResponse.Change, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.vanti.bsp.ew.tenants.PullSecretResponse} returns this
+ * @return {!proto.smartcore.bos.tenants.PullSecretResponse} returns this
  */
-proto.vanti.bsp.ew.tenants.PullSecretResponse.prototype.clearChangesList = function() {
+proto.smartcore.bos.tenants.PullSecretResponse.prototype.clearChangesList = function() {
   return this.setChangesList([]);
 };
 
 
+
+
+
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.prototype.toObject = function(opt_includeInstance) {
-    return proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.smartcore.bos.tenants.RegenerateSecretRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.tenants.RegenerateSecretRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.tenants.RegenerateSecretRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.tenants.RegenerateSecretRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.vanti.bsp.ew.tenants.RegenerateSecretRequest} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.toObject = function(includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, '')
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.vanti.bsp.ew.tenants.RegenerateSecretRequest}
+ * @return {!proto.smartcore.bos.tenants.RegenerateSecretRequest}
  */
-proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.deserializeBinary = function(bytes) {
+proto.smartcore.bos.tenants.RegenerateSecretRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.vanti.bsp.ew.tenants.RegenerateSecretRequest;
-  return proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.smartcore.bos.tenants.RegenerateSecretRequest;
+  return proto.smartcore.bos.tenants.RegenerateSecretRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.vanti.bsp.ew.tenants.RegenerateSecretRequest} msg The message object to deserialize into.
+ * @param {!proto.smartcore.bos.tenants.RegenerateSecretRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.vanti.bsp.ew.tenants.RegenerateSecretRequest}
+ * @return {!proto.smartcore.bos.tenants.RegenerateSecretRequest}
  */
-proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.smartcore.bos.tenants.RegenerateSecretRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -6313,9 +6389,9 @@ proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.deserializeBinaryFromReader =
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.prototype.serializeBinary = function() {
+proto.smartcore.bos.tenants.RegenerateSecretRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.serializeBinaryToWriter(this, writer);
+  proto.smartcore.bos.tenants.RegenerateSecretRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -6323,17 +6399,17 @@ proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.prototype.serializeBinary = f
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.vanti.bsp.ew.tenants.RegenerateSecretRequest} message
+ * @param {!proto.smartcore.bos.tenants.RegenerateSecretRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.serializeBinaryToWriter = function(message, writer) {
+proto.smartcore.bos.tenants.RegenerateSecretRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
     writer.writeString(
-        1,
-        f
+      1,
+      f
     );
   }
 };
@@ -6343,18 +6419,18 @@ proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.serializeBinaryToWriter = fun
  * optional string id = 1;
  * @return {string}
  */
-proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.prototype.getId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ''));
+proto.smartcore.bos.tenants.RegenerateSecretRequest.prototype.getId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.vanti.bsp.ew.tenants.RegenerateSecretRequest} returns this
+ * @return {!proto.smartcore.bos.tenants.RegenerateSecretRequest} returns this
  */
-proto.vanti.bsp.ew.tenants.RegenerateSecretRequest.prototype.setId = function(value) {
+proto.smartcore.bos.tenants.RegenerateSecretRequest.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
-goog.object.extend(exports, proto.vanti.bsp.ew.tenants);
+goog.object.extend(exports, proto.smartcore.bos.tenants);

@@ -3,8 +3,9 @@
 package rpc
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	"context"
+
+	"google.golang.org/grpc"
 )
 
 // WrapAxiomXaDriverService	adapts a rpc.AxiomXaDriverServiceServer	and presents it as a rpc.AxiomXaDriverServiceClient

@@ -32,7 +32,7 @@ func NewTestApiClient(cc grpc.ClientConnInterface) TestApiClient {
 
 func (c *testApiClient) GetTest(ctx context.Context, in *GetTestRequest, opts ...grpc.CallOption) (*Test, error) {
 	out := new(Test)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.TestApi/GetTest", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.ew.TestApi/GetTest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (c *testApiClient) GetTest(ctx context.Context, in *GetTestRequest, opts ..
 
 func (c *testApiClient) UpdateTest(ctx context.Context, in *UpdateTestRequest, opts ...grpc.CallOption) (*Test, error) {
 	out := new(Test)
-	err := c.cc.Invoke(ctx, "/vanti.bsp.ew.TestApi/UpdateTest", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.ew.TestApi/UpdateTest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func _TestApi_GetTest_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.TestApi/GetTest",
+		FullMethod: "/smartcore.bos.ew.TestApi/GetTest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TestApiServer).GetTest(ctx, req.(*GetTestRequest))
@@ -108,7 +108,7 @@ func _TestApi_UpdateTest_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vanti.bsp.ew.TestApi/UpdateTest",
+		FullMethod: "/smartcore.bos.ew.TestApi/UpdateTest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TestApiServer).UpdateTest(ctx, req.(*UpdateTestRequest))
@@ -120,7 +120,7 @@ func _TestApi_UpdateTest_Handler(srv interface{}, ctx context.Context, dec func(
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var TestApi_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "vanti.bsp.ew.TestApi",
+	ServiceName: "smartcore.bos.ew.TestApi",
 	HandlerType: (*TestApiServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

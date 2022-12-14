@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package vanti.bsp.ew;
+package smartcore.bos;
 
 option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 

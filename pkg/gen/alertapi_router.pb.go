@@ -3,11 +3,12 @@
 package gen
 
 import (
-	context "context"
-	fmt "fmt"
-	router "github.com/smart-core-os/sc-golang/pkg/router"
-	grpc "google.golang.org/grpc"
-	io "io"
+	"context"
+	"fmt"
+	"io"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
+	"google.golang.org/grpc"
 )
 
 // AlertApiRouter is a gen.AlertApiServer that allows routing named requests to specific gen.AlertApiClient
