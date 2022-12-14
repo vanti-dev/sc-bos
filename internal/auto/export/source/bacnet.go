@@ -8,7 +8,7 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/adapt"
 	dconfig "github.com/vanti-dev/sc-bos/internal/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/rpc"
-	"github.com/vanti-dev/sc-bos/internal/task"
+	"github.com/vanti-dev/sc-bos/pkg/task"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"

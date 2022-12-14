@@ -14,7 +14,7 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/merge"
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/rpc"
 	"github.com/vanti-dev/sc-bos/internal/node"
-	"github.com/vanti-dev/sc-bos/internal/task"
+	"github.com/vanti-dev/sc-bos/pkg/task"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )

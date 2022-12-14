@@ -7,7 +7,7 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/auto"
 	"github.com/vanti-dev/sc-bos/internal/auto/export/config"
 	"github.com/vanti-dev/sc-bos/internal/auto/export/source"
-	"github.com/vanti-dev/sc-bos/internal/task"
+	"github.com/vanti-dev/sc-bos/pkg/task"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )

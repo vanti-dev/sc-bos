@@ -12,7 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/adapt"
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/rpc"
-	"github.com/vanti-dev/sc-bos/internal/task"
+	"github.com/vanti-dev/sc-bos/pkg/task"
 	"go.uber.org/zap"
 	"testing"
 )

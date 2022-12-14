@@ -2,7 +2,7 @@ package lights
 
 import (
 	"github.com/vanti-dev/sc-bos/internal/auto"
-	"github.com/vanti-dev/sc-bos/internal/task"
+	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 const AutoType = "lights"
