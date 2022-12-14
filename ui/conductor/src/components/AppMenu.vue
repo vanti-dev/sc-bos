@@ -15,7 +15,7 @@
       <nav-button :to="{name:'ops'}"
                   subtitle=""
                   title="Operations"/>
-      <nav-button :to="{name:'site-settings'}"
+      <nav-button :to="{name:'settings'}"
                   subtitle=""
                   title="Site Settings"/>
       <nav-button :to="{name:'workflows'}"
