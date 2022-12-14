@@ -6,7 +6,7 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/driver"
 	"github.com/vanti-dev/sc-bos/internal/driver/axiomxa/config"
 	"github.com/vanti-dev/sc-bos/internal/driver/axiomxa/rpc"
-	"github.com/vanti-dev/sc-bos/internal/node"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"go.uber.org/zap"
 )

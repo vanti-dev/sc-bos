@@ -8,7 +8,7 @@ import (
 	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/rpc"
-	"github.com/vanti-dev/sc-bos/internal/node"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 	"go.uber.org/multierr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

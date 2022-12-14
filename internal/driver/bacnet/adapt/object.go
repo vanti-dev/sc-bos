@@ -7,7 +7,7 @@ import (
 	"github.com/vanti-dev/gobacnet/types/objecttype"
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/rpc"
-	"github.com/vanti-dev/sc-bos/internal/node"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 // Object adapts a bacnet object into one or more smart core named traits.

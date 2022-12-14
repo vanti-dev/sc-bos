@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/vanti-dev/sc-bos/internal/node"
 	"github.com/vanti-dev/sc-bos/internal/system"
 	"github.com/vanti-dev/sc-bos/internal/system/alerts/config"
 	"github.com/vanti-dev/sc-bos/internal/system/alerts/pgxalerts"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"sync"
 )

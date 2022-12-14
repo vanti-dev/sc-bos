@@ -9,7 +9,7 @@ import (
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/config"
-	"github.com/vanti-dev/sc-bos/internal/node"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 // BinaryObject adapts a binary bacnet object as smart core traits.

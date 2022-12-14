@@ -2,7 +2,7 @@ package driver
 
 import (
 	"crypto/tls"
-	"github.com/vanti-dev/sc-bos/internal/node"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"go.uber.org/zap"
 )

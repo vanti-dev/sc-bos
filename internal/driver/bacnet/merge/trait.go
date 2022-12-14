@@ -5,7 +5,7 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet/known"
-	"github.com/vanti-dev/sc-bos/internal/node"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 func IntoTrait(client *gobacnet.Client, ctx known.Context, traitConfig config.RawTrait) (node.SelfAnnouncer, error) {

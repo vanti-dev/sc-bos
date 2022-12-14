@@ -11,7 +11,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/vanti-dev/sc-bos/internal/driver"
 	"github.com/vanti-dev/sc-bos/internal/driver/proxy"
-	"github.com/vanti-dev/sc-bos/internal/node"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 	"os"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"

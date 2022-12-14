@@ -5,6 +5,7 @@ import (
 	"flag"
 	"github.com/vanti-dev/sc-bos/internal/system"
 	"github.com/vanti-dev/sc-bos/internal/system/alerts"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 	"os"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
@@ -21,7 +22,6 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/auto/lights"
 	"github.com/vanti-dev/sc-bos/internal/driver"
 	"github.com/vanti-dev/sc-bos/internal/driver/bacnet"
-	"github.com/vanti-dev/sc-bos/internal/node"
 	"github.com/vanti-dev/sc-bos/internal/testapi"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"go.uber.org/zap"
