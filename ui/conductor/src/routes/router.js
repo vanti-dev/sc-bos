@@ -1,4 +1,4 @@
-import admin from '@/routes/admin/route.js';
+import auth from '@/routes/auth/route.js';
 import commission from '@/routes/commission/route.js';
 import design from '@/routes/design/route.js';
 import operate from '@/routes/operate/route.js';
@@ -12,11 +12,11 @@ Vue.use(VueRouter);
 const router = new VueRouter({
   mode: 'history',
   routes: [
+    ...route(auth),
     ...route(start),
     ...route(design),
     ...route(commission),
     ...route(operate),
-    ...route(admin),
   ]
 });
 

@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    Tenant management page
+    User list
   </v-container>
 </template>
 

@@ -1,20 +1,20 @@
 import ChildOnlyPage from '@/components/ChildOnlyPage.vue';
-import tenants from '@/routes/admin/tenant/route.js';
+import thirdParty from '@/routes/auth/third-party/route.js';
 import {route} from '@/util/router.js';
 
 export default {
-  name: 'admin',
-  path: '/admin',
-  redirect: '/admin/summary',
+  name: 'auth',
+  path: '/auth',
+  redirect: '/auth/third-party',
   components: {
     default: ChildOnlyPage,
     nav: () => import('./AdminNav.vue')
   },
   children: [
-    {path: 'summary', component: () => import('./AdminSummary.vue')},
-      ...route(tenants)
+    {path: 'users', component: () => import('./users/Users.vue')},
+    ...route(thirdParty)
   ],
   meta: {
-    title: 'Administrator'
+    title: 'Auth'
   }
 }

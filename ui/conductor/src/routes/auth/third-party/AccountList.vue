@@ -69,7 +69,7 @@ onMounted(() => {
 
 const router = useRouter();
 function showTenant(item) {
-  router.push(`/admin/tenants/${item.id}`);
+  router.push(`/auth/third-party/${item.id}`);
 }
 </script>
 
