@@ -34,8 +34,8 @@
 </template>
 <script setup>
 import {timestampToDate} from '@/api/convpb.js';
-import Filters from '@/routes/operate/status/notifications/Filters.vue';
-import {useNotifications} from '@/routes/operate/status/notifications/notifications.js';
+import Filters from '@/routes/ops/notifications/Filters.vue';
+import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import {computed, onUnmounted, reactive, watch} from 'vue';
 
 const notifications = useNotifications();
