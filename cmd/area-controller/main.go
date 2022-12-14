@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/vanti-dev/sc-bos/pkg/app"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights"
@@ -21,7 +22,6 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
-	"github.com/vanti-dev/sc-bos/internal/app"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"go.uber.org/zap"
 )

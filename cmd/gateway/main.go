@@ -9,6 +9,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
+	"github.com/vanti-dev/sc-bos/pkg/app"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/proxy"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -16,7 +17,6 @@ import (
 	"os"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
-	"github.com/vanti-dev/sc-bos/internal/app"
 	"github.com/vanti-dev/sc-bos/internal/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"go.uber.org/zap"
