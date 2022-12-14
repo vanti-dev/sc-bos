@@ -12,17 +12,11 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
-	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts"
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
 
-	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
-	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
-	"github.com/smart-core-os/sc-golang/pkg/trait/light"
-	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
-	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
-	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -66,42 +60,9 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	addNodeAPIs(controller.Node)
+	alltraits.AddSupport(controller.Node)
 
 	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
 
 	return controller.Run(ctx)
-}
-
-func addNodeAPIs(supporter node.Supporter) {
-	{
-		r := airtemperature.NewApiRouter()
-		c := airtemperature.WrapApi(r)
-		supporter.Support(node.Routing(r), node.Clients(c))
-	}
-	{
-		r := brightnesssensor.NewApiRouter()
-		c := brightnesssensor.WrapApi(r)
-		supporter.Support(node.Routing(r), node.Clients(c))
-	}
-	{
-		r := light.NewApiRouter()
-		c := light.WrapApi(r)
-		supporter.Support(node.Routing(r), node.Clients(c))
-	}
-	{
-		r := occupancysensor.NewApiRouter()
-		c := occupancysensor.WrapApi(r)
-		supporter.Support(node.Routing(r), node.Clients(c))
-	}
-	{
-		r := onoff.NewApiRouter()
-		c := onoff.WrapApi(r)
-		supporter.Support(node.Routing(r), node.Clients(c))
-	}
-	{
-		r := parent.NewApiRouter()
-		c := parent.WrapApi(r)
-		supporter.Support(node.Routing(r), node.Clients(c))
-	}
 }

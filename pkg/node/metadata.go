@@ -12,17 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const (
-	MetadataRealism        = "scos.playground.realism"
-	MetadataRealismVirtual = "virtual"
-	MetadataRealismModel   = "model"
-
-	MetadataDeviceType = "scos.playground.device-type"
-)
-
-var AutoTraitMetadata = map[string]string{
-	MetadataRealism: MetadataRealismModel,
-}
+var AutoTraitMetadata = map[string]string{}
 var MetadataTraitNotSupported = errors.New("metadata is not supported")
 
 func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
