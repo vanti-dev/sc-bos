@@ -24,7 +24,7 @@ The different features of the UI require different capabilities from the server,
 - Logging in with keycloak requires keycloak to be running - see [docs/install/](../../docs/install/dev.md)
 - Logging in with username + password requires an area controller configured with local user accounts -
   see [area-controller/README.md](../../cmd/area-controller/README.md#local-authentication) for details
-- Notifications requires a controller configured with the [alert system](../../internal/system/alerts/README.md)
+- Notifications requires a controller configured with the [alert system](../../pkg/system/alerts/README.md)
 - System pages, like lights, require - or at least work better - with some actual devices to view and manipulate. These
   can be configured on the controller via the `"drivers"` config, samples of which can be found
   in [config/samples](../../config/samples). For detailed config options see the `internal/driver` sub-packages, each of

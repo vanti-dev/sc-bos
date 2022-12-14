@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/vanti-dev/sc-bos/internal/system"
-	"github.com/vanti-dev/sc-bos/internal/system/alerts"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights"
@@ -12,6 +10,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
 	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/system"
+	"github.com/vanti-dev/sc-bos/pkg/system/alerts"
 	"os"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
