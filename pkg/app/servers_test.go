@@ -12,12 +12,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
+
+	"github.com/vanti-dev/sc-bos/internal/util/pki"
 )
 
 func TestServeHTTPS(t *testing.T) {

@@ -13,10 +13,11 @@ import (
 	"os"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 var (

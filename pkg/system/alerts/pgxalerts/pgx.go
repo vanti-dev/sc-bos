@@ -5,20 +5,22 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
-	"github.com/vanti-dev/sc-bos/internal/util/minibus"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"strings"
-	"time"
+
+	"github.com/vanti-dev/sc-bos/internal/util/minibus"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 //go:embed schema.sql

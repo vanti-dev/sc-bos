@@ -3,18 +3,20 @@ package source
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
 	"github.com/vanti-dev/sc-bos/pkg/task"
-	"go.uber.org/zap"
-	"testing"
 )
 
 func TestBacnet_PublishAll(t *testing.T) {
@@ -77,12 +79,16 @@ type testBacnetApiServer struct {
 	*known.Map
 }
 
-func (t *testBacnetApiServer) ReadProperty(ctx context.Context, request *rpc.ReadPropertyRequest) (*rpc.ReadPropertyResponse, error) {
+func (t *testBacnetApiServer) ReadProperty(
+	ctx context.Context, request *rpc.ReadPropertyRequest,
+) (*rpc.ReadPropertyResponse, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (t *testBacnetApiServer) ReadPropertyMultiple(ctx context.Context, request *rpc.ReadPropertyMultipleRequest) (*rpc.ReadPropertyMultipleResponse, error) {
+func (t *testBacnetApiServer) ReadPropertyMultiple(
+	ctx context.Context, request *rpc.ReadPropertyMultipleRequest,
+) (*rpc.ReadPropertyMultipleResponse, error) {
 	device, err := t.LookupDeviceByName(request.Name)
 	if err != nil {
 		return nil, err
@@ -123,7 +129,9 @@ func (t *testBacnetApiServer) ReadPropertyMultiple(ctx context.Context, request 
 	return res, nil
 }
 
-func (t *testBacnetApiServer) ListObjects(_ context.Context, request *rpc.ListObjectsRequest) (*rpc.ListObjectsResponse, error) {
+func (t *testBacnetApiServer) ListObjects(
+	_ context.Context, request *rpc.ListObjectsRequest,
+) (*rpc.ListObjectsResponse, error) {
 	device, err := t.LookupDeviceByName(request.Name)
 	if err != nil {
 		return nil, err

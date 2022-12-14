@@ -3,12 +3,9 @@ package source
 import (
 	"context"
 	"errors"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/sc-bos/internal/util/pull"
-	"github.com/vanti-dev/sc-bos/pkg/auto/export/config"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -16,6 +13,11 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/vanti-dev/sc-bos/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/auto/export/config"
+	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 func NewSmartCore(services Services) task.Starter {
@@ -87,7 +89,10 @@ func (s *smartCore) applyConfig(ctx context.Context, cfg config.SmartCoreSource)
 	return nil
 }
 
-func publishLightBrightness(ctx context.Context, name string, lightClient traits.LightApiClient, publisher Publisher, sent *duplicates, logger *zap.Logger) error {
+func publishLightBrightness(
+	ctx context.Context, name string, lightClient traits.LightApiClient, publisher Publisher, sent *duplicates,
+	logger *zap.Logger,
+) error {
 	puller := &lightBrightnessPuller{
 		client: lightClient,
 		name:   name,

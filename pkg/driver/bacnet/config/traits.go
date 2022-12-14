@@ -3,9 +3,11 @@ package config
 import (
 	"encoding/json"
 	"errors"
+
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 )
 

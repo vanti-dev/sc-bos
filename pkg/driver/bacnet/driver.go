@@ -4,9 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/sirupsen/logrus"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	adapt2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
@@ -15,8 +19,6 @@ import (
 	rpc2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
-	"go.uber.org/multierr"
-	"go.uber.org/zap"
 )
 
 const DriverName = "bacnet"

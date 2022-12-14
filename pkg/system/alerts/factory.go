@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
+
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -11,7 +13,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts/config"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts/pgxalerts"
 	"github.com/vanti-dev/sc-bos/pkg/task"
-	"sync"
 )
 
 var Factory factory

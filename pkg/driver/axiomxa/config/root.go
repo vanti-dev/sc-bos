@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 )
 

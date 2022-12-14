@@ -5,9 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"go.uber.org/multierr"
 	"io"
 	"net/http"
+
+	"go.uber.org/multierr"
 )
 
 func (c *Client) url(suffix string, args ...any) string {

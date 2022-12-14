@@ -3,15 +3,17 @@ package adapt
 import (
 	"context"
 	"fmt"
+
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
-	rpc2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
-	"github.com/vanti-dev/sc-bos/pkg/node"
 	"go.uber.org/multierr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	rpc2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 // Device adapts a bacnet Device into a Smart Core traits and other apis.
@@ -41,7 +43,9 @@ func (d *DeviceBacnetService) AnnounceSelf(a node.Announcer) node.Undo {
 	return a.Announce(d.name, node.HasClient(rpc2.WrapBacnetDriverService(d)))
 }
 
-func (d *DeviceBacnetService) ReadProperty(ctx context.Context, request *rpc2.ReadPropertyRequest) (*rpc2.ReadPropertyResponse, error) {
+func (d *DeviceBacnetService) ReadProperty(
+	ctx context.Context, request *rpc2.ReadPropertyRequest,
+) (*rpc2.ReadPropertyResponse, error) {
 	if request.ObjectIdentifier == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "missing object_identifier")
 	}
@@ -70,7 +74,9 @@ func (d *DeviceBacnetService) ReadProperty(ctx context.Context, request *rpc2.Re
 	}, nil
 }
 
-func (d *DeviceBacnetService) ReadPropertyMultiple(ctx context.Context, request *rpc2.ReadPropertyMultipleRequest) (*rpc2.ReadPropertyMultipleResponse, error) {
+func (d *DeviceBacnetService) ReadPropertyMultiple(
+	ctx context.Context, request *rpc2.ReadPropertyMultipleRequest,
+) (*rpc2.ReadPropertyMultipleResponse, error) {
 	bacReq := bactypes.ReadMultipleProperty{}
 	for _, spec := range request.ReadSpecifications {
 		obj := bactypes.Object{
@@ -114,7 +120,9 @@ func (d *DeviceBacnetService) ReadPropertyMultiple(ctx context.Context, request 
 	return res, nil
 }
 
-func (d *DeviceBacnetService) WriteProperty(ctx context.Context, request *rpc2.WritePropertyRequest) (*rpc2.WritePropertyResponse, error) {
+func (d *DeviceBacnetService) WriteProperty(
+	ctx context.Context, request *rpc2.WritePropertyRequest,
+) (*rpc2.WritePropertyResponse, error) {
 	writeProp, err := d.propertyFromProtoForWrite(request.WriteValue)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "Interpreting request %v", err)
@@ -128,12 +136,16 @@ func (d *DeviceBacnetService) WriteProperty(ctx context.Context, request *rpc2.W
 	return &rpc2.WritePropertyResponse{}, d.client.WriteProperty(d.device, data, uint(request.WriteValue.Priority))
 }
 
-func (d *DeviceBacnetService) WritePropertyMultiple(ctx context.Context, request *rpc2.WritePropertyMultipleRequest) (*rpc2.WritePropertyMultipleResponse, error) {
+func (d *DeviceBacnetService) WritePropertyMultiple(
+	ctx context.Context, request *rpc2.WritePropertyMultipleRequest,
+) (*rpc2.WritePropertyMultipleResponse, error) {
 	// client doesn't implement WritePropertyMultiple! :(
 	return d.UnimplementedBacnetDriverServiceServer.WritePropertyMultiple(ctx, request)
 }
 
-func (d *DeviceBacnetService) ListObjects(_ context.Context, _ *rpc2.ListObjectsRequest) (*rpc2.ListObjectsResponse, error) {
+func (d *DeviceBacnetService) ListObjects(
+	_ context.Context, _ *rpc2.ListObjectsRequest,
+) (*rpc2.ListObjectsResponse, error) {
 	objects, err := d.known.ListObjects(d.device)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "device has been forgotten")

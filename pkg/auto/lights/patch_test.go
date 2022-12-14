@@ -3,11 +3,13 @@ package lights
 import (
 	"context"
 	"errors"
-	"github.com/google/go-cmp/cmp"
-	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
-	"go.uber.org/zap"
 	"sort"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"go.uber.org/zap"
+
+	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 )
 
 func TestBrightnessAutomation_processConfig(t *testing.T) {

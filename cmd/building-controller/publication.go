@@ -8,12 +8,13 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/internal/db"
-	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/vanti-dev/sc-bos/internal/db"
+	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 )
 
 type PublicationServer struct {
@@ -23,7 +24,9 @@ type PublicationServer struct {
 	conn   *pgxpool.Pool
 }
 
-func (p *PublicationServer) CreatePublication(ctx context.Context, request *traits.CreatePublicationRequest) (*traits.Publication, error) {
+func (p *PublicationServer) CreatePublication(
+	ctx context.Context, request *traits.CreatePublicationRequest,
+) (*traits.Publication, error) {
 	logger := rpcutil.ServerLogger(ctx, p.logger)
 	input := request.GetPublication()
 
@@ -79,7 +82,9 @@ func (p *PublicationServer) CreatePublication(ctx context.Context, request *trai
 	return output, nil
 }
 
-func (p *PublicationServer) GetPublication(ctx context.Context, request *traits.GetPublicationRequest) (*traits.Publication, error) {
+func (p *PublicationServer) GetPublication(
+	ctx context.Context, request *traits.GetPublicationRequest,
+) (*traits.Publication, error) {
 	id := request.GetId()
 	version := request.GetVersion()
 
@@ -92,7 +97,9 @@ func (p *PublicationServer) GetPublication(ctx context.Context, request *traits.
 	return output, err
 }
 
-func (p *PublicationServer) UpdatePublication(ctx context.Context, request *traits.UpdatePublicationRequest) (*traits.Publication, error) {
+func (p *PublicationServer) UpdatePublication(
+	ctx context.Context, request *traits.UpdatePublicationRequest,
+) (*traits.Publication, error) {
 	if request.GetUpdateMask() != nil {
 		return nil, status.Error(codes.Unimplemented, "field mask support not implemented")
 	}
@@ -130,7 +137,9 @@ func (p *PublicationServer) UpdatePublication(ctx context.Context, request *trai
 	return updated, nil
 }
 
-func (p *PublicationServer) DeletePublication(ctx context.Context, request *traits.DeletePublicationRequest) (*traits.Publication, error) {
+func (p *PublicationServer) DeletePublication(
+	ctx context.Context, request *traits.DeletePublicationRequest,
+) (*traits.Publication, error) {
 	var pub *traits.Publication
 
 	err := p.conn.BeginFunc(ctx, func(tx pgx.Tx) error {
@@ -165,11 +174,15 @@ func (p *PublicationServer) DeletePublication(ctx context.Context, request *trai
 	return pub, nil
 }
 
-func (p *PublicationServer) PullPublication(_ *traits.PullPublicationRequest, _ traits.PublicationApi_PullPublicationServer) error {
+func (p *PublicationServer) PullPublication(
+	_ *traits.PullPublicationRequest, _ traits.PublicationApi_PullPublicationServer,
+) error {
 	return status.Error(codes.Unimplemented, "PullPublication not implemented")
 }
 
-func (p *PublicationServer) ListPublications(ctx context.Context, request *traits.ListPublicationsRequest) (*traits.ListPublicationsResponse, error) {
+func (p *PublicationServer) ListPublications(
+	ctx context.Context, request *traits.ListPublicationsRequest,
+) (*traits.ListPublicationsResponse, error) {
 	limit := 50
 	if request.GetPageSize() > 0 {
 		limit = int(request.GetPageSize())
@@ -195,11 +208,15 @@ func (p *PublicationServer) ListPublications(ctx context.Context, request *trait
 	}, nil
 }
 
-func (p *PublicationServer) PullPublications(_ *traits.PullPublicationsRequest, _ traits.PublicationApi_PullPublicationsServer) error {
+func (p *PublicationServer) PullPublications(
+	_ *traits.PullPublicationsRequest, _ traits.PublicationApi_PullPublicationsServer,
+) error {
 	return status.Error(codes.Unimplemented, "PullPublications not implemented")
 }
 
-func (p *PublicationServer) AcknowledgePublication(ctx context.Context, request *traits.AcknowledgePublicationRequest) (*traits.Publication, error) {
+func (p *PublicationServer) AcknowledgePublication(
+	ctx context.Context, request *traits.AcknowledgePublicationRequest,
+) (*traits.Publication, error) {
 	var accepted bool
 	switch request.GetReceipt() {
 	case traits.Publication_Audience_REJECTED:

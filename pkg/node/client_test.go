@@ -2,10 +2,11 @@ package node
 
 import (
 	"context"
-	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"strings"
 	"testing"
+
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 )
 
 func TestClient(t *testing.T) {

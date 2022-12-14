@@ -1,11 +1,12 @@
 package node
 
 import (
+	"testing"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
 	"google.golang.org/protobuf/testing/protocmp"
-	"testing"
 )
 
 func TestNode_Announce_metadata(t *testing.T) {

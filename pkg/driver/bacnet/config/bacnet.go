@@ -3,11 +3,12 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
-	"strconv"
-	"strings"
 )
 
 type ObjectID bactypes.ObjectID

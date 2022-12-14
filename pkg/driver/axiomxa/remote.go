@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/config"
-	rpc2 "github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/rpc"
+	"io"
+	"net/http"
+
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"io"
-	"net/http"
+
+	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/config"
+	rpc2 "github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/rpc"
 )
 
 type server struct {
@@ -19,7 +21,9 @@ type server struct {
 	config config.Root
 }
 
-func (s *server) SaveQRCredential(ctx context.Context, request *rpc2.SaveQRCredentialRequest) (*rpc2.SaveQRCredentialResponse, error) {
+func (s *server) SaveQRCredential(
+	ctx context.Context, request *rpc2.SaveQRCredentialRequest,
+) (*rpc2.SaveQRCredentialResponse, error) {
 	// todo: update the actual request once we know what it looks like!
 	body := struct {
 		Credential string `json:"credential,omitempty"`

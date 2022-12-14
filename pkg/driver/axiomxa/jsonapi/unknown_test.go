@@ -2,8 +2,9 @@ package jsonapi
 
 import (
 	"encoding/json"
-	"github.com/google/go-cmp/cmp"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestKeepUnknown(t *testing.T) {

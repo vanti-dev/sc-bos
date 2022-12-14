@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/vanti-dev/sc-bos/internal/util/state"
+
 	"go.uber.org/zap"
+
+	"github.com/vanti-dev/sc-bos/internal/util/state"
 )
 
 // Starter describes types that can be started.

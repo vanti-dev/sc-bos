@@ -2,13 +2,14 @@ package node
 
 import (
 	"context"
+	"io"
+	"sync"
+
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/resolver"
 	"google.golang.org/grpc/resolver/manual"
-	"io"
-	"sync"
 )
 
 // Remote represents a remote smart core node

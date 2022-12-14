@@ -3,7 +3,9 @@ package lights
 import (
 	"context"
 	"fmt"
+
 	"github.com/smart-core-os/sc-api/go/traits"
+
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
@@ -27,7 +29,9 @@ type clientActions struct {
 	lightClient traits.LightApiClient
 }
 
-func (a *clientActions) UpdateBrightness(ctx context.Context, req *traits.UpdateBrightnessRequest, state *WriteState) error {
+func (a *clientActions) UpdateBrightness(
+	ctx context.Context, req *traits.UpdateBrightnessRequest, state *WriteState,
+) error {
 	got, err := a.lightClient.UpdateBrightness(ctx, req)
 	if err != nil {
 		return err
@@ -38,7 +42,9 @@ func (a *clientActions) UpdateBrightness(ctx context.Context, req *traits.Update
 
 // updateBrightnessLevelIfNeeded sets all the names devices brightness levels to level and stores successful responses in state.
 // This does not send requests if state already has a named brightness level equal to level.
-func updateBrightnessLevelIfNeeded(ctx context.Context, state *WriteState, actions actions, level float32, names ...string) error {
+func updateBrightnessLevelIfNeeded(
+	ctx context.Context, state *WriteState, actions actions, level float32, names ...string,
+) error {
 	for _, name := range names {
 		if val, ok := state.Brightness[name]; ok {
 			// don't do requests that won't change the write state

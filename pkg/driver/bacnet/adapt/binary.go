@@ -2,12 +2,14 @@ package adapt
 
 import (
 	"context"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )

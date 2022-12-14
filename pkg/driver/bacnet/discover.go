@@ -2,9 +2,11 @@ package bacnet
 
 import (
 	"fmt"
-	bactypes "github.com/vanti-dev/gobacnet/types"
-	config2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"net"
+
+	bactypes "github.com/vanti-dev/gobacnet/types"
+
+	config2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 )
 
 func (d *Driver) findDevice(device config2.Device) (bactypes.Device, error) {
@@ -33,7 +35,9 @@ func (d *Driver) findDevice(device config2.Device) (bactypes.Device, error) {
 	return bacDevices[0], nil
 }
 
-func (d *Driver) fetchObjects(cfg config2.Root, device config2.Device, bacDevice bactypes.Device) (map[bactypes.ObjectID]configObject, error) {
+func (d *Driver) fetchObjects(
+	cfg config2.Root, device config2.Device, bacDevice bactypes.Device,
+) (map[bactypes.ObjectID]configObject, error) {
 	objects := make(map[bactypes.ObjectID]configObject, len(device.Objects))
 	for _, object := range device.Objects {
 		objects[bactypes.ObjectID(object.ID)] = configObject{

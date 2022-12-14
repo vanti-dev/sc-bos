@@ -2,9 +2,10 @@ package lights
 
 import (
 	"context"
-	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"sort"
 	"time"
+
+	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 )
@@ -14,7 +15,9 @@ import (
 //
 // Returning a non-zero duration indicates that processing should be rerun after this delay even if ReadState doesn't
 // change.
-func processState(ctx context.Context, readState *ReadState, writeState *WriteState, actions actions) (time.Duration, error) {
+func processState(
+	ctx context.Context, readState *ReadState, writeState *WriteState, actions actions,
+) (time.Duration, error) {
 	// Work out what we need to do to apply the given writeState and make those changes for as long as ctx is valid
 
 	anyOccupied := false

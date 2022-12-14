@@ -2,10 +2,11 @@ package messageports
 
 import (
 	"fmt"
-	"github.com/google/go-cmp/cmp"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func ExampleUnmarshal() {

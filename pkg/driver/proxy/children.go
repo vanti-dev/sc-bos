@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"context"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 )
 

@@ -3,12 +3,14 @@ package axiomxa
 import (
 	"context"
 	"errors"
+
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/config"
 	rpc2 "github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/rpc"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
-	"go.uber.org/zap"
 )
 
 const DriverName = "axiomxa"

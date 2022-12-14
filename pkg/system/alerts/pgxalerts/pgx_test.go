@@ -1,15 +1,17 @@
 package pgxalerts
 
 import (
-	"github.com/google/go-cmp/cmp"
-	"github.com/smart-core-os/sc-api/go/types"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"google.golang.org/protobuf/testing/protocmp"
-	"google.golang.org/protobuf/types/known/fieldmaskpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/smart-core-os/sc-api/go/types"
+	"google.golang.org/protobuf/testing/protocmp"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 func Test_fieldMaskIncludesPath(t *testing.T) {

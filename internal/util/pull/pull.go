@@ -3,10 +3,11 @@ package pull
 import (
 	"context"
 	"errors"
+	"time"
+
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"time"
 )
 
 type Fetcher[C any] interface {

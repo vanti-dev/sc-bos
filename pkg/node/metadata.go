@@ -2,6 +2,7 @@ package node
 
 import (
 	"errors"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/router"
 	"github.com/smart-core-os/sc-golang/pkg/trait"

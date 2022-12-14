@@ -2,10 +2,11 @@ package auto
 
 import (
 	"github.com/timshannon/bolthold"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+
+	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 type Services struct {

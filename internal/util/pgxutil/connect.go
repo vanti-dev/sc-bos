@@ -2,9 +2,10 @@ package pgxutil
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"os"
 	"strings"
+
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type ConnectConfig struct {

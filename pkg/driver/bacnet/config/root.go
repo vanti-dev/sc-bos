@@ -3,11 +3,13 @@ package config
 import (
 	"bytes"
 	"encoding/json"
-	bactypes "github.com/vanti-dev/gobacnet/types"
-	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"io"
 	"net/netip"
 	"os"
+
+	bactypes "github.com/vanti-dev/gobacnet/types"
+
+	"github.com/vanti-dev/sc-bos/pkg/driver"
 )
 
 // Root represents a full collection of related configuration properties

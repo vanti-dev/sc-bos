@@ -5,17 +5,19 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/proxy/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
-	"go.uber.org/multierr"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 )
 
 const DriverName = "proxy"

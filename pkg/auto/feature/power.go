@@ -3,14 +3,16 @@ package feature
 import (
 	"context"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/smart-core-os/sc-api/go/traits"
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/internal/util/state"
 	"github.com/vanti-dev/sc-bos/internal/util/times"
 	"github.com/vanti-dev/sc-bos/pkg/auto/runstate"
-	"go.uber.org/multierr"
-	"go.uber.org/zap"
-	"sync"
-	"time"
 )
 
 type TurnOffScreensOutsideWorkingHours struct {
@@ -74,7 +76,9 @@ func (t *TurnOffScreensOutsideWorkingHours) Stop() error {
 	return nil
 }
 
-func (t *TurnOffScreensOutsideWorkingHours) WaitForStateChange(ctx context.Context, sourceState runstate.RunState) error {
+func (t *TurnOffScreensOutsideWorkingHours) WaitForStateChange(
+	ctx context.Context, sourceState runstate.RunState,
+) error {
 	return t.state().WaitForStateChange(ctx, sourceState)
 }
 

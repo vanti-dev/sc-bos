@@ -2,19 +2,21 @@ package source
 
 import (
 	"context"
+	"sort"
+	"strings"
+	"time"
+
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/encoding/protojson"
+
 	"github.com/vanti-dev/sc-bos/pkg/auto/export/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
 	dconfig "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
 	"github.com/vanti-dev/sc-bos/pkg/task"
-	"go.uber.org/multierr"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/encoding/protojson"
-	"sort"
-	"strings"
-	"time"
 )
 
 func NewBacnet(services Services) task.Starter {
@@ -71,7 +73,9 @@ func (b *bacnet) applyConfig(ctx context.Context, cfg config.BacnetSource) error
 	return nil
 }
 
-func (b *bacnet) publishAll(ctx context.Context, cfg config.BacnetSource, client rpc.BacnetDriverServiceClient, sent *duplicates) error {
+func (b *bacnet) publishAll(
+	ctx context.Context, cfg config.BacnetSource, client rpc.BacnetDriverServiceClient, sent *duplicates,
+) error {
 	t, ok := ctx.Value(timingKey).(timing)
 	if !ok {
 		t = timing{} // will be thrown away
@@ -102,7 +106,9 @@ func (b *bacnet) publishAll(ctx context.Context, cfg config.BacnetSource, client
 	return allErrs
 }
 
-func (b *bacnet) deviceToReadRequest(ctx context.Context, device config.BacnetDevice, client rpc.BacnetDriverServiceClient) (*rpc.ReadPropertyMultipleRequest, error) {
+func (b *bacnet) deviceToReadRequest(
+	ctx context.Context, device config.BacnetDevice, client rpc.BacnetDriverServiceClient,
+) (*rpc.ReadPropertyMultipleRequest, error) {
 	readRequest := &rpc.ReadPropertyMultipleRequest{Name: device.Name}
 	if len(device.Objects) == 0 {
 		// read all objects from the server
@@ -135,7 +141,9 @@ func (b *bacnet) deviceToReadRequest(ctx context.Context, device config.BacnetDe
 	return readRequest, nil
 }
 
-func (b *bacnet) publishResults(ctx context.Context, topicPrefix string, response *rpc.ReadPropertyMultipleResponse, sent *duplicates) error {
+func (b *bacnet) publishResults(
+	ctx context.Context, topicPrefix string, response *rpc.ReadPropertyMultipleResponse, sent *duplicates,
+) error {
 	var allErrs error
 	for _, result := range response.ReadResults {
 		objId := adapt.ObjectIDFromProto(result.ObjectIdentifier)

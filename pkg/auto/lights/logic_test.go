@@ -3,15 +3,17 @@ package lights
 import (
 	"context"
 	"fmt"
-	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"testing"
 	"time"
 
+	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/internal/util/jsontypes"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/vanti-dev/sc-bos/internal/util/jsontypes"
 )
 
 func Test_processState(t *testing.T) {
@@ -213,7 +215,9 @@ func (ta *testActions) assertNextCall(req any) {
 	}
 }
 
-func (ta *testActions) UpdateBrightness(ctx context.Context, req *traits.UpdateBrightnessRequest, state *WriteState) error {
+func (ta *testActions) UpdateBrightness(
+	ctx context.Context, req *traits.UpdateBrightnessRequest, state *WriteState,
+) error {
 	ta.calls = append(ta.calls, req)
 	ta.brightnessCalls = append(ta.brightnessCalls, req)
 	state.Brightness[req.Name] = req.Brightness

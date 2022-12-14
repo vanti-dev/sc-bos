@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+
 	"github.com/smart-core-os/sc-golang/pkg/router"
 	"github.com/smart-core-os/sc-golang/pkg/server"
 	"github.com/smart-core-os/sc-golang/pkg/trait"

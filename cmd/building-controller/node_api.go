@@ -4,20 +4,22 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/vanti-dev/sc-bos/internal/db"
-	"github.com/vanti-dev/sc-bos/internal/manage/enrollment"
-	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 	"google.golang.org/grpc/status"
+
+	"github.com/vanti-dev/sc-bos/internal/db"
+	"github.com/vanti-dev/sc-bos/internal/manage/enrollment"
+	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 type NodeServer struct {
@@ -31,7 +33,9 @@ type NodeServer struct {
 	testTLSConfig *tls.Config
 }
 
-func (n *NodeServer) GetNodeRegistration(ctx context.Context, request *gen.GetNodeRegistrationRequest) (*gen.NodeRegistration, error) {
+func (n *NodeServer) GetNodeRegistration(
+	ctx context.Context, request *gen.GetNodeRegistrationRequest,
+) (*gen.NodeRegistration, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	var dbEnrollment db.Enrollment
 	err := n.db.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
@@ -52,7 +56,9 @@ func (n *NodeServer) GetNodeRegistration(ctx context.Context, request *gen.GetNo
 	}, nil
 }
 
-func (n *NodeServer) CreateNodeRegistration(ctx context.Context, request *gen.CreateNodeRegistrationRequest) (*gen.NodeRegistration, error) {
+func (n *NodeServer) CreateNodeRegistration(
+	ctx context.Context, request *gen.CreateNodeRegistrationRequest,
+) (*gen.NodeRegistration, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	nodeReg := request.GetNodeRegistration()
 	if nodeReg == nil {
@@ -86,7 +92,9 @@ func (n *NodeServer) CreateNodeRegistration(ctx context.Context, request *gen.Cr
 	return nodeReg, nil
 }
 
-func (n *NodeServer) ListNodeRegistrations(ctx context.Context, request *gen.ListNodeRegistrationsRequest) (*gen.ListNodeRegistrationsResponse, error) {
+func (n *NodeServer) ListNodeRegistrations(
+	ctx context.Context, request *gen.ListNodeRegistrationsRequest,
+) (*gen.ListNodeRegistrationsResponse, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	var dbEnrollments []db.Enrollment
 	err := n.db.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
@@ -110,7 +118,9 @@ func (n *NodeServer) ListNodeRegistrations(ctx context.Context, request *gen.Lis
 	return &gen.ListNodeRegistrationsResponse{NodeRegistrations: registrations}, nil
 }
 
-func (n *NodeServer) TestNodeCommunication(ctx context.Context, request *gen.TestNodeCommunicationRequest) (*gen.TestNodeCommunicationResponse, error) {
+func (n *NodeServer) TestNodeCommunication(
+	ctx context.Context, request *gen.TestNodeCommunicationRequest,
+) (*gen.TestNodeCommunicationResponse, error) {
 	reg, err := n.GetNodeRegistration(ctx, &gen.GetNodeRegistrationRequest{NodeName: request.GetNodeName()})
 	if err != nil {
 		return nil, err

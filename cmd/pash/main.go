@@ -9,8 +9,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/vanti-dev/sc-bos/internal/util/pass"
 	"golang.org/x/term"
+
+	"github.com/vanti-dev/sc-bos/internal/util/pass"
 )
 
 var (

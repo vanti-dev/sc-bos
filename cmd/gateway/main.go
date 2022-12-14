@@ -4,22 +4,25 @@ import (
 	"context"
 	"embed"
 	"flag"
+	"os"
+
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
 	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
+
 	"github.com/vanti-dev/sc-bos/pkg/app"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/proxy"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
-	"os"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"github.com/vanti-dev/sc-bos/internal/auth/policy"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"go.uber.org/zap"
+
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 var systemConfig app.SystemConfig

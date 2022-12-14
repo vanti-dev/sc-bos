@@ -2,6 +2,7 @@ package source
 
 import (
 	"context"
+
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 )
 

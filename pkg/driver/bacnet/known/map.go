@@ -3,6 +3,7 @@ package known
 import (
 	"errors"
 	"fmt"
+
 	bactypes "github.com/vanti-dev/gobacnet/types"
 )
 

@@ -1,10 +1,11 @@
 package bacnet
 
 import (
-	"github.com/vanti-dev/gobacnet"
-	bactypes "github.com/vanti-dev/gobacnet/types"
 	"os"
 	"testing"
+
+	"github.com/vanti-dev/gobacnet"
+	bactypes "github.com/vanti-dev/gobacnet/types"
 )
 
 func TestYabeRoom(t *testing.T) {

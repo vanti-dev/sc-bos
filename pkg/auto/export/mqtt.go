@@ -3,13 +3,15 @@ package export
 import (
 	"context"
 	"fmt"
+
 	"github.com/eclipse/paho.mqtt.golang"
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export/config"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export/source"
 	"github.com/vanti-dev/sc-bos/pkg/task"
-	"go.uber.org/multierr"
-	"go.uber.org/zap"
 )
 
 var MQTTFactory auto.Factory = auto.FactoryFunc(NewMQTTExport)

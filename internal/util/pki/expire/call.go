@@ -3,6 +3,7 @@ package expire
 import (
 	"crypto/tls"
 	"crypto/x509"
+
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 )
 
