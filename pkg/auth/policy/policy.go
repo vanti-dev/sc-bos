@@ -56,7 +56,7 @@ type Policy interface {
 // Services/protobuf packages are assumed to correspond to Rego packages of the same name; the gRPC service `foo.bar.Baz`
 // corresponds to the Rego package `foo.bar.Baz`. The package should contain a boolean rule named `allow`.
 // The policy accepts the request if querying for `data.foo.bar.Baz.allow` returns a result set with only
-//`allow = true`. Otherwise, if the result set is empty then the next package up the hierarchy is tried, and if it's
+// `allow = true`. Otherwise, if the result set is empty then the next package up the hierarchy is tried, and if it's
 // not empty then returns ErrPermissionDenied.
 // If none of those queries return a result, we evaluate the query `data.grpc_default.allow` as a last resort.
 // A package can prevent going further up the hierarchy by including a `default allow := false` rule - this

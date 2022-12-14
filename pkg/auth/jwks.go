@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/go-jose/go-jose/v3"
-	"github.com/vanti-dev/sc-bos/internal/util/fetch"
 	"go.uber.org/multierr"
+
+	"github.com/vanti-dev/sc-bos/internal/util/fetch"
 )
 
 var (

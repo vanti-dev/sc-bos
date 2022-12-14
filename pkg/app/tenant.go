@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-jose/go-jose/v3/json"
-	"github.com/vanti-dev/sc-bos/internal/auth/tenant"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"go.uber.org/multierr"
 	"os"
 	"path/filepath"
+
+	"github.com/go-jose/go-jose/v3/json"
+	"go.uber.org/multierr"
+
+	"github.com/vanti-dev/sc-bos/pkg/auth/tenant"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 const tenantsFilename = "tenants.json"
@@ -42,7 +44,9 @@ func clientVerifier(config SystemConfig, manager node.Remote) (tenant.Verifier, 
 	}
 
 	// remoteTenants verifies tenant access using a remote service defined via TenantApiClient and managerConn
-	remoteTenants := tenant.VerifierFunc(func(ctx context.Context, id, secret string) (data tenant.SecretData, err error) {
+	remoteTenants := tenant.VerifierFunc(func(
+		ctx context.Context, id, secret string,
+	) (data tenant.SecretData, err error) {
 		conn, err := manager.Connect(ctx)
 		if err != nil {
 			return data, err

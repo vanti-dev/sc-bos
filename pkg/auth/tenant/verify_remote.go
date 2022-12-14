@@ -2,6 +2,7 @@ package tenant
 
 import (
 	"context"
+
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 

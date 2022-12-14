@@ -6,13 +6,14 @@ import (
 	"log"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	"github.com/vanti-dev/sc-bos/internal/auth"
-	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
+
+	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
+	"github.com/vanti-dev/sc-bos/pkg/auth"
 )
 
 type Interceptor struct {
@@ -33,7 +34,9 @@ func NewInterceptor(policy Policy, opts ...InterceptorOption) *Interceptor {
 }
 
 func (i *Interceptor) GRPCUnaryInterceptor() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
+	return func(
+		ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler,
+	) (resp any, err error) {
 		_, err = i.checkPolicyGrpc(ctx, nil, req, StreamAttributes{
 			IsServerStream: false,
 			IsClientStream: false,
@@ -88,7 +91,9 @@ func (i *Interceptor) GRPCStreamingInterceptor() grpc.StreamServerInterceptor {
 
 // Returns a set of verified credentials that can be used to speed up future calls to checkPolicyGrpc for the same
 // call (useful for streams). Pass nil creds the first time, then cache the creds.
-func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds, req any, stream StreamAttributes) (*verifiedCreds, error) {
+func (i *Interceptor) checkPolicyGrpc(
+	ctx context.Context, creds *verifiedCreds, req any, stream StreamAttributes,
+) (*verifiedCreds, error) {
 	service, method, ok := rpcutil.ServiceMethod(ctx)
 	if !ok {
 		return nil, status.Error(codes.Internal, "failed to resolve method")

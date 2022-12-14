@@ -7,9 +7,11 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/vanti-dev/sc-bos/internal/util/pass"
-	"go.uber.org/multierr"
 	"sync"
+
+	"go.uber.org/multierr"
+
+	"github.com/vanti-dev/sc-bos/internal/util/pass"
 )
 
 // Verifier verifies that an id is associated with a given secret.

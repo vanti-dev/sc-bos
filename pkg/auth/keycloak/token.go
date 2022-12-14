@@ -3,8 +3,10 @@ package keycloak
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/go-jose/go-jose/v3/jwt"
-	"github.com/vanti-dev/sc-bos/internal/auth"
+
+	"github.com/vanti-dev/sc-bos/pkg/auth"
 )
 
 type accessTokenPayload struct {

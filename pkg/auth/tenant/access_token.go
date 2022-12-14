@@ -3,12 +3,14 @@ package tenant
 import (
 	"context"
 	"crypto/rand"
-	"github.com/go-jose/go-jose/v3/jwt"
 	"io"
 	"time"
 
+	"github.com/go-jose/go-jose/v3/jwt"
+
 	"github.com/go-jose/go-jose/v3"
-	"github.com/vanti-dev/sc-bos/internal/auth"
+
+	"github.com/vanti-dev/sc-bos/pkg/auth"
 )
 
 type tokenClaims struct {

@@ -9,9 +9,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/vanti-dev/sc-bos/internal/auth"
-	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"go.uber.org/zap"
+
+	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
+	"github.com/vanti-dev/sc-bos/pkg/auth"
 )
 
 type TokenServer struct {
@@ -123,7 +124,9 @@ func parsePostForm(request *http.Request) error {
 	}
 }
 
-func (s *TokenServer) clientCredentialsFlow(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
+func (s *TokenServer) clientCredentialsFlow(
+	ctx context.Context, writer http.ResponseWriter, request *http.Request,
+) error {
 	if s.clientCredentialVerifier == nil {
 		return errUnsupportedGrantType
 	}

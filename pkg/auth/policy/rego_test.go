@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/vanti-dev/sc-bos/internal/auth"
+	"github.com/vanti-dev/sc-bos/pkg/auth"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
