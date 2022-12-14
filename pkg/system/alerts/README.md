@@ -33,7 +33,7 @@ backend by configuring the system to point to an existing postgres database:
     "alerts": {
       "storage": {
         "type": "postgres",
-        "uri": "postgres://username@localhost:5432/db-name",
+        "uri": "postgres://username@localhost:5432/smart_core",
         "passwordFile": "/secrets/postgres-password"
       }
     }
@@ -41,5 +41,9 @@ backend by configuring the system to point to an existing postgres database:
 }
 ```
 
-For development you can use the same postgres database setup via the [docker-compose.yaml](../../../docker-compose.yml)
-file located at the root of the project.
+For development, you can use the same postgres database setup via the [docker-compose.yaml](../../../docker-compose.yml)
+file located at the root of the project. See the [dev guide](../../../docs/install/dev.md) for more info.
+
+You'll then need to update the username above to `postgres` and create a secrets file with the password in (
+also `postgres`)
+and update the file path above (relative to the project root).

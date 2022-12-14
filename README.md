@@ -1,13 +1,17 @@
 Smart Core Building Operating System
 =================================
 
+For getting started with developing, see the [dev guide](docs/install/dev.md)
+
 ## System Architecture
+
 The system functionality is distributed among multiple components.
 
 ### Building Controller
-The Building Controller is responsible for management of the Smart Core installation. It is written in Go and installed in a
-virtual machine on a server. Over gRPC, it exposes both the Smart Core API (for device control and data collection) and
-private APIs for communicating with the frontend and other nodes.
+
+The Building Controller is responsible for management of the Smart Core installation. It is written in Go and installed
+in a virtual machine on a server. Over gRPC, it exposes both the Smart Core API (for device control and data collection)
+and private APIs for communicating with the frontend and other nodes.
 
 It provides the following services:
   - Hosting the building user interfaces

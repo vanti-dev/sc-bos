@@ -5,6 +5,8 @@ This command runs an Area Controller instance.
 
 ## Data Directory
 
+_Note: This is auto-generated the first time you run the area-controller._
+
 - `private-key.pem` - private key used for Smart Core, PKCS#8 wrapped in PEM
 - `self-signed.crt` - self-signed X.509 certificate for `private-key.pem` - used before controller has enrolled
 - `roots.pem` - certificates representing the roots of trust, used before enrollment
@@ -13,7 +15,7 @@ This command runs an Area Controller instance.
 - `users.json` - a json list of users and their hashed secrets. Used to authenticate requests locally using a
   username/password
 - `enrollment/`
-  - `enrollment.json` - data file generated upon enrollment
+    - `enrollment.json` - data file generated upon enrollment
   - `ca.crt` - Root CA for the Smart Core installation
   - `cert.crt` - X.509 certificate for `../private-key.pem` signed by the Root CA
 - `cache/`
