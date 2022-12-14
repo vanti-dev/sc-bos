@@ -19,8 +19,9 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
-	"github.com/vanti-dev/sc-bos/internal/auth/policy"
 	"go.uber.org/zap"
+
+	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
