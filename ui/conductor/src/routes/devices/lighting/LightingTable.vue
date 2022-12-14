@@ -33,16 +33,16 @@
 </template>
 <script setup>
 import MainCard from "@/components/SectionCard.vue";
-import Header from "@/components/operate/Header.vue";
-import Filters from "@/components/operate/Filters.vue";
-import BulkAction from "@/components/operate/BulkAction.vue";
+import Header from "@/components/devices/Header.vue";
+import Filters from "@/components/devices/Filters.vue";
+import BulkAction from "@/components/devices/BulkAction.vue";
 import RowMenu from "./RowMenu.vue";
-import { useLightingStore } from "@/stores/operate/lighting.js";
-import { storeToRefs } from "pinia";
+import {useLightingStore} from "@/stores/devices/lighting.js";
+import {storeToRefs} from "pinia";
 
 const store = useLightingStore();
 
-const { headers, selected, filteredLights, search } = storeToRefs(store);
+const {headers, selected, filteredLights, search} = storeToRefs(store);
 
 const getColor = (status) => {
   if (status == "On") {

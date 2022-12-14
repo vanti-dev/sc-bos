@@ -1,4 +1,5 @@
 import auth from '@/routes/auth/route.js';
+import devices from '@/routes/devices/route.js';
 import commission from '@/routes/commission/route.js';
 import design from '@/routes/design/route.js';
 import operate from '@/routes/operate/route.js';
@@ -13,7 +14,7 @@ const router = new VueRouter({
   mode: 'history',
   routes: [
     ...route(auth),
-    ...route(start),
+    ...route(devices),
     ...route(design),
     ...route(commission),
     ...route(operate),

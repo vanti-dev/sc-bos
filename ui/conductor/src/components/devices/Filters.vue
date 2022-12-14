@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import { useLightingStore } from "@/stores/operate/lighting.js";
+import {useLightingStore} from "@/stores/devices/lighting.js";
 import Search from "./Filters/Search.vue";
 import Status from "./Filters/Status.vue";
 import Model from "./Filters/Model.vue";

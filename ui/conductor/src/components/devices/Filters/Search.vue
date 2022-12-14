@@ -11,8 +11,8 @@
 </template>
 
 <script setup>
-import { useLightingStore } from "@/stores/operate/lighting.js";
-import { storeToRefs } from "pinia";
+import {useLightingStore} from "@/stores/devices/lighting.js";
+import {storeToRefs} from "pinia";
 
 const store = useLightingStore();
 const { search } = storeToRefs(store);
