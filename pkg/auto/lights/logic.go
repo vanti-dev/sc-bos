@@ -2,11 +2,11 @@ package lights
 
 import (
 	"context"
+	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"sort"
 	"time"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/internal/auto/lights/config"
 )
 
 // processState executes clientActions based on both read and write states.

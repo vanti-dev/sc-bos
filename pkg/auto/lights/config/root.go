@@ -2,9 +2,9 @@ package config
 
 import (
 	"encoding/json"
+	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"time"
 
-	"github.com/vanti-dev/sc-bos/internal/auto"
 	"github.com/vanti-dev/sc-bos/internal/util/jsontypes"
 )
 

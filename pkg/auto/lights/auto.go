@@ -3,7 +3,7 @@ package lights
 import (
 	"context"
 	"github.com/olebedev/emitter"
-	"github.com/vanti-dev/sc-bos/internal/auto/lights/config"
+	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"

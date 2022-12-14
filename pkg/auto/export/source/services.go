@@ -2,7 +2,7 @@ package source
 
 import (
 	"context"
-	"github.com/vanti-dev/sc-bos/internal/auto"
+	"github.com/vanti-dev/sc-bos/pkg/auto"
 )
 
 type Services struct {

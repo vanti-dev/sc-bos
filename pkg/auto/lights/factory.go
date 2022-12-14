@@ -1,7 +1,7 @@
 package lights
 
 import (
-	"github.com/vanti-dev/sc-bos/internal/auto"
+	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
