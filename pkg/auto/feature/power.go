@@ -10,9 +10,9 @@ import (
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/internal/util/state"
 	"github.com/vanti-dev/sc-bos/internal/util/times"
 	"github.com/vanti-dev/sc-bos/pkg/auto/runstate"
+	"github.com/vanti-dev/sc-bos/pkg/util/state"
 )
 
 type TurnOffScreensOutsideWorkingHours struct {

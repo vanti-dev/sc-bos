@@ -11,8 +11,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"github.com/vanti-dev/sc-bos/pkg/auth"
+	"github.com/vanti-dev/sc-bos/pkg/util/rpcutil"
 )
 
 type TokenServer struct {

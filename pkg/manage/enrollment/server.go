@@ -7,14 +7,14 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/vanti-dev/sc-bos/internal/util/minibus"
-
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/vanti-dev/sc-bos/internal/util/pki"
-	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
+	"github.com/vanti-dev/sc-bos/pkg/minibus"
+	"github.com/vanti-dev/sc-bos/pkg/util/pki"
+	"github.com/vanti-dev/sc-bos/pkg/util/rpcutil"
+
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
@@ -15,8 +16,6 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"github.com/vanti-dev/sc-bos/internal/util/jsontypes"
 )
 
 func TestPirsTurnLightsOn(t *testing.T) {

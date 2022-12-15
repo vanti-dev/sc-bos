@@ -9,6 +9,8 @@ import (
 	"regexp"
 
 	"github.com/vanti-dev/sc-bos/internal/util/pass"
+	"github.com/vanti-dev/sc-bos/pkg/db"
+	rpcutil2 "github.com/vanti-dev/sc-bos/pkg/util/rpcutil"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -18,8 +20,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
-	"github.com/vanti-dev/sc-bos/internal/db"
-	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -55,7 +55,7 @@ func NewServer(conn *pgxpool.Pool, options ...Option) *Server {
 }
 
 func (s *Server) ListTenants(ctx context.Context, request *gen.ListTenantsRequest) (*gen.ListTenantsResponse, error) {
-	logger := rpcutil.ServerLogger(ctx, s.logger)
+	logger := rpcutil2.ServerLogger(ctx, s.logger)
 
 	var tenants []*gen.Tenant
 	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
@@ -75,7 +75,7 @@ func (s *Server) PullTenants(request *gen.PullTenantsRequest, server gen.TenantA
 }
 
 func (s *Server) CreateTenant(ctx context.Context, request *gen.CreateTenantRequest) (*gen.Tenant, error) {
-	logger := rpcutil.ServerLogger(ctx, s.logger)
+	logger := rpcutil2.ServerLogger(ctx, s.logger)
 
 	var newTenant *gen.Tenant
 	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
@@ -99,7 +99,7 @@ func (s *Server) CreateTenant(ctx context.Context, request *gen.CreateTenantRequ
 }
 
 func (s *Server) GetTenant(ctx context.Context, request *gen.GetTenantRequest) (*gen.Tenant, error) {
-	logger := rpcutil.ServerLogger(ctx, s.logger)
+	logger := rpcutil2.ServerLogger(ctx, s.logger)
 
 	var tenant *gen.Tenant
 	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) error {
@@ -117,7 +117,7 @@ func (s *Server) GetTenant(ctx context.Context, request *gen.GetTenantRequest) (
 }
 
 func (s *Server) UpdateTenant(ctx context.Context, request *gen.UpdateTenantRequest) (*gen.Tenant, error) {
-	logger := rpcutil.ServerLogger(ctx, s.logger).With(zap.String("tenant", request.GetTenant().GetId()))
+	logger := rpcutil2.ServerLogger(ctx, s.logger).With(zap.String("tenant", request.GetTenant().GetId()))
 	tenant := request.Tenant
 	updater := masks.NewFieldUpdater(
 		masks.WithUpdateMask(request.UpdateMask),
@@ -133,14 +133,14 @@ func (s *Server) UpdateTenant(ctx context.Context, request *gen.UpdateTenantRequ
 	}
 
 	err = s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
-		if rpcutil.MaskContains(request.UpdateMask, "title") {
+		if rpcutil2.MaskContains(request.UpdateMask, "title") {
 			err = db.UpdateTenantTitle(ctx, tx, tenant.Id, tenant.Title)
 			if err != nil {
 				return err
 			}
 		}
 
-		if rpcutil.MaskContains(request.UpdateMask, "zone_names") {
+		if rpcutil2.MaskContains(request.UpdateMask, "zone_names") {
 			err = db.ReplaceTenantZones(ctx, tx, tenant.Id, tenant.ZoneNames)
 			if err != nil {
 				return err
@@ -164,7 +164,7 @@ func (s *Server) UpdateTenant(ctx context.Context, request *gen.UpdateTenantRequ
 func (s *Server) DeleteTenant(
 	ctx context.Context, request *gen.DeleteTenantRequest,
 ) (*gen.DeleteTenantResponse, error) {
-	logger := rpcutil.ServerLogger(ctx, s.logger).With(zap.String("id", request.Id))
+	logger := rpcutil2.ServerLogger(ctx, s.logger).With(zap.String("id", request.Id))
 
 	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) error {
 		return db.DeleteTenant(ctx, tx, request.Id)
@@ -184,7 +184,7 @@ func (s *Server) PullTenant(request *gen.PullTenantRequest, server gen.TenantApi
 }
 
 func (s *Server) AddTenantZones(ctx context.Context, request *gen.AddTenantZonesRequest) (*gen.Tenant, error) {
-	logger := rpcutil.ServerLogger(ctx, s.logger)
+	logger := rpcutil2.ServerLogger(ctx, s.logger)
 
 	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) error {
 		return db.AddTenantZones(ctx, tx, request.TenantId, request.AddZoneNames)
@@ -200,7 +200,7 @@ func (s *Server) AddTenantZones(ctx context.Context, request *gen.AddTenantZones
 }
 
 func (s *Server) RemoveTenantZones(ctx context.Context, request *gen.RemoveTenantZonesRequest) (*gen.Tenant, error) {
-	logger := rpcutil.ServerLogger(ctx, s.logger)
+	logger := rpcutil2.ServerLogger(ctx, s.logger)
 
 	var tenant *gen.Tenant
 	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
@@ -223,7 +223,7 @@ func (s *Server) RemoveTenantZones(ctx context.Context, request *gen.RemoveTenan
 }
 
 func (s *Server) ListSecrets(ctx context.Context, request *gen.ListSecretsRequest) (*gen.ListSecretsResponse, error) {
-	logger := rpcutil.ServerLogger(ctx, s.logger).With(
+	logger := rpcutil2.ServerLogger(ctx, s.logger).With(
 		zap.Namespace("request"),
 		zap.String("filter", request.GetFilter()),
 		zap.Bool("include_hash", request.GetIncludeHash()),
@@ -262,7 +262,7 @@ func (s *Server) PullSecrets(request *gen.PullSecretsRequest, server gen.TenantA
 }
 
 func (s *Server) CreateSecret(ctx context.Context, request *gen.CreateSecretRequest) (*gen.Secret, error) {
-	logger := rpcutil.ServerLogger(ctx, s.logger)
+	logger := rpcutil2.ServerLogger(ctx, s.logger)
 	secret := request.Secret
 
 	var err error
@@ -313,7 +313,7 @@ func (s *Server) VerifySecret(ctx context.Context, request *gen.VerifySecretRequ
 }
 
 func (s *Server) GetSecret(ctx context.Context, request *gen.GetSecretRequest) (*gen.Secret, error) {
-	logger := rpcutil.ServerLogger(ctx, s.logger).With(zap.String("secret_id", request.GetId()))
+	logger := rpcutil2.ServerLogger(ctx, s.logger).With(zap.String("secret_id", request.GetId()))
 
 	var secret *gen.Secret
 	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
@@ -337,7 +337,7 @@ func (s *Server) UpdateSecret(ctx context.Context, request *gen.UpdateSecretRequ
 func (s *Server) DeleteSecret(
 	ctx context.Context, request *gen.DeleteSecretRequest,
 ) (*gen.DeleteSecretResponse, error) {
-	logger := rpcutil.ServerLogger(ctx, s.logger)
+	logger := rpcutil2.ServerLogger(ctx, s.logger)
 	err := s.dbConn.BeginFunc(ctx, func(tx pgx.Tx) error {
 		return db.DeleteTenantSecret(ctx, tx, request.Id)
 	})

@@ -5,8 +5,7 @@ import (
 	"time"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto"
-
-	"github.com/vanti-dev/sc-bos/internal/util/jsontypes"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 // Root represent the configuration parameters available for the lighting automation.

@@ -7,13 +7,12 @@ import (
 	"time"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"github.com/vanti-dev/sc-bos/internal/util/jsontypes"
 )
 
 func Test_processState(t *testing.T) {
