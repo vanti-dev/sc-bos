@@ -23,8 +23,10 @@ export const useNotifications = defineStore('notifications', () => {
   // todo: get the name from somewhere
   const name = computed(() => 'test-ac');
 
-  const alerts = reactive(/** @type {ResourceCollection<Alert.AsObject, Alert>} */newResourceCollection()); // holds all the alerts we can show
-  const fetchingPage = reactive(/** @type {ActionTracker<ListAlertsResponse.AsObject>} */ newActionTracker()); // tracks the fetching of a single page
+  // holds all the alerts we can show
+  const alerts = reactive(/** @type {ResourceCollection<Alert.AsObject, Alert>} */newResourceCollection());
+  // tracks the fetching of a single page
+  const fetchingPage = reactive(/** @type {ActionTracker<ListAlertsResponse.AsObject>} */ newActionTracker());
 
   watch(name, async name => {
     closeResource(alerts);

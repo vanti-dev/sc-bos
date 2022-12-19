@@ -33,7 +33,9 @@
           </template>
           <v-date-picker v-model="newSecret.expiresAt" @input="customExpiryMenuVisible = false" no-title/>
         </v-menu>
-        <span v-else-if="newSecret.expiresIn === suggestedExpiresIn.noExpiry" class="expires-in-message never">The token will never expire!</span>
+        <span
+            v-else-if="newSecret.expiresIn === suggestedExpiresIn.noExpiry"
+            class="expires-in-message never">The token will never expire!</span>
         <span v-else class="expires-in-message">The token will expire <relative-date
             :date="computedExpiresAt"
             no-relative/></span>

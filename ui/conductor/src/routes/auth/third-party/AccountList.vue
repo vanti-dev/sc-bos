@@ -88,7 +88,9 @@ function showTenant(item) {
   cursor: pointer;
 }
 
-/* This selector is the one used by vuetify to match hovered table rows. We are more specific because of the scoped styles */
+/* This selector is the one used by vuetify to match hovered table rows. We are more specific
+ * because of the scoped styles
+ */
 .table
   > ::v-deep(.v-data-table__wrapper
     > table

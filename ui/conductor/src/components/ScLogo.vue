@@ -1,4 +1,5 @@
 <template>
+  <!-- eslint-disable max-len -->
   <svg
       viewBox="0 0 226 226"
       style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;"
@@ -30,6 +31,7 @@
       <circle cx="193.904" cy="193.991" r="24.609" style="fill:none;;stroke-width:3.52px;"/>
     </g>
   </svg>
+  <!-- eslint-enable max-len -->
 </template>
 
 <script setup>
