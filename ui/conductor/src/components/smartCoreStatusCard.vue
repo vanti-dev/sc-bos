@@ -1,8 +1,8 @@
 <template>
-  <v-card>
-    <v-card-text>
+  <v-card class="rounded-lg">
+    <v-card-text class="white--text">
       Smart Core OS:
-      <span class="font-weight-bold">{{ smartCoreStatus }}</span>
+      <span class="font-weight-bold text-uppercase" :class="getColor(smartCoreStatus)">{{ smartCoreStatus }}</span>
     </v-card-text>
   </v-card>
 </template>
@@ -13,5 +13,17 @@ import { storeToRefs } from "pinia";
 
 const store = useSmartCoreStore();
 
-const { smartCoreStatus } = storeToRefs(store);
+const { smartCoreStatus } = storeToRefs(store); 
+
+const getColor = (status) => {
+  switch (status) {
+    case "Online":
+      return "green--text";
+    case "Offline":
+      return "red--text";
+    default:
+      return "grey--text";
+  }
+};
+
 </script>
