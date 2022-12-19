@@ -43,7 +43,7 @@ import {usePage} from '@/components/page.js';
 import PageTitle from '@/components/PageTitle.vue';
 import ScLogo from '@/components/ScLogo.vue';
 import {useAccountStore} from '@/stores/account.js';
-import {onMounted} from 'vue';
+// import {onMounted} from 'vue';
 
 const {themeColor, hasSections, hasNav} = usePage();
 

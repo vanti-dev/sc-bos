@@ -54,7 +54,7 @@ async function newKeycloak() {
     events.dispatchEvent(new Event('authRefreshSuccess'));
   kc.onTokenExpired = () => events.dispatchEvent(new Event('tokenExpired'));
 
-  const authenticated = await kc.init(await initConfig());
+  await kc.init(await initConfig());
   return kc;
 }
 

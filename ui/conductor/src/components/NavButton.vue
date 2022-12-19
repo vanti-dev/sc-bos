@@ -19,7 +19,7 @@
 <script setup>
 import ScLogo from '@/components/ScLogo.vue';
 
-const props = defineProps({
+defineProps({
   title: String,
   subtitle: String,
   color: String,

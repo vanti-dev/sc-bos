@@ -170,7 +170,7 @@ import {storeToRefs} from 'pinia';
 
 const store = useLightingStore();
 
-const {search, drawer, selectedItem, lightData} = storeToRefs(store);
+const {drawer, selectedItem, lightData} = storeToRefs(store);
 </script>
 
 <style scoped>

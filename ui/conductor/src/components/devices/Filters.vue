@@ -12,5 +12,5 @@ import Search from './Filters/Search.vue';
 import Status from './Filters/Status.vue';
 import Model from './Filters/Model.vue';
 
-const store = useLightingStore();
+useLightingStore();
 </script>

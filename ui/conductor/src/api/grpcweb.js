@@ -1,5 +1,4 @@
 import {apiToken} from '@/api/auth.js';
-import {ClientReadableStream} from 'grpc-web';
 
 /**
  * @param {import('grpc-web').GrpcWebClientBaseOptions} [options]

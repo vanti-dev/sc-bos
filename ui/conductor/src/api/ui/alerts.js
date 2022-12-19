@@ -6,7 +6,6 @@ import {
   AcknowledgeAlertRequest,
   Alert,
   ListAlertsRequest,
-  ListAlertsResponse,
   PullAlertsRequest
 } from '@sc-bos/ui-gen/proto/alerts_pb';
 

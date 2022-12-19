@@ -1,7 +1,7 @@
 import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource.js';
 import {acknowledgeAlert, listAlerts, pullAlerts, unacknowledgeAlert} from '@/api/ui/alerts.js';
 import {Collection} from '@/util/query.js';
-import {Alert, ListAlertsResponse} from '@sc-bos/ui-gen/proto/alerts_pb';
+import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
 import {acceptHMRUpdate, defineStore} from 'pinia';
 import {computed, reactive, set, watch} from 'vue';
 
