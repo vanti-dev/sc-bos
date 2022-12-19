@@ -24,6 +24,6 @@ const props = defineProps({
   subtitle: String,
   color: String,
   to: [String, Object]
-})
+});
 </script>
 

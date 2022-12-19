@@ -55,7 +55,7 @@ export async function updatePublication(name, publication, tracker) {
     return api.updatePublication(new UpdatePublicationRequest()
         .setName(name)
         .setVersion(publication.version)
-        .setPublication(fromObject(publication)))
+        .setPublication(fromObject(publication)));
   });
 }
 
@@ -79,7 +79,7 @@ export async function acknowledgePublication(request, tracker) {
 
 /**
  * @param {Publication.AsObject} obj
- * @returns {Publication}
+ * @return {Publication}
  */
 export function fromObject(obj) {
   if (!obj) return undefined;
@@ -98,5 +98,5 @@ export function audienceFromObject(obj) {
   if (!obj) return undefined;
   const dst = new Publication.Audience();
   setProperties(dst, obj, 'name', 'receipt', 'receiptRejectedReason');
-  return dst
+  return dst;
 }

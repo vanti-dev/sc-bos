@@ -8,10 +8,10 @@
 </template>
 
 <script setup>
-import { useSmartCoreStore } from "@/stores/smartcore/smartcore.js";
-import { storeToRefs } from "pinia";
+import {useSmartCoreStore} from '@/stores/smartcore/smartcore.js';
+import {storeToRefs} from 'pinia';
 
 const store = useSmartCoreStore();
 
-const { smartCoreStatus } = storeToRefs(store);
+const {smartCoreStatus} = storeToRefs(store);
 </script>

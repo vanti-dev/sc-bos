@@ -2,12 +2,12 @@ const api = import.meta.env.VITE_AUTH_URL || 'https://localhost:443';
 
 const localLogin = (username, password) => {
   const formData = new FormData();
-  formData.set("grant_type", "password");
-  formData.set("username", username);
-  formData.set("password", password);
+  formData.set('grant_type', 'password');
+  formData.set('username', username);
+  formData.set('password', password);
   return fetch(`${api}/oauth2/token`, {
-    method: "POST",
-    body: formData,
+    method: 'POST',
+    body: formData
   });
 };
 

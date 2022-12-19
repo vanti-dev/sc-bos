@@ -6,21 +6,26 @@
       </v-btn>
     </template>
     <v-card :light="$vuetify.theme.dark" tile width="100vw">
-      <nav-button :to="{name:'auth'}"
-                  subtitle=""
-                  title="Auth"/>
-      <nav-button :to="{name:'devices'}"
-                  subtitle=""
-                  title="Devices"/>
-      <nav-button :to="{name:'ops'}"
-                  subtitle=""
-                  title="Operations"/>
-      <nav-button :to="{name:'settings'}"
-                  subtitle=""
-                  title="Site Settings"/>
-      <nav-button :to="{name:'workflows'}"
-                  subtitle=""
-                  title="Workflows & Automations"/>
+      <nav-button
+          :to="{name:'auth'}"
+          subtitle=""
+          title="Auth"/>
+      <nav-button
+          :to="{name:'devices'}"
+          subtitle=""
+          title="Devices"/>
+      <nav-button
+          :to="{name:'ops'}"
+          subtitle=""
+          title="Operations"/>
+      <nav-button
+          :to="{name:'settings'}"
+          subtitle=""
+          title="Site Settings"/>
+      <nav-button
+          :to="{name:'workflows'}"
+          subtitle=""
+          title="Workflows & Automations"/>
     </v-card>
   </v-menu>
 </template>

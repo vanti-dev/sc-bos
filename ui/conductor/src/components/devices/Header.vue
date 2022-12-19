@@ -6,7 +6,7 @@
         <span class="font-weight-bold">Lighting</span>
       </v-card-text>
     </v-card>
-    <smart-core-status-card />
+    <smart-core-status-card/>
   </div>
 </template>
 <script setup>

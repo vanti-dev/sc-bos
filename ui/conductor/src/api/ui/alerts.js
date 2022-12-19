@@ -19,7 +19,7 @@ export function listAlerts(request, tracker) {
   return trackAction('Alerts.listAlerts', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.listAlerts(listAlertsRequestFromObject(request));
-  })
+  });
 }
 
 /**
@@ -49,7 +49,7 @@ export function acknowledgeAlert(request, tracker) {
   return trackAction('Alerts.acknowledgeAlert', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.acknowledgeAlert(acknowledgeAlertRequestFromObject(request));
-  })
+  });
 }
 
 /**
@@ -61,7 +61,7 @@ export function unacknowledgeAlert(request, tracker) {
   return trackAction('Alerts.unacknowledgeAlert', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.unacknowledgeAlert(acknowledgeAlertRequestFromObject(request));
-  })
+  });
 }
 
 /**
@@ -77,9 +77,9 @@ function client(endpoint) {
  * @return {ListAlertsRequest}
  */
 function listAlertsRequestFromObject(obj) {
-  if (!obj) return undefined
+  if (!obj) return undefined;
   const dst = new ListAlertsRequest();
-  setProperties(dst, obj, 'name', 'pageToken', 'pageSize')
+  setProperties(dst, obj, 'name', 'pageToken', 'pageSize');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setQuery(alertQueryFromObject(obj.query));
   return dst;
@@ -110,6 +110,10 @@ function alertQueryFromObject(obj) {
   return dst;
 }
 
+/**
+ *
+ * @param obj
+ */
 function acknowledgeAlertRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new AcknowledgeAlertRequest();

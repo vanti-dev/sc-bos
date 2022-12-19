@@ -4,6 +4,9 @@
  */
 let _serverConfig = null;
 
+/**
+ *
+ */
 export async function serverConfig() {
   if (_serverConfig === null) {
     /** @type {string} */
@@ -18,7 +21,7 @@ export async function serverConfig() {
 }
 
 /**
- * @returns {Promise<string>}
+ * @return {Promise<string>}
  */
 export async function grpcWebEndpoint() {
   const envEndpoint = import.meta.env.VITE_GRPC_ENDPOINT || '';
@@ -32,12 +35,16 @@ export async function grpcWebEndpoint() {
   if (!address) {
     // If there's no configured address we assume we're connecting to the same server we are hosting on,
     // using the same scheme that we are served under.
-    return '//' + location.host
+    return '//' + location.host;
   }
   const protocol = (config.insecure || !config.httpsAddress) ? 'http://' : 'https://';
   return protocol + address;
 }
 
+/**
+ *
+ * @param config
+ */
 function configAddress(config) {
   const address = (config.insecure ? config.httpAddress : (config.httpsAddress || config.httpAddress));
   if (address?.[0] === ':') {

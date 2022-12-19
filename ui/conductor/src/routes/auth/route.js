@@ -17,4 +17,4 @@ export default {
   meta: {
     title: 'Auth'
   }
-}
+};

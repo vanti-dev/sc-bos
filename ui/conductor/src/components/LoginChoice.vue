@@ -13,23 +13,23 @@
     </v-card-text>
     <v-card-actions>
       <v-btn
-        @click="store.login(['profile'])"
-        color="primary"
-        block
-        large
-        class="font-weight-bold"
-        >Sign in with Keycloak</v-btn
-      >
+          @click="store.login(['profile'])"
+          color="primary"
+          block
+          large
+          class="font-weight-bold">
+        Sign in with Keycloak
+      </v-btn>
     </v-card-actions>
     <v-card-actions>
       <v-btn
-        color="warning"
-        block
-        large
-        class="font-weight-bold"
-        @click="store.toggleLoginForm()"
-        >Use a local Account</v-btn
-      >
+          color="warning"
+          block
+          large
+          class="font-weight-bold"
+          @click="store.toggleLoginForm()">
+        Use a local Account
+      </v-btn>
     </v-card-actions>
     <v-card-text class="text-center">
       Local accounts are used to setup Smart Core, prefer signing in with
@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import { useAccountStore } from "@/stores/account.js";
+import {useAccountStore} from '@/stores/account.js';
 
 const store = useAccountStore();
 </script>

@@ -1,56 +1,54 @@
 <template>
   <v-container fluid class="pa-7">
-    <Header />
+    <Header/>
     <v-sheet class="rounded-lg">
       <main-card>
         <v-data-table
-          v-model="selected"
-          :headers="headers"
-          :items="filteredLights"
-          item-key="device_id"
-          :search="search"
-          @click:row="rowClick"
-          :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
-          show-select
-        >
-          <template v-slot:top>
-            <Filters v-if="selected.length <= 1" />
-            <BulkAction v-else />
+            v-model="selected"
+            :headers="headers"
+            :items="filteredLights"
+            item-key="device_id"
+            :search="search"
+            @click:row="rowClick"
+            :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
+            show-select>
+          <template #top>
+            <Filters v-if="selected.length <= 1"/>
+            <BulkAction v-else/>
           </template>
-          <template v-slot:item.status="{ item }">
+          <template #item.status="{ item }">
             <span
-              :class="getColor(item.status)"
-              class="font-weight-bold text-uppercase"
-            >
+                :class="getColor(item.status)"
+                class="font-weight-bold text-uppercase">
               {{ item.status }}
             </span>
           </template>
         </v-data-table>
       </main-card>
-      <RowMenu />
+      <RowMenu/>
     </v-sheet>
   </v-container>
 </template>
 <script setup>
-import MainCard from "@/components/SectionCard.vue";
-import Header from "@/components/devices/Header.vue";
-import Filters from "@/components/devices/Filters.vue";
-import BulkAction from "@/components/devices/BulkAction.vue";
-import RowMenu from "./RowMenu.vue";
-import {useLightingStore} from "@/stores/devices/lighting.js";
-import {storeToRefs} from "pinia";
+import MainCard from '@/components/SectionCard.vue';
+import Header from '@/components/devices/Header.vue';
+import Filters from '@/components/devices/Filters.vue';
+import BulkAction from '@/components/devices/BulkAction.vue';
+import RowMenu from './RowMenu.vue';
+import {useLightingStore} from '@/stores/devices/lighting.js';
+import {storeToRefs} from 'pinia';
 
 const store = useLightingStore();
 
 const {headers, selected, filteredLights, search} = storeToRefs(store);
 
 const getColor = (status) => {
-  if (status == "On") {
-    return "green--text";
-  } else if (status == "Off") {
-    return "red--text";
+  if (status == 'On') {
+    return 'green--text';
+  } else if (status == 'Off') {
+    return 'red--text';
   } else {
-    return "orange--text";
+    return 'orange--text';
   }
 };
 

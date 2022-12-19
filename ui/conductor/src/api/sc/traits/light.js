@@ -38,7 +38,7 @@ export function getBrightness(request, tracker) {
   return trackAction('Light.getBrightness', tracker ?? {}, endpoint => {
     const api = new LightApiPromiseClient(endpoint, null, clientOptions());
     return api.getBrightness(getBrightnessRequestFromObject(request));
-  })
+  });
 }
 
 /**
@@ -50,7 +50,7 @@ export function updateBrightness(request, tracker) {
   return trackAction('Light.updateBrightness', tracker ?? {}, endpoint => {
     const api = new LightApiPromiseClient(endpoint, null, clientOptions());
     return api.updateBrightness(updateBrightnessRequestFromObject(request));
-  })
+  });
 }
 
 /**
@@ -86,7 +86,7 @@ export function updateBrightnessRequestFromObject(obj) {
  * Convert a JS object representation of Brightness into a protobuf Brightness object.
  *
  * @param {Brightness.AsObject} obj
- * @returns {Brightness}
+ * @return {Brightness}
  */
 export function brightnessFromObject(obj) {
   if (!obj) return undefined;

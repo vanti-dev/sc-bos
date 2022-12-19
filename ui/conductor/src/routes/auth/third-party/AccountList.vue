@@ -3,25 +3,23 @@
     <main-card>
       <v-card-actions>
         <v-text-field
-          label="Search tenants"
-          outlined
-          background-color="#ffffff1a"
-          hide-details
-          prepend-inner-icon="mdi-magnify"
-          v-model="search"
-        />
+            label="Search tenants"
+            outlined
+            background-color="#ffffff1a"
+            hide-details
+            prepend-inner-icon="mdi-magnify"
+            v-model="search"/>
       </v-card-actions>
       <v-data-table
-        class="table"
-        :headers="headers"
-        :items="tenantRows"
-        :search="search"
-        sort-by="title"
-        show-select
-        :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
-        :loading="tenantsTracker.loading"
-        @click:row="showTenant"
-      >
+          class="table"
+          :headers="headers"
+          :items="tenantRows"
+          :search="search"
+          sort-by="title"
+          show-select
+          :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
+          :loading="tenantsTracker.loading"
+          @click:row="showTenant">
         <template #item.zones="{ index, value }">
           <span class="d-inline-flex justify-start" style="gap: 8px">
             <v-chip v-for="zone in value" :key="index + zone" small outlined>{{
@@ -44,22 +42,22 @@ import {computed, onMounted, reactive, ref} from 'vue';
 import {useRouter} from 'vue-router/composables';
 
 const tenantsTracker = reactive(
-  /** @type {ActionTracker<ListTenantsResponse.AsObject>} */ newActionTracker()
+    /** @type {ActionTracker<ListTenantsResponse.AsObject>} */ newActionTracker()
 );
 
-const search = ref("");
+const search = ref('');
 
 const headers = computed(() => {
   return [
-    { text: "Name", value: "title" },
-    { text: "Zones", value: "zones" },
+    {text: 'Name', value: 'title'},
+    {text: 'Zones', value: 'zones'}
   ];
 });
 const tenantRows = computed(() => {
   if (!tenantsTracker.response) return [];
   return tenantsTracker.response.tenantsList.map((t) => ({
     ...t,
-    createTime: t.createTime ? timestampToDate(t.createTime) : null,
+    createTime: t.createTime ? timestampToDate(t.createTime) : null
   }));
 });
 
@@ -68,6 +66,10 @@ onMounted(() => {
 });
 
 const router = useRouter();
+/**
+ *
+ * @param item
+ */
 function showTenant(item) {
   router.push(`/auth/third-party/${item.id}`);
 }

@@ -1,10 +1,10 @@
 <template>
   <v-navigation-drawer app clipped floating color="transparent">
     <v-list class="bg" dense nav>
-      <v-divider class="my-2"></v-divider>
+      <v-divider class="my-2"/>
       <v-list-item-group>
         <v-list-group>
-          <template v-slot:activator>
+          <template #activator>
             <v-list-item-icon>
               <v-icon>mdi-domain</v-icon>
             </v-list-item-icon>
@@ -14,7 +14,7 @@
           </template>
 
           <v-list-group no-action sub-group>
-            <template v-slot:activator>
+            <template #activator>
               <v-list-item-icon>
                 <v-icon>mdi-floor-plan</v-icon>
               </v-list-item-icon>
@@ -24,28 +24,28 @@
             </template>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title class="text-caption"
-                  >Meeting Room 6.01</v-list-item-title
-                >
+                <v-list-item-title class="text-caption">
+                  Meeting Room 6.01
+                </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title class="text-caption"
-                  >Meeting Room 6.01</v-list-item-title
-                >
+                <v-list-item-title class="text-caption">
+                  Meeting Room 6.01
+                </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title class="text-caption"
-                  >Meeting Room 6.01</v-list-item-title
-                >
+                <v-list-item-title class="text-caption">
+                  Meeting Room 6.01
+                </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list-group>
           <v-list-group no-action sub-group>
-            <template v-slot:activator>
+            <template #activator>
               <v-list-item-icon>
                 <v-icon>mdi-floor-plan</v-icon>
               </v-list-item-icon>
@@ -55,30 +55,27 @@
             </template>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title class="text-caption"
-                  >Meeting Room 6.01</v-list-item-title
-                >
+                <v-list-item-title class="text-caption">
+                  Meeting Room 6.01
+                </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title class="text-caption"
-                  >Meeting Room 6.01</v-list-item-title
-                >
+                <v-list-item-title class="text-caption">
+                  Meeting Room 6.01
+                </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title class="text-caption"
-                >Meeting Room 6.01
-                </v-list-item-title
-                >
+                <v-list-item-title class="text-caption">
+                  Meeting Room 6.01
+                </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list-group>
         </v-list-group>
-
-
       </v-list-item-group>
 
       <v-list-item to="/ops/notifications">
@@ -91,16 +88,15 @@
 
         <v-chip class="font-weight-bold text primary"> 4</v-chip>
       </v-list-item>
-
     </v-list>
-    <template v-slot:append>
-      <NavFooter />
+    <template #append>
+      <NavFooter/>
     </template>
   </v-navigation-drawer>
 </template>
 
 <script setup>
-import NavFooter from "@/components/NavFooter.vue";
+import NavFooter from '@/components/NavFooter.vue';
 </script>
 
 <style scoped>

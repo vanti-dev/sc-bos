@@ -32,11 +32,14 @@ const emit = defineEmits(['hideToken', 'delete']);
 const clipboardCopySupported = ref(false);
 onMounted(() => {
   clipboardCopySupported.value = Boolean(navigator?.clipboard?.writeText);
-})
+});
 
 const clipboardCopyState = ref('wait');
 let clipboardCopyAgainHandle = 0;
 
+/**
+ *
+ */
 function copyToClipboard() {
   navigator.clipboard.writeText(props.secret.token)
       .then(() => clipboardCopyState.value = 'ok')
@@ -44,7 +47,7 @@ function copyToClipboard() {
         clearTimeout(clipboardCopyAgainHandle);
         clipboardCopyAgainHandle = setTimeout(() => {
           clipboardCopyState.value = 'wait';
-        }, milliseconds({seconds: 10}))
+        }, milliseconds({seconds: 10}));
       })
       .catch(err => clipboardCopyState.value = err);
 }

@@ -1,6 +1,6 @@
 import ChildOnlyPage from '@/components/ChildOnlyPage.vue';
 import {route} from '@/util/router.js';
-import lighting from '@/routes/devices/lighting/route'
+import lighting from '@/routes/devices/lighting/route';
 
 export default {
   name: 'devices',
@@ -16,4 +16,4 @@ export default {
   meta: {
     title: 'Devices'
   }
-}
+};

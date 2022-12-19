@@ -14,7 +14,7 @@
 <script>
 export default {
   name: 'AdminNav'
-}
+};
 </script>
 
 <style scoped>

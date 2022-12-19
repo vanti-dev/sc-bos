@@ -3,7 +3,7 @@ import {ClientReadableStream} from 'grpc-web';
 
 /**
  * @param {import('grpc-web').GrpcWebClientBaseOptions} [options]
- * @returns {import('grpc-web').GrpcWebClientBaseOptions}
+ * @return {import('grpc-web').GrpcWebClientBaseOptions}
  */
 export function clientOptions(options = {}) {
   return {
@@ -41,7 +41,7 @@ export function clientOptions(options = {}) {
  * caller. Similarly we assume that p.then(a); p.then(b); invokes a then b in that order when p settles, otherwise some
  * calling code might not subscribe and unsubscribe is the right order.
  *
- * @extends {ClientReadableStream}
+ * @augments {ClientReadableStream}
  */
 class DelayedClientReadableStream {
   /**

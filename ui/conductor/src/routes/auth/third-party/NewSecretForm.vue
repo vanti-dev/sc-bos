@@ -1,19 +1,20 @@
 <template>
   <v-form @submit.prevent="addSecretCommit" v-model="formValid">
     <v-card-text class="pt-0">
-      <v-text-field label="Note"
-                    v-model="newSecret.note"
-                    style="max-width: 400px"
-                    required
-                    hint="Easily recognisable: 'Read only', 'Dev access'"
-                    :rules="noteRules">
-      </v-text-field>
+      <v-text-field
+          label="Note"
+          v-model="newSecret.note"
+          style="max-width: 400px"
+          required
+          hint="Easily recognisable: 'Read only', 'Dev access'"
+          :rules="noteRules"/>
       <div class="d-flex justify-start align-baseline">
-        <v-select v-model="newSecret.expiresIn"
-                  :items="Object.values(suggestedExpiresIn)"
-                  hide-details
-                  class="expires-in"
-                  label="Expiration"/>
+        <v-select
+            v-model="newSecret.expiresIn"
+            :items="Object.values(suggestedExpiresIn)"
+            hide-details
+            class="expires-in"
+            label="Expiration"/>
         <v-menu
             v-if="newSecret.expiresIn === suggestedExpiresIn.custom"
             v-model="customExpiryMenuVisible"
@@ -33,8 +34,9 @@
           <v-date-picker v-model="newSecret.expiresAt" @input="customExpiryMenuVisible = false" no-title/>
         </v-menu>
         <span v-else-if="newSecret.expiresIn === suggestedExpiresIn.noExpiry" class="expires-in-message never">The token will never expire!</span>
-        <span v-else class="expires-in-message">The token will expire <relative-date :date="computedExpiresAt"
-                                                                                     no-relative/></span>
+        <span v-else class="expires-in-message">The token will expire <relative-date
+            :date="computedExpiresAt"
+            no-relative/></span>
       </div>
     </v-card-text>
     <v-card-actions class="justify-end">
@@ -92,8 +94,11 @@ const computedExpiresAt = computed(() => {
   }
 
   return add(now.value, duration);
-})
+});
 
+/**
+ *
+ */
 function addSecretReset() {
   newSecret.note = '';
   newSecret.expiresIn = suggestedExpiresIn.month;
@@ -101,21 +106,30 @@ function addSecretReset() {
   customExpiryMenuVisible.value = false;
 }
 
+/**
+ *
+ */
 function addSecretRollback() {
   emit('rollback');
   addSecretReset();
 }
 
+/**
+ *
+ */
 function addSecretCommit() {
   emit('commit', mintSecret());
   addSecretReset();
 }
 
+/**
+ *
+ */
 function mintSecret() {
   return {
     note: newSecret.note,
     expireTime: computedExpiresAt.value
-  }
+  };
 }
 
 const formValid = ref(false);

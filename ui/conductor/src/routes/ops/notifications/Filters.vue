@@ -1,20 +1,22 @@
 <template>
   <v-toolbar color="transparent" elevation="0">
     <v-spacer/>
-    <v-select hide-details
-              filled
-              :menu-props="{offsetY: true}"
-              label="Floor"
-              :items="floors"
-              :value="floor"
-              @change="updateFloor"></v-select>
-    <v-select hide-details
-              filled
-              :menu-props="{offsetY: true}"
-              label="Zone"
-              :value="zone"
-              :items="zones"
-              @change="updateZone"></v-select>
+    <v-select
+        hide-details
+        filled
+        :menu-props="{offsetY: true}"
+        label="Floor"
+        :items="floors"
+        :value="floor"
+        @change="updateFloor"/>
+    <v-select
+        hide-details
+        filled
+        :menu-props="{offsetY: true}"
+        label="Zone"
+        :value="zone"
+        :items="zones"
+        @change="updateZone"/>
   </v-toolbar>
 </template>
 
@@ -34,15 +36,19 @@ const emit = defineEmits({
 
 const floors = computed(() => {
   return ['All', ...props.floorItems];
-})
+});
 const zones = computed(() => {
   return ['All', ...props.zoneItems];
-})
+});
 
 const floor = computed(() => {
   return props.floor ?? 'All';
 });
 
+/**
+ *
+ * @param f
+ */
 function updateFloor(f) {
   if (f === 'All') return emit('update:floor', undefined);
   emit('update:floor', f);
@@ -50,8 +56,12 @@ function updateFloor(f) {
 
 const zone = computed(() => {
   return props.zone ?? 'All';
-})
+});
 
+/**
+ *
+ * @param z
+ */
 function updateZone(z) {
   if (z === 'All') return emit('update:zone', undefined);
   emit('update:zone', z);

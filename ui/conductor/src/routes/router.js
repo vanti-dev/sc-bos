@@ -12,7 +12,7 @@ const router = new VueRouter({
   routes: [
     ...route(auth),
     ...route(devices),
-    ...route(ops),
+    ...route(ops)
   ]
 });
 
@@ -26,7 +26,7 @@ if (window) {
 
     const title = nt ? `${nt} - Smart Core` : `Smart Core`;
     nextTick(() => window.document.title = title);
-  })
+  });
 }
 
 export default router;

@@ -1,14 +1,14 @@
-import { events, keycloak } from "@/api/keycloak.js";
-import localLogin from "@/api/localLogin.js";
-import { defineStore } from "pinia";
-import { computed, ref } from "vue";
+import {events, keycloak} from '@/api/keycloak.js';
+import localLogin from '@/api/localLogin.js';
+import {defineStore} from 'pinia';
+import {computed, ref} from 'vue';
 
-export const useAccountStore = defineStore("accountStore", () => {
+export const useAccountStore = defineStore('accountStore', () => {
   const kcp = keycloak();
   const kcEvents = events;
 
   const loggedIn = ref(false);
-  const token = ref("");
+  const token = ref('');
   const claims = ref({});
   const loginForm = ref(false);
   const loginDialog = ref(false);
@@ -19,7 +19,7 @@ export const useAccountStore = defineStore("accountStore", () => {
       loggedIn.value = kc.authenticated;
       token.value = kc.token;
       claims.value = kc.idTokenParsed;
-      localStorage.setItem("keyclock", true);
+      localStorage.setItem('keyclock', true);
       saveLocalStorage();
     });
   };
@@ -45,11 +45,11 @@ export const useAccountStore = defineStore("accountStore", () => {
         token.value = payload.access_token;
         loggedIn.value = true;
         claims.value = {
-          email: username.value,
+          email: username.value
         };
         toggleLoginDialog();
         saveLocalStorage();
-        localStorage.setItem("keyclock", false);
+        localStorage.setItem('keyclock', false);
       } else {
         snackbar.value = true;
       }
@@ -59,28 +59,28 @@ export const useAccountStore = defineStore("accountStore", () => {
   };
 
   const saveLocalStorage = () => {
-    localStorage.setItem("loggedIn", loggedIn.value);
-    localStorage.setItem("token", token.value);
-    localStorage.setItem("loggedIn", loggedIn.value);
-    localStorage.setItem("claims", JSON.stringify(claims.value));
+    localStorage.setItem('loggedIn', loggedIn.value);
+    localStorage.setItem('token', token.value);
+    localStorage.setItem('loggedIn', loggedIn.value);
+    localStorage.setItem('claims', JSON.stringify(claims.value));
   };
 
   const loadLocalStorage = () => {
-    token.value = localStorage.getItem("token");
-    loggedIn.value = JSON.parse(localStorage.getItem("loggedIn"));
-    claims.value = JSON.parse(localStorage.getItem("claims"));
+    token.value = localStorage.getItem('token');
+    loggedIn.value = JSON.parse(localStorage.getItem('loggedIn'));
+    claims.value = JSON.parse(localStorage.getItem('claims'));
   };
 
   const logout = async () => {
-    localStorage.getItem("keyclock") === "true" &&
+    localStorage.getItem('keyclock') === 'true' &&
       kcp.then((kc) => kc.logout());
     loggedIn.value = false;
-    token.value = "";
+    token.value = '';
     claims.value = {};
     saveLocalStorage();
   };
 
-  kcEvents.addEventListener("authSuccess", updateRefs);
+  kcEvents.addEventListener('authSuccess', updateRefs);
 
   return {
     loggedIn,
@@ -95,12 +95,12 @@ export const useAccountStore = defineStore("accountStore", () => {
     loadLocalStorage,
     snackbar,
 
-    fullName: computed(() => claims.value?.name || ""),
-    email: computed(() => claims.value?.email || ""),
+    fullName: computed(() => claims.value?.name || ''),
+    email: computed(() => claims.value?.email || ''),
 
     login: (scopes) => {
-      return kcp.then((kc) => kc.login({ scope: scopes.join(" ") }));
+      return kcp.then((kc) => kc.login({scope: scopes.join(' ')}));
     },
-    logout,
+    logout
   };
 });

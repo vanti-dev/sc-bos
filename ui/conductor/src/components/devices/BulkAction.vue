@@ -1,27 +1,32 @@
 <template>
   <v-card
-    class="pa-2 d-flex"
-    elevation="0"
-    v-if="selected.length > 1"
-    height="72px"
-  >
+      class="pa-2 d-flex"
+      elevation="0"
+      v-if="selected.length > 1"
+      height="72px">
     <v-card-subtitle> Bulk Actions</v-card-subtitle>
     <v-card-actions>
-      <v-btn color="green" class="mr-2" @click="store.bulkAction('On')"
-        >Turn On</v-btn
-      >
-      <v-btn color="red" class="mr-2" @click="store.bulkAction('Off')"
-        >Turn Off</v-btn
-      >
+      <v-btn
+          color="green"
+          class="mr-2"
+          @click="store.bulkAction('On')">
+        Turn On
+      </v-btn>
+      <v-btn
+          color="red"
+          class="mr-2"
+          @click="store.bulkAction('Off')">
+        Turn Off
+      </v-btn>
     </v-card-actions>
   </v-card>
 </template>
 
 <script setup>
-import {useLightingStore} from "@/stores/devices/lighting.js";
-import {storeToRefs} from "pinia";
+import {useLightingStore} from '@/stores/devices/lighting.js';
+import {storeToRefs} from 'pinia';
 
 const store = useLightingStore();
 
-const { selected } = storeToRefs(store);
+const {selected} = storeToRefs(store);
 </script>

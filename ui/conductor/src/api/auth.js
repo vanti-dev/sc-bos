@@ -1,6 +1,6 @@
 /**
- * @returns {Promise<string | null>}
+ * @return {Promise<string | null>}
  */
 export async function apiToken() {
-  return localStorage.getItem("token");
+  return localStorage.getItem('token');
 }

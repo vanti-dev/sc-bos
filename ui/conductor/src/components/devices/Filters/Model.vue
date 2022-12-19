@@ -6,8 +6,7 @@
       class="sectionText"
       filled
       hide-details="auto"
-      style="width: 100px"
-  ></v-select>
+      style="width: 100px"/>
 </template>
 
 <script setup>

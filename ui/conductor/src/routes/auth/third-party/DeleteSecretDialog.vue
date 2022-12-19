@@ -8,7 +8,8 @@
         </v-btn>
       </v-card-title>
 
-      <v-alert type="warning" text tile class="text-body-2">Any applications or scripts using this secret will no
+      <v-alert type="warning" text tile class="text-body-2">
+        Any applications or scripts using this secret will no
         longer be able to access
         the building API. You cannot undo this action.
       </v-alert>
@@ -23,10 +24,16 @@
 <script setup>
 const emit = defineEmits(['commit', 'rollback']);
 
+/**
+ *
+ */
 function commit() {
   emit('commit');
 }
 
+/**
+ *
+ */
 function rollback() {
   emit('rollback');
 }

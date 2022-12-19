@@ -21,27 +21,42 @@ export function listTenants(request, tracker) {
   return trackAction('Tenant.listTenants', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.listTenants(new ListTenantsRequest());
-  })
+  });
 }
 
+/**
+ *
+ * @param request
+ * @param tracker
+ */
 export function getTenant(request, tracker) {
   const id = String(request.id);
   if (!id) throw new Error('request.id must be specified');
   return trackAction('Tenant.getTenant', tracker ?? {}, async endpoint => {
     const api = client(endpoint);
     return api.getTenant(new GetTenantRequest().setId(id));
-  })
+  });
 }
 
+/**
+ *
+ * @param request
+ * @param tracker
+ */
 export function listSecrets(request, tracker) {
   const tenantId = String(request.tenantId);
   if (!tenantId) throw new Error('request.tenantId must be specified');
   return trackAction('Tenant.listSecrets', tracker ?? {}, async endpoint => {
     const api = client(endpoint);
     return api.listSecrets(new ListSecretsRequest().setFilter(`tenant.id=${tenantId}`));
-  })
+  });
 }
 
+/**
+ *
+ * @param request
+ * @param tracker
+ */
 export function createSecret(request, tracker) {
   const secret = request.secret;
   if (!secret) throw new Error('request.secret must be specified');
@@ -51,13 +66,18 @@ export function createSecret(request, tracker) {
   });
 }
 
+/**
+ *
+ * @param request
+ * @param tracker
+ */
 export function deleteSecret(request, tracker) {
   const secretId = request.id;
   if (!secretId) throw new Error('request.id must be specified');
   return trackAction('Tenant.deleteSecret', tracker ?? {}, async endpoint => {
     const api = client(endpoint);
     return api.deleteSecret(new DeleteSecretRequest().setId(secretId));
-  })
+  });
 }
 
 /**

@@ -1,60 +1,60 @@
-import { defineStore } from "pinia";
-import { computed, ref } from "vue";
-import lightingData from "./lighting.json";
+import {defineStore} from 'pinia';
+import {computed, ref} from 'vue';
+import lightingData from './lighting.json';
 
-export const useLightingStore = defineStore("lightingStore", () => {
+export const useLightingStore = defineStore('lightingStore', () => {
   // state data for lighting
   const lights = ref(lightingData);
 
   const headers = ref([
     {
-      text: "Device ID",
-      align: "start",
-      value: "device_id",
+      text: 'Device ID',
+      align: 'start',
+      value: 'device_id'
     },
-    { text: "Location", value: "location" },
-    { text: "Status", value: "status" },
-    { text: "Battery Status", value: "battery_status" },
-    { text: "Model", value: "model" },
+    {text: 'Location', value: 'location'},
+    {text: 'Status', value: 'status'},
+    {text: 'Battery Status', value: 'battery_status'},
+    {text: 'Model', value: 'model'}
   ]);
 
   const lightData = ref([
     {
-      title: "Building",
-      content: "Upper Gough Street",
+      title: 'Building',
+      content: 'Upper Gough Street'
     },
     {
-      title: "Floor",
-      content: "LO1",
+      title: 'Floor',
+      content: 'LO1'
     },
     {
-      title: "Zone",
-      content: "L02_12",
+      title: 'Zone',
+      content: 'L02_12'
     },
     {
-      title: "Manufacturer",
-      content: "Philips",
+      title: 'Manufacturer',
+      content: 'Philips'
     },
     {
-      title: "Model",
-      content: "LED 1245812",
+      title: 'Model',
+      content: 'LED 1245812'
     },
     {
-      title: "Installed on",
-      content: "12.09.22",
+      title: 'Installed on',
+      content: '12.09.22'
     },
     {
-      title: "Serial Number",
-      content: "12348a7a595",
+      title: 'Serial Number',
+      content: '12348a7a595'
     },
     {
-      title: "DALI Address",
-      content: "1234",
+      title: 'DALI Address',
+      content: '1234'
     },
     {
-      title: "DALI Controller",
-      content: "1234",
-    },
+      title: 'DALI Controller',
+      content: '1234'
+    }
   ]);
 
   // selected rows in the data table
@@ -64,30 +64,30 @@ export const useLightingStore = defineStore("lightingStore", () => {
   const selectedItem = ref({});
 
   // state for filters for the table
-  const status = ref("All");
+  const status = ref('All');
 
-  const model = ref("All");
+  const model = ref('All');
 
-  const search = ref("");
+  const search = ref('');
 
   const models = computed(() => {
     return [...new Set(lights.value.map((light) => light.model))];
   });
 
-  models.value.unshift("All");
+  models.value.unshift('All');
 
-  const statuses = ref(["All", "On", "Off"]);
+  const statuses = ref(['All', 'On', 'Off']);
 
   // state for the drawer for the light details
   const drawer = ref(false);
 
   const filteredLights = computed(() =>
     lights.value.filter((light) => {
-      if (status.value === "All" && model.value === "All") {
+      if (status.value === 'All' && model.value === 'All') {
         return true;
-      } else if (status.value === "All") {
+      } else if (status.value === 'All') {
         return light.model === model.value;
-      } else if (model.value === "All") {
+      } else if (model.value === 'All') {
         return light.status === status.value;
       } else {
         return light.status === status.value && light.model === model.value;
@@ -96,14 +96,14 @@ export const useLightingStore = defineStore("lightingStore", () => {
   );
 
   const bulkAction = (action) => {
-    if (action === "On") {
+    if (action === 'On') {
       selected.value.forEach((light) => {
-        light.status = "On";
+        light.status = 'On';
       });
       selected.value = [];
-    } else if (action === "Off") {
+    } else if (action === 'Off') {
       selected.value.forEach((light) => {
-        light.status = "Off";
+        light.status = 'Off';
       });
       selected.value = [];
     }
@@ -129,11 +129,11 @@ export const useLightingStore = defineStore("lightingStore", () => {
   };
 
   const turnOff = () => {
-    selectedItem.value.status = "Off";
+    selectedItem.value.status = 'Off';
   };
 
   const turnOn = () => {
-    selectedItem.value.status = "On";
+    selectedItem.value.status = 'On';
   };
 
   return {
@@ -155,6 +155,6 @@ export const useLightingStore = defineStore("lightingStore", () => {
     increaseBrightness,
     decreaseBrightness,
     turnOff,
-    turnOn,
+    turnOn
   };
 });

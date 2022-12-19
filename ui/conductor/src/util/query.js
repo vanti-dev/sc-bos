@@ -40,13 +40,13 @@ export class Collection {
       if (queryVersion === this._queryVersion) {
         set(this._resources.value, id, item);
       }
-    })
+    });
 
-    if (!this._nextPageToken) return // the server has no more pages
+    if (!this._nextPageToken) return; // the server has no more pages
 
     // give the ui a chance to update, then check if the ui wants us to fetch more pages.
-    await nextTick()
-    await this.fetchPages()
+    await nextTick();
+    await this.fetchPages();
   }
 
   set needsMorePages(b) {

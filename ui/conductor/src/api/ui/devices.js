@@ -13,7 +13,7 @@ export function listDevices(request, tracker) {
   return trackAction('Devices.listDevices', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.listDevices(listDevicesRequestFromObject(request));
-  })
+  });
 }
 
 /**
@@ -31,7 +31,7 @@ function client(endpoint) {
 function listDevicesRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new ListDevicesRequest();
-  setProperties(dst, obj, 'pageToken', 'pageSize')
+  setProperties(dst, obj, 'pageToken', 'pageSize');
   dst.setQuery(deviceQueryFromObject(obj.query));
   return dst;
 }
@@ -45,7 +45,7 @@ function deviceQueryFromObject(obj) {
   const dst = new Device.Query();
   for (const item of (obj.conditionsList ?? [])) {
     const dstItem = new Device.Query.Condition();
-    setProperties(dstItem, item, 'field', 'stringEqual')
+    setProperties(dstItem, item, 'field', 'stringEqual');
     dst.addConditions(dstItem);
   }
   return dst;

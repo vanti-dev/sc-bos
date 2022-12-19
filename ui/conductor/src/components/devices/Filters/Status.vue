@@ -6,14 +6,13 @@
       class="sectionText"
       filled
       hide-details="auto"
-      style="width: 100px"
-  ></v-select>
+      style="width: 100px"/>
 </template>
 
 <script setup>
-import {useLightingStore} from "@/stores/devices/lighting.js";
-import {storeToRefs} from "pinia";
+import {useLightingStore} from '@/stores/devices/lighting.js';
+import {storeToRefs} from 'pinia';
 
 const store = useLightingStore();
-const { status, statuses } = storeToRefs(store);
+const {status, statuses} = storeToRefs(store);
 </script>

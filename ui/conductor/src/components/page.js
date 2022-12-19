@@ -3,6 +3,9 @@ import {routeTitle} from '@/util/router.js';
 import {computed} from 'vue';
 import {useRoute} from 'vue-router/composables';
 
+/**
+ *
+ */
 export function usePage() {
   const currentRoute = useRoute();
   const themeColor = computed(() => {

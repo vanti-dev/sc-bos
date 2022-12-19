@@ -1,54 +1,51 @@
 <template>
   <v-app class="app-root">
     <v-app-bar
-      app
-      height="60"
-      :clipped-left="hasNav"
-      elevation="0"
-      color="#283037"
-      class="pr-7"
-    >
-      <app-menu btn-class="full-btn" />
+        app
+        height="60"
+        :clipped-left="hasNav"
+        elevation="0"
+        color="#283037"
+        class="pr-7">
+      <app-menu btn-class="full-btn"/>
       <sc-logo
-        :fill="themeColor"
-        :outline="themeColor ? 'white' : undefined"
-        style="height: 35px; margin-left: 16px"
-      />
+          :fill="themeColor"
+          :outline="themeColor ? 'white' : undefined"
+          style="height: 35px; margin-left: 16px"/>
       <span class="heading">Smart Core</span>
-      <page-title />
+      <page-title/>
 
       <v-divider
-        vertical
-        v-if="hasSections"
-        class="mx-8 section-divider"
-        inset
-      />
-      <router-view name="sections" />
+          vertical
+          v-if="hasSections"
+          class="mx-8 section-divider"
+          inset/>
+      <router-view name="sections"/>
 
-      <v-spacer />
+      <v-spacer/>
 
-      <router-view name="actions" />
-      <account-btn btn-class="full-btn mr-0" />
+      <router-view name="actions"/>
+      <account-btn btn-class="full-btn mr-0"/>
     </v-app-bar>
 
-    <router-view name="nav" v-if="hasNav" />
+    <router-view name="nav" v-if="hasNav"/>
 
     <v-main>
-      <router-view />
+      <router-view/>
     </v-main>
   </v-app>
 </template>
 
 <script setup>
-import AccountBtn from "@/components/AccountBtn.vue";
-import AppMenu from "@/components/AppMenu.vue";
-import { usePage } from "@/components/page.js";
-import PageTitle from "@/components/PageTitle.vue";
-import ScLogo from "@/components/ScLogo.vue";
-import { useAccountStore } from "@/stores/account.js";
-import { onMounted } from "vue";
+import AccountBtn from '@/components/AccountBtn.vue';
+import AppMenu from '@/components/AppMenu.vue';
+import {usePage} from '@/components/page.js';
+import PageTitle from '@/components/PageTitle.vue';
+import ScLogo from '@/components/ScLogo.vue';
+import {useAccountStore} from '@/stores/account.js';
+import {onMounted} from 'vue';
 
-const { themeColor, hasSections, hasNav } = usePage();
+const {themeColor, hasSections, hasNav} = usePage();
 
 const store = useAccountStore();
 

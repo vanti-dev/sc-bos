@@ -8,13 +8,14 @@
       <v-card-text>
         <v-combobox v-model="tenantZones" :items="['L3', 'L4']" multiple label="Occupies zones" hide-details outlined>
           <template #selection="data">
-            <v-chip :key="JSON.stringify(data.item)"
-                    v-bind="data.attrs"
-                    :input-value="data.selected"
-                    :disabled="data.disabled"
-                    close
-                    outlined
-                    @click:close="data.parent.selectItem(data.item)">
+            <v-chip
+                :key="JSON.stringify(data.item)"
+                v-bind="data.attrs"
+                :input-value="data.selected"
+                :disabled="data.disabled"
+                close
+                outlined
+                @click:close="data.parent.selectItem(data.item)">
               {{ data.item }}
             </v-chip>
           </template>
@@ -24,7 +25,8 @@
         <v-alert v-if="secretsTracker.error" type="error" text class="rounded-b-0">
           Unable to fetch tenant secrets: {{ secretsTracker.error.message }}
         </v-alert>
-        <v-card-title><span>Secrets</span>
+        <v-card-title>
+          <span>Secrets</span>
           <v-spacer/>
           <v-slide-y-reverse-transition>
             <theme-btn elevation="0" @click="addSecretBegin" v-if="!addingSecret">Generate new secret</theme-btn>
@@ -39,18 +41,20 @@
           </v-alert>
         </v-expand-transition>
         <v-list color="transparent">
-          <secret-token-list-item v-if="createdSecret"
-                                  :secret="createdSecret"
-                                  :key="createdSecret.id"
-                                  @hideToken="hideToken"
-                                  @delete="deleteSecretStart"/>
+          <secret-token-list-item
+              v-if="createdSecret"
+              :secret="createdSecret"
+              :key="createdSecret.id"
+              @hideToken="hideToken"
+              @delete="deleteSecretStart"/>
           <secret-list-item v-for="secret in secretList" :key="secret.id" :secret="secret" @delete="deleteSecretStart"/>
         </v-list>
       </section-card>
     </section-card>
-    <delete-secret-dialog v-model="deleteSecretDialogOpen"
-                          @commit="deleteSecretCommit"
-                          @rollback="deleteSecretRollback"/>
+    <delete-secret-dialog
+        v-model="deleteSecretDialogOpen"
+        @commit="deleteSecretCommit"
+        @rollback="deleteSecretRollback"/>
   </v-container>
 </template>
 
@@ -81,10 +85,10 @@ const secretList = computed(() => {
       .map(s => secretToObject(s))
       .sort((a, b) => compareDesc(a.createTime, b.createTime));
   if (createSecretTracker.response) {
-    sorted = sorted.filter(s => s.id !== createSecretTracker.response.id)
+    sorted = sorted.filter(s => s.id !== createSecretTracker.response.id);
   }
   return sorted;
-})
+});
 
 const tenantTitle = computed(() => tenantTracker.response?.title ?? '');
 const tenantZones = computed(() => tenantTracker.response?.zoneNamesList ?? []);
@@ -92,14 +96,24 @@ const tenantZones = computed(() => tenantTracker.response?.zoneNamesList ?? []);
 const addingSecret = ref(false);
 const createdSecret = computed(() => secretToObject(createSecretTracker.response));
 
+/**
+ *
+ */
 function addSecretBegin() {
   addingSecret.value = true;
 }
 
+/**
+ *
+ */
 function addSecretRollback() {
   addingSecret.value = false;
 }
 
+/**
+ *
+ * @param secret
+ */
 async function addSecretCommit(secret) {
   addingSecret.value = false;
   secret.tenant = tenantTracker.response;
@@ -109,6 +123,9 @@ async function addSecretCommit(secret) {
   await createSecret({secret}, createSecretTracker);
 }
 
+/**
+ *
+ */
 function hideToken() {
   createSecretTracker.response = null;
   listSecrets({tenantId: tenantTracker.response.id}, secretsTracker);
@@ -130,11 +147,18 @@ watch(tenantId, (newVal, oldVal) => {
 const deleteSecretDialogOpen = ref(false);
 const deleteSecretDialogSecret = ref(null);
 
+/**
+ *
+ * @param secret
+ */
 function deleteSecretStart(secret) {
   deleteSecretDialogSecret.value = secret;
   deleteSecretDialogOpen.value = true;
 }
 
+/**
+ *
+ */
 async function deleteSecretCommit() {
   if (!deleteSecretDialogSecret.value) return;
 
@@ -149,6 +173,9 @@ async function deleteSecretCommit() {
   }
 }
 
+/**
+ *
+ */
 function deleteSecretRollback() {
   deleteSecretDialogSecret.value = null;
   deleteSecretDialogOpen.value = false;

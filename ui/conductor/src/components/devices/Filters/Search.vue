@@ -6,14 +6,13 @@
       hide-details
       width="100%"
       filled
-      class="textarea sectionText"
-  />
+      class="textarea sectionText"/>
 </template>
 
 <script setup>
-import {useLightingStore} from "@/stores/devices/lighting.js";
-import {storeToRefs} from "pinia";
+import {useLightingStore} from '@/stores/devices/lighting.js';
+import {storeToRefs} from 'pinia';
 
 const store = useLightingStore();
-const { search } = storeToRefs(store);
+const {search} = storeToRefs(store);
 </script>

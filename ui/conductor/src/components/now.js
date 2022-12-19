@@ -6,6 +6,10 @@ export const MINUTE = 60 * SECOND;
 export const HOUR = 60 * MINUTE;
 export const DAY = 24 * HOUR;
 
+/**
+ *
+ * @param resolution
+ */
 export function useNow(resolution = MINUTE) {
   const now = ref(new Date());
 
@@ -20,6 +24,10 @@ export function useNow(resolution = MINUTE) {
 
   let handle = 0;
 
+  /**
+   *
+   * @param t
+   */
   function updateNowWhenNeeded(t) {
     const delay = nextDelay(t);
     clearTimeout(handle);

@@ -31,7 +31,7 @@ export const useNotifications = defineStore('notifications', () => {
     pullAlerts({name}, alerts);
     try {
       const firstPage = await listAlerts({name, pageSize: 100, pageToken: undefined}, fetchingPage);
-      for (let alert of firstPage.alertsList) {
+      for (const alert of firstPage.alertsList) {
         set(alerts.value, alert.id, alert);
       }
       fetchingPage.response = null;
@@ -40,6 +40,10 @@ export const useNotifications = defineStore('notifications', () => {
     }
   }, {immediate: true});
 
+  /**
+   *
+   * @param severity
+   */
   function severityData(severity) {
     for (let i = severity; i > 0; i--) {
       if (SeverityStrings[i]) {
@@ -53,6 +57,11 @@ export const useNotifications = defineStore('notifications', () => {
     return {text: 'unspecified', color: 'gray--text'};
   }
 
+  /**
+   *
+   * @param e
+   * @param alert
+   */
   function setAcknowledged(e, alert) {
     if (e) {
       acknowledgeAlert({name: name.value, id: alert.id, allowAcknowledged: false, allowMissing: false})
@@ -63,21 +72,28 @@ export const useNotifications = defineStore('notifications', () => {
     }
   }
 
+  /**
+   *
+   * @param alert
+   */
   function isAcknowledged(alert) {
     return Boolean(alert.acknowledgement);
   }
 
+  /**
+   *
+   */
   function newCollection() {
     const listFn = async (query, tracker, pageToken, recordFn) => {
       const page = await listAlerts({name: name.value, pageToken, query, pageSize: 100}, tracker);
-      for (let alert of page.alertsList) {
+      for (const alert of page.alertsList) {
         recordFn(alert, alert.id);
       }
-      return page.nextPageToken
-    }
+      return page.nextPageToken;
+    };
     const pullFn = (query, resources) => {
       pullAlerts({name: name.value, query}, resources);
-    }
+    };
     return new Collection(listFn, pullFn);
   }
 
@@ -89,10 +105,10 @@ export const useNotifications = defineStore('notifications', () => {
     severityData,
     setAcknowledged,
     isAcknowledged
-  }
+  };
 });
 
 // enable hot reload for this store
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useNotifications, import.meta.hot))
+  import.meta.hot.accept(acceptHMRUpdate(useNotifications, import.meta.hot));
 }
