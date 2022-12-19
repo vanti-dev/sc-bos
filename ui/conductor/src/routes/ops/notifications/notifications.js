@@ -44,7 +44,8 @@ export const useNotifications = defineStore('notifications', () => {
 
   /**
    *
-   * @param severity
+   * @param {Severity} severity
+   * @return {{color: string, text: *}|{color: string, text: string}}
    */
   function severityData(severity) {
     for (let i = severity; i > 0; i--) {
@@ -61,8 +62,8 @@ export const useNotifications = defineStore('notifications', () => {
 
   /**
    *
-   * @param e
-   * @param alert
+   * @param {event} e
+   * @param {Alert.AsObject} alert
    */
   function setAcknowledged(e, alert) {
     if (e) {
@@ -76,7 +77,8 @@ export const useNotifications = defineStore('notifications', () => {
 
   /**
    *
-   * @param alert
+   * @param {Alert.AsObject} alert
+   * @return {boolean}
    */
   function isAcknowledged(alert) {
     return Boolean(alert.acknowledgement);
@@ -84,6 +86,7 @@ export const useNotifications = defineStore('notifications', () => {
 
   /**
    *
+   * @return {Collection}
    */
   function newCollection() {
     const listFn = async (query, tracker, pageToken, recordFn) => {

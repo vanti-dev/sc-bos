@@ -4,11 +4,12 @@ import {OccupancySensorApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/tr
 import {PullOccupancyRequest} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
 
 /**
+ *
  * @param {string} name
- * @param {ResourceValue<AirTemperature.AsObject, AirTemperature>} resource
+ * @param {ResourceValue<Occupancy.AsObject, Occupancy>} resource
  */
 export function pullOccupancy(name, resource) {
-  return pullResource('OccupancySensor.Occupancy', resource, endpoint => {
+  pullResource('OccupancySensor.Occupancy', resource, endpoint => {
     const api = new OccupancySensorApiPromiseClient(endpoint, null, clientOptions());
     const stream = api.pullOccupancy(new PullOccupancyRequest().setName(name));
     stream.on('data', msg => {

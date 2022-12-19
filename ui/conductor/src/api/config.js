@@ -43,7 +43,8 @@ export async function grpcWebEndpoint() {
 
 /**
  *
- * @param config
+ * @param {ServerConfig} config
+ * @return {string}
  */
 function configAddress(config) {
   const address = (config.insecure ? config.httpAddress : (config.httpsAddress || config.httpAddress));

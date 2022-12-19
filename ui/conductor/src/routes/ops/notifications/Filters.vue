@@ -47,11 +47,14 @@ const floor = computed(() => {
 
 /**
  *
- * @param f
+ * @param {string} f
  */
 function updateFloor(f) {
-  if (f === 'All') return emit('update:floor', undefined);
-  emit('update:floor', f);
+  if (f === 'All') {
+    emit('update:floor', undefined);
+  } else {
+    emit('update:floor', f);
+  }
 }
 
 const zone = computed(() => {
@@ -60,11 +63,14 @@ const zone = computed(() => {
 
 /**
  *
- * @param z
+ * @param {string} z
  */
 function updateZone(z) {
-  if (z === 'All') return emit('update:zone', undefined);
-  emit('update:zone', z);
+  if (z === 'All') {
+    emit('update:zone', undefined);
+  } else {
+    emit('update:zone', z);
+  }
 }
 </script>
 

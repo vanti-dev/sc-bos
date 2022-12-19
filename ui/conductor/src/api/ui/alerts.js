@@ -112,7 +112,8 @@ function alertQueryFromObject(obj) {
 
 /**
  *
- * @param obj
+ * @param {AcknowledgeAlertRequest.AsObject} obj
+ * @return {AcknowledgeAlertRequest|undefined}
  */
 function acknowledgeAlertRequestFromObject(obj) {
   if (!obj) return undefined;

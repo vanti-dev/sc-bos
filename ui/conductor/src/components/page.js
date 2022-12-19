@@ -5,6 +5,7 @@ import {useRoute} from 'vue-router/composables';
 
 /**
  *
+ * @return {*}
  */
 export function usePage() {
   const currentRoute = useRoute();

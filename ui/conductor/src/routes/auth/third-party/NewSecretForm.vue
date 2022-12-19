@@ -126,6 +126,7 @@ function addSecretCommit() {
 
 /**
  *
+ * @return {{note: UnwrapRef<string>, expireTime: unknown}}
  */
 function mintSecret() {
   return {

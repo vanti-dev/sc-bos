@@ -8,13 +8,16 @@ export const DAY = 24 * HOUR;
 
 /**
  *
- * @param resolution
+ * @param {number} resolution
+ * @return {{now: Date}}
  */
 export function useNow(resolution = MINUTE) {
   const now = ref(new Date());
 
   /**
+   *
    * @param {Date} t
+   * @return {number}
    */
   function nextDelay(t) {
     const ms = t.getTime();
@@ -26,7 +29,7 @@ export function useNow(resolution = MINUTE) {
 
   /**
    *
-   * @param t
+   * @param {Date} t
    */
   function updateNowWhenNeeded(t) {
     const delay = nextDelay(t);

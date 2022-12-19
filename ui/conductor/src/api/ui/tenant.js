@@ -26,8 +26,9 @@ export function listTenants(request, tracker) {
 
 /**
  *
- * @param request
- * @param tracker
+ * @param {GetTenantRequest.AsObject} request
+ * @param {ActionTracker<GetTenantRequest.AsObject>} tracker
+ * @return {Promise<Tenant.AsObject>}
  */
 export function getTenant(request, tracker) {
   const id = String(request.id);
@@ -40,8 +41,9 @@ export function getTenant(request, tracker) {
 
 /**
  *
- * @param request
- * @param tracker
+ * @param {ListSecretsRequest.AsObject} request
+ * @param {ActionTracker<ListSecretsRequest.AsObject>} tracker
+ * @return {Promise<ListSecretsResponse.AsObject>}
  */
 export function listSecrets(request, tracker) {
   const tenantId = String(request.tenantId);
@@ -54,8 +56,9 @@ export function listSecrets(request, tracker) {
 
 /**
  *
- * @param request
- * @param tracker
+ * @param {CreateSecretRequest.AsObject} request
+ * @param {ActionTracker<CreateSecretRequest.AsObject>} tracker
+ * @return {Promise<Secret.AsObject>}
  */
 export function createSecret(request, tracker) {
   const secret = request.secret;
@@ -68,8 +71,9 @@ export function createSecret(request, tracker) {
 
 /**
  *
- * @param request
- * @param tracker
+ * @param {DeleteSecretRequest.AsObject} request
+ * @param {ActionTracker<DeleteSecretRequest.AsObject>} tracker
+ * @return {Promise<DeleteSecretResponse.AsObject>}
  */
 export function deleteSecret(request, tracker) {
   const secretId = request.id;

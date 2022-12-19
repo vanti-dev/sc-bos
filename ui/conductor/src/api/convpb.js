@@ -16,12 +16,18 @@ export function setProperties(dst, src, ...props) {
 }
 
 /**
+ * @function ConvFunc
+ * @param {*} v
+ * @return *
+ */
+
+/**
  * Copy props from src into dst calling conv on each. Src is a JS object and dst is a protobuf message.
  * This function calls setSomeProp for each prop, which should be camelCase versions of the proto property names.
  *
  * @param {import('google-protobuf').Message} dst
  * @param {Object} src
- * @param {function(v:any):any} conv
+ * @param {ConvFunc} conv
  * @param {string} props
  */
 export function convertProperties(dst, src, conv, ...props) {

@@ -3,7 +3,7 @@ import Vue from 'vue';
 
 /**
  *
- * @param resource
+ * @param {RemoteResource} resource
  */
 export function closeResource(resource) {
   if (resource?.stream?.close) resource.stream.close();
@@ -11,8 +11,8 @@ export function closeResource(resource) {
 
 /**
  *
- * @param resource
- * @param val
+ * @param {ResourceValue} resource
+ * @param {*} val
  */
 export function setValue(resource, val) {
   Vue.set(resource, 'loading', false);
@@ -22,10 +22,16 @@ export function setValue(resource, val) {
 }
 
 /**
+ * @function IdFunc
+ * @param {*} val
+ * @return {string|number}
+ */
+
+/**
  *
- * @param resource
- * @param change
- * @param idFunc
+ * @param {ResourceValue} resource
+ * @param {Change} change
+ * @param {IdFunc} idFunc
  */
 export function setCollection(resource, change, idFunc) {
   Vue.set(resource, 'loading', false);
@@ -45,8 +51,8 @@ export function setCollection(resource, change, idFunc) {
 
 /**
  *
- * @param resource
- * @param err
+ * @param {RemoteResource} resource
+ * @param {Error} err
  */
 export function setError(resource, err) {
   Vue.set(resource, 'loading', false);
@@ -56,9 +62,9 @@ export function setError(resource, err) {
 
 /**
  *
- * @param logPrefix
- * @param resource
- * @param newStream
+ * @param {string} logPrefix
+ * @param {RemoteResource} resource
+ * @param {StreamFactory} newStream
  */
 export function pullResource(logPrefix, resource, newStream) {
   const doPull = (retryDelayMs = 1000) => {
@@ -105,9 +111,9 @@ export function pullResource(logPrefix, resource, newStream) {
 
 /**
  *
- * @param logPrefix
- * @param tracker
- * @param action
+ * @param {string} logPrefix
+ * @param {ActionTracker} tracker
+ * @param {Action} action
  */
 export async function trackAction(logPrefix, tracker, action) {
   Vue.set(tracker, 'loading', true);
@@ -127,6 +133,7 @@ export async function trackAction(logPrefix, tracker, action) {
 
 /**
  *
+ * @return {ActionTracker}
  */
 export function newActionTracker() {
   return {
@@ -139,6 +146,7 @@ export function newActionTracker() {
 
 /**
  *
+ * @return {ResourceValue}
  */
 export function newResourceValue() {
   return {
@@ -152,6 +160,7 @@ export function newResourceValue() {
 
 /**
  *
+ * @return {ResourceCollection}
  */
 export function newResourceCollection() {
   return {

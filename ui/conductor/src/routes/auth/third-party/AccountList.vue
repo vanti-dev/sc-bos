@@ -68,7 +68,7 @@ onMounted(() => {
 const router = useRouter();
 /**
  *
- * @param item
+ * @param {Tenant.AsObject} item
  */
 function showTenant(item) {
   router.push(`/auth/third-party/${item.id}`);

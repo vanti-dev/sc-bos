@@ -112,7 +112,7 @@ function addSecretRollback() {
 
 /**
  *
- * @param secret
+ * @param {Secret.AsObject} secret
  */
 async function addSecretCommit(secret) {
   addingSecret.value = false;
@@ -149,7 +149,7 @@ const deleteSecretDialogSecret = ref(null);
 
 /**
  *
- * @param secret
+ * @param {Secret.AsObject} secret
  */
 function deleteSecretStart(secret) {
   deleteSecretDialogSecret.value = secret;
