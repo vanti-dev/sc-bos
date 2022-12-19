@@ -16,6 +16,8 @@ export function usePage() {
       const color = r.meta?.['logoColor'] || vuetify.framework.theme.currentTheme[r.name];
       if (color) return color;
     }
+    // didn't find it
+    return undefined;
   });
   const pageTitle = computed(() => {
     if (!currentRoute) return undefined;

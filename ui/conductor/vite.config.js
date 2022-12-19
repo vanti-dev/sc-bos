@@ -41,7 +41,10 @@ export default defineConfig({
   },
   plugins: [
     vue(),
+    // can't fix imported var names, so tell eslint to ignore them
+    // eslint-disable-next-line new-cap
     Components({
+      // eslint-disable-next-line new-cap
       resolvers: [VuetifyResolver()]
     })
   ],
