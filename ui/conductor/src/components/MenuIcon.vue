@@ -14,14 +14,17 @@ const iconRadius = 2;
 const iconPadding = 15 + iconRadius;
 const iconGap = (iconSize - 2 * iconPadding) / 2;
 
-const props = defineProps({
-  color: String
+defineProps({
+  color: {
+    type: String,
+    default: '#fff'
+  }
 });
 
 </script>
 <style scoped>
 .icon circle {
   stroke: none;
-  fill: v-bind(props.color);
+  fill: v-bind(color);
 }
 </style>

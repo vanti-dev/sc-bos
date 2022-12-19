@@ -37,7 +37,10 @@ import {usePage} from '@/components/page.js';
 import {ref} from 'vue';
 
 defineProps({
-  btnClass: [String, Object]
+  btnClass: {
+    type: [String, Object],
+    default: ''
+  }
 });
 
 const {themeColor} = usePage();

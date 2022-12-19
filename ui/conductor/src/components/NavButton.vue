@@ -20,10 +20,22 @@
 import ScLogo from '@/components/ScLogo.vue';
 
 defineProps({
-  title: String,
-  subtitle: String,
-  color: String,
-  to: [String, Object]
+  title: {
+    type: String,
+    default: ''
+  },
+  subtitle: {
+    type: String,
+    default: ''
+  },
+  color: {
+    type: String,
+    default: ''
+  },
+  to: {
+    type: [String, Object],
+    default: ''
+  }
 });
 </script>
 

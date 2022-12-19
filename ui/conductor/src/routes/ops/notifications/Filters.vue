@@ -24,10 +24,22 @@
 import {computed} from 'vue';
 
 const props = defineProps({
-  floor: String,
-  floorItems: Array,
-  zone: String,
-  zoneItems: Array
+  floor: {
+    type: String,
+    default: ''
+  },
+  floorItems: {
+    type: Array,
+    default: () => []
+  },
+  zone: {
+    type: String,
+    default: ''
+  },
+  zoneItems: {
+    type: Array,
+    default: () => []
+  }
 });
 const emit = defineEmits({
   'update:floor': String,

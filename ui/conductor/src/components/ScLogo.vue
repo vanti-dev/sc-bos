@@ -42,7 +42,10 @@ const props = defineProps({
     type: String,
     default: '#4c4c4c'
   },
-  fill: String
+  fill: {
+    type: String,
+    default: 'none'
+  }
 });
 
 const noFill = computed(() => props.fill === 'none');

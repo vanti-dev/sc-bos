@@ -8,7 +8,10 @@ import {format, milliseconds} from 'date-fns';
 import {computed} from 'vue';
 
 const props = defineProps({
-  date: [String, Number, Date],
+  date: {
+    type: [String, Number, Date],
+    default: ''
+  },
   noRelative: Boolean
 });
 const relativeFormatter = new Intl.RelativeTimeFormat(undefined, {numeric: 'auto'});

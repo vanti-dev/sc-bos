@@ -48,7 +48,10 @@ import {useAccountStore} from '@/stores/account.js';
 import {computed} from 'vue';
 
 defineProps({
-  btnClass: [String, Object]
+  btnClass: {
+    type: [String, Object],
+    default: ''
+  }
 });
 
 const accountStore = useAccountStore();

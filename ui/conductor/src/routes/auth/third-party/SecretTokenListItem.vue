@@ -25,7 +25,10 @@ import {milliseconds} from 'date-fns';
 import {onMounted, ref} from 'vue';
 
 const props = defineProps({
-  secret: Object
+  secret: {
+    type: Object,
+    default: () => {}
+  }
 });
 const emit = defineEmits(['hideToken', 'delete']);
 

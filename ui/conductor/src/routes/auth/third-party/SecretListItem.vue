@@ -27,7 +27,10 @@ import {MAX_INT32} from '@/util/number.js';
 import {computed, onBeforeUnmount, ref, watch} from 'vue';
 
 const props = defineProps({
-  secret: Object,
+  secret: {
+    type: Object,
+    default: () => {}
+  },
   showToken: Boolean
 });
 const emit = defineEmits(['delete']);
