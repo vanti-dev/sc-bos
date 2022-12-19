@@ -13,7 +13,8 @@ const hasPageTitle = computed(() => Boolean(pageTitle));
 <style scoped>
 span {
   font-weight: bold;
-  font-size: 22px;
+  font-size: 14px;
+  text-transform: uppercase;
 }
 
 .hasPageTitle {

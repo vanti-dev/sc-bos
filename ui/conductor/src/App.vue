@@ -14,7 +14,7 @@
         :outline="themeColor ? 'white' : undefined"
         style="height: 35px; margin-left: 16px"
       />
-      <span class="heading">Smart Core</span>
+       <v-divider class="mx-8" vertical></v-divider>
       <page-title />
 
       <v-divider

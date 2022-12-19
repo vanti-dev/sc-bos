@@ -1,7 +1,14 @@
 <template>
-  <v-card class="d-flex flex-nowrap justify-space-between" max-width="300" :to="to">
-    <v-avatar tile class="my-6 ml-4" size="57">
-      <sc-logo :fill="color"/>
+  <v-card
+    class="d-flex white--text rounded-0"
+    max-width="100%"
+    elevation-0
+    flat
+    :to="to"
+    style="background: #ffffff1a"
+  >
+    <v-avatar tile class="my-4 mx-4" size="57">
+      <img :src="icon" class="" />
     </v-avatar>
     <div>
       <slot>
@@ -23,6 +30,7 @@ const props = defineProps({
   title: String,
   subtitle: String,
   color: String,
+  icon: String,
   to: [String, Object]
 })
 </script>

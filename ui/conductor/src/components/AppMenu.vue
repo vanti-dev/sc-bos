@@ -1,26 +1,58 @@
 <template>
-  <v-menu v-bind="showMenu" bottom offset-y max-width="100%" tile transition="slide-y-transition">
-    <template #activator="{on, attrs}">
-      <v-btn icon tile v-bind="attrs" v-on="on" style="background: #FFFFFF1A" :class="btnClass">
-        <menu-icon :color="themeColor"/>
+  <v-menu
+    v-bind="showMenu"
+    class="-pl-16"
+    transition="slide-x-transition"
+    bottom
+    right
+    offset-y
+    max-width="40%"
+    tile
+  >
+    <template #activator="{ on, attrs }">
+      <v-btn
+        icon
+        tile
+        v-bind="attrs"
+        v-on="on"
+        style="background: #ffffff1a"
+        :class="btnClass"
+      >
+        <menu-icon color="white" />
       </v-btn>
     </template>
-    <v-card :light="$vuetify.theme.dark" tile width="100vw">
-      <nav-button :to="{name:'auth'}"
-                  subtitle=""
-                  title="Auth"/>
-      <nav-button :to="{name:'devices'}"
-                  subtitle=""
-                  title="Devices"/>
-      <nav-button :to="{name:'ops'}"
-                  subtitle=""
-                  title="Operations"/>
-      <nav-button :to="{name:'settings'}"
-                  subtitle=""
-                  title="Site Settings"/>
-      <nav-button :to="{name:'workflows'}"
-                  subtitle=""
-                  title="Workflows & Automations"/>
+
+    <v-card tile width="100vw">
+      <nav-button
+        :to="{ name: 'auth' }"
+        subtitle="Edit user accounts, and create API token"
+        title="Auth"
+        icon="/menu/auth.svg"
+      />
+      <nav-button
+        :to="{ name: 'devices' }"
+        subtitle="Add/update/delete devices from the system, view device's status and configuration, and control device settings"
+        title="Devices"
+        icon="/menu/devices.svg"
+      />
+      <nav-button
+        :to="{ name: 'ops' }"
+        subtitle="View status dashboards,check notifications and events"
+        title="Operations"
+        icon="/menu/operations.svg"
+      />
+      <nav-button
+        :to="{ name: 'settings' }"
+        subtitle="Configure site-specific settings and edit zones"
+        title="Site Settings"
+        icon="/menu/settings.svg"
+      />
+      <nav-button
+        :to="{ name: 'workflows' }"
+        subtitle="view automation status, and update settings"
+        title="Workflows & Automations"
+        icon="/menu/workflows.svg"
+      />
     </v-card>
   </v-menu>
 </template>
