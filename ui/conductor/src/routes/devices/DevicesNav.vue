@@ -1,14 +1,12 @@
 <template>
-  <v-navigation-drawer app clipped color="transparent" floating>
-    <v-list dense nav>
-      <v-list-item to="/devices/lighting">
-        <v-list-item-icon>
-          <v-icon>mdi-lightbulb</v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>Lighting</v-list-item-content>
-      </v-list-item>
-    </v-list>
-  </v-navigation-drawer>
+  <v-list class="pa-0" dense nav>
+    <v-list-item to="/devices/lighting">
+      <v-list-item-icon>
+        <v-icon>mdi-lightbulb</v-icon>
+      </v-list-item-icon>
+      <v-list-item-content>Lighting</v-list-item-content>
+    </v-list-item>
+  </v-list>
 </template>
 
 <script>

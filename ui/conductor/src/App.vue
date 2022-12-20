@@ -13,7 +13,6 @@
           :outline="themeColor ? 'white' : undefined"
           style="height: 35px; margin-left: 16px"/>
       <span class="heading">Smart Core</span>
-      <page-title/>
 
       <v-divider
           vertical
@@ -28,9 +27,16 @@
       <account-btn btn-class="full-btn mr-0"/>
     </v-app-bar>
 
-    <router-view name="nav" v-if="hasNav"/>
+    <v-navigation-drawer v-if="hasNav" app clipped color="transparent" floating width="275" class="pa-8 pr-0 mr-8">
+      <page-title/>
+      <v-divider class="my-5"/>
+      <router-view name="nav" v-if="hasNav"/>
+      <template #append>
+        <NavFooter/>
+      </template>
+    </v-navigation-drawer>
 
-    <v-main>
+    <v-main class="mx-8 my-5">
       <router-view/>
     </v-main>
   </v-app>
