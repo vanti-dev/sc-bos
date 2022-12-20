@@ -6,6 +6,7 @@ import {VuetifyResolver} from 'unplugin-vue-components/resolvers';
 import Components from 'unplugin-vue-components/vite';
 import {fileURLToPath, URL} from 'url';
 import {defineConfig} from 'vite';
+import eslintPlugin from 'vite-plugin-eslint';
 
 const _require = createRequire(import.meta.url);
 
@@ -41,6 +42,7 @@ export default defineConfig({
   },
   plugins: [
     vue(),
+    eslintPlugin(),
     // can't fix imported var names, so tell eslint to ignore them
     // eslint-disable-next-line new-cap
     Components({
