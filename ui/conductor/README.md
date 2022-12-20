@@ -30,9 +30,13 @@ The different features of the UI require different capabilities from the server,
   in [config/samples](../../config/samples). For detailed config options see the `internal/driver` sub-packages, each of
   which should provide a readme and config structure.
 
+To connect the UI to a local area controller, create a `.env.local` file in this directory with the following:
+```properties
+VITE_GRPC_ENDPOINT=http://localhost:23557
+```
+
 When testing device or system pages it can be easier to point the UI at
-the [Smart Core Playground](https://github.com/smart-core-os/sc-playground) via a `.env.local` file in this directory
-containing variables like
+the [Smart Core Playground](https://github.com/smart-core-os/sc-playground), updating the above config to:
 
 ```properties
 VITE_GRPC_ENDPOINT=https://localhost:8443
