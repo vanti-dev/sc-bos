@@ -1,6 +1,12 @@
 @import "vuetify/src/styles/styles.sass";
 @import "vuetify/src/components/VTextField/_variables.scss";
 
+
+.v-text-field--outlined {
+  background: var(--v-neutral-lighten1);
+  border-color: var(--v-neutral-lighten2);
+}
+
 /*
 Change the default styles for filled text fields, including selects,
 to have a border all around instead of just at the bottom

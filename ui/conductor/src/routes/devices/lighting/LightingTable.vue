@@ -30,7 +30,7 @@
   </v-container>
 </template>
 <script setup>
-import MainCard from '@/components/SectionCard.vue';
+import MainCard from '@/components/ContentCard.vue';
 import Header from '@/components/devices/Header.vue';
 import Filters from '@/components/devices/Filters.vue';
 import BulkAction from '@/components/devices/BulkAction.vue';

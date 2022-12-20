@@ -1,11 +1,10 @@
 <template>
-  <v-container fluid class="pa-7">
+  <v-container fluid class="pa-0">
     <main-card>
       <v-card-actions>
         <v-text-field
             label="Search tenants"
             outlined
-            background-color="#ffffff1a"
             hide-details
             prepend-inner-icon="mdi-magnify"
             v-model="search"/>
@@ -36,7 +35,7 @@
 import {timestampToDate} from '@/api/convpb.js';
 import {newActionTracker} from '@/api/resource.js';
 import {listTenants} from '@/api/ui/tenant.js';
-import MainCard from '@/components/SectionCard.vue';
+import MainCard from '@/components/ContentCard.vue';
 import {computed, onMounted, reactive, ref} from 'vue';
 import {useRouter} from 'vue-router/composables';
 
@@ -87,14 +86,4 @@ function showTenant(item) {
   cursor: pointer;
 }
 
-/* This selector is the one used by vuetify to match hovered table rows. We are more specific
- * because of the scoped styles
- */
-.table
-  > ::v-deep(.v-data-table__wrapper
-    > table
-    > tbody
-    > tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper)) {
-  background-color: #ffffff1a;
-}
 </style>

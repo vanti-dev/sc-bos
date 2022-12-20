@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <section-card class="mt-7 pb-4" :loading="tenantTracker.loading">
+    <content-card class="mt-7 pb-4" :loading="tenantTracker.loading">
       <v-alert v-if="tenantTracker.error" type="error" text class="rounded-b-0">
         Unable to fetch tenant information: {{ tenantTracker.error.message }}
       </v-alert>
@@ -21,7 +21,7 @@
           </template>
         </v-combobox>
       </v-card-text>
-      <section-card class="mx-4 mt-4" :loading="secretsTracker.loading">
+      <content-card class="mx-4 mt-4" :loading="secretsTracker.loading">
         <v-alert v-if="secretsTracker.error" type="error" text class="rounded-b-0">
           Unable to fetch tenant secrets: {{ secretsTracker.error.message }}
         </v-alert>
@@ -49,8 +49,8 @@
               @delete="deleteSecretStart"/>
           <secret-list-item v-for="secret in secretList" :key="secret.id" :secret="secret" @delete="deleteSecretStart"/>
         </v-list>
-      </section-card>
-    </section-card>
+      </content-card>
+    </content-card>
     <delete-secret-dialog
         v-model="deleteSecretDialogOpen"
         @commit="deleteSecretCommit"
@@ -61,7 +61,7 @@
 <script setup>
 import {newActionTracker} from '@/api/resource.js';
 import {createSecret, deleteSecret, getTenant, listSecrets, secretToObject} from '@/api/ui/tenant.js';
-import SectionCard from '@/components/SectionCard.vue';
+import ContentCard from '@/components/ContentCard.vue';
 import ThemeBtn from '@/components/ThemeBtn.vue';
 import DeleteSecretDialog from '@/routes/auth/third-party/DeleteSecretDialog.vue';
 import NewSecretForm from '@/routes/auth/third-party/NewSecretForm.vue';

@@ -31,7 +31,7 @@
       </template>
     </v-navigation-drawer>
 
-    <v-main class="mx-8 my-5">
+    <v-main class="mx-10 my-5">
       <router-view/>
     </v-main>
   </v-app>
