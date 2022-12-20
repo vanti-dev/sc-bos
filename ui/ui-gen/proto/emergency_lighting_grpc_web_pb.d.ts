@@ -11,28 +11,28 @@ export class EmergencyLightingApiClient {
   getEmergencyLight(
     request: proto_emergency_lighting_pb.GetEmergencyLightRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
+    callback: (err: grpcWeb.RpcError,
                response: proto_emergency_lighting_pb.EmergencyLight) => void
   ): grpcWeb.ClientReadableStream<proto_emergency_lighting_pb.EmergencyLight>;
 
   listEmergencyLights(
     request: proto_emergency_lighting_pb.ListEmergencyLightsRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
+    callback: (err: grpcWeb.RpcError,
                response: proto_emergency_lighting_pb.ListEmergencyLightsResponse) => void
   ): grpcWeb.ClientReadableStream<proto_emergency_lighting_pb.ListEmergencyLightsResponse>;
 
   listEmergencyLightEvents(
     request: proto_emergency_lighting_pb.ListEmergencyLightEventsRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
+    callback: (err: grpcWeb.RpcError,
                response: proto_emergency_lighting_pb.ListEmergencyLightEventsResponse) => void
   ): grpcWeb.ClientReadableStream<proto_emergency_lighting_pb.ListEmergencyLightEventsResponse>;
 
   getReportCSV(
     request: proto_emergency_lighting_pb.GetReportCSVRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
+    callback: (err: grpcWeb.RpcError,
                response: proto_emergency_lighting_pb.ReportCSV) => void
   ): grpcWeb.ClientReadableStream<proto_emergency_lighting_pb.ReportCSV>;
 

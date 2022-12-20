@@ -11,7 +11,7 @@ export class AlertApiClient {
   listAlerts(
     request: proto_alerts_pb.ListAlertsRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
+    callback: (err: grpcWeb.RpcError,
                response: proto_alerts_pb.ListAlertsResponse) => void
   ): grpcWeb.ClientReadableStream<proto_alerts_pb.ListAlertsResponse>;
 
@@ -23,14 +23,14 @@ export class AlertApiClient {
   acknowledgeAlert(
     request: proto_alerts_pb.AcknowledgeAlertRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
+    callback: (err: grpcWeb.RpcError,
                response: proto_alerts_pb.Alert) => void
   ): grpcWeb.ClientReadableStream<proto_alerts_pb.Alert>;
 
   unacknowledgeAlert(
     request: proto_alerts_pb.AcknowledgeAlertRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
+    callback: (err: grpcWeb.RpcError,
                response: proto_alerts_pb.Alert) => void
   ): grpcWeb.ClientReadableStream<proto_alerts_pb.Alert>;
 
@@ -44,21 +44,21 @@ export class AlertAdminApiClient {
   createAlert(
     request: proto_alerts_pb.CreateAlertRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
+    callback: (err: grpcWeb.RpcError,
                response: proto_alerts_pb.Alert) => void
   ): grpcWeb.ClientReadableStream<proto_alerts_pb.Alert>;
 
   updateAlert(
     request: proto_alerts_pb.UpdateAlertRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
+    callback: (err: grpcWeb.RpcError,
                response: proto_alerts_pb.Alert) => void
   ): grpcWeb.ClientReadableStream<proto_alerts_pb.Alert>;
 
   deleteAlert(
     request: proto_alerts_pb.DeleteAlertRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
+    callback: (err: grpcWeb.RpcError,
                response: proto_alerts_pb.DeleteAlertResponse) => void
   ): grpcWeb.ClientReadableStream<proto_alerts_pb.DeleteAlertResponse>;
 

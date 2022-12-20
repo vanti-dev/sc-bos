@@ -103,8 +103,8 @@ export namespace Alert {
 
     getAcknowledged(): boolean;
     setAcknowledged(value: boolean): Query;
-
-    getAcknowledgedCase(): Query.AcknowledgedCase;
+    hasAcknowledged(): boolean;
+    clearAcknowledged(): Query;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Query.AsObject;
@@ -123,7 +123,7 @@ export namespace Alert {
       floor: string,
       zone: string,
       source: string,
-      acknowledged: boolean,
+      acknowledged?: boolean,
     }
 
     export enum AcknowledgedCase { 

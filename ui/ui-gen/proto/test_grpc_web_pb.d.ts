@@ -11,14 +11,14 @@ export class TestApiClient {
   getTest(
     request: proto_test_pb.GetTestRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
+    callback: (err: grpcWeb.RpcError,
                response: proto_test_pb.Test) => void
   ): grpcWeb.ClientReadableStream<proto_test_pb.Test>;
 
   updateTest(
     request: proto_test_pb.UpdateTestRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
+    callback: (err: grpcWeb.RpcError,
                response: proto_test_pb.Test) => void
   ): grpcWeb.ClientReadableStream<proto_test_pb.Test>;
 
