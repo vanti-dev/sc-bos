@@ -8,10 +8,7 @@
         color="#283037"
         class="pr-7">
       <app-menu btn-class="full-btn"/>
-      <sc-logo
-          :fill="themeColor"
-          :outline="themeColor ? 'white' : undefined"
-          style="height: 35px; margin-left: 16px"/>
+      <sc-logo outline="white" style="height: 35px; margin-left: 16px"/>
       <span class="heading">Smart Core</span>
 
       <v-divider
@@ -51,7 +48,7 @@ import ScLogo from '@/components/ScLogo.vue';
 import {useAccountStore} from '@/stores/account.js';
 // import {onMounted} from 'vue';
 
-const {themeColor, hasSections, hasNav} = usePage();
+const {hasSections, hasNav} = usePage();
 
 const store = useAccountStore();
 
