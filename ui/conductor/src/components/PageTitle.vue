@@ -1,5 +1,5 @@
 <template>
-  <h1 class="pl-1">{{ pageTitle }}</h1>
+  <h1 class="pl-1 text-h1">{{ pageTitle }}</h1>
 </template>
 
 <script setup>
