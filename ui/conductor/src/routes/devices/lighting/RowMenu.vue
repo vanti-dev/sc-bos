@@ -40,7 +40,7 @@
 
       <v-subheader>STATUS</v-subheader>
 
-      <v-row column class="pa-2">
+      <v-row class="pa-2">
         <v-col class="px-3">
           <v-row>
             <v-col>
@@ -83,7 +83,7 @@
 
       <v-subheader>EMERGENCY LIGHTING</v-subheader>
 
-      <v-row column class="pa-2">
+      <v-row class="pa-2">
         <v-col class="px-3">
           <v-row>
             <v-col>
