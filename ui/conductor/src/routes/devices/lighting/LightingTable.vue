@@ -67,19 +67,8 @@ const rowClick = (item, row) => {
   cursor: pointer;
 }
 
-/* This selector is the one used by vuetify to match hovered table rows. We are more specific
- * because of the scoped styles
- */
-.table
-  > ::v-deep(.v-data-table__wrapper
-    > table
-    > tbody
-    > tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper)) {
-  background-color: #292f36;
-}
-
 .v-data-table ::v-deep(.v-data-footer) {
-  background: #3f454b !important;
+  background: var(--v-neutral-lighten1) !important;
   border-radius: 0px 0px 5px 5px;
   border: none;
   width: 100%;

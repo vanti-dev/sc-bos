@@ -5,7 +5,6 @@
         height="60"
         :clipped-left="hasNav"
         elevation="0"
-        color="#283037"
         class="pr-7">
       <app-menu btn-class="full-btn"/>
       <sc-logo outline="white" style="height: 35px; margin-left: 16px"/>
@@ -16,7 +15,6 @@
           v-if="hasSections"
           class="mx-8 section-divider"
           inset/>
-      <router-view name="sections"/>
 
       <v-spacer/>
 
@@ -57,7 +55,11 @@ store.loadLocalStorage();
 
 <style scoped>
 .v-application {
-  background: #101820;
+  background: var(--v-neutral-darken1);
+}
+
+.v-app-bar.v-toolbar.v-sheet {
+  background: var(--v-neutral-base);
 }
 
 .v-app-bar ::v-deep(.v-toolbar__content) {

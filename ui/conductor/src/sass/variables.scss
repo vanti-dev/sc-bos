@@ -1,10 +1,9 @@
 $body-font-family: 'Poppins', sans-serif;
 
 $material-dark: (
-    'cards': #283036,
+    'cards': var(--v-neutral-base),
     'table': (
-        'hover':#424f54,
-        'active': #4a595f,
+        'hover': var(--v-neutral-lighten2),
+        'active': var(--v-neutral-lighten1),
     ),
-    'navigation-drawer': #283036,
 )
