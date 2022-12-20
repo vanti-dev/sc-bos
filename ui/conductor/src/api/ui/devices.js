@@ -1,8 +1,8 @@
 import {setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {trackAction} from '@/api/resource.js';
-import {DevicesApiPromiseClient} from '@bsp-ew/ui-gen/proto/devices_grpc_web_pb';
-import {Device, ListDevicesRequest} from '@bsp-ew/ui-gen/proto/devices_pb';
+import {DevicesApiPromiseClient} from '@sc-bos/ui-gen/proto/devices_grpc_web_pb';
+import {Device, ListDevicesRequest} from '@sc-bos/ui-gen/proto/devices_pb';
 
 /**
  * @param {ListDevicesRequest.AsObject} request

@@ -63,7 +63,7 @@ import DeleteSecretDialog from '@/routes/auth/third-party/DeleteSecretDialog.vue
 import NewSecretForm from '@/routes/auth/third-party/NewSecretForm.vue';
 import SecretListItem from '@/routes/auth/third-party/SecretListItem.vue';
 import SecretTokenListItem from '@/routes/auth/third-party/SecretTokenListItem.vue';
-import {ListSecretsResponse, Secret, Tenant} from '@bsp-ew/ui-gen/proto/tenants_pb';
+import {ListSecretsResponse, Secret, Tenant} from '@sc-bos/ui-gen/proto/tenants_pb';
 import {compareDesc} from 'date-fns';
 import {computed, reactive, ref, watch} from 'vue';
 import {useRoute} from 'vue-router/composables';

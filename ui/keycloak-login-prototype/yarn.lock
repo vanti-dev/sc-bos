@@ -7,7 +7,7 @@
   resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.18.4.tgz#6774231779dd700e0af29f6ad8d479582d7ce5ef"
   integrity sha512-FDge0dFazETFcxGw/EXzOkN8uJp0PC7Qbm+Pe9T+av2zlBpOgunFHkQPPn+eRuClU73JF+98D531UgayY89tow==
 
-"@bsp-ew/ui-gen@../ui-gen":
+"@sc-bos/ui-gen@../ui-gen":
   version "0.0.0"
   dependencies:
     google-protobuf "^3.20.1"

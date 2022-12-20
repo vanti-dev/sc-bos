@@ -7,8 +7,8 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   optimizeDeps: {
     include: [
-      '@bsp-ew/ui-gen/src/test_grpc_web_pb.js',
-      '@bsp-ew/ui-gen/src/test_pb.js',
+      '@sc-bos/ui-gen/src/test_grpc_web_pb.js',
+      '@sc-bos/ui-gen/src/test_pb.js',
     ]
   },
   plugins: [vue()],

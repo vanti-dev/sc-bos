@@ -1,6 +1,6 @@
 <script setup>
-import {TestApiPromiseClient} from '@bsp-ew/ui-gen/src/test_grpc_web_pb'
-import {GetTestRequest} from '@bsp-ew/ui-gen/src/test_pb';
+import {TestApiPromiseClient} from '@sc-bos/ui-gen/src/test_grpc_web_pb'
+import {GetTestRequest} from '@sc-bos/ui-gen/src/test_pb';
 import {reactive} from 'vue'
 
 const props = defineProps(['token'])

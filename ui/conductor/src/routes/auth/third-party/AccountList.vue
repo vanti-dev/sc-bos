@@ -39,7 +39,7 @@ import {timestampToDate} from '@/api/convpb.js';
 import {newActionTracker} from '@/api/resource.js';
 import {listTenants} from '@/api/ui/tenant.js';
 import MainCard from '@/components/SectionCard.vue';
-import {ListTenantsResponse} from '@bsp-ew/ui-gen/proto/tenants_pb';
+import {ListTenantsResponse} from '@sc-bos/ui-gen/proto/tenants_pb';
 import {computed, onMounted, reactive, ref} from 'vue';
 import {useRouter} from 'vue-router/composables';
 
