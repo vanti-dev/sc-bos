@@ -2,12 +2,18 @@ $body-font-family: 'Poppins', sans-serif;
 $font-size-root: 14px;
 $line-height-root: 1.5;
 
+$border-radius-root: 5px;
+
 $material-dark: (
     'cards': var(--v-neutral-base),
     'table': (
         'hover': var(--v-neutral-lighten2),
         'active': var(--v-neutral-lighten1),
     ),
+);
+
+$font-weights: (
+  'semibold': 600
 );
 
 $headings: (
@@ -66,5 +72,37 @@ $headings: (
         'letter-spacing': 0.15em,
         'font-family': $body-font-family,
         'text-transform': uppercase
-    )
+    ),
+    'title-small': (
+        'size': .857rem,
+        'weight': 500,
+        'line-height': 1.5rem,
+        'letter-spacing': 0em,
+        'font-family': $body-font-family,
+        'text-transform': false
+    ),
+    'caption': (
+        'size': .857rem,
+        'weight': 500,
+        'line-height': 1.5rem,
+        'letter-spacing': 0em,
+        'font-family': $body-font-family,
+        'text-transform': false
+    ),
+    'subtitle-1': (
+        'size': 1rem,
+        'weight': 600,
+        'line-height': 1.5rem,
+        'letter-spacing': 0em,
+        'font-family': $body-font-family,
+        'text-transform': false
+    ),
+    'subtitle-2': (
+        'size': 1rem,
+        'weight': 500,
+        'line-height': 1.5rem,
+        'letter-spacing': 0em,
+        'font-family': $body-font-family,
+        'text-transform': false
+    ),
 );
