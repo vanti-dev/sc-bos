@@ -22,7 +22,15 @@
       <account-btn btn-class="full-btn mr-0"/>
     </v-app-bar>
 
-    <v-navigation-drawer v-if="hasNav" app clipped color="transparent" floating width="275" class="pa-8 pr-0 mr-8">
+    <v-navigation-drawer
+        v-if="hasNav"
+        app
+        clipped
+        permanent
+        color="transparent"
+        floating
+        width="275"
+        class="pa-8 pr-0 mr-8">
       <page-title/>
       <v-divider class="my-5"/>
       <router-view name="nav" v-if="hasNav"/>
@@ -31,7 +39,7 @@
       </template>
     </v-navigation-drawer>
 
-    <v-main class="mx-10 my-5">
+    <v-main class="mx-10 my-6">
       <router-view/>
     </v-main>
   </v-app>
