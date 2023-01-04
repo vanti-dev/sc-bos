@@ -5,11 +5,6 @@ import (
 	"crypto/tls"
 	"errors"
 
-	"github.com/vanti-dev/sc-bos/pkg/db"
-	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
-	"github.com/vanti-dev/sc-bos/pkg/util/pki"
-	"github.com/vanti-dev/sc-bos/pkg/util/rpcutil"
-
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
@@ -18,6 +13,11 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 	"google.golang.org/grpc/status"
+
+	"github.com/vanti-dev/sc-bos/internal/db"
+	"github.com/vanti-dev/sc-bos/internal/util/pki"
+	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
+	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )

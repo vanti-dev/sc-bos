@@ -12,8 +12,8 @@ import (
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 
+	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"github.com/vanti-dev/sc-bos/pkg/auth"
-	"github.com/vanti-dev/sc-bos/pkg/util/rpcutil"
 )
 
 type Interceptor struct {

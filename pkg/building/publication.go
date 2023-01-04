@@ -13,8 +13,8 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/vanti-dev/sc-bos/pkg/db"
-	"github.com/vanti-dev/sc-bos/pkg/util/rpcutil"
+	"github.com/vanti-dev/sc-bos/internal/db"
+	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 )
 
 type PublicationServer struct {

@@ -19,8 +19,8 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	pki2 "github.com/vanti-dev/sc-bos/pkg/util/pki"
 )
 
 // EnrollAreaController sets up the PKI for a remote Smart Core node.
@@ -29,7 +29,7 @@ import (
 // and invokes CreateEnrollment on the target with this information.
 // The Certificate and RootCAs will be computed from the authority and will be ignored if provided in enrollment.
 func EnrollAreaController(
-	ctx context.Context, enrollment *gen.Enrollment, authority pki2.Source,
+	ctx context.Context, enrollment *gen.Enrollment, authority pki.Source,
 ) (*gen.Enrollment, error) {
 	enrollment = proto.Clone(enrollment).(*gen.Enrollment)
 
@@ -58,11 +58,11 @@ func EnrollAreaController(
 		return nil, err
 	}
 
-	enrollment.RootCas = pki2.EncodeCertificates(roots)
+	enrollment.RootCas = pki.EncodeCertificates(roots)
 
 	certTemplate := newTargetCertificate(enrollment)
-	enrollment.Certificate, err = pki2.CreateCertificateChain(authorityCert, certTemplate, peerPublicKey,
-		pki2.WithAuthority(enrollment.TargetAddress),
+	enrollment.Certificate, err = pki.CreateCertificateChain(authorityCert, certTemplate, peerPublicKey,
+		pki.WithAuthority(enrollment.TargetAddress),
 	)
 	if err != nil {
 		return nil, err
@@ -219,11 +219,11 @@ func SaveEnrollment(dir string, enrollment Enrollment) error {
 		return err
 	}
 
-	_, err = pki2.SaveCertificateChain(filepath.Join(dir, rootCaCertFile), [][]byte{enrollment.RootCA.Raw})
+	_, err = pki.SaveCertificateChain(filepath.Join(dir, rootCaCertFile), [][]byte{enrollment.RootCA.Raw})
 	if err != nil {
 		return err
 	}
 
-	_, err = pki2.SaveCertificateChain(filepath.Join(dir, certFile), enrollment.Cert.Certificate)
+	_, err = pki.SaveCertificateChain(filepath.Join(dir, certFile), enrollment.Cert.Certificate)
 	return err
 }

@@ -18,7 +18,7 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 
-	pki2 "github.com/vanti-dev/sc-bos/pkg/util/pki"
+	"github.com/vanti-dev/sc-bos/internal/util/pki"
 )
 
 func TestServeHTTPS(t *testing.T) {
@@ -26,14 +26,14 @@ func TestServeHTTPS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	certSource := pki2.SelfSignedSource(privateKey)
+	certSource := pki.SelfSignedSource(privateKey)
 
 	gotRequest := make(chan struct{})
 	finishHandler := make(chan struct{})
 	defer close(finishHandler) // so the handler doesn't run forever
 	server := &http.Server{
 		Addr:      "localhost:20427",
-		TLSConfig: pki2.TLSServerConfig(certSource),
+		TLSConfig: pki.TLSServerConfig(certSource),
 		Handler: http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			close(gotRequest)
 			<-finishHandler
@@ -93,9 +93,9 @@ func TestServeGRPC(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	certSource := pki2.SelfSignedSource(privateKey)
+	certSource := pki.SelfSignedSource(privateKey)
 
-	server := grpc.NewServer(grpc.Creds(credentials.NewTLS(pki2.TLSServerConfig(certSource))))
+	server := grpc.NewServer(grpc.Creds(credentials.NewTLS(pki.TLSServerConfig(certSource))))
 	reflection.Register(server) // we don't need reflection for the test, it's just a convenient service to use
 
 	serveCtx, cancelServe := context.WithCancel(context.Background())

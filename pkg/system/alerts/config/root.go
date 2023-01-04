@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/vanti-dev/sc-bos/pkg/util/pgxutil"
+	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 )
 
 type Root struct {

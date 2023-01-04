@@ -12,15 +12,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/vanti-dev/sc-bos/pkg/auto"
-	"github.com/vanti-dev/sc-bos/pkg/driver"
-	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/system"
-	"github.com/vanti-dev/sc-bos/pkg/task"
-	pki2 "github.com/vanti-dev/sc-bos/pkg/util/pki"
-	"github.com/vanti-dev/sc-bos/pkg/util/pki/expire"
-
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/rs/cors"
 	"github.com/timshannon/bolthold"
@@ -31,8 +22,17 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/vanti-dev/sc-bos/internal/auth/tenant"
+	"github.com/vanti-dev/sc-bos/internal/util/pki"
+	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
+	"github.com/vanti-dev/sc-bos/pkg/auto"
+	"github.com/vanti-dev/sc-bos/pkg/driver"
+	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
+	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/system"
+	"github.com/vanti-dev/sc-bos/pkg/task"
+
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
-	"github.com/vanti-dev/sc-bos/pkg/auth/tenant"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -113,7 +113,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	}
 
 	// create private key if it doesn't exist
-	key, keyPEM, err := pki2.LoadOrGeneratePrivateKey(filepath.Join(config.DataDir, "private-key.pem"), logger)
+	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(config.DataDir, "private-key.pem"), logger)
 	if err != nil {
 		return nil, err
 	}
@@ -127,18 +127,18 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	// First we attempt to use cohort enrollment as our source of certs/roots.
 	// If that fails we attempt to read from files in the data dir (server-cert.pem, private-key.pem, and roots.pem).
 	// If all that fails we mint a new self signed certificate.
-	certSource := pki2.ChainSource(
+	certSource := pki.ChainSource(
 		enrollServer,
-		pki2.CacheSource(pki2.FuncSource(func() (*tls.Certificate, []*x509.Certificate, error) {
+		pki.CacheSource(pki.FuncSource(func() (*tls.Certificate, []*x509.Certificate, error) {
 			return readCertAndRoots(config, key)
 		}), expire.BeforeInvalid(time.Hour)),
-		pki2.CacheSource(pki2.SelfSignedSource(key, pki2.WithExpireAfter(30*24*time.Hour), pki2.WithIfaces()), expire.AfterProgress(0.5)),
+		pki.CacheSource(pki.SelfSignedSource(key, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()), expire.AfterProgress(0.5)),
 	)
-	tlsGRPCServerConfig := pki2.TLSServerConfig(certSource)
+	tlsGRPCServerConfig := pki.TLSServerConfig(certSource)
 	tlsGRPCServerConfig.ClientAuth = tls.VerifyClientCertIfGiven
-	tlsGRPCClientConfig := pki2.TLSClientConfig(certSource)
+	tlsGRPCClientConfig := pki.TLSClientConfig(certSource)
 
-	tlsHTTPServerConfig := pki2.TLSServerConfig(certSource)
+	tlsHTTPServerConfig := pki.TLSServerConfig(certSource)
 
 	// manager represents a delayed connection to the cohort manager.
 	// Using the manager connection when we aren't enrolled will result in RPC calls returning 'not resolved' errors or similar.
@@ -240,9 +240,9 @@ func shouldSetupTokenServer(config SystemConfig) bool {
 	return config.TenantOAuth || config.LocalOAuth
 }
 
-func readCertAndRoots(config SystemConfig, key pki2.PrivateKey) (*tls.Certificate, []*x509.Certificate, error) {
+func readCertAndRoots(config SystemConfig, key pki.PrivateKey) (*tls.Certificate, []*x509.Certificate, error) {
 	certPath := filepath.Join(config.DataDir, "server-cert.pem")
-	cert, err := pki2.LoadX509Cert(certPath, key)
+	cert, err := pki.LoadX509Cert(certPath, key)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -254,7 +254,7 @@ func readCertAndRoots(config SystemConfig, key pki2.PrivateKey) (*tls.Certificat
 		}
 		return nil, nil, err
 	}
-	roots, err := pki2.ParseCertificatesPEM(rootsPem)
+	roots, err := pki.ParseCertificatesPEM(rootsPem)
 	if err != nil {
 		return nil, nil, err
 	}
