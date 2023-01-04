@@ -10,6 +10,6 @@
   </div>
 </template>
 <script setup>
-import SmartCoreStatusCard from '@/components/smartCoreStatusCard.vue';
+import SmartCoreStatusCard from '@/routes/ops/smartCoreStatusCard.vue';
 
 </script>

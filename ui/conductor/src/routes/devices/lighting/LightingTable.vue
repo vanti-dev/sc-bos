@@ -25,8 +25,8 @@
 </template>
 <script setup>
 import MainCard from '@/components/ContentCard.vue';
-import Filters from '@/components/devices/Filters.vue';
-import BulkAction from '@/components/devices/BulkAction.vue';
+import Filters from '@/routes/devices/lighting/components/Filters.vue';
+import BulkAction from '@/routes/devices/lighting/components/BulkAction.vue';
 import {useLightingStore} from '@/stores/devices/lighting.js';
 import {storeToRefs} from 'pinia';
 import {usePageStore} from '@/stores/page';
