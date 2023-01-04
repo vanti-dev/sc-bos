@@ -4,6 +4,7 @@
         app
         height="60"
         :clipped-left="hasNav"
+        clipped-right
         elevation="0"
         class="pr-7">
       <app-menu btn-class="full-btn"/>
@@ -31,11 +32,16 @@
         floating
         width="275"
         class="pa-8 pr-0 mr-8">
-      <page-title/>
+      <h1 class="pl-1 text-h1">{{ pageTitle }}</h1>
       <v-divider class="my-5"/>
       <router-view name="nav" v-if="hasNav"/>
       <template #append>
-        <NavFooter/>
+        <v-footer class="pa-0" style="background:transparent">
+          <v-col class="pa-0">
+            <v-divider/>
+            <p class="my-2 text-caption text-center neutral--text text--lighten-2">Smart Core v2022.11</p>
+          </v-col>
+        </v-footer>
       </template>
     </v-navigation-drawer>
 
@@ -49,12 +55,11 @@
 import AccountBtn from '@/components/AccountBtn.vue';
 import AppMenu from '@/components/AppMenu.vue';
 import {usePage} from '@/components/page.js';
-import PageTitle from '@/components/PageTitle.vue';
 import ScLogo from '@/components/ScLogo.vue';
 import {useAccountStore} from '@/stores/account.js';
 // import {onMounted} from 'vue';
 
-const {hasSections, hasNav} = usePage();
+const {pageTitle, hasSections, hasNav} = usePage();
 
 const store = useAccountStore();
 
