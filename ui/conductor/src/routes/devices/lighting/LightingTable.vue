@@ -1,42 +1,40 @@
 <template>
-  <v-container fluid class="pa-0">
-    <main-card>
-      <v-data-table
-          v-model="selected"
-          :headers="headers"
-          :items="filteredLights"
-          item-key="device_id"
-          :search="search"
-          @click:row="rowClick"
-          :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
-          show-select>
-        <template #top>
-          <Filters v-if="selected.length <= 1"/>
-          <BulkAction v-else/>
-        </template>
-        <template #item.status="{ item }">
-          <span
-              :class="getColor(item.status)"
-              class="font-weight-bold text-uppercase">
-            {{ item.status }}
-          </span>
-        </template>
-      </v-data-table>
-    </main-card>
-    <RowMenu/>
-  </v-container>
+  <main-card>
+    <v-data-table
+        v-model="selected"
+        :headers="headers"
+        :items="filteredLights"
+        item-key="device_id"
+        :search="search"
+        @click:row="rowClick"
+        :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
+        show-select>
+      <template #top>
+        <Filters v-if="selected.length <= 1"/>
+        <BulkAction v-else/>
+      </template>
+      <template #item.status="{ item }">
+        <span
+            :class="getColor(item.status)"
+            class="font-weight-bold text-uppercase">
+          {{ item.status }}
+        </span>
+      </template>
+    </v-data-table>
+  </main-card>
 </template>
 <script setup>
 import MainCard from '@/components/ContentCard.vue';
 import Filters from '@/components/devices/Filters.vue';
 import BulkAction from '@/components/devices/BulkAction.vue';
-import RowMenu from './RowMenu.vue';
 import {useLightingStore} from '@/stores/devices/lighting.js';
 import {storeToRefs} from 'pinia';
+import {usePageStore} from '@/stores/page';
 
 const store = useLightingStore();
-
 const {headers, selected, filteredLights, search} = storeToRefs(store);
+
+const pageStore = usePageStore();
 
 const getColor = (status) => {
   if (status == 'On') {
@@ -49,7 +47,7 @@ const getColor = (status) => {
 };
 
 const rowClick = (item, row) => {
-  store.toggleDrawer();
+  pageStore.showSidebar = true;
   store.setSelectedItem(item);
 };
 </script>

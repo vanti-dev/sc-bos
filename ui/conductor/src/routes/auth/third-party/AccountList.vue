@@ -1,34 +1,32 @@
 <template>
-  <v-container fluid class="pa-0">
-    <main-card>
-      <v-card-actions>
-        <v-text-field
-            label="Search tenants"
-            outlined
-            hide-details
-            prepend-inner-icon="mdi-magnify"
-            v-model="search"/>
-      </v-card-actions>
-      <v-data-table
-          class="table"
-          :headers="headers"
-          :items="tenantRows"
-          :search="search"
-          sort-by="title"
-          show-select
-          :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
-          :loading="tenantsTracker.loading"
-          @click:row="showTenant">
-        <template #item.zones="{ index, value }">
-          <span class="d-inline-flex justify-start" style="gap: 8px">
-            <v-chip v-for="zone in value" :key="index + zone" small outlined>{{
-              zone
-            }}</v-chip>
-          </span>
-        </template>
-      </v-data-table>
-    </main-card>
-  </v-container>
+  <main-card>
+    <v-card-actions>
+      <v-text-field
+          label="Search tenants"
+          outlined
+          hide-details
+          prepend-inner-icon="mdi-magnify"
+          v-model="search"/>
+    </v-card-actions>
+    <v-data-table
+        class="table"
+        :headers="headers"
+        :items="tenantRows"
+        :search="search"
+        sort-by="title"
+        show-select
+        :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
+        :loading="tenantsTracker.loading"
+        @click:row="showTenant">
+      <template #item.zones="{ index, value }">
+        <span class="d-inline-flex justify-start" style="gap: 8px">
+          <v-chip v-for="zone in value" :key="index + zone" small outlined>{{
+            zone
+          }}</v-chip>
+        </span>
+      </template>
+    </v-data-table>
+  </main-card>
 </template>
 
 <script setup>

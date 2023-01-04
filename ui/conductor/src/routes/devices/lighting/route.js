@@ -1,3 +1,9 @@
 export default [
-  {path: 'lighting', component: () => import('./LightingTable.vue')}
+  {
+    path: 'lighting',
+    components: {
+      default: () => import('./LightingTable.vue'),
+      sidebar: () => import('./RowMenu.vue')
+    }
+  }
 ];

@@ -15,6 +15,7 @@ export function usePage() {
 
   const hasSections = computed(() => currentRoute?.matched?.some(r => r.components?.sections));
   const hasNav = computed(() => currentRoute?.matched?.some(r => r.components?.nav));
+  const hasSidebar = computed(() => currentRoute?.matched?.some(r => r.components?.sidebar));
 
-  return {pageTitle, hasSections, hasNav};
+  return {pageTitle, hasSections, hasNav, hasSidebar};
 }

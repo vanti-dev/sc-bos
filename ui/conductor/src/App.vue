@@ -4,7 +4,7 @@
         app
         height="60"
         :clipped-left="hasNav"
-        clipped-right
+        :clipped-right="hasSidebar"
         elevation="0"
         class="pr-7">
       <app-menu btn-class="full-btn"/>
@@ -45,9 +45,7 @@
       </template>
     </v-navigation-drawer>
 
-    <v-main class="mx-10 my-6">
-      <router-view/>
-    </v-main>
+    <router-view/>
   </v-app>
 </template>
 
@@ -59,7 +57,7 @@ import ScLogo from '@/components/ScLogo.vue';
 import {useAccountStore} from '@/stores/account.js';
 // import {onMounted} from 'vue';
 
-const {pageTitle, hasSections, hasNav} = usePage();
+const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
 
 const store = useAccountStore();
 

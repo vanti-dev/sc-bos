@@ -1,4 +1,4 @@
-import ChildOnlyPage from '@/components/ChildOnlyPage.vue';
+import ChildOnlyPage from '@/components/page-layout/ChildOnlyPage.vue';
 import thirdParty from '@/routes/auth/third-party/route.js';
 import {route} from '@/util/router.js';
 

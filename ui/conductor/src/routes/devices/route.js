@@ -1,4 +1,4 @@
-import ChildOnlyPage from '@/components/ChildOnlyPage.vue';
+import SidebarPage from '@/components/page-layout/SidebarPage.vue';
 import {route} from '@/util/router.js';
 import lighting from '@/routes/devices/lighting/route';
 
@@ -7,7 +7,7 @@ export default {
   path: '/devices',
   redirect: '/devices/lighting',
   components: {
-    default: ChildOnlyPage,
+    default: SidebarPage,
     nav: () => import('./DevicesNav.vue')
   },
   children: [
