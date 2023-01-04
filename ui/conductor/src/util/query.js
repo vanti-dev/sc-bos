@@ -27,7 +27,7 @@ export class Collection {
   }
 
   pullIfNeeded() {
-    if (!this._resources.loading && !this._resources.stream) {
+    if (this.pullFn && !this._resources.loading && !this._resources.stream) {
       this.pullFn(this.queryRaw, this._resources);
     }
   }
