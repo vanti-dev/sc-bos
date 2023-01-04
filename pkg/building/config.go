@@ -1,4 +1,4 @@
-package main
+package building
 
 type SystemConfig struct {
 	ListenGRPC             string `json:"listen-grpc"`
