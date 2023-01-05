@@ -3,7 +3,7 @@ import Vue from 'vue';
 
 /**
  *
- * @param {RemoteResource} resource
+ * @param {RemoteResource<any>} resource
  */
 export function closeResource(resource) {
   // todo: check if grpc streams have a close or cancel method
@@ -14,8 +14,9 @@ export function closeResource(resource) {
 
 /**
  *
- * @param {ResourceValue} resource
- * @param {*} val
+ * @param {ResourceValue<V, M>} resource
+ * @param {V} val
+ * @template V,M
  */
 export function setValue(resource, val) {
   Vue.set(resource, 'loading', false);
@@ -25,16 +26,11 @@ export function setValue(resource, val) {
 }
 
 /**
- * @function IdFunc
- * @param {*} val
- * @return {string|number}
- */
-
-/**
  *
- * @param {ResourceValue} resource
- * @param {Change} change
- * @param {IdFunc} idFunc
+ * @param {ResourceValue<V, M>} resource
+ * @param {CollectionChange<V,any>} change
+ * @param {function(V):string} idFunc
+ * @template V,M
  */
 export function setCollection(resource, change, idFunc) {
   Vue.set(resource, 'loading', false);
@@ -54,7 +50,7 @@ export function setCollection(resource, change, idFunc) {
 
 /**
  *
- * @param {RemoteResource} resource
+ * @param {RemoteResource<any,any>} resource
  * @param {Error} err
  */
 export function setError(resource, err) {
@@ -66,8 +62,9 @@ export function setError(resource, err) {
 /**
  *
  * @param {string} logPrefix
- * @param {RemoteResource} resource
- * @param {StreamFactory} newStream
+ * @param {RemoteResource<O, T>} resource
+ * @param {StreamFactory<T>} newStream
+ * @template T,O
  */
 export function pullResource(logPrefix, resource, newStream) {
   const doPull = (retryDelayMs = 1000) => {
@@ -115,8 +112,9 @@ export function pullResource(logPrefix, resource, newStream) {
 /**
  *
  * @param {string} logPrefix
- * @param {ActionTracker} tracker
- * @param {Action} action
+ * @param {ActionTracker<V>} tracker
+ * @param {Action<V, M>} action
+ * @template V, M
  */
 export async function trackAction(logPrefix, tracker, action) {
   Vue.set(tracker, 'loading', true);
@@ -136,7 +134,8 @@ export async function trackAction(logPrefix, tracker, action) {
 
 /**
  *
- * @return {ActionTracker}
+ * @return {ActionTracker<V>}
+ * @template V
  */
 export function newActionTracker() {
   return {
@@ -149,7 +148,8 @@ export function newActionTracker() {
 
 /**
  *
- * @return {ResourceValue}
+ * @return {ResourceValue<V, M>}
+ * @template V,M
  */
 export function newResourceValue() {
   return {
@@ -163,7 +163,8 @@ export function newResourceValue() {
 
 /**
  *
- * @return {ResourceCollection}
+ * @return {ResourceCollection<V, M>}
+ * @template V,M
  */
 export function newResourceCollection() {
   return {

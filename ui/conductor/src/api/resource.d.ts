@@ -4,7 +4,7 @@ import {Timestamp} from "google-protobuf/google/protobuf/timestamp_pb";
 import {ChangeType} from "@smart-core-os/sc-api-grpc-web/types/change_pb";
 
 type Opt<T> = T | null | undefined;
-type Msg<T> = Message | { toObject(includeInstance?: boolean): T }
+type Msg<T> = Message | { toObject(includeInstance?: boolean): T };
 
 export function closeResource(resource: RemoteResource<any> | null);
 
@@ -44,9 +44,7 @@ export interface ResourceCallback<V> {
   error(e: Error);
 }
 
-export interface StreamFactory<M> {
-  (endpoint: string): grpcWeb.ClientReadableStream<M>;
-}
+export type StreamFactory<M> = (endpoint: string) => grpcWeb.ClientReadableStream<M>;
 
 export interface CollectionChange<V, M extends Msg<V>> {
   getName(): string;
@@ -67,6 +65,4 @@ export interface ActionTracker<V> {
   duration?: number;
 }
 
-export interface Action<V, M extends Msg<V>> {
-  (endpoint: string): M
-}
+export type Action<V, M extends Msg<V>> = (endpoint: string) => Promise<M>;
