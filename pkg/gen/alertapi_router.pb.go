@@ -30,7 +30,7 @@ func NewAlertApiRouter(opts ...router.Option) *AlertApiRouter {
 // WithAlertApiClientFactory instructs the router to create a new
 // client the first time Get is called for that name.
 func WithAlertApiClientFactory(f func(name string) (AlertApiClient, error)) router.Option {
-	return router.WithFactory(func(name string) (interface{}, error) {
+	return router.WithFactory(func(name string) (any, error) {
 		return f(name)
 	})
 }
@@ -40,14 +40,14 @@ func (r *AlertApiRouter) Register(server *grpc.Server) {
 }
 
 // Add extends Router.Add to panic if client is not of type gen.AlertApiClient.
-func (r *AlertApiRouter) Add(name string, client interface{}) interface{} {
+func (r *AlertApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
 		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.AlertApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }
 
-func (r *AlertApiRouter) HoldsType(client interface{}) bool {
+func (r *AlertApiRouter) HoldsType(client any) bool {
 	_, ok := client.(AlertApiClient)
 	return ok
 }
@@ -163,4 +163,72 @@ func (r *AlertApiRouter) UnacknowledgeAlert(ctx context.Context, request *Acknow
 	}
 
 	return child.UnacknowledgeAlert(ctx, request)
+}
+
+func (r *AlertApiRouter) GetAlertMetadata(ctx context.Context, request *GetAlertMetadataRequest) (*AlertMetadata, error) {
+	child, err := r.GetAlertApiClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.GetAlertMetadata(ctx, request)
+}
+
+func (r *AlertApiRouter) PullAlertMetadata(request *PullAlertMetadataRequest, server AlertApi_PullAlertMetadataServer) error {
+	child, err := r.GetAlertApiClient(request.Name)
+	if err != nil {
+		return err
+	}
+
+	// so we can cancel our forwarding request if we can't send responses to our caller
+	reqCtx, reqDone := context.WithCancel(server.Context())
+	// issue the request
+	stream, err := child.PullAlertMetadata(reqCtx, request)
+	if err != nil {
+		return err
+	}
+
+	// send the stream header
+	header, err := stream.Header()
+	if err != nil {
+		return err
+	}
+	if err = server.SendHeader(header); err != nil {
+		return err
+	}
+
+	// send all the messages
+	// false means the error is from the child, true means the error is from the caller
+	var callerError bool
+	for {
+		// Impl note: we could improve throughput here by issuing the Recv and Send in different goroutines, but we're doing
+		// it synchronously until we have a need to change the behaviour
+
+		var msg *PullAlertMetadataResponse
+		msg, err = stream.Recv()
+		if err != nil {
+			break
+		}
+
+		err = server.Send(msg)
+		if err != nil {
+			callerError = true
+			break
+		}
+	}
+
+	// err is guaranteed to be non-nil as it's the only way to exit the loop
+	if callerError {
+		// cancel the request
+		reqDone()
+		return err
+	} else {
+		if trailer := stream.Trailer(); trailer != nil {
+			server.SetTrailer(trailer)
+		}
+		if err == io.EOF {
+			return nil
+		}
+		return err
+	}
 }

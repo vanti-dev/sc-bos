@@ -27,8 +27,8 @@ export function setValue(resource, val) {
 
 /**
  *
- * @param {ResourceValue<V, M>} resource
- * @param {CollectionChange<V,any>} change
+ * @param {ResourceCollection<V, M>} resource
+ * @param {CollectionChange<V,M>} change
  * @param {function(V):string} idFunc
  * @template V,M
  */

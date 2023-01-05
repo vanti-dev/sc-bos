@@ -34,6 +34,18 @@ export class AlertApiClient {
                response: proto_alerts_pb.Alert) => void
   ): grpcWeb.ClientReadableStream<proto_alerts_pb.Alert>;
 
+  getAlertMetadata(
+    request: proto_alerts_pb.GetAlertMetadataRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: proto_alerts_pb.AlertMetadata) => void
+  ): grpcWeb.ClientReadableStream<proto_alerts_pb.AlertMetadata>;
+
+  pullAlertMetadata(
+    request: proto_alerts_pb.PullAlertMetadataRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<proto_alerts_pb.PullAlertMetadataResponse>;
+
 }
 
 export class AlertAdminApiClient {
@@ -88,6 +100,16 @@ export class AlertApiPromiseClient {
     request: proto_alerts_pb.AcknowledgeAlertRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<proto_alerts_pb.Alert>;
+
+  getAlertMetadata(
+    request: proto_alerts_pb.GetAlertMetadataRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<proto_alerts_pb.AlertMetadata>;
+
+  pullAlertMetadata(
+    request: proto_alerts_pb.PullAlertMetadataRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<proto_alerts_pb.PullAlertMetadataResponse>;
 
 }
 

@@ -17,6 +17,10 @@ service AlertApi {
   // Acknowledgement allows tracking of which alerts have been seen by an actor that may be able to react to the alert.
   rpc AcknowledgeAlert(AcknowledgeAlertRequest) returns (Alert);
   rpc UnacknowledgeAlert(AcknowledgeAlertRequest) returns (Alert);
+
+  // Get alert metadata: how many alerts are there, what zones exist, etc.
+  rpc GetAlertMetadata(GetAlertMetadataRequest) returns (AlertMetadata);
+  rpc PullAlertMetadata(PullAlertMetadataRequest) returns (stream PullAlertMetadataResponse);
 }
 
 // AlertAdminApi allows for API access to the internal features of an alert management device.
@@ -90,6 +94,24 @@ message Alert {
     // When absent, acknowledgement does not affect whether an alert is returned or not.
     optional bool acknowledged = 8;
   }
+}
+
+message AlertMetadata {
+  uint32 total_count = 1;
+
+  // These counts have a key that matches the value in Alert,
+  // and a value equal to the total number of alerts that have that value.
+  // For example {"Floor2": 12, "Floor3": 33} means 12 alerts exist for "Floor2" and 33 exist for "Floor3".
+  //
+  // A client can use the keys to discover the list of available values.
+  //
+  // The server may include keys that have a zero value.
+
+  map<string, uint32> floor_counts = 2;
+  map<string, uint32> zone_counts = 3;
+  //map<string, uint32> source_counts = 4; // not sure this is needed and is likely to have poor performance
+  map<bool, uint32> acknowledged_counts = 5;
+  map<sint32, uint32> severity_counts = 6;
 }
 
 message ListAlertsRequest {
@@ -172,6 +194,33 @@ message AcknowledgeAlertRequest {
   bool allow_acknowledged = 3;
   // When true, acknowledging an alert that does not exist will not result in an error
   bool allow_missing = 4;
+}
+
+message GetAlertMetadataRequest {
+  // Name of the device exposing this trait.
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+}
+
+message PullAlertMetadataRequest {
+  // Name of the device exposing this trait.
+  string name = 1;
+  // If true, only changes to the count are returned, otherwise the current total will be returned immediately.
+  bool updates_only = 2;
+  google.protobuf.FieldMask read_mask = 3;
+}
+
+message PullAlertMetadataResponse {
+  repeated Change changes = 1;
+
+  message Change {
+    // The name of the device that emitted this change
+    string name = 1;
+    // Information about the alerts in aggregate.
+    AlertMetadata metadata = 2;
+    // When the change occurred
+    google.protobuf.Timestamp change_time = 3;
+  }
 }
 
 message CreateAlertRequest {

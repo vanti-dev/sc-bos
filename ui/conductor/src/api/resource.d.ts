@@ -34,7 +34,7 @@ export interface ResourceValue<V, M extends Msg<V>> extends RemoteResource<M> {
 }
 
 
-export interface ResourceCollection<V, M extends Msg<V>> extends RemoteResource<M> {
+export interface ResourceCollection<V, M extends Msg<V>> extends RemoteResource<any> {
   value?: { [id: string]: V };
 }
 
@@ -49,7 +49,7 @@ export type StreamFactory<M> = (endpoint: string) => grpcWeb.ClientReadableStrea
 export interface CollectionChange<V, M extends Msg<V>> {
   getName(): string;
 
-  getChangeTime(): Timestamp;
+  getChangeTime(): Timestamp | undefined;
 
   getChangeType(): ChangeType;
 

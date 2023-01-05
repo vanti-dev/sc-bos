@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgconn"
@@ -13,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -61,8 +63,32 @@ type Server struct {
 	gen.UnimplementedAlertApiServer
 	gen.UnimplementedAlertAdminApiServer
 
+	// Floors, if set, is used to pre-populate AlertMetadata with zero values for cases when no alerts appear on a floor.
+	Floors []string
+	// Zones, if set, is used to pre-populate AlertMetadata with zero values for cases when no alerts appear in a zone.
+	Zones []string
+	// Severity, if set, is used to pre-populate AlertMetadata with zero values for cases when no alerts have a severity.
+	Severity []int32
+
 	pool *pgxpool.Pool
 	bus  *minibus.Bus[*gen.PullAlertsResponse_Change]
+
+	// to support alert metadata
+	mdMu   sync.Mutex      // guards the following md fields
+	md     *resource.Value // of *gen.AlertMetadata, used to track changes
+	mdC    chan struct{}   // nil if needs init, blocked if init-ing, closed if done
+	mdErr  error           // non-nil if mdC is done and completed with error
+	mdStop func()          // closes any go routines that are listening for changes
+}
+
+func (s *Server) Close() error {
+	s.mdMu.Lock()
+	if s.mdStop != nil {
+		s.mdStop()
+	}
+	s.mdMu.Unlock()
+
+	return nil
 }
 
 func (s *Server) CreateAlert(ctx context.Context, request *gen.CreateAlertRequest) (*gen.Alert, error) {
@@ -390,7 +416,7 @@ func (s *Server) AcknowledgeAlert(ctx context.Context, request *gen.AcknowledgeA
 		return nil, err
 	}
 
-	if existing != updated {
+	if !proto.Equal(existing, updated) {
 		// notify
 		go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
 			Name:       request.Name,
@@ -441,7 +467,7 @@ func (s *Server) UnacknowledgeAlert(ctx context.Context, request *gen.Acknowledg
 		return nil, err
 	}
 
-	if existing != updated {
+	if !proto.Equal(existing, updated) {
 		// notify
 		go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
 			Name:       request.Name,
