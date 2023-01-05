@@ -1,4 +1,5 @@
 @import "vuetify/src/styles/styles.sass";
+@import "vuetify/src/components/VChip/_variables.scss";
 @import "vuetify/src/components/VTextField/_variables.scss";
 
 
@@ -42,4 +43,20 @@ to have a border all around instead of just at the bottom
 .v-text-field--filled .v-input__slot:before,
 .v-text-field--filled .v-input__slot:after {
     display: none;
+}
+
+/*
+Make sure that chips don't appear squashed if they contain only narrow text.
+Also center the text when it's small
+ */
+.v-chip {
+    justify-content: center;
+}
+
+.v-chip {
+    @each $name, $size in $icon-sizes {
+        &.v-size--#{$name} {
+            min-width: #{map-get($size, 'height')}px
+        }
+    }
 }
