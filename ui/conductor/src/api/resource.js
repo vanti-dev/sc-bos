@@ -6,6 +6,9 @@ import Vue from 'vue';
  * @param {RemoteResource} resource
  */
 export function closeResource(resource) {
+  // todo: check if grpc streams have a close or cancel method
+  //  The type says cancel, but our code said close.
+  if (resource?.stream?.cancel) resource.stream.cancel();
   if (resource?.stream?.close) resource.stream.close();
 }
 
