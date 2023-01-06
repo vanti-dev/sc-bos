@@ -7,14 +7,14 @@
         :menu-props="{offsetY: true}"
         label="Floor"
         :items="floors"
-        :value="floor"
+        :value="selectedFloor"
         @change="updateFloor"/>
     <v-select
         hide-details
         filled
         :menu-props="{offsetY: true}"
         label="Zone"
-        :value="zone"
+        :value="selectedZone"
         :items="zones"
         @change="updateZone"/>
   </v-toolbar>
@@ -53,8 +53,8 @@ const zones = computed(() => {
   return ['All', ...props.zoneItems];
 });
 
-const floor = computed(() => {
-  return props.floor ?? 'All';
+const selectedFloor = computed(() => {
+  return props.floor || 'All';
 });
 
 /**
@@ -69,8 +69,8 @@ function updateFloor(f) {
   }
 }
 
-const zone = computed(() => {
-  return props.zone ?? 'All';
+const selectedZone = computed(() => {
+  return props.zone || 'All';
 });
 
 /**
@@ -92,6 +92,6 @@ function updateZone(z) {
 }
 
 .v-select {
-  max-width: 120px;
+  max-width: 15em;
 }
 </style>

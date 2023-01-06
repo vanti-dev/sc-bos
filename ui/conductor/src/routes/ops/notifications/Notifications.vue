@@ -32,11 +32,13 @@
 </template>
 <script setup>
 import {timestampToDate} from '@/api/convpb.js';
+import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import Filters from '@/routes/ops/notifications/Filters.vue';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import {computed, onUnmounted, reactive, watch} from 'vue';
 
 const notifications = useNotifications();
+const alertMetadata = useAlertMetadata();
 
 const query = reactive({
   createdNotBefore: undefined,
@@ -49,9 +51,8 @@ const query = reactive({
   acknowledged: undefined
 });
 
-// todo: get these from the server, or at least the data, or something more relevant
-const floors = computed(() => ['L01', 'L02', 'L03', 'L04', '12']);
-const zones = computed(() => ['Z01', 'Z02', 'R01', 'NE']);
+const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
+const zones = computed(() => Object.keys(alertMetadata.zoneCountsMap).sort());
 
 const allHeaders = [
   {text: 'Timestamp', value: 'createTime', width: '14em'},
