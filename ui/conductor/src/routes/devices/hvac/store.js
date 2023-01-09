@@ -7,6 +7,20 @@ export const useHvacStore = defineStore('hvac', () => {
   const deviceList = ref(hvacJson.devices);
   const data = hvacJson.data;
 
+  const getDevice = computed((state) => {
+    return (deviceId) => {
+      for (const key in deviceList.value) {
+        if (deviceList.value.hasOwnProperty(key)) {
+          const d = deviceList.value[key];
+          if (d.deviceId === deviceId) {
+            return d;
+          }
+        }
+      }
+      return {};
+    };
+  });
+
   /**
    *
    * @param {string} deviceId
@@ -28,7 +42,7 @@ export const useHvacStore = defineStore('hvac', () => {
    */
   const getCurrentTemp = computed(() => {
     return (deviceId) => {
-      if (data.value.hasOwnProperty(deviceId)) {
+      if (data.hasOwnProperty(deviceId)) {
         return data[deviceId].currentTemp;
       }
       return 0;
@@ -38,6 +52,7 @@ export const useHvacStore = defineStore('hvac', () => {
   return {
     deviceList,
     getSetPoint,
-    getCurrentTemp
+    getCurrentTemp,
+    getDevice
   };
 });
