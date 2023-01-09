@@ -1,0 +1,21 @@
+{
+  "devices": [
+    {
+      "deviceId": "FCU-523",
+      "locations": ["L03, L03_Z01, L03_Z02"],
+      "floor": "L03",
+      "driver": "SC_BACnet",
+      "guid": "04ae55ymD_$u5lxhJN2aGi",
+      "bacnet": {
+        "setPoint": "1.2.3.4",
+        "currentTemp": "1.2.3.5"
+      }
+    }
+  ],
+  "data": {
+    "FCU-523": {
+      "setPoint": 22.0,
+      "currentTemp": 21.5
+    }
+  }
+}
