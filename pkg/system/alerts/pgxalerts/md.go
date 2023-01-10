@@ -116,7 +116,7 @@ func (s *Server) initAlertMetadata(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("severity %w", err)
 			}
-			md.SeverityCounts = severity
+			md.SeverityCounts = severityCountMapToProto(severity)
 
 			if eventsCancel != nil {
 				eventsCancel()
@@ -239,4 +239,12 @@ func queryGroupCounts[K comparable](ctx context.Context, tx pgx.Tx, col string, 
 		all[id] = count
 	}
 	return all, nil
+}
+
+func severityCountMapToProto(m map[gen.Alert_Severity]uint32) map[int32]uint32 {
+	dst := make(map[int32]uint32, len(m))
+	for k, v := range m {
+		dst[int32(k)] = v
+	}
+	return dst
 }

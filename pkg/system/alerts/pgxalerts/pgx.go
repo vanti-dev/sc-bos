@@ -56,6 +56,12 @@ func NewServerFromPool(ctx context.Context, pool *pgxpool.Pool) (*Server, error)
 	return &Server{
 		pool: pool,
 		bus:  &minibus.Bus[*gen.PullAlertsResponse_Change]{},
+		Severity: []gen.Alert_Severity{
+			gen.Alert_INFO,
+			gen.Alert_WARNING,
+			gen.Alert_SEVERE,
+			gen.Alert_LIFE_SAFETY,
+		},
 	}, nil
 }
 
@@ -68,7 +74,7 @@ type Server struct {
 	// Zones, if set, is used to pre-populate AlertMetadata with zero values for cases when no alerts appear in a zone.
 	Zones []string
 	// Severity, if set, is used to pre-populate AlertMetadata with zero values for cases when no alerts have a severity.
-	Severity []int32
+	Severity []gen.Alert_Severity
 
 	pool *pgxpool.Pool
 	bus  *minibus.Bus[*gen.PullAlertsResponse_Change]
