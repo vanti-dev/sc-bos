@@ -47,7 +47,13 @@ message Alert {
   message Acknowledgement {
     google.protobuf.Timestamp acknowledge_time = 1;
 
-    // there's room here for additional properties, like who acknowledged it, that we don't need right now
+    message Author {
+      string id = 1;
+      string display_name = 2;
+      string email = 3;
+    }
+    // Who acknowledged this alert
+    Author author = 2;
   }
   // Present if the alert has been acknowledged.
   // Acknowledgement is an indication that somebody is now aware that this alert exists.
@@ -188,6 +194,9 @@ message AcknowledgeAlertRequest {
   string name = 1;
   // The id of the alert.
   string id = 2;
+  // The author of the acknowledgement.
+  // If the alert has already been acknowledged then this is ignored.
+  Alert.Acknowledgement.Author author = 5;
 
   // When true, acknowledging an alert that is already acknowledged will not result in an error.
   // Similarly un-acknowledging an alert that is not acknowledged will not result in an error.
@@ -226,6 +235,8 @@ message PullAlertMetadataResponse {
 message CreateAlertRequest {
   // Name of the device exposing this trait.
   string name = 1;
+  // The alert information to use for the new record.
+  // Only description, floor, zone, severity, and source will contribute to the new alert.
   Alert alert = 2;
 }
 
@@ -234,6 +245,7 @@ message UpdateAlertRequest {
   string name = 1;
   // The new properties of the alert.
   // Alert.id must be present.
+  // Only description, floor, zone, severity, and source will contribute to the updated alert.
   Alert alert = 2;
   // Fields to update relative to the Alert type
   google.protobuf.FieldMask update_mask = 3;

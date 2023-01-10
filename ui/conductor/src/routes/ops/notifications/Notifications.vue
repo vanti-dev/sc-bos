@@ -19,12 +19,15 @@
           {{ item.createTime.toLocaleString() }}
         </template>
         <template #item.severity="{ item }">
-          <span :class="notifications.severityData(item.severity).color">{{
-            notifications.severityData(item.severity).text
-          }}</span>
+          <span :class="notifications.severityData(item.severity).color">
+            {{ notifications.severityData(item.severity).text }}
+          </span>
         </template>
         <template #item.acknowledged="{ item }">
-          <v-simple-checkbox :value="item.acknowledged" @input="notifications.setAcknowledged($event, item)"/>
+          <acknowledgement
+              :ack="item.acknowledgement"
+              @acknowledge="notifications.setAcknowledged(true, item)"
+              @unacknowledge="notifications.setAcknowledged(false, item)"/>
         </template>
       </v-data-table>
     </v-card>
@@ -32,6 +35,7 @@
 </template>
 <script setup>
 import {timestampToDate} from '@/api/convpb.js';
+import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import Filters from '@/routes/ops/notifications/Filters.vue';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
@@ -55,9 +59,9 @@ const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
 const zones = computed(() => Object.keys(alertMetadata.zoneCountsMap).sort());
 
 const allHeaders = [
-  {text: 'Timestamp', value: 'createTime', width: '14em'},
-  {text: 'Floor', value: 'floor', width: '7em'},
-  {text: 'Zone', value: 'zone', width: '7em'},
+  {text: 'Timestamp', value: 'createTime', width: '15em'},
+  {text: 'Floor', value: 'floor', width: '10em'},
+  {text: 'Zone', value: 'zone', width: '10em'},
   {text: 'Severity', value: 'severity', width: '9em'},
   {text: 'Description', value: 'description', width: '100%'},
   {text: 'Acknowledged', value: 'acknowledged', align: 'center', width: '12em'}

@@ -172,5 +172,17 @@ function acknowledgeAlertRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new AcknowledgeAlertRequest();
   setProperties(dst, obj, 'name', 'id', 'allowMissing', 'allowAcknowledged');
+  dst.setAuthor(alertAuthorFromObject(obj.author));
+  return dst;
+}
+
+/**
+ * @param {Alert.Acknowledgement.Author.AsObject} obj
+ * @return {undefined|Alert.Acknowledgement.Author}
+ */
+function alertAuthorFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new Alert.Acknowledgement.Author();
+  setProperties(dst, obj, 'id', 'displayName', 'email');
   return dst;
 }

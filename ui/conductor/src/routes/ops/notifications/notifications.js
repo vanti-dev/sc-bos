@@ -1,5 +1,6 @@
 import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource';
 import {acknowledgeAlert, listAlerts, pullAlerts, unacknowledgeAlert} from '@/api/ui/alerts.js';
+import {useAccountStore} from '@/stores/account';
 import {useControllerStore} from '@/stores/controller';
 import {Collection} from '@/util/query.js';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
@@ -60,14 +61,25 @@ export const useNotifications = defineStore('notifications', () => {
     return {text: 'unspecified', color: 'gray--text'};
   }
 
+  const account = useAccountStore();
+
   /**
    *
-   * @param {event} e
+   * @param {boolean} e
    * @param {Alert.AsObject} alert
    */
   function setAcknowledged(e, alert) {
     if (e) {
-      acknowledgeAlert({name: controller.controllerName, id: alert.id, allowAcknowledged: false, allowMissing: false})
+      let author = undefined;
+      if (account.email || account.fullName) {
+        author = {
+          email: account.email,
+          displayName: account.fullName
+        };
+      }
+      acknowledgeAlert({
+        name: controller.controllerName, id: alert.id, allowAcknowledged: false, allowMissing: false, author
+      })
           .catch(err => console.error(err));
     } else {
       unacknowledgeAlert({name: controller.controllerName, id: alert.id, allowAcknowledged: false, allowMissing: false})

@@ -60,6 +60,11 @@ export namespace Alert {
     hasAcknowledgeTime(): boolean;
     clearAcknowledgeTime(): Acknowledgement;
 
+    getAuthor(): Alert.Acknowledgement.Author | undefined;
+    setAuthor(value?: Alert.Acknowledgement.Author): Acknowledgement;
+    hasAuthor(): boolean;
+    clearAuthor(): Acknowledgement;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Acknowledgement.AsObject;
     static toObject(includeInstance: boolean, msg: Acknowledgement): Acknowledgement.AsObject;
@@ -71,7 +76,35 @@ export namespace Alert {
   export namespace Acknowledgement {
     export type AsObject = {
       acknowledgeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+      author?: Alert.Acknowledgement.Author.AsObject,
     }
+
+    export class Author extends jspb.Message {
+      getId(): string;
+      setId(value: string): Author;
+
+      getDisplayName(): string;
+      setDisplayName(value: string): Author;
+
+      getEmail(): string;
+      setEmail(value: string): Author;
+
+      serializeBinary(): Uint8Array;
+      toObject(includeInstance?: boolean): Author.AsObject;
+      static toObject(includeInstance: boolean, msg: Author): Author.AsObject;
+      static serializeBinaryToWriter(message: Author, writer: jspb.BinaryWriter): void;
+      static deserializeBinary(bytes: Uint8Array): Author;
+      static deserializeBinaryFromReader(message: Author, reader: jspb.BinaryReader): Author;
+    }
+
+    export namespace Author {
+      export type AsObject = {
+        id: string,
+        displayName: string,
+        email: string,
+      }
+    }
+
   }
 
 
@@ -340,6 +373,11 @@ export class AcknowledgeAlertRequest extends jspb.Message {
   getId(): string;
   setId(value: string): AcknowledgeAlertRequest;
 
+  getAuthor(): Alert.Acknowledgement.Author | undefined;
+  setAuthor(value?: Alert.Acknowledgement.Author): AcknowledgeAlertRequest;
+  hasAuthor(): boolean;
+  clearAuthor(): AcknowledgeAlertRequest;
+
   getAllowAcknowledged(): boolean;
   setAllowAcknowledged(value: boolean): AcknowledgeAlertRequest;
 
@@ -358,6 +396,7 @@ export namespace AcknowledgeAlertRequest {
   export type AsObject = {
     name: string,
     id: string,
+    author?: Alert.Acknowledgement.Author.AsObject,
     allowAcknowledged: boolean,
     allowMissing: boolean,
   }

@@ -28,9 +28,6 @@ import (
 //go:embed schema.sql
 var schemaSql string
 
-// selectAlertSQL selects fields in the order expected by scanAlert.
-const selectAlertSQL = `SELECT id, description, severity, create_time, ack_time, floor, zone, source FROM alerts`
-
 func SetupDB(ctx context.Context, pool *pgxpool.Pool) error {
 	return pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		_, err := tx.Exec(ctx, schemaSql)
@@ -406,7 +403,21 @@ func (s *Server) AcknowledgeAlert(ctx context.Context, request *gen.AcknowledgeA
 			return status.Error(codes.Aborted, "already acknowledged")
 		}
 
-		_, err = tx.Exec(ctx, `UPDATE alerts SET ack_time=now() WHERE id=$1`, request.Id)
+		var ackAuthorId, ackAuthorName, ackAuthorEmail *string
+		if request.Author != nil {
+			a := request.Author
+			if a.Id != "" {
+				ackAuthorId = &a.Id
+			}
+			if a.DisplayName != "" {
+				ackAuthorName = &a.DisplayName
+			}
+			if a.Email != "" {
+				ackAuthorEmail = &a.Email
+			}
+		}
+		_, err = tx.Exec(ctx, `UPDATE alerts SET ack_time=now(), ack_author_id=$2, ack_author_name=$3, ack_author_email=$4 WHERE id=$1`,
+			request.Id, ackAuthorId, ackAuthorName, ackAuthorEmail)
 		if err != nil {
 			return err
 		}
@@ -457,7 +468,7 @@ func (s *Server) UnacknowledgeAlert(ctx context.Context, request *gen.Acknowledg
 			return status.Error(codes.Aborted, "already not acknowledged")
 		}
 
-		_, err = tx.Exec(ctx, `UPDATE alerts SET ack_time=null WHERE id=$1`, request.Id)
+		_, err = tx.Exec(ctx, `UPDATE alerts SET ack_time=null, ack_author_id=null, ack_author_name=null, ack_author_email=null WHERE id=$1`, request.Id)
 		if err != nil {
 			return err
 		}
@@ -495,9 +506,13 @@ func readAlertById(ctx context.Context, tx pgx.Tx, id string, dst *gen.Alert) er
 	return scanAlert(row, dst)
 }
 
+// selectAlertSQL selects fields in the order expected by scanAlert.
+const selectAlertSQL = `SELECT id, description, severity, create_time, floor, zone, source, ack_time, ack_author_id, ack_author_name, ack_author_email FROM alerts`
+
 func scanAlert(scanner pgx.Row, dst *gen.Alert) error {
 	var createTime, ackTime *time.Time
-	err := scanner.Scan(&dst.Id, &dst.Description, &dst.Severity, &createTime, &ackTime, &dst.Floor, &dst.Zone, &dst.Source)
+	var ackAuthorId, ackAuthorName, ackAuthorEmail *string
+	err := scanner.Scan(&dst.Id, &dst.Description, &dst.Severity, &createTime, &dst.Floor, &dst.Zone, &dst.Source, &ackTime, &ackAuthorId, &ackAuthorName, &ackAuthorEmail)
 	if err != nil {
 		return err
 	}
@@ -507,6 +522,25 @@ func scanAlert(scanner pgx.Row, dst *gen.Alert) error {
 	if ackTime != nil {
 		dst.Acknowledgement = &gen.Alert_Acknowledgement{
 			AcknowledgeTime: timestamppb.New(*ackTime),
+		}
+
+		// ack author details, we assume there is an author only if the author has any information
+		var hasAuthor bool
+		author := &gen.Alert_Acknowledgement_Author{}
+		if ackAuthorId != nil {
+			hasAuthor = true
+			author.Id = *ackAuthorId
+		}
+		if ackAuthorName != nil {
+			hasAuthor = true
+			author.DisplayName = *ackAuthorName
+		}
+		if ackAuthorEmail != nil {
+			hasAuthor = true
+			author.Email = *ackAuthorEmail
+		}
+		if hasAuthor {
+			dst.Acknowledgement.Author = author
 		}
 	}
 	return nil
