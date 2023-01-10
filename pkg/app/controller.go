@@ -14,6 +14,7 @@ import (
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/rs/cors"
+	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/timshannon/bolthold"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -195,6 +196,13 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		grpcOpts = append(grpcOpts,
 			grpc.ChainUnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
 			grpc.ChainStreamInterceptor(interceptor.GRPCStreamingInterceptor()),
+		)
+	}
+
+	if rootNode.Name() != "" {
+		grpcOpts = append(grpcOpts,
+			grpc.ChainUnaryInterceptor(name.IfAbsentUnaryInterceptor(rootNode.Name())),
+			grpc.ChainStreamInterceptor(name.IfAbsentStreamInterceptor(rootNode.Name())),
 		)
 	}
 
