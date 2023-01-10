@@ -45,7 +45,7 @@ export const useAccountStore = defineStore('accountStore', () => {
         token.value = payload.access_token;
         loggedIn.value = true;
         claims.value = {
-          email: username.value
+          email: username
         };
         toggleLoginDialog();
         saveLocalStorage();
