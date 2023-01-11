@@ -161,8 +161,7 @@ func (s *Lifecycle[C]) Configure(configData []byte) error {
 	if s.configC == nil {
 		return errors.New("not started")
 	}
-	var c C
-	err := json.Unmarshal(configData, &c)
+	c, err := s.ReadConfig(configData)
 	if err != nil {
 		return err
 	}
