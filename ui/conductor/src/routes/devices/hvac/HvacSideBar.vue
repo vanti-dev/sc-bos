@@ -16,7 +16,7 @@ import {ref, watch} from 'vue';
 import {useHvacStore} from '@/routes/devices/hvac/store';
 import {storeToRefs} from 'pinia';
 import {usePageStore} from '@/stores/page';
-import AirTemperatureCard from '@/routes/devices/hvac/AirTemperatureCard.vue';
+import AirTemperatureCard from '@/routes/devices/hvac/SideBarCard_AirTemperature.vue';
 
 const hvacStore = useHvacStore();
 const {getSetPoint, getCurrentTemp} = storeToRefs(hvacStore);
