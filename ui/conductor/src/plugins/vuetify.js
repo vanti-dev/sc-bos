@@ -56,7 +56,11 @@ const opts = {
           lighten2: '#585D63',
           lighten3: '#707479',
           lighten4: '#888C90',
-          lighten5: '#9FA3A6'
+          lighten5: '#9FA3A6',
+          lighten6: '#B7BABC',
+          lighten7: '#CFD1D2',
+          lighten8: '#ECEDED',
+          lighten9: '#F7F7F7'
         },
         error: {
           darken1: '#BB0434',
