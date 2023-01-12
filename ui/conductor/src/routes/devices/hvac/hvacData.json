@@ -1,21 +1,70 @@
 {
   "devices": [
     {
-      "deviceId": "FCU-523",
-      "locations": ["L03, L03_Z01, L03_Z02"],
-      "floor": "L03",
-      "driver": "SC_BACnet",
-      "guid": "04ae55ymD_$u5lxhJN2aGi",
-      "bacnet": {
-        "setPoint": "1.2.3.4",
-        "currentTemp": "1.2.3.5"
+      "name": "FCU/01",
+      "metadata": {
+        "name": "FCU/01",
+        "traits": [
+          {
+            "name": "smartcore.traits.AirTemperature",
+            "more": {}
+          }
+        ],
+        "appearance": null,
+        "location": {
+          "title": "L03_013/Meeting Room 1",
+          "description": "",
+          "architecture_reference": "",
+          "more": {
+            "floor": "L03"
+          }
+        },
+        "id": null,
+        "product": null,
+        "revision": null,
+        "installation": null,
+        "nics": [],
+        "membership": {
+          "group": "",
+          "subsystem": "HVAC",
+          "more": {}
+        },
+        "more": {}
+      }
+    },
+    {
+      "name": "FCU/02",
+      "metadata": {
+        "name": "FCU/02",
+        "traits": [
+          {
+            "name": "smartcore.traits.AirTemperature",
+            "more": {}
+          }
+        ],
+        "appearance": null,
+        "location": {
+          "title": "L03_015/Meeting Room 2",
+          "description": "",
+          "architecture_reference": "",
+          "more": {
+            "floor": "L03"
+          }
+        },
+        "id": null,
+        "product": null,
+        "revision": null,
+        "installation": null,
+        "nics": [],
+        "membership": {
+          "group": "",
+          "subsystem": "HVAC",
+          "more": {}
+        },
+        "more": {}
       }
     }
   ],
-  "data": {
-    "FCU-523": {
-      "setPoint": 22.0,
-      "currentTemp": 21.5
-    }
-  }
+  "next_page_token": "",
+  "total_size": 0
 }

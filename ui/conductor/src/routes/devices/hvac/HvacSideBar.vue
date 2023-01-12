@@ -32,9 +32,43 @@ const {sidebarData} = storeToRefs(pageStore);
 
 const deviceInfo = ref({});
 
+// Watch for changes in pageStore.sidebarData, which is where the data table item gets passed through to here
 watch(sidebarData, async (device) => {
-  console.log('watch', device.deviceId, hvacStore.getDevice(device.deviceId));
-  deviceInfo.value = hvacStore.getDevice(device.deviceId);
+  console.log('watch', device);
+  deviceInfo.value = {};
+  if (device && device.hasOwnProperty('metadata')) {
+    const data = Object.entries(device.metadata);
+    // filter data
+    const filtered = data.filter(([key, value]) => {
+      // don't display traits or membership
+      if (key === 'traitsList' || key === 'membership') {
+        return false;
+      // ignore empty arrays
+      } else if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+      // ignore undefined props
+      return value !== undefined;
+    });
+    // expand and flatten data
+    filtered.forEach(([key, value]) => {
+      switch (key) {
+        case 'location': {
+          deviceInfo.value['zone'] = value.title;
+          if (value.moreMap.length > 0) {
+            for (const more of device.metadata.location.moreMap) {
+              deviceInfo.value[more[0]] = more[1];
+            }
+          }
+          break;
+        }
+        default: {
+          deviceInfo.value[key] = value;
+        }
+      }
+    });
+  }
+  console.log(deviceInfo);
 });
 
 /**

@@ -4,6 +4,7 @@ import {ref} from 'vue';
 export const usePageStore = defineStore('page', () => {
   const showSidebar = ref(false);
   const sidebarData = ref({});
+  const sidebarTitle = ref('');
 
   /**
    *
@@ -15,6 +16,7 @@ export const usePageStore = defineStore('page', () => {
   return {
     showSidebar,
     sidebarData,
+    sidebarTitle,
     toggleSidebar
   };
 });

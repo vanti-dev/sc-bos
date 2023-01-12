@@ -1,7 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Area Controller" type="GoApplicationRunConfiguration" factoryName="Go Application">
+  <configuration default="false" name="Area Controller [disable-policy]" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="sc-bos" />
     <working_directory value="$PROJECT_DIR$" />
+    <parameters value="--insecure-disable-policy" />
     <kind value="PACKAGE" />
     <package value="github.com/vanti-dev/sc-bos/cmd/area-controller" />
     <directory value="$PROJECT_DIR$" />

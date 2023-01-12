@@ -1,19 +1,16 @@
 <template>
   <v-list tile class="ma-0 pa-0">
-    <v-subheader class="text-body-large sidebarTitle pa-4">{{ title }}</v-subheader>
+    <v-subheader class="text-body-large sidebarTitle pa-4">{{ sidebarTitle }}</v-subheader>
     <slot/>
   </v-list>
 </template>
 
 <script setup>
-import {defineProps} from 'vue';
+import {usePageStore} from '@/stores/page';
+import {storeToRefs} from 'pinia';
 
-defineProps({
-  title: {
-    type: String,
-    default: 'title'
-  }
-});
+const pageStore = usePageStore();
+const {sidebarTitle} = storeToRefs(pageStore);
 
 </script>
 
