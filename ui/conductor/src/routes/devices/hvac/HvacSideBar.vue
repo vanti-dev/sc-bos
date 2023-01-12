@@ -6,14 +6,7 @@
       <v-list-item-subtitle>{{ val }}</v-list-item-subtitle>
     </v-list-item>
     <v-subheader class="text-title-caps neutral--text text--lighten-3">State</v-subheader>
-    <v-list-item class="py-1">
-      <v-list-item-title class="font-weight-bold text-capitalize">Current Temp</v-list-item-title>
-      <v-list-item-subtitle>{{ getCurrentTemp(deviceInfo.deviceId) }}</v-list-item-subtitle>
-    </v-list-item>
-    <v-list-item class="py-1">
-      <v-list-item-title class="font-weight-bold text-capitalize">Set Point</v-list-item-title>
-      <v-list-item-subtitle>{{ getSetPoint(deviceInfo.deviceId) }}</v-list-item-subtitle>
-    </v-list-item>
+    <air-temperature-card/>
   </SideBar>
 </template>
 
@@ -23,6 +16,7 @@ import {ref, watch} from 'vue';
 import {useHvacStore} from '@/routes/devices/hvac/store';
 import {storeToRefs} from 'pinia';
 import {usePageStore} from '@/stores/page';
+import AirTemperatureCard from '@/routes/devices/hvac/AirTemperatureCard.vue';
 
 const hvacStore = useHvacStore();
 const {getSetPoint, getCurrentTemp} = storeToRefs(hvacStore);
