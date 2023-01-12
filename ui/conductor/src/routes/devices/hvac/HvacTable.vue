@@ -58,8 +58,6 @@ const tableData = computed(() => {
         }
         return device;
       });
-
-  console.log(devices);
   return devices;
 });
 
@@ -70,7 +68,6 @@ const tableData = computed(() => {
  * @param {*} row
  */
 function showDevice(item, row) {
-  console.log(item, row);
   pageStore.showSidebar = true;
   pageStore.sidebarTitle = item.name;
   pageStore.sidebarData = item;

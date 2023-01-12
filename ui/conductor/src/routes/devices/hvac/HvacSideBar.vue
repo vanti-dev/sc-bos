@@ -34,7 +34,6 @@ const deviceInfo = ref({});
 
 // Watch for changes in pageStore.sidebarData, which is where the data table item gets passed through to here
 watch(sidebarData, async (device) => {
-  console.log('watch', device);
   deviceInfo.value = {};
   if (device && device.hasOwnProperty('metadata')) {
     const data = Object.entries(device.metadata);
@@ -68,7 +67,6 @@ watch(sidebarData, async (device) => {
       }
     });
   }
-  console.log(deviceInfo);
 });
 
 /**
