@@ -1,5 +1,7 @@
-import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource.js';
+import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource';
 import {acknowledgeAlert, listAlerts, pullAlerts, unacknowledgeAlert} from '@/api/ui/alerts.js';
+import {useAccountStore} from '@/stores/account';
+import {useControllerStore} from '@/stores/controller';
 import {Collection} from '@/util/query.js';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
 import {acceptHMRUpdate, defineStore} from 'pinia';
@@ -20,15 +22,14 @@ const SeverityColor = {
 };
 
 export const useNotifications = defineStore('notifications', () => {
-  // todo: get the name from somewhere
-  const name = computed(() => 'test-ac');
+  const controller = useControllerStore();
 
   // holds all the alerts we can show
   const alerts = reactive(/** @type {ResourceCollection<Alert.AsObject, Alert>} */newResourceCollection());
   // tracks the fetching of a single page
   const fetchingPage = reactive(/** @type {ActionTracker<ListAlertsResponse.AsObject>} */ newActionTracker());
 
-  watch(name, async name => {
+  watch(() => controller.controllerName, async name => {
     closeResource(alerts);
     pullAlerts({name}, alerts);
     try {
@@ -60,17 +61,28 @@ export const useNotifications = defineStore('notifications', () => {
     return {text: 'unspecified', color: 'gray--text'};
   }
 
+  const account = useAccountStore();
+
   /**
    *
-   * @param {event} e
+   * @param {boolean} e
    * @param {Alert.AsObject} alert
    */
   function setAcknowledged(e, alert) {
     if (e) {
-      acknowledgeAlert({name: name.value, id: alert.id, allowAcknowledged: false, allowMissing: false})
+      let author = undefined;
+      if (account.email || account.fullName) {
+        author = {
+          email: account.email,
+          displayName: account.fullName
+        };
+      }
+      acknowledgeAlert({
+        name: controller.controllerName, id: alert.id, allowAcknowledged: false, allowMissing: false, author
+      })
           .catch(err => console.error(err));
     } else {
-      unacknowledgeAlert({name: name.value, id: alert.id, allowAcknowledged: false, allowMissing: false})
+      unacknowledgeAlert({name: controller.controllerName, id: alert.id, allowAcknowledged: false, allowMissing: false})
           .catch(err => console.error(err));
     }
   }
@@ -90,14 +102,14 @@ export const useNotifications = defineStore('notifications', () => {
    */
   function newCollection() {
     const listFn = async (query, tracker, pageToken, recordFn) => {
-      const page = await listAlerts({name: name.value, pageToken, query, pageSize: 100}, tracker);
+      const page = await listAlerts({name: controller.controllerName, pageToken, query, pageSize: 100}, tracker);
       for (const alert of page.alertsList) {
         recordFn(alert, alert.id);
       }
       return page.nextPageToken;
     };
     const pullFn = (query, resources) => {
-      pullAlerts({name: name.value, query}, resources);
+      pullAlerts({name: controller.controllerName, query}, resources);
     };
     return new Collection(listFn, pullFn);
   }

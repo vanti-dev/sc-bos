@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgconn"
@@ -13,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -25,9 +27,6 @@ import (
 
 //go:embed schema.sql
 var schemaSql string
-
-// selectAlertSQL selects fields in the order expected by scanAlert.
-const selectAlertSQL = `SELECT id, description, severity, create_time, ack_time, floor, zone, source FROM alerts`
 
 func SetupDB(ctx context.Context, pool *pgxpool.Pool) error {
 	return pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
@@ -54,6 +53,12 @@ func NewServerFromPool(ctx context.Context, pool *pgxpool.Pool) (*Server, error)
 	return &Server{
 		pool: pool,
 		bus:  &minibus.Bus[*gen.PullAlertsResponse_Change]{},
+		Severity: []gen.Alert_Severity{
+			gen.Alert_INFO,
+			gen.Alert_WARNING,
+			gen.Alert_SEVERE,
+			gen.Alert_LIFE_SAFETY,
+		},
 	}, nil
 }
 
@@ -61,8 +66,32 @@ type Server struct {
 	gen.UnimplementedAlertApiServer
 	gen.UnimplementedAlertAdminApiServer
 
+	// Floors, if set, is used to pre-populate AlertMetadata with zero values for cases when no alerts appear on a floor.
+	Floors []string
+	// Zones, if set, is used to pre-populate AlertMetadata with zero values for cases when no alerts appear in a zone.
+	Zones []string
+	// Severity, if set, is used to pre-populate AlertMetadata with zero values for cases when no alerts have a severity.
+	Severity []gen.Alert_Severity
+
 	pool *pgxpool.Pool
 	bus  *minibus.Bus[*gen.PullAlertsResponse_Change]
+
+	// to support alert metadata
+	mdMu   sync.Mutex      // guards the following md fields
+	md     *resource.Value // of *gen.AlertMetadata, used to track changes
+	mdC    chan struct{}   // nil if needs init, blocked if init-ing, closed if done
+	mdErr  error           // non-nil if mdC is done and completed with error
+	mdStop func()          // closes any go routines that are listening for changes
+}
+
+func (s *Server) Close() error {
+	s.mdMu.Lock()
+	if s.mdStop != nil {
+		s.mdStop()
+	}
+	s.mdMu.Unlock()
+
+	return nil
 }
 
 func (s *Server) CreateAlert(ctx context.Context, request *gen.CreateAlertRequest) (*gen.Alert, error) {
@@ -374,7 +403,21 @@ func (s *Server) AcknowledgeAlert(ctx context.Context, request *gen.AcknowledgeA
 			return status.Error(codes.Aborted, "already acknowledged")
 		}
 
-		_, err = tx.Exec(ctx, `UPDATE alerts SET ack_time=now() WHERE id=$1`, request.Id)
+		var ackAuthorId, ackAuthorName, ackAuthorEmail *string
+		if request.Author != nil {
+			a := request.Author
+			if a.Id != "" {
+				ackAuthorId = &a.Id
+			}
+			if a.DisplayName != "" {
+				ackAuthorName = &a.DisplayName
+			}
+			if a.Email != "" {
+				ackAuthorEmail = &a.Email
+			}
+		}
+		_, err = tx.Exec(ctx, `UPDATE alerts SET ack_time=now(), ack_author_id=$2, ack_author_name=$3, ack_author_email=$4 WHERE id=$1`,
+			request.Id, ackAuthorId, ackAuthorName, ackAuthorEmail)
 		if err != nil {
 			return err
 		}
@@ -390,7 +433,7 @@ func (s *Server) AcknowledgeAlert(ctx context.Context, request *gen.AcknowledgeA
 		return nil, err
 	}
 
-	if existing != updated {
+	if !proto.Equal(existing, updated) {
 		// notify
 		go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
 			Name:       request.Name,
@@ -425,7 +468,7 @@ func (s *Server) UnacknowledgeAlert(ctx context.Context, request *gen.Acknowledg
 			return status.Error(codes.Aborted, "already not acknowledged")
 		}
 
-		_, err = tx.Exec(ctx, `UPDATE alerts SET ack_time=null WHERE id=$1`, request.Id)
+		_, err = tx.Exec(ctx, `UPDATE alerts SET ack_time=null, ack_author_id=null, ack_author_name=null, ack_author_email=null WHERE id=$1`, request.Id)
 		if err != nil {
 			return err
 		}
@@ -441,7 +484,7 @@ func (s *Server) UnacknowledgeAlert(ctx context.Context, request *gen.Acknowledg
 		return nil, err
 	}
 
-	if existing != updated {
+	if !proto.Equal(existing, updated) {
 		// notify
 		go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
 			Name:       request.Name,
@@ -463,9 +506,13 @@ func readAlertById(ctx context.Context, tx pgx.Tx, id string, dst *gen.Alert) er
 	return scanAlert(row, dst)
 }
 
+// selectAlertSQL selects fields in the order expected by scanAlert.
+const selectAlertSQL = `SELECT id, description, severity, create_time, floor, zone, source, ack_time, ack_author_id, ack_author_name, ack_author_email FROM alerts`
+
 func scanAlert(scanner pgx.Row, dst *gen.Alert) error {
 	var createTime, ackTime *time.Time
-	err := scanner.Scan(&dst.Id, &dst.Description, &dst.Severity, &createTime, &ackTime, &dst.Floor, &dst.Zone, &dst.Source)
+	var ackAuthorId, ackAuthorName, ackAuthorEmail *string
+	err := scanner.Scan(&dst.Id, &dst.Description, &dst.Severity, &createTime, &dst.Floor, &dst.Zone, &dst.Source, &ackTime, &ackAuthorId, &ackAuthorName, &ackAuthorEmail)
 	if err != nil {
 		return err
 	}
@@ -475,6 +522,25 @@ func scanAlert(scanner pgx.Row, dst *gen.Alert) error {
 	if ackTime != nil {
 		dst.Acknowledgement = &gen.Alert_Acknowledgement{
 			AcknowledgeTime: timestamppb.New(*ackTime),
+		}
+
+		// ack author details, we assume there is an author only if the author has any information
+		var hasAuthor bool
+		author := &gen.Alert_Acknowledgement_Author{}
+		if ackAuthorId != nil {
+			hasAuthor = true
+			author.Id = *ackAuthorId
+		}
+		if ackAuthorName != nil {
+			hasAuthor = true
+			author.DisplayName = *ackAuthorName
+		}
+		if ackAuthorEmail != nil {
+			hasAuthor = true
+			author.Email = *ackAuthorEmail
+		}
+		if hasAuthor {
+			dst.Acknowledgement.Author = author
 		}
 	}
 	return nil

@@ -14,7 +14,9 @@ import (
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/rs/cors"
+	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/timshannon/bolthold"
+	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -198,9 +200,17 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		)
 	}
 
+	if rootNode.Name() != "" {
+		grpcOpts = append(grpcOpts,
+			grpc.ChainUnaryInterceptor(name.IfAbsentUnaryInterceptor(rootNode.Name())),
+			grpc.ChainStreamInterceptor(name.IfAbsentStreamInterceptor(rootNode.Name())),
+		)
+	}
+
 	grpcServer := grpc.NewServer(grpcOpts...)
 	reflection.Register(grpcServer)
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
+	devices.NewServer(rootNode).Register(grpcServer)
 
 	grpcWebServer := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
 		return true

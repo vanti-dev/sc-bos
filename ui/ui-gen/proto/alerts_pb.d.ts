@@ -60,6 +60,11 @@ export namespace Alert {
     hasAcknowledgeTime(): boolean;
     clearAcknowledgeTime(): Acknowledgement;
 
+    getAuthor(): Alert.Acknowledgement.Author | undefined;
+    setAuthor(value?: Alert.Acknowledgement.Author): Acknowledgement;
+    hasAuthor(): boolean;
+    clearAuthor(): Acknowledgement;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Acknowledgement.AsObject;
     static toObject(includeInstance: boolean, msg: Acknowledgement): Acknowledgement.AsObject;
@@ -71,7 +76,35 @@ export namespace Alert {
   export namespace Acknowledgement {
     export type AsObject = {
       acknowledgeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+      author?: Alert.Acknowledgement.Author.AsObject,
     }
+
+    export class Author extends jspb.Message {
+      getId(): string;
+      setId(value: string): Author;
+
+      getDisplayName(): string;
+      setDisplayName(value: string): Author;
+
+      getEmail(): string;
+      setEmail(value: string): Author;
+
+      serializeBinary(): Uint8Array;
+      toObject(includeInstance?: boolean): Author.AsObject;
+      static toObject(includeInstance: boolean, msg: Author): Author.AsObject;
+      static serializeBinaryToWriter(message: Author, writer: jspb.BinaryWriter): void;
+      static deserializeBinary(bytes: Uint8Array): Author;
+      static deserializeBinaryFromReader(message: Author, reader: jspb.BinaryReader): Author;
+    }
+
+    export namespace Author {
+      export type AsObject = {
+        id: string,
+        displayName: string,
+        email: string,
+      }
+    }
+
   }
 
 
@@ -139,6 +172,40 @@ export namespace Alert {
     WARNING = 13,
     SEVERE = 17,
     LIFE_SAFETY = 21,
+  }
+}
+
+export class AlertMetadata extends jspb.Message {
+  getTotalCount(): number;
+  setTotalCount(value: number): AlertMetadata;
+
+  getFloorCountsMap(): jspb.Map<string, number>;
+  clearFloorCountsMap(): AlertMetadata;
+
+  getZoneCountsMap(): jspb.Map<string, number>;
+  clearZoneCountsMap(): AlertMetadata;
+
+  getAcknowledgedCountsMap(): jspb.Map<boolean, number>;
+  clearAcknowledgedCountsMap(): AlertMetadata;
+
+  getSeverityCountsMap(): jspb.Map<number, number>;
+  clearSeverityCountsMap(): AlertMetadata;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AlertMetadata.AsObject;
+  static toObject(includeInstance: boolean, msg: AlertMetadata): AlertMetadata.AsObject;
+  static serializeBinaryToWriter(message: AlertMetadata, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AlertMetadata;
+  static deserializeBinaryFromReader(message: AlertMetadata, reader: jspb.BinaryReader): AlertMetadata;
+}
+
+export namespace AlertMetadata {
+  export type AsObject = {
+    totalCount: number,
+    floorCountsMap: Array<[string, number]>,
+    zoneCountsMap: Array<[string, number]>,
+    acknowledgedCountsMap: Array<[boolean, number]>,
+    severityCountsMap: Array<[number, number]>,
   }
 }
 
@@ -306,6 +373,11 @@ export class AcknowledgeAlertRequest extends jspb.Message {
   getId(): string;
   setId(value: string): AcknowledgeAlertRequest;
 
+  getAuthor(): Alert.Acknowledgement.Author | undefined;
+  setAuthor(value?: Alert.Acknowledgement.Author): AcknowledgeAlertRequest;
+  hasAuthor(): boolean;
+  clearAuthor(): AcknowledgeAlertRequest;
+
   getAllowAcknowledged(): boolean;
   setAllowAcknowledged(value: boolean): AcknowledgeAlertRequest;
 
@@ -324,9 +396,113 @@ export namespace AcknowledgeAlertRequest {
   export type AsObject = {
     name: string,
     id: string,
+    author?: Alert.Acknowledgement.Author.AsObject,
     allowAcknowledged: boolean,
     allowMissing: boolean,
   }
+}
+
+export class GetAlertMetadataRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): GetAlertMetadataRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): GetAlertMetadataRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): GetAlertMetadataRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetAlertMetadataRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetAlertMetadataRequest): GetAlertMetadataRequest.AsObject;
+  static serializeBinaryToWriter(message: GetAlertMetadataRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetAlertMetadataRequest;
+  static deserializeBinaryFromReader(message: GetAlertMetadataRequest, reader: jspb.BinaryReader): GetAlertMetadataRequest;
+}
+
+export namespace GetAlertMetadataRequest {
+  export type AsObject = {
+    name: string,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+  }
+}
+
+export class PullAlertMetadataRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): PullAlertMetadataRequest;
+
+  getUpdatesOnly(): boolean;
+  setUpdatesOnly(value: boolean): PullAlertMetadataRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): PullAlertMetadataRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): PullAlertMetadataRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PullAlertMetadataRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: PullAlertMetadataRequest): PullAlertMetadataRequest.AsObject;
+  static serializeBinaryToWriter(message: PullAlertMetadataRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullAlertMetadataRequest;
+  static deserializeBinaryFromReader(message: PullAlertMetadataRequest, reader: jspb.BinaryReader): PullAlertMetadataRequest;
+}
+
+export namespace PullAlertMetadataRequest {
+  export type AsObject = {
+    name: string,
+    updatesOnly: boolean,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+  }
+}
+
+export class PullAlertMetadataResponse extends jspb.Message {
+  getChangesList(): Array<PullAlertMetadataResponse.Change>;
+  setChangesList(value: Array<PullAlertMetadataResponse.Change>): PullAlertMetadataResponse;
+  clearChangesList(): PullAlertMetadataResponse;
+  addChanges(value?: PullAlertMetadataResponse.Change, index?: number): PullAlertMetadataResponse.Change;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PullAlertMetadataResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: PullAlertMetadataResponse): PullAlertMetadataResponse.AsObject;
+  static serializeBinaryToWriter(message: PullAlertMetadataResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullAlertMetadataResponse;
+  static deserializeBinaryFromReader(message: PullAlertMetadataResponse, reader: jspb.BinaryReader): PullAlertMetadataResponse;
+}
+
+export namespace PullAlertMetadataResponse {
+  export type AsObject = {
+    changesList: Array<PullAlertMetadataResponse.Change.AsObject>,
+  }
+
+  export class Change extends jspb.Message {
+    getName(): string;
+    setName(value: string): Change;
+
+    getMetadata(): AlertMetadata | undefined;
+    setMetadata(value?: AlertMetadata): Change;
+    hasMetadata(): boolean;
+    clearMetadata(): Change;
+
+    getChangeTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setChangeTime(value?: google_protobuf_timestamp_pb.Timestamp): Change;
+    hasChangeTime(): boolean;
+    clearChangeTime(): Change;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Change.AsObject;
+    static toObject(includeInstance: boolean, msg: Change): Change.AsObject;
+    static serializeBinaryToWriter(message: Change, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Change;
+    static deserializeBinaryFromReader(message: Change, reader: jspb.BinaryReader): Change;
+  }
+
+  export namespace Change {
+    export type AsObject = {
+      name: string,
+      metadata?: AlertMetadata.AsObject,
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    }
+  }
+
 }
 
 export class CreateAlertRequest extends jspb.Message {

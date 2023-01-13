@@ -84,10 +84,18 @@
         <v-list-item-title>Notifications</v-list-item-title>
       </v-list-item-content>
 
-      <v-chip class="font-weight-bold text primary"> 4</v-chip>
+      <v-chip class="font-weight-bold text primary" v-if="alertMetadata.unacknowledgedAlertCount">
+        {{ alertMetadata.unacknowledgedAlertCount }}
+      </v-chip>
     </v-list-item>
   </v-list>
 </template>
+
+<script setup>
+import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
+
+const alertMetadata = useAlertMetadata();
+</script>
 
 <style scoped>
 ::v-deep(.v-list-item--active) {

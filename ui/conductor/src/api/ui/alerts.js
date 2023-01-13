@@ -1,11 +1,11 @@
 import {convertProperties, fieldMaskFromObject, setProperties, timestampFromObject} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
-import {pullResource, setCollection, trackAction} from '@/api/resource.js';
+import {pullResource, setCollection, setValue, trackAction} from '@/api/resource';
 import {AlertApiPromiseClient} from '@sc-bos/ui-gen/proto/alerts_grpc_web_pb';
 import {
   AcknowledgeAlertRequest,
-  Alert,
-  ListAlertsRequest,
+  Alert, GetAlertMetadataRequest,
+  ListAlertsRequest, PullAlertMetadataRequest,
   PullAlertsRequest
 } from '@sc-bos/ui-gen/proto/alerts_pb';
 
@@ -33,6 +33,36 @@ export function pullAlerts(request, resource) {
       const changes = msg.getChangesList();
       for (const change of changes) {
         setCollection(resource, change, v => v.id);
+      }
+    });
+    return stream;
+  });
+}
+
+/**
+ * @param {GetAlertMetadataRequest.AsObject} request
+ * @param {ActionTracker<AlertMetadata.AsObject>}tracker
+ * @return {Promise<AlertMetadata.AsObject>}
+ */
+export function getAlertMetadata(request, tracker) {
+  return trackAction('Alerts.getAlertMetadata', tracker ?? {}, endpoint => {
+    const api = client(endpoint);
+    return api.getAlertMetadata(getAlertMetadataRequestFromObject(request));
+  });
+}
+
+/**
+ * @param {PullAlertMetadataRequest.AsObject} request
+ * @param {ResourceValue<AlertMetadata.AsObject, PullAlertMetadataResponse>} resource
+ */
+export function pullAlertMetadata(request, resource) {
+  pullResource('Alerts.pullAlertMetadata', resource, endpoint => {
+    const api = client(endpoint);
+    const stream = api.pullAlertMetadata(pullAlertMetadataRequestFromObject(request));
+    stream.on('data', msg => {
+      const changes = msg.getChangesList();
+      for (const change of changes) {
+        setValue(resource, change.getMetadata().toObject());
       }
     });
     return stream;
@@ -98,6 +128,30 @@ function pullAlertsRequestFromObject(obj) {
 }
 
 /**
+ * @param {GetAlertMetadataRequest.AsObject} obj
+ * @return {GetAlertMetadataRequest|undefined}
+ */
+function getAlertMetadataRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new GetAlertMetadataRequest();
+  setProperties(dst, obj, 'name');
+  dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  return dst;
+}
+
+/**
+ * @param {PullAlertMetadataRequest.AsObject} obj
+ * @return {PullAlertMetadataRequest|undefined}
+ */
+function pullAlertMetadataRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new PullAlertMetadataRequest();
+  setProperties(dst, obj, 'name', 'updatesOnly');
+  dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  return dst;
+}
+
+/**
  * @param {Alert.Query.AsObject} obj
  * @return {Alert.Query|undefined}
  */
@@ -118,5 +172,17 @@ function acknowledgeAlertRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new AcknowledgeAlertRequest();
   setProperties(dst, obj, 'name', 'id', 'allowMissing', 'allowAcknowledged');
+  dst.setAuthor(alertAuthorFromObject(obj.author));
+  return dst;
+}
+
+/**
+ * @param {Alert.Acknowledgement.Author.AsObject} obj
+ * @return {undefined|Alert.Acknowledgement.Author}
+ */
+function alertAuthorFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new Alert.Acknowledgement.Author();
+  setProperties(dst, obj, 'id', 'displayName', 'email');
   return dst;
 }

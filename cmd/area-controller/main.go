@@ -12,6 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
+	"github.com/vanti-dev/sc-bos/pkg/driver/mock"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts"
@@ -46,6 +47,7 @@ func run(ctx context.Context) error {
 	systemConfig.DriverFactories = map[string]driver.Factory{
 		axiomxa.DriverName: axiomxa.Factory,
 		bacnet.DriverName:  bacnet.Factory,
+		mock.DriverName:    mock.Factory,
 	}
 	systemConfig.AutoFactories = map[string]auto.Factory{
 		lights.AutoType: lights.Factory,

@@ -27,7 +27,7 @@ func (w *alertApiWrapper) UnwrapServer() AlertApiServer {
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *alertApiWrapper) Unwrap() interface{} {
+func (w *alertApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
@@ -72,4 +72,39 @@ func (w *alertApiWrapper) AcknowledgeAlert(ctx context.Context, req *Acknowledge
 
 func (w *alertApiWrapper) UnacknowledgeAlert(ctx context.Context, req *AcknowledgeAlertRequest, _ ...grpc.CallOption) (*Alert, error) {
 	return w.server.UnacknowledgeAlert(ctx, req)
+}
+
+func (w *alertApiWrapper) GetAlertMetadata(ctx context.Context, req *GetAlertMetadataRequest, _ ...grpc.CallOption) (*AlertMetadata, error) {
+	return w.server.GetAlertMetadata(ctx, req)
+}
+
+func (w *alertApiWrapper) PullAlertMetadata(ctx context.Context, in *PullAlertMetadataRequest, opts ...grpc.CallOption) (AlertApi_PullAlertMetadataClient, error) {
+	stream := wrap.NewClientServerStream(ctx)
+	server := &pullAlertMetadataAlertApiServerWrapper{stream.Server()}
+	client := &pullAlertMetadataAlertApiClientWrapper{stream.Client()}
+	go func() {
+		err := w.server.PullAlertMetadata(in, server)
+		stream.Close(err)
+	}()
+	return client, nil
+}
+
+type pullAlertMetadataAlertApiClientWrapper struct {
+	grpc.ClientStream
+}
+
+func (w *pullAlertMetadataAlertApiClientWrapper) Recv() (*PullAlertMetadataResponse, error) {
+	m := new(PullAlertMetadataResponse)
+	if err := w.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+type pullAlertMetadataAlertApiServerWrapper struct {
+	grpc.ServerStream
+}
+
+func (s *pullAlertMetadataAlertApiServerWrapper) Send(response *PullAlertMetadataResponse) error {
+	return s.ServerStream.SendMsg(response)
 }

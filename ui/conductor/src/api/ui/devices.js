@@ -18,7 +18,7 @@ export function listDevices(request, tracker) {
 
 /**
  * @param {string} endpoint
- * @return {DevicesApiPromiseClient} LdvuUliuH
+ * @return {DevicesApiPromiseClient}
  */
 function client(endpoint) {
   return new DevicesApiPromiseClient(endpoint, null, clientOptions());
