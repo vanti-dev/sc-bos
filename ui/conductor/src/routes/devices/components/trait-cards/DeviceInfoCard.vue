@@ -1,21 +1,19 @@
 <template>
-  <SideBar title="LIT_001">
-    <v-subheader class="text-title-caps neutral--text text--lighten-3">Information</v-subheader>
-    <v-list-item v-for="(val, key) in deviceInfo" :key="key" class="py-1">
-      <v-list-item-title class="font-weight-bold text-capitalize">{{ camelToSentence(key) }}</v-list-item-title>
-      <v-list-item-subtitle>{{ val }}</v-list-item-subtitle>
-    </v-list-item>
-    <v-subheader class="text-title-caps neutral--text text--lighten-3">State</v-subheader>
-    <air-temperature-card :name="deviceInfo.name"/>
-  </SideBar>
+  <v-card elevation="0" tile>
+    <v-list tile class="ma-0 pa-0">
+      <v-subheader class="text-title-caps neutral--text text--lighten-3">Information</v-subheader>
+      <v-list-item v-for="(val, key) in deviceInfo" :key="key" class="py-1">
+        <v-list-item-title class="font-weight-bold text-capitalize">{{ camelToSentence(key) }}</v-list-item-title>
+        <v-list-item-subtitle>{{ val }}</v-list-item-subtitle>
+      </v-list-item>
+    </v-list>
+  </v-card>
 </template>
 
 <script setup>
-import SideBar from '@/components/SideBar.vue';
 import {ref, watch} from 'vue';
 import {storeToRefs} from 'pinia';
 import {usePageStore} from '@/stores/page';
-import AirTemperatureCard from '@/routes/devices/hvac/SideBarCard_AirTemperature.vue';
 import {camelToSentence} from '@/util/string';
 
 const pageStore = usePageStore();
@@ -23,7 +21,7 @@ const {sidebarData} = storeToRefs(pageStore);
 
 const deviceInfo = ref({});
 
-// Watch for changes in pageStore.sidebarData, which is where the data table item gets passed through to here
+// Watch for changes in pageStore.sidebarData, which is where the data table item gets passed
 watch(sidebarData, async (device) => {
   deviceInfo.value = {};
   if (device && device.hasOwnProperty('metadata')) {
