@@ -3,6 +3,7 @@
     <device-info-card/>
     <air-temperature-card :name="sidebarData.name" v-if="showCard('smartcore.traits.AirTemperature')"/>
     <light-card :name="sidebarData.name" v-if="showCard('smartcore.traits.Light')"/>
+    <emergency-light :name="sidebarData.name" v-if="showCard('smartcore.bsp.EmergencyLight')"/>
   </side-bar>
 </template>
 
@@ -16,6 +17,7 @@ import SideBar from '@/components/SideBar.vue';
 import DeviceInfoCard from '@/routes/devices/components/trait-cards/DeviceInfoCard.vue';
 import AirTemperatureCard from '@/routes/devices/components/trait-cards/AirTemperatureCard.vue';
 import LightCard from '@/routes/devices/components/trait-cards/LightCard.vue';
+import EmergencyLight from '@/routes/devices/components/trait-cards/EmergencyLight.vue';
 
 const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);
