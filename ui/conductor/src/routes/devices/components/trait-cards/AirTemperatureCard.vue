@@ -13,13 +13,19 @@
         :value="tempProgress()"
         background-color="neutral lighten-1"
         color="accent"/>
+    <v-card-actions class="px-4">
+      <v-spacer/>
+      <v-btn small color="neutral lighten-1" elevation="0" @click="changeSetPoint(0.1)">Up</v-btn>
+      <v-btn small color="neutral lighten-1" elevation="0" @click="changeSetPoint(-0.1)">Down</v-btn>
+    </v-card-actions>
+    <v-progress-linear color="primary" indeterminate :active="updateValue.loading"/>
   </v-card>
 </template>
 
 <script setup>
 import {computed, defineProps, onUnmounted, reactive, ref, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
-import {pullAirTemperature, toDisplayObject} from '@/api/sc/traits/air-temperature';
+import {pullAirTemperature, toDisplayObject, updateAirTemperature} from '@/api/sc/traits/air-temperature';
 import {camelToSentence} from '@/util/string';
 
 const temperatureRange = ref({
@@ -73,6 +79,30 @@ const airTempData = computed(() => {
   }
   return {};
 });
+
+const updateValue = reactive(newResourceValue());
+
+/**
+ * @param {number} value
+ */
+function changeSetPoint(value) {
+  if (airTempValue.value &&
+      airTempValue.value.hasOwnProperty('temperatureSetPoint') &&
+      airTempValue.value.temperatureSetPoint !== undefined &&
+      airTempValue.value.temperatureSetPoint.hasOwnProperty('valueCelsius')) {
+    /* @type {UpdateAirTemperatureRequest.AsObject} */
+    const req = {
+      name: props.name,
+      state: {
+        temperatureSetPoint: {
+          valueCelsius: airTempValue.value.temperatureSetPoint.valueCelsius + value
+        }
+      }
+      // todo: add updateMask?
+    };
+    updateAirTemperature(req, updateValue);
+  }
+}
 
 </script>
 
