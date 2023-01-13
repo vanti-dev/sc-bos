@@ -1,10 +1,47 @@
 <template>
   <content-card>
     <v-data-table
+        v-model="selectedDevices"
         :headers="headers"
         :items="tableData"
+        item-key="name"
+        show-select
         @click:row="showDevice">
-      <template #top/>
+      <template #top>
+        <!-- todo: bulk actions -->
+        <!-- filters -->
+        <v-container fluid style="width: 100%">
+          <v-row dense>
+            <v-col cols="12" md="5">
+              <v-text-field
+                  disabled
+                  v-model="search"
+                  append-icon="mdi-magnify"
+                  label="Search devices"
+                  hide-details
+                  filled/>
+            </v-col>
+            <v-spacer/>
+            <v-col cols="12" md="2">
+              <v-select
+                  disabled
+                  v-model="filterFloor"
+                  :items="floorList"
+                  label="Floor"
+                  hide-details
+                  filled/>
+            </v-col>
+            <v-col cols="12" md="2">
+              <v-select
+                  v-model="filterZone"
+                  :items="zoneList"
+                  label="Zone"
+                  hide-details
+                  filled/>
+            </v-col>
+          </v-row>
+        </v-container>
+      </template>
     </v-data-table>
   </content-card>
 </template>
@@ -36,6 +73,25 @@ const headers = ref([
   {text: 'Zone', value: 'metadata.location.title'}
 ]);
 
+const selectedDevices = ref([]);
+const search = ref('');
+
+// todo: get this from somewhere
+const floorList = ref([
+  'All', 'L00', 'L01', 'L02', 'L03', 'L04'
+]);
+const filterFloor = ref(floorList.value[0]);
+
+// todo: get this from somewhere. Probably also filter by floor
+const zoneList = ref([
+  'All',
+  'L03_013/Meeting Room 1',
+  'L03_014/Reception',
+  'L03_015/Meeting Room 2'
+]);
+const filterZone = ref(zoneList.value[0]);
+
+
 /** @type {Collection} */
 const collection = devicesStore.newCollection();
 collection.needsMorePages = true; // todo: this causes us to load all pages, connect with paging logic instead
@@ -50,6 +106,18 @@ watch(() => props.subsystem, (sys) => {
     query.conditionsList.push({field: 'metadata.membership.subsystem', stringEqual: sys});
   }
 }, {immediate: true});
+
+// watch for changes to the zone
+watch(filterZone, () => {
+  query.conditionsList = query.conditionsList.filter(cond => {
+    console.log('cond', cond);
+    return (cond.field !== 'metadata.location.title');
+  });
+  if (filterZone.value.toLowerCase() !== 'all') {
+    query.conditionsList.push({field: 'metadata.location.title', stringEqual: filterZone.value});
+  }
+  console.log(query);
+});
 
 onUnmounted(() => {
   collection.reset(); // stop listening when the component is unmounted
@@ -81,6 +149,19 @@ function showDevice(item, row) {
 
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+::v-deep(.v-data-table-header__icon) {
+  margin-left: 8px;
+}
 
+.table ::v-deep(tbody tr) {
+  cursor: pointer;
+}
+
+.v-data-table ::v-deep(.v-data-footer) {
+  background: var(--v-neutral-lighten1) !important;
+  border-radius: 0px 0px $border-radius-root*2 $border-radius-root*2;
+  border: none;
+  margin: 0 -12px -12px;
+}
 </style>
