@@ -2,24 +2,21 @@
   <SideBar title="LIT_001">
     <v-subheader class="text-title-caps neutral--text text--lighten-3">Information</v-subheader>
     <v-list-item v-for="(val, key) in deviceInfo" :key="key" class="py-1">
-      <v-list-item-title class="font-weight-bold text-capitalize">{{ parseKey(key) }}</v-list-item-title>
+      <v-list-item-title class="font-weight-bold text-capitalize">{{ camelToSentence(key) }}</v-list-item-title>
       <v-list-item-subtitle>{{ val }}</v-list-item-subtitle>
     </v-list-item>
     <v-subheader class="text-title-caps neutral--text text--lighten-3">State</v-subheader>
-    <air-temperature-card/>
+    <air-temperature-card :name="deviceInfo.name"/>
   </SideBar>
 </template>
 
 <script setup>
 import SideBar from '@/components/SideBar.vue';
 import {ref, watch} from 'vue';
-import {useHvacStore} from '@/routes/devices/hvac/store';
 import {storeToRefs} from 'pinia';
 import {usePageStore} from '@/stores/page';
 import AirTemperatureCard from '@/routes/devices/hvac/SideBarCard_AirTemperature.vue';
-
-const hvacStore = useHvacStore();
-const {getSetPoint, getCurrentTemp} = storeToRefs(hvacStore);
+import {camelToSentence} from '@/util/string';
 
 const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);
@@ -62,16 +59,6 @@ watch(sidebarData, async (device) => {
     });
   }
 });
-
-/**
- * Inserts spaces into camelCased object key
- *
- * @param {string} key
- * @return {string}
- */
-function parseKey(key) {
-  return key.replace(/([A-Z])/g, ' $1');
-}
 
 </script>
 

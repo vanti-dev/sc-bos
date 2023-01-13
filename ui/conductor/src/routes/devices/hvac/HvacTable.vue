@@ -34,7 +34,6 @@ const headers = ref([
   {text: 'Device name', value: 'name'},
   {text: 'Floor', value: 'metadata.location.floor'},
   {text: 'Zone', value: 'metadata.location.title'},
-  {text: 'Set Point', value: 'setPoint'},
   {text: 'Device GUID', value: 'guid'}
 ]);
 

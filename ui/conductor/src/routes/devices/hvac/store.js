@@ -31,34 +31,6 @@ export const useHvacStore = defineStore('hvac', () => {
 
   /**
    *
-   * @param {string} deviceId
-   * @return {number}
-   */
-  const getSetPoint = computed((state) => {
-    return (deviceId) => {
-      // if (data.hasOwnProperty(deviceId)) {
-      //   return data[deviceId].setPoint;
-      // }
-      return 0;
-    };
-  });
-
-  /**
-   *
-   * @param {string} deviceId
-   * @return {number}
-   */
-  const getCurrentTemp = computed(() => {
-    return (deviceId) => {
-      // if (data.hasOwnProperty(deviceId)) {
-      //   return data[deviceId].currentTemp;
-      // }
-      return 0;
-    };
-  });
-
-  /**
-   *
    * @return {Collection}
    */
   function newCollection() {
@@ -72,10 +44,9 @@ export const useHvacStore = defineStore('hvac', () => {
     return new Collection(listFn);
   }
 
+
   return {
     deviceList,
-    getSetPoint,
-    getCurrentTemp,
     getDevice,
     newCollection
   };
