@@ -43,7 +43,7 @@ watch(() => props.name, async (name) => {
   if (name && name !== '') {
     pullAirTemperature(name, airTempValue);
   }
-});
+}, {immediate: true});
 
 onUnmounted(() => {
   closeResource(airTempValue);
