@@ -2,6 +2,7 @@ package driver
 
 import (
 	"crypto/tls"
+	"net/http"
 
 	"go.uber.org/zap"
 
@@ -14,6 +15,7 @@ type Services struct {
 	Node            *node.Node // for advertising devices
 	Tasks           *task.Group
 	ClientTLSConfig *tls.Config // for connecting to other smartcore nodes
+	HTTPMux         *http.ServeMux
 }
 
 type Driver interface {
