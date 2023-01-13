@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0">
-      <v-subheader class="text-title-caps neutral--text text--lighten-3">Information</v-subheader>
+      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Information</v-subheader>
       <v-list-item v-for="(val, key) in deviceInfo" :key="key" class="py-1">
         <v-list-item-title class="font-weight-bold text-capitalize">{{ camelToSentence(key) }}</v-list-item-title>
         <v-list-item-subtitle>{{ val }}</v-list-item-subtitle>

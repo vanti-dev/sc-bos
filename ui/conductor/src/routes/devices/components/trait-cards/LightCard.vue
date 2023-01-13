@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0">
-      <v-subheader class="text-title-caps neutral--text text--lighten-3">State</v-subheader>
+      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">State</v-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">Brightness</v-list-item-title>
         <v-list-item-subtitle class="text-capitalize">{{ brightness }}%</v-list-item-subtitle>
