@@ -24,7 +24,6 @@ const traits = ref([]);
 const deviceId = ref('');
 
 watch(sidebarData, (device) => {
-  console.log('watch', device);
   deviceId.value = device.name;
   traits.value = [];
   if (device &&
