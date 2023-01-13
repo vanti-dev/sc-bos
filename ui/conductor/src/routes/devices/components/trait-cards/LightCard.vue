@@ -13,6 +13,14 @@
         :value="brightness"
         background-color="neutral lighten-1"
         color="accent"/>
+    <v-card-actions class="px-4">
+      <v-btn small color="neutral lighten-1" elevation="0" @click="updateLight(100)">On</v-btn>
+      <v-btn small color="neutral lighten-1" elevation="0" @click="updateLight(0)">Off</v-btn>
+      <v-spacer/>
+      <v-btn small color="neutral lighten-1" elevation="0" @click="updateLight(brightness+1)">Up</v-btn>
+      <v-btn small color="neutral lighten-1" elevation="0" @click="updateLight(brightness-1)">Down</v-btn>
+    </v-card-actions>
+    <v-progress-linear color="primary" indeterminate :active="updateValue.loading"/>
   </v-card>
 </template>
 
@@ -20,9 +28,10 @@
 
 import {computed, defineProps, onUnmounted, reactive, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
-import {pullBrightness} from '@/api/sc/traits/light';
+import {pullBrightness, updateBrightness} from '@/api/sc/traits/light';
 
 const props = defineProps({
+  // unique name of the device
   name: {
     type: String,
     default: ''
@@ -31,6 +40,7 @@ const props = defineProps({
 
 const lightValue = reactive(newResourceValue());
 
+// if device name changes
 watch(() => props.name, async (name) => {
   // close existing stream if present
   closeResource(lightValue);
@@ -46,10 +56,26 @@ onUnmounted(() => {
 
 const brightness = computed(() => {
   if (lightValue && lightValue.value) {
-    return (lightValue.value.levelPercent*100).toFixed(1);
+    return Math.round(lightValue.value.levelPercent*100);
   }
   return '-';
 });
+
+const updateValue = reactive(newResourceValue());
+
+/**
+ * @param {number} value
+ */
+function updateLight(value) {
+  /* @type {UpdateBrightnessRequest.AsObject} */
+  const req = {
+    name: props.name,
+    brightness: {
+      levelPercent: Math.round(value)/100
+    }
+  };
+  updateBrightness(req, updateValue);
+}
 
 </script>
 
