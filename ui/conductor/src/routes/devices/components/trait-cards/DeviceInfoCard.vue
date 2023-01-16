@@ -11,7 +11,7 @@
 </template>
 
 <script setup>
-import {ref, watch} from 'vue';
+import {computed} from 'vue';
 import {storeToRefs} from 'pinia';
 import {usePageStore} from '@/stores/page';
 import {camelToSentence} from '@/util/string';
@@ -19,13 +19,11 @@ import {camelToSentence} from '@/util/string';
 const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);
 
-const deviceInfo = ref({});
-
-// Watch for changes in pageStore.sidebarData, which is where the data table item gets passed
-watch(sidebarData, (device) => {
-  deviceInfo.value = {};
-  if (device && device.hasOwnProperty('metadata')) {
-    const data = Object.entries(device.metadata);
+// calculate deviceInfo based on sidebarData
+const deviceInfo = computed(() => {
+  const info = {};
+  if (sidebarData?.value?.metadata !== undefined) {
+    const data = Object.entries(sidebarData.value.metadata);
     // filter data
     const filtered = data.filter(([key, value]) => {
       // don't display traits or membership
@@ -42,20 +40,21 @@ watch(sidebarData, (device) => {
     filtered.forEach(([key, value]) => {
       switch (key) {
         case 'location': {
-          deviceInfo.value['zone'] = value.title;
+          info['zone'] = value.title;
           if (value.moreMap.length > 0) {
-            for (const more of device.metadata.location.moreMap) {
-              deviceInfo.value[more[0]] = more[1];
+            for (const more of sidebarData.value.metadata.location.moreMap) {
+              info[more[0]] = more[1];
             }
           }
           break;
         }
         default: {
-          deviceInfo.value[key] = value;
+          info[key] = value;
         }
       }
     });
   }
+  return info;
 });
 
 </script>
