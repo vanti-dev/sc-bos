@@ -61,12 +61,8 @@ onUnmounted(() => {
  * @return {number}
  */
 function tempProgress() {
-  let val = 0;
-  if (airTempValue.value &&
-      airTempValue.value.hasOwnProperty('ambientTemperature') &&
-      airTempValue.value.ambientTemperature !== undefined &&
-      airTempValue.value.ambientTemperature.hasOwnProperty('valueCelsius')) {
-    val = airTempValue.value.ambientTemperature.valueCelsius;
+  let val = airTempValue.value?.ambientTemperature?.valueCelsius ?? 0;
+  if (val > 0) {
     val -= temperatureRange.value.low;
     val = val / (temperatureRange.value.high - temperatureRange.value.low);
   }
@@ -86,10 +82,7 @@ const updateValue = reactive(newResourceValue());
  * @param {number} value
  */
 function changeSetPoint(value) {
-  if (airTempValue.value &&
-      airTempValue.value.hasOwnProperty('temperatureSetPoint') &&
-      airTempValue.value.temperatureSetPoint !== undefined &&
-      airTempValue.value.temperatureSetPoint.hasOwnProperty('valueCelsius')) {
+  if (airTempValue.value?.temperatureSetPoint?.valueCelsius !== undefined) {
     /* @type {UpdateAirTemperatureRequest.AsObject} */
     const req = {
       name: props.name,
