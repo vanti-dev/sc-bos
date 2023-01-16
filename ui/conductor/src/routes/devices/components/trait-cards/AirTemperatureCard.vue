@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import {computed, defineProps, onUnmounted, reactive, ref, watch} from 'vue';
+import {computed, onUnmounted, reactive, ref, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullAirTemperature, toDisplayObject, updateAirTemperature} from '@/api/sc/traits/air-temperature';
 import {camelToSentence} from '@/util/string';

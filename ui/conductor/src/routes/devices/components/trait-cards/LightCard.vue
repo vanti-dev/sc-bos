@@ -26,7 +26,7 @@
 
 <script setup>
 
-import {computed, defineProps, onUnmounted, reactive, watch} from 'vue';
+import {computed, onUnmounted, reactive, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullBrightness, updateBrightness} from '@/api/sc/traits/light';
 
