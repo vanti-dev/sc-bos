@@ -1025,8 +1025,8 @@ github.com/sirupsen/logrus v1.6.0/go.mod h1:7uNnSEd1DgxDLC74fIahvMZmmYsHGZGEOFrf
 github.com/sirupsen/logrus v1.7.0/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
 github.com/sirupsen/logrus v1.8.1 h1:dJKuHgqk1NNQlqoA6BTlM1Wf9DOH3NBjQyu0h9+AZZE=
 github.com/sirupsen/logrus v1.8.1/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
-github.com/smart-core-os/sc-api/go v1.0.0-beta.38 h1:vRMY7wgNFiHTft9JHDqNhBWsePigLk6BXSChaMd1kaw=
-github.com/smart-core-os/sc-api/go v1.0.0-beta.38/go.mod h1:6mSjMPKk2EMSZWcAu4BUZuOFvyO9Vs09z7c3PGDLlmY=
+github.com/smart-core-os/sc-api/go v1.0.0-beta.39 h1:XdR4UI938gQSEBUeAenshEwGzk8V1vAopwkWcBpZLic=
+github.com/smart-core-os/sc-api/go v1.0.0-beta.39/go.mod h1:6mSjMPKk2EMSZWcAu4BUZuOFvyO9Vs09z7c3PGDLlmY=
 github.com/smart-core-os/sc-golang v0.0.0-20221207173507-8d9afb2be2f7 h1:WSVeoWoDHn79Ca5EfDTexrnczACugzuFV/x2ZpVksOU=
 github.com/smart-core-os/sc-golang v0.0.0-20221207173507-8d9afb2be2f7/go.mod h1:oVt8Dc1Aa23R22pPuCiIPG9TJDTQnvhKwPCUcFNolMg=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d/go.mod h1:OnSkiWE9lh6wB0YB77sQom3nweQdgAjqCqsofrRNTgc=
