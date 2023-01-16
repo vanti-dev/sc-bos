@@ -1199,10 +1199,10 @@
   resolved "https://nexus.vanti.co.uk/repository/npm-public/@types/normalize-package-data/-/normalize-package-data-2.4.1.tgz#d3357479a0fdfdd5907fe67e17e0a85c906e1301"
   integrity sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==
 
-"@vanti/eslint-config-vue@^2.0.0":
-  version "2.0.0"
-  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@vanti/eslint-config-vue/-/eslint-config-vue-2.0.0.tgz#d60a90e86d3cb730a138560bffb6079e53e855be"
-  integrity sha512-KtjFpXe6jQMqyFR4jkCtHWqQobQ2snIHnmSRBoVvcVbxSFTJFx+eeX18QO6MM/k9ZJ1dhwUCiBAttXC7d2aVVQ==
+"@vanti/eslint-config-vue@^2.1.0":
+  version "2.1.0"
+  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@vanti/eslint-config-vue/-/eslint-config-vue-2.1.0.tgz#ada1f2b53bffa3889df306c425b54f14f090d688"
+  integrity sha512-sCJ/BG2rDe0C40TLwLK7psbBU8RqT3e3QJe7pamhLGlNQPH2+MKjG21LV7l9or/gMo3kUNtnvWxRQpLVoT5scA==
 
 "@vitejs/plugin-vue2@^1.1.2":
   version "1.1.2"
