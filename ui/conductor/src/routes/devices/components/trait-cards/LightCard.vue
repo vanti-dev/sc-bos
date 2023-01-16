@@ -17,8 +17,22 @@
       <v-btn small color="neutral lighten-1" elevation="0" @click="updateLight(100)">On</v-btn>
       <v-btn small color="neutral lighten-1" elevation="0" @click="updateLight(0)">Off</v-btn>
       <v-spacer/>
-      <v-btn small color="neutral lighten-1" elevation="0" @click="updateLight(brightness+1)">Up</v-btn>
-      <v-btn small color="neutral lighten-1" elevation="0" @click="updateLight(brightness-1)">Down</v-btn>
+      <v-btn
+          small
+          color="neutral lighten-1"
+          elevation="0"
+          @click="updateLight(brightness+1)"
+          :disabled="brightness >= 100">
+        Up
+      </v-btn>
+      <v-btn
+          small
+          color="neutral lighten-1"
+          elevation="0"
+          @click="updateLight(brightness-1)"
+          :disabled="brightness <= 0">
+        Down
+      </v-btn>
     </v-card-actions>
     <v-progress-linear color="primary" indeterminate :active="updateValue.loading"/>
   </v-card>
@@ -71,7 +85,7 @@ function updateLight(value) {
   const req = {
     name: props.name,
     brightness: {
-      levelPercent: Math.round(value)/100
+      levelPercent: Math.min(1, Math.round(value)/100)
     }
   };
   updateBrightness(req, updateValue);

@@ -15,8 +15,22 @@
         color="accent"/>
     <v-card-actions class="px-4">
       <v-spacer/>
-      <v-btn small color="neutral lighten-1" elevation="0" @click="changeSetPoint(0.1)">Up</v-btn>
-      <v-btn small color="neutral lighten-1" elevation="0" @click="changeSetPoint(-0.1)">Down</v-btn>
+      <v-btn
+          small
+          color="neutral lighten-1"
+          elevation="0"
+          @click="changeSetPoint(0.1)"
+          :disabled="(airTempValue.value?.temperatureSetPoint === undefined)">
+        Up
+      </v-btn>
+      <v-btn
+          small
+          color="neutral lighten-1"
+          elevation="0"
+          @click="changeSetPoint(-0.1)"
+          :disabled="(airTempValue.value?.temperatureSetPoint === undefined)">
+        Down
+      </v-btn>
     </v-card-actions>
     <v-progress-linear color="primary" indeterminate :active="updateValue.loading"/>
   </v-card>
