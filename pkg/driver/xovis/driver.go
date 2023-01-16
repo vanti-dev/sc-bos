@@ -2,14 +2,20 @@ package xovis
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"io"
+	"mime"
+	"net/http"
 	"sync"
+	"time"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/enterleavesensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver"
+	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 )
@@ -22,7 +28,8 @@ type factory struct{}
 
 func (f factory) New(services driver.Services) task.Starter {
 	d := &Driver{
-		Services: services,
+		Services:    services,
+		pushDataBus: &minibus.Bus[PushData]{},
 	}
 	d.Lifecycle = task.NewLifecycle(d.applyConfig)
 	return d
@@ -31,6 +38,7 @@ func (f factory) New(services driver.Services) task.Starter {
 type Driver struct {
 	driver.Services
 	*task.Lifecycle[DriverConfig]
+	pushDataBus *minibus.Bus[PushData]
 
 	m                 sync.Mutex
 	config            DriverConfig
@@ -80,6 +88,7 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 					client:      d.client,
 					logicID:     dev.EnterLeave.ID,
 					multiSensor: conf.MultiSensor,
+					bus:         d.pushDataBus,
 				})),
 			))
 		}
@@ -88,8 +97,45 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 	}
 	// register data push webhook
 	if dp := conf.DataPush; dp != nil && dp.WebhookPath != "" {
-
+		d.HTTPMux.HandleFunc(dp.WebhookPath, d.handleWebhook)
 	}
 
 	d.config = conf
+
+	return nil
+}
+
+func (d *Driver) handleWebhook(response http.ResponseWriter, request *http.Request) {
+	// verify HTTP method
+	if request.Method != http.MethodPost {
+		response.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	// verify request body is JSON
+	mediatype, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
+	if err != nil || mediatype != "application/json" {
+		_, _ = response.Write([]byte("invalid content type"))
+		response.WriteHeader(http.StatusUnsupportedMediaType)
+		return
+	}
+
+	// read request body and parse
+	rawBody, err := io.ReadAll(http.MaxBytesReader(response, request.Body, 10*1024*1024))
+	if err != nil {
+		response.WriteHeader(http.StatusRequestEntityTooLarge)
+		return
+	}
+	var body PushData
+	err = json.Unmarshal(rawBody, &body)
+	if err != nil {
+		_, _ = response.Write([]byte(err.Error()))
+		response.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// send the data to the bus
+	ctx, cancel := context.WithTimeout(request.Context(), 5*time.Second)
+	defer cancel()
+	_ = d.pushDataBus.Send(ctx, body)
 }
