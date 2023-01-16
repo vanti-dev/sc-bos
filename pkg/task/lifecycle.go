@@ -138,11 +138,12 @@ func (s *Lifecycle[C]) Start(_ context.Context) error {
 				cfgCtx, cfgStop = context.WithCancel(s.stopCtx)
 
 				err := s.ApplyConfig(cfgCtx, cfg)
-				s.status.Update(StatusActive)
 				if err != nil {
+					s.status.Update(StatusError)
 					s.Logger.Error("failed to apply config update", zap.Error(err))
 					continue
 				}
+				s.status.Update(StatusActive)
 			case <-s.stopCtx.Done():
 				//goland:noinspection GoVetLostCancel
 				return

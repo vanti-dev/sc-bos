@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 )
@@ -38,6 +39,40 @@ func TestLifecycle_CurrentState(t *testing.T) {
 		lt.assertCurrentState(StatusLoading, wait)
 		lt.assertCurrentState(StatusActive, wait)
 	})
+	t.Run("start,configure,stop", func(t *testing.T) {
+		lt := newLifecycleTester(t)
+		lt.startWithin(wait)
+		lt.assertCurrentState(StatusActive, wait)
+		lt.applyConfigSleep(time.Millisecond)
+		lt.configureWithin("foo", wait)
+		lt.assertCurrentState(StatusLoading, wait)
+		lt.assertCurrentState(StatusActive, wait)
+		lt.stopWithin(wait)
+		lt.assertCurrentState(StatusInactive, wait)
+	})
+
+	t.Run("configure", func(t *testing.T) {
+		t.Skip("Configure before start is not currently supported")
+		lt := newLifecycleTester(t)
+		lt.configureWithin("foo", wait)
+		lt.assertCurrentState(StatusInactive, wait)
+	})
+	t.Run("configure,configure", func(t *testing.T) {
+		t.Skip("Configure before start is not currently supported")
+		lt := newLifecycleTester(t)
+		lt.configureWithin("foo", wait)
+		lt.assertCurrentState(StatusInactive, wait)
+		lt.configureWithin("foo2", wait)
+		lt.assertCurrentState(StatusInactive, wait)
+	})
+
+	t.Run("start,configure,error", func(t *testing.T) {
+		lt := newLifecycleTester(t)
+		lt.startWithin(wait)
+		lt.applyConfigError(errors.New("expected"))
+		lt.configureWithin("foo", wait)
+		lt.assertCurrentState(StatusError, wait)
+	})
 }
 
 type lifecycleTester struct {
@@ -55,6 +90,7 @@ type ctxConfig struct {
 
 type applyConfigSetup struct {
 	sleep time.Duration
+	err   error
 }
 
 func newLifecycleTester(t *testing.T) *lifecycleTester {
@@ -74,6 +110,10 @@ func (lt *lifecycleTester) applyConfigSleep(sleep time.Duration) {
 	lt.prepareApplyConfig(applyConfigSetup{sleep: sleep})
 }
 
+func (lt *lifecycleTester) applyConfigError(err error) {
+	lt.prepareApplyConfig(applyConfigSetup{err: err})
+}
+
 func (lt *lifecycleTester) applyConfig(ctx context.Context, config string) error {
 	lt.applyConfigCalls = append(lt.applyConfigCalls, ctxConfig{ctx: ctx, config: config})
 	if len(lt.applyConfigSetup) > 0 {
@@ -86,6 +126,9 @@ func (lt *lifecycleTester) applyConfig(ctx context.Context, config string) error
 				return ctx.Err()
 			}
 		}
+		if setup.err != nil {
+			return setup.err
+		}
 	}
 	return nil
 }
@@ -96,7 +139,7 @@ func (lt *lifecycleTester) startWithin(wait time.Duration) {
 	ctx, stop := context.WithTimeout(context.Background(), wait)
 	defer stop()
 	if err := lt.Start(ctx); err != nil {
-		lt.Fatalf("Start timeout after %s", wait)
+		lt.Fatalf("Start err: %s", err)
 	}
 }
 
@@ -114,7 +157,7 @@ func (lt *lifecycleTester) configureWithin(config string, wait time.Duration) {
 	select {
 	case <-done:
 		if err != nil {
-			lt.Fatalf("Configure err %v", err)
+			lt.Fatalf("Configure err: %v", err)
 		}
 		return // success
 	case <-time.After(wait):
@@ -136,7 +179,7 @@ func (lt *lifecycleTester) stopWithin(wait time.Duration) {
 	select {
 	case <-stopped:
 		if stopErr != nil {
-			lt.Fatalf("Stop err %v", stopErr)
+			lt.Fatalf("Stop err: %v", stopErr)
 		}
 		return // success
 	case <-time.After(wait):
