@@ -78,7 +78,7 @@ func (e *enterLeaveServer) PullEnterLeaveEvents(
 		}
 	}
 
-	return status.Error(codes.Unimplemented, "PullEnterLeaveEvents unimplemented for this device")
+	return nil
 }
 
 func findLogicRecords(data *LogicsPushData, logicID int) (records []LogicRecord, ok bool) {

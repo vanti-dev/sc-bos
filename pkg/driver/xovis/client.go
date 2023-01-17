@@ -43,6 +43,7 @@ func (c *Client) newRequest(method string, endpoint string) *http.Request {
 	req := &http.Request{
 		Method: method,
 		URL:    c.BaseURL.JoinPath(endpoint),
+		Header: make(http.Header),
 	}
 	req.SetBasicAuth(c.Username, c.Password)
 	return req

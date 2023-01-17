@@ -25,6 +25,5 @@ type LogicConfig struct {
 }
 
 type DataPushConfig struct {
-	WebhookPath       string `json:"webhookPath"`
-	BearerTokenSHA256 string `json:"bearerTokenSHA256"`
+	WebhookPath string `json:"webhookPath"`
 }

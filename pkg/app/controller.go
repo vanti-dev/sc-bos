@@ -16,13 +16,14 @@ import (
 	"github.com/rs/cors"
 	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/timshannon/bolthold"
-	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
+
+	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 
 	"github.com/vanti-dev/sc-bos/internal/auth/tenant"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
@@ -359,6 +360,7 @@ func (c *Controller) startDrivers(ctx context.Context) (err error) {
 		Node:            c.Node,
 		Tasks:           &task.Group{},
 		ClientTLSConfig: c.ClientTLSConfig,
+		HTTPMux:         c.Mux,
 	}
 
 	var started []task.Starter

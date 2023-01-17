@@ -57,7 +57,7 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 		oldWebhook = d.config.DataPush.WebhookPath
 	}
 	if conf.DataPush != nil {
-		newWebhook = d.config.DataPush.WebhookPath
+		newWebhook = conf.DataPush.WebhookPath
 	}
 	if oldWebhook != "" && newWebhook != oldWebhook {
 		return errors.New("can't change webhook path once service is running")
@@ -83,7 +83,7 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 			))
 		}
 		if dev.EnterLeave != nil {
-			features = append(features, node.HasTrait(trait.OccupancySensor,
+			features = append(features, node.HasTrait(trait.EnterLeaveSensor,
 				node.WithClients(enterleavesensor.WrapApi(&enterLeaveServer{
 					client:      d.client,
 					logicID:     dev.EnterLeave.ID,
@@ -115,8 +115,8 @@ func (d *Driver) handleWebhook(response http.ResponseWriter, request *http.Reque
 	// verify request body is JSON
 	mediatype, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
 	if err != nil || mediatype != "application/json" {
-		_, _ = response.Write([]byte("invalid content type"))
 		response.WriteHeader(http.StatusUnsupportedMediaType)
+		_, _ = response.Write([]byte("invalid content type"))
 		return
 	}
 
@@ -129,8 +129,8 @@ func (d *Driver) handleWebhook(response http.ResponseWriter, request *http.Reque
 	var body PushData
 	err = json.Unmarshal(rawBody, &body)
 	if err != nil {
-		_, _ = response.Write([]byte(err.Error()))
 		response.WriteHeader(http.StatusBadRequest)
+		_, _ = response.Write([]byte(err.Error()))
 		return
 	}
 
