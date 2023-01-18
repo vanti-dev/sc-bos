@@ -22,7 +22,7 @@ proto.smartcore.bos = require('./nodes_pb.js');
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -30,7 +30,7 @@ proto.smartcore.bos = require('./nodes_pb.js');
 proto.smartcore.bos.NodeApiClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -48,7 +48,7 @@ proto.smartcore.bos.NodeApiClient =
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -56,7 +56,7 @@ proto.smartcore.bos.NodeApiClient =
 proto.smartcore.bos.NodeApiPromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -94,11 +94,30 @@ const methodDescriptor_NodeApi_GetNodeRegistration = new grpc.web.MethodDescript
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.GetNodeRegistrationRequest,
+ *   !proto.smartcore.bos.NodeRegistration>}
+ */
+const methodInfo_NodeApi_GetNodeRegistration = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.NodeRegistration,
+  /**
+   * @param {!proto.smartcore.bos.GetNodeRegistrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.NodeRegistration.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.GetNodeRegistrationRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.NodeRegistration)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.NodeRegistration)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.NodeRegistration>|undefined}
  *     The XHR Node Readable Stream
@@ -117,7 +136,7 @@ proto.smartcore.bos.NodeApiClient.prototype.getNodeRegistration =
 /**
  * @param {!proto.smartcore.bos.GetNodeRegistrationRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.NodeRegistration>}
  *     Promise that resolves to the response
@@ -155,11 +174,30 @@ const methodDescriptor_NodeApi_CreateNodeRegistration = new grpc.web.MethodDescr
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.CreateNodeRegistrationRequest,
+ *   !proto.smartcore.bos.NodeRegistration>}
+ */
+const methodInfo_NodeApi_CreateNodeRegistration = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.NodeRegistration,
+  /**
+   * @param {!proto.smartcore.bos.CreateNodeRegistrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.NodeRegistration.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.CreateNodeRegistrationRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.NodeRegistration)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.NodeRegistration)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.NodeRegistration>|undefined}
  *     The XHR Node Readable Stream
@@ -178,7 +216,7 @@ proto.smartcore.bos.NodeApiClient.prototype.createNodeRegistration =
 /**
  * @param {!proto.smartcore.bos.CreateNodeRegistrationRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.NodeRegistration>}
  *     Promise that resolves to the response
@@ -216,11 +254,30 @@ const methodDescriptor_NodeApi_ListNodeRegistrations = new grpc.web.MethodDescri
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.ListNodeRegistrationsRequest,
+ *   !proto.smartcore.bos.ListNodeRegistrationsResponse>}
+ */
+const methodInfo_NodeApi_ListNodeRegistrations = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.ListNodeRegistrationsResponse,
+  /**
+   * @param {!proto.smartcore.bos.ListNodeRegistrationsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ListNodeRegistrationsResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.ListNodeRegistrationsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ListNodeRegistrationsResponse)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.ListNodeRegistrationsResponse)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListNodeRegistrationsResponse>|undefined}
  *     The XHR Node Readable Stream
@@ -239,7 +296,7 @@ proto.smartcore.bos.NodeApiClient.prototype.listNodeRegistrations =
 /**
  * @param {!proto.smartcore.bos.ListNodeRegistrationsRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.ListNodeRegistrationsResponse>}
  *     Promise that resolves to the response
@@ -277,11 +334,30 @@ const methodDescriptor_NodeApi_TestNodeCommunication = new grpc.web.MethodDescri
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.TestNodeCommunicationRequest,
+ *   !proto.smartcore.bos.TestNodeCommunicationResponse>}
+ */
+const methodInfo_NodeApi_TestNodeCommunication = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.TestNodeCommunicationResponse,
+  /**
+   * @param {!proto.smartcore.bos.TestNodeCommunicationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.TestNodeCommunicationResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.TestNodeCommunicationRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.TestNodeCommunicationResponse)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.TestNodeCommunicationResponse)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.TestNodeCommunicationResponse>|undefined}
  *     The XHR Node Readable Stream
@@ -300,7 +376,7 @@ proto.smartcore.bos.NodeApiClient.prototype.testNodeCommunication =
 /**
  * @param {!proto.smartcore.bos.TestNodeCommunicationRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.TestNodeCommunicationResponse>}
  *     Promise that resolves to the response

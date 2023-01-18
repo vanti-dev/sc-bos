@@ -27,7 +27,7 @@ proto.smartcore.bos.tenants = require('./tenants_pb.js');
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -35,7 +35,7 @@ proto.smartcore.bos.tenants = require('./tenants_pb.js');
 proto.smartcore.bos.tenants.TenantApiClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -53,7 +53,7 @@ proto.smartcore.bos.tenants.TenantApiClient =
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -61,7 +61,7 @@ proto.smartcore.bos.tenants.TenantApiClient =
 proto.smartcore.bos.tenants.TenantApiPromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -99,11 +99,30 @@ const methodDescriptor_TenantApi_ListTenants = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.ListTenantsRequest,
+ *   !proto.smartcore.bos.tenants.ListTenantsResponse>}
+ */
+const methodInfo_TenantApi_ListTenants = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.ListTenantsResponse,
+  /**
+   * @param {!proto.smartcore.bos.tenants.ListTenantsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.ListTenantsResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.ListTenantsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.ListTenantsResponse)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.ListTenantsResponse)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.ListTenantsResponse>|undefined}
  *     The XHR Node Readable Stream
@@ -122,7 +141,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.listTenants =
 /**
  * @param {!proto.smartcore.bos.tenants.ListTenantsRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.ListTenantsResponse>}
  *     Promise that resolves to the response
@@ -160,8 +179,27 @@ const methodDescriptor_TenantApi_PullTenants = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.PullTenantsRequest,
+ *   !proto.smartcore.bos.tenants.PullTenantsResponse>}
+ */
+const methodInfo_TenantApi_PullTenants = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.PullTenantsResponse,
+  /**
+   * @param {!proto.smartcore.bos.tenants.PullTenantsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.PullTenantsResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.PullTenantsRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.PullTenantsResponse>}
  *     The XHR Node Readable Stream
@@ -178,7 +216,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.pullTenants =
 
 /**
  * @param {!proto.smartcore.bos.tenants.PullTenantsRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.PullTenantsResponse>}
  *     The XHR Node Readable Stream
@@ -216,11 +254,30 @@ const methodDescriptor_TenantApi_CreateTenant = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.CreateTenantRequest,
+ *   !proto.smartcore.bos.tenants.Tenant>}
+ */
+const methodInfo_TenantApi_CreateTenant = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.Tenant,
+  /**
+   * @param {!proto.smartcore.bos.tenants.CreateTenantRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.Tenant.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.CreateTenantRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.Tenant)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.Tenant)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.Tenant>|undefined}
  *     The XHR Node Readable Stream
@@ -239,7 +296,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.createTenant =
 /**
  * @param {!proto.smartcore.bos.tenants.CreateTenantRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.Tenant>}
  *     Promise that resolves to the response
@@ -277,11 +334,30 @@ const methodDescriptor_TenantApi_GetTenant = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.GetTenantRequest,
+ *   !proto.smartcore.bos.tenants.Tenant>}
+ */
+const methodInfo_TenantApi_GetTenant = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.Tenant,
+  /**
+   * @param {!proto.smartcore.bos.tenants.GetTenantRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.Tenant.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.GetTenantRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.Tenant)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.Tenant)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.Tenant>|undefined}
  *     The XHR Node Readable Stream
@@ -300,7 +376,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.getTenant =
 /**
  * @param {!proto.smartcore.bos.tenants.GetTenantRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.Tenant>}
  *     Promise that resolves to the response
@@ -338,11 +414,30 @@ const methodDescriptor_TenantApi_UpdateTenant = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.UpdateTenantRequest,
+ *   !proto.smartcore.bos.tenants.Tenant>}
+ */
+const methodInfo_TenantApi_UpdateTenant = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.Tenant,
+  /**
+   * @param {!proto.smartcore.bos.tenants.UpdateTenantRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.Tenant.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.UpdateTenantRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.Tenant)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.Tenant)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.Tenant>|undefined}
  *     The XHR Node Readable Stream
@@ -361,7 +456,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.updateTenant =
 /**
  * @param {!proto.smartcore.bos.tenants.UpdateTenantRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.Tenant>}
  *     Promise that resolves to the response
@@ -399,11 +494,30 @@ const methodDescriptor_TenantApi_DeleteTenant = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.DeleteTenantRequest,
+ *   !proto.smartcore.bos.tenants.DeleteTenantResponse>}
+ */
+const methodInfo_TenantApi_DeleteTenant = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.DeleteTenantResponse,
+  /**
+   * @param {!proto.smartcore.bos.tenants.DeleteTenantRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.DeleteTenantResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.DeleteTenantRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.DeleteTenantResponse)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.DeleteTenantResponse)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.DeleteTenantResponse>|undefined}
  *     The XHR Node Readable Stream
@@ -422,7 +536,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.deleteTenant =
 /**
  * @param {!proto.smartcore.bos.tenants.DeleteTenantRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.DeleteTenantResponse>}
  *     Promise that resolves to the response
@@ -460,8 +574,27 @@ const methodDescriptor_TenantApi_PullTenant = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.PullTenantRequest,
+ *   !proto.smartcore.bos.tenants.PullTenantResponse>}
+ */
+const methodInfo_TenantApi_PullTenant = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.PullTenantResponse,
+  /**
+   * @param {!proto.smartcore.bos.tenants.PullTenantRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.PullTenantResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.PullTenantRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.PullTenantResponse>}
  *     The XHR Node Readable Stream
@@ -478,7 +611,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.pullTenant =
 
 /**
  * @param {!proto.smartcore.bos.tenants.PullTenantRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.PullTenantResponse>}
  *     The XHR Node Readable Stream
@@ -516,11 +649,30 @@ const methodDescriptor_TenantApi_AddTenantZones = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.AddTenantZonesRequest,
+ *   !proto.smartcore.bos.tenants.Tenant>}
+ */
+const methodInfo_TenantApi_AddTenantZones = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.Tenant,
+  /**
+   * @param {!proto.smartcore.bos.tenants.AddTenantZonesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.Tenant.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.AddTenantZonesRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.Tenant)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.Tenant)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.Tenant>|undefined}
  *     The XHR Node Readable Stream
@@ -539,7 +691,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.addTenantZones =
 /**
  * @param {!proto.smartcore.bos.tenants.AddTenantZonesRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.Tenant>}
  *     Promise that resolves to the response
@@ -577,11 +729,30 @@ const methodDescriptor_TenantApi_RemoveTenantZones = new grpc.web.MethodDescript
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.RemoveTenantZonesRequest,
+ *   !proto.smartcore.bos.tenants.Tenant>}
+ */
+const methodInfo_TenantApi_RemoveTenantZones = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.Tenant,
+  /**
+   * @param {!proto.smartcore.bos.tenants.RemoveTenantZonesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.Tenant.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.RemoveTenantZonesRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.Tenant)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.Tenant)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.Tenant>|undefined}
  *     The XHR Node Readable Stream
@@ -600,7 +771,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.removeTenantZones =
 /**
  * @param {!proto.smartcore.bos.tenants.RemoveTenantZonesRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.Tenant>}
  *     Promise that resolves to the response
@@ -638,11 +809,30 @@ const methodDescriptor_TenantApi_ListSecrets = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.ListSecretsRequest,
+ *   !proto.smartcore.bos.tenants.ListSecretsResponse>}
+ */
+const methodInfo_TenantApi_ListSecrets = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.ListSecretsResponse,
+  /**
+   * @param {!proto.smartcore.bos.tenants.ListSecretsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.ListSecretsResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.ListSecretsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.ListSecretsResponse)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.ListSecretsResponse)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.ListSecretsResponse>|undefined}
  *     The XHR Node Readable Stream
@@ -661,7 +851,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.listSecrets =
 /**
  * @param {!proto.smartcore.bos.tenants.ListSecretsRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.ListSecretsResponse>}
  *     Promise that resolves to the response
@@ -699,8 +889,27 @@ const methodDescriptor_TenantApi_PullSecrets = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.PullSecretsRequest,
+ *   !proto.smartcore.bos.tenants.PullSecretsResponse>}
+ */
+const methodInfo_TenantApi_PullSecrets = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.PullSecretsResponse,
+  /**
+   * @param {!proto.smartcore.bos.tenants.PullSecretsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.PullSecretsResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.PullSecretsRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.PullSecretsResponse>}
  *     The XHR Node Readable Stream
@@ -717,7 +926,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.pullSecrets =
 
 /**
  * @param {!proto.smartcore.bos.tenants.PullSecretsRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.PullSecretsResponse>}
  *     The XHR Node Readable Stream
@@ -755,11 +964,30 @@ const methodDescriptor_TenantApi_CreateSecret = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.CreateSecretRequest,
+ *   !proto.smartcore.bos.tenants.Secret>}
+ */
+const methodInfo_TenantApi_CreateSecret = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.Secret,
+  /**
+   * @param {!proto.smartcore.bos.tenants.CreateSecretRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.Secret.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.CreateSecretRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.Secret)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.Secret)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.Secret>|undefined}
  *     The XHR Node Readable Stream
@@ -778,7 +1006,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.createSecret =
 /**
  * @param {!proto.smartcore.bos.tenants.CreateSecretRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.Secret>}
  *     Promise that resolves to the response
@@ -816,11 +1044,30 @@ const methodDescriptor_TenantApi_VerifySecret = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.VerifySecretRequest,
+ *   !proto.smartcore.bos.tenants.Secret>}
+ */
+const methodInfo_TenantApi_VerifySecret = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.Secret,
+  /**
+   * @param {!proto.smartcore.bos.tenants.VerifySecretRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.Secret.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.VerifySecretRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.Secret)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.Secret)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.Secret>|undefined}
  *     The XHR Node Readable Stream
@@ -839,7 +1086,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.verifySecret =
 /**
  * @param {!proto.smartcore.bos.tenants.VerifySecretRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.Secret>}
  *     Promise that resolves to the response
@@ -877,11 +1124,30 @@ const methodDescriptor_TenantApi_GetSecret = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.GetSecretRequest,
+ *   !proto.smartcore.bos.tenants.Secret>}
+ */
+const methodInfo_TenantApi_GetSecret = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.Secret,
+  /**
+   * @param {!proto.smartcore.bos.tenants.GetSecretRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.Secret.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.GetSecretRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.Secret)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.Secret)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.Secret>|undefined}
  *     The XHR Node Readable Stream
@@ -900,7 +1166,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.getSecret =
 /**
  * @param {!proto.smartcore.bos.tenants.GetSecretRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.Secret>}
  *     Promise that resolves to the response
@@ -938,11 +1204,30 @@ const methodDescriptor_TenantApi_UpdateSecret = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.UpdateSecretRequest,
+ *   !proto.smartcore.bos.tenants.Secret>}
+ */
+const methodInfo_TenantApi_UpdateSecret = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.Secret,
+  /**
+   * @param {!proto.smartcore.bos.tenants.UpdateSecretRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.Secret.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.UpdateSecretRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.Secret)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.Secret)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.Secret>|undefined}
  *     The XHR Node Readable Stream
@@ -961,7 +1246,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.updateSecret =
 /**
  * @param {!proto.smartcore.bos.tenants.UpdateSecretRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.Secret>}
  *     Promise that resolves to the response
@@ -999,11 +1284,30 @@ const methodDescriptor_TenantApi_DeleteSecret = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.DeleteSecretRequest,
+ *   !proto.smartcore.bos.tenants.DeleteSecretResponse>}
+ */
+const methodInfo_TenantApi_DeleteSecret = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.DeleteSecretResponse,
+  /**
+   * @param {!proto.smartcore.bos.tenants.DeleteSecretRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.DeleteSecretResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.DeleteSecretRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.DeleteSecretResponse)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.DeleteSecretResponse)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.DeleteSecretResponse>|undefined}
  *     The XHR Node Readable Stream
@@ -1022,7 +1326,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.deleteSecret =
 /**
  * @param {!proto.smartcore.bos.tenants.DeleteSecretRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.DeleteSecretResponse>}
  *     Promise that resolves to the response
@@ -1060,8 +1364,27 @@ const methodDescriptor_TenantApi_PullSecret = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.PullSecretRequest,
+ *   !proto.smartcore.bos.tenants.PullSecretResponse>}
+ */
+const methodInfo_TenantApi_PullSecret = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.PullSecretResponse,
+  /**
+   * @param {!proto.smartcore.bos.tenants.PullSecretRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.PullSecretResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.PullSecretRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.PullSecretResponse>}
  *     The XHR Node Readable Stream
@@ -1078,7 +1401,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.pullSecret =
 
 /**
  * @param {!proto.smartcore.bos.tenants.PullSecretRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.PullSecretResponse>}
  *     The XHR Node Readable Stream
@@ -1116,11 +1439,30 @@ const methodDescriptor_TenantApi_RegenerateSecret = new grpc.web.MethodDescripto
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.tenants.RegenerateSecretRequest,
+ *   !proto.smartcore.bos.tenants.Secret>}
+ */
+const methodInfo_TenantApi_RegenerateSecret = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.tenants.Secret,
+  /**
+   * @param {!proto.smartcore.bos.tenants.RegenerateSecretRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.tenants.Secret.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.tenants.RegenerateSecretRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.tenants.Secret)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.tenants.Secret)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.tenants.Secret>|undefined}
  *     The XHR Node Readable Stream
@@ -1139,7 +1481,7 @@ proto.smartcore.bos.tenants.TenantApiClient.prototype.regenerateSecret =
 /**
  * @param {!proto.smartcore.bos.tenants.RegenerateSecretRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.tenants.Secret>}
  *     Promise that resolves to the response

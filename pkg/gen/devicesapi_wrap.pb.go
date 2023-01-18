@@ -27,7 +27,7 @@ func (w *devicesApiWrapper) UnwrapServer() DevicesApiServer {
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *devicesApiWrapper) Unwrap() any {
+func (w *devicesApiWrapper) Unwrap() interface{} {
 	return w.UnwrapServer()
 }
 

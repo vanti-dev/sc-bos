@@ -11,28 +11,28 @@ export class NodeApiClient {
   getNodeRegistration(
     request: proto_nodes_pb.GetNodeRegistrationRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.RpcError,
+    callback: (err: grpcWeb.Error,
                response: proto_nodes_pb.NodeRegistration) => void
   ): grpcWeb.ClientReadableStream<proto_nodes_pb.NodeRegistration>;
 
   createNodeRegistration(
     request: proto_nodes_pb.CreateNodeRegistrationRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.RpcError,
+    callback: (err: grpcWeb.Error,
                response: proto_nodes_pb.NodeRegistration) => void
   ): grpcWeb.ClientReadableStream<proto_nodes_pb.NodeRegistration>;
 
   listNodeRegistrations(
     request: proto_nodes_pb.ListNodeRegistrationsRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.RpcError,
+    callback: (err: grpcWeb.Error,
                response: proto_nodes_pb.ListNodeRegistrationsResponse) => void
   ): grpcWeb.ClientReadableStream<proto_nodes_pb.ListNodeRegistrationsResponse>;
 
   testNodeCommunication(
     request: proto_nodes_pb.TestNodeCommunicationRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.RpcError,
+    callback: (err: grpcWeb.Error,
                response: proto_nodes_pb.TestNodeCommunicationResponse) => void
   ): grpcWeb.ClientReadableStream<proto_nodes_pb.TestNodeCommunicationResponse>;
 

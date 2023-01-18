@@ -26,7 +26,7 @@ func (w *alertAdminApiWrapper) UnwrapServer() AlertAdminApiServer {
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *alertAdminApiWrapper) Unwrap() any {
+func (w *alertAdminApiWrapper) Unwrap() interface{} {
 	return w.UnwrapServer()
 }
 

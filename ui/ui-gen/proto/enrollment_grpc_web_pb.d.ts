@@ -11,21 +11,21 @@ export class EnrollmentApiClient {
   getEnrollment(
     request: proto_enrollment_pb.GetEnrollmentRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.RpcError,
+    callback: (err: grpcWeb.Error,
                response: proto_enrollment_pb.Enrollment) => void
   ): grpcWeb.ClientReadableStream<proto_enrollment_pb.Enrollment>;
 
   createEnrollment(
     request: proto_enrollment_pb.CreateEnrollmentRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.RpcError,
+    callback: (err: grpcWeb.Error,
                response: proto_enrollment_pb.Enrollment) => void
   ): grpcWeb.ClientReadableStream<proto_enrollment_pb.Enrollment>;
 
   deleteEnrollment(
     request: proto_enrollment_pb.DeleteEnrollmentRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.RpcError,
+    callback: (err: grpcWeb.Error,
                response: proto_enrollment_pb.Enrollment) => void
   ): grpcWeb.ClientReadableStream<proto_enrollment_pb.Enrollment>;
 

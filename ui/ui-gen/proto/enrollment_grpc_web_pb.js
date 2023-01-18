@@ -22,7 +22,7 @@ proto.smartcore.bos = require('./enrollment_pb.js');
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -30,7 +30,7 @@ proto.smartcore.bos = require('./enrollment_pb.js');
 proto.smartcore.bos.EnrollmentApiClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -48,7 +48,7 @@ proto.smartcore.bos.EnrollmentApiClient =
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -56,7 +56,7 @@ proto.smartcore.bos.EnrollmentApiClient =
 proto.smartcore.bos.EnrollmentApiPromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -94,11 +94,30 @@ const methodDescriptor_EnrollmentApi_GetEnrollment = new grpc.web.MethodDescript
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.GetEnrollmentRequest,
+ *   !proto.smartcore.bos.Enrollment>}
+ */
+const methodInfo_EnrollmentApi_GetEnrollment = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.Enrollment,
+  /**
+   * @param {!proto.smartcore.bos.GetEnrollmentRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Enrollment.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.GetEnrollmentRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.Enrollment)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.Enrollment)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Enrollment>|undefined}
  *     The XHR Node Readable Stream
@@ -117,7 +136,7 @@ proto.smartcore.bos.EnrollmentApiClient.prototype.getEnrollment =
 /**
  * @param {!proto.smartcore.bos.GetEnrollmentRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.Enrollment>}
  *     Promise that resolves to the response
@@ -155,11 +174,30 @@ const methodDescriptor_EnrollmentApi_CreateEnrollment = new grpc.web.MethodDescr
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.CreateEnrollmentRequest,
+ *   !proto.smartcore.bos.Enrollment>}
+ */
+const methodInfo_EnrollmentApi_CreateEnrollment = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.Enrollment,
+  /**
+   * @param {!proto.smartcore.bos.CreateEnrollmentRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Enrollment.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.CreateEnrollmentRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.Enrollment)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.Enrollment)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Enrollment>|undefined}
  *     The XHR Node Readable Stream
@@ -178,7 +216,7 @@ proto.smartcore.bos.EnrollmentApiClient.prototype.createEnrollment =
 /**
  * @param {!proto.smartcore.bos.CreateEnrollmentRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.Enrollment>}
  *     Promise that resolves to the response
@@ -216,11 +254,30 @@ const methodDescriptor_EnrollmentApi_DeleteEnrollment = new grpc.web.MethodDescr
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.DeleteEnrollmentRequest,
+ *   !proto.smartcore.bos.Enrollment>}
+ */
+const methodInfo_EnrollmentApi_DeleteEnrollment = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.Enrollment,
+  /**
+   * @param {!proto.smartcore.bos.DeleteEnrollmentRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Enrollment.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.DeleteEnrollmentRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.Enrollment)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.Enrollment)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Enrollment>|undefined}
  *     The XHR Node Readable Stream
@@ -239,7 +296,7 @@ proto.smartcore.bos.EnrollmentApiClient.prototype.deleteEnrollment =
 /**
  * @param {!proto.smartcore.bos.DeleteEnrollmentRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.Enrollment>}
  *     Promise that resolves to the response

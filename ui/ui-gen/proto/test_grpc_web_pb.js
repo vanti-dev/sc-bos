@@ -23,7 +23,7 @@ proto.smartcore.bos.ew = require('./test_pb.js');
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -31,7 +31,7 @@ proto.smartcore.bos.ew = require('./test_pb.js');
 proto.smartcore.bos.ew.TestApiClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -49,7 +49,7 @@ proto.smartcore.bos.ew.TestApiClient =
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -57,7 +57,7 @@ proto.smartcore.bos.ew.TestApiClient =
 proto.smartcore.bos.ew.TestApiPromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -95,11 +95,30 @@ const methodDescriptor_TestApi_GetTest = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.ew.GetTestRequest,
+ *   !proto.smartcore.bos.ew.Test>}
+ */
+const methodInfo_TestApi_GetTest = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.ew.Test,
+  /**
+   * @param {!proto.smartcore.bos.ew.GetTestRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ew.Test.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.ew.GetTestRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ew.Test)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.ew.Test)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ew.Test>|undefined}
  *     The XHR Node Readable Stream
@@ -118,7 +137,7 @@ proto.smartcore.bos.ew.TestApiClient.prototype.getTest =
 /**
  * @param {!proto.smartcore.bos.ew.GetTestRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.ew.Test>}
  *     Promise that resolves to the response
@@ -156,11 +175,30 @@ const methodDescriptor_TestApi_UpdateTest = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.ew.UpdateTestRequest,
+ *   !proto.smartcore.bos.ew.Test>}
+ */
+const methodInfo_TestApi_UpdateTest = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.ew.Test,
+  /**
+   * @param {!proto.smartcore.bos.ew.UpdateTestRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ew.Test.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.ew.UpdateTestRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ew.Test)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.ew.Test)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ew.Test>|undefined}
  *     The XHR Node Readable Stream
@@ -179,7 +217,7 @@ proto.smartcore.bos.ew.TestApiClient.prototype.updateTest =
 /**
  * @param {!proto.smartcore.bos.ew.UpdateTestRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.ew.Test>}
  *     Promise that resolves to the response

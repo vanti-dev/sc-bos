@@ -30,7 +30,7 @@ func NewAlertApiRouter(opts ...router.Option) *AlertApiRouter {
 // WithAlertApiClientFactory instructs the router to create a new
 // client the first time Get is called for that name.
 func WithAlertApiClientFactory(f func(name string) (AlertApiClient, error)) router.Option {
-	return router.WithFactory(func(name string) (any, error) {
+	return router.WithFactory(func(name string) (interface{}, error) {
 		return f(name)
 	})
 }
@@ -40,14 +40,14 @@ func (r *AlertApiRouter) Register(server *grpc.Server) {
 }
 
 // Add extends Router.Add to panic if client is not of type gen.AlertApiClient.
-func (r *AlertApiRouter) Add(name string, client any) any {
+func (r *AlertApiRouter) Add(name string, client interface{}) interface{} {
 	if !r.HoldsType(client) {
 		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.AlertApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }
 
-func (r *AlertApiRouter) HoldsType(client any) bool {
+func (r *AlertApiRouter) HoldsType(client interface{}) bool {
 	_, ok := client.(AlertApiClient)
 	return ok
 }

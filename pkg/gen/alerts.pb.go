@@ -802,7 +802,9 @@ type CreateAlertRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Name of the device exposing this trait.
-	Name  string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// The alert information to use for the new record.
+	// Only description, floor, zone, severity, and source will contribute to the new alert.
 	Alert *Alert `protobuf:"bytes,2,opt,name=alert,proto3" json:"alert,omitempty"`
 }
 
@@ -861,6 +863,7 @@ type UpdateAlertRequest struct {
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// The new properties of the alert.
 	// Alert.id must be present.
+	// Only description, floor, zone, severity, and source will contribute to the updated alert.
 	Alert *Alert `protobuf:"bytes,2,opt,name=alert,proto3" json:"alert,omitempty"`
 	// Fields to update relative to the Alert type
 	UpdateMask *fieldmaskpb.FieldMask `protobuf:"bytes,3,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`

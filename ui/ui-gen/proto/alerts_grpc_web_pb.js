@@ -28,7 +28,7 @@ proto.smartcore.bos = require('./alerts_pb.js');
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -36,7 +36,7 @@ proto.smartcore.bos = require('./alerts_pb.js');
 proto.smartcore.bos.AlertApiClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -54,7 +54,7 @@ proto.smartcore.bos.AlertApiClient =
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -62,7 +62,7 @@ proto.smartcore.bos.AlertApiClient =
 proto.smartcore.bos.AlertApiPromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -100,11 +100,30 @@ const methodDescriptor_AlertApi_ListAlerts = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.ListAlertsRequest,
+ *   !proto.smartcore.bos.ListAlertsResponse>}
+ */
+const methodInfo_AlertApi_ListAlerts = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.ListAlertsResponse,
+  /**
+   * @param {!proto.smartcore.bos.ListAlertsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ListAlertsResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.ListAlertsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ListAlertsResponse)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.ListAlertsResponse)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListAlertsResponse>|undefined}
  *     The XHR Node Readable Stream
@@ -123,7 +142,7 @@ proto.smartcore.bos.AlertApiClient.prototype.listAlerts =
 /**
  * @param {!proto.smartcore.bos.ListAlertsRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.ListAlertsResponse>}
  *     Promise that resolves to the response
@@ -161,8 +180,27 @@ const methodDescriptor_AlertApi_PullAlerts = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.PullAlertsRequest,
+ *   !proto.smartcore.bos.PullAlertsResponse>}
+ */
+const methodInfo_AlertApi_PullAlerts = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.PullAlertsResponse,
+  /**
+   * @param {!proto.smartcore.bos.PullAlertsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.PullAlertsResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.PullAlertsRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullAlertsResponse>}
  *     The XHR Node Readable Stream
@@ -179,7 +217,7 @@ proto.smartcore.bos.AlertApiClient.prototype.pullAlerts =
 
 /**
  * @param {!proto.smartcore.bos.PullAlertsRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullAlertsResponse>}
  *     The XHR Node Readable Stream
@@ -217,11 +255,30 @@ const methodDescriptor_AlertApi_AcknowledgeAlert = new grpc.web.MethodDescriptor
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.AcknowledgeAlertRequest,
+ *   !proto.smartcore.bos.Alert>}
+ */
+const methodInfo_AlertApi_AcknowledgeAlert = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.Alert,
+  /**
+   * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Alert.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.Alert)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.Alert)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Alert>|undefined}
  *     The XHR Node Readable Stream
@@ -240,7 +297,7 @@ proto.smartcore.bos.AlertApiClient.prototype.acknowledgeAlert =
 /**
  * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.Alert>}
  *     Promise that resolves to the response
@@ -278,11 +335,30 @@ const methodDescriptor_AlertApi_UnacknowledgeAlert = new grpc.web.MethodDescript
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.AcknowledgeAlertRequest,
+ *   !proto.smartcore.bos.Alert>}
+ */
+const methodInfo_AlertApi_UnacknowledgeAlert = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.Alert,
+  /**
+   * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Alert.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.Alert)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.Alert)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Alert>|undefined}
  *     The XHR Node Readable Stream
@@ -301,7 +377,7 @@ proto.smartcore.bos.AlertApiClient.prototype.unacknowledgeAlert =
 /**
  * @param {!proto.smartcore.bos.AcknowledgeAlertRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.Alert>}
  *     Promise that resolves to the response
@@ -339,11 +415,30 @@ const methodDescriptor_AlertApi_GetAlertMetadata = new grpc.web.MethodDescriptor
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.GetAlertMetadataRequest,
+ *   !proto.smartcore.bos.AlertMetadata>}
+ */
+const methodInfo_AlertApi_GetAlertMetadata = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.AlertMetadata,
+  /**
+   * @param {!proto.smartcore.bos.GetAlertMetadataRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.AlertMetadata.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.GetAlertMetadataRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.AlertMetadata)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.AlertMetadata)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.AlertMetadata>|undefined}
  *     The XHR Node Readable Stream
@@ -362,7 +457,7 @@ proto.smartcore.bos.AlertApiClient.prototype.getAlertMetadata =
 /**
  * @param {!proto.smartcore.bos.GetAlertMetadataRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.AlertMetadata>}
  *     Promise that resolves to the response
@@ -400,8 +495,27 @@ const methodDescriptor_AlertApi_PullAlertMetadata = new grpc.web.MethodDescripto
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.PullAlertMetadataRequest,
+ *   !proto.smartcore.bos.PullAlertMetadataResponse>}
+ */
+const methodInfo_AlertApi_PullAlertMetadata = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.PullAlertMetadataResponse,
+  /**
+   * @param {!proto.smartcore.bos.PullAlertMetadataRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.PullAlertMetadataResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.PullAlertMetadataRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullAlertMetadataResponse>}
  *     The XHR Node Readable Stream
@@ -418,7 +532,7 @@ proto.smartcore.bos.AlertApiClient.prototype.pullAlertMetadata =
 
 /**
  * @param {!proto.smartcore.bos.PullAlertMetadataRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullAlertMetadataResponse>}
  *     The XHR Node Readable Stream
@@ -436,7 +550,7 @@ proto.smartcore.bos.AlertApiPromiseClient.prototype.pullAlertMetadata =
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -444,7 +558,7 @@ proto.smartcore.bos.AlertApiPromiseClient.prototype.pullAlertMetadata =
 proto.smartcore.bos.AlertAdminApiClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -462,7 +576,7 @@ proto.smartcore.bos.AlertAdminApiClient =
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -470,7 +584,7 @@ proto.smartcore.bos.AlertAdminApiClient =
 proto.smartcore.bos.AlertAdminApiPromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -508,11 +622,30 @@ const methodDescriptor_AlertAdminApi_CreateAlert = new grpc.web.MethodDescriptor
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.CreateAlertRequest,
+ *   !proto.smartcore.bos.Alert>}
+ */
+const methodInfo_AlertAdminApi_CreateAlert = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.Alert,
+  /**
+   * @param {!proto.smartcore.bos.CreateAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Alert.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.CreateAlertRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.Alert)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.Alert)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Alert>|undefined}
  *     The XHR Node Readable Stream
@@ -531,7 +664,7 @@ proto.smartcore.bos.AlertAdminApiClient.prototype.createAlert =
 /**
  * @param {!proto.smartcore.bos.CreateAlertRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.Alert>}
  *     Promise that resolves to the response
@@ -569,11 +702,30 @@ const methodDescriptor_AlertAdminApi_UpdateAlert = new grpc.web.MethodDescriptor
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.UpdateAlertRequest,
+ *   !proto.smartcore.bos.Alert>}
+ */
+const methodInfo_AlertAdminApi_UpdateAlert = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.Alert,
+  /**
+   * @param {!proto.smartcore.bos.UpdateAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Alert.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.UpdateAlertRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.Alert)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.Alert)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Alert>|undefined}
  *     The XHR Node Readable Stream
@@ -592,7 +744,7 @@ proto.smartcore.bos.AlertAdminApiClient.prototype.updateAlert =
 /**
  * @param {!proto.smartcore.bos.UpdateAlertRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.Alert>}
  *     Promise that resolves to the response
@@ -630,11 +782,30 @@ const methodDescriptor_AlertAdminApi_DeleteAlert = new grpc.web.MethodDescriptor
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.DeleteAlertRequest,
+ *   !proto.smartcore.bos.DeleteAlertResponse>}
+ */
+const methodInfo_AlertAdminApi_DeleteAlert = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.DeleteAlertResponse,
+  /**
+   * @param {!proto.smartcore.bos.DeleteAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.DeleteAlertResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.DeleteAlertRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.DeleteAlertResponse)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.DeleteAlertResponse)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.DeleteAlertResponse>|undefined}
  *     The XHR Node Readable Stream
@@ -653,7 +824,7 @@ proto.smartcore.bos.AlertAdminApiClient.prototype.deleteAlert =
 /**
  * @param {!proto.smartcore.bos.DeleteAlertRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.DeleteAlertResponse>}
  *     Promise that resolves to the response

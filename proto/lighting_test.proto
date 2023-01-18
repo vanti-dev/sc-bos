@@ -7,18 +7,18 @@ option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
-service EmergencyLightingApi {
-  rpc GetEmergencyLight(GetEmergencyLightRequest) returns (EmergencyLight);
-  rpc ListEmergencyLights(ListEmergencyLightsRequest) returns (ListEmergencyLightsResponse);
+service LightingTestApi {
+  rpc GetLightHealth(GetLightHealthRequest) returns (LightHealth);
+  rpc ListLightHealth(ListLightHealthRequest) returns (ListLightHealthResponse);
 
-  rpc ListEmergencyLightEvents(ListEmergencyLightEventsRequest) returns (ListEmergencyLightEventsResponse);
+  rpc ListLightEvents(ListLightEventsRequest) returns (ListLightEventsResponse);
 
   rpc GetReportCSV(GetReportCSVRequest) returns (ReportCSV);
 }
 
 // Resource Types
 
-enum EmergencyLightFault {
+enum LightFault {
   FAULT_UNSPECIFIED = 0;
   DURATION_TEST_FAILED = 1;   // the most recent duration test failed
   FUNCTION_TEST_FAILED = 2;   // the most recent function test failed
@@ -28,15 +28,15 @@ enum EmergencyLightFault {
   OTHER_FAULT = 6;
 }
 
-message EmergencyLight {
+message LightHealth {
   // The Smart Core device name of the emergency light.
   string name = 1;
   // The last time this data was updated.
   google.protobuf.Timestamp update_time = 2;
-  repeated EmergencyLightFault faults = 3;
+  repeated LightFault faults = 3;
 }
 
-message EmergencyLightingEvent {
+message LightingEvent {
   string name = 1; // Smart Core device name of the light this entry applies to
   string id = 2;   // An opaque, unique identifier for this log entry
   google.protobuf.Timestamp timestamp = 3;
@@ -54,17 +54,17 @@ message EmergencyLightingEvent {
 
   }
   message StatusReport {
-    repeated EmergencyLightFault faults = 1;
+    repeated LightFault faults = 1;
   }
 }
 
 // RPC Requests & Responses
 
-message GetEmergencyLightRequest {
+message GetLightHealthRequest {
   string name = 1;
 }
 
-message ListEmergencyLightsRequest {
+message ListLightHealthRequest {
   // The maximum number of emergency light names to return at once. The service may choose to return fewer.
   // If unspecified, defaults to 50.
   int32 page_size = 1;
@@ -73,18 +73,18 @@ message ListEmergencyLightsRequest {
   // If omitted, the first page is supplied.
   string page_token = 2;
 }
-message ListEmergencyLightsResponse {
-  repeated EmergencyLight emergency_lights = 1;
+message ListLightHealthResponse {
+  repeated LightHealth emergency_lights = 1;
   string next_page_token = 2;
 }
 
-message ListEmergencyLightEventsRequest {
+message ListLightEventsRequest {
   int32 page_size = 1;
   string page_token = 2;
   // TODO: add filtering support
 }
-message ListEmergencyLightEventsResponse {
-  repeated EmergencyLightingEvent events = 1;
+message ListLightEventsResponse {
+  repeated LightingEvent events = 1;
   string next_page_token = 2;
 }
 

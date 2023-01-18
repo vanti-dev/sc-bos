@@ -30,7 +30,7 @@ proto.smartcore.bos = require('./devices_pb.js');
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -38,7 +38,7 @@ proto.smartcore.bos = require('./devices_pb.js');
 proto.smartcore.bos.DevicesApiClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -56,7 +56,7 @@ proto.smartcore.bos.DevicesApiClient =
 /**
  * @param {string} hostname
  * @param {?Object} credentials
- * @param {?grpc.web.ClientOptions} options
+ * @param {?Object} options
  * @constructor
  * @struct
  * @final
@@ -64,7 +64,7 @@ proto.smartcore.bos.DevicesApiClient =
 proto.smartcore.bos.DevicesApiPromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options['format'] = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -102,11 +102,30 @@ const methodDescriptor_DevicesApi_ListDevices = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.ListDevicesRequest,
+ *   !proto.smartcore.bos.ListDevicesResponse>}
+ */
+const methodInfo_DevicesApi_ListDevices = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.ListDevicesResponse,
+  /**
+   * @param {!proto.smartcore.bos.ListDevicesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ListDevicesResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.ListDevicesRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ListDevicesResponse)}
+ * @param {function(?grpc.web.Error, ?proto.smartcore.bos.ListDevicesResponse)}
  *     callback The callback function(error, response)
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListDevicesResponse>|undefined}
  *     The XHR Node Readable Stream
@@ -125,7 +144,7 @@ proto.smartcore.bos.DevicesApiClient.prototype.listDevices =
 /**
  * @param {!proto.smartcore.bos.ListDevicesRequest} request The
  *     request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!Promise<!proto.smartcore.bos.ListDevicesResponse>}
  *     Promise that resolves to the response
@@ -163,8 +182,27 @@ const methodDescriptor_DevicesApi_PullDevices = new grpc.web.MethodDescriptor(
 
 
 /**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.smartcore.bos.PullDevicesRequest,
+ *   !proto.smartcore.bos.PullDevicesResponse>}
+ */
+const methodInfo_DevicesApi_PullDevices = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.smartcore.bos.PullDevicesResponse,
+  /**
+   * @param {!proto.smartcore.bos.PullDevicesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.PullDevicesResponse.deserializeBinary
+);
+
+
+/**
  * @param {!proto.smartcore.bos.PullDevicesRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullDevicesResponse>}
  *     The XHR Node Readable Stream
@@ -181,7 +219,7 @@ proto.smartcore.bos.DevicesApiClient.prototype.pullDevices =
 
 /**
  * @param {!proto.smartcore.bos.PullDevicesRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullDevicesResponse>}
  *     The XHR Node Readable Stream
