@@ -11,7 +11,8 @@
         clipped
         floating
         width="275"
-        class="sidebar pa-0">
+        class="pa-0"
+        color="neutral">
       <router-view name="sidebar"/>
     </v-navigation-drawer>
   </v-container>
@@ -30,7 +31,4 @@ const {showSidebar} = storeToRefs(pageStore);
 </script>
 
 <style scoped>
-.sidebar{
-  background: var(--v-neutral-base);
-}
 </style>
