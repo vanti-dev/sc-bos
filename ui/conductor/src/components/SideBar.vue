@@ -1,6 +1,6 @@
 <template>
   <v-list tile class="ma-0 pa-0">
-    <v-subheader class="text-body-large sidebarTitle pa-4">{{ sidebarTitle }}</v-subheader>
+    <v-subheader class="text-body-large sidebar-title pa-4">{{ sidebarTitle }}</v-subheader>
     <slot/>
   </v-list>
 </template>
@@ -15,7 +15,7 @@ const {sidebarTitle} = storeToRefs(pageStore);
 </script>
 
 <style scoped>
-.sidebarTitle {
+.sidebar-title {
   background: var(--v-neutral-lighten1);
   height: auto;
   font-weight: bold;

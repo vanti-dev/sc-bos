@@ -46,9 +46,4 @@ function showCard(trait) {
 </script>
 
 <style scoped>
-.sidebarTitle {
-  background: var(--v-neutral-lighten1);
-  height: auto;
-  font-weight: bold;
-}
 </style>
