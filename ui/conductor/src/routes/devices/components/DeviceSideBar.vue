@@ -28,9 +28,9 @@ const deviceId = computed(() => {
 
 const traits = computed(() => {
   const traits = {};
-  if (sidebarData.value?.metadata?.traitsList !== undefined) {
+  if (sidebarData.value?.metadata?.traitsList) {
     // flatten array of trait objects (e.g. [{name: 'trait1', ...}, ...] into object (e.g. {trait1: true, ...})
-    return sidebarData.value.metadata.traitsList.reduce((obj, key) => ({...obj, [key.name]: true}), {});
+    sidebarData.value.metadata.traitsList.forEach((trait) => traits[trait.name] = true);
   }
   return traits;
 });
