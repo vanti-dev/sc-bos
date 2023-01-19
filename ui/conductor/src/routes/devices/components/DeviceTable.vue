@@ -140,10 +140,6 @@ function showDevice(item, row) {
   margin-left: 8px;
 }
 
-.table ::v-deep(tbody tr) {
-  cursor: pointer;
-}
-
 .v-data-table ::v-deep(.v-data-footer) {
   background: var(--v-neutral-lighten1) !important;
   border-radius: 0px 0px $border-radius-root*2 $border-radius-root*2;
