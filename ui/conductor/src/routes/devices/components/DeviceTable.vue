@@ -49,7 +49,7 @@
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
 import {useDevicesStore} from '@/routes/devices/store';
-import {computed, onUnmounted, reactive, ref, watch} from 'vue';
+import {computed, onUnmounted, ref, watch} from 'vue';
 import {usePageStore} from '@/stores/page';
 
 const devicesStore = useDevicesStore();
@@ -60,11 +60,6 @@ const props = defineProps({
     type: String,
     default: ''
   }
-});
-
-/** @type {Device.Query.AsObject} */
-const query = reactive({
-  conditionsList: []
 });
 
 const headers = ref([
@@ -91,33 +86,24 @@ const zoneList = ref([
 ]);
 const filterZone = ref(zoneList.value[0]);
 
-
 /** @type {Collection} */
 const collection = devicesStore.newCollection();
 collection.needsMorePages = true; // todo: this causes us to load all pages, connect with paging logic instead
 
-// watch for changes to the query object and fetch new device list
-watch(query, () => collection.query(query), {deep: true, immediate: true});
-
-// watch for changes in the subsystem prop and update query
-watch(() => props.subsystem, (sys) => {
-  query.conditionsList = query.conditionsList.filter(cond => (cond.field !== 'metadata.membership.subsystem'));
-  if (sys !== 'all') {
-    query.conditionsList.push({field: 'metadata.membership.subsystem', stringEqual: sys});
+/** @type {ComputedRef<Device.Query.AsObject>} */
+const query = computed(() => {
+  const q = {conditionsList: []};
+  if (props.subsystem.toLowerCase() !== 'all') {
+    q.conditionsList.push({field: 'metadata.membership.subsystem', stringEqual: props.subsystem});
   }
-}, {immediate: true});
-
-// watch for changes to the zone
-watch(filterZone, () => {
-  query.conditionsList = query.conditionsList.filter(cond => {
-    console.log('cond', cond);
-    return (cond.field !== 'metadata.location.title');
-  });
   if (filterZone.value.toLowerCase() !== 'all') {
-    query.conditionsList.push({field: 'metadata.location.title', stringEqual: filterZone.value});
+    q.conditionsList.push({field: 'metadata.location.title', stringEqual: filterZone.value});
   }
-  console.log(query);
+  return q;
 });
+
+// watch for changes to the query object and fetch new device list
+watch(query, () => collection.query(query.value), {deep: true, immediate: true});
 
 onUnmounted(() => {
   collection.reset(); // stop listening when the component is unmounted
