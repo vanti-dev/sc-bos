@@ -1,0 +1,147 @@
+{
+  "devices": [
+    {
+      "name": "FCU/01",
+      "metadata": {
+        "name": "FCU/01",
+        "traits": [
+          {
+            "name": "smartcore.traits.AirTemperature",
+            "more": {}
+          }
+        ],
+        "appearance": null,
+        "location": {
+          "title": "L03_013/Meeting Room 1",
+          "description": "",
+          "architecture_reference": "",
+          "more": {
+            "floor": "L03"
+          }
+        },
+        "id": null,
+        "product": null,
+        "revision": null,
+        "installation": null,
+        "nics": [],
+        "membership": {
+          "group": "",
+          "subsystem": "hvac",
+          "more": {}
+        },
+        "more": {
+          "guid": "04ae55ymD_$u5lxhJN2aGi"
+        }
+      }
+    },
+    {
+      "name": "FCU/02",
+      "metadata": {
+        "name": "FCU/02",
+        "traits": [
+          {
+            "name": "smartcore.traits.AirTemperature",
+            "more": {}
+          }
+        ],
+        "appearance": null,
+        "location": {
+          "title": "L03_015/Meeting Room 2",
+          "description": "",
+          "architecture_reference": "",
+          "more": {
+            "floor": "L03"
+          }
+        },
+        "id": null,
+        "product": null,
+        "revision": null,
+        "installation": null,
+        "nics": [],
+        "membership": {
+          "group": "",
+          "subsystem": "hvac",
+          "more": {}
+        },
+        "more": {}
+      }
+    },
+    {
+      "name": "lights/01",
+      "metadata": {
+        "name": "lights/01",
+        "traits": [
+          {
+            "name": "smartcore.traits.Light",
+            "more": {}
+          }
+        ],
+        "appearance": null,
+        "location": null,
+        "id": null,
+        "product": null,
+        "revision": null,
+        "installation": null,
+        "nics": [],
+        "membership": {
+          "group": "",
+          "subsystem": "lighting",
+          "more": {}
+        },
+        "more": {}
+      }
+    },
+    {
+      "name": "lights/02",
+      "metadata": {
+        "name": "lights/02",
+        "traits": [
+          {
+            "name": "smartcore.traits.Light",
+            "more": {}
+          }
+        ],
+        "appearance": null,
+        "location": null,
+        "id": null,
+        "product": null,
+        "revision": null,
+        "installation": null,
+        "nics": [],
+        "membership": {
+          "group": "",
+          "subsystem": "lighting",
+          "more": {}
+        },
+        "more": {}
+      }
+    },
+    {
+      "name": "lights/03",
+      "metadata": {
+        "name": "lights/03",
+        "traits": [
+          {
+            "name": "smartcore.traits.Light",
+            "more": {}
+          }
+        ],
+        "appearance": null,
+        "location": null,
+        "id": null,
+        "product": null,
+        "revision": null,
+        "installation": null,
+        "nics": [],
+        "membership": {
+          "group": "",
+          "subsystem": "lighting",
+          "more": {}
+        },
+        "more": {}
+      }
+    }
+  ],
+  "next_page_token": "",
+  "total_size": 0
+}

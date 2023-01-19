@@ -1,17 +1,25 @@
 import SidebarPage from '@/components/page-layout/SidebarPage.vue';
-import {route} from '@/util/router.js';
-import lighting from '@/routes/devices/lighting/route';
 
 export default {
   name: 'devices',
   path: '/devices',
-  redirect: '/devices/lighting',
+  redirect: '/devices/all',
   components: {
     default: SidebarPage,
     nav: () => import('./DevicesNav.vue')
   },
   children: [
-    ...route(lighting)
+    {
+      path: ':subsystem',
+      components: {
+        default: () => import('./components/DeviceTable.vue'),
+        sidebar: () => import('./components/DeviceSideBar.vue')
+      },
+      props: {
+        default: true,
+        sidebar: false
+      }
+    }
   ],
   meta: {
     title: 'Devices'
