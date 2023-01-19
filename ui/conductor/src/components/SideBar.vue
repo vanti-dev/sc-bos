@@ -2,8 +2,8 @@
   <v-list tile class="ma-0 pa-0">
     <v-subheader class="text-body-large sidebar-title pa-4">
       {{ sidebarTitle }}<v-spacer/>
-      <v-btn icon small @click="pageStore.toggleSidebar()">
-        <v-icon color="neutral lighten-4">mdi-close</v-icon>
+      <v-btn icon small @click="pageStore.toggleSidebar()" color="neutral lighten-4">
+        <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-subheader>
     <slot/>
