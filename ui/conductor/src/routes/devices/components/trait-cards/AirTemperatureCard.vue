@@ -138,8 +138,8 @@ function changeSetPoint(value) {
         temperatureSetPoint: {
           valueCelsius: airTempValue.value.temperatureSetPoint.valueCelsius + value
         }
-      }
-      // todo: add updateMask?
+      },
+      updateMask: {pathsList: ['temperature_set_point']}
     };
     updateAirTemperature(req, updateValue);
   }
