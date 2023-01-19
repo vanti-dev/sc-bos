@@ -102,49 +102,6 @@ export function airTemperatureModeToString(mode) {
 }
 
 /**
- * Prepare an AirTemperature object for display to the user
- *
- * @param {AirTemperature.AsObject} temperatureValue
- * @return {Object}
- */
-export function toDisplayObject(temperatureValue) {
-  const data = {};
-  Object.entries(temperatureValue).forEach(([key, value]) => {
-    if (value !== undefined) {
-      switch (key) {
-        case 'mode': {
-          data[key] = airTemperatureModeToString(value);
-          break;
-        }
-        case 'ambientTemperature': {
-          data['currentTemp'] = temperatureToString(value);
-          break;
-        }
-        case 'temperatureSetPoint': {
-          data['setPoint'] = temperatureToString(value);
-          break;
-        }
-        case 'ambientHumidity': {
-          data['humidity'] = (value * 100).toFixed(1) + '%';
-          break;
-        }
-        case 'dewPoint': {
-          data[key] = temperatureToString(value);
-          break;
-        }
-        default: {
-          if (key.toLowerCase().startsWith('ambient')) {
-            key = key.substring(7);
-          }
-          data[key] = value;
-        }
-      }
-    }
-  });
-  return data;
-}
-
-/**
  *
  * @param {Temperature.AsObject} value
  * @return {string}

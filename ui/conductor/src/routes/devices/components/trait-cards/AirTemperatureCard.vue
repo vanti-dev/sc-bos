@@ -39,7 +39,11 @@
 <script setup>
 import {computed, onUnmounted, reactive, ref, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
-import {pullAirTemperature, toDisplayObject, updateAirTemperature} from '@/api/sc/traits/air-temperature';
+import {
+  airTemperatureModeToString,
+  pullAirTemperature, temperatureToString,
+  updateAirTemperature
+} from '@/api/sc/traits/air-temperature';
 import {camelToSentence} from '@/util/string';
 
 const temperatureRange = ref({
@@ -85,7 +89,37 @@ function tempProgress() {
 
 const airTempData = computed(() => {
   if (airTempValue && airTempValue.value) {
-    return toDisplayObject(airTempValue.value);
+    const data = {};
+    Object.entries(airTempValue.value).forEach(([key, value]) => {
+      if (value !== undefined) {
+        switch (key) {
+          case 'mode': {
+            data[key] = airTemperatureModeToString(value);
+            break;
+          }
+          case 'ambientTemperature': {
+            data['currentTemp'] = temperatureToString(value);
+            break;
+          }
+          case 'temperatureSetPoint': {
+            data['setPoint'] = temperatureToString(value);
+            break;
+          }
+          case 'ambientHumidity': {
+            data['humidity'] = (value * 100).toFixed(1) + '%';
+            break;
+          }
+          case 'dewPoint': {
+            data[key] = temperatureToString(value);
+            break;
+          }
+          default: {
+            data[key] = value;
+          }
+        }
+      }
+    });
+    return data;
   }
   return {};
 });
