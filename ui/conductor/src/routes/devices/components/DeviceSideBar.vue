@@ -1,14 +1,14 @@
 <template>
   <side-bar>
     <device-info-card/>
-    <air-temperature-card :name="sidebarData.name" v-if="showCard('smartcore.traits.AirTemperature')"/>
-    <light-card :name="sidebarData.name" v-if="showCard('smartcore.traits.Light')"/>
-    <emergency-light :name="sidebarData.name" v-if="showCard('smartcore.bsp.EmergencyLight')"/>
+    <air-temperature-card :name="deviceId" v-if="traits['smartcore.traits.AirTemperature']"/>
+    <light-card :name="deviceId" v-if="traits['smartcore.traits.Light']"/>
+    <emergency-light :name="deviceId" v-if="traits['smartcore.bsp.EmergencyLight']"/>
   </side-bar>
 </template>
 
 <script setup>
-import {ref, watch} from 'vue';
+import {computed, watch} from 'vue';
 import {storeToRefs} from 'pinia';
 
 import {usePageStore} from '@/stores/page';
@@ -22,26 +22,18 @@ import EmergencyLight from '@/routes/devices/components/trait-cards/EmergencyLig
 const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);
 
-const traits = ref([]);
-const deviceId = ref('');
-
-watch(sidebarData, (device) => {
-  deviceId.value = device.name;
-  traits.value = [];
-  if (device &&
-      device.hasOwnProperty('metadata') &&
-      device.metadata.hasOwnProperty('traitsList')) {
-    traits.value = device.metadata.traitsList.map(t => t.name);
-  }
+const deviceId = computed(() => {
+  return sidebarData.value?.name ?? '';
 });
 
-/**
- * @param {string} trait
- * @return {boolean}
- */
-function showCard(trait) {
-  return traits.value.indexOf(trait) >= 0;
-}
+const traits = computed(() => {
+  const traits = {};
+  if (sidebarData.value?.metadata?.traitsList !== undefined) {
+    // flatten array of trait objects (e.g. [{name: 'trait1', ...}, ...] into object (e.g. {trait1: true, ...})
+    return sidebarData.value.metadata.traitsList.reduce((obj, key) => ({...obj, [key.name]: true}), {});
+  }
+  return traits;
+});
 
 </script>
 
