@@ -28,11 +28,11 @@
                   v-model="search"/>
             </v-col>
             <v-spacer/>
-            <new-tenant-dialog>
+            <new-account-dialog>
               <template #activator="{on, attrs}">
                 <v-btn outlined v-bind="attrs" v-on="on">Add Account<v-icon right>mdi-plus</v-icon></v-btn>
               </template>
-            </new-tenant-dialog>
+            </new-account-dialog>
           </v-row>
         </v-container>
       </template>
@@ -47,7 +47,10 @@ import {listTenants} from '@/api/ui/tenant.js';
 import ContentCard from '@/components/ContentCard.vue';
 import {computed, onMounted, reactive, ref} from 'vue';
 import {useRouter} from 'vue-router/composables';
-import NewTenantDialog from '@/routes/auth/third-party/components/NewTenantDialog.vue';
+import NewAccountDialog from '@/routes/auth/third-party/components/NewAccountDialog.vue';
+import {usePageStore} from '@/stores/page';
+
+const pageStore = usePageStore();
 
 const tenantsTracker = reactive(
     /** @type {ActionTracker<ListTenantsResponse.AsObject>} */ newActionTracker()
@@ -81,7 +84,10 @@ const router = useRouter();
  * @param {Tenant.AsObject} item
  */
 function showTenant(item) {
-  router.push(`/auth/third-party/${item.id}`);
+  // router.push(`/auth/third-party/${item.id}`);
+  pageStore.showSidebar = true;
+  pageStore.sidebarTitle = item.title;
+  pageStore.sidebarData = item;
 }
 </script>
 
