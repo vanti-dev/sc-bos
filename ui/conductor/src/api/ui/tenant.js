@@ -3,7 +3,7 @@ import {clientOptions} from '@/api/grpcweb.js';
 import {trackAction} from '@/api/resource.js';
 import {TenantApiPromiseClient} from '@sc-bos/ui-gen/proto/tenants_grpc_web_pb';
 import {
-  CreateSecretRequest,
+  CreateSecretRequest, CreateTenantRequest,
   DeleteSecretRequest,
   GetTenantRequest,
   ListSecretsRequest,
@@ -22,6 +22,31 @@ export function listTenants(request, tracker) {
     const api = client(endpoint);
     return api.listTenants(new ListTenantsRequest());
   });
+}
+
+/**
+ *
+ * @param {CreateTenantRequest.AsObject} request
+ * @param {ActionTracker<CreateTenantRequest.AsObject>} tracker
+ * @return {Promise<Tenant.AsObject>}
+ */
+export function createTenant(request, tracker) {
+  return trackAction('Tenant.createTenant', tracker ?? {}, async endpoint => {
+    const api = client(endpoint);
+    return api.createTenant(createTenantRequestFromObject(request));
+  });
+}
+
+/**
+ * @param {CreateTenantRequest.AsObject} obj
+ * @return {CreateTenantRequest}
+ */
+function createTenantRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const req = new CreateTenantRequest();
+  req.setTenant(tenantFromObject(obj.tenant));
+  return req;
 }
 
 /**

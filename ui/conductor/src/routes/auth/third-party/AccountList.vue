@@ -1,20 +1,11 @@
 <template>
-  <main-card>
-    <v-card-actions>
-      <v-text-field
-          label="Search tenants"
-          outlined
-          hide-details
-          prepend-inner-icon="mdi-magnify"
-          v-model="search"/>
-    </v-card-actions>
+  <content-card>
     <v-data-table
         class="table"
         :headers="headers"
         :items="tenantRows"
         :search="search"
         sort-by="title"
-        show-select
         :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
         :loading="tenantsTracker.loading"
         @click:row="showTenant">
@@ -25,17 +16,38 @@
           }}</v-chip>
         </span>
       </template>
+      <template #top>
+        <v-container fluid style="width: 100%">
+          <v-row dense align="center">
+            <v-col cols="12" md="5">
+              <v-text-field
+                  label="Search tenants"
+                  outlined
+                  hide-details
+                  prepend-inner-icon="mdi-magnify"
+                  v-model="search"/>
+            </v-col>
+            <v-spacer/>
+            <new-tenant-dialog>
+              <template #activator="{on, attrs}">
+                <v-btn outlined v-bind="attrs" v-on="on">Add Account<v-icon right>mdi-plus</v-icon></v-btn>
+              </template>
+            </new-tenant-dialog>
+          </v-row>
+        </v-container>
+      </template>
     </v-data-table>
-  </main-card>
+  </content-card>
 </template>
 
 <script setup>
 import {timestampToDate} from '@/api/convpb.js';
 import {newActionTracker} from '@/api/resource.js';
 import {listTenants} from '@/api/ui/tenant.js';
-import MainCard from '@/components/ContentCard.vue';
+import ContentCard from '@/components/ContentCard.vue';
 import {computed, onMounted, reactive, ref} from 'vue';
 import {useRouter} from 'vue-router/composables';
+import NewTenantDialog from '@/routes/auth/third-party/components/NewTenantDialog.vue';
 
 const tenantsTracker = reactive(
     /** @type {ActionTracker<ListTenantsResponse.AsObject>} */ newActionTracker()
@@ -46,9 +58,11 @@ const search = ref('');
 const headers = computed(() => {
   return [
     {text: 'Name', value: 'title'},
+    {text: 'Permissions', value: 'permissions'},
     {text: 'Zones', value: 'zones'}
   ];
 });
+
 const tenantRows = computed(() => {
   if (!tenantsTracker.response) return [];
   return tenantsTracker.response.tenantsList.map((t) => ({
