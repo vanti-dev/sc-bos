@@ -5,6 +5,7 @@
         :headers="headers"
         :items="tableData"
         item-key="name"
+        :item-class="rowClass"
         show-select
         @click:row="showDevice">
       <template #top>
@@ -135,6 +136,17 @@ function showDevice(item, row) {
   pageStore.sidebarData = item;
 }
 
+/**
+ * @param {*} item
+ * @return {string}
+ */
+function rowClass(item) {
+  if (pageStore.showSidebar && pageStore.sidebarData?.name === item.name) {
+    return 'item-selected';
+  }
+  return '';
+}
+
 </script>
 
 <style lang="scss" scoped>
@@ -148,4 +160,9 @@ function showDevice(item, row) {
   border: none;
   margin: 0 -12px -12px;
 }
+
+.v-data-table ::v-deep(.item-selected) {
+  background-color: var(--v-primary-darken4);
+}
+
 </style>
