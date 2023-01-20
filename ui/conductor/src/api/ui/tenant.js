@@ -51,8 +51,7 @@ function createTenantRequestFromObject(obj) {
 
 /**
  *
- * @param {DeleteTenantRequest.AsObject} obj]
- * @param obj
+ * @param {DeleteTenantRequest.AsObject} obj
  * @param {ActionTracker<DeleteTenantRequest.AsObject>} tracker
  * @return {Promise<DeleteTenantResponse>}
  */
