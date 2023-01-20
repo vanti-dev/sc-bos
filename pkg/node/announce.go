@@ -1,6 +1,9 @@
 package node
 
 import (
+	"context"
+	"sync"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 )
@@ -29,6 +32,26 @@ func (a AnnouncerFunc) Announce(name string, features ...Feature) Undo {
 func AnnounceWithNamePrefix(prefix string, a Announcer) Announcer {
 	return AnnouncerFunc(func(name string, features ...Feature) Undo {
 		return a.Announce(prefix+name, features...)
+	})
+}
+
+// AnnounceContext returns a new Announcer that undoes any announcements when ctx is Done.
+// This leaks a go routine if ctx is never done.
+func AnnounceContext(ctx context.Context, a Announcer) Announcer {
+	mu := sync.Mutex{}
+	var undos []Undo
+	go func() {
+		<-ctx.Done()
+		for _, undo := range undos {
+			undo()
+		}
+	}()
+	return AnnouncerFunc(func(name string, features ...Feature) Undo {
+		undo := a.Announce(name, features...)
+		mu.Lock()
+		undos = append(undos, undo)
+		mu.Unlock()
+		return undo
 	})
 }
 
