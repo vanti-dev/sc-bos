@@ -26,7 +26,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
-	"golang.org/x/exp/maps"
+	"github.com/vanti-dev/sc-bos/pkg/util/maps"
 )
 
 const DriverName = "mock"
