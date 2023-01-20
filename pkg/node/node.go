@@ -135,6 +135,7 @@ func (n *Node) addRoute(name string, impl interface{}) Undo {
 		if r.HoldsType(impl) {
 			addCount++
 			r.Add(name, impl)
+			r := r
 			undo = append(undo, func() {
 				r.Remove(name)
 			})
