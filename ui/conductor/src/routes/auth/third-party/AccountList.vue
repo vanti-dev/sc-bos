@@ -72,15 +72,15 @@ function showTenant(item) {
 </script>
 
 <style lang="scss" scoped>
-::v-deep(.v-data-table-header__icon) {
+:deep(.v-data-table-header__icon) {
   margin-left: 8px;
 }
 
-.table ::v-deep(tbody tr) {
+.table :deep(tbody tr) {
   cursor: pointer;
 }
 
-.v-data-table ::v-deep(.v-data-footer) {
+.v-data-table :deep(.v-data-footer) {
   background: var(--v-neutral-lighten1) !important;
   border-radius: 0px 0px $border-radius-root*2 $border-radius-root*2;
   border: none;

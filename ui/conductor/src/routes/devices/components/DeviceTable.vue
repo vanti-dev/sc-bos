@@ -150,18 +150,18 @@ function rowClass(item) {
 </script>
 
 <style lang="scss" scoped>
-::v-deep(.v-data-table-header__icon) {
+:deep(.v-data-table-header__icon) {
   margin-left: 8px;
 }
 
-.v-data-table ::v-deep(.v-data-footer) {
+.v-data-table :deep(.v-data-footer) {
   background: var(--v-neutral-lighten1) !important;
   border-radius: 0px 0px $border-radius-root*2 $border-radius-root*2;
   border: none;
   margin: 0 -12px -12px;
 }
 
-.v-data-table ::v-deep(.item-selected) {
+.v-data-table :deep(.item-selected) {
   background-color: var(--v-primary-darken4);
 }
 

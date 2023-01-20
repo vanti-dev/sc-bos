@@ -73,7 +73,7 @@ store.loadLocalStorage();
   background: var(--v-neutral-base);
 }
 
-.v-app-bar ::v-deep(.v-toolbar__content) {
+.v-app-bar :deep(.v-toolbar__content) {
   padding-right: 0px;
 }
 
