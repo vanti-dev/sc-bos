@@ -17,6 +17,8 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/timshannon/bolthold"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
+	"github.com/vanti-dev/sc-bos/pkg/app/services"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -211,6 +213,9 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	reflection.Register(grpcServer)
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
 	devices.NewServer(rootNode).Register(grpcServer)
+	// support the services api for managing drivers, automations, and systems
+	serviceRouter := gen.NewServicesApiRouter()
+	rootNode.Support(node.Routing(serviceRouter), node.Clients(gen.WrapServicesApi(serviceRouter)))
 
 	grpcWebServer := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
 		return true
@@ -327,9 +332,11 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	}
 
 	// load and start the systems
-	if err := c.startSystems(ctx); err != nil {
+	systemServices, err := c.startSystems()
+	if err != nil {
 		return err
 	}
+	c.Node.Announce("systems", node.HasClient(gen.WrapServicesApi(services.NewApi(systemServices))))
 	// load and start the drivers
 	if err := c.startDrivers(ctx); err != nil {
 		return err
@@ -441,44 +448,23 @@ func (c *Controller) startAutomations(ctx context.Context) (err error) {
 	return err
 }
 
-func (c *Controller) startSystems(ctx context.Context) (err error) {
+func (c *Controller) startSystems() (*service.Map, error) {
 	services := system.Services{
 		Logger: c.Logger.Named("system"),
 		Node:   c.Node,
 	}
-
-	var started []task.Starter
-	go func() {
-		<-ctx.Done()
-		var err error
-		for _, impl := range started {
-			if task.Stoppable(impl) {
-				err = multierr.Append(err, task.Stop(impl))
-			}
-		}
-		if err != nil {
-			c.Logger.Warn("Failed to cleanly stop systems after ctx done", zap.Error(err))
-		}
-	}()
-
-	for k, cfg := range c.ControllerConfig.Systems {
-		f, ok := c.SystemConfig.SystemFactories[k]
+	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+		f, ok := c.SystemConfig.SystemFactories[kind]
 		if !ok {
-			err = multierr.Append(err, fmt.Errorf("unsupported system type %v", k))
-			continue
+			return nil, fmt.Errorf("unsupported system type %v", kind)
 		}
-		impl := f.New(services)
-		if e := impl.Start(ctx); e != nil {
-			err = multierr.Append(err, fmt.Errorf("start %s %w", k, e))
-		}
-		// keep track so we can stop them if ctx ends
-		started = append(started, impl)
+		return f.New(services), nil
+	}, service.IdIsKind)
 
-		if task.Configurable(impl) {
-			if e := task.Configure(impl, cfg); e != nil {
-				err = multierr.Append(err, fmt.Errorf("configure %s %w", k, e))
-			}
-		}
+	var allErrs error
+	for kind, cfg := range c.ControllerConfig.Systems {
+		_, _, err := m.Create("", kind, service.State{Active: true, Config: cfg})
+		allErrs = multierr.Append(allErrs, err)
 	}
-	return err
+	return m, allErrs
 }
