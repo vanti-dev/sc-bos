@@ -4,7 +4,7 @@ import {trackAction} from '@/api/resource.js';
 import {TenantApiPromiseClient} from '@sc-bos/ui-gen/proto/tenants_grpc_web_pb';
 import {
   CreateSecretRequest, CreateTenantRequest,
-  DeleteSecretRequest,
+  DeleteSecretRequest, DeleteTenantRequest,
   GetTenantRequest,
   ListSecretsRequest,
   ListTenantsRequest,
@@ -46,6 +46,33 @@ function createTenantRequestFromObject(obj) {
 
   const req = new CreateTenantRequest();
   req.setTenant(tenantFromObject(obj.tenant));
+  return req;
+}
+
+/**
+ *
+ * @param {DeleteTenantRequest.AsObject} obj]
+ * @param obj
+ * @param {ActionTracker<DeleteTenantRequest.AsObject>} tracker
+ * @return {Promise<DeleteTenantResponse>}
+ */
+export function deleteTenant(obj, tracker) {
+  return trackAction('Tenant.deleteTenant', tracker ?? {}, endpoint => {
+    const api = client(endpoint);
+    return api.deleteTenant(deleteTenantRequestFromObject(obj));
+  });
+}
+
+/**
+ *
+ * @param {DeleteTenantRequest.AsObject} obj
+ * @return {DeleteTenantRequest}
+ */
+function deleteTenantRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const req = new DeleteTenantRequest();
+  setProperties(req, obj, 'id');
   return req;
 }
 
