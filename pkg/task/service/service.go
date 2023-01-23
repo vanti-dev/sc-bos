@@ -81,8 +81,9 @@ type Service[C any] struct {
 	stopCtx  context.Context
 	stopFunc context.CancelFunc
 
-	parse ParseFunc[C]
-	apply ApplyFunc[C]
+	parse  ParseFunc[C]
+	apply  ApplyFunc[C]
+	onStop func()
 
 	now func() time.Time
 }
@@ -197,6 +198,10 @@ func (l *Service[C]) Stop() (State, error) {
 	state.Active = false
 	state.LastInactiveTime = l.now()
 	l.stopLocked()
+
+	if l.onStop != nil {
+		l.onStop()
+	}
 
 	return l.saveLocked(state)
 }

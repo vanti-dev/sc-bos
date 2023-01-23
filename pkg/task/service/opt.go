@@ -41,3 +41,11 @@ func WithNow[T any](now func() time.Time) Option[T] {
 		l.now = now
 	})
 }
+
+// WithOnStop sets a function on the Service that will be called each time Service.Stop is executed.
+// The onStop func should not invoke any lifecycle methods on the created service as this may result in a deadlock.
+func WithOnStop[T any](onStop func()) Option[T] {
+	return OptionFunc[T](func(l *Service[T]) {
+		l.onStop = onStop
+	})
+}
