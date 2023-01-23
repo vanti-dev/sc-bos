@@ -13,11 +13,11 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver"
-	adapt2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
-	merge2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/merge"
-	rpc2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/merge"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
@@ -37,10 +37,10 @@ func (_ factory) AddSupport(supporter node.Supporter) {
 
 // Register makes sure this driver and its device apis are available in the given node.
 func Register(supporter node.Supporter) {
-	r := rpc2.NewBacnetDriverServiceRouter()
+	r := rpc.NewBacnetDriverServiceRouter()
 	supporter.Support(
 		node.Routing(r),
-		node.Clients(rpc2.WrapBacnetDriverService(r)),
+		node.Clients(rpc.WrapBacnetDriverService(r)),
 	)
 }
 
@@ -99,11 +99,11 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			continue
 		}
 
-		deviceName := adapt2.DeviceName(device)
+		deviceName := adapt.DeviceName(device)
 		d.devices.StoreDevice(deviceName, bacDevice)
 
 		announcer := node.AnnounceWithNamePrefix("device/", rootAnnouncer)
-		adapt2.Device(deviceName, d.client, bacDevice, d.devices).AnnounceSelf(announcer)
+		adapt.Device(deviceName, d.client, bacDevice, d.devices).AnnounceSelf(announcer)
 
 		prefix := fmt.Sprintf("device/%v/obj/", deviceName)
 		announcer = node.AnnounceWithNamePrefix(prefix, rootAnnouncer)
@@ -130,14 +130,14 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			}
 
 			// no error, we added the device before we entered the loop so it should exist
-			_ = d.devices.StoreObject(bacDevice, adapt2.ObjectName(co), *bo)
+			_ = d.devices.StoreObject(bacDevice, adapt.ObjectName(co), *bo)
 
-			impl, err := adapt2.Object(d.client, bacDevice, co)
-			if errors.Is(err, adapt2.ErrNoDefault) {
+			impl, err := adapt.Object(d.client, bacDevice, co)
+			if errors.Is(err, adapt.ErrNoDefault) {
 				// logger.Debug("No default adaptation trait for object")
 				continue
 			}
-			if errors.Is(err, adapt2.ErrNoAdaptation) {
+			if errors.Is(err, adapt.ErrNoAdaptation) {
 				logger.Error("No adaptation from object to trait", zap.Stringer("trait", co.Trait))
 				continue
 			}
@@ -153,8 +153,8 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	announcer := node.AnnounceWithNamePrefix("trait/", rootAnnouncer)
 	for _, trait := range cfg.Traits {
 		logger := d.logger.With(zap.Stringer("trait", trait.Kind), zap.String("name", trait.Name))
-		impl, err := merge2.IntoTrait(d.client, d.devices, trait)
-		if errors.Is(err, merge2.ErrTraitNotSupported) {
+		impl, err := merge.IntoTrait(d.client, d.devices, trait)
+		if errors.Is(err, merge.ErrTraitNotSupported) {
 			logger.Error("Cannot combine into trait, not supported")
 			continue
 		}

@@ -9,7 +9,7 @@ import (
 
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/config"
-	rpc2 "github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/rpc"
+	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/rpc"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
@@ -29,8 +29,8 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 }
 
 func (f factory) AddSupport(supporter node.Supporter) {
-	r := rpc2.NewAxiomXaDriverServiceRouter()
-	supporter.Support(node.Routing(r), node.Clients(rpc2.WrapAxiomXaDriverService(r)))
+	r := rpc.NewAxiomXaDriverServiceRouter()
+	supporter.Support(node.Routing(r), node.Clients(rpc.WrapAxiomXaDriverService(r)))
 }
 
 type Driver struct {
@@ -51,7 +51,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		config: cfg,
 		logger: d.logger.Named("server"),
 	}
-	announcer.Announce(cfg.Name, node.HasClient(rpc2.WrapAxiomXaDriverService(httpImpl)))
+	announcer.Announce(cfg.Name, node.HasClient(rpc.WrapAxiomXaDriverService(httpImpl)))
 
 	return nil
 }

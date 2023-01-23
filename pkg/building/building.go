@@ -25,11 +25,11 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 
-	keycloak2 "github.com/vanti-dev/sc-bos/internal/auth/keycloak"
+	"github.com/vanti-dev/sc-bos/internal/auth/keycloak"
 	"github.com/vanti-dev/sc-bos/internal/db"
 	"github.com/vanti-dev/sc-bos/internal/manage/tenantapi"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
-	pki2 "github.com/vanti-dev/sc-bos/internal/util/pki"
+	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
 	"github.com/vanti-dev/sc-bos/pkg/app"
 	"github.com/vanti-dev/sc-bos/pkg/auth"
@@ -62,14 +62,14 @@ func RunController(ctx context.Context, logger *zap.Logger, configDir string, ad
 	serverAuthority := loadServerAuthority(configDir)
 
 	// Setup tls.Config for our server apis
-	grpcTlsServerConfig := pki2.TLSServerConfig(serverCerts(sysConf, serverAuthority))
+	grpcTlsServerConfig := pki.TLSServerConfig(serverCerts(sysConf, serverAuthority))
 
 	// Setup the tls.Config for serving https apis - including grpc-web and hosting
 	httpsCertSource, err := loadHTTPSCertSource(configDir, sysConf, serverAuthority)
 	if err != nil {
 		return err
 	}
-	httpsTlsConfig := pki2.TLSServerConfig(httpsCertSource)
+	httpsTlsConfig := pki.TLSServerConfig(httpsCertSource)
 
 	grpcServerOptions := []grpc.ServerOption{
 		grpc.Creds(credentials.NewTLS(grpcTlsServerConfig)),
@@ -210,7 +210,7 @@ func populateDB(ctx context.Context, logger *zap.Logger, conn *pgxpool.Pool) err
 }
 
 func initKeycloakValidator(ctx context.Context, sysConf SystemConfig) (auth.TokenValidator, error) {
-	authConfig := keycloak2.Config{
+	authConfig := keycloak.Config{
 		URL:      sysConf.KeycloakAddress,
 		Realm:    sysConf.KeycloakRealm,
 		ClientID: "sc-api",
@@ -220,11 +220,11 @@ func initKeycloakValidator(ctx context.Context, sysConf SystemConfig) (auth.Toke
 		panic(err)
 	}
 	keySet := auth.NewRemoteKeySet(ctx, authUrls.JWKSURI)
-	return keycloak2.NewTokenVerifier(&authConfig, keySet), nil
+	return keycloak.NewTokenVerifier(&authConfig, keySet), nil
 }
 
-func loadServerAuthority(configDir string) pki2.Source {
-	return pki2.FSSource(
+func loadServerAuthority(configDir string) pki.Source {
+	return pki.FSSource(
 		filepath.Join(configDir, "pki", "enrollment-ca.cert.pem"),
 		filepath.Join(configDir, "pki", "enrollment-ca.key.pem"),
 		filepath.Join(configDir, "pki", "roots.cert.pem"),
@@ -232,9 +232,9 @@ func loadServerAuthority(configDir string) pki2.Source {
 }
 
 // serverCerts creates a new pki.Source that mints new certificates (with server auth usage) using the given authority.
-func serverCerts(sysConf SystemConfig, authority pki2.Source) pki2.Source {
+func serverCerts(sysConf SystemConfig, authority pki.Source) pki.Source {
 	validity := time.Duration(sysConf.EnrollmentValidityDays) * 24 * time.Hour
-	keyPair := func() (*x509.Certificate, pki2.PrivateKey, error) {
+	keyPair := func() (*x509.Certificate, pki.PrivateKey, error) {
 		key, err := rsa.GenerateKey(rand.Reader, 4096)
 		if err != nil {
 			return nil, nil, err
@@ -247,13 +247,13 @@ func serverCerts(sysConf SystemConfig, authority pki2.Source) pki2.Source {
 		return cert, key, nil
 	}
 
-	return pki2.CacheSource(
-		pki2.AuthoritySourceFn(authority, keyPair, pki2.WithIfaces(), pki2.WithExpireAfter(validity)),
+	return pki.CacheSource(
+		pki.AuthoritySourceFn(authority, keyPair, pki.WithIfaces(), pki.WithExpireAfter(validity)),
 		expire.AfterProgress(0.5),
 	)
 }
 
-func loadHTTPSCertSource(configDir string, sysConf SystemConfig, authority pki2.Source) (pki2.Source, error) {
+func loadHTTPSCertSource(configDir string, sysConf SystemConfig, authority pki.Source) (pki.Source, error) {
 	if sysConf.SelfSignedHTTPS {
 		key, err := rsa.GenerateKey(rand.Reader, 4096)
 		if err != nil {
@@ -264,14 +264,14 @@ func loadHTTPSCertSource(configDir string, sysConf SystemConfig, authority pki2.
 			KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		}
-		source := pki2.AuthoritySource(authority, template, key, pki2.WithIfaces())
-		source = pki2.CacheSource(source, expire.BeforeInvalid(30*time.Minute))
+		source := pki.AuthoritySource(authority, template, key, pki.WithIfaces())
+		source = pki.CacheSource(source, expire.BeforeInvalid(30*time.Minute))
 		return source, nil
 	} else {
 		certPath := filepath.Join(configDir, "pki", "https.cert.pem")
 		keyPath := filepath.Join(configDir, "pki", "https.key.pem")
-		source := pki2.FSSource(certPath, keyPath, "")
-		source = pki2.CacheSource(source, expire.BeforeInvalid(30*time.Minute))
+		source := pki.FSSource(certPath, keyPath, "")
+		source = pki.CacheSource(source, expire.BeforeInvalid(30*time.Minute))
 		return source, nil
 	}
 }

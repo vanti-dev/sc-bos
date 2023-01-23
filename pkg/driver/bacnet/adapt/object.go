@@ -7,13 +7,13 @@ import (
 	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
 
-	config2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 // Object adapts a bacnet object into one or more smart core named traits.
-func Object(client *gobacnet.Client, device bactypes.Device, object config2.Object) (node.SelfAnnouncer, error) {
+func Object(client *gobacnet.Client, device bactypes.Device, object config.Object) (node.SelfAnnouncer, error) {
 	switch object.ID.Type {
 	case objecttype.BinaryValue, objecttype.BinaryOutput, objecttype.BinaryInput:
 		return BinaryObject(client, device, object)
@@ -26,7 +26,7 @@ func Object(client *gobacnet.Client, device bactypes.Device, object config2.Obje
 }
 
 // DeviceName returns the smart core name we should use for the configured object.
-func DeviceName(o config2.Device) string {
+func DeviceName(o config.Device) string {
 	if o.Name != "" {
 		return o.Name
 	}
@@ -34,7 +34,7 @@ func DeviceName(o config2.Device) string {
 }
 
 // ObjectName returns the smart core name we should use for the configured object.
-func ObjectName(o config2.Object) string {
+func ObjectName(o config.Object) string {
 	if o.Name != "" {
 		return o.Name
 	}

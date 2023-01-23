@@ -12,18 +12,18 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/config"
-	rpc2 "github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/rpc"
+	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/rpc"
 )
 
 type server struct {
-	rpc2.UnimplementedAxiomXaDriverServiceServer
+	rpc.UnimplementedAxiomXaDriverServiceServer
 	logger *zap.Logger
 	config config.Root
 }
 
 func (s *server) SaveQRCredential(
-	ctx context.Context, request *rpc2.SaveQRCredentialRequest,
-) (*rpc2.SaveQRCredentialResponse, error) {
+	ctx context.Context, request *rpc.SaveQRCredentialRequest,
+) (*rpc.SaveQRCredentialResponse, error) {
 	// todo: update the actual request once we know what it looks like!
 	body := struct {
 		Credential string `json:"credential,omitempty"`
@@ -52,5 +52,5 @@ func (s *server) SaveQRCredential(
 	if err != nil {
 		return nil, err
 	}
-	return &rpc2.SaveQRCredentialResponse{}, nil
+	return &rpc.SaveQRCredentialResponse{}, nil
 }
