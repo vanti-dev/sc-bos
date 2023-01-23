@@ -3,6 +3,7 @@ package driver
 import (
 	"crypto/tls"
 
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -20,5 +21,5 @@ type Driver interface {
 }
 
 type Factory interface {
-	New(services Services) task.Starter
+	New(services Services) service.Lifecycle
 }

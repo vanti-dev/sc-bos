@@ -338,9 +338,11 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	}
 	c.Node.Announce("systems", node.HasClient(gen.WrapServicesApi(services.NewApi(systemServices))))
 	// load and start the drivers
-	if err := c.startDrivers(ctx); err != nil {
+	driverServices, err := c.startDrivers()
+	if err != nil {
 		return err
 	}
+	c.Node.Announce("drivers", node.HasClient(gen.WrapServicesApi(services.NewApi(driverServices))))
 	// load and start the automations
 	if err := c.startAutomations(ctx); err != nil {
 		return err
@@ -360,48 +362,28 @@ func addFactorySupport[M ~map[K]F, K comparable, F any](s node.Supporter, m M) {
 	}
 }
 
-func (c *Controller) startDrivers(ctx context.Context) (err error) {
-	driverServices := driver.Services{
+func (c *Controller) startDrivers() (*service.Map, error) {
+	ctxServices := driver.Services{
 		Logger:          c.Logger.Named("driver"),
 		Node:            c.Node,
 		Tasks:           &task.Group{},
 		ClientTLSConfig: c.ClientTLSConfig,
 	}
 
-	var started []task.Starter
-	go func() {
-		<-ctx.Done()
-		var err error
-		for _, impl := range started {
-			if task.Stoppable(impl) {
-				err = multierr.Append(err, task.Stop(impl))
-			}
-		}
-		if err != nil {
-			c.Logger.Warn("Failed to cleanly stop drivers after ctx done", zap.Error(err))
-		}
-	}()
-
-	for _, driverConfig := range c.ControllerConfig.Drivers {
-		f, ok := c.SystemConfig.DriverFactories[driverConfig.Type]
+	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+		f, ok := c.SystemConfig.DriverFactories[kind]
 		if !ok {
-			err = multierr.Append(err, fmt.Errorf("unsupported driver type %v", driverConfig.Type))
-			continue
+			return nil, fmt.Errorf("unsupported driver type %v", kind)
 		}
-		impl := f.New(driverServices)
-		if e := impl.Start(ctx); e != nil {
-			err = multierr.Append(err, fmt.Errorf("start %s %w", driverConfig.Name, e))
-		}
-		// keep track so we can stop them if ctx ends
-		started = append(started, impl)
+		return f.New(ctxServices), nil
+	}, service.IdIsRequired)
 
-		if task.Configurable(impl) {
-			if e := task.Configure(impl, driverConfig.Raw); e != nil {
-				err = multierr.Append(err, fmt.Errorf("configure %s %w", driverConfig.Name, e))
-			}
-		}
+	var allErrs error
+	for _, cfg := range c.ControllerConfig.Drivers {
+		_, _, err := m.Create(cfg.Name, cfg.Type, service.State{Active: true, Config: cfg.Raw})
+		allErrs = multierr.Append(allErrs, err)
 	}
-	return err
+	return m, allErrs
 }
 
 func (c *Controller) startAutomations(ctx context.Context) (err error) {
@@ -449,7 +431,7 @@ func (c *Controller) startAutomations(ctx context.Context) (err error) {
 }
 
 func (c *Controller) startSystems() (*service.Map, error) {
-	services := system.Services{
+	ctxServices := system.Services{
 		Logger: c.Logger.Named("system"),
 		Node:   c.Node,
 	}
@@ -458,7 +440,7 @@ func (c *Controller) startSystems() (*service.Map, error) {
 		if !ok {
 			return nil, fmt.Errorf("unsupported system type %v", kind)
 		}
-		return f.New(services), nil
+		return f.New(ctxServices), nil
 	}, service.IdIsKind)
 
 	var allErrs error

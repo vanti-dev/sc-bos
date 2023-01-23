@@ -25,8 +25,9 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/util/maps"
+	"go.uber.org/zap"
 )
 
 const DriverName = "mock"
@@ -35,23 +36,24 @@ var Factory driver.Factory = factory{}
 
 type factory struct{}
 
-func (_ factory) New(services driver.Services) task.Starter {
+func (_ factory) New(services driver.Services) service.Lifecycle {
 	return NewDriver(services)
 }
 
-func NewDriver(services driver.Services) task.Starter {
+func NewDriver(services driver.Services) *Driver {
 	d := &Driver{
 		announcer: services.Node,
 		known:     make(map[deviceTrait]node.Undo),
 	}
-	d.Lifecycle = task.NewLifecycle(d.applyConfig)
-	d.Logger = services.Logger.Named(DriverName)
+	d.Service = service.New(d.applyConfig, service.WithOnStop[config.Root](d.Clean))
+	d.logger = services.Logger.Named(DriverName)
 	return d
 }
 
 type Driver struct {
-	*task.Lifecycle[config.Root]
+	*service.Service[config.Root]
 
+	logger    *zap.Logger
 	announcer node.Announcer
 	known     map[deviceTrait]node.Undo
 }
@@ -61,7 +63,14 @@ type deviceTrait struct {
 	trait trait.Name
 }
 
-func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
+func (d *Driver) Clean() {
+	for _, undo := range d.known {
+		undo()
+	}
+	d.known = make(map[deviceTrait]node.Undo)
+}
+
+func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 	toUndo := maps.Clone(d.known)
 	for _, device := range cfg.Devices {
 		var undos []node.Undo
@@ -87,7 +96,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			if _, ok := d.known[dt]; !ok {
 				client := newMockClient(dt.trait)
 				if client == nil {
-					d.Logger.Sugar().Warnf("Cannot create mock client %s::%s", dt.name, dt.trait)
+					d.logger.Sugar().Warnf("Cannot create mock client %s::%s", dt.name, dt.trait)
 				} else {
 					traitOpts = append(traitOpts, node.WithClients(client))
 				}
@@ -103,6 +112,11 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 
 		dt.trait = ""
 		d.known[dt] = node.UndoAll(undos...)
+	}
+
+	for k, undo := range toUndo {
+		undo()
+		delete(d.known, k)
 	}
 
 	return nil

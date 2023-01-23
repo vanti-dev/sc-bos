@@ -70,6 +70,9 @@ var (
 		}
 		return "", errors.New("exhausted attempts finding unique uuid")
 	})
+	IdIsRequired = IdFunc(func(_ string, _ func(id string) bool) (string, error) {
+		return "", errors.New("id is required")
+	})
 )
 
 type Record struct {
