@@ -11,7 +11,7 @@ export class DevicesApiClient {
   listDevices(
     request: proto_devices_pb.ListDevicesRequest,
     metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
+    callback: (err: grpcWeb.RpcError,
                response: proto_devices_pb.ListDevicesResponse) => void
   ): grpcWeb.ClientReadableStream<proto_devices_pb.ListDevicesResponse>;
 

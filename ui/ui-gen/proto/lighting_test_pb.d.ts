@@ -13,10 +13,10 @@ export class LightHealth extends jspb.Message {
   hasUpdateTime(): boolean;
   clearUpdateTime(): LightHealth;
 
-  getFaultsList(): Array<EmergencyLightFault>;
-  setFaultsList(value: Array<EmergencyLightFault>): LightHealth;
+  getFaultsList(): Array<LightFault>;
+  setFaultsList(value: Array<LightFault>): LightHealth;
   clearFaultsList(): LightHealth;
-  addFaults(value: EmergencyLightFault, index?: number): LightHealth;
+  addFaults(value: LightFault, index?: number): LightHealth;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): LightHealth.AsObject;
@@ -30,7 +30,7 @@ export namespace LightHealth {
   export type AsObject = {
     name: string,
     updateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    faultsList: Array<EmergencyLightFault>,
+    faultsList: Array<LightFault>,
   }
 }
 
@@ -118,10 +118,10 @@ export namespace LightingEvent {
 
 
   export class StatusReport extends jspb.Message {
-    getFaultsList(): Array<EmergencyLightFault>;
-    setFaultsList(value: Array<EmergencyLightFault>): StatusReport;
+    getFaultsList(): Array<LightFault>;
+    setFaultsList(value: Array<LightFault>): StatusReport;
     clearFaultsList(): StatusReport;
-    addFaults(value: EmergencyLightFault, index?: number): StatusReport;
+    addFaults(value: LightFault, index?: number): StatusReport;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): StatusReport.AsObject;
@@ -133,7 +133,7 @@ export namespace LightingEvent {
 
   export namespace StatusReport {
     export type AsObject = {
-      faultsList: Array<EmergencyLightFault>,
+      faultsList: Array<LightFault>,
     }
   }
 
@@ -294,7 +294,7 @@ export namespace ReportCSV {
   }
 }
 
-export enum EmergencyLightFault { 
+export enum LightFault { 
   FAULT_UNSPECIFIED = 0,
   DURATION_TEST_FAILED = 1,
   FUNCTION_TEST_FAILED = 2,

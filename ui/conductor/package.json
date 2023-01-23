@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@sc-bos/ui-gen": "file:../ui-gen",
-    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.39",
+    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.40",
     "date-fns": "^2.29.2",
     "google-protobuf": "^3.21.0",
     "grpc-web": "^1.4.2",

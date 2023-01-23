@@ -1124,7 +1124,7 @@
 "@sc-bos/ui-gen@file:../ui-gen":
   version "0.0.0"
   dependencies:
-    "@smart-core-os/sc-api-grpc-web" "^1.0.0-beta.39"
+    "@smart-core-os/sc-api-grpc-web" "^1.0.0-beta.40"
     google-protobuf "^3.20.1"
     grpc-web "^1.4.2"
 
@@ -1145,13 +1145,13 @@
   resolved "https://nexus.vanti.co.uk/repository/npm-public/@sideway/pinpoint/-/pinpoint-2.0.0.tgz#cff8ffadc372ad29fd3f78277aeb29e632cc70df"
   integrity sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==
 
-"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.39":
-  version "1.0.0-beta.39"
-  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.39.tgz#e2846d4b923d1c92ad148b897642b5629de2b2ed"
-  integrity sha512-grR0fx7JuqHazwacJxHeXfqWS/Yf+ie8ZLeCObDxji20Z7LuoFCMGqBLzA71OVS14JE5CmVpyT7KAwVnXdw4bQ==
+"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.40":
+  version "1.0.0-beta.40"
+  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.40.tgz#311117e9df458c8518e2328d7994bd1f2f7e4dc8"
+  integrity sha512-o9ZkLi0yAhKF6MDsCOh7BbGBiloeX83qwWHpEUX8whVoTQ0GFFYntsKXZtrJqtiZAYtEU/HHtKgk13vRE8hq9w==
   dependencies:
-    google-protobuf "^3.19.4"
-    grpc-web "^1.3.1"
+    google-protobuf "^3.21.2"
+    grpc-web "^1.4.2"
 
 "@types/eslint-scope@^3.7.3":
   version "3.7.4"
@@ -2493,15 +2493,15 @@ globals@^13.19.0:
   dependencies:
     type-fest "^0.20.2"
 
-google-protobuf@^3.19.4, google-protobuf@^3.21.0:
-  version "3.21.0"
-  resolved "https://registry.npmjs.org/google-protobuf/-/google-protobuf-3.21.0.tgz"
-  integrity sha512-byR7MBTK4tZ5PZEb+u5ZTzpt4SfrTxv5682MjPlHN16XeqgZE2/8HOIWeiXe8JKnT9OVbtBGhbq8mtvkK8cd5g==
-
-google-protobuf@^3.20.1:
+google-protobuf@^3.20.1, google-protobuf@^3.21.2:
   version "3.21.2"
   resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.21.2.tgz#4580a2bea8bbb291ee579d1fefb14d6fa3070ea4"
   integrity sha512-3MSOYFO5U9mPGikIYCzK0SaThypfGgS6bHqrUGXG3DPHCrb+txNqeEcns1W0lkGfk0rCyNXm7xB9rMxnCiZOoA==
+
+google-protobuf@^3.21.0:
+  version "3.21.0"
+  resolved "https://registry.npmjs.org/google-protobuf/-/google-protobuf-3.21.0.tgz"
+  integrity sha512-byR7MBTK4tZ5PZEb+u5ZTzpt4SfrTxv5682MjPlHN16XeqgZE2/8HOIWeiXe8JKnT9OVbtBGhbq8mtvkK8cd5g==
 
 graceful-fs@^4.1.2, graceful-fs@^4.2.4, graceful-fs@^4.2.9:
   version "4.2.10"
@@ -2512,11 +2512,6 @@ grapheme-splitter@^1.0.4:
   version "1.0.4"
   resolved "https://nexus.vanti.co.uk/repository/npm-public/grapheme-splitter/-/grapheme-splitter-1.0.4.tgz#9cf3a665c6247479896834af35cf1dbb4400767e"
   integrity sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==
-
-grpc-web@^1.3.1:
-  version "1.3.1"
-  resolved "https://registry.npmjs.org/grpc-web/-/grpc-web-1.3.1.tgz"
-  integrity sha512-VxyYEAGsatecAFY3xieRDzsuhm92yQBsJD7fd5Z3MY150hZWPwkrUWetzJ0QK5W0uym4+VedPQrei38wk0eIjQ==
 
 grpc-web@^1.4.2:
   version "1.4.2"

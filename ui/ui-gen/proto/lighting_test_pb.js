@@ -13,15 +13,15 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = Function('return this')();
+var global = (function() { return this || window || global || self || Function('return this')(); }).call(null);
 
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 goog.object.extend(proto, google_protobuf_timestamp_pb);
 var google_protobuf_duration_pb = require('google-protobuf/google/protobuf/duration_pb.js');
 goog.object.extend(proto, google_protobuf_duration_pb);
-goog.exportSymbol('proto.smartcore.bos.EmergencyLightFault', null, global);
 goog.exportSymbol('proto.smartcore.bos.GetLightHealthRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.GetReportCSVRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.LightFault', null, global);
 goog.exportSymbol('proto.smartcore.bos.LightHealth', null, global);
 goog.exportSymbol('proto.smartcore.bos.LightingEvent', null, global);
 goog.exportSymbol('proto.smartcore.bos.LightingEvent.DurationTestPass', null, global);
@@ -373,7 +373,7 @@ proto.smartcore.bos.LightHealth.deserializeBinaryFromReader = function(msg, read
       msg.setUpdateTime(value);
       break;
     case 3:
-      var values = /** @type {!Array<!proto.smartcore.bos.EmergencyLightFault>} */ (reader.isDelimited() ? reader.readPackedEnum() : [reader.readEnum()]);
+      var values = /** @type {!Array<!proto.smartcore.bos.LightFault>} */ (reader.isDelimited() ? reader.readPackedEnum() : [reader.readEnum()]);
       for (var i = 0; i < values.length; i++) {
         msg.addFaults(values[i]);
       }
@@ -488,16 +488,16 @@ proto.smartcore.bos.LightHealth.prototype.hasUpdateTime = function() {
 
 
 /**
- * repeated EmergencyLightFault faults = 3;
- * @return {!Array<!proto.smartcore.bos.EmergencyLightFault>}
+ * repeated LightFault faults = 3;
+ * @return {!Array<!proto.smartcore.bos.LightFault>}
  */
 proto.smartcore.bos.LightHealth.prototype.getFaultsList = function() {
-  return /** @type {!Array<!proto.smartcore.bos.EmergencyLightFault>} */ (jspb.Message.getRepeatedField(this, 3));
+  return /** @type {!Array<!proto.smartcore.bos.LightFault>} */ (jspb.Message.getRepeatedField(this, 3));
 };
 
 
 /**
- * @param {!Array<!proto.smartcore.bos.EmergencyLightFault>} value
+ * @param {!Array<!proto.smartcore.bos.LightFault>} value
  * @return {!proto.smartcore.bos.LightHealth} returns this
  */
 proto.smartcore.bos.LightHealth.prototype.setFaultsList = function(value) {
@@ -506,7 +506,7 @@ proto.smartcore.bos.LightHealth.prototype.setFaultsList = function(value) {
 
 
 /**
- * @param {!proto.smartcore.bos.EmergencyLightFault} value
+ * @param {!proto.smartcore.bos.LightFault} value
  * @param {number=} opt_index
  * @return {!proto.smartcore.bos.LightHealth} returns this
  */
@@ -1060,7 +1060,7 @@ proto.smartcore.bos.LightingEvent.StatusReport.deserializeBinaryFromReader = fun
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var values = /** @type {!Array<!proto.smartcore.bos.EmergencyLightFault>} */ (reader.isDelimited() ? reader.readPackedEnum() : [reader.readEnum()]);
+      var values = /** @type {!Array<!proto.smartcore.bos.LightFault>} */ (reader.isDelimited() ? reader.readPackedEnum() : [reader.readEnum()]);
       for (var i = 0; i < values.length; i++) {
         msg.addFaults(values[i]);
       }
@@ -1105,16 +1105,16 @@ proto.smartcore.bos.LightingEvent.StatusReport.serializeBinaryToWriter = functio
 
 
 /**
- * repeated EmergencyLightFault faults = 1;
- * @return {!Array<!proto.smartcore.bos.EmergencyLightFault>}
+ * repeated LightFault faults = 1;
+ * @return {!Array<!proto.smartcore.bos.LightFault>}
  */
 proto.smartcore.bos.LightingEvent.StatusReport.prototype.getFaultsList = function() {
-  return /** @type {!Array<!proto.smartcore.bos.EmergencyLightFault>} */ (jspb.Message.getRepeatedField(this, 1));
+  return /** @type {!Array<!proto.smartcore.bos.LightFault>} */ (jspb.Message.getRepeatedField(this, 1));
 };
 
 
 /**
- * @param {!Array<!proto.smartcore.bos.EmergencyLightFault>} value
+ * @param {!Array<!proto.smartcore.bos.LightFault>} value
  * @return {!proto.smartcore.bos.LightingEvent.StatusReport} returns this
  */
 proto.smartcore.bos.LightingEvent.StatusReport.prototype.setFaultsList = function(value) {
@@ -1123,7 +1123,7 @@ proto.smartcore.bos.LightingEvent.StatusReport.prototype.setFaultsList = functio
 
 
 /**
- * @param {!proto.smartcore.bos.EmergencyLightFault} value
+ * @param {!proto.smartcore.bos.LightFault} value
  * @param {number=} opt_index
  * @return {!proto.smartcore.bos.LightingEvent.StatusReport} returns this
  */
@@ -2442,7 +2442,7 @@ proto.smartcore.bos.ReportCSV.prototype.setCsv = function(value) {
 /**
  * @enum {number}
  */
-proto.smartcore.bos.EmergencyLightFault = {
+proto.smartcore.bos.LightFault = {
   FAULT_UNSPECIFIED: 0,
   DURATION_TEST_FAILED: 1,
   FUNCTION_TEST_FAILED: 2,
