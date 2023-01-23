@@ -344,9 +344,11 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	}
 	c.Node.Announce("drivers", node.HasClient(gen.WrapServicesApi(services.NewApi(driverServices))))
 	// load and start the automations
-	if err := c.startAutomations(ctx); err != nil {
+	autoServices, err := c.startAutomations()
+	if err != nil {
 		return err
 	}
+	c.Node.Announce("automations", node.HasClient(gen.WrapServicesApi(services.NewApi(autoServices))))
 
 	err = multierr.Append(err, group.Wait())
 	return
@@ -385,48 +387,28 @@ func (c *Controller) startDrivers() (*service.Map, error) {
 	return m, allErrs
 }
 
-func (c *Controller) startAutomations(ctx context.Context) (err error) {
-	autoServices := auto.Services{
+func (c *Controller) startAutomations() (*service.Map, error) {
+	ctxServices := auto.Services{
 		Logger:       c.Logger.Named("auto"),
 		Node:         c.Node,
 		Database:     c.Database,
 		GRPCServices: c.GRPC,
 	}
 
-	var started []task.Starter
-	go func() {
-		<-ctx.Done()
-		var err error
-		for _, impl := range started {
-			if task.Stoppable(impl) {
-				err = multierr.Append(err, task.Stop(impl))
-			}
-		}
-		if err != nil {
-			c.Logger.Warn("Failed to cleanly stop automations after ctx done", zap.Error(err))
-		}
-	}()
-
-	for _, autoConfig := range c.ControllerConfig.Automation {
-		f, ok := c.SystemConfig.AutoFactories[autoConfig.Type]
+	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+		f, ok := c.SystemConfig.AutoFactories[kind]
 		if !ok {
-			err = multierr.Append(err, fmt.Errorf("unsupported automation type %v", autoConfig.Type))
-			continue
+			return nil, fmt.Errorf("unsupported automation type %v", kind)
 		}
-		impl := f.New(autoServices)
-		if e := impl.Start(ctx); e != nil {
-			err = multierr.Append(err, fmt.Errorf("start %s %w", autoConfig.Name, e))
-		}
-		// keep track so we can stop them if ctx ends
-		started = append(started, impl)
+		return f.New(ctxServices), nil
+	}, service.IdIsRequired)
 
-		if task.Configurable(impl) {
-			if e := task.Configure(impl, autoConfig.Raw); e != nil {
-				err = multierr.Append(err, fmt.Errorf("configure %s %w", autoConfig.Name, e))
-			}
-		}
+	var allErrs error
+	for _, cfg := range c.ControllerConfig.Automation {
+		_, _, err := m.Create(cfg.Name, cfg.Type, service.State{Active: true, Config: cfg.Raw})
+		allErrs = multierr.Append(allErrs, err)
 	}
-	return err
+	return m, allErrs
 }
 
 func (c *Controller) startSystems() (*service.Map, error) {

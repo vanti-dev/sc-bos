@@ -2,11 +2,11 @@ package auto
 
 import (
 	"github.com/timshannon/bolthold"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 type Services struct {
@@ -20,11 +20,11 @@ type Services struct {
 type Factory interface {
 	// note this is an interface, not a func type so that the controller can check for other interfaces, like GrpcApi.
 
-	New(services Services) task.Starter
+	New(services Services) service.Lifecycle
 }
 
-type FactoryFunc func(services Services) task.Starter
+type FactoryFunc func(services Services) service.Lifecycle
 
-func (f FactoryFunc) New(services Services) task.Starter {
+func (f FactoryFunc) New(services Services) service.Lifecycle {
 	return f(services)
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/eclipse/paho.mqtt.golang"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
@@ -16,16 +17,15 @@ import (
 
 var MQTTFactory auto.Factory = auto.FactoryFunc(NewMQTTExport)
 
-func NewMQTTExport(services auto.Services) task.Starter {
+func NewMQTTExport(services auto.Services) service.Lifecycle {
 	e := &mqttExport{services: services}
-	e.Lifecycle = task.NewLifecycle(e.applyConfig)
-	e.Logger = services.Logger.Named("export.mqtt")
-	e.services.Logger = e.Logger
+	e.Service = service.New(service.MonoApply(e.applyConfig))
+	e.services.Logger = services.Logger.Named("export.mqtt")
 	return e
 }
 
 type mqttExport struct {
-	*task.Lifecycle[config.Root]
+	*service.Service[config.Root]
 	services auto.Services
 }
 
@@ -44,6 +44,11 @@ func (e *mqttExport) applyConfig(ctx context.Context, cfg config.Root) error {
 	if connected.Error() != nil {
 		return connected.Error()
 	}
+
+	go func() {
+		<-ctx.Done()
+		client.Disconnect(5000)
+	}()
 
 	return configureSources(ctx, services, cfg.Sources)
 }
