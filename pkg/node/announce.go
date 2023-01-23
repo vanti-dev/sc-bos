@@ -2,7 +2,6 @@ package node
 
 import (
 	"context"
-	"log"
 	"sync"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -43,7 +42,6 @@ func AnnounceContext(ctx context.Context, a Announcer) Announcer {
 	var undos []Undo
 	go func() {
 		<-ctx.Done()
-		log.Printf("Undoing AnnounceContext %v", ctx.Err())
 		for _, undo := range undos {
 			undo()
 		}
