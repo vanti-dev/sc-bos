@@ -3,6 +3,8 @@
     <v-list>
       <account-zone-list-card :zone-list="sidebarData.zoneNamesList ?? []"/>
       <v-divider/>
+      <account-secrets-card :account-id="sidebarData.id"/>
+      <v-divider/>
       <v-list-item class="pt-3">
         <v-dialog v-model="deleteConfirmation" max-width="320">
           <v-card class="pa-2">
@@ -34,16 +36,10 @@ import {reactive, ref} from 'vue';
 import {deleteTenant} from '@/api/ui/tenant';
 import {newActionTracker} from '@/api/resource';
 import AccountZoneListCard from '@/routes/auth/third-party/components/AccountZoneListCard.vue';
+import AccountSecretsCard from '@/routes/auth/third-party/components/AccountSecretsCard.vue';
 
 const pageStore = usePageStore();
 const {sidebarTitle, sidebarData} = storeToRefs(pageStore);
-
-const props = defineProps({
-  accountId: {
-    type: String,
-    default: ''
-  }
-});
 
 const deleteConfirmation = ref(false);
 const deleteTracker = reactive(
@@ -58,7 +54,7 @@ function deleteAccount() {
     id: sidebarData.value.id
   }, deleteTracker);
   deleteConfirmation.value = false;
-  // todo: remove from tenants ist
+  // todo: remove from tenants list
 }
 
 </script>
