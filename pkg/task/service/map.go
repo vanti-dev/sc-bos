@@ -83,7 +83,6 @@ type Record struct {
 // Lifecycle. If either are present and the corresponding Lifecycle call returns an error, then creating the new record
 // will be aborted and that error will be returned.
 func (m *Map) Create(id, kind string, state State) (string, State, error) {
-	log.Printf("Map.Create")
 	r, err := m.createRecord(id, kind)
 	if err != nil {
 		return "", State{}, err
