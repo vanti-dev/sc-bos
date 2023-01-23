@@ -366,7 +366,6 @@ func (c *Controller) startDrivers() (*service.Map, error) {
 	ctxServices := driver.Services{
 		Logger:          c.Logger.Named("driver"),
 		Node:            c.Node,
-		Tasks:           &task.Group{},
 		ClientTLSConfig: c.ClientTLSConfig,
 	}
 
