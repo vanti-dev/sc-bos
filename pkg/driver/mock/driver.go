@@ -2,8 +2,10 @@ package mock
 
 import (
 	"context"
+	"time"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/time/clock"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
@@ -28,6 +30,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/util/maps"
 	"go.uber.org/zap"
+	"golang.org/x/exp/rand"
 )
 
 const DriverName = "mock"
@@ -93,21 +96,34 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 			traitOpts := []node.TraitOption{
 				node.NoAddMetadata(),
 			}
+			var undo []node.Undo
+			if u, ok := d.known[dt]; ok {
+				undo = append(undo, u)
+			}
+
 			if _, ok := d.known[dt]; !ok {
-				client := newMockClient(dt.trait)
+				client, slc := newMockClient(dt.trait)
 				if client == nil {
 					d.logger.Sugar().Warnf("Cannot create mock client %s::%s", dt.name, dt.trait)
 				} else {
 					traitOpts = append(traitOpts, node.WithClients(client))
+
+					// start any mock trait automations - e.g. updating occupancy sensors
+					if slc != nil {
+						_, err := slc.Start()
+						if err != nil {
+							d.logger.Sugar().Warnf("Unable to start mock trait automation %s::%s %v", dt.name, dt.trait, err)
+						} else {
+							undo = append(undo, func() {
+								_, _ = slc.Stop()
+							})
+						}
+					}
 				}
 			}
-			undo := d.announcer.Announce(dt.name, node.HasTrait(dt.trait, traitOpts...))
-			if u, ok := d.known[dt]; ok {
-				d.known[dt] = node.UndoAll(u, undo)
-			} else {
-				d.known[dt] = undo
-			}
-			undos = append(undos, undo)
+			undo = append(undo, d.announcer.Announce(dt.name, node.HasTrait(dt.trait, traitOpts...)))
+			d.known[dt] = node.UndoAll(undo...)
+			undos = append(undos, undo...)
 		}
 
 		dt.trait = ""
@@ -122,78 +138,102 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 	return nil
 }
 
-func newMockClient(traitName trait.Name) any {
+func newMockClient(traitName trait.Name) (any, service.Lifecycle) {
 	switch traitName {
 	case trait.AirQualitySensor:
-		return airqualitysensor.WrapApi(airqualitysensor.NewModelServer(airqualitysensor.NewModel(&traits.AirQuality{})))
+		return airqualitysensor.WrapApi(airqualitysensor.NewModelServer(airqualitysensor.NewModel(&traits.AirQuality{}))), nil
 	case trait.AirTemperature:
-		return airtemperature.WrapApi(airtemperature.NewModelServer(airtemperature.NewModel(&traits.AirTemperature{})))
+		return airtemperature.WrapApi(airtemperature.NewModelServer(airtemperature.NewModel(&traits.AirTemperature{}))), nil
 	case trait.Booking:
-		return booking.WrapApi(booking.NewModelServer(booking.NewModel()))
+		return booking.WrapApi(booking.NewModelServer(booking.NewModel())), nil
 	case trait.BrightnessSensor:
-		// todo: return brightnesssensor.WrapApi(brightnesssensor.NewModelServer(brightnesssensor.NewModel()))
-		return nil
+		// todo: return brightnesssensor.WrapApi(brightnesssensor.NewModelServer(brightnesssensor.NewModel())), nil
+		return nil, nil
 	case trait.Channel:
-		// todo: return channel.WrapApi(channel.NewModelServer(channel.NewModel()))
-		return nil
+		// todo: return channel.WrapApi(channel.NewModelServer(channel.NewModel())), nil
+		return nil, nil
 	case trait.Count:
-		// todo: return count.WrapApi(count.NewModelServer(count.NewModel()))
-		return nil
+		// todo: return count.WrapApi(count.NewModelServer(count.NewModel())), nil
+		return nil, nil
 	case trait.Electric:
-		return electric.WrapApi(electric.NewModelServer(electric.NewModel(clock.Real())))
+		return electric.WrapApi(electric.NewModelServer(electric.NewModel(clock.Real()))), nil
 	case trait.Emergency:
-		// todo: return emergency.WrapApi(emergency.NewModelServer(emergency.NewModel()))
-		return nil
+		// todo: return emergency.WrapApi(emergency.NewModelServer(emergency.NewModel())), nil
+		return nil, nil
 	case trait.EnergyStorage:
-		return energystorage.WrapApi(energystorage.NewModelServer(energystorage.NewModel()))
+		return energystorage.WrapApi(energystorage.NewModelServer(energystorage.NewModel())), nil
 	case trait.EnterLeaveSensor:
-		return enterleavesensor.WrapApi(enterleavesensor.NewModelServer(enterleavesensor.NewModel()))
+		return enterleavesensor.WrapApi(enterleavesensor.NewModelServer(enterleavesensor.NewModel())), nil
 	case trait.ExtendRetract:
-		// todo: return extendretract.WrapApi(extendretract.NewModelServer(extendretract.NewModel()))
-		return nil
+		// todo: return extendretract.WrapApi(extendretract.NewModelServer(extendretract.NewModel())), nil
+		return nil, nil
 	case trait.FanSpeed:
-		return fanspeed.WrapApi(fanspeed.NewModelServer(fanspeed.NewModel()))
+		return fanspeed.WrapApi(fanspeed.NewModelServer(fanspeed.NewModel())), nil
 	case trait.Hail:
-		return hail.WrapApi(hail.NewModelServer(hail.NewModel()))
+		return hail.WrapApi(hail.NewModelServer(hail.NewModel())), nil
 	case trait.InputSelect:
-		// todo: return inputselect.WrapApi(inputselect.NewModelServer(inputselect.NewModel()))
-		return nil
+		// todo: return inputselect.WrapApi(inputselect.NewModelServer(inputselect.NewModel())), nil
+		return nil, nil
 	case trait.Light:
-		// todo: return light.WrapApi(light.NewModelServer(light.NewModel()))
-		return light.WrapApi(light.NewMemoryDevice())
+		// todo: return light.WrapApi(light.NewModelServer(light.NewModel())), nil
+		return light.WrapApi(light.NewMemoryDevice()), nil
 	case trait.LockUnlock:
-		// todo: return lockunlock.WrapApi(lockunlock.NewModelServer(lockunlock.NewModel()))
-		return nil
+		// todo: return lockunlock.WrapApi(lockunlock.NewModelServer(lockunlock.NewModel())), nil
+		return nil, nil
 	case trait.Metadata:
-		return metadata.WrapApi(metadata.NewModelServer(metadata.NewModel()))
+		return metadata.WrapApi(metadata.NewModelServer(metadata.NewModel())), nil
 	case trait.Microphone:
-		// todo: return microphone.WrapApi(microphone.NewModelServer(microphone.NewModel()))
-		return nil
+		// todo: return microphone.WrapApi(microphone.NewModelServer(microphone.NewModel())), nil
+		return nil, nil
 	case trait.Mode:
-		return mode.WrapApi(mode.NewModelServer(mode.NewModel()))
+		return mode.WrapApi(mode.NewModelServer(mode.NewModel())), nil
 	case trait.MotionSensor:
-		// todo: return motionsensor.WrapApi(motionsensor.NewModelServer(motionsensor.NewModel()))
-		return nil
+		// todo: return motionsensor.WrapApi(motionsensor.NewModelServer(motionsensor.NewModel())), nil
+		return nil, nil
 	case trait.OccupancySensor:
-		return occupancysensor.WrapApi(occupancysensor.NewModelServer(occupancysensor.NewModel(&traits.Occupancy{})))
+		model := occupancysensor.NewModel(&traits.Occupancy{})
+		return occupancysensor.WrapApi(occupancysensor.NewModelServer(model)), occupancySensorAuto(model)
 	case trait.OnOff:
-		return onoff.WrapApi(onoff.NewModelServer(onoff.NewModel(traits.OnOff_STATE_UNSPECIFIED)))
+		return onoff.WrapApi(onoff.NewModelServer(onoff.NewModel(traits.OnOff_STATE_UNSPECIFIED))), nil
 	case trait.OpenClose:
-		// todo: return openclose.WrapApi(openclose.NewModelServer(openclose.NewModel()))
-		return nil
+		// todo: return openclose.WrapApi(openclose.NewModelServer(openclose.NewModel())), nil
+		return nil, nil
 	case trait.Parent:
-		return parent.WrapApi(parent.NewModelServer(parent.NewModel()))
+		return parent.WrapApi(parent.NewModelServer(parent.NewModel())), nil
 	case trait.Publication:
-		return publication.WrapApi(publication.NewModelServer(publication.NewModel()))
+		return publication.WrapApi(publication.NewModelServer(publication.NewModel())), nil
 	case trait.Ptz:
-		// todo: return ptz.WrapApi(ptz.NewModelServer(ptz.NewModel()))
-		return nil
+		// todo: return ptz.WrapApi(ptz.NewModelServer(ptz.NewModel())), nil
+		return nil, nil
 	case trait.Speaker:
-		// todo: return speaker.WrapApi(speaker.NewModelServer(speaker.NewModel()))
-		return nil
+		// todo: return speaker.WrapApi(speaker.NewModelServer(speaker.NewModel())), nil
+		return nil, nil
 	case trait.Vending:
-		return vending.WrapApi(vending.NewModelServer(vending.NewModel()))
+		return vending.WrapApi(vending.NewModelServer(vending.NewModel())), nil
 	}
 
-	return nil
+	return nil, nil
+}
+
+func occupancySensorAuto(model *occupancysensor.Model) *service.Service[string] {
+	slc := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
+		go func() {
+			ticker := time.NewTicker(30 * time.Second)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case <-ticker.C:
+					state := traits.Occupancy_State(rand.Intn(3) + 1)
+					_, _ = model.SetOccupancy(&traits.Occupancy{State: state}, resource.WithUpdatePaths("state"))
+				}
+			}
+		}()
+		return nil
+	}), service.WithParser(func(data []byte) (string, error) {
+		return string(data), nil
+	}))
+	_, _ = slc.Configure([]byte{}) // call configure to ensure we load when start is called.
+	return slc
 }
