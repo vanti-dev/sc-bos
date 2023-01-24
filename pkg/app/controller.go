@@ -336,19 +336,19 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	c.Node.Announce("systems", node.HasClient(gen.WrapServicesApi(services.NewApi(systemServices))))
+	c.Node.Announce("systems", node.HasClient(gen.WrapServicesApi(services.NewApi(systemServices, services.WithKnownTypesFromMapKeys(c.SystemConfig.SystemFactories)))))
 	// load and start the drivers
 	driverServices, err := c.startDrivers()
 	if err != nil {
 		return err
 	}
-	c.Node.Announce("drivers", node.HasClient(gen.WrapServicesApi(services.NewApi(driverServices))))
+	c.Node.Announce("drivers", node.HasClient(gen.WrapServicesApi(services.NewApi(driverServices, services.WithKnownTypesFromMapKeys(c.SystemConfig.DriverFactories)))))
 	// load and start the automations
 	autoServices, err := c.startAutomations()
 	if err != nil {
 		return err
 	}
-	c.Node.Announce("automations", node.HasClient(gen.WrapServicesApi(services.NewApi(autoServices))))
+	c.Node.Announce("automations", node.HasClient(gen.WrapServicesApi(services.NewApi(autoServices, services.WithKnownTypesFromMapKeys(c.SystemConfig.AutoFactories)))))
 
 	err = multierr.Append(err, group.Wait())
 	return
