@@ -21,6 +21,10 @@ service ServicesApi {
   rpc StartService(StartServiceRequest) returns (Service);
   rpc ConfigureService(ConfigureServiceRequest) returns (Service);
   rpc StopService(StopServiceRequest) returns (Service);
+
+  // Get service metadata: how many service are there, what types exist, etc.
+  rpc GetServiceMetadata(GetServiceMetadataRequest) returns (ServiceMetadata);
+  rpc PullServiceMetadata(PullServiceMetadataRequest) returns (stream PullServiceMetadataResponse);
 }
 
 message Service {
@@ -66,7 +70,20 @@ message Service {
   // The time the service last accepted configuration
   // Output only.
   google.protobuf.Timestamp last_config_time = 12;
+}
 
+message ServiceMetadata {
+  int32 total_count = 1;
+
+  // These counts have a key that matches the value in Service,
+  // and a value equal to the total number of services that have that value.
+  // For example {"bacnet": 12, "dali": 33} means 12 services exist with type "bacnet" and 33 exist with type "dali".
+  //
+  // A client can use the keys to discover the list of available values.
+  //
+  // The server may include keys that have a zero value.
+
+  map<string, uint32> type_counts = 2;
 }
 
 message GetServiceRequest {
@@ -199,4 +216,32 @@ message StopServiceRequest {
 
   // Unless true, starting a service that is already INACTIVE or ERROR will return a PreconditionFailed error.
   bool allow_inactive = 3;
+}
+
+
+message GetServiceMetadataRequest {
+  // Name of the device managing the services
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+}
+
+message PullServiceMetadataRequest {
+  // Name of the device managing the services
+  string name = 1;
+  // If true, only changes to the count are returned, otherwise the current total will be returned immediately.
+  bool updates_only = 2;
+  google.protobuf.FieldMask read_mask = 3;
+}
+
+message PullServiceMetadataResponse {
+  repeated Change changes = 1;
+
+  message Change {
+    // The name of the device that emitted this change
+    string name = 1;
+    // Information about the services in aggregate.
+    ServiceMetadata metadata = 2;
+    // When the change occurred
+    google.protobuf.Timestamp change_time = 3;
+  }
 }

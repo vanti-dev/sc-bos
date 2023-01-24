@@ -14,6 +14,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -22,10 +23,16 @@ type Api struct {
 	gen.UnimplementedServicesApiServer
 	m   *service.Map
 	now func() time.Time
+
+	knownTypes []string
 }
 
-func NewApi(m *service.Map) *Api {
-	return &Api{m: m, now: time.Now}
+func NewApi(m *service.Map, opts ...Option) *Api {
+	a := &Api{m: m, now: time.Now}
+	for _, opt := range opts {
+		opt(a)
+	}
+	return a
 }
 
 func (a *Api) GetService(_ context.Context, request *gen.GetServiceRequest) (*gen.Service, error) {
@@ -361,4 +368,82 @@ func (a *Api) StopService(_ context.Context, request *gen.StopServiceRequest) (*
 		return nil, err
 	}
 	return stateToProto(r.Id, r.Kind, state), nil
+}
+
+func (a *Api) GetServiceMetadata(_ context.Context, request *gen.GetServiceMetadataRequest) (*gen.ServiceMetadata, error) {
+	md := a.newMetadata()
+	a.seedMetadata(md)
+
+	filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
+	filter.Filter(md)
+
+	return md, nil
+}
+
+func (a *Api) PullServiceMetadata(request *gen.PullServiceMetadataRequest, server gen.ServicesApi_PullServiceMetadataServer) error {
+	md := a.newMetadata()
+
+	ctx, stop := context.WithCancel(server.Context())
+	defer stop()
+
+	changes := a.m.Listen(ctx) // do this before getting the map values
+	a.seedMetadata(md)
+
+	filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
+
+	var lastSent *gen.ServiceMetadata
+	send := func(md *gen.ServiceMetadata) error {
+		md = filter.FilterClone(md).(*gen.ServiceMetadata)
+		if proto.Equal(md, lastSent) {
+			return nil // no change, don't send
+		}
+		lastSent = md
+		change := &gen.PullServiceMetadataResponse_Change{Metadata: md}
+		response := &gen.PullServiceMetadataResponse{Changes: []*gen.PullServiceMetadataResponse_Change{change}}
+		return server.Send(response)
+	}
+
+	if !request.UpdatesOnly {
+		if err := send(md); err != nil {
+			return err
+		}
+	}
+
+	for change := range changes {
+		if change.OldValue == nil && change.NewValue != nil {
+			// add
+			md.TotalCount++
+			md.TypeCounts[change.NewValue.Kind]++
+		} else if change.OldValue != nil && change.NewValue == nil {
+			// delete
+			md.TotalCount--
+			if md.TypeCounts[change.OldValue.Kind] > 0 { // just in case
+				md.TypeCounts[change.OldValue.Kind]--
+			}
+		} else {
+			continue // no change worth sending
+		}
+
+		if err := send(md); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *Api) newMetadata() *gen.ServiceMetadata {
+	md := &gen.ServiceMetadata{
+		TypeCounts: make(map[string]uint32),
+	}
+	for _, knownType := range a.knownTypes {
+		md.TypeCounts[knownType] = 0
+	}
+	return md
+}
+
+func (a *Api) seedMetadata(md *gen.ServiceMetadata) {
+	for _, record := range a.m.Values() {
+		md.TotalCount++
+		md.TypeCounts[record.Kind]++
+	}
 }

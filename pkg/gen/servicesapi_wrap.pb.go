@@ -120,3 +120,38 @@ func (w *servicesApiWrapper) ConfigureService(ctx context.Context, req *Configur
 func (w *servicesApiWrapper) StopService(ctx context.Context, req *StopServiceRequest, _ ...grpc.CallOption) (*Service, error) {
 	return w.server.StopService(ctx, req)
 }
+
+func (w *servicesApiWrapper) GetServiceMetadata(ctx context.Context, req *GetServiceMetadataRequest, _ ...grpc.CallOption) (*ServiceMetadata, error) {
+	return w.server.GetServiceMetadata(ctx, req)
+}
+
+func (w *servicesApiWrapper) PullServiceMetadata(ctx context.Context, in *PullServiceMetadataRequest, opts ...grpc.CallOption) (ServicesApi_PullServiceMetadataClient, error) {
+	stream := wrap.NewClientServerStream(ctx)
+	server := &pullServiceMetadataServicesApiServerWrapper{stream.Server()}
+	client := &pullServiceMetadataServicesApiClientWrapper{stream.Client()}
+	go func() {
+		err := w.server.PullServiceMetadata(in, server)
+		stream.Close(err)
+	}()
+	return client, nil
+}
+
+type pullServiceMetadataServicesApiClientWrapper struct {
+	grpc.ClientStream
+}
+
+func (w *pullServiceMetadataServicesApiClientWrapper) Recv() (*PullServiceMetadataResponse, error) {
+	m := new(PullServiceMetadataResponse)
+	if err := w.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+type pullServiceMetadataServicesApiServerWrapper struct {
+	grpc.ServerStream
+}
+
+func (s *pullServiceMetadataServicesApiServerWrapper) Send(response *PullServiceMetadataResponse) error {
+	return s.ServerStream.SendMsg(response)
+}

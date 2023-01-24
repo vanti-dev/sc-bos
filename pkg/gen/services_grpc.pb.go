@@ -31,6 +31,9 @@ type ServicesApiClient interface {
 	StartService(ctx context.Context, in *StartServiceRequest, opts ...grpc.CallOption) (*Service, error)
 	ConfigureService(ctx context.Context, in *ConfigureServiceRequest, opts ...grpc.CallOption) (*Service, error)
 	StopService(ctx context.Context, in *StopServiceRequest, opts ...grpc.CallOption) (*Service, error)
+	// Get service metadata: how many service are there, what types exist, etc.
+	GetServiceMetadata(ctx context.Context, in *GetServiceMetadataRequest, opts ...grpc.CallOption) (*ServiceMetadata, error)
+	PullServiceMetadata(ctx context.Context, in *PullServiceMetadataRequest, opts ...grpc.CallOption) (ServicesApi_PullServiceMetadataClient, error)
 }
 
 type servicesApiClient struct {
@@ -168,6 +171,47 @@ func (c *servicesApiClient) StopService(ctx context.Context, in *StopServiceRequ
 	return out, nil
 }
 
+func (c *servicesApiClient) GetServiceMetadata(ctx context.Context, in *GetServiceMetadataRequest, opts ...grpc.CallOption) (*ServiceMetadata, error) {
+	out := new(ServiceMetadata)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.ServicesApi/GetServiceMetadata", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *servicesApiClient) PullServiceMetadata(ctx context.Context, in *PullServiceMetadataRequest, opts ...grpc.CallOption) (ServicesApi_PullServiceMetadataClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ServicesApi_ServiceDesc.Streams[2], "/smartcore.bos.ServicesApi/PullServiceMetadata", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &servicesApiPullServiceMetadataClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ServicesApi_PullServiceMetadataClient interface {
+	Recv() (*PullServiceMetadataResponse, error)
+	grpc.ClientStream
+}
+
+type servicesApiPullServiceMetadataClient struct {
+	grpc.ClientStream
+}
+
+func (x *servicesApiPullServiceMetadataClient) Recv() (*PullServiceMetadataResponse, error) {
+	m := new(PullServiceMetadataResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServicesApiServer is the server API for ServicesApi service.
 // All implementations must embed UnimplementedServicesApiServer
 // for forward compatibility
@@ -181,6 +225,9 @@ type ServicesApiServer interface {
 	StartService(context.Context, *StartServiceRequest) (*Service, error)
 	ConfigureService(context.Context, *ConfigureServiceRequest) (*Service, error)
 	StopService(context.Context, *StopServiceRequest) (*Service, error)
+	// Get service metadata: how many service are there, what types exist, etc.
+	GetServiceMetadata(context.Context, *GetServiceMetadataRequest) (*ServiceMetadata, error)
+	PullServiceMetadata(*PullServiceMetadataRequest, ServicesApi_PullServiceMetadataServer) error
 	mustEmbedUnimplementedServicesApiServer()
 }
 
@@ -214,6 +261,12 @@ func (UnimplementedServicesApiServer) ConfigureService(context.Context, *Configu
 }
 func (UnimplementedServicesApiServer) StopService(context.Context, *StopServiceRequest) (*Service, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StopService not implemented")
+}
+func (UnimplementedServicesApiServer) GetServiceMetadata(context.Context, *GetServiceMetadataRequest) (*ServiceMetadata, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetServiceMetadata not implemented")
+}
+func (UnimplementedServicesApiServer) PullServiceMetadata(*PullServiceMetadataRequest, ServicesApi_PullServiceMetadataServer) error {
+	return status.Errorf(codes.Unimplemented, "method PullServiceMetadata not implemented")
 }
 func (UnimplementedServicesApiServer) mustEmbedUnimplementedServicesApiServer() {}
 
@@ -396,6 +449,45 @@ func _ServicesApi_StopService_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServicesApi_GetServiceMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetServiceMetadataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServicesApiServer).GetServiceMetadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/smartcore.bos.ServicesApi/GetServiceMetadata",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServicesApiServer).GetServiceMetadata(ctx, req.(*GetServiceMetadataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServicesApi_PullServiceMetadata_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(PullServiceMetadataRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServicesApiServer).PullServiceMetadata(m, &servicesApiPullServiceMetadataServer{stream})
+}
+
+type ServicesApi_PullServiceMetadataServer interface {
+	Send(*PullServiceMetadataResponse) error
+	grpc.ServerStream
+}
+
+type servicesApiPullServiceMetadataServer struct {
+	grpc.ServerStream
+}
+
+func (x *servicesApiPullServiceMetadataServer) Send(m *PullServiceMetadataResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // ServicesApi_ServiceDesc is the grpc.ServiceDesc for ServicesApi service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -431,6 +523,10 @@ var ServicesApi_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "StopService",
 			Handler:    _ServicesApi_StopService_Handler,
 		},
+		{
+			MethodName: "GetServiceMetadata",
+			Handler:    _ServicesApi_GetServiceMetadata_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -441,6 +537,11 @@ var ServicesApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "PullServices",
 			Handler:       _ServicesApi_PullServices_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "PullServiceMetadata",
+			Handler:       _ServicesApi_PullServiceMetadata_Handler,
 			ServerStreams: true,
 		},
 	},
