@@ -13,7 +13,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var AutoTraitMetadata = map[string]string{}
 var MetadataTraitNotSupported = errors.New("metadata is not supported")
 
 func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
@@ -27,23 +26,6 @@ func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
 	}
 	_, err = metadataModel.MergeMetadata(md)
 	// todo: undo applying the metadata to the device
-	return undo, err
-}
-
-func (n *Node) addTraitMetadata(name string, traitName trait.Name, md map[string]string) (Undo, error) {
-	undo := NilUndo
-	metadataModel, err := n.metadataModel(name)
-	if err != nil {
-		if !n.isNotFound(err) {
-			return NilUndo, err
-		}
-		metadataModel, undo = n.announceMetadata(name)
-	}
-	_, err = metadataModel.UpdateTraitMetadata(&traits.TraitMetadata{
-		Name: string(traitName),
-		More: md,
-	})
-	// todo: remove any trait metadata from metadataModel
 	return undo, err
 }
 
@@ -81,6 +63,6 @@ func (n *Node) announceMetadata(name string) (*metadata.Model, Undo) {
 	// auto add metadata support for devices that are asking to add metadata to that device
 	md := &traits.Metadata{Name: name}
 	model := metadata.NewModel(resource.WithInitialValue(md))
-	undo := n.Announce(name, HasTrait(trait.Metadata, WithClients(metadata.WrapApi(metadata.NewModelServer(model))), NoAddMetadata()))
+	undo := n.Announce(name, HasTrait(trait.Metadata, WithClients(metadata.WrapApi(metadata.NewModelServer(model)))))
 	return model, undo
 }

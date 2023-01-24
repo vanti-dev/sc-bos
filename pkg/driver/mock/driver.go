@@ -93,9 +93,7 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 			// the trait is still in the device config, don't delete it
 			delete(toUndo, dt)
 
-			traitOpts := []node.TraitOption{
-				node.NoAddMetadata(),
-			}
+			var traitOpts []node.TraitOption
 			var undo []node.Undo
 			if u, ok := d.known[dt]; ok {
 				undo = append(undo, u)

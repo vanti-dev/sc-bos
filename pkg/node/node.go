@@ -3,6 +3,7 @@ package node
 import (
 	"fmt"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/router"
 	"github.com/smart-core-os/sc-golang/pkg/server"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
@@ -82,6 +83,9 @@ func (n *Node) Announce(name string, features ...Feature) Undo {
 	log := n.Logger.Sugar()
 	for _, t := range a.traits {
 		log.Debugf("%v now implements %v", name, t.name)
+		undo = append(undo, func() {
+			log.Debugf("%v no longer implements %v", name, t.name)
+		})
 
 		if !t.noAddChildTrait && name != n.name {
 			undo = append(undo, n.addChildTrait(a.name, t.name))
@@ -89,23 +93,18 @@ func (n *Node) Announce(name string, features ...Feature) Undo {
 		for _, client := range t.clients {
 			undo = append(undo, n.addRoute(a.name, client))
 		}
-		if !t.noAddMetadata {
-			md := t.metadata
-			if md == nil {
-				md = AutoTraitMetadata
-			}
-			undoMd, err := n.addTraitMetadata(name, t.name, md)
-			if err != nil {
-				if err != MetadataTraitNotSupported {
-					log.Warnf("%v %v: %v", name, t.name, err)
-				}
-			}
-			undo = append(undo, undoMd)
+	}
+
+	md := a.metadata
+	if md == nil && len(a.traits) > 0 {
+		md = &traits.Metadata{}
+		for _, t := range a.traits {
+			md.Traits = append(md.Traits, &traits.TraitMetadata{Name: string(t.name)})
 		}
 	}
 
-	if a.metadata != nil {
-		undoMd, err := n.mergeMetadata(name, a.metadata)
+	if md != nil {
+		undoMd, err := n.mergeMetadata(name, md)
 		if err != nil {
 			if err != MetadataTraitNotSupported {
 				log.Warnf("%v metadata: %v", name, err)

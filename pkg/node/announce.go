@@ -69,7 +69,6 @@ type traitFeature struct {
 	metadata map[string]string
 
 	noAddChildTrait bool
-	noAddMetadata   bool
 }
 
 // Feature describes some aspect of a named device.
@@ -133,25 +132,5 @@ func WithClients(client ...interface{}) TraitOption {
 func NoAddChildTrait() TraitOption {
 	return func(t *traitFeature) {
 		t.noAddChildTrait = true
-	}
-}
-
-// NoAddMetadata instructs the Node not to add the trait to the nodes traits.Metadata.
-func NoAddMetadata() TraitOption {
-	return func(t *traitFeature) {
-		t.noAddMetadata = true
-	}
-}
-
-// WithTraitMetadata instructs the Node to use the given metadata when adding the trait to the nodes traits.Metadata.
-// Metadata maps will be merged together, with conflicting keys in later calls overriding existing keys.
-func WithTraitMetadata(md map[string]string) TraitOption {
-	return func(t *traitFeature) {
-		if t.metadata == nil {
-			t.metadata = make(map[string]string)
-		}
-		for k, v := range md {
-			t.metadata[k] = v
-		}
 	}
 }

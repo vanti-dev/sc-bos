@@ -95,14 +95,14 @@ func TestServer_ListDevices(t *testing.T) {
 					Subsystem: "Lighting",
 				},
 			}),
-			node.HasTrait(trait.Light, node.NoAddMetadata()))
+			node.HasTrait(trait.Light))
 		n.Announce(fmt.Sprintf("device/%02d/hvac", i),
 			node.HasMetadata(&traits.Metadata{
 				Membership: &traits.Metadata_Membership{
 					Subsystem: "HVAC",
 				},
 			}),
-			node.HasTrait(trait.AirTemperature, node.NoAddMetadata()))
+			node.HasTrait(trait.AirTemperature))
 	}
 
 	server := &Server{parentName: "test", node: n}
