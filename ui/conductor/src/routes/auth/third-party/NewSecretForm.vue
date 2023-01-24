@@ -8,7 +8,7 @@
       <!-- Form to create secret -->
       <v-form
           v-if="creatingSecret"
-          @submit.prevent="addSecretCommit"
+          @submit.prevent="saveSecret"
           v-model="formValid"
           class="pa-0"
           ref="form">
@@ -56,9 +56,10 @@
           </div>
         </v-card-text>
         <v-card-actions class="justify-end">
-          <v-btn type="cancel" text @click.prevent="addSecretRollback">Cancel</v-btn>
+          <v-btn type="cancel" text @click.prevent="cancelAddSecret">Cancel</v-btn>
           <v-btn class="primary" type="submit" depressed :disabled="!formValid">Create Secret</v-btn>
         </v-card-actions>
+        <v-progress-linear color="primary" indeterminate :active="createSecretTracker.loading"/>
       </v-form>
       <!-- Display secret details -->
       <v-list v-else class="pb-0">
@@ -101,6 +102,7 @@ import RelativeDate from '@/components/RelativeDate.vue';
 import {createSecret, secretToObject} from '@/api/ui/tenant';
 import {newActionTracker} from '@/api/resource';
 
+const emit = defineEmits(['finished']);
 const props = defineProps({
   accountName: {
     type: String,
@@ -114,7 +116,7 @@ const props = defineProps({
 
 const dialog = ref(false);
 const form = ref(null);
-// track stage if secret creation
+// track stage of secret creation
 const creatingSecret = ref(true);
 
 const createSecretTracker = reactive(/** @type {ActionTracker<Secret.AsObject>} */ newActionTracker());
@@ -161,6 +163,15 @@ const computedExpiresAt = computed(() => {
   return add(now.value, duration);
 });
 
+// form validation
+const formValid = ref(false);
+const noteRules = [
+  v => Boolean(v) || Boolean(v.trim()) || 'Notes can\'t be blank'
+];
+const expiresAtRules = [
+  v => Boolean(v) || 'Expiry date can\'t be blank'
+];
+
 /**
  *
  */
@@ -169,17 +180,32 @@ function addSecretReset() {
   newSecret.expiresIn = suggestedExpiresIn.month;
   newSecret.expiresAt = null;
   customExpiryMenuVisible.value = false;
-  form.value.resetValidation();
+  form.value?.resetValidation();
   creatingSecret.value = true;
+  // clear out the secret for security
   createSecretTracker.response = {};
+}
+
+
+/**
+ *
+ */
+function cancelAddSecret() {
+  addSecretReset();
+  dialog.value = false;
 }
 
 /**
  *
  */
-function addSecretRollback() {
-  addSecretReset();
-  dialog.value = false;
+async function saveSecret() {
+  creatingSecret.value = false;
+  const secret = {
+    note: newSecret.note,
+    expireTime: computedExpiresAt.value,
+    tenant: {id: props.accountId}
+  };
+  await createSecret({secret}, createSecretTracker);
 }
 
 /**
@@ -189,6 +215,7 @@ function finished() {
   creatingSecret.value = true;
   dialog.value = false;
   addSecretReset();
+  emit('finished');
 }
 
 /**
@@ -197,30 +224,6 @@ function finished() {
 function copySecret() {
   navigator.clipboard.writeText(createdSecret.value.secret);
 }
-
-/**
- *
- */
-async function addSecretCommit() {
-  creatingSecret.value = false;
-  if (createSecretTracker.response) {
-    await hideToken();
-  }
-  const secret = {
-    note: newSecret.note,
-    expireTime: computedExpiresAt.value,
-    tenant: {id: props.accountId}
-  };
-  await createSecret({secret}, createSecretTracker);
-}
-
-const formValid = ref(false);
-const noteRules = [
-  v => Boolean(v) || Boolean(v.trim()) || 'Notes can\'t be blank'
-];
-const expiresAtRules = [
-  v => Boolean(v) || 'Expiry date can\'t be blank'
-];
 </script>
 
 <style scoped>

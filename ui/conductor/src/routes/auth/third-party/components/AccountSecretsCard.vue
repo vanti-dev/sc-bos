@@ -2,6 +2,7 @@
   <v-card flat tile class="pa-0">
     <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Tokens</v-subheader>
     <v-list two-line class="pt-0">
+      <v-progress-linear color="primary" indeterminate :active="secretsTracker.loading"/>
       <v-hover v-slot="{hover}" v-for="secret of secretList" :key="secret.id">
         <v-list-item class="py-0">
           <v-list-item-content class="py-0">
@@ -43,7 +44,8 @@
     <v-card-actions class="px-4 pb-4">
       <new-secret-form
           :account-name="account.title"
-          :account-id="account.id">
+          :account-id="account.id"
+          @finished="refreshSecrets">
         <template #activator="{on}">
           <v-btn width="100%" color="primary" class="font-weight-bold" v-on="on">
             Create new token
@@ -88,13 +90,17 @@ const secretList = computed(() => {
 });
 
 // fetch secret data for account
-watch(() => props.account, (account) => {
-  if (!account.id) {
+watch(() => props.account, () => refreshSecrets(), {immediate: true});
+
+/**
+ */
+function refreshSecrets() {
+  if (!props.account.id) {
     secretsTracker.response = null;
     return;
   }
-  listSecrets({tenantId: account.id}, secretsTracker).catch(err => console.error(err));
-}, {immediate: true});
+  listSecrets({tenantId: props.account.id}, secretsTracker).catch(err => console.error(err));
+}
 
 /**
  * @param {Date} date
@@ -105,13 +111,12 @@ function humanizeDate(date) {
 }
 
 /**
- *
- * @param id
+ * @param {string} id
  */
 async function delSecret(id) {
-  console.log(id);
   await deleteSecret({id}, deleteSecretTracker);
   deleteConfirmation.value[id] = false;
+  refreshSecrets();
 }
 
 
