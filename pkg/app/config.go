@@ -5,14 +5,15 @@ import (
 
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
+	"github.com/vanti-dev/sc-bos/pkg/system"
 )
 
 type ControllerConfig struct {
-	Name       string                     `json:"name"`
-	Drivers    []driver.RawConfig         `json:"drivers"`
-	Automation []auto.RawConfig           `json:"automation"`
-	Spaces     []RawSpaceConfig           `json:"spaces"`
-	Systems    map[string]json.RawMessage `json:"systems,omitempty"`
+	Name       string                      `json:"name"`
+	Drivers    []driver.RawConfig          `json:"drivers"`
+	Automation []auto.RawConfig            `json:"automation"`
+	Spaces     []RawSpaceConfig            `json:"spaces"`
+	Systems    map[string]system.RawConfig `json:"systems,omitempty"`
 }
 
 type BaseSpaceConfig struct {

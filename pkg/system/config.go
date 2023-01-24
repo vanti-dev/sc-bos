@@ -1,11 +1,11 @@
-package auto
+package system
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type Config struct {
-	Name     string `json:"name"`
-	Type     string `json:"type"`
-	Disabled bool   `json:"disabled,omitempty"`
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 type RawConfig struct {

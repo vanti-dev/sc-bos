@@ -381,7 +381,7 @@ func (c *Controller) startDrivers() (*service.Map, error) {
 
 	var allErrs error
 	for _, cfg := range c.ControllerConfig.Drivers {
-		_, _, err := m.Create(cfg.Name, cfg.Type, service.State{Active: true, Config: cfg.Raw})
+		_, _, err := m.Create(cfg.Name, cfg.Type, service.State{Active: !cfg.Disabled, Config: cfg.Raw})
 		allErrs = multierr.Append(allErrs, err)
 	}
 	return m, allErrs
@@ -405,7 +405,7 @@ func (c *Controller) startAutomations() (*service.Map, error) {
 
 	var allErrs error
 	for _, cfg := range c.ControllerConfig.Automation {
-		_, _, err := m.Create(cfg.Name, cfg.Type, service.State{Active: true, Config: cfg.Raw})
+		_, _, err := m.Create(cfg.Name, cfg.Type, service.State{Active: !cfg.Disabled, Config: cfg.Raw})
 		allErrs = multierr.Append(allErrs, err)
 	}
 	return m, allErrs
@@ -426,7 +426,7 @@ func (c *Controller) startSystems() (*service.Map, error) {
 
 	var allErrs error
 	for kind, cfg := range c.ControllerConfig.Systems {
-		_, _, err := m.Create("", kind, service.State{Active: true, Config: cfg})
+		_, _, err := m.Create("", kind, service.State{Active: !cfg.Disabled, Config: cfg.Raw})
 		allErrs = multierr.Append(allErrs, err)
 	}
 	return m, allErrs
