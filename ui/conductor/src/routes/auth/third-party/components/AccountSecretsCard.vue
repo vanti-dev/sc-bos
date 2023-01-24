@@ -65,7 +65,7 @@ import {compareDesc} from 'date-fns';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import NewSecretForm from '@/routes/auth/third-party/NewSecretForm.vue';
+import NewSecretForm from './NewSecretForm.vue';
 
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
