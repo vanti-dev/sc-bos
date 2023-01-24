@@ -3,7 +3,7 @@
     <v-list>
       <account-zone-list-card :zone-list="sidebarData.zoneNamesList ?? []"/>
       <v-divider/>
-      <account-secrets-card :account-id="sidebarData.id"/>
+      <account-secrets-card :account="sidebarData"/>
       <v-divider/>
       <v-list-item class="pt-3">
         <v-dialog v-model="deleteConfirmation" max-width="320">
