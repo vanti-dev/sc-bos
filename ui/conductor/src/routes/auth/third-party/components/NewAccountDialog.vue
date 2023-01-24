@@ -28,6 +28,8 @@ const dialog = ref(false);
 const addTenantTracker = reactive(newResourceValue());
 const name = ref('');
 
+const emit = defineEmits(['finished']);
+
 onUnmounted(() => {
   clearForm();
 });
@@ -59,6 +61,7 @@ async function addTenant() {
   await createTenant(req, addTenantTracker);
   clearForm();
   dialog.value = false;
+  emit('finished');
 }
 
 </script>

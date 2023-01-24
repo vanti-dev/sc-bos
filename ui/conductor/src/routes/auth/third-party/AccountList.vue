@@ -28,7 +28,7 @@
                   v-model="search"/>
             </v-col>
             <v-spacer/>
-            <new-account-dialog>
+            <new-account-dialog @finished="refreshAccounts">
               <template #activator="{on, attrs}">
                 <v-btn outlined v-bind="attrs" v-on="on">Add Account<v-icon right>mdi-plus</v-icon></v-btn>
               </template>
@@ -46,7 +46,6 @@ import {newActionTracker} from '@/api/resource.js';
 import {listTenants} from '@/api/ui/tenant.js';
 import ContentCard from '@/components/ContentCard.vue';
 import {computed, onMounted, reactive, ref} from 'vue';
-import {useRouter} from 'vue-router/composables';
 import NewAccountDialog from '@/routes/auth/third-party/components/NewAccountDialog.vue';
 import {usePageStore} from '@/stores/page';
 
@@ -74,11 +73,14 @@ const tenantRows = computed(() => {
   }));
 });
 
-onMounted(() => {
-  listTenants(null, tenantsTracker);
-});
+onMounted(() => refreshAccounts());
 
-const router = useRouter();
+/**
+ */
+function refreshAccounts() {
+  listTenants(null, tenantsTracker);
+}
+
 /**
  *
  * @param {Tenant.AsObject} item
