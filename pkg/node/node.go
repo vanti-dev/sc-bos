@@ -155,7 +155,12 @@ func (n *Node) addRoute(name string, impl interface{}) Undo {
 func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
 	n.parent().AddChildTrait(name, traitName...)
 	return func() {
-		// todo: remove child traits from n.parent()
+		child := n.parent().RemoveChildTrait(name, traitName...)
+		// There's a huge assumption here that child was added via AddChildTrait,
+		// this should be true but isn't guaranteed
+		if child != nil && len(child.Traits) == 0 {
+			_, _ = n.parent().RemoveChildByName(child.Name)
+		}
 	}
 }
 
