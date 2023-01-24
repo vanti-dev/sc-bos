@@ -31,6 +31,9 @@ type Node struct {
 	// Typically they are wrappers around each router instance.
 	// Populated via Support(Clients).
 	clients []any
+	// apis holds each of the APIs that this node registers with a grpc.Server.
+	// Populated via Support(Api) explicitly, or Support(Routing) if the router implements server.GrpcApi.
+	apis []server.GrpcApi
 
 	Logger *zap.Logger
 }
@@ -51,10 +54,8 @@ func (n *Node) Name() string {
 // Register implements server.GrpcApi and registers all supported routers with s.
 func (n *Node) Register(s *grpc.Server) {
 	n.parent() // force the parent api to be initialised
-	for _, r := range n.routers {
-		if api, ok := r.(server.GrpcApi); ok {
-			api.Register(s)
-		}
+	for _, api := range n.apis {
+		api.Register(s)
 	}
 }
 
@@ -123,8 +124,12 @@ func (n *Node) Support(functions ...Function) {
 	}
 }
 
-func (n *Node) addRouter(r ...router.Router) {
-	n.routers = append(n.routers, r...)
+func (n *Node) addRouter(rs ...router.Router) {
+	n.routers = append(n.routers, rs...)
+}
+
+func (n *Node) addApi(apis ...server.GrpcApi) {
+	n.apis = append(n.apis, apis...)
 }
 
 // addRoute adds name->impl as a route to all routers that support the type impl.
