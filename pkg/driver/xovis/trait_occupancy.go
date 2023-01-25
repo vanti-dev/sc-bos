@@ -95,7 +95,7 @@ func (o *occupancyServer) PullOccupancy(
 		}
 	}
 
-	return status.Error(codes.Unimplemented, "PullOccupancy not implemented for this device")
+	return nil
 }
 
 // returns nil if the counts don't match the expected format for an occupancy logic

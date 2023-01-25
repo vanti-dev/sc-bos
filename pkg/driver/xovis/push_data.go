@@ -11,13 +11,15 @@ type PushData struct {
 type LogicsPushData struct {
 	PackageInfo *PackageInfo `json:"package_info,omitempty"`
 	SensorInfo  *SensorInfo  `json:"sensor_info,omitempty"`
-	Logics      []struct {
-		ID         int           `json:"id"`
-		Name       string        `json:"name"`
-		Info       string        `json:"info"`
-		Geometries []Geometry    `json:"geometries"`
-		Records    []LogicRecord `json:"records"`
-	} `json:"logics"`
+	Logics      []Logic      `json:"logics"`
+}
+
+type Logic struct {
+	ID         int           `json:"id"`
+	Name       string        `json:"name"`
+	Info       string        `json:"info"`
+	Geometries []Geometry    `json:"geometries"`
+	Records    []LogicRecord `json:"records"`
 }
 
 type LogicRecord struct {

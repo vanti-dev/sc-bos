@@ -123,7 +123,14 @@ func (d *Driver) handleWebhook(response http.ResponseWriter, request *http.Reque
 	// read request body and parse
 	rawBody, err := io.ReadAll(http.MaxBytesReader(response, request.Body, 10*1024*1024))
 	if err != nil {
-		response.WriteHeader(http.StatusRequestEntityTooLarge)
+		maxBytesErr := &http.MaxBytesError{}
+		if errors.As(err, &maxBytesErr) {
+			response.WriteHeader(http.StatusRequestEntityTooLarge)
+		} else {
+			// If the error was not size-related then the connection probably
+			// dropped. It's unlikely the client will receive the error we send here.
+			response.WriteHeader(http.StatusBadRequest)
+		}
 		return
 	}
 	var body PushData
