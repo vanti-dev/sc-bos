@@ -6,6 +6,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"google.golang.org/protobuf/proto"
 )
 
 // Announcer defines the Announce method.
@@ -113,7 +114,10 @@ func HasTrait(name trait.Name, opt ...TraitOption) Feature {
 // See metadata.Model.MergeMetadata for more details.
 func HasMetadata(md *traits.Metadata) Feature {
 	return featureFunc(func(a *announcement) {
-		a.metadata = md
+		// We clone because if this is the first time the name has been associated with metadata,
+		// then the passed md is used as is instead of cloning which can cause unexpected mutation
+		// from the pov of the caller.
+		a.metadata = proto.Clone(md).(*traits.Metadata)
 	})
 }
 
