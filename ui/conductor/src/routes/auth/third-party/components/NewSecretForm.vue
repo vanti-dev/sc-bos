@@ -87,6 +87,9 @@
           <v-btn class="primary" @click="finished">Done</v-btn>
         </v-card-actions>
       </v-list>
+      <v-snackbar v-model="copyConfirm" timeout="2000" color="success">
+        <span class="text-body-large align-baseline"><v-icon left>mdi-check-circle</v-icon>Secret copied</span>
+      </v-snackbar>
     </v-card>
     <template #activator="attrs">
       <slot name="activator" v-bind="attrs"/>
@@ -218,11 +221,13 @@ function finished() {
   emit('finished');
 }
 
+const copyConfirm = ref(false);
 /**
  *
  */
 function copySecret() {
   navigator.clipboard.writeText(createdSecret.value.secret);
+  copyConfirm.value = true;
 }
 </script>
 
