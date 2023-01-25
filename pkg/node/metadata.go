@@ -1,9 +1,12 @@
 package node
 
 import (
+	"context"
 	"errors"
+	"time"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/router"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
@@ -15,16 +18,79 @@ import (
 
 var MetadataTraitNotSupported = errors.New("metadata is not supported")
 
+type MetadataChange struct {
+	Name       string
+	ChangeTime time.Time
+	Type       types.ChangeType
+	OldValue   *traits.Metadata
+	NewValue   *traits.Metadata
+}
+
+// ListAllMetadata returns a slice containing all metadata set via Announce.
+func (n *Node) ListAllMetadata(opts ...resource.ReadOption) []*traits.Metadata {
+	msgs := n.allMetadata.List(opts...)
+	mds := make([]*traits.Metadata, len(msgs))
+	for i, msg := range msgs {
+		mds[i] = msg.(*traits.Metadata)
+	}
+	return mds
+}
+
+// PullAllMetadata returns a chan that emits MetadataChange whenever Announce or that announcement is undone.
+func (n *Node) PullAllMetadata(ctx context.Context, opts ...resource.ReadOption) <-chan MetadataChange {
+	mdC := make(chan MetadataChange)
+	go func() {
+		defer close(mdC)
+		for change := range n.allMetadata.Pull(ctx, opts...) {
+			emit := MetadataChange{
+				Name:       change.Id,
+				Type:       change.ChangeType,
+				ChangeTime: change.ChangeTime,
+			}
+			if change.OldValue != nil {
+				emit.OldValue = change.OldValue.(*traits.Metadata)
+			}
+			if change.NewValue != nil {
+				emit.NewValue = change.NewValue.(*traits.Metadata)
+			}
+			select {
+			case <-ctx.Done():
+				return
+			case mdC <- emit:
+			}
+		}
+	}()
+	return mdC
+}
+
 func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
 	undo := NilUndo
+
 	metadataModel, err := n.metadataModel(name)
 	if err != nil {
 		if !n.isNotFound(err) {
 			return undo, err
 		}
 		metadataModel, undo = n.announceMetadata(name)
+
+		// send that the metadata was removed if the merge is undone.
+		undo = UndoAll(undo, func() {
+			_, _ = n.allMetadata.Delete(name, resource.WithAllowMissing(true))
+		})
 	}
-	_, err = metadataModel.MergeMetadata(md)
+
+	newMd, err := metadataModel.MergeMetadata(md)
+	if err != nil {
+		undo()
+		return NilUndo, err
+	}
+
+	_, err = n.allMetadata.Update(name, newMd, resource.WithCreateIfAbsent())
+	if err != nil {
+		undo()
+		return NilUndo, err
+	}
+
 	// todo: undo applying the metadata to the device
 	return undo, err
 }

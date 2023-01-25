@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/router"
 	"github.com/smart-core-os/sc-golang/pkg/server"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
@@ -36,14 +37,19 @@ type Node struct {
 	// Populated via Support(Api) explicitly, or Support(Routing) if the router implements server.GrpcApi.
 	apis []server.GrpcApi
 
+	// allMetadata allows users of the node to be notified of any metadata changes via Announce or when
+	// that announcement is undone.
+	allMetadata *resource.Collection // of *traits.Metadata
+
 	Logger *zap.Logger
 }
 
 // New creates a new Node node with the given name.
 func New(name string) *Node {
 	return &Node{
-		name:   name,
-		Logger: zap.NewNop(),
+		name:        name,
+		Logger:      zap.NewNop(),
+		allMetadata: resource.NewCollection(),
 	}
 }
 

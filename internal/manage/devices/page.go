@@ -3,12 +3,10 @@ package devices
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 )
 
 type PageToken struct {
-	ParentPageToken string `json:"t,omitempty"`
-	PageIndex       int    `json:"i,omitempty"`
+	LastName string `json:"n"`
 }
 
 func (pt PageToken) encode() (string, error) {
@@ -17,10 +15,6 @@ func (pt PageToken) encode() (string, error) {
 		return "", err
 	}
 	return base64.RawStdEncoding.EncodeToString(bytes), nil
-}
-
-func (pt PageToken) String() string {
-	return fmt.Sprintf("%s@%d", pt.ParentPageToken, pt.PageIndex)
 }
 
 func decodePageToken(str string) (PageToken, error) {
