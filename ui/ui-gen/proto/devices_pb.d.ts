@@ -58,6 +58,12 @@ export namespace Device {
       getStringEqualFold(): string;
       setStringEqualFold(value: string): Condition;
 
+      getStringContains(): string;
+      setStringContains(value: string): Condition;
+
+      getStringContainsFold(): string;
+      setStringContainsFold(value: string): Condition;
+
       getValueCase(): Condition.ValueCase;
 
       serializeBinary(): Uint8Array;
@@ -73,12 +79,16 @@ export namespace Device {
         field: string,
         stringEqual: string,
         stringEqualFold: string,
+        stringContains: string,
+        stringContainsFold: string,
       }
 
       export enum ValueCase { 
         VALUE_NOT_SET = 0,
         STRING_EQUAL = 2,
         STRING_EQUAL_FOLD = 3,
+        STRING_CONTAINS = 4,
+        STRING_CONTAINS_FOLD = 5,
       }
     }
 

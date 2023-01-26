@@ -39,6 +39,15 @@ func conditionMatches(cond *gen.Device_Query_Condition, device *gen.Device) bool
 		cmp = func(v string) bool {
 			return strings.EqualFold(v, c.StringEqualFold)
 		}
+	case *gen.Device_Query_Condition_StringContains:
+		cmp = func(v string) bool {
+			return strings.Contains(v, c.StringContains)
+		}
+	case *gen.Device_Query_Condition_StringContainsFold:
+		ls := strings.ToLower(c.StringContainsFold)
+		cmp = func(v string) bool {
+			return strings.Contains(strings.ToLower(v), ls)
+		}
 	default:
 		return false
 	}

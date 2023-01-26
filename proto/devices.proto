@@ -34,6 +34,10 @@ message Device {
         // Compare the field to this string using a simple unicode case folding comparison.
         // See the go package strings.EqualFold.
         string string_equal_fold = 3;
+        // Compare the field using case sensitive contains.
+        string string_contains = 4;
+        // Compare the field using contains in a case insensitive manner.
+        string string_contains_fold = 5;
 
         // there's room here for additional rhs values for the field, but we don't need any
       }

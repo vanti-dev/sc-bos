@@ -611,7 +611,7 @@ proto.smartcore.bos.Device.Query.serializeBinaryToWriter = function(message, wri
  * @private {!Array<!Array<number>>}
  * @const
  */
-proto.smartcore.bos.Device.Query.Condition.oneofGroups_ = [[2,3]];
+proto.smartcore.bos.Device.Query.Condition.oneofGroups_ = [[2,3,4,5]];
 
 /**
  * @enum {number}
@@ -619,7 +619,9 @@ proto.smartcore.bos.Device.Query.Condition.oneofGroups_ = [[2,3]];
 proto.smartcore.bos.Device.Query.Condition.ValueCase = {
   VALUE_NOT_SET: 0,
   STRING_EQUAL: 2,
-  STRING_EQUAL_FOLD: 3
+  STRING_EQUAL_FOLD: 3,
+  STRING_CONTAINS: 4,
+  STRING_CONTAINS_FOLD: 5
 };
 
 /**
@@ -662,7 +664,9 @@ proto.smartcore.bos.Device.Query.Condition.toObject = function(includeInstance, 
   var f, obj = {
     field: jspb.Message.getFieldWithDefault(msg, 1, ""),
     stringEqual: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    stringEqualFold: jspb.Message.getFieldWithDefault(msg, 3, "")
+    stringEqualFold: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    stringContains: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    stringContainsFold: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
   if (includeInstance) {
@@ -711,6 +715,14 @@ proto.smartcore.bos.Device.Query.Condition.deserializeBinaryFromReader = functio
       var value = /** @type {string} */ (reader.readString());
       msg.setStringEqualFold(value);
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setStringContains(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setStringContainsFold(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -758,6 +770,20 @@ proto.smartcore.bos.Device.Query.Condition.serializeBinaryToWriter = function(me
   if (f != null) {
     writer.writeString(
       3,
+      f
+    );
+  }
+  f = /** @type {string} */ (jspb.Message.getField(message, 4));
+  if (f != null) {
+    writer.writeString(
+      4,
+      f
+    );
+  }
+  f = /** @type {string} */ (jspb.Message.getField(message, 5));
+  if (f != null) {
+    writer.writeString(
+      5,
       f
     );
   }
@@ -851,6 +877,78 @@ proto.smartcore.bos.Device.Query.Condition.prototype.clearStringEqualFold = func
  */
 proto.smartcore.bos.Device.Query.Condition.prototype.hasStringEqualFold = function() {
   return jspb.Message.getField(this, 3) != null;
+};
+
+
+/**
+ * optional string string_contains = 4;
+ * @return {string}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getStringContains = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.setStringContains = function(value) {
+  return jspb.Message.setOneofField(this, 4, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearStringContains = function() {
+  return jspb.Message.setOneofField(this, 4, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasStringContains = function() {
+  return jspb.Message.getField(this, 4) != null;
+};
+
+
+/**
+ * optional string string_contains_fold = 5;
+ * @return {string}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getStringContainsFold = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.setStringContainsFold = function(value) {
+  return jspb.Message.setOneofField(this, 5, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearStringContainsFold = function() {
+  return jspb.Message.setOneofField(this, 5, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasStringContainsFold = function() {
+  return jspb.Message.getField(this, 5) != null;
 };
 
 
