@@ -24,6 +24,7 @@ type MetadataChange struct {
 	Type       types.ChangeType
 	OldValue   *traits.Metadata
 	NewValue   *traits.Metadata
+	SeedValue  bool
 }
 
 // ListAllMetadata returns a slice containing all metadata set via Announce.
@@ -46,6 +47,7 @@ func (n *Node) PullAllMetadata(ctx context.Context, opts ...resource.ReadOption)
 				Name:       change.Id,
 				Type:       change.ChangeType,
 				ChangeTime: change.ChangeTime,
+				SeedValue:  change.SeedValue,
 			}
 			if change.OldValue != nil {
 				emit.OldValue = change.OldValue.(*traits.Metadata)
