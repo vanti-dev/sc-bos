@@ -3,13 +3,12 @@
 package gen
 
 import (
-	"context"
-
-	"github.com/smart-core-os/sc-golang/pkg/wrap"
-	"google.golang.org/grpc"
+	context "context"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
+	grpc "google.golang.org/grpc"
 )
 
-// WrapDevicesApi	adapts a gen.DevicesApiServer	and presents it as a gen.DevicesApiClient
+// WrapDevicesApi	adapts a DevicesApiServer	and presents it as a DevicesApiClient
 func WrapDevicesApi(server DevicesApiServer) DevicesApiClient {
 	return &devicesApiWrapper{server}
 }

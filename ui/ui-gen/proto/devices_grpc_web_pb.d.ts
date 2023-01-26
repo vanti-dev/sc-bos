@@ -20,6 +20,18 @@ export class DevicesApiClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<proto_devices_pb.PullDevicesResponse>;
 
+  getDevicesMetadata(
+    request: proto_devices_pb.GetDevicesMetadataRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: proto_devices_pb.DevicesMetadata) => void
+  ): grpcWeb.ClientReadableStream<proto_devices_pb.DevicesMetadata>;
+
+  pullDevicesMetadata(
+    request: proto_devices_pb.PullDevicesMetadataRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<proto_devices_pb.PullDevicesMetadataResponse>;
+
 }
 
 export class DevicesApiPromiseClient {
@@ -36,6 +48,16 @@ export class DevicesApiPromiseClient {
     request: proto_devices_pb.PullDevicesRequest,
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<proto_devices_pb.PullDevicesResponse>;
+
+  getDevicesMetadata(
+    request: proto_devices_pb.GetDevicesMetadataRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<proto_devices_pb.DevicesMetadata>;
+
+  pullDevicesMetadata(
+    request: proto_devices_pb.PullDevicesMetadataRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<proto_devices_pb.PullDevicesMetadataResponse>;
 
 }
 

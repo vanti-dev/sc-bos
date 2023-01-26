@@ -3,15 +3,14 @@
 package gen
 
 import (
-	"context"
-	"fmt"
-	"io"
-
-	"github.com/smart-core-os/sc-golang/pkg/router"
-	"google.golang.org/grpc"
+	context "context"
+	fmt "fmt"
+	router "github.com/smart-core-os/sc-golang/pkg/router"
+	grpc "google.golang.org/grpc"
+	io "io"
 )
 
-// ServicesApiRouter is a gen.ServicesApiServer that allows routing named requests to specific gen.ServicesApiClient
+// ServicesApiRouter is a ServicesApiServer that allows routing named requests to specific ServicesApiClient
 type ServicesApiRouter struct {
 	UnimplementedServicesApiServer
 
@@ -39,10 +38,10 @@ func (r *ServicesApiRouter) Register(server *grpc.Server) {
 	RegisterServicesApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.ServicesApiClient.
+// Add extends Router.Add to panic if client is not of type ServicesApiClient.
 func (r *ServicesApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.ServicesApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a ServicesApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

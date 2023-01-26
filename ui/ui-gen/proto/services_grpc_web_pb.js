@@ -620,5 +620,122 @@ proto.smartcore.bos.ServicesApiPromiseClient.prototype.stopService =
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.GetServiceMetadataRequest,
+ *   !proto.smartcore.bos.ServiceMetadata>}
+ */
+const methodDescriptor_ServicesApi_GetServiceMetadata = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.ServicesApi/GetServiceMetadata',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.GetServiceMetadataRequest,
+  proto.smartcore.bos.ServiceMetadata,
+  /**
+   * @param {!proto.smartcore.bos.GetServiceMetadataRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ServiceMetadata.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.GetServiceMetadataRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ServiceMetadata)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ServiceMetadata>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.ServicesApiClient.prototype.getServiceMetadata =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.ServicesApi/GetServiceMetadata',
+      request,
+      metadata || {},
+      methodDescriptor_ServicesApi_GetServiceMetadata,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.GetServiceMetadataRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.ServiceMetadata>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.ServicesApiPromiseClient.prototype.getServiceMetadata =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.ServicesApi/GetServiceMetadata',
+      request,
+      metadata || {},
+      methodDescriptor_ServicesApi_GetServiceMetadata);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.PullServiceMetadataRequest,
+ *   !proto.smartcore.bos.PullServiceMetadataResponse>}
+ */
+const methodDescriptor_ServicesApi_PullServiceMetadata = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.ServicesApi/PullServiceMetadata',
+  grpc.web.MethodType.SERVER_STREAMING,
+  proto.smartcore.bos.PullServiceMetadataRequest,
+  proto.smartcore.bos.PullServiceMetadataResponse,
+  /**
+   * @param {!proto.smartcore.bos.PullServiceMetadataRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.PullServiceMetadataResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.PullServiceMetadataRequest} request The request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullServiceMetadataResponse>}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.ServicesApiClient.prototype.pullServiceMetadata =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/smartcore.bos.ServicesApi/PullServiceMetadata',
+      request,
+      metadata || {},
+      methodDescriptor_ServicesApi_PullServiceMetadata);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.PullServiceMetadataRequest} request The request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullServiceMetadataResponse>}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.ServicesApiPromiseClient.prototype.pullServiceMetadata =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/smartcore.bos.ServicesApi/PullServiceMetadata',
+      request,
+      metadata || {},
+      methodDescriptor_ServicesApi_PullServiceMetadata);
+};
+
+
 module.exports = proto.smartcore.bos;
 

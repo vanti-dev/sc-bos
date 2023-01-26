@@ -67,6 +67,18 @@ export class ServicesApiClient {
                response: proto_services_pb.Service) => void
   ): grpcWeb.ClientReadableStream<proto_services_pb.Service>;
 
+  getServiceMetadata(
+    request: proto_services_pb.GetServiceMetadataRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: proto_services_pb.ServiceMetadata) => void
+  ): grpcWeb.ClientReadableStream<proto_services_pb.ServiceMetadata>;
+
+  pullServiceMetadata(
+    request: proto_services_pb.PullServiceMetadataRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<proto_services_pb.PullServiceMetadataResponse>;
+
 }
 
 export class ServicesApiPromiseClient {
@@ -118,6 +130,16 @@ export class ServicesApiPromiseClient {
     request: proto_services_pb.StopServiceRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<proto_services_pb.Service>;
+
+  getServiceMetadata(
+    request: proto_services_pb.GetServiceMetadataRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<proto_services_pb.ServiceMetadata>;
+
+  pullServiceMetadata(
+    request: proto_services_pb.PullServiceMetadataRequest,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<proto_services_pb.PullServiceMetadataResponse>;
 
 }
 

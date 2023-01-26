@@ -79,6 +79,28 @@ export namespace Service {
   }
 }
 
+export class ServiceMetadata extends jspb.Message {
+  getTotalCount(): number;
+  setTotalCount(value: number): ServiceMetadata;
+
+  getTypeCountsMap(): jspb.Map<string, number>;
+  clearTypeCountsMap(): ServiceMetadata;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ServiceMetadata.AsObject;
+  static toObject(includeInstance: boolean, msg: ServiceMetadata): ServiceMetadata.AsObject;
+  static serializeBinaryToWriter(message: ServiceMetadata, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ServiceMetadata;
+  static deserializeBinaryFromReader(message: ServiceMetadata, reader: jspb.BinaryReader): ServiceMetadata;
+}
+
+export namespace ServiceMetadata {
+  export type AsObject = {
+    totalCount: number,
+    typeCountsMap: Array<[string, number]>,
+  }
+}
+
 export class GetServiceRequest extends jspb.Message {
   getName(): string;
   setName(value: string): GetServiceRequest;
@@ -465,5 +487,108 @@ export namespace StopServiceRequest {
     id: string,
     allowInactive: boolean,
   }
+}
+
+export class GetServiceMetadataRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): GetServiceMetadataRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): GetServiceMetadataRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): GetServiceMetadataRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetServiceMetadataRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetServiceMetadataRequest): GetServiceMetadataRequest.AsObject;
+  static serializeBinaryToWriter(message: GetServiceMetadataRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetServiceMetadataRequest;
+  static deserializeBinaryFromReader(message: GetServiceMetadataRequest, reader: jspb.BinaryReader): GetServiceMetadataRequest;
+}
+
+export namespace GetServiceMetadataRequest {
+  export type AsObject = {
+    name: string,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+  }
+}
+
+export class PullServiceMetadataRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): PullServiceMetadataRequest;
+
+  getUpdatesOnly(): boolean;
+  setUpdatesOnly(value: boolean): PullServiceMetadataRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): PullServiceMetadataRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): PullServiceMetadataRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PullServiceMetadataRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: PullServiceMetadataRequest): PullServiceMetadataRequest.AsObject;
+  static serializeBinaryToWriter(message: PullServiceMetadataRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullServiceMetadataRequest;
+  static deserializeBinaryFromReader(message: PullServiceMetadataRequest, reader: jspb.BinaryReader): PullServiceMetadataRequest;
+}
+
+export namespace PullServiceMetadataRequest {
+  export type AsObject = {
+    name: string,
+    updatesOnly: boolean,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+  }
+}
+
+export class PullServiceMetadataResponse extends jspb.Message {
+  getChangesList(): Array<PullServiceMetadataResponse.Change>;
+  setChangesList(value: Array<PullServiceMetadataResponse.Change>): PullServiceMetadataResponse;
+  clearChangesList(): PullServiceMetadataResponse;
+  addChanges(value?: PullServiceMetadataResponse.Change, index?: number): PullServiceMetadataResponse.Change;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PullServiceMetadataResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: PullServiceMetadataResponse): PullServiceMetadataResponse.AsObject;
+  static serializeBinaryToWriter(message: PullServiceMetadataResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullServiceMetadataResponse;
+  static deserializeBinaryFromReader(message: PullServiceMetadataResponse, reader: jspb.BinaryReader): PullServiceMetadataResponse;
+}
+
+export namespace PullServiceMetadataResponse {
+  export type AsObject = {
+    changesList: Array<PullServiceMetadataResponse.Change.AsObject>,
+  }
+
+  export class Change extends jspb.Message {
+    getName(): string;
+    setName(value: string): Change;
+
+    getMetadata(): ServiceMetadata | undefined;
+    setMetadata(value?: ServiceMetadata): Change;
+    hasMetadata(): boolean;
+    clearMetadata(): Change;
+
+    getChangeTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setChangeTime(value?: google_protobuf_timestamp_pb.Timestamp): Change;
+    hasChangeTime(): boolean;
+    clearChangeTime(): Change;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Change.AsObject;
+    static toObject(includeInstance: boolean, msg: Change): Change.AsObject;
+    static serializeBinaryToWriter(message: Change, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Change;
+    static deserializeBinaryFromReader(message: Change, reader: jspb.BinaryReader): Change;
+  }
+
+  export namespace Change {
+    export type AsObject = {
+      name: string,
+      metadata?: ServiceMetadata.AsObject,
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    }
+  }
+
 }
 

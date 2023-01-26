@@ -55,6 +55,9 @@ export namespace Device {
       getStringEqual(): string;
       setStringEqual(value: string): Condition;
 
+      getStringEqualFold(): string;
+      setStringEqualFold(value: string): Condition;
+
       getValueCase(): Condition.ValueCase;
 
       serializeBinary(): Uint8Array;
@@ -69,14 +72,84 @@ export namespace Device {
       export type AsObject = {
         field: string,
         stringEqual: string,
+        stringEqualFold: string,
       }
 
       export enum ValueCase { 
         VALUE_NOT_SET = 0,
         STRING_EQUAL = 2,
+        STRING_EQUAL_FOLD = 3,
       }
     }
 
+  }
+
+}
+
+export class DevicesMetadata extends jspb.Message {
+  getTotalCount(): number;
+  setTotalCount(value: number): DevicesMetadata;
+
+  getFieldCountsList(): Array<DevicesMetadata.StringFieldCount>;
+  setFieldCountsList(value: Array<DevicesMetadata.StringFieldCount>): DevicesMetadata;
+  clearFieldCountsList(): DevicesMetadata;
+  addFieldCounts(value?: DevicesMetadata.StringFieldCount, index?: number): DevicesMetadata.StringFieldCount;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DevicesMetadata.AsObject;
+  static toObject(includeInstance: boolean, msg: DevicesMetadata): DevicesMetadata.AsObject;
+  static serializeBinaryToWriter(message: DevicesMetadata, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DevicesMetadata;
+  static deserializeBinaryFromReader(message: DevicesMetadata, reader: jspb.BinaryReader): DevicesMetadata;
+}
+
+export namespace DevicesMetadata {
+  export type AsObject = {
+    totalCount: number,
+    fieldCountsList: Array<DevicesMetadata.StringFieldCount.AsObject>,
+  }
+
+  export class StringFieldCount extends jspb.Message {
+    getField(): string;
+    setField(value: string): StringFieldCount;
+
+    getCountsMap(): jspb.Map<string, number>;
+    clearCountsMap(): StringFieldCount;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): StringFieldCount.AsObject;
+    static toObject(includeInstance: boolean, msg: StringFieldCount): StringFieldCount.AsObject;
+    static serializeBinaryToWriter(message: StringFieldCount, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): StringFieldCount;
+    static deserializeBinaryFromReader(message: StringFieldCount, reader: jspb.BinaryReader): StringFieldCount;
+  }
+
+  export namespace StringFieldCount {
+    export type AsObject = {
+      field: string,
+      countsMap: Array<[string, number]>,
+    }
+  }
+
+
+  export class Include extends jspb.Message {
+    getFieldsList(): Array<string>;
+    setFieldsList(value: Array<string>): Include;
+    clearFieldsList(): Include;
+    addFields(value: string, index?: number): Include;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Include.AsObject;
+    static toObject(includeInstance: boolean, msg: Include): Include.AsObject;
+    static serializeBinaryToWriter(message: Include, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Include;
+    static deserializeBinaryFromReader(message: Include, reader: jspb.BinaryReader): Include;
+  }
+
+  export namespace Include {
+    export type AsObject = {
+      fieldsList: Array<string>,
+    }
   }
 
 }
@@ -228,6 +301,113 @@ export namespace PullDevicesResponse {
       type: types_change_pb.ChangeType,
       newValue?: Device.AsObject,
       oldValue?: Device.AsObject,
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    }
+  }
+
+}
+
+export class GetDevicesMetadataRequest extends jspb.Message {
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): GetDevicesMetadataRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): GetDevicesMetadataRequest;
+
+  getIncludes(): DevicesMetadata.Include | undefined;
+  setIncludes(value?: DevicesMetadata.Include): GetDevicesMetadataRequest;
+  hasIncludes(): boolean;
+  clearIncludes(): GetDevicesMetadataRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetDevicesMetadataRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetDevicesMetadataRequest): GetDevicesMetadataRequest.AsObject;
+  static serializeBinaryToWriter(message: GetDevicesMetadataRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetDevicesMetadataRequest;
+  static deserializeBinaryFromReader(message: GetDevicesMetadataRequest, reader: jspb.BinaryReader): GetDevicesMetadataRequest;
+}
+
+export namespace GetDevicesMetadataRequest {
+  export type AsObject = {
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    includes?: DevicesMetadata.Include.AsObject,
+  }
+}
+
+export class PullDevicesMetadataRequest extends jspb.Message {
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): PullDevicesMetadataRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): PullDevicesMetadataRequest;
+
+  getIncludes(): DevicesMetadata.Include | undefined;
+  setIncludes(value?: DevicesMetadata.Include): PullDevicesMetadataRequest;
+  hasIncludes(): boolean;
+  clearIncludes(): PullDevicesMetadataRequest;
+
+  getUpdatesOnly(): boolean;
+  setUpdatesOnly(value: boolean): PullDevicesMetadataRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PullDevicesMetadataRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: PullDevicesMetadataRequest): PullDevicesMetadataRequest.AsObject;
+  static serializeBinaryToWriter(message: PullDevicesMetadataRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullDevicesMetadataRequest;
+  static deserializeBinaryFromReader(message: PullDevicesMetadataRequest, reader: jspb.BinaryReader): PullDevicesMetadataRequest;
+}
+
+export namespace PullDevicesMetadataRequest {
+  export type AsObject = {
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    includes?: DevicesMetadata.Include.AsObject,
+    updatesOnly: boolean,
+  }
+}
+
+export class PullDevicesMetadataResponse extends jspb.Message {
+  getChangesList(): Array<PullDevicesMetadataResponse.Change>;
+  setChangesList(value: Array<PullDevicesMetadataResponse.Change>): PullDevicesMetadataResponse;
+  clearChangesList(): PullDevicesMetadataResponse;
+  addChanges(value?: PullDevicesMetadataResponse.Change, index?: number): PullDevicesMetadataResponse.Change;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PullDevicesMetadataResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: PullDevicesMetadataResponse): PullDevicesMetadataResponse.AsObject;
+  static serializeBinaryToWriter(message: PullDevicesMetadataResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullDevicesMetadataResponse;
+  static deserializeBinaryFromReader(message: PullDevicesMetadataResponse, reader: jspb.BinaryReader): PullDevicesMetadataResponse;
+}
+
+export namespace PullDevicesMetadataResponse {
+  export type AsObject = {
+    changesList: Array<PullDevicesMetadataResponse.Change.AsObject>,
+  }
+
+  export class Change extends jspb.Message {
+    getName(): string;
+    setName(value: string): Change;
+
+    getDevicesMetadata(): DevicesMetadata | undefined;
+    setDevicesMetadata(value?: DevicesMetadata): Change;
+    hasDevicesMetadata(): boolean;
+    clearDevicesMetadata(): Change;
+
+    getChangeTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setChangeTime(value?: google_protobuf_timestamp_pb.Timestamp): Change;
+    hasChangeTime(): boolean;
+    clearChangeTime(): Change;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Change.AsObject;
+    static toObject(includeInstance: boolean, msg: Change): Change.AsObject;
+    static serializeBinaryToWriter(message: Change, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Change;
+    static deserializeBinaryFromReader(message: Change, reader: jspb.BinaryReader): Change;
+  }
+
+  export namespace Change {
+    export type AsObject = {
+      name: string,
+      devicesMetadata?: DevicesMetadata.AsObject,
       changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     }
   }

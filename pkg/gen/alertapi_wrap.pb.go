@@ -3,13 +3,12 @@
 package gen
 
 import (
-	"context"
-
-	"github.com/smart-core-os/sc-golang/pkg/wrap"
-	"google.golang.org/grpc"
+	context "context"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
+	grpc "google.golang.org/grpc"
 )
 
-// WrapAlertApi	adapts a gen.AlertApiServer	and presents it as a gen.AlertApiClient
+// WrapAlertApi	adapts a AlertApiServer	and presents it as a AlertApiClient
 func WrapAlertApi(server AlertApiServer) AlertApiClient {
 	return &alertApiWrapper{server}
 }
