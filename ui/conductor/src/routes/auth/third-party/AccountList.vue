@@ -3,7 +3,7 @@
     <v-data-table
         class="table"
         :headers="headers"
-        :items="tenantRows"
+        :items="tenantsList"
         :search="search"
         sort-by="title"
         :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
@@ -21,19 +21,20 @@
           <v-row dense align="center">
             <v-col cols="12" md="5">
               <v-text-field
-                  label="Search tenants"
+                  label="Search accounts"
                   outlined
                   hide-details
                   prepend-inner-icon="mdi-magnify"
                   v-model="search"/>
             </v-col>
             <v-spacer/>
-            <new-account-dialog @finished="refreshAccounts">
+            <new-account-dialog @finished="tenantStore.refreshTenants">
               <template #activator="{on, attrs}">
                 <v-btn outlined v-bind="attrs" v-on="on">Add Account<v-icon right>mdi-plus</v-icon></v-btn>
               </template>
             </new-account-dialog>
           </v-row>
+          <v-progress-linear color="primary" indeterminate :active="tenantsTracker.loading" class="mt-2"/>
         </v-container>
       </template>
     </v-data-table>
@@ -41,48 +42,28 @@
 </template>
 
 <script setup>
-import {timestampToDate} from '@/api/convpb.js';
-import {newActionTracker} from '@/api/resource.js';
-import {listTenants} from '@/api/ui/tenant.js';
 import ContentCard from '@/components/ContentCard.vue';
-import {computed, onMounted, reactive, ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import NewAccountDialog from '@/routes/auth/third-party/components/NewAccountDialog.vue';
 import {usePageStore} from '@/stores/page';
+import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
+import {storeToRefs} from 'pinia';
 
 const pageStore = usePageStore();
-
-const tenantsTracker = reactive(
-    /** @type {ActionTracker<ListTenantsResponse.AsObject>} */ newActionTracker()
-);
+const tenantStore = useTenantStore();
+const {tenantsList, tenantsTracker} = storeToRefs(tenantStore);
 
 const search = ref('');
 
-const headers = computed(() => {
-  return [
-    {text: 'Name', value: 'title'},
-    {text: 'Permissions', value: 'permissions'},
-    {text: 'Zones', value: 'zones'}
-  ];
-});
+const headers = [
+  {text: 'Name', value: 'title'},
+  {text: 'Permissions', value: 'permissions'},
+  {text: 'Zones', value: 'zones'}
+];
 
-const tenantRows = computed(() => {
-  if (!tenantsTracker.response) return [];
-  return tenantsTracker.response.tenantsList.map((t) => ({
-    ...t,
-    createTime: t.createTime ? timestampToDate(t.createTime) : null
-  }));
-});
-
-onMounted(() => refreshAccounts());
+onMounted(() => tenantStore.refreshTenants());
 
 /**
- */
-function refreshAccounts() {
-  listTenants(null, tenantsTracker);
-}
-
-/**
- *
  * @param {Tenant.AsObject} item
  */
 function showTenant(item) {
