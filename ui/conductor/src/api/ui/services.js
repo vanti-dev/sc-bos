@@ -3,6 +3,7 @@ import {ServicesApiPromiseClient} from '@sc-bos/ui-gen/proto/services_grpc_web_p
 import {clientOptions} from '@/api/grpcweb';
 import {GetMetadataRequest} from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb';
 import {fieldMaskFromObject, setProperties} from '@/api/convpb';
+import {ListServicesRequest} from '@sc-bos/ui-gen/proto/services_pb';
 
 
 /**
@@ -16,6 +17,20 @@ export function getServiceMetadata(request, tracker) {
   return trackAction('Services.GetServiceMetadata', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.getServiceMetadata(createGetMetadataRequestFromObject(request));
+  });
+}
+
+/**
+ * @param {ListServicesRequest.AsObject} request
+ * @param {ActionTracker<ListServicesRequest.AsObject>} tracker
+ * @return {Promise<ListServicesResponse.AsObject>}
+ */
+export function listServices(request, tracker) {
+  const name = String(request.name);
+  if (!name) throw new Error('request.name must be specified');
+  return trackAction('Services.ListServices', tracker ?? {}, endpoint => {
+    const api = client(endpoint);
+    return api.listServices(createListServicesRequestFromObject(request));
   });
 }
 
@@ -34,10 +49,20 @@ function client(endpoint) {
  */
 function createGetMetadataRequestFromObject(obj) {
   if (!obj) return undefined;
-
   const req = new GetMetadataRequest();
   setProperties(req, obj, 'name');
   req.setReadMask(fieldMaskFromObject(obj.readMask));
+  return req;
+}
+
+/**
+ * @param {ListServicesRequest.AsObject} obj
+ * @return {ListServicesRequest}
+ */
+function createListServicesRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const req = new ListServicesRequest();
+  setProperties(req, obj, 'name', 'pageToken', 'pageSize');
   return req;
 }
 

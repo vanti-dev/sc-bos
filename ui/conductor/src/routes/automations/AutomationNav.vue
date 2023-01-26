@@ -1,7 +1,7 @@
 <template>
   <v-list class="pa-0" dense nav>
     <v-list-item
-        v-for="automation of automationList"
+        v-for="automation of automationTypeList"
         :key="automation.type"
         :to="'/automations/'+automation.type">
       <v-list-item-icon><v-icon>{{ icon[automation.type] }}</v-icon></v-list-item-icon>
@@ -16,15 +16,15 @@ import {useAutomationsStore} from '@/routes/automations/store';
 import {storeToRefs} from 'pinia';
 import {onMounted, ref} from 'vue';
 
-const automationStore = useAutomationsStore();
-const {automationList} = storeToRefs(automationStore);
+const automationsStore = useAutomationsStore();
+const {automationTypeList} = storeToRefs(automationsStore);
 
 // map of icons to use for different automation sections
 const icon = ref({
   lights: 'mdi-lightbulb'
 });
 
-onMounted(() => automationStore.refreshMetadata());
+onMounted(() => automationsStore.refreshMetadata());
 
 </script>
 

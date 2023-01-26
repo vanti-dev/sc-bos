@@ -11,7 +11,7 @@ export default {
     {
       path: ':type?',
       components: {
-        default: () => import('./AutomationConfig.vue')
+        default: () => import('./AutomationList.vue')
       },
       props: {
         default: true
