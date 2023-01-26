@@ -26,6 +26,7 @@ message Device {
     message Condition {
       // The name of a field relative to Device using '.' as a path separator.
       // For example "metadata.membership.group".
+      // If absent then any field may be matched against the value.
       string field = 1;
       oneof value {
         // Compare the field to this string using a case sensitive comparison

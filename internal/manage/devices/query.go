@@ -1,11 +1,15 @@
 package devices
 
 import (
+	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protopath"
+	"google.golang.org/protobuf/reflect/protorange"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -24,19 +28,31 @@ func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
 }
 
 func conditionMatches(cond *gen.Device_Query_Condition, device *gen.Device) bool {
+	// everything is a string comparison, for now. Can rework this later if that no longer is the case
+	var cmp func(v string) bool
 	switch c := cond.Value.(type) {
 	case *gen.Device_Query_Condition_StringEqual:
-		return isMessageValueEqualString(cond.Field, c.StringEqual, device)
+		cmp = func(v string) bool {
+			return v == c.StringEqual
+		}
 	case *gen.Device_Query_Condition_StringEqualFold:
-		return isMessageValueEqualStringFold(cond.Field, c.StringEqualFold, device)
+		cmp = func(v string) bool {
+			return strings.EqualFold(v, c.StringEqualFold)
+		}
 	default:
 		return false
 	}
+
+	if cond.Field == "" {
+		// any field
+		return messageHasValueStringFunc(device, cmp)
+	}
+	return isMessageValueStringFunc(cond.Field, device, cmp)
 }
 
-// isMessageValueEqualString returns whether the value identified by path in msg is equal to the value string.
+// isMessageValueStringFunc returns whether the value identified by path in msg returns true when passed to f.
 // The path argument looks like `some.prop.path` and navigates the message fields.
-func isMessageValueEqualString(path, value string, msg proto.Message) bool {
+func isMessageValueStringFunc(path string, msg proto.Message, f func(v string) bool) bool {
 	if msg == nil {
 		return false
 	}
@@ -49,25 +65,34 @@ func isMessageValueEqualString(path, value string, msg proto.Message) bool {
 		return false
 	}
 
-	return vs == value
+	return f(vs)
 }
 
-// isMessageValueEqualStringFold returns whether the value identified by path in msg is EqualFold to the given value.
-// The path argument looks like `some.prop.path` and navigates the message fields.
-func isMessageValueEqualStringFold(path, value string, msg proto.Message) bool {
+// messageHasValueStringFunc returns whether any value in msg returns true when converted to a string and passed to f.
+// See valueString for the string conversion mechanism.
+func messageHasValueStringFunc(msg proto.Message, f func(v string) bool) bool {
 	if msg == nil {
 		return false
 	}
-	fd, v, ok := getMessageValue(path, msg.ProtoReflect())
-	if !ok {
+	var match bool
+	err := protorange.Range(msg.ProtoReflect(), func(values protopath.Values) error {
+		out := values.Index(-1)
+		str, ok := valueString(out.Step.FieldDescriptor(), out.Value)
+		if !ok {
+			return nil
+		}
+		if f(str) {
+			match = true
+			return protorange.Terminate
+		}
+		return nil
+	})
+	if err != nil {
+		// this shouldn't happen as our Range func doesn't return unexpected errors
+		log.Printf("Unexpected error during device query processing: %v", err)
 		return false
 	}
-	vs, ok := valueString(fd, v)
-	if !ok {
-		return false
-	}
-
-	return strings.EqualFold(vs, value)
+	return match
 }
 
 // getMessageString returns the property identified by path from msg as a string.
@@ -155,6 +180,10 @@ func nextValue(rest string, fieldDesc protoreflect.FieldDescriptor, val protoref
 // otherwise converts them to a string representation of the enum number.
 // Bytes are converted to string.
 func valueString(fd protoreflect.FieldDescriptor, v protoreflect.Value) (string, bool) {
+	if fd == nil {
+		return valueToString(v)
+	}
+
 	switch fd.Kind() {
 	case protoreflect.BoolKind:
 		return strconv.FormatBool(v.Bool()), true
@@ -185,6 +214,10 @@ func valueString(fd protoreflect.FieldDescriptor, v protoreflect.Value) (string,
 		// MessageKind, GroupKind
 		return "", false
 	}
+}
+
+func valueToString(v protoreflect.Value) (string, bool) {
+	return fmt.Sprintf("%v", v.Interface()), true
 }
 
 // parseMapKey converts keyStr into a protoreflect.MapKey using fd to choose the correct conversion method to use.

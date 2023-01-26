@@ -625,6 +625,7 @@ type Device_Query_Condition struct {
 
 	// The name of a field relative to Device using '.' as a path separator.
 	// For example "metadata.membership.group".
+	// If absent then any field may be matched against the value.
 	Field string `protobuf:"bytes,1,opt,name=field,proto3" json:"field,omitempty"`
 	// Types that are assignable to Value:
 	//	*Device_Query_Condition_StringEqual
