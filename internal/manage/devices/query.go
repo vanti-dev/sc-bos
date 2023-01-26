@@ -1,7 +1,6 @@
 package devices
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -85,8 +84,19 @@ func messageHasValueStringFunc(msg proto.Message, f func(v string) bool) bool {
 	}
 	var match bool
 	err := protorange.Range(msg.ProtoReflect(), func(values protopath.Values) error {
-		out := values.Index(-1)
-		str, ok := valueString(out.Step.FieldDescriptor(), out.Value)
+		last := values.Index(-1)
+
+		var fd protoreflect.FieldDescriptor
+		switch last.Step.Kind() {
+		case protopath.FieldAccessStep:
+			fd = last.Step.FieldDescriptor()
+		case protopath.MapIndexStep:
+			fd = values.Index(-2).Step.FieldDescriptor().MapValue()
+		case protopath.ListIndexStep:
+			fd = values.Index(-2).Step.FieldDescriptor()
+		}
+
+		str, ok := valueString(fd, last.Value)
 		if !ok {
 			return nil
 		}
@@ -190,9 +200,8 @@ func nextValue(rest string, fieldDesc protoreflect.FieldDescriptor, val protoref
 // Bytes are converted to string.
 func valueString(fd protoreflect.FieldDescriptor, v protoreflect.Value) (string, bool) {
 	if fd == nil {
-		return valueToString(v)
+		return "", false
 	}
-
 	switch fd.Kind() {
 	case protoreflect.BoolKind:
 		return strconv.FormatBool(v.Bool()), true
@@ -223,10 +232,6 @@ func valueString(fd protoreflect.FieldDescriptor, v protoreflect.Value) (string,
 		// MessageKind, GroupKind
 		return "", false
 	}
-}
-
-func valueToString(v protoreflect.Value) (string, bool) {
-	return fmt.Sprintf("%v", v.Interface()), true
 }
 
 // parseMapKey converts keyStr into a protoreflect.MapKey using fd to choose the correct conversion method to use.

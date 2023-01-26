@@ -2,6 +2,7 @@ package devices
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -62,16 +63,20 @@ func Test_messageHasValueStringFunc(t *testing.T) {
 		{"root map absent", "foo", &traits.Metadata{More: map[string]string{}}, false},
 		{"root map no key match", "val", &traits.Metadata{More: map[string]string{"val": "foo"}}, false},
 		{"nested string", "1234", &traits.Metadata{Id: &traits.Metadata_ID{Bacnet: "1234"}}, true},
-		{"nested string not equal", "1234", &traits.Metadata{Id: &traits.Metadata_ID{Bacnet: "not 1234"}}, false},
 		{"nested string absent prop", "1234", &traits.Metadata{Id: &traits.Metadata_ID{}}, false},
 		{"nested string absent message", "1234", &traits.Metadata{}, false},
 		{"nested map", "1234", &traits.Metadata{Id: &traits.Metadata_ID{More: map[string]string{"foo": "1234"}}}, true},
 		{"list property", "1234", &traits.Metadata{Nics: []*traits.Metadata_NIC{{DisplayName: "1234"}}}, true},
+		// There was a bug caused by incorrectly serialising messages to string before comparing,
+		// i.e. comparing against `{ "foo" [] [] 0x9872000020 }`, which caused false matches
+		{"special char", "{", &traits.Metadata{Name: "{foo}"}, true},
+		{"bad string prop", "{", &traits.Metadata{Id: &traits.Metadata_ID{Bacnet: "1234"}}, false},
+		{"bad string map", "{", &traits.Metadata{More: map[string]string{"val": "bar"}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := messageHasValueStringFunc(tt.msg, func(v string) bool {
-				return v == tt.value
+				return strings.Contains(v, tt.value)
 			}); got != tt.want {
 				t.Errorf("messageHasValueStringFunc() = %v, want %v", got, tt.want)
 			}
