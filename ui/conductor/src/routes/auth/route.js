@@ -1,7 +1,6 @@
 import ChildOnlyPage from '@/components/page-layout/ChildOnlyPage.vue';
 import thirdParty from '@/routes/auth/third-party/route.js';
 import {route} from '@/util/router.js';
-import SidebarPage from '@/components/page-layout/SidebarPage.vue';
 
 export default [
   {

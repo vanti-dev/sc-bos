@@ -57,7 +57,7 @@ const search = ref('');
 
 const headers = [
   {text: 'Name', value: 'title'},
-  {text: 'Permissions', value: 'permissions'},
+  // {text: 'Permissions', value: 'permissions'},
   {text: 'Zones', value: 'zones'}
 ];
 

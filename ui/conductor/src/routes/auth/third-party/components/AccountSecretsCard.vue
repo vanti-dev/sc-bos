@@ -61,7 +61,7 @@
 
 <script setup>
 import {deleteSecret, listSecrets, secretToObject} from '@/api/ui/tenant';
-import {computed, reactive, ref, watch} from 'vue';
+import {computed, reactive, watch} from 'vue';
 import {newActionTracker} from '@/api/resource';
 import {compareDesc} from 'date-fns';
 import dayjs from 'dayjs';
@@ -72,8 +72,6 @@ import DeleteConfirmationDialog from '@/routes/auth/third-party/components/Delet
 
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
-
-const deleteConfirmation = ref({});
 
 const secretsTracker = reactive(/** @type {ActionTracker<ListSecretsResponse.AsObject>} */ newActionTracker());
 const deleteSecretTracker = reactive(/** @type {ActionTracker<DeleteSecretResponse.AsObject>} */ newActionTracker());
@@ -119,7 +117,6 @@ function humanizeDate(date) {
  */
 async function delSecret(id) {
   await deleteSecret({id}, deleteSecretTracker);
-  deleteConfirmation.value[id] = false;
   refreshSecrets();
 }
 

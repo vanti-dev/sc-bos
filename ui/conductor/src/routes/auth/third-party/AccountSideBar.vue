@@ -30,7 +30,7 @@
 import SideBar from '@/components/SideBar.vue';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
-import {reactive, ref} from 'vue';
+import {reactive} from 'vue';
 import {deleteTenant} from '@/api/ui/tenant';
 import {newActionTracker} from '@/api/resource';
 import AccountZoneListCard from '@/routes/auth/third-party/components/AccountZoneListCard.vue';

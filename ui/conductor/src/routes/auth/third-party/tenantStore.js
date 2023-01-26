@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia';
-import {newActionTracker, newResourceCollection} from '@/api/resource';
+import {newActionTracker} from '@/api/resource';
 import {computed, reactive} from 'vue';
 import {timestampToDate} from '@/api/convpb';
 import {listTenants} from '@/api/ui/tenant';
