@@ -15,7 +15,6 @@
           <v-row dense>
             <v-col cols="12" md="5">
               <v-text-field
-                  disabled
                   v-model="search"
                   append-icon="mdi-magnify"
                   label="Search devices"
@@ -94,11 +93,15 @@ collection.needsMorePages = true; // todo: this causes us to load all pages, con
 /** @type {ComputedRef<Device.Query.AsObject>} */
 const query = computed(() => {
   const q = {conditionsList: []};
+  if (search.value) {
+    const words = search.value.split(/\s+/);
+    q.conditionsList.push(...words.map(word => ({stringContainsFold: word})));
+  }
   if (props.subsystem.toLowerCase() !== 'all') {
-    q.conditionsList.push({field: 'metadata.membership.subsystem', stringEqual: props.subsystem});
+    q.conditionsList.push({field: 'metadata.membership.subsystem', stringEqualFold: props.subsystem});
   }
   if (filterZone.value.toLowerCase() !== 'all') {
-    q.conditionsList.push({field: 'metadata.location.title', stringEqual: filterZone.value});
+    q.conditionsList.push({field: 'metadata.location.title', stringEqualFold: filterZone.value});
   }
   return q;
 });
