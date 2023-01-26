@@ -6,23 +6,21 @@
       <account-secrets-card :account="sidebarData"/>
       <v-divider/>
       <v-list-item class="pt-3">
-        <v-dialog v-model="deleteConfirmation" max-width="320">
-          <v-card class="pa-2">
-            <v-card-title class="text-h4 error--text text--lighten">Delete Account</v-card-title>
-            <v-card-text>
-              Are you sure you want to delete the account "{{ sidebarTitle }}"?<br><br>
-              <span class="font-bold error--text">Note: This action cannot be undone</span>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer/>
-              <v-btn @click="deleteConfirmation = false" color="primary">Cancel</v-btn>
-              <v-btn @click="deleteAccount" color="error">Delete</v-btn>
-            </v-card-actions>
-          </v-card>
-          <template #activator="{on}">
-            <v-btn outlined color="error" width="100%" v-on="on">Delete Account</v-btn>
+        <delete-confirmation-dialog
+            title="Delete Account"
+            :progress-bar="deleteTracker.loading"
+            @confirm="deleteAccount">
+          Are you sure you want to delete the account "{{ sidebarTitle }}"?
+          <template #alert-content>
+            Deleting this account will stop all integrations that connect using this account.
+            <br><br>
+            This action cannot be undone.
           </template>
-        </v-dialog>
+          <template #confirmBtn>I understand, delete account</template>
+          <template #activator="{on, attrs}">
+            <v-btn outlined color="error" width="100%" v-on="on" v-bind="attrs">Delete Account</v-btn>
+          </template>
+        </delete-confirmation-dialog>
       </v-list-item>
     </v-list>
   </side-bar>
@@ -37,11 +35,13 @@ import {deleteTenant} from '@/api/ui/tenant';
 import {newActionTracker} from '@/api/resource';
 import AccountZoneListCard from '@/routes/auth/third-party/components/AccountZoneListCard.vue';
 import AccountSecretsCard from '@/routes/auth/third-party/components/AccountSecretsCard.vue';
+import DeleteConfirmationDialog from '@/routes/auth/third-party/components/DeleteConfirmationDialog.vue';
+import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
 
 const pageStore = usePageStore();
 const {sidebarTitle, sidebarData} = storeToRefs(pageStore);
+const tenantStore = useTenantStore();
 
-const deleteConfirmation = ref(false);
 const deleteTracker = reactive(
     /** @type {ActionTracker<DeleteTenantResponse.AsObject>} */ newActionTracker()
 );
@@ -49,12 +49,11 @@ const deleteTracker = reactive(
 /**
  *
  */
-function deleteAccount() {
-  deleteTenant({
+async function deleteAccount() {
+  await deleteTenant({
     id: sidebarData.value.id
   }, deleteTracker);
-  deleteConfirmation.value = false;
-  // todo: remove from tenants list
+  tenantStore.refreshTenants();
 }
 
 </script>

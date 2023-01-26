@@ -24,26 +24,22 @@
               This secret will not expire
             </v-list-item-subtitle>
           </v-list-item-content>
-          <v-dialog v-model="deleteConfirmation[secret.id]" max-width="320">
-            <v-card class="pa-2">
-              <v-card-title class="text-h4 error--text text--lighten">Delete Account</v-card-title>
-              <v-card-text>
-                Are you sure you want to delete the secret "{{ secret.note }}"?<br><br>
-                <span class="font-bold error--text">Note: This action cannot be undone</span>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer/>
-                <v-btn @click="deleteConfirmation[secret.id] = false" color="primary">Cancel</v-btn>
-                <v-btn @click="delSecret(secret.id)" color="error">Delete</v-btn>
-              </v-card-actions>
-              <v-progress-linear color="primary" indeterminate :active="deleteSecretTracker.loading"/>
-            </v-card>
+          <delete-confirmation-dialog
+              title="Delete Token"
+              :progress-bar="deleteSecretTracker.loading"
+              @confirm="delSecret(secret.id)">
+            Are you sure you want to delete the token "{{ secret.note }}"?
+            <template #alert-content>
+              This action will stop any integrations using this token from functioning.<br><br>
+              This action cannot be undone.
+            </template>
+            <template #confirmBtn>Delete Token</template>
             <template #activator="{on, attrs}">
               <v-list-item-action v-show="hover" class="my-0" v-bind="attrs">
                 <v-btn icon small v-on="on"><v-icon color="neutral lighten-5">mdi-trash-can</v-icon></v-btn>
               </v-list-item-action>
             </template>
-          </v-dialog>
+          </delete-confirmation-dialog>
         </v-list-item>
       </v-hover>
     </v-list>
@@ -72,6 +68,7 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import NewSecretForm from './NewSecretForm.vue';
+import DeleteConfirmationDialog from '@/routes/auth/third-party/components/DeleteConfirmationDialog.vue';
 
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
@@ -84,7 +81,8 @@ const deleteSecretTracker = reactive(/** @type {ActionTracker<DeleteSecretRespon
 const props = defineProps({
   account: {
     type: Object,
-    default: () => {}
+    default: () => {
+    }
   }
 });
 
