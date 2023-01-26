@@ -8,6 +8,7 @@
         sort-by="title"
         :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
         :loading="tenantsTracker.loading"
+        :item-class="rowClass"
         @click:row="showTenant">
       <template #item.zones="{ index, value }">
         <span class="d-inline-flex justify-start" style="gap: 8px">
@@ -34,7 +35,6 @@
               </template>
             </new-account-dialog>
           </v-row>
-          <v-progress-linear color="primary" indeterminate :active="tenantsTracker.loading" class="mt-2"/>
         </v-container>
       </template>
     </v-data-table>
@@ -72,6 +72,17 @@ function showTenant(item) {
   pageStore.sidebarTitle = item.title;
   pageStore.sidebarData = item;
 }
+
+/**
+ * @param {*} item
+ * @return {string}
+ */
+function rowClass(item) {
+  if (pageStore.showSidebar && pageStore.sidebarData?.id === item.id) {
+    return 'item-selected';
+  }
+  return '';
+}
 </script>
 
 <style lang="scss" scoped>
@@ -88,5 +99,9 @@ function showTenant(item) {
   border-radius: 0px 0px $border-radius-root*2 $border-radius-root*2;
   border: none;
   margin: 0 -12px -12px;
+}
+
+.v-data-table :deep(.item-selected) {
+  background-color: var(--v-primary-darken4);
 }
 </style>
