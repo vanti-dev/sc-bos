@@ -230,26 +230,3 @@ func subMask(mask *fieldmaskpb.FieldMask, prefix string) *fieldmaskpb.FieldMask 
 	}
 	return nil
 }
-
-func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
-	if query == nil {
-		return true
-	}
-	for _, condition := range query.Conditions {
-		if !conditionMatches(condition, device) {
-			return false
-		}
-	}
-
-	// this means a query with no conditions always returns true
-	return true
-}
-
-func conditionMatches(cond *gen.Device_Query_Condition, device *gen.Device) bool {
-	switch c := cond.Value.(type) {
-	case *gen.Device_Query_Condition_StringEqual:
-		return isMessageValueEqualString(cond.Field, c.StringEqual, device)
-	default:
-		return false
-	}
-}

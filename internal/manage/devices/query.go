@@ -4,9 +4,35 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
+
+func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
+	if query == nil {
+		return true
+	}
+	for _, condition := range query.Conditions {
+		if !conditionMatches(condition, device) {
+			return false
+		}
+	}
+
+	// this means a query with no conditions always returns true
+	return true
+}
+
+func conditionMatches(cond *gen.Device_Query_Condition, device *gen.Device) bool {
+	switch c := cond.Value.(type) {
+	case *gen.Device_Query_Condition_StringEqual:
+		return isMessageValueEqualString(cond.Field, c.StringEqual, device)
+	case *gen.Device_Query_Condition_StringEqualFold:
+		return isMessageValueEqualStringFold(cond.Field, c.StringEqualFold, device)
+	default:
+		return false
+	}
+}
 
 // isMessageValueEqualString returns whether the value identified by path in msg is equal to the value string.
 // The path argument looks like `some.prop.path` and navigates the message fields.
@@ -24,6 +50,24 @@ func isMessageValueEqualString(path, value string, msg proto.Message) bool {
 	}
 
 	return vs == value
+}
+
+// isMessageValueEqualStringFold returns whether the value identified by path in msg is EqualFold to the given value.
+// The path argument looks like `some.prop.path` and navigates the message fields.
+func isMessageValueEqualStringFold(path, value string, msg proto.Message) bool {
+	if msg == nil {
+		return false
+	}
+	fd, v, ok := getMessageValue(path, msg.ProtoReflect())
+	if !ok {
+		return false
+	}
+	vs, ok := valueString(fd, v)
+	if !ok {
+		return false
+	}
+
+	return strings.EqualFold(vs, value)
 }
 
 // getMessageString returns the property identified by path from msg as a string.

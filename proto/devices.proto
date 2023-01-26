@@ -28,7 +28,11 @@ message Device {
       // For example "metadata.membership.group".
       string field = 1;
       oneof value {
+        // Compare the field to this string using a case sensitive comparison
         string string_equal = 2;
+        // Compare the field to this string using a simple unicode case folding comparison.
+        // See the go package strings.EqualFold.
+        string string_equal_fold = 3;
 
         // there's room here for additional rhs values for the field, but we don't need any
       }
