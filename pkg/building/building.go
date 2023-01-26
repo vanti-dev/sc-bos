@@ -18,6 +18,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/vanti-dev/sc-bos/pkg/system/tenants/pgxtenants"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -27,7 +28,6 @@ import (
 
 	"github.com/vanti-dev/sc-bos/internal/auth/keycloak"
 	"github.com/vanti-dev/sc-bos/internal/db"
-	"github.com/vanti-dev/sc-bos/internal/manage/tenantapi"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
@@ -101,8 +101,13 @@ func RunController(ctx context.Context, logger *zap.Logger, configDir string, ad
 		managerAddr:   sysConf.CanonicalAddress,
 		testTLSConfig: grpcTlsServerConfig,
 	})
-	gen.RegisterTenantApiServer(grpcServer, tenantapi.NewServer(dbConn,
-		tenantapi.WithLogger(logger.Named("tenantapi"))))
+	// todo: replace this with the systems package
+	tenantsApi, err := pgxtenants.NewServerFromPool(ctx, dbConn,
+		pgxtenants.WithLogger(logger.Named("tenantapi")))
+	if err != nil {
+		return fmt.Errorf("tenant api %w", err)
+	}
+	gen.RegisterTenantApiServer(grpcServer, tenantsApi)
 	traits.RegisterOnOffApiServer(grpcServer, onoff.NewApiRouter(
 		onoff.WithOnOffApiClientFactory(func(name string) (traits.OnOffApiClient, error) {
 			model := onoff.NewModel(traits.OnOff_OFF)
