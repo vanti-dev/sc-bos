@@ -54,6 +54,7 @@ async function deleteAccount() {
     id: sidebarData.value.id
   }, deleteTracker);
   tenantStore.refreshTenants();
+  pageStore.showSidebar = false;
 }
 
 </script>
