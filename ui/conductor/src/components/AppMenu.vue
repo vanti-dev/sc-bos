@@ -63,7 +63,7 @@ const menuItems = ref([
     title: 'Workflows & Automations',
     subtitle: 'View automation status and update settings',
     icon: 'mdi-priority-low',
-    link: {name: 'automation'}
+    link: {name: 'automations'}
   }
 ]);
 
