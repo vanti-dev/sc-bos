@@ -26,6 +26,25 @@ func isMessageValueEqualString(path, value string, msg proto.Message) bool {
 	return vs == value
 }
 
+// getMessageString returns the property identified by path from msg as a string.
+// Returns false if the path does not match any property, or that property cannot be represented as a string.
+// See valueString for details of string conversion.
+func getMessageString(path string, msg proto.Message) (string, bool) {
+	if msg == nil {
+		return "", false
+	}
+	fd, v, ok := getMessageValue(path, msg.ProtoReflect())
+	if !ok {
+		return "", false
+	}
+	vs, ok := valueString(fd, v)
+	if !ok {
+		return "", false
+	}
+
+	return vs, true
+}
+
 // getMessageValue returns the protoreflect.Value identified by path in msg.
 // Returns false if the path can't be resolved.
 func getMessageValue(path string, msg protoreflect.Message) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {

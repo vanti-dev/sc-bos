@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
@@ -27,12 +28,14 @@ type Server struct {
 	ChildPageSize int32
 
 	node *node.Node
+	now  func() time.Time
 }
 
 func NewServer(n *node.Node) *Server {
 	return &Server{
 		parentName: n.Name(),
 		node:       n,
+		now:        time.Now,
 	}
 }
 
@@ -138,6 +141,74 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 			return err
 		}
 	}
+	return nil
+}
+
+func (s *Server) GetDevicesMetadata(_ context.Context, request *gen.GetDevicesMetadataRequest) (*gen.DevicesMetadata, error) {
+	mds := s.node.ListAllMetadata()
+	var res *gen.DevicesMetadata
+	col := newMetadataCollector(request.Includes.Fields...)
+	for _, md := range mds {
+		res = col.add(&gen.Device{
+			Name:     md.Name,
+			Metadata: md,
+		})
+	}
+	return res, nil
+}
+
+func (s *Server) PullDevicesMetadata(request *gen.PullDevicesMetadataRequest, server gen.DevicesApi_PullDevicesMetadataServer) error {
+	var md *gen.DevicesMetadata
+	send := func(msg *gen.DevicesMetadata, t time.Time) error {
+		if proto.Equal(md, msg) {
+			return nil
+		}
+		md = proto.Clone(msg).(*gen.DevicesMetadata)
+		change := &gen.PullDevicesMetadataResponse_Change{
+			ChangeTime:      timestamppb.New(t),
+			DevicesMetadata: msg,
+		}
+		return server.Send(&gen.PullDevicesMetadataResponse{Changes: []*gen.PullDevicesMetadataResponse_Change{
+			change,
+		}})
+	}
+
+	// do this before getting initial values
+	changes := s.node.PullAllMetadata(server.Context())
+
+	// send initial values.
+	// Note we recalculate the metadata for the initial value and for updates separately. We can't guarantee data
+	// consistency between the Get and Pull calls, at least this way the data should be accurate.
+	if !request.UpdatesOnly {
+		md, err := s.GetDevicesMetadata(server.Context(), &gen.GetDevicesMetadataRequest{Includes: request.Includes})
+		if err != nil {
+			return err
+		}
+		if err := send(md, s.now()); err != nil {
+			return err
+		}
+	}
+
+	// watch for and send updates to metadata
+	col := newMetadataCollector(request.Includes.Fields...)
+	for change := range changes {
+		var md *gen.DevicesMetadata
+		if change.OldValue != nil {
+			md = col.remove(&gen.Device{Name: change.OldValue.Name, Metadata: change.OldValue})
+		}
+		if change.NewValue != nil {
+			md = col.add(&gen.Device{Name: change.NewValue.Name, Metadata: change.NewValue})
+		}
+
+		if change.SeedValue {
+			// avoid sending an update for each of the initial values that seed the collector
+			continue
+		}
+		if err := send(md, change.ChangeTime); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

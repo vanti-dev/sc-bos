@@ -13,6 +13,9 @@ import "types/change.proto";
 service DevicesApi {
   rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
   rpc PullDevices(PullDevicesRequest) returns (stream PullDevicesResponse);
+
+  rpc GetDevicesMetadata(GetDevicesMetadataRequest) returns (DevicesMetadata);
+  rpc PullDevicesMetadata(PullDevicesMetadataRequest) returns (stream PullDevicesMetadataResponse);
 }
 
 message Device {
@@ -31,6 +34,24 @@ message Device {
       }
     }
     repeated Condition conditions = 1;
+  }
+}
+
+message DevicesMetadata {
+  int32 total_count = 1;
+
+  message StringFieldCount {
+    string field = 1;
+    map<string, uint32> counts = 2;
+  }
+  // Field counts contain how many devices exist with specific field values.
+  // For example if there are 7 devices that have "metadata.membership.group" of "Lighting" then there will exist a
+  // field_counts entry that looks like `{field: "metadata.membership.group", counts: {"Lighting": 7}}`.
+  repeated StringFieldCount field_counts = 2;
+
+  message Include {
+    // Fields contains all the device fields that metadata should be computed for.
+    repeated string fields = 1;
   }
 }
 
@@ -91,5 +112,41 @@ message PullDevicesResponse {
     Device old_value = 4;
     // When the change occurred
     google.protobuf.Timestamp change_time = 5;
-  }}
+  }
+}
 
+message GetDevicesMetadataRequest {
+  // string name = 1; // omitted because I don't think we need it, but we might
+
+  // Fields to fetch relative to the DeviceMetadata type
+  google.protobuf.FieldMask read_mask = 2;
+  // Which fields to include in the metadata calculations.
+  // If absent DeviceMetadata.field_counts will be empty.
+  DevicesMetadata.Include includes = 3;
+}
+
+message PullDevicesMetadataRequest {
+  // string name = 1; // omitted because I don't think we need it, but we might
+
+  // Fields to fetch relative to the DeviceMetadata type
+  google.protobuf.FieldMask read_mask = 2;
+  // Which fields to include in the metadata calculations.
+  // If absent DeviceMetadata.field_counts will be empty.
+  DevicesMetadata.Include includes = 3;
+  // When true the device will only send changes to the resource value.
+  // The default behaviour is to send the current value immediately followed by any updates as they happen.
+  bool updates_only = 4;
+}
+
+message PullDevicesMetadataResponse {
+  repeated Change changes = 1;
+
+  message Change {
+    // The name of the device that emitted this change
+    string name = 1; // not currently used
+    // The updated devices metadata value.
+    DevicesMetadata devices_metadata = 2;
+    // When the change occurred
+    google.protobuf.Timestamp change_time = 3;
+  }
+}
