@@ -87,7 +87,7 @@ function updateZone(z) {
 </script>
 
 <style scoped>
-::v-deep(.v-toolbar__content > *:not(:last-child)) {
+:deep(.v-toolbar__content > *:not(:last-child)) {
   margin-right: 10px;
 }
 

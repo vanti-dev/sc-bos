@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
 
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -12,14 +11,14 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts/config"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts/pgxalerts"
-	"github.com/vanti-dev/sc-bos/pkg/task"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
 var Factory factory
 
 type factory struct{}
 
-func (_ factory) New(services system.Services) task.Starter {
+func (_ factory) New(services system.Services) service.Lifecycle {
 	return NewSystem(services)
 }
 
@@ -32,8 +31,7 @@ func NewSystem(services system.Services) *System {
 		name:      services.Node.Name(),
 		announcer: services.Node,
 	}
-	s.Lifecycle = task.NewLifecycle(s.applyConfig)
-	s.Logger = services.Logger.Named("alerts")
+	s.Service = service.New(service.MonoApply(s.applyConfig))
 	return s
 }
 
@@ -47,16 +45,16 @@ func Register(supporter node.Supporter) {
 }
 
 type System struct {
-	*task.Lifecycle[config.Root]
+	*service.Service[config.Root]
 
 	name      string
 	announcer node.Announcer
-
-	mu   sync.Mutex
-	undo node.Undo
 }
 
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
+	// using AnnounceContext only makes when using MonoApply, which we are in NewSystem
+	announcer := node.AnnounceContext(ctx, s.announcer)
+
 	if cfg.Storage == nil {
 		return errors.New("no storage")
 	}
@@ -74,13 +72,7 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 		return fmt.Errorf("init: %w", err)
 	}
 
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if s.undo != nil {
-		s.undo()
-	}
-	s.undo = s.announcer.Announce(s.name, node.HasClient(
+	announcer.Announce(s.name, node.HasClient(
 		gen.WrapAlertApi(server),
 		gen.WrapAlertAdminApi(server),
 	))

@@ -40,6 +40,10 @@ to have a border all around instead of just at the bottom
     border: $text-field-outlined-fieldset-border;
 }
 
+.v-text-field--filled.v-input--is-dirty .v-label {
+    color: var(--v-neutral-lighten5)
+}
+
 .v-text-field--filled .v-input__slot:before,
 .v-text-field--filled .v-input__slot:after {
     display: none;

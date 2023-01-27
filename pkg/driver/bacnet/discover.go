@@ -6,10 +6,10 @@ import (
 
 	bactypes "github.com/vanti-dev/gobacnet/types"
 
-	config2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 )
 
-func (d *Driver) findDevice(device config2.Device) (bactypes.Device, error) {
+func (d *Driver) findDevice(device config.Device) (bactypes.Device, error) {
 	fail := func(err error) (bactypes.Device, error) {
 		return bactypes.Device{}, err
 	}
@@ -36,7 +36,7 @@ func (d *Driver) findDevice(device config2.Device) (bactypes.Device, error) {
 }
 
 func (d *Driver) fetchObjects(
-	cfg config2.Root, device config2.Device, bacDevice bactypes.Device,
+	cfg config.Root, device config.Device, bacDevice bactypes.Device,
 ) (map[bactypes.ObjectID]configObject, error) {
 	objects := make(map[bactypes.ObjectID]configObject, len(device.Objects))
 	for _, object := range device.Objects {
@@ -72,8 +72,8 @@ func (d *Driver) fetchObjects(
 					continue
 				}
 				objects[object.ID] = configObject{
-					co: config2.Object{
-						ID:    config2.ObjectID(object.ID),
+					co: config.Object{
+						ID:    config.ObjectID(object.ID),
 						Title: firstNonEmpty(object.Description, object.Name),
 					},
 					bo: &object,
@@ -86,7 +86,7 @@ func (d *Driver) fetchObjects(
 }
 
 type configObject struct {
-	co config2.Object
+	co config.Object
 	bo *bactypes.Object
 }
 

@@ -1,8 +1,12 @@
 package node
 
 import (
+	"context"
+	"sync"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"google.golang.org/protobuf/proto"
 )
 
 // Announcer defines the Announce method.
@@ -32,6 +36,26 @@ func AnnounceWithNamePrefix(prefix string, a Announcer) Announcer {
 	})
 }
 
+// AnnounceContext returns a new Announcer that undoes any announcements when ctx is Done.
+// This leaks a go routine if ctx is never done.
+func AnnounceContext(ctx context.Context, a Announcer) Announcer {
+	mu := sync.Mutex{}
+	var undos []Undo
+	go func() {
+		<-ctx.Done()
+		for _, undo := range undos {
+			undo()
+		}
+	}()
+	return AnnouncerFunc(func(name string, features ...Feature) Undo {
+		undo := a.Announce(name, features...)
+		mu.Lock()
+		undos = append(undos, undo)
+		mu.Unlock()
+		return undo
+	})
+}
+
 type announcement struct {
 	name     string
 	traits   []traitFeature
@@ -46,7 +70,6 @@ type traitFeature struct {
 	metadata map[string]string
 
 	noAddChildTrait bool
-	noAddMetadata   bool
 }
 
 // Feature describes some aspect of a named device.
@@ -91,7 +114,10 @@ func HasTrait(name trait.Name, opt ...TraitOption) Feature {
 // See metadata.Model.MergeMetadata for more details.
 func HasMetadata(md *traits.Metadata) Feature {
 	return featureFunc(func(a *announcement) {
-		a.metadata = md
+		// We clone because if this is the first time the name has been associated with metadata,
+		// then the passed md is used as is instead of cloning which can cause unexpected mutation
+		// from the pov of the caller.
+		a.metadata = proto.Clone(md).(*traits.Metadata)
 	})
 }
 
@@ -110,25 +136,5 @@ func WithClients(client ...interface{}) TraitOption {
 func NoAddChildTrait() TraitOption {
 	return func(t *traitFeature) {
 		t.noAddChildTrait = true
-	}
-}
-
-// NoAddMetadata instructs the Node not to add the trait to the nodes traits.Metadata.
-func NoAddMetadata() TraitOption {
-	return func(t *traitFeature) {
-		t.noAddMetadata = true
-	}
-}
-
-// WithTraitMetadata instructs the Node to use the given metadata when adding the trait to the nodes traits.Metadata.
-// Metadata maps will be merged together, with conflicting keys in later calls overriding existing keys.
-func WithTraitMetadata(md map[string]string) TraitOption {
-	return func(t *traitFeature) {
-		if t.metadata == nil {
-			t.metadata = make(map[string]string)
-		}
-		for k, v := range md {
-			t.metadata[k] = v
-		}
 	}
 }

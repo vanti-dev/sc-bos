@@ -1,8 +1,20 @@
 package xovis
 
 import (
+	"encoding/json"
+
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 )
+
+func DefaultConfig() DriverConfig {
+	return DriverConfig{}
+}
+
+func ParseConfig(raw []byte) (DriverConfig, error) {
+	parsed := DefaultConfig()
+	err := json.Unmarshal(raw, &parsed)
+	return parsed, err
+}
 
 type DriverConfig struct {
 	driver.BaseConfig

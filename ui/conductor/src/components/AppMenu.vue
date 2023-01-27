@@ -1,66 +1,89 @@
 <template>
-  <v-menu v-bind="showMenu" bottom offset-y max-width="100%" tile transition="slide-y-transition">
+  <v-menu v-bind="showMenu" bottom offset-y content-class="main-nav" tile transition="slide-x-transition">
     <template #activator="{on, attrs}">
-      <v-btn icon tile v-bind="attrs" v-on="on" style="background: #FFFFFF1A" :class="btnClass">
-        <menu-icon :color="themeColor"/>
+      <v-btn
+          tile
+          v-bind="attrs"
+          v-on="on"
+          :ripple="false"
+          id="main-nav-button"
+          color="neutral lighten-1">
+        <menu-icon width="60"/>
       </v-btn>
     </template>
-    <v-card :light="$vuetify.theme.dark" tile width="100vw">
-      <nav-button
-          :to="{name:'auth'}"
-          subtitle=""
-          title="Auth"/>
-      <nav-button
-          :to="{name:'devices'}"
-          subtitle=""
-          title="Devices"/>
-      <nav-button
-          :to="{name:'ops'}"
-          subtitle=""
-          title="Operations"/>
-      <nav-button
-          :to="{name:'settings'}"
-          subtitle=""
-          title="Site Settings"/>
-      <nav-button
-          :to="{name:'workflows'}"
-          subtitle=""
-          title="Workflows & Automations"/>
+    <v-card max-width="512">
+      <v-list tile three-line subheader class="ma-0" color="neutral lighten-1">
+        <v-list-item v-for="(item, key) in menuItems" :to="item.link" :key="key">
+          <v-list-item-icon>
+            <v-icon x-large>{{ item.icon }}</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title class="text-h4">{{ item.title }}</v-list-item-title>
+            <v-list-item-subtitle class="text-body-small">{{ item.subtitle }}</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
     </v-card>
   </v-menu>
 </template>
 
 <script setup>
 import MenuIcon from '@/components/MenuIcon.vue';
-import NavButton from '@/components/NavButton.vue';
-import {usePage} from '@/components/page.js';
 import {ref} from 'vue';
 
-defineProps({
-  btnClass: {
-    type: [String, Object],
-    default: ''
-  }
-});
-
-const {themeColor} = usePage();
-
 const showMenu = ref(false);
+
+const menuItems = ref([
+  {
+    title: 'Auth',
+    subtitle: 'Edit user accounts, and create API tokens',
+    icon: 'mdi-key',
+    link: {name: 'auth'}
+  },
+  {
+    title: 'Devices',
+    subtitle: 'Add/update/delete devices from the system, view device\'s status and configuration, ' +
+        'and control device settings',
+    icon: 'mdi-devices',
+    link: {name: 'devices'}
+  },
+  {
+    title: 'Operations',
+    subtitle: 'View status dashboards, check notifications and events',
+    icon: 'mdi-bell-ring',
+    link: {name: 'ops'}
+  },
+  {
+    title: 'Site Settings',
+    subtitle: 'Configure site-specific settings and edit zones',
+    icon: 'mdi-cog',
+    link: {name: 'settings'}
+  },
+  {
+    title: 'Workflows & Automations',
+    subtitle: 'View automation status and update settings',
+    icon: 'mdi-priority-low',
+    link: {name: 'automations'}
+  }
+]);
 
 </script>
 
 <style scoped>
-.icon circle {
-  stroke: none;
-  fill: v-bind(logoColor);
+#main-nav-button {
+  margin-top: -12px;
+  margin-bottom: -12px;
+  margin-left: -16px !important;
+  height: 60px !important;
+  width: 60px;
 }
 
-.menu-card {
-  display: grid;
-  grid-auto-flow: column;
-  grid-gap: 30px;
-  justify-content: start;
-  padding: 30px 42px;
-  background: #ECEDED;
+#main-nav-button:focus {
+  background-color: var(--v-neutral-base) !important;
+  background-blend-mode: normal;
+}
+
+.main-nav {
+  margin-left: -12px;
 }
 </style>

@@ -17,6 +17,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts"
+	"github.com/vanti-dev/sc-bos/pkg/system/publications"
+	"github.com/vanti-dev/sc-bos/pkg/system/tenants"
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
 
 	"go.uber.org/zap"
@@ -56,7 +58,9 @@ func run(ctx context.Context) error {
 		"export-mqtt":   export.MQTTFactory,
 	}
 	systemConfig.SystemFactories = map[string]system.Factory{
-		"alerts": alerts.Factory,
+		"alerts":       alerts.Factory,
+		"tenants":      tenants.Factory,
+		"publications": publications.Factory,
 	}
 
 	controller, err := app.Bootstrap(ctx, systemConfig)

@@ -1,9 +1,12 @@
 package node
 
 import (
+	"context"
 	"errors"
+	"time"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/router"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
@@ -13,37 +16,84 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var AutoTraitMetadata = map[string]string{}
 var MetadataTraitNotSupported = errors.New("metadata is not supported")
+
+type MetadataChange struct {
+	Name       string
+	ChangeTime time.Time
+	Type       types.ChangeType
+	OldValue   *traits.Metadata
+	NewValue   *traits.Metadata
+	SeedValue  bool
+}
+
+// ListAllMetadata returns a slice containing all metadata set via Announce.
+func (n *Node) ListAllMetadata(opts ...resource.ReadOption) []*traits.Metadata {
+	msgs := n.allMetadata.List(opts...)
+	mds := make([]*traits.Metadata, len(msgs))
+	for i, msg := range msgs {
+		mds[i] = msg.(*traits.Metadata)
+	}
+	return mds
+}
+
+// PullAllMetadata returns a chan that emits MetadataChange whenever Announce or that announcement is undone.
+func (n *Node) PullAllMetadata(ctx context.Context, opts ...resource.ReadOption) <-chan MetadataChange {
+	mdC := make(chan MetadataChange)
+	go func() {
+		defer close(mdC)
+		for change := range n.allMetadata.Pull(ctx, opts...) {
+			emit := MetadataChange{
+				Name:       change.Id,
+				Type:       change.ChangeType,
+				ChangeTime: change.ChangeTime,
+				SeedValue:  change.SeedValue,
+			}
+			if change.OldValue != nil {
+				emit.OldValue = change.OldValue.(*traits.Metadata)
+			}
+			if change.NewValue != nil {
+				emit.NewValue = change.NewValue.(*traits.Metadata)
+			}
+			select {
+			case <-ctx.Done():
+				return
+			case mdC <- emit:
+			}
+		}
+	}()
+	return mdC
+}
 
 func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
 	undo := NilUndo
+
 	metadataModel, err := n.metadataModel(name)
 	if err != nil {
 		if !n.isNotFound(err) {
 			return undo, err
 		}
 		metadataModel, undo = n.announceMetadata(name)
-	}
-	_, err = metadataModel.MergeMetadata(md)
-	// todo: undo applying the metadata to the device
-	return undo, err
-}
 
-func (n *Node) addTraitMetadata(name string, traitName trait.Name, md map[string]string) (Undo, error) {
-	undo := NilUndo
-	metadataModel, err := n.metadataModel(name)
-	if err != nil {
-		if !n.isNotFound(err) {
-			return NilUndo, err
-		}
-		metadataModel, undo = n.announceMetadata(name)
+		// send that the metadata was removed if the merge is undone.
+		undo = UndoAll(undo, func() {
+			_, _ = n.allMetadata.Delete(name, resource.WithAllowMissing(true))
+		})
 	}
-	_, err = metadataModel.UpdateTraitMetadata(&traits.TraitMetadata{
-		Name: string(traitName),
-		More: md,
-	})
-	// todo: remove any trait metadata from metadataModel
+
+	newMd, err := metadataModel.MergeMetadata(md)
+	if err != nil {
+		undo()
+		return NilUndo, err
+	}
+
+	_, err = n.allMetadata.Update(name, newMd, resource.WithCreateIfAbsent())
+	if err != nil {
+		undo()
+		return NilUndo, err
+	}
+
+	// todo: undo applying the metadata to the device
 	return undo, err
 }
 
@@ -81,6 +131,6 @@ func (n *Node) announceMetadata(name string) (*metadata.Model, Undo) {
 	// auto add metadata support for devices that are asking to add metadata to that device
 	md := &traits.Metadata{Name: name}
 	model := metadata.NewModel(resource.WithInitialValue(md))
-	undo := n.Announce(name, HasTrait(trait.Metadata, WithClients(metadata.WrapApi(metadata.NewModelServer(model))), NoAddMetadata()))
+	undo := n.Announce(name, HasTrait(trait.Metadata, WithClients(metadata.WrapApi(metadata.NewModelServer(model)))))
 	return model, undo
 }

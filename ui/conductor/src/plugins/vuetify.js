@@ -14,6 +14,7 @@ const opts = {
     themes: {
       dark: {
         primary: {
+          darken4: '#00525E',
           darken1: '#00AAC1',
           base: '#00BED6',
           lighten1: '#33CADE',
@@ -60,8 +61,7 @@ const opts = {
           lighten6: '#B7BABC',
           lighten7: '#CFD1D2',
           lighten8: '#ECEDED',
-          lighten9: '#F7F7F7',
-          lighten10: '#FFFFFF'
+          lighten9: '#F7F7F7'
         },
         error: {
           darken1: '#BB0434',

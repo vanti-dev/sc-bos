@@ -8,17 +8,17 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver"
-	adapt2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
-	merge2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/merge"
-	rpc2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/merge"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 const DriverName = "bacnet"
@@ -27,7 +27,7 @@ var Factory driver.Factory = factory{}
 
 type factory struct{}
 
-func (_ factory) New(services driver.Services) task.Starter {
+func (_ factory) New(services driver.Services) service.Lifecycle {
 	return NewDriver(services)
 }
 
@@ -37,18 +37,19 @@ func (_ factory) AddSupport(supporter node.Supporter) {
 
 // Register makes sure this driver and its device apis are available in the given node.
 func Register(supporter node.Supporter) {
-	r := rpc2.NewBacnetDriverServiceRouter()
+	r := rpc.NewBacnetDriverServiceRouter()
 	supporter.Support(
 		node.Routing(r),
-		node.Clients(rpc2.WrapBacnetDriverService(r)),
+		node.Clients(rpc.WrapBacnetDriverService(r)),
 	)
 }
 
 // Driver brings BACnet devices into Smart Core.
 type Driver struct {
 	announcer node.Announcer // Any device we setup gets announced here
+	logger    *zap.Logger
 
-	*task.Lifecycle[config.Root]
+	*service.Service[config.Root]
 	client *gobacnet.Client // How we interact with bacnet systems
 
 	devices *known.Map
@@ -59,51 +60,53 @@ func NewDriver(services driver.Services) *Driver {
 	d := &Driver{
 		announcer: announcer,
 		devices:   known.NewMap(),
+		logger:    services.Logger.Named("bacnet"),
 	}
-	d.Lifecycle = task.NewLifecycle(d.applyConfig)
-	d.Logger = services.Logger.Named("bacnet")
-	d.ReadConfig = config.ReadBytes
+	d.Service = service.New(service.MonoApply(d.applyConfig), service.WithParser(config.ReadBytes))
 	return d
 }
 
-func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
-	// todo: make this process atomic
-	// todo: allow more than one config change, i.e. Undo announcements we need to remove on config change
+func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
+	// AnnounceContext only makes sense if using MonoApply, which we are in NewDriver
+	rootAnnouncer := node.AnnounceContext(ctx, d.announcer)
+	go func() {
+		<-ctx.Done() // ctx is cancelled on stop or before another applyConfig call, thanks to MonoApply above.
+		// clear resources setup during the last applyConfig call
+		d.devices.Clear()
+		if d.client != nil {
+			d.client.Close()
+			d.client = nil
+		}
+	}()
 
-	var err error
-	// todo: support re-setting up the client if config changes
-	if d.client == nil {
-		client, err := gobacnet.NewClient(cfg.LocalInterface, int(cfg.LocalPort))
-		if err != nil {
-			return err
-		}
-		client.Log.SetLevel(logrus.InfoLevel)
-		d.client = client
-		if address, err := client.LocalUDPAddress(); err == nil {
-			d.Logger.Debug("bacnet client configured", zap.Stringer("local", address),
-				zap.String("localInterface", cfg.LocalInterface), zap.Uint16("localPort", cfg.LocalPort))
-		}
+	client, err := gobacnet.NewClient(cfg.LocalInterface, int(cfg.LocalPort))
+	if err != nil {
+		return err
 	}
-
-	d.devices.Clear()
+	client.Log.SetLevel(logrus.InfoLevel)
+	d.client = client
+	if address, err := client.LocalUDPAddress(); err == nil {
+		d.logger.Debug("bacnet client configured", zap.Stringer("local", address),
+			zap.String("localInterface", cfg.LocalInterface), zap.Uint16("localPort", cfg.LocalPort))
+	}
 
 	// setup all our devices and objects...
 	for _, device := range cfg.Devices {
-		logger := d.Logger.With(zap.Uint32("deviceId", uint32(device.ID)))
+		logger := d.logger.With(zap.Uint32("deviceId", uint32(device.ID)))
 		bacDevice, e := d.findDevice(device)
 		if e != nil {
 			err = multierr.Append(err, e)
 			continue
 		}
 
-		deviceName := adapt2.DeviceName(device)
+		deviceName := adapt.DeviceName(device)
 		d.devices.StoreDevice(deviceName, bacDevice)
 
-		announcer := node.AnnounceWithNamePrefix("device/", d.announcer)
-		adapt2.Device(deviceName, d.client, bacDevice, d.devices).AnnounceSelf(announcer)
+		announcer := node.AnnounceWithNamePrefix("device/", rootAnnouncer)
+		adapt.Device(deviceName, d.client, bacDevice, d.devices).AnnounceSelf(announcer)
 
 		prefix := fmt.Sprintf("device/%v/obj/", deviceName)
-		announcer = node.AnnounceWithNamePrefix(prefix, d.announcer)
+		announcer = node.AnnounceWithNamePrefix(prefix, rootAnnouncer)
 
 		// Collect all the object that we will be announcing.
 		// This will be a combination of configured objects and those we discover on the device.
@@ -127,14 +130,14 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 			}
 
 			// no error, we added the device before we entered the loop so it should exist
-			_ = d.devices.StoreObject(bacDevice, adapt2.ObjectName(co), *bo)
+			_ = d.devices.StoreObject(bacDevice, adapt.ObjectName(co), *bo)
 
-			impl, err := adapt2.Object(d.client, bacDevice, co)
-			if errors.Is(err, adapt2.ErrNoDefault) {
+			impl, err := adapt.Object(d.client, bacDevice, co)
+			if errors.Is(err, adapt.ErrNoDefault) {
 				// logger.Debug("No default adaptation trait for object")
 				continue
 			}
-			if errors.Is(err, adapt2.ErrNoAdaptation) {
+			if errors.Is(err, adapt.ErrNoAdaptation) {
 				logger.Error("No adaptation from object to trait", zap.Stringer("trait", co.Trait))
 				continue
 			}
@@ -147,11 +150,11 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 	}
 
 	// Combine objects together into traits...
-	announcer := node.AnnounceWithNamePrefix("trait/", d.announcer)
+	announcer := node.AnnounceWithNamePrefix("trait/", rootAnnouncer)
 	for _, trait := range cfg.Traits {
-		logger := d.Logger.With(zap.Stringer("trait", trait.Kind), zap.String("name", trait.Name))
-		impl, err := merge2.IntoTrait(d.client, d.devices, trait)
-		if errors.Is(err, merge2.ErrTraitNotSupported) {
+		logger := d.logger.With(zap.Stringer("trait", trait.Kind), zap.String("name", trait.Name))
+		impl, err := merge.IntoTrait(d.client, d.devices, trait)
+		if errors.Is(err, merge.ErrTraitNotSupported) {
 			logger.Error("Cannot combine into trait, not supported")
 			continue
 		}

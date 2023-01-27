@@ -10,7 +10,7 @@ import (
 	"github.com/go-jose/go-jose/v3/json"
 	"go.uber.org/multierr"
 
-	tenant2 "github.com/vanti-dev/sc-bos/internal/auth/tenant"
+	"github.com/vanti-dev/sc-bos/internal/auth/tenant"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
@@ -32,7 +32,7 @@ type secretConfig struct {
 	Hash string `json:"hash,omitempty"`
 }
 
-func clientVerifier(config SystemConfig, manager node.Remote) (tenant2.Verifier, error) {
+func clientVerifier(config SystemConfig, manager node.Remote) (tenant.Verifier, error) {
 	localTenants, err := loadVerifier(config, tenantsFilename)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
@@ -40,13 +40,13 @@ func clientVerifier(config SystemConfig, manager node.Remote) (tenant2.Verifier,
 			return nil, err
 		}
 		// reading the local tenant data failed, we return this error each time as part of the secret verification
-		localTenants = tenant2.NeverVerify(err)
+		localTenants = tenant.NeverVerify(err)
 	}
 
 	// remoteTenants verifies tenant access using a remote service defined via TenantApiClient and managerConn
-	remoteTenants := tenant2.VerifierFunc(func(
+	remoteTenants := tenant.VerifierFunc(func(
 		ctx context.Context, id, secret string,
-	) (data tenant2.SecretData, err error) {
+	) (data tenant.SecretData, err error) {
 		conn, err := manager.Connect(ctx)
 		if err != nil {
 			return data, err
@@ -54,20 +54,20 @@ func clientVerifier(config SystemConfig, manager node.Remote) (tenant2.Verifier,
 		if conn == nil {
 			return data, errors.New("no remote clientVerifier")
 		}
-		return tenant2.RemoteVerify(ctx, id, secret, gen.NewTenantApiClient(conn))
+		return tenant.RemoteVerify(ctx, id, secret, gen.NewTenantApiClient(conn))
 	})
-	tenantVerifier := tenant2.FirstSuccessfulVerifier([]tenant2.Verifier{
+	tenantVerifier := tenant.FirstSuccessfulVerifier([]tenant.Verifier{
 		localTenants,
 		remoteTenants,
 	})
 	return tenantVerifier, nil
 }
 
-func passwordVerifier(config SystemConfig) (tenant2.Verifier, error) {
+func passwordVerifier(config SystemConfig) (tenant.Verifier, error) {
 	return loadVerifier(config, usersFilename)
 }
 
-func loadVerifier(config SystemConfig, filename string) (tenant2.Verifier, error) {
+func loadVerifier(config SystemConfig, filename string) (tenant.Verifier, error) {
 	file, err := os.ReadFile(filepath.Join(config.DataDir, filename))
 	if err != nil {
 		return nil, fmt.Errorf("reading file %w", err)
@@ -78,10 +78,10 @@ func loadVerifier(config SystemConfig, filename string) (tenant2.Verifier, error
 		return nil, fmt.Errorf("unmarshal json %w", err)
 	}
 
-	verifier := &tenant2.MemoryVerifier{}
+	verifier := &tenant.MemoryVerifier{}
 
 	for _, t := range configFile {
-		e := verifier.AddRecord(tenant2.SecretData{TenantID: t.ID, Zones: t.Zones})
+		e := verifier.AddRecord(tenant.SecretData{TenantID: t.ID, Zones: t.Zones})
 		err = multierr.Append(err, e)
 		if e != nil {
 			continue

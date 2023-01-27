@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
-	rpc2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
@@ -31,7 +31,7 @@ func Device(name string, client *gobacnet.Client, device bactypes.Device, known 
 //
 // We should keep this API up to date wrt the features available in gobacnet.Client.
 type DeviceBacnetService struct {
-	rpc2.UnimplementedBacnetDriverServiceServer
+	rpc.UnimplementedBacnetDriverServiceServer
 
 	name   string
 	client *gobacnet.Client
@@ -40,12 +40,12 @@ type DeviceBacnetService struct {
 }
 
 func (d *DeviceBacnetService) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(d.name, node.HasClient(rpc2.WrapBacnetDriverService(d)))
+	return a.Announce(d.name, node.HasClient(rpc.WrapBacnetDriverService(d)))
 }
 
 func (d *DeviceBacnetService) ReadProperty(
-	ctx context.Context, request *rpc2.ReadPropertyRequest,
-) (*rpc2.ReadPropertyResponse, error) {
+	ctx context.Context, request *rpc.ReadPropertyRequest,
+) (*rpc.ReadPropertyResponse, error) {
 	if request.ObjectIdentifier == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "missing object_identifier")
 	}
@@ -68,15 +68,15 @@ func (d *DeviceBacnetService) ReadProperty(
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Reading property %v", err)
 	}
-	return &rpc2.ReadPropertyResponse{
+	return &rpc.ReadPropertyResponse{
 		ObjectIdentifier: ObjectIDToProto(readProperty.Object.ID),
 		Result:           result,
 	}, nil
 }
 
 func (d *DeviceBacnetService) ReadPropertyMultiple(
-	ctx context.Context, request *rpc2.ReadPropertyMultipleRequest,
-) (*rpc2.ReadPropertyMultipleResponse, error) {
+	ctx context.Context, request *rpc.ReadPropertyMultipleRequest,
+) (*rpc.ReadPropertyMultipleResponse, error) {
 	bacReq := bactypes.ReadMultipleProperty{}
 	for _, spec := range request.ReadSpecifications {
 		obj := bactypes.Object{
@@ -99,9 +99,9 @@ func (d *DeviceBacnetService) ReadPropertyMultiple(
 		return nil, status.Errorf(codes.Internal, "Error(%d) from BACnet device", readProperties.ErrorCode)
 	}
 
-	res := &rpc2.ReadPropertyMultipleResponse{}
+	res := &rpc.ReadPropertyMultipleResponse{}
 	for _, object := range readProperties.Objects {
-		item := &rpc2.ReadPropertyMultipleResponse_ReadResult{
+		item := &rpc.ReadPropertyMultipleResponse_ReadResult{
 			ObjectIdentifier: ObjectIDToProto(object.ID),
 		}
 		for _, p := range object.Properties {
@@ -121,8 +121,8 @@ func (d *DeviceBacnetService) ReadPropertyMultiple(
 }
 
 func (d *DeviceBacnetService) WriteProperty(
-	ctx context.Context, request *rpc2.WritePropertyRequest,
-) (*rpc2.WritePropertyResponse, error) {
+	ctx context.Context, request *rpc.WritePropertyRequest,
+) (*rpc.WritePropertyResponse, error) {
 	writeProp, err := d.propertyFromProtoForWrite(request.WriteValue)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "Interpreting request %v", err)
@@ -133,32 +133,32 @@ func (d *DeviceBacnetService) WriteProperty(
 			Properties: []bactypes.Property{writeProp},
 		},
 	}
-	return &rpc2.WritePropertyResponse{}, d.client.WriteProperty(d.device, data, uint(request.WriteValue.Priority))
+	return &rpc.WritePropertyResponse{}, d.client.WriteProperty(d.device, data, uint(request.WriteValue.Priority))
 }
 
 func (d *DeviceBacnetService) WritePropertyMultiple(
-	ctx context.Context, request *rpc2.WritePropertyMultipleRequest,
-) (*rpc2.WritePropertyMultipleResponse, error) {
+	ctx context.Context, request *rpc.WritePropertyMultipleRequest,
+) (*rpc.WritePropertyMultipleResponse, error) {
 	// client doesn't implement WritePropertyMultiple! :(
 	return d.UnimplementedBacnetDriverServiceServer.WritePropertyMultiple(ctx, request)
 }
 
 func (d *DeviceBacnetService) ListObjects(
-	_ context.Context, _ *rpc2.ListObjectsRequest,
-) (*rpc2.ListObjectsResponse, error) {
+	_ context.Context, _ *rpc.ListObjectsRequest,
+) (*rpc.ListObjectsResponse, error) {
 	objects, err := d.known.ListObjects(d.device)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "device has been forgotten")
 	}
 
-	response := &rpc2.ListObjectsResponse{}
+	response := &rpc.ListObjectsResponse{}
 	for _, object := range objects {
 		response.Objects = append(response.Objects, ObjectIDToProto(object.ID))
 	}
 	return response, nil
 }
 
-func (d *DeviceBacnetService) propertyFromProtoForRead(reference *rpc2.PropertyReference) bactypes.Property {
+func (d *DeviceBacnetService) propertyFromProtoForRead(reference *rpc.PropertyReference) bactypes.Property {
 	if reference == nil {
 		return d.defaultReadProperty()
 	}
@@ -179,15 +179,15 @@ func (d *DeviceBacnetService) defaultReadProperty() bactypes.Property {
 	}
 }
 
-func (d *DeviceBacnetService) propertyFromProtoForWrite(reference *rpc2.PropertyWriteValue) (bactypes.Property, error) {
+func (d *DeviceBacnetService) propertyFromProtoForWrite(reference *rpc.PropertyWriteValue) (bactypes.Property, error) {
 	p := d.propertyFromProtoForRead(reference.PropertyReference)
 	var err error
 	p.Data, err = d.propertyValueFromProto(reference.Value)
 	return p, err
 }
 
-func PropertyToProto(p bactypes.Property) *rpc2.PropertyReference {
-	res := &rpc2.PropertyReference{
+func PropertyToProto(p bactypes.Property) *rpc.PropertyReference {
+	res := &rpc.PropertyReference{
 		Identifier: uint32(p.ID),
 	}
 	if p.ArrayIndex != bactypes.ArrayAll {
@@ -196,7 +196,7 @@ func PropertyToProto(p bactypes.Property) *rpc2.PropertyReference {
 	return res
 }
 
-func PropertyValueToProto(p bactypes.Property) (*rpc2.PropertyValue, error) {
+func PropertyValueToProto(p bactypes.Property) (*rpc.PropertyValue, error) {
 	// Property.Data doesn't distinguish between 8, 16, 32 bit data, they are all 32.
 	// It also doesn't support 64 bit data, so we don't either.
 	// It also doesn't support bit_string, it returns an error that we should catch earlier in the request.
@@ -204,71 +204,71 @@ func PropertyValueToProto(p bactypes.Property) (*rpc2.PropertyValue, error) {
 
 	switch v := p.Data.(type) {
 	case bactypes.Null:
-		return &rpc2.PropertyValue{Value: &rpc2.PropertyValue_Null{Null: true}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Null{Null: true}}, nil
 	case bool:
-		return &rpc2.PropertyValue{Value: &rpc2.PropertyValue_Boolean{Boolean: v}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Boolean{Boolean: v}}, nil
 	case uint32:
-		return &rpc2.PropertyValue{Value: &rpc2.PropertyValue_Unsigned32{Unsigned32: v}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Unsigned32{Unsigned32: v}}, nil
 	case int32:
-		return &rpc2.PropertyValue{Value: &rpc2.PropertyValue_Integer32{Integer32: v}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Integer32{Integer32: v}}, nil
 	case float32:
-		return &rpc2.PropertyValue{Value: &rpc2.PropertyValue_Real{Real: v}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Real{Real: v}}, nil
 	case float64:
-		return &rpc2.PropertyValue{Value: &rpc2.PropertyValue_Double{Double: v}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Double{Double: v}}, nil
 	case []byte:
-		return &rpc2.PropertyValue{Value: &rpc2.PropertyValue_OctetString{OctetString: v}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_OctetString{OctetString: v}}, nil
 	case string:
-		return &rpc2.PropertyValue{Value: &rpc2.PropertyValue_CharacterString{CharacterString: v}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_CharacterString{CharacterString: v}}, nil
 	case bactypes.Date:
-		return &rpc2.PropertyValue{Value: &rpc2.PropertyValue_Date{Date: DateToProto(v)}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Date{Date: DateToProto(v)}}, nil
 	case bactypes.Time:
-		return &rpc2.PropertyValue{Value: &rpc2.PropertyValue_Time{Time: TimeToProto(v)}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Time{Time: TimeToProto(v)}}, nil
 	case bactypes.ObjectID:
-		return &rpc2.PropertyValue{Value: &rpc2.PropertyValue_ObjectIdentifier{ObjectIdentifier: ObjectIDToProto(v)}}, nil
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_ObjectIdentifier{ObjectIdentifier: ObjectIDToProto(v)}}, nil
 	}
 
 	return nil, fmt.Errorf("unknown bacnet type %v (%T)", p.Data, p.Data)
 }
 
-func (d *DeviceBacnetService) propertyValueFromProto(p *rpc2.PropertyValue) (any, error) {
+func (d *DeviceBacnetService) propertyValueFromProto(p *rpc.PropertyValue) (any, error) {
 	switch v := p.Value.(type) {
-	case *rpc2.PropertyValue_Null:
+	case *rpc.PropertyValue_Null:
 		return bactypes.Null{}, nil
-	case *rpc2.PropertyValue_Boolean:
+	case *rpc.PropertyValue_Boolean:
 		return v.Boolean, nil
-	case *rpc2.PropertyValue_Unsigned32:
+	case *rpc.PropertyValue_Unsigned32:
 		return v.Unsigned32, nil
-	case *rpc2.PropertyValue_Unsigned64:
+	case *rpc.PropertyValue_Unsigned64:
 		return v.Unsigned64, nil
-	case *rpc2.PropertyValue_Integer32:
+	case *rpc.PropertyValue_Integer32:
 		return v.Integer32, nil
-	case *rpc2.PropertyValue_Integer64:
+	case *rpc.PropertyValue_Integer64:
 		return v.Integer64, nil
-	case *rpc2.PropertyValue_Real:
+	case *rpc.PropertyValue_Real:
 		return v.Real, nil
-	case *rpc2.PropertyValue_Double:
+	case *rpc.PropertyValue_Double:
 		return v.Double, nil
-	case *rpc2.PropertyValue_OctetString:
+	case *rpc.PropertyValue_OctetString:
 		return v.OctetString, nil
-	case *rpc2.PropertyValue_CharacterString:
+	case *rpc.PropertyValue_CharacterString:
 		return v.CharacterString, nil
-	case *rpc2.PropertyValue_BitString:
+	case *rpc.PropertyValue_BitString:
 		// not supported
-	case *rpc2.PropertyValue_Enumerated:
+	case *rpc.PropertyValue_Enumerated:
 		return bactypes.Enumerated(v.Enumerated), nil
-	case *rpc2.PropertyValue_Date:
+	case *rpc.PropertyValue_Date:
 		return d.dateFromProto(v.Date), nil
-	case *rpc2.PropertyValue_Time:
+	case *rpc.PropertyValue_Time:
 		return d.timeFromProto(v.Time), nil
-	case *rpc2.PropertyValue_ObjectIdentifier:
+	case *rpc.PropertyValue_ObjectIdentifier:
 		return ObjectIDFromProto(v.ObjectIdentifier), nil
 	}
 
 	return nil, fmt.Errorf("unknown proto oneof type %v (%T)", p.Value, p.Value)
 }
 
-func DateToProto(date bactypes.Date) *rpc2.PropertyValue_DateValue {
-	return &rpc2.PropertyValue_DateValue{
+func DateToProto(date bactypes.Date) *rpc.PropertyValue_DateValue {
+	return &rpc.PropertyValue_DateValue{
 		Year:       uint32(date.Year),
 		Month:      uint32(date.Month),
 		DayOfMonth: uint32(date.Day),
@@ -276,7 +276,7 @@ func DateToProto(date bactypes.Date) *rpc2.PropertyValue_DateValue {
 	}
 }
 
-func (d *DeviceBacnetService) dateFromProto(date *rpc2.PropertyValue_DateValue) bactypes.Date {
+func (d *DeviceBacnetService) dateFromProto(date *rpc.PropertyValue_DateValue) bactypes.Date {
 	return bactypes.Date{
 		Year:      int(date.Year),
 		Month:     int(date.Month),
@@ -285,7 +285,7 @@ func (d *DeviceBacnetService) dateFromProto(date *rpc2.PropertyValue_DateValue) 
 	}
 }
 
-func TimeToProto(time bactypes.Time) *rpc2.PropertyValue_TimeValue {
+func TimeToProto(time bactypes.Time) *rpc.PropertyValue_TimeValue {
 	octetToProto := func(o int) *uint32 {
 		if o == bactypes.UnspecifiedTime {
 			return nil
@@ -293,7 +293,7 @@ func TimeToProto(time bactypes.Time) *rpc2.PropertyValue_TimeValue {
 		ui := uint32(o)
 		return &ui
 	}
-	return &rpc2.PropertyValue_TimeValue{
+	return &rpc.PropertyValue_TimeValue{
 		Hour:               octetToProto(time.Hour),
 		Minute:             octetToProto(time.Minute),
 		Second:             octetToProto(time.Second),
@@ -301,7 +301,7 @@ func TimeToProto(time bactypes.Time) *rpc2.PropertyValue_TimeValue {
 	}
 }
 
-func (d *DeviceBacnetService) timeFromProto(time *rpc2.PropertyValue_TimeValue) bactypes.Time {
+func (d *DeviceBacnetService) timeFromProto(time *rpc.PropertyValue_TimeValue) bactypes.Time {
 	octetFromProto := func(p *uint32) int {
 		if p == nil {
 			return bactypes.UnspecifiedTime
@@ -320,12 +320,12 @@ func (d *DeviceBacnetService) timeFromProto(time *rpc2.PropertyValue_TimeValue) 
 	return t
 }
 
-func PropertyToProtoReadResult(p bactypes.Property) (*rpc2.PropertyReadResult, error) {
+func PropertyToProtoReadResult(p bactypes.Property) (*rpc.PropertyReadResult, error) {
 	value, err := PropertyValueToProto(p)
 	if err != nil {
 		return nil, err
 	}
-	return &rpc2.PropertyReadResult{
+	return &rpc.PropertyReadResult{
 		PropertyReference: PropertyToProto(p),
 		Value:             value,
 	}, nil

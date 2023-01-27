@@ -3,6 +3,8 @@ package node
 import (
 	"fmt"
 
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/router"
 	"github.com/smart-core-os/sc-golang/pkg/server"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
@@ -31,6 +33,13 @@ type Node struct {
 	// Typically they are wrappers around each router instance.
 	// Populated via Support(Clients).
 	clients []any
+	// apis holds each of the APIs that this node registers with a grpc.Server.
+	// Populated via Support(Api) explicitly, or Support(Routing) if the router implements server.GrpcApi.
+	apis []server.GrpcApi
+
+	// allMetadata allows users of the node to be notified of any metadata changes via Announce or when
+	// that announcement is undone.
+	allMetadata *resource.Collection // of *traits.Metadata
 
 	Logger *zap.Logger
 }
@@ -38,8 +47,9 @@ type Node struct {
 // New creates a new Node node with the given name.
 func New(name string) *Node {
 	return &Node{
-		name:   name,
-		Logger: zap.NewNop(),
+		name:        name,
+		Logger:      zap.NewNop(),
+		allMetadata: resource.NewCollection(),
 	}
 }
 
@@ -51,10 +61,8 @@ func (n *Node) Name() string {
 // Register implements server.GrpcApi and registers all supported routers with s.
 func (n *Node) Register(s *grpc.Server) {
 	n.parent() // force the parent api to be initialised
-	for _, r := range n.routers {
-		if api, ok := r.(server.GrpcApi); ok {
-			api.Register(s)
-		}
+	for _, api := range n.apis {
+		api.Register(s)
 	}
 }
 
@@ -81,6 +89,9 @@ func (n *Node) Announce(name string, features ...Feature) Undo {
 	log := n.Logger.Sugar()
 	for _, t := range a.traits {
 		log.Debugf("%v now implements %v", name, t.name)
+		undo = append(undo, func() {
+			log.Debugf("%v no longer implements %v", name, t.name)
+		})
 
 		if !t.noAddChildTrait && name != n.name {
 			undo = append(undo, n.addChildTrait(a.name, t.name))
@@ -88,23 +99,18 @@ func (n *Node) Announce(name string, features ...Feature) Undo {
 		for _, client := range t.clients {
 			undo = append(undo, n.addRoute(a.name, client))
 		}
-		if !t.noAddMetadata {
-			md := t.metadata
-			if md == nil {
-				md = AutoTraitMetadata
-			}
-			undoMd, err := n.addTraitMetadata(name, t.name, md)
-			if err != nil {
-				if err != MetadataTraitNotSupported {
-					log.Warnf("%v %v: %v", name, t.name, err)
-				}
-			}
-			undo = append(undo, undoMd)
+	}
+
+	md := a.metadata
+	if md == nil && len(a.traits) > 0 {
+		md = &traits.Metadata{}
+		for _, t := range a.traits {
+			md.Traits = append(md.Traits, &traits.TraitMetadata{Name: string(t.name)})
 		}
 	}
 
-	if a.metadata != nil {
-		undoMd, err := n.mergeMetadata(name, a.metadata)
+	if md != nil {
+		undoMd, err := n.mergeMetadata(name, md)
 		if err != nil {
 			if err != MetadataTraitNotSupported {
 				log.Warnf("%v metadata: %v", name, err)
@@ -123,8 +129,12 @@ func (n *Node) Support(functions ...Function) {
 	}
 }
 
-func (n *Node) addRouter(r ...router.Router) {
-	n.routers = append(n.routers, r...)
+func (n *Node) addRouter(rs ...router.Router) {
+	n.routers = append(n.routers, rs...)
+}
+
+func (n *Node) addApi(apis ...server.GrpcApi) {
+	n.apis = append(n.apis, apis...)
 }
 
 // addRoute adds name->impl as a route to all routers that support the type impl.
@@ -135,6 +145,7 @@ func (n *Node) addRoute(name string, impl interface{}) Undo {
 		if r.HoldsType(impl) {
 			addCount++
 			r.Add(name, impl)
+			r := r
 			undo = append(undo, func() {
 				r.Remove(name)
 			})
@@ -149,7 +160,12 @@ func (n *Node) addRoute(name string, impl interface{}) Undo {
 func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
 	n.parent().AddChildTrait(name, traitName...)
 	return func() {
-		// todo: remove child traits from n.parent()
+		child := n.parent().RemoveChildTrait(name, traitName...)
+		// There's a huge assumption here that child was added via AddChildTrait,
+		// this should be true but isn't guaranteed
+		if child != nil && len(child.Traits) == 0 {
+			_, _ = n.parent().RemoveChildByName(child.Name)
+		}
 	}
 }
 

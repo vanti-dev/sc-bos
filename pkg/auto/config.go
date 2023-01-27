@@ -3,8 +3,9 @@ package auto
 import "encoding/json"
 
 type Config struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	Disabled bool   `json:"disabled,omitempty"`
 }
 
 type RawConfig struct {

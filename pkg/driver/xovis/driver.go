@@ -17,7 +17,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
 const DriverName = "xovis"
@@ -26,18 +26,21 @@ var Factory driver.Factory = factory{}
 
 type factory struct{}
 
-func (f factory) New(services driver.Services) task.Starter {
+func (f factory) New(services driver.Services) service.Lifecycle {
 	d := &Driver{
 		Services:    services,
 		pushDataBus: &minibus.Bus[PushData]{},
 	}
-	d.Lifecycle = task.NewLifecycle(d.applyConfig)
+	d.Service = service.New(
+		service.MonoApply(d.applyConfig),
+		service.WithParser(ParseConfig),
+	)
 	return d
 }
 
 type Driver struct {
+	*service.Service[DriverConfig]
 	driver.Services
-	*task.Lifecycle[DriverConfig]
 	pushDataBus *minibus.Bus[PushData]
 
 	m                 sync.Mutex

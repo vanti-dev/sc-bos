@@ -45,7 +45,10 @@ function deviceQueryFromObject(obj) {
   const dst = new Device.Query();
   for (const item of (obj.conditionsList ?? [])) {
     const dstItem = new Device.Query.Condition();
-    setProperties(dstItem, item, 'field', 'stringEqual');
+    setProperties(dstItem, item, 'field',
+        'stringEqual', 'stringEqualFold',
+        'stringContains', 'stringContainsFold'
+    );
     dst.addConditions(dstItem);
   }
   return dst;

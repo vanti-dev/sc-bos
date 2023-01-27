@@ -9,7 +9,10 @@
         right
         app
         clipped
-        width="300px">
+        floating
+        width="275"
+        class="pa-0"
+        color="neutral">
       <router-view name="sidebar"/>
     </v-navigation-drawer>
   </v-container>
@@ -26,3 +29,6 @@ const pageStore = usePageStore();
 const {showSidebar} = storeToRefs(pageStore);
 
 </script>
+
+<style scoped>
+</style>

@@ -3,8 +3,8 @@ import {clientOptions} from '@/api/grpcweb.js';
 import {trackAction} from '@/api/resource.js';
 import {TenantApiPromiseClient} from '@sc-bos/ui-gen/proto/tenants_grpc_web_pb';
 import {
-  CreateSecretRequest,
-  DeleteSecretRequest,
+  CreateSecretRequest, CreateTenantRequest,
+  DeleteSecretRequest, DeleteTenantRequest,
   GetTenantRequest,
   ListSecretsRequest,
   ListTenantsRequest,
@@ -22,6 +22,57 @@ export function listTenants(request, tracker) {
     const api = client(endpoint);
     return api.listTenants(new ListTenantsRequest());
   });
+}
+
+/**
+ *
+ * @param {CreateTenantRequest.AsObject} request
+ * @param {ActionTracker<CreateTenantRequest.AsObject>} tracker
+ * @return {Promise<Tenant.AsObject>}
+ */
+export function createTenant(request, tracker) {
+  return trackAction('Tenant.createTenant', tracker ?? {}, async endpoint => {
+    const api = client(endpoint);
+    return api.createTenant(createTenantRequestFromObject(request));
+  });
+}
+
+/**
+ * @param {CreateTenantRequest.AsObject} obj
+ * @return {CreateTenantRequest}
+ */
+function createTenantRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const req = new CreateTenantRequest();
+  req.setTenant(tenantFromObject(obj.tenant));
+  return req;
+}
+
+/**
+ *
+ * @param {DeleteTenantRequest.AsObject} obj
+ * @param {ActionTracker<DeleteTenantRequest.AsObject>} tracker
+ * @return {Promise<DeleteTenantResponse>}
+ */
+export function deleteTenant(obj, tracker) {
+  return trackAction('Tenant.deleteTenant', tracker ?? {}, endpoint => {
+    const api = client(endpoint);
+    return api.deleteTenant(deleteTenantRequestFromObject(obj));
+  });
+}
+
+/**
+ *
+ * @param {DeleteTenantRequest.AsObject} obj
+ * @return {DeleteTenantRequest}
+ */
+function deleteTenantRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const req = new DeleteTenantRequest();
+  setProperties(req, obj, 'id');
+  return req;
 }
 
 /**

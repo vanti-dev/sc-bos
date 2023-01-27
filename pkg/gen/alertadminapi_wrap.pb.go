@@ -3,12 +3,11 @@
 package gen
 
 import (
-	"context"
-
-	"google.golang.org/grpc"
+	context "context"
+	grpc "google.golang.org/grpc"
 )
 
-// WrapAlertAdminApi	adapts a gen.AlertAdminApiServer	and presents it as a gen.AlertAdminApiClient
+// WrapAlertAdminApi	adapts a AlertAdminApiServer	and presents it as a AlertAdminApiClient
 func WrapAlertAdminApi(server AlertAdminApiServer) AlertAdminApiClient {
 	return &alertAdminApiWrapper{server}
 }

@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/config"
-	rpc2 "github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/rpc"
+	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/rpc"
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 const DriverName = "axiomxa"
@@ -19,39 +19,39 @@ var Factory driver.Factory = factory{}
 
 type factory struct{}
 
-func (f factory) New(services driver.Services) task.Starter {
+func (f factory) New(services driver.Services) service.Lifecycle {
 	d := &Driver{
 		announcer: services.Node,
 	}
-	d.Lifecycle = task.NewLifecycle(d.applyConfig)
-	d.Logger = services.Logger.Named(DriverName)
-	d.ReadConfig = config.ReadBytes
+	d.Service = service.New(d.applyConfig, service.WithParser(config.ReadBytes))
+	d.logger = services.Logger.Named(DriverName)
 	return d
 }
 
 func (f factory) AddSupport(supporter node.Supporter) {
-	r := rpc2.NewAxiomXaDriverServiceRouter()
-	supporter.Support(node.Routing(r), node.Clients(rpc2.WrapAxiomXaDriverService(r)))
+	r := rpc.NewAxiomXaDriverServiceRouter()
+	supporter.Support(node.Routing(r), node.Clients(rpc.WrapAxiomXaDriverService(r)))
 }
 
 type Driver struct {
-	*task.Lifecycle[config.Root]
+	*service.Service[config.Root]
 	announcer node.Announcer
+	logger    *zap.Logger
 }
 
-func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
-	// todo: track announcements and undo them on config update - aka support more than one config update
+func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
+	announcer := node.AnnounceContext(ctx, d.announcer)
 
 	if cfg.HTTP == nil {
 		return errors.New("http missing")
 	}
 
-	d.Logger.Debug("Setting up AxiomXa HTTP connector", zap.String("baseUrl", cfg.HTTP.BaseURL))
+	d.logger.Debug("Setting up AxiomXa HTTP connector", zap.String("baseUrl", cfg.HTTP.BaseURL))
 	httpImpl := &server{
 		config: cfg,
-		logger: d.Logger.Named("server"),
+		logger: d.logger.Named("server"),
 	}
-	d.announcer.Announce(cfg.Name, node.HasClient(rpc2.WrapAxiomXaDriverService(httpImpl)))
+	announcer.Announce(cfg.Name, node.HasClient(rpc.WrapAxiomXaDriverService(httpImpl)))
 
 	return nil
 }

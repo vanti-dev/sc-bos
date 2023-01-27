@@ -2,10 +2,10 @@
 package system
 
 import (
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 type Services struct {
@@ -14,5 +14,5 @@ type Services struct {
 }
 
 type Factory interface {
-	New(services Services) task.Starter
+	New(services Services) service.Lifecycle
 }

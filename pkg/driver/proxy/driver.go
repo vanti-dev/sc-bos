@@ -8,6 +8,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -17,7 +18,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/proxy/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 const DriverName = "proxy"
@@ -26,37 +26,43 @@ var Factory driver.Factory = factory{}
 
 type factory struct{}
 
-func (f factory) New(services driver.Services) task.Starter {
+func (f factory) New(services driver.Services) service.Lifecycle {
 	d := &Driver{
 		announcer:       services.Node,
 		clientTLSConfig: services.ClientTLSConfig,
 	}
-	d.Lifecycle = task.NewLifecycle(d.applyConfig)
-	d.Logger = services.Logger.Named(DriverName)
+	d.Service = service.New(d.applyConfig, service.WithOnStop[config.Root](d.Clear))
+	d.logger = services.Logger.Named(DriverName)
 	return d
 }
 
 type Driver struct {
-	*task.Lifecycle[config.Root]
+	*service.Service[config.Root]
+	logger          *zap.Logger
 	announcer       node.Announcer
 	clientTLSConfig *tls.Config // base config used to dial nodes
 
 	proxies []*proxy // all the nodes we proxy
 }
 
+func (d *Driver) Clear() {
+	var err error
+
+	// close all existing connections and unregister all proxied traits
+	for _, p := range d.proxies {
+		err = multierr.Append(err, p.Close())
+	}
+	d.proxies = nil
+	if err != nil {
+		d.logger.Warn("Failed to cleanly close existing proxies", zap.Error(err))
+	}
+}
+
 func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	// todo: support incremental updates to the config, i.e. a nodes trait list has updated
 	var allErrs error
 
-	// close all existing connections and unregister all proxied traits
-	for _, p := range d.proxies {
-		allErrs = multierr.Append(allErrs, p.Close())
-	}
-	d.proxies = nil
-	if allErrs != nil {
-		d.Logger.Warn("Failed to cleanly close existing proxies", zap.Error(allErrs))
-		allErrs = nil
-	}
+	d.Clear() // close existing proxies
 
 	// For each node we create a proxy instance which manages the discovery of children exposed by that node.
 	for _, n := range cfg.Nodes {
@@ -74,7 +80,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			config:    n,
 			conn:      conn,
 			announcer: d.announcer,
-			logger:    d.Logger.Named(n.Host),
+			logger:    d.logger.Named(n.Host),
 			shutdown:  shutdown,
 		}
 		d.proxies = append(d.proxies, proxy)
@@ -86,7 +92,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				return
 			}
 			if err != nil {
-				d.Logger.Warn("Announcing children error", zap.Error(err))
+				d.logger.Warn("Announcing children error", zap.Error(err))
 			}
 		}()
 	}

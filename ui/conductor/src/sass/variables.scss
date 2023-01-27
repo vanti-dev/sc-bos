@@ -1,4 +1,5 @@
 $body-font-family: 'Poppins', sans-serif;
+$mono-font-family: 'Consolas', monospace;
 $font-size-root: 14px;
 $line-height-root: 1.5;
 
@@ -57,6 +58,14 @@ $headings: (
         'font-family': $body-font-family,
         'text-transform': false
     ),
+    'body-code': (
+        'size': .857rem,
+        'weight': 400,
+        'line-height': 1.4rem,
+        'letter-spacing': .025em,
+        'font-family': $mono-font-family,
+        'text-transform': false
+    ),
     'title': (
         'size': 1rem,
         'weight': 500,
@@ -65,11 +74,27 @@ $headings: (
         'font-family': $body-font-family,
         'text-transform': false
     ),
-    'title-caps': (
+    'title-caps-large': (
         'size': 1rem,
         'weight': 700,
         'line-height': 1.5rem,
         'letter-spacing': 0.15em,
+        'font-family': $body-font-family,
+        'text-transform': uppercase
+    ),
+    'title-caps': (
+        'size': 0.857rem,
+        'weight': 700,
+        'line-height': 1.5rem,
+        'letter-spacing': 0.115em,
+        'font-family': $body-font-family,
+        'text-transform': uppercase
+    ),
+    'title-caps-small': (
+        'size': 0.714rem,
+        'weight': 700,
+        'line-height': 1.5rem,
+        'letter-spacing': 0.115em,
         'font-family': $body-font-family,
         'text-transform': uppercase
     ),

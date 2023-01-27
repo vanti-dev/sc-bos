@@ -1,16 +1,66 @@
 package devices
 
 import (
+	"log"
 	"strconv"
 	"strings"
 
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protopath"
+	"google.golang.org/protobuf/reflect/protorange"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-// isMessageValueEqualString returns whether the value identified by path in msg is equal to the value string.
+func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
+	if query == nil {
+		return true
+	}
+	for _, condition := range query.Conditions {
+		if !conditionMatches(condition, device) {
+			return false
+		}
+	}
+
+	// this means a query with no conditions always returns true
+	return true
+}
+
+func conditionMatches(cond *gen.Device_Query_Condition, device *gen.Device) bool {
+	// everything is a string comparison, for now. Can rework this later if that no longer is the case
+	var cmp func(v string) bool
+	switch c := cond.Value.(type) {
+	case *gen.Device_Query_Condition_StringEqual:
+		cmp = func(v string) bool {
+			return v == c.StringEqual
+		}
+	case *gen.Device_Query_Condition_StringEqualFold:
+		cmp = func(v string) bool {
+			return strings.EqualFold(v, c.StringEqualFold)
+		}
+	case *gen.Device_Query_Condition_StringContains:
+		cmp = func(v string) bool {
+			return strings.Contains(v, c.StringContains)
+		}
+	case *gen.Device_Query_Condition_StringContainsFold:
+		ls := strings.ToLower(c.StringContainsFold)
+		cmp = func(v string) bool {
+			return strings.Contains(strings.ToLower(v), ls)
+		}
+	default:
+		return false
+	}
+
+	if cond.Field == "" {
+		// any field
+		return messageHasValueStringFunc(device, cmp)
+	}
+	return isMessageValueStringFunc(cond.Field, device, cmp)
+}
+
+// isMessageValueStringFunc returns whether the value identified by path in msg returns true when passed to f.
 // The path argument looks like `some.prop.path` and navigates the message fields.
-func isMessageValueEqualString(path, value string, msg proto.Message) bool {
+func isMessageValueStringFunc(path string, msg proto.Message, f func(v string) bool) bool {
 	if msg == nil {
 		return false
 	}
@@ -23,7 +73,64 @@ func isMessageValueEqualString(path, value string, msg proto.Message) bool {
 		return false
 	}
 
-	return vs == value
+	return f(vs)
+}
+
+// messageHasValueStringFunc returns whether any value in msg returns true when converted to a string and passed to f.
+// See valueString for the string conversion mechanism.
+func messageHasValueStringFunc(msg proto.Message, f func(v string) bool) bool {
+	if msg == nil {
+		return false
+	}
+	var match bool
+	err := protorange.Range(msg.ProtoReflect(), func(values protopath.Values) error {
+		last := values.Index(-1)
+
+		var fd protoreflect.FieldDescriptor
+		switch last.Step.Kind() {
+		case protopath.FieldAccessStep:
+			fd = last.Step.FieldDescriptor()
+		case protopath.MapIndexStep:
+			fd = values.Index(-2).Step.FieldDescriptor().MapValue()
+		case protopath.ListIndexStep:
+			fd = values.Index(-2).Step.FieldDescriptor()
+		}
+
+		str, ok := valueString(fd, last.Value)
+		if !ok {
+			return nil
+		}
+		if f(str) {
+			match = true
+			return protorange.Terminate
+		}
+		return nil
+	})
+	if err != nil {
+		// this shouldn't happen as our Range func doesn't return unexpected errors
+		log.Printf("Unexpected error during device query processing: %v", err)
+		return false
+	}
+	return match
+}
+
+// getMessageString returns the property identified by path from msg as a string.
+// Returns false if the path does not match any property, or that property cannot be represented as a string.
+// See valueString for details of string conversion.
+func getMessageString(path string, msg proto.Message) (string, bool) {
+	if msg == nil {
+		return "", false
+	}
+	fd, v, ok := getMessageValue(path, msg.ProtoReflect())
+	if !ok {
+		return "", false
+	}
+	vs, ok := valueString(fd, v)
+	if !ok {
+		return "", false
+	}
+
+	return vs, true
 }
 
 // getMessageValue returns the protoreflect.Value identified by path in msg.
@@ -92,6 +199,9 @@ func nextValue(rest string, fieldDesc protoreflect.FieldDescriptor, val protoref
 // otherwise converts them to a string representation of the enum number.
 // Bytes are converted to string.
 func valueString(fd protoreflect.FieldDescriptor, v protoreflect.Value) (string, bool) {
+	if fd == nil {
+		return "", false
+	}
 	switch fd.Kind() {
 	case protoreflect.BoolKind:
 		return strconv.FormatBool(v.Bool()), true

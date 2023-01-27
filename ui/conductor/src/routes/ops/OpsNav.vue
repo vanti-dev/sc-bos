@@ -98,7 +98,7 @@ const alertMetadata = useAlertMetadata();
 </script>
 
 <style scoped>
-::v-deep(.v-list-item--active) {
+:deep(.v-list-item--active) {
   color: var(--v-primary-base);
 }
 </style>

@@ -24,6 +24,8 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
+	"github.com/vanti-dev/sc-bos/pkg/app/services"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 
 	"github.com/vanti-dev/sc-bos/internal/auth/tenant"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
@@ -212,6 +214,9 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	reflection.Register(grpcServer)
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
 	devices.NewServer(rootNode).Register(grpcServer)
+	// support the services api for managing drivers, automations, and systems
+	serviceRouter := gen.NewServicesApiRouter()
+	rootNode.Support(node.Routing(serviceRouter), node.Clients(gen.WrapServicesApi(serviceRouter)))
 
 	grpcWebServer := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
 		return true
@@ -328,17 +333,23 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	}
 
 	// load and start the systems
-	if err := c.startSystems(ctx); err != nil {
+	systemServices, err := c.startSystems()
+	if err != nil {
 		return err
 	}
+	c.Node.Announce("systems", node.HasClient(gen.WrapServicesApi(services.NewApi(systemServices, services.WithKnownTypesFromMapKeys(c.SystemConfig.SystemFactories)))))
 	// load and start the drivers
-	if err := c.startDrivers(ctx); err != nil {
+	driverServices, err := c.startDrivers()
+	if err != nil {
 		return err
 	}
+	c.Node.Announce("drivers", node.HasClient(gen.WrapServicesApi(services.NewApi(driverServices, services.WithKnownTypesFromMapKeys(c.SystemConfig.DriverFactories)))))
 	// load and start the automations
-	if err := c.startAutomations(ctx); err != nil {
+	autoServices, err := c.startAutomations()
+	if err != nil {
 		return err
 	}
+	c.Node.Announce("automations", node.HasClient(gen.WrapServicesApi(services.NewApi(autoServices, services.WithKnownTypesFromMapKeys(c.SystemConfig.AutoFactories)))))
 
 	err = multierr.Append(err, group.Wait())
 	return
@@ -354,133 +365,71 @@ func addFactorySupport[M ~map[K]F, K comparable, F any](s node.Supporter, m M) {
 	}
 }
 
-func (c *Controller) startDrivers(ctx context.Context) (err error) {
-	driverServices := driver.Services{
+func (c *Controller) startDrivers() (*service.Map, error) {
+	ctxServices := driver.Services{
 		Logger:          c.Logger.Named("driver"),
 		Node:            c.Node,
-		Tasks:           &task.Group{},
 		ClientTLSConfig: c.ClientTLSConfig,
 		HTTPMux:         c.Mux,
 	}
 
-	var started []task.Starter
-	go func() {
-		<-ctx.Done()
-		var err error
-		for _, impl := range started {
-			if task.Stoppable(impl) {
-				err = multierr.Append(err, task.Stop(impl))
-			}
-		}
-		if err != nil {
-			c.Logger.Warn("Failed to cleanly stop drivers after ctx done", zap.Error(err))
-		}
-	}()
-
-	for _, driverConfig := range c.ControllerConfig.Drivers {
-		f, ok := c.SystemConfig.DriverFactories[driverConfig.Type]
+	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+		f, ok := c.SystemConfig.DriverFactories[kind]
 		if !ok {
-			err = multierr.Append(err, fmt.Errorf("unsupported driver type %v", driverConfig.Type))
-			continue
+			return nil, fmt.Errorf("unsupported driver type %v", kind)
 		}
-		impl := f.New(driverServices)
-		if e := impl.Start(ctx); e != nil {
-			err = multierr.Append(err, fmt.Errorf("start %s %w", driverConfig.Name, e))
-		}
-		// keep track so we can stop them if ctx ends
-		started = append(started, impl)
+		return f.New(ctxServices), nil
+	}, service.IdIsRequired)
 
-		if task.Configurable(impl) {
-			if e := task.Configure(impl, driverConfig.Raw); e != nil {
-				err = multierr.Append(err, fmt.Errorf("configure %s %w", driverConfig.Name, e))
-			}
-		}
+	var allErrs error
+	for _, cfg := range c.ControllerConfig.Drivers {
+		_, _, err := m.Create(cfg.Name, cfg.Type, service.State{Active: !cfg.Disabled, Config: cfg.Raw})
+		allErrs = multierr.Append(allErrs, err)
 	}
-	return err
+	return m, allErrs
 }
 
-func (c *Controller) startAutomations(ctx context.Context) (err error) {
-	autoServices := auto.Services{
+func (c *Controller) startAutomations() (*service.Map, error) {
+	ctxServices := auto.Services{
 		Logger:       c.Logger.Named("auto"),
 		Node:         c.Node,
 		Database:     c.Database,
 		GRPCServices: c.GRPC,
 	}
 
-	var started []task.Starter
-	go func() {
-		<-ctx.Done()
-		var err error
-		for _, impl := range started {
-			if task.Stoppable(impl) {
-				err = multierr.Append(err, task.Stop(impl))
-			}
-		}
-		if err != nil {
-			c.Logger.Warn("Failed to cleanly stop automations after ctx done", zap.Error(err))
-		}
-	}()
-
-	for _, autoConfig := range c.ControllerConfig.Automation {
-		f, ok := c.SystemConfig.AutoFactories[autoConfig.Type]
+	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+		f, ok := c.SystemConfig.AutoFactories[kind]
 		if !ok {
-			err = multierr.Append(err, fmt.Errorf("unsupported automation type %v", autoConfig.Type))
-			continue
+			return nil, fmt.Errorf("unsupported automation type %v", kind)
 		}
-		impl := f.New(autoServices)
-		if e := impl.Start(ctx); e != nil {
-			err = multierr.Append(err, fmt.Errorf("start %s %w", autoConfig.Name, e))
-		}
-		// keep track so we can stop them if ctx ends
-		started = append(started, impl)
+		return f.New(ctxServices), nil
+	}, service.IdIsRequired)
 
-		if task.Configurable(impl) {
-			if e := task.Configure(impl, autoConfig.Raw); e != nil {
-				err = multierr.Append(err, fmt.Errorf("configure %s %w", autoConfig.Name, e))
-			}
-		}
+	var allErrs error
+	for _, cfg := range c.ControllerConfig.Automation {
+		_, _, err := m.Create(cfg.Name, cfg.Type, service.State{Active: !cfg.Disabled, Config: cfg.Raw})
+		allErrs = multierr.Append(allErrs, err)
 	}
-	return err
+	return m, allErrs
 }
 
-func (c *Controller) startSystems(ctx context.Context) (err error) {
-	services := system.Services{
+func (c *Controller) startSystems() (*service.Map, error) {
+	ctxServices := system.Services{
 		Logger: c.Logger.Named("system"),
 		Node:   c.Node,
 	}
-
-	var started []task.Starter
-	go func() {
-		<-ctx.Done()
-		var err error
-		for _, impl := range started {
-			if task.Stoppable(impl) {
-				err = multierr.Append(err, task.Stop(impl))
-			}
-		}
-		if err != nil {
-			c.Logger.Warn("Failed to cleanly stop systems after ctx done", zap.Error(err))
-		}
-	}()
-
-	for k, cfg := range c.ControllerConfig.Systems {
-		f, ok := c.SystemConfig.SystemFactories[k]
+	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+		f, ok := c.SystemConfig.SystemFactories[kind]
 		if !ok {
-			err = multierr.Append(err, fmt.Errorf("unsupported system type %v", k))
-			continue
+			return nil, fmt.Errorf("unsupported system type %v", kind)
 		}
-		impl := f.New(services)
-		if e := impl.Start(ctx); e != nil {
-			err = multierr.Append(err, fmt.Errorf("start %s %w", k, e))
-		}
-		// keep track so we can stop them if ctx ends
-		started = append(started, impl)
+		return f.New(ctxServices), nil
+	}, service.IdIsKind)
 
-		if task.Configurable(impl) {
-			if e := task.Configure(impl, cfg); e != nil {
-				err = multierr.Append(err, fmt.Errorf("configure %s %w", k, e))
-			}
-		}
+	var allErrs error
+	for kind, cfg := range c.ControllerConfig.Systems {
+		_, _, err := m.Create("", kind, service.State{Active: !cfg.Disabled, Config: cfg.Raw})
+		allErrs = multierr.Append(allErrs, err)
 	}
-	return err
+	return m, allErrs
 }

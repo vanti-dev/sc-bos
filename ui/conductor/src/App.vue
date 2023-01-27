@@ -7,7 +7,7 @@
         :clipped-right="hasSidebar"
         elevation="0"
         class="pr-7">
-      <app-menu btn-class="full-btn"/>
+      <app-menu/>
       <sc-logo outline="white" style="height: 35px; margin-left: 16px"/>
       <span class="heading">Smart Core</span>
 
@@ -73,30 +73,8 @@ store.loadLocalStorage();
   background: var(--v-neutral-base);
 }
 
-.v-app-bar ::v-deep(.v-toolbar__content) {
+.v-app-bar :deep(.v-toolbar__content) {
   padding-right: 0px;
-}
-
-.v-app-bar ::v-deep(.v-toolbar__content > .v-btn.full-btn) {
-  margin-top: -4px;
-  margin-bottom: -4px;
-  height: 60px;
-  min-width: 60px;
-  width: auto;
-
-  background-color: transparent;
-}
-
-.v-app-bar ::v-deep(.v-toolbar__content > .v-btn.full-btn:first-child) {
-  margin-left: -16px;
-}
-
-.v-app-bar ::v-deep(.v-toolbar__content > .v-btn.full-btn:last-child) {
-  margin-right: -16px;
-}
-
-.v-app-bar ::v-deep(.v-toolbar__content > .v-btn.full-btn .v-btn__content) {
-  height: 100%;
 }
 
 .heading {

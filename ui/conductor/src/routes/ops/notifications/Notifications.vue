@@ -97,7 +97,7 @@ const tableData = computed(() => {
 </script>
 
 <style scoped>
-::v-deep(table) {
+:deep(table) {
   table-layout: fixed;
 }
 </style>
