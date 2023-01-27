@@ -36,6 +36,7 @@ export const useAutomationsStore = defineStore('automations', () => {
     const listFn = async (name, tracker, pageToken, recordFn) => {
       const page = await listServices({name, pageToken, pageSize: 100}, tracker);
       for (const service of page.servicesList) {
+        service.config = JSON.parse(service.configRaw);
         recordFn(service, service.id);
       }
       return page.nextPageToken;

@@ -3,7 +3,7 @@ import {ServicesApiPromiseClient} from '@sc-bos/ui-gen/proto/services_grpc_web_p
 import {clientOptions} from '@/api/grpcweb';
 import {GetMetadataRequest} from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb';
 import {fieldMaskFromObject, setProperties} from '@/api/convpb';
-import {ListServicesRequest} from '@sc-bos/ui-gen/proto/services_pb';
+import {ConfigureServiceRequest, ListServicesRequest} from '@sc-bos/ui-gen/proto/services_pb';
 
 
 /**
@@ -31,6 +31,20 @@ export function listServices(request, tracker) {
   return trackAction('Services.ListServices', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.listServices(createListServicesRequestFromObject(request));
+  });
+}
+
+/**
+ *
+ * @param {ConfigureServiceRequest.AsObject} request
+ * @param {ActionTracker<Service.AsObject>} tracker
+ * @return {Promise<Service.AsObject>}
+ */
+export function configureService(request, tracker) {
+  if (!(request.name && request.id)) throw new Error('request.name and request.id must be specified');
+  return trackAction('Services.ConfigureService', tracker ?? {}, endpoint => {
+    const api = client(endpoint);
+    return api.configureService(createConfigureServiceRequestFromObject(request));
   });
 }
 
@@ -63,6 +77,19 @@ function createListServicesRequestFromObject(obj) {
   if (!obj) return undefined;
   const req = new ListServicesRequest();
   setProperties(req, obj, 'name', 'pageToken', 'pageSize');
+  return req;
+}
+
+/**
+ *
+ * @param {ConfigureServiceRequest.AsObject} obj
+ * @return {ConfigureServiceRequest}
+ */
+function createConfigureServiceRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const req = new ConfigureServiceRequest();
+  setProperties(req, obj, 'name', 'id');
+  req.setConfigRaw(obj.configRaw);
   return req;
 }
 

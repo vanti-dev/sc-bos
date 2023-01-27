@@ -1,17 +1,18 @@
-import ChildOnlyPage from '@/components/page-layout/ChildOnlyPage.vue';
+import SidebarPage from '@/components/page-layout/SidebarPage.vue';
 
 export default {
   name: 'automations',
   path: '/automations',
   components: {
-    default: ChildOnlyPage,
+    default: SidebarPage,
     nav: () => import('./AutomationNav.vue')
   },
   children: [
     {
       path: ':type?',
       components: {
-        default: () => import('./AutomationList.vue')
+        default: () => import('./components/AutomationList.vue'),
+        sidebar: () => import('./components/AutomationSideBar.vue')
       },
       props: {
         default: true
