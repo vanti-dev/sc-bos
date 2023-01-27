@@ -8,11 +8,13 @@
         :loading="automationsCollection.loading"
         @click:row="showAutomation">
       <template #item.active="{value}">
-        {{ value?'Running':'Stopped' }}
+        <span :class="value?'success--text':'error--text'" class="text--lighten-2">
+          {{ value?'Running':'Stopped' }}
+        </span>
       </template>
       <template #item.actions="{item}">
-        <v-btn outlined v-if="item.active" @click="stopService(item)">Stop</v-btn>
-        <v-btn outlined v-else @click="startService(item)">Start</v-btn>
+        <v-btn outlined v-if="item.active" @click.stop="stopAutomation(item)">Stop</v-btn>
+        <v-btn outlined v-else @click.stop="startAutomation(item)">Start</v-btn>
       </template>
     </v-data-table>
   </content-card>
@@ -20,11 +22,12 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import {computed, onMounted, onUnmounted, ref} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 import {useAutomationsStore} from '@/routes/automations/store';
 import {storeToRefs} from 'pinia';
-import {ServiceNames as ServiceTypes} from '@/api/ui/services';
+import {ServiceNames as ServiceTypes, startService, stopService} from '@/api/ui/services';
 import {usePageStore} from '@/stores/page';
+import {newActionTracker} from '@/api/resource';
 
 const automationsStore = useAutomationsStore();
 const {automationsCollection} = storeToRefs(automationsStore);
@@ -42,7 +45,7 @@ const search = ref('');
 const headers = [
   {text: 'ID', value: 'id'},
   {text: 'Status', value: 'active'},
-  {text: '', value: 'actions'}
+  {text: '', value: 'actions', align: 'end', width: '100'}
 ];
 
 /** @type {Collection} */
@@ -69,22 +72,23 @@ function showAutomation(service, row) {
   pageStore.sidebarData = service;
 }
 
+const startStopTracker = reactive(newActionTracker());
 /**
  *
  * @param {Service.AsObject} service
  */
-function startService(service) {
+async function startAutomation(service) {
   console.debug('Starting:', service.id);
-  // todo
+  await startService({name: ServiceTypes.Automations, id: service.id}, startStopTracker);
 }
 
 /**
  *
  * @param {Service.AsObject} service
  */
-function stopService(service) {
+async function stopAutomation(service) {
   console.debug('Stopping:', service.id);
-  // todo
+  await stopService({name: ServiceTypes.Automations, id: service.id}, startStopTracker);
 }
 
 </script>

@@ -3,7 +3,12 @@ import {ServicesApiPromiseClient} from '@sc-bos/ui-gen/proto/services_grpc_web_p
 import {clientOptions} from '@/api/grpcweb';
 import {GetMetadataRequest} from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb';
 import {fieldMaskFromObject, setProperties} from '@/api/convpb';
-import {ConfigureServiceRequest, ListServicesRequest} from '@sc-bos/ui-gen/proto/services_pb';
+import {
+  ConfigureServiceRequest,
+  ListServicesRequest,
+  StartServiceRequest,
+  StopServiceRequest
+} from '@sc-bos/ui-gen/proto/services_pb';
 
 
 /**
@@ -35,7 +40,6 @@ export function listServices(request, tracker) {
 }
 
 /**
- *
  * @param {ConfigureServiceRequest.AsObject} request
  * @param {ActionTracker<Service.AsObject>} tracker
  * @return {Promise<Service.AsObject>}
@@ -48,6 +52,30 @@ export function configureService(request, tracker) {
   });
 }
 
+/**
+ * @param {StartServiceRequest.AsObject} request
+ * @param {ActionTracker<Service.AsObject>} tracker
+ * @return {Promise<Service.AsObject>}
+ */
+export function startService(request, tracker) {
+  if (!(request.name && request.id)) throw new Error('request.name and request.id must be specified');
+  return trackAction('Services.StartService', tracker ?? {}, endpoint => {
+    const api = client(endpoint);
+    return api.startService(createStartServiceRequestFromObject(request));
+  });
+}
+/**
+ * @param {StopServiceRequest.AsObject} request
+ * @param {ActionTracker<Service.AsObject>} tracker
+ * @return {Promise<Service.AsObject>}
+ */
+export function stopService(request, tracker) {
+  if (!(request.name && request.id)) throw new Error('request.name and request.id must be specified');
+  return trackAction('Services.StopService', tracker ?? {}, endpoint => {
+    const api = client(endpoint);
+    return api.stopService(createStopServiceRequestFromObject(request));
+  });
+}
 
 /**
  * @param {string} endpoint
@@ -81,7 +109,6 @@ function createListServicesRequestFromObject(obj) {
 }
 
 /**
- *
  * @param {ConfigureServiceRequest.AsObject} obj
  * @return {ConfigureServiceRequest}
  */
@@ -92,6 +119,29 @@ function createConfigureServiceRequestFromObject(obj) {
   req.setConfigRaw(obj.configRaw);
   return req;
 }
+
+/**
+ * @param {StartServiceRequest.AsObject} obj
+ * @return {StartServiceRequest}
+ */
+function createStartServiceRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const req = new StartServiceRequest();
+  setProperties(req, obj, 'name', 'id', 'allowActive');
+  return req;
+}
+
+/**
+ * @param {StopServiceRequest.AsObject} obj
+ * @return {StopServiceRequest}
+ */
+function createStopServiceRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const req = new StopServiceRequest();
+  setProperties(req, obj, 'name', 'id', 'allowActive');
+  return req;
+}
+
 
 export const ServiceNames = {
   Automations: 'automations',
