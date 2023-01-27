@@ -1,32 +1,65 @@
-package building
+package pgxpublications
 
 import (
 	"context"
+	_ "embed"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/sc-bos/internal/db"
+	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"github.com/vanti-dev/sc-bos/internal/db"
-	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 )
 
-type PublicationServer struct {
+//go:embed schema.sql
+var schemaSql string
+
+func SetupDB(ctx context.Context, pool *pgxpool.Pool) error {
+	return pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		_, err := tx.Exec(ctx, schemaSql)
+		return err
+	})
+}
+
+func NewServer(ctx context.Context, connStr string) (*Server, error) {
+	pool, err := pgxpool.Connect(ctx, connStr)
+	if err != nil {
+		return nil, fmt.Errorf("connect %w", err)
+	}
+
+	return NewServerFromPool(ctx, pool)
+}
+
+func NewServerFromPool(ctx context.Context, pool *pgxpool.Pool, opts ...Option) (*Server, error) {
+	err := SetupDB(ctx, pool)
+	if err != nil {
+		return nil, fmt.Errorf("setup %w", err)
+	}
+
+	s := &Server{
+		pool: pool,
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s, nil
+}
+
+type Server struct {
 	traits.UnimplementedPublicationApiServer
 
 	logger *zap.Logger
-	conn   *pgxpool.Pool
+	pool   *pgxpool.Pool
 }
 
-func (p *PublicationServer) CreatePublication(
-	ctx context.Context, request *traits.CreatePublicationRequest,
-) (*traits.Publication, error) {
+func (p *Server) CreatePublication(ctx context.Context, request *traits.CreatePublicationRequest) (*traits.Publication, error) {
 	logger := rpcutil.ServerLogger(ctx, p.logger)
 	input := request.GetPublication()
 
@@ -39,7 +72,7 @@ func (p *PublicationServer) CreatePublication(
 	mediaType := input.GetMediaType()
 
 	var output *traits.Publication
-	err := p.conn.BeginFunc(ctx, func(tx pgx.Tx) error {
+	err := p.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		// Register the publication
 		err := db.CreatePublication(ctx, tx, pubID, audience)
 		if err != nil {
@@ -82,14 +115,12 @@ func (p *PublicationServer) CreatePublication(
 	return output, nil
 }
 
-func (p *PublicationServer) GetPublication(
-	ctx context.Context, request *traits.GetPublicationRequest,
-) (*traits.Publication, error) {
+func (p *Server) GetPublication(ctx context.Context, request *traits.GetPublicationRequest) (*traits.Publication, error) {
 	id := request.GetId()
 	version := request.GetVersion()
 
 	var output *traits.Publication
-	err := p.conn.BeginFunc(ctx, func(tx pgx.Tx) error {
+	err := p.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		var err error
 		output, err = db.GetPublication(ctx, tx, id, version)
 		return err
@@ -97,9 +128,7 @@ func (p *PublicationServer) GetPublication(
 	return output, err
 }
 
-func (p *PublicationServer) UpdatePublication(
-	ctx context.Context, request *traits.UpdatePublicationRequest,
-) (*traits.Publication, error) {
+func (p *Server) UpdatePublication(ctx context.Context, request *traits.UpdatePublicationRequest) (*traits.Publication, error) {
 	if request.GetUpdateMask() != nil {
 		return nil, status.Error(codes.Unimplemented, "field mask support not implemented")
 	}
@@ -112,7 +141,7 @@ func (p *PublicationServer) UpdatePublication(
 	}
 	var updated *traits.Publication
 
-	err := p.conn.BeginFunc(ctx, func(tx pgx.Tx) error {
+	err := p.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		var err error
 		if request.GetVersion() != "" {
 			err = checkLatestVersion(ctx, tx, request.GetPublication().GetId(), request.GetVersion())
@@ -137,12 +166,10 @@ func (p *PublicationServer) UpdatePublication(
 	return updated, nil
 }
 
-func (p *PublicationServer) DeletePublication(
-	ctx context.Context, request *traits.DeletePublicationRequest,
-) (*traits.Publication, error) {
+func (p *Server) DeletePublication(ctx context.Context, request *traits.DeletePublicationRequest) (*traits.Publication, error) {
 	var pub *traits.Publication
 
-	err := p.conn.BeginFunc(ctx, func(tx pgx.Tx) error {
+	err := p.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		var err error
 		// if a version is specified, check that it's the latest version
 		// this helps clients to avoid racing each other
@@ -174,15 +201,11 @@ func (p *PublicationServer) DeletePublication(
 	return pub, nil
 }
 
-func (p *PublicationServer) PullPublication(
-	_ *traits.PullPublicationRequest, _ traits.PublicationApi_PullPublicationServer,
-) error {
+func (p *Server) PullPublication(_ *traits.PullPublicationRequest, _ traits.PublicationApi_PullPublicationServer) error {
 	return status.Error(codes.Unimplemented, "PullPublication not implemented")
 }
 
-func (p *PublicationServer) ListPublications(
-	ctx context.Context, request *traits.ListPublicationsRequest,
-) (*traits.ListPublicationsResponse, error) {
+func (p *Server) ListPublications(ctx context.Context, request *traits.ListPublicationsRequest) (*traits.ListPublicationsResponse, error) {
 	limit := 50
 	if request.GetPageSize() > 0 {
 		limit = int(request.GetPageSize())
@@ -192,7 +215,7 @@ func (p *PublicationServer) ListPublications(
 		publications []*traits.Publication
 		nextToken    string
 	)
-	err := p.conn.BeginFunc(ctx, func(tx pgx.Tx) error {
+	err := p.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		var err error
 		publications, nextToken, err = db.GetPublicationsPaginated(ctx, tx, request.GetPageToken(), limit)
 		return err
@@ -208,15 +231,11 @@ func (p *PublicationServer) ListPublications(
 	}, nil
 }
 
-func (p *PublicationServer) PullPublications(
-	_ *traits.PullPublicationsRequest, _ traits.PublicationApi_PullPublicationsServer,
-) error {
+func (p *Server) PullPublications(_ *traits.PullPublicationsRequest, _ traits.PublicationApi_PullPublicationsServer) error {
 	return status.Error(codes.Unimplemented, "PullPublications not implemented")
 }
 
-func (p *PublicationServer) AcknowledgePublication(
-	ctx context.Context, request *traits.AcknowledgePublicationRequest,
-) (*traits.Publication, error) {
+func (p *Server) AcknowledgePublication(ctx context.Context, request *traits.AcknowledgePublicationRequest) (*traits.Publication, error) {
 	var accepted bool
 	switch request.GetReceipt() {
 	case traits.Publication_Audience_REJECTED:
@@ -231,7 +250,7 @@ func (p *PublicationServer) AcknowledgePublication(
 	}
 
 	var updated *traits.Publication
-	err := p.conn.BeginFunc(ctx, func(tx pgx.Tx) error {
+	err := p.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		err := db.CreatePublicationAcknowledgement(ctx, tx, request.GetId(), request.GetVersion(), time.Now(), accepted,
 			request.GetReceiptRejectedReason(), request.GetAllowAcknowledged())
 		if err != nil {

@@ -18,6 +18,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/vanti-dev/sc-bos/pkg/system/publications/pgxpublications"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants/pgxtenants"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -91,7 +92,12 @@ func RunController(ctx context.Context, logger *zap.Logger, configDir string, ad
 
 	grpcServer := grpc.NewServer(grpcServerOptions...)
 	reflection.Register(grpcServer)
-	traits.RegisterPublicationApiServer(grpcServer, &PublicationServer{conn: dbConn})
+	// todo: replace this with the systems package
+	publicationApi, err := pgxpublications.NewServerFromPool(ctx, dbConn, pgxpublications.WithLogger(logger.Named("publications")))
+	if err != nil {
+		return fmt.Errorf("publication api %w", err)
+	}
+	traits.RegisterPublicationApiServer(grpcServer, publicationApi)
 	gen.RegisterTestApiServer(grpcServer, testapi.NewAPI())
 	gen.RegisterNodeApiServer(grpcServer, &NodeServer{
 		logger:        logger.Named("NodeServer"),
