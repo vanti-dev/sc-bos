@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-import {computed, watch} from 'vue';
+import {computed} from 'vue';
 import {storeToRefs} from 'pinia';
 
 import {usePageStore} from '@/stores/page';

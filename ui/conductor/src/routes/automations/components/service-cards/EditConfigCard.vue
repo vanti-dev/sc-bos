@@ -36,11 +36,9 @@ import {storeToRefs} from 'pinia';
 import {computed, reactive, ref} from 'vue';
 import {configureService, ServiceNames as ServiceTypes} from '@/api/ui/services';
 import {newActionTracker} from '@/api/resource';
-import {useAutomationsStore} from '@/routes/automations/store';
 
 const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);
-const automationStore = useAutomationsStore();
 
 const jsonError = ref('');
 
