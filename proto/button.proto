@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+import "google/protobuf/timestamp.proto";
+
+service ButtonApi {
+  rpc GetButtonState(GetButtonStateRequest) returns (ButtonState);
+  rpc PullButtonEvents(PullButtonEventsRequest) returns (stream PullButtonEventsResponse);
+}
+
+message ButtonState {
+  enum PressState {
+    BUTTON_STATE_UNSPECIFIED = 0;
+    PRESSED = 1;
+    RELEASED = 2;
+  }
+
+  PressState press_state = 1;
+}
+
+
+enum ButtonEvent {
+  BUTTON_EVENT_UNSPECIFIED = 0;
+  // Button pushed down.
+  PRESS = 1;
+  // Button released.
+  RELEASE = 2;
+  // Button push and then released within a short time.
+  SHORT_PRESS = 3;
+  // Button pressed, released and then quickly pressed again.
+  DOUBLE_PRESS = 4;
+  // Button pressed, and has been held long enough to say that it's not a short press.
+  LONG_PRESS_START = 5;
+  // In between a LONG_PRESS_START and a LONG_PRESS_END, LONG_PRESS_REPEAT is sent periodically.
+  LONG_PRESS_REPEAT = 6;
+  // Button was released after being held down for a long time.
+  LONG_PRESS_END = 7;
+}
+
+message GetButtonStateRequest {
+  string name = 1;
+}
+
+message PullButtonEventsRequest {
+  string name = 1;
+}
+message PullButtonEventsResponse {
+  message Change {
+    string name = 1;
+    google.protobuf.Timestamp change_time = 2;
+    ButtonEvent button_event = 3;
+  }
+
+  repeated Change changes = 1;
+}
