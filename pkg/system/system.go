@@ -2,6 +2,7 @@
 package system
 
 import (
+	"github.com/timshannon/bolthold"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/zap"
 
@@ -9,8 +10,9 @@ import (
 )
 
 type Services struct {
-	Logger *zap.Logger
-	Node   *node.Node // for advertising devices
+	Logger   *zap.Logger
+	Node     *node.Node // for advertising devices
+	Database *bolthold.Store
 }
 
 type Factory interface {

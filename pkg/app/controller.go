@@ -415,8 +415,9 @@ func (c *Controller) startAutomations() (*service.Map, error) {
 
 func (c *Controller) startSystems() (*service.Map, error) {
 	ctxServices := system.Services{
-		Logger: c.Logger.Named("system"),
-		Node:   c.Node,
+		Logger:   c.Logger.Named("system"),
+		Node:     c.Node,
+		Database: c.Database,
 	}
 	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
 		f, ok := c.SystemConfig.SystemFactories[kind]
