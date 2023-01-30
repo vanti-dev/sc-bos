@@ -10,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/internal/db"
 	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -74,14 +73,14 @@ func (p *Server) CreatePublication(ctx context.Context, request *traits.CreatePu
 	var output *traits.Publication
 	err := p.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		// Register the publication
-		err := db.CreatePublication(ctx, tx, pubID, audience)
+		err := CreatePublication(ctx, tx, pubID, audience)
 		if err != nil {
 			return err
 		}
 
 		pubTime := time.Now().UTC()
 		// Create the initial version for the publication
-		version, err := db.CreatePublicationVersion(ctx, tx, db.PublicationVersion{
+		version, err := CreatePublicationVersion(ctx, tx, PublicationVersion{
 			PublicationID: pubID,
 			PublishTime:   pubTime,
 			Body:          body,
@@ -122,7 +121,7 @@ func (p *Server) GetPublication(ctx context.Context, request *traits.GetPublicat
 	var output *traits.Publication
 	err := p.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		var err error
-		output, err = db.GetPublication(ctx, tx, id, version)
+		output, err = GetPublication(ctx, tx, id, version)
 		return err
 	})
 	return output, err
@@ -133,7 +132,7 @@ func (p *Server) UpdatePublication(ctx context.Context, request *traits.UpdatePu
 		return nil, status.Error(codes.Unimplemented, "field mask support not implemented")
 	}
 
-	data := db.PublicationVersion{
+	data := PublicationVersion{
 		PublicationID: request.GetPublication().GetId(),
 		PublishTime:   time.Now(),
 		Body:          request.GetPublication().GetBody(),
@@ -150,12 +149,12 @@ func (p *Server) UpdatePublication(ctx context.Context, request *traits.UpdatePu
 			}
 		}
 
-		versionID, err := db.CreatePublicationVersion(ctx, tx, data)
+		versionID, err := CreatePublicationVersion(ctx, tx, data)
 		if err != nil {
 			return err
 		}
 
-		updated, err = db.GetPublication(ctx, tx, data.PublicationID, versionID)
+		updated, err = GetPublication(ctx, tx, data.PublicationID, versionID)
 		return err
 	})
 
@@ -181,7 +180,7 @@ func (p *Server) DeletePublication(ctx context.Context, request *traits.DeletePu
 		}
 
 		// grab a copy of the data we're about to delete
-		pub, err = db.GetPublication(ctx, tx, request.GetId(), request.GetVersion())
+		pub, err = GetPublication(ctx, tx, request.GetId(), request.GetVersion())
 		if errors.Is(err, pgx.ErrNoRows) && request.GetAllowMissing() {
 			// the publication doesn't exist, and the client indicates that this is acceptable
 			// return an empty publication to indicate this
@@ -192,7 +191,7 @@ func (p *Server) DeletePublication(ctx context.Context, request *traits.DeletePu
 			return err
 		}
 
-		return db.DeletePublication(ctx, tx, request.GetId(), request.GetAllowMissing())
+		return DeletePublication(ctx, tx, request.GetId(), request.GetAllowMissing())
 	})
 
 	if err != nil {
@@ -217,7 +216,7 @@ func (p *Server) ListPublications(ctx context.Context, request *traits.ListPubli
 	)
 	err := p.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		var err error
-		publications, nextToken, err = db.GetPublicationsPaginated(ctx, tx, request.GetPageToken(), limit)
+		publications, nextToken, err = GetPublicationsPaginated(ctx, tx, request.GetPageToken(), limit)
 		return err
 	})
 
@@ -251,14 +250,14 @@ func (p *Server) AcknowledgePublication(ctx context.Context, request *traits.Ack
 
 	var updated *traits.Publication
 	err := p.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
-		err := db.CreatePublicationAcknowledgement(ctx, tx, request.GetId(), request.GetVersion(), time.Now(), accepted,
+		err := CreatePublicationAcknowledgement(ctx, tx, request.GetId(), request.GetVersion(), time.Now(), accepted,
 			request.GetReceiptRejectedReason(), request.GetAllowAcknowledged())
 		if err != nil {
 			return err
 		}
 
 		// get the updated publication
-		updated, err = db.GetPublication(ctx, tx, request.GetId(), request.GetVersion())
+		updated, err = GetPublication(ctx, tx, request.GetId(), request.GetVersion())
 		return err
 	})
 
@@ -266,7 +265,7 @@ func (p *Server) AcknowledgePublication(ctx context.Context, request *traits.Ack
 }
 
 func checkLatestVersion(ctx context.Context, tx pgx.Tx, pubID string, expectedVersionID string) error {
-	latestVersion, err := db.GetLatestVersionID(ctx, tx, pubID)
+	latestVersion, err := GetLatestVersionID(ctx, tx, pubID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		// publication has no versions
 		return ErrExpectedVersion

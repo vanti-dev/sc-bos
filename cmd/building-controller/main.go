@@ -12,13 +12,11 @@ import (
 )
 
 var (
-	flagConfigDir  string
-	flagPopulateDB bool
+	flagConfigDir string
 )
 
 func init() {
 	flag.StringVar(&flagConfigDir, "config-dir", ".data/building-controller", "path to the configuration directory")
-	flag.BoolVar(&flagPopulateDB, "populate-db", false, "inserts some test data into the database and exits")
 }
 
 func run(ctx context.Context) error {
@@ -28,7 +26,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	return building.RunController(ctx, logger, flagConfigDir, flagPopulateDB)
+	return building.RunController(ctx, logger, flagConfigDir)
 }
 
 func main() {

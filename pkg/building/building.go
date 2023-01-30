@@ -14,13 +14,11 @@ import (
 	"time"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"github.com/vanti-dev/sc-bos/pkg/system/publications/pgxpublications"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants/pgxtenants"
-	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -28,7 +26,6 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/vanti-dev/sc-bos/internal/auth/keycloak"
-	"github.com/vanti-dev/sc-bos/internal/db"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
@@ -39,7 +36,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
 )
 
-func RunController(ctx context.Context, logger *zap.Logger, configDir string, addDBTestRecords bool) error {
+func RunController(ctx context.Context, logger *zap.Logger, configDir string) error {
 	// load system config file
 	sysConf, err := readSystemConfig(configDir)
 	if err != nil {
@@ -50,9 +47,6 @@ func RunController(ctx context.Context, logger *zap.Logger, configDir string, ad
 	dbConn, err := connectDB(ctx, sysConf)
 	if err != nil {
 		return err
-	}
-	if addDBTestRecords {
-		return populateDB(ctx, logger, dbConn)
 	}
 
 	// load certificates
@@ -162,62 +156,6 @@ func readSystemConfig(configDir string) (SystemConfig, error) {
 
 func connectDB(ctx context.Context, sysConf SystemConfig) (*pgxpool.Pool, error) {
 	return pgxutil.Connect(ctx, pgxutil.ConnectConfig{URI: sysConf.DatabaseURL, PasswordFile: sysConf.DatabasePasswordFile})
-}
-
-func populateDB(ctx context.Context, logger *zap.Logger, conn *pgxpool.Pool) error {
-	deviceNames := []string{
-		"test/area-controller-1",
-		"test/area-controller-2",
-		"test/area-controller-3",
-	}
-
-	baseTime := time.Date(2022, 7, 6, 11, 18, 0, 0, time.UTC)
-
-	err := conn.BeginFunc(ctx, func(tx pgx.Tx) error {
-		var errs error
-		for _, name := range deviceNames {
-			// register a publication
-			id := name + ":config"
-			errs = multierr.Append(errs, db.CreatePublication(ctx, tx, id, name))
-
-			// add some versions to it
-			for i := 1; i <= 3; i++ {
-				payload := struct {
-					Device      string `json:"device"`
-					Publication string `json:"publication"`
-					Sequence    int    `json:"sequence"`
-				}{
-					Device:      name,
-					Publication: id,
-					Sequence:    i,
-				}
-
-				encoded, err := json.Marshal(payload)
-				if err != nil {
-					errs = multierr.Append(errs, err)
-					continue
-				}
-
-				_, err = db.CreatePublicationVersion(ctx, tx, db.PublicationVersion{
-					PublicationID: id,
-					PublishTime:   baseTime.Add(time.Duration(i) * time.Hour),
-					Body:          encoded,
-					MediaType:     "application/json",
-					Changelog:     fmt.Sprintf("auto-populated revision %d", i),
-				})
-				errs = multierr.Append(errs, err)
-			}
-		}
-
-		return errs
-	})
-
-	if err != nil {
-		logger.Error("failed to populate database", zap.Error(err))
-	} else {
-		logger.Info("database populated")
-	}
-	return err
 }
 
 func initKeycloakValidator(ctx context.Context, sysConf SystemConfig) (auth.TokenValidator, error) {
