@@ -16,3 +16,10 @@ func (b MQTTBroker) ClientOptions() (*mqtt.ClientOptions, error) {
 	opts.SetOrderMatters(false)
 	return opts, nil
 }
+
+type MqttServiceSource struct {
+	Source
+
+	// the names to use for rpc requests
+	RpcNames []string `json:"rpcNames,omitempty"`
+}
