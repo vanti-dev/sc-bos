@@ -8,50 +8,64 @@ import "google/protobuf/timestamp.proto";
 
 service ButtonApi {
   rpc GetButtonState(GetButtonStateRequest) returns (ButtonState);
-  rpc PullButtonEvents(PullButtonEventsRequest) returns (stream PullButtonEventsResponse);
+  rpc PullButtonState(PullButtonStateRequest) returns (stream PullButtonStateResponse);
 }
 
 message ButtonState {
-  enum PressState {
-    BUTTON_STATE_UNSPECIFIED = 0;
-    PRESSED = 1;
-    RELEASED = 2;
+  enum Press {
+    PRESS_UNSPECIFIED = 0;
+    // Button is in its neutral position.
+    UNPRESSED = 1;
+    // Button is being pushed in.
+    PRESSED = 2;
   }
 
-  PressState press_state = 1;
-}
+  message Gesture {
+    enum Kind {
+      KIND_UNSPECIFIED = 0;
+      // One or more short press-and-release actions.
+      // Clicks in short succession may be fused into double-clicks, triple-clicks etc. - in this case, the number
+      // of fused clicks is stored in the count field.
+      // When clicks are fused in this way, the gesture will not appear at all until the final click has finished -
+      // it's not possible for a single gesture to be first reported as a single click, and then modified to a double click.
+      CLICK = 1;
+      // Button is kept in the pressed state for an extended period.
+      // Buttons may support repeat events, in which case the count will increment for each repeat event.
+      HOLD = 2;
+    }
 
+    // Opaque identifier changes each time a new gesture begins.
+    string id = 1;
+    Kind kind = 2;
+    // A counter for sub-events that occur within a single gesture. See the Kind for details of meaning.
+    int32 count = 3;
+    // The time when the gesture was first recognised.
+    google.protobuf.Timestamp start_time = 4;
+    // The time when the gesture was recognised as completed. For HOLD gestures, this remains unset until the button
+    // is released.
+    google.protobuf.Timestamp end_time = 5;
+  }
 
-enum ButtonEvent {
-  BUTTON_EVENT_UNSPECIFIED = 0;
-  // Button pushed down.
-  PRESS = 1;
-  // Button released.
-  RELEASE = 2;
-  // Button push and then released within a short time.
-  SHORT_PRESS = 3;
-  // Button pressed, released and then quickly pressed again.
-  DOUBLE_PRESS = 4;
-  // Button pressed, and has been held long enough to say that it's not a short press.
-  LONG_PRESS_START = 5;
-  // In between a LONG_PRESS_START and a LONG_PRESS_END, LONG_PRESS_REPEAT is sent periodically.
-  LONG_PRESS_REPEAT = 6;
-  // Button was released after being held down for a long time.
-  LONG_PRESS_END = 7;
+  Press state = 1;
+  // The time that state changed to its present value.
+  google.protobuf.Timestamp state_change_time = 2;
+
+  // The gesture that is currently in progress, or finished most recently.
+  Gesture most_recent_gesture = 3;
 }
 
 message GetButtonStateRequest {
   string name = 1;
 }
 
-message PullButtonEventsRequest {
+message PullButtonStateRequest {
   string name = 1;
 }
-message PullButtonEventsResponse {
+message PullButtonStateResponse {
   message Change {
     string name = 1;
     google.protobuf.Timestamp change_time = 2;
-    ButtonEvent button_event = 3;
+    ButtonState button_state = 3;
   }
 
   repeated Change changes = 1;

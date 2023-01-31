@@ -87,7 +87,7 @@ func (r *ButtonApiRouter) GetButtonState(ctx context.Context, request *GetButton
 	return child.GetButtonState(ctx, request)
 }
 
-func (r *ButtonApiRouter) PullButtonEvents(request *PullButtonEventsRequest, server ButtonApi_PullButtonEventsServer) error {
+func (r *ButtonApiRouter) PullButtonState(request *PullButtonStateRequest, server ButtonApi_PullButtonStateServer) error {
 	child, err := r.GetButtonApiClient(request.Name)
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func (r *ButtonApiRouter) PullButtonEvents(request *PullButtonEventsRequest, ser
 	// so we can cancel our forwarding request if we can't send responses to our caller
 	reqCtx, reqDone := context.WithCancel(server.Context())
 	// issue the request
-	stream, err := child.PullButtonEvents(reqCtx, request)
+	stream, err := child.PullButtonState(reqCtx, request)
 	if err != nil {
 		return err
 	}
@@ -117,7 +117,7 @@ func (r *ButtonApiRouter) PullButtonEvents(request *PullButtonEventsRequest, ser
 		// Impl note: we could improve throughput here by issuing the Recv and Send in different goroutines, but we're doing
 		// it synchronously until we have a need to change the behaviour
 
-		var msg *PullButtonEventsResponse
+		var msg *PullButtonStateResponse
 		msg, err = stream.Recv()
 		if err != nil {
 			break

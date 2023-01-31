@@ -4,8 +4,18 @@ import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/t
 
 
 export class ButtonState extends jspb.Message {
-  getPressState(): ButtonState.PressState;
-  setPressState(value: ButtonState.PressState): ButtonState;
+  getState(): ButtonState.Press;
+  setState(value: ButtonState.Press): ButtonState;
+
+  getStateChangeTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setStateChangeTime(value?: google_protobuf_timestamp_pb.Timestamp): ButtonState;
+  hasStateChangeTime(): boolean;
+  clearStateChangeTime(): ButtonState;
+
+  getMostRecentGesture(): ButtonState.Gesture | undefined;
+  setMostRecentGesture(value?: ButtonState.Gesture): ButtonState;
+  hasMostRecentGesture(): boolean;
+  clearMostRecentGesture(): ButtonState;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ButtonState.AsObject;
@@ -17,13 +27,60 @@ export class ButtonState extends jspb.Message {
 
 export namespace ButtonState {
   export type AsObject = {
-    pressState: ButtonState.PressState,
+    state: ButtonState.Press,
+    stateChangeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    mostRecentGesture?: ButtonState.Gesture.AsObject,
   }
 
-  export enum PressState { 
-    BUTTON_STATE_UNSPECIFIED = 0,
-    PRESSED = 1,
-    RELEASED = 2,
+  export class Gesture extends jspb.Message {
+    getId(): string;
+    setId(value: string): Gesture;
+
+    getKind(): ButtonState.Gesture.Kind;
+    setKind(value: ButtonState.Gesture.Kind): Gesture;
+
+    getCount(): number;
+    setCount(value: number): Gesture;
+
+    getStartTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setStartTime(value?: google_protobuf_timestamp_pb.Timestamp): Gesture;
+    hasStartTime(): boolean;
+    clearStartTime(): Gesture;
+
+    getEndTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setEndTime(value?: google_protobuf_timestamp_pb.Timestamp): Gesture;
+    hasEndTime(): boolean;
+    clearEndTime(): Gesture;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Gesture.AsObject;
+    static toObject(includeInstance: boolean, msg: Gesture): Gesture.AsObject;
+    static serializeBinaryToWriter(message: Gesture, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Gesture;
+    static deserializeBinaryFromReader(message: Gesture, reader: jspb.BinaryReader): Gesture;
+  }
+
+  export namespace Gesture {
+    export type AsObject = {
+      id: string,
+      kind: ButtonState.Gesture.Kind,
+      count: number,
+      startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+      endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    }
+
+    export enum Kind { 
+      KIND_UNSPECIFIED = 0,
+      CLICK = 1,
+      HOLD = 2,
+    }
+  }
+
+
+  export enum Press { 
+    STATE_UNSPECIFIED = 0,
+    UNPRESSED = 1,
+    PRESSED = 2,
   }
 }
 
@@ -45,41 +102,41 @@ export namespace GetButtonStateRequest {
   }
 }
 
-export class PullButtonEventsRequest extends jspb.Message {
+export class PullButtonStateRequest extends jspb.Message {
   getName(): string;
-  setName(value: string): PullButtonEventsRequest;
+  setName(value: string): PullButtonStateRequest;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): PullButtonEventsRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: PullButtonEventsRequest): PullButtonEventsRequest.AsObject;
-  static serializeBinaryToWriter(message: PullButtonEventsRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): PullButtonEventsRequest;
-  static deserializeBinaryFromReader(message: PullButtonEventsRequest, reader: jspb.BinaryReader): PullButtonEventsRequest;
+  toObject(includeInstance?: boolean): PullButtonStateRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: PullButtonStateRequest): PullButtonStateRequest.AsObject;
+  static serializeBinaryToWriter(message: PullButtonStateRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullButtonStateRequest;
+  static deserializeBinaryFromReader(message: PullButtonStateRequest, reader: jspb.BinaryReader): PullButtonStateRequest;
 }
 
-export namespace PullButtonEventsRequest {
+export namespace PullButtonStateRequest {
   export type AsObject = {
     name: string,
   }
 }
 
-export class PullButtonEventsResponse extends jspb.Message {
-  getChangesList(): Array<PullButtonEventsResponse.Change>;
-  setChangesList(value: Array<PullButtonEventsResponse.Change>): PullButtonEventsResponse;
-  clearChangesList(): PullButtonEventsResponse;
-  addChanges(value?: PullButtonEventsResponse.Change, index?: number): PullButtonEventsResponse.Change;
+export class PullButtonStateResponse extends jspb.Message {
+  getChangesList(): Array<PullButtonStateResponse.Change>;
+  setChangesList(value: Array<PullButtonStateResponse.Change>): PullButtonStateResponse;
+  clearChangesList(): PullButtonStateResponse;
+  addChanges(value?: PullButtonStateResponse.Change, index?: number): PullButtonStateResponse.Change;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): PullButtonEventsResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: PullButtonEventsResponse): PullButtonEventsResponse.AsObject;
-  static serializeBinaryToWriter(message: PullButtonEventsResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): PullButtonEventsResponse;
-  static deserializeBinaryFromReader(message: PullButtonEventsResponse, reader: jspb.BinaryReader): PullButtonEventsResponse;
+  toObject(includeInstance?: boolean): PullButtonStateResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: PullButtonStateResponse): PullButtonStateResponse.AsObject;
+  static serializeBinaryToWriter(message: PullButtonStateResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullButtonStateResponse;
+  static deserializeBinaryFromReader(message: PullButtonStateResponse, reader: jspb.BinaryReader): PullButtonStateResponse;
 }
 
-export namespace PullButtonEventsResponse {
+export namespace PullButtonStateResponse {
   export type AsObject = {
-    changesList: Array<PullButtonEventsResponse.Change.AsObject>,
+    changesList: Array<PullButtonStateResponse.Change.AsObject>,
   }
 
   export class Change extends jspb.Message {
@@ -91,8 +148,10 @@ export namespace PullButtonEventsResponse {
     hasChangeTime(): boolean;
     clearChangeTime(): Change;
 
-    getButtonEvent(): ButtonEvent;
-    setButtonEvent(value: ButtonEvent): Change;
+    getButtonState(): ButtonState | undefined;
+    setButtonState(value?: ButtonState): Change;
+    hasButtonState(): boolean;
+    clearButtonState(): Change;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Change.AsObject;
@@ -106,19 +165,9 @@ export namespace PullButtonEventsResponse {
     export type AsObject = {
       name: string,
       changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      buttonEvent: ButtonEvent,
+      buttonState?: ButtonState.AsObject,
     }
   }
 
 }
 
-export enum ButtonEvent { 
-  BUTTON_EVENT_UNSPECIFIED = 0,
-  PRESS = 1,
-  RELEASE = 2,
-  SHORT_PRESS = 3,
-  DOUBLE_PRESS = 4,
-  LONG_PRESS_START = 5,
-  LONG_PRESS_REPEAT = 6,
-  LONG_PRESS_END = 7,
-}

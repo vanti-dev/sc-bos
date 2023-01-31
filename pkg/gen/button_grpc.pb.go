@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ButtonApiClient interface {
 	GetButtonState(ctx context.Context, in *GetButtonStateRequest, opts ...grpc.CallOption) (*ButtonState, error)
-	PullButtonEvents(ctx context.Context, in *PullButtonEventsRequest, opts ...grpc.CallOption) (ButtonApi_PullButtonEventsClient, error)
+	PullButtonState(ctx context.Context, in *PullButtonStateRequest, opts ...grpc.CallOption) (ButtonApi_PullButtonStateClient, error)
 }
 
 type buttonApiClient struct {
@@ -43,12 +43,12 @@ func (c *buttonApiClient) GetButtonState(ctx context.Context, in *GetButtonState
 	return out, nil
 }
 
-func (c *buttonApiClient) PullButtonEvents(ctx context.Context, in *PullButtonEventsRequest, opts ...grpc.CallOption) (ButtonApi_PullButtonEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ButtonApi_ServiceDesc.Streams[0], "/smartcore.bos.ButtonApi/PullButtonEvents", opts...)
+func (c *buttonApiClient) PullButtonState(ctx context.Context, in *PullButtonStateRequest, opts ...grpc.CallOption) (ButtonApi_PullButtonStateClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ButtonApi_ServiceDesc.Streams[0], "/smartcore.bos.ButtonApi/PullButtonState", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &buttonApiPullButtonEventsClient{stream}
+	x := &buttonApiPullButtonStateClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -58,17 +58,17 @@ func (c *buttonApiClient) PullButtonEvents(ctx context.Context, in *PullButtonEv
 	return x, nil
 }
 
-type ButtonApi_PullButtonEventsClient interface {
-	Recv() (*PullButtonEventsResponse, error)
+type ButtonApi_PullButtonStateClient interface {
+	Recv() (*PullButtonStateResponse, error)
 	grpc.ClientStream
 }
 
-type buttonApiPullButtonEventsClient struct {
+type buttonApiPullButtonStateClient struct {
 	grpc.ClientStream
 }
 
-func (x *buttonApiPullButtonEventsClient) Recv() (*PullButtonEventsResponse, error) {
-	m := new(PullButtonEventsResponse)
+func (x *buttonApiPullButtonStateClient) Recv() (*PullButtonStateResponse, error) {
+	m := new(PullButtonStateResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (x *buttonApiPullButtonEventsClient) Recv() (*PullButtonEventsResponse, err
 // for forward compatibility
 type ButtonApiServer interface {
 	GetButtonState(context.Context, *GetButtonStateRequest) (*ButtonState, error)
-	PullButtonEvents(*PullButtonEventsRequest, ButtonApi_PullButtonEventsServer) error
+	PullButtonState(*PullButtonStateRequest, ButtonApi_PullButtonStateServer) error
 	mustEmbedUnimplementedButtonApiServer()
 }
 
@@ -91,8 +91,8 @@ type UnimplementedButtonApiServer struct {
 func (UnimplementedButtonApiServer) GetButtonState(context.Context, *GetButtonStateRequest) (*ButtonState, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetButtonState not implemented")
 }
-func (UnimplementedButtonApiServer) PullButtonEvents(*PullButtonEventsRequest, ButtonApi_PullButtonEventsServer) error {
-	return status.Errorf(codes.Unimplemented, "method PullButtonEvents not implemented")
+func (UnimplementedButtonApiServer) PullButtonState(*PullButtonStateRequest, ButtonApi_PullButtonStateServer) error {
+	return status.Errorf(codes.Unimplemented, "method PullButtonState not implemented")
 }
 func (UnimplementedButtonApiServer) mustEmbedUnimplementedButtonApiServer() {}
 
@@ -125,24 +125,24 @@ func _ButtonApi_GetButtonState_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ButtonApi_PullButtonEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(PullButtonEventsRequest)
+func _ButtonApi_PullButtonState_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(PullButtonStateRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(ButtonApiServer).PullButtonEvents(m, &buttonApiPullButtonEventsServer{stream})
+	return srv.(ButtonApiServer).PullButtonState(m, &buttonApiPullButtonStateServer{stream})
 }
 
-type ButtonApi_PullButtonEventsServer interface {
-	Send(*PullButtonEventsResponse) error
+type ButtonApi_PullButtonStateServer interface {
+	Send(*PullButtonStateResponse) error
 	grpc.ServerStream
 }
 
-type buttonApiPullButtonEventsServer struct {
+type buttonApiPullButtonStateServer struct {
 	grpc.ServerStream
 }
 
-func (x *buttonApiPullButtonEventsServer) Send(m *PullButtonEventsResponse) error {
+func (x *buttonApiPullButtonStateServer) Send(m *PullButtonStateResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -160,8 +160,8 @@ var ButtonApi_ServiceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "PullButtonEvents",
-			Handler:       _ButtonApi_PullButtonEvents_Handler,
+			StreamName:    "PullButtonState",
+			Handler:       _ButtonApi_PullButtonState_Handler,
 			ServerStreams: true,
 		},
 	},
