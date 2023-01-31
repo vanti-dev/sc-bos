@@ -198,7 +198,7 @@ type AlertMetadata struct {
 	TotalCount  uint32            `protobuf:"varint,1,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
 	FloorCounts map[string]uint32 `protobuf:"bytes,2,rep,name=floor_counts,json=floorCounts,proto3" json:"floor_counts,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"`
 	ZoneCounts  map[string]uint32 `protobuf:"bytes,3,rep,name=zone_counts,json=zoneCounts,proto3" json:"zone_counts,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"`
-	//map<string, uint32> source_counts = 4; // not sure this is needed and is likely to have poor performance
+	// map<string, uint32> source_counts = 4; // not sure this is needed and is likely to have poor performance
 	AcknowledgedCounts map[bool]uint32  `protobuf:"bytes,5,rep,name=acknowledged_counts,json=acknowledgedCounts,proto3" json:"acknowledged_counts,omitempty" protobuf_key:"varint,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"`
 	SeverityCounts     map[int32]uint32 `protobuf:"bytes,6,rep,name=severity_counts,json=severityCounts,proto3" json:"severity_counts,omitempty" protobuf_key:"zigzag32,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"`
 }

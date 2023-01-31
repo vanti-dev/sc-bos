@@ -115,7 +115,7 @@ message AlertMetadata {
 
   map<string, uint32> floor_counts = 2;
   map<string, uint32> zone_counts = 3;
-  //map<string, uint32> source_counts = 4; // not sure this is needed and is likely to have poor performance
+  // map<string, uint32> source_counts = 4; // not sure this is needed and is likely to have poor performance
   map<bool, uint32> acknowledged_counts = 5;
   map<sint32, uint32> severity_counts = 6;
 }
