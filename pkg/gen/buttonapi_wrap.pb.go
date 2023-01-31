@@ -34,33 +34,33 @@ func (w *buttonApiWrapper) GetButtonState(ctx context.Context, req *GetButtonSta
 	return w.server.GetButtonState(ctx, req)
 }
 
-func (w *buttonApiWrapper) PullButtonEvents(ctx context.Context, in *PullButtonEventsRequest, opts ...grpc.CallOption) (ButtonApi_PullButtonEventsClient, error) {
+func (w *buttonApiWrapper) PullButtonState(ctx context.Context, in *PullButtonStateRequest, opts ...grpc.CallOption) (ButtonApi_PullButtonStateClient, error) {
 	stream := wrap.NewClientServerStream(ctx)
-	server := &pullButtonEventsButtonApiServerWrapper{stream.Server()}
-	client := &pullButtonEventsButtonApiClientWrapper{stream.Client()}
+	server := &pullButtonStateButtonApiServerWrapper{stream.Server()}
+	client := &pullButtonStateButtonApiClientWrapper{stream.Client()}
 	go func() {
-		err := w.server.PullButtonEvents(in, server)
+		err := w.server.PullButtonState(in, server)
 		stream.Close(err)
 	}()
 	return client, nil
 }
 
-type pullButtonEventsButtonApiClientWrapper struct {
+type pullButtonStateButtonApiClientWrapper struct {
 	grpc.ClientStream
 }
 
-func (w *pullButtonEventsButtonApiClientWrapper) Recv() (*PullButtonEventsResponse, error) {
-	m := new(PullButtonEventsResponse)
+func (w *pullButtonStateButtonApiClientWrapper) Recv() (*PullButtonStateResponse, error) {
+	m := new(PullButtonStateResponse)
 	if err := w.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-type pullButtonEventsButtonApiServerWrapper struct {
+type pullButtonStateButtonApiServerWrapper struct {
 	grpc.ServerStream
 }
 
-func (s *pullButtonEventsButtonApiServerWrapper) Send(response *PullButtonEventsResponse) error {
+func (s *pullButtonStateButtonApiServerWrapper) Send(response *PullButtonStateResponse) error {
 	return s.ServerStream.SendMsg(response)
 }

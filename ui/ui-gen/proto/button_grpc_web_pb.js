@@ -141,56 +141,56 @@ proto.smartcore.bos.ButtonApiPromiseClient.prototype.getButtonState =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.smartcore.bos.PullButtonEventsRequest,
- *   !proto.smartcore.bos.PullButtonEventsResponse>}
+ *   !proto.smartcore.bos.PullButtonStateRequest,
+ *   !proto.smartcore.bos.PullButtonStateResponse>}
  */
-const methodDescriptor_ButtonApi_PullButtonEvents = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.ButtonApi/PullButtonEvents',
+const methodDescriptor_ButtonApi_PullButtonState = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.ButtonApi/PullButtonState',
   grpc.web.MethodType.SERVER_STREAMING,
-  proto.smartcore.bos.PullButtonEventsRequest,
-  proto.smartcore.bos.PullButtonEventsResponse,
+  proto.smartcore.bos.PullButtonStateRequest,
+  proto.smartcore.bos.PullButtonStateResponse,
   /**
-   * @param {!proto.smartcore.bos.PullButtonEventsRequest} request
+   * @param {!proto.smartcore.bos.PullButtonStateRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.smartcore.bos.PullButtonEventsResponse.deserializeBinary
+  proto.smartcore.bos.PullButtonStateResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.smartcore.bos.PullButtonEventsRequest} request The request proto
+ * @param {!proto.smartcore.bos.PullButtonStateRequest} request The request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullButtonEventsResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullButtonStateResponse>}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.ButtonApiClient.prototype.pullButtonEvents =
+proto.smartcore.bos.ButtonApiClient.prototype.pullButtonState =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/smartcore.bos.ButtonApi/PullButtonEvents',
+      '/smartcore.bos.ButtonApi/PullButtonState',
       request,
       metadata || {},
-      methodDescriptor_ButtonApi_PullButtonEvents);
+      methodDescriptor_ButtonApi_PullButtonState);
 };
 
 
 /**
- * @param {!proto.smartcore.bos.PullButtonEventsRequest} request The request proto
+ * @param {!proto.smartcore.bos.PullButtonStateRequest} request The request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullButtonEventsResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullButtonStateResponse>}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.ButtonApiPromiseClient.prototype.pullButtonEvents =
+proto.smartcore.bos.ButtonApiPromiseClient.prototype.pullButtonState =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/smartcore.bos.ButtonApi/PullButtonEvents',
+      '/smartcore.bos.ButtonApi/PullButtonState',
       request,
       metadata || {},
-      methodDescriptor_ButtonApi_PullButtonEvents);
+      methodDescriptor_ButtonApi_PullButtonState);
 };
 
 
