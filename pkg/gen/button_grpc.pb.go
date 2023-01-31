@@ -22,7 +22,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ButtonApiClient interface {
+	// Gets the current state of the button.
+	// Contain the most recent gesture, so clients using polling can still detect and respond to gestures.
+	// However, to reduce latency, PullButtonState is recommended for this use case.
 	GetButtonState(ctx context.Context, in *GetButtonStateRequest, opts ...grpc.CallOption) (*ButtonState, error)
+	// Fetches changes to button Press state and gestures, and optionally the initial state.
 	PullButtonState(ctx context.Context, in *PullButtonStateRequest, opts ...grpc.CallOption) (ButtonApi_PullButtonStateClient, error)
 }
 
@@ -79,7 +83,11 @@ func (x *buttonApiPullButtonStateClient) Recv() (*PullButtonStateResponse, error
 // All implementations must embed UnimplementedButtonApiServer
 // for forward compatibility
 type ButtonApiServer interface {
+	// Gets the current state of the button.
+	// Contain the most recent gesture, so clients using polling can still detect and respond to gestures.
+	// However, to reduce latency, PullButtonState is recommended for this use case.
 	GetButtonState(context.Context, *GetButtonStateRequest) (*ButtonState, error)
+	// Fetches changes to button Press state and gestures, and optionally the initial state.
 	PullButtonState(*PullButtonStateRequest, ButtonApi_PullButtonStateServer) error
 	mustEmbedUnimplementedButtonApiServer()
 }

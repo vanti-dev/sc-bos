@@ -1,6 +1,7 @@
 import * as jspb from 'google-protobuf'
 
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
+import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb';
 
 
 export class ButtonState extends jspb.Message {
@@ -78,7 +79,7 @@ export namespace ButtonState {
 
 
   export enum Press { 
-    STATE_UNSPECIFIED = 0,
+    PRESS_UNSPECIFIED = 0,
     UNPRESSED = 1,
     PRESSED = 2,
   }
@@ -87,6 +88,11 @@ export namespace ButtonState {
 export class GetButtonStateRequest extends jspb.Message {
   getName(): string;
   setName(value: string): GetButtonStateRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): GetButtonStateRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): GetButtonStateRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetButtonStateRequest.AsObject;
@@ -99,12 +105,21 @@ export class GetButtonStateRequest extends jspb.Message {
 export namespace GetButtonStateRequest {
   export type AsObject = {
     name: string,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
   }
 }
 
 export class PullButtonStateRequest extends jspb.Message {
   getName(): string;
   setName(value: string): PullButtonStateRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): PullButtonStateRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): PullButtonStateRequest;
+
+  getUpdatesOnly(): boolean;
+  setUpdatesOnly(value: boolean): PullButtonStateRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PullButtonStateRequest.AsObject;
@@ -117,6 +132,8 @@ export class PullButtonStateRequest extends jspb.Message {
 export namespace PullButtonStateRequest {
   export type AsObject = {
     name: string,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    updatesOnly: boolean,
   }
 }
 

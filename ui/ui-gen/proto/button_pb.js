@@ -23,6 +23,8 @@ var global =
 
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 goog.object.extend(proto, google_protobuf_timestamp_pb);
+var google_protobuf_field_mask_pb = require('google-protobuf/google/protobuf/field_mask_pb.js');
+goog.object.extend(proto, google_protobuf_field_mask_pb);
 goog.exportSymbol('proto.smartcore.bos.ButtonState', null, global);
 goog.exportSymbol('proto.smartcore.bos.ButtonState.Gesture', null, global);
 goog.exportSymbol('proto.smartcore.bos.ButtonState.Gesture.Kind', null, global);
@@ -301,7 +303,7 @@ proto.smartcore.bos.ButtonState.serializeBinaryToWriter = function(message, writ
  * @enum {number}
  */
 proto.smartcore.bos.ButtonState.Press = {
-  STATE_UNSPECIFIED: 0,
+  PRESS_UNSPECIFIED: 0,
   UNPRESSED: 1,
   PRESSED: 2
 };
@@ -731,7 +733,8 @@ proto.smartcore.bos.GetButtonStateRequest.prototype.toObject = function(opt_incl
  */
 proto.smartcore.bos.GetButtonStateRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -772,6 +775,11 @@ proto.smartcore.bos.GetButtonStateRequest.deserializeBinaryFromReader = function
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
       break;
+    case 2:
+      var value = new google_protobuf_field_mask_pb.FieldMask;
+      reader.readMessage(value,google_protobuf_field_mask_pb.FieldMask.deserializeBinaryFromReader);
+      msg.setReadMask(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -808,6 +816,14 @@ proto.smartcore.bos.GetButtonStateRequest.serializeBinaryToWriter = function(mes
       f
     );
   }
+  f = message.getReadMask();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      google_protobuf_field_mask_pb.FieldMask.serializeBinaryToWriter
+    );
+  }
 };
 
 
@@ -826,6 +842,43 @@ proto.smartcore.bos.GetButtonStateRequest.prototype.getName = function() {
  */
 proto.smartcore.bos.GetButtonStateRequest.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional google.protobuf.FieldMask read_mask = 2;
+ * @return {?proto.google.protobuf.FieldMask}
+ */
+proto.smartcore.bos.GetButtonStateRequest.prototype.getReadMask = function() {
+  return /** @type{?proto.google.protobuf.FieldMask} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_field_mask_pb.FieldMask, 2));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.FieldMask|undefined} value
+ * @return {!proto.smartcore.bos.GetButtonStateRequest} returns this
+*/
+proto.smartcore.bos.GetButtonStateRequest.prototype.setReadMask = function(value) {
+  return jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.GetButtonStateRequest} returns this
+ */
+proto.smartcore.bos.GetButtonStateRequest.prototype.clearReadMask = function() {
+  return this.setReadMask(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.GetButtonStateRequest.prototype.hasReadMask = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 
@@ -861,7 +914,9 @@ proto.smartcore.bos.PullButtonStateRequest.prototype.toObject = function(opt_inc
  */
 proto.smartcore.bos.PullButtonStateRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -902,6 +957,15 @@ proto.smartcore.bos.PullButtonStateRequest.deserializeBinaryFromReader = functio
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
       break;
+    case 2:
+      var value = new google_protobuf_field_mask_pb.FieldMask;
+      reader.readMessage(value,google_protobuf_field_mask_pb.FieldMask.deserializeBinaryFromReader);
+      msg.setReadMask(value);
+      break;
+    case 3:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setUpdatesOnly(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -938,6 +1002,21 @@ proto.smartcore.bos.PullButtonStateRequest.serializeBinaryToWriter = function(me
       f
     );
   }
+  f = message.getReadMask();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      google_protobuf_field_mask_pb.FieldMask.serializeBinaryToWriter
+    );
+  }
+  f = message.getUpdatesOnly();
+  if (f) {
+    writer.writeBool(
+      3,
+      f
+    );
+  }
 };
 
 
@@ -956,6 +1035,61 @@ proto.smartcore.bos.PullButtonStateRequest.prototype.getName = function() {
  */
 proto.smartcore.bos.PullButtonStateRequest.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional google.protobuf.FieldMask read_mask = 2;
+ * @return {?proto.google.protobuf.FieldMask}
+ */
+proto.smartcore.bos.PullButtonStateRequest.prototype.getReadMask = function() {
+  return /** @type{?proto.google.protobuf.FieldMask} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_field_mask_pb.FieldMask, 2));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.FieldMask|undefined} value
+ * @return {!proto.smartcore.bos.PullButtonStateRequest} returns this
+*/
+proto.smartcore.bos.PullButtonStateRequest.prototype.setReadMask = function(value) {
+  return jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.PullButtonStateRequest} returns this
+ */
+proto.smartcore.bos.PullButtonStateRequest.prototype.clearReadMask = function() {
+  return this.setReadMask(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.PullButtonStateRequest.prototype.hasReadMask = function() {
+  return jspb.Message.getField(this, 2) != null;
+};
+
+
+/**
+ * optional bool updates_only = 3;
+ * @return {boolean}
+ */
+proto.smartcore.bos.PullButtonStateRequest.prototype.getUpdatesOnly = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 3, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.smartcore.bos.PullButtonStateRequest} returns this
+ */
+proto.smartcore.bos.PullButtonStateRequest.prototype.setUpdatesOnly = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 
