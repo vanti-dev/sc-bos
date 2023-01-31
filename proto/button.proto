@@ -5,6 +5,7 @@ package smartcore.bos;
 option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
 
 service ButtonApi {
   rpc GetButtonState(GetButtonStateRequest) returns (ButtonState);
@@ -35,6 +36,8 @@ message ButtonState {
     }
 
     // Opaque identifier changes each time a new gesture begins.
+    // The gesture will remain in the ButtonState even when the client has already seen it; the client can use the id
+    // to detect when a new gesture has begun.
     string id = 1;
     Kind kind = 2;
     // A counter for sub-events that occur within a single gesture. See the Kind for details of meaning.
@@ -56,10 +59,15 @@ message ButtonState {
 
 message GetButtonStateRequest {
   string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
 }
 
 message PullButtonStateRequest {
   string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+  // By default, PullButtonState sends the initial ButtonState when the stream opens, followed by changes.
+  // Setting updates_only true will disable this behaviour, sending only when the ButtonState changes.
+  bool updates_only = 3;
 }
 message PullButtonStateResponse {
   message Change {
