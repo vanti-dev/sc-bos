@@ -22,14 +22,10 @@ func (t ValidatorFunc) ValidateAccessToken(ctx context.Context, token string) (*
 	return t(ctx, token)
 }
 
-// NewMultiValidator creates a Validator that validates tokens if any validator validates the token.
-func NewMultiValidator(validators ...Validator) Validator {
-	return multiValidator(validators)
-}
+// ValidatorSet is a collection of Validators where a token is deemed valid if any member Validator deems it valid.
+type ValidatorSet []Validator
 
-type multiValidator []Validator
-
-func (m multiValidator) ValidateAccessToken(ctx context.Context, token string) (*Claims, error) {
+func (m ValidatorSet) ValidateAccessToken(ctx context.Context, token string) (*Claims, error) {
 	var errs error
 	for _, verifier := range m {
 		claims, err := verifier.ValidateAccessToken(ctx, token)
@@ -40,4 +36,43 @@ func (m multiValidator) ValidateAccessToken(ctx context.Context, token string) (
 		errs = multierr.Append(errs, err)
 	}
 	return nil, errs
+}
+
+func (m *ValidatorSet) Append(v Validator) {
+	*m = append(*m, v)
+}
+
+func (m *ValidatorSet) Delete(v Validator) {
+	for i, validator := range *m {
+		if validator == v {
+			*m = append((*m)[:i], (*m)[i+1:]...)
+			return
+		}
+	}
+}
+
+// NeverValid returns a Validator that always returns err.
+func NeverValid(err error) Validator {
+	return neverValid{err: err}
+}
+
+type neverValid struct {
+	err error
+}
+
+func (nv neverValid) ValidateAccessToken(ctx context.Context, token string) (*Claims, error) {
+	return nil, nv.err
+}
+
+// AlwaysValid returns a Validator that always returns claims.
+func AlwaysValid(claims *Claims) Validator {
+	return alwaysValid{claims: claims}
+}
+
+type alwaysValid struct {
+	claims *Claims
+}
+
+func (av alwaysValid) ValidateAccessToken(ctx context.Context, token string) (*Claims, error) {
+	return av.claims, nil
 }
