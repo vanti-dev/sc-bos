@@ -7,11 +7,10 @@ import (
 	"time"
 
 	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/vanti-dev/sc-bos/pkg/auth/role"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 
 	"github.com/go-jose/go-jose/v3"
-
-	"github.com/vanti-dev/sc-bos/pkg/auth"
 )
 
 type tokenClaims struct {
@@ -73,7 +72,7 @@ func (ts *TokenSource) ValidateAccessToken(_ context.Context, tokenStr string) (
 		return nil, err
 	}
 	return &token.Claims{
-		Roles:     []string{auth.RoleTenant},
+		Roles:     []string{role.Tenant},
 		Zones:     customClaims.Zones,
 		IsService: true,
 	}, nil
