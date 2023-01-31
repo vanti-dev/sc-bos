@@ -171,7 +171,7 @@ func initKeycloakValidator(ctx context.Context, sysConf SystemConfig) (token.Val
 		panic(err)
 	}
 	keySet := jwks.NewRemoteKeySet(ctx, authUrls.JWKSURI)
-	return keycloak.NewTokenVerifier(&authConfig, keySet), nil
+	return keycloak.NewTokenValidator(&authConfig, keySet), nil
 }
 
 func loadServerAuthority(configDir string) pki.Source {

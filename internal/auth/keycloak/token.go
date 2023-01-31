@@ -11,6 +11,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auth"
 )
 
+// accessTokenPayload describes the claims present in a token issued by a Keycloak Authorization Server.
 type accessTokenPayload struct {
 	jwt.Claims
 	Roles          []string                  `json:"roles"`
@@ -18,7 +19,7 @@ type accessTokenPayload struct {
 	ResourceAccess map[string]resourceAccess `json:"resource_access"`
 }
 
-func (a *accessTokenPayload) AllRoles() []string {
+func (a *accessTokenPayload) allRoles() []string {
 	var roles []string
 	roles = append(roles, a.Roles...)
 	for _, res := range a.ResourceAccess {
@@ -27,7 +28,7 @@ func (a *accessTokenPayload) AllRoles() []string {
 	return roles
 }
 
-func (a *accessTokenPayload) IsAppOnly() bool {
+func (a *accessTokenPayload) isAppOnly() bool {
 	return false
 }
 
@@ -35,8 +36,10 @@ type resourceAccess struct {
 	Roles []string `json:"roles"`
 }
 
-func NewTokenVerifier(config *Config, keySet jwks.KeySet) *TokenValidator {
-	return &TokenValidator{
+// NewTokenValidator returns a token.Validator that validates tokens against the given jwks.KeySet which should be
+// hosted by Keycloak. During validation known Keycloak claims are validated, converted into token.Claims, and returned.
+func NewTokenValidator(config *Config, keySet jwks.KeySet) token.Validator {
+	return &tokenValidator{
 		keySet: keySet,
 		expected: jwt.Expected{
 			Audience: jwt.Audience{config.ClientID},
@@ -45,12 +48,12 @@ func NewTokenVerifier(config *Config, keySet jwks.KeySet) *TokenValidator {
 	}
 }
 
-type TokenValidator struct {
+type tokenValidator struct {
 	keySet   jwks.KeySet
 	expected jwt.Expected
 }
 
-func (v *TokenValidator) ValidateAccessToken(ctx context.Context, tokenStr string) (*token.Claims, error) {
+func (v *tokenValidator) ValidateAccessToken(ctx context.Context, tokenStr string) (*token.Claims, error) {
 	payloadBytes, err := v.keySet.VerifySignature(ctx, tokenStr)
 	if err != nil {
 		return nil, err
@@ -68,8 +71,8 @@ func (v *TokenValidator) ValidateAccessToken(ctx context.Context, tokenStr strin
 	}
 
 	return &token.Claims{
-		Roles:     payload.AllRoles(),
+		Roles:     payload.allRoles(),
 		Scopes:    payload.Scopes,
-		IsService: payload.IsAppOnly(),
+		IsService: payload.isAppOnly(),
 	}, nil
 }
