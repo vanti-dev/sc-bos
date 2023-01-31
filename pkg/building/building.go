@@ -17,6 +17,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/vanti-dev/sc-bos/pkg/auth/oidc"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/system/publications/pgxpublications"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants/pgxtenants"
@@ -165,7 +166,7 @@ func initKeycloakValidator(ctx context.Context, sysConf SystemConfig) (token.Val
 		Realm:    sysConf.KeycloakRealm,
 		ClientID: "sc-api",
 	}
-	authUrls, err := auth.DiscoverOIDCConfig(ctx, authConfig.Issuer())
+	authUrls, err := oidc.FetchConfig(ctx, authConfig.Issuer())
 	if err != nil {
 		panic(err)
 	}
