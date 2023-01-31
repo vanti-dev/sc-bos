@@ -31,7 +31,10 @@ message ButtonState {
       // it's not possible for a single gesture to be first reported as a single click, and then modified to a double click.
       CLICK = 1;
       // Button is kept in the pressed state for an extended period.
-      // Buttons may support repeat events, in which case the count will increment for each repeat event.
+      // Buttons may support repeat events, in which case the count will increment for each repeat event, keeping id
+      // the same because it's part of the same gesture.
+      // For HOLD gestures, the end_time is not set until the button has been released, allowing the client to determine
+      // when the gesture has ended.
       HOLD = 2;
     }
 
