@@ -1,15 +1,10 @@
-package auth
+package jwks
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/go-jose/go-jose/v3"
-	"github.com/google/go-cmp/cmp"
 )
 
 // keys for testing signature verification
@@ -54,67 +49,6 @@ func init() {
 	`), &testJWK2)
 	if err != nil {
 		panic(err)
-	}
-}
-
-func TestLocalKeySet_VerifySignature(t *testing.T) {
-	inputPayload := []byte("TestLocalKeySet_VerifySignature")
-
-	// sign a test message using the key we will use
-	sig1 := signJWS(t, testJWK1, inputPayload)
-	// sign again using the other key that's not in our key set
-	sig2 := signJWS(t, testJWK2, inputPayload)
-
-	// verify the first signature using the JWKS, which should succeed
-	jwks := jose.JSONWebKeySet{Keys: []jose.JSONWebKey{testJWK1.Public()}}
-	localKeySet := NewLocalKeySet(jwks)
-	outputPayload, err := localKeySet.VerifySignature(context.Background(), sig1)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !cmp.Equal(inputPayload, outputPayload) {
-		t.Error("payloads different")
-	}
-
-	// attempt to verify the second signature using the JWKS, which should fail as that key's not in the set
-	_, err = localKeySet.VerifySignature(context.Background(), sig2)
-	if !errors.Is(err, ErrKeyNotFound) {
-		t.Errorf("verification didn't fail as expected: %s", err.Error())
-	}
-}
-
-func TestRemoteKeySet_VerifySignature(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		jwks := jose.JSONWebKeySet{Keys: []jose.JSONWebKey{
-			testJWK1.Public(),
-		}}
-		data, err := json.Marshal(jwks)
-		if err != nil {
-			t.Error(err)
-			panic(err)
-		}
-		_, err = writer.Write(data)
-		if err != nil {
-			t.Error(err)
-			panic(err)
-		}
-		return
-	}))
-	defer server.Close()
-
-	remoteKeySet := NewRemoteKeySet(context.Background(), server.URL)
-	// sign a test message using the key we will use
-	inputPayload := []byte("TestRemoteKeySet_VerifySignature")
-	sig := signJWS(t, testJWK1, inputPayload)
-
-	outputPayload, err := remoteKeySet.VerifySignature(context.Background(), sig)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !cmp.Equal(inputPayload, outputPayload) {
-		t.Error("payload mismatch")
 	}
 }
 

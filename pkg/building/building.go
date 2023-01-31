@@ -17,6 +17,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/vanti-dev/sc-bos/pkg/auth/jwks"
 	"github.com/vanti-dev/sc-bos/pkg/auth/oidc"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/system/publications/pgxpublications"
@@ -32,7 +33,6 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
 	"github.com/vanti-dev/sc-bos/pkg/app"
-	"github.com/vanti-dev/sc-bos/pkg/auth"
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
@@ -170,7 +170,7 @@ func initKeycloakValidator(ctx context.Context, sysConf SystemConfig) (token.Val
 	if err != nil {
 		panic(err)
 	}
-	keySet := auth.NewRemoteKeySet(ctx, authUrls.JWKSURI)
+	keySet := jwks.NewRemoteKeySet(ctx, authUrls.JWKSURI)
 	return keycloak.NewTokenVerifier(&authConfig, keySet), nil
 }
 

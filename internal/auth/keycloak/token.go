@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/vanti-dev/sc-bos/pkg/auth/jwks"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 
 	"github.com/vanti-dev/sc-bos/pkg/auth"
@@ -34,7 +35,7 @@ type resourceAccess struct {
 	Roles []string `json:"roles"`
 }
 
-func NewTokenVerifier(config *Config, keySet auth.KeySet) *TokenValidator {
+func NewTokenVerifier(config *Config, keySet jwks.KeySet) *TokenValidator {
 	return &TokenValidator{
 		keySet: keySet,
 		expected: jwt.Expected{
@@ -45,7 +46,7 @@ func NewTokenVerifier(config *Config, keySet auth.KeySet) *TokenValidator {
 }
 
 type TokenValidator struct {
-	keySet   auth.KeySet
+	keySet   jwks.KeySet
 	expected jwt.Expected
 }
 
