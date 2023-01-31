@@ -13,7 +13,13 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = (function() { return this || window || global || self || Function('return this')(); }).call(null);
+var global =
+    (typeof globalThis !== 'undefined' && globalThis) ||
+    (typeof window !== 'undefined' && window) ||
+    (typeof global !== 'undefined' && global) ||
+    (typeof self !== 'undefined' && self) ||
+    (function () { return this; }).call(null) ||
+    Function('return this')();
 
 var google_protobuf_field_mask_pb = require('google-protobuf/google/protobuf/field_mask_pb.js');
 goog.object.extend(proto, google_protobuf_field_mask_pb);
@@ -1818,7 +1824,8 @@ proto.smartcore.bos.AlertMetadata.prototype.getFloorCountsMap = function(opt_noL
  */
 proto.smartcore.bos.AlertMetadata.prototype.clearFloorCountsMap = function() {
   this.getFloorCountsMap().clear();
-  return this;};
+  return this;
+};
 
 
 /**
@@ -1840,7 +1847,8 @@ proto.smartcore.bos.AlertMetadata.prototype.getZoneCountsMap = function(opt_noLa
  */
 proto.smartcore.bos.AlertMetadata.prototype.clearZoneCountsMap = function() {
   this.getZoneCountsMap().clear();
-  return this;};
+  return this;
+};
 
 
 /**
@@ -1862,7 +1870,8 @@ proto.smartcore.bos.AlertMetadata.prototype.getAcknowledgedCountsMap = function(
  */
 proto.smartcore.bos.AlertMetadata.prototype.clearAcknowledgedCountsMap = function() {
   this.getAcknowledgedCountsMap().clear();
-  return this;};
+  return this;
+};
 
 
 /**
@@ -1884,7 +1893,8 @@ proto.smartcore.bos.AlertMetadata.prototype.getSeverityCountsMap = function(opt_
  */
 proto.smartcore.bos.AlertMetadata.prototype.clearSeverityCountsMap = function() {
   this.getSeverityCountsMap().clear();
-  return this;};
+  return this;
+};
 
 
 

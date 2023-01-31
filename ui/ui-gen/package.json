@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.40",
-    "google-protobuf": "^3.20.1",
+    "google-protobuf": "^3.21.2",
     "grpc-web": "^1.4.2"
   },
   "devDependencies": {

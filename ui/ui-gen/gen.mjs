@@ -3,6 +3,7 @@ import fs from 'fs';
 import replace from 'replace-in-file';
 
 const protoFiles = fs.readdirSync('../../proto')
+    .filter(f => f.endsWith('.proto'))
     .map(f => 'proto/' + f);
 const protocPluginOpts = '--js_out=import_style=commonjs:. --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:.';
 
