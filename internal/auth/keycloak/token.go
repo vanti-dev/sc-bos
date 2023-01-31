@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 
 	"github.com/vanti-dev/sc-bos/pkg/auth"
 )
@@ -48,8 +49,8 @@ type TokenValidator struct {
 	expected jwt.Expected
 }
 
-func (v *TokenValidator) ValidateAccessToken(ctx context.Context, token string) (*auth.Authorization, error) {
-	payloadBytes, err := v.keySet.VerifySignature(ctx, token)
+func (v *TokenValidator) ValidateAccessToken(ctx context.Context, tokenStr string) (*token.Claims, error) {
+	payloadBytes, err := v.keySet.VerifySignature(ctx, tokenStr)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +66,7 @@ func (v *TokenValidator) ValidateAccessToken(ctx context.Context, token string) 
 		return nil, err
 	}
 
-	return &auth.Authorization{
+	return &token.Claims{
 		Roles:     payload.AllRoles(),
 		Scopes:    payload.Scopes,
 		IsService: payload.IsAppOnly(),

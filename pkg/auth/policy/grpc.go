@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -13,13 +14,12 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
-	"github.com/vanti-dev/sc-bos/pkg/auth"
 )
 
 type Interceptor struct {
 	logger   *zap.Logger
 	policy   Policy
-	verifier auth.TokenValidator
+	verifier token.Validator
 }
 
 func NewInterceptor(policy Policy, opts ...InterceptorOption) *Interceptor {
@@ -100,14 +100,14 @@ func (i *Interceptor) checkPolicyGrpc(
 	}
 
 	if creds == nil {
-		token, err := grpc_auth.AuthFromMD(ctx, "Bearer")
+		tkn, err := grpc_auth.AuthFromMD(ctx, "Bearer")
 		if err != nil {
 			log.Printf("no request bearer token: %s", err.Error())
 		}
 
-		var tokenClaims *auth.Authorization
-		if token != "" && i.verifier != nil {
-			tokenClaims, err = i.verifier.ValidateAccessToken(ctx, token)
+		var tokenClaims *token.Claims
+		if tkn != "" && i.verifier != nil {
+			tokenClaims, err = i.verifier.ValidateAccessToken(ctx, tkn)
 			if err != nil {
 				tokenClaims = nil
 				log.Printf("token failed verification: %s", err.Error())
@@ -118,7 +118,7 @@ func (i *Interceptor) checkPolicyGrpc(
 
 		creds = &verifiedCreds{
 			cert:        cert,
-			token:       token,
+			token:       tkn,
 			tokenClaims: tokenClaims,
 		}
 	}
@@ -163,7 +163,7 @@ func WithLogger(logger *zap.Logger) InterceptorOption {
 	}
 }
 
-func WithTokenVerifier(tv auth.TokenValidator) InterceptorOption {
+func WithTokenVerifier(tv token.Validator) InterceptorOption {
 	return func(interceptor *Interceptor) {
 		interceptor.verifier = tv
 	}
@@ -172,7 +172,7 @@ func WithTokenVerifier(tv auth.TokenValidator) InterceptorOption {
 type verifiedCreds struct {
 	cert        *x509.Certificate
 	token       string
-	tokenClaims *auth.Authorization
+	tokenClaims *token.Claims
 }
 
 // if we want to get the request of a server-to-client streaming call from within an interceptor, we need a way to

@@ -17,6 +17,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/system/publications/pgxpublications"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants/pgxtenants"
 	"go.uber.org/zap"
@@ -158,7 +159,7 @@ func connectDB(ctx context.Context, sysConf SystemConfig) (*pgxpool.Pool, error)
 	return pgxutil.Connect(ctx, pgxutil.ConnectConfig{URI: sysConf.DatabaseURL, PasswordFile: sysConf.DatabasePasswordFile})
 }
 
-func initKeycloakValidator(ctx context.Context, sysConf SystemConfig) (auth.TokenValidator, error) {
+func initKeycloakValidator(ctx context.Context, sysConf SystemConfig) (token.Validator, error) {
 	authConfig := keycloak.Config{
 		URL:      sysConf.KeycloakAddress,
 		Realm:    sysConf.KeycloakRealm,

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/vanti-dev/sc-bos/pkg/auth"
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -16,7 +16,7 @@ func BenchmarkPolicy(b *testing.B) {
 			Test: &gen.Test{Data: "please foobar"},
 		},
 		TokenValid: true,
-		TokenClaims: auth.Authorization{
+		TokenClaims: token.Claims{
 			Roles:  []string{"Test.User"},
 			Scopes: []string{"Test.Read", "Test.Write"},
 		},

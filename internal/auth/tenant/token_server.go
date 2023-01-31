@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
-	"github.com/vanti-dev/sc-bos/pkg/auth"
 )
 
 type TokenServer struct {
@@ -222,7 +222,7 @@ func (s *TokenServer) userCreds(request *http.Request) (username string, passwor
 	return username, password, nil
 }
 
-func (s *TokenServer) TokenValidator() auth.TokenValidator {
+func (s *TokenServer) TokenValidator() token.Validator {
 	return s.tokens
 }
 

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 
 	"github.com/go-jose/go-jose/v3"
 
@@ -53,8 +54,8 @@ func (ts *TokenSource) GenerateAccessToken(data SecretData, validity time.Durati
 		CompactSerialize()
 }
 
-func (ts *TokenSource) ValidateAccessToken(_ context.Context, token string) (*auth.Authorization, error) {
-	tok, err := jwt.ParseSigned(token)
+func (ts *TokenSource) ValidateAccessToken(_ context.Context, tokenStr string) (*token.Claims, error) {
+	tok, err := jwt.ParseSigned(tokenStr)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +72,7 @@ func (ts *TokenSource) ValidateAccessToken(_ context.Context, token string) (*au
 	if err != nil {
 		return nil, err
 	}
-	return &auth.Authorization{
+	return &token.Claims{
 		Roles:     []string{auth.RoleTenant},
 		Zones:     customClaims.Zones,
 		IsService: true,
