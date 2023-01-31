@@ -7,12 +7,20 @@ option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/field_mask.proto";
 
+// The state and events from a momentary push-button input.
+// This trait facilitates reactions to basic user input.
+// Both the basic button state (pressed or not) as well as higher-level input events like "double click" are supported.
 service ButtonApi {
+  // Gets the current state of the button.
+  // Contain the most recent gesture, so clients using polling can still detect and respond to gestures.
+  // However, to reduce latency, PullButtonState is recommended for this use case.
   rpc GetButtonState(GetButtonStateRequest) returns (ButtonState);
+  // Fetches changes to button Press state and gestures, and optionally the initial state.
   rpc PullButtonState(PullButtonStateRequest) returns (stream PullButtonStateResponse);
 }
 
 message ButtonState {
+  // Instantaneous button state.
   enum Press {
     PRESS_UNSPECIFIED = 0;
     // Button is in its neutral position.
@@ -21,6 +29,9 @@ message ButtonState {
     PRESSED = 2;
   }
 
+  // A representation of user intent, deduced from a pattern of button presses.
+  // The way that the device converts button presses into gestures is implementation-defined.
+  // There may be a delay between the button presses and the registration of a gesture.
   message Gesture {
     enum Kind {
       KIND_UNSPECIFIED = 0;
@@ -57,6 +68,7 @@ message ButtonState {
   google.protobuf.Timestamp state_change_time = 2;
 
   // The gesture that is currently in progress, or finished most recently.
+  // May be absent, if there is no gesture recorded for this button.
   Gesture most_recent_gesture = 3;
 }
 
