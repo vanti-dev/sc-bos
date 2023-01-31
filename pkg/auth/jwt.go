@@ -3,6 +3,8 @@ package auth
 import (
 	"encoding/json"
 	"strings"
+
+	"github.com/vanti-dev/sc-bos/pkg/util/slices"
 )
 
 type JWTScopes []string
@@ -22,5 +24,5 @@ func (s *JWTScopes) UnmarshalJSON(data []byte) error {
 }
 
 func (s *JWTScopes) HasScopes(required ...string) bool {
-	return RequireAll(required, *s)
+	return slices.ContainsAll(required, *s)
 }
