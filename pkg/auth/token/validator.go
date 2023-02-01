@@ -25,9 +25,9 @@ func (t ValidatorFunc) ValidateAccessToken(ctx context.Context, token string) (*
 // ValidatorSet is a collection of Validators where a token is deemed valid if any member Validator deems it valid.
 type ValidatorSet []Validator
 
-func (m ValidatorSet) ValidateAccessToken(ctx context.Context, token string) (*Claims, error) {
+func (m *ValidatorSet) ValidateAccessToken(ctx context.Context, token string) (*Claims, error) {
 	var errs error
-	for _, verifier := range m {
+	for _, verifier := range *m {
 		claims, err := verifier.ValidateAccessToken(ctx, token)
 		if err == nil {
 			return claims, nil
