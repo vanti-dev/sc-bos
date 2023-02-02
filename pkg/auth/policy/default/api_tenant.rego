@@ -1,3 +1,3 @@
-package vanti.bsp.ew.tenants.TenantApi
+package smartcore.bos.tenants.TenantApi
 
 allow := true

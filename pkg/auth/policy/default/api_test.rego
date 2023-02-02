@@ -1,4 +1,4 @@
-package vanti.bsp.ew.TestApi
+package smartcore.bos.ew.TestApi
 
 import future.keywords.in
 
