@@ -3,9 +3,12 @@ package keycloak
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"sync"
 
 	"github.com/go-jose/go-jose/v3/jwt"
 	"github.com/vanti-dev/sc-bos/pkg/auth/jwks"
+	"github.com/vanti-dev/sc-bos/pkg/auth/oidc"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 
 	"github.com/vanti-dev/sc-bos/pkg/auth"
@@ -46,6 +49,47 @@ func NewTokenValidator(config *Config, keySet jwks.KeySet) token.Validator {
 			Issuer:   config.Issuer(),
 		},
 	}
+}
+
+// NewOIDCTokenValidator returns a token.Validator like NewTokenValidator using well known OIDC configuration for available keys.
+func NewOIDCTokenValidator(cfg Config) token.Validator {
+	issuer := cfg.Issuer()
+
+	var mu sync.RWMutex
+	var underlying token.Validator
+	cachedValidator := func(ctx context.Context) (token.Validator, error) {
+		mu.RLock()
+		v := underlying
+		mu.RUnlock()
+
+		if v == nil {
+			mu.Lock()
+			defer mu.Unlock()
+			if underlying != nil {
+				return underlying, nil
+			}
+
+			// todo: during error conditions this fetches every time, make it not do that.
+			// This is in the critical path of token validation which is in the critical path of RPCs
+			authUrls, err := oidc.FetchConfig(ctx, issuer)
+			if err != nil {
+				return nil, fmt.Errorf("oidc fetch: %w", err)
+			}
+			keySet := jwks.NewRemoteKeySet(ctx, authUrls.JWKSURI)
+			v = NewTokenValidator(&cfg, keySet)
+			underlying = v
+		}
+
+		return v, nil
+	}
+
+	return token.ValidatorFunc(func(ctx context.Context, token string) (*token.Claims, error) {
+		v, err := cachedValidator(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return v.ValidateAccessToken(ctx, token)
+	})
 }
 
 type tokenValidator struct {

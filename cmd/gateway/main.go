@@ -10,6 +10,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/proxy"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
+	"github.com/vanti-dev/sc-bos/pkg/system"
+	"github.com/vanti-dev/sc-bos/pkg/system/authn"
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
 
 	"go.uber.org/zap"
@@ -27,8 +29,6 @@ func init() {
 	flag.StringVar(&systemConfig.DataDir, "data-dir", ".data/gateway", "path to local data storage directory")
 
 	flag.BoolVar(&systemConfig.DisablePolicy, "insecure-disable-policy", false, "Insecure! Disable checking requests against the security policy. This option opens up the server to any request.")
-	flag.BoolVar(&systemConfig.LocalOAuth, "local-auth", false, "Enable issuing password tokens based on credentials found in users.json")
-	flag.BoolVar(&systemConfig.TenantOAuth, "tenant-auth", true, "enable issuing client tokens based on credentials found in tenants.json or verified via the enrollment manager node")
 }
 
 func main() {
@@ -48,6 +48,9 @@ func run(ctx context.Context) error {
 	systemConfig.Policy = pol
 	systemConfig.DriverFactories = map[string]driver.Factory{
 		proxy.DriverName: proxy.Factory,
+	}
+	systemConfig.SystemFactories = map[string]system.Factory{
+		"authn": authn.Factory(),
 	}
 
 	controller, err := app.Bootstrap(ctx, systemConfig)

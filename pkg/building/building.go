@@ -17,9 +17,6 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
-	"github.com/vanti-dev/sc-bos/pkg/auth/jwks"
-	"github.com/vanti-dev/sc-bos/pkg/auth/oidc"
-	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/system/publications/pgxpublications"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants/pgxtenants"
 	"go.uber.org/zap"
@@ -72,10 +69,10 @@ func RunController(ctx context.Context, logger *zap.Logger, configDir string) er
 		grpc.Creds(credentials.NewTLS(grpcTlsServerConfig)),
 	}
 	if !sysConf.DisableAuth {
-		verifier, err := initKeycloakValidator(ctx, sysConf)
-		if err != nil {
-			return fmt.Errorf("init keycloak token verifier: %w", err)
-		}
+		verifier := keycloak.NewOIDCTokenValidator(keycloak.Config{
+			URL:   sysConf.KeycloakAddress,
+			Realm: sysConf.KeycloakRealm,
+		})
 		interceptor := policy.NewInterceptor(policy.Default(false),
 			policy.WithTokenVerifier(verifier),
 			policy.WithLogger(logger.Named("policy")),
@@ -158,20 +155,6 @@ func readSystemConfig(configDir string) (SystemConfig, error) {
 
 func connectDB(ctx context.Context, sysConf SystemConfig) (*pgxpool.Pool, error) {
 	return pgxutil.Connect(ctx, pgxutil.ConnectConfig{URI: sysConf.DatabaseURL, PasswordFile: sysConf.DatabasePasswordFile})
-}
-
-func initKeycloakValidator(ctx context.Context, sysConf SystemConfig) (token.Validator, error) {
-	authConfig := keycloak.Config{
-		URL:      sysConf.KeycloakAddress,
-		Realm:    sysConf.KeycloakRealm,
-		ClientID: "sc-api",
-	}
-	authUrls, err := oidc.FetchConfig(ctx, authConfig.Issuer())
-	if err != nil {
-		panic(err)
-	}
-	keySet := jwks.NewRemoteKeySet(ctx, authUrls.JWKSURI)
-	return keycloak.NewTokenValidator(&authConfig, keySet), nil
 }
 
 func loadServerAuthority(configDir string) pki.Source {

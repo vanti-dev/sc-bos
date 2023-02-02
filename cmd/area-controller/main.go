@@ -17,6 +17,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts"
+	"github.com/vanti-dev/sc-bos/pkg/system/authn"
 	"github.com/vanti-dev/sc-bos/pkg/system/publications"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants"
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
@@ -35,8 +36,6 @@ func init() {
 	flag.StringVar(&systemConfig.StaticDir, "static-dir", "", "(optional) path to directory to host static files over HTTP from")
 
 	flag.BoolVar(&systemConfig.DisablePolicy, "insecure-disable-policy", false, "Insecure! Disable checking requests against the security policy. This option opens up the server to any request.")
-	flag.BoolVar(&systemConfig.LocalOAuth, "local-auth", false, "Enable issuing password tokens based on credentials found in users.json")
-	flag.BoolVar(&systemConfig.TenantOAuth, "tenant-auth", false, "enable issuing client tokens based on credentials found in tenants.json or verified via the enrollment manager node")
 }
 
 func main() {
@@ -47,6 +46,7 @@ func run(ctx context.Context) error {
 	flag.Parse()
 	systemConfig.LocalConfigFileName = "area-controller.local.json"
 	systemConfig.Logger = zap.NewDevelopmentConfig()
+	systemConfig.Logger.DisableStacktrace = true // because they are annoying!
 	systemConfig.DriverFactories = map[string]driver.Factory{
 		axiomxa.DriverName: axiomxa.Factory,
 		bacnet.DriverName:  bacnet.Factory,
@@ -59,6 +59,7 @@ func run(ctx context.Context) error {
 	}
 	systemConfig.SystemFactories = map[string]system.Factory{
 		"alerts":       alerts.Factory,
+		"authn":        authn.Factory(),
 		"tenants":      tenants.Factory,
 		"publications": publications.Factory,
 	}

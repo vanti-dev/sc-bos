@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/rs/cors"
 	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/timshannon/bolthold"
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -27,7 +27,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/app/services"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 
-	"github.com/vanti-dev/sc-bos/internal/auth/tenant"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
@@ -51,13 +50,6 @@ type SystemConfig struct {
 	DataDir             string
 	StaticDir           string // hosts static files from this directory over HTTP if StaticDir is non-empty
 	LocalConfigFileName string // defaults to LocalConfigFileName
-
-	// TenantOAuth, if true, means the controller will support issuing tokens using the OAuth client_credentials flow
-	// with credentials read from tenants.json or verified using the manager node
-	TenantOAuth bool
-	// LocalOAuth, if true, means the controller will support issuing tokens using the OAuth password flow with
-	// credentials read from users.json
-	LocalOAuth bool
 
 	Policy        policy.Policy // Override the policy used for RPC calls. Defaults to policy.Default
 	DisablePolicy bool          // Unsafe, disables any policy checking for the server
@@ -159,44 +151,22 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	var grpcOpts []grpc.ServerOption
 	grpcOpts = append(grpcOpts, grpc.Creds(credentials.NewTLS(tlsGRPCServerConfig)))
 
-	// Configure how we authenticate requests
-	policyInterceptorOpts := []policy.InterceptorOption{policy.WithLogger(logger.Named("policy"))}
-	if shouldSetupTokenServer(config) {
-		// Setup the OAuth server for issuing and validating tokens
-		tokenServerOpts := []tenant.TokenServerOption{tenant.WithLogger(logger.Named("token.server"))}
-		if config.TenantOAuth {
-			verifier, err := clientVerifier(config, manager)
-			if err != nil {
-				return nil, err
-			}
-			tokenServerOpts = append(tokenServerOpts, tenant.WithClientCredentialFlow(verifier, 15*time.Minute))
-		}
-		if config.LocalOAuth {
-			verifier, err := passwordVerifier(config)
-			if err != nil {
-				if !errors.Is(err, os.ErrNotExist) {
-					// if the file exists, but we can't read it, we should let someone know
-					return nil, err
-				}
-			} else {
-				tokenServerOpts = append(tokenServerOpts, tenant.WithPasswordFlow(verifier, 24*time.Hour))
-			}
-		}
+	// tokenValidator validates access tokens as part of the authorisation of requests to our APIs.
+	// Claims associated with the token are presented along with other information when processing policy files.
+	// Systems contribute validators to this set supporting different sources of token.
+	tokenValidator := &token.ValidatorSet{}
 
-		tokenServer, err := tenant.NewTokenServer("gateway", tokenServerOpts...)
-		if err != nil {
-			return nil, err
-		}
-		mux.Handle("/oauth2/token", cors.Default().Handler(tokenServer))
-		policyInterceptorOpts = append(policyInterceptorOpts, policy.WithTokenVerifier(tokenServer.TokenValidator()))
-	}
+	// configure request authorisation, here we setup grpc interceptors that decide if a request is denied or not.
 	if !config.DisablePolicy {
 		pol := policy.Default(false)
 		if config.Policy != nil {
 			pol = config.Policy
 		}
 
-		interceptor := policy.NewInterceptor(pol, policyInterceptorOpts...)
+		interceptor := policy.NewInterceptor(pol,
+			policy.WithLogger(logger.Named("policy")),
+			policy.WithTokenVerifier(tokenValidator),
+		)
 		grpcOpts = append(grpcOpts,
 			grpc.ChainUnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
 			grpc.ChainStreamInterceptor(interceptor.GRPCStreamingInterceptor()),
@@ -242,6 +212,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		Node:             rootNode,
 		Tasks:            &task.Group{},
 		Database:         db,
+		TokenValidators:  tokenValidator,
 		Mux:              mux,
 		GRPC:             grpcServer,
 		HTTP:             httpServer,
@@ -250,10 +221,6 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	}
 	c.Defer(manager.Close)
 	return c, nil
-}
-
-func shouldSetupTokenServer(config SystemConfig) bool {
-	return config.TenantOAuth || config.LocalOAuth
 }
 
 func readCertAndRoots(config SystemConfig, key pki.PrivateKey) (*tls.Certificate, []*x509.Certificate, error) {
@@ -283,10 +250,11 @@ type Controller struct {
 	Enrollment       *enrollment.Server
 
 	// services for drivers/automations
-	Logger   *zap.Logger
-	Node     *node.Node
-	Tasks    *task.Group
-	Database *bolthold.Store
+	Logger          *zap.Logger
+	Node            *node.Node
+	Tasks           *task.Group
+	Database        *bolthold.Store
+	TokenValidators *token.ValidatorSet
 
 	Mux  *http.ServeMux
 	GRPC *grpc.Server
@@ -415,9 +383,12 @@ func (c *Controller) startAutomations() (*service.Map, error) {
 
 func (c *Controller) startSystems() (*service.Map, error) {
 	ctxServices := system.Services{
-		Logger:   c.Logger.Named("system"),
-		Node:     c.Node,
-		Database: c.Database,
+		DataDir:         c.SystemConfig.DataDir,
+		Logger:          c.Logger.Named("system"),
+		Node:            c.Node,
+		Database:        c.Database,
+		HTTPMux:         c.Mux,
+		TokenValidators: c.TokenValidators,
 	}
 	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
 		f, ok := c.SystemConfig.SystemFactories[kind]

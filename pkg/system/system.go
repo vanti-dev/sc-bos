@@ -2,7 +2,10 @@
 package system
 
 import (
+	"net/http"
+
 	"github.com/timshannon/bolthold"
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/zap"
 
@@ -10,9 +13,13 @@ import (
 )
 
 type Services struct {
-	Logger   *zap.Logger
-	Node     *node.Node // for advertising devices
-	Database *bolthold.Store
+	DataDir         string
+	Logger          *zap.Logger
+	Node            *node.Node // for advertising devices
+	CohortManager   node.Remote
+	Database        *bolthold.Store
+	HTTPMux         *http.ServeMux      // to allow systems to serve http requests
+	TokenValidators *token.ValidatorSet // to allow systems to contribute towards client validation
 }
 
 type Factory interface {
