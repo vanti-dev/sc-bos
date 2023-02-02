@@ -29,7 +29,7 @@ func (f factory) New(services system.Services) service.Lifecycle {
 }
 
 func (f factory) AddSupport(supporter node.Supporter) {
-	supporter.Support(node.Api(f.server))
+	supporter.Support(node.Api(f.server), node.Clients(gen.WrapTenantApi(f.server)))
 }
 
 func NewSystem(services system.Services) *System {
