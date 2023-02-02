@@ -196,3 +196,29 @@ func ValidKeyPair(public crypto.PublicKey, private crypto.PrivateKey) error {
 
 	return nil
 }
+
+// LoadCertAndRootsWithKey reads and returns a certificate from certPath and validates it against key.
+// It optionally reads a roots file from rootsPath, if rootsPath is empty or the file is not found then returns nil.
+func LoadCertAndRootsWithKey(certPath, rootsPath string, key PrivateKey) (*tls.Certificate, []*x509.Certificate, error) {
+	cert, err := LoadX509Cert(certPath, key)
+	if err != nil {
+		return nil, nil, err
+	}
+	if rootsPath == "" {
+		return &cert, nil, nil
+	}
+
+	rootsPem, err := os.ReadFile(rootsPath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			// we ignore that roots doesn't exist, this just means we don't trust other nodes
+			return &cert, nil, nil
+		}
+		return nil, nil, err
+	}
+	roots, err := ParseCertificatesPEM(rootsPem)
+	if err != nil {
+		return nil, nil, err
+	}
+	return &cert, roots, nil
+}

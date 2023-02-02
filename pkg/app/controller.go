@@ -50,6 +50,7 @@ type SystemConfig struct {
 	DataDir             string
 	StaticDir           string // hosts static files from this directory over HTTP if StaticDir is non-empty
 	LocalConfigFileName string // defaults to LocalConfigFileName
+	CertConfig          CertConfig
 
 	Policy        policy.Policy // Override the policy used for RPC calls. Defaults to policy.Default
 	DisablePolicy bool          // Unsafe, disables any policy checking for the server
@@ -57,6 +58,36 @@ type SystemConfig struct {
 	DriverFactories map[string]driver.Factory // keyed by driver name
 	AutoFactories   map[string]auto.Factory   // keyed by automation type
 	SystemFactories map[string]system.Factory // keyed by system type
+}
+
+// CertConfig encapsulates different settings used for loading and present certificates to clients and servers.
+type CertConfig struct {
+	KeyFile   string
+	CertFile  string
+	RootsFile string
+
+	HTTPCert     bool // have the https stack (grpc-web and hosting) use different pki.Source from the grpc stack
+	HTTPKeyFile  string
+	HTTPCertFile string
+}
+
+func (c CertConfig) FillDefaults() CertConfig {
+	or := func(a *string, b string) {
+		if *a == "" {
+			*a = b
+		}
+	}
+
+	or(&c.KeyFile, "grpc.key.pem")
+	or(&c.CertFile, "grpc.cert.pem")
+	or(&c.RootsFile, "grpc.roots.pem")
+	// if the config specifies http key or cert file paths, assume they want to use it
+	if c.HTTPKeyFile != "" || c.HTTPCertFile != "" {
+		c.HTTPCert = true
+	}
+	or(&c.HTTPKeyFile, "https.key.pem")
+	or(&c.HTTPCertFile, "https.cert.pem")
+	return c
 }
 
 func (sc SystemConfig) LocalConfigPath() string {
@@ -114,9 +145,10 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 			zap.String("path", dbPath))
 	}
 
+	certConfig := config.CertConfig.FillDefaults()
 	// Create a private key if it doesn't exist.
 	// This key is used by the controller for incoming and outgoing connections, and as part of the enrolment process.
-	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(config.DataDir, "private-key.pem"), logger)
+	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(config.DataDir, certConfig.KeyFile), logger)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +169,12 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	// The certificates public key must be paired with private key `key` loaded above.
 	fileSource := pki.CacheSource(
 		pki.FuncSource(func() (*tls.Certificate, []*x509.Certificate, error) {
-			return readCertAndRoots(config, key)
+			certPath := filepath.Join(config.DataDir, certConfig.CertFile)
+			rootsPath := certConfig.RootsFile
+			if rootsPath != "" {
+				rootsPath = filepath.Join(config.DataDir, rootsPath)
+			}
+			return pki.LoadCertAndRootsWithKey(certPath, rootsPath, key)
 		}),
 		expire.BeforeInvalid(time.Hour),
 	)
@@ -147,24 +184,40 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	selfSignedSource := pki.CacheSource(
 		pki.SelfSignedSource(key, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()),
 		expire.AfterProgress(0.5),
-		pki.WithFSCache(filepath.Join(config.DataDir, "ss-cert.pem"), "", key),
+		pki.WithFSCache(filepath.Join(config.DataDir, "self-signed.cert.pem"), "", key),
 	)
 
 	// certSource is used by both incoming and outgoing connections.
-	// The server (both grpc and https) present the sources certificate and any intermediates between it and the roots
-	// to clients during TLS handshake.
-	// If an incoming connection (grpc only) presents a client cert then it will be validated against the roots.
-	// Outgoing connections (grpc only) will present the sources certificate as a client cert for validation by the remote party.
+	// The server present the sources certificate and any intermediates between it and the roots to clients during TLS handshake.
+	// If an incoming connection presents a client cert then it will be validated against the roots.
+	// Outgoing connections will present the sources certificate as a client cert for validation by the remote party.
+	// Config can indicate that different certs be used for grpc and https (inc grpc-web)
 	certSource := pki.ChainSource(
 		enrollServer,
 		fileSource,
 		selfSignedSource,
 	)
-	// tls.Config for different purposes backed by certSource
 	tlsGRPCServerConfig := pki.TLSServerConfig(certSource)
 	tlsGRPCServerConfig.ClientAuth = tls.VerifyClientCertIfGiven
 	tlsGRPCClientConfig := pki.TLSClientConfig(certSource)
-	tlsHTTPServerConfig := pki.TLSServerConfig(certSource)
+
+	// Certs used for https (hosting and grpc-web) can be different from the Smart Core native grpc endpoint,
+	// mostly to allow support for trusted certs on the https interface and cohort managed certs for grpc requests.
+	httpCertSource := certSource
+	if certConfig.HTTPCert {
+		fileSource := pki.CacheSource(
+			pki.FSSource(
+				filepath.Join(config.DataDir, certConfig.HTTPCertFile),
+				filepath.Join(config.DataDir, certConfig.HTTPKeyFile),
+				""),
+			expire.After(30*time.Minute),
+		)
+		httpCertSource = pki.ChainSource(
+			fileSource,
+			selfSignedSource, // reuse the same self signed cert from grpc requests
+		)
+	}
+	tlsHTTPServerConfig := pki.TLSServerConfig(httpCertSource)
 
 	// manager represents a delayed connection to the cohort manager.
 	// Using the manager connection when we aren't enrolled will result in RPC calls returning 'not resolved' errors or similar.
@@ -250,27 +303,6 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	}
 	c.Defer(manager.Close)
 	return c, nil
-}
-
-func readCertAndRoots(config SystemConfig, key pki.PrivateKey) (*tls.Certificate, []*x509.Certificate, error) {
-	certPath := filepath.Join(config.DataDir, "server-cert.pem")
-	cert, err := pki.LoadX509Cert(certPath, key)
-	if err != nil {
-		return nil, nil, err
-	}
-	rootsPem, err := os.ReadFile(filepath.Join(config.DataDir, "roots.pem"))
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			// we ignore that roots doesn't exist, this just means we don't trust other nodes
-			return &cert, nil, nil
-		}
-		return nil, nil, err
-	}
-	roots, err := pki.ParseCertificatesPEM(rootsPem)
-	if err != nil {
-		return nil, nil, err
-	}
-	return &cert, roots, nil
 }
 
 type Controller struct {

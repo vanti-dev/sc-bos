@@ -117,7 +117,7 @@ type fsCacheStore struct {
 }
 
 func (f fsCacheStore) Certs() (cert *tls.Certificate, roots []*x509.Certificate, err error) {
-	return readCertAndRootsWithKey(f.certPath, f.rootsPath, f.key)
+	return LoadCertAndRootsWithKey(f.certPath, f.rootsPath, f.key)
 }
 
 func (f fsCacheStore) Write(cert *tls.Certificate, roots []*x509.Certificate) error {
@@ -134,30 +134,6 @@ func (f fsCacheStore) Write(cert *tls.Certificate, roots []*x509.Certificate) er
 		err = multierr.Append(err, os.WriteFile(f.rootsPath, rootsPEM, 0664))
 	}
 	return err
-}
-
-func readCertAndRootsWithKey(certPath, rootsPath string, key PrivateKey) (*tls.Certificate, []*x509.Certificate, error) {
-	cert, err := LoadX509Cert(certPath, key)
-	if err != nil {
-		return nil, nil, err
-	}
-	if rootsPath == "" {
-		return &cert, nil, nil
-	}
-
-	rootsPem, err := os.ReadFile(rootsPath)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			// we ignore that roots doesn't exist, this just means we don't trust other nodes
-			return &cert, nil, nil
-		}
-		return nil, nil, err
-	}
-	roots, err := ParseCertificatesPEM(rootsPem)
-	if err != nil {
-		return nil, nil, err
-	}
-	return &cert, roots, nil
 }
 
 // FuncSource adapts f to implement Source.
