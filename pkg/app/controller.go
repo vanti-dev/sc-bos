@@ -99,9 +99,14 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 		}
 	}
 
-	// initialise services
+	// rootNode grants both local (in process) and networked (via grpc.Server) access to controller apis.
+	// If you have a device you want expose via a Smart Core API, rootNode is where you'd do that via Announce.
+	// If you need to know the brightness of another controller device, rootNode.Clients is how you'd do that.
 	rootNode := node.New(localConfig.Name)
 	rootNode.Logger = logger.Named("node")
+
+	// Setup a local database for storing non-critical data.
+	// This is made available to automations and systems as a local cache, for example for lighting reports.
 	dbPath := filepath.Join(config.DataDir, "db.bolt")
 	db, err := bolthold.Open(dbPath, 0750, nil)
 	if err != nil {
@@ -109,32 +114,55 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 			zap.String("path", dbPath))
 	}
 
-	// create private key if it doesn't exist
+	// Create a private key if it doesn't exist.
+	// This key is used by the controller for incoming and outgoing connections, and as part of the enrolment process.
 	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(config.DataDir, "private-key.pem"), logger)
 	if err != nil {
 		return nil, err
 	}
 
+	// enrollServer manages this controllers participation in a cohort.
+	// When registered with a grpc.Server, the enrollServer will accept requests like CreateEnrollment which gives
+	// this controller a new certificate for use during outgoing TLS connections to other cohort members.
+	// In addition the enrollment will also include details of the trusted root certs so this controller can validate
+	// incoming connections that contain a client certificate.
+	//
+	// enrollServer implements pki.Source providing these features without any extra work to setup.
 	enrollServer, err := enrollment.LoadOrCreateServer(filepath.Join(config.DataDir, "enrollment"), keyPEM, logger.Named("enrollment"))
 	if err != nil {
 		return nil, err
 	}
 
-	// We read certificates from a few sources, choosing the first that succeeds.
-	// First we attempt to use cohort enrollment as our source of certs/roots.
-	// If that fails we attempt to read from files in the data dir (server-cert.pem, private-key.pem, and roots.pem).
-	// If all that fails we mint a new self signed certificate.
+	// fileSource attempts to load a certificate and trust roots from disk.
+	// The certificates public key must be paired with private key `key` loaded above.
+	fileSource := pki.CacheSource(
+		pki.FuncSource(func() (*tls.Certificate, []*x509.Certificate, error) {
+			return readCertAndRoots(config, key)
+		}),
+		expire.BeforeInvalid(time.Hour),
+	)
+
+	// selfSignedSource creates a self signed certificate.
+	// The certificates public key will be paired with and signed by `key`.
+	selfSignedSource := pki.CacheSource(
+		pki.SelfSignedSource(key, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()),
+		expire.AfterProgress(0.5),
+	)
+
+	// certSource is used by both incoming and outgoing connections.
+	// The server (both grpc and https) present the sources certificate and any intermediates between it and the roots
+	// to clients during TLS handshake.
+	// If an incoming connection (grpc only) presents a client cert then it will be validated against the roots.
+	// Outgoing connections (grpc only) will present the sources certificate as a client cert for validation by the remote party.
 	certSource := pki.ChainSource(
 		enrollServer,
-		pki.CacheSource(pki.FuncSource(func() (*tls.Certificate, []*x509.Certificate, error) {
-			return readCertAndRoots(config, key)
-		}), expire.BeforeInvalid(time.Hour)),
-		pki.CacheSource(pki.SelfSignedSource(key, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()), expire.AfterProgress(0.5)),
+		fileSource,
+		selfSignedSource,
 	)
+	// tls.Config for different purposes backed by certSource
 	tlsGRPCServerConfig := pki.TLSServerConfig(certSource)
 	tlsGRPCServerConfig.ClientAuth = tls.VerifyClientCertIfGiven
 	tlsGRPCClientConfig := pki.TLSClientConfig(certSource)
-
 	tlsHTTPServerConfig := pki.TLSServerConfig(certSource)
 
 	// manager represents a delayed connection to the cohort manager.
