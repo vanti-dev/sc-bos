@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"errors"
+	"log"
 	"os"
 	"sync"
 
@@ -35,8 +36,23 @@ type Expiry func(cert *tls.Certificate, roots []*x509.Certificate, err error) bo
 
 // CacheSource wraps source such that it is only ever called when expiry returns true.
 // See the package pki/expiry for a collection of bundled expiration functions.
-func CacheSource(source Source, expiry Expiry) Source {
-	return &cachedSource{source: source, expiry: expiry}
+func CacheSource(source Source, expiry Expiry, opts ...CacheSourceOpt) Source {
+	cs := &cachedSource{source: source, expiry: expiry}
+	for _, opt := range opts {
+		opt(cs)
+	}
+	return cs
+}
+
+type CacheSourceOpt func(cs *cachedSource)
+
+// WithFSCache instructs the source to cache certs and roots to disk when source is invoked.
+// When CacheSource Certs is called for the first time, an attempt will be made to load these files before invoking the
+// underlying source.
+func WithFSCache(certPath, rootsPath string, key PrivateKey) CacheSourceOpt {
+	return func(cs *cachedSource) {
+		cs.store = fsCacheStore{certPath: certPath, rootsPath: rootsPath, key: key}
+	}
 }
 
 type cachedSource struct {
@@ -48,11 +64,21 @@ type cachedSource struct {
 	cert  *tls.Certificate
 	roots []*x509.Certificate
 	err   error
+	store cacheStore
 }
 
 func (c *cachedSource) Certs() (*tls.Certificate, []*x509.Certificate, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	if !c.ran && c.store != nil {
+		c.ran = true
+		c.cert, c.roots, c.err = c.store.Certs()
+		if errors.Is(c.err, os.ErrNotExist) {
+			// reset the error, not found if a fine starting place
+			c.ran = false
+			c.err = nil
+		}
+	}
 	if c.expired() {
 		cert, roots, err := c.source.Certs()
 		if cert == nil && err == nil {
@@ -60,6 +86,13 @@ func (c *cachedSource) Certs() (*tls.Certificate, []*x509.Certificate, error) {
 			err = ErrNoCertOrErr
 		}
 		c.cert, c.roots, c.err = cert, roots, err
+		// save the cert for future runs
+		if err == nil && c.store != nil {
+			err := c.store.Write(cert, roots)
+			if err != nil {
+				log.Printf("Unable to write certs to file %v", err)
+			}
+		}
 	}
 	return c.cert, c.roots, c.err
 }
@@ -71,6 +104,60 @@ func (c *cachedSource) expired() bool {
 	}
 	c.ran = true
 	return true
+}
+
+type cacheStore interface {
+	Source
+	Write(cert *tls.Certificate, roots []*x509.Certificate) error
+}
+
+type fsCacheStore struct {
+	certPath, rootsPath string
+	key                 PrivateKey
+}
+
+func (f fsCacheStore) Certs() (cert *tls.Certificate, roots []*x509.Certificate, err error) {
+	return readCertAndRootsWithKey(f.certPath, f.rootsPath, f.key)
+}
+
+func (f fsCacheStore) Write(cert *tls.Certificate, roots []*x509.Certificate) error {
+	if cert.PrivateKey != f.key {
+		return errors.New("cert private key doesn't match")
+	}
+	var err error
+	if f.certPath != "" {
+		certPEM := EncodePEMSequence(cert.Certificate, "CERTIFICATE")
+		err = multierr.Append(err, os.WriteFile(f.certPath, certPEM, 0664))
+	}
+	if f.rootsPath != "" {
+		rootsPEM := EncodeCertificates(roots)
+		err = multierr.Append(err, os.WriteFile(f.rootsPath, rootsPEM, 0664))
+	}
+	return err
+}
+
+func readCertAndRootsWithKey(certPath, rootsPath string, key PrivateKey) (*tls.Certificate, []*x509.Certificate, error) {
+	cert, err := LoadX509Cert(certPath, key)
+	if err != nil {
+		return nil, nil, err
+	}
+	if rootsPath == "" {
+		return &cert, nil, nil
+	}
+
+	rootsPem, err := os.ReadFile(rootsPath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			// we ignore that roots doesn't exist, this just means we don't trust other nodes
+			return &cert, nil, nil
+		}
+		return nil, nil, err
+	}
+	roots, err := ParseCertificatesPEM(rootsPem)
+	if err != nil {
+		return nil, nil, err
+	}
+	return &cert, roots, nil
 }
 
 // FuncSource adapts f to implement Source.

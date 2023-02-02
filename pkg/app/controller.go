@@ -147,6 +147,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	selfSignedSource := pki.CacheSource(
 		pki.SelfSignedSource(key, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()),
 		expire.AfterProgress(0.5),
+		pki.WithFSCache(filepath.Join(config.DataDir, "ss-cert.pem"), "", key),
 	)
 
 	// certSource is used by both incoming and outgoing connections.
