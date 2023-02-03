@@ -15,6 +15,7 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/timshannon/bolthold"
+	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -40,66 +41,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-const LocalConfigFileName = "area-controller.local.json"
-
-type SystemConfig struct {
-	Logger      zap.Config
-	ListenGRPC  string
-	ListenHTTPS string
-
-	DataDir             string
-	StaticDir           string // hosts static files from this directory over HTTP if StaticDir is non-empty
-	LocalConfigFileName string // defaults to LocalConfigFileName
-	CertConfig          CertConfig
-
-	Policy        policy.Policy // Override the policy used for RPC calls. Defaults to policy.Default
-	DisablePolicy bool          // Unsafe, disables any policy checking for the server
-
-	DriverFactories map[string]driver.Factory // keyed by driver name
-	AutoFactories   map[string]auto.Factory   // keyed by automation type
-	SystemFactories map[string]system.Factory // keyed by system type
-}
-
-// CertConfig encapsulates different settings used for loading and present certificates to clients and servers.
-type CertConfig struct {
-	KeyFile   string
-	CertFile  string
-	RootsFile string
-
-	HTTPCert     bool // have the https stack (grpc-web and hosting) use different pki.Source from the grpc stack
-	HTTPKeyFile  string
-	HTTPCertFile string
-}
-
-func (c CertConfig) FillDefaults() CertConfig {
-	or := func(a *string, b string) {
-		if *a == "" {
-			*a = b
-		}
-	}
-
-	or(&c.KeyFile, "grpc.key.pem")
-	or(&c.CertFile, "grpc.cert.pem")
-	or(&c.RootsFile, "grpc.roots.pem")
-	// if the config specifies http key or cert file paths, assume they want to use it
-	if c.HTTPKeyFile != "" || c.HTTPCertFile != "" {
-		c.HTTPCert = true
-	}
-	or(&c.HTTPKeyFile, "https.key.pem")
-	or(&c.HTTPCertFile, "https.cert.pem")
-	return c
-}
-
-func (sc SystemConfig) LocalConfigPath() string {
-	s := sc.LocalConfigFileName
-	if s == "" {
-		s = LocalConfigFileName
-	}
-	return filepath.Join(sc.DataDir, s)
-}
-
 // Bootstrap will obtain a Controller in a ready-to-run state.
-func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
+func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) {
 	logger, err := config.Logger.Build()
 	if err != nil {
 		return nil, err
@@ -114,7 +57,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 	// load the local config file if possible
 	// TODO: pull config from manager publication
 	var localConfig ControllerConfig
-	localConfigPath := config.LocalConfigPath()
+	localConfigPath := filepath.Join(config.DataDir, config.LocalConfigFileName)
 	rawLocalConfig, err := os.ReadFile(localConfigPath)
 	if err == nil {
 		err = json.Unmarshal(rawLocalConfig, &localConfig)
@@ -145,7 +88,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 			zap.String("path", dbPath))
 	}
 
-	certConfig := config.CertConfig.FillDefaults()
+	certConfig := config.CertConfig
 	// Create a private key if it doesn't exist.
 	// This key is used by the controller for incoming and outgoing connections, and as part of the enrolment process.
 	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(config.DataDir, certConfig.KeyFile), logger)
@@ -306,7 +249,7 @@ func Bootstrap(ctx context.Context, config SystemConfig) (*Controller, error) {
 }
 
 type Controller struct {
-	SystemConfig     SystemConfig
+	SystemConfig     sysconf.Config
 	ControllerConfig ControllerConfig
 	Enrollment       *enrollment.Server
 
