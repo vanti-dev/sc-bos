@@ -1,11 +1,11 @@
-import {trackAction} from '@/api/resource';
+import {pullResource, setCollection, trackAction} from '@/api/resource';
 import {ServicesApiPromiseClient} from '@sc-bos/ui-gen/proto/services_grpc_web_pb';
 import {clientOptions} from '@/api/grpcweb';
 import {GetMetadataRequest} from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb';
 import {fieldMaskFromObject, setProperties} from '@/api/convpb';
 import {
   ConfigureServiceRequest,
-  ListServicesRequest,
+  ListServicesRequest, PullServiceRequest,
   StartServiceRequest,
   StopServiceRequest
 } from '@sc-bos/ui-gen/proto/services_pb';
@@ -36,6 +36,25 @@ export function listServices(request, tracker) {
   return trackAction('Services.ListServices', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.listServices(createListServicesRequestFromObject(request));
+  });
+}
+
+/**
+ *
+ * @param request
+ * @param resource
+ */
+export function pullServices(request, resource) {
+  pullResource('Services.PullServices', resource, endpoint => {
+    const api = client(endpoint);
+    const stream = api.pullServices(pullServicesRequestFromObject(request));
+    stream.on('data', msg => {
+      const changes = msg.getChangesList();
+      for (const change of changes) {
+        setCollection(resource, change, v => v.id);
+      }
+    });
+    return stream;
   });
 }
 
@@ -105,6 +124,18 @@ function createListServicesRequestFromObject(obj) {
   if (!obj) return undefined;
   const req = new ListServicesRequest();
   setProperties(req, obj, 'name', 'pageToken', 'pageSize');
+  return req;
+}
+
+/**
+ * @param {PullServiceRequest.AsObject} obj
+ * @return {PullServiceRequest}
+ */
+function pullServicesRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const req = new PullServiceRequest();
+  setProperties(req, obj, 'name', 'updatesOnly');
+  req.setReadMask(fieldMaskFromObject(obj.readMask));
   return req;
 }
 

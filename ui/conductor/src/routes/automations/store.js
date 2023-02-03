@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia';
 import {newActionTracker, newResourceCollection} from '@/api/resource';
 import {computed, reactive} from 'vue';
-import {getServiceMetadata, listServices, ServiceNames} from '@/api/ui/services';
+import {getServiceMetadata, listServices, pullServices, ServiceNames} from '@/api/ui/services';
 import {Collection} from '@/util/query';
 
 export const useAutomationsStore = defineStore('automations', () => {
@@ -41,7 +41,10 @@ export const useAutomationsStore = defineStore('automations', () => {
       }
       return page.nextPageToken;
     };
-    return new Collection(listFn);
+    const pullFn = (name, resources) => {
+      pullServices({name}, resources);
+    };
+    return new Collection(listFn, pullFn);
   }
 
   return {
