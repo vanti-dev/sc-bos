@@ -73,9 +73,7 @@ func (b *bacnet) applyConfig(ctx context.Context, cfg config.BacnetSource) error
 	return nil
 }
 
-func (b *bacnet) publishAll(
-	ctx context.Context, cfg config.BacnetSource, client rpc.BacnetDriverServiceClient, sent *duplicates,
-) error {
+func (b *bacnet) publishAll(ctx context.Context, cfg config.BacnetSource, client rpc.BacnetDriverServiceClient, sent *duplicates) error {
 	t, ok := ctx.Value(timingKey).(timing)
 	if !ok {
 		t = timing{} // will be thrown away
@@ -106,9 +104,7 @@ func (b *bacnet) publishAll(
 	return allErrs
 }
 
-func (b *bacnet) deviceToReadRequest(
-	ctx context.Context, device config.BacnetDevice, client rpc.BacnetDriverServiceClient,
-) (*rpc.ReadPropertyMultipleRequest, error) {
+func (b *bacnet) deviceToReadRequest(ctx context.Context, device config.BacnetDevice, client rpc.BacnetDriverServiceClient) (*rpc.ReadPropertyMultipleRequest, error) {
 	readRequest := &rpc.ReadPropertyMultipleRequest{Name: device.Name}
 	if len(device.Objects) == 0 {
 		// read all objects from the server
@@ -141,9 +137,7 @@ func (b *bacnet) deviceToReadRequest(
 	return readRequest, nil
 }
 
-func (b *bacnet) publishResults(
-	ctx context.Context, topicPrefix string, response *rpc.ReadPropertyMultipleResponse, sent *duplicates,
-) error {
+func (b *bacnet) publishResults(ctx context.Context, topicPrefix string, response *rpc.ReadPropertyMultipleResponse, sent *duplicates) error {
 	var allErrs error
 	for _, result := range response.ReadResults {
 		objId := adapt.ObjectIDFromProto(result.ObjectIdentifier)

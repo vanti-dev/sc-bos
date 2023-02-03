@@ -28,9 +28,7 @@ import (
 // constructs a new client certificate signed using the certificate and key from authority,
 // and invokes CreateEnrollment on the target with this information.
 // The Certificate and RootCAs will be computed from the authority and will be ignored if provided in enrollment.
-func EnrollAreaController(
-	ctx context.Context, enrollment *gen.Enrollment, authority pki.Source,
-) (*gen.Enrollment, error) {
+func EnrollAreaController(ctx context.Context, enrollment *gen.Enrollment, authority pki.Source) (*gen.Enrollment, error) {
 	enrollment = proto.Clone(enrollment).(*gen.Enrollment)
 
 	// when in enrollment mode, the target node will be using a self-signed cert we won't be able to
@@ -99,9 +97,7 @@ type certInterceptor struct {
 	peerCertificates []*x509.Certificate
 }
 
-func (cw *certInterceptor) ClientHandshake(
-	ctx context.Context, authority string, rawConn net.Conn,
-) (net.Conn, credentials.AuthInfo, error) {
+func (cw *certInterceptor) ClientHandshake(ctx context.Context, authority string, rawConn net.Conn) (net.Conn, credentials.AuthInfo, error) {
 	conn, info, err := cw.TransportCredentials.ClientHandshake(ctx, authority, rawConn)
 	if info, ok := info.(credentials.TLSInfo); ok {
 		cw.m.Lock()

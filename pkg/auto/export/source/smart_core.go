@@ -89,10 +89,7 @@ func (s *smartCore) applyConfig(ctx context.Context, cfg config.SmartCoreSource)
 	return nil
 }
 
-func publishLightBrightness(
-	ctx context.Context, name string, lightClient traits.LightApiClient, publisher Publisher, sent *duplicates,
-	logger *zap.Logger,
-) error {
+func publishLightBrightness(ctx context.Context, name string, lightClient traits.LightApiClient, publisher Publisher, sent *duplicates, logger *zap.Logger) error {
 	puller := &lightBrightnessPuller{
 		client: lightClient,
 		name:   name,

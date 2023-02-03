@@ -35,9 +35,7 @@ func (d *Driver) findDevice(device config.Device) (bactypes.Device, error) {
 	return bacDevices[0], nil
 }
 
-func (d *Driver) fetchObjects(
-	cfg config.Root, device config.Device, bacDevice bactypes.Device,
-) (map[bactypes.ObjectID]configObject, error) {
+func (d *Driver) fetchObjects(cfg config.Root, device config.Device, bacDevice bactypes.Device) (map[bactypes.ObjectID]configObject, error) {
 	objects := make(map[bactypes.ObjectID]configObject, len(device.Objects))
 	for _, object := range device.Objects {
 		objects[bactypes.ObjectID(object.ID)] = configObject{

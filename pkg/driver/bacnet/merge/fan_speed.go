@@ -64,9 +64,7 @@ func (t *fanSpeed) GetFanSpeed(ctx context.Context, request *traits.GetFanSpeedR
 	return t.ModelServer.GetFanSpeed(ctx, request)
 }
 
-func (t *fanSpeed) UpdateFanSpeed(
-	ctx context.Context, request *traits.UpdateFanSpeedRequest,
-) (*traits.FanSpeed, error) {
+func (t *fanSpeed) UpdateFanSpeed(ctx context.Context, request *traits.UpdateFanSpeedRequest) (*traits.FanSpeed, error) {
 	newPreset := request.GetFanSpeed().GetPreset()
 	newFanSpeed := request.GetFanSpeed().GetPercentage()
 	if newPreset != "" {
@@ -118,9 +116,7 @@ func (t *fanSpeed) pollPeer(ctx context.Context) (*traits.FanSpeed, error) {
 //  3. pollPeer returns an error
 //
 // An backoff delay will be added between each call to pollPeer
-func (t *fanSpeed) pollUntil(
-	ctx context.Context, tries int, test func(data *traits.FanSpeed) bool,
-) (*traits.FanSpeed, error) {
+func (t *fanSpeed) pollUntil(ctx context.Context, tries int, test func(data *traits.FanSpeed) bool) (*traits.FanSpeed, error) {
 	if tries == 0 {
 		tries = math.MaxInt
 	}

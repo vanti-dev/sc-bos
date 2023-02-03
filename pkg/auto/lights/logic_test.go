@@ -214,9 +214,7 @@ func (ta *testActions) assertNextCall(req any) {
 	}
 }
 
-func (ta *testActions) UpdateBrightness(
-	ctx context.Context, req *traits.UpdateBrightnessRequest, state *WriteState,
-) error {
+func (ta *testActions) UpdateBrightness(ctx context.Context, req *traits.UpdateBrightnessRequest, state *WriteState) error {
 	ta.calls = append(ta.calls, req)
 	ta.brightnessCalls = append(ta.brightnessCalls, req)
 	state.Brightness[req.Name] = req.Brightness

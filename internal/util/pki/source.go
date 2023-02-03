@@ -265,9 +265,7 @@ func AuthoritySource(authority Source, id *x509.Certificate, key PrivateKey, csr
 
 // AuthoritySourceFn returns a Source that mints a new tls.Certificate based on the given signing authority using id and
 // key funcs.
-func AuthoritySourceFn(
-	authority Source, keyPair func() (*x509.Certificate, PrivateKey, error), csrOpts ...CSROption,
-) Source {
+func AuthoritySourceFn(authority Source, keyPair func() (*x509.Certificate, PrivateKey, error), csrOpts ...CSROption) Source {
 	return &authoritySource{
 		authority: authority,
 		csr:       newCSR(csrOpts...),

@@ -58,9 +58,7 @@ func (t *airTemperature) AnnounceSelf(a node.Announcer) node.Undo {
 	return a.Announce(t.config.Name, node.HasTrait(trait.AirTemperature, node.WithClients(airtemperature.WrapApi(t))))
 }
 
-func (t *airTemperature) GetAirTemperature(
-	ctx context.Context, request *traits.GetAirTemperatureRequest,
-) (*traits.AirTemperature, error) {
+func (t *airTemperature) GetAirTemperature(ctx context.Context, request *traits.GetAirTemperatureRequest) (*traits.AirTemperature, error) {
 	_, err := t.pollPeer(ctx)
 	if err != nil {
 		return nil, err
@@ -68,9 +66,7 @@ func (t *airTemperature) GetAirTemperature(
 	return t.ModelServer.GetAirTemperature(ctx, request)
 }
 
-func (t *airTemperature) UpdateAirTemperature(
-	ctx context.Context, request *traits.UpdateAirTemperatureRequest,
-) (*traits.AirTemperature, error) {
+func (t *airTemperature) UpdateAirTemperature(ctx context.Context, request *traits.UpdateAirTemperatureRequest) (*traits.AirTemperature, error) {
 	newSetPoint := float32(request.GetState().GetTemperatureSetPoint().GetValueCelsius())
 	err := writeProperty(ctx, t.client, t.known, *t.config.SetPoint, newSetPoint, 0)
 	if err != nil {
@@ -110,9 +106,7 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 //  3. pollPeer returns an error
 //
 // An backoff delay will be added between each call to pollPeer
-func (t *airTemperature) pollUntil(
-	ctx context.Context, tries int, test func(temperature *traits.AirTemperature) bool,
-) (*traits.AirTemperature, error) {
+func (t *airTemperature) pollUntil(ctx context.Context, tries int, test func(temperature *traits.AirTemperature) bool) (*traits.AirTemperature, error) {
 	if tries == 0 {
 		tries = math.MaxInt
 	}

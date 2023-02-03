@@ -19,9 +19,7 @@ type enterLeaveServer struct {
 	bus         *minibus.Bus[PushData]
 }
 
-func (e *enterLeaveServer) PullEnterLeaveEvents(
-	request *traits.PullEnterLeaveEventsRequest, server traits.EnterLeaveSensorApi_PullEnterLeaveEventsServer,
-) error {
+func (e *enterLeaveServer) PullEnterLeaveEvents(request *traits.PullEnterLeaveEventsRequest, server traits.EnterLeaveSensorApi_PullEnterLeaveEventsServer) error {
 	// get the initial value of the logics so we can compare later
 	res, err := GetLiveLogic(e.client, e.multiSensor, e.logicID)
 	if err != nil {

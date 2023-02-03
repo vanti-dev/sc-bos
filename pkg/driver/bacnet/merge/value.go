@@ -12,9 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 )
 
-func readProperty(
-	_ context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource,
-) (any, error) {
+func readProperty(_ context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource) (any, error) {
 	device, object, property, err := value.Lookup(known)
 	if err != nil {
 		return nil, err
@@ -39,9 +37,7 @@ func readProperty(
 	return res.Object.Properties[0].Data, nil
 }
 
-func readPropertyFloat64(
-	ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource,
-) (float64, error) {
+func readPropertyFloat64(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource) (float64, error) {
 	data, err := readProperty(ctx, client, known, value)
 	if err != nil {
 		return 0, err
@@ -60,9 +56,7 @@ func readPropertyFloat64(
 	return 0, fmt.Errorf("unsupported conversion %T -> float64 for val %v", data, data)
 }
 
-func readPropertyFloat32(
-	ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource,
-) (float32, error) {
+func readPropertyFloat32(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource) (float32, error) {
 	data, err := readProperty(ctx, client, known, value)
 	if err != nil {
 		return 0, err
@@ -81,9 +75,7 @@ func readPropertyFloat32(
 	return 0, fmt.Errorf("unsupported conversion %T -> float64 for val %v", data, data)
 }
 
-func writeProperty(
-	_ context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource, data any, priority uint,
-) error {
+func writeProperty(_ context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource, data any, priority uint) error {
 	device, object, property, err := value.Lookup(known)
 	if err != nil {
 		return err

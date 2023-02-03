@@ -43,9 +43,7 @@ func (d *DeviceBacnetService) AnnounceSelf(a node.Announcer) node.Undo {
 	return a.Announce(d.name, node.HasClient(rpc.WrapBacnetDriverService(d)))
 }
 
-func (d *DeviceBacnetService) ReadProperty(
-	ctx context.Context, request *rpc.ReadPropertyRequest,
-) (*rpc.ReadPropertyResponse, error) {
+func (d *DeviceBacnetService) ReadProperty(ctx context.Context, request *rpc.ReadPropertyRequest) (*rpc.ReadPropertyResponse, error) {
 	if request.ObjectIdentifier == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "missing object_identifier")
 	}
@@ -74,9 +72,7 @@ func (d *DeviceBacnetService) ReadProperty(
 	}, nil
 }
 
-func (d *DeviceBacnetService) ReadPropertyMultiple(
-	ctx context.Context, request *rpc.ReadPropertyMultipleRequest,
-) (*rpc.ReadPropertyMultipleResponse, error) {
+func (d *DeviceBacnetService) ReadPropertyMultiple(ctx context.Context, request *rpc.ReadPropertyMultipleRequest) (*rpc.ReadPropertyMultipleResponse, error) {
 	bacReq := bactypes.ReadMultipleProperty{}
 	for _, spec := range request.ReadSpecifications {
 		obj := bactypes.Object{
@@ -120,9 +116,7 @@ func (d *DeviceBacnetService) ReadPropertyMultiple(
 	return res, nil
 }
 
-func (d *DeviceBacnetService) WriteProperty(
-	ctx context.Context, request *rpc.WritePropertyRequest,
-) (*rpc.WritePropertyResponse, error) {
+func (d *DeviceBacnetService) WriteProperty(ctx context.Context, request *rpc.WritePropertyRequest) (*rpc.WritePropertyResponse, error) {
 	writeProp, err := d.propertyFromProtoForWrite(request.WriteValue)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "Interpreting request %v", err)
@@ -136,16 +130,12 @@ func (d *DeviceBacnetService) WriteProperty(
 	return &rpc.WritePropertyResponse{}, d.client.WriteProperty(d.device, data, uint(request.WriteValue.Priority))
 }
 
-func (d *DeviceBacnetService) WritePropertyMultiple(
-	ctx context.Context, request *rpc.WritePropertyMultipleRequest,
-) (*rpc.WritePropertyMultipleResponse, error) {
+func (d *DeviceBacnetService) WritePropertyMultiple(ctx context.Context, request *rpc.WritePropertyMultipleRequest) (*rpc.WritePropertyMultipleResponse, error) {
 	// client doesn't implement WritePropertyMultiple! :(
 	return d.UnimplementedBacnetDriverServiceServer.WritePropertyMultiple(ctx, request)
 }
 
-func (d *DeviceBacnetService) ListObjects(
-	_ context.Context, _ *rpc.ListObjectsRequest,
-) (*rpc.ListObjectsResponse, error) {
+func (d *DeviceBacnetService) ListObjects(_ context.Context, _ *rpc.ListObjectsRequest) (*rpc.ListObjectsResponse, error) {
 	objects, err := d.known.ListObjects(d.device)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "device has been forgotten")

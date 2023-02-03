@@ -21,9 +21,7 @@ type server struct {
 	config config.Root
 }
 
-func (s *server) SaveQRCredential(
-	ctx context.Context, request *rpc.SaveQRCredentialRequest,
-) (*rpc.SaveQRCredentialResponse, error) {
+func (s *server) SaveQRCredential(ctx context.Context, request *rpc.SaveQRCredentialRequest) (*rpc.SaveQRCredentialResponse, error) {
 	// todo: update the actual request once we know what it looks like!
 	body := struct {
 		Credential string `json:"credential,omitempty"`

@@ -33,9 +33,7 @@ type NodeServer struct {
 	testTLSConfig *tls.Config
 }
 
-func (n *NodeServer) GetNodeRegistration(
-	ctx context.Context, request *gen.GetNodeRegistrationRequest,
-) (*gen.NodeRegistration, error) {
+func (n *NodeServer) GetNodeRegistration(ctx context.Context, request *gen.GetNodeRegistrationRequest) (*gen.NodeRegistration, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	var dbEnrollment db.Enrollment
 	err := n.db.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
@@ -56,9 +54,7 @@ func (n *NodeServer) GetNodeRegistration(
 	}, nil
 }
 
-func (n *NodeServer) CreateNodeRegistration(
-	ctx context.Context, request *gen.CreateNodeRegistrationRequest,
-) (*gen.NodeRegistration, error) {
+func (n *NodeServer) CreateNodeRegistration(ctx context.Context, request *gen.CreateNodeRegistrationRequest) (*gen.NodeRegistration, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	nodeReg := request.GetNodeRegistration()
 	if nodeReg == nil {
@@ -92,9 +88,7 @@ func (n *NodeServer) CreateNodeRegistration(
 	return nodeReg, nil
 }
 
-func (n *NodeServer) ListNodeRegistrations(
-	ctx context.Context, request *gen.ListNodeRegistrationsRequest,
-) (*gen.ListNodeRegistrationsResponse, error) {
+func (n *NodeServer) ListNodeRegistrations(ctx context.Context, request *gen.ListNodeRegistrationsRequest) (*gen.ListNodeRegistrationsResponse, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	var dbEnrollments []db.Enrollment
 	err := n.db.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
@@ -118,9 +112,7 @@ func (n *NodeServer) ListNodeRegistrations(
 	return &gen.ListNodeRegistrationsResponse{NodeRegistrations: registrations}, nil
 }
 
-func (n *NodeServer) TestNodeCommunication(
-	ctx context.Context, request *gen.TestNodeCommunicationRequest,
-) (*gen.TestNodeCommunicationResponse, error) {
+func (n *NodeServer) TestNodeCommunication(ctx context.Context, request *gen.TestNodeCommunicationRequest) (*gen.TestNodeCommunicationResponse, error) {
 	reg, err := n.GetNodeRegistration(ctx, &gen.GetNodeRegistrationRequest{NodeName: request.GetNodeName()})
 	if err != nil {
 		return nil, err

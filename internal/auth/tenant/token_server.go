@@ -124,9 +124,7 @@ func parsePostForm(request *http.Request) error {
 	}
 }
 
-func (s *TokenServer) clientCredentialsFlow(
-	ctx context.Context, writer http.ResponseWriter, request *http.Request,
-) error {
+func (s *TokenServer) clientCredentialsFlow(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
 	if s.clientCredentialVerifier == nil {
 		return errUnsupportedGrantType
 	}

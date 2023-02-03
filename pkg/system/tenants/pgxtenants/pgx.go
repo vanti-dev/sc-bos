@@ -176,9 +176,7 @@ func (s *Server) UpdateTenant(ctx context.Context, request *gen.UpdateTenantRequ
 	return tenant, nil
 }
 
-func (s *Server) DeleteTenant(
-	ctx context.Context, request *gen.DeleteTenantRequest,
-) (*gen.DeleteTenantResponse, error) {
+func (s *Server) DeleteTenant(ctx context.Context, request *gen.DeleteTenantRequest) (*gen.DeleteTenantResponse, error) {
 	logger := rpcutil.ServerLogger(ctx, s.logger).With(zap.String("id", request.Id))
 
 	err := s.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
@@ -349,9 +347,7 @@ func (s *Server) UpdateSecret(ctx context.Context, request *gen.UpdateSecretRequ
 	return nil, status.Error(codes.Unimplemented, "unimplemented")
 }
 
-func (s *Server) DeleteSecret(
-	ctx context.Context, request *gen.DeleteSecretRequest,
-) (*gen.DeleteSecretResponse, error) {
+func (s *Server) DeleteSecret(ctx context.Context, request *gen.DeleteSecretRequest) (*gen.DeleteSecretResponse, error) {
 	logger := rpcutil.ServerLogger(ctx, s.logger)
 	err := s.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		return db.DeleteTenantSecret(ctx, tx, request.Id)

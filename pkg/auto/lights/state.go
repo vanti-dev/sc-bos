@@ -61,9 +61,7 @@ func (s *WriteState) MergeFrom(other *WriteState) {
 }
 
 // readStateChanges collates changes and emits *ReadState.
-func readStateChanges(
-	ctx context.Context, workingState *ReadState, changes <-chan Patcher, newStateAvailable chan<- *ReadState,
-) error {
+func readStateChanges(ctx context.Context, workingState *ReadState, changes <-chan Patcher, newStateAvailable chan<- *ReadState) error {
 	var readyToNotify chan struct{}
 
 	// applyChange updates workingState by applying change to it.

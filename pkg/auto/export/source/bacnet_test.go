@@ -79,16 +79,12 @@ type testBacnetApiServer struct {
 	*known.Map
 }
 
-func (t *testBacnetApiServer) ReadProperty(
-	ctx context.Context, request *rpc.ReadPropertyRequest,
-) (*rpc.ReadPropertyResponse, error) {
+func (t *testBacnetApiServer) ReadProperty(ctx context.Context, request *rpc.ReadPropertyRequest) (*rpc.ReadPropertyResponse, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (t *testBacnetApiServer) ReadPropertyMultiple(
-	ctx context.Context, request *rpc.ReadPropertyMultipleRequest,
-) (*rpc.ReadPropertyMultipleResponse, error) {
+func (t *testBacnetApiServer) ReadPropertyMultiple(ctx context.Context, request *rpc.ReadPropertyMultipleRequest) (*rpc.ReadPropertyMultipleResponse, error) {
 	device, err := t.LookupDeviceByName(request.Name)
 	if err != nil {
 		return nil, err
@@ -129,9 +125,7 @@ func (t *testBacnetApiServer) ReadPropertyMultiple(
 	return res, nil
 }
 
-func (t *testBacnetApiServer) ListObjects(
-	_ context.Context, request *rpc.ListObjectsRequest,
-) (*rpc.ListObjectsResponse, error) {
+func (t *testBacnetApiServer) ListObjects(_ context.Context, request *rpc.ListObjectsRequest) (*rpc.ListObjectsResponse, error) {
 	device, err := t.LookupDeviceByName(request.Name)
 	if err != nil {
 		return nil, err

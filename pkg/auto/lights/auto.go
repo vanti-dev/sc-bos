@@ -123,9 +123,7 @@ func (b *BrightnessAutomation) Stop() error {
 // processStateChanges reads ReadState from a channel and analyses each entry deciding if light levels should be changed.
 // This function backs off to processState which has the actual logic for what to do given a certain state,
 // this function handles the channel management, retry logic, TTL on decisions, and all that type of thing.
-func (b *BrightnessAutomation) processStateChanges(
-	ctx context.Context, readStates <-chan *ReadState, actions actions,
-) error {
+func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStates <-chan *ReadState, actions actions) error {
 	// the below are the innards of time.Timer, but expanded so we can stop/select on them even if
 	// we don't have a timer active right now
 

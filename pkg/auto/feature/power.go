@@ -76,9 +76,7 @@ func (t *TurnOffScreensOutsideWorkingHours) Stop() error {
 	return nil
 }
 
-func (t *TurnOffScreensOutsideWorkingHours) WaitForStateChange(
-	ctx context.Context, sourceState runstate.RunState,
-) error {
+func (t *TurnOffScreensOutsideWorkingHours) WaitForStateChange(ctx context.Context, sourceState runstate.RunState) error {
 	return t.state().WaitForStateChange(ctx, sourceState)
 }
 

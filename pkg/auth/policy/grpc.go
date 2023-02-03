@@ -91,9 +91,7 @@ func (i *Interceptor) GRPCStreamingInterceptor() grpc.StreamServerInterceptor {
 
 // Returns a set of verified credentials that can be used to speed up future calls to checkPolicyGrpc for the same
 // call (useful for streams). Pass nil creds the first time, then cache the creds.
-func (i *Interceptor) checkPolicyGrpc(
-	ctx context.Context, creds *verifiedCreds, req any, stream StreamAttributes,
-) (*verifiedCreds, error) {
+func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds, req any, stream StreamAttributes) (*verifiedCreds, error) {
 	service, method, ok := rpcutil.ServiceMethod(ctx)
 	if !ok {
 		return nil, status.Error(codes.Internal, "failed to resolve method")

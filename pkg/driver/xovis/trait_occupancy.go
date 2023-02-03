@@ -21,9 +21,7 @@ type occupancyServer struct {
 
 var errDataFormat = status.Error(codes.FailedPrecondition, "data received from sensor did not match expected format")
 
-func (o *occupancyServer) GetOccupancy(
-	ctx context.Context, request *traits.GetOccupancyRequest,
-) (*traits.Occupancy, error) {
+func (o *occupancyServer) GetOccupancy(ctx context.Context, request *traits.GetOccupancyRequest) (*traits.Occupancy, error) {
 	res, err := GetLiveLogic(o.client, o.multiSensor, o.logicID)
 	if err != nil {
 		return nil, status.Error(codes.Unavailable, err.Error())
@@ -37,9 +35,7 @@ func (o *occupancyServer) GetOccupancy(
 	return occupancy, nil
 }
 
-func (o *occupancyServer) PullOccupancy(
-	request *traits.PullOccupancyRequest, server traits.OccupancySensorApi_PullOccupancyServer,
-) error {
+func (o *occupancyServer) PullOccupancy(request *traits.PullOccupancyRequest, server traits.OccupancySensorApi_PullOccupancyServer) error {
 	// fetch the initial occupancy state
 	res, err := GetLiveLogic(o.client, o.multiSensor, o.logicID)
 	if err != nil {

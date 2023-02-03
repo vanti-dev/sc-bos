@@ -33,9 +33,7 @@ type subscriber interface {
 // Any configuration changes, via Configure, should be sent via configChanged chan which matches the return type for Emitter.On.
 //
 // Blocks until fatal errors in the subscriptions or ctx is done.
-func (b *BrightnessAutomation) setupReadSources(
-	ctx context.Context, configChanged <-chan emitter.Event, changes chan<- Patcher,
-) error {
+func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChanged <-chan emitter.Event, changes chan<- Patcher) error {
 	// eagerly fetch the clients we might be using.
 	// While the config might mean we don't use them, better to have the system fail early just in case
 	var occupancySensorClient traits.OccupancySensorApiClient
@@ -92,9 +90,7 @@ type source struct {
 	runningSources map[string]context.CancelFunc
 }
 
-func (b *BrightnessAutomation) processConfig(
-	ctx context.Context, cfg config.Root, sources []*source, changes chan<- Patcher,
-) (sourceCount int) {
+func (b *BrightnessAutomation) processConfig(ctx context.Context, cfg config.Root, sources []*source, changes chan<- Patcher) (sourceCount int) {
 	logger := b.logger.With(zap.String("auto", cfg.Name))
 	for _, source := range sources {
 		names := source.names(cfg)
