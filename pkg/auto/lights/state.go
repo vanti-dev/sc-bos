@@ -2,10 +2,12 @@ package lights
 
 import (
 	"context"
+	"time"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 // ReadState models everything we have read from the system.
@@ -16,12 +18,20 @@ type ReadState struct {
 	Occupancy map[string]*traits.Occupancy
 	// used for daylight dimming
 	AmbientBrightness map[string]*traits.AmbientBrightness
+	Buttons           map[string]*gen.ButtonState
+	Force             *ForceState
+}
+
+type ForceState struct {
+	On   bool
+	Time time.Time
 }
 
 func NewReadState() *ReadState {
 	return &ReadState{
 		Occupancy:         make(map[string]*traits.Occupancy),
 		AmbientBrightness: make(map[string]*traits.AmbientBrightness),
+		Buttons:           make(map[string]*gen.ButtonState),
 	}
 }
 
@@ -34,6 +44,9 @@ func (s *ReadState) Clone() *ReadState {
 	}
 	for name, val := range s.AmbientBrightness {
 		clone.AmbientBrightness[name] = val
+	}
+	for name, val := range s.Buttons {
+		clone.Buttons[name] = val
 	}
 	return clone
 }

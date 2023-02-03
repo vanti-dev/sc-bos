@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 // Patcher represents a single patch that adjusts ReadState.
@@ -44,6 +45,10 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 	if err := b.clients.Client(&brightnessSensorClient); err != nil {
 		return fmt.Errorf("%w traits.BrightnessSensorApiClient", err)
 	}
+	var buttonClient gen.ButtonApiClient
+	if err := b.clients.Client(&buttonClient); err != nil {
+		return fmt.Errorf("%w gen.ButtonApiClient", err)
+	}
 
 	// Setup the sources that we can pull patches from.
 	sources := []*source{
@@ -57,6 +62,32 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 			names: func(cfg config.Root) []string { return cfg.BrightnessSensors },
 			new: func(name string, logger *zap.Logger) subscriber {
 				return &BrightnessSensorPatches{name: name, client: brightnessSensorClient, logger: logger}
+			},
+		},
+		{
+			names: func(cfg config.Root) (names []string) {
+				return cfg.OnButtons
+			},
+			new: func(name string, logger *zap.Logger) subscriber {
+				return &ButtonPatches{
+					name:       name,
+					client:     buttonClient,
+					logger:     logger,
+					isOnButton: true,
+				}
+			},
+		},
+		{
+			names: func(cfg config.Root) (names []string) {
+				return cfg.OffButtons
+			},
+			new: func(name string, logger *zap.Logger) subscriber {
+				return &ButtonPatches{
+					name:       name,
+					client:     buttonClient,
+					logger:     logger,
+					isOnButton: false,
+				}
 			},
 		},
 	}
