@@ -16,6 +16,8 @@ import (
 // Returning a non-zero duration indicates that processing should be rerun after this delay even if ReadState doesn't
 // change.
 func processState(ctx context.Context, readState *ReadState, writeState *WriteState, actions actions) (time.Duration, error) {
+	var rerunAfter time.Duration
+
 	// Work out what we need to do to apply the given writeState and make those changes for as long as ctx is valid
 
 	anyOccupied := false
@@ -28,15 +30,36 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 		}
 	}
 
+	// check if the buttons have been used to override the state recently enough
+	var now time.Time
+	if readState.Config.Now != nil {
+		now = readState.Config.Now()
+	} else {
+		now = time.Now()
+	}
+	var (
+		isForcedOn  bool
+		isForcedOff bool
+	)
+	if readState.Force != nil {
+		sinceButtonPress := now.Sub(readState.Force.Time)
+		configuredTimeout := readState.Config.UnoccupiedOffDelay.Duration
+		if sinceButtonPress < configuredTimeout {
+			isForcedOn = readState.Force.On
+			isForcedOff = !readState.Force.On
+			rerunAfter = configuredTimeout - sinceButtonPress
+		}
+	}
+
 	// We can do easy checks for occupancy and turn things on if they are occupied
-	if anyOccupied {
+	if anyOccupied || isForcedOn {
 		level, ok := computeOnLevelPercent(readState)
 		if !ok {
 			// todo: here we are in a position where daylight dimming is supposed to be enabled but we don't have enough
 			//  info to actually choose the output light level. We should probably not make any changes and wait for
 			//  more data to come in, but we'll leave that to future us as part of snagging.
 		}
-		return 0, updateBrightnessLevelIfNeeded(ctx, writeState, actions, level, readState.Config.Lights...)
+		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, level, readState.Config.Lights...)
 	}
 
 	// We can also delay changes if we need to.
@@ -44,24 +67,29 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	// if it's been unoccupied for more than 10 minutes.
 	// If it hasn't been 10 minutes yet, it waits some time and turns the lights off when it has been
 	// 10 minutes.
-	becameUnoccupied := lastUnoccupiedTime(readState)
-	if !becameUnoccupied.IsZero() {
+	var occupancyExpired bool
+	if becameUnoccupied := lastUnoccupiedTime(readState); !becameUnoccupied.IsZero() {
 		unoccupiedDelayBeforeDarkness := readState.Config.UnoccupiedOffDelay.Duration
 
-		now := readState.Config.Now()
 		sinceUnoccupied := now.Sub(becameUnoccupied)
 		if sinceUnoccupied >= unoccupiedDelayBeforeDarkness {
 			// we've been unoccupied for long enough, turn things off now
-			return 0, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, readState.Config.Lights...)
-		}
+			occupancyExpired = true
+		} else if !isForcedOff {
+			// if the lights are forced off, no point waking up before that expires, as nothing will change before then.
 
-		// we haven't written anything, but in `unoccupiedDelayBeforeDarkness - sinceUnoccupied` time we will, let the
-		// caller know
-		return unoccupiedDelayBeforeDarkness - sinceUnoccupied, nil
+			// we haven't written anything, but in `unoccupiedDelayBeforeDarkness - sinceUnoccupied` time we will, let the
+			// caller know
+			rerunAfter = unoccupiedDelayBeforeDarkness - sinceUnoccupied
+		}
+	}
+
+	if occupancyExpired || isForcedOff {
+		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, readState.Config.Lights...)
 	}
 
 	// no change
-	return 0, nil
+	return rerunAfter, nil
 }
 
 // lastUnoccupiedTime returns the most recent Occupancy.StateChangeTime across each Config.OccupancySensors that have an

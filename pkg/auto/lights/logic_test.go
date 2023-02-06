@@ -164,6 +164,80 @@ func Test_processState(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("force", func(t *testing.T) {
+		now := time.Date(2023, 2, 6, 11, 0, 0, 0, time.UTC)
+		tests := []struct {
+			name   string
+			on     bool
+			time   time.Time
+			ttl    time.Duration
+			action bool
+			level  float32
+		}{
+			{
+				name:   "on active",
+				on:     true,
+				time:   now.Add(-5 * time.Minute),
+				ttl:    5 * time.Minute,
+				action: true,
+				level:  100,
+			},
+			{
+				name:   "on expired",
+				on:     true,
+				time:   now.Add(-15 * time.Minute),
+				ttl:    0,
+				action: false,
+			},
+			{
+				name:   "off active",
+				on:     false,
+				time:   now.Add(-5 * time.Minute),
+				ttl:    5 * time.Minute,
+				action: true,
+				level:  0,
+			},
+			{
+				name:   "off expired",
+				on:     false,
+				time:   now.Add(-15 * time.Minute),
+				ttl:    0,
+				action: false,
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				readState := NewReadState()
+				writeState := NewWriteState()
+				acts := newTestActions(t)
+
+				readState.Config.Lights = []string{"light01"}
+				readState.Config.Now = func() time.Time { return now }
+				readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+				readState.Force = &ForceState{
+					On:   true,
+					Time: tt.time,
+				}
+
+				ttl, err := processState(context.Background(), readState, writeState, acts)
+				if err != nil {
+					t.Errorf("processState error: %s", err.Error())
+				}
+				if ttl != tt.ttl {
+					t.Errorf("ttl mismatch: expect %v, got %v", tt.ttl, ttl)
+				}
+				if tt.action {
+					acts.assertNextCall(&traits.UpdateBrightnessRequest{
+						Name:       "light01",
+						Brightness: &traits.Brightness{LevelPercent: 100},
+					})
+				}
+				acts.assertNoMoreCalls()
+			})
+		}
+	})
 }
 
 func assertNoTTLOrErr(t *testing.T, ttl time.Duration, err error) {
