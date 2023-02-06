@@ -194,6 +194,22 @@ func (fsp fsSource) Certs() (*tls.Certificate, []*x509.Certificate, error) {
 	return &cert, roots, err
 }
 
+// FSKeySource is like FSSource but the key is already loaded.
+// See LoadCertAndRootsWithKey.
+func FSKeySource(certFile string, key PrivateKey, rootsFile string) Source {
+	return fsKeySource{certFile, key, rootsFile}
+}
+
+type fsKeySource struct {
+	certFile  string
+	key       PrivateKey
+	rootsFile string
+}
+
+func (fsp fsKeySource) Certs() (*tls.Certificate, []*x509.Certificate, error) {
+	return LoadCertAndRootsWithKey(fsp.certFile, fsp.rootsFile, fsp.key)
+}
+
 // SelfSignedSource returns a Source backed by CreateSelfSignedCertificate and a basic certificate template.
 func SelfSignedSource(key PrivateKey, opts ...CSROption) Source {
 	return &ssSource{
