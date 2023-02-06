@@ -25,7 +25,7 @@ type Source interface {
 }
 
 // ErrNoCertOrErr is returned when a Source returns neither a tls.Certificate nor an error when invoked.
-var ErrNoCertOrErr = errors.New("cache: no cert from source")
+var ErrNoCertOrErr = errors.New("pki: no cert from source")
 
 // Expiry is called to know if certificates need to be reloaded.
 // Either cert is nil or err is nil but never both.
@@ -222,6 +222,10 @@ func (s *ssSource) Certs() (*tls.Certificate, []*x509.Certificate, error) {
 type SourceSet []Source
 
 func (ss *SourceSet) Certs() (cert *tls.Certificate, roots []*x509.Certificate, err error) {
+	if len(*ss) == 0 {
+		return nil, nil, ErrNoCertOrErr
+	}
+
 	var rootErr error
 	for _, source := range *ss {
 		certs, roots, err := source.Certs()
@@ -234,7 +238,6 @@ func (ss *SourceSet) Certs() (cert *tls.Certificate, roots []*x509.Certificate, 
 		}
 		return certs, roots, nil
 	}
-
 	return nil, nil, rootErr
 }
 
