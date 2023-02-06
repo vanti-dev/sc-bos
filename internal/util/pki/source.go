@@ -226,6 +226,17 @@ func SelfSignedSource(key PrivateKey, opts ...CSROption) Source {
 	}
 }
 
+// SelfSignedSourceT is like SelfSignedSource but using the given template.
+func SelfSignedSourceT(key PrivateKey, template *x509.Certificate, opts ...CSROption) Source {
+	return &ssSource{
+		template: func() *x509.Certificate {
+			return template
+		},
+		key:  key,
+		opts: opts,
+	}
+}
+
 type ssSource struct {
 	template func() *x509.Certificate
 	key      PrivateKey
