@@ -80,7 +80,6 @@ const startStopTracker = reactive(newActionTracker());
 async function startAutomation(service) {
   console.debug('Starting:', service.id);
   await startService({name: ServiceTypes.Automations, id: service.id}, startStopTracker);
-  automationsCollection;
 }
 
 /**
