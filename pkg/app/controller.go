@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -111,16 +110,14 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	// fileSource attempts to load a certificate and trust roots from disk.
 	// The certificates public key must be paired with private key `key` loaded above.
 	fileSource := pki.CacheSource(
-		pki.FuncSource(func() (*tls.Certificate, []*x509.Certificate, error) {
-			certPath := filepath.Join(config.DataDir, certConfig.CertFile)
-			rootsPath := certConfig.RootsFile
-			if rootsPath != "" {
-				rootsPath = filepath.Join(config.DataDir, rootsPath)
-			}
-			return pki.LoadCertAndRootsWithKey(certPath, rootsPath, key)
-		}),
+		pki.FSKeySource(
+			filepath.Join(config.DataDir, certConfig.CertFile), key,
+			joinIfPresent(config.DataDir, certConfig.RootsFile)),
 		expire.BeforeInvalid(time.Hour),
 	)
+
+	// systemSource allows systems to contribute certificates to incoming and outgoing gRPC connections.
+	systemSource := &pki.SourceSet{}
 
 	// selfSignedSource creates a self signed certificate.
 	// The certificates public key will be paired with and signed by `key`.
@@ -138,6 +135,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	certSource := &pki.SourceSet{
 		enrollServer,
 		fileSource,
+		systemSource,
 		selfSignedSource,
 	}
 	tlsGRPCServerConfig := pki.TLSServerConfig(certSource)
@@ -238,6 +236,8 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		Tasks:            &task.Group{},
 		Database:         db,
 		TokenValidators:  tokenValidator,
+		GRPCCerts:        systemSource,
+		PrivateKey:       key,
 		Mux:              mux,
 		GRPC:             grpcServer,
 		HTTP:             httpServer,
@@ -259,11 +259,13 @@ type Controller struct {
 	Tasks           *task.Group
 	Database        *bolthold.Store
 	TokenValidators *token.ValidatorSet
+	GRPCCerts       *pki.SourceSet
 
 	Mux  *http.ServeMux
 	GRPC *grpc.Server
 	HTTP *http.Server
 
+	PrivateKey      pki.PrivateKey
 	ClientTLSConfig *tls.Config
 	ManagerConn     node.Remote
 
@@ -393,6 +395,8 @@ func (c *Controller) startSystems() (*service.Map, error) {
 		Database:        c.Database,
 		HTTPMux:         c.Mux,
 		TokenValidators: c.TokenValidators,
+		GRPCCerts:       c.GRPCCerts,
+		PrivateKey:      c.PrivateKey,
 	}
 	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
 		f, ok := c.SystemConfig.SystemFactories[kind]
@@ -408,4 +412,11 @@ func (c *Controller) startSystems() (*service.Map, error) {
 		allErrs = multierr.Append(allErrs, err)
 	}
 	return m, allErrs
+}
+
+func joinIfPresent(dir, path string) string {
+	if path == "" {
+		return ""
+	}
+	return filepath.Join(dir, path)
 }

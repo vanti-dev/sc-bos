@@ -17,6 +17,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/vanti-dev/sc-bos/pkg/system/hub/pgxhub"
 	"github.com/vanti-dev/sc-bos/pkg/system/publications/pgxpublications"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants/pgxtenants"
 	"go.uber.org/zap"
@@ -92,14 +93,16 @@ func RunController(ctx context.Context, logger *zap.Logger, configDir string) er
 	}
 	traits.RegisterPublicationApiServer(grpcServer, publicationApi)
 	gen.RegisterTestApiServer(grpcServer, testapi.NewAPI())
-	gen.RegisterNodeApiServer(grpcServer, &NodeServer{
-		logger:        logger.Named("NodeServer"),
-		db:            dbConn,
-		authority:     serverAuthority,
-		managerName:   "building-controller",
-		managerAddr:   sysConf.CanonicalAddress,
-		testTLSConfig: grpcTlsServerConfig,
-	})
+	// todo: replace this with systems package
+	hubServer, err := pgxhub.NewServerFromPool(ctx, dbConn, pgxhub.WithLogger(logger.Named("hub")))
+	if err != nil {
+		return fmt.Errorf("hub api %w", err)
+	}
+	hubServer.ManagerName = "building-controller"
+	hubServer.ManagerAddr = sysConf.CanonicalAddress
+	hubServer.Authority = serverAuthority
+	hubServer.TestTLSConfig = grpcTlsServerConfig
+	gen.RegisterNodeApiServer(grpcServer, hubServer)
 	// todo: replace this with the systems package
 	tenantsApi, err := pgxtenants.NewServerFromPool(ctx, dbConn,
 		pgxtenants.WithLogger(logger.Named("tenantapi")))

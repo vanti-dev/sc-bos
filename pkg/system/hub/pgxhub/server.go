@@ -1,9 +1,11 @@
-package building
+package pgxhub
 
 import (
 	"context"
 	"crypto/tls"
+	_ "embed"
 	"errors"
+	"fmt"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -22,21 +24,55 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-type NodeServer struct {
-	gen.UnimplementedNodeApiServer
+//go:embed schema.sql
+var schemaSql string
 
-	logger        *zap.Logger
-	db            *pgxpool.Pool
-	managerName   string
-	managerAddr   string
-	authority     pki.Source // trust authority for the cohort of smart core nodes
-	testTLSConfig *tls.Config
+func SetupDB(ctx context.Context, pool *pgxpool.Pool) error {
+	return pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		_, err := tx.Exec(ctx, schemaSql)
+		return err
+	})
 }
 
-func (n *NodeServer) GetNodeRegistration(ctx context.Context, request *gen.GetNodeRegistrationRequest) (*gen.NodeRegistration, error) {
+func NewServer(ctx context.Context, connStr string) (*Server, error) {
+	pool, err := pgxpool.Connect(ctx, connStr)
+	if err != nil {
+		return nil, fmt.Errorf("connect %w", err)
+	}
+
+	return NewServerFromPool(ctx, pool)
+}
+
+func NewServerFromPool(ctx context.Context, pool *pgxpool.Pool, opts ...Option) (*Server, error) {
+	err := SetupDB(ctx, pool)
+	if err != nil {
+		return nil, fmt.Errorf("setup %w", err)
+	}
+
+	s := &Server{
+		pool: pool,
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s, nil
+}
+
+type Server struct {
+	gen.UnimplementedNodeApiServer
+	logger *zap.Logger
+	pool   *pgxpool.Pool
+
+	ManagerName   string
+	ManagerAddr   string
+	Authority     pki.Source  // trust authority for the cohort of smart core nodes
+	TestTLSConfig *tls.Config // TLS config used when initiating test connections with a node
+}
+
+func (n *Server) GetNodeRegistration(ctx context.Context, request *gen.GetNodeRegistrationRequest) (*gen.NodeRegistration, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	var dbEnrollment db.Enrollment
-	err := n.db.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
+	err := n.pool.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
 		dbEnrollment, err = db.GetEnrollment(ctx, tx, request.GetNodeName())
 		return
 	})
@@ -54,7 +90,7 @@ func (n *NodeServer) GetNodeRegistration(ctx context.Context, request *gen.GetNo
 	}, nil
 }
 
-func (n *NodeServer) CreateNodeRegistration(ctx context.Context, request *gen.CreateNodeRegistrationRequest) (*gen.NodeRegistration, error) {
+func (n *Server) CreateNodeRegistration(ctx context.Context, request *gen.CreateNodeRegistrationRequest) (*gen.NodeRegistration, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	nodeReg := request.GetNodeRegistration()
 	if nodeReg == nil {
@@ -64,16 +100,16 @@ func (n *NodeServer) CreateNodeRegistration(ctx context.Context, request *gen.Cr
 	en, err := enrollment.EnrollAreaController(ctx, &gen.Enrollment{
 		TargetName:     nodeReg.Name,
 		TargetAddress:  nodeReg.Address,
-		ManagerName:    n.managerName,
-		ManagerAddress: n.managerAddr,
-	}, n.authority)
+		ManagerName:    n.ManagerName,
+		ManagerAddress: n.ManagerAddr,
+	}, n.Authority)
 	if err != nil {
 		logger.Error("failed to enroll area controller", zap.Error(err),
 			zap.String("target_address", nodeReg.Address))
 		return nil, status.Error(codes.Unknown, "target refused registration")
 	}
 
-	err = n.db.BeginFunc(ctx, func(tx pgx.Tx) error {
+	err = n.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		return db.CreateEnrollment(ctx, tx, db.Enrollment{
 			Name:        en.TargetName,
 			Description: nodeReg.Description,
@@ -82,21 +118,21 @@ func (n *NodeServer) CreateNodeRegistration(ctx context.Context, request *gen.Cr
 		})
 	})
 	if err != nil {
-		logger.Error("db.CreateEnrollment failed", zap.Error(err))
+		logger.Error("pool.CreateEnrollment failed", zap.Error(err))
 		return nil, status.Error(codes.DataLoss, "failed to save the enrollment - manual intervention required")
 	}
 	return nodeReg, nil
 }
 
-func (n *NodeServer) ListNodeRegistrations(ctx context.Context, request *gen.ListNodeRegistrationsRequest) (*gen.ListNodeRegistrationsResponse, error) {
+func (n *Server) ListNodeRegistrations(ctx context.Context, request *gen.ListNodeRegistrationsRequest) (*gen.ListNodeRegistrationsResponse, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	var dbEnrollments []db.Enrollment
-	err := n.db.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
+	err := n.pool.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
 		dbEnrollments, err = db.ListEnrollments(ctx, tx)
 		return
 	})
 	if err != nil {
-		logger.Error("db.ListEnrollments failed", zap.Error(err))
+		logger.Error("pool.ListEnrollments failed", zap.Error(err))
 		return nil, status.Error(codes.Unavailable, "unable to retrieve enrollments")
 	}
 
@@ -112,7 +148,7 @@ func (n *NodeServer) ListNodeRegistrations(ctx context.Context, request *gen.Lis
 	return &gen.ListNodeRegistrationsResponse{NodeRegistrations: registrations}, nil
 }
 
-func (n *NodeServer) TestNodeCommunication(ctx context.Context, request *gen.TestNodeCommunicationRequest) (*gen.TestNodeCommunicationResponse, error) {
+func (n *Server) TestNodeCommunication(ctx context.Context, request *gen.TestNodeCommunicationRequest) (*gen.TestNodeCommunicationResponse, error) {
 	reg, err := n.GetNodeRegistration(ctx, &gen.GetNodeRegistrationRequest{NodeName: request.GetNodeName()})
 	if err != nil {
 		return nil, err
@@ -120,7 +156,7 @@ func (n *NodeServer) TestNodeCommunication(ctx context.Context, request *gen.Tes
 
 	logger := n.logger.With(zap.String("node_address", reg.Address))
 
-	conn, err := grpc.DialContext(ctx, reg.Address, grpc.WithTransportCredentials(credentials.NewTLS(n.testTLSConfig)))
+	conn, err := grpc.DialContext(ctx, reg.Address, grpc.WithTransportCredentials(credentials.NewTLS(n.TestTLSConfig)))
 	if err != nil {
 		logger.Error("failed to connect to node", zap.Error(err))
 		return nil, status.Error(codes.Unavailable, "unable to connect to target node")
