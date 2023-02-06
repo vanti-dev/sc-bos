@@ -147,6 +147,22 @@ func (f funcSource) Certs() (cert *tls.Certificate, roots []*x509.Certificate, e
 	return f()
 }
 
+// LazySource returns certs from f().Certs(), only invoking f the first time the returns Source.Certs is called.
+func LazySource(f func() (Source, error)) Source {
+	var once sync.Once
+	var err error
+	var source Source
+	return FuncSource(func() (*tls.Certificate, []*x509.Certificate, error) {
+		once.Do(func() {
+			source, err = f()
+		})
+		if err != nil {
+			return nil, nil, err
+		}
+		return source.Certs()
+	})
+}
+
 // FSSource returns a Source that reads the cert+private keypair and roots from files in PEM format on the filesystem.
 // Each call to Certs will read the files.
 // rootsFile can be empty in which case no roots will be read or returned from Source.Certs.
