@@ -135,11 +135,11 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	// If an incoming connection presents a client cert then it will be validated against the roots.
 	// Outgoing connections will present the sources certificate as a client cert for validation by the remote party.
 	// Config can indicate that different certs be used for grpc and https (inc grpc-web)
-	certSource := pki.ChainSource(
+	certSource := &pki.SourceSet{
 		enrollServer,
 		fileSource,
 		selfSignedSource,
-	)
+	}
 	tlsGRPCServerConfig := pki.TLSServerConfig(certSource)
 	tlsGRPCServerConfig.ClientAuth = tls.VerifyClientCertIfGiven
 	tlsGRPCClientConfig := pki.TLSClientConfig(certSource)
@@ -155,10 +155,10 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 				""),
 			expire.After(30*time.Minute),
 		)
-		httpCertSource = pki.ChainSource(
+		httpCertSource = &pki.SourceSet{
 			fileSource,
 			selfSignedSource, // reuse the same self signed cert from grpc requests
-		)
+		}
 	}
 	tlsHTTPServerConfig := pki.TLSServerConfig(httpCertSource)
 

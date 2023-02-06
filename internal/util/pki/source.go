@@ -218,16 +218,12 @@ func (s *ssSource) Certs() (*tls.Certificate, []*x509.Certificate, error) {
 	return cert, nil, nil
 }
 
-// ChainSource returns a Source that will return certs from the first of sources to return a non-nil cert and err.
-func ChainSource(sources ...Source) Source {
-	return chainSource(sources)
-}
+// SourceSet is a Source that will return certs from the first of sources to return a non-nil cert and err.
+type SourceSet []Source
 
-type chainSource []Source
-
-func (c chainSource) Certs() (cert *tls.Certificate, roots []*x509.Certificate, err error) {
+func (ss *SourceSet) Certs() (cert *tls.Certificate, roots []*x509.Certificate, err error) {
 	var rootErr error
-	for _, source := range c {
+	for _, source := range *ss {
 		certs, roots, err := source.Certs()
 		if certs == nil && err == nil {
 			err = ErrNoCertOrErr
@@ -240,6 +236,20 @@ func (c chainSource) Certs() (cert *tls.Certificate, roots []*x509.Certificate, 
 	}
 
 	return nil, nil, rootErr
+}
+
+// Append adds source to c.
+func (ss *SourceSet) Append(source Source) {
+	*ss = append(*ss, source)
+}
+
+// Delete deletes source from c.
+func (ss *SourceSet) Delete(source Source) {
+	for i, item := range *ss {
+		if source == item {
+			*ss = append((*ss)[:i], (*ss)[i+1:]...)
+		}
+	}
 }
 
 // DirectSource adapts a tls.Certificate and some roots into a Source that always returns these values.
