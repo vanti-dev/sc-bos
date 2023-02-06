@@ -18,6 +18,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts"
 	"github.com/vanti-dev/sc-bos/pkg/system/authn"
+	"github.com/vanti-dev/sc-bos/pkg/system/hub"
 	"github.com/vanti-dev/sc-bos/pkg/system/publications"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants"
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
@@ -65,6 +66,7 @@ func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig.SystemFactories = map[string]system.Factory{
 		"alerts":       alerts.Factory,
 		"authn":        authn.Factory(),
+		"hub":          hub.Factory(),
 		"tenants":      tenants.Factory,
 		"publications": publications.Factory,
 	}
