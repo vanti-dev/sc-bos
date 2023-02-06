@@ -265,7 +265,7 @@ func (s *ssSource) Certs() (*tls.Certificate, []*x509.Certificate, error) {
 type SourceSet []Source
 
 func (ss *SourceSet) Certs() (cert *tls.Certificate, roots []*x509.Certificate, err error) {
-	if len(*ss) == 0 {
+	if ss == nil || len(*ss) == 0 {
 		return nil, nil, ErrNoCertOrErr
 	}
 
