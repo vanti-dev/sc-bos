@@ -408,7 +408,7 @@ func (c *Controller) startSystems() (*service.Map, error) {
 	}, service.IdIsKind)
 
 	var allErrs error
-	for kind, cfg := range c.ControllerConfig.Systems {
+	for kind, cfg := range c.SystemConfig.Systems {
 		_, _, err := m.Create("", kind, service.State{Active: !cfg.Disabled, Config: cfg.Raw})
 		allErrs = multierr.Append(allErrs, err)
 	}

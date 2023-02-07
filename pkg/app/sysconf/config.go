@@ -42,6 +42,8 @@ type Config struct {
 	LocalConfigFileName string `json:"configFile,omitempty"` // defaults to LocalConfigFileName
 	CertConfig          Certs  `json:"certs,omitempty"`
 
+	Systems map[string]system.RawConfig `json:"systems,omitempty"`
+
 	Policy        policy.Policy `json:"-"` // Override the policy used for RPC calls. Defaults to policy.Default
 	DisablePolicy bool          `json:"-"` // Unsafe, disables any policy checking for the server
 
