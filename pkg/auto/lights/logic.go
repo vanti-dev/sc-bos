@@ -51,6 +51,10 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 		}
 	}
 
+	if isForcedOff {
+		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, readState.Config.Lights...)
+	}
+
 	// We can do easy checks for occupancy and turn things on if they are occupied
 	if anyOccupied || isForcedOn {
 		level, ok := computeOnLevelPercent(readState)
@@ -84,7 +88,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 		}
 	}
 
-	if occupancyExpired || isForcedOff {
+	if occupancyExpired {
 		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, readState.Config.Lights...)
 	}
 
