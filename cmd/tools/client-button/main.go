@@ -87,6 +87,7 @@ func run(ctx context.Context) (err error) {
 				stream, err := buttonClient.PullButtonState(ctx, &gen.PullButtonStateRequest{Name: clientConfig.Name})
 				if err != nil {
 					_, _ = fmt.Fprintf(rl.Stderr(), "PullButtonState failed: %s\n", err.Error())
+					time.Sleep(5 * time.Second)
 					continue
 				}
 
@@ -94,7 +95,6 @@ func run(ctx context.Context) (err error) {
 					res, err := stream.Recv()
 					if err != nil {
 						_, _ = fmt.Fprintf(rl.Stderr(), "PullButtonState failed: %s\n", err.Error())
-						time.Sleep(2 * time.Second)
 						continue outer
 					}
 
