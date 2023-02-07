@@ -57,7 +57,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	// load the local config file if possible
 	// TODO: pull config from manager publication
 	var localConfig appconf.Config
-	localConfigPath := filepath.Join(config.DataDir, config.LocalConfigFileName)
+	localConfigPath := filepath.Join(config.DataDir, config.AppConfigFile)
 	rawLocalConfig, err := os.ReadFile(localConfigPath)
 	if err == nil {
 		err = json.Unmarshal(rawLocalConfig, &localConfig)

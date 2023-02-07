@@ -44,7 +44,7 @@ func run(ctx context.Context) error {
 func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig := sysconf.Default()
 	systemConfig.ConfigDirs = []string{".data/gateway-01"}
-	systemConfig.LocalConfigFileName = "gateway.local.json"
+	systemConfig.AppConfigFile = "gateway.local.json"
 
 	pol, err := policy.FromFS(policyFS)
 	if err != nil {

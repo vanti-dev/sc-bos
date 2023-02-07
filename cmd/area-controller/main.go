@@ -51,7 +51,7 @@ func run(ctx context.Context) error {
 func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig := sysconf.Default()
 	systemConfig.DataDir = ".data/area-controller-01"
-	systemConfig.LocalConfigFileName = "area-controller.local.json"
+	systemConfig.AppConfigFile = "area-controller.local.json"
 
 	systemConfig.DriverFactories = map[string]driver.Factory{
 		axiomxa.DriverName: axiomxa.Factory,

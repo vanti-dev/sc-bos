@@ -37,15 +37,15 @@ type Config struct {
 	ListenGRPC  string     `json:"listenGrpc,omitempty"`
 	ListenHTTPS string     `json:"listenHttps,omitempty"`
 
-	DataDir             string `json:"dataDir,omitempty"`
-	StaticDir           string `json:"staticDir,omitempty"`  // hosts static files from this directory over HTTP if StaticDir is non-empty
-	LocalConfigFileName string `json:"configFile,omitempty"` // defaults to LocalConfigFileName
-	CertConfig          Certs  `json:"certs,omitempty"`
+	DataDir       string `json:"dataDir,omitempty"`       // defaults to .data/controller
+	StaticDir     string `json:"staticDir,omitempty"`     // hosts static files from this directory over HTTP if StaticDir is non-empty
+	AppConfigFile string `json:"appConfigFile,omitempty"` // defaults to app.conf.json
+	CertConfig    Certs  `json:"certs,omitempty"`
 
 	Systems map[string]system.RawConfig `json:"systems,omitempty"`
 
 	Policy        policy.Policy `json:"-"` // Override the policy used for RPC calls. Defaults to policy.Default
-	DisablePolicy bool          `json:"-"` // Unsafe, disables any policy checking for the server
+	DisablePolicy bool          `json:"-"` // Unsafe, disables any policy checking for the server. Can't be set by json config.
 
 	DriverFactories map[string]driver.Factory `json:"-"` // keyed by driver name
 	AutoFactories   map[string]auto.Factory   `json:"-"` // keyed by automation type
@@ -72,9 +72,9 @@ func Default() Config {
 		ListenGRPC:  ":23557",
 		ListenHTTPS: ":443",
 
-		DataDir:             ".data/controller",
-		StaticDir:           "",
-		LocalConfigFileName: "app.conf.json",
+		DataDir:       ".data/controller",
+		StaticDir:     "",
+		AppConfigFile: "app.conf.json",
 
 		CertConfig: Certs{
 			KeyFile:      "grpc.key.pem",
