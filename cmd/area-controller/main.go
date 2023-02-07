@@ -9,6 +9,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights"
+	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
@@ -62,6 +63,7 @@ func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig.AutoFactories = map[string]auto.Factory{
 		lights.AutoType: lights.Factory,
 		"export-mqtt":   export.MQTTFactory,
+		udmi.AutoType:   udmi.Factory,
 	}
 	systemConfig.SystemFactories = map[string]system.Factory{
 		"alerts":       alerts.Factory,
