@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 
@@ -34,6 +35,8 @@ func TestPirsTurnLightsOn(t *testing.T) {
 			*v = light.WrapApi(light.NewApiRouter())
 		case *traits.BrightnessSensorApiClient:
 			*v = brightnesssensor.WrapApi(brightnesssensor.NewApiRouter())
+		case *gen.ButtonApiClient:
+			*v = gen.WrapButtonApi(gen.NewButtonApiRouter())
 		default:
 			return errors.New("unsupported lightClient type")
 		}

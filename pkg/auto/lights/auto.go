@@ -2,6 +2,7 @@ package lights
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/olebedev/emitter"
@@ -77,7 +78,11 @@ func (b *BrightnessAutomation) Start(_ context.Context) error {
 	configChanged := b.bus.On("config")
 	group.Go(func() error {
 		defer b.bus.Off("config", configChanged)
-		return b.setupReadSources(ctx, configChanged, changes)
+		err := b.setupReadSources(ctx, configChanged, changes)
+		if err != nil {
+			return fmt.Errorf("setupReadSources: %w", err)
+		}
+		return nil
 	})
 
 	// readStates receives state that should be processed, for example to work out if lights should be turned on.
@@ -87,13 +92,29 @@ func (b *BrightnessAutomation) Start(_ context.Context) error {
 
 	// collect and collate the state changes
 	group.Go(func() error {
-		return readStateChanges(ctx, initialState, changes, readStates)
+		err := readStateChanges(ctx, initialState, changes, readStates)
+		if err != nil {
+			return fmt.Errorf("readStateChanges: %w", err)
+		}
+		return nil
 	})
 
 	// process state changes and execute RPC calls to update the real world
 	group.Go(func() error {
-		return b.processStateChanges(ctx, readStates, actions)
+		err := b.processStateChanges(ctx, readStates, actions)
+		if err != nil {
+			return fmt.Errorf("processStateChanges: %w", err)
+		}
+		return nil
 	})
+
+	// log the error when the group stops
+	go func() {
+		err := group.Wait()
+		if err != nil {
+			b.logger.Error("automation background tasks stopped", zap.Error(err))
+		}
+	}()
 
 	// note: we don't wait for the group to complete!
 	return nil
