@@ -36,6 +36,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
 )
 
+// Deprecated, use app.Controller instead.
 func RunController(ctx context.Context, logger *zap.Logger, configDir string) error {
 	// load system config file
 	sysConf, err := readSystemConfig(configDir)
