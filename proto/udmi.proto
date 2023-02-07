@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+// UdmiService defines the service needed to add UDMI support to a driver or system.
+// The implementer is responsible for message payloads and topic definitions. This will not be validated.
+service UdmiService {
+  // DescribeTopics returns the topics the implementer is interested in subscribing to
+  // (usually config topics, https://faucetsdn.github.io/udmi/docs/messages/config.html)
+  rpc DescribeTopics(DescribeTopicsRequest) returns (DescribeTopicsResponse);
+  // If the implementer lists topics in any DescribeTopicsResponse, then each message received via the MQTT
+  // broker will invoke a call to this method
+  rpc OnMessage(OnMessageRequest) returns (OnMessageResponse);
+  // PullExportMessages, which are to be published to the MQTT broker for data export
+  rpc PullExportMessages(PullExportMessagesRequest) returns (stream PullExportMessagesResponse);
+}
+
+message DescribeTopicsRequest {
+  string name = 1;
+}
+
+message DescribeTopicsResponse {
+  string name = 1;
+  repeated string topics = 2;
+}
+
+message OnMessageRequest {
+  string name = 1;
+  MqttMessage message = 2;
+}
+
+message OnMessageResponse {
+  string name = 1;
+}
+
+message PullExportMessagesRequest {
+  string name = 1;
+}
+
+message PullExportMessagesResponse {
+  string name = 1;
+  MqttMessage message = 2;
+}
+
+message MqttMessage {
+  string topic = 1;
+  string payload = 2;  // JSON payload
+}
