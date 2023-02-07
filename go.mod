@@ -3,6 +3,7 @@ module github.com/vanti-dev/sc-bos
 go 1.19
 
 require (
+	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/go-jose/go-jose/v3 v3.0.0
 	github.com/google/go-cmp v0.5.8
