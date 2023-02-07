@@ -16,7 +16,6 @@ import (
 	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 	"google.golang.org/grpc/status"
 
-	"github.com/vanti-dev/sc-bos/internal/db"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
@@ -71,9 +70,9 @@ type Server struct {
 
 func (n *Server) GetNodeRegistration(ctx context.Context, request *gen.GetNodeRegistrationRequest) (*gen.NodeRegistration, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
-	var dbEnrollment db.Enrollment
+	var dbEnrollment Enrollment
 	err := n.pool.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
-		dbEnrollment, err = db.GetEnrollment(ctx, tx, request.GetNodeName())
+		dbEnrollment, err = GetEnrollment(ctx, tx, request.GetNodeName())
 		return
 	})
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -110,7 +109,7 @@ func (n *Server) CreateNodeRegistration(ctx context.Context, request *gen.Create
 	}
 
 	err = n.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
-		return db.CreateEnrollment(ctx, tx, db.Enrollment{
+		return CreateEnrollment(ctx, tx, Enrollment{
 			Name:        en.TargetName,
 			Description: nodeReg.Description,
 			Address:     en.TargetAddress,
@@ -126,9 +125,9 @@ func (n *Server) CreateNodeRegistration(ctx context.Context, request *gen.Create
 
 func (n *Server) ListNodeRegistrations(ctx context.Context, request *gen.ListNodeRegistrationsRequest) (*gen.ListNodeRegistrationsResponse, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
-	var dbEnrollments []db.Enrollment
+	var dbEnrollments []Enrollment
 	err := n.pool.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
-		dbEnrollments, err = db.ListEnrollments(ctx, tx)
+		dbEnrollments, err = ListEnrollments(ctx, tx)
 		return
 	})
 	if err != nil {
