@@ -14,6 +14,7 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/timshannon/bolthold"
+	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"go.uber.org/multierr"
@@ -55,7 +56,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	// load the local config file if possible
 	// TODO: pull config from manager publication
-	var localConfig ControllerConfig
+	var localConfig appconf.Config
 	localConfigPath := filepath.Join(config.DataDir, config.LocalConfigFileName)
 	rawLocalConfig, err := os.ReadFile(localConfigPath)
 	if err == nil {
@@ -124,27 +125,27 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	selfSignedSource := pki.CacheSource(
 		pki.SelfSignedSource(key, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()),
 		expire.AfterProgress(0.5),
-		pki.WithFSCache(filepath.Join(config.DataDir, "self-signed.cert.pem"), "", key),
+		pki.WithFSCache(filepath.Join(config.DataDir, "grpc-self-signed.cert.pem"), "", key),
 	)
 
-	// certSource is used by both incoming and outgoing connections.
+	// grpcSource is used by both incoming and outgoing grpc connections.
 	// The server present the sources certificate and any intermediates between it and the roots to clients during TLS handshake.
 	// If an incoming connection presents a client cert then it will be validated against the roots.
 	// Outgoing connections will present the sources certificate as a client cert for validation by the remote party.
 	// Config can indicate that different certs be used for grpc and https (inc grpc-web)
-	certSource := &pki.SourceSet{
+	grpcSource := &pki.SourceSet{
 		enrollServer,
 		fileSource,
 		systemSource,
 		selfSignedSource,
 	}
-	tlsGRPCServerConfig := pki.TLSServerConfig(certSource)
+	tlsGRPCServerConfig := pki.TLSServerConfig(grpcSource)
 	tlsGRPCServerConfig.ClientAuth = tls.VerifyClientCertIfGiven
-	tlsGRPCClientConfig := pki.TLSClientConfig(certSource)
+	tlsGRPCClientConfig := pki.TLSClientConfig(grpcSource)
 
 	// Certs used for https (hosting and grpc-web) can be different from the Smart Core native grpc endpoint,
 	// mostly to allow support for trusted certs on the https interface and cohort managed certs for grpc requests.
-	httpCertSource := certSource
+	httpCertSource := grpcSource
 	if certConfig.HTTPCert {
 		fileSource := pki.CacheSource(
 			pki.FSSource(
@@ -250,7 +251,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 type Controller struct {
 	SystemConfig     sysconf.Config
-	ControllerConfig ControllerConfig
+	ControllerConfig appconf.Config
 	Enrollment       *enrollment.Server
 
 	// services for drivers/automations

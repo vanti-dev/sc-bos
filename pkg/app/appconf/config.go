@@ -1,4 +1,4 @@
-package app
+package appconf
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system"
 )
 
-type ControllerConfig struct {
+type Config struct {
 	Name       string                      `json:"name"`
 	Drivers    []driver.RawConfig          `json:"drivers"`
 	Automation []auto.RawConfig            `json:"automation"`

@@ -1,4 +1,4 @@
-package app
+package appconf
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 )
 
-func ExampleControllerConfig() {
+func ExampleConfig() {
 	type ExampleDriverConfig struct {
 		driver.BaseConfig
 		Property string `json:"property"`
@@ -23,7 +23,7 @@ func ExampleControllerConfig() {
 		}
     ]
 }`)
-	var config ControllerConfig
+	var config Config
 	err := json.Unmarshal(buf, &config)
 	if err != nil {
 		panic(err)
