@@ -13,3 +13,13 @@ CREATE TABLE IF NOT EXISTS publication_version
     media_type     TEXT,
     changelog      TEXT
 );
+
+CREATE TABLE IF NOT EXISTS publication_ack
+(
+    id              UUID        NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    -- at the moment it's only possible to acknowledge a version once, hence the uniqueness constraint
+    version_id      UUID        NOT NULL UNIQUE REFERENCES publication_version (id) ON DELETE CASCADE,
+    accepted        BOOLEAN     NOT NULL,
+    rejected_reason TEXT,
+    receipt_time    TIMESTAMPTZ NOT NULL
+);

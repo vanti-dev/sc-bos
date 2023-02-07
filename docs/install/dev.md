@@ -32,7 +32,8 @@ _The following steps will have been applied automatically if you used the above 
 3. Create a database called `keycloak`
 4. Create a database called `smart_core`
 5. `CREATE EXTENSION "uuid-ossp"` in the `smart_core` database.
-6. Apply the schema from `scripts/schema.sql` to the `smart_core` database.
+
+Individual database tables are created by the relevant systems when they are started for the first time.
 
 ## Keycloak
 

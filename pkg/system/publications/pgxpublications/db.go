@@ -96,7 +96,7 @@ func GetPublication(ctx context.Context, tx pgx.Tx, pubID, versionID string) (*t
 			SELECT p.audience_name, pv.id, pv.body, pv.publish_time, pv.media_type, a.accepted, a.receipt_time, a.rejected_reason
 			FROM publication p
 			INNER JOIN publication_version pv ON p.id = pv.publication_id
-			LEFT JOIN acknowledgement a on pv.id = a.version_id
+			LEFT JOIN publication_ack a on pv.id = a.version_id
 			WHERE p.id = $1 AND pv.id = $2;
 		`
 
@@ -108,7 +108,7 @@ func GetPublication(ctx context.Context, tx pgx.Tx, pubID, versionID string) (*t
 			SELECT p.audience_name, pv.id, pv.body, pv.publish_time, pv.media_type, a.accepted, a.receipt_time, a.rejected_reason
 			FROM publication p
 			INNER JOIN publication_version pv ON p.id = pv.publication_id
-			LEFT JOIN acknowledgement a on pv.id = a.version_id
+			LEFT JOIN publication_ack a on pv.id = a.version_id
 			WHERE p.id = $1
 			ORDER BY pv.publish_time DESC
 			LIMIT 1;
@@ -158,7 +158,7 @@ func GetPublicationsPaginated(ctx context.Context, tx pgx.Tx, token string, limi
 		                          a.receipt_time, a.rejected_reason
 		FROM publication p
 		INNER JOIN publication_version pv ON p.id = pv.publication_id
-		LEFT JOIN acknowledgement a on pv.id = a.version_id
+		LEFT JOIN publication_ack a on pv.id = a.version_id
 		WHERE p.id > $1 OR $1 = ''
 		ORDER BY p.id, pv.publish_time DESC
 		LIMIT $2;
@@ -221,7 +221,7 @@ func GetAcknowledgement(ctx context.Context, tx pgx.Tx, versionID string) (*Ackn
 	// language=postgresql
 	query := `
 		SELECT id, accepted, receipt_time, rejected_reason
-		FROM acknowledgement
+		FROM publication_ack
 		WHERE version_id = $1;
 	`
 
@@ -270,7 +270,7 @@ func CreatePublicationAcknowledgement(ctx context.Context, tx pgx.Tx, pubID, ver
 
 	// language=postgresql
 	query := `
-		INSERT INTO acknowledgement (id, version_id, accepted, rejected_reason, receipt_time) 
+		INSERT INTO publication_ack (id, version_id, accepted, rejected_reason, receipt_time) 
 		VALUES (DEFAULT, $1, $2, $3, $4);
     `
 
