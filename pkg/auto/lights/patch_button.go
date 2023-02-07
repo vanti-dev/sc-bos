@@ -93,11 +93,15 @@ func (name clearButtonStatePatcher) Patch(state *ReadState) {
 }
 
 func updateButtonState(state *ReadState, name string, isOnButton bool, newState *gen.ButtonState) {
-	oldButtonState := state.Buttons[name]
-	if t, ok := isNewSingleClick(oldButtonState, newState); ok {
-		state.Force = &ForceState{
-			On:   isOnButton,
-			Time: t,
+	oldButtonState, ok := state.Buttons[name]
+	// we only want to apply the force if the button gesture represents a new change we haven't seen before
+	// this prevents picking up old button gestures when the automation starts
+	if ok {
+		if t, ok := isNewSingleClick(oldButtonState, newState); ok {
+			state.Force = &ForceState{
+				On:   isOnButton,
+				Time: t,
+			}
 		}
 	}
 	state.Buttons[name] = newState

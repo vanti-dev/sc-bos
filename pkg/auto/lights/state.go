@@ -27,6 +27,17 @@ type ForceState struct {
 	Time time.Time
 }
 
+func (s *ForceState) Clone() *ForceState {
+	if s != nil {
+		return &ForceState{
+			On:   s.On,
+			Time: s.Time,
+		}
+	} else {
+		return nil
+	}
+}
+
 func NewReadState() *ReadState {
 	return &ReadState{
 		Occupancy:         make(map[string]*traits.Occupancy),
@@ -48,6 +59,7 @@ func (s *ReadState) Clone() *ReadState {
 	for name, val := range s.Buttons {
 		clone.Buttons[name] = val
 	}
+	clone.Force = s.Force.Clone()
 	return clone
 }
 
