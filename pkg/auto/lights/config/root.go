@@ -40,7 +40,7 @@ type DaylightDimming struct {
 }
 
 type LevelThreshold struct {
-	BelowLux     float32 `json:"aboveLux,omitempty"`
+	BelowLux     float32 `json:"belowLux,omitempty"`
 	LevelPercent float32 `json:"levelPercent,omitempty"`
 }
 
