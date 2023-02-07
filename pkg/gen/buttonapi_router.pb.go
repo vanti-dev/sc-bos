@@ -145,3 +145,12 @@ func (r *ButtonApiRouter) PullButtonState(request *PullButtonStateRequest, serve
 		return err
 	}
 }
+
+func (r *ButtonApiRouter) UpdateButtonState(ctx context.Context, request *UpdateButtonStateRequest) (*ButtonState, error) {
+	child, err := r.GetButtonApiClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.UpdateButtonState(ctx, request)
+}

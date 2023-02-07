@@ -24,13 +24,16 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
+	"go.uber.org/zap"
+	"golang.org/x/exp/rand"
+
 	"github.com/vanti-dev/sc-bos/pkg/driver"
+	"github.com/vanti-dev/sc-bos/pkg/driver/mock/button"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/config"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/util/maps"
-	"go.uber.org/zap"
-	"golang.org/x/exp/rand"
 )
 
 const DriverName = "mock"
@@ -208,6 +211,9 @@ func newMockClient(traitName trait.Name) (any, service.Lifecycle) {
 		return nil, nil
 	case trait.Vending:
 		return vending.WrapApi(vending.NewModelServer(vending.NewModel())), nil
+
+	case button.TraitName:
+		return gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED))), nil
 	}
 
 	return nil, nil

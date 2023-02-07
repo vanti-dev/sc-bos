@@ -20,6 +20,13 @@ export class ButtonApiClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<proto_button_pb.PullButtonStateResponse>;
 
+  updateButtonState(
+    request: proto_button_pb.UpdateButtonStateRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: proto_button_pb.ButtonState) => void
+  ): grpcWeb.ClientReadableStream<proto_button_pb.ButtonState>;
+
 }
 
 export class ButtonApiPromiseClient {
@@ -36,6 +43,11 @@ export class ButtonApiPromiseClient {
     request: proto_button_pb.PullButtonStateRequest,
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<proto_button_pb.PullButtonStateResponse>;
+
+  updateButtonState(
+    request: proto_button_pb.UpdateButtonStateRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<proto_button_pb.ButtonState>;
 
 }
 

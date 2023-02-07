@@ -28,6 +28,9 @@ type ButtonApiClient interface {
 	GetButtonState(ctx context.Context, in *GetButtonStateRequest, opts ...grpc.CallOption) (*ButtonState, error)
 	// Fetches changes to button Press state and gestures, and optionally the initial state.
 	PullButtonState(ctx context.Context, in *PullButtonStateRequest, opts ...grpc.CallOption) (ButtonApi_PullButtonStateClient, error)
+	// Updates the stored button state according to the write mask.
+	// Real (physical) buttons are not expected to implement this method - it is intended for virtual or mock buttons
+	UpdateButtonState(ctx context.Context, in *UpdateButtonStateRequest, opts ...grpc.CallOption) (*ButtonState, error)
 }
 
 type buttonApiClient struct {
@@ -79,6 +82,15 @@ func (x *buttonApiPullButtonStateClient) Recv() (*PullButtonStateResponse, error
 	return m, nil
 }
 
+func (c *buttonApiClient) UpdateButtonState(ctx context.Context, in *UpdateButtonStateRequest, opts ...grpc.CallOption) (*ButtonState, error) {
+	out := new(ButtonState)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.ButtonApi/UpdateButtonState", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ButtonApiServer is the server API for ButtonApi service.
 // All implementations must embed UnimplementedButtonApiServer
 // for forward compatibility
@@ -89,6 +101,9 @@ type ButtonApiServer interface {
 	GetButtonState(context.Context, *GetButtonStateRequest) (*ButtonState, error)
 	// Fetches changes to button Press state and gestures, and optionally the initial state.
 	PullButtonState(*PullButtonStateRequest, ButtonApi_PullButtonStateServer) error
+	// Updates the stored button state according to the write mask.
+	// Real (physical) buttons are not expected to implement this method - it is intended for virtual or mock buttons
+	UpdateButtonState(context.Context, *UpdateButtonStateRequest) (*ButtonState, error)
 	mustEmbedUnimplementedButtonApiServer()
 }
 
@@ -101,6 +116,9 @@ func (UnimplementedButtonApiServer) GetButtonState(context.Context, *GetButtonSt
 }
 func (UnimplementedButtonApiServer) PullButtonState(*PullButtonStateRequest, ButtonApi_PullButtonStateServer) error {
 	return status.Errorf(codes.Unimplemented, "method PullButtonState not implemented")
+}
+func (UnimplementedButtonApiServer) UpdateButtonState(context.Context, *UpdateButtonStateRequest) (*ButtonState, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateButtonState not implemented")
 }
 func (UnimplementedButtonApiServer) mustEmbedUnimplementedButtonApiServer() {}
 
@@ -154,6 +172,24 @@ func (x *buttonApiPullButtonStateServer) Send(m *PullButtonStateResponse) error 
 	return x.ServerStream.SendMsg(m)
 }
 
+func _ButtonApi_UpdateButtonState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateButtonStateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ButtonApiServer).UpdateButtonState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/smartcore.bos.ButtonApi/UpdateButtonState",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ButtonApiServer).UpdateButtonState(ctx, req.(*UpdateButtonStateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ButtonApi_ServiceDesc is the grpc.ServiceDesc for ButtonApi service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -164,6 +200,10 @@ var ButtonApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetButtonState",
 			Handler:    _ButtonApi_GetButtonState_Handler,
+		},
+		{
+			MethodName: "UpdateButtonState",
+			Handler:    _ButtonApi_UpdateButtonState_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -64,3 +64,7 @@ type pullButtonStateButtonApiServerWrapper struct {
 func (s *pullButtonStateButtonApiServerWrapper) Send(response *PullButtonStateResponse) error {
 	return s.ServerStream.SendMsg(response)
 }
+
+func (w *buttonApiWrapper) UpdateButtonState(ctx context.Context, req *UpdateButtonStateRequest, _ ...grpc.CallOption) (*ButtonState, error) {
+	return w.server.UpdateButtonState(ctx, req)
+}

@@ -196,5 +196,66 @@ proto.smartcore.bos.ButtonApiPromiseClient.prototype.pullButtonState =
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.UpdateButtonStateRequest,
+ *   !proto.smartcore.bos.ButtonState>}
+ */
+const methodDescriptor_ButtonApi_UpdateButtonState = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.ButtonApi/UpdateButtonState',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.UpdateButtonStateRequest,
+  proto.smartcore.bos.ButtonState,
+  /**
+   * @param {!proto.smartcore.bos.UpdateButtonStateRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ButtonState.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.UpdateButtonStateRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ButtonState)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ButtonState>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.ButtonApiClient.prototype.updateButtonState =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.ButtonApi/UpdateButtonState',
+      request,
+      metadata || {},
+      methodDescriptor_ButtonApi_UpdateButtonState,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.UpdateButtonStateRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.ButtonState>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.ButtonApiPromiseClient.prototype.updateButtonState =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.ButtonApi/UpdateButtonState',
+      request,
+      metadata || {},
+      methodDescriptor_ButtonApi_UpdateButtonState);
+};
+
+
 module.exports = proto.smartcore.bos;
 

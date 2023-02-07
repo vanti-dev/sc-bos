@@ -17,6 +17,10 @@ service ButtonApi {
   rpc GetButtonState(GetButtonStateRequest) returns (ButtonState);
   // Fetches changes to button Press state and gestures, and optionally the initial state.
   rpc PullButtonState(PullButtonStateRequest) returns (stream PullButtonStateResponse);
+
+  // Updates the stored button state according to the write mask.
+  // Real (physical) buttons are not expected to implement this method - it is intended for virtual or mock buttons
+  rpc UpdateButtonState(UpdateButtonStateRequest) returns (ButtonState);
 }
 
 message ButtonState {
@@ -92,4 +96,10 @@ message PullButtonStateResponse {
   }
 
   repeated Change changes = 1;
+}
+
+message UpdateButtonStateRequest {
+  string name = 1;
+  google.protobuf.FieldMask update_mask = 2;
+  ButtonState button_state = 3;
 }

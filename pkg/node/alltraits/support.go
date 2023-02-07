@@ -31,6 +31,8 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/speaker"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
 
+	"github.com/vanti-dev/sc-bos/pkg/driver/mock/button"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
@@ -146,6 +148,12 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 	trait.Vending: func(s node.Supporter) {
 		r := vending.NewApiRouter()
 		s.Support(node.Routing(r), node.Clients(vending.WrapApi(r)))
+	},
+
+	// sc-bos private traits
+	button.TraitName: func(s node.Supporter) {
+		r := gen.NewButtonApiRouter()
+		s.Support(node.Routing(r), node.Clients(gen.WrapButtonApi(r)))
 	},
 }
 

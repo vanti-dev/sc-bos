@@ -188,3 +188,33 @@ export namespace PullButtonStateResponse {
 
 }
 
+export class UpdateButtonStateRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): UpdateButtonStateRequest;
+
+  getUpdateMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setUpdateMask(value?: google_protobuf_field_mask_pb.FieldMask): UpdateButtonStateRequest;
+  hasUpdateMask(): boolean;
+  clearUpdateMask(): UpdateButtonStateRequest;
+
+  getButtonState(): ButtonState | undefined;
+  setButtonState(value?: ButtonState): UpdateButtonStateRequest;
+  hasButtonState(): boolean;
+  clearButtonState(): UpdateButtonStateRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateButtonStateRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateButtonStateRequest): UpdateButtonStateRequest.AsObject;
+  static serializeBinaryToWriter(message: UpdateButtonStateRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateButtonStateRequest;
+  static deserializeBinaryFromReader(message: UpdateButtonStateRequest, reader: jspb.BinaryReader): UpdateButtonStateRequest;
+}
+
+export namespace UpdateButtonStateRequest {
+  export type AsObject = {
+    name: string,
+    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    buttonState?: ButtonState.AsObject,
+  }
+}
+
