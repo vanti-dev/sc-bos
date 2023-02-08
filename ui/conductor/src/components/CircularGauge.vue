@@ -1,5 +1,5 @@
 <template>
-  <v-card :max-width="width" flat tile>
+  <v-card :width="width" :height="heightComputed" flat tile class="gauge">
     <svg
         xmlns="http://www.w3.org/2000/svg"
         xml:space="preserve"
@@ -15,7 +15,12 @@
           :fill="fillColors[i-1]"
           :transform="transforms[i-1]"/>
     </svg>
-    <span>{{ value }}</span>
+    <span class="text-h1 value">
+      <slot/>
+    </span>
+    <span class="text-title gauge-title">
+      <slot name="title"/>
+    </span>
   </v-card>
 </template>
 
@@ -27,7 +32,7 @@ const center = [0, 73];
 const props = defineProps({
   value: {
     type: Number,
-    default: .52
+    default: .5
   },
   min: {
     type: [Number, String],
@@ -39,11 +44,15 @@ const props = defineProps({
   },
   segments: {
     type: [Number, String],
-    default: 20
+    default: 25
   },
   width: {
     type: [Number, String],
-    default: 146
+    default: 155
+  },
+  height: {
+    type: [Number, String],
+    default: null
   },
   color: {
     type: String,
@@ -53,6 +62,8 @@ const props = defineProps({
 
 const maxValue = computed(() => parseFloat(props.max));
 const minValue = computed(() => parseFloat(props.min));
+
+const heightComputed = computed(() => props.height || props.width);
 
 // how much is each segment worth?
 const segValue = computed(() => {
@@ -67,12 +78,14 @@ const transforms = computed(() => {
     const pos = i / (props.segments - 1);
     const val = minValue.value + i * segValue.value;
 
+    // move 0 point for rotation and scaling to top, centre of path
     t.push('translate(2.5 0)');
 
+    // calculate rotation based on position in sequence
     const rot = -120 + pos * 240;
     t.push('rotate(' + rot + ' ' + center.join(' ') + ')');
 
-
+    // calculate scale based on value
     if (val >= props.value) {
       t.push('scale(0.5 0.7)');
     } else if (val < props.value - segValue.value) {
@@ -84,6 +97,7 @@ const transforms = computed(() => {
       t.push('scale(' + s.join(' ') + ')');
     }
 
+    // move back again so it displays correctly
     t.push('translate(-2.5 0)');
 
     ts.push(t.join(' '));
@@ -111,5 +125,25 @@ const fillColors = computed(() => {
 </script>
 
 <style scoped>
-
+.gauge {
+  position: relative;
+}
+.value {
+  display: flex;
+  position: absolute;
+  left:  15%;
+  top:   15%;
+  right: 15%;
+  bottom: 20%;
+  justify-content: center;
+  align-items: center;
+}
+.gauge-title {
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  text-align: center;
+}
 </style>
