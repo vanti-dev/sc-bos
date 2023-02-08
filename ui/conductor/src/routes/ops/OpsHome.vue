@@ -28,6 +28,8 @@
         </content-card>
         <content-card>
           <h4 class="text-h4">Environmental</h4>
+          <circular-gauge width="300" :value="gaugeVal" min="-10" max="30"/>
+          <v-slider v-model="gaugeVal" min="-10" max="30" step="0.5"/>
         </content-card>
       </v-col>
     </v-row>
@@ -35,6 +37,10 @@
 </template>
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
+import CircularGauge from '@/components/CircularGauge.vue';
+import {ref} from 'vue';
+
+const gaugeVal = ref(0);
 
 const floors = [
   {
