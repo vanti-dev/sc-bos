@@ -102,5 +102,5 @@ func (e *udmiAuto) applyConfig(ctx context.Context, cfg config.Root) error {
 			e.services.Logger.Debug("shut down")
 		}
 	}()
-	return err
+	return nil
 }
