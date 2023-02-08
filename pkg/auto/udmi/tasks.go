@@ -16,45 +16,58 @@ import (
 // tasksForSource returns an array of tasks to run for each UdmiService source/name
 // all of these need to be run for the implementation to work
 func tasksForSource(name string, logger *zap.Logger, client gen.UdmiServiceClient, pubsub *PubSub) []task.Task {
-	puller := &udmiMessagePuller{
-		client: client,
-		name:   name,
-	}
-	changes := make(chan *gen.PullExportMessagesResponse)
+	messageChanges := make(chan *gen.PullExportMessagesResponse)
+	topicChanges := make(chan *gen.PullControlTopicsResponse)
 
 	var tasks []task.Task
 
 	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
-		logger.Debug("task run: subscribe")
-		err := subscribe(ctx, name, logger, client, pubsub.Subscriber)
-		logger.Debug("task end: subscribe", zap.String("err", errStr(err)))
+		logger.Debug("task run: pullTopics")
+		err := pullTopics(ctx, name, logger, client, topicChanges)
+		logger.Debug("task end: pullTopics", zap.String("err", errStr(err)))
+		return task.Normal, err
+	})
+	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
+		logger.Debug("task run: handleTopicChanges")
+		err := handleTopicChanges(ctx, name, logger, client, topicChanges, pubsub.Subscriber)
+		logger.Debug("task end: handleTopicChanges", zap.String("err", errStr(err)))
 		return task.Normal, err
 	})
 	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
 		logger.Debug("task run: pullMessages")
-		err := pullMessages(ctx, logger, changes, puller)
+		err := pullMessages(ctx, name, logger, client, messageChanges)
 		logger.Debug("task end: pullMessages", zap.String("err", errStr(err)))
 		return task.Normal, err
 	})
 	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
-		logger.Debug("task run: publishMessages")
-		err := publishMessages(ctx, changes, pubsub.Publisher)
-		logger.Debug("task end: publishMessages", zap.String("err", errStr(err)))
+		logger.Debug("task run: handleMessages")
+		err := handleMessages(ctx, messageChanges, pubsub.Publisher)
+		logger.Debug("task end: handleMessages", zap.String("err", errStr(err)))
 		return task.Normal, err
 	})
 
 	return tasks
 }
 
-// subscribe will fetch the topics for the given name, and for each topic an MQTT subscription is created (via
-// Subscriber). Messages received for each of those subscriptions is then passed onto the UdmiService using OnMessage.
-func subscribe(ctx context.Context, name string, logger *zap.Logger, client gen.UdmiServiceClient, subscriber Subscriber) error {
-	res, err := client.DescribeTopics(ctx, &gen.DescribeTopicsRequest{Name: name})
-	if err != nil {
-		return err
+// pullTopics calls pull for control topics (with default backoff/delay) and sends each message on the given channel
+func pullTopics(ctx context.Context, name string, logger *zap.Logger, client gen.UdmiServiceClient, changes chan *gen.PullControlTopicsResponse) error {
+	puller := &udmiControlTopicsPuller{
+		client: client,
+		name:   name,
 	}
-	for _, topic := range res.Topics {
-		err := subscriber.Subscribe(ctx, topic, func(_ mqtt.Client, message mqtt.Message) {
+	defer close(changes)
+	err := pull.Changes[*gen.PullControlTopicsResponse](ctx, puller, changes, pull.WithLogger(logger))
+	if status.Code(err) == codes.Unimplemented {
+		return nil
+	}
+	return err
+}
+
+// handleTopicChanges will wait for topic messages on the channel, and for each topic an MQTT subscription is created (via
+// Subscriber). Messages received for each of those subscriptions is then passed onto the UdmiService using OnMessage.
+func handleTopicChanges(ctx context.Context, name string, logger *zap.Logger, client gen.UdmiServiceClient, changes chan *gen.PullControlTopicsResponse, subscriber Subscriber) error {
+	subscribeTopic := func(ctx context.Context, topic string) error {
+		return subscriber.Subscribe(ctx, topic, func(_ mqtt.Client, message mqtt.Message) {
 			payload := string(message.Payload())
 			logger.Debug("received MQTT message", zap.String("topic", topic), zap.String("payload", payload))
 			_, err := client.OnMessage(ctx, &gen.OnMessageRequest{
@@ -70,16 +83,35 @@ func subscribe(ctx context.Context, name string, logger *zap.Logger, client gen.
 				logger.Debug("forwarded MQTT message to UDMI service", zap.String("topic", topic), zap.String("payload", payload))
 			}
 		})
-		if err != nil {
-			return err
+	}
+
+	current := &canceller{
+		cancel: func() {},
+	}
+	defer func() {
+		current.cancel()
+	}()
+	for change := range changes {
+		current.cancel() // cancel previous subscriptions
+		ctx, cancel := context.WithCancel(ctx)
+		current.cancel = cancel
+		// todo: work out topic changes, rather than just restart all
+		for _, topic := range change.Topics {
+			err := subscribeTopic(ctx, topic)
+			if err != nil {
+				return err
+			}
 		}
 	}
-	<-ctx.Done()
-	return ctx.Err()
+	return nil
 }
 
-// pullMessages calls pull (with default backoff/delay) and sends each message on the given channel
-func pullMessages(ctx context.Context, logger *zap.Logger, changes chan *gen.PullExportMessagesResponse, puller pull.Fetcher[*gen.PullExportMessagesResponse]) error {
+// pullMessages calls pull for export messages (with default backoff/delay) and sends each message on the given channel
+func pullMessages(ctx context.Context, name string, logger *zap.Logger, client gen.UdmiServiceClient, changes chan *gen.PullExportMessagesResponse) error {
+	puller := &udmiExportMessagePuller{
+		client: client,
+		name:   name,
+	}
 	defer close(changes)
 	err := pull.Changes[*gen.PullExportMessagesResponse](ctx, puller, changes, pull.WithLogger(logger))
 	if status.Code(err) == codes.Unimplemented {
@@ -88,9 +120,9 @@ func pullMessages(ctx context.Context, logger *zap.Logger, changes chan *gen.Pul
 	return err
 }
 
-// publishMessages waits for messages on the given channel and sends them to the publisher
+// handleMessages waits for messages on the given channel and sends them to the publisher
 // ultimately these end up getting sent as MQTT messages
-func publishMessages(ctx context.Context, changes chan *gen.PullExportMessagesResponse, publisher Publisher) error {
+func handleMessages(ctx context.Context, changes chan *gen.PullExportMessagesResponse, publisher Publisher) error {
 	for change := range changes {
 		if change.Message == nil {
 			continue
@@ -109,4 +141,8 @@ func errStr(err error) string {
 		str = err.Error()
 	}
 	return str
+}
+
+type canceller struct {
+	cancel func()
 }
