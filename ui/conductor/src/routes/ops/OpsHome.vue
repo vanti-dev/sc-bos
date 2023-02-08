@@ -28,7 +28,7 @@
         </content-card>
         <content-card>
           <h4 class="text-h4">Environmental</h4>
-          <circular-gauge :value="gaugeVal" min="-10" max="30">
+          <circular-gauge :value="gaugeVal" min="-10" max="30" segments="30">
             {{ gaugeVal.toFixed(1) }}&deg;
             <template #title>Avg. Indoor Temperature</template>
           </circular-gauge>

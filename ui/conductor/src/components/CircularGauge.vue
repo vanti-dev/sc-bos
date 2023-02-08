@@ -1,5 +1,5 @@
 <template>
-  <v-card :width="width" :height="heightComputed" flat tile class="gauge">
+  <v-card :width="width" :height="heightValue" flat tile class="gauge">
     <svg
         xmlns="http://www.w3.org/2000/svg"
         xml:space="preserve"
@@ -10,7 +10,7 @@
         viewBox="-70.5 0 146 146">
       <path
           d="M5 0H0l1 20h3L5 0Z"
-          v-for="i in segments"
+          v-for="i in segmentsValue"
           :key="i"
           :fill="fillColors[i-1]"
           :transform="transforms[i-1]"/>
@@ -62,20 +62,20 @@ const props = defineProps({
 
 const maxValue = computed(() => parseFloat(props.max));
 const minValue = computed(() => parseFloat(props.min));
-
-const heightComputed = computed(() => props.height || props.width);
+const heightValue = computed(() => props.height || props.width);
+const segmentsValue = computed(() => parseInt(props.segments));
 
 // how much is each segment worth?
 const segValue = computed(() => {
-  return (maxValue.value - minValue.value) / props.segments;
+  return (maxValue.value - minValue.value) / segmentsValue.value;
 });
 
 // list of transforms per segment
 const transforms = computed(() => {
   const ts = [];
-  for (let i = 0; i<props.segments; i++) {
+  for (let i = 0; i<segmentsValue.value; i++) {
     const t = [];
-    const pos = i / (props.segments - 1);
+    const pos = i / (segmentsValue.value - 1);
     const val = minValue.value + i * segValue.value;
 
     // move 0 point for rotation and scaling to top, centre of path
@@ -109,7 +109,7 @@ const transforms = computed(() => {
 const fillColors = computed(() => {
   const cols = [];
 
-  for (let i = 0; i<props.segments; i++) {
+  for (let i = 0; i<segmentsValue.value; i++) {
     const val = minValue.value + i * segValue.value;
 
     if (val >= props.value) {
