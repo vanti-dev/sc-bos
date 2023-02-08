@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
+import {computed, getCurrentInstance} from 'vue';
 
 const center = [0, 73];
 
@@ -56,7 +56,7 @@ const props = defineProps({
   },
   color: {
     type: String,
-    default: '#ff9947'
+    default: 'primary'
   }
 });
 
@@ -113,9 +113,17 @@ const fillColors = computed(() => {
     const val = minValue.value + i * segValue.value;
 
     if (val >= props.value) {
+      // todo: allow override of 'off' colour
       cols.push('#ffffff');
     } else {
-      cols.push(props.color);
+      if (props.color.startsWith('#')) {
+        cols.push(props.color);
+      } else {
+        const theme = getCurrentInstance().proxy.$vuetify.theme.currentTheme;
+        const c = props.color.split(' ');
+        const col = theme[c[0]][c[1] ?? 'base'];
+        cols.push(col);
+      }
     }
   }
   return cols;
