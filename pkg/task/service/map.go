@@ -49,6 +49,16 @@ func NewMap(createFunc CreateFunc, idFunc IdFunc) *Map {
 	}
 }
 
+// MapSetNow sets the now func on m returning a func that undoes the set.
+// Use for testing.
+func MapSetNow(m *Map, now func() time.Time) func() {
+	old := m.now
+	m.now = now
+	return func() {
+		m.now = old
+	}
+}
+
 var (
 	// IdIsKind is an IdFunc that attempts to use the kind as the id.
 	// This implies that only one service of a given type can exist in the map.

@@ -26,6 +26,7 @@ func TestApi_PullServices(t *testing.T) {
 	api.now = func() time.Time {
 		return now
 	}
+	t.Cleanup(service.MapSetNow(m, api.now))
 
 	ctx, stop := context.WithCancel(context.Background())
 	t.Cleanup(stop)

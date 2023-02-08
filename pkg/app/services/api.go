@@ -216,14 +216,6 @@ func (a *Api) pullServices(ctx context.Context, request *gen.PullServicesRequest
 
 		// we manage our own REMOVE event, if we return then it's because we're returning
 		var last *gen.Service
-		defer func() {
-			publish(&gen.PullServicesResponse_Change{
-				Name:       request.Name,
-				ChangeTime: timestamppb.New(a.now()),
-				Type:       types.ChangeType_REMOVE,
-				OldValue:   recordToProto(record),
-			})
-		}()
 
 		var serviceChanges <-chan service.State
 		if updateOnly {
@@ -285,6 +277,15 @@ func (a *Api) pullServices(ctx context.Context, request *gen.PullServicesRequest
 					if stop, ok := listeners[c.OldValue.Id]; ok {
 						delete(listeners, c.OldValue.Id)
 						stop()
+						change := &gen.PullServicesResponse_Change{
+							Name:       request.Name,
+							ChangeTime: timestamppb.New(c.ChangeTime),
+							Type:       types.ChangeType_REMOVE,
+							OldValue:   recordToProto(c.OldValue),
+						}
+						if !publish(change) {
+							return
+						}
 					}
 				} else if c.OldValue == nil && c.NewValue != nil {
 					// add
