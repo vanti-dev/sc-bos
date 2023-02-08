@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
@@ -169,7 +168,6 @@ func (m *Map) Values() []*Record {
 
 // Listen emits changes to m on the returns chan until ctx is done.
 func (m *Map) Listen(ctx context.Context) <-chan *Change {
-	log.Printf("Map.Listen")
 	return m.bus.Listen(ctx)
 }
 

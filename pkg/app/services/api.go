@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"log"
 	"sort"
 	"strings"
 	"time"
@@ -186,7 +185,6 @@ func (a *Api) PullServices(request *gen.PullServicesRequest, server gen.Services
 	defer stop()
 
 	for c := range a.pullServices(ctx, request) {
-		log.Printf("Got allChanges %+v", c)
 		change := &gen.PullServicesResponse{Changes: []*gen.PullServicesResponse_Change{c}}
 		if err := server.Send(change); err != nil {
 			return err
@@ -240,7 +238,6 @@ func (a *Api) pullServices(ctx context.Context, request *gen.PullServicesRequest
 				Type:       types.ChangeType_ADD,
 				NewValue:   last,
 			}
-			log.Printf("Sending initial %+v", change)
 			if !publish(change) {
 				return
 			}
@@ -256,7 +253,6 @@ func (a *Api) pullServices(ctx context.Context, request *gen.PullServicesRequest
 				OldValue:   old,
 				NewValue:   last,
 			}
-			log.Printf("Sending update %+v", change)
 			if !publish(change) {
 				return
 			}
@@ -279,10 +275,8 @@ func (a *Api) pullServices(ctx context.Context, request *gen.PullServicesRequest
 		for {
 			select {
 			case <-ctx.Done():
-				log.Printf("Got ctx.Done()")
 				return
 			case c, ok := <-changes:
-				log.Printf("Got change %+v, ok=%v", c, ok)
 				if !ok {
 					return // changes closed
 				}

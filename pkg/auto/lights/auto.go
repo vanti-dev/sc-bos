@@ -2,6 +2,7 @@ package lights
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -111,6 +112,9 @@ func (b *BrightnessAutomation) Start(_ context.Context) error {
 	// log the error when the group stops
 	go func() {
 		err := group.Wait()
+		if errors.Is(err, context.Canceled) {
+			return // don't bother logging these as they are expected when stopped
+		}
 		if err != nil {
 			b.logger.Error("automation background tasks stopped", zap.Error(err))
 		}
