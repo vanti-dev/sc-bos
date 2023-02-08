@@ -214,8 +214,7 @@ func (a *Api) pullServices(ctx context.Context, request *gen.PullServicesRequest
 	watchRecord := func(ctx context.Context, stop context.CancelFunc, record *service.Record, updateOnly bool) {
 		defer stop() // we shouldn't need this, ctx cancellation is the only way to exit this func anyway
 
-		// we manage our own REMOVE event, if we return then it's because we're returning
-		var last *gen.Service
+		var last *gen.Service // used for updates as OldValue
 
 		var serviceChanges <-chan service.State
 		if updateOnly {
