@@ -74,6 +74,14 @@ $headings: (
         'font-family': $body-font-family,
         'text-transform': false
     ),
+    'title-bold': (
+        'size': 1rem,
+        'weight': 700,
+        'line-height': 1.5rem,
+        'letter-spacing': 0em,
+        'font-family': $body-font-family,
+        'text-transform': false
+    ),
     'title-caps-large': (
         'size': 1rem,
         'weight': 700,

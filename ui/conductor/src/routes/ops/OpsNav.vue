@@ -7,7 +7,7 @@
             <v-icon>mdi-domain</v-icon>
           </v-list-item-icon>
           <v-list-item-content>
-            <v-list-item-title>Buildings</v-list-item-title>
+            <v-list-item-title>Building Overview</v-list-item-title>
           </v-list-item-content>
         </template>
 

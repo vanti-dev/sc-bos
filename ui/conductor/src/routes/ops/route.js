@@ -6,13 +6,13 @@ import {route} from '@/util/router.js';
 export default {
   name: 'ops',
   path: '/ops',
-  redirect: '/ops/summary',
+  redirect: '/ops/overview',
   components: {
     default: ChildOnlyPage,
     nav: () => import('./OpsNav.vue')
   },
   children: [
-    {path: 'summary', component: () => import('./OpsSummary.vue')},
+    {path: 'overview', component: () => import('./OpsHome.vue')},
     ...route(notifications)
   ],
   meta: {
