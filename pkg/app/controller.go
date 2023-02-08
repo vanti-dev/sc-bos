@@ -313,18 +313,21 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 		return err
 	}
 	c.Node.Announce("systems", node.HasClient(gen.WrapServicesApi(services.NewApi(systemServices, services.WithKnownTypesFromMapKeys(c.SystemConfig.SystemFactories)))))
+	go logServiceMapChanges(ctx, c.Logger.Named("system"), systemServices)
 	// load and start the drivers
 	driverServices, err := c.startDrivers()
 	if err != nil {
 		return err
 	}
 	c.Node.Announce("drivers", node.HasClient(gen.WrapServicesApi(services.NewApi(driverServices, services.WithKnownTypesFromMapKeys(c.SystemConfig.DriverFactories)))))
+	go logServiceMapChanges(ctx, c.Logger.Named("driver"), driverServices)
 	// load and start the automations
 	autoServices, err := c.startAutomations()
 	if err != nil {
 		return err
 	}
 	c.Node.Announce("automations", node.HasClient(gen.WrapServicesApi(services.NewApi(autoServices, services.WithKnownTypesFromMapKeys(c.SystemConfig.AutoFactories)))))
+	go logServiceMapChanges(ctx, c.Logger.Named("auto"), autoServices)
 
 	err = multierr.Append(err, group.Wait())
 	return
@@ -413,6 +416,68 @@ func (c *Controller) startSystems() (*service.Map, error) {
 		allErrs = multierr.Append(allErrs, err)
 	}
 	return m, allErrs
+}
+
+func logServiceMapChanges(ctx context.Context, logger *zap.Logger, m *service.Map) {
+	known := map[string]func(){}
+	changes := m.Listen(ctx)
+	for _, record := range m.Values() {
+		ctx, stop := context.WithCancel(ctx)
+		known[record.Id] = stop
+		record := record
+		go logServiceRecordChanges(ctx, logger, record)
+	}
+	for change := range changes {
+		if change.OldValue == nil && change.NewValue != nil {
+			// add
+			if _, ok := known[change.NewValue.Id]; ok {
+				continue // deal with potential race between Listen and Values
+			}
+			ctx, stop := context.WithCancel(ctx)
+			known[change.NewValue.Id] = stop
+			go logServiceRecordChanges(ctx, logger, change.NewValue)
+		} else if change.OldValue != nil && change.NewValue == nil {
+			// remove
+			stop, ok := known[change.OldValue.Id]
+			if !ok {
+				continue
+			}
+			delete(known, change.OldValue.Id)
+			stop()
+		}
+	}
+}
+
+func logServiceRecordChanges(ctx context.Context, logger *zap.Logger, r *service.Record) {
+	logger = logger.With(zap.String("id", r.Id), zap.String("kind", r.Kind))
+	state, changes := r.Service.StateAndChanges(ctx)
+	logger.Debug("Created", zap.Bool("active", state.Active), zap.Error(state.Err))
+	lastMode := ""
+	for change := range changes {
+		mode := ""
+		switch {
+		case !change.Active && change.Err != nil:
+			mode = "error"
+		case !change.Active:
+			mode = "Stopped"
+		case change.Loading:
+			mode = "Loading"
+		case change.Active:
+			mode = "Running"
+		}
+		if mode == lastMode {
+			continue
+		}
+		switch mode {
+		case "error":
+			logger.Warn("Failed to load", zap.Error(state.Err))
+		case "":
+			continue
+		default:
+			logger.Debug(mode)
+		}
+		lastMode = mode
+	}
 }
 
 func joinIfPresent(dir, path string) string {
