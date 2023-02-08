@@ -451,9 +451,8 @@ func logServiceMapChanges(ctx context.Context, logger *zap.Logger, m *service.Ma
 func logServiceRecordChanges(ctx context.Context, logger *zap.Logger, r *service.Record) {
 	logger = logger.With(zap.String("id", r.Id), zap.String("kind", r.Kind))
 	state, changes := r.Service.StateAndChanges(ctx)
-	logger.Debug("Created", zap.Bool("active", state.Active), zap.Error(state.Err))
 	lastMode := ""
-	for change := range changes {
+	logMode := func(change service.State) {
 		mode := ""
 		switch {
 		case !change.Active && change.Err != nil:
@@ -466,17 +465,27 @@ func logServiceRecordChanges(ctx context.Context, logger *zap.Logger, r *service
 			mode = "Running"
 		}
 		if mode == lastMode {
-			continue
+			return
 		}
 		switch mode {
 		case "error":
 			logger.Warn("Failed to load", zap.Error(state.Err))
 		case "":
-			continue
+			return
+		case "Stopped":
+			if lastMode == "" {
+				logger.Debug("Created")
+			} else {
+				logger.Debug(mode)
+			}
 		default:
 			logger.Debug(mode)
 		}
 		lastMode = mode
+	}
+	logMode(state)
+	for change := range changes {
+		logMode(change)
 	}
 }
 
