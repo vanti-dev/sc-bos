@@ -7,21 +7,22 @@ option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 // UdmiService defines the service needed to add UDMI support to a driver or system.
 // The implementer is responsible for message payloads and topic definitions. This will not be validated.
 service UdmiService {
-  // DescribeTopics returns the topics the implementer is interested in subscribing to
+  // PullControlTopics returns a stream of topics the implementer is interested in subscribing to.
+  // Each response will include all topics, any sent previously can be discarded.
   // (usually config topics, https://faucetsdn.github.io/udmi/docs/messages/config.html)
-  rpc DescribeTopics(DescribeTopicsRequest) returns (DescribeTopicsResponse);
-  // If the implementer lists topics in any DescribeTopicsResponse, then each message received via the MQTT
+  rpc PullControlTopics(PullControlTopicsRequest) returns (stream PullControlTopicsResponse);
+  // If the implementer lists topics in any PullControlTopicsResponse, then each message received via the MQTT
   // broker will invoke a call to this method
   rpc OnMessage(OnMessageRequest) returns (OnMessageResponse);
   // PullExportMessages, which are to be published to the MQTT broker for data export
   rpc PullExportMessages(PullExportMessagesRequest) returns (stream PullExportMessagesResponse);
 }
 
-message DescribeTopicsRequest {
+message PullControlTopicsRequest {
   string name = 1;
 }
 
-message DescribeTopicsResponse {
+message PullControlTopicsResponse {
   string name = 1;
   repeated string topics = 2;
 }

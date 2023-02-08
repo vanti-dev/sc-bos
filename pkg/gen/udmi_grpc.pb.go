@@ -22,10 +22,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UdmiServiceClient interface {
-	// DescribeTopics returns the topics the implementer is interested in subscribing to
+	// PullControlTopics returns a stream of topics the implementer is interested in subscribing to.
+	// Each response will include all topics, any sent previously can be discarded.
 	// (usually config topics, https://faucetsdn.github.io/udmi/docs/messages/config.html)
-	DescribeTopics(ctx context.Context, in *DescribeTopicsRequest, opts ...grpc.CallOption) (*DescribeTopicsResponse, error)
-	// If the implementer lists topics in any DescribeTopicsResponse, then each message received via the MQTT
+	PullControlTopics(ctx context.Context, in *PullControlTopicsRequest, opts ...grpc.CallOption) (UdmiService_PullControlTopicsClient, error)
+	// If the implementer lists topics in any PullControlTopicsResponse, then each message received via the MQTT
 	// broker will invoke a call to this method
 	OnMessage(ctx context.Context, in *OnMessageRequest, opts ...grpc.CallOption) (*OnMessageResponse, error)
 	// PullExportMessages, which are to be published to the MQTT broker for data export
@@ -40,13 +41,36 @@ func NewUdmiServiceClient(cc grpc.ClientConnInterface) UdmiServiceClient {
 	return &udmiServiceClient{cc}
 }
 
-func (c *udmiServiceClient) DescribeTopics(ctx context.Context, in *DescribeTopicsRequest, opts ...grpc.CallOption) (*DescribeTopicsResponse, error) {
-	out := new(DescribeTopicsResponse)
-	err := c.cc.Invoke(ctx, "/smartcore.bos.UdmiService/DescribeTopics", in, out, opts...)
+func (c *udmiServiceClient) PullControlTopics(ctx context.Context, in *PullControlTopicsRequest, opts ...grpc.CallOption) (UdmiService_PullControlTopicsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &UdmiService_ServiceDesc.Streams[0], "/smartcore.bos.UdmiService/PullControlTopics", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &udmiServicePullControlTopicsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type UdmiService_PullControlTopicsClient interface {
+	Recv() (*PullControlTopicsResponse, error)
+	grpc.ClientStream
+}
+
+type udmiServicePullControlTopicsClient struct {
+	grpc.ClientStream
+}
+
+func (x *udmiServicePullControlTopicsClient) Recv() (*PullControlTopicsResponse, error) {
+	m := new(PullControlTopicsResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *udmiServiceClient) OnMessage(ctx context.Context, in *OnMessageRequest, opts ...grpc.CallOption) (*OnMessageResponse, error) {
@@ -59,7 +83,7 @@ func (c *udmiServiceClient) OnMessage(ctx context.Context, in *OnMessageRequest,
 }
 
 func (c *udmiServiceClient) PullExportMessages(ctx context.Context, in *PullExportMessagesRequest, opts ...grpc.CallOption) (UdmiService_PullExportMessagesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &UdmiService_ServiceDesc.Streams[0], "/smartcore.bos.UdmiService/PullExportMessages", opts...)
+	stream, err := c.cc.NewStream(ctx, &UdmiService_ServiceDesc.Streams[1], "/smartcore.bos.UdmiService/PullExportMessages", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,10 +118,11 @@ func (x *udmiServicePullExportMessagesClient) Recv() (*PullExportMessagesRespons
 // All implementations must embed UnimplementedUdmiServiceServer
 // for forward compatibility
 type UdmiServiceServer interface {
-	// DescribeTopics returns the topics the implementer is interested in subscribing to
+	// PullControlTopics returns a stream of topics the implementer is interested in subscribing to.
+	// Each response will include all topics, any sent previously can be discarded.
 	// (usually config topics, https://faucetsdn.github.io/udmi/docs/messages/config.html)
-	DescribeTopics(context.Context, *DescribeTopicsRequest) (*DescribeTopicsResponse, error)
-	// If the implementer lists topics in any DescribeTopicsResponse, then each message received via the MQTT
+	PullControlTopics(*PullControlTopicsRequest, UdmiService_PullControlTopicsServer) error
+	// If the implementer lists topics in any PullControlTopicsResponse, then each message received via the MQTT
 	// broker will invoke a call to this method
 	OnMessage(context.Context, *OnMessageRequest) (*OnMessageResponse, error)
 	// PullExportMessages, which are to be published to the MQTT broker for data export
@@ -109,8 +134,8 @@ type UdmiServiceServer interface {
 type UnimplementedUdmiServiceServer struct {
 }
 
-func (UnimplementedUdmiServiceServer) DescribeTopics(context.Context, *DescribeTopicsRequest) (*DescribeTopicsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DescribeTopics not implemented")
+func (UnimplementedUdmiServiceServer) PullControlTopics(*PullControlTopicsRequest, UdmiService_PullControlTopicsServer) error {
+	return status.Errorf(codes.Unimplemented, "method PullControlTopics not implemented")
 }
 func (UnimplementedUdmiServiceServer) OnMessage(context.Context, *OnMessageRequest) (*OnMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OnMessage not implemented")
@@ -131,22 +156,25 @@ func RegisterUdmiServiceServer(s grpc.ServiceRegistrar, srv UdmiServiceServer) {
 	s.RegisterService(&UdmiService_ServiceDesc, srv)
 }
 
-func _UdmiService_DescribeTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DescribeTopicsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _UdmiService_PullControlTopics_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(PullControlTopicsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(UdmiServiceServer).DescribeTopics(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/smartcore.bos.UdmiService/DescribeTopics",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UdmiServiceServer).DescribeTopics(ctx, req.(*DescribeTopicsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(UdmiServiceServer).PullControlTopics(m, &udmiServicePullControlTopicsServer{stream})
+}
+
+type UdmiService_PullControlTopicsServer interface {
+	Send(*PullControlTopicsResponse) error
+	grpc.ServerStream
+}
+
+type udmiServicePullControlTopicsServer struct {
+	grpc.ServerStream
+}
+
+func (x *udmiServicePullControlTopicsServer) Send(m *PullControlTopicsResponse) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _UdmiService_OnMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -196,15 +224,16 @@ var UdmiService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*UdmiServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "DescribeTopics",
-			Handler:    _UdmiService_DescribeTopics_Handler,
-		},
-		{
 			MethodName: "OnMessage",
 			Handler:    _UdmiService_OnMessage_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "PullControlTopics",
+			Handler:       _UdmiService_PullControlTopics_Handler,
+			ServerStreams: true,
+		},
 		{
 			StreamName:    "PullExportMessages",
 			Handler:       _UdmiService_PullExportMessages_Handler,

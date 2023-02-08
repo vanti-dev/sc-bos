@@ -30,8 +30,35 @@ func (w *udmiServiceWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *udmiServiceWrapper) DescribeTopics(ctx context.Context, req *DescribeTopicsRequest, _ ...grpc.CallOption) (*DescribeTopicsResponse, error) {
-	return w.server.DescribeTopics(ctx, req)
+func (w *udmiServiceWrapper) PullControlTopics(ctx context.Context, in *PullControlTopicsRequest, opts ...grpc.CallOption) (UdmiService_PullControlTopicsClient, error) {
+	stream := wrap.NewClientServerStream(ctx)
+	server := &pullControlTopicsUdmiServiceServerWrapper{stream.Server()}
+	client := &pullControlTopicsUdmiServiceClientWrapper{stream.Client()}
+	go func() {
+		err := w.server.PullControlTopics(in, server)
+		stream.Close(err)
+	}()
+	return client, nil
+}
+
+type pullControlTopicsUdmiServiceClientWrapper struct {
+	grpc.ClientStream
+}
+
+func (w *pullControlTopicsUdmiServiceClientWrapper) Recv() (*PullControlTopicsResponse, error) {
+	m := new(PullControlTopicsResponse)
+	if err := w.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+type pullControlTopicsUdmiServiceServerWrapper struct {
+	grpc.ServerStream
+}
+
+func (s *pullControlTopicsUdmiServiceServerWrapper) Send(response *PullControlTopicsResponse) error {
+	return s.ServerStream.SendMsg(response)
 }
 
 func (w *udmiServiceWrapper) OnMessage(ctx context.Context, req *OnMessageRequest, _ ...grpc.CallOption) (*OnMessageResponse, error) {
