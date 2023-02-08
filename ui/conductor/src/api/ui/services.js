@@ -41,8 +41,8 @@ export function listServices(request, tracker) {
 
 /**
  *
- * @param request
- * @param resource
+ * @param {PullServiceRequest.AsObject} request
+ * @param {ResourceCollection<Service.AsObject, Service>} resource
  */
 export function pullServices(request, resource) {
   pullResource('Services.PullServices', resource, endpoint => {
