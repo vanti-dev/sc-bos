@@ -1,49 +1,62 @@
 <template>
-  <v-container fluid class="pa-0 pt-2">
-    <v-row>
-      <v-col md="8" sm="12">
-        <h3 class="text-h3 pt-2 pb-6">Status: Building Overview</h3>
-      </v-col>
-      <v-col>
-        <content-card class="justify-center">
-          <v-card-text class="py-1">
-            <span class="text-title">Smart Core OS: </span>
-            <span class="text-title-bold text-uppercase">Online</span>
-          </v-card-text>
+  <v-container fluid class="pa-0 pt-2 d-flex flex-column" style="min-width: 270px; max-width: 1200px">
+    <div class="d-flex flex-column flex-md-row">
+      <h3 class="text-h3 pt-2 pb-6 flex-grow-1">Status: Building Overview</h3>
+      <content-card class="mr-6 mb-6 mr-sm-0" style="min-width: 270px;">
+        <div class="py-1" style="text-align: center">
+          <span class="text-title">Smart Core OS: </span>
+          <span class="text-title-bold text-uppercase success--text text--lighten-4">Online</span>
+        </div>
+      </content-card>
+    </div>
+    <div class="d-flex flex-column flex-lg-row">
+      <div class="flex-grow-1 d-flex flex-column mr-lg-6">
+        <content-card class="mb-6 mr-0 mr-lg-6 px-6">
+          <h4 class="text-h4 order-md-last order-sm-first pb-4 pb-md-0 pt-0 pt-md-4">System Monitor</h4>
         </content-card>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col lg="8" md="12" sm="12">
-        <content-card class="mb-6">
-          <h4 class="text-h4">System Monitor</h4>
+        <content-card class="mb-6 mr-0 mr-lg-6 px-6">
+          <h4 class="text-h4 order-md-last order-sm-first pb-4 pb-md-0 pt-0 pt-md-4">Energy</h4>
         </content-card>
-        <content-card>
-          <h4 class="text-h4">Energy</h4>
+      </div>
+      <div class="d-flex flex-column" style="min-width: 270px;">
+        <content-card class="mb-6 mr-0 px-6">
+          <h4 class="text-h4 order-md-last order-sm-first pb-4 pb-md-0 pt-0 pt-md-4">Occupancy</h4>
         </content-card>
-      </v-col>
-      <v-col>
-        <content-card class="mb-6">
-          <h4 class="text-h4">Occupancy</h4>
+        <content-card class="mb-6 d-flex flex-column px-6 pt-md-6">
+          <h4 class="text-h4 order-md-last order-sm-first pb-4 pb-md-0 pt-0 pt-md-4">Environmental</h4>
+          <div class="d-flex flex-column flex-md-row flex-lg-column">
+            <circular-gauge
+                :value="temperature"
+                min="-10"
+                max="30"
+                segments="30"
+                class="align-self-center mb-8 mb-md-0 mb-lg-8 mr-md-8 mr-lg-0">
+              {{ temperature.toFixed(1) }}&deg;
+              <template #title>Avg. Indoor Temperature</template>
+            </circular-gauge>
+            <circular-gauge
+                :value="humidity"
+                max="100"
+                segments="30"
+                class="align-self-center">
+              {{ humidity.toFixed(1) }}&percnt;
+              <template #title>Avg. Humidity</template>
+            </circular-gauge>
+          </div>
+          <v-slider v-model="sliderVal" min="-10" max="30" step="0.5"/>
         </content-card>
-        <content-card>
-          <h4 class="text-h4">Environmental</h4>
-          <circular-gauge :value="gaugeVal" min="-10" max="30" segments="30">
-            {{ gaugeVal.toFixed(1) }}&deg;
-            <template #title>Avg. Indoor Temperature</template>
-          </circular-gauge>
-          <v-slider v-model="gaugeVal" min="-10" max="30" step="0.5"/>
-        </content-card>
-      </v-col>
-    </v-row>
+      </div>
+    </div>
   </v-container>
 </template>
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
 import CircularGauge from '@/components/CircularGauge.vue';
-import {ref} from 'vue';
+import {computed, ref} from 'vue';
 
-const gaugeVal = ref(0);
+const sliderVal = ref(0);
+const temperature = computed(() => sliderVal.value);
+const humidity = computed(() => ((sliderVal.value+10)*100/40));
 
 const floors = [
   {
