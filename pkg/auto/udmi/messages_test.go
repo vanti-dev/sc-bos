@@ -18,17 +18,17 @@ func TestPointsEvent_Equal(t *testing.T) {
 		{
 			name:  "one is nil",
 			e1:    nil,
-			e2:    map[string]*PointValue{},
+			e2:    map[string]PointValue{},
 			equal: false,
 		},
 		{
 			name: "matching values",
-			e1: map[string]*PointValue{
+			e1: map[string]PointValue{
 				"p1": {PresentValue: true},
 				"p2": {PresentValue: "my-string"},
 				"p3": {PresentValue: 10.67},
 			},
-			e2: map[string]*PointValue{
+			e2: map[string]PointValue{
 				"p2": {PresentValue: "my-string"},
 				"p1": {PresentValue: true},
 				"p3": {PresentValue: 10.67},
@@ -37,12 +37,12 @@ func TestPointsEvent_Equal(t *testing.T) {
 		},
 		{
 			name: "mismatched values",
-			e1: map[string]*PointValue{
+			e1: map[string]PointValue{
 				"p1": {PresentValue: true},
 				"p2": {PresentValue: "my-string"},
 				"p3": {PresentValue: 10.67},
 			},
-			e2: map[string]*PointValue{
+			e2: map[string]PointValue{
 				"p2": {PresentValue: "my-string2"},
 				"p1": {PresentValue: true},
 				"p3": {PresentValue: 10.67},

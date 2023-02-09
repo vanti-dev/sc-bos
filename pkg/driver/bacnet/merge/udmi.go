@@ -128,7 +128,7 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		events[key] = &udmi.PointValue{PresentValue: value}
+		events[key] = udmi.PointValue{PresentValue: value}
 	}
 	f.pointsLock.Lock()
 	defer f.pointsLock.Unlock()
