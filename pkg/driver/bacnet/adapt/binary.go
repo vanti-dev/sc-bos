@@ -10,6 +10,8 @@ import (
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -67,7 +69,7 @@ func (b *binaryOnOff) GetOnOff(ctx context.Context, request *traits.GetOnOffRequ
 	case uint32: // YABE room simulator uses this, not sure if that is "normal"
 		value = v == 1
 	default:
-		b.logger.Warn("expected bool||uint32 return type", zap.Any("value", v))
+		return nil, status.Errorf(codes.Internal, "expected bool or uint32 return type for binary value, got %v", v)
 	}
 
 	var state traits.OnOff_State
