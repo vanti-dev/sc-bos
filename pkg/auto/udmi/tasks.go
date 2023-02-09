@@ -85,16 +85,14 @@ func handleTopicChanges(ctx context.Context, name string, logger *zap.Logger, cl
 		})
 	}
 
-	current := &canceller{
-		cancel: func() {},
-	}
+	current := func() {}
 	defer func() {
-		current.cancel()
+		current()
 	}()
 	for change := range changes {
-		current.cancel() // cancel previous subscriptions
+		current() // cancel previous subscriptions
 		ctx, cancel := context.WithCancel(ctx)
-		current.cancel = cancel
+		current = cancel
 		// todo: work out topic changes, rather than just restart all
 		for _, topic := range change.Topics {
 			err := subscribeTopic(ctx, topic)
@@ -141,8 +139,4 @@ func errStr(err error) string {
 		str = err.Error()
 	}
 	return str
-}
-
-type canceller struct {
-	cancel func()
 }
