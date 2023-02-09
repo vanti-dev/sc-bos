@@ -13,6 +13,7 @@
       <div class="flex-grow-1 d-flex flex-column mr-lg-8">
         <content-card class="mb-8 d-flex flex-column px-6 pt-md-6">
           <h4 class="text-h4 order-lg-last pb-4 pb-lg-0 pt-0 pt-lg-4">System Monitor</h4>
+          <building/>
         </content-card>
         <content-card class="mb-8 d-flex flex-column px-6 pt-md-6">
           <h4 class="text-h4 order-lg-last pb-4 pb-lg-0 pt-0 pt-lg-4">Energy</h4>
@@ -75,6 +76,7 @@
 import ContentCard from '@/components/ContentCard.vue';
 import CircularGauge from '@/components/CircularGauge.vue';
 import {computed, ref} from 'vue';
+import Building from '@/clients/ew/Building_EW.vue';
 
 const sliderVal = ref(0);
 
@@ -84,63 +86,5 @@ const externalTemperature = computed(() => temperature.value-7);
 const occupancy = computed(() => Math.round(sliderVal.value*maxOccupancy.value));
 const maxOccupancy = computed(() => 1556);
 const occupancyPercentage = computed(() => occupancy.value/maxOccupancy.value*100);
-
-const floors = [
-  {
-    name: 'G',
-    title: 'Ground Floor',
-    zone: 'L00'
-  },
-  {
-    name: '1',
-    title: '1st Floor',
-    zone: 'L01'
-  },
-  {
-    name: '2',
-    title: '2nd Floor',
-    zone: 'L02'
-  },
-  {
-    name: '3',
-    title: '3rd Floor',
-    zone: 'L03'
-  },
-  {
-    name: '4',
-    title: '4th Floor',
-    zone: 'L04'
-  },
-  {
-    name: '5',
-    title: '5th Floor',
-    zone: 'L05'
-  },
-  {
-    name: '6',
-    title: '6th Floor',
-    zone: 'L06'
-  },
-  {
-    name: '7',
-    title: '7th Floor',
-    zone: 'L07'
-  },
-  {
-    name: '8',
-    title: '8th Floor',
-    zone: 'L08'
-  },
-  {
-    name: '9',
-    title: '9th Floor',
-    zone: 'L09'
-  },
-  {
-    name: '10',
-    title: '10th Floor',
-    zone: 'L10'
-  }
-];
 
 </script>
