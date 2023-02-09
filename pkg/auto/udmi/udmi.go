@@ -35,7 +35,7 @@ func (_ factory) AddSupport(supporter node.Supporter) {
 func NewUDMI(services auto.Services) service.Lifecycle {
 	e := &udmiAuto{services: services}
 	e.Service = service.New(service.MonoApply(e.applyConfig))
-	e.services.Logger = services.Logger.Named("udmi")
+	e.services.Logger = services.Logger.Named(AutoType)
 	return e
 }
 
