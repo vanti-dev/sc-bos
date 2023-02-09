@@ -79,8 +79,6 @@ func handleTopicChanges(ctx context.Context, name string, logger *zap.Logger, cl
 			})
 			if err != nil {
 				logger.Warn("unable to call OnMessage", zap.Error(err))
-			} else {
-				logger.Debug("forwarded MQTT message to UDMI service", zap.String("topic", topic), zap.String("payload", payload))
 			}
 		})
 	}
