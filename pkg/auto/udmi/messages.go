@@ -2,7 +2,7 @@ package udmi
 
 // PointsEvent presents the JSON payload of a UDMI Event message
 // see https://faucetsdn.github.io/udmi/docs/messages/pointset.html#event
-type PointsEvent map[string]*PointValue
+type PointsEvent map[string]PointValue
 
 func (f PointsEvent) Equal(other PointsEvent) bool {
 	if f == nil && other == nil {
@@ -18,9 +18,6 @@ func (f PointsEvent) Equal(other PointsEvent) bool {
 		}
 		if value == v {
 			continue
-		}
-		if value == nil || v == nil {
-			return false
 		}
 		if value.PresentValue != v.PresentValue {
 			return false
