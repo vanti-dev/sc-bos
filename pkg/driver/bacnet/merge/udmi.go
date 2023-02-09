@@ -8,6 +8,8 @@ import (
 
 	"github.com/vanti-dev/gobacnet"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
@@ -69,7 +71,6 @@ func (f *udmiMerge) AnnounceSelf(a node.Announcer) node.Undo {
 }
 
 func (f *udmiMerge) PullControlTopics(request *gen.PullControlTopicsRequest, server gen.UdmiService_PullControlTopicsServer) error {
-	f.logger.Debug("PullControlTopics")
 	err := server.Send(&gen.PullControlTopicsResponse{
 		Name:   f.config.Name,
 		Topics: []string{f.config.TopicPrefix + "/config"},
@@ -83,16 +84,33 @@ func (f *udmiMerge) PullControlTopics(request *gen.PullControlTopicsRequest, ser
 }
 
 func (f *udmiMerge) OnMessage(ctx context.Context, request *gen.OnMessageRequest) (*gen.OnMessageResponse, error) {
-	f.logger.Debug("OnMessage")
-	// todo: implement control
+	if request.Message == nil {
+		return nil, status.Error(codes.InvalidArgument, "no message")
+	}
+	var msg udmi.ConfigMessage
+	err := json.Unmarshal([]byte(request.Message.Payload), &msg)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid config message: %s", err)
+	}
+	for point, value := range msg.PointSet.Points {
+		if cfg, ok := f.config.Points[point]; ok {
+			set := value.SetValue
+			if floatValue, isFloat := value.SetValue.(float64); isFloat {
+				// let's assume for now values shouldn't be float64, true for the YABE room simulator at least
+				set = float32(floatValue)
+			}
+			err = writeProperty(ctx, f.client, f.known, *cfg, set, 0)
+			if err != nil {
+				return nil, status.Errorf(codes.Internal, "failed to write point %s: %s", point, err)
+			}
+		}
+	}
 	return &gen.OnMessageResponse{Name: f.config.Name}, nil
 }
 
 func (f *udmiMerge) PullExportMessages(request *gen.PullExportMessagesRequest, server gen.UdmiService_PullExportMessagesServer) error {
-	f.logger.Debug("PullExportMessages")
 	_ = f.pollTask.Attach(server.Context())
 	for msg := range f.bus.Listen(server.Context()) {
-		f.logger.Debug("sending export message", zap.Any("message", msg))
 		err := server.Send(msg)
 		if err != nil {
 			return err
