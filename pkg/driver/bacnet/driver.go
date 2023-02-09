@@ -8,9 +8,10 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
+
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
@@ -56,9 +57,8 @@ type Driver struct {
 }
 
 func NewDriver(services driver.Services) *Driver {
-	announcer := node.AnnounceWithNamePrefix("bacnet/", services.Node)
 	d := &Driver{
-		announcer: announcer,
+		announcer: services.Node,
 		devices:   known.NewMap(),
 		logger:    services.Logger.Named("bacnet"),
 	}
@@ -102,10 +102,10 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		deviceName := adapt.DeviceName(device)
 		d.devices.StoreDevice(deviceName, bacDevice)
 
-		announcer := node.AnnounceWithNamePrefix("device/", rootAnnouncer)
+		announcer := node.AnnounceWithNamePrefix("bacnet/device/", rootAnnouncer)
 		adapt.Device(deviceName, d.client, bacDevice, d.devices).AnnounceSelf(announcer)
 
-		prefix := fmt.Sprintf("device/%v/obj/", deviceName)
+		prefix := fmt.Sprintf("bacnet/device/%v/obj/", deviceName)
 		announcer = node.AnnounceWithNamePrefix(prefix, rootAnnouncer)
 
 		// Collect all the object that we will be announcing.
@@ -150,7 +150,6 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	}
 
 	// Combine objects together into traits...
-	announcer := node.AnnounceWithNamePrefix("trait/", rootAnnouncer)
 	for _, trait := range cfg.Traits {
 		logger := d.logger.With(zap.Stringer("trait", trait.Kind), zap.String("name", trait.Name))
 		impl, err := merge.IntoTrait(d.client, d.devices, trait, logger)
@@ -162,7 +161,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			logger.Error("Cannot combine into trait", zap.Error(err))
 			continue
 		}
-		impl.AnnounceSelf(announcer)
+		impl.AnnounceSelf(rootAnnouncer)
 	}
 
 	return err
