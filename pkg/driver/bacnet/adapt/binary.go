@@ -9,13 +9,14 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 // BinaryObject adapts a binary bacnet object as smart core traits.
-func BinaryObject(client *gobacnet.Client, device bactypes.Device, object config.Object) (node.SelfAnnouncer, error) {
+func BinaryObject(client *gobacnet.Client, device bactypes.Device, object config.Object, logger *zap.Logger) (node.SelfAnnouncer, error) {
 	switch object.Trait {
 	case "":
 		return nil, ErrNoDefault
@@ -25,6 +26,7 @@ func BinaryObject(client *gobacnet.Client, device bactypes.Device, object config
 			client: client,
 			device: device,
 			object: object,
+			logger: logger,
 
 			model:       model,
 			ModelServer: onoff.NewModelServer(model),
@@ -38,6 +40,7 @@ type binaryOnOff struct {
 	client *gobacnet.Client
 	device bactypes.Device
 	object config.Object
+	logger *zap.Logger
 
 	model *onoff.Model
 	*onoff.ModelServer
@@ -57,9 +60,18 @@ func (b *binaryOnOff) GetOnOff(ctx context.Context, request *traits.GetOnOffRequ
 		return nil, err
 	}
 
-	resData := read.Object.Properties[0].Data.(bool)
+	var value bool
+	switch v := read.Object.Properties[0].Data.(type) {
+	case bool:
+		value = v
+	case uint32: // YABE room simulator uses this, not sure if that is "normal"
+		value = v == 1
+	default:
+		b.logger.Warn("expected bool||uint32 return type", zap.Any("value", v))
+	}
+
 	var state traits.OnOff_State
-	if resData {
+	if value {
 		state = traits.OnOff_ON
 	} else {
 		state = traits.OnOff_OFF

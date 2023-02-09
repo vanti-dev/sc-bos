@@ -6,6 +6,7 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
+	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
@@ -13,10 +14,10 @@ import (
 )
 
 // Object adapts a bacnet object into one or more smart core named traits.
-func Object(client *gobacnet.Client, device bactypes.Device, object config.Object) (node.SelfAnnouncer, error) {
+func Object(client *gobacnet.Client, device bactypes.Device, object config.Object, logger *zap.Logger) (node.SelfAnnouncer, error) {
 	switch object.ID.Type {
 	case objecttype.BinaryValue, objecttype.BinaryOutput, objecttype.BinaryInput:
-		return BinaryObject(client, device, object)
+		return BinaryObject(client, device, object, logger)
 	}
 
 	if object.Trait == "" {
