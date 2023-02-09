@@ -11,6 +11,9 @@ func (f PointsEvent) Equal(other PointsEvent) bool {
 	if f == nil || other == nil {
 		return false
 	}
+	if len(f) != len(other) {
+		return false
+	}
 	for key, value := range f {
 		v, ok := other[key]
 		if !ok {
