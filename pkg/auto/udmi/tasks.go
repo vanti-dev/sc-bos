@@ -24,25 +24,25 @@ func tasksForSource(name string, logger *zap.Logger, client gen.UdmiServiceClien
 	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
 		logger.Debug("task run: pullTopics")
 		err := pullTopics(ctx, name, logger, client, topicChanges)
-		logger.Debug("task end: pullTopics", zap.String("err", errStr(err)))
+		logger.Debug("task end: pullTopics", zap.Error(err))
 		return task.Normal, err
 	})
 	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
 		logger.Debug("task run: handleTopicChanges")
 		err := handleTopicChanges(ctx, name, logger, client, topicChanges, pubsub.Subscriber)
-		logger.Debug("task end: handleTopicChanges", zap.String("err", errStr(err)))
+		logger.Debug("task end: handleTopicChanges", zap.Error(err))
 		return task.Normal, err
 	})
 	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
 		logger.Debug("task run: pullMessages")
 		err := pullMessages(ctx, name, logger, client, messageChanges)
-		logger.Debug("task end: pullMessages", zap.String("err", errStr(err)))
+		logger.Debug("task end: pullMessages", zap.Error(err))
 		return task.Normal, err
 	})
 	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
 		logger.Debug("task run: handleMessages")
 		err := handleMessages(ctx, messageChanges, pubsub.Publisher)
-		logger.Debug("task end: handleMessages", zap.String("err", errStr(err)))
+		logger.Debug("task end: handleMessages", zap.Error(err))
 		return task.Normal, err
 	})
 
@@ -131,12 +131,4 @@ func handleMessages(ctx context.Context, changes <-chan *gen.PullExportMessagesR
 		}
 	}
 	return nil
-}
-
-func errStr(err error) string {
-	str := "nil"
-	if err != nil {
-		str = err.Error()
-	}
-	return str
 }
