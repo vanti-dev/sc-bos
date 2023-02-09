@@ -22,6 +22,8 @@ func (p PublisherFunc) Publish(ctx context.Context, topic string, payload any) e
 }
 
 type Subscriber interface {
+	// Subscribe starts a new subscription for the given topic. This will return a nil error if the subscription
+	// has been successful, and it has been acknowledged.
 	Subscribe(ctx context.Context, topic string, cb mqtt.MessageHandler) error
 }
 
