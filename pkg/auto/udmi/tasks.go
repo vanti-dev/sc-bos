@@ -50,7 +50,7 @@ func tasksForSource(name string, logger *zap.Logger, client gen.UdmiServiceClien
 }
 
 // pullTopics calls pull for control topics (with default backoff/delay) and sends each message on the given channel
-func pullTopics(ctx context.Context, name string, logger *zap.Logger, client gen.UdmiServiceClient, changes chan *gen.PullControlTopicsResponse) error {
+func pullTopics(ctx context.Context, name string, logger *zap.Logger, client gen.UdmiServiceClient, changes chan<- *gen.PullControlTopicsResponse) error {
 	puller := &udmiControlTopicsPuller{
 		client: client,
 		name:   name,
@@ -65,7 +65,7 @@ func pullTopics(ctx context.Context, name string, logger *zap.Logger, client gen
 
 // handleTopicChanges will wait for topic messages on the channel, and for each topic an MQTT subscription is created (via
 // Subscriber). Messages received for each of those subscriptions is then passed onto the UdmiService using OnMessage.
-func handleTopicChanges(ctx context.Context, name string, logger *zap.Logger, client gen.UdmiServiceClient, changes chan *gen.PullControlTopicsResponse, subscriber Subscriber) error {
+func handleTopicChanges(ctx context.Context, name string, logger *zap.Logger, client gen.UdmiServiceClient, changes <-chan *gen.PullControlTopicsResponse, subscriber Subscriber) error {
 	subscribeTopic := func(ctx context.Context, topic string) error {
 		return subscriber.Subscribe(ctx, topic, func(_ mqtt.Client, message mqtt.Message) {
 			payload := string(message.Payload())
@@ -107,7 +107,7 @@ func handleTopicChanges(ctx context.Context, name string, logger *zap.Logger, cl
 }
 
 // pullMessages calls pull for export messages (with default backoff/delay) and sends each message on the given channel
-func pullMessages(ctx context.Context, name string, logger *zap.Logger, client gen.UdmiServiceClient, changes chan *gen.PullExportMessagesResponse) error {
+func pullMessages(ctx context.Context, name string, logger *zap.Logger, client gen.UdmiServiceClient, changes chan<- *gen.PullExportMessagesResponse) error {
 	puller := &udmiExportMessagePuller{
 		client: client,
 		name:   name,
@@ -122,7 +122,7 @@ func pullMessages(ctx context.Context, name string, logger *zap.Logger, client g
 
 // handleMessages waits for messages on the given channel and sends them to the publisher
 // ultimately these end up getting sent as MQTT messages
-func handleMessages(ctx context.Context, changes chan *gen.PullExportMessagesResponse, publisher Publisher) error {
+func handleMessages(ctx context.Context, changes <-chan *gen.PullExportMessagesResponse, publisher Publisher) error {
 	for change := range changes {
 		if change.Message == nil {
 			continue
