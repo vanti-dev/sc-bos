@@ -11,10 +11,12 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/fanspeed"
 	"github.com/vanti-dev/gobacnet"
+	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 type fanSpeedConfig struct {
@@ -31,25 +33,49 @@ func readFanSpeedConfig(raw []byte) (cfg fanSpeedConfig, err error) {
 type fanSpeed struct {
 	client *gobacnet.Client
 	known  known.Context
+	logger *zap.Logger
 
 	model *fanspeed.Model
 	*fanspeed.ModelServer
-	config fanSpeedConfig
+	config   fanSpeedConfig
+	pollTask *task.Intermittent
 }
 
-func newFanSpeed(client *gobacnet.Client, ctx known.Context, config config.RawTrait) (*fanSpeed, error) {
+func newFanSpeed(client *gobacnet.Client, ctx known.Context, config config.RawTrait, logger *zap.Logger) (*fanSpeed, error) {
 	cfg, err := readFanSpeedConfig(config.Raw)
 	if err != nil {
 		return nil, err
 	}
 	model := fanspeed.NewModel()
-	return &fanSpeed{
+	t := &fanSpeed{
 		client:      client,
 		known:       ctx,
+		logger:      logger,
 		model:       model,
 		ModelServer: fanspeed.NewModelServer(model),
 		config:      cfg,
-	}, nil
+	}
+	t.pollTask = task.NewIntermittent(t.startPoll)
+	return t, nil
+}
+
+func (t *fanSpeed) startPoll(init context.Context) (stop task.StopFn, err error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	ticker := time.NewTicker(t.config.PollPeriodDuration())
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				_, err := t.pollPeer(ctx)
+				if err != nil { // todo: should this return?
+					t.logger.Warn("pollPeer error", zap.String("err", err.Error()))
+				}
+			case <-ctx.Done():
+				break
+			}
+		}
+	}()
+	return cancel, nil
 }
 
 func (t *fanSpeed) AnnounceSelf(a node.Announcer) node.Undo {
@@ -83,6 +109,11 @@ func (t *fanSpeed) UpdateFanSpeed(ctx context.Context, request *traits.UpdateFan
 	return t.pollUntil(ctx, 5, func(data *traits.FanSpeed) bool {
 		return data.GetPercentage() == newFanSpeed
 	})
+}
+
+func (t *fanSpeed) PullFanSpeed(request *traits.PullFanSpeedRequest, server traits.FanSpeedApi_PullFanSpeedServer) error {
+	_ = t.pollTask.Attach(server.Context())
+	return t.ModelServer.PullFanSpeed(request, server)
 }
 
 func (t *fanSpeed) speedToPreset(speed float32) string {
