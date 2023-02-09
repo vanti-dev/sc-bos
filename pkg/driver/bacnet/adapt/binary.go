@@ -9,7 +9,6 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
-	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -18,7 +17,7 @@ import (
 )
 
 // BinaryObject adapts a binary bacnet object as smart core traits.
-func BinaryObject(client *gobacnet.Client, device bactypes.Device, object config.Object, logger *zap.Logger) (node.SelfAnnouncer, error) {
+func BinaryObject(client *gobacnet.Client, device bactypes.Device, object config.Object) (node.SelfAnnouncer, error) {
 	switch object.Trait {
 	case "":
 		return nil, ErrNoDefault
@@ -28,7 +27,6 @@ func BinaryObject(client *gobacnet.Client, device bactypes.Device, object config
 			client: client,
 			device: device,
 			object: object,
-			logger: logger,
 
 			model:       model,
 			ModelServer: onoff.NewModelServer(model),
@@ -42,7 +40,6 @@ type binaryOnOff struct {
 	client *gobacnet.Client
 	device bactypes.Device
 	object config.Object
-	logger *zap.Logger
 
 	model *onoff.Model
 	*onoff.ModelServer

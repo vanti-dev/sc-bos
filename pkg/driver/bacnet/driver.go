@@ -132,7 +132,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			// no error, we added the device before we entered the loop so it should exist
 			_ = d.devices.StoreObject(bacDevice, adapt.ObjectName(co), *bo)
 
-			impl, err := adapt.Object(d.client, bacDevice, co, logger.Named(co.Name))
+			impl, err := adapt.Object(d.client, bacDevice, co)
 			if errors.Is(err, adapt.ErrNoDefault) {
 				// logger.Debug("No default adaptation trait for object")
 				continue
