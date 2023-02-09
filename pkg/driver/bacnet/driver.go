@@ -153,7 +153,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	announcer := node.AnnounceWithNamePrefix("trait/", rootAnnouncer)
 	for _, trait := range cfg.Traits {
 		logger := d.logger.With(zap.Stringer("trait", trait.Kind), zap.String("name", trait.Name))
-		impl, err := merge.IntoTrait(d.client, d.devices, trait)
+		impl, err := merge.IntoTrait(d.client, d.devices, trait, logger)
 		if errors.Is(err, merge.ErrTraitNotSupported) {
 			logger.Error("Cannot combine into trait, not supported")
 			continue

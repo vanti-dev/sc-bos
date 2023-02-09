@@ -12,10 +12,12 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
 	"github.com/vanti-dev/gobacnet"
+	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 type airTemperatureConfig struct {
@@ -33,25 +35,49 @@ func readAirTemperatureConfig(raw []byte) (cfg airTemperatureConfig, err error) 
 type airTemperature struct {
 	client *gobacnet.Client
 	known  known.Context
+	logger *zap.Logger
 
 	model *airtemperature.Model
 	*airtemperature.ModelServer
-	config airTemperatureConfig
+	config   airTemperatureConfig
+	pollTask *task.Intermittent
 }
 
-func newAirTemperature(client *gobacnet.Client, ctx known.Context, config config.RawTrait) (*airTemperature, error) {
+func newAirTemperature(client *gobacnet.Client, ctx known.Context, config config.RawTrait, logger *zap.Logger) (*airTemperature, error) {
 	cfg, err := readAirTemperatureConfig(config.Raw)
 	if err != nil {
 		return nil, err
 	}
 	model := airtemperature.NewModel(&traits.AirTemperature{})
-	return &airTemperature{
+	t := &airTemperature{
 		client:      client,
 		known:       ctx,
+		logger:      logger,
 		model:       model,
 		ModelServer: airtemperature.NewModelServer(model),
 		config:      cfg,
-	}, nil
+	}
+	t.pollTask = task.NewIntermittent(t.startPoll)
+	return t, nil
+}
+
+func (t *airTemperature) startPoll(init context.Context) (stop task.StopFn, err error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	ticker := time.NewTicker(t.config.PollPeriodDuration())
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				_, err := t.pollPeer(ctx)
+				if err != nil { // todo: should this return?
+					t.logger.Warn("pollPeer error", zap.String("err", err.Error()))
+				}
+			case <-ctx.Done():
+				break
+			}
+		}
+	}()
+	return cancel, nil
 }
 
 func (t *airTemperature) AnnounceSelf(a node.Announcer) node.Undo {
@@ -77,6 +103,11 @@ func (t *airTemperature) UpdateAirTemperature(ctx context.Context, request *trai
 	return t.pollUntil(ctx, 5, func(temperature *traits.AirTemperature) bool {
 		return temperature.GetTemperatureSetPoint().ValueCelsius == float64(newSetPoint)
 	})
+}
+
+func (t *airTemperature) PullAirTemperature(request *traits.PullAirTemperatureRequest, server traits.AirTemperatureApi_PullAirTemperatureServer) error {
+	_ = t.pollTask.Attach(server.Context())
+	return t.ModelServer.PullAirTemperature(request, server)
 }
 
 // pollPeer fetches data from the peer device and saves the data locally.

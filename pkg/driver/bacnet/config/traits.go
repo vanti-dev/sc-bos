@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/gobacnet/property"
@@ -22,6 +23,16 @@ import (
 type Trait struct {
 	Name string     `json:"name,omitempty"`
 	Kind trait.Name `json:"kind,omitempty"`
+	// poll period used to poll the objects for pull updates
+	// defaults to 10s
+	PollPeriod *Duration `json:"pollPeriod,omitempty"`
+}
+
+func (t *Trait) PollPeriodDuration() time.Duration {
+	if t.PollPeriod != nil && t.PollPeriod.Duration != 0 {
+		return t.PollPeriod.Duration
+	}
+	return time.Second * 10
 }
 
 type RawTrait struct {
