@@ -45,8 +45,6 @@ type udmiAuto struct {
 }
 
 func (e *udmiAuto) applyConfig(ctx context.Context, cfg config.Root) error {
-	e.services.Logger.Debug("applyConfig")
-
 	var udmiClient gen.UdmiServiceClient
 	err := e.services.Node.Client(&udmiClient)
 	if err != nil {
