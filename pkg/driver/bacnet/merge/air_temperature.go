@@ -93,6 +93,9 @@ func (t *airTemperature) GetAirTemperature(ctx context.Context, request *traits.
 }
 
 func (t *airTemperature) UpdateAirTemperature(ctx context.Context, request *traits.UpdateAirTemperatureRequest) (*traits.AirTemperature, error) {
+	if request.GetState().GetTemperatureSetPoint() == nil {
+		return t.GetAirTemperature(ctx, &traits.GetAirTemperatureRequest{Name: request.Name})
+	}
 	newSetPoint := float32(request.GetState().GetTemperatureSetPoint().GetValueCelsius())
 	err := writeProperty(ctx, t.client, t.known, *t.config.SetPoint, newSetPoint, 0)
 	if err != nil {
