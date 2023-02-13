@@ -1,4 +1,4 @@
-package services
+package serviceapi
 
 import (
 	"golang.org/x/exp/slices"

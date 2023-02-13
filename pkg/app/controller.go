@@ -14,31 +14,28 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/timshannon/bolthold"
+	"github.com/vanti-dev/sc-bos/internal/manage/devices"
+	"github.com/vanti-dev/sc-bos/internal/util/pki"
+	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
+	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
+	"github.com/vanti-dev/sc-bos/pkg/auto"
+	"github.com/vanti-dev/sc-bos/pkg/driver"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
+	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/system"
+	"github.com/vanti-dev/sc-bos/pkg/task"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
+	"github.com/vanti-dev/sc-bos/pkg/task/serviceapi"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
-
-	"github.com/vanti-dev/sc-bos/internal/manage/devices"
-	"github.com/vanti-dev/sc-bos/pkg/app/services"
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
-
-	"github.com/vanti-dev/sc-bos/internal/util/pki"
-	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
-	"github.com/vanti-dev/sc-bos/pkg/auto"
-	"github.com/vanti-dev/sc-bos/pkg/driver"
-	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/system"
-	"github.com/vanti-dev/sc-bos/pkg/task"
-
-	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
@@ -312,21 +309,21 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	c.Node.Announce("systems", node.HasClient(gen.WrapServicesApi(services.NewApi(systemServices, services.WithKnownTypesFromMapKeys(c.SystemConfig.SystemFactories)))))
+	c.Node.Announce("systems", node.HasClient(gen.WrapServicesApi(serviceapi.NewApi(systemServices, serviceapi.WithKnownTypesFromMapKeys(c.SystemConfig.SystemFactories)))))
 	go logServiceMapChanges(ctx, c.Logger.Named("system"), systemServices)
 	// load and start the drivers
 	driverServices, err := c.startDrivers()
 	if err != nil {
 		return err
 	}
-	c.Node.Announce("drivers", node.HasClient(gen.WrapServicesApi(services.NewApi(driverServices, services.WithKnownTypesFromMapKeys(c.SystemConfig.DriverFactories)))))
+	c.Node.Announce("drivers", node.HasClient(gen.WrapServicesApi(serviceapi.NewApi(driverServices, serviceapi.WithKnownTypesFromMapKeys(c.SystemConfig.DriverFactories)))))
 	go logServiceMapChanges(ctx, c.Logger.Named("driver"), driverServices)
 	// load and start the automations
 	autoServices, err := c.startAutomations()
 	if err != nil {
 		return err
 	}
-	c.Node.Announce("automations", node.HasClient(gen.WrapServicesApi(services.NewApi(autoServices, services.WithKnownTypesFromMapKeys(c.SystemConfig.AutoFactories)))))
+	c.Node.Announce("automations", node.HasClient(gen.WrapServicesApi(serviceapi.NewApi(autoServices, serviceapi.WithKnownTypesFromMapKeys(c.SystemConfig.AutoFactories)))))
 	go logServiceMapChanges(ctx, c.Logger.Named("auto"), autoServices)
 
 	err = multierr.Append(err, group.Wait())

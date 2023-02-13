@@ -1,4 +1,5 @@
-package services
+// Package serviceapi implements gen.ServiceApi backed by a service.Map.
+package serviceapi
 
 import (
 	"context"
