@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -46,6 +47,24 @@ func NewMap(createFunc CreateFunc, idFunc IdFunc) *Map {
 		idFunc: idFunc,
 		create: createFunc,
 		now:    time.Now,
+	}
+}
+
+var ErrImmutable = errors.New("immutable")
+
+// NewMapOf creates an immutable map containing only the given known services.
+// Services will have an ID assigned based on the index in known.
+// The returned map will return an error for Create and Delete.
+func NewMapOf(known []Lifecycle) *Map {
+	knownMap := make(map[string]*Record, len(known))
+	for i, lifecycle := range known {
+		id := strconv.FormatInt(int64(i), 10)
+		knownMap[id] = &Record{Id: id, Service: lifecycle}
+	}
+	return &Map{
+		known: knownMap,
+		bus:   &minibus.Bus[*Change]{},
+		now:   time.Now,
 	}
 }
 
@@ -182,6 +201,9 @@ func (m *Map) Listen(ctx context.Context) <-chan *Change {
 }
 
 func (m *Map) createRecord(id, kind string) (*Record, error) {
+	if m.create == nil {
+		return nil, ErrImmutable
+	}
 	s, err := m.create(kind)
 	if err != nil {
 		return nil, err
@@ -208,6 +230,9 @@ func (m *Map) createRecord(id, kind string) (*Record, error) {
 }
 
 func (m *Map) deleteRecord(id string) (*Record, error) {
+	if m.create == nil {
+		return nil, ErrImmutable
+	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	r, ok := m.known[id]
