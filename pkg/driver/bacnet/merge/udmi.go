@@ -20,15 +20,15 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
-const udmiMergeName = "udmi"
+const UdmiMergeName = "udmi"
 
-type udmiMergeConfig struct {
+type UdmiMergeConfig struct {
 	config.Trait
 	TopicPrefix string                         `json:"topicPrefix,omitempty"`
 	Points      map[string]*config.ValueSource `json:"points"`
 }
 
-func readUdmiMergeConfig(raw []byte) (cfg udmiMergeConfig, err error) {
+func readUdmiMergeConfig(raw []byte) (cfg UdmiMergeConfig, err error) {
 	err = json.Unmarshal(raw, &cfg)
 	return
 }
@@ -42,7 +42,7 @@ type udmiMerge struct {
 	known  known.Context
 	logger *zap.Logger
 
-	config udmiMergeConfig
+	config UdmiMergeConfig
 	bus    minibus.Bus[*gen.PullExportMessagesResponse]
 
 	pollTask *task.Intermittent

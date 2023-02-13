@@ -17,7 +17,7 @@ func IntoTrait(client *gobacnet.Client, ctx known.Context, traitConfig config.Ra
 		return newFanSpeed(client, ctx, traitConfig, logger)
 	case trait.AirTemperature:
 		return newAirTemperature(client, ctx, traitConfig, logger)
-	case udmiMergeName:
+	case UdmiMergeName:
 		return newUdmiMerge(client, ctx, traitConfig, logger)
 	}
 	return nil, ErrTraitNotSupported

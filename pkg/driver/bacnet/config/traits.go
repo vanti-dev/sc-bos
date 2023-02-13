@@ -83,6 +83,10 @@ type DeviceRef struct {
 	name string
 }
 
+func NewDeviceRef(name string) *DeviceRef {
+	return &DeviceRef{name: name}
+}
+
 func (d DeviceRef) Lookup(ctx known.Context) (bactypes.Device, error) {
 	if d.name != "" {
 		return ctx.LookupDeviceByName(d.name)
@@ -118,6 +122,10 @@ func (d *DeviceRef) UnmarshalJSON(bytes []byte) error {
 type ObjectRef struct {
 	id   ObjectID
 	name string
+}
+
+func NewObjectRef(name string) *ObjectRef {
+	return &ObjectRef{name: name}
 }
 
 func (o ObjectRef) Lookup(device bactypes.Device, ctx known.Context) (bactypes.Object, error) {
