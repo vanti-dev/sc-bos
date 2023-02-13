@@ -5,6 +5,7 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -16,33 +17,36 @@ import (
 // tasksForSource returns an array of tasks to run for each UdmiService source/name
 // all of these need to be run for the implementation to work
 func tasksForSource(name string, logger *zap.Logger, client gen.UdmiServiceClient, pubsub *PubSub) []task.Task {
-	messageChanges := make(chan *gen.PullExportMessagesResponse)
-	topicChanges := make(chan *gen.PullControlTopicsResponse)
-
 	var tasks []task.Task
 
 	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
 		logger.Debug("task run: pullTopics")
-		err := pullTopics(ctx, name, logger, client, topicChanges)
+		topicChanges := make(chan *gen.PullControlTopicsResponse)
+		defer close(topicChanges)
+		grp, ctx := errgroup.WithContext(ctx)
+		grp.Go(func() error {
+			return pullTopics(ctx, name, logger, client, topicChanges)
+		})
+		grp.Go(func() error {
+			return handleTopicChanges(ctx, name, logger, client, topicChanges, pubsub.Subscriber)
+		})
+		err := grp.Wait() // this waits for all go routines to finish, so we are safe to then close the channel
 		logger.Debug("task end: pullTopics", zap.Error(err))
 		return task.Normal, err
 	})
 	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
-		logger.Debug("task run: handleTopicChanges")
-		err := handleTopicChanges(ctx, name, logger, client, topicChanges, pubsub.Subscriber)
-		logger.Debug("task end: handleTopicChanges", zap.Error(err))
-		return task.Normal, err
-	})
-	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
 		logger.Debug("task run: pullMessages")
-		err := pullMessages(ctx, name, logger, client, messageChanges)
+		messageChanges := make(chan *gen.PullExportMessagesResponse)
+		defer close(messageChanges)
+		grp, ctx := errgroup.WithContext(ctx)
+		grp.Go(func() error {
+			return pullMessages(ctx, name, logger, client, messageChanges)
+		})
+		grp.Go(func() error {
+			return handleMessages(ctx, messageChanges, pubsub.Publisher)
+		})
+		err := grp.Wait() // this waits for all go routines to finish, so we are safe to then close the channel
 		logger.Debug("task end: pullMessages", zap.Error(err))
-		return task.Normal, err
-	})
-	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
-		logger.Debug("task run: handleMessages")
-		err := handleMessages(ctx, messageChanges, pubsub.Publisher)
-		logger.Debug("task end: handleMessages", zap.Error(err))
 		return task.Normal, err
 	})
 
