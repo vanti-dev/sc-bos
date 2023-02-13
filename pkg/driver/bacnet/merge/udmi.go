@@ -35,7 +35,7 @@ func readUdmiMergeConfig(raw []byte) (cfg udmiMergeConfig, err error) {
 
 // udmiMerge implements the UdmiService and will merge multiple BACnet objects into one UDMI payload
 // BACnet objects are polled for changes, and any changes sent as UDMI events
-// control is not yet implemented
+// control is implemented via OnMessage, only points present in the config are controllable.
 type udmiMerge struct {
 	gen.UnimplementedUdmiServiceServer
 	client *gobacnet.Client
