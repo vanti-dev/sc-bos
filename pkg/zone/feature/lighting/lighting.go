@@ -13,12 +13,14 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/lighting/config"
+	"go.uber.org/zap"
 )
 
 var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
 	f := &feature{
 		announce: services.Node,
 		clients:  services.Node,
+		logger:   services.Logger,
 	}
 	f.Service = service.New(service.MonoApply(f.applyConfig))
 	return f
@@ -28,10 +30,12 @@ type feature struct {
 	*service.Service[config.Root]
 	announce node.Announcer
 	clients  node.Clienter
+	logger   *zap.Logger
 }
 
 func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := node.AnnounceContext(ctx, f.announce)
+	logger := f.logger.With(zap.String("zone", cfg.Name))
 
 	if len(cfg.Lights) > 0 {
 		var lightClient traits.LightApiClient
@@ -42,9 +46,9 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		group := &Group{
 			client: lightClient,
 			names:  cfg.Lights,
+			logger: logger.Named("lights"),
 		}
-		announce.Announce(cfg.Name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group)),
-			node.NoAddChildTrait()))
+		announce.Announce(cfg.Name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group))))
 	}
 	for key, lights := range cfg.LightGroups {
 		var lightClient traits.LightApiClient
@@ -54,10 +58,10 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		group := &Group{
 			client: lightClient,
 			names:  lights,
+			logger: logger.Named("lightGroup").With(zap.String("lightGroup", key)),
 		}
 		name := fmt.Sprintf("%s/lights/%s", cfg.Name, key)
-		announce.Announce(name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group)),
-			node.NoAddChildTrait()))
+		announce.Announce(name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group))))
 	}
 
 	return nil

@@ -7,6 +7,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"go.uber.org/multierr"
+	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -19,6 +20,8 @@ type Group struct {
 	traits.UnimplementedLightApiServer
 	client traits.LightApiClient
 	names  []string
+
+	logger *zap.Logger
 }
 
 func (g *Group) UpdateBrightness(ctx context.Context, request *traits.UpdateBrightnessRequest) (*traits.Brightness, error) {
@@ -38,6 +41,11 @@ func (g *Group) UpdateBrightness(ctx context.Context, request *traits.UpdateBrig
 		return nil, allErrs
 	}
 
+	if allErrs != nil {
+		if g.logger != nil {
+			g.logger.Warn("some lights failed", zap.Errors("errors", multierr.Errors(allErrs)))
+		}
+	}
 	return mergeBrightness(allRes)
 }
 
@@ -58,6 +66,11 @@ func (g *Group) GetBrightness(ctx context.Context, request *traits.GetBrightness
 		return nil, allErrs
 	}
 
+	if allErrs != nil {
+		if g.logger != nil {
+			g.logger.Warn("some lights failed", zap.Errors("errors", multierr.Errors(allErrs)))
+		}
+	}
 	return mergeBrightness(allRes)
 }
 
