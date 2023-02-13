@@ -30,6 +30,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/task/serviceapi"
+	"github.com/vanti-dev/sc-bos/pkg/zone"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -325,6 +326,13 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	}
 	c.Node.Announce("automations", node.HasClient(gen.WrapServicesApi(serviceapi.NewApi(autoServices, serviceapi.WithKnownTypesFromMapKeys(c.SystemConfig.AutoFactories)))))
 	go logServiceMapChanges(ctx, c.Logger.Named("auto"), autoServices)
+	// load and start the zones
+	zoneServices, err := c.startZones()
+	if err != nil {
+		return err
+	}
+	c.Node.Announce("zones", node.HasClient(gen.WrapServicesApi(serviceapi.NewApi(zoneServices, serviceapi.WithKnownTypesFromMapKeys(c.SystemConfig.ZoneFactories)))))
+	go logServiceMapChanges(ctx, c.Logger.Named("zone"), zoneServices)
 
 	err = multierr.Append(err, group.Wait())
 	return
@@ -410,6 +418,27 @@ func (c *Controller) startSystems() (*service.Map, error) {
 	var allErrs error
 	for kind, cfg := range c.SystemConfig.Systems {
 		_, _, err := m.Create("", kind, service.State{Active: !cfg.Disabled, Config: cfg.Raw})
+		allErrs = multierr.Append(allErrs, err)
+	}
+	return m, allErrs
+}
+func (c *Controller) startZones() (*service.Map, error) {
+	ctxServices := zone.Services{
+		Logger: c.Logger.Named("auto"),
+		Node:   c.Node,
+	}
+
+	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+		f, ok := c.SystemConfig.ZoneFactories[kind]
+		if !ok {
+			return nil, fmt.Errorf("unsupported zone type %v", kind)
+		}
+		return f.New(ctxServices), nil
+	}, service.IdIsRequired)
+
+	var allErrs error
+	for _, cfg := range c.ControllerConfig.Zones {
+		_, _, err := m.Create(cfg.Name, cfg.Type, service.State{Active: !cfg.Disabled, Config: cfg.Raw})
 		allErrs = multierr.Append(allErrs, err)
 	}
 	return m, allErrs

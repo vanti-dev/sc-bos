@@ -7,6 +7,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/system"
+	"github.com/vanti-dev/sc-bos/pkg/zone"
 	"go.uber.org/zap"
 )
 
@@ -50,6 +51,7 @@ type Config struct {
 	DriverFactories map[string]driver.Factory `json:"-"` // keyed by driver name
 	AutoFactories   map[string]auto.Factory   `json:"-"` // keyed by automation type
 	SystemFactories map[string]system.Factory `json:"-"` // keyed by system type
+	ZoneFactories   map[string]zone.Factory   `json:"-"` // keyed by zone type
 }
 
 // Certs encapsulates different settings used for loading and present certificates to clients and servers.

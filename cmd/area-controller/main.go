@@ -23,6 +23,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system/publications"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants"
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
+	"github.com/vanti-dev/sc-bos/pkg/zone"
+	"github.com/vanti-dev/sc-bos/pkg/zone/area"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
@@ -71,6 +73,9 @@ func loadSystemConfig() (sysconf.Config, error) {
 		"hub":          hub.Factory(),
 		"tenants":      tenants.Factory,
 		"publications": publications.Factory,
+	}
+	systemConfig.ZoneFactories = map[string]zone.Factory{
+		"area": area.Factory,
 	}
 
 	err := sysconf.Load(&systemConfig)
