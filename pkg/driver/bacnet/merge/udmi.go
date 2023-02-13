@@ -149,9 +149,14 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 		events[key] = udmi.PointValue{PresentValue: value}
 	}
 	f.pointsLock.Lock()
-	defer f.pointsLock.Unlock()
-	if !f.points.Equal(events) {
+	isEqual := f.points.Equal(events)
+	hasUpdate := !isEqual
+	if hasUpdate {
 		f.points = events
+	}
+	f.pointsLock.Unlock()
+	if hasUpdate {
+		// send the update
 		b, err := json.Marshal(f.points)
 		if err != nil {
 			return err
