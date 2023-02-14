@@ -495,7 +495,7 @@ func logServiceRecordChanges(ctx context.Context, logger *zap.Logger, r *service
 		}
 		switch mode {
 		case "error":
-			logger.Warn("Failed to load", zap.Error(state.Err))
+			logger.Warn("Failed to load", zap.Error(change.Err))
 		case "":
 			return
 		case "Stopped":
