@@ -70,7 +70,7 @@ onUnmounted(() => {
 
 const brightness = computed(() => {
   if (lightValue && lightValue.value) {
-    return Math.round(lightValue.value.levelPercent*100);
+    return Math.round(lightValue.value.levelPercent);
   }
   return '-';
 });
@@ -85,7 +85,7 @@ function updateLight(value) {
   const req = {
     name: props.name,
     brightness: {
-      levelPercent: Math.min(1, Math.round(value)/100)
+      levelPercent: Math.min(100, Math.round(value))
     }
   };
   updateBrightness(req, updateValue);
