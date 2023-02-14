@@ -88,8 +88,7 @@ func (g *Group) PullBrightness(request *traits.PullBrightnessRequest, server tra
 
 	group, ctx := errgroup.WithContext(server.Context())
 	for _, name := range g.names {
-		name := name
-		request := request
+		request := proto.Clone(request).(*traits.PullBrightnessRequest)
 		request.Name = name
 		group.Go(func() error {
 			return pull.Changes(ctx, pull.NewFetcher(
@@ -104,7 +103,7 @@ func (g *Group) PullBrightness(request *traits.PullBrightnessRequest, server tra
 							return err
 						}
 						for _, change := range res.Changes {
-							changes <- c{name: name, val: change.Brightness}
+							changes <- c{name: request.Name, val: change.Brightness}
 						}
 					}
 				},
@@ -113,7 +112,7 @@ func (g *Group) PullBrightness(request *traits.PullBrightnessRequest, server tra
 					if err != nil {
 						return err
 					}
-					changes <- c{name: name, val: res}
+					changes <- c{name: request.Name, val: res}
 					return nil
 				}),
 				changes,
