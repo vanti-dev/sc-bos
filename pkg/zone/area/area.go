@@ -9,11 +9,13 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task/serviceapi"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
 	"github.com/vanti-dev/sc-bos/pkg/zone/area/config"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/hvac"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/lighting"
 )
 
 // DefaultFeatures lists all the default features for an area.
 var DefaultFeatures = []zone.Factory{
+	hvac.Feature,
 	lighting.Feature,
 }
 
