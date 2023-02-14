@@ -24,6 +24,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"go.uber.org/zap"
 	"golang.org/x/exp/rand"
 
@@ -214,6 +215,8 @@ func newMockClient(traitName trait.Name) (any, service.Lifecycle) {
 
 	case button.TraitName:
 		return gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED))), nil
+	case meter.TraitName:
+		return gen.WrapMeterApi(meter.NewModelServer(meter.NewModel())), nil
 	}
 
 	return nil, nil
