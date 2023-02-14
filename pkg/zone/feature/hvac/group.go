@@ -4,10 +4,12 @@ import (
 	"context"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
+	"golang.org/x/exp/constraints"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -173,7 +175,89 @@ func mergeAirTemperature(all []*traits.AirTemperature) (*traits.AirTemperature, 
 	case 1:
 		return all[0], nil
 	default:
-		// todo: actually merge the air temperature data
-		return all[0], nil
+		out := &traits.AirTemperature{}
+		// TemperatureGoal
+		if setPoint, ok := mean(all, func(e *traits.AirTemperature) (float64, bool) {
+			switch t := e.GetTemperatureGoal().(type) {
+			case *traits.AirTemperature_TemperatureSetPoint:
+				return t.TemperatureSetPoint.ValueCelsius, true
+			default:
+				return 0, false
+			}
+		}); ok {
+			out.TemperatureGoal = &traits.AirTemperature_TemperatureSetPoint{TemperatureSetPoint: &types.Temperature{ValueCelsius: setPoint}}
+		}
+		// AmbientTemperature
+		if val, ok := mean(all, func(e *traits.AirTemperature) (float64, bool) {
+			if e.AmbientTemperature == nil {
+				return 0, false
+			}
+			return e.AmbientTemperature.ValueCelsius, true
+		}); ok {
+			out.AmbientTemperature = &types.Temperature{ValueCelsius: val}
+		}
+		// AmbientHumidity
+		if val, ok := mean(all, func(e *traits.AirTemperature) (float32, bool) {
+			if e.AmbientHumidity == nil {
+				return 0, false
+			}
+			return *e.AmbientHumidity, true
+		}); ok {
+			out.AmbientHumidity = &val
+		}
+		// DewPoint
+		if val, ok := mean(all, func(e *traits.AirTemperature) (float64, bool) {
+			if e.DewPoint == nil {
+				return 0, false
+			}
+			return e.DewPoint.ValueCelsius, true
+		}); ok {
+			out.DewPoint = &types.Temperature{ValueCelsius: val}
+		}
+		// can't average the mode, if they're all the same use it
+		for _, temp := range all {
+			if temp == nil {
+				continue
+			}
+			if out.Mode == 0 {
+				out.Mode = temp.Mode
+				continue
+			}
+			if out.Mode == temp.Mode {
+				continue
+			}
+			if temp.Mode == 0 {
+				continue
+			}
+
+			// not all modes are the same
+			out.Mode = 0
+			break
+		}
+		return out, nil
 	}
+}
+
+type Number interface {
+	constraints.Float | constraints.Integer
+}
+
+func mean[N Number, E any](items []E, f func(E) (N, bool)) (N, bool) {
+	var t float64
+	for _, item := range items {
+		if _, ok := f(item); ok {
+			t++
+		}
+	}
+	if t == 0 {
+		return 0, false
+	}
+
+	var res float64
+	for _, item := range items {
+		if v, ok := f(item); ok {
+			res += float64(v) / t
+		}
+	}
+	return N(res), true
 }
