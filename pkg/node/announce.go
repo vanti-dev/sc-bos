@@ -60,7 +60,7 @@ type announcement struct {
 	name     string
 	traits   []traitFeature
 	clients  []interface{}
-	metadata *traits.Metadata
+	metadata []*traits.Metadata
 	undo     []Undo
 }
 
@@ -109,7 +109,8 @@ func HasTrait(name trait.Name, opt ...TraitOption) Feature {
 }
 
 // HasMetadata merges the given metadata into any existing metadata held against the device name.
-// Merging metadata is not transitive, two calls to Announce causes the second call to overwrite the first for all common fields.
+// Merging metadata is not commutative, two calls to Announce causes the second call to overwrite the first for all common fields.
+// Announce accepts multiple HasMetadata features acting as if Announce were called in sequence with each HasMetadata feature.
 //
 // See metadata.Model.MergeMetadata for more details.
 func HasMetadata(md *traits.Metadata) Feature {
@@ -117,7 +118,7 @@ func HasMetadata(md *traits.Metadata) Feature {
 		// We clone because if this is the first time the name has been associated with metadata,
 		// then the passed md is used as is instead of cloning which can cause unexpected mutation
 		// from the pov of the caller.
-		a.metadata = proto.Clone(md).(*traits.Metadata)
+		a.metadata = append(a.metadata, proto.Clone(md).(*traits.Metadata))
 	})
 }
 

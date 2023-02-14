@@ -101,15 +101,16 @@ func (n *Node) Announce(name string, features ...Feature) Undo {
 		}
 	}
 
-	md := a.metadata
-	if md == nil && len(a.traits) > 0 {
-		md = &traits.Metadata{}
+	mds := a.metadata
+	if len(mds) == 0 && len(a.traits) > 0 {
+		md := &traits.Metadata{}
 		for _, t := range a.traits {
 			md.Traits = append(md.Traits, &traits.TraitMetadata{Name: string(t.name)})
 		}
+		mds = append(mds, md)
 	}
 
-	if md != nil {
+	for _, md := range mds {
 		undoMd, err := n.mergeMetadata(name, md)
 		if err != nil {
 			if err != MetadataTraitNotSupported {

@@ -54,6 +54,22 @@ func TestNode_Announce_metadata(t *testing.T) {
 	if diff := cmp.Diff(want, got, protocmp.Transform()); diff != "" {
 		t.Fatalf("D2 Metadata (-want,+got)\n%s", diff)
 	}
+
+	// announce with multiple HasMetadata calls
+	d3Metadata := metadata.NewModel()
+	r.Add("d3", metadata.WrapApi(metadata.NewModelServer(d3Metadata)))
+	n.Announce("d3",
+		HasMetadata(&traits.Metadata{Appearance: &traits.Metadata_Appearance{Description: "Device 3"}}),
+		HasMetadata(&traits.Metadata{Appearance: &traits.Metadata_Appearance{Title: "D3"}}),
+	)
+	got, err = d3Metadata.GetMetadata()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want = &traits.Metadata{Appearance: &traits.Metadata_Appearance{Title: "D3", Description: "Device 3"}}
+	if diff := cmp.Diff(want, got, protocmp.Transform()); diff != "" {
+		t.Fatalf("D3 Metadata (-want,+got)\n%s", diff)
+	}
 }
 
 func TestNode_ListAllMetadata(t *testing.T) {
