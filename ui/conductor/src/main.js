@@ -12,3 +12,8 @@ const app = new Vue({
   render: (h) => h(App)
 });
 app.$mount('#app');
+
+// plugin components
+import VueApexCharts from 'vue-apexcharts';
+Vue.use(VueApexCharts);
+Vue.component('Apexchart', VueApexCharts);

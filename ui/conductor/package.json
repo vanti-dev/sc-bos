@@ -11,6 +11,7 @@
   "dependencies": {
     "@sc-bos/ui-gen": "file:../ui-gen",
     "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.40",
+    "apexcharts": "^3.37.0",
     "date-fns": "^2.29.2",
     "dayjs": "^1.11.7",
     "google-protobuf": "^3.21.0",
@@ -18,6 +19,7 @@
     "keycloak-js": "^19.0.1",
     "pinia": "^2.0.17",
     "vue": "2.7",
+    "vue-apexcharts": "^1.6.2",
     "vue-router": "3.6",
     "vuetify": "^2.6.8"
   },

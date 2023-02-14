@@ -13,10 +13,17 @@
       <div class="flex-grow-1 d-flex flex-column mr-lg-8">
         <content-card class="mb-8 d-flex flex-column px-6 pt-md-6">
           <h4 class="text-h4 order-lg-last pb-4 pb-lg-0 pt-0 pt-lg-4">System Monitor</h4>
-          <building/>
+          <building-status/>
         </content-card>
-        <content-card class="mb-8 d-flex flex-column px-6 pt-md-6">
-          <h4 class="text-h4 order-lg-last pb-4 pb-lg-0 pt-0 pt-lg-4">Energy</h4>
+        <content-card class="mb-8 d-flex flex-column px-6 pt-md-6 pb-md-8 pb-sm-8 ">
+          <h4 class="text-h4 order-lg-last py-0 pt-lg-2 pb-4 pb-md-0">Energy</h4>
+          <div class="d-flex flex-row">
+            <div class="text-h2 align-self-center" style="line-height: 0.5em; min-width: 120px;">
+              {{ currentEnergy.toFixed(1) }}<span style="font-size: 0.5em;">kWh</span><br>
+              <span class="text-title">Consumption</span>
+            </div>
+            <energy-graph class="flex-grow-1 d-none d-md-block"/>
+          </div>
         </content-card>
       </div>
       <div class="d-flex flex-column" style="min-width: 250px;">
@@ -72,11 +79,13 @@
     </div>
   </v-container>
 </template>
+
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
 import CircularGauge from '@/components/CircularGauge.vue';
 import {computed, ref} from 'vue';
-import Building from '@/clients/ew/Building_EW.vue';
+import BuildingStatus from '@/clients/ew/BuildingStatus_EW.vue';
+import EnergyGraph from '@/routes/ops/components/EnergyGraph.vue';
 
 const sliderVal = ref(0);
 
@@ -86,5 +95,6 @@ const externalTemperature = computed(() => temperature.value-7);
 const occupancy = computed(() => Math.round(sliderVal.value*maxOccupancy.value));
 const maxOccupancy = computed(() => 1556);
 const occupancyPercentage = computed(() => occupancy.value/maxOccupancy.value*100);
+const currentEnergy = computed(() => sliderVal.value*120);
 
 </script>
