@@ -41,9 +41,10 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 
 		group := &Group{
-			client: client,
-			names:  cfg.Thermostats,
-			logger: logger,
+			client:   client,
+			names:    cfg.Thermostats,
+			readOnly: cfg.ReadOnlyThermostats,
+			logger:   logger,
 		}
 		announce.Announce(cfg.Name, node.HasTrait(trait.AirTemperature, node.WithClients(airtemperature.WrapApi(group))))
 	}

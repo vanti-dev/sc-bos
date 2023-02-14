@@ -44,9 +44,10 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 
 		group := &Group{
-			client: lightClient,
-			names:  cfg.Lights,
-			logger: logger.Named("lights"),
+			client:   lightClient,
+			names:    cfg.Lights,
+			readOnly: cfg.ReadOnlyLights,
+			logger:   logger.Named("lights"),
 		}
 		announce.Announce(cfg.Name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group))))
 	}
@@ -56,9 +57,10 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 			return err
 		}
 		group := &Group{
-			client: lightClient,
-			names:  lights,
-			logger: logger.Named("lightGroup").With(zap.String("lightGroup", key)),
+			client:   lightClient,
+			names:    lights,
+			readOnly: cfg.ReadOnlyLights,
+			logger:   logger.Named("lightGroup").With(zap.String("lightGroup", key)),
 		}
 		name := fmt.Sprintf("%s/lights/%s", cfg.Name, key)
 		announce.Announce(name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group))))

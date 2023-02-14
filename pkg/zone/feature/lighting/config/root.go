@@ -7,6 +7,7 @@ import (
 type Root struct {
 	zone.Config
 
-	Lights      []string            `json:"lights,omitempty"`      // Announces as {zone}
-	LightGroups map[string][]string `json:"lightGroups,omitempty"` // Announced as {zone}/lights/{key}
+	ReadOnlyLights bool                `json:"readOnlyLights,omitempty"`
+	Lights         []string            `json:"lights,omitempty"`      // Announces as {zone}
+	LightGroups    map[string][]string `json:"lightGroups,omitempty"` // Announced as {zone}/lights/{key}
 }

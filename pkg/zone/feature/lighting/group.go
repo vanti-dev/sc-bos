@@ -18,13 +18,17 @@ import (
 // Group implements traits.LightApiServer backed by a group of lights.
 type Group struct {
 	traits.UnimplementedLightApiServer
-	client traits.LightApiClient
-	names  []string
+	client   traits.LightApiClient
+	names    []string
+	readOnly bool
 
 	logger *zap.Logger
 }
 
 func (g *Group) UpdateBrightness(ctx context.Context, request *traits.UpdateBrightnessRequest) (*traits.Brightness, error) {
+	if g.readOnly {
+		return nil, status.Error(codes.FailedPrecondition, "read-only")
+	}
 	var allErrs error
 	var allRes []*traits.Brightness
 	for _, name := range g.names {

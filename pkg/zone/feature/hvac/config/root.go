@@ -7,5 +7,6 @@ import (
 type Root struct {
 	zone.Config
 
-	Thermostats []string `json:"thermostats,omitempty"`
+	ReadOnlyThermostats bool     `json:"readOnlyThermostats,omitempty"`
+	Thermostats         []string `json:"thermostats,omitempty"`
 }

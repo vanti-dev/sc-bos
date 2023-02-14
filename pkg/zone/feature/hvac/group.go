@@ -17,8 +17,9 @@ import (
 
 type Group struct {
 	traits.UnimplementedAirTemperatureApiServer
-	client traits.AirTemperatureApiClient
-	names  []string
+	client   traits.AirTemperatureApiClient
+	names    []string
+	readOnly bool
 
 	logger *zap.Logger
 }
@@ -49,6 +50,9 @@ func (g *Group) GetAirTemperature(ctx context.Context, request *traits.GetAirTem
 }
 
 func (g *Group) UpdateAirTemperature(ctx context.Context, request *traits.UpdateAirTemperatureRequest) (*traits.AirTemperature, error) {
+	if g.readOnly {
+		return nil, status.Errorf(codes.FailedPrecondition, "read-only")
+	}
 	var allErrs []error
 	var allRes []*traits.AirTemperature
 	for _, name := range g.names {
