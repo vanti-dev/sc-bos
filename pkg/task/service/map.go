@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"sync"
 	"time"
@@ -59,13 +60,22 @@ func NewMapOf(known []Lifecycle) *Map {
 	knownMap := make(map[string]*Record, len(known))
 	for i, lifecycle := range known {
 		id := strconv.FormatInt(int64(i), 10)
-		knownMap[id] = &Record{Id: id, Service: lifecycle}
+		kind := kindFromType(lifecycle)
+		knownMap[id] = &Record{Id: id, Kind: kind, Service: lifecycle}
 	}
 	return &Map{
 		known: knownMap,
 		bus:   &minibus.Bus[*Change]{},
 		now:   time.Now,
 	}
+}
+
+func kindFromType(t any) string {
+	rt := reflect.TypeOf(t)
+	if rt.Kind() == reflect.Pointer {
+		rt = rt.Elem()
+	}
+	return rt.String()
 }
 
 // MapSetNow sets the now func on m returning a func that undoes the set.
