@@ -56,6 +56,14 @@ func AnnounceContext(ctx context.Context, a Announcer) Announcer {
 	})
 }
 
+// AnnounceFeatures returns an Announcer that acts like `Announce(name, [moreFeatures..., features...])`
+func AnnounceFeatures(a Announcer, moreFeatures ...Feature) Announcer {
+	return AnnouncerFunc(func(name string, features ...Feature) Undo {
+		allFeatures := append(moreFeatures, features...)
+		return a.Announce(name, allFeatures...)
+	})
+}
+
 type announcement struct {
 	name     string
 	traits   []traitFeature
