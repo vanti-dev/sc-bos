@@ -1107,6 +1107,8 @@ github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtX
 github.com/urfave/cli v1.22.2/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/vanti-dev/gobacnet v0.0.0-20221024154753-4861ab8551a7 h1:FS+m+E0ESIWLZz0QeEOre/yHMexlCEW7MMFFGvxSETI=
 github.com/vanti-dev/gobacnet v0.0.0-20221024154753-4861ab8551a7/go.mod h1:MYngtum1Fve/7qCpWkXf6GaczTq7lakzptypgqiMtmM=
+github.com/vanti-dev/gobacnet v0.0.0-20230214143924-491552bcf78c h1:87A8OI26WcasJ/mJm8dtQnjFqN1LOLyHptSv2N5dFe0=
+github.com/vanti-dev/gobacnet v0.0.0-20230214143924-491552bcf78c/go.mod h1:MYngtum1Fve/7qCpWkXf6GaczTq7lakzptypgqiMtmM=
 github.com/vektah/gqlparser/v2 v2.4.5 h1:C02NsyEsL4TXJB7ndonqTfuQOL4XPIu0aAWugdmTgmc=
 github.com/vektah/gqlparser/v2 v2.4.5/go.mod h1:flJWIR04IMQPGz+BXLrORkrARBxv/rtyIAFvd/MceW0=
 github.com/vishvananda/netlink v0.0.0-20181108222139-023a6dafdcdf/go.mod h1:+SR5DhBJrl6ZM7CoCKvpw5BKroDKQ+PJqOg65H/2ktk=
