@@ -8,6 +8,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export"
+	"github.com/vanti-dev/sc-bos/pkg/auto/history"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights"
 	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
@@ -15,6 +16,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock"
 	"github.com/vanti-dev/sc-bos/pkg/driver/xovis"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts"
@@ -45,6 +47,7 @@ func run(ctx context.Context) error {
 	}
 
 	alltraits.AddSupport(controller.Node)
+	historypb.AddSupport(controller.Node)
 
 	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
 
@@ -65,6 +68,7 @@ func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig.AutoFactories = map[string]auto.Factory{
 		lights.AutoType: lights.Factory,
 		"export-mqtt":   export.MQTTFactory,
+		"history":       history.Factory,
 		udmi.AutoType:   udmi.Factory,
 	}
 	systemConfig.SystemFactories = map[string]system.Factory{
