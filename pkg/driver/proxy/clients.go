@@ -3,8 +3,8 @@ package proxy
 import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/sc-bos/pkg/driver/mock/button"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"google.golang.org/grpc"
 )

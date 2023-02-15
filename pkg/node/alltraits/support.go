@@ -30,9 +30,9 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/speaker"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 
-	"github.com/vanti-dev/sc-bos/pkg/driver/mock/button"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
