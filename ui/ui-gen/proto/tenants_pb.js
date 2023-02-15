@@ -1,4 +1,4 @@
-// source: proto/tenants.proto
+// source: tenants.proto
 /**
  * @fileoverview
  * @enhanceable

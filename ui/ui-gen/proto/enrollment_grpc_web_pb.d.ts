@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as proto_enrollment_pb from '../proto/enrollment_pb';
+import * as enrollment_pb from './enrollment_pb';
 
 
 export class EnrollmentApiClient {
@@ -9,25 +9,25 @@ export class EnrollmentApiClient {
                options?: null | { [index: string]: any; });
 
   getEnrollment(
-    request: proto_enrollment_pb.GetEnrollmentRequest,
+    request: enrollment_pb.GetEnrollmentRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_enrollment_pb.Enrollment) => void
-  ): grpcWeb.ClientReadableStream<proto_enrollment_pb.Enrollment>;
+               response: enrollment_pb.Enrollment) => void
+  ): grpcWeb.ClientReadableStream<enrollment_pb.Enrollment>;
 
   createEnrollment(
-    request: proto_enrollment_pb.CreateEnrollmentRequest,
+    request: enrollment_pb.CreateEnrollmentRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_enrollment_pb.Enrollment) => void
-  ): grpcWeb.ClientReadableStream<proto_enrollment_pb.Enrollment>;
+               response: enrollment_pb.Enrollment) => void
+  ): grpcWeb.ClientReadableStream<enrollment_pb.Enrollment>;
 
   deleteEnrollment(
-    request: proto_enrollment_pb.DeleteEnrollmentRequest,
+    request: enrollment_pb.DeleteEnrollmentRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_enrollment_pb.Enrollment) => void
-  ): grpcWeb.ClientReadableStream<proto_enrollment_pb.Enrollment>;
+               response: enrollment_pb.Enrollment) => void
+  ): grpcWeb.ClientReadableStream<enrollment_pb.Enrollment>;
 
 }
 
@@ -37,19 +37,19 @@ export class EnrollmentApiPromiseClient {
                options?: null | { [index: string]: any; });
 
   getEnrollment(
-    request: proto_enrollment_pb.GetEnrollmentRequest,
+    request: enrollment_pb.GetEnrollmentRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_enrollment_pb.Enrollment>;
+  ): Promise<enrollment_pb.Enrollment>;
 
   createEnrollment(
-    request: proto_enrollment_pb.CreateEnrollmentRequest,
+    request: enrollment_pb.CreateEnrollmentRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_enrollment_pb.Enrollment>;
+  ): Promise<enrollment_pb.Enrollment>;
 
   deleteEnrollment(
-    request: proto_enrollment_pb.DeleteEnrollmentRequest,
+    request: enrollment_pb.DeleteEnrollmentRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_enrollment_pb.Enrollment>;
+  ): Promise<enrollment_pb.Enrollment>;
 
 }
 

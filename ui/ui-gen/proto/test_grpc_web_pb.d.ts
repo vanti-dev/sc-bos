@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as proto_test_pb from '../proto/test_pb';
+import * as test_pb from './test_pb';
 
 
 export class TestApiClient {
@@ -9,18 +9,18 @@ export class TestApiClient {
                options?: null | { [index: string]: any; });
 
   getTest(
-    request: proto_test_pb.GetTestRequest,
+    request: test_pb.GetTestRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_test_pb.Test) => void
-  ): grpcWeb.ClientReadableStream<proto_test_pb.Test>;
+               response: test_pb.Test) => void
+  ): grpcWeb.ClientReadableStream<test_pb.Test>;
 
   updateTest(
-    request: proto_test_pb.UpdateTestRequest,
+    request: test_pb.UpdateTestRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_test_pb.Test) => void
-  ): grpcWeb.ClientReadableStream<proto_test_pb.Test>;
+               response: test_pb.Test) => void
+  ): grpcWeb.ClientReadableStream<test_pb.Test>;
 
 }
 
@@ -30,14 +30,14 @@ export class TestApiPromiseClient {
                options?: null | { [index: string]: any; });
 
   getTest(
-    request: proto_test_pb.GetTestRequest,
+    request: test_pb.GetTestRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_test_pb.Test>;
+  ): Promise<test_pb.Test>;
 
   updateTest(
-    request: proto_test_pb.UpdateTestRequest,
+    request: test_pb.UpdateTestRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_test_pb.Test>;
+  ): Promise<test_pb.Test>;
 
 }
 

@@ -8,7 +8,7 @@
 // versions:
 // 	protoc-gen-grpc-web v1.4.2
 // 	protoc              v3.21.12
-// source: proto/mqtt.proto
+// source: mqtt.proto
 
 
 /* eslint-disable */

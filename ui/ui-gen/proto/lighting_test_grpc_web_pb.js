@@ -8,7 +8,7 @@
 // versions:
 // 	protoc-gen-grpc-web v1.4.2
 // 	protoc              v3.21.12
-// source: proto/lighting_test.proto
+// source: lighting_test.proto
 
 
 /* eslint-disable */

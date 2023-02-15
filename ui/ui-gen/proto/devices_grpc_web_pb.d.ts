@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as proto_devices_pb from '../proto/devices_pb';
+import * as devices_pb from './devices_pb';
 
 
 export class DevicesApiClient {
@@ -9,28 +9,28 @@ export class DevicesApiClient {
                options?: null | { [index: string]: any; });
 
   listDevices(
-    request: proto_devices_pb.ListDevicesRequest,
+    request: devices_pb.ListDevicesRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_devices_pb.ListDevicesResponse) => void
-  ): grpcWeb.ClientReadableStream<proto_devices_pb.ListDevicesResponse>;
+               response: devices_pb.ListDevicesResponse) => void
+  ): grpcWeb.ClientReadableStream<devices_pb.ListDevicesResponse>;
 
   pullDevices(
-    request: proto_devices_pb.PullDevicesRequest,
+    request: devices_pb.PullDevicesRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<proto_devices_pb.PullDevicesResponse>;
+  ): grpcWeb.ClientReadableStream<devices_pb.PullDevicesResponse>;
 
   getDevicesMetadata(
-    request: proto_devices_pb.GetDevicesMetadataRequest,
+    request: devices_pb.GetDevicesMetadataRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_devices_pb.DevicesMetadata) => void
-  ): grpcWeb.ClientReadableStream<proto_devices_pb.DevicesMetadata>;
+               response: devices_pb.DevicesMetadata) => void
+  ): grpcWeb.ClientReadableStream<devices_pb.DevicesMetadata>;
 
   pullDevicesMetadata(
-    request: proto_devices_pb.PullDevicesMetadataRequest,
+    request: devices_pb.PullDevicesMetadataRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<proto_devices_pb.PullDevicesMetadataResponse>;
+  ): grpcWeb.ClientReadableStream<devices_pb.PullDevicesMetadataResponse>;
 
 }
 
@@ -40,24 +40,24 @@ export class DevicesApiPromiseClient {
                options?: null | { [index: string]: any; });
 
   listDevices(
-    request: proto_devices_pb.ListDevicesRequest,
+    request: devices_pb.ListDevicesRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_devices_pb.ListDevicesResponse>;
+  ): Promise<devices_pb.ListDevicesResponse>;
 
   pullDevices(
-    request: proto_devices_pb.PullDevicesRequest,
+    request: devices_pb.PullDevicesRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<proto_devices_pb.PullDevicesResponse>;
+  ): grpcWeb.ClientReadableStream<devices_pb.PullDevicesResponse>;
 
   getDevicesMetadata(
-    request: proto_devices_pb.GetDevicesMetadataRequest,
+    request: devices_pb.GetDevicesMetadataRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_devices_pb.DevicesMetadata>;
+  ): Promise<devices_pb.DevicesMetadata>;
 
   pullDevicesMetadata(
-    request: proto_devices_pb.PullDevicesMetadataRequest,
+    request: devices_pb.PullDevicesMetadataRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<proto_devices_pb.PullDevicesMetadataResponse>;
+  ): grpcWeb.ClientReadableStream<devices_pb.PullDevicesMetadataResponse>;
 
 }
 

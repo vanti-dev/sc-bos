@@ -1,4 +1,4 @@
-// source: proto/enrollment.proto
+// source: enrollment.proto
 /**
  * @fileoverview
  * @enhanceable

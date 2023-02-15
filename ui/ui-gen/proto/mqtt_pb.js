@@ -1,4 +1,4 @@
-// source: proto/mqtt.proto
+// source: mqtt.proto
 /**
  * @fileoverview
  * @enhanceable

@@ -1,4 +1,4 @@
-// source: proto/udmi.proto
+// source: udmi.proto
 /**
  * @fileoverview
  * @enhanceable

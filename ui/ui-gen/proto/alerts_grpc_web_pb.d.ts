@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as proto_alerts_pb from '../proto/alerts_pb';
+import * as alerts_pb from './alerts_pb';
 
 
 export class AlertApiClient {
@@ -9,42 +9,42 @@ export class AlertApiClient {
                options?: null | { [index: string]: any; });
 
   listAlerts(
-    request: proto_alerts_pb.ListAlertsRequest,
+    request: alerts_pb.ListAlertsRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_alerts_pb.ListAlertsResponse) => void
-  ): grpcWeb.ClientReadableStream<proto_alerts_pb.ListAlertsResponse>;
+               response: alerts_pb.ListAlertsResponse) => void
+  ): grpcWeb.ClientReadableStream<alerts_pb.ListAlertsResponse>;
 
   pullAlerts(
-    request: proto_alerts_pb.PullAlertsRequest,
+    request: alerts_pb.PullAlertsRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<proto_alerts_pb.PullAlertsResponse>;
+  ): grpcWeb.ClientReadableStream<alerts_pb.PullAlertsResponse>;
 
   acknowledgeAlert(
-    request: proto_alerts_pb.AcknowledgeAlertRequest,
+    request: alerts_pb.AcknowledgeAlertRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_alerts_pb.Alert) => void
-  ): grpcWeb.ClientReadableStream<proto_alerts_pb.Alert>;
+               response: alerts_pb.Alert) => void
+  ): grpcWeb.ClientReadableStream<alerts_pb.Alert>;
 
   unacknowledgeAlert(
-    request: proto_alerts_pb.AcknowledgeAlertRequest,
+    request: alerts_pb.AcknowledgeAlertRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_alerts_pb.Alert) => void
-  ): grpcWeb.ClientReadableStream<proto_alerts_pb.Alert>;
+               response: alerts_pb.Alert) => void
+  ): grpcWeb.ClientReadableStream<alerts_pb.Alert>;
 
   getAlertMetadata(
-    request: proto_alerts_pb.GetAlertMetadataRequest,
+    request: alerts_pb.GetAlertMetadataRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_alerts_pb.AlertMetadata) => void
-  ): grpcWeb.ClientReadableStream<proto_alerts_pb.AlertMetadata>;
+               response: alerts_pb.AlertMetadata) => void
+  ): grpcWeb.ClientReadableStream<alerts_pb.AlertMetadata>;
 
   pullAlertMetadata(
-    request: proto_alerts_pb.PullAlertMetadataRequest,
+    request: alerts_pb.PullAlertMetadataRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<proto_alerts_pb.PullAlertMetadataResponse>;
+  ): grpcWeb.ClientReadableStream<alerts_pb.PullAlertMetadataResponse>;
 
 }
 
@@ -54,25 +54,25 @@ export class AlertAdminApiClient {
                options?: null | { [index: string]: any; });
 
   createAlert(
-    request: proto_alerts_pb.CreateAlertRequest,
+    request: alerts_pb.CreateAlertRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_alerts_pb.Alert) => void
-  ): grpcWeb.ClientReadableStream<proto_alerts_pb.Alert>;
+               response: alerts_pb.Alert) => void
+  ): grpcWeb.ClientReadableStream<alerts_pb.Alert>;
 
   updateAlert(
-    request: proto_alerts_pb.UpdateAlertRequest,
+    request: alerts_pb.UpdateAlertRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_alerts_pb.Alert) => void
-  ): grpcWeb.ClientReadableStream<proto_alerts_pb.Alert>;
+               response: alerts_pb.Alert) => void
+  ): grpcWeb.ClientReadableStream<alerts_pb.Alert>;
 
   deleteAlert(
-    request: proto_alerts_pb.DeleteAlertRequest,
+    request: alerts_pb.DeleteAlertRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_alerts_pb.DeleteAlertResponse) => void
-  ): grpcWeb.ClientReadableStream<proto_alerts_pb.DeleteAlertResponse>;
+               response: alerts_pb.DeleteAlertResponse) => void
+  ): grpcWeb.ClientReadableStream<alerts_pb.DeleteAlertResponse>;
 
 }
 
@@ -82,34 +82,34 @@ export class AlertApiPromiseClient {
                options?: null | { [index: string]: any; });
 
   listAlerts(
-    request: proto_alerts_pb.ListAlertsRequest,
+    request: alerts_pb.ListAlertsRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_alerts_pb.ListAlertsResponse>;
+  ): Promise<alerts_pb.ListAlertsResponse>;
 
   pullAlerts(
-    request: proto_alerts_pb.PullAlertsRequest,
+    request: alerts_pb.PullAlertsRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<proto_alerts_pb.PullAlertsResponse>;
+  ): grpcWeb.ClientReadableStream<alerts_pb.PullAlertsResponse>;
 
   acknowledgeAlert(
-    request: proto_alerts_pb.AcknowledgeAlertRequest,
+    request: alerts_pb.AcknowledgeAlertRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_alerts_pb.Alert>;
+  ): Promise<alerts_pb.Alert>;
 
   unacknowledgeAlert(
-    request: proto_alerts_pb.AcknowledgeAlertRequest,
+    request: alerts_pb.AcknowledgeAlertRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_alerts_pb.Alert>;
+  ): Promise<alerts_pb.Alert>;
 
   getAlertMetadata(
-    request: proto_alerts_pb.GetAlertMetadataRequest,
+    request: alerts_pb.GetAlertMetadataRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_alerts_pb.AlertMetadata>;
+  ): Promise<alerts_pb.AlertMetadata>;
 
   pullAlertMetadata(
-    request: proto_alerts_pb.PullAlertMetadataRequest,
+    request: alerts_pb.PullAlertMetadataRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<proto_alerts_pb.PullAlertMetadataResponse>;
+  ): grpcWeb.ClientReadableStream<alerts_pb.PullAlertMetadataResponse>;
 
 }
 
@@ -119,19 +119,19 @@ export class AlertAdminApiPromiseClient {
                options?: null | { [index: string]: any; });
 
   createAlert(
-    request: proto_alerts_pb.CreateAlertRequest,
+    request: alerts_pb.CreateAlertRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_alerts_pb.Alert>;
+  ): Promise<alerts_pb.Alert>;
 
   updateAlert(
-    request: proto_alerts_pb.UpdateAlertRequest,
+    request: alerts_pb.UpdateAlertRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_alerts_pb.Alert>;
+  ): Promise<alerts_pb.Alert>;
 
   deleteAlert(
-    request: proto_alerts_pb.DeleteAlertRequest,
+    request: alerts_pb.DeleteAlertRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_alerts_pb.DeleteAlertResponse>;
+  ): Promise<alerts_pb.DeleteAlertResponse>;
 
 }
 

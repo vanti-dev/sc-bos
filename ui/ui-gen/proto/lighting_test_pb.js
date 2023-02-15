@@ -1,4 +1,4 @@
-// source: proto/lighting_test.proto
+// source: lighting_test.proto
 /**
  * @fileoverview
  * @enhanceable

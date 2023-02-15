@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as proto_button_pb from '../proto/button_pb';
+import * as button_pb from './button_pb';
 
 
 export class ButtonApiClient {
@@ -9,23 +9,23 @@ export class ButtonApiClient {
                options?: null | { [index: string]: any; });
 
   getButtonState(
-    request: proto_button_pb.GetButtonStateRequest,
+    request: button_pb.GetButtonStateRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_button_pb.ButtonState) => void
-  ): grpcWeb.ClientReadableStream<proto_button_pb.ButtonState>;
+               response: button_pb.ButtonState) => void
+  ): grpcWeb.ClientReadableStream<button_pb.ButtonState>;
 
   pullButtonState(
-    request: proto_button_pb.PullButtonStateRequest,
+    request: button_pb.PullButtonStateRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<proto_button_pb.PullButtonStateResponse>;
+  ): grpcWeb.ClientReadableStream<button_pb.PullButtonStateResponse>;
 
   updateButtonState(
-    request: proto_button_pb.UpdateButtonStateRequest,
+    request: button_pb.UpdateButtonStateRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_button_pb.ButtonState) => void
-  ): grpcWeb.ClientReadableStream<proto_button_pb.ButtonState>;
+               response: button_pb.ButtonState) => void
+  ): grpcWeb.ClientReadableStream<button_pb.ButtonState>;
 
 }
 
@@ -35,19 +35,19 @@ export class ButtonApiPromiseClient {
                options?: null | { [index: string]: any; });
 
   getButtonState(
-    request: proto_button_pb.GetButtonStateRequest,
+    request: button_pb.GetButtonStateRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_button_pb.ButtonState>;
+  ): Promise<button_pb.ButtonState>;
 
   pullButtonState(
-    request: proto_button_pb.PullButtonStateRequest,
+    request: button_pb.PullButtonStateRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<proto_button_pb.PullButtonStateResponse>;
+  ): grpcWeb.ClientReadableStream<button_pb.PullButtonStateResponse>;
 
   updateButtonState(
-    request: proto_button_pb.UpdateButtonStateRequest,
+    request: button_pb.UpdateButtonStateRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_button_pb.ButtonState>;
+  ): Promise<button_pb.ButtonState>;
 
 }
 

@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as proto_lighting_test_pb from '../proto/lighting_test_pb';
+import * as lighting_test_pb from './lighting_test_pb';
 
 
 export class LightingTestApiClient {
@@ -9,32 +9,32 @@ export class LightingTestApiClient {
                options?: null | { [index: string]: any; });
 
   getLightHealth(
-    request: proto_lighting_test_pb.GetLightHealthRequest,
+    request: lighting_test_pb.GetLightHealthRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_lighting_test_pb.LightHealth) => void
-  ): grpcWeb.ClientReadableStream<proto_lighting_test_pb.LightHealth>;
+               response: lighting_test_pb.LightHealth) => void
+  ): grpcWeb.ClientReadableStream<lighting_test_pb.LightHealth>;
 
   listLightHealth(
-    request: proto_lighting_test_pb.ListLightHealthRequest,
+    request: lighting_test_pb.ListLightHealthRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_lighting_test_pb.ListLightHealthResponse) => void
-  ): grpcWeb.ClientReadableStream<proto_lighting_test_pb.ListLightHealthResponse>;
+               response: lighting_test_pb.ListLightHealthResponse) => void
+  ): grpcWeb.ClientReadableStream<lighting_test_pb.ListLightHealthResponse>;
 
   listLightEvents(
-    request: proto_lighting_test_pb.ListLightEventsRequest,
+    request: lighting_test_pb.ListLightEventsRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_lighting_test_pb.ListLightEventsResponse) => void
-  ): grpcWeb.ClientReadableStream<proto_lighting_test_pb.ListLightEventsResponse>;
+               response: lighting_test_pb.ListLightEventsResponse) => void
+  ): grpcWeb.ClientReadableStream<lighting_test_pb.ListLightEventsResponse>;
 
   getReportCSV(
-    request: proto_lighting_test_pb.GetReportCSVRequest,
+    request: lighting_test_pb.GetReportCSVRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: proto_lighting_test_pb.ReportCSV) => void
-  ): grpcWeb.ClientReadableStream<proto_lighting_test_pb.ReportCSV>;
+               response: lighting_test_pb.ReportCSV) => void
+  ): grpcWeb.ClientReadableStream<lighting_test_pb.ReportCSV>;
 
 }
 
@@ -44,24 +44,24 @@ export class LightingTestApiPromiseClient {
                options?: null | { [index: string]: any; });
 
   getLightHealth(
-    request: proto_lighting_test_pb.GetLightHealthRequest,
+    request: lighting_test_pb.GetLightHealthRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_lighting_test_pb.LightHealth>;
+  ): Promise<lighting_test_pb.LightHealth>;
 
   listLightHealth(
-    request: proto_lighting_test_pb.ListLightHealthRequest,
+    request: lighting_test_pb.ListLightHealthRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_lighting_test_pb.ListLightHealthResponse>;
+  ): Promise<lighting_test_pb.ListLightHealthResponse>;
 
   listLightEvents(
-    request: proto_lighting_test_pb.ListLightEventsRequest,
+    request: lighting_test_pb.ListLightEventsRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_lighting_test_pb.ListLightEventsResponse>;
+  ): Promise<lighting_test_pb.ListLightEventsResponse>;
 
   getReportCSV(
-    request: proto_lighting_test_pb.GetReportCSVRequest,
+    request: lighting_test_pb.GetReportCSVRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<proto_lighting_test_pb.ReportCSV>;
+  ): Promise<lighting_test_pb.ReportCSV>;
 
 }
 

@@ -1,4 +1,4 @@
-// source: proto/alerts.proto
+// source: alerts.proto
 /**
  * @fileoverview
  * @enhanceable

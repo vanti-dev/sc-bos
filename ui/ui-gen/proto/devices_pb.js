@@ -1,4 +1,4 @@
-// source: proto/devices.proto
+// source: devices.proto
 /**
  * @fileoverview
  * @enhanceable

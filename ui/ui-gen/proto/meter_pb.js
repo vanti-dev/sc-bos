@@ -1,4 +1,4 @@
-// source: proto/meter.proto
+// source: meter.proto
 /**
  * @fileoverview
  * @enhanceable

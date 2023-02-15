@@ -1,4 +1,4 @@
-// source: proto/button.proto
+// source: button.proto
 /**
  * @fileoverview
  * @enhanceable

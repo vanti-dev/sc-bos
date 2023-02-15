@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as proto_mqtt_pb from '../proto/mqtt_pb';
+import * as mqtt_pb from './mqtt_pb';
 
 
 export class MqttServiceClient {
@@ -9,9 +9,9 @@ export class MqttServiceClient {
                options?: null | { [index: string]: any; });
 
   pullMessages(
-    request: proto_mqtt_pb.PullMessagesRequest,
+    request: mqtt_pb.PullMessagesRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<proto_mqtt_pb.PullMessagesResponse>;
+  ): grpcWeb.ClientReadableStream<mqtt_pb.PullMessagesResponse>;
 
 }
 
@@ -21,9 +21,9 @@ export class MqttServicePromiseClient {
                options?: null | { [index: string]: any; });
 
   pullMessages(
-    request: proto_mqtt_pb.PullMessagesRequest,
+    request: mqtt_pb.PullMessagesRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<proto_mqtt_pb.PullMessagesResponse>;
+  ): grpcWeb.ClientReadableStream<mqtt_pb.PullMessagesResponse>;
 
 }
 
