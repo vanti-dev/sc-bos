@@ -30,7 +30,7 @@ func (s *Store) Append(_ context.Context, payload []byte) (history.Record, error
 	if l > 0 && s.slice[l-1].CreateTime == now {
 		// todo: cap this memory growth. Should be ok for now as this isn't likely in production
 		// 000 sorts after 00 after 0, so adding a 0 to the time maintains the sort order
-		r.ID += "0"
+		r.ID = s.slice[l-1].ID + "0"
 	}
 	s.slice = append(s.slice, r)
 	return r, nil
