@@ -11,13 +11,13 @@ export const useServicesStore = defineStore('services', () => {
 
 
   /**
-   * @typedef service
-   * @param {ActionTracker<ServiceMetadata.AsObject>} metadataTracker
-   * @param {Collection} servicesCollection
+   * @typedef {Object} Service
+   * @property {ActionTracker<ServiceMetadata.AsObject>} metadataTracker
+   * @property {Collection} servicesCollection
    */
   /**
    * @param {string} service
-   * @return {service}
+   * @return {Service}
    */
   function getService(service) {
     if (!metadataTrackers.hasOwnProperty(service)) metadataTrackers[service] = newActionTracker();

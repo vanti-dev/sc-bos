@@ -177,5 +177,6 @@ function createStopServiceRequestFromObject(obj) {
 export const ServiceNames = {
   Automations: 'automations',
   Drivers: 'drivers',
-  Systems: 'systems'
+  Systems: 'systems',
+  Zones: 'zones'
 };

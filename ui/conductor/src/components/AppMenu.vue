@@ -57,7 +57,7 @@ const menuItems = ref([
     title: 'Site Settings',
     subtitle: 'Configure site-specific settings and edit zones',
     icon: 'mdi-cog',
-    link: {name: 'settings'}
+    link: {name: 'site'}
   },
   {
     title: 'Workflows & Automations',
