@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -12,6 +13,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/history"
 	"github.com/vanti-dev/sc-bos/pkg/history/memstore"
+	"github.com/vanti-dev/sc-bos/pkg/history/pgxstore"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/zap"
@@ -41,7 +43,14 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	var store history.Store
 	switch cfg.Storage.Type {
 	case "postgres":
-		// todo: postgres data store for history
+		pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		if err != nil {
+			return err
+		}
+		store, err = pgxstore.NewStoreFromPool(ctx, cfg.Source.Name, pool)
+		if err != nil {
+			return err
+		}
 	case "memory":
 		store = memstore.New()
 	default:
