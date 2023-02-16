@@ -13,20 +13,31 @@
 </template>
 
 <script setup>
+import {useServicesStore} from '@/stores/services';
+import {computed, onMounted, ref} from 'vue';
+import {ServiceNames} from '@/api/ui/services';
 
-import {useAutomationsStore} from '@/routes/automations/store';
-import {storeToRefs} from 'pinia';
-import {onMounted, ref} from 'vue';
+const serviceStore = useServicesStore();
+const metadataTracker = ref(serviceStore.getService(ServiceNames.Automations).metadataTracker);
 
-const automationsStore = useAutomationsStore();
-const {automationTypeList} = storeToRefs(automationsStore);
+// filter out automations that have no instances, and map to {type, number} obj
+const automationTypeList = computed(() => {
+  if (!metadataTracker.value.response) return [];
+  const list = [];
+  metadataTracker.value.response.typeCountsMap.forEach(([type, number]) => {
+    if (number > 0) {
+      list.push({type, number});
+    }
+  });
+  return list;
+});
 
 // map of icons to use for different automation sections
 const icon = ref({
   lights: 'mdi-lightbulb'
 });
 
-onMounted(() => automationsStore.refreshMetadata());
+onMounted(() => serviceStore.refreshMetadata(ServiceNames.Automations));
 
 </script>
 

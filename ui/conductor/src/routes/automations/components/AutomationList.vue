@@ -23,14 +23,13 @@
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
 import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
-import {useAutomationsStore} from '@/routes/automations/store';
-import {storeToRefs} from 'pinia';
-import {ServiceNames as ServiceTypes, startService, stopService} from '@/api/ui/services';
+import {useServicesStore} from '@/stores/services';
+import {ServiceNames, startService, stopService} from '@/api/ui/services';
 import {usePageStore} from '@/stores/page';
 import {newActionTracker} from '@/api/resource';
 
-const automationsStore = useAutomationsStore();
-const {automationsCollection} = storeToRefs(automationsStore);
+const serviceStore = useServicesStore();
+const automationsCollection = ref(serviceStore.getService(ServiceNames.Automations).serviceCollection);
 const pageStore = usePageStore();
 
 const props = defineProps({
@@ -49,10 +48,10 @@ const headers = [
 ];
 
 /** @type {Collection} */
-const collection = automationsStore.newAutomationsCollection();
+const collection = serviceStore.newServicesCollection();
 collection.needsMorePages = true; // todo: this causes us to load all pages, connect with paging logic instead
 
-onMounted(() => collection.query(ServiceTypes.Automations));
+onMounted(() => collection.query(ServiceNames.Automations));
 onUnmounted(() => collection.reset());
 
 const automationsList = computed(() => {
@@ -79,7 +78,7 @@ const startStopTracker = reactive(newActionTracker());
  */
 async function startAutomation(service) {
   console.debug('Starting:', service.id);
-  await startService({name: ServiceTypes.Automations, id: service.id}, startStopTracker);
+  await startService({name: ServiceNames.Automations, id: service.id}, startStopTracker);
 }
 
 /**
@@ -88,7 +87,7 @@ async function startAutomation(service) {
  */
 async function stopAutomation(service) {
   console.debug('Stopping:', service.id);
-  await stopService({name: ServiceTypes.Automations, id: service.id}, startStopTracker);
+  await stopService({name: ServiceNames.Automations, id: service.id}, startStopTracker);
 }
 
 </script>
