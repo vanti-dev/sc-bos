@@ -1,3 +1,4 @@
+// Package memstore provides an implementation of history.Store with records stored in memory.
 package memstore
 
 import (

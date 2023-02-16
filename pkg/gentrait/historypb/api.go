@@ -1,3 +1,5 @@
+// Package historypb adds types useful for working with the generated FooHistory services.
+// This package is temporary as each traits history service will eventually move to be next to the other non-generated trait types.
 package historypb
 
 import (
