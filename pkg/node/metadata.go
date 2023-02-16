@@ -12,6 +12,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -81,20 +82,36 @@ func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
 		})
 	}
 
-	newMd, err := metadataModel.MergeMetadata(md)
-	if err != nil {
-		undo()
-		return NilUndo, err
+	var newMd *traits.Metadata
+	for i := 0; i < 5; i++ {
+		var err error
+		newMd, err = metadataModel.MergeMetadata(md)
+		if isConcurrentUpdateDetectedError(err) {
+			n.Logger.Warn("writing metadata", zap.Error(err), zap.String("name", name))
+			continue
+		}
+		if err != nil {
+			undo()
+			return NilUndo, err
+		}
+		break // no err
 	}
 
-	_, err = n.allMetadata.Update(name, newMd, resource.WithCreateIfAbsent())
-	if err != nil {
-		undo()
-		return NilUndo, err
+	for i := 0; i < 5; i++ {
+		_, err := n.allMetadata.Update(name, newMd, resource.WithCreateIfAbsent())
+		if isConcurrentUpdateDetectedError(err) {
+			n.Logger.Warn("updating all metadata", zap.Error(err), zap.String("name", name))
+			continue
+		}
+		if err != nil {
+			undo()
+			return NilUndo, err
+		}
+		break // no err
 	}
 
 	// todo: undo applying the metadata to the device
-	return undo, err
+	return undo, nil
 }
 
 func (n *Node) metadataApiRouter() router.Router {

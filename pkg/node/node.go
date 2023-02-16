@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
@@ -11,6 +12,8 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Node represents a smart core node.
@@ -159,7 +162,24 @@ func (n *Node) addRoute(name string, impl interface{}) Undo {
 }
 
 func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
-	n.parent().AddChildTrait(name, traitName...)
+	fn := func() {
+		n.parent().AddChildTrait(name, traitName...)
+	}
+	var err any
+	for i := 0; i < 5; i++ {
+		err = catchPanic(fn)
+		if isConcurrentUpdateDetectedPanic(err) {
+			n.Logger.Warn("panic adding child trait", zap.Any("panic", err), zap.String("name", name), zap.Any("traitNames", traitName))
+			continue
+		}
+		if err != nil {
+			panic(err) // report other errors
+		}
+		break // no err
+	}
+	if err != nil {
+		panic(err) // we tried
+	}
 	return func() {
 		child := n.parent().RemoveChildTrait(name, traitName...)
 		// There's a huge assumption here that child was added via AddChildTrait,
@@ -182,4 +202,25 @@ func (n *Node) parent() *parent.Model {
 		n.Announce(n.name, HasTrait(trait.Parent, WithClients(client)))
 	}
 	return n.children
+}
+
+func catchPanic(f func()) (res any) {
+	defer func() {
+		res = recover()
+	}()
+	f()
+	return
+}
+
+func isConcurrentUpdateDetectedPanic(err any) bool {
+	e, ok := err.(error)
+	return ok && isConcurrentUpdateDetectedError(e)
+}
+
+func isConcurrentUpdateDetectedError(err error) bool {
+	s, ok := status.FromError(err)
+	if !ok {
+		return false
+	}
+	return s.Code() == codes.Aborted && strings.Contains(s.Message(), "concurrent update detected")
 }
