@@ -18,7 +18,7 @@ func (a *automation) collectOccupancyChanges(ctx context.Context, name string, p
 	}
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
-		stream, err := client.PullOccupancy(ctx, &traits.PullOccupancyRequest{Name: name})
+		stream, err := client.PullOccupancy(ctx, &traits.PullOccupancyRequest{Name: name, UpdatesOnly: true})
 		if err != nil {
 			return err
 		}

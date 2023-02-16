@@ -18,7 +18,7 @@ func (a *automation) collectMeterReadingChanges(ctx context.Context, name string
 	}
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
-		stream, err := client.PullMeterReadings(ctx, &gen.PullMeterReadingsRequest{Name: name})
+		stream, err := client.PullMeterReadings(ctx, &gen.PullMeterReadingsRequest{Name: name, UpdatesOnly: true})
 		if err != nil {
 			return err
 		}

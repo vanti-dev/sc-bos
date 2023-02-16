@@ -18,7 +18,7 @@ func (a *automation) collectElectricDemandChanges(ctx context.Context, name stri
 	}
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
-		stream, err := client.PullDemand(ctx, &traits.PullDemandRequest{Name: name})
+		stream, err := client.PullDemand(ctx, &traits.PullDemandRequest{Name: name, UpdatesOnly: true})
 		if err != nil {
 			return err
 		}
