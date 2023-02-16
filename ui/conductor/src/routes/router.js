@@ -11,6 +11,7 @@ Vue.use(VueRouter);
 const router = new VueRouter({
   mode: 'history',
   routes: [
+    {path: '/', redirect: '/ops'},
     ...route(auth),
     ...route(devices),
     ...route(ops),
