@@ -1,3 +1,5 @@
+// Package history provides an automation that pulls data from a trait and inserts them into store.
+// The automation announces a history api to allow API retrieval of these records filtered by time period.
 package history
 
 import (
