@@ -3,10 +3,14 @@
 </template>
 
 <script setup>
+import {Zone} from '@/routes/site/zone/zone';
+
 defineProps({
   zone: {
-    type: String,
-    default: ''
+    type: Zone,
+    default: () => {
+      return null;
+    }
   }
 });
 </script>
