@@ -11,7 +11,8 @@
         <v-list-item-group>
           <v-list-item
               v-for="zone of zoneList"
-              :key="zone">
+              :key="zone"
+              :to="'/site/zone/'+zone">
             <v-list-item-icon>
               <v-icon>mdi-select-all</v-icon>
             </v-list-item-icon>
@@ -31,14 +32,13 @@ import {ServiceNames} from '@/api/ui/services';
 const serviceStore = useServicesStore();
 const zonesCollection = ref(serviceStore.getService(ServiceNames.Zones).servicesCollection);
 
-// todo: this causes us to load all pages, connect with paging logic instead
+// todo: this causes us to load all pages, connect with paging logic instead - although we might want it in this case
 zonesCollection.value.needsMorePages = true;
 
 onMounted(() => zonesCollection.value.query(ServiceNames.Zones));
 onUnmounted(() => zonesCollection.value.reset());
 
 const zoneList = computed(() => {
-  console.log(zonesCollection.value);
   return Object.values(zonesCollection.value.resources.value).map(zone => {
     return zone.id;
   });

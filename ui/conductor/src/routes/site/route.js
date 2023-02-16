@@ -6,16 +6,10 @@ export default {
   redirect: '/site/zone',
   components: {
     default: ChildOnlyPage,
-    nav: () => import('./ZoneNav.vue')
+    nav: () => import('./SiteNav.vue')
   },
   children: [
-    {
-      name: 'zone',
-      path: 'zone',
-      children: [
-        {path: 'list', component: () => import('./ZoneList.vue')}
-      ]
-    }
+    {name: 'zone', path: 'zone/:zone?', component: () => import('./zone/ZonePage.vue'), props: true}
   ],
   meta: {
     title: 'Site Settings'

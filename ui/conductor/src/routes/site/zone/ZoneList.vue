@@ -2,10 +2,13 @@
   <div>ZoneList</div>
 </template>
 
-<script>
-export default {
-  name: 'ZoneList'
-};
+<script setup>
+defineProps({
+  zone: {
+    type: String,
+    default: ''
+  }
+});
 </script>
 
 <style scoped>
