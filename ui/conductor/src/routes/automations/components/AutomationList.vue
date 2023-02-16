@@ -29,7 +29,7 @@ import {usePageStore} from '@/stores/page';
 import {newActionTracker} from '@/api/resource';
 
 const serviceStore = useServicesStore();
-const automationsCollection = ref(serviceStore.getService(ServiceNames.Automations).serviceCollection);
+const automationsCollection = ref(serviceStore.getService(ServiceNames.Automations).servicesCollection);
 const pageStore = usePageStore();
 
 const props = defineProps({
@@ -47,15 +47,14 @@ const headers = [
   {text: '', value: 'actions', align: 'end', width: '100'}
 ];
 
-/** @type {Collection} */
-const collection = serviceStore.newServicesCollection();
-collection.needsMorePages = true; // todo: this causes us to load all pages, connect with paging logic instead
+// todo: this causes us to load all pages, connect with paging logic instead
+automationsCollection.value.needsMorePages = true;
 
-onMounted(() => collection.query(ServiceNames.Automations));
-onUnmounted(() => collection.reset());
+onMounted(() => automationsCollection.value.query(ServiceNames.Automations));
+onUnmounted(() => automationsCollection.value.reset());
 
 const automationsList = computed(() => {
-  return Object.values(collection.resources.value).filter(automation => {
+  return Object.values(automationsCollection.value.resources.value).filter(automation => {
     return automation.type === props.type;
   });
 });

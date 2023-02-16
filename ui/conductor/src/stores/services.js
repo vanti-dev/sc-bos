@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia';
-import {newActionTracker, newResourceCollection} from '@/api/resource';
+import {newActionTracker} from '@/api/resource';
 import {reactive, ref} from 'vue';
 import {getServiceMetadata, listServices, pullServices} from '@/api/ui/services';
 import {Collection} from '@/util/query';
@@ -7,18 +7,24 @@ import {Collection} from '@/util/query';
 export const useServicesStore = defineStore('services', () => {
   const metadataTrackers = reactive(/** @type {Map<string, ActionTracker<ServiceMetadata.AsObject>>} */{});
   const servicesCollections =
-      reactive(/** @type {Map<string, ResourceCollection<Service.AsObject, Service>>} */{});
+      reactive(/** @type {Map<string, Collection>} */{});
+
 
   /**
+   * @typedef service
+   * @param {ActionTracker<ServiceMetadata.AsObject>} metadataTracker
+   * @param {Collection} servicesCollection
+   */
+  /**
    * @param {string} service
-   * @return {*}
+   * @return {service}
    */
   function getService(service) {
     if (!metadataTrackers.hasOwnProperty(service)) metadataTrackers[service] = newActionTracker();
-    if (!servicesCollections.hasOwnProperty(service)) servicesCollections[service] = newResourceCollection();
+    if (!servicesCollections.hasOwnProperty(service)) servicesCollections[service] = newServicesCollection();
     return {
       metadataTracker: metadataTrackers[service],
-      serviceCollection: servicesCollections[service]
+      servicesCollection: servicesCollections[service]
     };
   }
 
