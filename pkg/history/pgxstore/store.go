@@ -128,7 +128,8 @@ func (s slice) Len(ctx context.Context) (int, error) {
 	sql := fmt.Sprintf("SELECT COUNT(*) FROM history WHERE %s", strings.Join(where, " AND "))
 	row := s.pool.QueryRow(ctx, sql, args...)
 	var count int
-	return count, row.Scan(&count)
+	err = row.Scan(&count)
+	return count, err
 }
 
 func (s *slice) sourceClause(clauses []string, args []any) ([]string, []any) {
