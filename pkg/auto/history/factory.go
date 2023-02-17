@@ -49,7 +49,7 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 		if err != nil {
 			return err
 		}
-		store, err = pgxstore.NewStoreFromPool(ctx, cfg.Source.Name, pool)
+		store, err = pgxstore.NewStoreFromPool(ctx, fmt.Sprintf("%s[%s]", cfg.Source.Name, cfg.Source.Trait), pool)
 		if err != nil {
 			return err
 		}
