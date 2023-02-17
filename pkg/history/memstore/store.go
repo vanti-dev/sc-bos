@@ -20,6 +20,14 @@ func New() *Store {
 	return &Store{now: time.Now}
 }
 
+func SetNow(s *Store, now func() time.Time) func() {
+	old := s.now
+	s.now = now
+	return func() {
+		s.now = old
+	}
+}
+
 func (s *Store) Append(_ context.Context, payload []byte) (history.Record, error) {
 	now := s.now()
 	l := len(s.slice)
