@@ -29,6 +29,13 @@ func (a AnnouncerFunc) Announce(name string, features ...Feature) Undo {
 	return a(name, features...)
 }
 
+// SelfAnnouncerFunc allows adapting a func of the correct signature to implement SelfAnnouncer
+type SelfAnnouncerFunc func(a Announcer) Undo
+
+func (sa SelfAnnouncerFunc) AnnounceSelf(a Announcer) Undo {
+	return sa(a)
+}
+
 // AnnounceWithNamePrefix returns an Announcer whose Announce method acts like `Announce(prefix+name, features...)`
 func AnnounceWithNamePrefix(prefix string, a Announcer) Announcer {
 	return AnnouncerFunc(func(name string, features ...Feature) Undo {
@@ -121,8 +128,12 @@ func HasTrait(name trait.Name, opt ...TraitOption) Feature {
 // Announce accepts multiple HasMetadata features acting as if Announce were called in sequence with each HasMetadata feature.
 //
 // See metadata.Model.MergeMetadata for more details.
+// If md is nil, does not adjust the announcement.
 func HasMetadata(md *traits.Metadata) Feature {
 	return featureFunc(func(a *announcement) {
+		if md == nil {
+			return // do nothing, helps callers to avoid nil checks
+		}
 		// We clone because if this is the first time the name has been associated with metadata,
 		// then the passed md is used as is instead of cloning which can cause unexpected mutation
 		// from the pov of the caller.
