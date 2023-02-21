@@ -15,8 +15,10 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock"
+	"github.com/vanti-dev/sc-bos/pkg/driver/priority"
 	"github.com/vanti-dev/sc-bos/pkg/driver/xovis"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/prioritypb"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts"
@@ -48,6 +50,7 @@ func run(ctx context.Context) error {
 
 	alltraits.AddSupport(controller.Node)
 	historypb.AddSupport(controller.Node)
+	prioritypb.AddSupport(controller.Node)
 
 	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
 
@@ -60,10 +63,11 @@ func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig.AppConfigFile = "area-controller.local.json"
 
 	systemConfig.DriverFactories = map[string]driver.Factory{
-		axiomxa.DriverName: axiomxa.Factory,
-		bacnet.DriverName:  bacnet.Factory,
-		mock.DriverName:    mock.Factory,
-		xovis.DriverName:   xovis.Factory,
+		axiomxa.DriverName:  axiomxa.Factory,
+		bacnet.DriverName:   bacnet.Factory,
+		mock.DriverName:     mock.Factory,
+		priority.DriverName: priority.Factory,
+		xovis.DriverName:    xovis.Factory,
 	}
 	systemConfig.AutoFactories = map[string]auto.Factory{
 		lights.AutoType: lights.Factory,
