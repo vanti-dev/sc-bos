@@ -2,6 +2,7 @@
   <v-container fluid>
     <v-toolbar flat dense color="transparent">
       <v-toolbar-title>{{ zone }}</v-toolbar-title>
+      <v-spacer/>
       <v-btn-toggle mandatory dense v-model="viewType">
         <v-btn value="map">Map View</v-btn>
         <v-btn value="list">List View</v-btn>
@@ -9,8 +10,9 @@
       <v-spacer/>
       <v-btn><v-icon left>mdi-pencil</v-icon>Edit</v-btn>
     </v-toolbar>
-    <ZoneMap v-if="viewType === 'map'" :zone="zoneObj"/>
-    <ZoneList v-if="viewType === 'list'" :zone="zoneObj"/>
+    <div v-if="!zone"/>
+    <ZoneMap v-else-if="viewType === 'map'" :zone="zoneObj"/>
+    <ZoneList v-else-if="viewType === 'list'" :zone="zoneObj"/>
   </v-container>
 </template>
 

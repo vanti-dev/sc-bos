@@ -13,11 +13,26 @@ export class Zone {
   }
 
   get deviceIds() {
-    console.log(this._config);
     return [
       ...this._config.lights ?? [],
       ...this._config.hvac ?? [],
       ...this._config.occupancySensors ?? []
     ];
+  }
+
+  deviceTypes = [
+    {key: 'lights', type: 'light'},
+    {key: 'hvac', type: 'hvac'},
+    {key: 'occupancySensors', type: 'occupancy sensor'}
+  ];
+
+  get devices() {
+    const d = [];
+    this.deviceTypes.forEach(t => {
+      if (this._config.hasOwnProperty(t.key)) {
+        this._config[t.key].forEach(n => d.push({name: n, type: t.type}));
+      }
+    });
+    return d;
   }
 }
