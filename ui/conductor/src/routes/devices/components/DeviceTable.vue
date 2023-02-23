@@ -6,7 +6,7 @@
         :items="tableData"
         item-key="name"
         :item-class="rowClass"
-        show-select
+        :show-select="showSelect"
         @click:row="showDevice">
       <template #top>
         <!-- todo: bulk actions -->
@@ -51,6 +51,7 @@ import ContentCard from '@/components/ContentCard.vue';
 import {useDevicesStore} from '@/routes/devices/store';
 import {computed, onUnmounted, ref, watch} from 'vue';
 import {usePageStore} from '@/stores/page';
+import {Zone} from '@/routes/site/zone/zone';
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();
@@ -58,7 +59,16 @@ const pageStore = usePageStore();
 const props = defineProps({
   subsystem: {
     type: String,
-    default: ''
+    default: 'all'
+  },
+  zone: {
+    type: Zone,
+    default: () => {}
+  },
+  showSelect: Boolean,
+  filter: {
+    type: Function,
+    default: () => true
   }
 });
 
@@ -115,6 +125,7 @@ onUnmounted(() => {
 
 const tableData = computed(() => {
   return Object.values(collection.resources.value)
+      .filter(props.filter)
       .map(device => {
         if (device.metadata?.location?.moreMap?.length > 0) {
           // flatten the moreMap of location to expose additional location data to the user - this allows us to add

@@ -41,7 +41,7 @@ onUnmounted(() => zonesCollection.value.reset());
 const zoneList = computed(() => {
   return Object.values(zonesCollection.value.resources.value).map(zone => {
     return zone.id;
-  });
+  }).sort();
 });
 
 </script>

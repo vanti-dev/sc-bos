@@ -20,7 +20,7 @@ export class Zone {
     ];
   }
 
-  deviceTypes = [
+  _deviceTypes = [
     {key: 'lights', type: 'light'},
     {key: 'hvac', type: 'hvac'},
     {key: 'occupancySensors', type: 'occupancy sensor'}
@@ -28,7 +28,7 @@ export class Zone {
 
   get devices() {
     const d = [];
-    this.deviceTypes.forEach(t => {
+    this._deviceTypes.forEach(t => {
       if (this._config.hasOwnProperty(t.key)) {
         this._config[t.key].forEach(n => d.push({name: n, type: t.type}));
       }
