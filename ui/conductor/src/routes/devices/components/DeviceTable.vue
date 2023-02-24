@@ -31,14 +31,14 @@
                   hide-details
                   filled/>
             </v-col>
-            <v-col cols="12" md="2">
+            <!--            <v-col cols="12" md="2">
               <v-select
                   v-model="filterZone"
                   :items="zoneList"
                   label="Zone"
                   hide-details
                   filled/>
-            </v-col>
+            </v-col>-->
           </v-row>
         </v-container>
       </template>
@@ -75,7 +75,7 @@ const props = defineProps({
 const headers = ref([
   {text: 'Device name', value: 'name'},
   {text: 'Floor', value: 'metadata.location.floor'},
-  {text: 'Zone', value: 'metadata.location.title'}
+  {text: 'Location', value: 'metadata.location.title'}
 ]);
 
 const selectedDevices = ref([]);
@@ -88,13 +88,13 @@ const floorList = ref([
 const filterFloor = ref(floorList.value[0]);
 
 // todo: get this from somewhere. Probably also filter by floor
-const zoneList = ref([
+/* const zoneList = ref([
   'All',
   'L03_013/Meeting Room 1',
   'L03_014/Reception',
   'L03_015/Meeting Room 2'
 ]);
-const filterZone = ref(zoneList.value[0]);
+const filterZone = ref(zoneList.value[0]); */
 
 /** @type {Collection} */
 const collection = devicesStore.newCollection();
@@ -110,9 +110,9 @@ const query = computed(() => {
   if (props.subsystem.toLowerCase() !== 'all') {
     q.conditionsList.push({field: 'metadata.membership.subsystem', stringEqualFold: props.subsystem});
   }
-  if (filterZone.value.toLowerCase() !== 'all') {
+  /*   if (filterZone.value.toLowerCase() !== 'all') {
     q.conditionsList.push({field: 'metadata.location.title', stringEqualFold: filterZone.value});
-  }
+  } */
   return q;
 });
 
