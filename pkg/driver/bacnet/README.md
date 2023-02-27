@@ -44,3 +44,26 @@ and the [merge](merge) package.
 
 The driver also publishes a non-Smart Core gRPC API described in [bacnet.proto](rpc/bacnet.proto) that provides low
 level access to BACnet services like ReadProperty and WriteProperty against configured devices.
+
+## BACnet - Destination Network Addressing
+
+One project worked on, that uses this driver had the following setup:
+
+```
+controller-1/ DeviceID 1100
+├─ fcu-1 DeviceID 1111
+├─ fcu-2 DeviceID 1112
+controller-2/ DeviceID 1200
+├─ fcu-3 DeviceID 1211
+├─ fcu-4 DeviceID 1212
+```
+
+The controllers were BACnet/IP devices, that connected to FCUs and other field devices over [BACnet MS/TP (RS485)](http://www.bacnetwiki.com/wiki/index.php?title=BACnet_MS/TP). The controllers were all on the BMS VLAN, and this driver was running on a separate SC VLAN with UDP traffic on port `0xBAC0` allowed to the BMS VLAN; broadcast traffic wasn't supported/set-up.
+
+It was noticed that YABE on the BMS VLAN would discover all controllers and all FCUs, and be able to make requests to specific FCUs. However, from the SC VLAN, any request to a specific FCU device ID, sent to a controller IP address, would respond with an error `unknown-object`.
+
+It was discovered that a destination network and address must also be specified in the request. This ends up in the [NPDU packet](http://www.bacnetwiki.com/wiki/index.php?title=Network_Layer_Protocol_Data_Unit), and can be inspected with Wireshark. In this particular case the information we need was (partially) encoded into the device IDs: FCU device ID `1211` was on destination network `50012`, and had address `11`; this could only be found out because we had YABE working on VLAN, else we'd have had to ask for extra information. Also, because they had their software auto-assign IDs, which made the pattern I suppose.
+
+### TL;DR
+
+For some BACnet requests you may need to set a destination network and address, as well as `IP:port`, and device ID. This is configured by the `Comm#Destination` field.

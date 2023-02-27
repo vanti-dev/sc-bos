@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"net"
 	"net/netip"
 	"os"
+	"strconv"
+	"strings"
 
 	bactypes "github.com/vanti-dev/gobacnet/types"
 
@@ -73,4 +76,61 @@ type Device struct {
 
 type Comm struct {
 	IP *netip.AddrPort `json:"ip,omitempty"`
+	// the destination BACnet network
+	// this is used if the target BACnet device is not IP, but being proxied through a BACnet IP router
+	// see: http://www.bacnetwiki.com/wiki/index.php?title=Network_Layer_Protocol_Data_Unit
+	Destination *Destination `json:"destination,omitempty"`
+}
+
+func (c *Comm) ToAddress() (bactypes.Address, error) {
+	var addr bactypes.Address
+	if c.IP != nil {
+		udpAddr := net.UDPAddrFromAddrPort(*c.IP)
+		addr = bactypes.UDPToAddress(udpAddr)
+	}
+
+	if c.Destination != nil {
+		addr.Net = c.Destination.Network
+		if c.Destination.Address != "" {
+			dadr, err := c.Destination.Address.Bytes()
+			if err != nil {
+				return bactypes.Address{}, nil
+			}
+			addr.Adr = dadr
+			addr.Len = uint8(len(dadr))
+		}
+	}
+
+	return addr, nil
+}
+
+// Destination representation BACnet NPDU destination settings
+// see: http://www.bacnetwiki.com/wiki/index.php?title=Network_Layer_Protocol_Data_Unit
+type Destination struct {
+	// Network is the Destination Network 1-65534, or 65535 for broadcast
+	// http://www.bacnetwiki.com/wiki/index.php?title=Destination_Network
+	Network uint16 `json:"network,omitempty"`
+	// Address is in dot-notation when multiple octets
+	// could be upto 18, but in practice 6 or less
+	// http://www.bacnetwiki.com/wiki/index.php?title=MAC_Layer_Address
+	Address DestinationAddress `json:"address,omitempty"`
+}
+
+type DestinationAddress string
+
+func (d DestinationAddress) Bytes() ([]byte, error) {
+	octets := strings.Split(string(d), ".")
+	var addr []byte
+	if d == "" {
+		return addr, nil
+	}
+	for i := 0; i < len(octets); i++ {
+		octet := octets[i]
+		value, err := strconv.ParseUint(octet, 10, 8)
+		if err != nil {
+			return nil, err
+		}
+		addr = append(addr, byte(value))
+	}
+	return addr, nil
 }

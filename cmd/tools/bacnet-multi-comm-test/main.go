@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
-	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,7 +21,7 @@ import (
 )
 
 var (
-	dir         = flag.String("dir", "", "directory to scan for config")
+	dir         = flag.String("dir", ".", "directory to scan for config")
 	configFile  = flag.String("config-file", "area-controller.local.json", "file name to look for and load")
 	resultsFile = flag.String("results-file", "results.csv", "file name to save results to")
 )
@@ -151,8 +150,10 @@ func findDevice(client *gobacnet.Client, device config.Device) (bactypes.Device,
 		return is[0], nil
 	}
 
-	udpAddr := net.UDPAddrFromAddrPort(*device.Comm.IP)
-	addr := bactypes.UDPToAddress(udpAddr)
+	addr, err := device.Comm.ToAddress()
+	if err != nil {
+		return fail(err)
+	}
 	bacDevices, err := client.RemoteDevices(addr, device.ID)
 	if err != nil {
 		return fail(err)
