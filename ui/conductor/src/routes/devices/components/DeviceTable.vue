@@ -1,12 +1,13 @@
 <template>
   <content-card>
     <v-data-table
-        v-model="selectedDevices"
+        v-model="selectedDevicesComp"
         :headers="headers"
         :items="tableData"
         item-key="name"
         :item-class="rowClass"
         :show-select="showSelect"
+        :class="tableClasses"
         @click:row="showDevice">
       <template #top>
         <!-- todo: bulk actions -->
@@ -65,12 +66,25 @@ const props = defineProps({
     type: Zone,
     default: () => {}
   },
-  showSelect: Boolean,
+  showSelect: {
+    type: Boolean,
+    default: true
+  },
+  rowSelect: {
+    type: Boolean,
+    default: true
+  },
+  selectedDevices: {
+    type: Array,
+    default: () => []
+  },
   filter: {
     type: Function,
     default: () => true
   }
 });
+
+const emit = defineEmits(['update:selectedDevices']);
 
 const headers = ref([
   {text: 'Device name', value: 'name'},
@@ -78,7 +92,22 @@ const headers = ref([
   {text: 'Location', value: 'metadata.location.title'}
 ]);
 
-const selectedDevices = ref([]);
+const tableClasses = computed(() => {
+  const c = [];
+  if (props.showSelect) c.push('selectable');
+  if (props.rowSelect) c.push('rowSelectable');
+  return c.join(' ');
+});
+
+const selectedDevicesComp = computed({
+  get() {
+    return tableData.value.filter(device => props.selectedDevices.indexOf(device.name) >= 0);
+  },
+  set(value) {
+    emit('update:selectedDevices', value.map(d => d.name));
+  }
+});
+
 const search = ref('');
 
 // todo: get this from somewhere
@@ -175,8 +204,12 @@ function rowClass(item) {
   margin: 0 -12px -12px;
 }
 
-.v-data-table :deep(.item-selected) {
-  background-color: var(--v-primary-darken4);
+
+.v-data-table:not(.selectable) :deep(.v-data-table__selected){
+  background: none;
 }
 
+.v-data-table.rowSelectable :deep(.item-selected) {
+  background-color: var(--v-primary-darken4);
+}
 </style>
