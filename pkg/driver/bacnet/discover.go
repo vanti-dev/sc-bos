@@ -2,21 +2,25 @@ package bacnet
 
 import (
 	"fmt"
-	"net"
 
+	"github.com/vanti-dev/gobacnet"
 	bactypes "github.com/vanti-dev/gobacnet/types"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 )
 
 func (d *Driver) findDevice(device config.Device) (bactypes.Device, error) {
+	return FindDevice(d.client, device)
+}
+
+func FindDevice(client *gobacnet.Client, device config.Device) (bactypes.Device, error) {
 	fail := func(err error) (bactypes.Device, error) {
 		return bactypes.Device{}, err
 	}
 
 	if device.Comm == nil {
 		id := device.ID
-		is, err := d.client.WhoIs(int(id), int(id))
+		is, err := client.WhoIs(int(id), int(id))
 		if err != nil {
 			return fail(err)
 		}
@@ -26,9 +30,11 @@ func (d *Driver) findDevice(device config.Device) (bactypes.Device, error) {
 		return is[0], nil
 	}
 
-	udpAddr := net.UDPAddrFromAddrPort(*device.Comm.IP)
-	addr := bactypes.UDPToAddress(udpAddr)
-	bacDevices, err := d.client.RemoteDevices(addr, device.ID)
+	addr, err := device.Comm.ToAddress()
+	if err != nil {
+		return fail(err)
+	}
+	bacDevices, err := client.RemoteDevices(addr, device.ID)
 	if err != nil {
 		return fail(err)
 	}

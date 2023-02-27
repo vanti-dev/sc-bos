@@ -65,7 +65,8 @@ func run() error {
 		}
 
 		for _, device := range cfg.Devices {
-			dev, err := findDevice(client, device)
+			log.Printf("check deviceId: %d", device.ID)
+			dev, err := bacnet.FindDevice(client, device)
 			res := &result{
 				name:     device.Name,
 				deviceId: fmt.Sprintf("%d", device.ID),
@@ -138,36 +139,6 @@ func loadConfigs() (map[string]config.Root, error) {
 		}
 	}
 	return bacnetConfigs, nil
-}
-
-func findDevice(client *gobacnet.Client, device config.Device) (bactypes.Device, error) {
-	fail := func(err error) (bactypes.Device, error) {
-		return bactypes.Device{}, err
-	}
-
-	log.Printf("find deviceId: %d", device.ID)
-
-	if device.Comm == nil {
-		id := device.ID
-		is, err := client.WhoIs(int(id), int(id))
-		if err != nil {
-			return fail(err)
-		}
-		if len(is) == 0 {
-			return fail(fmt.Errorf("no devices found (via WhoIs) with id %d", id))
-		}
-		return is[0], nil
-	}
-
-	addr, err := device.Comm.ToAddress()
-	if err != nil {
-		return fail(err)
-	}
-	bacDevices, err := client.RemoteDevices(addr, device.ID)
-	if err != nil {
-		return fail(err)
-	}
-	return bacDevices[0], nil
 }
 
 func readProp(client *gobacnet.Client, device bactypes.Device, obj config.Object, prop property.ID) (any, error) {
