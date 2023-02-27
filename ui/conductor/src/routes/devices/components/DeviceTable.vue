@@ -154,17 +154,7 @@ onUnmounted(() => {
 
 const tableData = computed(() => {
   return Object.values(collection.resources.value)
-      .filter(props.filter)
-      .map(device => {
-        if (device.metadata?.location?.moreMap?.length > 0) {
-          // flatten the moreMap of location to expose additional location data to the user - this allows us to add
-          // extra info that isn't natively supported by the smart core metadata trait
-          for (const [key, val] of device.metadata.location.moreMap) {
-            device.metadata.location[key] = val;
-          }
-        }
-        return device;
-      });
+      .filter(props.filter);
 });
 
 /**
