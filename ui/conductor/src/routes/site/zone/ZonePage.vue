@@ -38,12 +38,8 @@ const props = defineProps({
 });
 
 const zoneObj = computed(() => {
-  const z = zoneCollection?.value?.resources?.value[props.zone] ?? null;
-  if (z) {
-    return new Zone(z);
-  } else {
-    return null;
-  }
+  const z = zoneCollection?.value?.resources?.value[props.zone] ?? (new Service()).toObject();
+  return new Zone(z);
 });
 
 const viewType = ref('list');

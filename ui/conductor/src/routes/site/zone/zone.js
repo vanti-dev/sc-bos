@@ -5,7 +5,11 @@ export class Zone {
   constructor(zoneService) {
     if (!zoneService) throw new Error('zoneService must be provided');
     this._id = zoneService.id;
-    this._config = JSON.parse(zoneService.configRaw);
+    if (zoneService.configRaw === '') {
+      this._config = {};
+    } else {
+      this._config = JSON.parse(zoneService.configRaw);
+    }
   }
 
   get name() {
