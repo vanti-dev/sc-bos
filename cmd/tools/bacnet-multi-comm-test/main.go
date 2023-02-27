@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
@@ -55,6 +56,7 @@ func run() error {
 		log.Printf("config: %s, devices: %d", key, len(cfg.Devices))
 
 		client, err := gobacnet.NewClient(cfg.LocalInterface, int(cfg.LocalPort))
+		client.Log.Out = &bytes.Buffer{} // else client.Close() will close os.Stderr
 		if err != nil {
 			return err
 		}
