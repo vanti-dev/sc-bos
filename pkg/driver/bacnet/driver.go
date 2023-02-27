@@ -93,7 +93,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	// setup all our devices and objects...
 	for _, device := range cfg.Devices {
 		logger := d.logger.With(zap.Uint32("deviceId", uint32(device.ID)))
-		bacDevice, e := d.findDevice(device)
+		bacDevice, e := d.findDevice(ctx, device)
 		if e != nil {
 			err = multierr.Append(err, e)
 			continue
@@ -110,7 +110,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 
 		// Collect all the object that we will be announcing.
 		// This will be a combination of configured objects and those we discover on the device.
-		objects, e := d.fetchObjects(cfg, device, bacDevice)
+		objects, e := d.fetchObjects(ctx, cfg, device, bacDevice)
 		if e != nil {
 			logger.Warn("Failed discovering objects", zap.Error(e))
 		}

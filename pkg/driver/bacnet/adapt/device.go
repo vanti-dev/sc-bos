@@ -48,7 +48,7 @@ func (d *DeviceBacnetService) ReadProperty(ctx context.Context, request *rpc.Rea
 		return nil, status.Errorf(codes.InvalidArgument, "missing object_identifier")
 	}
 
-	readProperty, err := d.client.ReadProperty(d.device, bactypes.ReadPropertyData{
+	readProperty, err := d.client.ReadProperty(ctx, d.device, bactypes.ReadPropertyData{
 		Object: bactypes.Object{
 			ID:         ObjectIDFromProto(request.ObjectIdentifier),
 			Properties: []bactypes.Property{d.propertyFromProtoForRead(request.PropertyReference)},
@@ -87,7 +87,7 @@ func (d *DeviceBacnetService) ReadPropertyMultiple(ctx context.Context, request 
 		}
 		bacReq.Objects = append(bacReq.Objects, obj)
 	}
-	readProperties, err := d.client.ReadMultiProperty(d.device, bacReq)
+	readProperties, err := d.client.ReadMultiProperty(ctx, d.device, bacReq)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func (d *DeviceBacnetService) WriteProperty(ctx context.Context, request *rpc.Wr
 			Properties: []bactypes.Property{writeProp},
 		},
 	}
-	return &rpc.WritePropertyResponse{}, d.client.WriteProperty(d.device, data, uint(request.WriteValue.Priority))
+	return &rpc.WritePropertyResponse{}, d.client.WriteProperty(ctx, d.device, data, uint(request.WriteValue.Priority))
 }
 
 func (d *DeviceBacnetService) WritePropertyMultiple(ctx context.Context, request *rpc.WritePropertyMultipleRequest) (*rpc.WritePropertyMultipleResponse, error) {

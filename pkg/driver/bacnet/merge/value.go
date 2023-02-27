@@ -12,7 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 )
 
-func readProperty(_ context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource) (any, error) {
+func readProperty(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource) (any, error) {
 	device, object, property, err := value.Lookup(known)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func readProperty(_ context.Context, client *gobacnet.Client, known known.Contex
 			},
 		},
 	}
-	res, err := client.ReadProperty(device, req)
+	res, err := client.ReadProperty(ctx, device, req)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func readPropertyFloat32(ctx context.Context, client *gobacnet.Client, known kno
 	return 0, fmt.Errorf("unsupported conversion %T -> float64 for val %v", data, data)
 }
 
-func writeProperty(_ context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource, data any, priority uint) error {
+func writeProperty(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource, data any, priority uint) error {
 	device, object, property, err := value.Lookup(known)
 	if err != nil {
 		return err
@@ -93,5 +93,5 @@ func writeProperty(_ context.Context, client *gobacnet.Client, known known.Conte
 			},
 		},
 	}
-	return client.WriteProperty(device, req, priority)
+	return client.WriteProperty(ctx, device, req, priority)
 }

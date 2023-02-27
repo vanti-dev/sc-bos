@@ -1,8 +1,10 @@
 package bacnet
 
 import (
+	"context"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/vanti-dev/gobacnet"
 	bactypes "github.com/vanti-dev/gobacnet/types"
@@ -17,8 +19,9 @@ func TestYabeRoom(t *testing.T) {
 		t.Fatalf("NewClient error %v", err)
 	}
 	t.Cleanup(client.Close)
-
-	iAm, err := client.WhoIs(800_000, 900_000)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	iAm, err := client.WhoIs(ctx, 800_000, 900_000)
 	if err != nil {
 		t.Fatalf("WhoIs error %v", err)
 	}
@@ -32,7 +35,7 @@ func TestYabeRoom(t *testing.T) {
 	t.Logf("Connecting to %v", netAddr)
 	bacAddr := bactypes.UDPToAddress(&netAddr)
 	t.Logf("After conversion: iAm Addr:%v, udp addr:%v, bac addr:%v", iAm[0].Addr, netAddr, bacAddr)
-	devices, err := client.RemoteDevices(bacAddr, iAm[0].ID.Instance)
+	devices, err := client.RemoteDevices(ctx, bacAddr, iAm[0].ID.Instance)
 	if err != nil {
 		t.Fatalf("RemoteDevices error %v", err)
 	}

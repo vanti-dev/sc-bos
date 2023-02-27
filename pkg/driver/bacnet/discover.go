@@ -1,6 +1,7 @@
 package bacnet
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/vanti-dev/gobacnet"
@@ -9,18 +10,18 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 )
 
-func (d *Driver) findDevice(device config.Device) (bactypes.Device, error) {
-	return FindDevice(d.client, device)
+func (d *Driver) findDevice(ctx context.Context, device config.Device) (bactypes.Device, error) {
+	return FindDevice(ctx, d.client, device)
 }
 
-func FindDevice(client *gobacnet.Client, device config.Device) (bactypes.Device, error) {
+func FindDevice(ctx context.Context, client *gobacnet.Client, device config.Device) (bactypes.Device, error) {
 	fail := func(err error) (bactypes.Device, error) {
 		return bactypes.Device{}, err
 	}
 
 	if device.Comm == nil {
 		id := device.ID
-		is, err := client.WhoIs(int(id), int(id))
+		is, err := client.WhoIs(ctx, int(id), int(id))
 		if err != nil {
 			return fail(err)
 		}
@@ -34,14 +35,14 @@ func FindDevice(client *gobacnet.Client, device config.Device) (bactypes.Device,
 	if err != nil {
 		return fail(err)
 	}
-	bacDevices, err := client.RemoteDevices(addr, device.ID)
+	bacDevices, err := client.RemoteDevices(ctx, addr, device.ID)
 	if err != nil {
 		return fail(err)
 	}
 	return bacDevices[0], nil
 }
 
-func (d *Driver) fetchObjects(cfg config.Root, device config.Device, bacDevice bactypes.Device) (map[bactypes.ObjectID]configObject, error) {
+func (d *Driver) fetchObjects(ctx context.Context, cfg config.Root, device config.Device, bacDevice bactypes.Device) (map[bactypes.ObjectID]configObject, error) {
 	objects := make(map[bactypes.ObjectID]configObject, len(device.Objects))
 	for _, object := range device.Objects {
 		objects[bactypes.ObjectID(object.ID)] = configObject{
@@ -58,7 +59,7 @@ func (d *Driver) fetchObjects(cfg config.Root, device config.Device, bacDevice b
 	}
 
 	if discoverObjects {
-		hasObjects, err := d.client.Objects(bacDevice)
+		hasObjects, err := d.client.Objects(ctx, bacDevice)
 		if err != nil {
 			return objects, fmt.Errorf("read objects %w", err)
 		}

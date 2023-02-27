@@ -46,7 +46,7 @@ type binaryOnOff struct {
 }
 
 func (b *binaryOnOff) GetOnOff(ctx context.Context, request *traits.GetOnOffRequest) (*traits.OnOff, error) {
-	read, err := b.client.ReadProperty(b.device, bactypes.ReadPropertyData{
+	read, err := b.client.ReadProperty(ctx, b.device, bactypes.ReadPropertyData{
 		Object: bactypes.Object{
 			ID: bactypes.ObjectID(b.object.ID),
 			Properties: []bactypes.Property{

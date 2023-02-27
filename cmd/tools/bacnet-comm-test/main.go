@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
 	"net/url"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/vanti-dev/gobacnet"
 	bactypes "github.com/vanti-dev/gobacnet/types"
@@ -27,6 +29,8 @@ func main() {
 		log.Fatal(err)
 	}
 	defer client.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
 
 	uri, err := url.ParseRequestURI("bacnet://" + serverPort)
 	if err != nil {
@@ -46,7 +50,7 @@ func main() {
 	}
 	bacAddr := bactypes.UDPToAddress(&net.UDPAddr{IP: ip, Port: int(portNum)})
 	log.Printf("Connecting to %v", bacAddr)
-	devices, err := client.RemoteDevices(bacAddr, bactypes.ObjectInstance(deviceNum))
+	devices, err := client.RemoteDevices(ctx, bacAddr, bactypes.ObjectInstance(deviceNum))
 	if err != nil {
 		log.Fatalf("Error reading device info! %v", err)
 	}

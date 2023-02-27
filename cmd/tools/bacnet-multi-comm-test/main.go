@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
@@ -29,6 +30,7 @@ var (
 	configFile  = flag.String("config-file", "area-controller.local.json", "file name to look for and load")
 	resultsFile = flag.String("results-file", "results", "file name to save results to, timestamp will be appended")
 	devicesOnly = flag.Bool("devices-only", false, "only check devices, not objects")
+	timeout     = flag.Duration("timeout", time.Second*2, "timeout for requests")
 )
 
 func main() {
@@ -57,10 +59,10 @@ func run() error {
 		log.Printf("config: %s, devices: %d", key, len(cfg.Devices))
 
 		client, err := gobacnet.NewClient(cfg.LocalInterface, int(cfg.LocalPort))
-		client.Log.Out = &bytes.Buffer{} // else client.Close() will close os.Stderr
 		if err != nil {
 			return err
 		}
+		client.Log.Out = &bytes.Buffer{} // else client.Close() will close os.Stderr
 		client.Log.SetLevel(logrus.InfoLevel)
 		address, err := client.LocalUDPAddress()
 		if err == nil {
@@ -68,8 +70,10 @@ func run() error {
 		}
 
 		for _, device := range cfg.Devices {
+			ctx, cancel := context.WithTimeout(context.Background(), *timeout)
+			defer cancel()
 			log.Printf("check deviceId: %d", device.ID)
-			dev, err := bacnet.FindDevice(client, device)
+			dev, err := bacnet.FindDevice(ctx, client, device)
 			res := &result{
 				name:     device.Name,
 				deviceId: fmt.Sprintf("%d", device.ID),
@@ -90,7 +94,9 @@ func run() error {
 						deviceId: obj.ID.String(),
 						value:    "",
 					}
-					value, err := readProp(client, dev, obj, property.PresentValue)
+					ctx, cancel := context.WithTimeout(context.Background(), *timeout)
+					defer cancel()
+					value, err := readProp(ctx, client, dev, obj, property.PresentValue)
 					if err == nil {
 						objRes.responding = true
 						objRes.value = value
@@ -144,7 +150,7 @@ func loadConfigs() (map[string]config.Root, error) {
 	return bacnetConfigs, nil
 }
 
-func readProp(client *gobacnet.Client, device bactypes.Device, obj config.Object, prop property.ID) (any, error) {
+func readProp(ctx context.Context, client *gobacnet.Client, device bactypes.Device, obj config.Object, prop property.ID) (any, error) {
 	req := bactypes.ReadPropertyData{
 		Object: bactypes.Object{
 			ID: bactypes.ObjectID(obj.ID),
@@ -153,7 +159,7 @@ func readProp(client *gobacnet.Client, device bactypes.Device, obj config.Object
 			},
 		},
 	}
-	res, err := client.ReadProperty(device, req)
+	res, err := client.ReadProperty(ctx, device, req)
 	if err != nil {
 		return nil, err
 	}
