@@ -28,6 +28,7 @@ var (
 	dir         = flag.String("dir", ".", "directory to scan for config")
 	configFile  = flag.String("config-file", "area-controller.local.json", "file name to look for and load")
 	resultsFile = flag.String("results-file", "results", "file name to save results to, timestamp will be appended")
+	devicesOnly = flag.Bool("devices-only", false, "only check devices, not objects")
 )
 
 func main() {
@@ -82,7 +83,7 @@ func run() error {
 			}
 			results[key] = append(results[key], res)
 
-			if res.responding {
+			if res.responding && !*devicesOnly {
 				for _, obj := range device.Objects {
 					objRes := &result{
 						name:     fmt.Sprintf("%s/%s", device.Name, obj.Name),
