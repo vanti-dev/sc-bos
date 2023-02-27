@@ -39,4 +39,8 @@ export class Zone {
     });
     return d;
   }
+
+  set devices(deviceList) {
+    console.log('zone:set devices', deviceList);
+  }
 }

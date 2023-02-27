@@ -15,7 +15,10 @@
         v-else-if="viewType === 'list'"
         :zone="zoneObj"
         :show-select="editMode"
-        :filter="zoneDevicesFilter"/>
+        :row-select="false"
+        :filter="zoneDevicesFilter"
+        :selected-devices="deviceList"
+        @update:selectedDevices="deviceList = $event"/>
   </v-container>
 </template>
 
@@ -26,6 +29,7 @@ import {useServicesStore} from '@/stores/services';
 import {ServiceNames} from '@/api/ui/services';
 import {Zone} from '@/routes/site/zone/zone';
 import DeviceTable from '@/routes/devices/components/DeviceTable.vue';
+import {Service} from '@sc-bos/ui-gen/proto/services_pb';
 
 const servicesStore = useServicesStore();
 const zoneCollection = ref(servicesStore.getService(ServiceNames.Zones).servicesCollection);
@@ -45,16 +49,22 @@ const zoneObj = computed(() => {
 const viewType = ref('list');
 const editMode = ref(false);
 
-const deviceList = computed(() => {
-  return zoneObj.value.devices;
+const deviceList = computed({
+  get() {
+    return zoneObj.value.deviceIds;
+  },
+  set(value) {
+    zoneObj.value.devices = value;
+  }
 });
 
+
 /**
- *
- * @param device
+ * @param {Device.AsObject} device
+ * @return {boolean}
  */
 function zoneDevicesFilter(device) {
-  return zoneObj?.value?.deviceIds?.indexOf(device.name) >= 0 ?? true;
+  return editMode.value || (zoneObj?.value?.deviceIds?.indexOf(device.name) >= 0 ?? true);
 }
 
 </script>
