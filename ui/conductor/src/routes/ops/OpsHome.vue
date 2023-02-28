@@ -2,12 +2,7 @@
   <v-container fluid class="pa-0 pt-2 d-flex flex-column" style="min-width: 270px; max-width: 1200px">
     <div class="d-flex flex-column flex-md-row">
       <h3 class="text-h3 pt-2 pb-6 flex-grow-1">Status: Building Overview</h3>
-      <content-card class="mr-8 mb-8 mr-sm-0" style="min-width: 250px;">
-        <div class="py-1" style="text-align: center">
-          <span class="text-title">Smart Core OS: </span>
-          <span class="text-title-bold text-uppercase success--text text--lighten-4">Online</span>
-        </div>
-      </content-card>
+      <sc-status-card/>
     </div>
     <div class="d-flex flex-column flex-lg-row">
       <div class="flex-grow-1 d-flex flex-column mr-lg-8">
@@ -15,61 +10,16 @@
           <h4 class="text-h4 order-lg-last pb-4 pb-lg-0 pt-0 pt-lg-4">System Monitor</h4>
           <building-status/>
         </content-card>
-        <content-card class="mb-8 d-flex flex-column px-6 pt-md-6 pb-md-8 pb-sm-8 ">
-          <h4 class="text-h4 order-lg-last py-0 pt-lg-2 pb-4 pb-md-0">Energy</h4>
-          <div class="d-flex flex-row">
-            <div class="text-h2 align-self-center" style="line-height: 0.5em; min-width: 120px;">
-              {{ currentEnergy.toFixed(1) }}<span style="font-size: 0.5em;">kWh</span><br>
-              <span class="text-title">Consumption</span>
-            </div>
-            <energy-graph class="flex-grow-1 d-none d-md-block"/>
-          </div>
-        </content-card>
+        <energy-card :current-energy="currentEnergy"/>
       </div>
       <div class="d-flex flex-column" style="min-width: 250px;">
-        <content-card class="mb-8 d-flex flex-column px-6 pt-md-6">
-          <h4 class="text-h4 order-lg-last pb-4 pb-lg-0 pt-0 pt-lg-4">Occupancy</h4>
-          <v-progress-linear height="24" class="mb-3" v-model="occupancyPercentage"/>
-          <div>
-            <div class="text-h2" style="float:left">
-              {{ occupancy }}
-              <span class="text-caption neutral--text text--lighten-5">/{{ maxOccupancy }}</span>
-            </div>
-            <div class="text-h2" style="float:right">{{ occupancyPercentage.toFixed(0) }}%</div>
-          </div>
-        </content-card>
-        <content-card class="mb-8 d-flex flex-column px-6 pt-md-6">
-          <h4 class="text-h4 order-lg-last pb-4 pb-lg-0 pt-0 pt-lg-4">Environmental</h4>
-          <div class="d-flex flex-column flex-md-row flex-lg-column">
-            <circular-gauge
-                :value="temperature"
-                min="15"
-                max="35"
-                segments="30"
-                class="align-self-center mb-6 mb-md-0 mb-lg-8 mr-md-8 mr-lg-0">
-              {{ temperature.toFixed(1) }}&deg;
-              <template #title>Avg. Indoor Temperature</template>
-            </circular-gauge>
-            <div class="align-self-center mb-6 mb-md-0 mb-lg-8 mr-md-8 mr-lg-0" style="width: 205px;">
-              <span
-                  class="text-title"
-                  style="display: inline-block; width: 100px;">External Temperature</span>
-              <span
-                  class="text-h1"
-                  style="display: inline-block; float: right;">{{ externalTemperature.toFixed(1) }}&deg;</span>
-            </div>
-            <circular-gauge
-                :value="humidity"
-                max="100"
-                segments="30"
-                class="align-self-center">
-              <span class="align-baseline">
-                {{ humidity.toFixed(1) }}<span style="font-size: 0.7em;">&percnt;</span>
-              </span>
-              <template #title>Avg. Humidity</template>
-            </circular-gauge>
-          </div>
-        </content-card>
+        <occupancy-card
+            :occupancy="occupancy"
+            :max-occupancy="maxOccupancy"/>
+        <environmental-card
+            :temperature="temperature"
+            :external-temperature="externalTemperature"
+            :humidity="humidity"/>
       </div>
     </div>
     <!-- todo: remove test slider, hook up real backend -->
@@ -82,10 +32,12 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import CircularGauge from '@/components/CircularGauge.vue';
 import {computed, ref} from 'vue';
 import BuildingStatus from '@/clients/ew/BuildingStatus_EW.vue';
-import EnergyGraph from '@/routes/ops/components/EnergyGraph.vue';
+import OccupancyCard from '@/routes/ops/components/OccupancyCard.vue';
+import EnvironmentalCard from '@/routes/ops/components/EnvironmentalCard.vue';
+import EnergyCard from '@/routes/ops/components/EnergyCard.vue';
+import ScStatusCard from '@/routes/ops/components/ScStatusCard.vue';
 
 const sliderVal = ref(0);
 
@@ -94,7 +46,6 @@ const humidity = computed(() => 20+(sliderVal.value*60));
 const externalTemperature = computed(() => temperature.value-7);
 const occupancy = computed(() => Math.round(sliderVal.value*maxOccupancy.value));
 const maxOccupancy = computed(() => 1556);
-const occupancyPercentage = computed(() => occupancy.value/maxOccupancy.value*100);
 const currentEnergy = computed(() => sliderVal.value*120);
 
 </script>
