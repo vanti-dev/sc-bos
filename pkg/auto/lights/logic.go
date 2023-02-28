@@ -72,7 +72,10 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	// If it hasn't been 10 minutes yet, it waits some time and turns the lights off when it has been
 	// 10 minutes.
 	var occupancyExpired bool
-	if becameUnoccupied := lastUnoccupiedTime(readState); !becameUnoccupied.IsZero() {
+	if len(readState.Config.OccupancySensors) == 0 {
+		// if no occupancy sensors are configured, always consider the space unoccupied.
+		occupancyExpired = true
+	} else if becameUnoccupied := lastUnoccupiedTime(readState); !becameUnoccupied.IsZero() {
 		unoccupiedDelayBeforeDarkness := readState.Config.UnoccupiedOffDelay.Duration
 
 		sinceUnoccupied := now.Sub(becameUnoccupied)
