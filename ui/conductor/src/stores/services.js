@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia';
 import {newActionTracker} from '@/api/resource';
-import {reactive, ref} from 'vue';
+import {reactive} from 'vue';
 import {getServiceMetadata, listServices, pullServices} from '@/api/ui/services';
 import {Collection} from '@/util/query';
 

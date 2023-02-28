@@ -41,6 +41,6 @@ export class Zone {
   }
 
   set devices(deviceList) {
-    console.log('zone:set devices', deviceList);
+    console.debug('zone:set devices', deviceList);
   }
 }
