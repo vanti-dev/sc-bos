@@ -214,6 +214,7 @@ func Test_processState(t *testing.T) {
 				acts := newTestActions(t)
 
 				readState.Config.Lights = []string{"light01"}
+				readState.Config.OccupancySensors = []string{"pir01"}
 				readState.Config.Now = func() time.Time { return now }
 				readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
 				readState.Force = &ForceState{
