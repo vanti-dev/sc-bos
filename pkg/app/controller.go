@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"crypto/tls"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -14,6 +13,13 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/timshannon/bolthold"
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/reflection"
+
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
@@ -31,12 +37,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/task/serviceapi"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
-	"go.uber.org/multierr"
-	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/reflection"
 )
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
@@ -54,22 +54,19 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	// load the local config file if possible
 	// TODO: pull config from manager publication
-	var localConfig appconf.Config
 	localConfigPath := filepath.Join(config.DataDir, config.AppConfigFile)
-	rawLocalConfig, err := os.ReadFile(localConfigPath)
-	if err == nil {
-		err = json.Unmarshal(rawLocalConfig, &localConfig)
-		if err != nil {
-			return nil, fmt.Errorf("local config JSON unmarshal: %w", err)
-		}
-	} else {
-		if !errors.Is(err, os.ErrNotExist) {
-			logger.Warn("failed to load local config from file", zap.Error(err),
-				zap.String("path", localConfigPath))
-		} else {
+	localConfig, err := appconf.LoadLocalConfig(config.DataDir, config.AppConfigFile)
+	if localConfig == nil && err != nil {
+		if errors.Is(err, os.ErrNotExist) {
 			logger.Debug("failed to load local config from file", zap.Error(err), zap.String("path", localConfigPath))
+		} else {
+			return nil, err
 		}
+	} else if err != nil {
+		// we loaded some config, but had some errors
+		logger.Warn("failed to load some config", zap.Error(err))
 	}
+	logger.Debug("loaded local config", zap.String("path", localConfigPath), zap.Strings("includes", localConfig.Includes))
 
 	// rootNode grants both local (in process) and networked (via grpc.Server) access to controller apis.
 	// If you have a device you want expose via a Smart Core API, rootNode is where you'd do that via Announce.
@@ -228,7 +225,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	c := &Controller{
 		SystemConfig:     config,
-		ControllerConfig: localConfig,
+		ControllerConfig: *localConfig,
 		Enrollment:       enrollServer,
 		Logger:           logger,
 		Node:             rootNode,
