@@ -2,6 +2,7 @@ package jsontypes
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 )
 
@@ -43,5 +44,10 @@ func (d *Duration) UnmarshalJSON(raw []byte) error {
 
 //goland:noinspection GoMixedReceiverTypes
 func (d Duration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(d.String())
+	str := d.String()
+	// time.Duration.String() always has 0s in, so 2m becomes 2m0s for example; we prefer brevity.
+	if str != "0s" && strings.HasSuffix(str, "0s") {
+		str = strings.Replace(str, "0s", "", 1)
+	}
+	return json.Marshal(str)
 }
