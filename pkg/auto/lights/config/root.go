@@ -25,8 +25,8 @@ type Root struct {
 	DaylightDimming *DaylightDimming `json:"daylightDimming,omitempty"`
 
 	// Devices implementing the Button trait will be used to switch the lights on and off when clicked once.
-	OnButtons  []string `json:"onButtons"`
-	OffButtons []string `json:"offButtons"`
+	OnButtons  []string `json:"onButtons,omitempty"`
+	OffButtons []string `json:"offButtons,omitempty"`
 
 	// Now returns the current time. It's configurable for testing purposes, typically for testing the logic.
 	Now func() time.Time `json:"-"`
