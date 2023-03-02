@@ -137,7 +137,7 @@ func computeOnLevelPercent(readState *ReadState) (level float32, ok bool) {
 		return 100, true
 	}
 
-	return threshold.LevelPercent, false
+	return threshold.LevelPercent, true
 }
 
 func combinedLuxLevel(brightness map[string]*traits.AmbientBrightness) float32 {
