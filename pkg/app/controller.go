@@ -10,8 +10,9 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
+	"github.com/rs/cors"
 	"github.com/timshannon/bolthold"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -20,10 +21,12 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
+	http2 "github.com/vanti-dev/sc-bos/pkg/app/http"
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
@@ -162,9 +165,9 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	manager := node.DialChan(ctx, enrollServer.ManagerAddress(ctx),
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsGRPCClientConfig)))
 
-	mux := http.NewServeMux()
-	if config.StaticDir != "" {
-		mux.Handle("/", http.FileServer(http.Dir(config.StaticDir)))
+	router := mux.NewRouter()
+	for _, site := range config.HttpConfig.StaticHosting {
+		http2.ServeStaticSite(site, router, logger.Named("http "+site.Path))
 	}
 
 	var grpcOpts []grpc.ServerOption
@@ -211,14 +214,25 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		return true
 	}))
 
+	addr := config.HttpConfig.Host + ":" + config.HttpConfig.Port
+	// configure CORS setup
+	co := cors.New(cors.Options{
+		AllowedOrigins:   config.HttpConfig.Cors.CorsOrigins,
+		AllowCredentials: true,
+		AllowedHeaders:   []string{http2.HttpHeaderAllowOrigin, http2.HttpHeaderAuthorization, http2.HttpHeaderContentType},
+		AllowedMethods:   []string{http.MethodHead, http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
+		Debug:            config.HttpConfig.Cors.DebugMode,
+	})
+
 	httpServer := &http.Server{
-		Addr:      config.ListenHTTPS,
+		Addr:      addr,
 		TLSConfig: tlsHTTPServerConfig,
 		Handler: http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			if grpcWebServer.IsGrpcWebRequest(request) || grpcWebServer.IsAcceptableGrpcCorsRequest(request) {
 				grpcWebServer.ServeHTTP(writer, request)
 			} else {
-				mux.ServeHTTP(writer, request)
+				co.HandlerFunc(writer, request)
+				router.ServeHTTP(writer, request)
 			}
 		}),
 	}
@@ -234,7 +248,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		TokenValidators:  tokenValidator,
 		GRPCCerts:        systemSource,
 		PrivateKey:       key,
-		Mux:              mux,
+		Mux:              router,
 		GRPC:             grpcServer,
 		HTTP:             httpServer,
 		ClientTLSConfig:  tlsGRPCClientConfig,
@@ -257,7 +271,7 @@ type Controller struct {
 	TokenValidators *token.ValidatorSet
 	GRPCCerts       *pki.SourceSet
 
-	Mux  *http.ServeMux
+	Mux  *mux.Router
 	GRPC *grpc.Server
 	HTTP *http.Server
 
@@ -296,11 +310,9 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 			return ServeGRPC(ctx, c.GRPC, c.SystemConfig.ListenGRPC, 15*time.Second, c.Logger.Named("server.grpc"))
 		})
 	}
-	if c.SystemConfig.ListenHTTPS != "" {
-		group.Go(func() error {
-			return ServeHTTPS(ctx, c.HTTP, 15*time.Second, c.Logger.Named("server.https"))
-		})
-	}
+	group.Go(func() error {
+		return ServeHTTPS(ctx, c.HTTP, 15*time.Second, c.Logger.Named("server.https"))
+	})
 
 	// load and start the systems
 	systemServices, err := c.startSystems()

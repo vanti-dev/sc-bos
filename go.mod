@@ -14,7 +14,7 @@ require (
 	github.com/olebedev/emitter v0.0.0-20190110104742-e8d1457e6aee
 	github.com/open-policy-agent/opa v0.42.2
 	github.com/pborman/uuid v1.2.0
-	github.com/rs/cors v1.7.0
+	github.com/rs/cors v1.8.3
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.39
 	github.com/smart-core-os/sc-golang v0.0.0-20230125150853-415fdd3456d6
@@ -40,6 +40,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.2.0 // indirect
+	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect

@@ -5,6 +5,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/pkg/app/http"
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
@@ -35,14 +36,13 @@ type Config struct {
 	ConfigDirs  []string `json:"-"` // Dirs we look in for system config files. Config in DataDir is always loaded and will have higher priority.
 	ConfigFiles []string `json:"-"` // Filenames we load in ConfigDirs for system config
 
-	Logger      *zap.Config `json:"logger,omitempty"`
-	ListenGRPC  string      `json:"listenGrpc,omitempty"`
-	ListenHTTPS string      `json:"listenHttps,omitempty"`
+	Logger     *zap.Config `json:"logger,omitempty"`
+	ListenGRPC string     `json:"listenGrpc,omitempty"`
 
-	DataDir       string `json:"dataDir,omitempty"`       // defaults to .data/controller
-	StaticDir     string `json:"staticDir,omitempty"`     // hosts static files from this directory over HTTP if StaticDir is non-empty
-	AppConfigFile string `json:"appConfigFile,omitempty"` // defaults to app.conf.json
-	CertConfig    *Certs `json:"certs,omitempty"`
+	HttpConfig    http.HttpConfig `json:"http,omitempty"`          // http static hosting config
+	DataDir       string          `json:"dataDir,omitempty"`       // defaults to .data/controller
+	AppConfigFile string          `json:"appConfigFile,omitempty"` // defaults to app.conf.json
+	CertConfig    *Certs           `json:"certs,omitempty"`
 
 	Systems map[string]system.RawConfig `json:"systems,omitempty"`
 
@@ -72,12 +72,22 @@ func Default() Config {
 		ConfigDirs:  []string{},
 		ConfigFiles: []string{"system.conf.json", "system.json"},
 
-		Logger:      &logConf,
-		ListenGRPC:  ":23557",
-		ListenHTTPS: ":443",
+		Logger:     &logConf,
+		ListenGRPC: ":23557",
 
+		HttpConfig: http.HttpConfig{
+			Host: "localhost",
+			Port: "8443",
+			Cors: http.CorsConfig{
+				DebugMode:   false,
+				CorsOrigins: []string{"https://localhost:8443"},
+			},
+			StaticHosting: []http.StaticHostingConfig{{
+				FilePath: "./ui/conductor/dist",
+				Path:     "/",
+			}},
+		},
 		DataDir:       ".data/controller",
-		StaticDir:     "",
 		AppConfigFile: "app.conf.json",
 
 		CertConfig: &Certs{
