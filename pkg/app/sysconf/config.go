@@ -3,12 +3,13 @@ package sysconf
 import (
 	"os"
 
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
-	"go.uber.org/zap"
 )
 
 // Load loads into dst any user supplied config from json files and CLI arguments.
@@ -34,14 +35,14 @@ type Config struct {
 	ConfigDirs  []string `json:"-"` // Dirs we look in for system config files. Config in DataDir is always loaded and will have higher priority.
 	ConfigFiles []string `json:"-"` // Filenames we load in ConfigDirs for system config
 
-	Logger      zap.Config `json:"logger,omitempty"`
-	ListenGRPC  string     `json:"listenGrpc,omitempty"`
-	ListenHTTPS string     `json:"listenHttps,omitempty"`
+	Logger      *zap.Config `json:"logger,omitempty"`
+	ListenGRPC  string      `json:"listenGrpc,omitempty"`
+	ListenHTTPS string      `json:"listenHttps,omitempty"`
 
 	DataDir       string `json:"dataDir,omitempty"`       // defaults to .data/controller
 	StaticDir     string `json:"staticDir,omitempty"`     // hosts static files from this directory over HTTP if StaticDir is non-empty
 	AppConfigFile string `json:"appConfigFile,omitempty"` // defaults to app.conf.json
-	CertConfig    Certs  `json:"certs,omitempty"`
+	CertConfig    *Certs `json:"certs,omitempty"`
 
 	Systems map[string]system.RawConfig `json:"systems,omitempty"`
 
@@ -66,11 +67,12 @@ type Certs struct {
 }
 
 func Default() Config {
+	logConf := zap.NewDevelopmentConfig()
 	config := Config{
 		ConfigDirs:  []string{},
 		ConfigFiles: []string{"system.conf.json", "system.json"},
 
-		Logger:      zap.NewDevelopmentConfig(),
+		Logger:      &logConf,
 		ListenGRPC:  ":23557",
 		ListenHTTPS: ":443",
 
@@ -78,7 +80,7 @@ func Default() Config {
 		StaticDir:     "",
 		AppConfigFile: "app.conf.json",
 
-		CertConfig: Certs{
+		CertConfig: &Certs{
 			KeyFile:      "grpc.key.pem",
 			CertFile:     "grpc.cert.pem",
 			RootsFile:    "grpc.roots.pem",
@@ -93,7 +95,7 @@ func Default() Config {
 	return config
 }
 
-func (c Certs) FillDefaults() Certs {
+func (c *Certs) FillDefaults() *Certs {
 	or := func(a *string, b string) {
 		if *a == "" {
 			*a = b
