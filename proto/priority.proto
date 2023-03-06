@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+// PriorityApi allows inspection and interaction with devices that support priority levels for interaction.
+// Actual setting and retrieval of values at a priority level happens via trait (or other) APIs.
+// Each priority level gets a unique Smart Core name and implements trait apis allowing direct setting of the trait
+// specific properties.
+service PriorityApi {
+  // Clear a single priority value, unsetting it in the priority list entries.
+  rpc ClearPriorityEntry(ClearPriorityValueRequest) returns (ClearPriorityValueResponse);
+}
+
+message ClearPriorityValueRequest {
+  // The name of the device that implements priority.
+  string name = 1;
+  // Required if the name implements priority for multiple traits.
+  string trait = 2;
+  oneof id {
+    // The index of the priority in the PriorityList.entries property.
+    int32 entry_index = 3;
+    // The name of the priority entry in PriorityList.entries
+    string entry_name = 4;
+  }
+
+  // todo: should we error if the value is already cleared?
+}
+
+message ClearPriorityValueResponse {}
