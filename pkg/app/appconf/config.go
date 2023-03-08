@@ -34,27 +34,23 @@ func (c *Config) mergeWith(other *Config) {
 	driverNames := c.driverNamesMap()
 	autoNames := c.autoNamesMap()
 	zoneNames := c.zoneNamesMap()
-	for i := 0; i < len(other.Drivers); i++ {
-		d := other.Drivers[i]
+	for _, d := range other.Drivers {
 		if _, found := driverNames[d.Name]; !found {
 			c.Drivers = append(c.Drivers, d)
 		}
 	}
-	for i := 0; i < len(other.Automation); i++ {
-		d := other.Automation[i]
-		if _, found := autoNames[d.Name]; !found {
-			c.Automation = append(c.Automation, d)
+	for _, a := range other.Automation {
+		if _, found := autoNames[a.Name]; !found {
+			c.Automation = append(c.Automation, a)
 		}
 	}
-	for i := 0; i < len(other.Zones); i++ {
-		d := other.Zones[i]
-		if _, found := zoneNames[d.Name]; !found {
-			c.Zones = append(c.Zones, d)
+	for _, z := range other.Zones {
+		if _, found := zoneNames[z.Name]; !found {
+			c.Zones = append(c.Zones, z)
 		}
 	}
 	// special case for includes - de-duplicate
-	for i := 0; i < len(other.Includes); i++ {
-		inc := other.Includes[i]
+	for _, inc := range other.Includes {
 		if slices.Contains(inc, c.Includes) {
 			continue
 		}
@@ -103,8 +99,7 @@ func loadIncludes(dir string, dst *Config, includes, seen []string) ([]string, e
 	var errs error
 	var configs []*Config
 	// load first layer of includes
-	for i := 0; i < len(includes); i++ {
-		include := includes[i]
+	for _, include := range includes {
 		path := filepath.Join(dir, include)
 		if slices.Contains(path, seen) {
 			continue
@@ -119,8 +114,8 @@ func loadIncludes(dir string, dst *Config, includes, seen []string) ([]string, e
 		}
 	}
 	// load all deeper includes
-	for i := 0; i < len(configs); i++ {
-		alsoSeen, err := loadIncludes(dir, dst, configs[i].Includes, seen)
+	for _, config := range configs {
+		alsoSeen, err := loadIncludes(dir, dst, config.Includes, seen)
 		if err != nil {
 			seen = alsoSeen
 		}
