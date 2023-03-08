@@ -1105,10 +1105,6 @@ github.com/urfave/cli v0.0.0-20171014202726-7bc6a0acffa5/go.mod h1:70zkFmudgCuE/
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli v1.22.2/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
-github.com/vanti-dev/gobacnet v0.0.0-20221024154753-4861ab8551a7 h1:FS+m+E0ESIWLZz0QeEOre/yHMexlCEW7MMFFGvxSETI=
-github.com/vanti-dev/gobacnet v0.0.0-20221024154753-4861ab8551a7/go.mod h1:MYngtum1Fve/7qCpWkXf6GaczTq7lakzptypgqiMtmM=
-github.com/vanti-dev/gobacnet v0.0.0-20230214143924-491552bcf78c h1:87A8OI26WcasJ/mJm8dtQnjFqN1LOLyHptSv2N5dFe0=
-github.com/vanti-dev/gobacnet v0.0.0-20230214143924-491552bcf78c/go.mod h1:MYngtum1Fve/7qCpWkXf6GaczTq7lakzptypgqiMtmM=
 github.com/vanti-dev/gobacnet v0.0.0-20230227161032-9f3d079e441a h1:eCe1zEuzb9K/pfqTldAJ/hGrhGjlor1pW7dUqQQiMp0=
 github.com/vanti-dev/gobacnet v0.0.0-20230227161032-9f3d079e441a/go.mod h1:MYngtum1Fve/7qCpWkXf6GaczTq7lakzptypgqiMtmM=
 github.com/vektah/gqlparser/v2 v2.4.5 h1:C02NsyEsL4TXJB7ndonqTfuQOL4XPIu0aAWugdmTgmc=
