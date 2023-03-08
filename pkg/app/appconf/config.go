@@ -49,17 +49,17 @@ func LoadLocalConfig(dir, file string) (*Config, error) {
 		return nil, err
 	}
 	// if we successfully loaded config, also load included files
-	_, err = loadIncludes(dir, conf, conf, nil)
+	_, err = loadIncludes(dir, conf, conf.Includes, nil)
 	return conf, err // return the config we have, and any errors
 }
 
 // loadIncludes will go through each include, load the configs, merge the configs, then load any further includes
-func loadIncludes(dir string, base *Config, conf *Config, seen []string) ([]string, error) {
+func loadIncludes(dir string, dst *Config, includes, seen []string) ([]string, error) {
 	var errs error
 	var configs []*Config
 	// load first layer of includes
-	for i := 0; i < len(conf.Includes); i++ {
-		include := conf.Includes[i]
+	for i := 0; i < len(includes); i++ {
+		include := includes[i]
 		path := filepath.Join(dir, include)
 		if slices.Contains(path, seen) {
 			continue
@@ -78,7 +78,7 @@ func loadIncludes(dir string, base *Config, conf *Config, seen []string) ([]stri
 	}
 	// load all deeper includes
 	for i := 0; i < len(configs); i++ {
-		alsoSeen, err := loadIncludes(dir, base, configs[i], seen)
+		alsoSeen, err := loadIncludes(dir, dst, configs[i].Includes, seen)
 		seen = append(seen, alsoSeen...)
 		errs = multierr.Append(errs, err)
 	}
