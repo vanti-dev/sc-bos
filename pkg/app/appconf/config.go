@@ -70,11 +70,8 @@ func loadIncludes(dir string, dst *Config, includes, seen []string) ([]string, e
 			errs = multierr.Append(errs, err)
 		} else {
 			configs = append(configs, extraConf)
+			dst.mergeWith(extraConf)
 		}
-	}
-	// merge
-	for i := 0; i < len(configs); i++ {
-		base.mergeWith(configs[i]) // don't append to include in the first loop
 	}
 	// load all deeper includes
 	for i := 0; i < len(configs); i++ {
