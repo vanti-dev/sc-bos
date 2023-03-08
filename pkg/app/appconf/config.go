@@ -21,6 +21,7 @@ type Config struct {
 	// an array of other config files to read and merge.
 	// If any included config files have further includes, they will also be loaded.
 	// name will be ignored from any included files, and all other values will be merged.
+	// if a duplicate name is found (e.g. duplicate driver), then the first one will be used
 	Includes   []string           `json:"includes,omitempty"`
 	Drivers    []driver.RawConfig `json:"drivers,omitempty"`
 	Automation []auto.RawConfig   `json:"automation,omitempty"`
@@ -28,9 +29,29 @@ type Config struct {
 }
 
 func (c *Config) mergeWith(other *Config) {
-	c.Drivers = append(c.Drivers, other.Drivers...)
-	c.Automation = append(c.Automation, other.Automation...)
-	c.Zones = append(c.Zones, other.Zones...)
+	// if any driver/auto/zone has a duplicate name it is ignored in favour of the one already present
+
+	driverNames := c.driverNamesMap()
+	autoNames := c.autoNamesMap()
+	zoneNames := c.zoneNamesMap()
+	for i := 0; i < len(other.Drivers); i++ {
+		d := other.Drivers[i]
+		if _, found := driverNames[d.Name]; !found {
+			c.Drivers = append(c.Drivers, d)
+		}
+	}
+	for i := 0; i < len(other.Automation); i++ {
+		d := other.Automation[i]
+		if _, found := autoNames[d.Name]; !found {
+			c.Automation = append(c.Automation, d)
+		}
+	}
+	for i := 0; i < len(other.Zones); i++ {
+		d := other.Zones[i]
+		if _, found := zoneNames[d.Name]; !found {
+			c.Zones = append(c.Zones, d)
+		}
+	}
 	// special case for includes - de-duplicate
 	for i := 0; i < len(other.Includes); i++ {
 		inc := other.Includes[i]
@@ -39,6 +60,30 @@ func (c *Config) mergeWith(other *Config) {
 		}
 		c.Includes = append(c.Includes, inc)
 	}
+}
+
+func (c *Config) driverNamesMap() map[string]bool {
+	names := make(map[string]bool, len(c.Drivers))
+	for _, d := range c.Drivers {
+		names[d.Name] = true
+	}
+	return names
+}
+
+func (c *Config) autoNamesMap() map[string]bool {
+	names := make(map[string]bool, len(c.Automation))
+	for _, d := range c.Automation {
+		names[d.Name] = true
+	}
+	return names
+}
+
+func (c *Config) zoneNamesMap() map[string]bool {
+	names := make(map[string]bool, len(c.Zones))
+	for _, d := range c.Zones {
+		names[d.Name] = true
+	}
+	return names
 }
 
 // LoadLocalConfig will load Config from a local file, as well as any included files

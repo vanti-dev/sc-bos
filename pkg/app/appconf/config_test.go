@@ -58,6 +58,12 @@ func TestLoadLocalConfig(t *testing.T) {
 			Raw:        json.RawMessage(fmt.Sprintf("{\"name\": \"%s\"}", name)),
 		}
 	}
+	driverWithType := func(name, t string) driver.RawConfig {
+		return driver.RawConfig{
+			BaseConfig: driver.BaseConfig{Name: name, Type: t},
+			Raw:        json.RawMessage(fmt.Sprintf("{\"name\": \"%s\", \"type\": \"%s\"}", name, t)),
+		}
+	}
 	tests := []struct {
 		name   string
 		fs     fstest.MapFS
@@ -233,6 +239,67 @@ func TestLoadLocalConfig(t *testing.T) {
 					driverNamed("driver-1"),
 					driverNamed("driver-part-1"),
 					driverNamed("driver-part-1a"),
+				},
+			},
+		},
+		{
+			name: "duplicate driver ignored",
+			fs: fstest.MapFS{
+				filepath.Join("data", "base.json"): {
+					Data: []byte(`{
+						"name": "my-config",
+						"includes": ["part-1.json"],
+						"drivers": [{"name": "driver-1", "type": "d-1"}]
+					}`),
+				},
+				filepath.Join("data", "part-1.json"): {
+					Data: []byte(`{
+						"name": "ignored",
+						"drivers": [{"name": "driver-1", "type": "d-2"}]
+					}`),
+				},
+			},
+			dir:  "data",
+			file: "base.json",
+			config: &Config{
+				Name:     "my-config",
+				Includes: []string{"part-1.json"},
+				Drivers: []driver.RawConfig{
+					driverWithType("driver-1", "d-1"),
+				},
+			},
+		},
+		{
+			name: "first dup driver takes precendence",
+			fs: fstest.MapFS{
+				filepath.Join("data", "base.json"): {
+					Data: []byte(`{
+						"name": "my-config",
+						"includes": ["part-1.json","part-2.json"],
+						"drivers": [{"name": "driver-1", "type": "d-1"}]
+					}`),
+				},
+				filepath.Join("data", "part-1.json"): {
+					Data: []byte(`{
+						"name": "ignored",
+						"drivers": [{"name": "driver-2", "type": "d-1a"}]
+					}`),
+				},
+				filepath.Join("data", "part-2.json"): {
+					Data: []byte(`{
+						"name": "ignored",
+						"drivers": [{"name": "driver-2", "type": "d-2"}]
+					}`),
+				},
+			},
+			dir:  "data",
+			file: "base.json",
+			config: &Config{
+				Name:     "my-config",
+				Includes: []string{"part-1.json", "part-2.json"},
+				Drivers: []driver.RawConfig{
+					driverWithType("driver-1", "d-1"),
+					driverWithType("driver-2", "d-1a"),
 				},
 			},
 		},
