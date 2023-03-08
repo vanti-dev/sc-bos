@@ -45,9 +45,11 @@ func (d *Duration) UnmarshalJSON(raw []byte) error {
 //goland:noinspection GoMixedReceiverTypes
 func (d Duration) MarshalJSON() ([]byte, error) {
 	str := d.String()
-	// time.Duration.String() always has 0s in, so 2m becomes 2m0s for example; we prefer brevity.
-	if str != "0s" && strings.HasSuffix(str, "0s") {
-		str = strings.Replace(str, "0s", "", 1)
+	if strings.HasSuffix(str, "m0s") {
+		str = str[:len(str)-2]
+	}
+	if strings.Contains(str, "h0m") {
+		str = strings.Replace(str, "h0m", "h", 1)
 	}
 	return json.Marshal(str)
 }
