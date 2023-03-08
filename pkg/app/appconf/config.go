@@ -76,7 +76,9 @@ func loadIncludes(dir string, dst *Config, includes, seen []string) ([]string, e
 	// load all deeper includes
 	for i := 0; i < len(configs); i++ {
 		alsoSeen, err := loadIncludes(dir, dst, configs[i].Includes, seen)
-		seen = append(seen, alsoSeen...)
+		if err != nil {
+			seen = alsoSeen
+		}
 		errs = multierr.Append(errs, err)
 	}
 	return seen, errs
