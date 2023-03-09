@@ -13,6 +13,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
@@ -24,7 +26,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system/hub/pgxhub"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/util/netutil"
-	"go.uber.org/zap"
 )
 
 func Factory() system.Factory {

@@ -6,11 +6,11 @@ import (
 	"io"
 	"time"
 
+	"github.com/go-jose/go-jose/v3"
 	"github.com/go-jose/go-jose/v3/jwt"
+
 	"github.com/vanti-dev/sc-bos/pkg/auth/role"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
-
-	"github.com/go-jose/go-jose/v3"
 )
 
 type tokenClaims struct {

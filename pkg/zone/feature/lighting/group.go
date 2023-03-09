@@ -3,9 +3,6 @@ package lighting
 import (
 	"context"
 
-	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/cmp"
-	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -13,6 +10,10 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/cmp"
+	"github.com/vanti-dev/sc-bos/internal/util/pull"
 )
 
 // Group implements traits.LightApiServer backed by a group of lights.

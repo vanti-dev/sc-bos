@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 

@@ -3,9 +3,10 @@ package pubcache
 import (
 	"context"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"go.etcd.io/bbolt"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/smart-core-os/sc-api/go/traits"
 )
 
 // NewBoltStorage create a Storage using a Bolt database as the backend.

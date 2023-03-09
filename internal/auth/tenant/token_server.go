@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 )
 
 type TokenServer struct {

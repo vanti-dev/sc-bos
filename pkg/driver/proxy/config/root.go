@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 )
 
@@ -28,7 +27,7 @@ type Node struct {
 
 	// Traits defines the exact named traits we proxy for this remote.
 	// If absent or empty the remote will be inspected using the Parent trait including all found traits.
-	//Traits []Trait `json:"traits,omitempty"` // todo: support manual traits
+	// Traits []Trait `json:"traits,omitempty"` // todo: support manual traits
 }
 
 type TLS struct {

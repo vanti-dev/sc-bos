@@ -12,11 +12,12 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/system/publications/config"
 	"github.com/vanti-dev/sc-bos/pkg/system/publications/pgxpublications"
-	"go.uber.org/multierr"
-	"go.uber.org/zap"
 )
 
 func main() {

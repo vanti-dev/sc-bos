@@ -5,6 +5,10 @@ import (
 	"errors"
 	"time"
 
+	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
@@ -12,9 +16,6 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
-	"go.uber.org/zap"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 var MetadataTraitNotSupported = errors.New("metadata is not supported")

@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/timshannon/bolthold"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -20,6 +19,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"

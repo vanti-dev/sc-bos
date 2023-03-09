@@ -4,10 +4,10 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
 type Services struct {

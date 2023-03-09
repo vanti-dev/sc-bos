@@ -10,8 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/smart-core-os/sc-api/go/traits"
 )
 
 // NewFileStorage returns a Storage that persists publications in a directory on the filesystem.

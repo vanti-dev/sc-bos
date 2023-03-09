@@ -7,12 +7,12 @@ import (
 	"math"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/fanspeed"
 	"github.com/vanti-dev/gobacnet"
-	"go.uber.org/zap"
-
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/node"

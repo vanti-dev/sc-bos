@@ -12,11 +12,11 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 

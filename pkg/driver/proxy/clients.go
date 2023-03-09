@@ -1,12 +1,13 @@
 package proxy
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
-	"google.golang.org/grpc"
 )
 
 // newApiClientForTrait returns the *ApiClient implementation for the named trait.

@@ -4,10 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/smart-core-os/sc-golang/pkg/resource"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 type Model struct {

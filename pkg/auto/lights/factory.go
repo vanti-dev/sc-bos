@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"sync/atomic"
 
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
-	"go.uber.org/zap"
 )
 
 const AutoType = "lights"

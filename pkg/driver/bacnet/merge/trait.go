@@ -1,10 +1,10 @@
 package merge
 
 import (
-	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/gobacnet"
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/node"

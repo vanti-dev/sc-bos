@@ -4,9 +4,10 @@ import (
 	"errors"
 	"time"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func recordToProto(r *service.Record) *gen.Service {

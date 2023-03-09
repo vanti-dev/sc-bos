@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
@@ -13,7 +15,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system/publications/config"
 	"github.com/vanti-dev/sc-bos/pkg/system/publications/pgxpublications"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
-	"go.uber.org/zap"
 )
 
 var Factory factory

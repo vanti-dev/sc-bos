@@ -3,9 +3,9 @@ package button
 import (
 	"context"
 
-	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 

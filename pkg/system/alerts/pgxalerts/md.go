@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4"
-	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/smart-core-os/sc-golang/pkg/resource"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 func (s *Server) GetAlertMetadata(ctx context.Context, request *gen.GetAlertMetadataRequest) (*gen.AlertMetadata, error) {

@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 
-	"github.com/vanti-dev/sc-bos/internal/util/pull"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/vanti-dev/sc-bos/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 func (a *automation) collectMeterReadingChanges(ctx context.Context, name string, payloads chan<- []byte) {

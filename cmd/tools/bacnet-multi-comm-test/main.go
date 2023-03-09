@@ -16,10 +16,10 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
-
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
@@ -124,7 +124,7 @@ func run() error {
 							id := object.ID
 							if !uniqueObjIds[id.String()] {
 								uniqueObjIds[id.String()] = true
-								//log.Printf("discovered device object %v:%v (name=%v)", id.Type, id.Instance, object.Name)
+								// log.Printf("discovered device object %v:%v (name=%v)", id.Type, id.Instance, object.Name)
 								cfgObjects = append(cfgObjects, config.Object{ID: config.ObjectID(id), Name: object.Name})
 							}
 						}

@@ -7,11 +7,11 @@ import (
 	"sync"
 
 	"github.com/go-jose/go-jose/v3/jwt"
+
+	"github.com/vanti-dev/sc-bos/pkg/auth"
 	"github.com/vanti-dev/sc-bos/pkg/auth/jwks"
 	"github.com/vanti-dev/sc-bos/pkg/auth/oidc"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
-
-	"github.com/vanti-dev/sc-bos/pkg/auth"
 )
 
 // accessTokenPayload describes the claims present in a token issued by a Keycloak Authorization Server.

@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/internal/util/times"
 	"github.com/vanti-dev/sc-bos/pkg/auto/runstate"
 	"github.com/vanti-dev/sc-bos/pkg/util/state"

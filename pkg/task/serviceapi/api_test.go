@@ -6,10 +6,11 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"google.golang.org/protobuf/testing/protocmp"
+
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
-	"google.golang.org/protobuf/testing/protocmp"
 )
 
 func TestApi_PullServices(t *testing.T) {

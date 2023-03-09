@@ -4,9 +4,10 @@ import (
 	"context"
 	"sync"
 
+	"google.golang.org/protobuf/proto"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"google.golang.org/protobuf/proto"
 )
 
 // Announcer defines the Announce method.

@@ -5,12 +5,13 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/testing/protocmp"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/testing/protocmp"
 )
 
 func TestNode_Announce_metadata(t *testing.T) {

@@ -4,10 +4,11 @@ import (
 	"context"
 	"sync"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 var errNotEnabled = status.Error(codes.FailedPrecondition, "not enabled")
