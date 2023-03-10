@@ -30,7 +30,9 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/speaker"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
+
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/color"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -155,6 +157,10 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 	button.TraitName: func(s node.Supporter) {
 		r := gen.NewButtonApiRouter()
 		s.Support(node.Routing(r), node.Clients(gen.WrapButtonApi(r)))
+	},
+	color.TraitName: func(s node.Supporter) {
+		r := gen.NewColorApiRouter()
+		s.Support(node.Routing(r), node.Clients(gen.WrapColorApi(r)))
 	},
 	meter.TraitName: func(s node.Supporter) {
 		r := gen.NewMeterApiRouter()
