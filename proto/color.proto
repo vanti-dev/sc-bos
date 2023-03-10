@@ -44,19 +44,19 @@ message Color {
 // ColorChannels represents different channels of color for a device, e.g. red, green, and blue
 message ColorChannels {
   // red channel value in the range [0,255]
-  // optional on write
+  // optional on write, required on read if supported
   optional uint32 red = 1;
   // green channel value in the range [0,255]
-  // optional on write
+  // optional on write, required on read if supported
   optional uint32 green = 2;
   // blue channel value in the range [0,255]
-  // optional on write
+  // optional on write, required on read if supported
   optional uint32 blue = 3;
   // if the device supports an intensity channel, that is represented here in the range [0,255]
-  // optional on write
+  // optional on write, required on read if supported
   optional uint32 intensity = 4;
   // if the device supports color temperature, that is represented here in Kelvin, typically in the range [2000,9000]
-  // optional on write
+  // optional on write, required on read if supported
   optional uint32 temperature = 5;
   // a map of other channel names to value, where the value is [0-255]
   // all values supported (that aren't specific fields above) should be present in the map,
@@ -67,9 +67,9 @@ message ColorChannels {
 }
 
 message ColorPreset {
-  // a unique name for this preset, which could be a number or ID, e.g. "143"
+  // a unique name for this preset, which could be a number or ID, e.g. "143", or "preset_1"
   string name = 1;
-  // a display name for this preset, e.g. "
+  // a display name for this preset, e.g. "Wake Up", or "Film Mode"
   string title = 2;
 }
 
