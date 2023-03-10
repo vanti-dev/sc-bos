@@ -44,21 +44,25 @@ target to send it to and the system replaces the template keywords and sends the
 
 Here are some of the available template placeholder values (called inserts):
 
-- `TIMESTAMP`:   Date & Time of the event, acquired from the event message. In dd/mm/yyyy hh:MM:ss format
-- `EVENTID`:     Identification number associated with the event.
-- `EVENTDESC`:   Description of the event, acquired from the event message.
-- `NETWORKID`:   Identification number associated with the network of the event.
-- `NETWORKDESC`: Description of the network, associated with the event message.
-- `NC100ID`:     Identification number associated with the NC100 of the event.
-- `NC100DES`:    Description of the NC100, associated with the event message.
-- `DEVICEID`:    Identification number associated with the device (RC2, IOC16, or SafeSuiteTM panel) of the event.
-- `DEVICEDESC`:  The description of the device (RC2, IOC16, or SafeSuiteTM panel) associated with the event message.
-- `CARDID`:      Identification number associated with the Card
-- `CARDNUMBER`:  Card number associated with the event.
-- `CARDHOLDER`:  Name of the cardholder associated with the event.
-- `USAGECOUNT`:  Usage count assigned to a card.
+| Insert           | Description                                                                                         | Type                              |
+|------------------|-----------------------------------------------------------------------------------------------------|-----------------------------------|
+| `TIMESTAMP`      | Date & Time of the event, acquired from the event message.                                          | `string`, `"dd/mm/yyyy hh:MM:ss"` |
+| `EVENTID`        | Identification number associated with the event.                                                    | `uint`                            |
+| `EVENTDESC`      | Description of the event, acquired from the event message.                                          | `string`                          |
+| `NETWORKID`      | Identification number associated with the network of the event.                                     | integer                           |
+| `NETWORKDESC`    | Description of the network, associated with the event message.                                      | `string`                          |
+| `NC100ID`        | Identification number associated with the NC100 of the event.                                       | integer                           |
+| `NC100DESC`      | Description of the NC100, associated with the event message.                                        | `string`                          |
+| `DEVICEID`       | Identification number associated with the device (RC2, IOC16, or SafeSuiteTM panel) of the event.   | integer                           |
+| `DEVICEDESC`     | The description of the device (RC2, IOC16, or SafeSuiteTM panel) associated with the event message. | `string`                          |
+| `CARDID`         | Identification number associated with the Card                                                      | integer                           |
+| `CARDNUMBER`     | Card number associated with the event.                                                              | `uint64`                          |
+| `CARDHOLDERDESC` | Name of the cardholder associated with the event.                                                   | `string`                          |
+| `USAGECOUNT`     | Usage count assigned to a card.                                                                     | ?                                 |
 
 Message Ports cannot be written to.
+
+A _network_ in Axiom terminology refers to a card reader or door. An example `NETWORKDESC` is `"ACU-06 Comms intake"`.
 
 ## Direct DB Access
 
