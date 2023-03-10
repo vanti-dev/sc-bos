@@ -1,8 +1,11 @@
 # RBH AxiomXa Driver
 
-Driver for the AxiomXa product version, produced by RBH. The server is an access control system which consists of an "
-Axiom Server" which provides the vendor specific UI for managing the estate. This server also hosts any API access
+Driver for the AxiomXa product version, produced by RBH. The server is an access control system which consists of an
+"Axiom Server" which provides the vendor specific UI for managing the estate. This server also hosts any API access
 available.
+
+Axiom itself has the concept of cards and card holders, controllers (which they call networks) and card readers (which
+they call devices).
 
 AxiomXa provides three different methods of integration, each with benefits and drawbacks
 
