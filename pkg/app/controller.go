@@ -218,7 +218,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	co := cors.New(cors.Options{
 		AllowedOrigins:   config.Cors.CorsOrigins,
 		AllowCredentials: true,
-		AllowedHeaders:   []string{http2.HttpHeaderAllowOrigin, http2.HttpHeaderAuthorization, http2.HttpHeaderContentType},
+		AllowedHeaders:   []string{http2.HeaderAllowOrigin, http2.HeaderAuthorization, http2.HeaderContentType},
 		AllowedMethods:   []string{http.MethodHead, http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
 		Debug:            config.Cors.DebugMode,
 	})

@@ -1,7 +1,7 @@
 package http
 
 const (
-	HttpHeaderAllowOrigin   = "Access-Control-Allow-Origin"
-	HttpHeaderAuthorization = "Authorization"
-	HttpHeaderContentType   = "Content-Type"
+	HeaderAllowOrigin   = "Access-Control-Allow-Origin"
+	HeaderAuthorization = "Authorization"
+	HeaderContentType   = "Content-Type"
 )
