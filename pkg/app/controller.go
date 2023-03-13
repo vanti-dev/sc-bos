@@ -25,6 +25,7 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
+	http2 "github.com/vanti-dev/sc-bos/pkg/app/http"
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
@@ -164,8 +165,9 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsGRPCClientConfig)))
 
 	mux := http.NewServeMux()
-	if config.StaticDir != "" {
-		mux.Handle("/", http.FileServer(http.Dir(config.StaticDir)))
+	for _, site := range config.StaticHosting {
+		handler := http2.NewStaticHandler(site.FilePath)
+		mux.Handle(site.Path, http.StripPrefix(site.Path, handler))
 	}
 
 	var grpcOpts []grpc.ServerOption
