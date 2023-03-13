@@ -2,8 +2,8 @@ package axiomxa
 
 import (
 	"context"
-	"errors"
 
+	"github.com/olebedev/emitter"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver"
@@ -42,16 +42,29 @@ type Driver struct {
 func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	announcer := node.AnnounceContext(ctx, d.announcer)
 
-	if cfg.HTTP == nil {
-		return errors.New("http missing")
+	if cfg.HTTP != nil {
+		d.logger.Debug("Setting up AxiomXa HTTP connector", zap.String("baseUrl", cfg.HTTP.BaseURL))
+		httpImpl := &server{
+			config: cfg,
+			logger: d.logger.Named("server"),
+		}
+		announcer.Announce(cfg.Name, node.HasClient(rpc.WrapAxiomXaDriverService(httpImpl)))
 	}
 
-	d.logger.Debug("Setting up AxiomXa HTTP connector", zap.String("baseUrl", cfg.HTTP.BaseURL))
-	httpImpl := &server{
-		config: cfg,
-		logger: d.logger.Named("server"),
+	// bus topics look like AG or NOFF (Access Granted or Network Offline) based on the available message ports
+	// The argument is always of type mps.Fields.
+	bus := emitter.New(0)
+	if err := d.setupMessagePortServer(ctx, cfg, bus); err != nil {
+		return err
 	}
-	announcer.Announce(cfg.Name, node.HasClient(rpc.WrapAxiomXaDriverService(httpImpl)))
+
+	// devices maps axiom devices (and controllers) to smart core names
+	devices := devicesFromConfig(cfg.Devices)
+
+	// announce traits that expose this functionality over smart core
+	if err := d.announceTraits(ctx, cfg, announcer, bus, devices); err != nil {
+		return err
+	}
 
 	return nil
 }

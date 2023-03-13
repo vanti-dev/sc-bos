@@ -1,10 +1,11 @@
-package messageports
+package mps
 
 import "fmt"
 
 type Field string
 
 const (
+	Ignore         Field = "_"
 	Timestamp      Field = "TIMESTAMP"
 	EventID        Field = "EVENTID"
 	EventDesc      Field = "EVENTDESC"
@@ -43,6 +44,9 @@ type Fields struct {
 // field returns a pointer to the field in f that corresponds to field.
 func (f *Fields) field(field Field) (any, error) {
 	switch field {
+	case Ignore:
+		var s string
+		return &s, nil
 	case Timestamp:
 		return &f.Timestamp, nil
 	case EventID:
@@ -78,6 +82,10 @@ func (f *Fields) field(field Field) (any, error) {
 type Pattern struct {
 	Separator string // defaults to the package Separator
 	Fields    []Field
+}
+
+func NewPattern(fields ...Field) Pattern {
+	return Pattern{Fields: fields}
 }
 
 func (p Pattern) Unmarshal(data []byte, dst *Fields) error {
