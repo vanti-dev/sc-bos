@@ -1,12 +1,5 @@
 package http
 
-type HttpConfig struct {
-	Host          string                `json:"host,omitempty"`
-	Port          string                `json:"port,omitempty"`
-	Cors          CorsConfig            `json:"cors"`
-	StaticHosting []StaticHostingConfig `json:"staticHosting,omitempty"`
-}
-
 type StaticHostingConfig struct {
 	// the location of the static files
 	FilePath string `json:"filepath"`

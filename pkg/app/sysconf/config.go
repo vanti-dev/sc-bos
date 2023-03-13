@@ -36,13 +36,15 @@ type Config struct {
 	ConfigDirs  []string `json:"-"` // Dirs we look in for system config files. Config in DataDir is always loaded and will have higher priority.
 	ConfigFiles []string `json:"-"` // Filenames we load in ConfigDirs for system config
 
-	Logger     *zap.Config `json:"logger,omitempty"`
-	ListenGRPC string     `json:"listenGrpc,omitempty"`
+	Logger      *zap.Config `json:"logger,omitempty"`
+	ListenGRPC  string      `json:"listenGrpc,omitempty"`
+	ListenHTTPS string      `json:"listenHttps,omitempty"`
 
-	HttpConfig    http.HttpConfig `json:"http,omitempty"`          // http static hosting config
-	DataDir       string          `json:"dataDir,omitempty"`       // defaults to .data/controller
-	AppConfigFile string          `json:"appConfigFile,omitempty"` // defaults to app.conf.json
-	CertConfig    *Certs           `json:"certs,omitempty"`
+	DataDir       string                     `json:"dataDir,omitempty"` // defaults to .data/controller
+	StaticHosting []http.StaticHostingConfig `json:"staticHosting"`
+	AppConfigFile string                     `json:"appConfigFile,omitempty"` // defaults to app.conf.json
+	CertConfig    *Certs                     `json:"certs,omitempty"`
+	Cors          http.CorsConfig            `json:"cors,omitempty"`
 
 	Systems map[string]system.RawConfig `json:"systems,omitempty"`
 
@@ -72,21 +74,18 @@ func Default() Config {
 		ConfigDirs:  []string{},
 		ConfigFiles: []string{"system.conf.json", "system.json"},
 
-		Logger:     &logConf,
-		ListenGRPC: ":23557",
+		Logger:      &logConf,
+		ListenGRPC:  ":23557",
+		ListenHTTPS: ":443",
 
-		HttpConfig: http.HttpConfig{
-			Host: "localhost",
-			Port: "8443",
-			Cors: http.CorsConfig{
-				DebugMode:   false,
-				CorsOrigins: []string{"https://localhost:8443"},
-			},
-			StaticHosting: []http.StaticHostingConfig{{
-				FilePath: "./ui/conductor/dist",
-				Path:     "/",
-			}},
+		Cors: http.CorsConfig{
+			DebugMode:   false,
+			CorsOrigins: []string{"https://localhost:443"},
 		},
+		StaticHosting: []http.StaticHostingConfig{{
+			FilePath: "./ui/conductor/dist",
+			Path:     "/",
+		}},
 		DataDir:       ".data/controller",
 		AppConfigFile: "app.conf.json",
 
