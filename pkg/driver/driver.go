@@ -2,8 +2,8 @@ package driver
 
 import (
 	"crypto/tls"
+	"net/http"
 
-	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -15,7 +15,7 @@ type Services struct {
 	Logger          *zap.Logger
 	Node            *node.Node  // for advertising devices
 	ClientTLSConfig *tls.Config // for connecting to other smartcore nodes
-	HTTPMux         *mux.Router
+	HTTPMux         *http.ServeMux
 }
 
 type Driver interface {
