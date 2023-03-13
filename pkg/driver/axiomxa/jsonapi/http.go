@@ -12,7 +12,7 @@ import (
 )
 
 func (c *Client) url(suffix string, args ...any) string {
-	return c.baseURL + fmt.Sprintf(suffix, args...)
+	return c.BaseURL + fmt.Sprintf(suffix, args...)
 }
 
 func (c *Client) postNoAuth(ctx context.Context, url string, reqJSON any, resJSON any) error {
@@ -35,7 +35,7 @@ func (c *Client) postNoAuth(ctx context.Context, url string, reqJSON any, resJSO
 		req.Header.Set("Content-Type", "application/json")
 	}
 
-	res, err := c.httpClient.Do(req)
+	res, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (c *Client) post(ctx context.Context, url string, reqJSON any, resJSON any)
 		}
 		req.Header.Set("Authorization", "Bearer "+token)
 
-		res, err := c.httpClient.Do(req)
+		res, err := c.HTTPClient.Do(req)
 		if err != nil {
 			return err
 		}
@@ -100,7 +100,7 @@ func (c *Client) get(ctx context.Context, url string, resJSON any) error {
 			return err
 		}
 
-		res, err := c.httpClient.Do(req)
+		res, err := c.HTTPClient.Do(req)
 		if err != nil {
 			return err
 		}

@@ -2,13 +2,15 @@ package axiomxa
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/olebedev/emitter"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/config"
-	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/rpc"
+	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/jsonapi"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
@@ -29,8 +31,8 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 }
 
 func (f factory) AddSupport(supporter node.Supporter) {
-	r := rpc.NewAxiomXaDriverServiceRouter()
-	supporter.Support(node.Routing(r), node.Clients(rpc.WrapAxiomXaDriverService(r)))
+	r := gen.NewAxiomXaDriverServiceRouter()
+	supporter.Support(node.Routing(r), node.Clients(gen.WrapAxiomXaDriverService(r)))
 }
 
 type Driver struct {
@@ -44,15 +46,30 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 
 	if cfg.HTTP != nil {
 		d.logger.Debug("Setting up AxiomXa HTTP connector", zap.String("baseUrl", cfg.HTTP.BaseURL))
-		httpImpl := &server{
+		username, password, err := cfg.HTTP.Credentials()
+		if err != nil {
+			return err
+		}
+		tlsConfig, err := cfg.HTTP.TLS.TLSConfig()
+		if err != nil {
+			return err
+		}
+		client := jsonapi.NewClient(cfg.HTTP.BaseURL, username, password)
+		if tlsConfig != nil {
+			client.HTTPClient.Transport = &http.Transport{
+				TLSClientConfig: tlsConfig,
+			}
+		}
+
+		qrServerImpl := &qrServer{
 			config: cfg,
 			logger: d.logger.Named("server"),
 		}
-		announcer.Announce(cfg.Name, node.HasClient(rpc.WrapAxiomXaDriverService(httpImpl)))
+		announcer.Announce(cfg.Name, node.HasClient(gen.WrapAxiomXaDriverService(qrServerImpl)))
 	}
 
-	// bus topics look like AG or NOFF (Access Granted or Network Offline) based on the available message ports
-	// The argument is always of type mps.Fields.
+	// bus topics will be one of the Keys in bsp-ew.go, like KeyAccessGranted ("AG")
+	// The event argument is always of type mps.Fields.
 	bus := emitter.New(0)
 	if err := d.setupMessagePortServer(ctx, cfg, bus); err != nil {
 		return err

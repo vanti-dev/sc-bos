@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+// KeepUnknown can be used to keep unknown fields in a json Unmarshal->Marshal flow.
+// Known and unknown fields are marshalled in sorted order, as if both known and unknown keys were stored in the same map.
 type KeepUnknown[T any] struct {
 	Known   T
 	unknown map[string]json.RawMessage

@@ -6,8 +6,8 @@ import (
 )
 
 type Client struct {
-	baseURL    string
-	httpClient *http.Client
+	BaseURL    string
+	HTTPClient *http.Client
 
 	Username, Password string
 
@@ -16,4 +16,13 @@ type Client struct {
 	loginStop     func()        // call this func to stop any running login requests
 	loginResponse LoginResponse
 	loginErr      error
+}
+
+func NewClient(baseURL, username, password string) *Client {
+	return &Client{
+		BaseURL:    baseURL,
+		Username:   username,
+		Password:   password,
+		HTTPClient: &http.Client{},
+	}
 }
