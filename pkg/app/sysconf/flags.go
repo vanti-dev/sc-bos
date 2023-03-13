@@ -19,9 +19,11 @@ func LoadFromArgs(dst *Config, args ...string) ([]string, error) {
 	fs.BoolVar(&dst.DisablePolicy, "insecure-disable-policy", dst.DisablePolicy, "Insecure! Disable checking requests against the security policy. This option opens up the server to any request.")
 
 	err := fs.Parse(args)
-	dst.StaticHosting = []http.StaticHostingConfig{{
-		FilePath: static,
-		Path:     "/",
-	}}
+	if static != "" {
+		dst.StaticHosting = []http.StaticHostingConfig{{
+			FilePath: static,
+			Path:     "/",
+		}}
+	}
 	return fs.Args(), err
 }
