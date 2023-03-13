@@ -165,9 +165,11 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsGRPCClientConfig)))
 
 	mux := http.NewServeMux()
+	logger.Debug("static hosting config", zap.Any("config", config.StaticHosting))
 	for _, site := range config.StaticHosting {
-		handler := http2.NewStaticHandler(site.FilePath)
+		handler := http2.NewStaticHandler(site.FilePath, logger.Named("StaticHandler "+site.Path))
 		mux.Handle(site.Path, http.StripPrefix(site.Path, handler))
+		logger.Info("Serving static site", zap.String("path", site.Path), zap.String("filePath", site.FilePath))
 	}
 
 	var grpcOpts []grpc.ServerOption

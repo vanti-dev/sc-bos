@@ -5,13 +5,16 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	"go.uber.org/zap"
 )
 
-func NewStaticHandler(staticPath string) http.Handler {
+func NewStaticHandler(staticPath string, logger *zap.Logger) http.Handler {
 	return SPAFileServer(http.Dir(staticPath), func(w http.ResponseWriter, r *http.Request) bool {
-		r.URL.Path = "/index.html"
+		r.URL.Path = "/"
+		logger.Debug("redirecting", zap.String("request", r.URL.String()))
 		return true
-	})
+	}, logger)
 }
 
 // SPAHandler provides the function signature for passing to the FileServerWith404
@@ -24,7 +27,7 @@ The implementation can choose to either modify the request, e.g. change the URL 
 default FileServer handling to still take place, or return false to stop further processing, for example if you wanted
 to write a custom response
 */
-func SPAFileServer(root http.FileSystem, handlerSPA SPAHandler) http.Handler {
+func SPAFileServer(root http.FileSystem, handlerSPA SPAHandler, logger *zap.Logger) http.Handler {
 	fs := http.FileServer(root)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -35,6 +38,8 @@ func SPAFileServer(root http.FileSystem, handlerSPA SPAHandler) http.Handler {
 			r.URL.Path = upath
 		}
 		upath = path.Clean(upath)
+
+		logger.Debug("Looking up path", zap.String("path", upath), zap.String("request", r.URL.String()))
 
 		// attempt to open the file via the http.FileSystem
 		f, err := root.Open(upath)
