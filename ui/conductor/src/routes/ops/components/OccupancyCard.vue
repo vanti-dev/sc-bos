@@ -14,21 +14,40 @@
 
 <script setup>
 
-import {computed} from 'vue';
+import {computed, onUnmounted, reactive, watch} from 'vue';
 import ContentCard from '@/components/ContentCard.vue';
+import {closeResource, newResourceValue} from '@/api/resource';
+import {pullOccupancy} from '@/api/sc/traits/occupancy';
 
 const props = defineProps({
-  occupancy: {
-    type: Number,
-    default: 0
-  },
-  maxOccupancy: {
-    type: Number,
-    default: 1
+  name: {
+    type: String,
+    default: 'building'
   }
 });
 
-const occupancyPercentage = computed(() => props.occupancy/props.maxOccupancy*100);
+const occupancyValue = reactive(newResourceValue());
+// todo: where do we get this from?
+const maxOccupancy = 1234;
+
+const occupancy = computed(() => {
+  return occupancyValue.value?.peopleCount ?? 0;
+});
+
+const occupancyPercentage = computed(() => occupancy.value/maxOccupancy*100);
+
+watch(() => props.name, async (name) => {
+  // close existing stream if present
+  closeResource(occupancyValue);
+  // create new stream
+  if (name && name !== '') {
+    pullOccupancy(name, occupancyValue);
+  }
+}, {immediate: true});
+
+onUnmounted(() => {
+  closeResource(occupancyValue);
+});
 
 </script>
 

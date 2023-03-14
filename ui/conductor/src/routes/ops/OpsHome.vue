@@ -13,13 +13,8 @@
         <energy-card :current-energy="currentEnergy"/>
       </div>
       <div class="d-flex flex-column" style="min-width: 250px;">
-        <occupancy-card
-            :occupancy="occupancy"
-            :max-occupancy="maxOccupancy"/>
-        <environmental-card
-            :temperature="temperature"
-            :external-temperature="externalTemperature"
-            :humidity="humidity"/>
+        <occupancy-card :name="zoneName"/>
+        <environmental-card :name="zoneName"/>
       </div>
     </div>
     <!-- todo: remove test slider, hook up real backend -->
@@ -41,11 +36,9 @@ import ScStatusCard from '@/routes/ops/components/ScStatusCard.vue';
 
 const sliderVal = ref(0);
 
-const temperature = computed(() => 10+(sliderVal.value*25));
-const humidity = computed(() => 20+(sliderVal.value*60));
-const externalTemperature = computed(() => temperature.value-7);
-const occupancy = computed(() => Math.round(sliderVal.value*maxOccupancy.value));
-const maxOccupancy = computed(() => 1556);
 const currentEnergy = computed(() => sliderVal.value*120);
+
+// todo: should probably get this from somewhere
+const zoneName = 'Floor 3'; // building-wide zone to use for collecting data
 
 </script>

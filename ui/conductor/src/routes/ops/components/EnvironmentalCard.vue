@@ -4,8 +4,8 @@
     <div class="d-flex flex-column flex-md-row flex-lg-column">
       <circular-gauge
           :value="temperature"
-          min="15"
-          max="35"
+          :min="temperatureRange.low"
+          :max="temperatureRange.high"
           segments="30"
           class="align-self-center mb-6 mb-md-0 mb-lg-8 mr-md-8 mr-lg-0">
         {{ temperature.toFixed(1) }}&deg;
@@ -25,7 +25,7 @@
           segments="30"
           class="align-self-center">
         <span class="align-baseline">
-          {{ humidity.toFixed(1) }}<span style="font-size: 0.7em;">&percnt;</span>
+          {{ (humidity * 100).toFixed(1) }}<span style="font-size: 0.7em;">&percnt;</span>
         </span>
         <template #title>Avg. Humidity</template>
       </circular-gauge>
@@ -37,21 +37,62 @@
 
 import ContentCard from '@/components/ContentCard.vue';
 import CircularGauge from '@/components/CircularGauge.vue';
+import {computed, onUnmounted, reactive, ref, watch} from 'vue';
+import {closeResource, newResourceValue} from '@/api/resource';
+import {pullAirTemperature} from '@/api/sc/traits/air-temperature';
 
 const props = defineProps({
-  temperature: {
-    type: Number,
-    default: 0
+  // name of the device/zone to query for internal temperature data
+  name: {
+    type: String,
+    default: 'building'
   },
-  humidity: {
-    type: Number,
-    default: 0
-  },
-  externalTemperature: {
-    type: Number,
-    default: 0
+  // name of the device/zone to query for external temperature data
+  externalName: {
+    type: String,
+    default: 'outside'
   }
 });
+
+// todo: do we need to get this from somewhere?
+const temperatureRange = ref({
+  low: 18.0,
+  high: 24.0
+});
+
+const indoorTempValue = reactive(newResourceValue());
+const outdoorTempValue = reactive(newResourceValue());
+
+const temperature = computed(() => indoorTempValue.value?.ambientTemperature?.valueCelsius ?? 0);
+const humidity = computed(() => indoorTempValue.value?.ambientHumidity?.value ?? 0);
+const externalTemperature = computed(() => outdoorTempValue.value?.ambientTemperature?.valueCelsius ?? 0);
+
+watch(() => props.name, async (name) => {
+  // close existing stream if present
+  closeResource(indoorTempValue);
+  // create new stream
+  if (name && name !== '') {
+    pullAirTemperature(name, indoorTempValue);
+  }
+}, {immediate: true});
+
+onUnmounted(() => {
+  closeResource(indoorTempValue);
+});
+
+watch(() => props.name, async (name) => {
+  // close existing stream if present
+  closeResource(outdoorTempValue);
+  // create new stream
+  if (name && name !== '') {
+    pullAirTemperature(name, outdoorTempValue);
+  }
+}, {immediate: true});
+
+onUnmounted(() => {
+  closeResource(outdoorTempValue);
+});
+
 
 </script>
 
