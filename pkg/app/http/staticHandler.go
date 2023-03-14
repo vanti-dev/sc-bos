@@ -5,16 +5,13 @@ import (
 	"os"
 	"path"
 	"strings"
-
-	"go.uber.org/zap"
 )
 
-func NewStaticHandler(staticPath string, logger *zap.Logger) http.Handler {
+func NewStaticHandler(staticPath string) http.Handler {
 	return SPAFileServer(http.Dir(staticPath), func(w http.ResponseWriter, r *http.Request) bool {
 		r.URL.Path = "/"
-		logger.Debug("redirecting", zap.String("request", r.URL.String()))
 		return true
-	}, logger)
+	})
 }
 
 // SPAHandler provides the function signature for passing to the SPAFileServer
@@ -29,7 +26,7 @@ type SPAHandler = func(w http.ResponseWriter, r *http.Request) (doDefaultFileSer
 // wanted to write a custom response
 //
 // This code borrows heavily from https://gist.github.com/lummie/91cd1c18b2e32fa9f316862221a6fd5c
-func SPAFileServer(root http.FileSystem, handlerSPA SPAHandler, logger *zap.Logger) http.Handler {
+func SPAFileServer(root http.FileSystem, handlerSPA SPAHandler) http.Handler {
 	fs := http.FileServer(root)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -40,8 +37,6 @@ func SPAFileServer(root http.FileSystem, handlerSPA SPAHandler, logger *zap.Logg
 			r.URL.Path = upath
 		}
 		upath = path.Clean(upath)
-
-		logger.Debug("Looking up path", zap.String("path", upath), zap.String("request", r.URL.String()))
 
 		// attempt to open the file via the http.FileSystem
 		f, err := root.Open(upath)
