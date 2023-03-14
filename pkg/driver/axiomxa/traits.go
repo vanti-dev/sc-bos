@@ -13,6 +13,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/mps"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
@@ -28,7 +29,7 @@ func (d *Driver) announceTraits(ctx context.Context, cfg config.Root, announcer 
 	}
 	udmiClient := gen.WrapUdmiService(udmiServer)
 	for _, device := range cfg.Devices {
-		announcer.Announce(device.Name, node.HasClient(udmiClient))
+		announcer.Announce(device.Name, node.HasTrait(udmipb.TraitName, node.WithClients(udmiClient)))
 	}
 
 	return nil

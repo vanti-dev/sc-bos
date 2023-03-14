@@ -15,6 +15,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
@@ -67,7 +68,7 @@ func newUdmiMerge(client *gobacnet.Client, ctx known.Context, config config.RawT
 }
 
 func (f *udmiMerge) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(f.config.Name, node.HasClient(gen.WrapUdmiService(f)))
+	return a.Announce(f.config.Name, node.HasTrait(udmipb.TraitName, node.WithClients(gen.WrapUdmiService(f))))
 }
 
 func (f *udmiMerge) PullControlTopics(request *gen.PullControlTopicsRequest, server gen.UdmiService_PullControlTopicsServer) error {
