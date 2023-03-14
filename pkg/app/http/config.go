@@ -2,7 +2,7 @@ package http
 
 type StaticHostingConfig struct {
 	// the location of the static files
-	FilePath string `json:"filepath"`
+	FilePath string `json:"filePath"`
 	// the url path the files should be served on (e.g. "/my-site")
 	Path string `json:"path"`
 }
