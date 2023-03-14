@@ -83,10 +83,7 @@ func Default() Config {
 			// todo: this should really default to the default host
 			CorsOrigins: []string{"*"},
 		},
-		StaticHosting: []http.StaticHostingConfig{{
-			FilePath: "./ui/conductor/dist",
-			Path:     "/",
-		}},
+		StaticHosting: []http.StaticHostingConfig{},
 		DataDir:       ".data/controller",
 		AppConfigFile: "app.conf.json",
 
