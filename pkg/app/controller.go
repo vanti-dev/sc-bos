@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/rs/cors"
 	"github.com/timshannon/bolthold"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -24,6 +25,7 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
+	http2 "github.com/vanti-dev/sc-bos/pkg/app/http"
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
@@ -163,8 +165,10 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsGRPCClientConfig)))
 
 	mux := http.NewServeMux()
-	if config.StaticDir != "" {
-		mux.Handle("/", http.FileServer(http.Dir(config.StaticDir)))
+	for _, site := range config.StaticHosting {
+		handler := http2.NewStaticHandler(site.FilePath)
+		mux.Handle(site.Path, http.StripPrefix(site.Path, handler))
+		logger.Info("Serving static site", zap.String("path", site.Path), zap.String("filePath", site.FilePath))
 	}
 
 	var grpcOpts []grpc.ServerOption
@@ -211,6 +215,16 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		return true
 	}))
 
+	// configure CORS setup
+	co := cors.New(cors.Options{
+		AllowedOrigins:   config.Cors.CorsOrigins,
+		AllowCredentials: true,
+		AllowedHeaders:   []string{http2.HeaderAllowOrigin, http2.HeaderAuthorization, http2.HeaderContentType},
+		AllowedMethods:   []string{http.MethodHead, http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
+		Debug:            config.Cors.DebugMode,
+	})
+	corsWrap := co.Handler(mux)
+
 	httpServer := &http.Server{
 		Addr:      config.ListenHTTPS,
 		TLSConfig: tlsHTTPServerConfig,
@@ -218,7 +232,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 			if grpcWebServer.IsGrpcWebRequest(request) || grpcWebServer.IsAcceptableGrpcCorsRequest(request) {
 				grpcWebServer.ServeHTTP(writer, request)
 			} else {
-				mux.ServeHTTP(writer, request)
+				corsWrap.ServeHTTP(writer, request)
 			}
 		}),
 	}

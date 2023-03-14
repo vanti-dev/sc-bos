@@ -5,6 +5,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/pkg/app/http"
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
@@ -39,10 +40,11 @@ type Config struct {
 	ListenGRPC  string      `json:"listenGrpc,omitempty"`
 	ListenHTTPS string      `json:"listenHttps,omitempty"`
 
-	DataDir       string `json:"dataDir,omitempty"`       // defaults to .data/controller
-	StaticDir     string `json:"staticDir,omitempty"`     // hosts static files from this directory over HTTP if StaticDir is non-empty
-	AppConfigFile string `json:"appConfigFile,omitempty"` // defaults to app.conf.json
-	CertConfig    *Certs `json:"certs,omitempty"`
+	DataDir       string                     `json:"dataDir,omitempty"` // defaults to .data/controller
+	StaticHosting []http.StaticHostingConfig `json:"staticHosting"`
+	AppConfigFile string                     `json:"appConfigFile,omitempty"` // defaults to app.conf.json
+	CertConfig    *Certs                     `json:"certs,omitempty"`
+	Cors          http.CorsConfig            `json:"cors,omitempty"`
 
 	Systems map[string]system.RawConfig `json:"systems,omitempty"`
 
@@ -76,8 +78,13 @@ func Default() Config {
 		ListenGRPC:  ":23557",
 		ListenHTTPS: ":443",
 
+		Cors: http.CorsConfig{
+			DebugMode: false,
+			// todo: this should really default to the default host
+			CorsOrigins: []string{"*"},
+		},
+		StaticHosting: []http.StaticHostingConfig{},
 		DataDir:       ".data/controller",
-		StaticDir:     "",
 		AppConfigFile: "app.conf.json",
 
 		CertConfig: &Certs{
