@@ -5,8 +5,9 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/smart-core-os/sc-api/go/traits"
 )
 
 var (

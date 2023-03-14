@@ -2,6 +2,7 @@ package jsonapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -112,6 +113,26 @@ func TestKeepUnknown(t *testing.T) {
 			t.Errorf("Marshal (-want,+got)\n%s", diff)
 		}
 	})
+}
+
+func ExampleKeepUnknown() {
+	jsonData := []byte(`{
+	"name": "example",
+	"age": 40
+}`)
+	type jsonType struct {
+		Name string `json:"name"`
+		// No age fields
+	}
+
+	dst := KeepUnknown[jsonType]{}
+	_ = json.Unmarshal(jsonData, &dst)
+
+	dst.Known.Name = "changed"
+
+	outData, _ := json.Marshal(dst)
+	fmt.Println(string(outData))
+	// Output: {"age":40,"name":"changed"}
 }
 
 type keepUnknownType struct {

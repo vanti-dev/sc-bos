@@ -5,11 +5,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protopath"
 	"google.golang.org/protobuf/reflect/protorange"
 	"google.golang.org/protobuf/reflect/protoreflect"
+
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {

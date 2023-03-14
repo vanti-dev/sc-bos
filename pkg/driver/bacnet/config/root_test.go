@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
 	bactypes "github.com/vanti-dev/gobacnet/types"
 )
 

@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vanti-dev/gobacnet/property"
-	bactypes "github.com/vanti-dev/gobacnet/types"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 
+	"github.com/vanti-dev/gobacnet/property"
+	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
 	dconfig "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"

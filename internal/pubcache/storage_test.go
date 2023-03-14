@@ -7,9 +7,10 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/smart-core-os/sc-api/go/traits"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/smart-core-os/sc-api/go/traits"
 )
 
 func TestMemoryStorage(t *testing.T) {

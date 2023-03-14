@@ -5,9 +5,9 @@ import (
 	"flag"
 	"log"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/util/client"
 )
 

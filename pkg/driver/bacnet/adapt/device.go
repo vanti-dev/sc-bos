@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vanti-dev/gobacnet"
-	"github.com/vanti-dev/gobacnet/property"
-	bactypes "github.com/vanti-dev/gobacnet/types"
 	"go.uber.org/multierr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/vanti-dev/gobacnet"
+	"github.com/vanti-dev/gobacnet/property"
+	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
 	"github.com/vanti-dev/sc-bos/pkg/node"

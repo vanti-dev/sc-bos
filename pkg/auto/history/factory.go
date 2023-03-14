@@ -6,6 +6,8 @@ import (
 	"context"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
@@ -18,7 +20,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/history/pgxstore"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
-	"go.uber.org/zap"
 )
 
 var Factory = auto.FactoryFunc(NewAutomation)

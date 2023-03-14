@@ -3,11 +3,11 @@ package xovis
 import (
 	"context"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 )
 

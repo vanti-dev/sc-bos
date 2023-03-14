@@ -6,11 +6,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vanti-dev/gobacnet"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"

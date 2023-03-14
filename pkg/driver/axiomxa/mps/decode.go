@@ -1,4 +1,4 @@
-package messageports
+package mps
 
 import (
 	"bytes"

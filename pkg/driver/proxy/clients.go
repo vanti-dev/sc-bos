@@ -1,12 +1,15 @@
 package proxy
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/color"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
-	"google.golang.org/grpc"
 )
 
 // newApiClientForTrait returns the *ApiClient implementation for the named trait.
@@ -76,6 +79,8 @@ func newApiClientForTrait(conn *grpc.ClientConn, t trait.Name) any {
 		// sc-bos private traits
 	case button.TraitName:
 		return gen.NewButtonApiClient(conn)
+	case color.TraitName:
+		return gen.NewColorApiClient(conn)
 	case meter.TraitName:
 		return gen.NewMeterApiClient(conn)
 	}

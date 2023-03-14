@@ -4,9 +4,10 @@ import (
 	"errors"
 	"fmt"
 
+	"go.uber.org/multierr"
+
 	"github.com/vanti-dev/sc-bos/internal/auth/tenant"
 	"github.com/vanti-dev/sc-bos/pkg/system/authn/config"
-	"go.uber.org/multierr"
 )
 
 // loadFileVerifier returns a tenant.Verifier that checks credentials against those found in a json file.

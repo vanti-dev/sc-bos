@@ -5,16 +5,16 @@ import (
 	"fmt"
 
 	"github.com/eclipse/paho.mqtt.golang"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export/config"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export/source"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
 var MQTTFactory auto.Factory = factory{}

@@ -12,15 +12,15 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/smart-core-os/sc-api/go/types"
-	"github.com/smart-core-os/sc-golang/pkg/masks"
-	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/smart-core-os/sc-api/go/types"
+	"github.com/smart-core-os/sc-golang/pkg/masks"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 )

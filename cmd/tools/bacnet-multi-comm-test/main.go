@@ -16,10 +16,10 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
-
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
@@ -72,7 +72,11 @@ func run() error {
 		for _, device := range cfg.Devices {
 			ctx, cancel := context.WithTimeout(context.Background(), *timeout)
 			defer cancel()
-			log.Printf("check deviceId: %d", device.ID)
+			if device.Comm != nil {
+				log.Printf("check device: %s (id:%d)", device.Comm.IP, device.ID)
+			} else {
+				log.Printf("check deviceId: %d", device.ID)
+			}
 			dev, err := bacnet.FindDevice(ctx, client, device)
 			res := &result{
 				name:     device.Name,
@@ -81,6 +85,18 @@ func run() error {
 			}
 			if err == nil {
 				res.responding = true
+				readId := fmt.Sprintf("%d", dev.ID.Instance)
+				if readId != res.deviceId {
+					log.Printf("configured device %v is really %v", res.deviceId, readId)
+					res.deviceId = readId
+				}
+				if res.name == "" {
+					res.name, err = readObjectName(client, dev, dev.ID)
+					device.Name = res.name
+					if err != nil {
+						log.Printf("unable to discover device name %v %v", dev.ID, err)
+					}
+				}
 			}
 			if device.Comm != nil {
 				res.address = device.Comm.IP.String()
@@ -88,7 +104,47 @@ func run() error {
 			results[key] = append(results[key], res)
 
 			if res.responding && !*devicesOnly {
-				for _, obj := range device.Objects {
+				cfgObjects := device.Objects
+
+				// Discover device objects if we're asked to
+				if shouldDiscoverObjects(cfg, device) {
+					ctx, cancel := context.WithTimeout(context.Background(), (*timeout)*4)
+					defer cancel()
+					objects, err := client.Objects(ctx, dev)
+					if err != nil {
+						log.Printf("Unable to discover objects %v : %v", device.ID, err)
+					}
+
+					uniqueObjIds := make(map[string]bool, len(cfgObjects))
+					for _, object := range cfgObjects {
+						uniqueObjIds[object.ID.String()] = true
+					}
+					for _, obj := range objects.Objects {
+						for _, object := range obj {
+							id := object.ID
+							if !uniqueObjIds[id.String()] {
+								uniqueObjIds[id.String()] = true
+								// log.Printf("discovered device object %v:%v (name=%v)", id.Type, id.Instance, object.Name)
+								cfgObjects = append(cfgObjects, config.Object{ID: config.ObjectID(id), Name: object.Name})
+							}
+						}
+					}
+				}
+
+				// Discover all the names for objects that don't have them
+				for i, obj := range cfgObjects {
+					if obj.Name == "" {
+						obj.Name, err = readObjectName(client, dev, bactypes.ObjectID(obj.ID))
+						if err != nil {
+							log.Printf("unable to get name for %v/%v", device.Name, obj.ID)
+							continue
+						}
+						cfgObjects[i] = obj
+					}
+				}
+
+				// Fetch the PresentValue for the objects and record them in the results
+				for _, obj := range cfgObjects {
 					objRes := &result{
 						name:     fmt.Sprintf("%s/%s", device.Name, obj.Name),
 						deviceId: obj.ID.String(),
@@ -109,6 +165,24 @@ func run() error {
 	}
 	fileName := *resultsFile + "_" + time.Now().Format("2006-01-02T15_04") + ".csv"
 	return writeResults(fileName, results)
+}
+
+func readObjectName(client *gobacnet.Client, dev bactypes.Device, objId bactypes.ObjectID) (string, error) {
+	ctx, clean := context.WithTimeout(context.Background(), *timeout)
+	propVal, err := client.ReadProperty(ctx, dev, bactypes.ReadPropertyData{Object: bactypes.Object{ID: objId, Properties: []bactypes.Property{
+		{ID: property.ObjectName, ArrayIndex: bactypes.ArrayAll},
+	}}})
+	clean()
+	if err != nil {
+		return "", err
+	}
+	for _, p := range propVal.Object.Properties {
+		if p.ID == property.ObjectName {
+			return p.Data.(string), nil
+		}
+	}
+
+	return "", errors.New("response did not include ObjectName property")
 }
 
 func loadConfigs() (map[string]config.Root, error) {
@@ -176,7 +250,7 @@ func readProp(ctx context.Context, client *gobacnet.Client, device bactypes.Devi
 
 func writeResults(fileName string, results map[string][]*result) error {
 	var rows [][]string
-	rows = append(rows, []string{"Name", "Address", "Device ID", "Responding", "Value"})
+	rows = append(rows, []string{"Name", "Address", "BACnet ID", "Responding", "Value"})
 	for _, res := range results {
 		for _, re := range res {
 			rows = append(rows, re.toRow())

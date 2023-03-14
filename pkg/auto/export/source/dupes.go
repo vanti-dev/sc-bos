@@ -1,8 +1,9 @@
 package source
 
 import (
-	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/smart-core-os/sc-golang/pkg/cmp"
 )
 
 type duplicates struct {

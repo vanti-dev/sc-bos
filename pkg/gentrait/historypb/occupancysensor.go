@@ -3,12 +3,13 @@ package historypb
 import (
 	"context"
 
-	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/history"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/history"
 )
 
 type OccupancySensorServer struct {

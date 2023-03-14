@@ -3,10 +3,11 @@ package meter
 import (
 	"context"
 
-	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/smart-core-os/sc-golang/pkg/resource"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 type ModelServer struct {

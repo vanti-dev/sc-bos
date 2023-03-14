@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/rs/cors"
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/internal/auth/keycloak"
 	"github.com/vanti-dev/sc-bos/internal/auth/tenant"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
@@ -14,7 +16,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/authn/config"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
-	"go.uber.org/zap"
 )
 
 const TokenEndpointPath = "/oauth2/token"

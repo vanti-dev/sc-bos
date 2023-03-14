@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	timepb "github.com/smart-core-os/sc-api/go/types/time"
-	"github.com/vanti-dev/sc-bos/pkg/history"
 	"go.uber.org/multierr"
 	"google.golang.org/protobuf/proto"
+
+	timepb "github.com/smart-core-os/sc-api/go/types/time"
+	"github.com/vanti-dev/sc-bos/pkg/history"
 )
 
 func newPageReader[R proto.Message](decodePayload func(r history.Record) (R, error)) pageReader[R] {

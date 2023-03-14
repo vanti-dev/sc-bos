@@ -3,6 +3,8 @@ package occupancy
 import (
 	"context"
 
+	"go.uber.org/zap"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
@@ -10,7 +12,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/occupancy/config"
-	"go.uber.org/zap"
 )
 
 var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {

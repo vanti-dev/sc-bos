@@ -3,11 +3,12 @@ package historypb
 import (
 	"context"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/history"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/history"
 )
 
 type MeterServer struct {

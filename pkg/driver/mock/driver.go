@@ -4,6 +4,9 @@ import (
 	"context"
 	"time"
 
+	"go.uber.org/zap"
+	"golang.org/x/exp/rand"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/time/clock"
@@ -24,14 +27,11 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
-	"go.uber.org/zap"
-	"golang.org/x/exp/rand"
-
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/util/maps"

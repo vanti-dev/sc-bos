@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -14,6 +13,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 )
 
 type Interceptor struct {

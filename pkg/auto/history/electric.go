@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 
-	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/sc-bos/internal/util/pull"
 )
 
 func (a *automation) collectElectricDemandChanges(ctx context.Context, name string, payloads chan<- []byte) {

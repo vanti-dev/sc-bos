@@ -9,6 +9,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 
 	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
 type Services struct {

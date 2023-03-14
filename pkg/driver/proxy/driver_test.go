@@ -3,10 +3,10 @@ package proxy
 import (
 	"testing"
 
-	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 

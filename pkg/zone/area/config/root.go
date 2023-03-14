@@ -3,9 +3,10 @@ package config
 import (
 	"encoding/json"
 
+	"go.uber.org/multierr"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
-	"go.uber.org/multierr"
 )
 
 type Root struct {

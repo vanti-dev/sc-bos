@@ -5,9 +5,9 @@ import (
 	"flag"
 	"log"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/util/client"
 )
 

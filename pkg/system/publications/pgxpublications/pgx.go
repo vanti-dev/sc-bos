@@ -9,12 +9,13 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 )
 
 //go:embed schema.sql

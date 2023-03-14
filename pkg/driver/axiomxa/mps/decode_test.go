@@ -1,4 +1,4 @@
-package messageports
+package mps
 
 import (
 	"fmt"
@@ -53,9 +53,30 @@ func TestUnmarshal(t *testing.T) {
 		{"too much data", []byte("hello,world"), []any{"hello"}, false},
 		{"too many targets", []byte("hello"), []any{"hello", ""}, false},
 		{"time", []byte("02/11/2022 12:52:30"), []any{Time{time.Date(2022, 11, 2, 12, 52, 30, 0, time.UTC)}}, false},
+
+		// these tests are example outputs from BSP-033's (enterprise wharf) AxiomXa system
+		{
+			"EW Access Granted",
+			[]byte("AG,02/03/2023 15:44:23,65536,Access granted: reader,ACU-06 Comms intake,Reader door 1,7349,1280458934,Anthony Ellis"),
+			[]any{
+				"AG", // kind
+				Time{time.Date(2023, 3, 2, 15, 44, 23, 0, time.UTC)}, // TIMESTAMP
+				int32(65536),             // EVENTID
+				"Access granted: reader", // EVENTDESC
+				"ACU-06 Comms intake",    // NETWORKDESC
+				"Reader door 1",          // DEVICEDESC
+				int32(7349),              // CARDID
+				int64(1280458934),        // CARDNUMBER
+				"Anthony Ellis",          // CARDHOLDERDESC
+			},
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// dst holds pointers to zero values of the types held in tt.want whose values will be filled by Unmarshal
+			// want: {"foo", int32(123), Time{time.Now()}}
+			// dst:  {<"",*string>, <0,*int32>, <nil,*Time>}
 			dst := make([]any, len(tt.want))
 			for i, v := range tt.want {
 				dst[i] = reflect.New(reflect.TypeOf(v)).Interface()

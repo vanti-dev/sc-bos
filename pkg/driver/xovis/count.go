@@ -3,9 +3,10 @@ package xovis
 import (
 	"time"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/smart-core-os/sc-api/go/traits"
 )
 
 type countAccumulator struct {

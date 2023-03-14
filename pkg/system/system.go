@@ -10,9 +10,8 @@ import (
 
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
-
 	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
 type Services struct {

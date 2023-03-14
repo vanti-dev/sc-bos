@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -13,7 +15,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants/hold"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants/pgxtenants"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
-	"go.uber.org/zap"
 )
 
 var Factory = factory{

@@ -3,14 +3,17 @@ package jsonapi
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 // Card represents a "card object" as defined by Section 5 of the API documentation.
 type Card struct {
-	ID           int `json:"ID"`
-	CardholderID int `json:"CardholderID"`
-	CardNumber   int `json:"CardNumber"`
-	CardType     int `json:"CardType"`
+	ID          uint      `json:"ID"`
+	CardNumber  uint64    `json:"CardNumber"`
+	CardType    CardType  `json:"CardType"`
+	AccessLevel uint      `json:"AccessLevel"`
+	ActiveDate  time.Time `json:"ActiveDate"`
+	ExpiryDate  time.Time `json:"ExpiryDate"`
 
 	/*
 		{
@@ -112,6 +115,17 @@ type Card struct {
 	*/
 }
 
+type CardType uint
+
+// CardTypes defined in the AxiomXa software.
+const (
+	CardTypeNormal     CardType = 0
+	CardTypeSupervisor CardType = 1
+	CardTypeVisitor    CardType = 2
+	CardTypeSpecial    CardType = 3
+	CardTypeContractor CardType = 4
+)
+
 // CreateCard creates a new card with the given card information.
 // Card.ID will be ignored if present in the given card.
 func (c *Client) CreateCard(ctx context.Context, card Card) (KeepUnknown[Card], error) {
@@ -120,9 +134,11 @@ func (c *Client) CreateCard(ctx context.Context, card Card) (KeepUnknown[Card], 
 		return KeepUnknown[Card]{}, err
 	}
 
-	newCard.Known.CardholderID = card.CardholderID
 	newCard.Known.CardNumber = card.CardNumber
 	newCard.Known.CardType = card.CardType
+	newCard.Known.AccessLevel = card.AccessLevel
+	newCard.Known.ActiveDate = card.ActiveDate
+	newCard.Known.ExpiryDate = card.ExpiryDate
 
 	var updated bool
 	if err := c.post(ctx, "/card/update", newCard, &updated); err != nil {
