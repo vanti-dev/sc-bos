@@ -6,5 +6,5 @@ CREATE TABLE IF NOT EXISTS history
     payload     BYTEA       NULL
 );
 
-CREATE INDEX ON history (source);
-CREATE INDEX ON history (create_time);
+CREATE INDEX IF NOT EXISTS history_source_idx ON history (source);
+CREATE INDEX IF NOT EXISTS history_create_time_idx ON history (create_time);
