@@ -34,7 +34,8 @@ const automationTypeList = computed(() => {
 
 // map of icons to use for different automation sections
 const icon = ref({
-  lights: 'mdi-lightbulb'
+  lights: 'mdi-lightbulb',
+  history: 'mdi-history'
 });
 
 onMounted(() => serviceStore.refreshMetadata(ServiceNames.Automations));
