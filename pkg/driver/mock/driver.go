@@ -6,6 +6,7 @@ import (
 
 	"go.uber.org/zap"
 	"golang.org/x/exp/rand"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
@@ -216,7 +217,8 @@ func newMockClient(traitName trait.Name) (any, service.Lifecycle) {
 	case button.TraitName:
 		return gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED))), nil
 	case meter.TraitName:
-		return gen.WrapMeterApi(meter.NewModelServer(meter.NewModel())), nil
+		model := meter.NewModel()
+		return gen.WrapMeterApi(meter.NewModelServer(model)), meterAuto(model)
 	}
 
 	return nil, nil
@@ -234,6 +236,42 @@ func occupancySensorAuto(model *occupancysensor.Model) *service.Service[string] 
 				case <-ticker.C:
 					state := traits.Occupancy_State(rand.Intn(3) + 1)
 					_, _ = model.SetOccupancy(&traits.Occupancy{State: state}, resource.WithUpdatePaths("state"))
+				}
+			}
+		}()
+		return nil
+	}), service.WithParser(func(data []byte) (string, error) {
+		return string(data), nil
+	}))
+	_, _ = slc.Configure([]byte{}) // call configure to ensure we load when start is called.
+	return slc
+}
+
+func meterAuto(model *meter.Model) *service.Service[string] {
+	slc := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
+		go func() {
+			timer := time.NewTimer((30 * time.Second) + time.Duration(rand.Float32())*time.Minute)
+			start := &timestamppb.Timestamp{
+				Seconds: time.Now().Unix(),
+				Nanos:   0,
+			}
+			value := rand.Float32() * 100
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case <-timer.C:
+					value += rand.Float32() * 100
+					state := gen.MeterReading{
+						Usage:     value,
+						StartTime: start,
+						EndTime: &timestamppb.Timestamp{
+							Seconds: time.Now().Unix(),
+							Nanos:   0,
+						},
+					}
+					_, _ = model.UpdateMeterReading(&state)
+					timer = time.NewTimer((30 * time.Second) + time.Duration(rand.Float32())*time.Minute)
 				}
 			}
 		}()
