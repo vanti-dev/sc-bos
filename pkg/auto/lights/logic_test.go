@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -21,7 +22,8 @@ func Test_processState(t *testing.T) {
 		readState := NewReadState()
 		writeState := NewWriteState()
 		actions := newTestActions(t)
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		assertNoTTLOrErr(t, ttl, err)
 		actions.assertNoMoreCalls()
 	})
@@ -35,7 +37,8 @@ func Test_processState(t *testing.T) {
 		readState.Config.Lights = []string{"light01"}
 		readState.Occupancy["pir01"] = &traits.Occupancy{State: traits.Occupancy_OCCUPIED}
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		assertNoTTLOrErr(t, ttl, err)
 		actions.assertNextCall(&traits.UpdateBrightnessRequest{
 			Name: "light01",
@@ -54,7 +57,8 @@ func Test_processState(t *testing.T) {
 		readState.Config.Lights = []string{"light01"}
 		readState.Occupancy["pir01"] = &traits.Occupancy{State: traits.Occupancy_OCCUPIED}
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		assertNoTTLOrErr(t, ttl, err)
 		actions.assertNoMoreCalls()
 	})
@@ -74,7 +78,8 @@ func Test_processState(t *testing.T) {
 			StateChangeTime: timestamppb.New(now.Add(-20 * time.Minute)),
 		}
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 
 		assertNoTTLOrErr(t, ttl, err)
 		actions.assertNextCall(&traits.UpdateBrightnessRequest{
@@ -99,7 +104,8 @@ func Test_processState(t *testing.T) {
 			StateChangeTime: timestamppb.New(now.Add(-5 * time.Minute)),
 		}
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		if err != nil {
 			t.Fatalf("Got error %v", err)
 		}
@@ -154,7 +160,8 @@ func Test_processState(t *testing.T) {
 					readState.AmbientBrightness[name] = &traits.AmbientBrightness{BrightnessLux: lux}
 				}
 
-				ttl, err := processState(context.Background(), readState, writeState, actions)
+				logger, _ := zap.NewDevelopment()
+				ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 				assertNoTTLOrErr(t, ttl, err)
 				actions.assertNextCall(&traits.UpdateBrightnessRequest{
 					Name: "light01",
@@ -165,6 +172,8 @@ func Test_processState(t *testing.T) {
 			})
 		}
 	})
+
+	// Start of button tests
 
 	t.Run("toggle pressed currently on", func(t *testing.T) {
 		readState := NewReadState()
@@ -186,7 +195,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		if ttl != 10*time.Minute {
 			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
 		}
@@ -224,7 +234,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light02"] = &traits.Brightness{LevelPercent: 50}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		if ttl != 10*time.Minute {
 			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
 		}
@@ -233,7 +244,7 @@ func Test_processState(t *testing.T) {
 		}
 
 		actions.assertNextCall(&traits.UpdateBrightnessRequest{
-			Name: "light01",
+			Name: "light02",
 			Brightness: &traits.Brightness{
 				LevelPercent: 0,
 			},
@@ -261,7 +272,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		if ttl != 10*time.Minute {
 			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
 		}
@@ -297,7 +309,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
 		writeState.LastButtonAction = now.Add(-time.Minute)
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		assertNoTTLOrErr(t, ttl, err)
 
 		actions.assertNoMoreCalls()
@@ -323,7 +336,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
 		writeState.LastButtonAction = now
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		assertNoTTLOrErr(t, ttl, err)
 
 		actions.assertNoMoreCalls()
@@ -349,7 +363,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
 		writeState.LastButtonAction = now
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		assertNoTTLOrErr(t, ttl, err)
 
 		actions.assertNoMoreCalls()
@@ -376,7 +391,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		if ttl != 10*time.Minute {
 			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
 		}
@@ -413,7 +429,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		if ttl != 10*time.Minute {
 			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
 		}
@@ -445,7 +462,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		assertNoTTLOrErr(t, ttl, err)
 
 		actions.assertNextCall(&traits.UpdateBrightnessRequest{
@@ -477,7 +495,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		assertNoTTLOrErr(t, ttl, err)
 
 		actions.assertNoMoreCalls()
@@ -504,7 +523,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		if ttl != 5*time.Minute {
 			t.Fatalf("Error, ttl not equal 5 minutes, got %s", ttl.String())
 		}
@@ -541,7 +561,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		if ttl != 5*time.Minute {
 			t.Fatalf("Error, ttl not equal 5 minutes, got %s", ttl.String())
 		}
@@ -578,7 +599,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		if ttl != 5*time.Minute {
 			t.Fatalf("Error, ttl not equal 5 minutes, got %s", ttl.String())
 		}
@@ -615,7 +637,8 @@ func Test_processState(t *testing.T) {
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
-		ttl, err := processState(context.Background(), readState, writeState, actions)
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		assertNoTTLOrErr(t, ttl, err)
 		actions.assertNextCall(&traits.UpdateBrightnessRequest{
 			Name: "light01",

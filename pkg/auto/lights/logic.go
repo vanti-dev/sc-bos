@@ -5,6 +5,8 @@ import (
 	"sort"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 
@@ -16,7 +18,7 @@ import (
 //
 // Returning a non-zero duration indicates that processing should be rerun after this delay even if ReadState doesn't
 // change.
-func processState(ctx context.Context, readState *ReadState, writeState *WriteState, actions actions) (time.Duration, error) {
+func processState(ctx context.Context, readState *ReadState, writeState *WriteState, actions actions, logger *zap.Logger) (time.Duration, error) {
 	var rerunAfter time.Duration
 
 	// Work out what we need to do to apply the given writeState and make those changes for as long as ctx is valid
@@ -52,12 +54,19 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 		case OffButton:
 			isSwitchedOff = true
 		case ToggleButton:
-			isSwitchedOn = getNewToggleState(writeState)
+			if getNewToggleState(writeState) {
+				isSwitchedOn = true
+			} else {
+				isSwitchedOff = true
+			}
 			rerunAfter = readState.Config.UnoccupiedOffDelay.Duration
 		}
 		// Update the last time a button action happened
 		writeState.LastButtonAction = readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()
 	}
+
+	logger.Debug("Is switched on ", zap.Bool("isSwitchedOn", isSwitchedOn))
+	logger.Debug("Is switched off ", zap.Bool("isSwitchedOff", isSwitchedOff))
 
 	if isSwitchedOff {
 		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, readState.Config.Lights...)
@@ -69,6 +78,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	if anyOccupied || isSwitchedOn {
 		level, ok := computeOnLevelPercent(readState)
 		if !ok {
+			logger.Warn("Could not get level for daylight dimming")
 			// todo: here we are in a position where daylight dimming is supposed to be enabled but we don't have enough
 			//  info to actually choose the output light level. We should probably not make any changes and wait for
 			//  more data to come in, but we'll leave that to future us as part of snagging.
@@ -98,7 +108,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	}
 
 	if becameUnoccupied.IsZero() && mostRecentButtonTime.IsZero() {
-		// Todo: logging to say we've never become unoccupied and most recent button time zero
+		logger.Debug("Both time last unoccupied and last button press are zero.")
 	} else {
 		unoccupiedDelayBeforeDarkness := readState.Config.UnoccupiedOffDelay.Duration
 
@@ -269,3 +279,7 @@ const (
 	OffButton
 	ToggleButton
 )
+
+func (s ButtonType) String() string {
+	return [...]string{"Undefined button", "On button", "Off button", "Toggle button"}[s]
+}
