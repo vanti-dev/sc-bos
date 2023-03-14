@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 )
@@ -20,43 +21,52 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 
 	// Work out what we need to do to apply the given writeState and make those changes for as long as ctx is valid
 
-	anyOccupied := false
-	for _, name := range readState.Config.OccupancySensors {
-		if o, ok := readState.Occupancy[name]; ok {
-			if o.State == traits.Occupancy_OCCUPIED {
-				anyOccupied = true
-				break
-			}
-		}
-	}
-
-	// check if the buttons have been used to override the state recently enough
 	var now time.Time
 	if readState.Config.Now != nil {
 		now = readState.Config.Now()
 	} else {
 		now = time.Now()
 	}
+
 	var (
-		isForcedOn  bool
-		isForcedOff bool
+		isSwitchedOn  bool
+		isSwitchedOff bool
 	)
-	if readState.Force != nil {
-		sinceButtonPress := now.Sub(readState.Force.Time)
-		configuredTimeout := readState.Config.UnoccupiedOffDelay.Duration
-		if sinceButtonPress < configuredTimeout {
-			isForcedOn = readState.Force.On
-			isForcedOff = !readState.Force.On
-			rerunAfter = configuredTimeout - sinceButtonPress
-		}
+
+	mostRecentButtonName := getMostRecentButtonPress(readState)
+
+	var buttonActionRequired bool
+	if len(mostRecentButtonName) == 0 {
+		buttonActionRequired = false
+	} else {
+		buttonActionRequired = isButtonActionRequired(readState.Buttons[mostRecentButtonName], writeState)
 	}
 
-	if isForcedOff {
+	if buttonActionRequired {
+		// Either isSwitchedOn or isSwitchedOff should be set
+		buttonType := getButtonType(readState, mostRecentButtonName)
+		switch buttonType {
+		case OnButton:
+			isSwitchedOn = true
+			rerunAfter = readState.Config.UnoccupiedOffDelay.Duration
+		case OffButton:
+			isSwitchedOff = true
+		case ToggleButton:
+			isSwitchedOn = getNewToggleState(writeState)
+			rerunAfter = readState.Config.UnoccupiedOffDelay.Duration
+		}
+		// Update the last time a button action happened
+		writeState.LastButtonAction = readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()
+	}
+
+	if isSwitchedOff {
 		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, readState.Config.Lights...)
 	}
 
+	anyOccupied := areAnyOccupied(readState.Config.OccupancySensors, readState.Occupancy)
+
 	// We can do easy checks for occupancy and turn things on if they are occupied
-	if anyOccupied || isForcedOn {
+	if anyOccupied || isSwitchedOn {
 		level, ok := computeOnLevelPercent(readState)
 		if !ok {
 			// todo: here we are in a position where daylight dimming is supposed to be enabled but we don't have enough
@@ -66,25 +76,36 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, level, readState.Config.Lights...)
 	}
 
-	// We can also delay changes if we need to.
 	// This code check when occupancy last reported unoccupied and only turns the lights off
-	// if it's been unoccupied for more than 10 minutes.
+	// if it's been unoccupied for more than unoccupied timeout.
 	// If it hasn't been 10 minutes yet, it waits some time and turns the lights off when it has been
-	// 10 minutes.
+	// greater than the unoccupied timeout.
+	// If a push button hasn't been pressed for the timeout period lights will be switched off too
 	var occupancyExpired bool
-	if len(readState.Config.OccupancySensors) == 0 {
-		// if no occupancy sensors are configured, always consider the space unoccupied.
-		occupancyExpired = true
-	} else if becameUnoccupied := lastUnoccupiedTime(readState); !becameUnoccupied.IsZero() {
+
+	mostRecentButtonTime := time.Time{}
+	if len(mostRecentButtonName) > 0 {
+		mostRecentButtonTime = readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()
+	}
+	becameUnoccupied := lastUnoccupiedTime(readState)
+
+	var sinceUnoccupied time.Duration
+
+	if mostRecentButtonTime.After(becameUnoccupied) {
+		sinceUnoccupied = now.Sub(mostRecentButtonTime)
+	} else {
+		sinceUnoccupied = now.Sub(becameUnoccupied)
+	}
+
+	if becameUnoccupied.IsZero() && mostRecentButtonTime.IsZero() {
+		// Todo: logging to say we've never become unoccupied and most recent button time zero
+	} else {
 		unoccupiedDelayBeforeDarkness := readState.Config.UnoccupiedOffDelay.Duration
 
-		sinceUnoccupied := now.Sub(becameUnoccupied)
 		if sinceUnoccupied >= unoccupiedDelayBeforeDarkness {
 			// we've been unoccupied for long enough, turn things off now
 			occupancyExpired = true
-		} else if !isForcedOff {
-			// if the lights are forced off, no point waking up before that expires, as nothing will change before then.
-
+		} else {
 			// we haven't written anything, but in `unoccupiedDelayBeforeDarkness - sinceUnoccupied` time we will, let the
 			// caller know
 			rerunAfter = unoccupiedDelayBeforeDarkness - sinceUnoccupied
@@ -97,6 +118,77 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 
 	// no change
 	return rerunAfter, nil
+}
+
+// getNewToggleState returns the new toggle state based on the last light brightness write
+// if any light is on then we switch off, if all lights are off we switch on
+func getNewToggleState(state *WriteState) bool {
+	for _, brightness := range state.Brightness {
+		if brightness.LevelPercent > 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// getButtonType returns the type of button based on where it appeared in the config
+func getButtonType(state *ReadState, buttonName string) ButtonType {
+	nFound := 0
+	buttonType := UndefinedButton
+	for _, name := range state.Config.OnButtons {
+		if name == buttonName {
+			nFound++
+			buttonType = OnButton
+		}
+	}
+	for _, name := range state.Config.OffButtons {
+		if name == buttonName {
+			nFound++
+			buttonType = OffButton
+		}
+	}
+	for _, name := range state.Config.ToggleButtons {
+		if name == buttonName {
+			nFound++
+			buttonType = ToggleButton
+		}
+	}
+	// Todo: Add some logging if nButtons != 1
+	return buttonType
+}
+
+func getMostRecentButtonPress(readState *ReadState) string {
+	mostRecentTime := time.Time{}
+	mostRecentName := ""
+	for name, button := range readState.Buttons {
+		if button.StateChangeTime.AsTime().After(mostRecentTime) {
+			mostRecentTime = button.StateChangeTime.AsTime()
+			mostRecentName = name
+		}
+	}
+	return mostRecentName
+}
+
+// isButtonActionRequired returns true if state is unpressed and change time is more recent than last button action
+func isButtonActionRequired(button *gen.ButtonState, writeState *WriteState) bool {
+	if button.State == gen.ButtonState_UNPRESSED && button.StateChangeTime.AsTime().After(writeState.LastButtonAction) {
+		return true
+	}
+	return false
+}
+
+// areAnyOccupied returns true if any occupancy sensors in the list are occupied
+func areAnyOccupied(sensorsPresent []string, occupancyStates map[string]*traits.Occupancy) bool {
+	var ret = false
+	for _, name := range sensorsPresent {
+		if o, ok := occupancyStates[name]; ok {
+			if o.State == traits.Occupancy_OCCUPIED {
+				ret = true
+				break
+			}
+		}
+	}
+	return ret
 }
 
 // lastUnoccupiedTime returns the most recent Occupancy.StateChangeTime across each Config.OccupancySensors that have an
@@ -168,3 +260,12 @@ func closestThresholdBelow(lux float32, thresholds []config.LevelThreshold) (con
 	}
 	return config.LevelThreshold{}, false
 }
+
+type ButtonType int
+
+const (
+	UndefinedButton ButtonType = iota
+	OnButton
+	OffButton
+	ToggleButton
+)

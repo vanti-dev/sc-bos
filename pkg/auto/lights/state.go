@@ -19,23 +19,6 @@ type ReadState struct {
 	// used for daylight dimming
 	AmbientBrightness map[string]*traits.AmbientBrightness
 	Buttons           map[string]*gen.ButtonState
-	Force             *ForceState
-}
-
-type ForceState struct {
-	On   bool
-	Time time.Time
-}
-
-func (s *ForceState) Clone() *ForceState {
-	if s != nil {
-		return &ForceState{
-			On:   s.On,
-			Time: s.Time,
-		}
-	} else {
-		return nil
-	}
 }
 
 func NewReadState() *ReadState {
@@ -59,19 +42,20 @@ func (s *ReadState) Clone() *ReadState {
 	for name, val := range s.Buttons {
 		clone.Buttons[name] = val
 	}
-	clone.Force = s.Force.Clone()
 	return clone
 }
 
 // WriteState models the state of the system based on the changes we've made to it.
 // For example if we UpdateBrightness, then the response to that call is recorded in this state.
 type WriteState struct {
-	Brightness map[string]*traits.Brightness
+	Brightness       map[string]*traits.Brightness
+	LastButtonAction time.Time
 }
 
 func NewWriteState() *WriteState {
 	return &WriteState{
-		Brightness: make(map[string]*traits.Brightness),
+		Brightness:       make(map[string]*traits.Brightness),
+		LastButtonAction: time.Now(),
 	}
 }
 
@@ -83,6 +67,7 @@ func (s *WriteState) MergeFrom(other *WriteState) {
 			s.Brightness[name] = brightness
 		}
 	}
+	s.LastButtonAction = other.LastButtonAction
 }
 
 // readStateChanges collates changes and emits *ReadState.

@@ -12,6 +12,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
@@ -165,79 +166,464 @@ func Test_processState(t *testing.T) {
 		}
 	})
 
-	t.Run("force", func(t *testing.T) {
-		now := time.Date(2023, 2, 6, 11, 0, 0, 0, time.UTC)
-		tests := []struct {
-			name   string
-			on     bool
-			time   time.Time
-			ttl    time.Duration
-			action bool
-			level  float32
-		}{
-			{
-				name:   "on active",
-				on:     true,
-				time:   now.Add(-5 * time.Minute),
-				ttl:    5 * time.Minute,
-				action: true,
-				level:  100,
-			},
-			{
-				name:   "on expired",
-				on:     true,
-				time:   now.Add(-15 * time.Minute),
-				ttl:    0,
-				action: false,
-			},
-			{
-				name:   "off active",
-				on:     false,
-				time:   now.Add(-5 * time.Minute),
-				ttl:    5 * time.Minute,
-				action: true,
-				level:  0,
-			},
-			{
-				name:   "off expired",
-				on:     false,
-				time:   now.Add(-15 * time.Minute),
-				ttl:    0,
-				action: false,
-			},
+	t.Run("toggle pressed currently on", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.ToggleButtons = []string{"toggleButton01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+
+		readState.Buttons["toggleButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
-				readState := NewReadState()
-				writeState := NewWriteState()
-				acts := newTestActions(t)
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
+		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
-				readState.Config.Lights = []string{"light01"}
-				readState.Config.OccupancySensors = []string{"pir01"}
-				readState.Config.Now = func() time.Time { return now }
-				readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
-				readState.Force = &ForceState{
-					On:   true,
-					Time: tt.time,
-				}
-
-				ttl, err := processState(context.Background(), readState, writeState, acts)
-				if err != nil {
-					t.Errorf("processState error: %s", err.Error())
-				}
-				if ttl != tt.ttl {
-					t.Errorf("ttl mismatch: expect %v, got %v", tt.ttl, ttl)
-				}
-				if tt.action {
-					acts.assertNextCall(&traits.UpdateBrightnessRequest{
-						Name:       "light01",
-						Brightness: &traits.Brightness{LevelPercent: 100},
-					})
-				}
-				acts.assertNoMoreCalls()
-			})
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		if ttl != 10*time.Minute {
+			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
 		}
+		if err != nil {
+			t.Fatalf("Error want <nil>, got %v", err)
+		}
+
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: 0,
+			},
+		})
+		return
+	})
+
+	t.Run("toggle pressed currently half on", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.ToggleButtons = []string{"toggleButton01"}
+		readState.Config.Lights = []string{"light01", "light02"}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+
+		readState.Buttons["toggleButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.Brightness["light02"] = &traits.Brightness{LevelPercent: 50}
+		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		if ttl != 10*time.Minute {
+			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
+		}
+		if err != nil {
+			t.Fatalf("Error want <nil>, got %v", err)
+		}
+
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: 0,
+			},
+		})
+		return
+	})
+
+	t.Run("toggle pressed currently off", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.ToggleButtons = []string{"toggleButton01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+
+		readState.Buttons["toggleButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		if ttl != 10*time.Minute {
+			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
+		}
+		if err != nil {
+			t.Fatalf("Error want <nil>, got %v", err)
+		}
+
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: 100,
+			},
+		})
+		return
+	})
+
+	t.Run("no op on ButtonState_PRESSED", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.ToggleButtons = []string{"toggleButton01"}
+		readState.Config.Lights = []string{"light01"}
+
+		readState.Buttons["toggleButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_PRESSED,
+			StateChangeTime:   timestamppb.New(now),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.LastButtonAction = now.Add(-time.Minute)
+
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		assertNoTTLOrErr(t, ttl, err)
+
+		actions.assertNoMoreCalls()
+		return
+	})
+
+	t.Run("toggle pressed dont action", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.ToggleButtons = []string{"toggleButton01"}
+		readState.Config.Lights = []string{"light01"}
+
+		readState.Buttons["toggleButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.LastButtonAction = now
+
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		assertNoTTLOrErr(t, ttl, err)
+
+		actions.assertNoMoreCalls()
+		return
+	})
+
+	t.Run("toggle pressed in past dont action", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.ToggleButtons = []string{"toggleButton01"}
+		readState.Config.Lights = []string{"light01"}
+
+		readState.Buttons["toggleButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now.Add(-time.Minute)),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.LastButtonAction = now
+
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		assertNoTTLOrErr(t, ttl, err)
+
+		actions.assertNoMoreCalls()
+		return
+	})
+
+	t.Run("on button pressed and off", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.OnButtons = []string{"onButton01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+
+		readState.Buttons["onButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		if ttl != 10*time.Minute {
+			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
+		}
+		if err != nil {
+			t.Fatalf("Error want <nil>, got %v", err)
+		}
+
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: 100,
+			},
+		})
+		return
+	})
+
+	t.Run("on button pressed and on", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.OnButtons = []string{"onButton01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+
+		readState.Buttons["onButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
+		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		if ttl != 10*time.Minute {
+			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
+		}
+		if err != nil {
+			t.Fatalf("Error want <nil>, got %v", err)
+		}
+
+		actions.assertNoMoreCalls()
+		return
+	})
+
+	t.Run("off button pressed and on", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.OffButtons = []string{"offButton01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+
+		readState.Buttons["offButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
+		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		assertNoTTLOrErr(t, ttl, err)
+
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: 0,
+			},
+		})
+		return
+	})
+
+	t.Run("off button pressed and off", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.OffButtons = []string{"offButton01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+
+		readState.Buttons["offButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		assertNoTTLOrErr(t, ttl, err)
+
+		actions.assertNoMoreCalls()
+		return
+	})
+
+	t.Run("within unoccupancy timeout no op", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.ToggleButtons = []string{"toggleButton01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+
+		readState.Buttons["toggleButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now.Add(-5 * time.Minute)),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
+		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		if ttl != 5*time.Minute {
+			t.Fatalf("Error, ttl not equal 5 minutes, got %s", ttl.String())
+		}
+		if err != nil {
+			t.Fatalf("Error want <nil>, got %v", err)
+		}
+		actions.assertNoMoreCalls()
+		return
+	})
+
+	t.Run("button withun unoccupancy, PIR not, no op", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.ToggleButtons = []string{"toggleButton01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+		readState.Config.OccupancySensors = []string{"pir01"}
+
+		readState.Occupancy["pir01"] = &traits.Occupancy{
+			State:           traits.Occupancy_UNOCCUPIED,
+			StateChangeTime: timestamppb.New(now.Add(-15 * time.Minute)),
+		}
+
+		readState.Buttons["toggleButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now.Add(-5 * time.Minute)),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
+		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		if ttl != 5*time.Minute {
+			t.Fatalf("Error, ttl not equal 5 minutes, got %s", ttl.String())
+		}
+		if err != nil {
+			t.Fatalf("Error want <nil>, got %v", err)
+		}
+		actions.assertNoMoreCalls()
+		return
+	})
+
+	t.Run("PIR within unoccupancy, button not, no op", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.ToggleButtons = []string{"toggleButton01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+		readState.Config.OccupancySensors = []string{"pir01"}
+
+		readState.Occupancy["pir01"] = &traits.Occupancy{
+			State:           traits.Occupancy_UNOCCUPIED,
+			StateChangeTime: timestamppb.New(now.Add(-5 * time.Minute)),
+		}
+
+		readState.Buttons["toggleButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now.Add(-15 * time.Minute)),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
+		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		if ttl != 5*time.Minute {
+			t.Fatalf("Error, ttl not equal 5 minutes, got %s", ttl.String())
+		}
+		if err != nil {
+			t.Fatalf("Error want <nil>, got %v", err)
+		}
+		actions.assertNoMoreCalls()
+		return
+	})
+
+	t.Run("both PIR and button outside unoccupancy", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.ToggleButtons = []string{"toggleButton01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+		readState.Config.OccupancySensors = []string{"pir01"}
+
+		readState.Occupancy["pir01"] = &traits.Occupancy{
+			State:           traits.Occupancy_UNOCCUPIED,
+			StateChangeTime: timestamppb.New(now.Add(-15 * time.Minute)),
+		}
+
+		readState.Buttons["toggleButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now.Add(-15 * time.Minute)),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
+		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+
+		ttl, err := processState(context.Background(), readState, writeState, actions)
+		assertNoTTLOrErr(t, ttl, err)
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: 0,
+			},
+		})
+		return
 	})
 }
 
