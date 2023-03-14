@@ -79,8 +79,9 @@ func Default() Config {
 		ListenHTTPS: ":443",
 
 		Cors: http.CorsConfig{
-			DebugMode:   false,
-			CorsOrigins: []string{"https://localhost:443"},
+			DebugMode: false,
+			// todo: this should really default to the default host
+			CorsOrigins: []string{"*"},
 		},
 		StaticHosting: []http.StaticHostingConfig{{
 			FilePath: "./ui/conductor/dist",
