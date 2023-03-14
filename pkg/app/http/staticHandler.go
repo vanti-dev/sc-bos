@@ -17,16 +17,18 @@ func NewStaticHandler(staticPath string, logger *zap.Logger) http.Handler {
 	}, logger)
 }
 
-// SPAHandler provides the function signature for passing to the FileServerWith404
+// SPAHandler provides the function signature for passing to the SPAFileServer
 type SPAHandler = func(w http.ResponseWriter, r *http.Request) (doDefaultFileServe bool)
 
-/*
-SPAFileServer wraps the http.FileServer checking to see if the url path exists first.
-If the file fails to exist it calls the supplied handlerSPA function
-The implementation can choose to either modify the request, e.g. change the URL path and return true to have the
-default FileServer handling to still take place, or return false to stop further processing, for example if you wanted
-to write a custom response
-*/
+// SPAFileServer wraps the http.FileServer checking to see if the url path exists first.
+//
+// # If the file fails to exist it calls the supplied handlerSPA function
+//
+// The implementation can choose to either modify the request, e.g. change the URL path and return true to have the
+// default FileServer handling to still take place, or return false to stop further processing, for example if you
+// wanted to write a custom response
+//
+// This code borrows heavily from https://gist.github.com/lummie/91cd1c18b2e32fa9f316862221a6fd5c
 func SPAFileServer(root http.FileSystem, handlerSPA SPAHandler, logger *zap.Logger) http.Handler {
 	fs := http.FileServer(root)
 
