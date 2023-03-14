@@ -104,7 +104,7 @@ const selectedDevicesComp = computed({
     return tableData.value.filter(device => props.selectedDevices.indexOf(device.name) >= 0);
   },
   set(value) {
-    emit('update:selectedDevices', value.map(d => d.name));
+    emit('update:selectedDevices', value);
   }
 });
 

@@ -1,3 +1,5 @@
+import {configureService, ServiceNames as ServiceTypes} from '@/api/ui/services';
+
 export class Zone {
   /**
    * @param {Service.AsObject} zoneService
@@ -25,9 +27,9 @@ export class Zone {
   }
 
   _deviceTypes = [
-    {key: 'lights', type: 'light'},
-    {key: 'hvac', type: 'hvac'},
-    {key: 'occupancySensors', type: 'occupancy sensor'}
+    {key: 'lights', type: 'light', trait: 'smartcore.traits.Light'},
+    {key: 'hvac', type: 'hvac', trait: 'smartcore.traits.AirTemperature'},
+    {key: 'occupancySensors', type: 'occupancy sensor', trait: 'smartcore.traits.Occupancy'}
   ];
 
   get devices() {
@@ -41,6 +43,34 @@ export class Zone {
   }
 
   set devices(deviceList) {
-    console.debug('zone:set devices', deviceList);
+    this._newConfig = {
+      name: this._config.name,
+      type: this._config.type
+    };
+    // for each device in the zone
+    deviceList.forEach(d => {
+      // loop through the deviceTypes and add to the corresponding part of the zone config
+      this._deviceTypes.forEach(t => {
+        if (d.metadata.traitsList.map(t => t.name).includes(t.trait)) {
+          if (!this._newConfig.hasOwnProperty(t.key)) {
+            this._newConfig[t.key] = [];
+          }
+          this._newConfig[t.key].push(d.name);
+        }
+      });
+    });
+  }
+
+  async save(saveTracker) {
+    if (this._newConfig) {
+      this._config = this._newConfig;
+      const req = {
+        name: ServiceTypes.Zones,
+        id: this._id,
+        configRaw: JSON.stringify(this._newConfig, null, 2)
+      };
+      await configureService(req, saveTracker);
+    }
+    this._newConfig = undefined;
   }
 }

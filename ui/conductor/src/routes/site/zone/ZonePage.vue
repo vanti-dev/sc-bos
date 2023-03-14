@@ -6,7 +6,7 @@
         <v-btn value="map" disabled>Map View</v-btn>
         <v-btn value="list">List View</v-btn>
       </v-btn-toggle>
-      <v-btn class="ml-6" v-if="editMode" @click="editMode=false" color="accent">
+      <v-btn class="ml-6" v-if="editMode" @click="save" color="accent">
         <v-icon left>mdi-content-save</v-icon>
         Save
       </v-btn>
@@ -36,6 +36,7 @@ import {ServiceNames} from '@/api/ui/services';
 import {Zone} from '@/routes/site/zone/zone';
 import DeviceTable from '@/routes/devices/components/DeviceTable.vue';
 import {Service} from '@sc-bos/ui-gen/proto/services_pb';
+import {newActionTracker} from '@/api/resource';
 
 const servicesStore = useServicesStore();
 const zoneCollection = ref(servicesStore.getService(ServiceNames.Zones).servicesCollection);
@@ -71,6 +72,16 @@ const deviceList = computed({
  */
 function zoneDevicesFilter(device) {
   return editMode.value || (zoneObj?.value?.deviceIds?.indexOf(device.name) >= 0 ?? true);
+}
+
+const saveTracker = newActionTracker();
+
+/**
+ * Save the new device list to the zone
+ */
+function save() {
+  zoneObj.value.save(saveTracker);
+  editMode.value = false;
 }
 
 </script>
