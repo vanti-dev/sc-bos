@@ -27,7 +27,7 @@ type Root struct {
 	// Devices implementing the Button trait will be used to switch the lights on and off when clicked once.
 	OnButtons     []string `json:"onButtons,omitempty"`
 	OffButtons    []string `json:"offButtons,omitempty"`
-	ToggleButtons []string `json:"toggleButtons, omitempty"`
+	ToggleButtons []string `json:"toggleButtons,omitempty"`
 
 	// Now returns the current time. It's configurable for testing purposes, typically for testing the logic.
 	Now func() time.Time `json:"-"`
