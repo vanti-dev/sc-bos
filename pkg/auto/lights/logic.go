@@ -41,6 +41,11 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	if len(mostRecentButtonName) == 0 {
 		buttonActionRequired = false
 	} else {
+		logger.Debug("Checking if button action require for button ", zap.String("button", mostRecentButtonName),
+			zap.Bool("action required", buttonActionRequired),
+			zap.Time("state change time", readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()),
+			zap.Time("last action time", writeState.LastButtonAction),
+			zap.String("button state", readState.Buttons[mostRecentButtonName].State.String()))
 		buttonActionRequired = isButtonActionRequired(readState.Buttons[mostRecentButtonName], writeState)
 	}
 
@@ -61,12 +66,15 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 			}
 			rerunAfter = readState.Config.UnoccupiedOffDelay.Duration
 		}
+		logger.Debug("Button action required ", zap.String("Button type", buttonType.String()),
+			zap.Bool("isSwitchedOn", isSwitchedOn),
+			zap.Bool("isSwitchedOff", isSwitchedOff),
+			zap.Time("state change time", readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()),
+			zap.Time("last button action", writeState.LastButtonAction))
+
 		// Update the last time a button action happened
 		writeState.LastButtonAction = readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()
 	}
-
-	logger.Debug("Is switched on ", zap.Bool("isSwitchedOn", isSwitchedOn))
-	logger.Debug("Is switched off ", zap.Bool("isSwitchedOff", isSwitchedOff))
 
 	if isSwitchedOff {
 		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, readState.Config.Lights...)
