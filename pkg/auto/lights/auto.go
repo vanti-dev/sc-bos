@@ -165,7 +165,7 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 		cancelTtlTimer()
 		cancelRetryTimer()
 
-		ttl, err := processState(ctx, readState, writeState, actions)
+		ttl, err := processState(ctx, readState, writeState, actions, b.logger.Named("Process State"))
 		b.bus.Emit("process-complete", ttl, err, readState, writeState) // used only for testing, notify that processing has completed
 		if err != nil {
 			// todo: setup retries for processing the state

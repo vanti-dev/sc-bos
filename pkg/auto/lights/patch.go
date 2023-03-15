@@ -70,10 +70,9 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 			},
 			new: func(name string, logger *zap.Logger) subscriber {
 				return &ButtonPatches{
-					name:       name,
-					client:     buttonClient,
-					logger:     logger,
-					isOnButton: true,
+					name:   name,
+					client: buttonClient,
+					logger: logger,
 				}
 			},
 		},
@@ -83,10 +82,21 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 			},
 			new: func(name string, logger *zap.Logger) subscriber {
 				return &ButtonPatches{
-					name:       name,
-					client:     buttonClient,
-					logger:     logger,
-					isOnButton: false,
+					name:   name,
+					client: buttonClient,
+					logger: logger,
+				}
+			},
+		},
+		{
+			names: func(cfg config.Root) (names []string) {
+				return cfg.ToggleButtons
+			},
+			new: func(name string, logger *zap.Logger) subscriber {
+				return &ButtonPatches{
+					name:   name,
+					client: buttonClient,
+					logger: logger,
 				}
 			},
 		},
