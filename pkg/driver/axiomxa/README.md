@@ -72,3 +72,11 @@ A _network_ in Axiom terminology refers to a card reader or door. An example `NE
 We try to avoid this as it's both the least secure and least robust, it does give us access to all the information
 available to the AxiomXa system though.
 
+## Manual Testing
+
+You can sent a TCP packet to the server on port `60001` with a message port message to test the functionality is
+working:
+
+```shell
+echo "AG,02/03/2023 15:44:23,65536,Access granted: reader,ACU-06 Comms intake,Reader door 1,7349,1280458934,Anthony Ellis" | nc localhost 60001
+```

@@ -6,6 +6,8 @@ import (
 	"net"
 	"sort"
 	"sync"
+
+	"go.uber.org/zap"
 )
 
 type OnMessageFunc = func(data []byte)
@@ -13,6 +15,7 @@ type OnMessageFunc = func(data []byte)
 // Server receives message port packets and sends each to OnMessage for processing.
 type Server struct {
 	OnMessage OnMessageFunc
+	Logger    *zap.Logger
 }
 
 func NewServer(handler OnMessageFunc) *Server {
@@ -42,11 +45,20 @@ func (s *Server) Serve(lis net.Listener) error {
 func (s *Server) serveConn(rw net.Conn) {
 	lineReader := bufio.NewScanner(rw)
 	for lineReader.Scan() {
-		s.OnMessage(lineReader.Bytes())
+		msg := lineReader.Bytes()
+		s.logMessage(rw, msg)
+		s.OnMessage(msg)
 	}
 
 	// todo: handle any errors, or errors we don't expect
 	// lineReader.Err() ...
+}
+
+func (s *Server) logMessage(rw net.Conn, msg []byte) {
+	if s.Logger == nil {
+		return
+	}
+	s.Logger.Debug("message port received", zap.Stringer("remoteAddr", rw.RemoteAddr()), zap.ByteString("msg", msg))
 }
 
 // onceCloseListener wraps a net.Listener, protecting it from

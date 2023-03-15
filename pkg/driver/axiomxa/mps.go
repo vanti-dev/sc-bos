@@ -30,6 +30,7 @@ func (d *Driver) setupMessagePortServer(ctx context.Context, cfg config.Root, bu
 	server := mps.NewServer(mps.MapPrefix(onMessageMap, func(data []byte) {
 		d.logger.Warn("Unexpected message port message", zap.String("data", string(data)))
 	}))
+	server.Logger = d.logger
 
 	go server.Serve(mpLis)
 
