@@ -45,13 +45,13 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 		if readState.Buttons[mostRecentButtonName].MostRecentGesture != nil {
 			mostRecentGestureName = readState.Buttons[mostRecentButtonName].MostRecentGesture.Kind.String()
 		}
+		buttonActionRequired = isButtonActionRequired(readState.Buttons[mostRecentButtonName], writeState)
 		logger.Debug("Checking if button action require for button ", zap.String("button", mostRecentButtonName),
 			zap.Bool("action required", buttonActionRequired),
 			zap.Time("state change time", readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()),
 			zap.Time("last action time", writeState.LastButtonAction),
 			zap.String("button state", readState.Buttons[mostRecentButtonName].State.String()),
 			zap.String("last gesture", mostRecentGestureName))
-		buttonActionRequired = isButtonActionRequired(readState.Buttons[mostRecentButtonName], writeState)
 	}
 
 	if buttonActionRequired {
