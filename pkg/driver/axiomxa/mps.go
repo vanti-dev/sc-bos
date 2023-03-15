@@ -14,6 +14,7 @@ import (
 // setupMessagePortServer listens on cfg.MessagePorts.Bind for message ports, sending the parsed Fields to bus.
 func (d *Driver) setupMessagePortServer(ctx context.Context, cfg config.Root, bus *emitter.Emitter) error {
 	var lc net.ListenConfig
+	d.logger.Info("Setting up Message Port receiver", zap.String("addr", cfg.MessagePorts.Bind))
 	mpLis, err := lc.Listen(ctx, "tcp", cfg.MessagePorts.Bind)
 	if err != nil {
 		return err
