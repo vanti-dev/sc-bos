@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/time/clock"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
@@ -146,7 +147,17 @@ func newMockClient(traitName trait.Name) (any, service.Lifecycle) {
 	case trait.AirQualitySensor:
 		return airqualitysensor.WrapApi(airqualitysensor.NewModelServer(airqualitysensor.NewModel(&traits.AirQuality{}))), nil
 	case trait.AirTemperature:
-		return airtemperature.WrapApi(airtemperature.NewModelServer(airtemperature.NewModel(&traits.AirTemperature{}))), nil
+		h := rand.Float32()
+		t := 10 + (rand.Float64() * 20)
+		model := traits.AirTemperature{
+			Mode:               traits.AirTemperature_AUTO,
+			AmbientTemperature: &types.Temperature{ValueCelsius: t},
+			AmbientHumidity:    &h,
+			TemperatureGoal: &traits.AirTemperature_TemperatureSetPoint{
+				TemperatureSetPoint: &types.Temperature{ValueCelsius: t},
+			},
+		}
+		return airtemperature.WrapApi(airtemperature.NewModelServer(airtemperature.NewModel(&model))), nil
 	case trait.Booking:
 		return booking.WrapApi(booking.NewModelServer(booking.NewModel())), nil
 	case trait.BrightnessSensor:
