@@ -34,6 +34,9 @@ export class Alert extends jspb.Message {
   getSource(): string;
   setSource(value: string): Alert;
 
+  getFederation(): string;
+  setFederation(value: string): Alert;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Alert.AsObject;
   static toObject(includeInstance: boolean, msg: Alert): Alert.AsObject;
@@ -52,6 +55,7 @@ export namespace Alert {
     floor: string,
     zone: string,
     source: string,
+    federation: string,
   }
 
   export class Acknowledgement extends jspb.Message {
@@ -134,6 +138,9 @@ export namespace Alert {
     getSource(): string;
     setSource(value: string): Query;
 
+    getFederation(): string;
+    setFederation(value: string): Query;
+
     getAcknowledged(): boolean;
     setAcknowledged(value: boolean): Query;
     hasAcknowledged(): boolean;
@@ -156,6 +163,7 @@ export namespace Alert {
       floor: string,
       zone: string,
       source: string,
+      federation: string,
       acknowledged?: boolean,
     }
 

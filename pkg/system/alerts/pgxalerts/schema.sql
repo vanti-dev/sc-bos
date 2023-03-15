@@ -13,3 +13,5 @@ CREATE TABLE IF NOT EXISTS alerts
     ack_author_email TEXT        NULL,
     ack_author_id    TEXT        NULL
 );
+
+ALTER TABLE alerts ADD COLUMN IF NOT EXISTS federation TEXT NULL;

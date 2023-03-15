@@ -73,6 +73,7 @@ message Alert {
   string floor = 7;  // the floor the alert relates to, typically the floor the source is located on.
   string zone = 8;   // the spacial zone the alert relates to, typically the zone the source is located in.
   string source = 9; // the originator of the alert
+  string federation = 10; // the system source is associated with, typically a controller name
 
   // Query allows filtering for list and pull requests.
   // If multiple fields are present they are ANDed together.
@@ -94,6 +95,8 @@ message Alert {
     string zone = 6;
     // Only return alerts that match this source.
     string source = 7;
+    // When collating alerts from multiple systems, federation records that remote system.
+    string federation = 9;
 
     // When true, only include alerts that have an acknowledgement.
     // When false, only include alerts that don't have an acknowledgement.

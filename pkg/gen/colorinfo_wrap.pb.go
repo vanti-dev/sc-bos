@@ -7,7 +7,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// WrapColorInfo	adapts a gen.ColorInfoServer	and presents it as a gen.ColorInfoClient
+// WrapColorInfo	adapts a ColorInfoServer	and presents it as a ColorInfoClient
 func WrapColorInfo(server ColorInfoServer) ColorInfoClient {
 	return &colorInfoWrapper{server}
 }

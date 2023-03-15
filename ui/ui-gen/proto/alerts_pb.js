@@ -485,7 +485,8 @@ proto.smartcore.bos.Alert.toObject = function(includeInstance, msg) {
     severity: jspb.Message.getFieldWithDefault(msg, 6, 0),
     floor: jspb.Message.getFieldWithDefault(msg, 7, ""),
     zone: jspb.Message.getFieldWithDefault(msg, 8, ""),
-    source: jspb.Message.getFieldWithDefault(msg, 9, "")
+    source: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    federation: jspb.Message.getFieldWithDefault(msg, 10, "")
   };
 
   if (includeInstance) {
@@ -555,6 +556,10 @@ proto.smartcore.bos.Alert.deserializeBinaryFromReader = function(msg, reader) {
     case 9:
       var value = /** @type {string} */ (reader.readString());
       msg.setSource(value);
+      break;
+    case 10:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setFederation(value);
       break;
     default:
       reader.skipField();
@@ -640,6 +645,13 @@ proto.smartcore.bos.Alert.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       9,
+      f
+    );
+  }
+  f = message.getFederation();
+  if (f.length > 0) {
+    writer.writeString(
+      10,
       f
     );
   }
@@ -1088,6 +1100,7 @@ proto.smartcore.bos.Alert.Query.toObject = function(includeInstance, msg) {
     floor: jspb.Message.getFieldWithDefault(msg, 5, ""),
     zone: jspb.Message.getFieldWithDefault(msg, 6, ""),
     source: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    federation: jspb.Message.getFieldWithDefault(msg, 9, ""),
     acknowledged: jspb.Message.getBooleanFieldWithDefault(msg, 8, false)
   };
 
@@ -1154,6 +1167,10 @@ proto.smartcore.bos.Alert.Query.deserializeBinaryFromReader = function(msg, read
     case 7:
       var value = /** @type {string} */ (reader.readString());
       msg.setSource(value);
+      break;
+    case 9:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setFederation(value);
       break;
     case 8:
       var value = /** @type {boolean} */ (reader.readBool());
@@ -1236,6 +1253,13 @@ proto.smartcore.bos.Alert.Query.serializeBinaryToWriter = function(message, writ
   if (f.length > 0) {
     writer.writeString(
       7,
+      f
+    );
+  }
+  f = message.getFederation();
+  if (f.length > 0) {
+    writer.writeString(
+      9,
       f
     );
   }
@@ -1410,6 +1434,24 @@ proto.smartcore.bos.Alert.Query.prototype.getSource = function() {
  */
 proto.smartcore.bos.Alert.Query.prototype.setSource = function(value) {
   return jspb.Message.setProto3StringField(this, 7, value);
+};
+
+
+/**
+ * optional string federation = 9;
+ * @return {string}
+ */
+proto.smartcore.bos.Alert.Query.prototype.getFederation = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.Alert.Query} returns this
+ */
+proto.smartcore.bos.Alert.Query.prototype.setFederation = function(value) {
+  return jspb.Message.setProto3StringField(this, 9, value);
 };
 
 
@@ -1628,6 +1670,24 @@ proto.smartcore.bos.Alert.prototype.getSource = function() {
  */
 proto.smartcore.bos.Alert.prototype.setSource = function(value) {
   return jspb.Message.setProto3StringField(this, 9, value);
+};
+
+
+/**
+ * optional string federation = 10;
+ * @return {string}
+ */
+proto.smartcore.bos.Alert.prototype.getFederation = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.Alert} returns this
+ */
+proto.smartcore.bos.Alert.prototype.setFederation = function(value) {
+  return jspb.Message.setProto3StringField(this, 10, value);
 };
 
 

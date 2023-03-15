@@ -105,8 +105,8 @@ func (s *Server) CreateAlert(ctx context.Context, request *gen.CreateAlertReques
 
 	var createTime time.Time
 	err := s.pool.QueryRow(ctx,
-		`INSERT INTO alerts (description, severity, floor, zone, source) VALUES ($1, $2, $3, $4, $5) RETURNING id, create_time`,
-		alert.Description, alert.Severity, alert.Floor, alert.Zone, alert.Source,
+		`INSERT INTO alerts (description, severity, floor, zone, source, federation) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, create_time`,
+		alert.Description, alert.Severity, alert.Floor, alert.Zone, alert.Source, alert.Federation,
 	).Scan(&alert.Id, &createTime)
 	if err != nil {
 		return nil, dbErrToStatus(err)
@@ -152,6 +152,10 @@ func (s *Server) UpdateAlert(ctx context.Context, request *gen.UpdateAlertReques
 	if shouldUpdateField(request.UpdateMask, "source", alert.Source) {
 		fields = append(fields, "source")
 		values = append(values, alert.Source)
+	}
+	if shouldUpdateField(request.UpdateMask, "federation", alert.Federation) {
+		fields = append(fields, "federation")
+		values = append(values, alert.Federation)
 	}
 
 	if len(fields) == 0 {
@@ -297,6 +301,11 @@ func (s *Server) ListAlerts(ctx context.Context, request *gen.ListAlertsRequest)
 		if q.Source != "" {
 			where = append(where, fmt.Sprintf(`source=$%d`, argIdx+1))
 			args = append(args, q.Source)
+			argIdx += 1
+		}
+		if q.Federation != "" {
+			where = append(where, fmt.Sprintf(`federation=$%d`, argIdx+1))
+			args = append(args, q.Federation)
 			argIdx += 1
 		}
 		if q.Acknowledged != nil {
@@ -507,12 +516,12 @@ func readAlertById(ctx context.Context, tx pgx.Tx, id string, dst *gen.Alert) er
 }
 
 // selectAlertSQL selects fields in the order expected by scanAlert.
-const selectAlertSQL = `SELECT id, description, severity, create_time, floor, zone, source, ack_time, ack_author_id, ack_author_name, ack_author_email FROM alerts`
+const selectAlertSQL = `SELECT id, description, severity, create_time, floor, zone, source, federation, ack_time, ack_author_id, ack_author_name, ack_author_email FROM alerts`
 
 func scanAlert(scanner pgx.Row, dst *gen.Alert) error {
 	var createTime, ackTime *time.Time
 	var ackAuthorId, ackAuthorName, ackAuthorEmail *string
-	err := scanner.Scan(&dst.Id, &dst.Description, &dst.Severity, &createTime, &dst.Floor, &dst.Zone, &dst.Source, &ackTime, &ackAuthorId, &ackAuthorName, &ackAuthorEmail)
+	err := scanner.Scan(&dst.Id, &dst.Description, &dst.Severity, &createTime, &dst.Floor, &dst.Zone, &dst.Source, &dst.Federation, &ackTime, &ackAuthorId, &ackAuthorName, &ackAuthorEmail)
 	if err != nil {
 		return err
 	}
@@ -651,6 +660,9 @@ func alertMatchesQuery(q *gen.Alert_Query, a *gen.Alert) bool {
 		return false
 	}
 	if q.Source != "" && q.Source != a.Source {
+		return false
+	}
+	if q.Federation != "" && q.Federation != a.Federation {
 		return false
 	}
 

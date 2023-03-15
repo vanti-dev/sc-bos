@@ -8,7 +8,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// WrapColorApi	adapts a gen.ColorApiServer	and presents it as a gen.ColorApiClient
+// WrapColorApi	adapts a ColorApiServer	and presents it as a ColorApiClient
 func WrapColorApi(server ColorApiServer) ColorApiClient {
 	return &colorApiWrapper{server}
 }
