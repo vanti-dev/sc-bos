@@ -41,12 +41,16 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	if len(mostRecentButtonName) == 0 {
 		buttonActionRequired = false
 	} else {
+		mostRecentGestureName := "Unknown"
+		if readState.Buttons[mostRecentButtonName].MostRecentGesture != nil {
+			mostRecentGestureName = readState.Buttons[mostRecentButtonName].MostRecentGesture.Kind.String()
+		}
 		logger.Debug("Checking if button action require for button ", zap.String("button", mostRecentButtonName),
 			zap.Bool("action required", buttonActionRequired),
 			zap.Time("state change time", readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()),
 			zap.Time("last action time", writeState.LastButtonAction),
 			zap.String("button state", readState.Buttons[mostRecentButtonName].State.String()),
-			zap.String("last gesture", readState.Buttons[mostRecentButtonName].MostRecentGesture.Kind.String()))
+			zap.String("last gesture", mostRecentGestureName))
 		buttonActionRequired = isButtonActionRequired(readState.Buttons[mostRecentButtonName], writeState)
 	}
 
@@ -78,7 +82,8 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	}
 
 	if isSwitchedOff {
-		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, readState.Config.Lights...)
+		logger.Debug("Switched off by button press. Setting level to zero")
+		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, logger, readState.Config.Lights...)
 	}
 
 	anyOccupied := areAnyOccupied(readState.Config.OccupancySensors, readState.Occupancy)
@@ -86,13 +91,14 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	// We can do easy checks for occupancy and turn things on if they are occupied
 	if anyOccupied || isSwitchedOn {
 		level, ok := computeOnLevelPercent(readState)
+		logger.Debug("Occupied or button pressed. Setting level.", zap.Float32("level", level))
 		if !ok {
 			logger.Warn("Could not get level for daylight dimming")
 			// todo: here we are in a position where daylight dimming is supposed to be enabled but we don't have enough
 			//  info to actually choose the output light level. We should probably not make any changes and wait for
 			//  more data to come in, but we'll leave that to future us as part of snagging.
 		}
-		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, level, readState.Config.Lights...)
+		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, level, logger, readState.Config.Lights...)
 	}
 
 	// This code check when occupancy last reported unoccupied and only turns the lights off
@@ -132,7 +138,8 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	}
 
 	if occupancyExpired {
-		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, readState.Config.Lights...)
+		logger.Debug("Occupancy expired. Setting level to zero")
+		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, logger, readState.Config.Lights...)
 	}
 
 	// no change
