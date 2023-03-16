@@ -163,30 +163,20 @@ func (n *Node) addRoute(name string, impl interface{}) Undo {
 }
 
 func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
-	fn := func() {
+	retryConcurrentOp(func() {
 		n.parent().AddChildTrait(name, traitName...)
-	}
-	var err any
-	for i := 0; i < 5; i++ {
-		err = catchPanic(fn)
-		if isConcurrentUpdateDetectedPanic(err) {
-			n.Logger.Warn("panic adding child trait", zap.Any("panic", err), zap.String("name", name), zap.Any("traitNames", traitName))
-			continue
-		}
-		if err != nil {
-			panic(err) // report other errors
-		}
-		break // no err
-	}
-	if err != nil {
-		panic(err) // we tried
-	}
+	})
 	return func() {
-		child := n.parent().RemoveChildTrait(name, traitName...)
+		var child *traits.Child
+		retryConcurrentOp(func() {
+			child = n.parent().RemoveChildTrait(name, traitName...)
+		})
 		// There's a huge assumption here that child was added via AddChildTrait,
 		// this should be true but isn't guaranteed
 		if child != nil && len(child.Traits) == 0 {
-			_, _ = n.parent().RemoveChildByName(child.Name)
+			retryConcurrentOp(func() {
+				_, _ = n.parent().RemoveChildByName(child.Name)
+			})
 		}
 	}
 }
@@ -203,6 +193,26 @@ func (n *Node) parent() *parent.Model {
 		n.Announce(n.name, HasTrait(trait.Parent, WithClients(client)))
 	}
 	return n.children
+}
+
+// retryConcurrentOp runs fn retrying up to 5 times when any panics that isConcurrentUpdateDetectedPanic returns true for.
+func retryConcurrentOp(fn func()) (retried bool) {
+	var err any
+	for i := 0; i < 5; i++ {
+		err = catchPanic(fn)
+		if isConcurrentUpdateDetectedPanic(err) {
+			retried = true
+			continue
+		}
+		if err != nil {
+			panic(err) // report other errors
+		}
+		break // no err
+	}
+	if err != nil {
+		panic(err) // we tried
+	}
+	return
 }
 
 func catchPanic(f func()) (res any) {
