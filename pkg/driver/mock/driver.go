@@ -148,7 +148,7 @@ func newMockClient(traitName trait.Name) (any, service.Lifecycle) {
 		return airqualitysensor.WrapApi(airqualitysensor.NewModelServer(airqualitysensor.NewModel(&traits.AirQuality{}))), nil
 	case trait.AirTemperature:
 		h := rand.Float32()
-		t := 10 + (rand.Float64() * 20)
+		t := 15 + (rand.Float64() * 10)
 		model := traits.AirTemperature{
 			Mode:               traits.AirTemperature_AUTO,
 			AmbientTemperature: &types.Temperature{ValueCelsius: t},
