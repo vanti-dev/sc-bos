@@ -179,7 +179,7 @@ func mergeAirTemperature(all []*traits.AirTemperature) (*traits.AirTemperature, 
 		out := &traits.AirTemperature{}
 		// TemperatureGoal
 		if setPoint, ok := mean(all, func(e *traits.AirTemperature) (float64, bool) {
-			switch t := e.GetTemperatureGoal().(type) {
+			switch t := e.GetTemperatureGoal().(type) { // note: Get is e-nil safe
 			case *traits.AirTemperature_TemperatureSetPoint:
 				return t.TemperatureSetPoint.ValueCelsius, true
 			default:
@@ -190,7 +190,7 @@ func mergeAirTemperature(all []*traits.AirTemperature) (*traits.AirTemperature, 
 		}
 		// AmbientTemperature
 		if val, ok := mean(all, func(e *traits.AirTemperature) (float64, bool) {
-			if e.AmbientTemperature == nil {
+			if e == nil || e.AmbientTemperature == nil {
 				return 0, false
 			}
 			return e.AmbientTemperature.ValueCelsius, true
@@ -199,7 +199,7 @@ func mergeAirTemperature(all []*traits.AirTemperature) (*traits.AirTemperature, 
 		}
 		// AmbientHumidity
 		if val, ok := mean(all, func(e *traits.AirTemperature) (float32, bool) {
-			if e.AmbientHumidity == nil {
+			if e == nil || e.AmbientHumidity == nil {
 				return 0, false
 			}
 			return *e.AmbientHumidity, true
@@ -208,7 +208,7 @@ func mergeAirTemperature(all []*traits.AirTemperature) (*traits.AirTemperature, 
 		}
 		// DewPoint
 		if val, ok := mean(all, func(e *traits.AirTemperature) (float64, bool) {
-			if e.DewPoint == nil {
+			if e == nil || e.DewPoint == nil {
 				return 0, false
 			}
 			return e.DewPoint.ValueCelsius, true
