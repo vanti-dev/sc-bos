@@ -21,7 +21,6 @@
       </div>
       <circular-gauge
           :value="humidity"
-          max="100"
           segments="30"
           class="align-self-center">
         <span class="align-baseline">
@@ -64,7 +63,7 @@ const indoorTempValue = reactive(newResourceValue());
 const outdoorTempValue = reactive(newResourceValue());
 
 const temperature = computed(() => indoorTempValue.value?.ambientTemperature?.valueCelsius ?? 0);
-const humidity = computed(() => indoorTempValue.value?.ambientHumidity?.value ?? 0);
+const humidity = computed(() => indoorTempValue.value?.ambientHumidity ?? 0);
 const externalTemperature = computed(() => outdoorTempValue.value?.ambientTemperature?.valueCelsius ?? 0);
 
 watch(() => props.name, async (name) => {
