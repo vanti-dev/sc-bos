@@ -58,24 +58,25 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	if cfg.Storage == nil {
 		return errors.New("no storage")
 	}
-	if cfg.Storage.Type != "postgres" {
-		return fmt.Errorf("unsuported storage type %s, want one of [postgres]", cfg.Storage.Type)
-	}
+	switch cfg.Storage.Type {
+	case config.StorageTypePostgres:
+		pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		if err != nil {
+			return fmt.Errorf("connect: %w", err)
+		}
 
-	pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
-	if err != nil {
-		return fmt.Errorf("connect: %w", err)
-	}
+		server, err := pgxalerts.NewServerFromPool(ctx, pool)
+		if err != nil {
+			return fmt.Errorf("init: %w", err)
+		}
 
-	server, err := pgxalerts.NewServerFromPool(ctx, pool)
-	if err != nil {
-		return fmt.Errorf("init: %w", err)
+		announcer.Announce(s.name, node.HasClient(
+			gen.WrapAlertApi(server),
+			gen.WrapAlertAdminApi(server),
+		))
+	default:
+		return fmt.Errorf("unsuported storage type %s", cfg.Storage.Type)
 	}
-
-	announcer.Announce(s.name, node.HasClient(
-		gen.WrapAlertApi(server),
-		gen.WrapAlertAdminApi(server),
-	))
 
 	return nil
 }
