@@ -81,7 +81,7 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 			gen.WrapAlertApi(server),
 			gen.WrapAlertAdminApi(server),
 		))
-	case config.StorageTypeCohort:
+	case config.StorageTypeHub:
 		server := hubalerts.NewServer("", s.name, s.cohortManager)
 		announcer.Announce(s.name, node.HasClient(
 			gen.WrapAlertApi(server),
