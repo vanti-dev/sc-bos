@@ -117,10 +117,31 @@ func (n *Server) CreateNodeRegistration(ctx context.Context, request *gen.Create
 		})
 	})
 	if err != nil {
-		logger.Error("pool.CreateEnrollment failed", zap.Error(err))
-		return nil, status.Error(codes.DataLoss, "failed to save the enrollment - manual intervention required")
+		delErr := n.deleteNodeRegistration(ctx, nodeReg)
+		if delErr != nil {
+			// failed to rollback!
+			logger.Error("pool.CreateEnrollment failed, failed to rollback",
+				zap.NamedError("enroll", err), zap.NamedError("rollback", delErr))
+			return nil, status.Errorf(codes.DataLoss, "enrollment failed, rollback failed - the system is in a corrupt state, manual intervention required")
+		}
+		logger.Warn("pool.CreateEnrollment failed", zap.Error(err))
+		return nil, status.Error(codes.Aborted, "failed to save the enrollment, no changes have been made")
 	}
 	return nodeReg, nil
+}
+
+func (n *Server) deleteNodeRegistration(ctx context.Context, reg *gen.NodeRegistration) error {
+	conn, err := grpc.DialContext(ctx, reg.Address, grpc.WithTransportCredentials(credentials.NewTLS(n.TestTLSConfig)))
+	if err != nil {
+		n.logger.Error("failed to connect to node", zap.Error(err))
+		return status.Error(codes.Unavailable, "unable to connect to target node")
+	}
+	client := gen.NewEnrollmentApiClient(conn)
+	_, err = client.DeleteEnrollment(ctx, &gen.DeleteEnrollmentRequest{})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (n *Server) ListNodeRegistrations(ctx context.Context, request *gen.ListNodeRegistrationsRequest) (*gen.ListNodeRegistrationsResponse, error) {

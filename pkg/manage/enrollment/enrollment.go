@@ -223,3 +223,7 @@ func SaveEnrollment(dir string, enrollment Enrollment) error {
 	_, err = pki.SaveCertificateChain(filepath.Join(dir, certFile), enrollment.Cert.Certificate)
 	return err
 }
+
+func DeleteEnrollment(dir string) error {
+	return os.RemoveAll(dir)
+}

@@ -106,6 +106,50 @@ func (es *Server) CreateEnrollment(ctx context.Context, request *gen.CreateEnrol
 	return request.GetEnrollment(), nil
 }
 
+func (es *Server) DeleteEnrollment(ctx context.Context, request *gen.DeleteEnrollmentRequest) (*gen.Enrollment, error) {
+	// delete only if we are enrolled already
+	es.m.Lock()
+	defer es.m.Unlock()
+
+	select {
+	case <-es.done:
+	default:
+		return nil, status.Error(codes.NotFound, "not enrolled")
+	}
+
+	// 0. remember state needed to undo this delete if needed
+	// 1. clear the enrollment pki.Source
+	// 2. delete the enrollment files
+	// 3. reset tracking state
+
+	en := es.enrollment
+	es.enrollment = Enrollment{}
+	if err := DeleteEnrollment(es.dir); err != nil {
+		es.enrollment = en
+		// try our best to save the enrollment again
+		var saveErr error
+		for i := 0; i < 5; i++ {
+			saveErr = SaveEnrollment(es.dir, en)
+			if saveErr == nil {
+				break
+			}
+		}
+		if saveErr != nil {
+			es.logger.Error("delete failed, rollback failed - manual intervention required", zap.NamedError("delErr", err), zap.NamedError("rollbackErr", saveErr))
+			return nil, status.Errorf(codes.DataLoss, "failed to delete, failed to rollback")
+		}
+		return nil, status.Errorf(codes.Aborted, err.Error())
+	}
+	es.done = make(chan struct{})
+	go es.managerAddressChanged.Send(context.Background(), "")
+
+	return &gen.Enrollment{
+		TargetName:     en.RootDeviceName,
+		ManagerName:    en.ManagerName,
+		ManagerAddress: en.ManagerAddress,
+	}, nil
+}
+
 func (es *Server) Wait(ctx context.Context) (enrollment Enrollment, done bool) {
 	select {
 	case <-es.done:
