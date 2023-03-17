@@ -3,6 +3,7 @@ module github.com/vanti-dev/sc-bos
 go 1.19
 
 require (
+	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/go-jose/go-jose/v3 v3.0.0
@@ -34,7 +35,6 @@ require (
 require (
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/agnivade/levenshtein v1.0.1 // indirect
-	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
