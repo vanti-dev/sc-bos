@@ -257,8 +257,13 @@ func (s *ssSource) Certs() (*tls.Certificate, []*x509.Certificate, error) {
 		Leaf:        leaf,
 		PrivateKey:  s.key,
 	}
-	// Technically cert is one of the roots, but as nobody else will have access to it we don't include it in roots
-	return cert, nil, nil
+
+	var roots []*x509.Certificate
+	if leaf.IsCA {
+		// assume that if we're making a self signed ca, then we want that ca to exist in the roots.
+		roots = append(roots, leaf)
+	}
+	return cert, roots, nil
 }
 
 // SourceSet is a Source that will return certs from the first of sources to return a non-nil cert and err.

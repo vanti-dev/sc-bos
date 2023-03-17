@@ -141,7 +141,6 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		selfSignedSource,
 	}
 	tlsGRPCServerConfig := pki.TLSServerConfig(grpcSource)
-	tlsGRPCServerConfig.ClientAuth = tls.VerifyClientCertIfGiven
 	tlsGRPCClientConfig := pki.TLSClientConfig(grpcSource)
 
 	// Certs used for https (hosting and grpc-web) can be different from the Smart Core native grpc endpoint,

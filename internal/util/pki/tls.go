@@ -9,12 +9,20 @@ import (
 // TLSServerConfig returns a *tls.Config for use by a server using source to provide the server cert.
 // If the returned tls.Config requires validation of client certificates then sources roots will be used to validate
 // the client certificates.
+//
+// Warning: if tls.Config.ClientAuth is configured to verify client certificates then this happens _before_ source is
+// consulted for ClientCAs which will likely cause verification to fail.
 func TLSServerConfig(source Source) *tls.Config {
 	r := &resolver{
 		server: true,
 		source: source,
 		config: new(tls.Config),
 	}
+
+	// We want to set config.ClientAuth to tls.VerifyClientCertIfGiven but this triggers cert validation that doesn't use source.
+	// So we have to use non-verifying ClientAuth settings and take over the verification ourselves using r.clientAuth.
+	r.config.ClientAuth = tls.RequestClientCert
+	r.clientAuth = tls.VerifyClientCertIfGiven
 
 	r.config.GetCertificate = r.getCertificate
 	r.config.VerifyConnection = r.verifyConnection
@@ -41,6 +49,8 @@ type resolver struct {
 	server bool
 	config *tls.Config
 	source Source
+
+	clientAuth tls.ClientAuthType
 }
 
 func (r *resolver) getCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
@@ -98,7 +108,7 @@ func (r *resolver) skipVerify(cs tls.ConnectionState) (bool, error) {
 	}
 
 	if r.server {
-		switch r.config.ClientAuth {
+		switch r.clientAuth {
 		case tls.NoClientCert, tls.RequestClientCert:
 			return true, nil
 		case tls.RequireAnyClientCert:
