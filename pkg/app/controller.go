@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -77,7 +78,11 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	// rootNode grants both local (in process) and networked (via grpc.Server) access to controller apis.
 	// If you have a device you want expose via a Smart Core API, rootNode is where you'd do that via Announce.
 	// If you need to know the brightness of another controller device, rootNode.Clients is how you'd do that.
-	rootNode := node.New(localConfig.Name)
+	cName := localConfig.Name
+	if cName == "" {
+		cName = config.Name
+	}
+	rootNode := node.New(cName)
 	rootNode.Logger = logger.Named("node")
 
 	// Setup a local database for storing non-critical data.
@@ -411,15 +416,21 @@ func (c *Controller) startAutomations() (*service.Map, error) {
 }
 
 func (c *Controller) startSystems() (*service.Map, error) {
+	grpcEndpoint, err := c.grpcEndpoint()
+	if err != nil {
+		return nil, err
+	}
 	ctxServices := system.Services{
 		DataDir:         c.SystemConfig.DataDir,
 		Logger:          c.Logger.Named("system"),
 		Node:            c.Node,
+		GRPCEndpoint:    grpcEndpoint,
 		Database:        c.Database,
 		HTTPMux:         c.Mux,
 		TokenValidators: c.TokenValidators,
 		GRPCCerts:       c.GRPCCerts,
 		PrivateKey:      c.PrivateKey,
+		CohortManager:   c.ManagerConn,
 		ClientTLSConfig: c.ClientTLSConfig,
 	}
 	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
@@ -457,6 +468,26 @@ func (c *Controller) startZones() (*service.Map, error) {
 		allErrs = multierr.Append(allErrs, err)
 	}
 	return m, allErrs
+}
+
+func (c *Controller) grpcEndpoint() (string, error) {
+	lisAddr := c.SystemConfig.ListenGRPC
+	addr := c.SystemConfig.GRPCAddr
+	_, p, err := net.SplitHostPort(lisAddr)
+	if err != nil {
+		return "", err
+	}
+	return net.JoinHostPort(addr, p), nil
+}
+
+func (c *Controller) httpEndpoint() (string, error) {
+	lisAddr := c.SystemConfig.ListenHTTPS
+	addr := c.SystemConfig.HTTPAddr
+	_, p, err := net.SplitHostPort(lisAddr)
+	if err != nil {
+		return "", err
+	}
+	return net.JoinHostPort(addr, p), nil
 }
 
 func logServiceMapChanges(ctx context.Context, logger *zap.Logger, m *service.Map) {

@@ -10,6 +10,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/system"
+	"github.com/vanti-dev/sc-bos/pkg/util/netutil"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
 )
 
@@ -36,9 +37,17 @@ type Config struct {
 	ConfigDirs  []string `json:"-"` // Dirs we look in for system config files. Config in DataDir is always loaded and will have higher priority.
 	ConfigFiles []string `json:"-"` // Filenames we load in ConfigDirs for system config
 
+	// The smart core name of the controller.
+	// Can be overridden by app config.
+	Name string `json:"name,omitempty"`
+
 	Logger      *zap.Config `json:"logger,omitempty"`
 	ListenGRPC  string      `json:"listenGrpc,omitempty"`
 	ListenHTTPS string      `json:"listenHttps,omitempty"`
+	// FooAddr are preferred IP/host others use to connect to us.
+	// Defaults to netutil.PublicAddress
+	GRPCAddr string `json:"grpcAddr,omitempty"`
+	HTTPAddr string `json:"grpcAddr,omitempty"`
 
 	DataDir       string                     `json:"dataDir,omitempty"` // defaults to .data/controller
 	StaticHosting []http.StaticHostingConfig `json:"staticHosting"`
@@ -99,6 +108,12 @@ func Default() Config {
 		DisablePolicy: false,
 	}
 	config.Logger.DisableStacktrace = true // because it's annoying
+
+	if localIP, err := netutil.OutboundAddr(); err == nil {
+		config.GRPCAddr = localIP.String()
+		config.HTTPAddr = localIP.String()
+	}
+
 	return config
 }
 
