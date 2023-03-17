@@ -64,30 +64,22 @@ func TestRetryError(t *testing.T) {
 	})
 
 	t.Run("panic", func(t *testing.T) {
-		once := RetryError{}
-		func() {
-			defer func() {
-				if r := recover(); r == nil {
-					t.Fatal("RetryError.Do did not panic")
-				}
-			}()
-
-			once.Do(context.Background(), func() error {
-				panic("expected test panic")
-			})
-		}()
+		once := RetryError{recoverPanic: true}
+		err := once.Do(context.Background(), func() error {
+			panic("expected test panic")
+		})
+		if err != ErrPanicSuppressed {
+			t.Fatalf("Expecting %v, got %v", ErrPanicSuppressed, err)
+		}
 
 		// make sure panicking didn't settle the once
-		func() {
-			defer func() {
-				if r := recover(); r == nil {
-					t.Fatal("RetryError.Do did not panic")
-				}
-			}()
-
-			once.Do(context.Background(), func() error {
-				panic("expected test panic")
-			})
-		}()
+		var ran bool
+		once.Do(context.Background(), func() error {
+			ran = true
+			return nil
+		})
+		if !ran {
+			t.Fatalf("Panic caused once to be settled")
+		}
 	})
 }
