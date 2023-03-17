@@ -38,6 +38,10 @@ type DaylightDimming struct {
 	// With Thresholds you can say "below 300 lux set brightness to 80%, below 700 lux set to 50%".
 	// The threshold with the highest BelowLux value below the measured lux level will be selected.
 	Thresholds []LevelThreshold `json:"thresholds,omitempty"`
+	// PercentageTowardsGoal configures how quickly we reach our goal. If set to 50 then we calculate the desired level
+	// from the lookup table and then go half way between current and desired.
+	// A new lux reading will come in based on that light level; we will approach the goal, always undershooting.
+	PercentageTowardsGoal float32 `json:"percentageTowardsGoal,omitempty""`
 }
 
 type LevelThreshold struct {

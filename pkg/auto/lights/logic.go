@@ -261,8 +261,14 @@ func computeOnLevelPercent(readState *ReadState, writeState *WriteState) (level 
 	// Go half way between goal and current level percent
 	currentAverage, err := getAverageLevel(writeState)
 	var levelPercent float32
+	pcTowardsGoal := readState.Config.DaylightDimming.PercentageTowardsGoal
+
+	if pcTowardsGoal <= 0 || pcTowardsGoal > 100 {
+		pcTowardsGoal = 75
+	}
+
 	if err == nil {
-		levelPercent = (threshold.LevelPercent + currentAverage) / 2
+		levelPercent = currentAverage + pcTowardsGoal*(threshold.LevelPercent-currentAverage)/100
 	} else {
 		levelPercent = threshold.LevelPercent
 	}
