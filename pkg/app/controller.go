@@ -60,15 +60,19 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	localConfig, err := appconf.LoadLocalConfig(config.DataDir, config.AppConfigFile)
 	if localConfig == nil && err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			logger.Debug("failed to load local config from file", zap.Error(err), zap.String("path", localConfigPath))
+			logger.Debug("local config file not found", zap.String("path", localConfigPath))
+			// continue with default config
+			localConfig = &appconf.Config{}
 		} else {
 			return nil, err
 		}
 	} else if err != nil {
 		// we loaded some config, but had some errors
-		logger.Warn("failed to load some config", zap.Error(err))
+		logger.Warn("failed to load some config", zap.String("path", localConfigPath), zap.Error(err))
+	} else {
+		// successfully loaded the config
+		logger.Debug("loaded local config", zap.String("path", localConfigPath), zap.Strings("includes", localConfig.Includes))
 	}
-	logger.Debug("loaded local config", zap.String("path", localConfigPath), zap.Strings("includes", localConfig.Includes))
 
 	// rootNode grants both local (in process) and networked (via grpc.Server) access to controller apis.
 	// If you have a device you want expose via a Smart Core API, rootNode is where you'd do that via Announce.
