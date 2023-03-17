@@ -1,0 +1,93 @@
+package once
+
+import (
+	"context"
+	"errors"
+	"testing"
+)
+
+type one int
+
+func (o *one) Increment() {
+	*o++
+}
+
+func run(t *testing.T, once *RetryError, o *one, c chan bool) {
+	once.Do(context.Background(), func() error {
+		o.Increment()
+		return nil
+	})
+	if v := *o; v != 1 {
+		t.Errorf("once failed inside run: %d is not 1", v)
+	}
+	c <- true
+}
+
+func TestRetryError(t *testing.T) {
+	t.Run("run once", func(t *testing.T) {
+		o := new(one)
+		once := new(RetryError)
+		c := make(chan bool)
+		const N = 10
+		for i := 0; i < N; i++ {
+			go run(t, once, o, c)
+		}
+		for i := 0; i < N; i++ {
+			<-c
+		}
+		if *o != 1 {
+			t.Errorf("once failed outside run: %d is not 1", *o)
+		}
+	})
+
+	t.Run("retry errors", func(t *testing.T) {
+		o := new(one)
+		once := new(RetryError)
+		knownErr := errors.New("known")
+		err := once.Do(context.Background(), func() error {
+			o.Increment()
+			return knownErr
+		})
+		if err != knownErr {
+			t.Fatal("Expecting known error")
+		}
+		err = once.Do(context.Background(), func() error {
+			o.Increment()
+			return knownErr
+		})
+		if err != knownErr {
+			t.Fatal("Expecting known error")
+		}
+		if v := *o; v != 2 {
+			t.Fatalf("Expecting multiple calls on error")
+		}
+	})
+
+	t.Run("panic", func(t *testing.T) {
+		once := RetryError{}
+		func() {
+			defer func() {
+				if r := recover(); r == nil {
+					t.Fatal("RetryError.Do did not panic")
+				}
+			}()
+
+			once.Do(context.Background(), func() error {
+				panic("expected test panic")
+			})
+		}()
+
+		// make sure panicking didn't settle the once
+		func() {
+			defer func() {
+				if r := recover(); r == nil {
+					t.Fatal("RetryError.Do did not panic")
+				}
+			}()
+
+			once.Do(context.Background(), func() error {
+				panic("expected test panic")
+			})
+		}()
+	})
+}
