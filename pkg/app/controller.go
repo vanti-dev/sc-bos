@@ -420,6 +420,7 @@ func (c *Controller) startSystems() (*service.Map, error) {
 		TokenValidators: c.TokenValidators,
 		GRPCCerts:       c.GRPCCerts,
 		PrivateKey:      c.PrivateKey,
+		ClientTLSConfig: c.ClientTLSConfig,
 	}
 	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
 		f, ok := c.SystemConfig.SystemFactories[kind]
