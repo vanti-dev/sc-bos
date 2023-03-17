@@ -90,8 +90,9 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 
 	// We can do easy checks for occupancy and turn things on if they are occupied
 	if anyOccupied || isSwitchedOn {
+		logger.Debug("Occupied or button pressed. Computing on level percent ", zap.Float32("brightness", combinedLuxLevel(readState.AmbientBrightness)))
 		level, ok := computeOnLevelPercent(readState)
-		logger.Debug("Occupied or button pressed. Setting level.", zap.Float32("level", level))
+		logger.Debug("Setting level.", zap.Float32("level", level))
 		if !ok {
 			logger.Warn("Could not get level for daylight dimming")
 			// todo: here we are in a position where daylight dimming is supposed to be enabled but we don't have enough
@@ -241,6 +242,7 @@ func lastUnoccupiedTime(state *ReadState) time.Time {
 }
 
 func computeOnLevelPercent(readState *ReadState) (level float32, ok bool) {
+
 	dd := readState.Config.DaylightDimming
 	if dd == nil {
 		return 100, true
