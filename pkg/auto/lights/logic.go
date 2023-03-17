@@ -2,6 +2,7 @@ package lights
 
 import (
 	"context"
+	"errors"
 	"sort"
 	"time"
 
@@ -91,7 +92,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	// We can do easy checks for occupancy and turn things on if they are occupied
 	if anyOccupied || isSwitchedOn {
 		logger.Debug("Occupied or button pressed. Computing on level percent ", zap.Float32("brightness", combinedLuxLevel(readState.AmbientBrightness)))
-		level, ok := computeOnLevelPercent(readState)
+		level, ok := computeOnLevelPercent(readState, writeState)
 		logger.Debug("Setting level.", zap.Float32("level", level))
 		if !ok {
 			logger.Warn("Could not get level for daylight dimming")
@@ -241,7 +242,7 @@ func lastUnoccupiedTime(state *ReadState) time.Time {
 	return mostRecentUnoccupiedTime
 }
 
-func computeOnLevelPercent(readState *ReadState) (level float32, ok bool) {
+func computeOnLevelPercent(readState *ReadState, writeState *WriteState) (level float32, ok bool) {
 
 	dd := readState.Config.DaylightDimming
 	if dd == nil {
@@ -257,7 +258,29 @@ func computeOnLevelPercent(readState *ReadState) (level float32, ok bool) {
 		return 100, true
 	}
 
-	return threshold.LevelPercent, true
+	// Go half way between goal and current level percent
+	currentAverage, err := getAverageLevel(writeState)
+	var levelPercent float32
+	if err == nil {
+		levelPercent = (threshold.LevelPercent + currentAverage) / 2
+	} else {
+		levelPercent = threshold.LevelPercent
+	}
+
+	return levelPercent, true
+}
+
+func getAverageLevel(state *WriteState) (float32, error) {
+	sum := float32(0)
+	n := 0
+	for _, brightness := range state.Brightness {
+		sum += brightness.LevelPercent
+		n++
+	}
+	if n == 0 {
+		return 0, errors.New("No brightness readings available")
+	}
+	return sum / float32(n), nil
 }
 
 func combinedLuxLevel(brightness map[string]*traits.AmbientBrightness) float32 {
