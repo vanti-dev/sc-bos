@@ -1,7 +1,7 @@
 <template>
   <v-list tile class="ma-0 pa-0">
     <v-subheader class="text-body-large sidebar-title pa-4">
-      {{ sidebarTitle }}<v-spacer/>
+      <span class="sidebar-title-text">{{ sidebarTitle }}</span><v-spacer/>
       <v-btn icon small @click="pageStore.toggleSidebar()" color="neutral lighten-4">
         <v-icon>mdi-close</v-icon>
       </v-btn>
@@ -24,5 +24,11 @@ const {sidebarTitle} = storeToRefs(pageStore);
   background: var(--v-neutral-lighten1);
   height: auto;
   font-weight: bold;
+  align-items: start;
+}
+.sidebar-title-text {
+  display: block;
+  overflow-wrap: break-word;
+  max-width: 210px;
 }
 </style>
