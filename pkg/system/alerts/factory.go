@@ -10,6 +10,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts/config"
+	"github.com/vanti-dev/sc-bos/pkg/system/alerts/hubalerts"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts/pgxalerts"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
@@ -30,6 +31,9 @@ func NewSystem(services system.Services) *System {
 	s := &System{
 		name:      services.Node.Name(),
 		announcer: services.Node,
+
+		cohortManagerName: "", // use the default
+		cohortManager:     services.CohortManager,
 	}
 	s.Service = service.New(service.MonoApply(s.applyConfig))
 	return s
@@ -49,6 +53,9 @@ type System struct {
 
 	name      string
 	announcer node.Announcer
+
+	cohortManagerName string
+	cohortManager     node.Remote
 }
 
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
@@ -70,6 +77,12 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 			return fmt.Errorf("init: %w", err)
 		}
 
+		announcer.Announce(s.name, node.HasClient(
+			gen.WrapAlertApi(server),
+			gen.WrapAlertAdminApi(server),
+		))
+	case config.StorageTypeCohort:
+		server := hubalerts.NewServer("", s.name, s.cohortManager)
 		announcer.Announce(s.name, node.HasClient(
 			gen.WrapAlertApi(server),
 			gen.WrapAlertAdminApi(server),

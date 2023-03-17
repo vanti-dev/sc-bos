@@ -14,6 +14,8 @@ type StorageType string
 
 const (
 	StorageTypePostgres StorageType = "postgres"
+	// StorageTypeHub when used in Storage.Type instructs the system to store and retrieve alerts from the cohort hub.
+	StorageTypeHub StorageType = "hub"
 )
 
 type Storage struct {
