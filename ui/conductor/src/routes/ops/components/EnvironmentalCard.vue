@@ -79,7 +79,7 @@ onUnmounted(() => {
   closeResource(indoorTempValue);
 });
 
-watch(() => props.name, async (name) => {
+watch(() => props.externalName, async (name) => {
   // close existing stream if present
   closeResource(outdoorTempValue);
   // create new stream
