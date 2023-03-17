@@ -21,15 +21,15 @@ export class Zone {
   get deviceIds() {
     return [
       ...this._config.lights ?? [],
-      ...this._config.hvac ?? [],
+      ...this._config.thermostats ?? [],
       ...this._config.occupancySensors ?? []
     ];
   }
 
   _deviceTypes = [
     {key: 'lights', type: 'light', trait: 'smartcore.traits.Light'},
-    {key: 'hvac', type: 'hvac', trait: 'smartcore.traits.AirTemperature'},
-    {key: 'occupancySensors', type: 'occupancy sensor', trait: 'smartcore.traits.Occupancy'}
+    {key: 'thermostats', type: 'thermostat', trait: 'smartcore.traits.AirTemperature'},
+    {key: 'occupancySensors', type: 'occupancy sensor', trait: 'smartcore.traits.OccupancySensor'}
   ];
 
   get devices() {
