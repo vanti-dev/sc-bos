@@ -278,11 +278,17 @@ func closestThresholdBelow(lux float32, thresholds []config.LevelThreshold) (con
 	sort.Slice(thresholds, func(i, j int) bool {
 		return thresholds[i].BelowLux < thresholds[j].BelowLux
 	})
+	// Check if lux is greater than highest threshold
+	if lux > thresholds[len(thresholds)-1].BelowLux {
+		return thresholds[len(thresholds)-1], true
+	}
+
 	for _, threshold := range thresholds {
 		if lux < threshold.BelowLux {
 			return threshold, true
 		}
 	}
+
 	if thresholds[0].BelowLux == 0 {
 		return thresholds[0], true
 	}
