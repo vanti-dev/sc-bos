@@ -17,11 +17,6 @@
         <environmental-card :name="zoneName"/>
       </div>
     </div>
-    <!-- todo: remove test slider, hook up real backend -->
-    <div>
-      <span class="text-title-caps">Test</span>
-      <v-slider v-model="sliderVal" max="1" step="0.01"/>
-    </div>
   </v-container>
 </template>
 
