@@ -42,6 +42,7 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 	s := &System{
 		holder:          f.server,
 		name:            services.Node.Name(),
+		endpoint:        services.GRPCEndpoint,
 		dataDir:         services.DataDir,
 		sharedKey:       services.PrivateKey,
 		clientTLSConfig: services.ClientTLSConfig,
@@ -64,6 +65,7 @@ type System struct {
 	holder *hold.Server
 
 	name            string
+	endpoint        string
 	dataDir         string
 	sharedKey       pki.PrivateKey
 	clientTLSConfig *tls.Config
@@ -111,11 +113,14 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	}
 	server.ManagerAddr = cfg.Address
 	if server.ManagerAddr == "" {
+		server.ManagerAddr = s.endpoint
+	}
+	if server.ManagerAddr == "" {
 		ipAddr, err := netutil.OutboundAddr()
 		if err != nil {
 			return err
 		}
-		server.ManagerAddr = ipAddr.String()
+		server.ManagerAddr = ipAddr.String() + ":23557" // guess at the default port
 	}
 
 	s.sources = append(s.sources, grpcSource)

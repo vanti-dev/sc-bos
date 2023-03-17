@@ -17,6 +17,7 @@ import (
 type Services struct {
 	DataDir         string
 	Logger          *zap.Logger
+	GRPCEndpoint    string     // host:port of this controllers grpc api
 	Node            *node.Node // for advertising devices
 	CohortManager   node.Remote
 	Database        *bolthold.Store
