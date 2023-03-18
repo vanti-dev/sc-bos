@@ -41,7 +41,7 @@ type DaylightDimming struct {
 	// PercentageTowardsGoal configures how quickly we reach our goal. If set to 50 then we calculate the desired level
 	// from the lookup table and then go half way between current and desired.
 	// A new lux reading will come in based on that light level; we will approach the goal, always undershooting.
-	PercentageTowardsGoal float32 `json:"percentageTowardsGoal,omitempty""`
+	PercentageTowardsGoal float32 `json:"percentageTowardsGoal,omitempty"`
 }
 
 type LevelThreshold struct {
