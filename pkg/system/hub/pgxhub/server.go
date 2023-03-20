@@ -93,7 +93,19 @@ func (n *Server) EnrollHubNode(ctx context.Context, request *gen.EnrollHubNodeRe
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	nodeReg := request.GetNode()
 	if nodeReg == nil {
-		return nil, status.Error(codes.InvalidArgument, "node_registration must be supplied")
+		return nil, status.Error(codes.InvalidArgument, "node must be supplied")
+	}
+	if nodeReg.Address == "" {
+		return nil, status.Error(codes.InvalidArgument, "node.address must be supplied")
+	}
+
+	// check if the node is already enrolled
+	err := n.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
+		_, err := GetEnrollment(ctx, tx, nodeReg.Address)
+		return err
+	})
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return nil, status.Errorf(codes.AlreadyExists, "%s already enrolled", nodeReg.Address)
 	}
 
 	en, err := enroll.Controller(ctx, &gen.Enrollment{
