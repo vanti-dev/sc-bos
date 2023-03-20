@@ -13,46 +13,46 @@ type Enrollment struct {
 	Cert        []byte
 }
 
+const rowFields = "address, name, description, cert"
+
 func GetEnrollment(ctx context.Context, tx pgx.Tx, name string) (en Enrollment, err error) {
 	// language=postgresql
 	query := `
-		SELECT description, address, cert
+		SELECT ` + rowFields + `
 		FROM enrollment
-		WHERE name = $1;
+		WHERE address = $1;
     `
 
 	row := tx.QueryRow(ctx, query, name)
-	var descNull *string
-	err = row.Scan(&descNull, &en.Address, &en.Cert)
-	if descNull != nil {
-		en.Description = *descNull
-	}
-	en.Name = name
+	err = scanRow(row, &en)
 	return
 }
 
 func CreateEnrollment(ctx context.Context, tx pgx.Tx, en Enrollment) error {
 	// language=postgresql
 	query := `
-		INSERT INTO enrollment (name, description, address, cert) 
+		INSERT INTO enrollment (address, name, description, cert) 
 		VALUES ($1, $2, $3, $4);
 	`
 
-	var descNull *string
+	var nameNull, descNull *string
+	if en.Name != "" {
+		nameNull = &en.Name
+	}
 	if en.Description != "" {
 		descNull = &en.Description
 	}
 
-	_, err := tx.Exec(ctx, query, en.Name, descNull, en.Address, en.Cert)
+	_, err := tx.Exec(ctx, query, en.Address, nameNull, descNull, en.Cert)
 	return err
 }
 
 func ListEnrollments(ctx context.Context, tx pgx.Tx) ([]Enrollment, error) {
 	// language=postgresql
 	query := `
-		SELECT name, description, address, cert
+		SELECT ` + rowFields + `
 		FROM enrollment
-		ORDER BY name;
+		ORDER BY address;
 	`
 
 	rows, err := tx.Query(ctx, query)
@@ -64,7 +64,7 @@ func ListEnrollments(ctx context.Context, tx pgx.Tx) ([]Enrollment, error) {
 	var enrollments []Enrollment
 	for rows.Next() {
 		var en Enrollment
-		err = rows.Scan(&en.Name, &en.Description, &en.Address, &en.Cert)
+		err = scanRow(rows, &en)
 		if err != nil {
 			return nil, err
 		}
@@ -72,4 +72,19 @@ func ListEnrollments(ctx context.Context, tx pgx.Tx) ([]Enrollment, error) {
 		enrollments = append(enrollments, en)
 	}
 	return enrollments, nil
+}
+
+func scanRow(row pgx.Row, dst *Enrollment) error {
+	var nameNull, descNull *string
+	err := row.Scan(&dst.Address, nameNull, descNull, &dst.Cert)
+	if err != nil {
+		return err
+	}
+	if nameNull != nil {
+		dst.Name = *nameNull
+	}
+	if descNull != nil {
+		dst.Description = *descNull
+	}
+	return nil
 }

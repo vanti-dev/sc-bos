@@ -58,7 +58,7 @@ func NewServerFromPool(ctx context.Context, pool *pgxpool.Pool, opts ...Option) 
 }
 
 type Server struct {
-	gen.UnimplementedNodeApiServer
+	gen.UnimplementedHubApiServer
 	logger *zap.Logger
 	pool   *pgxpool.Pool
 
@@ -68,30 +68,30 @@ type Server struct {
 	TestTLSConfig *tls.Config // TLS config used when initiating test connections with a node
 }
 
-func (n *Server) GetNodeRegistration(ctx context.Context, request *gen.GetNodeRegistrationRequest) (*gen.NodeRegistration, error) {
+func (n *Server) GetHubNode(ctx context.Context, request *gen.GetHubNodeRequest) (*gen.HubNode, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	var dbEnrollment Enrollment
 	err := n.pool.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
-		dbEnrollment, err = GetEnrollment(ctx, tx, request.GetNodeName())
+		dbEnrollment, err = GetEnrollment(ctx, tx, request.GetAddress())
 		return
 	})
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, status.Error(codes.NotFound, "no node registration with specified node_name")
+		return nil, status.Error(codes.NotFound, "no node registration with specified address")
 	} else if err != nil {
-		logger.Error("GetEnrollment failed", zap.Error(err), zap.String("name", request.GetNodeName()))
+		logger.Error("GetEnrollment failed", zap.Error(err), zap.String("address", request.GetAddress()))
 		return nil, status.Error(codes.Internal, "failed to retrieve enrollment")
 	}
 
-	return &gen.NodeRegistration{
+	return &gen.HubNode{
 		Name:        dbEnrollment.Name,
 		Address:     dbEnrollment.Address,
 		Description: dbEnrollment.Description,
 	}, nil
 }
 
-func (n *Server) CreateNodeRegistration(ctx context.Context, request *gen.CreateNodeRegistrationRequest) (*gen.NodeRegistration, error) {
+func (n *Server) EnrollHubNode(ctx context.Context, request *gen.EnrollHubNodeRequest) (*gen.HubNode, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
-	nodeReg := request.GetNodeRegistration()
+	nodeReg := request.GetNode()
 	if nodeReg == nil {
 		return nil, status.Error(codes.InvalidArgument, "node_registration must be supplied")
 	}
@@ -117,7 +117,7 @@ func (n *Server) CreateNodeRegistration(ctx context.Context, request *gen.Create
 		})
 	})
 	if err != nil {
-		delErr := n.deleteNodeRegistration(ctx, nodeReg)
+		delErr := n.deleteHubNode(ctx, nodeReg)
 		if delErr != nil {
 			// failed to rollback!
 			logger.Error("pool.CreateEnrollment failed, failed to rollback",
@@ -130,7 +130,7 @@ func (n *Server) CreateNodeRegistration(ctx context.Context, request *gen.Create
 	return nodeReg, nil
 }
 
-func (n *Server) deleteNodeRegistration(ctx context.Context, reg *gen.NodeRegistration) error {
+func (n *Server) deleteHubNode(ctx context.Context, reg *gen.HubNode) error {
 	conn, err := grpc.DialContext(ctx, reg.Address, grpc.WithTransportCredentials(credentials.NewTLS(n.TestTLSConfig)))
 	if err != nil {
 		n.logger.Error("failed to connect to node", zap.Error(err))
@@ -144,7 +144,7 @@ func (n *Server) deleteNodeRegistration(ctx context.Context, reg *gen.NodeRegist
 	return nil
 }
 
-func (n *Server) ListNodeRegistrations(ctx context.Context, request *gen.ListNodeRegistrationsRequest) (*gen.ListNodeRegistrationsResponse, error) {
+func (n *Server) ListHubNodes(ctx context.Context, request *gen.ListHubNodesRequest) (*gen.ListHubNodesResponse, error) {
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	var dbEnrollments []Enrollment
 	err := n.pool.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
@@ -156,20 +156,20 @@ func (n *Server) ListNodeRegistrations(ctx context.Context, request *gen.ListNod
 		return nil, status.Error(codes.Unavailable, "unable to retrieve enrollments")
 	}
 
-	var registrations []*gen.NodeRegistration
+	var registrations []*gen.HubNode
 	for _, en := range dbEnrollments {
-		registrations = append(registrations, &gen.NodeRegistration{
+		registrations = append(registrations, &gen.HubNode{
 			Name:        en.Name,
 			Address:     en.Address,
 			Description: en.Description,
 		})
 	}
 
-	return &gen.ListNodeRegistrationsResponse{NodeRegistrations: registrations}, nil
+	return &gen.ListHubNodesResponse{Nodes: registrations}, nil
 }
 
-func (n *Server) TestNodeCommunication(ctx context.Context, request *gen.TestNodeCommunicationRequest) (*gen.TestNodeCommunicationResponse, error) {
-	reg, err := n.GetNodeRegistration(ctx, &gen.GetNodeRegistrationRequest{NodeName: request.GetNodeName()})
+func (n *Server) TestHubNode(ctx context.Context, request *gen.TestHubNodeRequest) (*gen.TestHubNodeResponse, error) {
+	reg, err := n.GetHubNode(ctx, &gen.GetHubNodeRequest{Address: request.GetAddress()})
 	if err != nil {
 		return nil, err
 	}
@@ -209,5 +209,5 @@ func (n *Server) TestNodeCommunication(ctx context.Context, request *gen.TestNod
 		serviceNames = append(serviceNames, service.Name)
 	}
 
-	return &gen.TestNodeCommunicationResponse{Services: serviceNames}, nil
+	return &gen.TestHubNodeResponse{}, nil
 }

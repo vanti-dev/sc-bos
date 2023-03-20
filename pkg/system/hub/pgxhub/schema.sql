@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS enrollment
 (
-    name        TEXT  NOT NULL PRIMARY KEY,
+    address     TEXT  NOT NULL PRIMARY KEY,
+    name        TEXT,
     description TEXT,
-    address     TEXT  NOT NULL,
     cert        BYTEA NOT NULL
 );

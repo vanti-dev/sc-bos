@@ -56,7 +56,7 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 }
 
 func (f *factory) AddSupport(supporter node.Supporter) {
-	supporter.Support(node.Api(f.server), node.Clients(gen.WrapNodeApi(f.server)))
+	supporter.Support(node.Api(f.server), node.Clients(gen.WrapHubApi(f.server)))
 }
 
 type System struct {
@@ -125,7 +125,7 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 
 	s.sources = append(s.sources, grpcSource)
 	s.certs.Append(grpcSource)
-	s.holder.Fill(gen.WrapNodeApi(server))
+	s.holder.Fill(gen.WrapHubApi(server))
 	return nil
 }
 

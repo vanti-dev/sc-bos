@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+service HubApi {
+  rpc GetHubNode(GetHubNodeRequest) returns (HubNode);
+  rpc ListHubNodes(ListHubNodesRequest) returns (ListHubNodesResponse);
+
+  rpc EnrollHubNode(EnrollHubNodeRequest) returns (HubNode);
+  rpc TestHubNode(TestHubNodeRequest) returns (TestHubNodeResponse);
+}
+
+message HubNode {
+  string address = 1;
+  string name = 2;
+  string description = 4;
+}
+
+message GetHubNodeRequest {
+  string address = 1;
+}
+
+message EnrollHubNodeRequest {
+  HubNode node = 1;
+}
+
+message ListHubNodesRequest {
+
+}
+
+message ListHubNodesResponse {
+  repeated HubNode nodes = 1;
+}
+
+message TestHubNodeRequest {
+  string address = 1;
+}
+
+message TestHubNodeResponse {
+}
