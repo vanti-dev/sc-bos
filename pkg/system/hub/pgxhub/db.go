@@ -76,7 +76,7 @@ func ListEnrollments(ctx context.Context, tx pgx.Tx) ([]Enrollment, error) {
 
 func scanRow(row pgx.Row, dst *Enrollment) error {
 	var nameNull, descNull *string
-	err := row.Scan(&dst.Address, nameNull, descNull, &dst.Cert)
+	err := row.Scan(&dst.Address, &nameNull, &descNull, &dst.Cert)
 	if err != nil {
 		return err
 	}
