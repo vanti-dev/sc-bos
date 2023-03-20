@@ -18,7 +18,7 @@ import (
 
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
-	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
+	"github.com/vanti-dev/sc-bos/pkg/system/hub/enroll"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
@@ -96,7 +96,7 @@ func (n *Server) CreateNodeRegistration(ctx context.Context, request *gen.Create
 		return nil, status.Error(codes.InvalidArgument, "node_registration must be supplied")
 	}
 
-	en, err := enrollment.EnrollAreaController(ctx, &gen.Enrollment{
+	en, err := enroll.Controller(ctx, &gen.Enrollment{
 		TargetName:     nodeReg.Name,
 		TargetAddress:  nodeReg.Address,
 		ManagerName:    n.ManagerName,

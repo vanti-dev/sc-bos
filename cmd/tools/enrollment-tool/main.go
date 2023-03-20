@@ -11,7 +11,7 @@ import (
 
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
+	"github.com/vanti-dev/sc-bos/pkg/system/hub/enroll"
 )
 
 var (
@@ -56,7 +56,7 @@ func run() error {
 		ManagerName:    flagManagerName,
 		ManagerAddress: flagManagerAddr,
 	}
-	en, err := enrollment.EnrollAreaController(context.Background(), en, authority)
+	en, err := enroll.Controller(context.Background(), en, authority)
 	fmt.Println(protojson.Format(en))
 	return err
 }
