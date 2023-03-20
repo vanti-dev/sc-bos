@@ -19,6 +19,8 @@
 const grpc = {};
 grpc.web = require('grpc-web');
 
+
+var traits_metadata_pb = require('@smart-core-os/sc-api-grpc-web/traits/metadata_pb.js')
 const proto = {};
 proto.smartcore = {};
 proto.smartcore.bos = require('./hub_pb.js');
@@ -194,6 +196,67 @@ proto.smartcore.bos.HubApiPromiseClient.prototype.listHubNodes =
       request,
       metadata || {},
       methodDescriptor_HubApi_ListHubNodes);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.InspectHubNodeRequest,
+ *   !proto.smartcore.bos.HubNodeInspection>}
+ */
+const methodDescriptor_HubApi_InspectHubNode = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.HubApi/InspectHubNode',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.InspectHubNodeRequest,
+  proto.smartcore.bos.HubNodeInspection,
+  /**
+   * @param {!proto.smartcore.bos.InspectHubNodeRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.HubNodeInspection.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.InspectHubNodeRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.HubNodeInspection)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.HubNodeInspection>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.HubApiClient.prototype.inspectHubNode =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.HubApi/InspectHubNode',
+      request,
+      metadata || {},
+      methodDescriptor_HubApi_InspectHubNode,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.InspectHubNodeRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.HubNodeInspection>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.HubApiPromiseClient.prototype.inspectHubNode =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.HubApi/InspectHubNode',
+      request,
+      metadata || {},
+      methodDescriptor_HubApi_InspectHubNode);
 };
 
 

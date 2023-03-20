@@ -61,6 +61,14 @@ func (s *Server) ListHubNodes(ctx context.Context, request *gen.ListHubNodesRequ
 	return c.ListHubNodes(ctx, request)
 }
 
+func (s *Server) InspectHubNode(ctx context.Context, request *gen.InspectHubNodeRequest) (*gen.HubNodeInspection, error) {
+	c, err := s.client()
+	if err != nil {
+		return nil, err
+	}
+	return c.InspectHubNode(ctx, request)
+}
+
 func (s *Server) TestHubNode(ctx context.Context, request *gen.TestHubNodeRequest) (*gen.TestHubNodeResponse, error) {
 	c, err := s.client()
 	if err != nil {

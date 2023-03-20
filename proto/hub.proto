@@ -4,10 +4,13 @@ package smartcore.bos;
 
 option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 
+import "traits/metadata.proto";
+
 service HubApi {
   rpc GetHubNode(GetHubNodeRequest) returns (HubNode);
   rpc ListHubNodes(ListHubNodesRequest) returns (ListHubNodesResponse);
 
+  rpc InspectHubNode(InspectHubNodeRequest) returns (HubNodeInspection);
   rpc EnrollHubNode(EnrollHubNodeRequest) returns (HubNode);
   rpc TestHubNode(TestHubNodeRequest) returns (TestHubNodeResponse);
 }
@@ -18,12 +21,24 @@ message HubNode {
   string description = 4;
 }
 
+message HubNodeInspection {
+  // Metadata that the node advertises at its root.
+  smartcore.traits.Metadata metadata = 1;
+  // The public certificates the node presents during HTTPS handshakes.
+  // This will contain PEM encoded x509 certificates.
+  repeated string public_certs = 2;
+}
+
 message GetHubNodeRequest {
   string address = 1;
 }
 
 message EnrollHubNodeRequest {
   HubNode node = 1;
+  // If provided, only if the node presents these certificates will the enrollment proceed.
+  // Can be used along with InspectHubNode to ensure the correct node is enrolled.
+  // This should contain PEM encoded x509 certificates as returned by InspectHubNode.
+  repeated string public_certs = 2;
 }
 
 message ListHubNodesRequest {
@@ -32,6 +47,10 @@ message ListHubNodesRequest {
 
 message ListHubNodesResponse {
   repeated HubNode nodes = 1;
+}
+
+message InspectHubNodeRequest {
+  HubNode node = 1;
 }
 
 message TestHubNodeRequest {

@@ -37,6 +37,10 @@ func (w *hubApiWrapper) ListHubNodes(ctx context.Context, req *ListHubNodesReque
 	return w.server.ListHubNodes(ctx, req)
 }
 
+func (w *hubApiWrapper) InspectHubNode(ctx context.Context, req *InspectHubNodeRequest, _ ...grpc.CallOption) (*HubNodeInspection, error) {
+	return w.server.InspectHubNode(ctx, req)
+}
+
 func (w *hubApiWrapper) EnrollHubNode(ctx context.Context, req *EnrollHubNodeRequest, _ ...grpc.CallOption) (*HubNode, error) {
 	return w.server.EnrollHubNode(ctx, req)
 }

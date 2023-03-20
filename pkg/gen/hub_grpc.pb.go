@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type HubApiClient interface {
 	GetHubNode(ctx context.Context, in *GetHubNodeRequest, opts ...grpc.CallOption) (*HubNode, error)
 	ListHubNodes(ctx context.Context, in *ListHubNodesRequest, opts ...grpc.CallOption) (*ListHubNodesResponse, error)
+	InspectHubNode(ctx context.Context, in *InspectHubNodeRequest, opts ...grpc.CallOption) (*HubNodeInspection, error)
 	EnrollHubNode(ctx context.Context, in *EnrollHubNodeRequest, opts ...grpc.CallOption) (*HubNode, error)
 	TestHubNode(ctx context.Context, in *TestHubNodeRequest, opts ...grpc.CallOption) (*TestHubNodeResponse, error)
 }
@@ -54,6 +55,15 @@ func (c *hubApiClient) ListHubNodes(ctx context.Context, in *ListHubNodesRequest
 	return out, nil
 }
 
+func (c *hubApiClient) InspectHubNode(ctx context.Context, in *InspectHubNodeRequest, opts ...grpc.CallOption) (*HubNodeInspection, error) {
+	out := new(HubNodeInspection)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.HubApi/InspectHubNode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hubApiClient) EnrollHubNode(ctx context.Context, in *EnrollHubNodeRequest, opts ...grpc.CallOption) (*HubNode, error) {
 	out := new(HubNode)
 	err := c.cc.Invoke(ctx, "/smartcore.bos.HubApi/EnrollHubNode", in, out, opts...)
@@ -78,6 +88,7 @@ func (c *hubApiClient) TestHubNode(ctx context.Context, in *TestHubNodeRequest, 
 type HubApiServer interface {
 	GetHubNode(context.Context, *GetHubNodeRequest) (*HubNode, error)
 	ListHubNodes(context.Context, *ListHubNodesRequest) (*ListHubNodesResponse, error)
+	InspectHubNode(context.Context, *InspectHubNodeRequest) (*HubNodeInspection, error)
 	EnrollHubNode(context.Context, *EnrollHubNodeRequest) (*HubNode, error)
 	TestHubNode(context.Context, *TestHubNodeRequest) (*TestHubNodeResponse, error)
 	mustEmbedUnimplementedHubApiServer()
@@ -92,6 +103,9 @@ func (UnimplementedHubApiServer) GetHubNode(context.Context, *GetHubNodeRequest)
 }
 func (UnimplementedHubApiServer) ListHubNodes(context.Context, *ListHubNodesRequest) (*ListHubNodesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListHubNodes not implemented")
+}
+func (UnimplementedHubApiServer) InspectHubNode(context.Context, *InspectHubNodeRequest) (*HubNodeInspection, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InspectHubNode not implemented")
 }
 func (UnimplementedHubApiServer) EnrollHubNode(context.Context, *EnrollHubNodeRequest) (*HubNode, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EnrollHubNode not implemented")
@@ -148,6 +162,24 @@ func _HubApi_ListHubNodes_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HubApi_InspectHubNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InspectHubNodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubApiServer).InspectHubNode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/smartcore.bos.HubApi/InspectHubNode",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubApiServer).InspectHubNode(ctx, req.(*InspectHubNodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HubApi_EnrollHubNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(EnrollHubNodeRequest)
 	if err := dec(in); err != nil {
@@ -198,6 +230,10 @@ var HubApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListHubNodes",
 			Handler:    _HubApi_ListHubNodes_Handler,
+		},
+		{
+			MethodName: "InspectHubNode",
+			Handler:    _HubApi_InspectHubNode_Handler,
 		},
 		{
 			MethodName: "EnrollHubNode",

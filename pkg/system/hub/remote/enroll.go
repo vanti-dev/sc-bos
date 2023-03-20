@@ -1,4 +1,4 @@
-package enroll
+package remote
 
 import (
 	"context"
@@ -6,9 +6,8 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"errors"
-	"net"
 	"net/url"
-	"sync"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -18,23 +17,40 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-// Controller sets up the PKI for a remote Smart Core node.
+// Enroll sets up the PKI for a remote Smart Core node.
 // This connects to the remote node specified by enrollment.TargetAddress,
 // constructs a new client certificate signed using the certificate and key from authority,
 // and invokes CreateEnrollment on the target with this information.
 // The Certificate and RootCAs will be computed from the authority and will be ignored if provided in enrollment.
-func Controller(ctx context.Context, enrollment *gen.Enrollment, authority pki.Source) (*gen.Enrollment, error) {
+// If any remoteRoots are provided, the remote server will be checked using these as trust roots, otherwise any remote certificate will be allowed.
+func Enroll(ctx context.Context, enrollment *gen.Enrollment, authority pki.Source, remoteRoots ...string) (*gen.Enrollment, error) {
 	enrollment = proto.Clone(enrollment).(*gen.Enrollment)
 
 	// when in enrollment mode, the target node will be using a self-signed cert we won't be able to
 	// automatically verify.
 	tlsConfig := &tls.Config{InsecureSkipVerify: true}
+	if len(remoteRoots) > 0 {
+		// when we have explicit remoteRoots we verify the remote certs!
+		tlsConfig.InsecureSkipVerify = false
+		tlsConfig.RootCAs = x509.NewCertPool()
+		for _, root := range remoteRoots {
+			tlsConfig.RootCAs.AppendCertsFromPEM([]byte(root))
+		}
+
+		// Make sure there's a timeout to avoid infinite (or 120s) connection loops in the case when tls fails.
+		// There's no way to actually get the grpc.Dial func to return on first tls error, it will continue to retry
+		// until ctx expires.
+		var cleanUp context.CancelFunc
+		ctx, cleanUp = context.WithTimeout(ctx, 30*time.Second)
+		defer cleanUp()
+	}
 
 	// the certInterceptor captures and saves the certificate presented by the server when the connection is opened
 	creds := &certInterceptor{TransportCredentials: credentials.NewTLS(tlsConfig)}
 	conn, err := grpc.DialContext(ctx, enrollment.TargetAddress,
 		grpc.WithTransportCredentials(creds),
 		grpc.WithBlock(),
+		grpc.WithReturnConnectionError(),
 	)
 	if err != nil {
 		return nil, err
@@ -82,34 +98,4 @@ func newTargetCertificate(enrollment *gen.Enrollment) *x509.Certificate {
 			Opaque: enrollment.TargetName,
 		}},
 	}
-}
-
-type certInterceptor struct {
-	credentials.TransportCredentials
-
-	m                sync.Mutex
-	populated        bool
-	peerCertificates []*x509.Certificate
-}
-
-func (cw *certInterceptor) ClientHandshake(ctx context.Context, authority string, rawConn net.Conn) (net.Conn, credentials.AuthInfo, error) {
-	conn, info, err := cw.TransportCredentials.ClientHandshake(ctx, authority, rawConn)
-	if info, ok := info.(credentials.TLSInfo); ok {
-		cw.m.Lock()
-		defer cw.m.Unlock()
-
-		if !cw.populated {
-			cw.peerCertificates = info.State.PeerCertificates
-			cw.populated = true
-		}
-	}
-
-	return conn, info, err
-}
-
-func (cw *certInterceptor) PeerCertificates() (certs []*x509.Certificate, ok bool) {
-	cw.m.Lock()
-	defer cw.m.Unlock()
-
-	return cw.peerCertificates, cw.populated
 }

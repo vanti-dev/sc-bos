@@ -18,7 +18,7 @@ import (
 
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
-	"github.com/vanti-dev/sc-bos/pkg/system/hub/enroll"
+	"github.com/vanti-dev/sc-bos/pkg/system/hub/remote"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
@@ -108,16 +108,16 @@ func (n *Server) EnrollHubNode(ctx context.Context, request *gen.EnrollHubNodeRe
 		return nil, status.Errorf(codes.AlreadyExists, "%s already enrolled", nodeReg.Address)
 	}
 
-	en, err := enroll.Controller(ctx, &gen.Enrollment{
+	en, err := remote.Enroll(ctx, &gen.Enrollment{
 		TargetName:     nodeReg.Name,
 		TargetAddress:  nodeReg.Address,
 		ManagerName:    n.ManagerName,
 		ManagerAddress: n.ManagerAddr,
-	}, n.Authority)
+	}, n.Authority, request.PublicCerts...)
 	if err != nil {
 		logger.Error("failed to enroll area controller", zap.Error(err),
 			zap.String("target_address", nodeReg.Address))
-		return nil, status.Error(codes.Unknown, "target refused registration")
+		return nil, status.Error(codes.Unknown, "enrollment failed")
 	}
 
 	err = n.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
@@ -178,6 +178,13 @@ func (n *Server) ListHubNodes(ctx context.Context, request *gen.ListHubNodesRequ
 	}
 
 	return &gen.ListHubNodesResponse{Nodes: registrations}, nil
+}
+
+func (n *Server) InspectHubNode(ctx context.Context, request *gen.InspectHubNodeRequest) (*gen.HubNodeInspection, error) {
+	if request.GetNode().GetAddress() == "" {
+		return nil, status.Error(codes.InvalidArgument, "node.address must be supplied")
+	}
+	return remote.Inspect(ctx, request.Node.Address)
 }
 
 func (n *Server) TestHubNode(ctx context.Context, request *gen.TestHubNodeRequest) (*gen.TestHubNodeResponse, error) {

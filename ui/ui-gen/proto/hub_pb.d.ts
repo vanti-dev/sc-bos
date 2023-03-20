@@ -1,5 +1,6 @@
 import * as jspb from 'google-protobuf'
 
+import * as traits_metadata_pb from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb';
 
 
 export class HubNode extends jspb.Message {
@@ -28,6 +29,32 @@ export namespace HubNode {
   }
 }
 
+export class HubNodeInspection extends jspb.Message {
+  getMetadata(): traits_metadata_pb.Metadata | undefined;
+  setMetadata(value?: traits_metadata_pb.Metadata): HubNodeInspection;
+  hasMetadata(): boolean;
+  clearMetadata(): HubNodeInspection;
+
+  getPublicCertsList(): Array<string>;
+  setPublicCertsList(value: Array<string>): HubNodeInspection;
+  clearPublicCertsList(): HubNodeInspection;
+  addPublicCerts(value: string, index?: number): HubNodeInspection;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): HubNodeInspection.AsObject;
+  static toObject(includeInstance: boolean, msg: HubNodeInspection): HubNodeInspection.AsObject;
+  static serializeBinaryToWriter(message: HubNodeInspection, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): HubNodeInspection;
+  static deserializeBinaryFromReader(message: HubNodeInspection, reader: jspb.BinaryReader): HubNodeInspection;
+}
+
+export namespace HubNodeInspection {
+  export type AsObject = {
+    metadata?: traits_metadata_pb.Metadata.AsObject,
+    publicCertsList: Array<string>,
+  }
+}
+
 export class GetHubNodeRequest extends jspb.Message {
   getAddress(): string;
   setAddress(value: string): GetHubNodeRequest;
@@ -52,6 +79,11 @@ export class EnrollHubNodeRequest extends jspb.Message {
   hasNode(): boolean;
   clearNode(): EnrollHubNodeRequest;
 
+  getPublicCertsList(): Array<string>;
+  setPublicCertsList(value: Array<string>): EnrollHubNodeRequest;
+  clearPublicCertsList(): EnrollHubNodeRequest;
+  addPublicCerts(value: string, index?: number): EnrollHubNodeRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): EnrollHubNodeRequest.AsObject;
   static toObject(includeInstance: boolean, msg: EnrollHubNodeRequest): EnrollHubNodeRequest.AsObject;
@@ -63,6 +95,7 @@ export class EnrollHubNodeRequest extends jspb.Message {
 export namespace EnrollHubNodeRequest {
   export type AsObject = {
     node?: HubNode.AsObject,
+    publicCertsList: Array<string>,
   }
 }
 
@@ -97,6 +130,26 @@ export class ListHubNodesResponse extends jspb.Message {
 export namespace ListHubNodesResponse {
   export type AsObject = {
     nodesList: Array<HubNode.AsObject>,
+  }
+}
+
+export class InspectHubNodeRequest extends jspb.Message {
+  getNode(): HubNode | undefined;
+  setNode(value?: HubNode): InspectHubNodeRequest;
+  hasNode(): boolean;
+  clearNode(): InspectHubNodeRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): InspectHubNodeRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: InspectHubNodeRequest): InspectHubNodeRequest.AsObject;
+  static serializeBinaryToWriter(message: InspectHubNodeRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): InspectHubNodeRequest;
+  static deserializeBinaryFromReader(message: InspectHubNodeRequest, reader: jspb.BinaryReader): InspectHubNodeRequest;
+}
+
+export namespace InspectHubNodeRequest {
+  export type AsObject = {
+    node?: HubNode.AsObject,
   }
 }
 
