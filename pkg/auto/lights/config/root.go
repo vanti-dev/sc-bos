@@ -90,14 +90,14 @@ func (d *DaylightDimming) process() error {
 // ThresholdSegments will generate one LevelThreshold per step, with each threshold LevelPercent being evenly
 // spread between MinLevel and MaxLevel, and each threshold BelowLux being evenly spread between MinLux and MaxLux
 type ThresholdSegments struct {
-	MinLux int
-	MaxLux int
+	MinLux int `json:"minLux,omitempty"`
+	MaxLux int `json:"maxLux,omitempty"`
 	// defaults to 0!
-	MinLevel int
+	MinLevel int `json:"minLevel,omitempty"`
 	// defaults to 100 (if 0), max 100
-	MaxLevel int
+	MaxLevel int `json:"maxLevel,omitempty"`
 	// defaults to 100 (if 0)
-	Steps int
+	Steps int `json:"steps,omitempty"`
 }
 
 type LevelThreshold struct {
