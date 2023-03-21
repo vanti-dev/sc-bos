@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto"
@@ -34,6 +35,9 @@ type Root struct {
 }
 
 type DaylightDimming struct {
+	// Segments configures generated Thresholds based on some parameters
+	// if Thresholds has any values, this will be ignored
+	Segments *ThresholdSegments `json:"segments,omitempty"`
 	// Thresholds configures a mapping between measured lux levels and output brightness of lights.
 	// With Thresholds you can say "below 300 lux set brightness to 80%, below 700 lux set to 50%".
 	// The threshold with the highest BelowLux value below the measured lux level will be selected.
@@ -44,6 +48,58 @@ type DaylightDimming struct {
 	PercentageTowardsGoal float32 `json:"percentageTowardsGoal,omitempty"`
 }
 
+// process will turn Segments into Thresholds, if configured
+func (d *DaylightDimming) process() error {
+	if d == nil {
+		return nil // nothing to do
+	}
+	if len(d.Thresholds) > 0 {
+		return nil // nothing to do
+	}
+	if d.Segments == nil {
+		return nil // nothing to do
+	}
+	seg := d.Segments
+	if seg.MinLevel < 0 {
+		return fmt.Errorf("invalid daylight dimming minLevel %d, expected >0", seg.MinLevel)
+	}
+	if seg.MaxLevel > 100 {
+		return fmt.Errorf("invalid daylight dimming maxLevel %d, expected <100", seg.MaxLevel)
+	}
+	if seg.MinLux > seg.MaxLux || seg.MinLux == seg.MaxLux {
+		return fmt.Errorf("invalid daylight dimming minLux %d maxLux %d, expected minLux < maxLux", seg.MinLux, seg.MaxLux)
+	}
+	if seg.MaxLevel == 0 {
+		seg.MaxLevel = 100
+	}
+	if seg.Steps == 0 {
+		seg.Steps = 100
+	}
+	// negative lux step, we go from max to min
+	luxStep := (seg.MinLux - seg.MaxLux) / seg.Steps
+	levelStep := (seg.MaxLevel - seg.MinLevel) / (seg.Steps - 1)
+	for i := 0; i < seg.Steps; i++ {
+		d.Thresholds = append(d.Thresholds, LevelThreshold{
+			BelowLux:     float32(seg.MaxLux + i*luxStep),
+			LevelPercent: float32(seg.MinLevel + i*levelStep),
+		})
+	}
+	return nil
+}
+
+// ThresholdSegments will generate one LevelThreshold per step, with each threshold LevelPercent being evenly
+// spread between MinLevel and MaxLevel, and each threshold BelowLux being evenly spread between MinLux and MaxLux
+type ThresholdSegments struct {
+	MinLux int
+	MaxLux int
+	// defaults to 0!
+	MinLevel int
+	// defaults to 100 (if 0), max 100
+	MaxLevel int
+	// defaults to 100 (if 0)
+	Steps int
+}
+
 type LevelThreshold struct {
 	BelowLux     float32 `json:"belowLux,omitempty"`
 	LevelPercent float32 `json:"levelPercent,omitempty"`
@@ -52,6 +108,13 @@ type LevelThreshold struct {
 func Read(data []byte) (Root, error) {
 	root := Default()
 	err := json.Unmarshal(data, &root)
+	if err != nil {
+		return root, err
+	}
+	if root.DaylightDimming != nil {
+		// err is returned below
+		err = root.DaylightDimming.process()
+	}
 	return root, err
 }
 
