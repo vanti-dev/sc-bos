@@ -13,9 +13,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 	"google.golang.org/grpc/status"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"github.com/vanti-dev/sc-bos/pkg/system/hub/remote"
@@ -197,35 +197,15 @@ func (n *Server) TestHubNode(ctx context.Context, request *gen.TestHubNodeReques
 
 	conn, err := grpc.DialContext(ctx, reg.Address, grpc.WithTransportCredentials(credentials.NewTLS(n.TestTLSConfig)))
 	if err != nil {
-		logger.Error("failed to connect to node", zap.Error(err))
-		return nil, status.Error(codes.Unavailable, "unable to connect to target node")
+		logger.Debug("failed connection", zap.Error(err))
+		return nil, status.Error(codes.Unavailable, "failed connection")
 	}
 
-	client := grpc_reflection_v1alpha.NewServerReflectionClient(conn)
-	stream, err := client.ServerReflectionInfo(ctx)
+	client := traits.NewMetadataApiClient(conn)
+	_, err = client.GetMetadata(ctx, &traits.GetMetadataRequest{})
 	if err != nil {
-		logger.Error("failed to reflect target node", zap.Error(err))
-		return nil, status.Error(codes.Unavailable, "target node reflection failed")
-	}
-
-	err = stream.Send(&grpc_reflection_v1alpha.ServerReflectionRequest{
-		Host:           reg.Address,
-		MessageRequest: &grpc_reflection_v1alpha.ServerReflectionRequest_ListServices{ListServices: ""},
-	})
-	if err != nil {
-		logger.Error("node reflection: send request", zap.Error(err))
-		return nil, status.Error(codes.Unavailable, "target node reflection failed")
-	}
-
-	res, err := stream.Recv()
-	if err != nil {
-		logger.Error("node reflection: receive response", zap.Error(err))
-		return nil, status.Error(codes.Unavailable, "target node reflection failed")
-	}
-
-	var serviceNames []string
-	for _, service := range res.GetListServicesResponse().GetService() {
-		serviceNames = append(serviceNames, service.Name)
+		logger.Debug("failed api request", zap.Error(err))
+		return nil, status.Error(codes.Unavailable, "failed api request")
 	}
 
 	return &gen.TestHubNodeResponse{}, nil
