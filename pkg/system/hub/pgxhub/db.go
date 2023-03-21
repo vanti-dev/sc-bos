@@ -15,7 +15,7 @@ type Enrollment struct {
 
 const rowFields = "address, name, description, cert"
 
-func GetEnrollment(ctx context.Context, tx pgx.Tx, name string) (en Enrollment, err error) {
+func SelectEnrollment(ctx context.Context, tx pgx.Tx, address string) (en Enrollment, err error) {
 	// language=postgresql
 	query := `
 		SELECT ` + rowFields + `
@@ -23,12 +23,12 @@ func GetEnrollment(ctx context.Context, tx pgx.Tx, name string) (en Enrollment, 
 		WHERE address = $1;
     `
 
-	row := tx.QueryRow(ctx, query, name)
+	row := tx.QueryRow(ctx, query, address)
 	err = scanRow(row, &en)
 	return
 }
 
-func CreateEnrollment(ctx context.Context, tx pgx.Tx, en Enrollment) error {
+func InsertEnrollment(ctx context.Context, tx pgx.Tx, en Enrollment) error {
 	// language=postgresql
 	query := `
 		INSERT INTO enrollment (address, name, description, cert) 
@@ -47,7 +47,7 @@ func CreateEnrollment(ctx context.Context, tx pgx.Tx, en Enrollment) error {
 	return err
 }
 
-func ListEnrollments(ctx context.Context, tx pgx.Tx) ([]Enrollment, error) {
+func SelectEnrollments(ctx context.Context, tx pgx.Tx) ([]Enrollment, error) {
 	// language=postgresql
 	query := `
 		SELECT ` + rowFields + `

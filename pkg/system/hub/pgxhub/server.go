@@ -72,13 +72,13 @@ func (n *Server) GetHubNode(ctx context.Context, request *gen.GetHubNodeRequest)
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	var dbEnrollment Enrollment
 	err := n.pool.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
-		dbEnrollment, err = GetEnrollment(ctx, tx, request.GetAddress())
+		dbEnrollment, err = SelectEnrollment(ctx, tx, request.GetAddress())
 		return
 	})
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, status.Error(codes.NotFound, "no node registration with specified address")
 	} else if err != nil {
-		logger.Error("GetEnrollment failed", zap.Error(err), zap.String("address", request.GetAddress()))
+		logger.Error("SelectEnrollment failed", zap.Error(err), zap.String("address", request.GetAddress()))
 		return nil, status.Error(codes.Internal, "failed to retrieve enrollment")
 	}
 
@@ -101,7 +101,7 @@ func (n *Server) EnrollHubNode(ctx context.Context, request *gen.EnrollHubNodeRe
 
 	// check if the node is already enrolled
 	err := n.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
-		_, err := GetEnrollment(ctx, tx, nodeReg.Address)
+		_, err := SelectEnrollment(ctx, tx, nodeReg.Address)
 		return err
 	})
 	if !errors.Is(err, pgx.ErrNoRows) {
@@ -121,7 +121,7 @@ func (n *Server) EnrollHubNode(ctx context.Context, request *gen.EnrollHubNodeRe
 	}
 
 	err = n.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
-		return CreateEnrollment(ctx, tx, Enrollment{
+		return InsertEnrollment(ctx, tx, Enrollment{
 			Name:        en.TargetName,
 			Description: nodeReg.Description,
 			Address:     en.TargetAddress,
@@ -132,11 +132,11 @@ func (n *Server) EnrollHubNode(ctx context.Context, request *gen.EnrollHubNodeRe
 		delErr := n.deleteHubNode(ctx, nodeReg)
 		if delErr != nil {
 			// failed to rollback!
-			logger.Error("pool.CreateEnrollment failed, failed to rollback",
+			logger.Error("pool.InsertEnrollment failed, failed to rollback",
 				zap.NamedError("enroll", err), zap.NamedError("rollback", delErr))
 			return nil, status.Errorf(codes.DataLoss, "enrollment failed, rollback failed - the system is in a corrupt state, manual intervention required")
 		}
-		logger.Warn("pool.CreateEnrollment failed", zap.Error(err))
+		logger.Warn("pool.InsertEnrollment failed", zap.Error(err))
 		return nil, status.Error(codes.Aborted, "failed to save the enrollment, no changes have been made")
 	}
 	return nodeReg, nil
@@ -160,11 +160,11 @@ func (n *Server) ListHubNodes(ctx context.Context, request *gen.ListHubNodesRequ
 	logger := rpcutil.ServerLogger(ctx, n.logger)
 	var dbEnrollments []Enrollment
 	err := n.pool.BeginFunc(ctx, func(tx pgx.Tx) (err error) {
-		dbEnrollments, err = ListEnrollments(ctx, tx)
+		dbEnrollments, err = SelectEnrollments(ctx, tx)
 		return
 	})
 	if err != nil {
-		logger.Error("pool.ListEnrollments failed", zap.Error(err))
+		logger.Error("pool.SelectEnrollments failed", zap.Error(err))
 		return nil, status.Error(codes.Unavailable, "unable to retrieve enrollments")
 	}
 
