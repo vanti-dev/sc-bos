@@ -1,6 +1,7 @@
 package enrollment
 
 import (
+	"bytes"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -30,7 +31,7 @@ func (e Enrollment) Equal(other Enrollment) bool {
 		e.ManagerAddress != other.ManagerAddress {
 		return false
 	}
-	return string(e.Cert.Certificate[0]) == string(other.Cert.Certificate[0])
+	return bytes.Equal(e.Cert.Certificate[0], other.Cert.Certificate[0])
 }
 
 var ErrNotEnrolled = errors.New("node is not enrolled")
