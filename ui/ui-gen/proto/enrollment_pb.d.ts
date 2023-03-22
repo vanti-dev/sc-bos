@@ -78,6 +78,26 @@ export namespace CreateEnrollmentRequest {
   }
 }
 
+export class UpdateEnrollmentRequest extends jspb.Message {
+  getEnrollment(): Enrollment | undefined;
+  setEnrollment(value?: Enrollment): UpdateEnrollmentRequest;
+  hasEnrollment(): boolean;
+  clearEnrollment(): UpdateEnrollmentRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateEnrollmentRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateEnrollmentRequest): UpdateEnrollmentRequest.AsObject;
+  static serializeBinaryToWriter(message: UpdateEnrollmentRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateEnrollmentRequest;
+  static deserializeBinaryFromReader(message: UpdateEnrollmentRequest, reader: jspb.BinaryReader): UpdateEnrollmentRequest;
+}
+
+export namespace UpdateEnrollmentRequest {
+  export type AsObject = {
+    enrollment?: Enrollment.AsObject,
+  }
+}
+
 export class DeleteEnrollmentRequest extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeleteEnrollmentRequest.AsObject;

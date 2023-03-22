@@ -24,8 +24,20 @@ const _ = grpc.SupportPackageIsVersion7
 type HubApiClient interface {
 	GetHubNode(ctx context.Context, in *GetHubNodeRequest, opts ...grpc.CallOption) (*HubNode, error)
 	ListHubNodes(ctx context.Context, in *ListHubNodesRequest, opts ...grpc.CallOption) (*ListHubNodesResponse, error)
+	// Query the hub node for information that can be used to knowledgeably enroll that node with this hub.
+	// This request will return both the node metadata and public certificates presented by the node.
 	InspectHubNode(ctx context.Context, in *InspectHubNodeRequest, opts ...grpc.CallOption) (*HubNodeInspection, error)
+	// Enroll the node with this hub.
+	// Enrollment involves the hub signing the nodes public key and issuing that cert to the node.
+	// A node can only be enrolled with one hub, the first to enroll the node wins.
+	// Use RenewHubNode to refresh the certificate issued to the node.
 	EnrollHubNode(ctx context.Context, in *EnrollHubNodeRequest, opts ...grpc.CallOption) (*HubNode, error)
+	// Re-sign and re-issue a certificate to the node.
+	// Fails if the node isn't already enrolled.
+	RenewHubNode(ctx context.Context, in *RenewHubNodeRequest, opts ...grpc.CallOption) (*HubNode, error)
+	// Test that communications with an enrolled node is working.
+	// This checks communication and the TLS stack, only returning success if the node presents a public certificate signed
+	// by this hub.
 	TestHubNode(ctx context.Context, in *TestHubNodeRequest, opts ...grpc.CallOption) (*TestHubNodeResponse, error)
 }
 
@@ -73,6 +85,15 @@ func (c *hubApiClient) EnrollHubNode(ctx context.Context, in *EnrollHubNodeReque
 	return out, nil
 }
 
+func (c *hubApiClient) RenewHubNode(ctx context.Context, in *RenewHubNodeRequest, opts ...grpc.CallOption) (*HubNode, error) {
+	out := new(HubNode)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.HubApi/RenewHubNode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hubApiClient) TestHubNode(ctx context.Context, in *TestHubNodeRequest, opts ...grpc.CallOption) (*TestHubNodeResponse, error) {
 	out := new(TestHubNodeResponse)
 	err := c.cc.Invoke(ctx, "/smartcore.bos.HubApi/TestHubNode", in, out, opts...)
@@ -88,8 +109,20 @@ func (c *hubApiClient) TestHubNode(ctx context.Context, in *TestHubNodeRequest, 
 type HubApiServer interface {
 	GetHubNode(context.Context, *GetHubNodeRequest) (*HubNode, error)
 	ListHubNodes(context.Context, *ListHubNodesRequest) (*ListHubNodesResponse, error)
+	// Query the hub node for information that can be used to knowledgeably enroll that node with this hub.
+	// This request will return both the node metadata and public certificates presented by the node.
 	InspectHubNode(context.Context, *InspectHubNodeRequest) (*HubNodeInspection, error)
+	// Enroll the node with this hub.
+	// Enrollment involves the hub signing the nodes public key and issuing that cert to the node.
+	// A node can only be enrolled with one hub, the first to enroll the node wins.
+	// Use RenewHubNode to refresh the certificate issued to the node.
 	EnrollHubNode(context.Context, *EnrollHubNodeRequest) (*HubNode, error)
+	// Re-sign and re-issue a certificate to the node.
+	// Fails if the node isn't already enrolled.
+	RenewHubNode(context.Context, *RenewHubNodeRequest) (*HubNode, error)
+	// Test that communications with an enrolled node is working.
+	// This checks communication and the TLS stack, only returning success if the node presents a public certificate signed
+	// by this hub.
 	TestHubNode(context.Context, *TestHubNodeRequest) (*TestHubNodeResponse, error)
 	mustEmbedUnimplementedHubApiServer()
 }
@@ -109,6 +142,9 @@ func (UnimplementedHubApiServer) InspectHubNode(context.Context, *InspectHubNode
 }
 func (UnimplementedHubApiServer) EnrollHubNode(context.Context, *EnrollHubNodeRequest) (*HubNode, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EnrollHubNode not implemented")
+}
+func (UnimplementedHubApiServer) RenewHubNode(context.Context, *RenewHubNodeRequest) (*HubNode, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenewHubNode not implemented")
 }
 func (UnimplementedHubApiServer) TestHubNode(context.Context, *TestHubNodeRequest) (*TestHubNodeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TestHubNode not implemented")
@@ -198,6 +234,24 @@ func _HubApi_EnrollHubNode_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HubApi_RenewHubNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenewHubNodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubApiServer).RenewHubNode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/smartcore.bos.HubApi/RenewHubNode",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubApiServer).RenewHubNode(ctx, req.(*RenewHubNodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HubApi_TestHubNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TestHubNodeRequest)
 	if err := dec(in); err != nil {
@@ -238,6 +292,10 @@ var HubApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "EnrollHubNode",
 			Handler:    _HubApi_EnrollHubNode_Handler,
+		},
+		{
+			MethodName: "RenewHubNode",
+			Handler:    _HubApi_RenewHubNode_Handler,
 		},
 		{
 			MethodName: "TestHubNode",

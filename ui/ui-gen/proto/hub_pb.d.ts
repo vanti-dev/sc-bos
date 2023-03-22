@@ -99,6 +99,24 @@ export namespace EnrollHubNodeRequest {
   }
 }
 
+export class RenewHubNodeRequest extends jspb.Message {
+  getAddress(): string;
+  setAddress(value: string): RenewHubNodeRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): RenewHubNodeRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RenewHubNodeRequest): RenewHubNodeRequest.AsObject;
+  static serializeBinaryToWriter(message: RenewHubNodeRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RenewHubNodeRequest;
+  static deserializeBinaryFromReader(message: RenewHubNodeRequest, reader: jspb.BinaryReader): RenewHubNodeRequest;
+}
+
+export namespace RenewHubNodeRequest {
+  export type AsObject = {
+    address: string,
+  }
+}
+
 export class ListHubNodesRequest extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListHubNodesRequest.AsObject;

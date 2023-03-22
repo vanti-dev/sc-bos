@@ -200,6 +200,67 @@ proto.smartcore.bos.EnrollmentApiPromiseClient.prototype.createEnrollment =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.UpdateEnrollmentRequest,
+ *   !proto.smartcore.bos.Enrollment>}
+ */
+const methodDescriptor_EnrollmentApi_UpdateEnrollment = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.EnrollmentApi/UpdateEnrollment',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.UpdateEnrollmentRequest,
+  proto.smartcore.bos.Enrollment,
+  /**
+   * @param {!proto.smartcore.bos.UpdateEnrollmentRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Enrollment.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.UpdateEnrollmentRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.Enrollment)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Enrollment>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.EnrollmentApiClient.prototype.updateEnrollment =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.EnrollmentApi/UpdateEnrollment',
+      request,
+      metadata || {},
+      methodDescriptor_EnrollmentApi_UpdateEnrollment,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.UpdateEnrollmentRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.Enrollment>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.EnrollmentApiPromiseClient.prototype.updateEnrollment =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.EnrollmentApi/UpdateEnrollment',
+      request,
+      metadata || {},
+      methodDescriptor_EnrollmentApi_UpdateEnrollment);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.smartcore.bos.DeleteEnrollmentRequest,
  *   !proto.smartcore.bos.Enrollment>}
  */

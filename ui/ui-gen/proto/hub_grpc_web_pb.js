@@ -324,6 +324,67 @@ proto.smartcore.bos.HubApiPromiseClient.prototype.enrollHubNode =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.RenewHubNodeRequest,
+ *   !proto.smartcore.bos.HubNode>}
+ */
+const methodDescriptor_HubApi_RenewHubNode = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.HubApi/RenewHubNode',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.RenewHubNodeRequest,
+  proto.smartcore.bos.HubNode,
+  /**
+   * @param {!proto.smartcore.bos.RenewHubNodeRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.HubNode.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.RenewHubNodeRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.HubNode)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.HubNode>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.HubApiClient.prototype.renewHubNode =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.HubApi/RenewHubNode',
+      request,
+      metadata || {},
+      methodDescriptor_HubApi_RenewHubNode,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.RenewHubNodeRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.HubNode>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.HubApiPromiseClient.prototype.renewHubNode =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.HubApi/RenewHubNode',
+      request,
+      metadata || {},
+      methodDescriptor_HubApi_RenewHubNode);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.smartcore.bos.TestHubNodeRequest,
  *   !proto.smartcore.bos.TestHubNodeResponse>}
  */

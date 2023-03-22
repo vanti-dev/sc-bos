@@ -10,8 +10,20 @@ service HubApi {
   rpc GetHubNode(GetHubNodeRequest) returns (HubNode);
   rpc ListHubNodes(ListHubNodesRequest) returns (ListHubNodesResponse);
 
+  // Query the hub node for information that can be used to knowledgeably enroll that node with this hub.
+  // This request will return both the node metadata and public certificates presented by the node.
   rpc InspectHubNode(InspectHubNodeRequest) returns (HubNodeInspection);
+  // Enroll the node with this hub.
+  // Enrollment involves the hub signing the nodes public key and issuing that cert to the node.
+  // A node can only be enrolled with one hub, the first to enroll the node wins.
+  // Use RenewHubNode to refresh the certificate issued to the node.
   rpc EnrollHubNode(EnrollHubNodeRequest) returns (HubNode);
+  // Re-sign and re-issue a certificate to the node.
+  // Fails if the node isn't already enrolled.
+  rpc RenewHubNode(RenewHubNodeRequest) returns (HubNode);
+  // Test that communications with an enrolled node is working.
+  // This checks communication and the TLS stack, only returning success if the node presents a public certificate signed
+  // by this hub.
   rpc TestHubNode(TestHubNodeRequest) returns (TestHubNodeResponse);
 }
 
@@ -39,6 +51,10 @@ message EnrollHubNodeRequest {
   // Can be used along with InspectHubNode to ensure the correct node is enrolled.
   // This should contain PEM encoded x509 certificates as returned by InspectHubNode.
   repeated string public_certs = 2;
+}
+
+message RenewHubNodeRequest {
+  string address = 1;
 }
 
 message ListHubNodesRequest {

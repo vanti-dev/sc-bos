@@ -16,9 +16,15 @@ option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 //   - When a target node is in operating mode, its management node may cancel its enrollment by calling DeleteEnrollment.
 //     The target node will then return to enrollment mode.
 //     The target node will not accept any CreateEnrollment calls while it is in operating mode.
+//   - The certificate and roots associated with an enrollment can be updated via UpdateEnrollment.
+//     Only an enrolled node will respond successfully to an update.
+//     The node must only update the enrollment information if the certificate given is signed by the same signer as the
+//     current enrollment certificate.
+//     The node may reject the update if the client certificate isn't signed by one of the existing enrollment roots.
 service EnrollmentApi {
   rpc GetEnrollment(GetEnrollmentRequest) returns (Enrollment) {}
   rpc CreateEnrollment(CreateEnrollmentRequest) returns (Enrollment) {}
+  rpc UpdateEnrollment(UpdateEnrollmentRequest) returns (Enrollment) {}
   rpc DeleteEnrollment(DeleteEnrollmentRequest) returns (Enrollment) {}
 }
 
@@ -77,6 +83,10 @@ message Enrollment {
 message GetEnrollmentRequest {}
 
 message CreateEnrollmentRequest {
+  Enrollment enrollment = 1;
+}
+
+message UpdateEnrollmentRequest {
   Enrollment enrollment = 1;
 }
 

@@ -36,6 +36,13 @@ export class HubApiClient {
                response: hub_pb.HubNode) => void
   ): grpcWeb.ClientReadableStream<hub_pb.HubNode>;
 
+  renewHubNode(
+    request: hub_pb.RenewHubNodeRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: hub_pb.HubNode) => void
+  ): grpcWeb.ClientReadableStream<hub_pb.HubNode>;
+
   testHubNode(
     request: hub_pb.TestHubNodeRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -67,6 +74,11 @@ export class HubApiPromiseClient {
 
   enrollHubNode(
     request: hub_pb.EnrollHubNodeRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<hub_pb.HubNode>;
+
+  renewHubNode(
+    request: hub_pb.RenewHubNodeRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<hub_pb.HubNode>;
 
