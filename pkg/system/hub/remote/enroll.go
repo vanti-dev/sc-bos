@@ -88,6 +88,56 @@ func Enroll(ctx context.Context, enrollment *gen.Enrollment, authority pki.Sourc
 	return enrollment, nil
 }
 
+// Renew updates the PKI for a remote Smart Core node.
+// This connects to the remote node specified by enrollment.TargetAddress using tlsConfig,
+// signs the servers public certificate using authority,
+// and calls EnrollmentApi.UpdateEnrollment on the remote node.
+func Renew(ctx context.Context, enrollment *gen.Enrollment, authority pki.Source, tlsConfig *tls.Config) (*gen.Enrollment, error) {
+	enrollment = proto.Clone(enrollment).(*gen.Enrollment)
+
+	// the certInterceptor captures and saves the certificate presented by the server when the connection is opened
+	creds := &certInterceptor{TransportCredentials: credentials.NewTLS(tlsConfig)}
+	conn, err := grpc.DialContext(ctx, enrollment.TargetAddress,
+		grpc.WithTransportCredentials(creds),
+		grpc.WithBlock(),
+		grpc.WithReturnConnectionError(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	peerCerts, ok := creds.PeerCertificates()
+	if !ok || len(peerCerts) == 0 {
+		return nil, errors.New("peer did not present any certificates")
+	}
+	peerPublicKey := peerCerts[0].PublicKey
+
+	authorityCert, roots, err := authority.Certs()
+	if err != nil {
+		return nil, err
+	}
+
+	enrollment.RootCas = pki.EncodeCertificates(roots)
+
+	certTemplate := newTargetCertificate(enrollment)
+	enrollment.Certificate, err = pki.CreateCertificateChain(authorityCert, certTemplate, peerPublicKey,
+		pki.WithAuthority(enrollment.TargetAddress),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	client := gen.NewEnrollmentApiClient(conn)
+	_, err = client.UpdateEnrollment(ctx, &gen.UpdateEnrollmentRequest{
+		Enrollment: enrollment,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return enrollment, nil
+}
+
 func newTargetCertificate(enrollment *gen.Enrollment) *x509.Certificate {
 	return &x509.Certificate{
 		Subject:     pkix.Name{CommonName: enrollment.TargetName},

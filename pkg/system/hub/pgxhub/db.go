@@ -47,6 +47,25 @@ func InsertEnrollment(ctx context.Context, tx pgx.Tx, en Enrollment) error {
 	return err
 }
 
+func UpdateEnrollment(ctx context.Context, tx pgx.Tx, en Enrollment) error {
+	// language=postgresql
+	query := `
+		UPDATE enrollment SET name=$2, description=$3, cert=$4
+		WHERE address=$1;
+	`
+
+	var nameNull, descNull *string
+	if en.Name != "" {
+		nameNull = &en.Name
+	}
+	if en.Description != "" {
+		descNull = &en.Description
+	}
+
+	_, err := tx.Exec(ctx, query, en.Address, nameNull, descNull, en.Cert)
+	return err
+}
+
 func SelectEnrollments(ctx context.Context, tx pgx.Tx) ([]Enrollment, error) {
 	// language=postgresql
 	query := `

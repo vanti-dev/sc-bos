@@ -187,6 +187,42 @@ func (n *Server) InspectHubNode(ctx context.Context, request *gen.InspectHubNode
 	return remote.Inspect(ctx, request.Node.Address)
 }
 
+func (n *Server) RenewHubNode(ctx context.Context, request *gen.RenewHubNodeRequest) (*gen.HubNode, error) {
+	logger := rpcutil.ServerLogger(ctx, n.logger)
+	reg, err := n.GetHubNode(ctx, &gen.GetHubNodeRequest{Address: request.GetAddress()})
+	if err != nil {
+		return nil, err
+	}
+
+	en, err := remote.Renew(ctx, &gen.Enrollment{
+		TargetName:     reg.Name,
+		TargetAddress:  reg.Address,
+		ManagerName:    n.ManagerName,
+		ManagerAddress: n.ManagerAddr,
+	}, n.Authority, n.TestTLSConfig)
+	if err != nil {
+		logger.Error("failed to renew area controller", zap.Error(err),
+			zap.String("target_address", reg.Address))
+		return nil, status.Error(codes.Unknown, "enrollment failed")
+	}
+
+	err = n.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
+		return UpdateEnrollment(ctx, tx, Enrollment{
+			Name:        en.TargetName,
+			Description: reg.Description,
+			Address:     en.TargetAddress,
+			Cert:        en.Certificate,
+		})
+	})
+	if err != nil {
+		// failed to rollback!
+		logger.Error("pool.UpdateEnrollment failed, no rollback",
+			zap.Error(err))
+		return nil, status.Errorf(codes.DataLoss, "renew failed, unable to rollback - the system is in a corrupt state, manual intervention may be required")
+	}
+	return reg, nil
+}
+
 func (n *Server) TestHubNode(ctx context.Context, request *gen.TestHubNodeRequest) (*gen.TestHubNodeResponse, error) {
 	reg, err := n.GetHubNode(ctx, &gen.GetHubNodeRequest{Address: request.GetAddress()})
 	if err != nil {
