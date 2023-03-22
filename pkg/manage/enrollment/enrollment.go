@@ -10,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"go.uber.org/multierr"
+
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 )
 
@@ -94,27 +96,66 @@ func LoadEnrollment(dir string, keyPEM []byte) (Enrollment, error) {
 	return enrollment, nil
 }
 
-func SaveEnrollment(dir string, enrollment Enrollment) error {
-	err := os.MkdirAll(dir, 0750)
-	if err != nil {
+func SaveEnrollment(dir string, enrollment Enrollment) (err error) {
+	enrollmentFile := filepath.Join(dir, enrollmentFile)
+	rootCaCertFile := filepath.Join(dir, rootCaCertFile)
+	certFile := filepath.Join(dir, certFile)
+
+	// check if files already exist
+	_, err = os.Stat(enrollmentFile)
+	if errors.Is(err, os.ErrNotExist) {
+		err = os.MkdirAll(dir, 0750)
+		if err != nil {
+			return err
+		}
+	} else if err != nil {
 		return err
+	} else {
+		// The files already exist, lets treat this as an update.
+		// We want to be atomic, so make a backup of the files so we can restore them afterwards if needed
+		files := []string{enrollmentFile, rootCaCertFile, certFile}
+		for _, f := range files {
+			if err := os.Rename(f, f+".bak"); err != nil {
+				return fmt.Errorf("failed to backup old files %w", err)
+			}
+		}
+		defer func() {
+			if err == nil {
+				// remove backup files
+				for _, file := range files {
+					_ = os.Remove(file + ".bak")
+				}
+			} else {
+				// restore the backup files, removing any existing files in the process
+				for _, file := range files {
+					if _, e := os.Stat(file + ".bak"); e == nil {
+						if _, e := os.Stat(file); e == nil {
+							os.Remove(file)
+						}
+						os.Rename(file+".bak", file)
+					} else if errors.Is(e, os.ErrNotExist) {
+						continue
+					} else {
+						err = multierr.Combine(err, e)
+					}
+				}
+			}
+		}()
 	}
 
 	jsonBytes, err := json.Marshal(enrollment)
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(filepath.Join(dir, enrollmentFile), jsonBytes, 0640)
+	err = os.WriteFile(enrollmentFile, jsonBytes, 0640)
 	if err != nil {
 		return err
 	}
-
-	_, err = pki.SaveCertificateChain(filepath.Join(dir, rootCaCertFile), [][]byte{enrollment.RootCA.Raw})
+	_, err = pki.SaveCertificateChain(rootCaCertFile, [][]byte{enrollment.RootCA.Raw})
 	if err != nil {
 		return err
 	}
-
-	_, err = pki.SaveCertificateChain(filepath.Join(dir, certFile), enrollment.Cert.Certificate)
+	_, err = pki.SaveCertificateChain(certFile, enrollment.Cert.Certificate)
 	return err
 }
 
