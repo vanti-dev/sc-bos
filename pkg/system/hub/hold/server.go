@@ -53,6 +53,14 @@ func (s *Server) EnrollHubNode(ctx context.Context, request *gen.EnrollHubNodeRe
 	return c.EnrollHubNode(ctx, request)
 }
 
+func (s *Server) RenewHubNode(ctx context.Context, request *gen.RenewHubNodeRequest) (*gen.HubNode, error) {
+	c, err := s.client()
+	if err != nil {
+		return nil, err
+	}
+	return c.RenewHubNode(ctx, request)
+}
+
 func (s *Server) ListHubNodes(ctx context.Context, request *gen.ListHubNodesRequest) (*gen.ListHubNodesResponse, error) {
 	c, err := s.client()
 	if err != nil {
