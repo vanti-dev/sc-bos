@@ -52,6 +52,7 @@ func LoadOrCreateServer(dir string, keyPEM []byte, logger *zap.Logger) (*Server,
 	if err == nil {
 		es.enrollment = enrollment
 		close(es.done)
+		logger.Info("The controller is enrolled with a hub", zap.String("hubAddress", enrollment.ManagerAddress))
 	} else if !errors.Is(err, ErrNotEnrolled) {
 		return nil, err
 	}
@@ -104,6 +105,8 @@ func (es *Server) CreateEnrollment(ctx context.Context, request *gen.CreateEnrol
 	es.enrollment = enrollment
 	go es.managerAddressChanged.Send(context.Background(), enrollment.ManagerAddress)
 	close(es.done)
+
+	logger.Info("The controller is newly enrolled with a hub", zap.String("hubAddress", enrollment.ManagerAddress))
 	return request.GetEnrollment(), nil
 }
 
