@@ -6,10 +6,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"math"
 	"sync"
+	"time"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
@@ -264,6 +268,118 @@ func (es *Server) certsLocked() (*tls.Certificate, []*x509.Certificate, error) {
 	cert := es.enrollment.Cert
 	roots := []*x509.Certificate{es.enrollment.RootCA}
 	return &cert, roots, nil
+}
+
+// RequestRenew asks the hub to renew our certificate.
+// Errors if this node is not enrolled with a hub.
+func (es *Server) RequestRenew(ctx context.Context) error {
+	es.m.Lock()
+	clientCert, roots, err := es.certsLocked()
+	hubAddress := es.enrollment.ManagerAddress
+	localAddress := es.enrollment.LocalAddress
+	es.m.Unlock()
+
+	if err != nil {
+		return err
+	}
+	if hubAddress == "" {
+		return errors.New("hub address not known")
+	}
+	if localAddress == "" {
+		return errors.New("local address not known")
+	}
+
+	source := pki.FuncSource(func() (*tls.Certificate, []*x509.Certificate, error) {
+		return clientCert, roots, err
+	})
+	tlsConfig := pki.TLSClientConfig(source)
+	conn, err := grpc.DialContext(ctx, hubAddress, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	if err != nil {
+		return err
+	}
+	client := gen.NewHubApiClient(conn)
+	// warning, do not hold es.m lock when invoking this method or we'll get a deadlock that includes a network hop
+	// which would be really hard to debug!
+	_, err = client.RenewHubNode(ctx, &gen.RenewHubNodeRequest{Address: localAddress})
+	return err
+}
+
+func (es *Server) AutoRenew(ctx context.Context) error {
+	const afterProgress = 0.75
+
+	enrollments := es.Enrollments(ctx)
+	var renewAfter *time.Timer
+	var timerC <-chan time.Time
+	var renewAttempt int // for tracking failures and for computing delays
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case enrollment, ok := <-enrollments:
+			// if the enrollment changes we:
+			// 1. if we aren't enrolled: stop any renewal timers and clean up resources
+			// 2. if we are already enrolled: stop any existing timers and continue with 3
+			// 3. if we are newly enrolled: work out when to auto-renew and setup timers to wake us up then.
+
+			if !ok {
+				return ctx.Err()
+			}
+
+			renewAttempt = 0 // reset any backoff settings
+
+			if enrollment.IsZero() {
+				// stop auto-renewing for now
+				if renewAfter == nil {
+					// we already weren't auto-renewing
+					continue
+				}
+				renewAfter.Stop()
+				renewAfter = nil
+				timerC = nil
+				continue
+			}
+
+			// start auto-renewing
+			if renewAfter != nil {
+				// Start with a new timer.
+				// this is easier than tracking resets and drains
+				renewAfter.Stop()
+				renewAfter = nil
+				timerC = nil
+			}
+			leaf, err := pki.TLSLeaf(&enrollment.Cert)
+			if err != nil {
+				// this shouldn't happen because the cert will have already been validated during enrollment
+				es.logger.Error("Unexpected cert parsing error during auto-renewal check", zap.Error(err))
+				continue
+			}
+			maxAge := leaf.NotAfter.Sub(leaf.NotBefore)
+			renewAge := time.Duration(float64(maxAge) * afterProgress)
+			renewTime := leaf.NotBefore.Add(renewAge)
+			now := time.Now()
+			renewDelay := renewTime.Sub(now)
+			es.logger.Debug("Auto-renewal of enrolled certificate scheduled", zap.Time("at", renewTime))
+			// wait until the cert is reaching expiry before we renew it,
+			// note negative durations cause the timer to trigger immediately
+			renewAfter = time.NewTimer(renewDelay)
+			timerC = renewAfter.C
+		case <-timerC:
+			err := es.RequestRenew(ctx)
+			if err != nil {
+				renewAttempt++
+				if renewAttempt == 1 {
+					es.logger.Warn("Auto-renewal of enrolled certificate failed, will retry", zap.Error(err))
+				} else if renewAttempt%20 == 0 {
+					es.logger.Warn("Auto-renewal of enrolled certificate is still failing", zap.Error(err), zap.Int("attempts", renewAttempt))
+				}
+				newDelay := time.Duration(float64(100*time.Millisecond) * math.Pow(1.1, float64(renewAttempt)))
+				if newDelay > 5*time.Minute {
+					newDelay = 5 * time.Minute
+				}
+				renewAfter.Reset(newDelay)
+			}
+		}
+	}
 }
 
 // Enrollments returns a chan that emits whenever the enrollment status or properties for this server change.
