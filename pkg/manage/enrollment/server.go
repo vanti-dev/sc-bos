@@ -183,7 +183,10 @@ func (es *Server) Enrollment() (enrollment Enrollment, ok bool) {
 func (es *Server) Certs() (*tls.Certificate, []*x509.Certificate, error) {
 	es.m.Lock()
 	defer es.m.Unlock()
+	return es.certsLocked()
+}
 
+func (es *Server) certsLocked() (*tls.Certificate, []*x509.Certificate, error) {
 	// check that we are enrolled
 	select {
 	case <-es.done:
