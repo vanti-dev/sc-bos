@@ -27,7 +27,7 @@ type Server struct {
 	enrollment Enrollment
 	done       chan struct{}
 
-	managerAddressChanged minibus.Bus[string]
+	enrollmentChanged minibus.Bus[Enrollment]
 }
 
 // NewServer creates an enrollment server, without attempting to load an existing enrollment.
@@ -103,7 +103,7 @@ func (es *Server) CreateEnrollment(ctx context.Context, request *gen.CreateEnrol
 	}
 
 	es.enrollment = enrollment
-	go es.managerAddressChanged.Send(context.Background(), enrollment.ManagerAddress)
+	go es.enrollmentChanged.Send(context.Background(), enrollment)
 	close(es.done)
 
 	logger.Info("The controller is newly enrolled with a hub", zap.String("hubAddress", enrollment.ManagerAddress))
@@ -145,7 +145,7 @@ func (es *Server) DeleteEnrollment(ctx context.Context, request *gen.DeleteEnrol
 		return nil, status.Errorf(codes.Aborted, err.Error())
 	}
 	es.done = make(chan struct{})
-	go es.managerAddressChanged.Send(context.Background(), "")
+	go es.enrollmentChanged.Send(context.Background(), Enrollment{})
 
 	return &gen.Enrollment{
 		TargetName:     en.RootDeviceName,
@@ -196,22 +196,34 @@ func (es *Server) Certs() (*tls.Certificate, []*x509.Certificate, error) {
 	return &cert, roots, nil
 }
 
+// Enrollments returns a chan that emits whenever the enrollment status or properties for this server change.
+func (es *Server) Enrollments(ctx context.Context) <-chan Enrollment {
+	changes := es.enrollmentChanged.Listen(ctx)
+	// send the initial data right away
+	out := make(chan Enrollment, 1)
+	if en, ok := es.Enrollment(); ok {
+		out <- en
+	}
+
+	go func() {
+		defer close(out)
+		for en := range changes {
+			out <- en
+		}
+	}()
+	return out
+}
+
 // ManagerAddress returns a chan that emits the manager address whenever it changes.
 // Cancel the given context to stop listening for changes.
 func (es *Server) ManagerAddress(ctx context.Context) <-chan string {
-	changes := es.managerAddressChanged.Listen(ctx)
-	en, ok := es.Enrollment()
-	if !ok {
-		return changes
-	}
-
+	changes := es.enrollmentChanged.Listen(ctx)
 	// send the initial data right away
-	out := make(chan string, 1)
-	out <- en.ManagerAddress
+	out := make(chan string)
 	go func() {
 		defer close(out)
 		for addr := range changes {
-			out <- addr
+			out <- addr.ManagerAddress
 		}
 	}()
 	return out
