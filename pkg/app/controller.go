@@ -314,6 +314,11 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	c.Node.Register(c.GRPC)
 
 	group, ctx := errgroup.WithContext(ctx)
+	if c.Enrollment != nil {
+		group.Go(func() error {
+			return c.Enrollment.AutoRenew(ctx)
+		})
+	}
 	if c.SystemConfig.ListenGRPC != "" {
 		group.Go(func() error {
 			return ServeGRPC(ctx, c.GRPC, c.SystemConfig.ListenGRPC, 15*time.Second, c.Logger.Named("server.grpc"))
