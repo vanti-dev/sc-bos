@@ -165,6 +165,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		}
 	}
 	tlsHTTPServerConfig := pki.TLSServerConfig(httpCertSource)
+	tlsHTTPServerConfig.ClientAuth = tls.NoClientCert
 
 	// manager represents a delayed connection to the cohort manager.
 	// Using the manager connection when we aren't enrolled will result in RPC calls returning 'not resolved' errors or similar.
