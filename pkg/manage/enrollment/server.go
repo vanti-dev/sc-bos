@@ -1,6 +1,7 @@
 package enrollment
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -107,6 +108,72 @@ func (es *Server) CreateEnrollment(ctx context.Context, request *gen.CreateEnrol
 	close(es.done)
 
 	logger.Info("The controller is newly enrolled with a hub", zap.String("hubAddress", enrollment.ManagerAddress))
+	return request.GetEnrollment(), nil
+}
+
+func (es *Server) UpdateEnrollment(ctx context.Context, request *gen.UpdateEnrollmentRequest) (*gen.Enrollment, error) {
+	logger := rpcutil.ServerLogger(ctx, es.logger)
+
+	es.m.Lock()
+	defer es.m.Unlock()
+
+	select {
+	case <-es.done:
+	default:
+		return nil, status.Error(codes.NotFound, "not enrolled")
+	}
+
+	en := es.enrollment
+	oldLeaf, err := x509.ParseCertificate(en.Cert.Certificate[0])
+	if err != nil {
+		logger.Error("Failed to parse old enrollment certificate", zap.Error(err))
+		return nil, status.Error(codes.Unknown, "failed to parse old certificate")
+	}
+
+	cert, err := tls.X509KeyPair(request.GetEnrollment().GetCertificate(), es.keyPEM)
+	if err != nil {
+		logger.Debug("invalid enrollment certificate", zap.Error(err))
+		return nil, status.Error(codes.InvalidArgument, "invalid certificate")
+	}
+
+	newLeaf, err := x509.ParseCertificate(cert.Certificate[0])
+	if err != nil {
+		// shouldn't happen because tls.X509KeyPair parses the cert too
+		logger.Error("Failed to parse new enrollment certificate", zap.Error(err))
+		return nil, status.Error(codes.Unknown, "failed to parse new certificate")
+	}
+
+	if !haveSameIssuer(oldLeaf, newLeaf) {
+		logger.Debug("Updated enrollment cert not from same issuer", zap.Any("old", oldLeaf.Issuer), zap.Any("new", newLeaf.Issuer))
+		return nil, status.Error(codes.InvalidArgument, "issuers don't match")
+	}
+
+	roots, err := pki.ParseCertificatesPEM(request.GetEnrollment().GetRootCas())
+	if err != nil {
+		logger.Error("invalid enrollment root", zap.Error(err))
+		return nil, status.Error(codes.InvalidArgument, "invalid root certificate(s)")
+	}
+	if len(roots) != 1 {
+		return nil, status.Error(codes.InvalidArgument, "only 1 root CA is supported")
+	}
+
+	enrollment := Enrollment{
+		RootDeviceName: request.GetEnrollment().GetTargetName(),
+		ManagerName:    request.GetEnrollment().GetManagerName(),
+		ManagerAddress: request.GetEnrollment().GetManagerAddress(),
+		LocalAddress:   request.GetEnrollment().GetTargetAddress(),
+		RootCA:         roots[0],
+		Cert:           cert,
+	}
+	err = SaveEnrollment(es.dir, enrollment)
+	if err != nil {
+		logger.Debug("failed to save enrollment", zap.Error(err), zap.String("dir", es.dir))
+		return nil, status.Error(codes.Aborted, "failed to store enrollment")
+	}
+
+	es.enrollment = enrollment
+	go es.enrollmentChanged.Send(context.Background(), enrollment)
+	logger.Info("The controllers enrollment has been renewed", zap.String("hubAddress", enrollment.ManagerAddress))
 	return request.GetEnrollment(), nil
 }
 
@@ -230,4 +297,11 @@ func (es *Server) ManagerAddress(ctx context.Context) <-chan string {
 		}
 	}()
 	return out
+}
+
+func haveSameIssuer(a, b *x509.Certificate) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return bytes.Equal(a.RawIssuer, b.RawIssuer)
 }
