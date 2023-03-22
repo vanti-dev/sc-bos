@@ -128,3 +128,12 @@ func (r *resolver) skipVerify(cs tls.ConnectionState) (bool, error) {
 
 	return false, nil
 }
+
+// TLSLeaf returns either cert.Leaf or parses the first of cert.Certificate.
+// This does not set cert.Leaf.
+func TLSLeaf(cert *tls.Certificate) (*x509.Certificate, error) {
+	if cert.Leaf != nil {
+		return cert.Leaf, nil
+	}
+	return x509.ParseCertificate(cert.Certificate[0])
+}

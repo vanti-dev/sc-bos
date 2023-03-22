@@ -41,7 +41,7 @@ func BeforeInvalidT(d time.Duration, now Now) pki.Expiry {
 			return false
 		}
 
-		c, err := leaf(cert)
+		c, err := pki.TLSLeaf(cert)
 		if err != nil {
 			return false
 		}
@@ -61,7 +61,7 @@ func AfterValidT(d time.Duration, now Now) pki.Expiry {
 		if cert == nil {
 			return false
 		}
-		c, err := leaf(cert)
+		c, err := pki.TLSLeaf(cert)
 		if err != nil {
 			return false
 		}
@@ -83,7 +83,7 @@ func AfterProgressT(progress float32, now Now) pki.Expiry {
 			return false
 		}
 
-		c, err := leaf(cert)
+		c, err := pki.TLSLeaf(cert)
 		if err != nil {
 			return false
 		}
@@ -91,11 +91,4 @@ func AfterProgressT(progress float32, now Now) pki.Expiry {
 		age := now().Sub(c.NotBefore)
 		return age >= time.Duration(float32(c.NotAfter.Sub(c.NotBefore))*progress)
 	}
-}
-
-func leaf(cert *tls.Certificate) (*x509.Certificate, error) {
-	if cert.Leaf != nil {
-		return cert.Leaf, nil
-	}
-	return x509.ParseCertificate(cert.Certificate[0])
 }
