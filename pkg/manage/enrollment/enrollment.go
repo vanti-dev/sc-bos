@@ -36,6 +36,15 @@ func (e Enrollment) Equal(other Enrollment) bool {
 	return bytes.Equal(e.Cert.Certificate[0], other.Cert.Certificate[0])
 }
 
+func (e Enrollment) IsZero() bool {
+	return e.RootDeviceName == "" &&
+		e.ManagerName == "" &&
+		e.ManagerAddress == "" &&
+		e.LocalAddress == "" &&
+		e.RootCA == nil &&
+		len(e.Cert.Certificate) == 0
+}
+
 var ErrNotEnrolled = errors.New("node is not enrolled")
 
 const (
