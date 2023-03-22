@@ -91,6 +91,7 @@ func (es *Server) CreateEnrollment(ctx context.Context, request *gen.CreateEnrol
 		RootDeviceName: request.GetEnrollment().GetTargetName(),
 		ManagerName:    request.GetEnrollment().GetManagerName(),
 		ManagerAddress: request.GetEnrollment().GetManagerAddress(),
+		LocalAddress:   request.GetEnrollment().GetTargetAddress(),
 		RootCA:         roots[0],
 		Cert:           cert,
 	}

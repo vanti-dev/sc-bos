@@ -20,6 +20,7 @@ type Enrollment struct {
 	RootDeviceName string `json:"root_device_name"`
 	ManagerName    string `json:"manager_name"`
 	ManagerAddress string `json:"manager_address"`
+	LocalAddress   string `json:"local_address"`
 
 	RootCA *x509.Certificate `json:"-"`
 	Cert   tls.Certificate   `json:"-"`
@@ -28,7 +29,8 @@ type Enrollment struct {
 func (e Enrollment) Equal(other Enrollment) bool {
 	if e.RootDeviceName != other.RootDeviceName ||
 		e.ManagerName != other.ManagerName ||
-		e.ManagerAddress != other.ManagerAddress {
+		e.ManagerAddress != other.ManagerAddress ||
+		e.LocalAddress != other.LocalAddress {
 		return false
 	}
 	return bytes.Equal(e.Cert.Certificate[0], other.Cert.Certificate[0])
