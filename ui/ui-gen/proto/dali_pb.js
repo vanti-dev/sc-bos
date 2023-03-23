@@ -31,6 +31,7 @@ goog.exportSymbol('proto.smartcore.bos.driver.dali.DeleteTestResultRequest', nul
 goog.exportSymbol('proto.smartcore.bos.driver.dali.EmergencyStatus', null, global);
 goog.exportSymbol('proto.smartcore.bos.driver.dali.EmergencyStatus.Failure', null, global);
 goog.exportSymbol('proto.smartcore.bos.driver.dali.EmergencyStatus.Mode', null, global);
+goog.exportSymbol('proto.smartcore.bos.driver.dali.EmergencyStatus.Test', null, global);
 goog.exportSymbol('proto.smartcore.bos.driver.dali.GetControlGearStatusRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.driver.dali.GetEmergencyStatusRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.driver.dali.GetGroupMembershipRequest', null, global);
@@ -44,7 +45,6 @@ goog.exportSymbol('proto.smartcore.bos.driver.dali.StartTestRequest', null, glob
 goog.exportSymbol('proto.smartcore.bos.driver.dali.StartTestResponse', null, global);
 goog.exportSymbol('proto.smartcore.bos.driver.dali.StopTestRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.driver.dali.StopTestResponse', null, global);
-goog.exportSymbol('proto.smartcore.bos.driver.dali.Test', null, global);
 goog.exportSymbol('proto.smartcore.bos.driver.dali.TestResult', null, global);
 goog.exportSymbol('proto.smartcore.bos.driver.dali.UpdateTestIntervalRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.driver.dali.UpdateTestIntervalResponse', null, global);
@@ -1389,19 +1389,19 @@ proto.smartcore.bos.driver.dali.EmergencyStatus.deserializeBinaryFromReader = fu
       }
       break;
     case 2:
-      var values = /** @type {!Array<!proto.smartcore.bos.driver.dali.Test>} */ (reader.isDelimited() ? reader.readPackedEnum() : [reader.readEnum()]);
+      var values = /** @type {!Array<!proto.smartcore.bos.driver.dali.EmergencyStatus.Test>} */ (reader.isDelimited() ? reader.readPackedEnum() : [reader.readEnum()]);
       for (var i = 0; i < values.length; i++) {
         msg.addPendingTests(values[i]);
       }
       break;
     case 3:
-      var values = /** @type {!Array<!proto.smartcore.bos.driver.dali.Test>} */ (reader.isDelimited() ? reader.readPackedEnum() : [reader.readEnum()]);
+      var values = /** @type {!Array<!proto.smartcore.bos.driver.dali.EmergencyStatus.Test>} */ (reader.isDelimited() ? reader.readPackedEnum() : [reader.readEnum()]);
       for (var i = 0; i < values.length; i++) {
         msg.addOverdueTests(values[i]);
       }
       break;
     case 4:
-      var values = /** @type {!Array<!proto.smartcore.bos.driver.dali.Test>} */ (reader.isDelimited() ? reader.readPackedEnum() : [reader.readEnum()]);
+      var values = /** @type {!Array<!proto.smartcore.bos.driver.dali.EmergencyStatus.Test>} */ (reader.isDelimited() ? reader.readPackedEnum() : [reader.readEnum()]);
       for (var i = 0; i < values.length; i++) {
         msg.addResultsAvailable(values[i]);
       }
@@ -1515,6 +1515,16 @@ proto.smartcore.bos.driver.dali.EmergencyStatus.serializeBinaryToWriter = functi
 /**
  * @enum {number}
  */
+proto.smartcore.bos.driver.dali.EmergencyStatus.Test = {
+  TEST_UNKNOWN: 0,
+  NO_TEST: 1,
+  FUNCTION_TEST: 2,
+  DURATION_TEST: 3
+};
+
+/**
+ * @enum {number}
+ */
 proto.smartcore.bos.driver.dali.EmergencyStatus.Mode = {
   MODE_UNSPECIFIED: 0,
   REST: 1,
@@ -1579,15 +1589,15 @@ proto.smartcore.bos.driver.dali.EmergencyStatus.prototype.clearActiveModesList =
 
 /**
  * repeated Test pending_tests = 2;
- * @return {!Array<!proto.smartcore.bos.driver.dali.Test>}
+ * @return {!Array<!proto.smartcore.bos.driver.dali.EmergencyStatus.Test>}
  */
 proto.smartcore.bos.driver.dali.EmergencyStatus.prototype.getPendingTestsList = function() {
-  return /** @type {!Array<!proto.smartcore.bos.driver.dali.Test>} */ (jspb.Message.getRepeatedField(this, 2));
+  return /** @type {!Array<!proto.smartcore.bos.driver.dali.EmergencyStatus.Test>} */ (jspb.Message.getRepeatedField(this, 2));
 };
 
 
 /**
- * @param {!Array<!proto.smartcore.bos.driver.dali.Test>} value
+ * @param {!Array<!proto.smartcore.bos.driver.dali.EmergencyStatus.Test>} value
  * @return {!proto.smartcore.bos.driver.dali.EmergencyStatus} returns this
  */
 proto.smartcore.bos.driver.dali.EmergencyStatus.prototype.setPendingTestsList = function(value) {
@@ -1596,7 +1606,7 @@ proto.smartcore.bos.driver.dali.EmergencyStatus.prototype.setPendingTestsList = 
 
 
 /**
- * @param {!proto.smartcore.bos.driver.dali.Test} value
+ * @param {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} value
  * @param {number=} opt_index
  * @return {!proto.smartcore.bos.driver.dali.EmergencyStatus} returns this
  */
@@ -1616,15 +1626,15 @@ proto.smartcore.bos.driver.dali.EmergencyStatus.prototype.clearPendingTestsList 
 
 /**
  * repeated Test overdue_tests = 3;
- * @return {!Array<!proto.smartcore.bos.driver.dali.Test>}
+ * @return {!Array<!proto.smartcore.bos.driver.dali.EmergencyStatus.Test>}
  */
 proto.smartcore.bos.driver.dali.EmergencyStatus.prototype.getOverdueTestsList = function() {
-  return /** @type {!Array<!proto.smartcore.bos.driver.dali.Test>} */ (jspb.Message.getRepeatedField(this, 3));
+  return /** @type {!Array<!proto.smartcore.bos.driver.dali.EmergencyStatus.Test>} */ (jspb.Message.getRepeatedField(this, 3));
 };
 
 
 /**
- * @param {!Array<!proto.smartcore.bos.driver.dali.Test>} value
+ * @param {!Array<!proto.smartcore.bos.driver.dali.EmergencyStatus.Test>} value
  * @return {!proto.smartcore.bos.driver.dali.EmergencyStatus} returns this
  */
 proto.smartcore.bos.driver.dali.EmergencyStatus.prototype.setOverdueTestsList = function(value) {
@@ -1633,7 +1643,7 @@ proto.smartcore.bos.driver.dali.EmergencyStatus.prototype.setOverdueTestsList = 
 
 
 /**
- * @param {!proto.smartcore.bos.driver.dali.Test} value
+ * @param {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} value
  * @param {number=} opt_index
  * @return {!proto.smartcore.bos.driver.dali.EmergencyStatus} returns this
  */
@@ -1653,15 +1663,15 @@ proto.smartcore.bos.driver.dali.EmergencyStatus.prototype.clearOverdueTestsList 
 
 /**
  * repeated Test results_available = 4;
- * @return {!Array<!proto.smartcore.bos.driver.dali.Test>}
+ * @return {!Array<!proto.smartcore.bos.driver.dali.EmergencyStatus.Test>}
  */
 proto.smartcore.bos.driver.dali.EmergencyStatus.prototype.getResultsAvailableList = function() {
-  return /** @type {!Array<!proto.smartcore.bos.driver.dali.Test>} */ (jspb.Message.getRepeatedField(this, 4));
+  return /** @type {!Array<!proto.smartcore.bos.driver.dali.EmergencyStatus.Test>} */ (jspb.Message.getRepeatedField(this, 4));
 };
 
 
 /**
- * @param {!Array<!proto.smartcore.bos.driver.dali.Test>} value
+ * @param {!Array<!proto.smartcore.bos.driver.dali.EmergencyStatus.Test>} value
  * @return {!proto.smartcore.bos.driver.dali.EmergencyStatus} returns this
  */
 proto.smartcore.bos.driver.dali.EmergencyStatus.prototype.setResultsAvailableList = function(value) {
@@ -1670,7 +1680,7 @@ proto.smartcore.bos.driver.dali.EmergencyStatus.prototype.setResultsAvailableLis
 
 
 /**
- * @param {!proto.smartcore.bos.driver.dali.Test} value
+ * @param {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} value
  * @param {number=} opt_index
  * @return {!proto.smartcore.bos.driver.dali.EmergencyStatus} returns this
  */
@@ -2512,7 +2522,7 @@ proto.smartcore.bos.driver.dali.StartTestRequest.deserializeBinaryFromReader = f
       msg.setName(value);
       break;
     case 2:
-      var value = /** @type {!proto.smartcore.bos.driver.dali.Test} */ (reader.readEnum());
+      var value = /** @type {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} */ (reader.readEnum());
       msg.setTest(value);
       break;
     default:
@@ -2580,16 +2590,16 @@ proto.smartcore.bos.driver.dali.StartTestRequest.prototype.setName = function(va
 
 
 /**
- * optional Test test = 2;
- * @return {!proto.smartcore.bos.driver.dali.Test}
+ * optional EmergencyStatus.Test test = 2;
+ * @return {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test}
  */
 proto.smartcore.bos.driver.dali.StartTestRequest.prototype.getTest = function() {
-  return /** @type {!proto.smartcore.bos.driver.dali.Test} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+  return /** @type {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
 };
 
 
 /**
- * @param {!proto.smartcore.bos.driver.dali.Test} value
+ * @param {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} value
  * @return {!proto.smartcore.bos.driver.dali.StartTestRequest} returns this
  */
 proto.smartcore.bos.driver.dali.StartTestRequest.prototype.setTest = function(value) {
@@ -3005,7 +3015,7 @@ proto.smartcore.bos.driver.dali.UpdateTestIntervalRequest.deserializeBinaryFromR
       msg.setName(value);
       break;
     case 2:
-      var value = /** @type {!proto.smartcore.bos.driver.dali.Test} */ (reader.readEnum());
+      var value = /** @type {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} */ (reader.readEnum());
       msg.setTest(value);
       break;
     case 3:
@@ -3086,16 +3096,16 @@ proto.smartcore.bos.driver.dali.UpdateTestIntervalRequest.prototype.setName = fu
 
 
 /**
- * optional Test test = 2;
- * @return {!proto.smartcore.bos.driver.dali.Test}
+ * optional EmergencyStatus.Test test = 2;
+ * @return {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test}
  */
 proto.smartcore.bos.driver.dali.UpdateTestIntervalRequest.prototype.getTest = function() {
-  return /** @type {!proto.smartcore.bos.driver.dali.Test} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+  return /** @type {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
 };
 
 
 /**
- * @param {!proto.smartcore.bos.driver.dali.Test} value
+ * @param {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} value
  * @return {!proto.smartcore.bos.driver.dali.UpdateTestIntervalRequest} returns this
  */
 proto.smartcore.bos.driver.dali.UpdateTestIntervalRequest.prototype.setTest = function(value) {
@@ -3364,7 +3374,7 @@ proto.smartcore.bos.driver.dali.TestResult.deserializeBinaryFromReader = functio
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {!proto.smartcore.bos.driver.dali.Test} */ (reader.readEnum());
+      var value = /** @type {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} */ (reader.readEnum());
       msg.setTest(value);
       break;
     case 4:
@@ -3442,16 +3452,16 @@ proto.smartcore.bos.driver.dali.TestResult.serializeBinaryToWriter = function(me
 
 
 /**
- * optional Test test = 1;
- * @return {!proto.smartcore.bos.driver.dali.Test}
+ * optional EmergencyStatus.Test test = 1;
+ * @return {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test}
  */
 proto.smartcore.bos.driver.dali.TestResult.prototype.getTest = function() {
-  return /** @type {!proto.smartcore.bos.driver.dali.Test} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+  return /** @type {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
 
 /**
- * @param {!proto.smartcore.bos.driver.dali.Test} value
+ * @param {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} value
  * @return {!proto.smartcore.bos.driver.dali.TestResult} returns this
  */
 proto.smartcore.bos.driver.dali.TestResult.prototype.setTest = function(value) {
@@ -3607,7 +3617,7 @@ proto.smartcore.bos.driver.dali.GetTestResultRequest.deserializeBinaryFromReader
       msg.setName(value);
       break;
     case 2:
-      var value = /** @type {!proto.smartcore.bos.driver.dali.Test} */ (reader.readEnum());
+      var value = /** @type {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} */ (reader.readEnum());
       msg.setTest(value);
       break;
     default:
@@ -3675,16 +3685,16 @@ proto.smartcore.bos.driver.dali.GetTestResultRequest.prototype.setName = functio
 
 
 /**
- * optional Test test = 2;
- * @return {!proto.smartcore.bos.driver.dali.Test}
+ * optional EmergencyStatus.Test test = 2;
+ * @return {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test}
  */
 proto.smartcore.bos.driver.dali.GetTestResultRequest.prototype.getTest = function() {
-  return /** @type {!proto.smartcore.bos.driver.dali.Test} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+  return /** @type {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
 };
 
 
 /**
- * @param {!proto.smartcore.bos.driver.dali.Test} value
+ * @param {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} value
  * @return {!proto.smartcore.bos.driver.dali.GetTestResultRequest} returns this
  */
 proto.smartcore.bos.driver.dali.GetTestResultRequest.prototype.setTest = function(value) {
@@ -3768,7 +3778,7 @@ proto.smartcore.bos.driver.dali.DeleteTestResultRequest.deserializeBinaryFromRea
       msg.setName(value);
       break;
     case 2:
-      var value = /** @type {!proto.smartcore.bos.driver.dali.Test} */ (reader.readEnum());
+      var value = /** @type {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} */ (reader.readEnum());
       msg.setTest(value);
       break;
     case 3:
@@ -3847,16 +3857,16 @@ proto.smartcore.bos.driver.dali.DeleteTestResultRequest.prototype.setName = func
 
 
 /**
- * optional Test test = 2;
- * @return {!proto.smartcore.bos.driver.dali.Test}
+ * optional EmergencyStatus.Test test = 2;
+ * @return {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test}
  */
 proto.smartcore.bos.driver.dali.DeleteTestResultRequest.prototype.getTest = function() {
-  return /** @type {!proto.smartcore.bos.driver.dali.Test} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+  return /** @type {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
 };
 
 
 /**
- * @param {!proto.smartcore.bos.driver.dali.Test} value
+ * @param {!proto.smartcore.bos.driver.dali.EmergencyStatus.Test} value
  * @return {!proto.smartcore.bos.driver.dali.DeleteTestResultRequest} returns this
  */
 proto.smartcore.bos.driver.dali.DeleteTestResultRequest.prototype.setTest = function(value) {
@@ -3881,15 +3891,5 @@ proto.smartcore.bos.driver.dali.DeleteTestResultRequest.prototype.setEtag = func
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
-
-/**
- * @enum {number}
- */
-proto.smartcore.bos.driver.dali.Test = {
-  TEST_UNKNOWN: 0,
-  NO_TEST: 1,
-  FUNCTION_TEST: 2,
-  DURATION_TEST: 3
-};
 
 goog.object.extend(exports, proto.smartcore.bos.driver.dali);

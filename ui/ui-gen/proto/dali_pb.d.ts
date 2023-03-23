@@ -119,20 +119,20 @@ export class EmergencyStatus extends jspb.Message {
   clearActiveModesList(): EmergencyStatus;
   addActiveModes(value: EmergencyStatus.Mode, index?: number): EmergencyStatus;
 
-  getPendingTestsList(): Array<Test>;
-  setPendingTestsList(value: Array<Test>): EmergencyStatus;
+  getPendingTestsList(): Array<EmergencyStatus.Test>;
+  setPendingTestsList(value: Array<EmergencyStatus.Test>): EmergencyStatus;
   clearPendingTestsList(): EmergencyStatus;
-  addPendingTests(value: Test, index?: number): EmergencyStatus;
+  addPendingTests(value: EmergencyStatus.Test, index?: number): EmergencyStatus;
 
-  getOverdueTestsList(): Array<Test>;
-  setOverdueTestsList(value: Array<Test>): EmergencyStatus;
+  getOverdueTestsList(): Array<EmergencyStatus.Test>;
+  setOverdueTestsList(value: Array<EmergencyStatus.Test>): EmergencyStatus;
   clearOverdueTestsList(): EmergencyStatus;
-  addOverdueTests(value: Test, index?: number): EmergencyStatus;
+  addOverdueTests(value: EmergencyStatus.Test, index?: number): EmergencyStatus;
 
-  getResultsAvailableList(): Array<Test>;
-  setResultsAvailableList(value: Array<Test>): EmergencyStatus;
+  getResultsAvailableList(): Array<EmergencyStatus.Test>;
+  setResultsAvailableList(value: Array<EmergencyStatus.Test>): EmergencyStatus;
   clearResultsAvailableList(): EmergencyStatus;
-  addResultsAvailable(value: Test, index?: number): EmergencyStatus;
+  addResultsAvailable(value: EmergencyStatus.Test, index?: number): EmergencyStatus;
 
   getInhibitActive(): boolean;
   setInhibitActive(value: boolean): EmergencyStatus;
@@ -159,13 +159,20 @@ export class EmergencyStatus extends jspb.Message {
 export namespace EmergencyStatus {
   export type AsObject = {
     activeModesList: Array<EmergencyStatus.Mode>,
-    pendingTestsList: Array<Test>,
-    overdueTestsList: Array<Test>,
-    resultsAvailableList: Array<Test>,
+    pendingTestsList: Array<EmergencyStatus.Test>,
+    overdueTestsList: Array<EmergencyStatus.Test>,
+    resultsAvailableList: Array<EmergencyStatus.Test>,
     inhibitActive: boolean,
     identificationActive: boolean,
     batteryLevelPercent: number,
     failuresList: Array<EmergencyStatus.Failure>,
+  }
+
+  export enum Test { 
+    TEST_UNKNOWN = 0,
+    NO_TEST = 1,
+    FUNCTION_TEST = 2,
+    DURATION_TEST = 3,
   }
 
   export enum Mode { 
@@ -289,8 +296,8 @@ export class StartTestRequest extends jspb.Message {
   getName(): string;
   setName(value: string): StartTestRequest;
 
-  getTest(): Test;
-  setTest(value: Test): StartTestRequest;
+  getTest(): EmergencyStatus.Test;
+  setTest(value: EmergencyStatus.Test): StartTestRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): StartTestRequest.AsObject;
@@ -303,7 +310,7 @@ export class StartTestRequest extends jspb.Message {
 export namespace StartTestRequest {
   export type AsObject = {
     name: string,
-    test: Test,
+    test: EmergencyStatus.Test,
   }
 }
 
@@ -357,8 +364,8 @@ export class UpdateTestIntervalRequest extends jspb.Message {
   getName(): string;
   setName(value: string): UpdateTestIntervalRequest;
 
-  getTest(): Test;
-  setTest(value: Test): UpdateTestIntervalRequest;
+  getTest(): EmergencyStatus.Test;
+  setTest(value: EmergencyStatus.Test): UpdateTestIntervalRequest;
 
   getInterval(): google_protobuf_duration_pb.Duration | undefined;
   setInterval(value?: google_protobuf_duration_pb.Duration): UpdateTestIntervalRequest;
@@ -376,7 +383,7 @@ export class UpdateTestIntervalRequest extends jspb.Message {
 export namespace UpdateTestIntervalRequest {
   export type AsObject = {
     name: string,
-    test: Test,
+    test: EmergencyStatus.Test,
     interval?: google_protobuf_duration_pb.Duration.AsObject,
   }
 }
@@ -402,8 +409,8 @@ export namespace UpdateTestIntervalResponse {
 }
 
 export class TestResult extends jspb.Message {
-  getTest(): Test;
-  setTest(value: Test): TestResult;
+  getTest(): EmergencyStatus.Test;
+  setTest(value: EmergencyStatus.Test): TestResult;
 
   getPass(): boolean;
   setPass(value: boolean): TestResult;
@@ -426,7 +433,7 @@ export class TestResult extends jspb.Message {
 
 export namespace TestResult {
   export type AsObject = {
-    test: Test,
+    test: EmergencyStatus.Test,
     pass: boolean,
     duration?: google_protobuf_duration_pb.Duration.AsObject,
     etag: string,
@@ -437,8 +444,8 @@ export class GetTestResultRequest extends jspb.Message {
   getName(): string;
   setName(value: string): GetTestResultRequest;
 
-  getTest(): Test;
-  setTest(value: Test): GetTestResultRequest;
+  getTest(): EmergencyStatus.Test;
+  setTest(value: EmergencyStatus.Test): GetTestResultRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetTestResultRequest.AsObject;
@@ -451,7 +458,7 @@ export class GetTestResultRequest extends jspb.Message {
 export namespace GetTestResultRequest {
   export type AsObject = {
     name: string,
-    test: Test,
+    test: EmergencyStatus.Test,
   }
 }
 
@@ -459,8 +466,8 @@ export class DeleteTestResultRequest extends jspb.Message {
   getName(): string;
   setName(value: string): DeleteTestResultRequest;
 
-  getTest(): Test;
-  setTest(value: Test): DeleteTestResultRequest;
+  getTest(): EmergencyStatus.Test;
+  setTest(value: EmergencyStatus.Test): DeleteTestResultRequest;
 
   getEtag(): string;
   setEtag(value: string): DeleteTestResultRequest;
@@ -476,14 +483,8 @@ export class DeleteTestResultRequest extends jspb.Message {
 export namespace DeleteTestResultRequest {
   export type AsObject = {
     name: string,
-    test: Test,
+    test: EmergencyStatus.Test,
     etag: string,
   }
 }
 
-export enum Test { 
-  TEST_UNKNOWN = 0,
-  NO_TEST = 1,
-  FUNCTION_TEST = 2,
-  DURATION_TEST = 3,
-}
