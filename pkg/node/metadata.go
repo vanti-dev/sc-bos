@@ -87,8 +87,8 @@ func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
 	for i := 0; i < 5; i++ {
 		var err error
 		newMd, err = metadataModel.MergeMetadata(md)
-		if isConcurrentUpdateDetectedError(err) {
-			n.Logger.Warn("writing metadata", zap.Error(err), zap.String("name", name))
+		if isConcurrentUpdateDetectedError(err) && i < 4 {
+			n.Logger.Debug("writing metadata, will try again", zap.Int("attempt", i), zap.String("name", name))
 			continue
 		}
 		if err != nil {
@@ -100,8 +100,8 @@ func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
 
 	for i := 0; i < 5; i++ {
 		_, err := n.allMetadata.Update(name, newMd, resource.WithCreateIfAbsent())
-		if isConcurrentUpdateDetectedError(err) {
-			n.Logger.Warn("updating all metadata", zap.Error(err), zap.String("name", name))
+		if isConcurrentUpdateDetectedError(err) && i < 4 {
+			n.Logger.Debug("updating all metadata, will try again", zap.Int("attempt", i), zap.String("name", name))
 			continue
 		}
 		if err != nil {
