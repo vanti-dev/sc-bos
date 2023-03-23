@@ -9,12 +9,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
-	"github.com/vanti-dev/sc-bos/pkg/system"
-	"github.com/vanti-dev/sc-bos/pkg/system/alerts"
-	"github.com/vanti-dev/sc-bos/pkg/system/authn"
-	"github.com/vanti-dev/sc-bos/pkg/system/hub"
-	"github.com/vanti-dev/sc-bos/pkg/system/publications"
-	"github.com/vanti-dev/sc-bos/pkg/system/tenants"
+	"github.com/vanti-dev/sc-bos/pkg/system/allsystems"
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -49,13 +44,7 @@ func loadSystemConfig() (sysconf.Config, error) {
 
 	systemConfig.DriverFactories = map[string]driver.Factory{}
 	systemConfig.AutoFactories = map[string]auto.Factory{}
-	systemConfig.SystemFactories = map[string]system.Factory{
-		"alerts":       alerts.Factory,
-		"authn":        authn.Factory(),
-		"hub":          hub.Factory(),
-		"tenants":      tenants.Factory,
-		"publications": publications.Factory,
-	}
+	systemConfig.SystemFactories = allsystems.Factories()
 
 	err := sysconf.Load(&systemConfig)
 	return systemConfig, err
