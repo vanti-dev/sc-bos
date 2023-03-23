@@ -13,6 +13,7 @@ export default {
   },
   children: [
     {path: 'overview', component: () => import('./OpsHome.vue')},
+    {path: 'emergency-lighting', component: () => import('./emergency-lighting/EmergencyLighting.vue')},
     ...route(notifications)
   ],
   meta: {

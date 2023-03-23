@@ -23,6 +23,18 @@
         {{ alertMetadata.unacknowledgedAlertCount }}
       </v-chip>
     </v-list-item>
+    <v-list-item to="/ops/emergency-lighting">
+      <v-list-item-icon>
+        <v-icon>mdi-alarm-light-outline</v-icon>
+      </v-list-item-icon>
+      <v-list-item-content>
+        <v-list-item-title>Emergency Lighting</v-list-item-title>
+      </v-list-item-content>
+
+      <v-chip class="font-weight-bold text primary" v-if="alertMetadata.unacknowledgedAlertCount">
+        {{ alertMetadata.unacknowledgedAlertCount }}
+      </v-chip>
+    </v-list-item>
   </v-list>
 </template>
 
