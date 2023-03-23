@@ -6,13 +6,14 @@ import (
 
 	"github.com/vanti-dev/sc-bos/pkg/app"
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
-	"github.com/vanti-dev/sc-bos/pkg/auto"
-	"github.com/vanti-dev/sc-bos/pkg/driver"
+	"github.com/vanti-dev/sc-bos/pkg/auto/allautos"
+	"github.com/vanti-dev/sc-bos/pkg/driver/alldrivers"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system/allsystems"
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
-
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/zone/allzones"
 )
 
 func main() {
@@ -31,6 +32,7 @@ func run(ctx context.Context) error {
 	}
 
 	alltraits.AddSupport(controller.Node)
+	historypb.AddSupport(controller.Node)
 
 	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
 
@@ -39,12 +41,11 @@ func run(ctx context.Context) error {
 
 func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig := sysconf.Default()
-	systemConfig.DataDir = ".data/building-controller"
-	systemConfig.AppConfigFile = "building-controller.local.json"
 
-	systemConfig.DriverFactories = map[string]driver.Factory{}
-	systemConfig.AutoFactories = map[string]auto.Factory{}
+	systemConfig.DriverFactories = alldrivers.Factories()
+	systemConfig.AutoFactories = allautos.Factories()
 	systemConfig.SystemFactories = allsystems.Factories()
+	systemConfig.ZoneFactories = allzones.Factories()
 
 	err := sysconf.Load(&systemConfig)
 	return systemConfig, err

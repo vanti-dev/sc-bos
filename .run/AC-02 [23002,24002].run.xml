@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="AC-02 [23002,24002]" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="sc-bos" />
+    <working_directory value="$PROJECT_DIR$" />
+    <parameters value="--insecure-disable-policy --data-dir .data/ac-02 --listen-grpc :23002 --listen-https :24002" />
+    <kind value="PACKAGE" />
+    <package value="github.com/vanti-dev/sc-bos/cmd/bos" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <method v="2" />
+  </configuration>
+</component>
