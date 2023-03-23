@@ -30,6 +30,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/speaker"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
 
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/color"
@@ -161,6 +162,10 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 	color.TraitName: func(s node.Supporter) {
 		r := gen.NewColorApiRouter()
 		s.Support(node.Routing(r), node.Clients(gen.WrapColorApi(r)))
+	},
+	emergencylight.TraitName: func(s node.Supporter) {
+		// We don't do anything here, there is no trait that this supports exclusively.
+		// Manually expose the DaliApi on the node if you need this functionality.
 	},
 	meter.TraitName: func(s node.Supporter) {
 		r := gen.NewMeterApiRouter()
