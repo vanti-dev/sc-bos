@@ -36,3 +36,9 @@ type Services struct {
 type Factory interface {
 	New(services Services) service.Lifecycle
 }
+
+type FactoryFunc func(services Services) service.Lifecycle
+
+func (f FactoryFunc) New(services Services) service.Lifecycle {
+	return f(services)
+}
