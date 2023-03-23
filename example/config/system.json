@@ -1,0 +1,50 @@
+{
+  "name": "BOS",
+  "systems": {
+    "alerts": {
+      "disabled": true,
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": "./.data/secrets/postgres-password"
+      }
+    },
+    "authn": {
+      "disabled": true,
+      "user": {
+        "fileAccounts": true,
+        "keycloakAccounts": {
+          "url": "http://localhost:8888",
+          "realm": "smart-core"
+        }
+      },
+      "system": {
+        "tenantAccounts": true
+      }
+    },
+    "hub": {
+      "disabled": true,
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": "./.data/secrets/postgres-password"
+      }
+    },
+    "publications": {
+      "disabled": true,
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": "./.data/secrets/postgres-password"
+      }
+    },
+    "tenants": {
+      "disabled": true,
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": "./.data/secrets/postgres-password"
+      }
+    }
+  }
+}

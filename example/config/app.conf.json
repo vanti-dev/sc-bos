@@ -1,0 +1,148 @@
+{
+  "name": "test-ac",
+  "drivers": [
+    {
+      "disabled": true,
+      "type": "mock", "name": "Test Devices",
+      "devices": [
+        {
+          "name": "lights/01",
+          "traits": [
+            {"name": "smartcore.traits.Light"},
+            {"name": "smartcore.bos.LightingTest"}
+          ],
+          "membership": {"subsystem": "lighting"},
+          "location": {"title": "L03_013/Meeting Room 1"}
+        },
+        {
+          "name": "lights/02",
+          "traits": [{"name": "smartcore.traits.Light"}],
+          "membership": {"subsystem": "lighting"},
+          "location": {"title": "L03_014/Reception"}
+        },
+        {
+          "name": "lights/03",
+          "traits": [{"name": "smartcore.traits.Light"}],
+          "membership": {"subsystem": "lighting"},
+          "location": {"title": "L03_015/Meeting Room 2"}
+        },
+        {
+          "name": "pir/01",
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "membership": {"subsystem": "lighting"},
+          "location": {"title": "L03_013/Meeting Room 1"}
+        },
+        {
+          "name": "pir/02",
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "membership": {"subsystem": "lighting"},
+          "location": {"title": "L03_013/Meeting Room 1"}
+        },
+        {
+          "name": "pir/03",
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "membership": {"subsystem": "lighting"},
+          "location": {"title": "L03_013/Meeting Room 1"}
+        },
+        {
+          "name": "FCU/01",
+          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "membership": {"subsystem": "hvac"},
+          "location": {
+            "title": "L03_013/Meeting Room 1",
+            "more": {
+              "floor": "L03"
+            }
+          }
+        },
+        {
+          "name": "FCU/02",
+          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "membership": {"subsystem": "hvac"},
+          "location": {
+            "title": "L03_015/Meeting Room 2",
+            "more": {
+              "floor": "L03"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "automation": [
+    {
+      "name": "udmi-test", "type": "udmi",
+      "sources": [
+        "smart-core/doors/reader/1"
+      ],
+      "broker": {
+        "host": "localhost:1883"
+      }
+    },
+    {
+      "disabled": true,
+      "name": "lights-01",
+      "type": "lights",
+      "occupancySensors": [
+        "pir/01",
+        "pir/02",
+        "pir/03"
+      ],
+      "lights": ["lights/01", "lights/02"],
+      "unoccupiedOffDelay": "15s"
+    },
+    {
+      "disabled": true,
+      "name": "collect-occupancy", "type": "history",
+      "source": {"name": "pir/01", "trait": "smartcore.traits.OccupancySensor"},
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": "./.data/area-controller-01/postgres-pass"
+      }
+    }
+  ],
+  "zones": [
+    {
+      "disabled":true,
+      "name": "Floor 3",
+      "type": "area",
+      "lights": ["lights/01", "lights/02", "lights/03"],
+      "hvac": ["FCU/01", "FCU/02"],
+      "occupancySensors": ["pir/01", "pir/02", "pir/03"]
+    },
+    {
+      "disabled": true,
+      "name": "Room 1",
+      "type": "area",
+      "lights": ["lights/01", "lights/03"],
+      "lightGroups": {
+        "speaker": ["lights/01"],
+        "audience": ["lights/02", "lights/03"]
+      },
+      "hvac": ["FCU/01"]
+    },
+    {
+      "disabled": true,
+      "name": "Room 2",
+      "type": "area",
+      "lights": ["lights/01", "lights/03"],
+      "lightGroups": {
+        "speaker": ["lights/01"],
+        "audience": ["lights/02", "lights/03"]
+      },
+      "hvac": ["FCU/01"]
+    },
+    {
+      "disabled": true,
+      "name": "Office",
+      "type": "area",
+      "lights": ["lights/01", "lights/03"],
+      "lightGroups": {
+        "speaker": ["lights/01"],
+        "audience": ["lights/02", "lights/03"]
+      },
+      "hvac": ["FCU/01"]
+    }
+  ]
+}
