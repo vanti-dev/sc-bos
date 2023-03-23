@@ -1,4 +1,4 @@
-package proxy
+package alltraits
 
 import (
 	"google.golang.org/grpc"
@@ -12,10 +12,10 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 )
 
-// newApiClientForTrait returns the *ApiClient implementation for the named trait.
+// APIClient returns the {trait}ApiClient implementation for the named trait.
 // For example passing trait.OnOff would return traits.NewOnOffApiClient.
 // Returns nil if the trait is not known.
-func newApiClientForTrait(conn *grpc.ClientConn, t trait.Name) any {
+func APIClient(conn *grpc.ClientConn, t trait.Name) any {
 	// todo: I feel this should really live in sc-golang somewhere
 
 	switch t {

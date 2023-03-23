@@ -17,6 +17,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/proxy/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
@@ -155,7 +156,7 @@ func (p *proxy) announceChange(announced announcedTraits, change *traits.PullChi
 	needAnnouncing := announced.updateChild(change.OldValue, change.NewValue)
 	childName := change.GetNewValue().GetName() // nil safe way to get the name
 	for _, tn := range needAnnouncing {
-		client := newApiClientForTrait(p.conn, tn)
+		client := alltraits.APIClient(p.conn, tn)
 		if client == nil {
 			p.logger.Warn(fmt.Sprintf("remote child implements unknown trait %s", tn))
 			continue
