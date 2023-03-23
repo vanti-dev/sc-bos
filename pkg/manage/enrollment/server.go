@@ -403,7 +403,7 @@ func (es *Server) Enrollments(ctx context.Context) <-chan Enrollment {
 // ManagerAddress returns a chan that emits the manager address whenever it changes.
 // Cancel the given context to stop listening for changes.
 func (es *Server) ManagerAddress(ctx context.Context) <-chan string {
-	changes := es.enrollmentChanged.Listen(ctx)
+	changes := es.Enrollments(ctx)
 	// send the initial data right away
 	out := make(chan string)
 	go func() {
