@@ -21,6 +21,10 @@ grpc.web = require('grpc-web');
 
 
 var traits_metadata_pb = require('@smart-core-os/sc-api-grpc-web/traits/metadata_pb.js')
+
+var types_change_pb = require('@smart-core-os/sc-api-grpc-web/types/change_pb.js')
+
+var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js')
 const proto = {};
 proto.smartcore = {};
 proto.smartcore.bos = require('./hub_pb.js');
@@ -196,6 +200,62 @@ proto.smartcore.bos.HubApiPromiseClient.prototype.listHubNodes =
       request,
       metadata || {},
       methodDescriptor_HubApi_ListHubNodes);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.PullHubNodesRequest,
+ *   !proto.smartcore.bos.PullHubNodesResponse>}
+ */
+const methodDescriptor_HubApi_PullHubNodes = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.HubApi/PullHubNodes',
+  grpc.web.MethodType.SERVER_STREAMING,
+  proto.smartcore.bos.PullHubNodesRequest,
+  proto.smartcore.bos.PullHubNodesResponse,
+  /**
+   * @param {!proto.smartcore.bos.PullHubNodesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.PullHubNodesResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.PullHubNodesRequest} request The request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullHubNodesResponse>}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.HubApiClient.prototype.pullHubNodes =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/smartcore.bos.HubApi/PullHubNodes',
+      request,
+      metadata || {},
+      methodDescriptor_HubApi_PullHubNodes);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.PullHubNodesRequest} request The request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullHubNodesResponse>}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.HubApiPromiseClient.prototype.pullHubNodes =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/smartcore.bos.HubApi/PullHubNodes',
+      request,
+      metadata || {},
+      methodDescriptor_HubApi_PullHubNodes);
 };
 
 

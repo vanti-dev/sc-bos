@@ -69,6 +69,27 @@ func (s *Server) ListHubNodes(ctx context.Context, request *gen.ListHubNodesRequ
 	return c.ListHubNodes(ctx, request)
 }
 
+func (s *Server) PullHubNodes(request *gen.PullHubNodesRequest, server gen.HubApi_PullHubNodesServer) error {
+	c, err := s.client()
+	if err != nil {
+		return err
+	}
+	stream, err := c.PullHubNodes(server.Context(), request)
+	if err != nil {
+		return err
+	}
+	for {
+		msg, err := stream.Recv()
+		if err != nil {
+			return err
+		}
+		err = server.Send(msg)
+		if err != nil {
+			return err
+		}
+	}
+}
+
 func (s *Server) InspectHubNode(ctx context.Context, request *gen.InspectHubNodeRequest) (*gen.HubNodeInspection, error) {
 	c, err := s.client()
 	if err != nil {

@@ -1,6 +1,8 @@
 import * as jspb from 'google-protobuf'
 
 import * as traits_metadata_pb from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb';
+import * as types_change_pb from '@smart-core-os/sc-api-grpc-web/types/change_pb';
+import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
 
 
 export class HubNode extends jspb.Message {
@@ -149,6 +151,81 @@ export namespace ListHubNodesResponse {
   export type AsObject = {
     nodesList: Array<HubNode.AsObject>,
   }
+}
+
+export class PullHubNodesRequest extends jspb.Message {
+  getUpdatesOnly(): boolean;
+  setUpdatesOnly(value: boolean): PullHubNodesRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PullHubNodesRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: PullHubNodesRequest): PullHubNodesRequest.AsObject;
+  static serializeBinaryToWriter(message: PullHubNodesRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullHubNodesRequest;
+  static deserializeBinaryFromReader(message: PullHubNodesRequest, reader: jspb.BinaryReader): PullHubNodesRequest;
+}
+
+export namespace PullHubNodesRequest {
+  export type AsObject = {
+    updatesOnly: boolean,
+  }
+}
+
+export class PullHubNodesResponse extends jspb.Message {
+  getChangesList(): Array<PullHubNodesResponse.Change>;
+  setChangesList(value: Array<PullHubNodesResponse.Change>): PullHubNodesResponse;
+  clearChangesList(): PullHubNodesResponse;
+  addChanges(value?: PullHubNodesResponse.Change, index?: number): PullHubNodesResponse.Change;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PullHubNodesResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: PullHubNodesResponse): PullHubNodesResponse.AsObject;
+  static serializeBinaryToWriter(message: PullHubNodesResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullHubNodesResponse;
+  static deserializeBinaryFromReader(message: PullHubNodesResponse, reader: jspb.BinaryReader): PullHubNodesResponse;
+}
+
+export namespace PullHubNodesResponse {
+  export type AsObject = {
+    changesList: Array<PullHubNodesResponse.Change.AsObject>,
+  }
+
+  export class Change extends jspb.Message {
+    getType(): types_change_pb.ChangeType;
+    setType(value: types_change_pb.ChangeType): Change;
+
+    getNewValue(): HubNode | undefined;
+    setNewValue(value?: HubNode): Change;
+    hasNewValue(): boolean;
+    clearNewValue(): Change;
+
+    getOldValue(): HubNode | undefined;
+    setOldValue(value?: HubNode): Change;
+    hasOldValue(): boolean;
+    clearOldValue(): Change;
+
+    getChangeTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setChangeTime(value?: google_protobuf_timestamp_pb.Timestamp): Change;
+    hasChangeTime(): boolean;
+    clearChangeTime(): Change;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Change.AsObject;
+    static toObject(includeInstance: boolean, msg: Change): Change.AsObject;
+    static serializeBinaryToWriter(message: Change, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Change;
+    static deserializeBinaryFromReader(message: Change, reader: jspb.BinaryReader): Change;
+  }
+
+  export namespace Change {
+    export type AsObject = {
+      type: types_change_pb.ChangeType,
+      newValue?: HubNode.AsObject,
+      oldValue?: HubNode.AsObject,
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    }
+  }
+
 }
 
 export class InspectHubNodeRequest extends jspb.Message {

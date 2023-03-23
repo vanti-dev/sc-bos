@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type HubApiClient interface {
 	GetHubNode(ctx context.Context, in *GetHubNodeRequest, opts ...grpc.CallOption) (*HubNode, error)
 	ListHubNodes(ctx context.Context, in *ListHubNodesRequest, opts ...grpc.CallOption) (*ListHubNodesResponse, error)
+	PullHubNodes(ctx context.Context, in *PullHubNodesRequest, opts ...grpc.CallOption) (HubApi_PullHubNodesClient, error)
 	// Query the hub node for information that can be used to knowledgeably enroll that node with this hub.
 	// This request will return both the node metadata and public certificates presented by the node.
 	InspectHubNode(ctx context.Context, in *InspectHubNodeRequest, opts ...grpc.CallOption) (*HubNodeInspection, error)
@@ -65,6 +66,38 @@ func (c *hubApiClient) ListHubNodes(ctx context.Context, in *ListHubNodesRequest
 		return nil, err
 	}
 	return out, nil
+}
+
+func (c *hubApiClient) PullHubNodes(ctx context.Context, in *PullHubNodesRequest, opts ...grpc.CallOption) (HubApi_PullHubNodesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &HubApi_ServiceDesc.Streams[0], "/smartcore.bos.HubApi/PullHubNodes", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &hubApiPullHubNodesClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type HubApi_PullHubNodesClient interface {
+	Recv() (*PullHubNodesResponse, error)
+	grpc.ClientStream
+}
+
+type hubApiPullHubNodesClient struct {
+	grpc.ClientStream
+}
+
+func (x *hubApiPullHubNodesClient) Recv() (*PullHubNodesResponse, error) {
+	m := new(PullHubNodesResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *hubApiClient) InspectHubNode(ctx context.Context, in *InspectHubNodeRequest, opts ...grpc.CallOption) (*HubNodeInspection, error) {
@@ -109,6 +142,7 @@ func (c *hubApiClient) TestHubNode(ctx context.Context, in *TestHubNodeRequest, 
 type HubApiServer interface {
 	GetHubNode(context.Context, *GetHubNodeRequest) (*HubNode, error)
 	ListHubNodes(context.Context, *ListHubNodesRequest) (*ListHubNodesResponse, error)
+	PullHubNodes(*PullHubNodesRequest, HubApi_PullHubNodesServer) error
 	// Query the hub node for information that can be used to knowledgeably enroll that node with this hub.
 	// This request will return both the node metadata and public certificates presented by the node.
 	InspectHubNode(context.Context, *InspectHubNodeRequest) (*HubNodeInspection, error)
@@ -136,6 +170,9 @@ func (UnimplementedHubApiServer) GetHubNode(context.Context, *GetHubNodeRequest)
 }
 func (UnimplementedHubApiServer) ListHubNodes(context.Context, *ListHubNodesRequest) (*ListHubNodesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListHubNodes not implemented")
+}
+func (UnimplementedHubApiServer) PullHubNodes(*PullHubNodesRequest, HubApi_PullHubNodesServer) error {
+	return status.Errorf(codes.Unimplemented, "method PullHubNodes not implemented")
 }
 func (UnimplementedHubApiServer) InspectHubNode(context.Context, *InspectHubNodeRequest) (*HubNodeInspection, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InspectHubNode not implemented")
@@ -196,6 +233,27 @@ func _HubApi_ListHubNodes_Handler(srv interface{}, ctx context.Context, dec func
 		return srv.(HubApiServer).ListHubNodes(ctx, req.(*ListHubNodesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
+}
+
+func _HubApi_PullHubNodes_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(PullHubNodesRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(HubApiServer).PullHubNodes(m, &hubApiPullHubNodesServer{stream})
+}
+
+type HubApi_PullHubNodesServer interface {
+	Send(*PullHubNodesResponse) error
+	grpc.ServerStream
+}
+
+type hubApiPullHubNodesServer struct {
+	grpc.ServerStream
+}
+
+func (x *hubApiPullHubNodesServer) Send(m *PullHubNodesResponse) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _HubApi_InspectHubNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -302,6 +360,12 @@ var HubApi_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HubApi_TestHubNode_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "PullHubNodes",
+			Handler:       _HubApi_PullHubNodes_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "hub.proto",
 }

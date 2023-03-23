@@ -4,6 +4,7 @@ package gen
 
 import (
 	context "context"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 	grpc "google.golang.org/grpc"
 )
 
@@ -35,6 +36,37 @@ func (w *hubApiWrapper) GetHubNode(ctx context.Context, req *GetHubNodeRequest, 
 
 func (w *hubApiWrapper) ListHubNodes(ctx context.Context, req *ListHubNodesRequest, _ ...grpc.CallOption) (*ListHubNodesResponse, error) {
 	return w.server.ListHubNodes(ctx, req)
+}
+
+func (w *hubApiWrapper) PullHubNodes(ctx context.Context, in *PullHubNodesRequest, opts ...grpc.CallOption) (HubApi_PullHubNodesClient, error) {
+	stream := wrap.NewClientServerStream(ctx)
+	server := &pullHubNodesHubApiServerWrapper{stream.Server()}
+	client := &pullHubNodesHubApiClientWrapper{stream.Client()}
+	go func() {
+		err := w.server.PullHubNodes(in, server)
+		stream.Close(err)
+	}()
+	return client, nil
+}
+
+type pullHubNodesHubApiClientWrapper struct {
+	grpc.ClientStream
+}
+
+func (w *pullHubNodesHubApiClientWrapper) Recv() (*PullHubNodesResponse, error) {
+	m := new(PullHubNodesResponse)
+	if err := w.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+type pullHubNodesHubApiServerWrapper struct {
+	grpc.ServerStream
+}
+
+func (s *pullHubNodesHubApiServerWrapper) Send(response *PullHubNodesResponse) error {
+	return s.ServerStream.SendMsg(response)
 }
 
 func (w *hubApiWrapper) InspectHubNode(ctx context.Context, req *InspectHubNodeRequest, _ ...grpc.CallOption) (*HubNodeInspection, error) {

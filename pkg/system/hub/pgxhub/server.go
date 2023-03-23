@@ -14,10 +14,13 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
+	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/system/hub/remote"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -61,6 +64,8 @@ type Server struct {
 	gen.UnimplementedHubApiServer
 	logger *zap.Logger
 	pool   *pgxpool.Pool
+
+	dbChanges minibus.Bus[*gen.PullHubNodesResponse_Change]
 
 	ManagerName   string
 	ManagerAddr   string
@@ -139,6 +144,13 @@ func (n *Server) EnrollHubNode(ctx context.Context, request *gen.EnrollHubNodeRe
 		logger.Warn("pool.InsertEnrollment failed", zap.Error(err))
 		return nil, status.Error(codes.Aborted, "failed to save the enrollment, no changes have been made")
 	}
+
+	go n.dbChanges.Send(context.Background(), &gen.PullHubNodesResponse_Change{
+		NewValue:   nodeReg,
+		ChangeTime: timestamppb.Now(),
+		Type:       types.ChangeType_ADD,
+	})
+
 	return nodeReg, nil
 }
 
@@ -178,6 +190,39 @@ func (n *Server) ListHubNodes(ctx context.Context, request *gen.ListHubNodesRequ
 	}
 
 	return &gen.ListHubNodesResponse{Nodes: registrations}, nil
+}
+
+func (n *Server) PullHubNodes(request *gen.PullHubNodesRequest, server gen.HubApi_PullHubNodesServer) error {
+	// subscribe before we list from the db.
+	// There's still a race here as db access isn't guarded by the same locks as dbChanges is, sorry future dev
+	events := n.dbChanges.Listen(server.Context())
+
+	if !request.UpdatesOnly {
+		nodes, err := n.ListHubNodes(server.Context(), &gen.ListHubNodesRequest{})
+		if err != nil {
+			return err
+		}
+		for _, node := range nodes.Nodes {
+			err := server.Send(&gen.PullHubNodesResponse{Changes: []*gen.PullHubNodesResponse_Change{
+				{
+					Type:       types.ChangeType_ADD,
+					ChangeTime: timestamppb.Now(),
+					NewValue:   node,
+				},
+			}})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	for event := range events {
+		err := server.Send(&gen.PullHubNodesResponse{Changes: []*gen.PullHubNodesResponse_Change{event}})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (n *Server) InspectHubNode(ctx context.Context, request *gen.InspectHubNodeRequest) (*gen.HubNodeInspection, error) {
@@ -220,6 +265,19 @@ func (n *Server) RenewHubNode(ctx context.Context, request *gen.RenewHubNodeRequ
 			zap.Error(err))
 		return nil, status.Errorf(codes.DataLoss, "renew failed, unable to rollback - the system is in a corrupt state, manual intervention may be required")
 	}
+
+	newNode := &gen.HubNode{
+		Address:     en.TargetAddress,
+		Name:        en.TargetName,
+		Description: reg.Description,
+	}
+	go n.dbChanges.Send(context.Background(), &gen.PullHubNodesResponse_Change{
+		OldValue:   reg,
+		NewValue:   newNode,
+		ChangeTime: timestamppb.Now(),
+		Type:       types.ChangeType_UPDATE,
+	})
+
 	return reg, nil
 }
 
