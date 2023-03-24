@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"errors"
 	"fmt"
 	"net"
@@ -128,8 +130,17 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	// selfSignedSource creates a self signed certificate.
 	// The certificates public key will be paired with and signed by `key`.
+	ssCommonName := rootNode.Name()
+	if ssCommonName == "" {
+		ssCommonName = "localhost"
+	}
 	selfSignedSource := pki.CacheSource(
-		pki.SelfSignedSource(key, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()),
+		pki.SelfSignedSourceT(key, &x509.Certificate{
+			Subject:               pkix.Name{CommonName: ssCommonName, Organization: []string{"Smart Core BOS"}},
+			KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
+			ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
+			BasicConstraintsValid: true,
+		}, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()),
 		expire.AfterProgress(0.5),
 		pki.WithFSCache(filepath.Join(config.DataDir, "grpc-self-signed.cert.pem"), "", key),
 	)
