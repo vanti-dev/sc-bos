@@ -151,9 +151,10 @@ func newTargetCertificate(certs []*x509.Certificate, enrollment *gen.Enrollment)
 		Subject:     subject,
 		KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-		URIs: []*url.URL{{
-			Scheme: "smart-core",
-			Opaque: enrollment.TargetName,
-		}},
+		// Warning: Adding this URI SAN stops the cert from working in curl (at least)
+		// URIs: []*url.URL{{
+		// 	Scheme: "smart-core",
+		// 	Opaque: enrollment.TargetName,
+		// }},
 	}
 }
