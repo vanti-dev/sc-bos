@@ -7,7 +7,18 @@
     </v-card-title>
     <v-data-table
         :headers="headers"
-        :items="lightHealth">
+        :items="lightHealth"
+        :loading="lightHealthTracker.loading"
+        show-select
+        v-model="selectedLights"
+        item-key="name">
+      <template #top>
+        <span v-if="selectedLights.length > 0">
+          <v-btn color="accent darken-1" class="ml-4" @click="functionTest">Function Test</v-btn>
+          <v-btn color="accent darken-1" class="ml-4" @click="durationTest">Duration Test</v-btn>
+          <span class="pl-4">{{ selectedLights.length }} light{{ selectedLights.length === 1 ? '':'s' }} selected</span>
+        </span>
+      </template>
       <template #item.faultsList="{value}">
         <span class="text-title-bold success--text text--lighten-3" v-if="value.length === 0">OK</span>
         <span class="text-title-bold error--text text--lighten-1" v-else>
@@ -20,16 +31,19 @@
 </template>
 
 <script setup>
-import {faultToString, getReportCSV, listLightHealth} from '@/api/sc/traits/lighting-test';
-import {computed, onMounted, reactive} from 'vue';
+import {faultToString, getReportCSV, listLightHealth, runTest} from '@/api/sc/traits/lighting-test';
+import {computed, onMounted, reactive, ref} from 'vue';
 import {newActionTracker} from '@/api/resource';
 import ContentCard from '@/components/ContentCard.vue';
+import {EmergencyStatus} from '@sc-bos/ui-gen/proto/dali_pb';
 
 const headers = [
   {text: 'Name', value: 'name'},
-  {text: 'Status', value: 'faultsList'},
-  {text: 'Updated', value: 'updateTime'}
+  {text: 'Status', value: 'faultsList'}
+  // {text: 'Updated', value: 'updateTime'}
 ];
+
+const selectedLights = ref([]);
 
 const csvTracker = reactive(
     /** @type {ActionTracker<ReportCSV.AsObject>} */ newActionTracker()
@@ -53,7 +67,8 @@ function refreshLightHealth() {
 
 /**
  *
- * @param seconds
+ * @param {number} seconds
+ * @return {string}
  */
 function parseDate(seconds) {
   const d = new Date(seconds*1000);
@@ -73,6 +88,36 @@ async function downloadCSV() {
   anchor.target = '_blank';
   anchor.download = 'emergency-lighting-report.csv';
   anchor.click();
+}
+
+/**
+ * @return {Promise<void>}
+ */
+function durationTest() {
+  return doTest(EmergencyStatus.Test.DURATION_TEST);
+}
+
+/**
+ * @return {Promise<void>}
+ */
+function functionTest() {
+  return doTest(EmergencyStatus.Test.FUNCTION_TEST);
+}
+
+/**
+ *
+ * @param {EmergencyStatus.Test} type
+ */
+async function doTest(type) {
+  const lightingTests = selectedLights.value.map(light => {
+    const req = {
+      name: light.name,
+      test: type
+    };
+    return runTest(req);
+  });
+  await Promise.all(lightingTests).catch(err => console.error('Error running test: ', err));
+  selectedLights.value = [];
 }
 
 </script>
