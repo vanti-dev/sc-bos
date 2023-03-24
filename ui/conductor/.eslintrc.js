@@ -8,5 +8,6 @@ module.exports = {
     'vue/no-v-model-argument': 0,
     // allow errors and warnings to console
     'no-console': ['warn', {allow: ['warn', 'error']}]
-  }
+  },
+  'ignorePatterns': ['**/dist/*']
 };
