@@ -37,7 +37,7 @@ func (v VersionInfo) ServeHTTP(w http.ResponseWriter, request *http.Request) {
 			return
 		}
 		enc.Encode(v.BuildInfo)
-	case "text/plain":
+	case "text/plain", "*/*", "text/*":
 		w.Header().Set("Content-Type", mediaType)
 		if v.BuildInfo == nil {
 			fmt.Fprintf(w, "Version Unknown\n")
@@ -46,6 +46,6 @@ func (v VersionInfo) ServeHTTP(w http.ResponseWriter, request *http.Request) {
 
 		fmt.Fprintln(w, v.BuildInfo)
 	default:
-		http.Error(w, "unsupported media type", http.StatusUnsupportedMediaType)
+		http.Error(w, fmt.Sprintf("unsupported media type: %v", mediaType), http.StatusUnsupportedMediaType)
 	}
 }
