@@ -4,9 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"crypto/x509/pkix"
 	"errors"
-	"net/url"
 	"time"
 
 	"google.golang.org/grpc"
@@ -122,7 +120,7 @@ func Renew(ctx context.Context, enrollment *gen.Enrollment, authority pki.Source
 
 	enrollment.RootCas = pki.EncodeCertificates(roots)
 
-	certTemplate := newTargetCertificate(enrollment)
+	certTemplate := newTargetCertificate(peerCerts, enrollment)
 	enrollment.Certificate, err = pki.CreateCertificateChain(authorityCert, certTemplate, peerPublicKey,
 		pki.WithAuthority(enrollment.TargetAddress),
 	)
@@ -141,9 +139,16 @@ func Renew(ctx context.Context, enrollment *gen.Enrollment, authority pki.Source
 	return enrollment, nil
 }
 
-func newTargetCertificate(enrollment *gen.Enrollment) *x509.Certificate {
+func newTargetCertificate(certs []*x509.Certificate, enrollment *gen.Enrollment) *x509.Certificate {
+	cert := certs[0]
+	cn := enrollment.TargetName
+	if cn == "" {
+		cn = cert.Subject.CommonName
+	}
+	subject := cert.Subject
+	subject.CommonName = cn
 	return &x509.Certificate{
-		Subject:     pkix.Name{CommonName: enrollment.TargetName},
+		Subject:     subject,
 		KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		URIs: []*url.URL{{
