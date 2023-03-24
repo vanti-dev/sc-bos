@@ -173,13 +173,6 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	manager := node.DialChan(ctx, enrollServer.ManagerAddress(ctx),
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsGRPCClientConfig)))
 
-	mux := http.NewServeMux()
-	for _, site := range config.StaticHosting {
-		handler := http2.NewStaticHandler(site.FilePath)
-		mux.Handle(site.Path, http.StripPrefix(site.Path, handler))
-		logger.Info("Serving static site", zap.String("path", site.Path), zap.String("filePath", site.FilePath))
-	}
-
 	var grpcOpts []grpc.ServerOption
 	grpcOpts = append(grpcOpts, grpc.Creds(credentials.NewTLS(tlsGRPCServerConfig)))
 
@@ -223,6 +216,15 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	grpcWebServer := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
 		return true
 	}))
+
+	// HTTP endpoint setup
+	mux := http.NewServeMux()
+	// Static site hosting
+	for _, site := range config.StaticHosting {
+		handler := http2.NewStaticHandler(site.FilePath)
+		mux.Handle(site.Path, http.StripPrefix(site.Path, handler))
+		logger.Info("Serving static site", zap.String("path", site.Path), zap.String("filePath", site.FilePath))
+	}
 
 	// configure CORS setup
 	co := cors.New(cors.Options{
