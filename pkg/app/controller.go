@@ -240,6 +240,8 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	// Well known APIs
 	// Allow getting/updating the log level at run time
 	mux.Handle("/__/log/level", config.Logger.Level)
+	// Get version information about this binary
+	mux.Handle("/__/version", Version)
 
 	// configure CORS setup
 	co := cors.New(cors.Options{
