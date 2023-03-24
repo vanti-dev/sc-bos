@@ -1,0 +1,22 @@
+{
+  "features": {
+    "auth": {
+      "users": false,
+      "third-party": true
+    },
+    "devices": {
+      "*": true
+    },
+    "ops": {
+      "overview": true,
+      "emergency-lighting": true,
+      "notifications": true
+    },
+    "automations": {
+      "*": true
+    },
+    "site": {
+      "zone": true
+    }
+  }
+}

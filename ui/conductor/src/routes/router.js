@@ -6,6 +6,7 @@ import site from '@/routes/site/route.js';
 import {route, routeTitle} from '@/util/router.js';
 import Vue, {nextTick} from 'vue';
 import VueRouter from 'vue-router';
+import {featureEnabled} from '@/routes/config';
 
 Vue.use(VueRouter);
 
@@ -32,6 +33,10 @@ if (window) {
     const title = nt ? `${nt} - Smart Core` : `Smart Core`;
     nextTick(() => window.document.title = title);
   });
+  router.beforeEach(async (to, from, next) => {
+    next(await featureEnabled(to.path));
+  });
 }
+
 
 export default router;
