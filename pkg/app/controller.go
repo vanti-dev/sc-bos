@@ -237,6 +237,10 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		logger.Info("Serving static site", zap.String("path", site.Path), zap.String("filePath", site.FilePath))
 	}
 
+	// Well known APIs
+	// Allow getting/updating the log level at run time
+	mux.Handle("/__/log/level", config.Logger.Level)
+
 	// configure CORS setup
 	co := cors.New(cors.Options{
 		AllowedOrigins:   config.Cors.CorsOrigins,
