@@ -38,7 +38,7 @@ func (v VersionInfo) ServeHTTP(w http.ResponseWriter, request *http.Request) {
 		}
 		enc.Encode(v.BuildInfo)
 	case "text/plain", "*/*", "text/*":
-		w.Header().Set("Content-Type", mediaType)
+		w.Header().Set("Content-Type", "text/plain")
 		if v.BuildInfo == nil {
 			fmt.Fprintf(w, "Version Unknown\n")
 			return
