@@ -69,7 +69,10 @@ func Enroll(ctx context.Context, enrollment *gen.Enrollment, authority pki.Sourc
 
 	enrollment.RootCas = pki.EncodeCertificates(roots)
 
-	certTemplate := newTargetCertificate(enrollment)
+	if enrollment.TargetName == "" {
+		enrollment.TargetName = peerCerts[0].Subject.CommonName
+	}
+	certTemplate := newTargetCertificate(peerCerts, enrollment)
 	enrollment.Certificate, err = pki.CreateCertificateChain(authorityCert, certTemplate, peerPublicKey,
 		pki.WithAuthority(enrollment.TargetAddress),
 	)
