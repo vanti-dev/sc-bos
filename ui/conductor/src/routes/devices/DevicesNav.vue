@@ -27,10 +27,7 @@
   </v-list>
 </template>
 
-<script>
-export default {
-  name: 'AdminNav'
-};
+<script setup>
 </script>
 
 <style scoped>
