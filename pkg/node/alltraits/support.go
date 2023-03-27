@@ -72,8 +72,14 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 		s.Support(node.Routing(r), node.Clients(electric.WrapApi(r)))
 	},
 	trait.Emergency: func(s node.Supporter) {
-		r := emergency.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(emergency.WrapApi(r)))
+		{
+			r := emergency.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(emergency.WrapApi(r)))
+		}
+		{
+			r := gen.NewElectricHistoryRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapElectricHistory(r)))
+		}
 	},
 	trait.EnergyStorage: func(s node.Supporter) {
 		r := energystorage.NewApiRouter()
@@ -124,8 +130,14 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 		s.Support(node.Routing(r), node.Clients(motionsensor.WrapApi(r)))
 	},
 	trait.OccupancySensor: func(s node.Supporter) {
-		r := occupancysensor.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(occupancysensor.WrapApi(r)))
+		{
+			r := occupancysensor.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(occupancysensor.WrapApi(r)))
+		}
+		{
+			r := gen.NewOccupancySensorHistoryRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapOccupancySensorHistory(r)))
+		}
 	},
 	trait.OnOff: func(s node.Supporter) {
 		r := onoff.NewApiRouter()
@@ -170,8 +182,14 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 		// Manually expose the DaliApi on the node if you need this functionality.
 	},
 	meter.TraitName: func(s node.Supporter) {
-		r := gen.NewMeterApiRouter()
-		s.Support(node.Routing(r), node.Clients(gen.WrapMeterApi(r)))
+		{
+			r := gen.NewMeterApiRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapMeterApi(r)))
+		}
+		{
+			r := gen.NewMeterHistoryRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapMeterHistory(r)))
+		}
 	},
 	mqttpb.TraitName: func(s node.Supporter) {
 		r := gen.NewMqttServiceRouter()

@@ -9,7 +9,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto/allautos"
 	"github.com/vanti-dev/sc-bos/pkg/driver/alldrivers"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system/allsystems"
 	"github.com/vanti-dev/sc-bos/pkg/testapi"
@@ -32,7 +31,6 @@ func run(ctx context.Context) error {
 	}
 
 	alltraits.AddSupport(controller.Node)
-	historypb.AddSupport(controller.Node)
 
 	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
 
