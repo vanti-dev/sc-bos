@@ -3,6 +3,7 @@ package proxy
 import (
 	"context"
 	"crypto/tls"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -12,6 +13,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/servicepb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
@@ -55,51 +57,121 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	ignore := append([]string{}, s.ignore...)
 	ignore = append(ignore, cfg.Ignore...)
 
-	hubClient := gen.NewHubApiClient(hubConn)
-	go s.retry(ctx, "pullHubNodes", func(ctx context.Context) (task.Next, error) {
-		stream, err := hubClient.PullHubNodes(ctx, &gen.PullHubNodesRequest{})
-		if err != nil {
-			return task.Normal, err
-		}
+	go s.retry(ctx, "announceHubApis", func(ctx context.Context) (task.Next, error) {
+		return s.announceHubApis(ctx, hubConn)
+	})
 
-		knownNodes := make(map[string]context.CancelFunc)
-		for {
-			nodeChanges, err := stream.Recv()
-			if err != nil {
-				return task.ResetBackoff, err
-			}
-
-			for _, change := range nodeChanges.Changes {
-				// todo: this could be more efficient but I'm low on time right now
-				if change.OldValue != nil {
-					if stop, ok := knownNodes[change.OldValue.Address]; ok {
-						stop()
-						delete(knownNodes, change.OldValue.Address)
-					}
-				}
-				if change.NewValue != nil {
-					hubNode := change.NewValue
-					// todo: consider not processing nodes that are also proxies
-					if slices.Contains(hubNode.Address, ignore) {
-						continue
-					}
-					s.logger.Debug("Proxying all devices from node", zap.String("node", hubNode.Address))
-					nodeCtx, stopNode := context.WithCancel(ctx)
-					knownNodes[hubNode.Address] = stopNode
-					nodeConn, err := grpc.DialContext(nodeCtx, hubNode.Address, grpc.WithTransportCredentials(credentials.NewTLS(s.tlsConfig)))
-					if err != nil {
-						return task.Normal, err
-					}
-					go s.retry(nodeCtx, "collectChildren", func(ctx context.Context) (task.Next, error) {
-						return s.announceNodeChildren(ctx, nodeConn)
-					})
-				}
-			}
-		}
+	go s.retry(ctx, "announceNodes", func(ctx context.Context) (task.Next, error) {
+		return s.announceNodes(ctx, hubConn, ignore...)
 	})
 	return nil
 }
 
+// announceHubApis adds any routed apis to this node that should be forwarded on to the hub.
+// After this you should be able to ask this node to, for example, list alerts on the hub.
+func (s *System) announceHubApis(ctx context.Context, hubConn *grpc.ClientConn) (task.Next, error) {
+	// ctx is cancelled when this function returns - i.e. on error
+	// this makes sure we're forgetting any announcements in that case.
+	// The function will be retried if possible.
+	announcer := node.AnnounceContext(ctx, s.announcer)
+
+	// ask the hub what it's name is, and use that for any announcements
+	mdClient := traits.NewMetadataApiClient(hubConn)
+	stream, err := mdClient.PullMetadata(ctx, &traits.PullMetadataRequest{})
+	if err != nil {
+		return task.Normal, err
+	}
+
+	undo := node.NilUndo // called if the hubName changes to un-announce previous apis
+	for {
+		msg, err := stream.Recv()
+		if err != nil {
+			// at least one request worked so try again immediately
+			return task.ResetBackoff, err
+		}
+		if len(msg.Changes) == 0 {
+			continue
+		}
+
+		undo()
+		lastChange := msg.Changes[len(msg.Changes)-1]
+		hubName := lastChange.Metadata.Name
+
+		var undos []node.Undo
+
+		// non-trait routed apis
+		undos = append(undos, announcer.Announce(hubName, node.HasMetadata(lastChange.Metadata), node.HasClient(
+			gen.NewAlertApiClient(hubConn),
+			// gen.NewAlertAdminApiClient(hubConn), // Don't do this, we don't want external control of this
+		)))
+		undos = append(undos, s.announceServiceApi(announcer, hubConn, hubName))
+
+		// hub traits
+		for _, tm := range lastChange.Metadata.Traits {
+			traitName := trait.Name(tm.Name)
+			if traitName == trait.Metadata {
+				continue
+			}
+
+			undos = append(undos, s.announceTrait(announcer, hubConn, hubName, traitName))
+		}
+
+		undo = node.UndoAll(undos...)
+	}
+}
+
+// announceNodes fetches all the hubs enrolled nodes and sets up routed apis on this node that proxy those node apis.
+func (s *System) announceNodes(ctx context.Context, hubConn *grpc.ClientConn, ignore ...string) (task.Next, error) {
+	hubClient := gen.NewHubApiClient(hubConn)
+	stream, err := hubClient.PullHubNodes(ctx, &gen.PullHubNodesRequest{})
+	if err != nil {
+		return task.Normal, err
+	}
+
+	knownNodes := make(map[string]context.CancelFunc)
+	for {
+		nodeChanges, err := stream.Recv()
+		if err != nil {
+			return task.ResetBackoff, err
+		}
+
+		for _, change := range nodeChanges.Changes {
+			// todo: this could be more efficient but I'm low on time right now
+			if change.OldValue != nil {
+				if stop, ok := knownNodes[change.OldValue.Address]; ok {
+					stop()
+					delete(knownNodes, change.OldValue.Address)
+				}
+			}
+			if change.NewValue != nil {
+				hubNode := change.NewValue
+				// todo: consider not processing nodes that are also proxies
+				if slices.Contains(hubNode.Address, ignore) {
+					continue
+				}
+				s.logger.Debug("Proxying node", zap.String("name", hubNode.Name), zap.String("node", hubNode.Address))
+				nodeCtx, stopNode := context.WithCancel(ctx)
+				knownNodes[hubNode.Address] = stopNode
+				nodeConn, err := grpc.DialContext(nodeCtx, hubNode.Address, grpc.WithTransportCredentials(credentials.NewTLS(s.tlsConfig)))
+				if err != nil {
+					return task.Normal, err
+				}
+
+				// proxy any advertised children and child traits
+				go s.retry(nodeCtx, "proxyChildTraits", func(ctx context.Context) (task.Next, error) {
+					return s.announceNodeChildren(ctx, nodeConn)
+				})
+
+				// proxy any non-trait apis that also use routing
+				go s.retry(nodeCtx, "proxyNodeApis", func(ctx context.Context) (task.Next, error) {
+					return s.announceNodeApis(ctx, hubNode, nodeConn)
+				})
+			}
+		}
+	}
+}
+
+// announceNodeChildren discovers and routes all named traits surfaced via nodeConn.
 func (s *System) announceNodeChildren(ctx context.Context, nodeConn *grpc.ClientConn) (task.Next, error) {
 	// ctx is cancelled when this function returns - i.e. on error
 	// this makes sure we're forgetting any announcements in that case.
@@ -144,16 +216,7 @@ func (s *System) announceNodeChildren(ctx context.Context, nodeConn *grpc.Client
 					})
 					continue
 				}
-				traitClient := alltraits.APIClient(nodeConn, traitName)
-				if traitClient == nil {
-					s.logger.Warn("unable to proxy unknown trait on child",
-						zap.String("target", nodeConn.Target()), zap.String("name", child.Name), zap.String("trait", childTrait.Name))
-					continue
-				}
-
-				// todo: we need to better support metadata so our DevicesApi works as expected!
-				undo := announcer.Announce(child.Name, node.HasTrait(traitName, node.WithClients(traitClient)))
-				undos = append(undos, undo)
+				undos = append(undos, s.announceTrait(announcer, nodeConn, child.Name, traitName))
 			}
 
 			if len(undos) == 0 {
@@ -165,6 +228,8 @@ func (s *System) announceNodeChildren(ctx context.Context, nodeConn *grpc.Client
 	}
 }
 
+// announceChildMetadata pulls the metadata from conn (named name) and updates our nodes local cache of this metadata.
+// This makes sure our devices api works locally without having to query all hub nodes.
 func (s *System) announceChildMetadata(ctx context.Context, conn *grpc.ClientConn, name string) (task.Next, error) {
 	mdClient := traits.NewMetadataApiClient(conn)
 	stream, err := mdClient.PullMetadata(ctx, &traits.PullMetadataRequest{Name: name})
@@ -188,6 +253,56 @@ func (s *System) announceChildMetadata(ctx context.Context, conn *grpc.ClientCon
 			lastAnnounce = s.announcer.Announce(name, node.HasMetadata(md))
 		}
 	}
+}
+
+// announceNodeApis announces any non-trait based apis that should be routed to a specific node.
+// If naming conflicts would occur, name conversion will be performed. For example the services api typically routes
+// `drivers`, `automations`, etc which will conflict with each other if we expose them all as is, so we rename to
+// `AC-01/drivers`, `AC-01/automations` instead.
+func (s *System) announceNodeApis(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) (task.Next, error) {
+	// ctx is cancelled when this function returns - i.e. on error
+	// this makes sure we're forgetting any announcements in that case.
+	// The function will be retried if possible.
+	announcer := node.AnnounceContext(ctx, s.announcer)
+
+	// service api does name conversion when proxying
+	// devices on node AC-01 becomes AC-01/devices on this node
+	s.announceServiceApi(announcer, nodeConn, hubNode.Name)
+
+	<-ctx.Done()
+	return task.ResetBackoff, ctx.Err()
+}
+
+func (s *System) announceServiceApi(announcer node.Announcer, conn *grpc.ClientConn, name string) node.Undo {
+	servicesApi := servicepb.RenameApi(gen.NewServicesApiClient(conn), func(n string) string {
+		if strings.HasPrefix(n, name+"/") {
+			return n[len(name+"/"):]
+		}
+		return n
+	})
+	servicesClient := gen.WrapServicesApi(servicesApi)
+	var undos []node.Undo
+	for _, bucket := range []string{"automations", "drivers", "systems", "zones"} {
+		undos = append(undos, announcer.Announce(name+"/"+bucket, node.HasClient(servicesClient)))
+	}
+	return node.UndoAll(undos...)
+}
+
+func (s *System) announceTrait(announcer node.Announcer, nodeConn *grpc.ClientConn, name string, traitName trait.Name) node.Undo {
+	var clients []any
+	if c := alltraits.APIClient(nodeConn, traitName); c != nil {
+		clients = append(clients, c)
+	} else {
+		s.logger.Warn("unable to proxy unknown trait on child",
+			zap.String("target", nodeConn.Target()), zap.String("name", name), zap.Stringer("trait", traitName))
+	}
+	if c := alltraits.HistoryClient(nodeConn, traitName); c != nil {
+		clients = append(clients, c)
+	} else {
+		// traitName doesn't support history, but most of them don't so don't spam the logs
+	}
+
+	return announcer.Announce(name, node.HasTrait(traitName, node.WithClients(clients...)))
 }
 
 func (s *System) retry(ctx context.Context, name string, t task.Task) error {
