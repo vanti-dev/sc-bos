@@ -18,7 +18,7 @@ import (
 // APIClient returns the {trait}ApiClient implementation for the named trait.
 // For example passing trait.OnOff would return traits.NewOnOffApiClient.
 // Returns nil if the trait is not known.
-func APIClient(conn *grpc.ClientConn, t trait.Name) any {
+func APIClient(conn grpc.ClientConnInterface, t trait.Name) any {
 	// todo: I feel this should really live in sc-golang somewhere
 
 	switch t {
@@ -94,4 +94,23 @@ func APIClient(conn *grpc.ClientConn, t trait.Name) any {
 		return gen.NewUdmiServiceClient(conn)
 	}
 	return nil
+}
+
+// HistoryClient returns the {trait}HistoryClient implementation for the named trait.
+// For example passing trait.Meter would return traits.NewMeterHistoryClient.
+// Returns nil if the trait is not known.
+func HistoryClient(conn grpc.ClientConnInterface, t trait.Name) any {
+	switch t {
+	// Smart Core traits
+	case trait.Electric:
+		return gen.NewElectricHistoryClient(conn)
+	case trait.OccupancySensor:
+		return gen.NewOccupancySensorHistoryClient(conn)
+
+		// (not yet) Smart Core traits
+	case meter.TraitName:
+		return gen.NewMeterHistoryClient(conn)
+	default:
+		return nil
+	}
 }
