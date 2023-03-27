@@ -11,8 +11,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export/config"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export/source"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
@@ -23,11 +21,6 @@ type factory struct{}
 
 func (_ factory) New(services auto.Services) service.Lifecycle {
 	return NewMQTTExport(services)
-}
-
-func (_ factory) AddSupport(supporter node.Supporter) {
-	r := gen.NewMqttServiceRouter()
-	supporter.Support(node.Routing(r), node.Clients(gen.WrapMqttService(r)))
 }
 
 func NewMQTTExport(services auto.Services) service.Lifecycle {
