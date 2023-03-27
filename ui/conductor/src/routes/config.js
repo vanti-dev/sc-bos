@@ -39,11 +39,15 @@ const _defaultConfig = {
       'emergency-lighting': false,
       'notifications': true
     },
+    'automations': {
+      '*': true
+    },
     'site': {
       'zone': true
     },
-    'automations': {
-      '*': true
+    'system': {
+      'drivers': true,
+      'features': true
     }
   },
   home: '/devices'

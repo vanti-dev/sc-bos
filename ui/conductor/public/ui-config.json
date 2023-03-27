@@ -17,6 +17,10 @@
     },
     "automations": {
       "*": true
+    },
+    "system": {
+      "drivers": true,
+      "features": true
     }
   },
   "home": "/devices"

@@ -3,6 +3,7 @@ import devices from '@/routes/devices/route.js';
 import ops from '@/routes/ops/route.js';
 import automations from '@/routes/automations/route.js';
 import site from '@/routes/site/route.js';
+import system from '@/routes/system/route.js';
 import {route, routeTitle} from '@/util/router.js';
 import Vue, {nextTick} from 'vue';
 import VueRouter from 'vue-router';
@@ -17,7 +18,8 @@ const router = new VueRouter({
     ...route(devices),
     ...route(ops),
     ...route(automations),
-    ...route(site)
+    ...route(site),
+    ...route(system)
   ]
 });
 
