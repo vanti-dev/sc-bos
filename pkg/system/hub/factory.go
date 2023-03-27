@@ -41,6 +41,7 @@ type factory struct {
 func (f *factory) New(services system.Services) service.Lifecycle {
 	s := &System{
 		holder:          f.server,
+		hubNode:         services.CohortManager,
 		name:            services.Node.Name(),
 		endpoint:        services.GRPCEndpoint,
 		dataDir:         services.DataDir,
@@ -62,7 +63,8 @@ func (f *factory) AddSupport(supporter node.Supporter) {
 type System struct {
 	*service.Service[config.Root]
 
-	holder *hold.Server
+	holder  *hold.Server
+	hubNode node.Remote
 
 	name            string
 	endpoint        string
@@ -82,50 +84,58 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	if cfg.Storage == nil {
 		return errors.New("no storage")
 	}
-	if cfg.Storage.Type != "postgres" {
-		return fmt.Errorf("unsuported storage type %s, want one of [postgres]", cfg.Storage.Type)
-	}
-
-	pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
-	if err != nil {
-		return fmt.Errorf("connect: %w", err)
-	}
-	go func() {
-		<-ctx.Done()
-		pool.Close()
-	}()
-
-	server, err := pgxhub.NewServerFromPool(ctx, pool, pgxhub.WithLogger(s.logger))
-	if err != nil {
-		return fmt.Errorf("init: %w", err)
-	}
-
-	// caSource sources the certs used to sign enrollment requests
-	caSource := s.newCA(cfg)
-	// grpcSource generates certs signed by caSource and is trusted by the cohort this controller manages
-	grpcSource := s.newGRPC(cfg, caSource)
-
-	server.Authority = caSource
-	server.TestTLSConfig = s.clientTLSConfig
-	server.ManagerName = cfg.Name
-	if server.ManagerName == "" {
-		server.ManagerName = s.name
-	}
-	server.ManagerAddr = cfg.Address
-	if server.ManagerAddr == "" {
-		server.ManagerAddr = s.endpoint
-	}
-	if server.ManagerAddr == "" {
-		ipAddr, err := netutil.OutboundAddr()
+	switch cfg.Storage.Type {
+	case config.StorageTypeProxy:
+		conn, err := s.hubNode.Connect(ctx)
 		if err != nil {
 			return err
 		}
-		server.ManagerAddr = ipAddr.String() + ":23557" // guess at the default port
+		s.holder.Fill(gen.NewHubApiClient(conn))
+	case config.StorageTypePostgres:
+		pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		if err != nil {
+			return fmt.Errorf("connect: %w", err)
+		}
+		go func() {
+			<-ctx.Done()
+			pool.Close()
+		}()
+
+		server, err := pgxhub.NewServerFromPool(ctx, pool, pgxhub.WithLogger(s.logger))
+		if err != nil {
+			return fmt.Errorf("init: %w", err)
+		}
+
+		// caSource sources the certs used to sign enrollment requests
+		caSource := s.newCA(cfg)
+		// grpcSource generates certs signed by caSource and is trusted by the cohort this controller manages
+		grpcSource := s.newGRPC(cfg, caSource)
+
+		server.Authority = caSource
+		server.TestTLSConfig = s.clientTLSConfig
+		server.ManagerName = cfg.Name
+		if server.ManagerName == "" {
+			server.ManagerName = s.name
+		}
+		server.ManagerAddr = cfg.Address
+		if server.ManagerAddr == "" {
+			server.ManagerAddr = s.endpoint
+		}
+		if server.ManagerAddr == "" {
+			ipAddr, err := netutil.OutboundAddr()
+			if err != nil {
+				return err
+			}
+			server.ManagerAddr = ipAddr.String() + ":23557" // guess at the default port
+		}
+
+		s.sources = append(s.sources, grpcSource)
+		s.certs.Append(grpcSource)
+		s.holder.Fill(gen.WrapHubApi(server))
+	default:
+		return fmt.Errorf("unsuported storage type %s", cfg.Storage.Type)
 	}
 
-	s.sources = append(s.sources, grpcSource)
-	s.certs.Append(grpcSource)
-	s.holder.Fill(gen.WrapHubApi(server))
 	return nil
 }
 
