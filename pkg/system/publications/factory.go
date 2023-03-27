@@ -47,23 +47,24 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	if cfg.Storage == nil {
 		return errors.New("no storage")
 	}
-	if cfg.Storage.Type != "postgres" {
-		return fmt.Errorf("unsuported storage type %s, want one of [postgres]", cfg.Storage.Type)
-	}
+	switch cfg.Storage.Type {
+	case config.StorageTypePostgres:
+		pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		if err != nil {
+			return fmt.Errorf("connect: %w", err)
+		}
 
-	pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
-	if err != nil {
-		return fmt.Errorf("connect: %w", err)
-	}
+		server, err := pgxpublications.NewServerFromPool(ctx, pool, pgxpublications.WithLogger(s.logger))
+		if err != nil {
+			return fmt.Errorf("init: %w", err)
+		}
 
-	server, err := pgxpublications.NewServerFromPool(ctx, pool, pgxpublications.WithLogger(s.logger))
-	if err != nil {
-		return fmt.Errorf("init: %w", err)
+		// Note, ctx in cancelled each time config is updated (and on stop) because we use MonoApply in NewSystem
+		announcer := node.AnnounceContext(ctx, s.announcer)
+		announcer.Announce(s.name, node.HasTrait(trait.Publication, node.WithClients(publication.WrapApi(server))))
+	default:
+		return fmt.Errorf("unsuported storage type %s", cfg.Storage.Type)
 	}
-
-	// Note, ctx in cancelled each time config is updated (and on stop) because we use MonoApply in NewSystem
-	announcer := node.AnnounceContext(ctx, s.announcer)
-	announcer.Announce(s.name, node.HasTrait(trait.Publication, node.WithClients(publication.WrapApi(server))))
 
 	return nil
 }
