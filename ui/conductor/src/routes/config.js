@@ -67,6 +67,9 @@ export async function featureEnabled(path) {
  * @return {boolean}
  */
 export function checkFeatureEnabled(config, pathSegments) {
+  if (pathSegments.length === 0) {
+    return true;
+  }
   const seg = pathSegments[0];
   if (config.hasOwnProperty(seg)) {
     if (typeof config[seg] == 'object') {

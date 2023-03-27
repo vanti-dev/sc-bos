@@ -13,7 +13,7 @@
     </template>
     <v-card max-width="512">
       <v-list tile three-line subheader class="ma-0" color="neutral lighten-1">
-        <v-list-item v-for="(item, key) in menuItems" :to="item.link" :key="key">
+        <v-list-item v-for="(item, key) in enabledMenuItems" :to="item.link" :key="key">
           <v-list-item-icon>
             <v-icon x-large>{{ item.icon }}</v-icon>
           </v-list-item-icon>
@@ -29,11 +29,12 @@
 
 <script setup>
 import MenuIcon from '@/components/MenuIcon.vue';
-import {ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
+import {featureEnabled} from '@/routes/config';
 
 const showMenu = ref(false);
 
-const menuItems = ref([
+const menuItems = [
   {
     title: 'Auth',
     subtitle: 'Edit user accounts, and create API tokens',
@@ -65,7 +66,16 @@ const menuItems = ref([
     icon: 'mdi-priority-low',
     link: {name: 'automations'}
   }
-]);
+];
+
+// computed props shouldn't return a promise, so instead we're setting this ref based on mounted
+const enabledMenuItems = ref([]);
+onMounted(async () => {
+  // create array of true/false vals for whether each menu item is enabled
+  const isEnabled = await Promise.all(menuItems.map(item => featureEnabled(item.link.name)));
+  // filter menu items based on above list
+  enabledMenuItems.value = menuItems.filter((item, index) => isEnabled[index]);
+});
 
 </script>
 
