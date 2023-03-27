@@ -35,7 +35,8 @@ func (f factory) AddSupport(supporter node.Supporter) {
 
 func NewSystem(services system.Services) *System {
 	s := &System{
-		logger: services.Logger.Named("tenants"),
+		hubNode: services.CohortManager,
+		logger:  services.Logger.Named("tenants"),
 	}
 	s.Service = service.New(s.applyConfig)
 	return s
@@ -43,29 +44,37 @@ func NewSystem(services system.Services) *System {
 
 type System struct {
 	*service.Service[config.Root]
-	logger *zap.Logger
+	hubNode node.Remote
+	logger  *zap.Logger
 }
 
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	if cfg.Storage == nil {
 		return errors.New("no storage")
 	}
-	if cfg.Storage.Type != "postgres" {
-		return fmt.Errorf("unsuported storage type %s, want one of [postgres]", cfg.Storage.Type)
-	}
+	switch cfg.Storage.Type {
+	case config.StorageTypeProxy:
+		conn, err := s.hubNode.Connect(ctx)
+		if err != nil {
+			return err
+		}
+		Factory.server.Fill(gen.NewTenantApiClient(conn))
+	case config.StorageTypePostgres:
+		pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		if err != nil {
+			return fmt.Errorf("connect: %w", err)
+		}
 
-	pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
-	if err != nil {
-		return fmt.Errorf("connect: %w", err)
-	}
+		server, err := pgxtenants.NewServerFromPool(ctx, pool, pgxtenants.WithLogger(s.logger))
+		if err != nil {
+			return fmt.Errorf("init: %w", err)
+		}
 
-	server, err := pgxtenants.NewServerFromPool(ctx, pool, pgxtenants.WithLogger(s.logger))
-	if err != nil {
-		return fmt.Errorf("init: %w", err)
+		// There's only one tenant api, each time we run we make sure to take over control of it.
+		Factory.server.Fill(gen.WrapTenantApi(server))
+	default:
+		return fmt.Errorf("unsuported storage type %s", cfg.Storage.Type)
 	}
-
-	// There's only one tenant api, each time we run we make sure to take over control of it.
-	Factory.server.Fill(gen.WrapTenantApi(server))
 
 	return nil
 }

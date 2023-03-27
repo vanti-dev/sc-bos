@@ -10,7 +10,14 @@ type Root struct {
 	Storage *Storage `json:"storage,omitempty"`
 }
 
+type StorageType string
+
+const (
+	StorageTypePostgres StorageType = "postgres"
+	StorageTypeProxy    StorageType = "proxy"
+)
+
 type Storage struct {
-	Type string `json:"type,omitempty"`
+	Type StorageType `json:"type,omitempty"`
 	pgxutil.ConnectConfig
 }
