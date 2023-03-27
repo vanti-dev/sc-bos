@@ -6,7 +6,7 @@ export default [
     path: '/auth/third-party',
     components: {
       default: SidebarPage,
-      nav: () => import('../AdminNav.vue')
+      nav: () => import('../AuthNav.vue')
     },
     children: [
       {
