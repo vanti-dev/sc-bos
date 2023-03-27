@@ -6,6 +6,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
@@ -86,6 +87,8 @@ func APIClient(conn *grpc.ClientConn, t trait.Name) any {
 		return gen.NewDaliApiClient(conn)
 	case meter.TraitName:
 		return gen.NewMeterApiClient(conn)
+	case udmipb.TraitName:
+		return gen.NewUdmiServiceClient(conn)
 	}
 	return nil
 }
