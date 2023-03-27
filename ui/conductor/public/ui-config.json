@@ -8,15 +8,16 @@
       "*": true
     },
     "ops": {
-      "overview": true,
+      "overview": false,
       "emergency-lighting": true,
       "notifications": true
     },
-    "automations": {
-      "*": true
-    },
     "site": {
       "zone": true
+    },
+    "automations": {
+      "*": true
     }
-  }
+  },
+  "home": "/devices"
 }

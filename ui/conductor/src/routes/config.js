@@ -20,6 +20,9 @@ export async function uiConfig() {
 }
 
 /**
+ * The default config for the UI - this should mostly be targeted as though it was running on an Area Controller, as
+ * this will have the most standardised feature set.
+ *
  * @private
  */
 const _defaultConfig = {
@@ -33,16 +36,17 @@ const _defaultConfig = {
     },
     'ops': {
       'overview': false,
-      'emergency-lighting': true,
+      'emergency-lighting': false,
       'notifications': true
-    },
-    'automations': {
-      '*': true
     },
     'site': {
       'zone': true
+    },
+    'automations': {
+      '*': true
     }
-  }
+  },
+  home: '/devices'
 };
 
 /**

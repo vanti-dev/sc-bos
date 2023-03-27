@@ -6,14 +6,13 @@ import site from '@/routes/site/route.js';
 import {route, routeTitle} from '@/util/router.js';
 import Vue, {nextTick} from 'vue';
 import VueRouter from 'vue-router';
-import {featureEnabled} from '@/routes/config';
+import {featureEnabled, uiConfig} from '@/routes/config';
 
 Vue.use(VueRouter);
 
 const router = new VueRouter({
   mode: 'history',
   routes: [
-    {path: '/', redirect: '/ops'},
     ...route(auth),
     ...route(devices),
     ...route(ops),
@@ -34,7 +33,12 @@ if (window) {
     nextTick(() => window.document.title = title);
   });
   router.beforeEach(async (to, from, next) => {
-    next(await featureEnabled(to.path));
+    if (to.path==='/') {
+      const c = await uiConfig();
+      next(c.home);
+    } else {
+      next(await featureEnabled(to.path));
+    }
   });
 }
 
