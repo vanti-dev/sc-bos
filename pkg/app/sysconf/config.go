@@ -47,7 +47,7 @@ type Config struct {
 	// FooAddr are preferred IP/host others use to connect to us.
 	// Defaults to netutil.PublicAddress
 	GRPCAddr string `json:"grpcAddr,omitempty"`
-	HTTPAddr string `json:"grpcAddr,omitempty"`
+	HTTPAddr string `json:"httpAddr,omitempty"`
 
 	DataDir       string                     `json:"dataDir,omitempty"` // defaults to .data/controller
 	StaticHosting []http.StaticHostingConfig `json:"staticHosting"`
