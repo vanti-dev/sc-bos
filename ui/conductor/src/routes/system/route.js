@@ -11,13 +11,15 @@ export default {
     {
       path: 'drivers',
       components: {
-        default: () => import('./components/ServicesList.vue')
+        default: () => import('./components/pages/DriversList.vue'),
+        sidebar: () => import('./components/ServicesSideBar.vue')
       }
     },
     {
       path: 'features',
       components: {
-        default: () => import('./components/ServicesList.vue')
+        default: () => import('./components/pages/FeaturesList.vue'),
+        sidebar: () => import('./components/ServicesSideBar.vue')
       }
     }
   ],

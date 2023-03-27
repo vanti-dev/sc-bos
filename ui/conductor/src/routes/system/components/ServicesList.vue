@@ -2,19 +2,19 @@
   <content-card>
     <v-data-table
         :headers="headers"
-        :items="automationsList"
+        :items="serviceList"
         item-key="id"
         :search="search"
-        :loading="automationsCollection.loading"
-        @click:row="showAutomation">
+        :loading="serviceCollection.loading"
+        @click:row="showService">
       <template #item.active="{value}">
         <span :class="value?'success--text':'error--text'" class="text--lighten-2">
-          {{ value?'Running':'Stopped' }}
+          {{ value ? 'Running' : 'Stopped' }}
         </span>
       </template>
       <template #item.actions="{item}">
-        <v-btn outlined v-if="item.active" @click.stop="stopAutomation(item)">Stop</v-btn>
-        <v-btn outlined v-else @click.stop="startAutomation(item)">Start</v-btn>
+        <v-btn outlined v-if="item.active" @click.stop="_stopService(item)">Stop</v-btn>
+        <v-btn outlined v-else @click.stop="_startService(item)">Start</v-btn>
       </template>
     </v-data-table>
   </content-card>
@@ -22,17 +22,22 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
+import {computed, onUnmounted, reactive, ref, watch} from 'vue';
 import {useServicesStore} from '@/stores/services';
 import {ServiceNames, startService, stopService} from '@/api/ui/services';
 import {usePageStore} from '@/stores/page';
 import {newActionTracker} from '@/api/resource';
 
 const serviceStore = useServicesStore();
-const automationsCollection = ref(serviceStore.getService(ServiceNames.Automations).servicesCollection);
+const serviceCollection = ref(serviceStore.getService(props.name).servicesCollection);
 const pageStore = usePageStore();
 
 const props = defineProps({
+  name: {
+    type: String,
+    default: ServiceNames.Systems
+  },
+  // optional type filter for services list
   type: {
     type: String,
     default: ''
@@ -48,14 +53,16 @@ const headers = [
 ];
 
 // todo: this causes us to load all pages, connect with paging logic instead
-automationsCollection.value.needsMorePages = true;
+serviceCollection.value.needsMorePages = true;
 
-onMounted(() => automationsCollection.value.query(ServiceNames.Automations));
-onUnmounted(() => automationsCollection.value.reset());
+watch(() => props.name, (value) => {
+  serviceCollection.value.query(props.name);
+}, {immediate: true});
+onUnmounted(() => serviceCollection.value.reset());
 
-const automationsList = computed(() => {
-  return Object.values(automationsCollection.value.resources.value).filter(automation => {
-    return automation.type === props.type;
+const serviceList = computed(() => {
+  return Object.values(serviceCollection.value.resources.value).filter(service => {
+    return props.type === '' || service.type === props.type;
   });
 });
 
@@ -64,29 +71,30 @@ const automationsList = computed(() => {
  * @param {Service.AsObject} service
  * @param {*} row
  */
-function showAutomation(service, row) {
+function showService(service, row) {
   pageStore.showSidebar = true;
   pageStore.sidebarTitle = service.id;
   pageStore.sidebarData = service;
 }
 
 const startStopTracker = reactive(newActionTracker());
+
 /**
  *
  * @param {Service.AsObject} service
  */
-async function startAutomation(service) {
+async function _startService(service) {
   console.debug('Starting:', service.id);
-  await startService({name: ServiceNames.Automations, id: service.id}, startStopTracker);
+  await startService({name: props.name, id: service.id}, startStopTracker);
 }
 
 /**
  *
  * @param {Service.AsObject} service
  */
-async function stopAutomation(service) {
+async function _stopService(service) {
   console.debug('Stopping:', service.id);
-  await stopService({name: ServiceNames.Automations, id: service.id}, startStopTracker);
+  await stopService({name: props.name, id: service.id}, startStopTracker);
 }
 
 </script>

@@ -4,14 +4,9 @@
   </side-bar>
 </template>
 
-<script>
-import SideBar from '@/components/SideBar.vue';
+<script setup>
 import EditConfigCard from '@/routes/system/components/service-cards/EditConfigCard.vue';
-
-export default {
-  name: 'AutomationSideBar',
-  components: {EditConfigCard, SideBar}
-};
+import SideBar from '@/components/SideBar.vue';
 </script>
 
 <style scoped>
