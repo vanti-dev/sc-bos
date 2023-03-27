@@ -10,10 +10,10 @@ let _uiConfig = null;
 export async function uiConfig() {
   if (_uiConfig === null) {
     /** @type {string} */
-    const url = import.meta.env.VITE_UI_CONFIG_URL || '/ui-config.json';
+    const url = import.meta.env.VITE_UI_CONFIG_URL || '/__/scos/ui-config.json';
     _uiConfig = await fetch(url)
         .then(res => /** @type {Promise<ServerConfig>} */ res.json())
-        .catch(() => (_uiConfig = _defaultConfig));
+        .catch(() => _defaultConfig);
   }
   // todo: retry on network failure
   return _uiConfig;
