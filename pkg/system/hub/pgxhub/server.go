@@ -146,7 +146,7 @@ func (n *Server) EnrollHubNode(ctx context.Context, request *gen.EnrollHubNodeRe
 	}
 
 	go n.dbChanges.Send(context.Background(), &gen.PullHubNodesResponse_Change{
-		NewValue:   nodeReg,
+		NewValue:   &gen.HubNode{Address: en.TargetAddress, Name: en.TargetName, Description: nodeReg.Description},
 		ChangeTime: timestamppb.Now(),
 		Type:       types.ChangeType_ADD,
 	})
