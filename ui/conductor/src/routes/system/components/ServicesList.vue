@@ -74,7 +74,7 @@ const serviceList = computed(() => {
 function showService(service, row) {
   pageStore.showSidebar = true;
   pageStore.sidebarTitle = service.id;
-  pageStore.sidebarData = service;
+  pageStore.sidebarData = {...service, config: JSON.parse(service.configRaw)};
 }
 
 const startStopTracker = reactive(newActionTracker());
