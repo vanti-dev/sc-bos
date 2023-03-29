@@ -12,6 +12,6 @@ export default {
     {name: 'zone', path: 'zone/:zone?', component: () => import('./zone/ZonePage.vue'), props: true}
   ],
   meta: {
-    title: 'Site Settings'
+    title: 'Site Config'
   }
 };
