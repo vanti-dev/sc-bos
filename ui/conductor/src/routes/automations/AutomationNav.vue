@@ -1,5 +1,11 @@
 <template>
   <v-list class="pa-0" dense nav>
+    <v-list-item to="/automations/all">
+      <v-list-item-icon>
+        <v-icon>mdi-view-list</v-icon>
+      </v-list-item-icon>
+      <v-list-item-content class="text-capitalize">All</v-list-item-content>
+    </v-list-item>
     <v-list-item
         v-for="automation of automationTypeList"
         :key="automation.type"

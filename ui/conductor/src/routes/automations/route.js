@@ -3,6 +3,7 @@ import SidebarPage from '@/components/page-layout/SidebarPage.vue';
 export default {
   name: 'automations',
   path: '/automations',
+  redirect: '/automations/all',
   components: {
     default: SidebarPage,
     nav: () => import('./AutomationNav.vue')

@@ -62,7 +62,7 @@ onUnmounted(() => serviceCollection.value.reset());
 
 const serviceList = computed(() => {
   return Object.values(serviceCollection.value.resources.value).filter(service => {
-    return props.type === '' || service.type === props.type;
+    return props.type === '' || props.type === 'all' || service.type === props.type;
   });
 });
 
