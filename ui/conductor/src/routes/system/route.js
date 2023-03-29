@@ -1,4 +1,5 @@
 import SidebarPage from '@/components/page-layout/SidebarPage.vue';
+import {featureEnabled} from '@/routes/config';
 
 export default {
   name: 'system',
@@ -25,5 +26,16 @@ export default {
   ],
   meta: {
     title: 'System'
+  },
+  beforeEnter: async (to, from, next) => {
+    if (to.path === '/system') {
+      if (await featureEnabled('/system/drivers')) {
+        next('/system/drivers');
+      } else if (await featureEnabled('/system/features')) {
+        next('/system/features');
+      }
+    } else {
+      next();
+    }
   }
 };
