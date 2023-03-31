@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -89,7 +90,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	// Setup a local database for storing non-critical data.
 	// This is made available to automations and systems as a local cache, for example for lighting reports.
-	dbPath := filepath.Join(config.DataDir, "db.bolt")
+	dbPath := filePath(config.DataDir, "db.bolt")
 	db, err := bolthold.Open(dbPath, 0750, nil)
 	if err != nil {
 		logger.Warn("failed to open local database file - some system components may fail", zap.Error(err),
@@ -99,7 +100,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	certConfig := config.CertConfig
 	// Create a private key if it doesn't exist.
 	// This key is used by the controller for incoming and outgoing connections, and as part of the enrolment process.
-	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filepath.Join(config.DataDir, certConfig.KeyFile), logger)
+	key, keyPEM, err := pki.LoadOrGeneratePrivateKey(filePath(config.DataDir, certConfig.KeyFile), logger)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +112,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	// incoming connections that contain a client certificate.
 	//
 	// enrollServer implements pki.Source providing these features without any extra work to setup.
-	enrollServer, err := enrollment.LoadOrCreateServer(filepath.Join(config.DataDir, "enrollment"), keyPEM, logger.Named("enrollment"))
+	enrollServer, err := enrollment.LoadOrCreateServer(filePath(config.DataDir, "enrollment"), keyPEM, logger.Named("enrollment"))
 	if err != nil {
 		return nil, err
 	}
@@ -120,8 +121,8 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	// The certificates public key must be paired with private key `key` loaded above.
 	fileSource := pki.CacheSource(
 		pki.FSKeySource(
-			filepath.Join(config.DataDir, certConfig.CertFile), key,
-			joinIfPresent(config.DataDir, certConfig.RootsFile)),
+			filePath(config.DataDir, certConfig.CertFile), key,
+			filePath(config.DataDir, certConfig.RootsFile)),
 		expire.BeforeInvalid(time.Hour),
 	)
 
@@ -142,7 +143,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 			BasicConstraintsValid: true,
 		}, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()),
 		expire.AfterProgress(0.5),
-		pki.WithFSCache(filepath.Join(config.DataDir, "grpc-self-signed.cert.pem"), "", key),
+		pki.WithFSCache(filePath(config.DataDir, "grpc-self-signed.cert.pem"), "", key),
 	)
 
 	// grpcSource is used by both incoming and outgoing grpc connections.
@@ -165,8 +166,8 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	if certConfig.HTTPCert {
 		fileSource := pki.CacheSource(
 			pki.FSSource(
-				filepath.Join(config.DataDir, certConfig.HTTPCertFile),
-				filepath.Join(config.DataDir, certConfig.HTTPKeyFile),
+				filePath(config.DataDir, certConfig.HTTPCertFile),
+				filePath(config.DataDir, certConfig.HTTPKeyFile),
 				""),
 			expire.After(30*time.Minute),
 		)
@@ -591,4 +592,12 @@ func joinIfPresent(dir, path string) string {
 		return ""
 	}
 	return filepath.Join(dir, path)
+}
+
+// filePath adds dataDir as a prefix to path only if path is not empty and path does not start with "/".
+func filePath(dataDir, path string) string {
+	if strings.HasPrefix(path, "/") {
+		return path
+	}
+	return joinIfPresent(dataDir, path)
 }
