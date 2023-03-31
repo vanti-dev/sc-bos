@@ -168,8 +168,19 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 		ttl, err := processState(ctx, readState, writeState, actions, b.logger.Named("Process State"))
 		b.bus.Emit("process-complete", ttl, err, readState, writeState) // used only for testing, notify that processing has completed
 		if err != nil {
-			// todo: setup retries for processing the state
-			return err
+			// if the context has been cancelled, stop
+			if ctx.Err() != nil {
+				return err
+			}
+
+			// if the context remains live, schedule another update soon
+			// TODO: make this delay configurable, or add backoff etc.
+			after := 5 * time.Second
+			b.logger.Error("processState failed; scheduling retry",
+				zap.Error(err),
+				zap.Duration("retryAfter", after),
+			)
+			ttl = after
 		}
 
 		// Setup ttl for the transformed model.
