@@ -5,16 +5,44 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue';
+import {computed, reactive, ref, watch} from 'vue';
+import {closeResource, newResourceValue} from '@/api/resource';
+import {listMeterReadingHistory} from '@/api/sc/traits/meter-history';
 
-// todo: get this from the backend
+const props = defineProps({
+  name: {
+    type: String,
+    default: 'meter/01'
+  }
+});
+
+const meterHistoryValue = reactive(newResourceValue());
+
+watch(() => props.name, async (name) => {
+  // close existing stream if present
+  closeResource(meterHistoryValue);
+
+  // create new stream
+  if (name && name !== '') {
+    const res = await listMeterReadingHistory(name, meterHistoryValue);
+    // create a list of data points that show the change in value since the previous reading
+    data.value = res.meterReadingRecordsList.map((reading, i) => {
+      if (i === 0) {
+        return {
+          x: new Date(reading.meterReading.endTime.seconds*1000),
+          y: reading.meterReading.usage
+        };
+      } else {
+        return {
+          x: new Date(reading.meterReading.endTime.seconds*1000),
+          y: reading.meterReading.usage - res.meterReadingRecordsList[i - 1].meterReading.usage
+        };
+      }
+    });
+  }
+}, {immediate: true});
+
 const data = ref([]);
-for (let i = 0; i < 24; i++) {
-  data.value.push({
-    x: new Date().setHours(i),
-    y: 20 + Math.random() * 100
-  });
-}
 
 const options = {
   chart: {
