@@ -5,7 +5,6 @@ import (
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
-	"golang.org/x/exp/constraints"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,6 +15,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/merge"
 )
 
 type Group struct {
@@ -178,7 +178,7 @@ func mergeAirTemperature(all []*traits.AirTemperature) (*traits.AirTemperature, 
 	default:
 		out := &traits.AirTemperature{}
 		// TemperatureGoal
-		if setPoint, ok := mean(all, func(e *traits.AirTemperature) (float64, bool) {
+		if setPoint, ok := merge.Mean(all, func(e *traits.AirTemperature) (float64, bool) {
 			switch t := e.GetTemperatureGoal().(type) { // note: Get is e-nil safe
 			case *traits.AirTemperature_TemperatureSetPoint:
 				return t.TemperatureSetPoint.ValueCelsius, true
@@ -189,7 +189,7 @@ func mergeAirTemperature(all []*traits.AirTemperature) (*traits.AirTemperature, 
 			out.TemperatureGoal = &traits.AirTemperature_TemperatureSetPoint{TemperatureSetPoint: &types.Temperature{ValueCelsius: setPoint}}
 		}
 		// AmbientTemperature
-		if val, ok := mean(all, func(e *traits.AirTemperature) (float64, bool) {
+		if val, ok := merge.Mean(all, func(e *traits.AirTemperature) (float64, bool) {
 			if e == nil || e.AmbientTemperature == nil {
 				return 0, false
 			}
@@ -198,7 +198,7 @@ func mergeAirTemperature(all []*traits.AirTemperature) (*traits.AirTemperature, 
 			out.AmbientTemperature = &types.Temperature{ValueCelsius: val}
 		}
 		// AmbientHumidity
-		if val, ok := mean(all, func(e *traits.AirTemperature) (float32, bool) {
+		if val, ok := merge.Mean(all, func(e *traits.AirTemperature) (float32, bool) {
 			if e == nil || e.AmbientHumidity == nil {
 				return 0, false
 			}
@@ -207,7 +207,7 @@ func mergeAirTemperature(all []*traits.AirTemperature) (*traits.AirTemperature, 
 			out.AmbientHumidity = &val
 		}
 		// DewPoint
-		if val, ok := mean(all, func(e *traits.AirTemperature) (float64, bool) {
+		if val, ok := merge.Mean(all, func(e *traits.AirTemperature) (float64, bool) {
 			if e == nil || e.DewPoint == nil {
 				return 0, false
 			}
@@ -237,28 +237,4 @@ func mergeAirTemperature(all []*traits.AirTemperature) (*traits.AirTemperature, 
 		}
 		return out, nil
 	}
-}
-
-type Number interface {
-	constraints.Float | constraints.Integer
-}
-
-func mean[N Number, E any](items []E, f func(E) (N, bool)) (N, bool) {
-	var t float64
-	for _, item := range items {
-		if _, ok := f(item); ok {
-			t++
-		}
-	}
-	if t == 0 {
-		return 0, false
-	}
-
-	var res float64
-	for _, item := range items {
-		if v, ok := f(item); ok {
-			res += float64(v) / t
-		}
-	}
-	return N(res), true
 }

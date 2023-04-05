@@ -1,4 +1,4 @@
-package meter
+package electric
 
 import (
 	"context"
@@ -11,27 +11,26 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/merge"
 )
 
 type Group struct {
-	gen.UnimplementedMeterApiServer
-	client   gen.MeterApiClient
-	names    []string
-	readOnly bool
+	traits.UnimplementedElectricApiServer
+	client traits.ElectricApiClient
+	names  []string
 
 	logger *zap.Logger
 }
 
-func (g *Group) GetMeterReading(ctx context.Context, request *gen.GetMeterReadingRequest) (*gen.MeterReading, error) {
+func (g *Group) GetDemand(ctx context.Context, request *traits.GetDemandRequest) (*traits.ElectricDemand, error) {
 	var allErrs []error
-	var allRes []*gen.MeterReading
+	var allRes []*traits.ElectricDemand
 	for _, name := range g.names {
 		request.Name = name
-		res, err := g.client.GetMeterReading(ctx, request)
+		res, err := g.client.GetDemand(ctx, request)
 		if err != nil {
 			allErrs = append(allErrs, err)
 			continue
@@ -45,32 +44,32 @@ func (g *Group) GetMeterReading(ctx context.Context, request *gen.GetMeterReadin
 
 	if allErrs != nil {
 		if g.logger != nil {
-			g.logger.Warn("some meters failed", zap.Errors("errors", allErrs))
+			g.logger.Warn("some electrics failed", zap.Errors("errors", allErrs))
 		}
 	}
-	return mergeMeterReading(allRes)
+	return mergeDemand(allRes)
 }
 
-func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server gen.MeterApi_PullMeterReadingsServer) error {
+func (g *Group) PullDemand(request *traits.PullDemandRequest, server traits.ElectricApi_PullDemandServer) error {
 	if len(g.names) == 0 {
-		return status.Error(codes.FailedPrecondition, "zone has no meter names")
+		return status.Error(codes.FailedPrecondition, "zone has no electric names")
 	}
 
 	type c struct {
 		name string
-		val  *gen.MeterReading
+		val  *traits.ElectricDemand
 	}
 	changes := make(chan c)
 	defer close(changes)
 
 	group, ctx := errgroup.WithContext(server.Context())
 	for _, name := range g.names {
-		request := proto.Clone(request).(*gen.PullMeterReadingsRequest)
+		request := proto.Clone(request).(*traits.PullDemandRequest)
 		request.Name = name
 		group.Go(func() error {
 			return pull.Changes(ctx, pull.NewFetcher(
 				func(ctx context.Context, changes chan<- c) error {
-					stream, err := g.client.PullMeterReadings(ctx, request)
+					stream, err := g.client.PullDemand(ctx, request)
 					if err != nil {
 						return err
 					}
@@ -80,12 +79,12 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 							return err
 						}
 						for _, change := range res.Changes {
-							changes <- c{name: request.Name, val: change.MeterReading}
+							changes <- c{name: request.Name, val: change.Demand}
 						}
 					}
 				},
 				func(ctx context.Context, changes chan<- c) error {
-					res, err := g.client.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: name, ReadMask: request.ReadMask})
+					res, err := g.client.GetDemand(ctx, &traits.GetDemandRequest{Name: name, ReadMask: request.ReadMask})
 					if err != nil {
 						return err
 					}
@@ -103,9 +102,9 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 		for i, name := range g.names {
 			indexes[name] = i
 		}
-		values := make([]*gen.MeterReading, len(g.names))
+		values := make([]*traits.ElectricDemand, len(g.names))
 
-		var last *gen.MeterReading
+		var last *traits.ElectricDemand
 		eq := cmp.Equal(cmp.FloatValueApprox(0, 0.001))
 
 		for {
@@ -114,7 +113,7 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 				return ctx.Err()
 			case change := <-changes:
 				values[indexes[change.name]] = change.val
-				r, err := mergeMeterReading(values)
+				r, err := mergeDemand(values)
 				if err != nil {
 					return err
 				}
@@ -125,10 +124,10 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 				}
 				last = r
 
-				err = server.Send(&gen.PullMeterReadingsResponse{Changes: []*gen.PullMeterReadingsResponse_Change{{
-					Name:         request.Name,
-					ChangeTime:   timestamppb.Now(),
-					MeterReading: r,
+				err = server.Send(&traits.PullDemandResponse{Changes: []*traits.PullDemandResponse_Change{{
+					Name:       request.Name,
+					ChangeTime: timestamppb.Now(),
+					Demand:     r,
 				}}})
 				if err != nil {
 					return err
@@ -140,32 +139,41 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 	return group.Wait()
 }
 
-func mergeMeterReading(all []*gen.MeterReading) (*gen.MeterReading, error) {
+func mergeDemand(all []*traits.ElectricDemand) (*traits.ElectricDemand, error) {
 	switch len(all) {
 	case 0:
-		return nil, status.Error(codes.FailedPrecondition, "zone has no meter names")
+		return nil, status.Error(codes.FailedPrecondition, "zone has no electric names")
 	case 1:
 		return all[0], nil
 	default:
-		out := &gen.MeterReading{}
-		out.Usage, _ = merge.Sum(all, func(e *gen.MeterReading) (float32, bool) {
+		out := &traits.ElectricDemand{}
+		out.Current, _ = merge.Sum(all, func(e *traits.ElectricDemand) (float32, bool) {
 			if e == nil {
 				return 0, false
 			}
-			return e.Usage, true
+			return e.Current, true
 		})
-		out.StartTime = merge.EarliestTimestamp(all, func(e *gen.MeterReading) *timestamppb.Timestamp {
+		out.Rating, _ = merge.Sum(all, func(e *traits.ElectricDemand) (float32, bool) {
 			if e == nil {
-				return nil
+				return 0, false
 			}
-			return e.StartTime
+			return e.Rating, true
 		})
-		out.EndTime = merge.LatestTimestamp(all, func(e *gen.MeterReading) *timestamppb.Timestamp {
-			if e == nil {
-				return nil
+		// Either all the voltages are the same or we can't set out.Voltage
+		for _, e := range all {
+			if e == nil || e.Voltage == nil {
+				continue
 			}
-			return e.EndTime
-		})
+			if out.Voltage == nil {
+				out.Voltage = e.Voltage
+				continue
+			}
+			if *out.Voltage != *e.Voltage {
+				// not all voltages are equal, so we can't set
+				out.Voltage = nil
+				break
+			}
+		}
 		return out, nil
 	}
 }
