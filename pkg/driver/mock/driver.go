@@ -262,10 +262,7 @@ func meterAuto(model *meter.Model) *service.Service[string] {
 	slc := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
 		go func() {
 			timer := time.NewTimer((30 * time.Second) + time.Duration(rand.Float32())*time.Minute)
-			start := &timestamppb.Timestamp{
-				Seconds: time.Now().Unix(),
-				Nanos:   0,
-			}
+			start := timestamppb.Now()
 			value := rand.Float32() * 100
 			for {
 				select {
@@ -276,10 +273,7 @@ func meterAuto(model *meter.Model) *service.Service[string] {
 					state := gen.MeterReading{
 						Usage:     value,
 						StartTime: start,
-						EndTime: &timestamppb.Timestamp{
-							Seconds: time.Now().Unix(),
-							Nanos:   0,
-						},
+						EndTime:   timestamppb.Now(),
 					}
 					_, _ = model.UpdateMeterReading(&state)
 					timer = time.NewTimer((30 * time.Second) + time.Duration(rand.Float32())*time.Minute)
