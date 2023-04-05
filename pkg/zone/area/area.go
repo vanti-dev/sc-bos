@@ -11,6 +11,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/zone/area/config"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/hvac"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/lighting"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/meter"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/occupancy"
 )
 
@@ -18,6 +19,7 @@ import (
 var DefaultFeatures = []zone.Factory{
 	hvac.Feature,
 	lighting.Feature,
+	meter.Feature,
 	occupancy.Feature,
 }
 
