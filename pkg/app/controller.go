@@ -41,7 +41,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
-	"github.com/vanti-dev/sc-bos/pkg/task/serviceapi"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
 )
 
@@ -355,28 +354,28 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	c.Node.Announce("systems", node.HasClient(gen.WrapServicesApi(serviceapi.NewApi(systemServices, serviceapi.WithKnownTypesFromMapKeys(c.SystemConfig.SystemFactories)))))
+	announceSystemServices(c, systemServices, c.SystemConfig.SystemFactories)
 	go logServiceMapChanges(ctx, c.Logger.Named("system"), systemServices)
 	// load and start the drivers
 	driverServices, err := c.startDrivers()
 	if err != nil {
 		return err
 	}
-	c.Node.Announce("drivers", node.HasClient(gen.WrapServicesApi(serviceapi.NewApi(driverServices, serviceapi.WithKnownTypesFromMapKeys(c.SystemConfig.DriverFactories)))))
+	announceServices(c, "drivers", driverServices, c.SystemConfig.DriverFactories)
 	go logServiceMapChanges(ctx, c.Logger.Named("driver"), driverServices)
 	// load and start the automations
 	autoServices, err := c.startAutomations()
 	if err != nil {
 		return err
 	}
-	c.Node.Announce("automations", node.HasClient(gen.WrapServicesApi(serviceapi.NewApi(autoServices, serviceapi.WithKnownTypesFromMapKeys(c.SystemConfig.AutoFactories)))))
+	announceAutoServices(c, autoServices, c.SystemConfig.AutoFactories)
 	go logServiceMapChanges(ctx, c.Logger.Named("auto"), autoServices)
 	// load and start the zones
 	zoneServices, err := c.startZones()
 	if err != nil {
 		return err
 	}
-	c.Node.Announce("zones", node.HasClient(gen.WrapServicesApi(serviceapi.NewApi(zoneServices, serviceapi.WithKnownTypesFromMapKeys(c.SystemConfig.ZoneFactories)))))
+	announceServices(c, "zones", zoneServices, c.SystemConfig.ZoneFactories)
 	go logServiceMapChanges(ctx, c.Logger.Named("zone"), zoneServices)
 
 	err = multierr.Append(err, group.Wait())
@@ -474,6 +473,7 @@ func (c *Controller) startSystems() (*service.Map, error) {
 	}
 	return m, allErrs
 }
+
 func (c *Controller) startZones() (*service.Map, error) {
 	ctxServices := zone.Services{
 		Logger: c.Logger.Named("auto"),

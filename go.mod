@@ -13,6 +13,7 @@ require (
 	github.com/jackc/pgconn v1.13.0
 	github.com/jackc/pgx/v4 v4.17.0
 	github.com/mwitkow/grpc-proxy v0.0.0-20230212185441-f345521cb9c9
+	github.com/natefinch/atomic v1.0.1
 	github.com/olebedev/emitter v0.0.0-20190110104742-e8d1457e6aee
 	github.com/open-policy-agent/opa v0.42.2
 	github.com/pborman/uuid v1.2.0

@@ -3,11 +3,15 @@ package serviceapi
 
 import (
 	"context"
+	"encoding/base32"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"sort"
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -26,6 +30,9 @@ type Api struct {
 	now func() time.Time
 
 	knownTypes []string
+	store      Store
+	marshaller Marshaller
+	logger     *zap.Logger
 }
 
 func NewApi(m *service.Map, opts ...Option) *Api {
@@ -97,10 +104,15 @@ func (a *Api) PullService(request *gen.PullServiceRequest, server gen.ServicesAp
 	}
 }
 
-func (a *Api) CreateService(_ context.Context, request *gen.CreateServiceRequest) (*gen.Service, error) {
+func (a *Api) CreateService(ctx context.Context, request *gen.CreateServiceRequest) (*gen.Service, error) {
 	id, kind, state := protoToState(request.Service)
 	id, state, err := a.m.Create(id, kind, state)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := a.storeConfig(ctx, id, kind, state.Config); err != nil {
+		// todo: revert the update
 		return nil, err
 	}
 	return stateToProto(id, kind, state), nil
@@ -322,10 +334,13 @@ func (a *Api) StartService(_ context.Context, request *gen.StartServiceRequest) 
 	if err != nil {
 		return nil, err
 	}
+
+	// todo: starting/stopping a service should be saved somewhere. Unfortunately it isn't.
+
 	return stateToProto(r.Id, r.Kind, state), nil
 }
 
-func (a *Api) ConfigureService(_ context.Context, request *gen.ConfigureServiceRequest) (*gen.Service, error) {
+func (a *Api) ConfigureService(ctx context.Context, request *gen.ConfigureServiceRequest) (*gen.Service, error) {
 	if request.Id == "" {
 		return nil, status.Error(codes.InvalidArgument, "id missing")
 	}
@@ -340,6 +355,13 @@ func (a *Api) ConfigureService(_ context.Context, request *gen.ConfigureServiceR
 	if err != nil {
 		return nil, err
 	}
+
+	// note, during update kind either exists or isn't needed
+	if err := a.storeConfig(ctx, request.Id, "", state.Config); err != nil {
+		// todo: revert the update
+		return nil, err
+	}
+
 	return stateToProto(r.Id, r.Kind, state), nil
 }
 
@@ -363,6 +385,7 @@ func (a *Api) StopService(_ context.Context, request *gen.StopServiceRequest) (*
 	if err != nil {
 		return nil, err
 	}
+	// todo: starting/stopping a service should be saved somewhere. Unfortunately it isn't.
 	return stateToProto(r.Id, r.Kind, state), nil
 }
 
@@ -443,3 +466,49 @@ func (a *Api) seedMetadata(md *gen.ServiceMetadata) {
 		md.TypeCounts[record.Kind]++
 	}
 }
+
+func (a *Api) storeConfig(ctx context.Context, id, kind string, data []byte) error {
+	if a.store == nil {
+		return nil
+	}
+
+	if len(data) == 0 {
+		data = []byte("{}")
+	}
+	// We need to make sure the config contains the relevant metadata fields like name and kind.
+	// This code converts raw config data like {"foo": "bar"} to {"name": "id", "type": "kind", "foo": "bar"}
+	jsonData := make(map[string]json.RawMessage)
+	if err := json.Unmarshal(data, &jsonData); err == nil {
+		if _, ok := jsonData["name"]; !ok {
+			jsonData["name"] = json.RawMessage(fmt.Sprintf("%q", id))
+		}
+		if kind != "" {
+			if _, ok := jsonData["type"]; !ok {
+				jsonData["type"] = json.RawMessage(fmt.Sprintf("%q", kind))
+			}
+		}
+		if d, err := json.Marshal(jsonData); err == nil {
+			data = d
+		}
+	} // else, just use the original data
+
+	if a.marshaller != nil {
+		var err error
+		data, err = a.marshaller.MarshalConfig(data)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Avoid allowing users to write arbitrary file names to disk.
+	safeName := fileNameEncoder.EncodeToString([]byte(id))
+	if err := a.store.Save(ctx, fmt.Sprintf("%s.json", safeName), data); err != nil {
+		if a.logger != nil {
+			a.logger.Warn("writing config file failed", zap.Error(err))
+		}
+		// todo: return an error here once we can reliably roll back any changes before the store.
+	}
+	return nil
+}
+
+var fileNameEncoder = base32.StdEncoding.WithPadding(base32.NoPadding)

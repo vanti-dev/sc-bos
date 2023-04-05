@@ -1,6 +1,7 @@
 package serviceapi
 
 import (
+	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
 
@@ -18,5 +19,23 @@ func WithKnownTypesFromMapKeys[M ~map[string]T, T any](m M) Option {
 		for k, _ := range m {
 			a.knownTypes = append(a.knownTypes, k)
 		}
+	}
+}
+
+func WithLogger(l *zap.Logger) Option {
+	return func(a *Api) {
+		a.logger = l
+	}
+}
+
+func WithStore(s Store) Option {
+	return func(a *Api) {
+		a.store = s
+	}
+}
+
+func WithMarshaller(m Marshaller) Option {
+	return func(a *Api) {
+		a.marshaller = m
 	}
 }
