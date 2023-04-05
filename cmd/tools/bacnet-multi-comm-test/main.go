@@ -108,7 +108,7 @@ func run() error {
 
 				// Discover device objects if we're asked to
 				if shouldDiscoverObjects(cfg, device) {
-					ctx, cancel := context.WithTimeout(context.Background(), (*timeout)*4)
+					ctx, cancel := context.WithTimeout(context.Background(), (*timeout)*10)
 					defer cancel()
 					objects, err := client.Objects(ctx, dev)
 					if err != nil {
