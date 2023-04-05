@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"go.uber.org/multierr"
 
+	"github.com/vanti-dev/sc-bos/pkg/app/files"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/util/slices"
@@ -84,7 +84,7 @@ func (c *Config) zoneNamesMap() map[string]bool {
 
 // LoadLocalConfig will load Config from a local file, as well as any included files
 func LoadLocalConfig(dir, file string) (*Config, error) {
-	path := filepath.Join(dir, file)
+	path := files.Path(dir, file)
 	conf, err := configFromFile(path)
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func loadIncludes(dir string, dst *Config, includes, seen []string) ([]string, e
 	var configs []*Config
 	// load first layer of includes
 	for _, include := range includes {
-		path := filepath.Join(dir, include)
+		path := files.Path(dir, include)
 		if slices.Contains(path, seen) {
 			continue
 		}
