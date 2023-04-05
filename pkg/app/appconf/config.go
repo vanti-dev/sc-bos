@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"go.uber.org/multierr"
 
@@ -14,18 +15,28 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/zone"
 )
 
-var readFile = os.ReadFile // for testing
+// for testing
+var (
+	readFile = os.ReadFile
+	glob     = filepath.Glob
+)
 
 type Config struct {
 	Name string `json:"name,omitempty"`
-	// an array of other config files to read and merge.
-	// If any included config files have further includes, they will also be loaded.
-	// name will be ignored from any included files, and all other values will be merged.
-	// if a duplicate name is found (e.g. duplicate driver), then the first one will be used
+	// Include lists other files and glob patterns for config to load.
+	// Files are read in the order specified here then by filepath.Glob.
+	// Drivers, Automation, and Zones are merged using the Name in a first-come, first-served nature.
+	// Glob includes are expanded in the output when using LoadLocalConfig, files not found will be excluded.
+	// Included files that also have includes will processed once all includes in this config are processed.
+	// Paths are resolved relative to the directory the config file is in.
+	// Paths starting with `/` will be treated as absolute paths.
 	Includes   []string           `json:"includes,omitempty"`
 	Drivers    []driver.RawConfig `json:"drivers,omitempty"`
 	Automation []auto.RawConfig   `json:"automation,omitempty"`
 	Zones      []zone.RawConfig   `json:"zones,omitempty"`
+
+	// the path to the file this config was loaded from
+	FilePath string `json:"-"`
 }
 
 func (c *Config) mergeWith(other *Config) {
@@ -49,12 +60,13 @@ func (c *Config) mergeWith(other *Config) {
 			c.Zones = append(c.Zones, z)
 		}
 	}
-	// special case for includes - de-duplicate
-	for _, inc := range other.Includes {
-		if slices.Contains(inc, c.Includes) {
-			continue
-		}
-		c.Includes = append(c.Includes, inc)
+	// Includes are merged in a special way, we use the FilePath relative to c as the include.
+	relInc, err := filepath.Rel(filepath.Dir(c.FilePath), other.FilePath)
+	if err != nil {
+		return
+	}
+	if !slices.Contains(relInc, c.Includes) {
+		c.Includes = append(c.Includes, relInc)
 	}
 }
 
@@ -90,7 +102,9 @@ func LoadLocalConfig(dir, file string) (*Config, error) {
 		return nil, err
 	}
 	// if we successfully loaded config, also load included files
-	_, err = loadIncludes(dir, conf, conf.Includes, nil)
+	includes := conf.Includes
+	conf.Includes = nil // includes are added back into the config during merge. This gets rid of globs and files we couldn't find
+	_, err = loadIncludes(dir, conf, includes, nil)
 	return conf, err // return the config we have, and any errors
 }
 
@@ -104,18 +118,24 @@ func loadIncludes(dir string, dst *Config, includes, seen []string) ([]string, e
 		if slices.Contains(path, seen) {
 			continue
 		}
-		seen = append(seen, path) // track files we've seen, to avoid getting in a loop
-		extraConf, err := configFromFile(path)
-		if err != nil {
-			errs = multierr.Append(errs, err)
-		} else {
-			configs = append(configs, extraConf)
-			dst.mergeWith(extraConf)
+		matches, err := glob(path)
+		if err != nil || matches == nil {
+			matches = []string{path}
+		}
+		for _, path := range matches {
+			seen = append(seen, path) // track files we've seen, to avoid getting in a loop
+			extraConf, err := configFromFile(path)
+			if err != nil {
+				errs = multierr.Append(errs, err)
+			} else {
+				configs = append(configs, extraConf)
+				dst.mergeWith(extraConf)
+			}
 		}
 	}
 	// load all deeper includes
 	for _, config := range configs {
-		alsoSeen, err := loadIncludes(dir, dst, config.Includes, seen)
+		alsoSeen, err := loadIncludes(filepath.Dir(config.FilePath), dst, config.Includes, seen)
 		if err != nil {
 			seen = alsoSeen
 		}
@@ -135,5 +155,6 @@ func configFromFile(path string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("config JSON unmarshal %s: %w", path, err)
 	}
+	conf.FilePath = path
 	return &conf, nil
 }
