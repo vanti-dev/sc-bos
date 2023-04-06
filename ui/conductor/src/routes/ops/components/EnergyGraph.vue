@@ -12,7 +12,7 @@ import {listMeterReadingHistory} from '@/api/sc/traits/meter-history';
 const props = defineProps({
   name: {
     type: String,
-    default: 'meter/01'
+    default: 'building'
   }
 });
 

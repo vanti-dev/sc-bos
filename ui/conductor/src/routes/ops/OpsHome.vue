@@ -10,7 +10,7 @@
           <h4 class="text-h4 order-lg-last pb-4 pb-lg-0 pt-0 pt-lg-4">System Monitor</h4>
           <building-status/>
         </content-card>
-        <energy-card :current-energy="currentEnergy"/>
+        <energy-card :zone-name="energyZone"/>
       </div>
       <div class="d-flex flex-column" style="min-width: 250px;">
         <occupancy-card :name="zoneName"/>
@@ -28,10 +28,11 @@ import OccupancyCard from '@/routes/ops/components/OccupancyCard.vue';
 import EnvironmentalCard from '@/routes/ops/components/EnvironmentalCard.vue';
 import EnergyCard from '@/routes/ops/components/EnergyCard.vue';
 import ScStatusCard from '@/routes/ops/components/ScStatusCard.vue';
+import {useAppConfigStore} from '@/stores/app-config';
 
-const sliderVal = ref(0);
+const appConfig = useAppConfigStore();
 
-const currentEnergy = computed(() => sliderVal.value*120);
+const energyZone = appConfig.config?.ops?.buildingZone ?? '';
 
 // todo: should probably get this from somewhere
 const zoneName = 'Floor 3'; // building-wide zone to use for collecting data

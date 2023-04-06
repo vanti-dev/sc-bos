@@ -6,7 +6,7 @@
         {{ currentEnergy.toFixed(1) }}<span style="font-size: 0.5em;">kWh</span><br>
         <span class="text-title">Consumption</span>
       </div>
-      <energy-graph class="flex-grow-1 d-none d-md-block"/>
+      <energy-graph class="flex-grow-1 d-none d-md-block" :name="zoneName"/>
     </div>
   </content-card>
 </template>
@@ -14,13 +14,16 @@
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
 import EnergyGraph from '@/routes/ops/components/EnergyGraph.vue';
+import {ref} from 'vue';
 
 const props = defineProps({
-  currentEnergy: {
-    type: Number,
-    default: 0
+  zoneName: {
+    type: String,
+    default: 'building'
   }
 });
+
+const currentEnergy = ref(0);
 </script>
 
 <style scoped>

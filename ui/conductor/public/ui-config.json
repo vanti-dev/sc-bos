@@ -26,6 +26,9 @@
     }
   },
   "config": {
-    "home": "/ops"
+    "home": "/ops",
+    "ops": {
+      "buildingZone": "building"
+    }
   }
 }
