@@ -1,7 +1,7 @@
 import ChildOnlyPage from '@/components/page-layout/ChildOnlyPage.vue';
 import thirdParty from '@/routes/auth/third-party/route.js';
 import {route} from '@/util/router.js';
-import {featureEnabled} from '@/routes/config';
+import {useAppConfigStore} from '@/stores/app-config';
 
 export default [
   {
@@ -18,8 +18,9 @@ export default [
       title: 'Auth'
     },
     beforeEnter: async (to, from, next) => {
+      const appConfig = useAppConfigStore();
       if (to.path === '/auth') {
-        if (await featureEnabled('/auth/users')) {
+        if (appConfig.pathEnabled('/auth/users')) {
           next('/auth/users');
         } else {
           next('/auth/third-party');

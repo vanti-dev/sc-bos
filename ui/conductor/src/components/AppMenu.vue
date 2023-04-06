@@ -29,8 +29,8 @@
 
 <script setup>
 import MenuIcon from '@/components/MenuIcon.vue';
-import {computed, onMounted, ref} from 'vue';
-import {featureEnabled} from '@/routes/config';
+import {computed, ref} from 'vue';
+import {useAppConfigStore} from '@/stores/app-config';
 
 const showMenu = ref(false);
 
@@ -74,13 +74,10 @@ const menuItems = [
   }
 ];
 
-// computed props shouldn't return a promise, so instead we're setting this ref based on mounted
-const enabledMenuItems = ref([]);
-onMounted(async () => {
-  // create array of true/false vals for whether each menu item is enabled
-  const isEnabled = await Promise.all(menuItems.map(item => featureEnabled(item.link.name)));
-  // filter menu items based on above list
-  enabledMenuItems.value = menuItems.filter((item, index) => isEnabled[index]);
+const appConfig = useAppConfigStore();
+
+const enabledMenuItems = computed(() => {
+  return menuItems.filter(item => appConfig.pathEnabled('/'+item.link.name));
 });
 
 </script>

@@ -2,7 +2,7 @@ import ChildOnlyPage from '@/components/page-layout/ChildOnlyPage.vue';
 import notifications from '@/routes/ops/notifications/route.js';
 
 import {route} from '@/util/router.js';
-import {featureEnabled} from '@/routes/config';
+import {useAppConfigStore} from '@/stores/app-config';
 
 export default {
   name: 'ops',
@@ -20,12 +20,13 @@ export default {
     title: 'Operations'
   },
   beforeEnter: async (to, from, next) => {
+    const appConfig = useAppConfigStore();
     if (to.path === '/ops') {
-      if (await featureEnabled('/ops/overview')) {
+      if (appConfig.pathEnabled('/ops/overview')) {
         next('/ops/overview');
-      } else if (await featureEnabled('/ops/notifications')) {
+      } else if (appConfig.pathEnabled('/ops/notifications')) {
         next('/ops/notifications');
-      } else if (await featureEnabled('/ops/emergency-lighting')) {
+      } else if (appConfig.pathEnabled('/ops/emergency-lighting')) {
         next('/ops/emergency-lighting');
       }
     } else {

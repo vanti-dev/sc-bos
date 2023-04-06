@@ -7,7 +7,7 @@ import system from '@/routes/system/route.js';
 import {route, routeTitle} from '@/util/router.js';
 import Vue, {nextTick} from 'vue';
 import VueRouter from 'vue-router';
-import {featureEnabled, uiConfig} from '@/routes/config';
+import {useAppConfigStore} from '@/stores/app-config';
 
 Vue.use(VueRouter);
 
@@ -35,11 +35,12 @@ if (window) {
     nextTick(() => window.document.title = title);
   });
   router.beforeEach(async (to, from, next) => {
+    const appConfig = useAppConfigStore();
+    await appConfig.loadConfig();
     if (to.path==='/') {
-      const c = await uiConfig();
-      next(c.home);
+      next(appConfig.homePath);
     } else {
-      next(await featureEnabled(to.path));
+      next(appConfig.pathEnabled(to.path));
     }
   });
 }
