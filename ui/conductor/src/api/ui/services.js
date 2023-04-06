@@ -5,7 +5,8 @@ import {GetMetadataRequest} from '@smart-core-os/sc-api-grpc-web/traits/metadata
 import {fieldMaskFromObject, setProperties} from '@/api/convpb';
 import {
   ConfigureServiceRequest,
-  ListServicesRequest, PullServiceRequest,
+  ListServicesRequest,
+  PullServiceRequest,
   StartServiceRequest,
   StopServiceRequest
 } from '@sc-bos/ui-gen/proto/services_pb';

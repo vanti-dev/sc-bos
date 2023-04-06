@@ -1,11 +1,7 @@
 import {clientOptions} from '@/api/grpcweb';
 import {trackAction} from '@/api/resource';
-import {
-  MeterHistoryPromiseClient,
-  OccupancySensorHistoryClient,
-  OccupancySensorHistoryPromiseClient
-} from '@sc-bos/ui-gen/proto/history_grpc_web_pb';
-import {ListMeterReadingHistoryRequest, ListOccupancyHistoryRequest} from '@sc-bos/ui-gen/proto/history_pb';
+import {OccupancySensorHistoryPromiseClient} from '@sc-bos/ui-gen/proto/history_grpc_web_pb';
+import {ListOccupancyHistoryRequest} from '@sc-bos/ui-gen/proto/history_pb';
 
 /**
  *

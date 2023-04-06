@@ -3,8 +3,10 @@ import {clientOptions} from '@/api/grpcweb.js';
 import {trackAction} from '@/api/resource.js';
 import {TenantApiPromiseClient} from '@sc-bos/ui-gen/proto/tenants_grpc_web_pb';
 import {
-  CreateSecretRequest, CreateTenantRequest,
-  DeleteSecretRequest, DeleteTenantRequest,
+  CreateSecretRequest,
+  CreateTenantRequest,
+  DeleteSecretRequest,
+  DeleteTenantRequest,
   GetTenantRequest,
   ListSecretsRequest,
   ListTenantsRequest,

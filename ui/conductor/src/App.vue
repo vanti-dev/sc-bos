@@ -55,7 +55,6 @@ import AppMenu from '@/components/AppMenu.vue';
 import {usePage} from '@/components/page.js';
 import ScLogo from '@/components/ScLogo.vue';
 import {useAccountStore} from '@/stores/account.js';
-// import {onMounted} from 'vue';
 
 const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
 

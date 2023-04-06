@@ -55,10 +55,8 @@ export const useAppConfigStore = defineStore('appConfig', () => {
   async function loadConfig() {
     const url = import.meta.env.VITE_UI_CONFIG_URL || '/__/scos/ui-config.json';
     try {
-      console.debug('Loaded server config from', url);
       const res = await fetch(url);
       _config.value = await res.json();
-      console.debug('config loaded', _config.value);
     } catch (e) {
       console.warn('Failed to load config from server, using default config', e);
       _config.value = _defaultConfig;

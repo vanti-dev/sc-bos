@@ -22,9 +22,7 @@
 <script setup>
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
-import {computed, reactive, ref} from 'vue';
-import {configureService, ServiceNames as ServiceTypes} from '@/api/ui/services';
-import {newActionTracker} from '@/api/resource';
+import {computed, ref} from 'vue';
 
 const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);

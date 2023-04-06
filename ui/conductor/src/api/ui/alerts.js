@@ -4,8 +4,10 @@ import {pullResource, setCollection, setValue, trackAction} from '@/api/resource
 import {AlertApiPromiseClient} from '@sc-bos/ui-gen/proto/alerts_grpc_web_pb';
 import {
   AcknowledgeAlertRequest,
-  Alert, GetAlertMetadataRequest,
-  ListAlertsRequest, PullAlertMetadataRequest,
+  Alert,
+  GetAlertMetadataRequest,
+  ListAlertsRequest,
+  PullAlertMetadataRequest,
   PullAlertsRequest
 } from '@sc-bos/ui-gen/proto/alerts_pb';
 
