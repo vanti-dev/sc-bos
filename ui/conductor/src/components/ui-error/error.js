@@ -1,6 +1,7 @@
 import {defineStore} from 'pinia';
 import Vue, {computed, ref, watch} from 'vue';
 import {StatusCode} from 'grpc-web';
+import {statusCodeToString} from '@/components/ui-error/util';
 
 /**
  * @typedef {Object} UiError
@@ -20,6 +21,8 @@ export const useErrorStore = defineStore('error', () => {
    */
   function addError(resource, error) {
     const e = /** @type {UiError} */{resource, source: error, timestamp: Date.now(), id: _id++};
+    // eslint-disable-next-line max-len
+    console.error(`[${(new Date(e.timestamp)).toLocaleTimeString()}] ${statusCodeToString(e.source.code)}: ${e.source.message}`, e.source);
     Vue.set(_errorMap.value, e.id, e);
     // todo: auto-clear errors
   }
@@ -53,6 +56,19 @@ export const useErrorStore = defineStore('error', () => {
 
   /**
    *
+   * @param {Ref<ResourceValue>} resourceValue
+   * @return {WatchStopHandle}
+   */
+  function registerValue(resourceValue) {
+    return watch(() => resourceValue.value.streamError, (error) => {
+      if (error && error.code !== StatusCode.OK) {
+        addError(resourceValue.value, error);
+      }
+    });
+  }
+
+  /**
+   *
    * @param {Ref<Collection>} collection
    * @return {WatchStopHandle}
    */
@@ -69,6 +85,7 @@ export const useErrorStore = defineStore('error', () => {
     clearError,
     errors,
     registerTracker,
+    registerValue,
     registerCollection
   };
 });
