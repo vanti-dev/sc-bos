@@ -3,9 +3,11 @@ package merge
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sync"
 	"time"
 
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -142,13 +144,22 @@ func (f *udmiMerge) startPoll(init context.Context) (stop task.StopFn, err error
 // pollPeer fetches data from the peer device, save locally, and fire a change if there is one
 func (f *udmiMerge) pollPeer(ctx context.Context) error {
 	events := make(udmi.PointsEvent)
+	var errs []error
 	for key, cfg := range f.config.Points {
 		value, err := readProperty(ctx, f.client, f.known, *cfg)
 		if err != nil {
-			return err
+			errs = append(errs, fmt.Errorf("read property %q: %w", key, err))
+			continue
 		}
 		events[key] = udmi.PointValue{PresentValue: value}
 	}
+	if len(errs) == len(f.config.Points) {
+		return multierr.Combine(errs...)
+	}
+	if len(errs) > 0 {
+		f.logger.Debug("ignoring some errors", zap.Errors("errs", errs))
+	}
+
 	f.pointsLock.Lock()
 	isEqual := f.points.Equal(events)
 	hasUpdate := !isEqual
