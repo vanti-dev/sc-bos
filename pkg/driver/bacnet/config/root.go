@@ -26,8 +26,8 @@ type Root struct {
 	ForceDiscovery           bool       `json:"forceDiscovery,omitempty"`
 	IncludeDiscoveredDevices bool       `json:"includeDiscoveredDevices,omitempty"`
 
-	DeviceNamePrefix string `json:"deviceNamePrefix,omitempty"` // defaults to "bacnet/device/"
-	ObjectNamePrefix string `json:"objectNamePrefix,omitempty"` // defaults to "obj/"
+	DeviceNamePrefix string `json:"deviceNamePrefix"` // defaults to "bacnet/device/" if absent in json or using Defaults
+	ObjectNamePrefix string `json:"objectNamePrefix"` // defaults to "obj/" if absent in json, or using Defaults
 
 	DiscoverObjects bool `json:"discoverObjects,omitempty"`
 
