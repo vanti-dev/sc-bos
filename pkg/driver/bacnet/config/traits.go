@@ -151,6 +151,7 @@ func (o *ObjectRef) UnmarshalJSON(bytes []byte) error {
 	oid, err := ObjectIDFromString(s)
 	if err == nil {
 		*o = ObjectRef{id: oid}
+		return nil
 	}
 	*o = ObjectRef{name: s}
 	return nil
