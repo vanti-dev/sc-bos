@@ -22,12 +22,11 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import {computed, onUnmounted, reactive, ref, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 import {useServicesStore} from '@/stores/services';
 import {ServiceNames, startService, stopService} from '@/api/ui/services';
 import {usePageStore} from '@/stores/page';
 import {newActionTracker} from '@/api/resource';
-import {StatusCode} from 'grpc-web';
 import {useErrorStore} from '@/components/ui-error/error';
 
 const serviceStore = useServicesStore();
@@ -58,21 +57,23 @@ const headers = [
 // todo: this causes us to load all pages, connect with paging logic instead
 serviceCollection.value.needsMorePages = true;
 
+// setup query
 watch(() => props.name, (value) => {
   serviceCollection.value.query(props.name);
 }, {immediate: true});
-onUnmounted(() => serviceCollection.value.reset());
+let unwatchErrors;
+onMounted(() => {
+  unwatchErrors = errors.registerCollection(serviceCollection);
+});
+onUnmounted(() => {
+  unwatchErrors();
+  serviceCollection.value.reset();
+});
 
 const serviceList = computed(() => {
   return Object.values(serviceCollection.value.resources.value).filter(service => {
     return props.type === '' || props.type === 'all' || service.type === props.type;
   });
-});
-
-watch(() => serviceCollection.value.resources.streamError, (err) => {
-  if (err && err.code !== StatusCode.OK) {
-    errors.addError(serviceCollection.value.resources, err);
-  }
 });
 
 /**

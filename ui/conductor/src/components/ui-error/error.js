@@ -1,5 +1,6 @@
 import {defineStore} from 'pinia';
-import Vue, {computed, ref} from 'vue';
+import Vue, {computed, ref, watch} from 'vue';
+import {StatusCode} from 'grpc-web';
 
 /**
  * @typedef {Object} UiError
@@ -20,7 +21,7 @@ export const useErrorStore = defineStore('error', () => {
   function addError(resource, error) {
     const e = /** @type {UiError} */{resource, source: error, timestamp: Date.now(), id: _id++};
     Vue.set(_errorMap.value, e.id, e);
-    // todo: expire errors
+    // todo: auto-clear errors
   }
 
   /**
@@ -38,9 +39,36 @@ export const useErrorStore = defineStore('error', () => {
     return Object.values(_errorMap.value);
   });
 
+  /**
+   * @param {Ref<ActionTracker>} actionTracker
+   * @return {WatchStopHandle}
+   */
+  function registerTracker(actionTracker) {
+    return watch(() => actionTracker.value.error, (error) => {
+      if (error && error.code !== StatusCode.OK) {
+        addError(actionTracker.resource, error);
+      }
+    });
+  }
+
+  /**
+   *
+   * @param {Ref<Collection>} collection
+   * @return {WatchStopHandle}
+   */
+  function registerCollection(collection) {
+    return watch(() => collection.value.resources.streamError, (error) => {
+      if (error && error.code !== StatusCode.OK) {
+        addError(collection.value.resources, error);
+      }
+    });
+  }
+
   return {
     addError,
     clearError,
-    errors
+    errors,
+    registerTracker,
+    registerCollection
   };
 });
