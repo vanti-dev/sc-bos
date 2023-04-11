@@ -100,10 +100,11 @@
 <script setup>
 import {DAY, useNow} from '@/components/now.js';
 import {add} from 'date-fns';
-import {computed, reactive, ref} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 import RelativeDate from '@/components/RelativeDate.vue';
 import {createSecret, secretToObject} from '@/api/ui/tenant';
 import {newActionTracker} from '@/api/resource';
+import {useErrorStore} from '@/components/ui-error/error';
 
 const emit = defineEmits(['finished']);
 const props = defineProps({
@@ -174,6 +175,16 @@ const noteRules = [
 const expiresAtRules = [
   v => Boolean(v) || 'Expiry date can\'t be blank'
 ];
+
+// UI error handling
+const errorStore = useErrorStore();
+let unwatchErrors;
+onMounted(() => {
+  unwatchErrors = errorStore.registerTracker(createSecretTracker);
+});
+onUnmounted(() => {
+  if (unwatchErrors) unwatchErrors();
+});
 
 /**
  *

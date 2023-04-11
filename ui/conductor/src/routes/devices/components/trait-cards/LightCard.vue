@@ -40,9 +40,10 @@
 
 <script setup>
 
-import {computed, onUnmounted, reactive, watch} from 'vue';
-import {closeResource, newResourceValue} from '@/api/resource';
+import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
+import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
 import {pullBrightness, updateBrightness} from '@/api/sc/traits/light';
+import {useErrorStore} from '@/components/ui-error/error';
 
 const props = defineProps({
   // unique name of the device
@@ -53,6 +54,19 @@ const props = defineProps({
 });
 
 const lightValue = reactive(newResourceValue());
+const updateValue = reactive(newActionTracker());
+
+// UI error handling
+const errorStore = useErrorStore();
+let unwatchLightError; let unwatchUpdateError;
+onMounted(() => {
+  unwatchLightError = errorStore.registerValue(lightValue);
+  unwatchUpdateError = errorStore.registerTracker(updateValue);
+});
+onUnmounted(() => {
+  if (unwatchLightError) unwatchLightError();
+  if (unwatchUpdateError) unwatchUpdateError();
+});
 
 // if device name changes
 watch(() => props.name, async (name) => {
@@ -74,8 +88,6 @@ const brightness = computed(() => {
   }
   return '-';
 });
-
-const updateValue = reactive(newResourceValue());
 
 /**
  * @param {number} value

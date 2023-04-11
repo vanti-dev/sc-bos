@@ -50,12 +50,14 @@
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
 import {useDevicesStore} from '@/routes/devices/store';
-import {computed, onUnmounted, ref, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 import {usePageStore} from '@/stores/page';
 import {Zone} from '@/routes/site/zone/zone';
+import {useErrorStore} from '@/components/ui-error/error';
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();
+const errorStore = useErrorStore();
 
 const props = defineProps({
   subsystem: {
@@ -126,7 +128,7 @@ const filterFloor = ref(floorList.value[0]);
 const filterZone = ref(zoneList.value[0]); */
 
 /** @type {Collection} */
-const collection = devicesStore.newCollection();
+const collection = reactive(devicesStore.newCollection());
 collection.needsMorePages = true; // todo: this causes us to load all pages, connect with paging logic instead
 
 /** @type {ComputedRef<Device.Query.AsObject>} */
@@ -148,7 +150,13 @@ const query = computed(() => {
 // watch for changes to the query object and fetch new device list
 watch(query, () => collection.query(query.value), {deep: true, immediate: true});
 
+// UI error handling
+let unwatchErrors;
+onMounted(() => {
+  unwatchErrors = errorStore.registerCollection(collection);
+});
 onUnmounted(() => {
+  if (unwatchErrors) unwatchErrors();
   collection.reset(); // stop listening when the component is unmounted
 });
 

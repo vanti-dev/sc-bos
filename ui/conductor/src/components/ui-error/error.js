@@ -43,39 +43,47 @@ export const useErrorStore = defineStore('error', () => {
   });
 
   /**
-   * @param {Ref<ActionTracker>} actionTracker
+   * @param {ActionTracker} actionTracker
    * @return {WatchStopHandle}
    */
   function registerTracker(actionTracker) {
-    return watch(() => actionTracker.value.error, (error) => {
-      if (error && error.code !== StatusCode.OK) {
-        addError(actionTracker.resource, error);
-      }
-    });
+    if (actionTracker.hasOwnProperty('error')) {
+      return watch(() => actionTracker.error, (error) => {
+        if (error && error.code !== StatusCode.OK) {
+          addError(actionTracker, error);
+        }
+      });
+    } else if (actionTracker.value) {
+      return watch(() => actionTracker.value.error, (error) => {
+        if (error && error.code !== StatusCode.OK) {
+          addError(actionTracker.value, error);
+        }
+      });
+    }
   }
 
   /**
    *
-   * @param {Ref<ResourceValue>} resourceValue
+   * @param {ResourceValue} resourceValue
    * @return {WatchStopHandle}
    */
   function registerValue(resourceValue) {
-    return watch(() => resourceValue.value.streamError, (error) => {
+    return watch(() => resourceValue.streamError, (error) => {
       if (error && error.code !== StatusCode.OK) {
-        addError(resourceValue.value, error);
+        addError(resourceValue, error);
       }
     });
   }
 
   /**
    *
-   * @param {Ref<Collection>} collection
+   * @param {Collection} collection
    * @return {WatchStopHandle}
    */
   function registerCollection(collection) {
-    return watch(() => collection.value.resources.streamError, (error) => {
+    return watch(() => collection.resources.streamError, (error) => {
       if (error && error.code !== StatusCode.OK) {
-        addError(collection.value.resources, error);
+        addError(collection.resources, error);
       }
     });
   }

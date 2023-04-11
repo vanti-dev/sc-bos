@@ -30,9 +30,11 @@ import {newActionTracker} from '@/api/resource';
 import {useErrorStore} from '@/components/ui-error/error';
 
 const serviceStore = useServicesStore();
-const serviceCollection = ref(serviceStore.getService(props.name).servicesCollection);
 const pageStore = usePageStore();
 const errors = useErrorStore();
+
+const serviceCollection = reactive(serviceStore.getService(props.name).servicesCollection);
+const startStopTracker = reactive(newActionTracker());
 
 const props = defineProps({
   name: {
@@ -55,23 +57,26 @@ const headers = [
 ];
 
 // todo: this causes us to load all pages, connect with paging logic instead
-serviceCollection.value.needsMorePages = true;
+serviceCollection.needsMorePages = true;
 
 // setup query
 watch(() => props.name, (value) => {
-  serviceCollection.value.query(props.name);
+  serviceCollection.query(props.name);
 }, {immediate: true});
-let unwatchErrors;
+// UI error handling
+let unwatchErrors; let unwatchStartStopErrors;
 onMounted(() => {
   unwatchErrors = errors.registerCollection(serviceCollection);
+  unwatchStartStopErrors = errors.registerTracker(startStopTracker);
 });
 onUnmounted(() => {
-  unwatchErrors();
-  serviceCollection.value.reset();
+  if (unwatchErrors) unwatchErrors();
+  if (unwatchStartStopErrors) unwatchStartStopErrors();
+  serviceCollection.reset();
 });
 
 const serviceList = computed(() => {
-  return Object.values(serviceCollection.value.resources.value).filter(service => {
+  return Object.values(serviceCollection.resources.value).filter(service => {
     return props.type === '' || props.type === 'all' || service.type === props.type;
   });
 });
@@ -87,7 +92,6 @@ function showService(service, row) {
   pageStore.sidebarData = {...service, config: JSON.parse(service.configRaw)};
 }
 
-const startStopTracker = reactive(newActionTracker());
 
 /**
  *

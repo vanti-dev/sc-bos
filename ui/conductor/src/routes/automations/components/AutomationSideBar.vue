@@ -17,9 +17,10 @@ import EditConfigCard from '@/routes/system/components/service-cards/EditConfigC
 import LightsConfigCard from '@/routes/automations/components/config-cards/LightsConfigCard.vue';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
-import {computed, reactive, ref} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 import {newActionTracker} from '@/api/resource';
 import {configureService, ServiceNames as ServiceTypes} from '@/api/ui/services';
+import {useErrorStore} from '@/components/ui-error/error';
 
 const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);
@@ -30,6 +31,17 @@ const saveConfirm = ref(false);
 const automationType = computed(() => {
   return sidebarData.value?.config?.type ?? '';
 });
+
+// UI error handling
+const errorStore = useErrorStore();
+let unwatchError;
+onMounted(() => {
+  unwatchError = errorStore.registerTracker(saveTracker);
+});
+onUnmounted(() => {
+  unwatchError();
+});
+
 
 /**
  *

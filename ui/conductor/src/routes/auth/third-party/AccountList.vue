@@ -43,15 +43,17 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import {onMounted, ref} from 'vue';
+import {onMounted, onUnmounted, ref} from 'vue';
 import NewAccountDialog from '@/routes/auth/third-party/components/NewAccountDialog.vue';
 import {usePageStore} from '@/stores/page';
 import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
 import {storeToRefs} from 'pinia';
+import {useErrorStore} from '@/components/ui-error/error';
 
 const pageStore = usePageStore();
 const tenantStore = useTenantStore();
 const {tenantsList, tenantsTracker} = storeToRefs(tenantStore);
+const errorStore = useErrorStore();
 
 const search = ref('');
 
@@ -61,7 +63,15 @@ const headers = [
   {text: 'Zones', value: 'zones'}
 ];
 
-onMounted(() => tenantStore.refreshTenants());
+// UI error handling
+let unwatchErrors;
+onMounted(() => {
+  unwatchErrors = errorStore.registerTracker(tenantsTracker);
+  tenantStore.refreshTenants();
+});
+onUnmounted( () => {
+  if (unwatchErrors) unwatchErrors();
+});
 
 /**
  * @param {Tenant.AsObject} item

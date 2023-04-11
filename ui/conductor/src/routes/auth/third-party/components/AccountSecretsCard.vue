@@ -61,7 +61,7 @@
 
 <script setup>
 import {deleteSecret, listSecrets, secretToObject} from '@/api/ui/tenant';
-import {computed, reactive, watch} from 'vue';
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue';
 import {newActionTracker} from '@/api/resource';
 import {compareDesc} from 'date-fns';
 import dayjs from 'dayjs';
@@ -69,12 +69,25 @@ import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import NewSecretForm from './NewSecretForm.vue';
 import DeleteConfirmationDialog from '@/routes/auth/third-party/components/DeleteConfirmationDialog.vue';
+import {useErrorStore} from '@/components/ui-error/error';
 
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
 
-const secretsTracker = reactive(/** @type {ActionTracker<ListSecretsResponse.AsObject>} */ newActionTracker());
-const deleteSecretTracker = reactive(/** @type {ActionTracker<DeleteSecretResponse.AsObject>} */ newActionTracker());
+const secretsTracker = ref(/** @type {ActionTracker<ListSecretsResponse.AsObject>} */ newActionTracker());
+const deleteSecretTracker = ref(/** @type {ActionTracker<DeleteSecretResponse.AsObject>} */ newActionTracker());
+
+// UI error handling
+const errorStore = useErrorStore();
+let unwatchSecretErrors; let unwatchDeleteSecretErrors;
+onMounted(() => {
+  unwatchSecretErrors = errorStore.registerTracker(secretsTracker);
+  unwatchDeleteSecretErrors = errorStore.registerTracker(deleteSecretTracker);
+});
+onUnmounted(() => {
+  unwatchSecretErrors();
+  unwatchDeleteSecretErrors();
+});
 
 const props = defineProps({
   account: {
@@ -86,7 +99,7 @@ const props = defineProps({
 
 const secretList = computed(() => {
   // sorted by create time
-  return secretsTracker.response?.secretsList
+  return secretsTracker.value.response?.secretsList
       .map(s => secretToObject(s))
       .sort((a, b) => compareDesc(a.createTime, b.createTime));
 });
@@ -98,7 +111,7 @@ watch(() => props.account, () => refreshSecrets(), {immediate: true});
  */
 function refreshSecrets() {
   if (!props.account.id) {
-    secretsTracker.response = null;
+    secretsTracker.value.response = null;
     return;
   }
   listSecrets({tenantId: props.account.id}, secretsTracker).catch(err => console.error(err));

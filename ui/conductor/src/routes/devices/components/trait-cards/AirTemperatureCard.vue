@@ -37,8 +37,8 @@
 </template>
 
 <script setup>
-import {computed, onUnmounted, reactive, ref, watch} from 'vue';
-import {closeResource, newResourceValue} from '@/api/resource';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
 import {
   airTemperatureModeToString,
   pullAirTemperature,
@@ -46,6 +46,7 @@ import {
   updateAirTemperature
 } from '@/api/sc/traits/air-temperature';
 import {camelToSentence} from '@/util/string';
+import {useErrorStore} from '@/components/ui-error/error';
 
 const temperatureRange = ref({
   low: 18.0,
@@ -60,6 +61,7 @@ const props = defineProps({
 });
 
 const airTempValue = reactive(newResourceValue());
+const updateValue = reactive(newActionTracker());
 
 watch(() => props.name, async (name) => {
   // close existing stream if present
@@ -72,6 +74,18 @@ watch(() => props.name, async (name) => {
 
 onUnmounted(() => {
   closeResource(airTempValue);
+});
+
+// UI error handling
+const errorStore = useErrorStore();
+let unwatchAirTempErrors; let unwatchUpdateErrors;
+onMounted(() => {
+  unwatchAirTempErrors = errorStore.registerValue(airTempValue);
+  unwatchUpdateErrors = errorStore.registerTracker(updateValue);
+});
+onUnmounted(() => {
+  if (unwatchAirTempErrors) unwatchAirTempErrors();
+  if (unwatchUpdateErrors) unwatchUpdateErrors();
 });
 
 /**
@@ -125,7 +139,6 @@ const airTempData = computed(() => {
   return {};
 });
 
-const updateValue = reactive(newResourceValue());
 
 /**
  * @param {number} value

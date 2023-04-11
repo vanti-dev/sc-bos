@@ -20,17 +20,26 @@
 </template>
 <script setup>
 
-import {onUnmounted, reactive, ref} from 'vue';
+import {onMounted, onUnmounted, ref} from 'vue';
 import {createTenant} from '@/api/ui/tenant';
-import {newResourceValue} from '@/api/resource';
+import {newActionTracker} from '@/api/resource';
+import {useErrorStore} from '@/components/ui-error/error';
 
 const dialog = ref(false);
-const addTenantTracker = reactive(newResourceValue());
+const addTenantTracker = ref(newActionTracker());
 const name = ref('');
 
 const emit = defineEmits(['finished']);
 
+// UI error handling
+const errorStore = useErrorStore();
+let unwatchErrors;
+onMounted(() => {
+  unwatchErrors = errorStore.registerTracker(addTenantTracker);
+});
+
 onUnmounted(() => {
+  unwatchErrors();
   clearForm();
 });
 
