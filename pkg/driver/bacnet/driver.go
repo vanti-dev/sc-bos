@@ -101,10 +101,11 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		deviceName := adapt.DeviceName(device)
 		d.devices.StoreDevice(deviceName, bacDevice)
 
-		announcer := node.AnnounceWithNamePrefix("bacnet/device/", rootAnnouncer)
+		announcer := node.AnnounceWithNamePrefix(cfg.DeviceNamePrefix, rootAnnouncer)
 		adapt.Device(deviceName, d.client, bacDevice, d.devices).AnnounceSelf(announcer)
 
-		prefix := fmt.Sprintf("bacnet/device/%v/obj/", deviceName)
+		// aka "[bacnet/devices/]{deviceName}/[obj/]"
+		prefix := fmt.Sprintf("%s%s/%s", cfg.DeviceNamePrefix, deviceName, cfg.ObjectNamePrefix)
 		announcer = node.AnnounceWithNamePrefix(prefix, rootAnnouncer)
 
 		// Collect all the object that we will be announcing.

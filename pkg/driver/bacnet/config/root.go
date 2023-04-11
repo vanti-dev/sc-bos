@@ -26,6 +26,9 @@ type Root struct {
 	ForceDiscovery           bool       `json:"forceDiscovery,omitempty"`
 	IncludeDiscoveredDevices bool       `json:"includeDiscoveredDevices,omitempty"`
 
+	DeviceNamePrefix string `json:"deviceNamePrefix,omitempty"` // defaults to "bacnet/device/"
+	ObjectNamePrefix string `json:"objectNamePrefix,omitempty"` // defaults to "obj/"
+
 	DiscoverObjects bool `json:"discoverObjects,omitempty"`
 
 	COV *COV `json:"cov,omitempty"`
@@ -35,7 +38,8 @@ type Root struct {
 }
 
 // ReadFile reads from the named file a config Root.
-func ReadFile(name string) (root Root, err error) {
+func ReadFile(name string) (Root, error) {
+	root := Defaults()
 	bytes, err := os.ReadFile(name)
 	if err != nil {
 		return root, err
@@ -45,14 +49,22 @@ func ReadFile(name string) (root Root, err error) {
 }
 
 // Read decodes r into a config Root.
-func Read(r io.Reader) (root Root, err error) {
-	err = json.NewDecoder(r).Decode(&root)
-	return
+func Read(r io.Reader) (Root, error) {
+	root := Defaults()
+	err := json.NewDecoder(r).Decode(&root)
+	return root, err
 }
 
 // ReadBytes decodes bytes into a config Root.
 func ReadBytes(data []byte) (root Root, err error) {
 	return Read(bytes.NewReader(data))
+}
+
+func Defaults() Root {
+	return Root{
+		DeviceNamePrefix: "bacnet/device/",
+		ObjectNamePrefix: "obj/",
+	}
 }
 
 type Discovery struct {
