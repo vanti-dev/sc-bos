@@ -14,10 +14,11 @@
 
 <script setup>
 
-import {computed, onUnmounted, reactive, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
 import ContentCard from '@/components/ContentCard.vue';
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullOccupancy} from '@/api/sc/traits/occupancy';
+import {useErrorStore} from '@/components/ui-error/error';
 
 const props = defineProps({
   name: {
@@ -47,6 +48,16 @@ watch(() => props.name, async (name) => {
 
 onUnmounted(() => {
   closeResource(occupancyValue);
+});
+
+// UI Error Handling
+const errorStore = useErrorStore();
+let unwatchErrors;
+onMounted(() => {
+  unwatchErrors = errorStore.registerValue(occupancyValue);
+});
+onUnmounted(() => {
+  if (unwatchErrors) unwatchErrors();
 });
 
 </script>

@@ -36,9 +36,10 @@
 
 import ContentCard from '@/components/ContentCard.vue';
 import CircularGauge from '@/components/CircularGauge.vue';
-import {computed, onUnmounted, reactive, ref, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullAirTemperature} from '@/api/sc/traits/air-temperature';
+import {useErrorStore} from '@/components/ui-error/error';
 
 const props = defineProps({
   // name of the device/zone to query for internal temperature data
@@ -90,6 +91,18 @@ watch(() => props.externalName, async (name) => {
 
 onUnmounted(() => {
   closeResource(outdoorTempValue);
+});
+
+// UI Error handling
+const errorStore = useErrorStore();
+let unwatchIndoorTempErrors; let unwatchOutdoorTempErrors;
+onMounted(() => {
+  unwatchIndoorTempErrors = errorStore.registerValue(indoorTempValue);
+  unwatchOutdoorTempErrors = errorStore.registerValue(outdoorTempValue);
+});
+onUnmounted(() => {
+  unwatchIndoorTempErrors();
+  unwatchOutdoorTempErrors();
 });
 
 
