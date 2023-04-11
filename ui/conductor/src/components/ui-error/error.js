@@ -81,11 +81,20 @@ export const useErrorStore = defineStore('error', () => {
    * @return {WatchStopHandle}
    */
   function registerCollection(collection) {
-    return watch(() => collection.resources.streamError, (error) => {
-      if (error && error.code !== StatusCode.OK) {
-        addError(collection.resources, error);
-      }
-    });
+    console.debug('registering collection', collection);
+    if (collection.hasOwnProperty('streamError')) {
+      return watch(() => collection.streamError, (error) => {
+        if (error && error.code !== StatusCode.OK) {
+          addError(collection, error);
+        }
+      });
+    } else {
+      return watch(() => collection.resources.streamError, (error) => {
+        if (error && error.code !== StatusCode.OK) {
+          addError(collection.resources, error);
+        }
+      });
+    }
   }
 
   return {

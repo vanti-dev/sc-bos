@@ -32,10 +32,11 @@
 
 <script setup>
 import {faultToString, getReportCSV, listLightHealth, runTest} from '@/api/sc/traits/lighting-test';
-import {computed, onMounted, reactive, ref} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 import {newActionTracker} from '@/api/resource';
 import ContentCard from '@/components/ContentCard.vue';
 import {EmergencyStatus} from '@sc-bos/ui-gen/proto/dali_pb';
+import {useErrorStore} from '@/components/ui-error/error';
 
 const headers = [
   {text: 'Name', value: 'name'},
@@ -57,6 +58,18 @@ const lightHealth = computed(() => {
 });
 
 onMounted(() => refreshLightHealth());
+
+// Ui Error handling
+const errorStore = useErrorStore();
+let unwatchCsvErrors; let unwatchLightHealthErrors;
+onMounted(() => {
+  unwatchCsvErrors = errorStore.registerTracker(csvTracker);
+  unwatchLightHealthErrors = errorStore.registerTracker(lightHealthTracker);
+});
+onUnmounted(() => {
+  if (unwatchCsvErrors) unwatchCsvErrors();
+  if (unwatchLightHealthErrors) unwatchLightHealthErrors();
+});
 
 /**
  *

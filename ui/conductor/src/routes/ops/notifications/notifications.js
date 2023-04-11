@@ -5,7 +5,8 @@ import {useControllerStore} from '@/stores/controller';
 import {Collection} from '@/util/query.js';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
 import {acceptHMRUpdate, defineStore} from 'pinia';
-import {computed, reactive, set, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, set, watch} from 'vue';
+import {useErrorStore} from '@/components/ui-error/error';
 
 
 const SeverityStrings = {
@@ -42,6 +43,18 @@ export const useNotifications = defineStore('notifications', () => {
       console.warn('Error fetching first page', e);
     }
   }, {immediate: true});
+
+  // UI Error Handling
+  const errorStore = useErrorStore();
+  let unwatchAlertErrors; let unwatchPageErrors;
+  onMounted(() => {
+    unwatchAlertErrors = errorStore.registerCollection(alerts);
+    unwatchPageErrors = errorStore.registerValue(fetchingPage);
+  });
+  onUnmounted(() => {
+    if (unwatchAlertErrors) unwatchAlertErrors();
+    if (unwatchPageErrors) unwatchPageErrors();
+  });
 
   /**
    *

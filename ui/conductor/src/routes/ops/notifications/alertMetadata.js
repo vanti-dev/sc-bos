@@ -2,7 +2,8 @@ import {closeResource, newResourceValue} from '@/api/resource';
 import {pullAlertMetadata} from '@/api/ui/alerts';
 import {useControllerStore} from '@/stores/controller';
 import {defineStore} from 'pinia';
-import {computed, reactive, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
+import {useErrorStore} from '@/components/ui-error/error';
 
 export const useAlertMetadata = defineStore('alertMetadata', () => {
   const controller = useControllerStore();
@@ -11,6 +12,16 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
     closeResource(alertMetadata);
     pullAlertMetadata({name, updatesOnly: false}, alertMetadata);
   }, {immediate: true});
+
+  // Ui Error Handling
+  const errorStore = useErrorStore();
+  let unwatchErrors;
+  onMounted(() => {
+    unwatchErrors = errorStore.registerValue(alertMetadata);
+  });
+  onUnmounted(() => {
+    if (unwatchErrors) unwatchErrors();
+  });
 
   /**
    * Converts a proto map, which is an array of [k,v] into a js object.
