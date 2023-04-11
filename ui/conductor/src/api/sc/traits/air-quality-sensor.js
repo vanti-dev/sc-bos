@@ -1,5 +1,5 @@
 import {clientOptions} from '@/api/grpcweb.js';
-import {pullResource, setValue} from '@/api/resource.js';
+import {pullResource, setError, setValue} from '@/api/resource.js';
 import {AirQualitySensorApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_grpc_web_pb';
 import {PullAirQualityRequest} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
 
@@ -16,6 +16,9 @@ export function pullAirQualitySensor(name, resource) {
       for (const change of changes) {
         setValue(resource, change.getAirQuality().toObject());
       }
+    });
+    stream.on('error', err => {
+      setError(resource, err);
     });
     return stream;
   });

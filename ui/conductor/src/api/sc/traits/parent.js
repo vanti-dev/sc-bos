@@ -1,5 +1,5 @@
 import {clientOptions} from '@/api/grpcweb.js';
-import {pullResource, setCollection} from '@/api/resource.js';
+import {pullResource, setCollection, setError} from '@/api/resource.js';
 import {ParentApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/parent_grpc_web_pb';
 import {PullChildrenRequest} from '@smart-core-os/sc-api-grpc-web/traits/parent_pb';
 
@@ -16,6 +16,9 @@ export function pullChildren(name, resources) {
       for (const change of changes) {
         setCollection(resources, change, child => child.name);
       }
+    });
+    stream.on('error', err => {
+      setError(resources, err);
     });
     return stream;
   });

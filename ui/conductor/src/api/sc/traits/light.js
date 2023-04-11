@@ -1,6 +1,6 @@
 import {fieldMaskFromObject, setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
-import {pullResource, setValue, trackAction} from '@/api/resource.js';
+import {pullResource, setError, setValue, trackAction} from '@/api/resource.js';
 import {tweenFromObject} from '@/api/sc/types/tween.js';
 import {LightApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/light_grpc_web_pb';
 import {
@@ -24,6 +24,9 @@ export function pullBrightness(name, resource) {
       for (const change of changes) {
         setValue(resource, change.getBrightness().toObject());
       }
+    });
+    stream.on('error', err => {
+      setError(resource, err);
     });
     return stream;
   });

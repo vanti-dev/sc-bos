@@ -1,5 +1,5 @@
 import {clientOptions} from '@/api/grpcweb.js';
-import {pullResource, setValue} from '@/api/resource.js';
+import {pullResource, setError, setValue} from '@/api/resource.js';
 import {AirTemperatureApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_grpc_web_pb';
 import {
   AirTemperature,
@@ -23,6 +23,9 @@ export function pullAirTemperature(name, resource) {
       for (const change of changes) {
         setValue(resource, change.getAirTemperature().toObject());
       }
+    });
+    stream.on('error', err => {
+      setError(resource, err);
     });
     return stream;
   });

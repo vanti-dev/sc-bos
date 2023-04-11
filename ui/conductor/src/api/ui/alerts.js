@@ -1,6 +1,6 @@
 import {convertProperties, fieldMaskFromObject, setProperties, timestampFromObject} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
-import {pullResource, setCollection, setValue, trackAction} from '@/api/resource';
+import {pullResource, setCollection, setError, setValue, trackAction} from '@/api/resource';
 import {AlertApiPromiseClient} from '@sc-bos/ui-gen/proto/alerts_grpc_web_pb';
 import {
   AcknowledgeAlertRequest,
@@ -37,6 +37,9 @@ export function pullAlerts(request, resource) {
         setCollection(resource, change, v => v.id);
       }
     });
+    stream.on('error', err => {
+      setError(resource, err);
+    });
     return stream;
   });
 }
@@ -66,6 +69,9 @@ export function pullAlertMetadata(request, resource) {
       for (const change of changes) {
         setValue(resource, change.getMetadata().toObject());
       }
+    });
+    stream.on('error', err => {
+      setError(resource, err);
     });
     return stream;
   });
