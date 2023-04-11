@@ -6,7 +6,7 @@ import {ListMeterReadingHistoryRequest} from '@sc-bos/ui-gen/proto/history_pb';
 /**
  *
  * @param {string} name
- * @param {ResourceValue<ListMeterReadingHistoryResponse.AsObject>} tracker
+ * @param {ActionTracker<ListMeterReadingHistoryResponse.AsObject>} tracker
  * @return {Promise<ListMeterReadingHistoryResponse.AsObject>}
  */
 export function listMeterReadingHistory(name, tracker) {
