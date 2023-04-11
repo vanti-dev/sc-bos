@@ -46,6 +46,8 @@
     </v-navigation-drawer>
 
     <router-view/>
+
+    <error-view/>
   </v-app>
 </template>
 
@@ -55,6 +57,7 @@ import AppMenu from '@/components/AppMenu.vue';
 import {usePage} from '@/components/page.js';
 import ScLogo from '@/components/ScLogo.vue';
 import {useAccountStore} from '@/stores/account.js';
+import ErrorView from '@/components/ui-error/ErrorView.vue';
 
 const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
 

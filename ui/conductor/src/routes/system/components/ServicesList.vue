@@ -27,10 +27,13 @@ import {useServicesStore} from '@/stores/services';
 import {ServiceNames, startService, stopService} from '@/api/ui/services';
 import {usePageStore} from '@/stores/page';
 import {newActionTracker} from '@/api/resource';
+import {StatusCode} from 'grpc-web';
+import {useErrorStore} from '@/components/ui-error/error';
 
 const serviceStore = useServicesStore();
 const serviceCollection = ref(serviceStore.getService(props.name).servicesCollection);
 const pageStore = usePageStore();
+const errors = useErrorStore();
 
 const props = defineProps({
   name: {
@@ -64,6 +67,12 @@ const serviceList = computed(() => {
   return Object.values(serviceCollection.value.resources.value).filter(service => {
     return props.type === '' || props.type === 'all' || service.type === props.type;
   });
+});
+
+watch(() => serviceCollection.value.resources.streamError, (err) => {
+  if (err && err.code !== StatusCode.OK) {
+    errors.addError(serviceCollection.value.resources, err);
+  }
 });
 
 /**
