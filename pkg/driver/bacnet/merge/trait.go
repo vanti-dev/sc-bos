@@ -7,6 +7,7 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
@@ -17,7 +18,7 @@ func IntoTrait(client *gobacnet.Client, ctx known.Context, traitConfig config.Ra
 		return newFanSpeed(client, ctx, traitConfig, logger)
 	case trait.AirTemperature:
 		return newAirTemperature(client, ctx, traitConfig, logger)
-	case UdmiMergeName:
+	case UdmiMergeName, udmipb.TraitName:
 		return newUdmiMerge(client, ctx, traitConfig, logger)
 	}
 	return nil, ErrTraitNotSupported
