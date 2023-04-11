@@ -47,6 +47,9 @@ func Changes[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, op
 					}
 				}
 			} else {
+				if errCount > 0 {
+					conf.logger.Debug("updates are now succeeding")
+				}
 				errCount = 0
 				delay = 0
 			}
