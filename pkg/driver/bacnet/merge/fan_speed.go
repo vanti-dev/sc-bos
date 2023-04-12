@@ -71,7 +71,7 @@ func (t *fanSpeed) startPoll(init context.Context) (stop task.StopFn, err error)
 					t.logger.Warn("pollPeer error", zap.String("err", err.Error()))
 				}
 			case <-ctx.Done():
-				break
+				return
 			}
 		}
 	}()

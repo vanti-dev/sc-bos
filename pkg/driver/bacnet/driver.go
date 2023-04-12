@@ -18,6 +18,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/ctxerr"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/merge"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
@@ -178,22 +179,12 @@ func (d *Driver) initClient(cfg config.Root) error {
 }
 
 func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announcer, cfg config.Root, device config.Device, devices known.Context) error {
-	realErr := func(err error) error {
-		// check err is really a context error without cause
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-			return err
-		}
-	}
-
 	deviceName := adapt.DeviceName(device)
 	logger := d.logger.With(zap.Uint32("deviceId", uint32(device.ID)), zap.String("name", deviceName))
 
 	bacDevice, err := d.findDevice(ctx, device)
 	if err != nil {
-		return fmt.Errorf("device comm handshake: %w", realErr(err))
+		return fmt.Errorf("device comm handshake: %w", ctxerr.Cause(ctx, err))
 	}
 
 	d.storeDevice(deviceName, bacDevice)
@@ -209,7 +200,7 @@ func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announc
 	// This will be a combination of configured objects and those we discover on the device.
 	objects, err := d.fetchObjects(ctx, cfg, device, bacDevice)
 	if err != nil {
-		return fmt.Errorf("fetch objects: %w", realErr(err))
+		return fmt.Errorf("fetch objects: %w", ctxerr.Cause(ctx, err))
 	}
 
 	for _, object := range objects {

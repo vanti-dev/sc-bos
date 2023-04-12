@@ -134,7 +134,7 @@ func (f *udmiMerge) startPoll(init context.Context) (stop task.StopFn, err error
 					f.logger.Warn("pollPeer error", zap.String("err", err.Error()))
 				}
 			case <-ctx.Done():
-				break
+				return
 			}
 		}
 	}()

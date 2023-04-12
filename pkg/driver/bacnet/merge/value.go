@@ -7,6 +7,7 @@ import (
 
 	"github.com/vanti-dev/gobacnet"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/ctxerr"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
@@ -28,7 +29,7 @@ func readProperty(ctx context.Context, client *gobacnet.Client, known known.Cont
 	}
 	res, err := client.ReadProperty(ctx, device, req)
 	if err != nil {
-		return nil, err
+		return nil, ctxerr.Cause(ctx, err)
 	}
 	if len(res.Object.Properties) == 0 {
 		// Shouldn't happen, but has on occasion. I guess it depends how the device responds to our request
@@ -93,5 +94,6 @@ func writeProperty(ctx context.Context, client *gobacnet.Client, known known.Con
 			},
 		},
 	}
-	return client.WriteProperty(ctx, device, req, priority)
+	err = client.WriteProperty(ctx, device, req, priority)
+	return ctxerr.Cause(ctx, err)
 }
