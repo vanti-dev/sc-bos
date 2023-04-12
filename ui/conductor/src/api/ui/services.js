@@ -46,6 +46,7 @@ export function listServices(request, tracker) {
  * @param {ResourceCollection<Service.AsObject, Service>} resource
  */
 export function pullServices(request, resource) {
+  if (!request.name) throw new Error('request.name must be specified');
   pullResource('Services.PullServices', resource, endpoint => {
     const api = client(endpoint);
     const stream = api.pullServices(pullServicesRequestFromObject(request));
