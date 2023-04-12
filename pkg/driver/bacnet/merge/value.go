@@ -90,6 +90,21 @@ func readMultiProperties(ctx context.Context, client *gobacnet.Client, device ba
 	multiRes, err := client.ReadMultiProperty(ctx, device, req)
 	if err != nil {
 		// todo: be more conservative about which errors we try individual property reads for
+		err = ctxerr.Cause(ctx, err)
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			// stop early as ctx is done anyway
+			for _, object := range req.Objects {
+				for _, prop := range object.Properties {
+					k := key{device.ID.Instance, object.ID, prop.ID}
+					for _, i := range resIndexes[k] {
+						res[i] = err
+					}
+				}
+			}
+			return
+		}
+
+		// read the properties one at a time as the multi read failed
 		for _, object := range req.Objects {
 			for _, prop := range object.Properties {
 				oneRes, err := client.ReadProperty(ctx, device, bactypes.ReadPropertyData{

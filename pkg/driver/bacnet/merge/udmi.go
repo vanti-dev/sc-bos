@@ -3,6 +3,7 @@ package merge
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -128,7 +129,7 @@ func (f *udmiMerge) startPoll(init context.Context) (stop task.StopFn, err error
 	go func() {
 		for {
 			err := f.pollPeer(ctx)
-			if err != nil { // todo: should this return?
+			if err != nil && !errors.Is(err, context.Canceled) { // todo: should this return?
 				f.logger.Warn("pollPeer error", zap.String("err", err.Error()))
 			}
 			select {
@@ -164,6 +165,11 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 		return multierr.Combine(errs...)
 	}
 	if len(errs) > 0 {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
 		f.logger.Debug("ignoring some errors", zap.Errors("errs", errs))
 	}
 

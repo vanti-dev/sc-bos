@@ -3,6 +3,7 @@ package merge
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -65,7 +66,7 @@ func (t *fanSpeed) startPoll(init context.Context) (stop task.StopFn, err error)
 	go func() {
 		for {
 			_, err := t.pollPeer(ctx)
-			if err != nil { // todo: should this return?
+			if err != nil && !errors.Is(err, context.Canceled) { // todo: should this return?
 				t.logger.Warn("pollPeer error", zap.String("err", err.Error()))
 			}
 			select {
