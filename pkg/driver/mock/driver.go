@@ -32,6 +32,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/util/maps"
@@ -104,7 +105,7 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 			}
 
 			if _, ok := d.known[dt]; !ok {
-				client, slc := newMockClient(dt.trait)
+				client, slc := newMockClient(dt.trait, device.Name, d.logger)
 				if client == nil {
 					d.logger.Sugar().Warnf("Cannot create mock client %s::%s", dt.name, dt.trait)
 				} else {
@@ -140,7 +141,7 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 	return nil
 }
 
-func newMockClient(traitName trait.Name) (any, service.Lifecycle) {
+func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) (any, service.Lifecycle) {
 	switch traitName {
 	case trait.AirQualitySensor:
 		return airqualitysensor.WrapApi(airqualitysensor.NewModelServer(airqualitysensor.NewModel(&traits.AirQuality{}))), nil
@@ -228,6 +229,8 @@ func newMockClient(traitName trait.Name) (any, service.Lifecycle) {
 	case meter.TraitName:
 		model := meter.NewModel()
 		return gen.WrapMeterApi(meter.NewModelServer(model)), auto.MeterAuto(model)
+	case udmipb.TraitName:
+		return gen.WrapUdmiService(auto.NewUdmiServer(logger, deviceName)), nil
 	}
 
 	return nil, nil
