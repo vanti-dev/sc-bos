@@ -61,44 +61,34 @@ func NewDriver(services driver.Services) *Driver {
 		devices:   known.NewMap(),
 		logger:    services.Logger.Named("bacnet"),
 	}
-	d.Service = service.New(service.MonoApply(d.applyConfig), service.WithParser(config.ReadBytes))
+	d.Service = service.New(service.MonoApply(d.applyConfig),
+		service.WithParser(config.ReadBytes),
+		service.WithOnStop[config.Root](d.Clear))
 	return d
 }
 
 func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	// AnnounceContext only makes sense if using MonoApply, which we are in NewDriver
 	rootAnnouncer := node.AnnounceContext(ctx, d.announcer)
-	go func() {
-		<-ctx.Done() // ctx is cancelled on stop or before another applyConfig call, thanks to MonoApply above.
-		// clear resources setup during the last applyConfig call
-		d.devices.Clear()
-		if d.client != nil {
-			d.client.Close()
-			d.client = nil
-		}
-	}()
+	// we start fresh each time config is updated
+	d.Clear()
 
-	client, err := gobacnet.NewClient(cfg.LocalInterface, int(cfg.LocalPort))
+	err := d.initClient(cfg)
 	if err != nil {
 		return err
-	}
-	client.Log.SetLevel(logrus.InfoLevel)
-	d.client = client
-	if address, err := client.LocalUDPAddress(); err == nil {
-		d.logger.Debug("bacnet client configured", zap.Stringer("local", address),
-			zap.String("localInterface", cfg.LocalInterface), zap.Uint16("localPort", cfg.LocalPort))
 	}
 
 	// setup all our devices and objects...
 	for _, device := range cfg.Devices {
-		logger := d.logger.With(zap.Uint32("deviceId", uint32(device.ID)))
+		deviceName := adapt.DeviceName(device)
+		logger := d.logger.With(zap.Uint32("deviceId", uint32(device.ID)), zap.String("name", deviceName))
+
 		bacDevice, e := d.findDevice(ctx, device)
 		if e != nil {
 			err = multierr.Append(err, e)
 			continue
 		}
 
-		deviceName := adapt.DeviceName(device)
 		d.devices.StoreDevice(deviceName, bacDevice)
 
 		announcer := node.AnnounceWithNamePrefix(cfg.DeviceNamePrefix, rootAnnouncer)
@@ -165,4 +155,26 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	}
 
 	return err
+}
+
+func (d *Driver) initClient(cfg config.Root) error {
+	client, err := gobacnet.NewClient(cfg.LocalInterface, int(cfg.LocalPort))
+	if err != nil {
+		return err
+	}
+	client.Log.SetLevel(logrus.InfoLevel)
+	d.client = client
+	if address, err := client.LocalUDPAddress(); err == nil {
+		d.logger.Debug("bacnet client configured", zap.Stringer("local", address),
+			zap.String("localInterface", cfg.LocalInterface), zap.Uint16("localPort", cfg.LocalPort))
+	}
+	return err
+}
+
+func (d *Driver) Clear() {
+	d.devices.Clear()
+	if d.client != nil {
+		d.client.Close()
+		d.client = nil
+	}
 }
