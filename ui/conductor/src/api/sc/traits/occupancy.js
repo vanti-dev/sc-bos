@@ -1,7 +1,7 @@
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setValue} from '@/api/resource.js';
 import {OccupancySensorApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_grpc_web_pb';
-import {PullOccupancyRequest} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
+import {Occupancy, PullOccupancyRequest} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
 
 /**
  *
@@ -20,4 +20,24 @@ export function pullOccupancy(name, resource) {
     });
     return stream;
   });
+}
+
+/**
+ *
+ * @param {Occupancy.State} state
+ * @return {string}
+ */
+export function occupancyStateToString(state) {
+  switch (state) {
+    case Occupancy.State.STATE_UNSPECIFIED:
+      return 'Unspecified';
+    case Occupancy.State.OCCUPIED:
+      return 'Occupied';
+    case Occupancy.State.UNOCCUPIED:
+      return 'Unoccupied';
+    case Occupancy.State.IDLE:
+      return 'Idle';
+    default:
+      return 'Unknown';
+  }
 }
