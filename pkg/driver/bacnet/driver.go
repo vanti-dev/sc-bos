@@ -4,12 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
-	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/gobacnet"
+	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
@@ -18,6 +22,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/merge"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
 	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
@@ -52,6 +57,7 @@ type Driver struct {
 	*service.Service[config.Root]
 	client *gobacnet.Client // How we interact with bacnet systems
 
+	mu      sync.RWMutex
 	devices *known.Map
 }
 
@@ -78,71 +84,71 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		return errs
 	}
 
+	devices := known.SyncContext(d.mu.RLocker(), d.devices)
+
 	// setup all our devices and objects...
 	for _, device := range cfg.Devices {
-		deviceName := adapt.DeviceName(device)
-		logger := d.logger.With(zap.Uint32("deviceId", uint32(device.ID)), zap.String("name", deviceName))
+		// make sure to retry setting up devices in case they aren't yet online but might be in the future
+		device := device
+		go func() {
+			// This is more complicated than I think it should be.
+			// The issue is that the Context passed to Task is cancelled when the task returns.
+			// We don't want this to happen as any announced names should live past the lifetime of the task.
+			// To avoid this we have to split the cleanup of names from the cancellation of the task.
+			cfgCtx := ctx
+			cleanupLastAttempt := func() {}
 
-		bacDevice, err := d.findDevice(ctx, device)
-		if err != nil {
-			errs = multierr.Append(errs, err)
-			continue
-		}
+			logger := d.logger.With(zap.String("device", device.Name), zap.Stringer("address", device.Comm.IP))
+			taskOpts := []task.Option{
+				task.WithRetry(task.RetryUnlimited),
+				task.WithBackoff(500*time.Millisecond, 30*time.Second),
+				task.WithTimeout(10 * time.Second),
+				// no WithErrorLogger as it's too noisy, we'll log errors ourselves
+			}
+			attempt := 0
 
-		d.devices.StoreDevice(deviceName, bacDevice)
+			err := task.Run(cfgCtx, func(ctx context.Context) (task.Next, error) {
+				attempt++
+				// clean up any names that were announced during previous attempts
+				cleanupLastAttempt()
+				// make sure we can clean up announced names if the task is retried or the enclosing Service is stopped or reconfigured.
+				var announceCtx context.Context
+				announceCtx, cleanupLastAttempt = context.WithCancel(cfgCtx)
+				announcer := node.AnnounceContext(announceCtx, rootAnnouncer)
 
-		announcer := node.AnnounceWithNamePrefix(cfg.DeviceNamePrefix, rootAnnouncer)
-		adapt.Device(deviceName, d.client, bacDevice, d.devices).AnnounceSelf(announcer)
+				// It's ok for configureDevices to receive the task context here as ctx is only used for queries
+				err := d.configureDevice(ctx, announcer, cfg, device, devices)
 
-		// aka "[bacnet/devices/]{deviceName}/[obj/]"
-		prefix := fmt.Sprintf("%s%s/%s", cfg.DeviceNamePrefix, deviceName, cfg.ObjectNamePrefix)
-		announcer = node.AnnounceWithNamePrefix(prefix, rootAnnouncer)
+				if err != nil {
+					if errors.Is(err, context.Canceled) {
+						return task.Normal, err
+					}
 
-		// Collect all the object that we will be announcing.
-		// This will be a combination of configured objects and those we discover on the device.
-		objects, err := d.fetchObjects(ctx, cfg, device, bacDevice)
-		if err != nil {
-			logger.Warn("Failed discovering objects", zap.Error(err))
-		}
-
-		for _, object := range objects {
-			co, bo := object.co, object.bo
-			logger := logger.With(zap.Stringer("object", co))
-			// Device types are handled separately
-			if bo.ID.Type == objecttype.Device {
-				// We're assuming that devices in the wild follow the spec
-				// which says each network device has exactly one bacnet device.
-				// We check for this explicitly to make sure our assumptions hold
-				if bo.ID != bacDevice.ID {
-					logger.Error("BACnet device with multiple advertised devices!")
+					switch attempt {
+					case 1, 2:
+						logger.Warn("Device offline? Will keep trying", zap.Error(err), zap.Int("attempt", attempt))
+					case 3:
+						logger.Warn("Device offline? Reducing logging.", zap.Error(err), zap.Int("attempt", attempt))
+					default:
+						if attempt%10 == 0 {
+							logger.Debug("Device still offline? Will keep trying", zap.Error(err), zap.Int("attempt", attempt))
+						}
+					}
+				} else {
+					logger.Debug("Device configured successfully")
 				}
-				continue
+				return task.Normal, err
+			}, taskOpts...)
+			if err != nil && !errors.Is(err, context.Canceled) {
+				d.logger.Error("Cannot configure device", zap.Error(err))
 			}
-
-			// no error, we added the device before we entered the loop so it should exist
-			_ = d.devices.StoreObject(bacDevice, adapt.ObjectName(co), *bo)
-
-			impl, err := adapt.Object(d.client, bacDevice, co)
-			if errors.Is(err, adapt.ErrNoDefault) {
-				// logger.Debug("No default adaptation trait for object")
-				continue
-			}
-			if errors.Is(err, adapt.ErrNoAdaptation) {
-				logger.Error("No adaptation from object to trait", zap.Stringer("trait", co.Trait))
-				continue
-			}
-			if err != nil {
-				logger.Error("Error adapting object", zap.Error(err))
-				continue
-			}
-			impl.AnnounceSelf(announcer)
-		}
+		}()
 	}
 
 	// Combine objects together into traits...
 	for _, trait := range cfg.Traits {
 		logger := d.logger.With(zap.Stringer("trait", trait.Kind), zap.String("name", trait.Name))
-		impl, err := merge.IntoTrait(d.client, d.devices, trait, logger)
+		impl, err := merge.IntoTrait(d.client, devices, trait, logger)
 		if errors.Is(err, merge.ErrTraitNotSupported) {
 			logger.Error("Cannot combine into trait, not supported")
 			continue
@@ -171,9 +177,98 @@ func (d *Driver) initClient(cfg config.Root) error {
 	return err
 }
 
+func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announcer, cfg config.Root, device config.Device, devices known.Context) error {
+	realErr := func(err error) error {
+		// check err is really a context error without cause
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			return err
+		}
+	}
+
+	deviceName := adapt.DeviceName(device)
+	logger := d.logger.With(zap.Uint32("deviceId", uint32(device.ID)), zap.String("name", deviceName))
+
+	bacDevice, err := d.findDevice(ctx, device)
+	if err != nil {
+		return fmt.Errorf("device comm handshake: %w", realErr(err))
+	}
+
+	d.storeDevice(deviceName, bacDevice)
+
+	announcer := node.AnnounceWithNamePrefix(cfg.DeviceNamePrefix, rootAnnouncer)
+	adapt.Device(deviceName, d.client, bacDevice, devices).AnnounceSelf(announcer)
+
+	// aka "[bacnet/devices/]{deviceName}/[obj/]"
+	prefix := fmt.Sprintf("%s%s/%s", cfg.DeviceNamePrefix, deviceName, cfg.ObjectNamePrefix)
+	announcer = node.AnnounceWithNamePrefix(prefix, rootAnnouncer)
+
+	// Collect all the object that we will be announcing.
+	// This will be a combination of configured objects and those we discover on the device.
+	objects, err := d.fetchObjects(ctx, cfg, device, bacDevice)
+	if err != nil {
+		return fmt.Errorf("fetch objects: %w", realErr(err))
+	}
+
+	for _, object := range objects {
+		co, bo := object.co, object.bo
+		logger := logger.With(zap.Stringer("object", co))
+		// Device types are handled separately
+		if bo.ID.Type == objecttype.Device {
+			// We're assuming that devices in the wild follow the spec
+			// which says each network device has exactly one bacnet device.
+			// We check for this explicitly to make sure our assumptions hold
+			if bo.ID != bacDevice.ID {
+				logger.Error("BACnet device with multiple advertised devices!")
+			}
+			continue
+		}
+
+		// no error, we added the device before we entered the loop so it should exist
+		_ = d.storeObject(bacDevice, co, bo)
+
+		impl, err := adapt.Object(d.client, bacDevice, co)
+		if errors.Is(err, adapt.ErrNoDefault) {
+			// logger.Debug("No default adaptation trait for object")
+			continue
+		}
+		if errors.Is(err, adapt.ErrNoAdaptation) {
+			logger.Error("No adaptation from object to trait", zap.Stringer("trait", co.Trait))
+			continue
+		}
+		if err != nil {
+			logger.Error("Error adapting object", zap.Error(err))
+			continue
+		}
+		impl.AnnounceSelf(announcer)
+	}
+
+	return nil
+}
+
+func (d *Driver) storeObject(bacDevice bactypes.Device, co config.Object, bo *bactypes.Object) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	return d.devices.StoreObject(bacDevice, adapt.ObjectName(co), *bo)
+}
+
+func (d *Driver) storeDevice(deviceName string, bacDevice bactypes.Device) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.devices.StoreDevice(deviceName, bacDevice)
+}
+
 func (d *Driver) Clear() {
+	d.mu.Lock()
 	d.devices.Clear()
+	d.mu.Unlock()
 	if d.client != nil {
+		// Important: without this, stopping the bacnet driver closes os.Stderr by default!
+		if d.client.Log.Out == os.Stderr {
+			d.client.Log.Out = io.Discard
+		}
 		d.client.Close()
 		d.client = nil
 	}
