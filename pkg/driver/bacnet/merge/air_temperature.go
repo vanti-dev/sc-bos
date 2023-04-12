@@ -115,11 +115,12 @@ func (t *airTemperature) PullAirTemperature(request *traits.PullAirTemperatureRe
 
 // pollPeer fetches data from the peer device and saves the data locally.
 func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, error) {
-	setPoint, err := readPropertyFloat64(ctx, t.client, t.known, *t.config.SetPoint)
+	responses := readProperties(ctx, t.client, t.known, *t.config.SetPoint, *t.config.AmbientTemperature)
+	setPoint, err := float64Value(responses[0])
 	if err != nil {
 		return nil, err
 	}
-	ambientTemperature, err := readPropertyFloat64(ctx, t.client, t.known, *t.config.AmbientTemperature)
+	ambientTemperature, err := float64Value(responses[1])
 	if err != nil {
 		return nil, err
 	}

@@ -145,14 +145,21 @@ func (f *udmiMerge) startPoll(init context.Context) (stop task.StopFn, err error
 func (f *udmiMerge) pollPeer(ctx context.Context) error {
 	events := make(udmi.PointsEvent)
 	var errs []error
+	requestValues := make([]config.ValueSource, 0, len(f.config.Points))
+	keys := make([]string, 0, len(f.config.Points))
 	for key, cfg := range f.config.Points {
-		value, err := readProperty(ctx, f.client, f.known, *cfg)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("read property %q: %w", key, err))
-			continue
-		}
-		events[key] = udmi.PointValue{PresentValue: value}
+		requestValues = append(requestValues, *cfg)
+		keys = append(keys, key)
 	}
+	for i, result := range readProperties(ctx, f.client, f.known, requestValues...) {
+		switch e := result.(type) {
+		case error:
+			errs = append(errs, fmt.Errorf("read property %q: %w", keys[i], e))
+		default:
+			events[keys[i]] = udmi.PointValue{PresentValue: e}
+		}
+	}
+
 	if len(errs) == len(f.config.Points) {
 		return multierr.Combine(errs...)
 	}
