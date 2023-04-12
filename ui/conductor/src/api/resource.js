@@ -12,6 +12,8 @@ export function closeResource(resource) {
   //  The type says cancel, but our code said close.
   if (resource?.stream?.cancel) resource.stream.cancel();
   if (resource?.stream?.close) resource.stream.close();
+  if (resource?.value) Vue.set(resource, 'value', null);
+  if (resource?.updateTime) Vue.set(resource, 'updateTime', null);
 }
 
 /**
