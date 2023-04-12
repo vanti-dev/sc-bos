@@ -228,7 +228,7 @@ func announceAutoServices[M ~map[string]T, T any](c *Controller, services *servi
 func announceSystemServices[M ~map[string]T, T any](c *Controller, services *service.Map, factories M) node.Undo {
 	// special because we don't support writing this config, yet
 	// todo: support writing system config
-	return c.Node.Announce("automations", node.HasClient(gen.WrapServicesApi(serviceapi.NewApi(services,
+	return c.Node.Announce("systems", node.HasClient(gen.WrapServicesApi(serviceapi.NewApi(services,
 		serviceapi.WithKnownTypesFromMapKeys(factories),
 		serviceapi.WithLogger(c.Logger.Named("serviceapi")),
 	))))
