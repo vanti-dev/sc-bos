@@ -1,5 +1,5 @@
 import {clientOptions} from '@/api/grpcweb.js';
-import {pullResource, setError, setValue} from '@/api/resource.js';
+import {pullResource, setValue} from '@/api/resource.js';
 import {OccupancySensorApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_grpc_web_pb';
 import {PullOccupancyRequest} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
 
@@ -17,9 +17,6 @@ export function pullOccupancy(name, resource) {
       for (const change of changes) {
         setValue(resource, change.getOccupancy().toObject());
       }
-    });
-    stream.on('error', err => {
-      setError(resource, err);
     });
     return stream;
   });

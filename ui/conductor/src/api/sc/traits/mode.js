@@ -1,5 +1,5 @@
 import {clientOptions} from '@/api/grpcweb.js';
-import {pullResource, setError, setValue} from '@/api/resource.js';
+import {pullResource, setValue} from '@/api/resource.js';
 import {ModeApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/mode_grpc_web_pb';
 import {PullModeValuesRequest} from '@smart-core-os/sc-api-grpc-web/traits/mode_pb';
 
@@ -16,9 +16,6 @@ export function pullModeValues(name, resource) {
       for (const change of changes) {
         setValue(resource, change.getModeValues().toObject());
       }
-    });
-    stream.on('error', err => {
-      setError(resource, err);
     });
     return stream;
   });

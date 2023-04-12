@@ -1,4 +1,4 @@
-import {pullResource, setCollection, setError, trackAction} from '@/api/resource';
+import {pullResource, setCollection, trackAction} from '@/api/resource';
 import {ServicesApiPromiseClient} from '@sc-bos/ui-gen/proto/services_grpc_web_pb';
 import {clientOptions} from '@/api/grpcweb';
 import {GetMetadataRequest} from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb';
@@ -54,9 +54,6 @@ export function pullServices(request, resource) {
       for (const change of changes) {
         setCollection(resource, change, v => v.id);
       }
-    });
-    stream.on('error', err => {
-      setError(resource, err);
     });
     return stream;
   });

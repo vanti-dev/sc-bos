@@ -1,5 +1,5 @@
 import {clientOptions} from '@/api/grpcweb.js';
-import {pullResource, setError, setValue, trackAction} from '@/api/resource.js';
+import {pullResource, setValue, trackAction} from '@/api/resource.js';
 import {OnOffApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/on_off_grpc_web_pb';
 import {GetOnOffRequest, PullOnOffRequest} from '@smart-core-os/sc-api-grpc-web/traits/on_off_pb';
 
@@ -16,9 +16,6 @@ export function pullOnOff(name, resource) {
       for (const change of changes) {
         setValue(resource, change.getOnOff().toObject());
       }
-    });
-    stream.on('error', err => {
-      setError(resource, err);
     });
     return stream;
   });

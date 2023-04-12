@@ -1,6 +1,6 @@
 import {setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
-import {pullResource, setCollection, setError, trackAction} from '@/api/resource.js';
+import {pullResource, setCollection, trackAction} from '@/api/resource.js';
 import {PublicationApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/publication_grpc_web_pb';
 import {
   AcknowledgePublicationRequest,
@@ -23,9 +23,6 @@ export function pullPublications(name, resource) {
       for (const change of changes) {
         setCollection(resource, change, v => v.id);
       }
-    });
-    stream.on('error', err => {
-      setError(resource, err);
     });
     return stream;
   });
