@@ -101,7 +101,7 @@ func readMultiProperties(ctx context.Context, client *gobacnet.Client, device ba
 				if err != nil {
 					k := key{device.ID.Instance, object.ID, prop.ID}
 					for _, i := range resIndexes[k] {
-						res[i] = err
+						res[i] = ctxerr.Cause(ctx, err)
 					}
 					continue
 				}
@@ -152,14 +152,6 @@ func float32Value(data any) (float32, error) {
 	}
 
 	return 0, fmt.Errorf("unsupported conversion %T -> float32 for val %v", data, data)
-}
-
-func readPropertyFloat64(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource) (float64, error) {
-	data, err := readProperty(ctx, client, known, value)
-	if err != nil {
-		return 0, err
-	}
-	return float64Value(data)
 }
 
 func readPropertyFloat32(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource) (float32, error) {
