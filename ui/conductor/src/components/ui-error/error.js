@@ -24,7 +24,10 @@ export const useErrorStore = defineStore('error', () => {
     // eslint-disable-next-line max-len
     console.error(`[${(new Date(e.timestamp)).toLocaleTimeString()}] ${statusCodeToString(e.source.code)}: ${e.source.message}`, e.source);
     Vue.set(_errorMap.value, e.id, e);
-    // todo: auto-clear errors
+    // auto-clear errors after 1 minute
+    setTimeout(() => {
+      clearError(e);
+    }, 60 * 1000);
   }
 
   /**
@@ -81,7 +84,6 @@ export const useErrorStore = defineStore('error', () => {
    * @return {WatchStopHandle}
    */
   function registerCollection(collection) {
-    console.debug('registering collection', collection);
     if (collection.hasOwnProperty('streamError')) {
       return watch(() => collection.streamError, (error) => {
         if (error && error.code !== StatusCode.OK) {
