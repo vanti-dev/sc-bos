@@ -66,12 +66,12 @@ func (t *airTemperature) startPoll(init context.Context) (stop task.StopFn, err 
 	ticker := time.NewTicker(t.config.PollPeriodDuration())
 	go func() {
 		for {
+			_, err := t.pollPeer(ctx)
+			if err != nil { // todo: should this return?
+				t.logger.Warn("pollPeer error", zap.String("err", err.Error()))
+			}
 			select {
 			case <-ticker.C:
-				_, err := t.pollPeer(ctx)
-				if err != nil { // todo: should this return?
-					t.logger.Warn("pollPeer error", zap.String("err", err.Error()))
-				}
 			case <-ctx.Done():
 				return
 			}

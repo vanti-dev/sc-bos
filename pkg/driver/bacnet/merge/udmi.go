@@ -127,12 +127,12 @@ func (f *udmiMerge) startPoll(init context.Context) (stop task.StopFn, err error
 	ticker := time.NewTicker(f.config.PollPeriodDuration())
 	go func() {
 		for {
+			err := f.pollPeer(ctx)
+			if err != nil { // todo: should this return?
+				f.logger.Warn("pollPeer error", zap.String("err", err.Error()))
+			}
 			select {
 			case <-ticker.C:
-				err := f.pollPeer(ctx)
-				if err != nil { // todo: should this return?
-					f.logger.Warn("pollPeer error", zap.String("err", err.Error()))
-				}
 			case <-ctx.Done():
 				return
 			}
