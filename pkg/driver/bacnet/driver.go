@@ -73,9 +73,9 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	// we start fresh each time config is updated
 	d.Clear()
 
-	err := d.initClient(cfg)
-	if err != nil {
-		return err
+	errs := d.initClient(cfg)
+	if errs != nil {
+		return errs
 	}
 
 	// setup all our devices and objects...
@@ -83,9 +83,9 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		deviceName := adapt.DeviceName(device)
 		logger := d.logger.With(zap.Uint32("deviceId", uint32(device.ID)), zap.String("name", deviceName))
 
-		bacDevice, e := d.findDevice(ctx, device)
-		if e != nil {
-			err = multierr.Append(err, e)
+		bacDevice, err := d.findDevice(ctx, device)
+		if err != nil {
+			errs = multierr.Append(errs, err)
 			continue
 		}
 
@@ -100,9 +100,9 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 
 		// Collect all the object that we will be announcing.
 		// This will be a combination of configured objects and those we discover on the device.
-		objects, e := d.fetchObjects(ctx, cfg, device, bacDevice)
-		if e != nil {
-			logger.Warn("Failed discovering objects", zap.Error(e))
+		objects, err := d.fetchObjects(ctx, cfg, device, bacDevice)
+		if err != nil {
+			logger.Warn("Failed discovering objects", zap.Error(err))
 		}
 
 		for _, object := range objects {
@@ -154,7 +154,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		impl.AnnounceSelf(rootAnnouncer)
 	}
 
-	return err
+	return errs
 }
 
 func (d *Driver) initClient(cfg config.Root) error {
