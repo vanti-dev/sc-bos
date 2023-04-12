@@ -4,20 +4,21 @@
     <air-temperature-card :name="deviceId" v-if="traits['smartcore.traits.AirTemperature']"/>
     <light-card :name="deviceId" v-if="traits['smartcore.traits.Light']"/>
     <emergency-light :name="deviceId" v-if="traits['smartcore.bsp.EmergencyLight']"/>
+    <udmi-card :name="deviceId" v-if="traits['smartcore.bos.UDMI']"/>
   </side-bar>
 </template>
 
 <script setup>
-import {computed} from 'vue';
-import {storeToRefs} from 'pinia';
+import SideBar from '@/components/SideBar.vue';
+import AirTemperatureCard from '@/routes/devices/components/trait-cards/AirTemperatureCard.vue';
+import DeviceInfoCard from '@/routes/devices/components/trait-cards/DeviceInfoCard.vue';
+import EmergencyLight from '@/routes/devices/components/trait-cards/EmergencyLight.vue';
+import LightCard from '@/routes/devices/components/trait-cards/LightCard.vue';
+import UdmiCard from '@/routes/devices/components/trait-cards/UdmiCard.vue';
 
 import {usePageStore} from '@/stores/page';
-
-import SideBar from '@/components/SideBar.vue';
-import DeviceInfoCard from '@/routes/devices/components/trait-cards/DeviceInfoCard.vue';
-import AirTemperatureCard from '@/routes/devices/components/trait-cards/AirTemperatureCard.vue';
-import LightCard from '@/routes/devices/components/trait-cards/LightCard.vue';
-import EmergencyLight from '@/routes/devices/components/trait-cards/EmergencyLight.vue';
+import {storeToRefs} from 'pinia';
+import {computed} from 'vue';
 
 const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);
