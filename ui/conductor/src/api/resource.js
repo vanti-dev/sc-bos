@@ -60,10 +60,15 @@ export function setCollection(resource, change, idFunc) {
  *
  * @param {RemoteResource<any,any>} resource
  * @param {Error} err
+ * @param {string} name
  */
-export function setError(resource, err) {
+export function setError(resource, err, name='') {
+  const rErr = /** @type {RemoteError} */ {
+    name,
+    error: err
+  };
   Vue.set(resource, 'loading', false);
-  Vue.set(resource, 'streamError', err);
+  Vue.set(resource, 'streamError', rErr);
   Vue.set(resource, 'updateTime', new Date());
 }
 
@@ -180,7 +185,7 @@ export function pullResource(logPrefix, resource, newStream) {
             retryDelayMs = 1000; // if we were successful, we reset the retry delay
           });
           stream.on('error', (err) => {
-            setError(resource, err);
+            setError(resource, err, logPrefix);
             retry();
           });
           stream.on('end', () => {
@@ -188,7 +193,7 @@ export function pullResource(logPrefix, resource, newStream) {
           });
         })
         .catch((err) => {
-          setError(resource, err);
+          setError(resource, err, logPrefix);
           retry();
         });
   };
@@ -254,7 +259,11 @@ export async function trackAction(logPrefix, tracker, action) {
     Vue.set(tracker, 'response', value);
     return value;
   } catch (err) {
-    Vue.set(tracker, 'error', err);
+    const rErr = /** @type {RemoteError} */ {
+      name: logPrefix,
+      error: err
+    };
+    Vue.set(tracker, 'error', rErr);
     throw err;
   } finally {
     Vue.set(tracker, 'loading', false);

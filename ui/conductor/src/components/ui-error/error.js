@@ -5,7 +5,7 @@ import {statusCodeToString} from '@/components/ui-error/util';
 
 /**
  * @typedef {Object} UiError
- * @property {RemoteResource} resource
+ * @property {string} name
  * @property {Error} source
  * @property {number} timestamp
  * @property {string} id
@@ -17,12 +17,12 @@ export const useErrorStore = defineStore('error', () => {
 
   /**
    * @param {RemoteResource} resource
-   * @param {Error} error
+   * @param {RemoteError} error
    */
   function addError(resource, error) {
-    const e = /** @type {UiError} */{resource, source: error, timestamp: Date.now(), id: _id++};
+    const e = /** @type {UiError} */{name: error.name, source: error.error, timestamp: Date.now(), id: _id++};
     // eslint-disable-next-line max-len
-    console.error(`[${(new Date(e.timestamp)).toLocaleTimeString()}] ${statusCodeToString(e.source.code)}: ${e.source.message}`, e.source);
+    console.error(`[${(new Date(e.timestamp)).toLocaleTimeString()}] ${e.name} | ${statusCodeToString(e.source.code)}: ${e.source.message}`, e.source);
     Vue.set(_errorMap.value, e.id, e);
     // auto-clear errors after 1 minute
     setTimeout(() => {

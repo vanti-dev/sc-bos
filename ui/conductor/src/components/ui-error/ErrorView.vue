@@ -3,12 +3,13 @@
     <v-list-item
         v-for="(item, index) in errorStore.errors"
         :key="index"
-        class="mt-2">
+        style="height: 64px;">
       <v-snackbar
           :value="true"
           timeout="5000"
           color="error"
           absolute>
+        <span class="error-name">{{ item.name }}</span>
         {{ statusCodeToString(item.source.code) }}: {{ item.source.message }}
         <template #action="{ attrs }">
           <v-btn text v-bind="attrs" @click="errorStore.clearError(item)">
@@ -34,5 +35,9 @@ const errorStore = useErrorStore();
   bottom: 0;
   left: 50%;
   background: transparent;
+}
+.error-name {
+  display: block;
+  font-size: 0.8em;
 }
 </style>

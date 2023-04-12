@@ -22,17 +22,21 @@ export function newActionTracker<T>(): ActionTracker<T>;
 export function newResourceValue<T, M extends Msg<T>>(): ResourceValue<T, M>;
 export function newResourceCollection<T, M extends Msg<T>>(): ResourceCollection<T, M>;
 
+export interface ResourceError {
+  name: string;
+  error: grpcWeb.RpcError;
+}
+
 export interface RemoteResource<M> {
   loading?: boolean;
   stream?: grpcWeb.ClientReadableStream<M>;
-  streamError?: Error;
+  streamError?: ResourceError;
   updateTime?: Date;
 }
 
 export interface ResourceValue<V, M extends Msg<V>> extends RemoteResource<M> {
   value?: V;
 }
-
 
 export interface ResourceCollection<V, M extends Msg<V>> extends RemoteResource<any> {
   value?: { [id: string]: V };
@@ -60,7 +64,7 @@ export interface CollectionChange<V, M extends Msg<V>> {
 
 export interface ActionTracker<V> {
   loading?: boolean;
-  error?: Error;
+  error?: ResourceError;
   response?: V;
   duration?: number;
 }
