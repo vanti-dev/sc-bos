@@ -15,7 +15,6 @@ export function pullExportMessages(name, resource) {
     const stream = api.pullExportMessages(new PullExportMessagesRequest().setName(name));
     stream.on('data', msg => {
       const obj = msg.getMessage().toObject();
-      console.debug('UDMI.pullExportMessages', obj);
       setValue(resource, obj);
     });
     return stream;
