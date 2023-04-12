@@ -31,6 +31,7 @@ var (
 	resultsFile = flag.String("results-file", "results", "file name to save results to, timestamp will be appended")
 	devicesOnly = flag.Bool("devices-only", false, "only check devices, not objects")
 	timeout     = flag.Duration("timeout", time.Second*2, "timeout for requests")
+	localPort   = flag.Int("local-port", 0, "local port to use for bacnet requests, overrides any found in config")
 )
 
 func main() {
@@ -58,7 +59,11 @@ func run() error {
 	for key, cfg := range bacnetConfigs {
 		log.Printf("config: %s, devices: %d", key, len(cfg.Devices))
 
-		client, err := gobacnet.NewClient(cfg.LocalInterface, int(cfg.LocalPort))
+		port := int(cfg.LocalPort)
+		if *localPort > 0 {
+			port = *localPort
+		}
+		client, err := gobacnet.NewClient(cfg.LocalInterface, port)
 		if err != nil {
 			return err
 		}
