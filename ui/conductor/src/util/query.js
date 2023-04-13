@@ -1,4 +1,5 @@
 import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource.js';
+import {useErrorStore} from '@/components/ui-error/error';
 import {nextTick, reactive, set} from 'vue';
 
 export class Collection {
@@ -15,6 +16,8 @@ export class Collection {
 
     this._needsMorePages = false;
     this._nextPageToken = null;
+
+    this._errors = useErrorStore();
   }
 
   query(q = undefined) {
@@ -23,7 +26,7 @@ export class Collection {
     this.queryRaw = q;
     this._queryVersion = Math.random();
     this.fetchPages()
-        .catch(err => console.error(err));
+        .catch(err => this._errors.addError(this._resources, {name: `Collection.query`, error: err}));
   }
 
   pullIfNeeded() {
@@ -54,7 +57,7 @@ export class Collection {
 
     this._needsMorePages = b;
     this.fetchPages()
-        .catch(err => console.error(err));
+        .catch(err => this._errors.addError(this._resources, {name: `Collection.query`, error: err}));
   }
 
   get needsMorePages() {
