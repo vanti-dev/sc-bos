@@ -19,8 +19,8 @@
         <v-list-item-title>{{ item.title }}</v-list-item-title>
       </v-list-item-content>
 
-      <v-chip class="font-weight-bold text primary" v-if="item.count">
-        {{ item.count }}
+      <v-chip class="font-weight-bold text primary" v-if="item.count?.value">
+        {{ item.count.value }}
       </v-chip>
     </v-list-item>
   </v-list>
@@ -28,8 +28,8 @@
 
 <script setup>
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
-import {computed, ref} from 'vue';
 import {useAppConfigStore} from '@/stores/app-config';
+import {computed, ref} from 'vue';
 
 const alertMetadata = useAlertMetadata();
 
