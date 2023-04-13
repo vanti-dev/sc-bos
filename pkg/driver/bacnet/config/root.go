@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	bactypes "github.com/vanti-dev/gobacnet/types"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver"
@@ -32,6 +33,9 @@ type Root struct {
 	DiscoverObjects bool `json:"discoverObjects,omitempty"`
 
 	COV *COV `json:"cov,omitempty"`
+
+	// Metadata is applied to all announced names.
+	Metadata *traits.Metadata `json:"metadata,omitempty"`
 
 	Devices []Device   `json:"devices,omitempty"`
 	Traits  []RawTrait `json:"traits,omitempty"`
@@ -81,6 +85,9 @@ type Device struct {
 	ID    bactypes.ObjectInstance `json:"id,omitempty"`
 
 	COV *COV `json:"cov,omitempty"`
+
+	// Metadata applied to any traits sharing this devices name.
+	Metadata *traits.Metadata `json:"metadata,omitempty"`
 
 	DiscoverObjects *bool    `json:"discoverObjects,omitempty"`
 	Objects         []Object `json:"objects,omitempty"`

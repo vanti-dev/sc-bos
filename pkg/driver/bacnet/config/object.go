@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 )
 
@@ -13,7 +14,8 @@ type Object struct {
 
 	COV *COV `json:"COV,omitempty"`
 
-	Trait trait.Name `json:"trait,omitempty"`
+	Trait    trait.Name       `json:"trait,omitempty"`
+	Metadata *traits.Metadata `json:"metadata,omitempty"` // applied to any traits created from this object
 
 	Priorities []Priority `json:"priorities,omitempty"`
 	Properties []Property `json:"properties,omitempty"`

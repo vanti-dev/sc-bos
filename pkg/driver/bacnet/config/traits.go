@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
@@ -21,8 +22,9 @@ import (
 //	  Value *ValueSource `json:"value,omitempty"`
 //	}
 type Trait struct {
-	Name string     `json:"name,omitempty"`
-	Kind trait.Name `json:"kind,omitempty"`
+	Name     string           `json:"name,omitempty"`
+	Kind     trait.Name       `json:"kind,omitempty"`
+	Metadata *traits.Metadata `json:"metadata,omitempty"`
 	// poll period used to poll the objects for pull updates
 	// defaults to 10s
 	PollPeriod *Duration `json:"pollPeriod,omitempty"`

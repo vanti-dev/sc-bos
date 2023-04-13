@@ -77,6 +77,9 @@ func NewDriver(services driver.Services) *Driver {
 func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	// AnnounceContext only makes sense if using MonoApply, which we are in NewDriver
 	rootAnnouncer := node.AnnounceContext(ctx, d.announcer)
+	if cfg.Metadata != nil {
+		rootAnnouncer = node.AnnounceFeatures(rootAnnouncer, node.HasMetadata(cfg.Metadata))
+	}
 	// we start fresh each time config is updated
 	d.Clear()
 
@@ -158,7 +161,11 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			logger.Error("Cannot combine into trait", zap.Error(err))
 			continue
 		}
-		impl.AnnounceSelf(rootAnnouncer)
+		announcer := rootAnnouncer
+		if trait.Metadata != nil {
+			announcer = node.AnnounceFeatures(announcer, node.HasMetadata(trait.Metadata))
+		}
+		impl.AnnounceSelf(announcer)
 	}
 
 	return errs
@@ -188,6 +195,10 @@ func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announc
 	}
 
 	d.storeDevice(deviceName, bacDevice)
+
+	if device.Metadata != nil {
+		rootAnnouncer = node.AnnounceFeatures(rootAnnouncer, node.HasMetadata(device.Metadata))
+	}
 
 	announcer := node.AnnounceWithNamePrefix(cfg.DeviceNamePrefix, rootAnnouncer)
 	adapt.Device(deviceName, d.client, bacDevice, devices).AnnounceSelf(announcer)
@@ -232,6 +243,11 @@ func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announc
 		if err != nil {
 			logger.Error("Error adapting object", zap.Error(err))
 			continue
+		}
+
+		announcer := announcer
+		if object.co.Metadata != nil {
+			announcer = node.AnnounceFeatures(announcer, node.HasMetadata(object.co.Metadata))
 		}
 		impl.AnnounceSelf(announcer)
 	}
