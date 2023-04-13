@@ -28,7 +28,6 @@ export function listAlerts(request, tracker) {
  * @param {ResourceCollection<Alert.AsObject, Alert>} resource
  */
 export function pullAlerts(request, resource) {
-  if (!request.name) throw new Error('request.name must be specified');
   pullResource('Alerts.pullAlerts', resource, endpoint => {
     const api = client(endpoint);
     const stream = api.pullAlerts(pullAlertsRequestFromObject(request));
@@ -59,7 +58,6 @@ export function getAlertMetadata(request, tracker) {
  * @param {ResourceValue<AlertMetadata.AsObject, PullAlertMetadataResponse>} resource
  */
 export function pullAlertMetadata(request, resource) {
-  if (!request.name) throw new Error('request.name must be specified');
   pullResource('Alerts.pullAlertMetadata', resource, endpoint => {
     const api = client(endpoint);
     const stream = api.pullAlertMetadata(pullAlertMetadataRequestFromObject(request));
