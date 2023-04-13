@@ -20,7 +20,7 @@ require (
 	github.com/rs/cors v1.8.3
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.39
-	github.com/smart-core-os/sc-golang v0.0.0-20230125150853-415fdd3456d6
+	github.com/smart-core-os/sc-golang v0.0.0-20230413130742-be38e8e212cf
 	github.com/timshannon/bolthold v0.0.0-20210913165410-232392fc8a6a
 	github.com/vanti-dev/gobacnet v0.0.0-20230227161032-9f3d079e441a
 	go.etcd.io/bbolt v1.3.6
