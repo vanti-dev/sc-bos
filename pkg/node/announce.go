@@ -67,7 +67,9 @@ func AnnounceContext(ctx context.Context, a Announcer) Announcer {
 // AnnounceFeatures returns an Announcer that acts like `Announce(name, [moreFeatures..., features...])`
 func AnnounceFeatures(a Announcer, moreFeatures ...Feature) Announcer {
 	return AnnouncerFunc(func(name string, features ...Feature) Undo {
-		allFeatures := append(moreFeatures, features...)
+		// do it this way to avoid modifying modeFeatures if it happens to have capacity
+		allFeatures := append([]Feature{}, moreFeatures...)
+		allFeatures = append(allFeatures, features...)
 		return a.Announce(name, allFeatures...)
 	})
 }
