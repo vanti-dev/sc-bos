@@ -108,31 +108,41 @@ func TestServer_ListDevices(t *testing.T) {
 	server := &Server{parentName: "test", node: n}
 	server.ChildPageSize = 5 // force multiple pages to be read from the parent
 
+	mdNamed := func(name string) *traits.Metadata {
+		return &traits.Metadata{
+			Name:       name,
+			Membership: &traits.Metadata_Membership{Subsystem: "Lighting"},
+			Traits: []*traits.TraitMetadata{
+				{Name: trait.Light.String()},
+			},
+		}
+	}
+
 	wantPage1 := []*gen.Device{
-		{Name: "device/00/light", Metadata: &traits.Metadata{Name: "device/00/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/01/light", Metadata: &traits.Metadata{Name: "device/01/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/02/light", Metadata: &traits.Metadata{Name: "device/02/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/03/light", Metadata: &traits.Metadata{Name: "device/03/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/04/light", Metadata: &traits.Metadata{Name: "device/04/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/05/light", Metadata: &traits.Metadata{Name: "device/05/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/06/light", Metadata: &traits.Metadata{Name: "device/06/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
+		{Name: "device/00/light", Metadata: mdNamed("device/00/light")},
+		{Name: "device/01/light", Metadata: mdNamed("device/01/light")},
+		{Name: "device/02/light", Metadata: mdNamed("device/02/light")},
+		{Name: "device/03/light", Metadata: mdNamed("device/03/light")},
+		{Name: "device/04/light", Metadata: mdNamed("device/04/light")},
+		{Name: "device/05/light", Metadata: mdNamed("device/05/light")},
+		{Name: "device/06/light", Metadata: mdNamed("device/06/light")},
 	}
 	wantPage2 := []*gen.Device{
-		{Name: "device/07/light", Metadata: &traits.Metadata{Name: "device/07/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/08/light", Metadata: &traits.Metadata{Name: "device/08/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/09/light", Metadata: &traits.Metadata{Name: "device/09/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/10/light", Metadata: &traits.Metadata{Name: "device/10/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/11/light", Metadata: &traits.Metadata{Name: "device/11/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/12/light", Metadata: &traits.Metadata{Name: "device/12/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/13/light", Metadata: &traits.Metadata{Name: "device/13/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
+		{Name: "device/07/light", Metadata: mdNamed("device/07/light")},
+		{Name: "device/08/light", Metadata: mdNamed("device/08/light")},
+		{Name: "device/09/light", Metadata: mdNamed("device/09/light")},
+		{Name: "device/10/light", Metadata: mdNamed("device/10/light")},
+		{Name: "device/11/light", Metadata: mdNamed("device/11/light")},
+		{Name: "device/12/light", Metadata: mdNamed("device/12/light")},
+		{Name: "device/13/light", Metadata: mdNamed("device/13/light")},
 	}
 	wantPage3 := []*gen.Device{
-		{Name: "device/14/light", Metadata: &traits.Metadata{Name: "device/14/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/15/light", Metadata: &traits.Metadata{Name: "device/15/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/16/light", Metadata: &traits.Metadata{Name: "device/16/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/17/light", Metadata: &traits.Metadata{Name: "device/17/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/18/light", Metadata: &traits.Metadata{Name: "device/18/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
-		{Name: "device/19/light", Metadata: &traits.Metadata{Name: "device/19/light", Membership: &traits.Metadata_Membership{Subsystem: "Lighting"}}},
+		{Name: "device/14/light", Metadata: mdNamed("device/14/light")},
+		{Name: "device/15/light", Metadata: mdNamed("device/15/light")},
+		{Name: "device/16/light", Metadata: mdNamed("device/16/light")},
+		{Name: "device/17/light", Metadata: mdNamed("device/17/light")},
+		{Name: "device/18/light", Metadata: mdNamed("device/18/light")},
+		{Name: "device/19/light", Metadata: mdNamed("device/19/light")},
 	}
 
 	// PAGE 1 - should return a full page

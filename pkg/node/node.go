@@ -106,7 +106,7 @@ func (n *Node) Announce(name string, features ...Feature) Undo {
 	}
 
 	mds := a.metadata
-	if len(mds) == 0 && len(a.traits) > 0 {
+	if len(a.traits) > 0 {
 		md := &traits.Metadata{}
 		for _, t := range a.traits {
 			md.Traits = append(md.Traits, &traits.TraitMetadata{Name: string(t.name)})
