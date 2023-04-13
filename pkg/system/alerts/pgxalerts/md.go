@@ -155,6 +155,20 @@ func applyMdDelta(md *resource.Value, e *gen.PullAlertsResponse_Change) error {
 	_, err := md.Set(&gen.AlertMetadata{}, resource.InterceptBefore(func(old, new proto.Message) {
 		oldMd, newMd := old.(*gen.AlertMetadata), new.(*gen.AlertMetadata)
 		proto.Merge(newMd, oldMd)
+		// proto.Merge doesn't set maps that are empty but non-nil!
+		// Without this explicit copy we'd end up with nil maps that we then assign to, which panics
+		if newMd.FloorCounts == nil {
+			newMd.FloorCounts = make(map[string]uint32)
+		}
+		if newMd.ZoneCounts == nil {
+			newMd.ZoneCounts = make(map[string]uint32)
+		}
+		if newMd.SeverityCounts == nil {
+			newMd.SeverityCounts = make(map[int32]uint32)
+		}
+		if newMd.AcknowledgedCounts == nil {
+			newMd.AcknowledgedCounts = make(map[bool]uint32)
+		}
 
 		// total
 		if e.OldValue == nil && e.NewValue != nil {

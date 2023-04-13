@@ -90,6 +90,32 @@ func Test_applyMdDelta(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("empty old maps", func(t *testing.T) {
+		res := resource.NewValue(resource.WithInitialValue(&gen.AlertMetadata{
+			FloorCounts:        make(map[string]uint32),
+			ZoneCounts:         make(map[string]uint32),
+			SeverityCounts:     make(map[int32]uint32),
+			AcknowledgedCounts: make(map[bool]uint32),
+		}))
+		err := applyMdDelta(res, &gen.PullAlertsResponse_Change{
+			NewValue: &gen.Alert{Floor: "foo", Zone: "bar", Severity: 1},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		got := res.Get()
+		want := &gen.AlertMetadata{
+			TotalCount:         1,
+			FloorCounts:        map[string]uint32{"foo": 1},
+			ZoneCounts:         map[string]uint32{"bar": 1},
+			SeverityCounts:     map[int32]uint32{1: 1},
+			AcknowledgedCounts: map[bool]uint32{false: 1},
+		}
+		if diff := cmp.Diff(want, got, protocmp.Transform()); diff != "" {
+			t.Fatalf("applyMdDelta md (-want,+got)\n%s", diff)
+		}
+	})
 }
 
 func patch(before, change *gen.AlertMetadata) *gen.AlertMetadata {
