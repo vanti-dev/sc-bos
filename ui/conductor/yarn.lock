@@ -1122,7 +1122,7 @@
     picomatch "^2.2.2"
 
 "@sc-bos/ui-gen@file:../ui-gen":
-  version "1.0.0-beta.2"
+  version "1.0.0-beta.3"
   dependencies:
     "@smart-core-os/sc-api-grpc-web" "^1.0.0-beta.40"
     google-protobuf "^3.21.2"
