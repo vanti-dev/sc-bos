@@ -3,11 +3,11 @@ package merge
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"math"
 	"time"
 
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -68,9 +68,7 @@ func (t *airTemperature) startPoll(init context.Context) (stop task.StopFn, err 
 	go func() {
 		for {
 			_, err := t.pollPeer(ctx)
-			if err != nil && !errors.Is(err, context.Canceled) { // todo: should this return?
-				t.logger.Warn("pollPeer error", zap.String("err", err.Error()))
-			}
+			LogPollError(t.logger, "air temperature poll error", err)
 			select {
 			case <-ticker.C:
 			case <-ctx.Done():
@@ -117,13 +115,17 @@ func (t *airTemperature) PullAirTemperature(request *traits.PullAirTemperatureRe
 // pollPeer fetches data from the peer device and saves the data locally.
 func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, error) {
 	responses := readProperties(ctx, t.client, t.known, *t.config.SetPoint, *t.config.AmbientTemperature)
+	var errs error
 	setPoint, err := float64Value(responses[0])
 	if err != nil {
-		return nil, err
+		errs = multierr.Append(errs, ErrReadProperty{Prop: "setPoint", Cause: err})
 	}
 	ambientTemperature, err := float64Value(responses[1])
 	if err != nil {
-		return nil, err
+		errs = multierr.Append(errs, ErrReadProperty{Prop: "ambientTemperature", Cause: err})
+	}
+	if errs != nil {
+		return nil, errs
 	}
 	data := &traits.AirTemperature{
 		AmbientTemperature: &types.Temperature{ValueCelsius: ambientTemperature},

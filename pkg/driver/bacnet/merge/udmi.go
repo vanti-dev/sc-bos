@@ -3,8 +3,6 @@ package merge
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -129,9 +127,7 @@ func (f *udmiMerge) startPoll(init context.Context) (stop task.StopFn, err error
 	go func() {
 		for {
 			err := f.pollPeer(ctx)
-			if err != nil && !errors.Is(err, context.Canceled) { // todo: should this return?
-				f.logger.Warn("pollPeer error", zap.String("err", err.Error()))
-			}
+			LogPollError(f.logger, "udmi poll error", err)
 			select {
 			case <-ticker.C:
 			case <-ctx.Done():
@@ -155,7 +151,7 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 	for i, result := range readProperties(ctx, f.client, f.known, requestValues...) {
 		switch e := result.(type) {
 		case error:
-			errs = append(errs, fmt.Errorf("read property %q: %w", keys[i], e))
+			errs = append(errs, ErrReadProperty{Prop: keys[i], Cause: e})
 		default:
 			events[keys[i]] = udmi.PointValue{PresentValue: e}
 		}

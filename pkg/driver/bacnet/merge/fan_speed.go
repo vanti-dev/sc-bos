@@ -3,7 +3,6 @@ package merge
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -66,9 +65,7 @@ func (t *fanSpeed) startPoll(init context.Context) (stop task.StopFn, err error)
 	go func() {
 		for {
 			_, err := t.pollPeer(ctx)
-			if err != nil && !errors.Is(err, context.Canceled) { // todo: should this return?
-				t.logger.Warn("pollPeer error", zap.String("err", err.Error()))
-			}
+			LogPollError(t.logger, "fan speed poll error", err)
 			select {
 			case <-ticker.C:
 			case <-ctx.Done():
@@ -130,7 +127,7 @@ func (t *fanSpeed) speedToPreset(speed float32) string {
 func (t *fanSpeed) pollPeer(ctx context.Context) (*traits.FanSpeed, error) {
 	speed, err := readPropertyFloat32(ctx, t.client, t.known, *t.config.Speed)
 	if err != nil {
-		return nil, err
+		return nil, ErrReadProperty{Prop: "speed", Cause: err}
 	}
 	data := &traits.FanSpeed{
 		Percentage: speed,
