@@ -1,6 +1,8 @@
 package axiomxa
 
 import (
+	"strings"
+
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/mps"
 )
@@ -13,13 +15,13 @@ type devices struct {
 func devicesFromConfig(ds []config.Device) *devices {
 	out := &devices{byNetDevice: make(map[netDevice]config.Device)}
 	for _, d := range ds {
-		out.byNetDevice[netDevice{network: d.NetworkDesc, device: d.DeviceDesc}] = d
+		out.byNetDevice[netDevice{network: normaliseName(d.NetworkDesc), device: normaliseName(d.DeviceDesc)}] = d
 	}
 	return out
 }
 
 func (d *devices) Find(fields mps.Fields) (config.Device, bool) {
-	nd := netDevice{network: fields.NetworkDesc, device: fields.DeviceDesc}
+	nd := netDevice{network: normaliseName(fields.NetworkDesc), device: normaliseName(fields.DeviceDesc)}
 	dv, ok := d.byNetDevice[nd]
 	return dv, ok
 }
@@ -42,4 +44,10 @@ func (d *devices) UDMITopicPrefix(fields mps.Fields) (string, bool) {
 
 type netDevice struct {
 	network, device string
+}
+
+func normaliseName(name string) string {
+	name = strings.ToLower(name)
+	name = strings.TrimSpace(name)
+	return name
 }
