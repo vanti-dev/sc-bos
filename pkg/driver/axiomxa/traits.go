@@ -71,14 +71,14 @@ func (u *udmiServer) PullExportMessages(request *gen.PullExportMessagesRequest, 
 			}
 
 			var points *udmi.PointsEvent
-			switch msg.Topic {
+			switch msg.OriginalTopic {
 			case KeyAccessGranted:
 				points = u.toCardReaderPoints(data, "access granted")
 			case KeyAccessDenied:
 				points = u.toCardReaderPoints(data, "access denied")
-			case KeyDoorNotOpen:
+			case KeySecure:
 				points = u.toDoorPoints(data, "not open")
-			case KeyDoorHeldOpen:
+			case KeyDoorHeldOpen, KeyForcedEntry:
 				points = u.toDoorPoints(data, "held open")
 			default:
 				continue
