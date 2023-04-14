@@ -29,7 +29,7 @@ func (d *Driver) announceTraits(ctx context.Context, cfg config.Root, announcer 
 	}
 	udmiClient := gen.WrapUdmiService(udmiServer)
 	for _, device := range cfg.Devices {
-		announcer.Announce(device.Name, node.HasTrait(udmipb.TraitName, node.WithClients(udmiClient)))
+		announcer.Announce(device.Name, node.HasMetadata(device.Metadata), node.HasTrait(udmipb.TraitName, node.WithClients(udmiClient)))
 	}
 
 	return nil

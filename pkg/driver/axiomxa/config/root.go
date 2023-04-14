@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
@@ -38,14 +39,17 @@ func ReadBytes(data []byte) (root Root, err error) {
 }
 
 type Device struct {
-	Name string // Smart Core name
+	Name string `json:"name,omitempty"` // Smart Core name
 	// NetworkDesc is the human specified name identifying an Axiom controller.
-	NetworkDesc string
+	NetworkDesc string `json:"networkDesc,omitempty"`
 	// DeviceDesc is the human specified name identifying a card reader managed by NetworkDesc.
-	DeviceDesc string
+	DeviceDesc string `json:"deviceDesc,omitempty"`
 	// UDMITopicPrefix is used for telemetry and config when using UDMI.
 	// Defaults to Name.
-	UDMITopicPrefix string
+	UDMITopicPrefix string `json:"UDMITopicPrefix,omitempty"`
+
+	// Smart core metadata associated with this device.
+	Metadata *traits.Metadata `json:"metadata,omitempty"`
 }
 
 type HTTP struct {
