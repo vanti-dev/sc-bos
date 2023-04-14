@@ -20,33 +20,30 @@ func tasksForSource(name string, logger *zap.Logger, client gen.UdmiServiceClien
 	var tasks []task.Task
 
 	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
-		logger.Debug("task run: pullTopics")
+		logger.Debug("subscribing")
 		topicChanges := make(chan *gen.PullControlTopicsResponse)
-		defer close(topicChanges)
 		grp, ctx := errgroup.WithContext(ctx)
 		grp.Go(func() error {
+			defer close(topicChanges)
 			return pullTopics(ctx, name, logger, client, topicChanges)
 		})
 		grp.Go(func() error {
 			return handleTopicChanges(ctx, name, logger, client, topicChanges, pubsub.Subscriber)
 		})
 		err := grp.Wait() // this waits for all go routines to finish, so we are safe to then close the channel
-		logger.Debug("task end: pullTopics", zap.Error(err))
 		return task.Normal, err
 	})
 	tasks = append(tasks, func(ctx context.Context) (task.Next, error) {
-		logger.Debug("task run: pullMessages")
 		messageChanges := make(chan *gen.PullExportMessagesResponse)
-		defer close(messageChanges)
 		grp, ctx := errgroup.WithContext(ctx)
 		grp.Go(func() error {
+			defer close(messageChanges)
 			return pullMessages(ctx, name, logger, client, messageChanges)
 		})
 		grp.Go(func() error {
 			return handleMessages(ctx, messageChanges, pubsub.Publisher)
 		})
 		err := grp.Wait() // this waits for all go routines to finish, so we are safe to then close the channel
-		logger.Debug("task end: pullMessages", zap.Error(err))
 		return task.Normal, err
 	})
 
@@ -59,7 +56,6 @@ func pullTopics(ctx context.Context, name string, logger *zap.Logger, client gen
 		client: client,
 		name:   name,
 	}
-	defer close(changes)
 	err := pull.Changes[*gen.PullControlTopicsResponse](ctx, puller, changes, pull.WithLogger(logger))
 	if status.Code(err) == codes.Unimplemented {
 		return nil
@@ -112,7 +108,6 @@ func pullMessages(ctx context.Context, name string, logger *zap.Logger, client g
 		client: client,
 		name:   name,
 	}
-	defer close(changes)
 	err := pull.Changes[*gen.PullExportMessagesResponse](ctx, puller, changes, pull.WithLogger(logger))
 	if status.Code(err) == codes.Unimplemented {
 		return nil

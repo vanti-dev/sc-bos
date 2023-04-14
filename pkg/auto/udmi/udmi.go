@@ -3,12 +3,16 @@ package udmi
 import (
 	"context"
 	"errors"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 
@@ -67,32 +71,127 @@ func (e *udmiAuto) applyConfig(ctx context.Context, cfg config.Root) error {
 		client.Disconnect(5000)
 	}()
 
-	grp, ctx := errgroup.WithContext(ctx)
-	var tasks []task.Task
-
-	// todo: check if we've already setup the sources
-	// todo: how do we stop one source?
-	for _, name := range cfg.Sources {
-		tasks = append(tasks, tasksForSource(name, e.services.Logger.Named(name), udmiClient, pubSub)...)
-	}
-
-	for _, t := range tasks {
-		t := t // save for go routine usage
-		grp.Go(func() error {
-			return task.Run(ctx, t, task.WithRetry(task.RetryUnlimited), task.WithBackoff(time.Millisecond*100, time.Second*10))
-		})
-	}
-
-	go func() {
-		err := grp.Wait()
-		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+	var tasks namedTasks
+	pullFrom := func(name string) {
+		logger := e.services.Logger.With(zap.String("name", name))
+		err := tasks.Run(ctx, name, tasksForSource(name, logger, udmiClient, pubSub),
+			task.WithRetry(task.RetryUnlimited), task.WithBackoff(time.Millisecond*100, time.Second*10))
+		if errors.Is(err, ErrAlreadyRunning) {
+			// cool, I guess someone else beat us to it
 			return
 		}
-		if err != nil {
-			e.services.Logger.Warn("shut down", zap.Error(err))
-		} else {
-			e.services.Logger.Debug("shut down")
+		if err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
+			logger.Warn("shut down unexpectedly", zap.Error(err))
+			return
+		}
+		logger.Debug("subscription stopped")
+	}
+
+	// setup manually configured sources
+	for _, name := range cfg.Sources {
+		go pullFrom(name)
+	}
+
+	// setup discovered sources
+	if cfg.DiscoverSources {
+		go func() {
+			for { // loop in case we get errors
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
+				for change := range e.services.Node.PullAllMetadata(ctx, resource.WithReadPaths(&traits.Metadata{}, "traits")) {
+					hadTrait, hasTrait := hasUDMITrait(change.OldValue), hasUDMITrait(change.NewValue)
+					if hadTrait && !hasTrait {
+						// remove
+						err := tasks.Stop(change.Name)
+						if err != nil && !errors.Is(err, ErrNotRunning) {
+							e.services.Logger.Debug("error during stop", zap.String("name", change.Name), zap.Error(err))
+						}
+					}
+					if !hadTrait && hasTrait {
+						// add
+						go pullFrom(change.Name)
+					}
+				}
+			}
+		}()
+	}
+
+	return nil
+}
+
+func hasUDMITrait(md *traits.Metadata) bool {
+	for _, t := range md.GetTraits() {
+		if t.Name == udmipb.TraitName.String() {
+			return true
+		}
+	}
+	return false
+}
+
+type namedTasks struct {
+	mu         sync.Mutex
+	stopByName map[string]taskRuntime
+}
+
+var (
+	ErrAlreadyRunning = errors.New("already running")
+	ErrNotRunning     = errors.New("not running")
+)
+
+func (s *namedTasks) Run(ctx context.Context, name string, tasks []task.Task, opts ...task.Option) error {
+	ctx, stop := context.WithCancel(ctx)
+	defer stop()
+	id := &ctx
+
+	s.mu.Lock()
+	if s.stopByName == nil {
+		s.stopByName = make(map[string]taskRuntime)
+	}
+
+	_, ok := s.stopByName[name]
+	if ok {
+		s.mu.Unlock()
+		return ErrAlreadyRunning
+	}
+	s.stopByName[name] = taskRuntime{stop, id}
+	s.mu.Unlock()
+
+	defer func() {
+		// cleanup
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		rt, ok := s.stopByName[name]
+		if ok && rt.id == id {
+			delete(s.stopByName, name)
 		}
 	}()
+
+	group, ctx := errgroup.WithContext(ctx)
+	for _, t := range tasks {
+		t := t
+		group.Go(func() error {
+			return task.Run(ctx, t, opts...)
+		})
+	}
+	return group.Wait()
+}
+
+func (s *namedTasks) Stop(name string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	rt, ok := s.stopByName[name]
+	if !ok {
+		return ErrNotRunning
+	}
+	rt.stop()
+	delete(s.stopByName, name)
 	return nil
+}
+
+type taskRuntime struct {
+	stop func()
+	id   *context.Context
 }
