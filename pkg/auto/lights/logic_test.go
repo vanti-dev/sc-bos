@@ -199,8 +199,8 @@ func Test_processState(t *testing.T) {
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		if ttl != 10*time.Minute {
-			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
+		if ttl != 0 {
+			t.Fatalf("Error, ttl not equal 0 minutes, got %s", ttl.String())
 		}
 		if err != nil {
 			t.Fatalf("Error want <nil>, got %v", err)
@@ -238,8 +238,8 @@ func Test_processState(t *testing.T) {
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		if ttl != 10*time.Minute {
-			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
+		if ttl != 0 {
+			t.Fatalf("Error, ttl not equal 0 minutes, got %s", ttl.String())
 		}
 		if err != nil {
 			t.Fatalf("Error want <nil>, got %v", err)
@@ -394,6 +394,44 @@ func Test_processState(t *testing.T) {
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 		if ttl != 10*time.Minute {
 			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
+		}
+		if err != nil {
+			t.Fatalf("Error want <nil>, got %v", err)
+		}
+
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: 100,
+			},
+		})
+		actions.assertNoMoreCalls()
+	})
+
+	t.Run("on button pressed in the past", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.OnButtons = []string{"onButton01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+
+		readState.Buttons["onButton01"] = &gen.ButtonState{
+			State:             gen.ButtonState_UNPRESSED,
+			StateChangeTime:   timestamppb.New(now.Add(-time.Minute)),
+			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
+		}
+
+		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
+		if ttl != 9*time.Minute {
+			t.Fatalf("Error, ttl not equal 9 minutes, got %s", ttl.String())
 		}
 		if err != nil {
 			t.Fatalf("Error want <nil>, got %v", err)

@@ -27,8 +27,8 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	now := readState.Now()
 
 	var (
-		isSwitchedOn  bool
-		isSwitchedOff bool
+		onButtonClicked  bool
+		offButtonClicked bool
 	)
 
 	mostRecentButtonName := getMostRecentButtonPress(readState)
@@ -51,33 +51,38 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	}
 
 	if buttonActionRequired {
-		// Either isSwitchedOn or isSwitchedOff should be set
+		// Either onButtonClicked or offButtonClicked should be set
 		buttonType := getButtonType(readState, mostRecentButtonName)
 		switch buttonType {
 		case OnButton:
-			isSwitchedOn = true
-			rerunAfter = readState.Config.UnoccupiedOffDelay.Duration
+			onButtonClicked = true
 		case OffButton:
-			isSwitchedOff = true
+			offButtonClicked = true
 		case ToggleButton:
-			if getNewToggleState(writeState) {
-				isSwitchedOn = true
+			// decide if the toggle button should be treated as an on or off button based on updates we've written
+			if brightnessAllOff(writeState) {
+				onButtonClicked = true
 			} else {
-				isSwitchedOff = true
+				offButtonClicked = true
 			}
-			rerunAfter = readState.Config.UnoccupiedOffDelay.Duration
 		}
+		buttonClickTime := readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()
 		logger.Debug("Button action required ", zap.String("Button type", buttonType.String()),
-			zap.Bool("isSwitchedOn", isSwitchedOn),
-			zap.Bool("isSwitchedOff", isSwitchedOff),
-			zap.Time("state change time", readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()),
+			zap.Bool("onButtonClicked", onButtonClicked),
+			zap.Bool("offButtonClicked", offButtonClicked),
+			zap.Time("buttonClickTime", buttonClickTime),
 			zap.Time("last button action", writeState.LastButtonAction))
 
+		if onButtonClicked {
+			buttonClickAge := now.Sub(buttonClickTime)
+			rerunAfter = readState.Config.UnoccupiedOffDelay.Duration - buttonClickAge
+		}
+
 		// Update the last time a button action happened
-		writeState.LastButtonAction = readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()
+		writeState.LastButtonAction = buttonClickTime
 	}
 
-	if isSwitchedOff {
+	if offButtonClicked {
 		logger.Debug("Switched off by button press. Setting level to zero")
 		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, logger, readState.Config.Lights...)
 	}
@@ -85,7 +90,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	anyOccupied := areAnyOccupied(readState.Config.OccupancySensors, readState.Occupancy)
 
 	// We can do easy checks for occupancy and turn things on if they are occupied
-	if anyOccupied || isSwitchedOn {
+	if anyOccupied || onButtonClicked {
 		// logger.Debug("Occupied or button pressed. Computing on level percent ", zap.Float32("brightness", combinedLuxLevel(readState.AmbientBrightness)))
 		level, ok := computeOnLevelPercent(readState, writeState)
 		// logger.Debug("Setting level.", zap.Float32("level", level))
@@ -143,9 +148,9 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	return rerunAfter, nil
 }
 
-// getNewToggleState returns the new toggle state based on the last light brightness write
-// if any light is on then we switch off, if all lights are off we switch on
-func getNewToggleState(state *WriteState) bool {
+// brightnessAllOff returns if all the given brightness levels are zero.
+// Note is len(brightness) == 0, this will return true.
+func brightnessAllOff(state *WriteState) bool {
 	for _, brightness := range state.Brightness {
 		if brightness.LevelPercent > 0 {
 			return false
