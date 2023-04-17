@@ -25,6 +25,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	now := readState.Now()
 	var mode config.ModeOption
 	mode, rerunAfter = activeMode(now, readState)
+	logger = logger.With(zap.String("mode", mode.Name))
 
 	onButtonClicked, offButtonClicked := captureButtonActions(readState, writeState, logger)
 
@@ -109,6 +110,9 @@ func activeMode(now time.Time, state *ReadState) (config.ModeOption, time.Durati
 	var currentMode config.ModeOption
 	found := false
 	for _, mode := range state.Config.Modes {
+		if mode.Start.Schedule == nil || mode.End.Schedule == nil {
+			continue
+		}
 		startAt := mode.Start.Next(now)
 		endAt := mode.End.Next(now)
 		if startAt.Before(endAt) {

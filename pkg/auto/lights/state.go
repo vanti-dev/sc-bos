@@ -44,6 +44,7 @@ func (s *ReadState) Clone() *ReadState {
 	for name, val := range s.Buttons {
 		clone.Buttons[name] = val
 	}
+	clone.Modes = s.Modes
 	return clone
 }
 
