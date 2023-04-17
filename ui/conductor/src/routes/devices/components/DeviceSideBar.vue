@@ -5,6 +5,7 @@
     <light-card :name="deviceId" v-if="traits['smartcore.traits.Light']"/>
     <occupancy-card :name="deviceId" v-if="traits['smartcore.traits.OccupancySensor']"/>
     <emergency-light :name="deviceId" v-if="traits['smartcore.bsp.EmergencyLight']"/>
+    <mode-card :name="deviceId" v-if="traits['smartcore.traits.Mode']"/>
     <udmi-card :name="deviceId" v-if="traits['smartcore.bos.UDMI']"/>
   </side-bar>
 </template>
@@ -15,6 +16,7 @@ import AirTemperatureCard from '@/routes/devices/components/trait-cards/AirTempe
 import DeviceInfoCard from '@/routes/devices/components/trait-cards/DeviceInfoCard.vue';
 import EmergencyLight from '@/routes/devices/components/trait-cards/EmergencyLight.vue';
 import LightCard from '@/routes/devices/components/trait-cards/LightCard.vue';
+import ModeCard from '@/routes/devices/components/trait-cards/ModeCard.vue';
 import OccupancyCard from '@/routes/devices/components/trait-cards/OccupancyCard.vue';
 import UdmiCard from '@/routes/devices/components/trait-cards/UdmiCard.vue';
 
