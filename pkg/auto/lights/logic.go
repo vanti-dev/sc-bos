@@ -23,12 +23,15 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	// Work out what we need to do to apply the given writeState and make those changes for as long as ctx is valid
 
 	now := readState.Now()
+	var mode config.ModeOption
+	mode, rerunAfter = activeMode(now, readState)
 
 	onButtonClicked, offButtonClicked := captureButtonActions(readState, writeState, logger)
 
 	if offButtonClicked {
-		logger.Debug("Switched off by button press. Setting level to zero")
-		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, logger, readState.Config.Lights...)
+		offLevel := computeOffLevelPercent(mode)
+		logger.Debug("Switched off by button press. Setting level to zero", zap.Float32("offLevel", offLevel))
+		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, offLevel, logger, readState.Config.Lights...)
 	}
 
 	anyOccupied := areAnyOccupied(readState.Config.OccupancySensors, readState.Occupancy)
@@ -36,11 +39,13 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	// We can do easy checks for occupancy and turn things on if they are occupied
 	if anyOccupied || onButtonClicked {
 		if onButtonClicked {
-			rerunAfter = readState.Config.UnoccupiedOffDelay.Duration - now.Sub(writeState.LastButtonOnTime)
+			if wake := mode.UnoccupiedOffDelay.Duration - now.Sub(writeState.LastButtonOnTime); rerunAfter == 0 || wake < rerunAfter {
+				rerunAfter = wake
+			}
 		}
 
 		// logger.Debug("Occupied or button pressed. Computing on level percent ", zap.Float32("brightness", combinedLuxLevel(readState.AmbientBrightness)))
-		level, ok := computeOnLevelPercent(readState, writeState)
+		level, ok := computeOnLevelPercent(mode, readState, writeState)
 		// logger.Debug("Setting level.", zap.Float32("level", level))
 		if !ok {
 			logger.Debug("Not enough read information for daylight dimming calculations")
@@ -66,21 +71,63 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 		logger.Debug("Both time last unoccupied and last button press are zero.")
 	} else {
 		sinceUnoccupied := now.Sub(becameUnoccupied)
-		unoccupiedDelayBeforeDarkness := readState.Config.UnoccupiedOffDelay.Duration
+		unoccupiedDelayBeforeDarkness := mode.UnoccupiedOffDelay.Duration
 
 		if sinceUnoccupied >= unoccupiedDelayBeforeDarkness {
 			// we've been unoccupied for long enough, turn things off now
-			logger.Debug("Occupancy expired. Setting level to zero")
-			return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, logger, readState.Config.Lights...)
+			offLevel := computeOffLevelPercent(mode)
+			logger.Debug("Occupancy expired. Setting level to zero", zap.Float32("offLevel", offLevel))
+			return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, offLevel, logger, readState.Config.Lights...)
 		} else {
 			// we haven't written anything, but in `unoccupiedDelayBeforeDarkness - sinceUnoccupied` time we will, let the
 			// caller know
-			rerunAfter = unoccupiedDelayBeforeDarkness - sinceUnoccupied
+			if wait := unoccupiedDelayBeforeDarkness - sinceUnoccupied; rerunAfter == 0 || wait < rerunAfter {
+				rerunAfter = wait
+			}
 		}
 	}
 
 	// no change
 	return rerunAfter, nil
+}
+
+// activeMode returns the current active mode for the automation, plus the ttl for when that mode is likely to change.
+// The active mode is the next mode to stop, or the default mode if no modes are started.
+func activeMode(now time.Time, state *ReadState) (config.ModeOption, time.Duration) {
+	var nextStart, nextEnd time.Time
+	var currentMode config.ModeOption
+	found := false
+	for _, mode := range state.Config.Modes {
+		startAt := mode.Start.Next(now)
+		endAt := mode.End.Next(now)
+		if startAt.Before(endAt) {
+			// currently stopped
+			if nextStart.IsZero() || startAt.Before(nextStart) {
+				nextStart = startAt
+			}
+		} else {
+			// currently started
+			if nextEnd.IsZero() || endAt.Before(nextEnd) {
+				nextEnd = endAt
+				currentMode = mode
+				found = true
+			}
+		}
+	}
+
+	if found {
+		wake := nextStart
+		if wake.IsZero() || nextEnd.Before(wake) {
+			wake = nextEnd
+		}
+		return currentMode, wake.Sub(now)
+	}
+
+	wake := now
+	if nextStart.After(wake) {
+		wake = nextStart
+	}
+	return config.ModeOption{Name: "default", Mode: state.Config.Mode}, wake.Sub(now)
 }
 
 // brightnessAllOff returns if all the given brightness levels are zero.
@@ -131,23 +178,38 @@ func lastUnoccupiedTime(state *ReadState) time.Time {
 	return mostRecentUnoccupiedTime
 }
 
-func computeOnLevelPercent(readState *ReadState, writeState *WriteState) (level float32, ok bool) {
+func computeOffLevelPercent(mode config.ModeOption) (level float32) {
+	if mode.OffLevelPercent != nil {
+		return *mode.OffLevelPercent
+	}
+	return 0
+}
+
+func computeOnLevelPercent(mode config.ModeOption, readState *ReadState, writeState *WriteState) (level float32, ok bool) {
+	var fullyOff, fullyOn float32 = 0, 100.0
+	if mode.OnLevelPercent != nil {
+		fullyOn = *mode.OnLevelPercent
+	}
+	if mode.OffLevelPercent != nil {
+		fullyOff = *mode.OffLevelPercent
+	}
+
 	dd := readState.Config.DaylightDimming
 	if dd == nil {
-		return 100, true
+		return fullyOn, true
 	}
 	if len(dd.Thresholds) == 0 {
-		return 100, true
+		return fullyOn, true
 	}
 	if len(readState.AmbientBrightness) == 0 {
-		return 100, false
+		return fullyOn, false
 	}
 
 	sensorLux := combinedLuxLevel(readState.AmbientBrightness)
 	threshold, ok := closestThresholdBelow(sensorLux, dd.Thresholds)
 	if !ok {
 		// measured lux level is brighter than the config for the dimmest on level, so just turn the light off
-		return 0, true
+		return fullyOff, true
 	}
 
 	// Go half way between goal and current level percent

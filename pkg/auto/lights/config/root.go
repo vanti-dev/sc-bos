@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/robfig/cron/v3"
+
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
@@ -18,12 +20,9 @@ type Root struct {
 	Lights            []string `json:"lights,omitempty"`
 	BrightnessSensors []string `json:"brightnessSensors,omitempty"`
 
-	// UnoccupiedOffDelay configures how long we wait after the most recent occupancy sensor reported unoccupied before
-	// we turn the light off.
-	UnoccupiedOffDelay jsontypes.Duration `json:"unoccupiedOffDelay,omitempty"`
-	// DaylightDimming configures how the brightness measured in the space affects the luminosity of the lights that
-	// are on.
-	DaylightDimming *DaylightDimming `json:"daylightDimming,omitempty"`
+	Mode // default mode
+	// Modes describe modes of operation and when they should be active by default.
+	Modes []ModeOption `json:"modes,omitempty"`
 
 	// Devices implementing the Button trait will be used to switch the lights on and off when clicked once.
 	OnButtons     []string `json:"onButtons,omitempty"`
@@ -105,6 +104,61 @@ type LevelThreshold struct {
 	LevelPercent float32 `json:"levelPercent,omitempty"`
 }
 
+type Mode struct {
+	// UnoccupiedOffDelay configures how long we wait after the most recent occupancy sensor reported unoccupied before
+	// we turn the light off.
+	UnoccupiedOffDelay jsontypes.Duration `json:"unoccupiedOffDelay,omitempty"`
+	// DaylightDimming configures how the brightness measured in the space affects the luminosity of the lights that
+	// are on.
+	DaylightDimming *DaylightDimming `json:"daylightDimming,omitempty"`
+	// Levels to use when the lights are on or off. If present overrides daylight dimming.
+	OnLevelPercent  *float32 `json:"onLevelPercent,omitempty"`
+	OffLevelPercent *float32 `json:"offLevelPercent,omitempty"`
+}
+
+type ModeOption struct {
+	Name string `json:"name,omitempty"`
+	Mode
+	Start Schedule `json:"start,omitempty"`
+	End   Schedule `json:"end,omitempty"`
+}
+
+// Schedule represent a cron formatted schedule, used by ModeOption to encode the start and end times for when that mode should be active.
+type Schedule struct {
+	cron.Schedule
+	Raw string
+}
+
+func ScheduleMustParse(raw string) Schedule {
+	schedule, err := cron.ParseStandard(raw)
+	if err != nil {
+		panic(err)
+	}
+	return Schedule{Schedule: schedule, Raw: raw}
+}
+
+func (s *Schedule) String() string {
+	return s.Raw
+}
+
+func (s *Schedule) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.Raw)
+}
+
+func (s *Schedule) UnmarshalJSON(bytes []byte) error {
+	var str string
+	err := json.Unmarshal(bytes, &str)
+	if err != nil {
+		return err
+	}
+	schedule, err := cron.ParseStandard(str)
+	if err != nil {
+		return err
+	}
+	*s = Schedule{Schedule: schedule, Raw: str}
+	return nil
+}
+
 func Read(data []byte) (Root, error) {
 	root := Default()
 	err := json.Unmarshal(data, &root)
@@ -120,7 +174,9 @@ func Read(data []byte) (Root, error) {
 
 func Default() Root {
 	return Root{
-		Now:                time.Now,
-		UnoccupiedOffDelay: jsontypes.Duration{Duration: 10 * time.Minute},
+		Now: time.Now,
+		Mode: Mode{
+			UnoccupiedOffDelay: jsontypes.Duration{Duration: 10 * time.Minute},
+		},
 	}
 }

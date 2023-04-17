@@ -648,6 +648,119 @@ func Test_processState(t *testing.T) {
 		})
 		actions.assertNoMoreCalls()
 	})
+
+	t.Run("set on level from default mode", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+
+		readState.Config.OccupancySensors = []string{"pir01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Occupancy["pir01"] = &traits.Occupancy{State: traits.Occupancy_OCCUPIED}
+		var onLevel float32 = 78
+		readState.Config.Mode = config.Mode{
+			OnLevelPercent: &onLevel,
+		}
+
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
+		assertNoTTLOrErr(t, ttl, err)
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: onLevel,
+			},
+		})
+		actions.assertNoMoreCalls()
+	})
+
+	t.Run("set off level from default mode", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+		now := time.Unix(0, 0)
+
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+		readState.Config.OccupancySensors = []string{"pir01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Occupancy["pir01"] = &traits.Occupancy{
+			State:           traits.Occupancy_UNOCCUPIED,
+			StateChangeTime: timestamppb.New(now.Add(-20 * time.Minute)),
+		}
+		var offLevel float32 = 12
+		readState.Config.Mode = config.Mode{
+			OffLevelPercent: &offLevel,
+		}
+
+		logger, _ := zap.NewDevelopment()
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
+
+		assertNoTTLOrErr(t, ttl, err)
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: offLevel,
+			},
+		})
+		actions.assertNoMoreCalls()
+	})
+
+	t.Run("set on level from mode at time", func(t *testing.T) {
+		readState := NewReadState()
+		writeState := NewWriteState()
+		actions := newTestActions(t)
+
+		readState.Config.OccupancySensors = []string{"pir01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Occupancy["pir01"] = &traits.Occupancy{State: traits.Occupancy_OCCUPIED}
+		var onLevel float32 = 78
+		readState.Config.Modes = []config.ModeOption{
+			{
+				Name:  "testMode",
+				Start: config.ScheduleMustParse("10 0 * * *"),
+				End:   config.ScheduleMustParse("18 0 * * *"),
+				Mode: config.Mode{
+					OnLevelPercent: &onLevel,
+				},
+			},
+		}
+		now := time.Unix(0, 0)
+		now = now.In(time.UTC)
+		readState.Config.Now = func() time.Time { return now }
+
+		logger, _ := zap.NewDevelopment()
+
+		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
+		if ttl != 10*time.Minute {
+			t.Fatalf("Error, ttl not equal 10 minutes, got %s", ttl.String())
+		}
+		if err != nil {
+			t.Fatalf("Error want <nil>, got %v", err)
+		}
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: 100,
+			},
+		})
+
+		now = now.Add(10 * time.Minute)
+		ttl, err = processState(context.Background(), readState, writeState, actions, logger)
+		if ttl != 8*time.Minute {
+			t.Fatalf("Error, ttl not equal 8 minutes, got %s", ttl.String())
+		}
+		if err != nil {
+			t.Fatalf("Error want <nil>, got %v", err)
+		}
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: onLevel,
+			},
+		})
+		actions.assertNoMoreCalls()
+	})
 }
 
 func assertNoTTLOrErr(t *testing.T, ttl time.Duration, err error) {
@@ -703,4 +816,74 @@ func (ta *testActions) UpdateBrightness(ctx context.Context, req *traits.UpdateB
 	ta.brightnessCalls = append(ta.brightnessCalls, req)
 	state.Brightness[req.Name] = req.Brightness
 	return nil
+}
+
+func Test_activeMode(t *testing.T) {
+	cfg := NewReadState()
+	cfg.Config.Mode = config.Mode{}
+	// These modes basically look like this:
+	//    [-a-----] [-d------]         [-f---]
+	//      [-b-------]    [-e-------]
+	//  [-c--------------]
+	cfg.Config.Modes = append(cfg.Config.Modes, config.ModeOption{
+		Name:  "a",
+		Start: config.ScheduleMustParse("10, 0, 1, 1, ?"),
+		End:   config.ScheduleMustParse("20, 0, 1, 1, ?"),
+	})
+	cfg.Config.Modes = append(cfg.Config.Modes, config.ModeOption{
+		Name:  "b",
+		Start: config.ScheduleMustParse("12, 0, 1, 1, ?"),
+		End:   config.ScheduleMustParse("25, 0, 1, 1, ?"),
+	})
+	cfg.Config.Modes = append(cfg.Config.Modes, config.ModeOption{
+		Name:  "c",
+		Start: config.ScheduleMustParse("5, 0, 1, 1, ?"),
+		End:   config.ScheduleMustParse("28, 0, 1, 1, ?"),
+	})
+	cfg.Config.Modes = append(cfg.Config.Modes, config.ModeOption{
+		Name:  "d",
+		Start: config.ScheduleMustParse("22, 0, 1, 1, ?"),
+		End:   config.ScheduleMustParse("30, 0, 1, 1, ?"),
+	})
+	cfg.Config.Modes = append(cfg.Config.Modes, config.ModeOption{
+		Name:  "e",
+		Start: config.ScheduleMustParse("29, 0, 1, 1, ?"),
+		End:   config.ScheduleMustParse("35, 0, 1, 1, ?"),
+	})
+	cfg.Config.Modes = append(cfg.Config.Modes, config.ModeOption{
+		Name:  "f",
+		Start: config.ScheduleMustParse("40, 0, 1, 1, ?"),
+		End:   config.ScheduleMustParse("45, 0, 1, 1, ?"),
+	})
+
+	tests := []struct {
+		name     string
+		now      int
+		wantMode string
+		wantWake time.Duration
+	}{
+		{"before all", 0, "default", 5 * time.Minute},
+		{"c start", 5, "c", 5 * time.Minute},
+		{"after c start", 9, "c", 1 * time.Minute},
+		{"after a start", 11, "a", 1 * time.Minute},
+		{"after b start", 13, "a", 7 * time.Minute},
+		{"after a end", 21, "b", 1 * time.Minute},
+		{"after d start", 23, "b", 2 * time.Minute},
+		{"after b end", 26, "c", 2 * time.Minute},
+		{"c end", 28, "d", 1 * time.Minute},
+		{"after e start", 30, "e", 5 * time.Minute},
+		{"after e end", 36, "default", 4 * time.Minute},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			now := time.Date(2023, 1, 1, 0, tt.now, 0, 0, time.UTC)
+			gotMode, gotWake := activeMode(now, cfg)
+			if gotMode.Name != tt.wantMode {
+				t.Errorf("activeMode() mode got = %v, want %v", gotMode.Name, tt.wantMode)
+			}
+			if gotWake != tt.wantWake {
+				t.Errorf("activeMode() wake got = %v, want %v", gotWake, tt.wantWake)
+			}
+		})
+	}
 }
