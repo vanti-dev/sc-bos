@@ -557,6 +557,7 @@ func Test_processState(t *testing.T) {
 
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+		writeState.LastButtonOnTime = now.Add(-5 * time.Minute)
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
@@ -594,6 +595,7 @@ func Test_processState(t *testing.T) {
 
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+		writeState.LastButtonOnTime = now.Add(-5 * time.Minute)
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
@@ -631,6 +633,7 @@ func Test_processState(t *testing.T) {
 
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+		writeState.LastButtonOnTime = now.Add(-5 * time.Minute)
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)

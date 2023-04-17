@@ -74,6 +74,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 		if onButtonClicked {
 			buttonClickAge := now.Sub(buttonClickTime)
 			rerunAfter = readState.Config.UnoccupiedOffDelay.Duration - buttonClickAge
+			writeState.LastButtonOnTime = buttonClickTime
 		}
 
 		// Update the last time a button action happened
@@ -106,40 +107,27 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	// If it hasn't been 10 minutes yet, it waits some time and turns the lights off when it has been
 	// greater than the unoccupied timeout.
 	// If a push button hasn't been pressed for the timeout period lights will be switched off too
-	var occupancyExpired bool
 
-	mostRecentButtonTime := time.Time{}
-	if mostRecentButtonState != nil {
-		mostRecentButtonTime = mostRecentButtonState.StateChangeTime.AsTime()
-	}
 	becameUnoccupied := lastUnoccupiedTime(readState)
-
-	var sinceUnoccupied time.Duration
-
-	if mostRecentButtonTime.After(becameUnoccupied) {
-		sinceUnoccupied = now.Sub(mostRecentButtonTime)
-	} else {
-		sinceUnoccupied = now.Sub(becameUnoccupied)
+	if buttonOnTime := writeState.LastButtonOnTime; buttonOnTime.After(becameUnoccupied) {
+		becameUnoccupied = buttonOnTime
 	}
 
-	if becameUnoccupied.IsZero() && mostRecentButtonTime.IsZero() {
+	if becameUnoccupied.IsZero() {
 		logger.Debug("Both time last unoccupied and last button press are zero.")
 	} else {
+		sinceUnoccupied := now.Sub(becameUnoccupied)
 		unoccupiedDelayBeforeDarkness := readState.Config.UnoccupiedOffDelay.Duration
 
 		if sinceUnoccupied >= unoccupiedDelayBeforeDarkness {
 			// we've been unoccupied for long enough, turn things off now
-			occupancyExpired = true
+			logger.Debug("Occupancy expired. Setting level to zero")
+			return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, logger, readState.Config.Lights...)
 		} else {
 			// we haven't written anything, but in `unoccupiedDelayBeforeDarkness - sinceUnoccupied` time we will, let the
 			// caller know
 			rerunAfter = unoccupiedDelayBeforeDarkness - sinceUnoccupied
 		}
-	}
-
-	if occupancyExpired {
-		logger.Debug("Occupancy expired. Setting level to zero")
-		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, 0, logger, readState.Config.Lights...)
 	}
 
 	// no change

@@ -56,7 +56,8 @@ func (s *ReadState) Now() time.Time {
 // For example if we UpdateBrightness, then the response to that call is recorded in this state.
 type WriteState struct {
 	Brightness       map[string]*traits.Brightness
-	LastButtonAction time.Time
+	LastButtonAction time.Time // used for button press deduplication, the last time we did anything due to a button press
+	LastButtonOnTime time.Time // used for occupancy related darkness, the last time lights were turned on due to button press
 }
 
 func NewWriteState() *WriteState {
