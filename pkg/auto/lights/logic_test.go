@@ -91,7 +91,7 @@ func Test_processState(t *testing.T) {
 		})
 		actions.assertNoMoreCalls()
 	})
-	t.Run("ttl returned when lights should change", func(t *testing.T) {
+	t.Run("pir ttl", func(t *testing.T) {
 		readState := NewReadState()
 		writeState := NewWriteState()
 		actions := newTestActions(t)
@@ -529,7 +529,6 @@ func Test_processState(t *testing.T) {
 		}
 
 		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
-		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
@@ -538,7 +537,7 @@ func Test_processState(t *testing.T) {
 		actions.assertNoMoreCalls()
 	})
 
-	t.Run("within unoccupancy timeout no op", func(t *testing.T) {
+	t.Run("button ttl", func(t *testing.T) {
 		readState := NewReadState()
 		writeState := NewWriteState()
 		actions := newTestActions(t)
@@ -549,20 +548,12 @@ func Test_processState(t *testing.T) {
 		readState.Config.Lights = []string{"light01"}
 		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
 
-		readState.Buttons["toggleButton01"] = &gen.ButtonState{
-			State:             gen.ButtonState_UNPRESSED,
-			StateChangeTime:   timestamppb.New(now.Add(-5 * time.Minute)),
-			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
-		}
-
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
-		writeState.LastButtonAction = now.Add(-5 * time.Minute)
-		writeState.LastButtonOnTime = now.Add(-5 * time.Minute)
+		writeState.LastButtonOnTime = now.Add(-time.Minute)
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		if ttl != 5*time.Minute {
-			t.Fatalf("Error, ttl not equal 5 minutes, got %s", ttl.String())
+		if ttl != 9*time.Minute {
+			t.Fatalf("Error, ttl not equal 9 minutes, got %s", ttl.String())
 		}
 		if err != nil {
 			t.Fatalf("Error want <nil>, got %v", err)
@@ -570,7 +561,7 @@ func Test_processState(t *testing.T) {
 		actions.assertNoMoreCalls()
 	})
 
-	t.Run("button within unoccupancy, PIR not, no op", func(t *testing.T) {
+	t.Run("button+pir ttl, button last", func(t *testing.T) {
 		readState := NewReadState()
 		writeState := NewWriteState()
 		actions := newTestActions(t)
@@ -586,20 +577,11 @@ func Test_processState(t *testing.T) {
 			State:           traits.Occupancy_UNOCCUPIED,
 			StateChangeTime: timestamppb.New(now.Add(-15 * time.Minute)),
 		}
-
-		readState.Buttons["toggleButton01"] = &gen.ButtonState{
-			State:             gen.ButtonState_UNPRESSED,
-			StateChangeTime:   timestamppb.New(now.Add(-5 * time.Minute)),
-			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
-		}
-
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
-		writeState.LastButtonAction = now.Add(-5 * time.Minute)
-		writeState.LastButtonOnTime = now.Add(-5 * time.Minute)
+		writeState.LastButtonOnTime = now.Add(-time.Minute)
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		if ttl != 5*time.Minute {
+		if ttl != 9*time.Minute {
 			t.Fatalf("Error, ttl not equal 5 minutes, got %s", ttl.String())
 		}
 		if err != nil {
@@ -608,7 +590,7 @@ func Test_processState(t *testing.T) {
 		actions.assertNoMoreCalls()
 	})
 
-	t.Run("PIR within unoccupancy, button not, no op", func(t *testing.T) {
+	t.Run("button+pir ttl, pir last", func(t *testing.T) {
 		readState := NewReadState()
 		writeState := NewWriteState()
 		actions := newTestActions(t)
@@ -624,16 +606,7 @@ func Test_processState(t *testing.T) {
 			State:           traits.Occupancy_UNOCCUPIED,
 			StateChangeTime: timestamppb.New(now.Add(-5 * time.Minute)),
 		}
-
-		readState.Buttons["toggleButton01"] = &gen.ButtonState{
-			State:             gen.ButtonState_UNPRESSED,
-			StateChangeTime:   timestamppb.New(now.Add(-15 * time.Minute)),
-			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
-		}
-
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
-		writeState.LastButtonAction = now.Add(-5 * time.Minute)
-		writeState.LastButtonOnTime = now.Add(-5 * time.Minute)
+		writeState.LastButtonOnTime = now.Add(-15 * time.Minute)
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
@@ -646,7 +619,7 @@ func Test_processState(t *testing.T) {
 		actions.assertNoMoreCalls()
 	})
 
-	t.Run("both PIR and button outside unoccupancy", func(t *testing.T) {
+	t.Run("button+pir ttl, both old", func(t *testing.T) {
 		readState := NewReadState()
 		writeState := NewWriteState()
 		actions := newTestActions(t)
@@ -662,15 +635,7 @@ func Test_processState(t *testing.T) {
 			State:           traits.Occupancy_UNOCCUPIED,
 			StateChangeTime: timestamppb.New(now.Add(-15 * time.Minute)),
 		}
-
-		readState.Buttons["toggleButton01"] = &gen.ButtonState{
-			State:             gen.ButtonState_UNPRESSED,
-			StateChangeTime:   timestamppb.New(now.Add(-15 * time.Minute)),
-			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
-		}
-
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
-		writeState.LastButtonAction = now.Add(-5 * time.Minute)
+		writeState.LastButtonOnTime = now.Add(-15 * time.Minute)
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
