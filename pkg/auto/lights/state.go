@@ -62,7 +62,9 @@ type WriteState struct {
 
 func NewWriteState() *WriteState {
 	return &WriteState{
-		Brightness:       make(map[string]*traits.Brightness),
+		Brightness: make(map[string]*traits.Brightness),
+		// This causes all button presses before we boot to be ignored for action purposes - i.e. they don't directly turn lights on or off.
+		// This doesn't affect occupancy timeouts, so if a button was pressed 2 mins ago it still counts towards unoccupied darkness.
 		LastButtonAction: time.Now(),
 	}
 }
