@@ -212,7 +212,7 @@ func Test_processState(t *testing.T) {
 				LevelPercent: 0,
 			},
 		})
-		return
+		actions.assertNoMoreCalls()
 	})
 
 	t.Run("toggle pressed currently half on", func(t *testing.T) {
@@ -251,7 +251,7 @@ func Test_processState(t *testing.T) {
 				LevelPercent: 0,
 			},
 		})
-		return
+		actions.assertNoMoreCalls()
 	})
 
 	t.Run("toggle pressed currently off", func(t *testing.T) {
@@ -289,7 +289,7 @@ func Test_processState(t *testing.T) {
 				LevelPercent: 100,
 			},
 		})
-		return
+		actions.assertNoMoreCalls()
 	})
 
 	t.Run("no op on ButtonState_PRESSED", func(t *testing.T) {
@@ -316,7 +316,6 @@ func Test_processState(t *testing.T) {
 		assertNoTTLOrErr(t, ttl, err)
 
 		actions.assertNoMoreCalls()
-		return
 	})
 
 	t.Run("toggle pressed dont action", func(t *testing.T) {
@@ -343,7 +342,6 @@ func Test_processState(t *testing.T) {
 		assertNoTTLOrErr(t, ttl, err)
 
 		actions.assertNoMoreCalls()
-		return
 	})
 
 	t.Run("toggle pressed in past dont action", func(t *testing.T) {
@@ -370,7 +368,6 @@ func Test_processState(t *testing.T) {
 		assertNoTTLOrErr(t, ttl, err)
 
 		actions.assertNoMoreCalls()
-		return
 	})
 
 	t.Run("on button pressed and off", func(t *testing.T) {
@@ -408,7 +405,7 @@ func Test_processState(t *testing.T) {
 				LevelPercent: 100,
 			},
 		})
-		return
+		actions.assertNoMoreCalls()
 	})
 
 	t.Run("on button pressed and on", func(t *testing.T) {
@@ -441,7 +438,6 @@ func Test_processState(t *testing.T) {
 		}
 
 		actions.assertNoMoreCalls()
-		return
 	})
 
 	t.Run("off button pressed and on", func(t *testing.T) {
@@ -474,7 +470,7 @@ func Test_processState(t *testing.T) {
 				LevelPercent: 0,
 			},
 		})
-		return
+		actions.assertNoMoreCalls()
 	})
 
 	t.Run("off button pressed and off", func(t *testing.T) {
@@ -502,7 +498,6 @@ func Test_processState(t *testing.T) {
 		assertNoTTLOrErr(t, ttl, err)
 
 		actions.assertNoMoreCalls()
-		return
 	})
 
 	t.Run("within unoccupancy timeout no op", func(t *testing.T) {
@@ -534,7 +529,6 @@ func Test_processState(t *testing.T) {
 			t.Fatalf("Error want <nil>, got %v", err)
 		}
 		actions.assertNoMoreCalls()
-		return
 	})
 
 	t.Run("button withun unoccupancy, PIR not, no op", func(t *testing.T) {
@@ -572,7 +566,6 @@ func Test_processState(t *testing.T) {
 			t.Fatalf("Error want <nil>, got %v", err)
 		}
 		actions.assertNoMoreCalls()
-		return
 	})
 
 	t.Run("PIR within unoccupancy, button not, no op", func(t *testing.T) {
@@ -610,7 +603,6 @@ func Test_processState(t *testing.T) {
 			t.Fatalf("Error want <nil>, got %v", err)
 		}
 		actions.assertNoMoreCalls()
-		return
 	})
 
 	t.Run("both PIR and button outside unoccupancy", func(t *testing.T) {
@@ -648,7 +640,7 @@ func Test_processState(t *testing.T) {
 				LevelPercent: 0,
 			},
 		})
-		return
+		actions.assertNoMoreCalls()
 	})
 }
 
