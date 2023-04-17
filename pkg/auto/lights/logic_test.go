@@ -46,6 +46,7 @@ func Test_processState(t *testing.T) {
 				LevelPercent: 100,
 			},
 		})
+		actions.assertNoMoreCalls()
 	})
 
 	t.Run("ignore non-relevant occupancy", func(t *testing.T) {
@@ -88,6 +89,7 @@ func Test_processState(t *testing.T) {
 				LevelPercent: 0,
 			},
 		})
+		actions.assertNoMoreCalls()
 	})
 	t.Run("ttl returned when lights should change", func(t *testing.T) {
 		readState := NewReadState()
