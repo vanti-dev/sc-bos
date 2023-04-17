@@ -238,9 +238,11 @@ func lastUnoccupiedTime(state *ReadState) time.Time {
 }
 
 func computeOnLevelPercent(readState *ReadState, writeState *WriteState) (level float32, ok bool) {
-
 	dd := readState.Config.DaylightDimming
 	if dd == nil {
+		return 100, true
+	}
+	if len(dd.Thresholds) == 0 {
 		return 100, true
 	}
 	if len(readState.AmbientBrightness) == 0 {
@@ -250,7 +252,8 @@ func computeOnLevelPercent(readState *ReadState, writeState *WriteState) (level 
 	sensorLux := combinedLuxLevel(readState.AmbientBrightness)
 	threshold, ok := closestThresholdBelow(sensorLux, dd.Thresholds)
 	if !ok {
-		return 100, true
+		// measured lux level is brighter than the config for the dimmest on level, so just turn the light off
+		return 0, true
 	}
 
 	// Go half way between goal and current level percent
@@ -302,10 +305,6 @@ func closestThresholdBelow(lux float32, thresholds []config.LevelThreshold) (con
 	sort.Slice(thresholds, func(i, j int) bool {
 		return thresholds[i].BelowLux < thresholds[j].BelowLux
 	})
-	// Check if lux is greater than highest threshold
-	if lux > thresholds[len(thresholds)-1].BelowLux {
-		return thresholds[len(thresholds)-1], true
-	}
 
 	for _, threshold := range thresholds {
 		if lux < threshold.BelowLux {

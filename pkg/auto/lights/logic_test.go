@@ -140,8 +140,7 @@ func Test_processState(t *testing.T) {
 			{"30%", 30, []float32{10_000 - 1}},
 			{"1%", 1, []float32{30_000 - 1}},
 			{"off", 0, []float32{30_000}},
-			// todo(ellis): re-enable this failing test
-			// {"very bright", 0, []float32{100_000}},
+			{"very bright", 0, []float32{100_000}},
 		}
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
