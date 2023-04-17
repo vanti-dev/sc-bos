@@ -49,6 +49,10 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 	if err := b.clients.Client(&buttonClient); err != nil {
 		return fmt.Errorf("%w gen.ButtonApiClient", err)
 	}
+	var modeClient traits.ModeApiClient
+	if err := b.clients.Client(&modeClient); err != nil {
+		return fmt.Errorf("%w traits.ModeApiClient", err)
+	}
 
 	// Setup the sources that we can pull patches from.
 	sources := []*source{
@@ -96,6 +100,21 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 				return &ButtonPatches{
 					name:   name,
 					client: buttonClient,
+					logger: logger,
+				}
+			},
+		},
+		{
+			names: func(cfg config.Root) (names []string) {
+				if cfg.ModeSource == "" {
+					return names
+				}
+				return []string{cfg.ModeSource}
+			},
+			new: func(name string, logger *zap.Logger) subscriber {
+				return &ModePatches{
+					name:   name,
+					client: modeClient,
 					logger: logger,
 				}
 			},

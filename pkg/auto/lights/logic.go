@@ -91,9 +91,20 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	return rerunAfter, nil
 }
 
+const (
+	ModeAuto     = "auto"
+	ModeDefault  = "default"
+	ModeValueKey = "lighting.mode"
+)
+
 // activeMode returns the current active mode for the automation, plus the ttl for when that mode is likely to change.
 // The active mode is the next mode to stop, or the default mode if no modes are started.
 func activeMode(now time.Time, state *ReadState) (config.ModeOption, time.Duration) {
+	// check if there's a mode set from the read state
+	if mode, ok := readStateMode(state); ok {
+		return mode, 0
+	}
+
 	var nextStart, nextEnd time.Time
 	var currentMode config.ModeOption
 	found := false
@@ -127,7 +138,35 @@ func activeMode(now time.Time, state *ReadState) (config.ModeOption, time.Durati
 	if nextStart.After(wake) {
 		wake = nextStart
 	}
-	return config.ModeOption{Name: "default", Mode: state.Config.Mode}, wake.Sub(now)
+	return config.ModeOption{Name: ModeDefault, Mode: state.Config.Mode}, wake.Sub(now)
+}
+
+func readStateMode(state *ReadState) (config.ModeOption, bool) {
+	if state.Modes == nil {
+		return config.ModeOption{}, false
+	}
+	values := state.Modes.Values
+	key := state.Config.ModeValueKey
+	if key == "" {
+		key = ModeValueKey
+	}
+	modeName, ok := values[key]
+	if !ok {
+		return config.ModeOption{}, false
+	}
+	switch modeName {
+	case ModeAuto:
+		return config.ModeOption{}, false
+	case ModeDefault:
+		return config.ModeOption{Name: ModeDefault, Mode: state.Config.Mode}, true
+	default:
+		for _, mode := range state.Config.Modes {
+			if mode.Name == modeName {
+				return mode, true
+			}
+		}
+	}
+	return config.ModeOption{}, false
 }
 
 // brightnessAllOff returns if all the given brightness levels are zero.

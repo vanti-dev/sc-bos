@@ -24,6 +24,9 @@ type Root struct {
 	// Modes describe modes of operation and when they should be active by default.
 	Modes []ModeOption `json:"modes,omitempty"`
 
+	ModeSource   string `json:"modeSource,omitempty"` // the device name to read the active mode from
+	ModeValueKey string `json:"modeName,omitempty"`   // the name of the mode value in ModeSource that represents the active mode. Defaults to lighting.mode
+
 	// Devices implementing the Button trait will be used to switch the lights on and off when clicked once.
 	OnButtons     []string `json:"onButtons,omitempty"`
 	OffButtons    []string `json:"offButtons,omitempty"`

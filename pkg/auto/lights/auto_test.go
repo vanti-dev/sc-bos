@@ -12,6 +12,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
+	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -37,6 +38,8 @@ func TestPirsTurnLightsOn(t *testing.T) {
 			*v = brightnesssensor.WrapApi(brightnesssensor.NewApiRouter())
 		case *gen.ButtonApiClient:
 			*v = gen.WrapButtonApi(gen.NewButtonApiRouter())
+		case *traits.ModeApiClient:
+			*v = mode.WrapApi(mode.NewApiRouter())
 		default:
 			return errors.New("unsupported lightClient type")
 		}
@@ -87,6 +90,8 @@ func TestPirsTurnLightsOn(t *testing.T) {
 
 	// check setting occupied on one PIR causes the lights to come on
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
+	// DEAR FUTURE DEV, if you get test failures here it's probably because you're missing a case in the
+	// clients switch statement above
 	ttl, err := waitForState(func(state *ReadState) bool {
 		o, ok := state.Occupancy["pir01"]
 		if !ok {

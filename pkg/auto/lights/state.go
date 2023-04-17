@@ -19,6 +19,8 @@ type ReadState struct {
 	// used for daylight dimming
 	AmbientBrightness map[string]*traits.AmbientBrightness
 	Buttons           map[string]*gen.ButtonState
+	// used for selecting the run modes, aka "modes" config property
+	Modes *traits.ModeValues
 }
 
 func NewReadState() *ReadState {
