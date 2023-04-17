@@ -31,23 +31,19 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 		offButtonClicked bool
 	)
 
-	mostRecentButtonName := getMostRecentButtonPress(readState)
+	mostRecentButtonName, mostRecentButtonState, buttonActionRequired := getMostRecentButtonPress(readState)
 
-	var buttonActionRequired bool
-	if len(mostRecentButtonName) == 0 {
-		buttonActionRequired = false
-	} else {
-		mostRecentGestureName := "Unknown"
-		if readState.Buttons[mostRecentButtonName].MostRecentGesture != nil {
-			mostRecentGestureName = readState.Buttons[mostRecentButtonName].MostRecentGesture.Kind.String()
-		}
-		buttonActionRequired = isButtonActionRequired(readState.Buttons[mostRecentButtonName], writeState)
-		logger.Debug("Checking if button action require for button ", zap.String("button", mostRecentButtonName),
+	if buttonActionRequired {
+		buttonActionRequired = isButtonActionRequired(mostRecentButtonState, writeState)
+
+		logger.Debug("Checking if button action required for button",
+			zap.String("button", mostRecentButtonName),
 			zap.Bool("action required", buttonActionRequired),
-			zap.Time("state change time", readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()),
+			zap.Time("state change time", mostRecentButtonState.StateChangeTime.AsTime()),
 			zap.Time("last action time", writeState.LastButtonAction),
-			zap.String("button state", readState.Buttons[mostRecentButtonName].State.String()),
-			zap.String("last gesture", mostRecentGestureName))
+			zap.Stringer("button state", mostRecentButtonState.State),
+			zap.Stringer("last gesture", mostRecentButtonState.GetMostRecentGesture().GetKind()),
+		)
 	}
 
 	if buttonActionRequired {
@@ -66,12 +62,14 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 				offButtonClicked = true
 			}
 		}
-		buttonClickTime := readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()
-		logger.Debug("Button action required ", zap.String("Button type", buttonType.String()),
+		buttonClickTime := mostRecentButtonState.StateChangeTime.AsTime()
+		logger.Debug("Button action required",
+			zap.Stringer("Button type", buttonType),
 			zap.Bool("onButtonClicked", onButtonClicked),
 			zap.Bool("offButtonClicked", offButtonClicked),
 			zap.Time("buttonClickTime", buttonClickTime),
-			zap.Time("last button action", writeState.LastButtonAction))
+			zap.Time("last button action", writeState.LastButtonAction),
+		)
 
 		if onButtonClicked {
 			buttonClickAge := now.Sub(buttonClickTime)
@@ -95,7 +93,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 		level, ok := computeOnLevelPercent(readState, writeState)
 		// logger.Debug("Setting level.", zap.Float32("level", level))
 		if !ok {
-			logger.Warn("Could not get level for daylight dimming")
+			logger.Debug("Not enough read information for daylight dimming calculations")
 			// todo: here we are in a position where daylight dimming is supposed to be enabled but we don't have enough
 			//  info to actually choose the output light level. We should probably not make any changes and wait for
 			//  more data to come in, but we'll leave that to future us as part of snagging.
@@ -111,8 +109,8 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	var occupancyExpired bool
 
 	mostRecentButtonTime := time.Time{}
-	if len(mostRecentButtonName) > 0 {
-		mostRecentButtonTime = readState.Buttons[mostRecentButtonName].StateChangeTime.AsTime()
+	if mostRecentButtonState != nil {
+		mostRecentButtonTime = mostRecentButtonState.StateChangeTime.AsTime()
 	}
 	becameUnoccupied := lastUnoccupiedTime(readState)
 
@@ -185,16 +183,16 @@ func getButtonType(state *ReadState, buttonName string) ButtonType {
 	return buttonType
 }
 
-func getMostRecentButtonPress(readState *ReadState) string {
+func getMostRecentButtonPress(readState *ReadState) (name string, state *gen.ButtonState, ok bool) {
 	mostRecentTime := time.Time{}
-	mostRecentName := ""
-	for name, button := range readState.Buttons {
+	for n, button := range readState.Buttons {
 		if button.StateChangeTime.AsTime().After(mostRecentTime) {
 			mostRecentTime = button.StateChangeTime.AsTime()
-			mostRecentName = name
+			name = n
+			state = button
 		}
 	}
-	return mostRecentName
+	return name, state, !mostRecentTime.IsZero()
 }
 
 // isButtonActionRequired returns true if state is unpressed and change time is more recent than last button action
