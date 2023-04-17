@@ -531,7 +531,7 @@ func Test_processState(t *testing.T) {
 		actions.assertNoMoreCalls()
 	})
 
-	t.Run("button withun unoccupancy, PIR not, no op", func(t *testing.T) {
+	t.Run("button within unoccupancy, PIR not, no op", func(t *testing.T) {
 		readState := NewReadState()
 		writeState := NewWriteState()
 		actions := newTestActions(t)
