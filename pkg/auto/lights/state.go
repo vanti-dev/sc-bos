@@ -45,6 +45,13 @@ func (s *ReadState) Clone() *ReadState {
 	return clone
 }
 
+func (s *ReadState) Now() time.Time {
+	if s.Config.Now == nil {
+		return time.Now()
+	}
+	return s.Config.Now()
+}
+
 // WriteState models the state of the system based on the changes we've made to it.
 // For example if we UpdateBrightness, then the response to that call is recorded in this state.
 type WriteState struct {

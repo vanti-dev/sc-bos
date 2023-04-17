@@ -24,12 +24,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 
 	// Work out what we need to do to apply the given writeState and make those changes for as long as ctx is valid
 
-	var now time.Time
-	if readState.Config.Now != nil {
-		now = readState.Config.Now()
-	} else {
-		now = time.Now()
-	}
+	now := readState.Now()
 
 	var (
 		isSwitchedOn  bool
