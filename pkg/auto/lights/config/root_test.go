@@ -1,9 +1,14 @@
 package config
 
 import (
+	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
+
+	"github.com/vanti-dev/sc-bos/pkg/auto"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 func TestProcess(t *testing.T) {
@@ -83,4 +88,66 @@ func TestProcess(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRoot_MarshalJSON(t *testing.T) {
+	t.Run("empty daylight dimming", func(t *testing.T) {
+		root := Root{
+			Config: auto.Config{
+				Name: "test",
+				Type: "lights",
+			},
+			Mode: Mode{
+				DaylightDimming: &DaylightDimming{},
+			},
+		}
+		bin, err := json.Marshal(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := `{"name":"test","type":"lights","unoccupiedOffDelay":"0s","daylightDimming":{}}`
+		if string(bin) != want {
+			t.Fatalf("got %q, want %q", string(bin), want)
+		}
+	})
+}
+
+func TestRoot_modeDefaults(t *testing.T) {
+	t.Run("from json", func(t *testing.T) {
+		raw := `{
+	"name":"test",
+	"type":"lights",
+	"daylightDimming": {
+		"thresholds": [
+			{
+				"belowLux": 29713,
+				"levelPercent": 1
+			}
+		]
+	},
+	"modes": [
+		{"name":"short","unoccupiedOffDelay":"1m"}
+	]
+}`
+		root, err := Read([]byte(raw))
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := []ModeOption{
+			{
+				Name: "short",
+				Mode: Mode{
+					UnoccupiedOffDelay: jsontypes.Duration{Duration: 1 * time.Minute},
+					DaylightDimming: &DaylightDimming{
+						Thresholds: []LevelThreshold{
+							{BelowLux: 29713, LevelPercent: 1},
+						},
+					},
+				},
+			},
+		}
+		if diff := cmp.Diff(want, root.Modes); diff != "" {
+			t.Fatalf("root (-want,+got)\n%s", diff)
+		}
+	})
 }

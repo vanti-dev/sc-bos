@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"go.uber.org/multierr"
+
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
@@ -130,11 +132,37 @@ func Read(data []byte) (Root, error) {
 	if err != nil {
 		return root, err
 	}
+	var errs error
 	if root.DaylightDimming != nil {
 		// err is returned below
-		err = root.DaylightDimming.process()
+		errs = multierr.Append(errs, root.DaylightDimming.process())
 	}
+	for _, mode := range root.Modes {
+		if mode.DaylightDimming != nil {
+			errs = multierr.Append(errs, mode.DaylightDimming.process())
+		}
+	}
+	root.Modes = applyModeDefaults(root.Mode, root.Modes)
 	return root, err
+}
+
+func applyModeDefaults(defaults Mode, modes []ModeOption) []ModeOption {
+	for i, mode := range modes {
+		if mode.DaylightDimming == nil {
+			mode.DaylightDimming = defaults.DaylightDimming
+		}
+		if mode.UnoccupiedOffDelay.Duration == 0 {
+			mode.UnoccupiedOffDelay = defaults.UnoccupiedOffDelay
+		}
+		if mode.OnLevelPercent == nil {
+			mode.OnLevelPercent = defaults.OnLevelPercent
+		}
+		if mode.OffLevelPercent == nil {
+			mode.OffLevelPercent = defaults.OffLevelPercent
+		}
+		modes[i] = mode
+	}
+	return modes
 }
 
 func Default() Root {
