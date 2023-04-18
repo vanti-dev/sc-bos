@@ -126,7 +126,8 @@ func TestRoot_modeDefaults(t *testing.T) {
 		]
 	},
 	"modes": [
-		{"name":"short","unoccupiedOffDelay":"1m"}
+		{"name":"short","unoccupiedOffDelay":"1m"},
+		{"name":"long","unoccupiedOffDelay":"2m","daylightDimming":{}}
 	]
 }`
 		root, err := Read([]byte(raw))
@@ -143,6 +144,13 @@ func TestRoot_modeDefaults(t *testing.T) {
 							{BelowLux: 29713, LevelPercent: 1},
 						},
 					},
+				},
+			},
+			{
+				Name: "long",
+				Mode: Mode{
+					UnoccupiedOffDelay: jsontypes.Duration{Duration: 2 * time.Minute},
+					DaylightDimming:    &DaylightDimming{},
 				},
 			},
 		}

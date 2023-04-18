@@ -122,8 +122,8 @@ type Mode struct {
 type ModeOption struct {
 	Name string `json:"name,omitempty"`
 	Mode
-	Start Schedule `json:"start,omitempty"`
-	End   Schedule `json:"end,omitempty"`
+	Start *Schedule `json:"start,omitempty"`
+	End   *Schedule `json:"end,omitempty"`
 }
 
 func Read(data []byte) (Root, error) {

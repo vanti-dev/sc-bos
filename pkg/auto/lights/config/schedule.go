@@ -12,12 +12,12 @@ type Schedule struct {
 	Raw string
 }
 
-func ScheduleMustParse(raw string) Schedule {
+func ScheduleMustParse(raw string) *Schedule {
 	schedule, err := cron.ParseStandard(raw)
 	if err != nil {
 		panic(err)
 	}
-	return Schedule{Schedule: schedule, Raw: raw}
+	return &Schedule{Schedule: schedule, Raw: raw}
 }
 
 func (s *Schedule) String() string {

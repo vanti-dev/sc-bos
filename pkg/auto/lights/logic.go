@@ -110,7 +110,8 @@ func activeMode(now time.Time, state *ReadState) (config.ModeOption, time.Durati
 	var currentMode config.ModeOption
 	found := false
 	for _, mode := range state.Config.Modes {
-		if mode.Start.Schedule == nil || mode.End.Schedule == nil {
+		if mode.Start == nil || mode.Start.Schedule == nil ||
+			mode.End == nil || mode.End.Schedule == nil {
 			continue
 		}
 		startAt := mode.Start.Next(now)
