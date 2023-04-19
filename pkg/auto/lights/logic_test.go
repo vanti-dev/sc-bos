@@ -714,7 +714,10 @@ func Test_processState(t *testing.T) {
 		readState.Config.OccupancySensors = []string{"pir01"}
 		readState.Config.Lights = []string{"light01"}
 		readState.Occupancy["pir01"] = &traits.Occupancy{State: traits.Occupancy_OCCUPIED}
-		var onLevel float32 = 78
+		var onLevel, fullLevel float32 = 78, 100
+		readState.Config.Mode = config.Mode{
+			OnLevelPercent: &fullLevel,
+		}
 		readState.Config.Modes = []config.ModeOption{
 			{
 				Name:  "testMode",

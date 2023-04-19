@@ -125,20 +125,24 @@ func TestRoot_modeDefaults(t *testing.T) {
 			}
 		]
 	},
+	"unoccupiedOffDelay": "30s",
 	"modes": [
-		{"name":"short","unoccupiedOffDelay":"1m"},
-		{"name":"long","unoccupiedOffDelay":"2m","daylightDimming":{}}
+		{"name":"short","unoccupiedOffDelay":"1m","onLevelPercent":80},
+		{"name":"long","unoccupiedOffDelay":"2m","daylightDimming":{}},
+		{"name":"inherit","unoccupiedOffDelay":"0s","daylightDimming":{}}
 	]
 }`
 		root, err := Read([]byte(raw))
 		if err != nil {
 			t.Fatal(err)
 		}
+		var eighty float32 = 80
 		want := []ModeOption{
 			{
 				Name: "short",
 				Mode: Mode{
 					UnoccupiedOffDelay: jsontypes.Duration{Duration: 1 * time.Minute},
+					OnLevelPercent:     &eighty,
 					DaylightDimming: &DaylightDimming{
 						Thresholds: []LevelThreshold{
 							{BelowLux: 29713, LevelPercent: 1},
@@ -150,6 +154,13 @@ func TestRoot_modeDefaults(t *testing.T) {
 				Name: "long",
 				Mode: Mode{
 					UnoccupiedOffDelay: jsontypes.Duration{Duration: 2 * time.Minute},
+					DaylightDimming:    &DaylightDimming{},
+				},
+			},
+			{
+				Name: "inherit",
+				Mode: Mode{
+					UnoccupiedOffDelay: jsontypes.Duration{Duration: 30 * time.Second},
 					DaylightDimming:    &DaylightDimming{},
 				},
 			},
