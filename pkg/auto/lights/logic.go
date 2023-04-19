@@ -238,7 +238,7 @@ func computeOnLevelPercent(mode config.ModeOption, readState *ReadState, writeSt
 		fullyOff = *mode.OffLevelPercent
 	}
 
-	dd := readState.Config.DaylightDimming
+	dd := mode.DaylightDimming
 	if dd == nil {
 		return fullyOn, true
 	}
@@ -259,7 +259,7 @@ func computeOnLevelPercent(mode config.ModeOption, readState *ReadState, writeSt
 	// Go half way between goal and current level percent
 	currentAverage, err := getAverageLevel(writeState)
 	var levelPercent float32
-	pcTowardsGoal := readState.Config.DaylightDimming.PercentageTowardsGoal
+	pcTowardsGoal := mode.DaylightDimming.PercentageTowardsGoal
 
 	if pcTowardsGoal <= 0 || pcTowardsGoal > 100 {
 		pcTowardsGoal = 75
