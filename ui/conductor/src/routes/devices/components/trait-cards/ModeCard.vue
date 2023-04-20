@@ -8,7 +8,7 @@
             <template v-if="mode[0] === 'lighting.mode'">
               <v-select
                   label="Lighting Mode"
-                  :items="['auto', 'normal', 'extended', 'night', 'maintenance']"
+                  :items="['auto', 'normal', 'extended', 'night', 'maintenance', 'test']"
                   :value="mode[1]"
                   @input="updateMode(mode[0], $event, true)"
                   :disabled="updateValue.loading"
