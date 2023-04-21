@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
@@ -194,7 +195,10 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
+		writeState.Brightness["light01"] = BrightnessWriteState{
+			WriteTime:  now,
+			Brightness: &traits.Brightness{LevelPercent: 100},
+		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
 		logger, _ := zap.NewDevelopment()
@@ -232,8 +236,14 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
-		writeState.Brightness["light02"] = &traits.Brightness{LevelPercent: 50}
+		writeState.Brightness["light01"] = BrightnessWriteState{
+			WriteTime:  now,
+			Brightness: &traits.Brightness{LevelPercent: 0},
+		}
+		writeState.Brightness["light02"] = BrightnessWriteState{
+			WriteTime:  now,
+			Brightness: &traits.Brightness{LevelPercent: 50},
+		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
 		logger, _ := zap.NewDevelopment()
@@ -271,7 +281,10 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.Brightness["light01"] = BrightnessWriteState{
+			WriteTime:  now,
+			Brightness: &traits.Brightness{LevelPercent: 0},
+		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
 		logger, _ := zap.NewDevelopment()
@@ -308,7 +321,10 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.Brightness["light01"] = BrightnessWriteState{
+			WriteTime:  now,
+			Brightness: &traits.Brightness{LevelPercent: 0},
+		}
 		writeState.LastButtonAction = now.Add(-time.Minute)
 
 		logger, _ := zap.NewDevelopment()
@@ -334,7 +350,10 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.Brightness["light01"] = BrightnessWriteState{
+			WriteTime:  now,
+			Brightness: &traits.Brightness{LevelPercent: 0},
+		}
 		writeState.LastButtonAction = now
 
 		logger, _ := zap.NewDevelopment()
@@ -360,7 +379,10 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.Brightness["light01"] = BrightnessWriteState{
+			WriteTime:  now,
+			Brightness: &traits.Brightness{LevelPercent: 0},
+		}
 		writeState.LastButtonAction = now
 
 		logger, _ := zap.NewDevelopment()
@@ -387,7 +409,10 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.Brightness["light01"] = BrightnessWriteState{
+			WriteTime:  now,
+			Brightness: &traits.Brightness{LevelPercent: 0},
+		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
 		logger, _ := zap.NewDevelopment()
@@ -425,7 +450,10 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.Brightness["light01"] = BrightnessWriteState{
+			WriteTime:  now,
+			Brightness: &traits.Brightness{LevelPercent: 0},
+		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
 		logger, _ := zap.NewDevelopment()
@@ -463,7 +491,10 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
+		writeState.Brightness["light01"] = BrightnessWriteState{
+			WriteTime:  now,
+			Brightness: &traits.Brightness{LevelPercent: 100},
+		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
 		logger, _ := zap.NewDevelopment()
@@ -495,7 +526,10 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 100}
+		writeState.Brightness["light01"] = BrightnessWriteState{
+			WriteTime:  now,
+			Brightness: &traits.Brightness{LevelPercent: 100},
+		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
 		logger, _ := zap.NewDevelopment()
@@ -528,7 +562,10 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = &traits.Brightness{LevelPercent: 0}
+		writeState.Brightness["light01"] = BrightnessWriteState{
+			WriteTime:  now,
+			Brightness: &traits.Brightness{LevelPercent: 0},
+		}
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
@@ -814,10 +851,13 @@ func (ta *testActions) assertNextCall(req any) {
 	}
 }
 
-func (ta *testActions) UpdateBrightness(ctx context.Context, req *traits.UpdateBrightnessRequest, state *WriteState) error {
+func (ta *testActions) UpdateBrightness(ctx context.Context, now time.Time, req *traits.UpdateBrightnessRequest, state *WriteState) error {
 	ta.calls = append(ta.calls, req)
 	ta.brightnessCalls = append(ta.brightnessCalls, req)
-	state.Brightness[req.Name] = req.Brightness
+	state.Brightness[req.Name] = BrightnessWriteState{
+		WriteTime:  now,
+		Brightness: req.Brightness,
+	}
 	return nil
 }
 

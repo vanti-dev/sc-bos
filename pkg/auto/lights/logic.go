@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 )
 
@@ -32,7 +33,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	if offButtonClicked {
 		offLevel := computeOffLevelPercent(mode)
 		logger.Debug("Switched off by button press. Setting level to zero", zap.Float32("offLevel", offLevel))
-		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, offLevel, logger, readState.Config.Lights...)
+		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, offLevel, logger, readState.Config.Lights...)
 	}
 
 	anyOccupied := areAnyOccupied(readState.Config.OccupancySensors, readState.Occupancy)
@@ -54,7 +55,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 			//  info to actually choose the output light level. We should probably not make any changes and wait for
 			//  more data to come in, but we'll leave that to future us as part of snagging.
 		}
-		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, level, logger, readState.Config.Lights...)
+		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, level, logger, readState.Config.Lights...)
 	}
 
 	// This code check when occupancy last reported unoccupied and only turns the lights off
@@ -78,7 +79,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 			// we've been unoccupied for long enough, turn things off now
 			offLevel := computeOffLevelPercent(mode)
 			logger.Debug("Occupancy expired. Setting level to zero", zap.Float32("offLevel", offLevel))
-			return rerunAfter, updateBrightnessLevelIfNeeded(ctx, writeState, actions, offLevel, logger, readState.Config.Lights...)
+			return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, offLevel, logger, readState.Config.Lights...)
 		} else {
 			// we haven't written anything, but in `unoccupiedDelayBeforeDarkness - sinceUnoccupied` time we will, let the
 			// caller know
@@ -178,7 +179,7 @@ func readStateMode(state *ReadState) (config.ModeOption, bool) {
 // Note is len(brightness) == 0, this will return true.
 func brightnessAllOff(state *WriteState) bool {
 	for _, brightness := range state.Brightness {
-		if brightness.LevelPercent > 0 {
+		if brightness.Brightness.LevelPercent > 0 {
 			return false
 		}
 	}
@@ -278,7 +279,7 @@ func getAverageLevel(state *WriteState) (float32, error) {
 	sum := float32(0)
 	n := 0
 	for _, brightness := range state.Brightness {
-		sum += brightness.LevelPercent
+		sum += brightness.Brightness.LevelPercent
 		n++
 	}
 	if n == 0 {

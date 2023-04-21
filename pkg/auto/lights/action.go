@@ -3,6 +3,7 @@ package lights
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -11,11 +12,13 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
+const brightnessCacheValidity = 2 * time.Minute
+
 // actions defines the only side effects the automation can have.
 // This is intended to allow easier testing of the business logic, a bit like a DAO would for database access.
 type actions interface {
 	// UpdateBrightness sends a LightApiClient.UpdateBrightness request and stores successful result in state.
-	UpdateBrightness(ctx context.Context, req *traits.UpdateBrightnessRequest, state *WriteState) error
+	UpdateBrightness(ctx context.Context, now time.Time, req *traits.UpdateBrightnessRequest, state *WriteState) error
 }
 
 // newActions creates an actions backed by node.Clienter clients.
@@ -31,27 +34,32 @@ type clientActions struct {
 	lightClient traits.LightApiClient
 }
 
-func (a *clientActions) UpdateBrightness(ctx context.Context, req *traits.UpdateBrightnessRequest, state *WriteState) error {
+func (a *clientActions) UpdateBrightness(ctx context.Context, now time.Time, req *traits.UpdateBrightnessRequest, state *WriteState) error {
 	got, err := a.lightClient.UpdateBrightness(ctx, req)
 	if err != nil {
 		return err
 	}
-	state.Brightness[req.Name] = got
+	state.Brightness[req.Name] = BrightnessWriteState{
+		WriteTime:  now,
+		Brightness: got,
+	}
 	return nil
 }
 
 // updateBrightnessLevelIfNeeded sets all the names devices brightness levels to level and stores successful responses in state.
 // This does not send requests if state already has a named brightness level equal to level.
-func updateBrightnessLevelIfNeeded(ctx context.Context, state *WriteState, actions actions, level float32, logger *zap.Logger, names ...string) error {
+func updateBrightnessLevelIfNeeded(ctx context.Context, now time.Time, state *WriteState, actions actions, level float32, logger *zap.Logger, names ...string) error {
 	for _, name := range names {
 		if val, ok := state.Brightness[name]; ok {
-			// don't do requests that won't change the write state
-			if val.LevelPercent == level {
+			expired := now.After(val.WriteTime.Add(brightnessCacheValidity))
+			// don't do requests that won't change the write state unless the entry is expired
+			if val.Brightness.LevelPercent == level && !expired {
 				continue
 			}
 		}
+
 		logger.Debug("Setting brightness for light fitting", zap.String("fitting name", name), zap.Float32("level", level))
-		err := actions.UpdateBrightness(ctx, &traits.UpdateBrightnessRequest{
+		err := actions.UpdateBrightness(ctx, now, &traits.UpdateBrightnessRequest{
 			Name: name,
 			Brightness: &traits.Brightness{
 				LevelPercent: level,

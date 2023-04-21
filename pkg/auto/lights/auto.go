@@ -14,6 +14,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
+const refreshEvery = 3 * time.Minute
+
 // BrightnessAutomation implements turning lights on or off based on occupancy readings from PIRs and other devices.
 type BrightnessAutomation struct {
 	logger  *zap.Logger
@@ -183,11 +185,14 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			ttl = after
 		}
 
+		// ensure it's not too long before we wake up, so the lights are refreshed regularly
+		// so external changes don't stick around forever
+		if ttl == 0 || ttl > refreshEvery {
+			ttl = refreshEvery
+		}
 		// Setup ttl for the transformed model.
 		// After this time it should be recalculated.
-		if ttl > 0 {
-			ttlExpired, cancelTtlTimer = b.newTimer(ttl)
-		}
+		ttlExpired, cancelTtlTimer = b.newTimer(ttl)
 
 		return nil
 	}
