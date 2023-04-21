@@ -10,6 +10,7 @@ const (
 	KeyDoorHeldOpen   = "DHO"
 	KeyDoorNotOpen    = "DNO"
 	KeyForcedEntry    = "FE"
+	KeyTailgate       = "TG"
 	KeyTamper         = "TAMP"
 	KeySecure         = "SEC"
 	KeyNetworkOffline = "NOFF"
@@ -22,6 +23,7 @@ var EWAxiomPatterns = map[string]mps.Pattern{
 	KeyDoorHeldOpen:   mps.NewPattern(mps.Timestamp, mps.EventID, mps.EventDesc, mps.NetworkDesc, mps.DeviceDesc),
 	KeyDoorNotOpen:    mps.NewPattern(mps.Timestamp, mps.EventID, mps.EventDesc, mps.NetworkDesc, mps.DeviceDesc),
 	KeyForcedEntry:    mps.NewPattern(mps.Timestamp, mps.EventID, mps.EventDesc, mps.NetworkDesc, mps.DeviceDesc),
+	KeyTailgate:       mps.NewPattern(mps.Timestamp, mps.EventID, mps.EventDesc, mps.NetworkDesc, mps.DeviceDesc),
 	KeyTamper:         mps.NewPattern(mps.Timestamp, mps.EventID, mps.EventDesc, mps.NetworkDesc, mps.DeviceDesc),
 	KeySecure:         mps.NewPattern(mps.Timestamp, mps.EventID, mps.EventDesc, mps.NetworkDesc, mps.DeviceDesc),
 	KeyNetworkOffline: mps.NewPattern(mps.Timestamp, mps.EventID, mps.EventDesc, mps.NetworkDesc),
