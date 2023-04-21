@@ -14,7 +14,9 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/mps"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
+	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 func (d *Driver) announceTraits(ctx context.Context, cfg config.Root, announcer node.Announcer, mpsMessages *emitter.Emitter, names *devices) error {
@@ -23,10 +25,13 @@ func (d *Driver) announceTraits(ctx context.Context, cfg config.Root, announcer 
 	}
 
 	udmiServer := &udmiServer{
-		msgs:  mpsMessages,
-		names: names,
-		log:   d.logger.Named("udmi"),
+		msgs:         mpsMessages,
+		udmiMessages: &minibus.Bus[udmiMessage]{},
+		names:        names,
+		log:          d.logger.Named("udmi"),
 	}
+	udmiServer.pipe = task.NewIntermittent(udmiServer.mpsToUDMIMessages)
+
 	udmiClient := gen.WrapUdmiService(udmiServer)
 	for _, device := range cfg.Devices {
 		announcer.Announce(device.Name, node.HasMetadata(device.Metadata), node.HasTrait(udmipb.TraitName, node.WithClients(udmiClient)))
@@ -39,7 +44,10 @@ func (d *Driver) announceTraits(ctx context.Context, cfg config.Root, announcer 
 // We only support telemetry, not control. These methods just don't do anything, rather than returning UNIMPLEMENTED.
 type udmiServer struct {
 	gen.UnimplementedUdmiServiceServer
-	msgs  *emitter.Emitter
+	msgs         *emitter.Emitter          // original message ports
+	pipe         *task.Intermittent        // task that converts msgs to udmiMessages
+	udmiMessages *minibus.Bus[udmiMessage] // emits converted and processed message ports
+
 	names *devices
 	log   *zap.Logger
 }
@@ -56,39 +64,70 @@ func (u *udmiServer) OnMessage(ctx context.Context, request *gen.OnMessageReques
 }
 
 func (u *udmiServer) PullExportMessages(request *gen.PullExportMessagesRequest, messagesServer gen.UdmiService_PullExportMessagesServer) error {
-	msgs := u.msgs.On("*")
-	defer u.msgs.Off("*", msgs)
+	if err := u.pipe.Attach(messagesServer.Context()); err != nil {
+		return err
+	}
 
-	for {
-		select {
-		case <-messagesServer.Context().Done():
-			return messagesServer.Context().Err()
-		case msg := <-msgs:
-			data := msg.Args[0].(mps.Fields)
-			name, topic, ok := u.lookupNames(data)
-			if !ok || name != request.Name {
-				continue
-			}
+	for msg := range u.udmiMessages.Listen(messagesServer.Context()) {
+		if msg.name != request.Name {
+			continue
+		}
 
-			var points *udmi.PointsEvent
-			switch msg.OriginalTopic {
-			case KeyAccessGranted:
-				points = u.toCardReaderPoints(data, "access granted")
-			case KeyAccessDenied:
-				points = u.toCardReaderPoints(data, "access denied")
-			case KeySecure:
-				points = u.toDoorPoints(data, "not open")
-			case KeyDoorHeldOpen, KeyForcedEntry:
-				points = u.toDoorPoints(data, "held open")
-			default:
-				continue
-			}
+		var points *udmi.PointsEvent
+		switch msg.topic {
+		case KeyAccessGranted:
+			points = u.toCardReaderPoints(msg.data, "access granted")
+		case KeyAccessDenied:
+			points = u.toCardReaderPoints(msg.data, "access denied")
+		case KeySecure:
+			points = u.toDoorPoints(msg.data, "not open")
+		case KeyDoorHeldOpen, KeyForcedEntry:
+			points = u.toDoorPoints(msg.data, "held open")
+		default:
+			continue
+		}
 
-			if err := u.sendPoints(messagesServer, points, topic, name); err != nil {
-				return err
-			}
+		if err := u.sendPoints(messagesServer, points, msg.udmiTopic, msg.name); err != nil {
+			return err
 		}
 	}
+
+	return nil
+}
+
+type udmiMessage struct {
+	topic     string
+	name      string
+	udmiTopic string
+	data      mps.Fields
+}
+
+func (u *udmiServer) mpsToUDMIMessages(_ context.Context) (task.StopFn, error) {
+	mpsMsgs := u.msgs.On("*")
+	ctx, stop := context.WithCancel(context.Background())
+	go func() {
+		defer u.msgs.Off("*", mpsMsgs)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case msg := <-mpsMsgs:
+				data := msg.Args[0].(mps.Fields)
+				name, topic, ok := u.lookupNames(data)
+				if !ok {
+					continue
+				}
+				u.udmiMessages.Send(context.Background(), udmiMessage{
+					topic:     msg.OriginalTopic,
+					name:      name,
+					udmiTopic: topic,
+					data:      data,
+				})
+			}
+		}
+	}()
+	return stop, nil
 }
 
 func (u *udmiServer) lookupNames(fields mps.Fields) (name, topic string, ok bool) {
