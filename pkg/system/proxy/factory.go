@@ -196,7 +196,7 @@ func (s *System) announceNode(ctx context.Context, hubNode *gen.HubNode, nodeCon
 
 func (s *System) announceControllerNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) {
 	go s.retry(ctx, "proxyNodeMetadata", func(ctx context.Context) (task.Next, error) {
-		return s.announceNodeMetadata(ctx, hubNode, nodeConn)
+		return s.announceMetadata(ctx, nodeConn, hubNode.Name)
 	})
 	// proxy any advertised children and child traits
 	go s.retry(ctx, "proxyChildTraits", func(ctx context.Context) (task.Next, error) {
@@ -211,7 +211,7 @@ func (s *System) announceControllerNode(ctx context.Context, hubNode *gen.HubNod
 
 func (s *System) announceProxyNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) {
 	go s.retry(ctx, "proxyNodeMetadata", func(ctx context.Context) (task.Next, error) {
-		return s.announceNodeMetadata(ctx, hubNode, nodeConn)
+		return s.announceMetadata(ctx, nodeConn, hubNode.Name)
 	})
 	// explicitly don't fetch proxy children as they will have the same children as us anyway
 
@@ -239,29 +239,6 @@ func (s *System) isProxy(ctx context.Context, nodeConn *grpc.ClientConn) (bool, 
 		if req.PageToken == "" {
 			return false, nil
 		}
-	}
-}
-
-func (s *System) announceNodeMetadata(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) (task.Next, error) {
-	// ctx is cancelled when this function returns - i.e. on error
-	// this makes sure we're forgetting any announcements in that case.
-	// The function will be retried if possible.
-	announcer := node.AnnounceContext(ctx, s.announcer)
-	client := traits.NewMetadataApiClient(nodeConn)
-	stream, err := client.PullMetadata(ctx, &traits.PullMetadataRequest{Name: hubNode.Name})
-	if err != nil {
-		return task.Normal, err
-	}
-	for {
-		msg, err := stream.Recv()
-		if err != nil {
-			return task.ResetBackoff, err // at least one successful comm happened
-		}
-		if len(msg.Changes) == 0 {
-			continue
-		}
-		change := msg.Changes[len(msg.Changes)-1]
-		announcer.Announce(hubNode.Name, node.HasMetadata(change.Metadata))
 	}
 }
 
@@ -306,7 +283,7 @@ func (s *System) announceNodeChildren(ctx context.Context, nodeConn *grpc.Client
 						stopMdCtx()
 					})
 					go s.retry(mdCtx, "watchMetadata", func(ctx context.Context) (task.Next, error) {
-						return s.announceChildMetadata(mdCtx, nodeConn, child.Name)
+						return s.announceMetadata(mdCtx, nodeConn, child.Name)
 					})
 					continue
 				}
@@ -322,9 +299,9 @@ func (s *System) announceNodeChildren(ctx context.Context, nodeConn *grpc.Client
 	}
 }
 
-// announceChildMetadata pulls the metadata from conn (named name) and updates our nodes local cache of this metadata.
+// announceMetadata pulls the metadata from conn (named name) and updates our nodes local cache of this metadata.
 // This makes sure our devices api works locally without having to query all hub nodes.
-func (s *System) announceChildMetadata(ctx context.Context, conn *grpc.ClientConn, name string) (task.Next, error) {
+func (s *System) announceMetadata(ctx context.Context, conn *grpc.ClientConn, name string) (task.Next, error) {
 	mdClient := traits.NewMetadataApiClient(conn)
 	stream, err := mdClient.PullMetadata(ctx, &traits.PullMetadataRequest{Name: name})
 	if err != nil {
