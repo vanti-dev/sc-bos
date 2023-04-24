@@ -8,6 +8,7 @@ import (
 
 	"go.uber.org/multierr"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/app/files"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
@@ -22,7 +23,8 @@ var (
 )
 
 type Config struct {
-	Name string `json:"name,omitempty"`
+	Name     string           `json:"name,omitempty"`
+	Metadata *traits.Metadata `json:"metadata,omitempty"`
 	// Include lists other files and glob patterns for config to load.
 	// Files are read in the order specified here then by filepath.Glob.
 	// Drivers, Automation, and Zones are merged using the Name in a first-come, first-served nature.

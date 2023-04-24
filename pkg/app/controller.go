@@ -325,6 +325,8 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	// we delay registering the node servers until now, so that the caller can call c.Node.Support in between
 	// Bootstrap and Run and have all these added correctly.
 	c.Node.Register(c.GRPC)
+	// metadata associated with the node itself
+	c.Node.Announce(c.Node.Name(), node.HasMetadata(c.ControllerConfig.Metadata))
 
 	group, ctx := errgroup.WithContext(ctx)
 	if c.Enrollment != nil {
