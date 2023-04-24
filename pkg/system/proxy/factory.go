@@ -27,6 +27,7 @@ const Name = "proxy"
 
 var Factory = system.FactoryFunc(func(services system.Services) service.Lifecycle {
 	s := &System{
+		self:      services.Node,
 		hub:       services.CohortManager,
 		ignore:    []string{services.GRPCEndpoint}, // avoid infinite recursion
 		tlsConfig: services.ClientTLSConfig,
@@ -37,6 +38,7 @@ var Factory = system.FactoryFunc(func(services system.Services) service.Lifecycl
 })
 
 type System struct {
+	self      *node.Node
 	hub       node.Remote
 	ignore    []string
 	tlsConfig *tls.Config
@@ -152,11 +154,13 @@ func (s *System) announceNodes(ctx context.Context, hubConn *grpc.ClientConn, ig
 			}
 			if change.NewValue != nil {
 				hubNode := change.NewValue
-				// todo: consider not processing nodes that are also proxies
+				if hubNode.Name == s.self.Name() {
+					continue // don't do anything for our own node
+				}
 				if slices.Contains(hubNode.Address, ignore) {
 					continue
 				}
-				s.logger.Debug("Proxying node", zap.String("name", hubNode.Name), zap.String("node", hubNode.Address))
+
 				nodeCtx, stopNode := context.WithCancel(ctx)
 				knownNodes[hubNode.Address] = stopNode
 				nodeConn, err := grpc.DialContext(nodeCtx, hubNode.Address, grpc.WithTransportCredentials(credentials.NewTLS(s.tlsConfig)))
@@ -164,17 +168,100 @@ func (s *System) announceNodes(ctx context.Context, hubConn *grpc.ClientConn, ig
 					return task.Normal, err
 				}
 
-				// proxy any advertised children and child traits
-				go s.retry(nodeCtx, "proxyChildTraits", func(ctx context.Context) (task.Next, error) {
-					return s.announceNodeChildren(ctx, nodeConn)
-				})
-
-				// proxy any non-trait apis that also use routing
-				go s.retry(nodeCtx, "proxyNodeApis", func(ctx context.Context) (task.Next, error) {
-					return s.announceNodeApis(ctx, hubNode, nodeConn)
+				go s.retry(nodeCtx, "announceNode", func(ctx context.Context) (task.Next, error) {
+					return s.announceNode(ctx, hubNode, nodeConn)
 				})
 			}
 		}
+	}
+}
+
+func (s *System) announceNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) (task.Next, error) {
+	isProxyNode, err := s.isProxy(ctx, nodeConn)
+	if err != nil {
+		return task.Normal, err
+	}
+
+	s.logger.Debug("Proxying node", zap.String("name", hubNode.Name), zap.String("node", hubNode.Address), zap.Bool("isProxy", isProxyNode))
+	switch {
+	case isProxyNode:
+		s.announceProxyNode(ctx, hubNode, nodeConn)
+	default:
+		s.announceControllerNode(ctx, hubNode, nodeConn)
+	}
+
+	<-ctx.Done()
+	return task.ResetBackoff, ctx.Err()
+}
+
+func (s *System) announceControllerNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) {
+	go s.retry(ctx, "proxyNodeMetadata", func(ctx context.Context) (task.Next, error) {
+		return s.announceNodeMetadata(ctx, hubNode, nodeConn)
+	})
+	// proxy any advertised children and child traits
+	go s.retry(ctx, "proxyChildTraits", func(ctx context.Context) (task.Next, error) {
+		return s.announceNodeChildren(ctx, nodeConn)
+	})
+
+	// proxy any non-trait apis that also use routing
+	go s.retry(ctx, "proxyNodeApis", func(ctx context.Context) (task.Next, error) {
+		return s.announceNodeApis(ctx, hubNode, nodeConn)
+	})
+}
+
+func (s *System) announceProxyNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) {
+	go s.retry(ctx, "proxyNodeMetadata", func(ctx context.Context) (task.Next, error) {
+		return s.announceNodeMetadata(ctx, hubNode, nodeConn)
+	})
+	// explicitly don't fetch proxy children as they will have the same children as us anyway
+
+	// proxy any non-trait apis that also use routing
+	go s.retry(ctx, "proxyNodeApis", func(ctx context.Context) (task.Next, error) {
+		return s.announceNodeApis(ctx, hubNode, nodeConn)
+	})
+}
+
+func (s *System) isProxy(ctx context.Context, nodeConn *grpc.ClientConn) (bool, error) {
+	client := gen.NewServicesApiClient(nodeConn)
+	req := &gen.ListServicesRequest{Name: "systems"}
+	for {
+		systems, err := client.ListServices(ctx, req)
+		if err != nil {
+			return false, err
+		}
+		for _, sys := range systems.Services {
+			if sys.Type == Name {
+				return true, nil
+			}
+		}
+
+		req.PageToken = systems.NextPageToken
+		if req.PageToken == "" {
+			return false, nil
+		}
+	}
+}
+
+func (s *System) announceNodeMetadata(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) (task.Next, error) {
+	// ctx is cancelled when this function returns - i.e. on error
+	// this makes sure we're forgetting any announcements in that case.
+	// The function will be retried if possible.
+	announcer := node.AnnounceContext(ctx, s.announcer)
+	client := traits.NewMetadataApiClient(nodeConn)
+	stream, err := client.PullMetadata(ctx, &traits.PullMetadataRequest{Name: hubNode.Name})
+	if err != nil {
+		return task.Normal, err
+	}
+	for {
+		msg, err := stream.Recv()
+		if err != nil {
+			return task.ResetBackoff, err // at least one successful comm happened
+		}
+		if len(msg.Changes) == 0 {
+			continue
+		}
+		change := msg.Changes[len(msg.Changes)-1]
+		announcer.Announce(hubNode.Name, node.HasMetadata(change.Metadata))
 	}
 }
 
