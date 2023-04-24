@@ -313,5 +313,28 @@ func (s *System) announceTrait(announcer node.Announcer, nodeConn *grpc.ClientCo
 }
 
 func (s *System) retry(ctx context.Context, name string, t task.Task) error {
-	return task.Run(ctx, t, task.WithRetry(task.RetryUnlimited), task.WithBackoff(10*time.Millisecond, 30*time.Second), task.WithErrorLogger(s.logger.With(zap.String("task", name))))
+	attempt := 0
+	return task.Run(ctx, func(ctx context.Context) (task.Next, error) {
+		attempt++
+		next, err := t(ctx)
+		if next == task.ResetBackoff {
+			// assume some success happened, reset err and attempts
+			attempt = 1
+		}
+
+		if err == nil {
+			return next, err
+		}
+
+		switch {
+		case attempt == 1:
+			s.logger.Warn("failed to run task, will retry", zap.String("task", name), zap.Error(err), zap.Int("attempt", attempt))
+		case attempt == 5:
+			s.logger.Warn("failed to run task, reducing logging", zap.String("task", name), zap.Error(err), zap.Int("attempt", attempt))
+		case attempt%10 == 0:
+			s.logger.Debug("failed to run task", zap.String("task", name), zap.Error(err), zap.Int("attempt", attempt))
+		}
+
+		return next, err
+	}, task.WithRetry(task.RetryUnlimited), task.WithBackoff(10*time.Millisecond, 30*time.Second))
 }
