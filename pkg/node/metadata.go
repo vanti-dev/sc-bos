@@ -21,12 +21,12 @@ import (
 var MetadataTraitNotSupported = errors.New("metadata is not supported")
 
 type MetadataChange struct {
-	Name       string
-	ChangeTime time.Time
-	Type       types.ChangeType
-	OldValue   *traits.Metadata
-	NewValue   *traits.Metadata
-	SeedValue  bool
+	Name          string
+	ChangeTime    time.Time
+	Type          types.ChangeType
+	OldValue      *traits.Metadata
+	NewValue      *traits.Metadata
+	LastSeedValue bool
 }
 
 // ListAllMetadata returns a slice containing all metadata set via Announce.
@@ -46,10 +46,10 @@ func (n *Node) PullAllMetadata(ctx context.Context, opts ...resource.ReadOption)
 		defer close(mdC)
 		for change := range n.allMetadata.Pull(ctx, opts...) {
 			emit := MetadataChange{
-				Name:       change.Id,
-				Type:       change.ChangeType,
-				ChangeTime: change.ChangeTime,
-				SeedValue:  change.SeedValue,
+				Name:          change.Id,
+				Type:          change.ChangeType,
+				ChangeTime:    change.ChangeTime,
+				LastSeedValue: change.LastSeedValue,
 			}
 			if change.OldValue != nil {
 				emit.OldValue = change.OldValue.(*traits.Metadata)

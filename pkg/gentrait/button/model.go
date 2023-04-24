@@ -42,9 +42,9 @@ func (m *Model) PullButtonState(ctx context.Context, options ...resource.ReadOpt
 		for change := range rx {
 			value := change.Value.(*gen.ButtonState)
 			tx <- PullButtonStateChange{
-				Value:      value,
-				ChangeTime: change.ChangeTime,
-				SeedValue:  change.SeedValue,
+				Value:         value,
+				ChangeTime:    change.ChangeTime,
+				LastSeedValue: change.LastSeedValue,
 			}
 		}
 	}()
@@ -52,7 +52,7 @@ func (m *Model) PullButtonState(ctx context.Context, options ...resource.ReadOpt
 }
 
 type PullButtonStateChange struct {
-	Value      *gen.ButtonState
-	ChangeTime time.Time
-	SeedValue  bool
+	Value         *gen.ButtonState
+	ChangeTime    time.Time
+	LastSeedValue bool
 }

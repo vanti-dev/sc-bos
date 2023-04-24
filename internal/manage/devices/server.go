@@ -191,6 +191,7 @@ func (s *Server) PullDevicesMetadata(request *gen.PullDevicesMetadataRequest, se
 
 	// watch for and send updates to metadata
 	col := newMetadataCollector(request.Includes.Fields...)
+	seeding := true
 	for change := range changes {
 		var md *gen.DevicesMetadata
 		if change.OldValue != nil {
@@ -200,7 +201,10 @@ func (s *Server) PullDevicesMetadata(request *gen.PullDevicesMetadataRequest, se
 			md = col.add(&gen.Device{Name: change.NewValue.Name, Metadata: change.NewValue})
 		}
 
-		if change.SeedValue {
+		if change.LastSeedValue {
+			seeding = false // technically not true as this is the last seed value, but we'll deal with that below
+		}
+		if seeding || (change.LastSeedValue && request.UpdatesOnly) {
 			// avoid sending an update for each of the initial values that seed the collector
 			continue
 		}
