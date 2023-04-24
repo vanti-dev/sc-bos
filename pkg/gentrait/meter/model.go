@@ -69,6 +69,7 @@ func (m *Model) PullMeterReadings(ctx context.Context, opts ...resource.ReadOpti
 
 	recv := m.meterReading.Pull(ctx, opts...)
 	go func() {
+		defer close(send)
 		for change := range recv {
 			value := change.Value.(*gen.MeterReading)
 			send <- PullMeterReadingChange{
