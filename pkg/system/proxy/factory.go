@@ -75,6 +75,11 @@ func (s *System) announceHubApis(ctx context.Context, hubConn *grpc.ClientConn) 
 	// The function will be retried if possible.
 	announcer := node.AnnounceContext(ctx, s.announcer)
 
+	// announce any children the hub has
+	go s.retry(ctx, "proxyHubChildTraits", func(ctx context.Context) (task.Next, error) {
+		return s.announceNodeChildren(ctx, hubConn)
+	})
+
 	// ask the hub what it's name is, and use that for any announcements
 	mdClient := traits.NewMetadataApiClient(hubConn)
 	stream, err := mdClient.PullMetadata(ctx, &traits.PullMetadataRequest{})
@@ -104,6 +109,8 @@ func (s *System) announceHubApis(ctx context.Context, hubConn *grpc.ClientConn) 
 			gen.NewAlertApiClient(hubConn),
 			// gen.NewAlertAdminApiClient(hubConn), // Don't do this, we don't want external control of this
 		)))
+
+		// this is the same logic that you find in announceNodeApis
 		undos = append(undos, s.announceServiceApi(announcer, hubConn, hubName))
 
 		// hub traits
