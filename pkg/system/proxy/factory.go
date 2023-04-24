@@ -59,8 +59,8 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	ignore := append([]string{}, s.ignore...)
 	ignore = append(ignore, cfg.Ignore...)
 
-	go s.retry(ctx, "announceHubApis", func(ctx context.Context) (task.Next, error) {
-		return s.announceHubApis(ctx, hubConn)
+	go s.retry(ctx, "announceHub", func(ctx context.Context) (task.Next, error) {
+		return s.announceHub(ctx, hubConn)
 	})
 
 	go s.retry(ctx, "announceNodes", func(ctx context.Context) (task.Next, error) {
@@ -69,16 +69,16 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	return nil
 }
 
-// announceHubApis adds any routed apis to this node that should be forwarded on to the hub.
+// announceHub adds any routed apis to this node that should be forwarded on to the hub.
 // After this you should be able to ask this node to, for example, list alerts on the hub.
-func (s *System) announceHubApis(ctx context.Context, hubConn *grpc.ClientConn) (task.Next, error) {
+func (s *System) announceHub(ctx context.Context, hubConn *grpc.ClientConn) (task.Next, error) {
 	// ctx is cancelled when this function returns - i.e. on error
 	// this makes sure we're forgetting any announcements in that case.
 	// The function will be retried if possible.
 	announcer := node.AnnounceContext(ctx, s.announcer)
 
 	// announce any children the hub has
-	go s.retry(ctx, "proxyHubChildTraits", func(ctx context.Context) (task.Next, error) {
+	go s.retry(ctx, "proxyHubChildren", func(ctx context.Context) (task.Next, error) {
 		return s.announceNodeChildren(ctx, hubConn)
 	})
 
@@ -195,11 +195,11 @@ func (s *System) announceNode(ctx context.Context, hubNode *gen.HubNode, nodeCon
 }
 
 func (s *System) announceControllerNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) {
-	go s.retry(ctx, "proxyNodeMetadata", func(ctx context.Context) (task.Next, error) {
-		return s.announceMetadata(ctx, nodeConn, hubNode.Name)
+	go s.retry(ctx, "proxyNodeParent", func(ctx context.Context) (task.Next, error) {
+		return s.announceNodeParent(ctx, nodeConn, hubNode.Name)
 	})
 	// proxy any advertised children and child traits
-	go s.retry(ctx, "proxyChildTraits", func(ctx context.Context) (task.Next, error) {
+	go s.retry(ctx, "proxyNodeChildren", func(ctx context.Context) (task.Next, error) {
 		return s.announceNodeChildren(ctx, nodeConn)
 	})
 
@@ -210,8 +210,8 @@ func (s *System) announceControllerNode(ctx context.Context, hubNode *gen.HubNod
 }
 
 func (s *System) announceProxyNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) {
-	go s.retry(ctx, "proxyNodeMetadata", func(ctx context.Context) (task.Next, error) {
-		return s.announceMetadata(ctx, nodeConn, hubNode.Name)
+	go s.retry(ctx, "proxyNodeParent", func(ctx context.Context) (task.Next, error) {
+		return s.announceNodeParent(ctx, nodeConn, hubNode.Name)
 	})
 	// explicitly don't fetch proxy children as they will have the same children as us anyway
 
@@ -239,6 +239,42 @@ func (s *System) isProxy(ctx context.Context, nodeConn *grpc.ClientConn) (bool, 
 		if req.PageToken == "" {
 			return false, nil
 		}
+	}
+}
+
+// announceNodeParent discovers all the hub parents trait apis and announces them on this node.
+func (s *System) announceNodeParent(ctx context.Context, nodeConn *grpc.ClientConn, name string) (task.Next, error) {
+	announcer := node.AnnounceContext(ctx, s.announcer)
+
+	mdClient := traits.NewMetadataApiClient(nodeConn)
+	mdStream, err := mdClient.PullMetadata(ctx, &traits.PullMetadataRequest{Name: name})
+	if err != nil {
+		return task.Normal, err
+	}
+
+	undo := func() {}
+	for {
+		mdUpdate, err := mdStream.Recv()
+		if err != nil {
+			return task.ResetBackoff, err // it's an error, but we did succeed with at least one request
+		}
+		if len(mdUpdate.Changes) == 0 {
+			continue
+		}
+
+		undo()
+		change := mdUpdate.Changes[len(mdUpdate.Changes)-1]
+
+		var undos []node.Undo
+		undos = append(undos, announcer.Announce(name, node.HasMetadata(change.Metadata)))
+		for _, tm := range change.Metadata.Traits {
+			traitName := trait.Name(tm.Name)
+			if traitName == trait.Metadata {
+				continue
+			}
+			undos = append(undos, s.announceTrait(announcer, nodeConn, name, traitName))
+		}
+		undo = node.UndoAll(undos...)
 	}
 }
 
