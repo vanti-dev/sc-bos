@@ -28,6 +28,8 @@ type Trait struct {
 	// poll period used to poll the objects for pull updates
 	// defaults to 10s
 	PollPeriod *Duration `json:"pollPeriod,omitempty"`
+	// how long to wait when running a poll for it to respond. Defaults to PollPeriod.
+	PollTimeout *Duration `json:"pollTimeout,omitempty"`
 }
 
 func (t *Trait) PollPeriodDuration() time.Duration {
@@ -35,6 +37,13 @@ func (t *Trait) PollPeriodDuration() time.Duration {
 		return t.PollPeriod.Duration
 	}
 	return time.Second * 10
+}
+
+func (t *Trait) PollTimeoutDuration() time.Duration {
+	if t.PollTimeout != nil && t.PollTimeout.Duration != 0 {
+		return t.PollTimeout.Duration
+	}
+	return t.PollPeriodDuration()
 }
 
 type RawTrait struct {

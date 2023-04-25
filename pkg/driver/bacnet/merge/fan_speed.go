@@ -15,6 +15,7 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 )
@@ -31,9 +32,10 @@ func readFanSpeedConfig(raw []byte) (cfg fanSpeedConfig, err error) {
 }
 
 type fanSpeed struct {
-	client *gobacnet.Client
-	known  known.Context
-	logger *zap.Logger
+	client   *gobacnet.Client
+	known    known.Context
+	statuses *statuspb.Map
+	logger   *zap.Logger
 
 	model *fanspeed.Model
 	*fanspeed.ModelServer
@@ -41,7 +43,7 @@ type fanSpeed struct {
 	pollTask *task.Intermittent
 }
 
-func newFanSpeed(client *gobacnet.Client, ctx known.Context, config config.RawTrait, logger *zap.Logger) (*fanSpeed, error) {
+func newFanSpeed(client *gobacnet.Client, devices known.Context, statuses *statuspb.Map, config config.RawTrait, logger *zap.Logger) (*fanSpeed, error) {
 	cfg, err := readFanSpeedConfig(config.Raw)
 	if err != nil {
 		return nil, err
@@ -49,7 +51,8 @@ func newFanSpeed(client *gobacnet.Client, ctx known.Context, config config.RawTr
 	model := fanspeed.NewModel()
 	t := &fanSpeed{
 		client:      client,
-		known:       ctx,
+		known:       devices,
+		statuses:    statuses,
 		logger:      logger,
 		model:       model,
 		ModelServer: fanspeed.NewModelServer(model),
@@ -64,8 +67,10 @@ func (t *fanSpeed) startPoll(init context.Context) (stop task.StopFn, err error)
 	ticker := time.NewTicker(t.config.PollPeriodDuration())
 	go func() {
 		for {
+			ctx, cleanup := context.WithTimeout(ctx, t.config.PollTimeoutDuration())
 			_, err := t.pollPeer(ctx)
 			LogPollError(t.logger, "fan speed poll error", err)
+			cleanup()
 			select {
 			case <-ticker.C:
 			case <-ctx.Done():
@@ -126,6 +131,7 @@ func (t *fanSpeed) speedToPreset(speed float32) string {
 // pollPeer fetches data from the peer device and saves the data locally.
 func (t *fanSpeed) pollPeer(ctx context.Context) (*traits.FanSpeed, error) {
 	speed, err := readPropertyFloat32(ctx, t.client, t.known, *t.config.Speed)
+	updatePollErrorStatus(t.statuses, t.config.Name, 1, err)
 	if err != nil {
 		return nil, ErrReadProperty{Prop: "speed", Cause: err}
 	}

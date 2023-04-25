@@ -16,6 +16,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -40,9 +41,10 @@ func readUdmiMergeConfig(raw []byte) (cfg UdmiMergeConfig, err error) {
 // control is implemented via OnMessage, only points present in the config are controllable.
 type udmiMerge struct {
 	gen.UnimplementedUdmiServiceServer
-	client *gobacnet.Client
-	known  known.Context
-	logger *zap.Logger
+	client   *gobacnet.Client
+	known    known.Context
+	statuses *statuspb.Map
+	logger   *zap.Logger
 
 	config UdmiMergeConfig
 	bus    minibus.Bus[*gen.PullExportMessagesResponse]
@@ -53,16 +55,17 @@ type udmiMerge struct {
 	points     udmi.PointsEvent
 }
 
-func newUdmiMerge(client *gobacnet.Client, ctx known.Context, config config.RawTrait, logger *zap.Logger) (*udmiMerge, error) {
+func newUdmiMerge(client *gobacnet.Client, devices known.Context, statuses *statuspb.Map, config config.RawTrait, logger *zap.Logger) (*udmiMerge, error) {
 	cfg, err := readUdmiMergeConfig(config.Raw)
 	if err != nil {
 		return nil, err
 	}
 	f := &udmiMerge{
-		client: client,
-		known:  ctx,
-		config: cfg,
-		logger: logger,
+		client:   client,
+		known:    devices,
+		statuses: statuses,
+		config:   cfg,
+		logger:   logger,
 	}
 	f.pollTask = task.NewIntermittent(f.startPoll)
 	return f, nil
@@ -126,8 +129,10 @@ func (f *udmiMerge) startPoll(init context.Context) (stop task.StopFn, err error
 	ticker := time.NewTicker(f.config.PollPeriodDuration())
 	go func() {
 		for {
+			ctx, cleanup := context.WithTimeout(ctx, f.config.PollTimeoutDuration())
 			err := f.pollPeer(ctx)
 			LogPollError(f.logger, "udmi poll error", err)
+			cleanup()
 			select {
 			case <-ticker.C:
 			case <-ctx.Done():
@@ -157,8 +162,10 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 		}
 	}
 
+	updatePollErrorStatus(f.statuses, f.config.Name, len(f.config.Points), errs...)
 	if len(errs) == len(f.config.Points) {
-		return multierr.Combine(errs...)
+		err := multierr.Combine(errs...)
+		return err
 	}
 	if len(errs) > 0 {
 		select {
@@ -167,6 +174,7 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 		default:
 		}
 		f.logger.Debug("ignoring some errors", zap.Errors("errs", errs))
+
 	}
 
 	f.pointsLock.Lock()

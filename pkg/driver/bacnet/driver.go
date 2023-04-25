@@ -22,6 +22,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/merge"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -89,11 +91,24 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	}
 
 	devices := known.SyncContext(d.mu.RLocker(), d.devices)
+	statuses := statuspb.NewMap(rootAnnouncer)
 
 	// setup all our devices and objects...
 	for _, device := range cfg.Devices {
 		// make sure to retry setting up devices in case they aren't yet online but might be in the future
 		device := device
+		deviceName := adapt.DeviceName(device)
+		logger := d.logger.With(zap.String("device", deviceName), zap.Uint32("deviceId", uint32(device.ID)),
+			zap.Stringer("address", device.Comm.IP))
+
+		// allow status reporting for this device
+		scDeviceName := cfg.DeviceNamePrefix + deviceName
+		statuses.UpdateProblem(scDeviceName, &gen.StatusLog_Problem{
+			Name:        scDeviceName,
+			Level:       gen.StatusLog_NON_FUNCTIONAL,
+			Description: "device has not yet been configured",
+		})
+
 		go func() {
 			// This is more complicated than I think it should be.
 			// The issue is that the Context passed to Task is cancelled when the task returns.
@@ -102,7 +117,6 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			cfgCtx := ctx
 			cleanupLastAttempt := func() {}
 
-			logger := d.logger.With(zap.String("device", device.Name), zap.Stringer("address", device.Comm.IP))
 			taskOpts := []task.Option{
 				task.WithRetry(task.RetryUnlimited),
 				task.WithBackoff(500*time.Millisecond, 30*time.Second),
@@ -121,7 +135,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				announcer := node.AnnounceContext(announceCtx, rootAnnouncer)
 
 				// It's ok for configureDevices to receive the task context here as ctx is only used for queries
-				err := d.configureDevice(ctx, announcer, cfg, device, devices)
+				err := d.configureDevice(ctx, announcer, cfg, device, devices, statuses, logger)
 
 				if err != nil {
 					if errors.Is(err, context.Canceled) {
@@ -152,7 +166,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	// Combine objects together into traits...
 	for _, trait := range cfg.Traits {
 		logger := d.logger.With(zap.Stringer("trait", trait.Kind), zap.String("name", trait.Name))
-		impl, err := merge.IntoTrait(d.client, devices, trait, logger)
+		impl, err := merge.IntoTrait(d.client, devices, statuses, trait, logger)
 		if errors.Is(err, merge.ErrTraitNotSupported) {
 			logger.Error("Cannot combine into trait, not supported")
 			continue
@@ -185,13 +199,19 @@ func (d *Driver) initClient(cfg config.Root) error {
 	return err
 }
 
-func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announcer, cfg config.Root, device config.Device, devices known.Context) error {
+func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announcer, cfg config.Root, device config.Device, devices known.Context, statuses *statuspb.Map, logger *zap.Logger) error {
 	deviceName := adapt.DeviceName(device)
-	logger := d.logger.With(zap.Uint32("deviceId", uint32(device.ID)), zap.String("name", deviceName))
+	scDeviceName := cfg.DeviceNamePrefix + deviceName
 
 	bacDevice, err := d.findDevice(ctx, device)
 	if err != nil {
-		return fmt.Errorf("device comm handshake: %w", ctxerr.Cause(ctx, err))
+		err := fmt.Errorf("device comm handshake: %w", ctxerr.Cause(ctx, err))
+		statuses.UpdateProblem(scDeviceName, &gen.StatusLog_Problem{
+			Name:        scDeviceName,
+			Level:       gen.StatusLog_OFFLINE,
+			Description: err.Error(),
+		})
+		return err
 	}
 
 	d.storeDevice(deviceName, bacDevice)
@@ -200,12 +220,16 @@ func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announc
 		rootAnnouncer = node.AnnounceFeatures(rootAnnouncer, node.HasMetadata(device.Metadata))
 	}
 
-	announcer := node.AnnounceWithNamePrefix(cfg.DeviceNamePrefix, rootAnnouncer)
-	adapt.Device(deviceName, d.client, bacDevice, devices).AnnounceSelf(announcer)
+	// assume we're online unless we get an error
+	statuses.UpdateProblem(scDeviceName, &gen.StatusLog_Problem{
+		Name:        scDeviceName,
+		Level:       gen.StatusLog_NOMINAL,
+		Description: "handshake successful",
+	})
+	adapt.Device(scDeviceName, d.client, bacDevice, devices, statuses).AnnounceSelf(rootAnnouncer)
 
 	// aka "[bacnet/devices/]{deviceName}/[obj/]"
-	prefix := fmt.Sprintf("%s%s/%s", cfg.DeviceNamePrefix, deviceName, cfg.ObjectNamePrefix)
-	announcer = node.AnnounceWithNamePrefix(prefix, rootAnnouncer)
+	prefix := fmt.Sprintf("%s/%s", scDeviceName, cfg.ObjectNamePrefix)
 
 	// Collect all the object that we will be announcing.
 	// This will be a combination of configured objects and those we discover on the device.
@@ -231,7 +255,7 @@ func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announc
 		// no error, we added the device before we entered the loop so it should exist
 		_ = d.storeObject(bacDevice, co, bo)
 
-		impl, err := adapt.Object(d.client, bacDevice, co)
+		impl, err := adapt.Object(prefix, d.client, bacDevice, co, statuses)
 		if errors.Is(err, adapt.ErrNoDefault) {
 			// logger.Debug("No default adaptation trait for object")
 			continue
@@ -245,7 +269,7 @@ func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announc
 			continue
 		}
 
-		announcer := announcer
+		announcer := rootAnnouncer
 		if object.co.Metadata != nil {
 			announcer = node.AnnounceFeatures(announcer, node.HasMetadata(object.co.Metadata))
 		}
