@@ -109,7 +109,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
    * Checks whether the path matches against any of the RegExp in the enabledPaths array
    *
    * @param {string} path
-   * @param {RegExp[]} enabledPaths
+   * @return {boolean}
    */
   function pathEnabled(path) {
     for (const regex of enabledPaths.value) {
