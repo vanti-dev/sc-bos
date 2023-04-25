@@ -1,7 +1,8 @@
 <template>
   <div class="d-flex flex-wrap">
-    <v-card v-for="(node, index) in nodesList" :key="index" width="300px" class="ma-2">
+    <v-card v-for="node in nodesList" :key="node.name" width="300px" class="ma-2">
       <v-card-title class="text-body-large font-weight-bold pb-0">{{ node.name }}</v-card-title>
+      <v-card-subtitle v-if="node.description !== ''">{{ node.description }}</v-card-subtitle>
       <v-card-text>
         <v-list dense>
           <v-list-item class="pa-0">
@@ -24,7 +25,7 @@ import {computed} from 'vue';
 
 const hubStore = useHubStore();
 const nodesList = computed(() => {
-  return hubStore.nodesList?.value ?? [];
+  return Object.values(hubStore.nodesList);
 });
 
 const servicesStore = useServicesStore();
