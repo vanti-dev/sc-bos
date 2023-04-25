@@ -13,20 +13,23 @@ import (
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 // BinaryObject adapts a binary bacnet object as smart core traits.
-func BinaryObject(client *gobacnet.Client, device bactypes.Device, object config.Object) (node.SelfAnnouncer, error) {
+func BinaryObject(prefix string, client *gobacnet.Client, device bactypes.Device, object config.Object, statuses *statuspb.Map) (node.SelfAnnouncer, error) {
 	switch object.Trait {
 	case "":
 		return nil, ErrNoDefault
 	case trait.OnOff:
 		model := onoff.NewModel(traits.OnOff_STATE_UNSPECIFIED)
 		return &binaryOnOff{
-			client: client,
-			device: device,
-			object: object,
+			prefix:   prefix,
+			client:   client,
+			device:   device,
+			object:   object,
+			statuses: statuses,
 
 			model:       model,
 			ModelServer: onoff.NewModelServer(model),
@@ -37,9 +40,11 @@ func BinaryObject(client *gobacnet.Client, device bactypes.Device, object config
 }
 
 type binaryOnOff struct {
-	client *gobacnet.Client
-	device bactypes.Device
-	object config.Object
+	prefix   string
+	client   *gobacnet.Client
+	device   bactypes.Device
+	object   config.Object
+	statuses *statuspb.Map
 
 	model *onoff.Model
 	*onoff.ModelServer
@@ -55,6 +60,7 @@ func (b *binaryOnOff) GetOnOff(ctx context.Context, request *traits.GetOnOffRequ
 		},
 	})
 
+	updateRequestErrorStatus(b.statuses, b.name(), "getOnOff", err)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +93,11 @@ func (b *binaryOnOff) PullOnOff(request *traits.PullOnOffRequest, server traits.
 }
 
 func (b *binaryOnOff) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(ObjectName(b.object),
+	return a.Announce(b.name(),
 		node.HasTrait(trait.OnOff, node.WithClients(onoff.WrapApi(b))),
 	)
+}
+
+func (b *binaryOnOff) name() string {
+	return b.prefix + ObjectName(b.object)
 }

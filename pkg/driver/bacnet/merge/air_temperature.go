@@ -17,6 +17,7 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 )
@@ -34,9 +35,10 @@ func readAirTemperatureConfig(raw []byte) (cfg airTemperatureConfig, err error) 
 }
 
 type airTemperature struct {
-	client *gobacnet.Client
-	known  known.Context
-	logger *zap.Logger
+	client   *gobacnet.Client
+	known    known.Context
+	statuses *statuspb.Map
+	logger   *zap.Logger
 
 	model *airtemperature.Model
 	*airtemperature.ModelServer
@@ -44,7 +46,7 @@ type airTemperature struct {
 	pollTask *task.Intermittent
 }
 
-func newAirTemperature(client *gobacnet.Client, ctx known.Context, config config.RawTrait, logger *zap.Logger) (*airTemperature, error) {
+func newAirTemperature(client *gobacnet.Client, devices known.Context, statuses *statuspb.Map, config config.RawTrait, logger *zap.Logger) (*airTemperature, error) {
 	cfg, err := readAirTemperatureConfig(config.Raw)
 	if err != nil {
 		return nil, err
@@ -52,7 +54,8 @@ func newAirTemperature(client *gobacnet.Client, ctx known.Context, config config
 	model := airtemperature.NewModel(&traits.AirTemperature{})
 	t := &airTemperature{
 		client:      client,
-		known:       ctx,
+		known:       devices,
+		statuses:    statuses,
 		logger:      logger,
 		model:       model,
 		ModelServer: airtemperature.NewModelServer(model),
@@ -67,8 +70,10 @@ func (t *airTemperature) startPoll(init context.Context) (stop task.StopFn, err 
 	ticker := time.NewTicker(t.config.PollPeriodDuration())
 	go func() {
 		for {
+			ctx, cleanup := context.WithTimeout(ctx, t.config.PollTimeoutDuration())
 			_, err := t.pollPeer(ctx)
 			LogPollError(t.logger, "air temperature poll error", err)
+			cleanup()
 			select {
 			case <-ticker.C:
 			case <-ctx.Done():
@@ -115,17 +120,18 @@ func (t *airTemperature) PullAirTemperature(request *traits.PullAirTemperatureRe
 // pollPeer fetches data from the peer device and saves the data locally.
 func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, error) {
 	responses := readProperties(ctx, t.client, t.known, *t.config.SetPoint, *t.config.AmbientTemperature)
-	var errs error
+	var errs []error
 	setPoint, err := float64Value(responses[0])
 	if err != nil {
-		errs = multierr.Append(errs, ErrReadProperty{Prop: "setPoint", Cause: err})
+		errs = append(errs, ErrReadProperty{Prop: "setPoint", Cause: err})
 	}
 	ambientTemperature, err := float64Value(responses[1])
 	if err != nil {
-		errs = multierr.Append(errs, ErrReadProperty{Prop: "ambientTemperature", Cause: err})
+		errs = append(errs, ErrReadProperty{Prop: "ambientTemperature", Cause: err})
 	}
-	if errs != nil {
-		return nil, errs
+	updatePollErrorStatus(t.statuses, t.config.Name, 2, errs...)
+	if len(errs) > 0 {
+		return nil, multierr.Combine(errs...)
 	}
 	data := &traits.AirTemperature{
 		AmbientTemperature: &types.Temperature{ValueCelsius: ambientTemperature},

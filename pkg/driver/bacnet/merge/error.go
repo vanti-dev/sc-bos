@@ -11,6 +11,8 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 )
 
 var (
@@ -93,4 +95,40 @@ type stringerFunc func() string
 
 func (s stringerFunc) String() string {
 	return s()
+}
+
+func updatePollErrorStatus(statuses *statuspb.Map, name string, requests int, errs ...error) {
+	problemName := fmt.Sprintf("%s.%s", name, "poll")
+
+	allFailed := len(errs) == requests
+	someOffline, allOffline := isOfflineError(errs...)
+
+	if !someOffline {
+		statuses.UpdateProblem(name, &gen.StatusLog_Problem{
+			Name:        problemName,
+			Level:       gen.StatusLog_NOMINAL,
+			Description: fmt.Sprintf("poll success"),
+		})
+		return
+	}
+
+	level := gen.StatusLog_REDUCED_FUNCTION
+	if allOffline && allFailed {
+		level = gen.StatusLog_OFFLINE
+	}
+	statuses.UpdateProblem(name, &gen.StatusLog_Problem{
+		Name:        problemName,
+		Level:       level,
+		Description: fmt.Sprintf("poll timeout"),
+	})
+}
+
+func isOfflineError(errs ...error) (some, all bool) {
+	offlineCount := 0
+	for _, err := range errs {
+		if errors.Is(err, context.DeadlineExceeded) {
+			offlineCount++
+		}
+	}
+	return offlineCount > 0, offlineCount == len(errs)
 }

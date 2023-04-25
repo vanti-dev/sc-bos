@@ -13,16 +13,18 @@ import (
 	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 // Device adapts a bacnet Device into a Smart Core traits and other apis.
-func Device(name string, client *gobacnet.Client, device bactypes.Device, known known.Context) node.SelfAnnouncer {
+func Device(name string, client *gobacnet.Client, device bactypes.Device, known known.Context, statuses *statuspb.Map) node.SelfAnnouncer {
 	return &DeviceBacnetService{
-		name:   name,
-		client: client,
-		device: device,
-		known:  known,
+		name:     name,
+		client:   client,
+		device:   device,
+		known:    known,
+		statuses: statuses,
 	}
 }
 
@@ -33,10 +35,11 @@ func Device(name string, client *gobacnet.Client, device bactypes.Device, known 
 type DeviceBacnetService struct {
 	rpc.UnimplementedBacnetDriverServiceServer
 
-	name   string
-	client *gobacnet.Client
-	device bactypes.Device
-	known  known.Context
+	name     string
+	client   *gobacnet.Client
+	device   bactypes.Device
+	known    known.Context
+	statuses *statuspb.Map
 }
 
 func (d *DeviceBacnetService) AnnounceSelf(a node.Announcer) node.Undo {
@@ -54,6 +57,7 @@ func (d *DeviceBacnetService) ReadProperty(ctx context.Context, request *rpc.Rea
 			Properties: []bactypes.Property{d.propertyFromProtoForRead(request.PropertyReference)},
 		},
 	})
+	d.handleErrorStatus("readProperty", err)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +92,7 @@ func (d *DeviceBacnetService) ReadPropertyMultiple(ctx context.Context, request 
 		bacReq.Objects = append(bacReq.Objects, obj)
 	}
 	readProperties, err := d.client.ReadMultiProperty(ctx, d.device, bacReq)
+	d.handleErrorStatus("readPropertyMultiple", err)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +132,9 @@ func (d *DeviceBacnetService) WriteProperty(ctx context.Context, request *rpc.Wr
 			Properties: []bactypes.Property{writeProp},
 		},
 	}
-	return &rpc.WritePropertyResponse{}, d.client.WriteProperty(ctx, d.device, data, uint(request.WriteValue.Priority))
+	err = d.client.WriteProperty(ctx, d.device, data, uint(request.WriteValue.Priority))
+	d.handleErrorStatus("writeProperty", err)
+	return &rpc.WritePropertyResponse{}, err
 }
 
 func (d *DeviceBacnetService) WritePropertyMultiple(ctx context.Context, request *rpc.WritePropertyMultipleRequest) (*rpc.WritePropertyMultipleResponse, error) {
@@ -146,6 +153,10 @@ func (d *DeviceBacnetService) ListObjects(_ context.Context, _ *rpc.ListObjectsR
 		response.Objects = append(response.Objects, ObjectIDToProto(object.ID))
 	}
 	return response, nil
+}
+
+func (d *DeviceBacnetService) handleErrorStatus(request string, err error) {
+	updateRequestErrorStatus(d.statuses, d.name, request, err)
 }
 
 func (d *DeviceBacnetService) propertyFromProtoForRead(reference *rpc.PropertyReference) bactypes.Property {
