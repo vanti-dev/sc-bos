@@ -9,7 +9,7 @@
             {{ node.address }}
           </v-list-item>
           <v-list-item class="pa-0">
-            {{ }}
+            Automations: {{ node.automations?.metadataTracker?.response?.totalCount }}
           </v-list-item>
         </v-list>
       </v-card-text>
@@ -19,23 +19,28 @@
 </template>
 
 <script setup>
+import {ServiceNames} from '@/api/ui/services';
 import {useHubStore} from '@/stores/hub';
 import {useServicesStore} from '@/stores/services';
-import {computed} from 'vue';
+import {computed, reactive} from 'vue';
 
 const hubStore = useHubStore();
+const servicesStore = useServicesStore();
+
 const nodesList = computed(() => {
-  return Object.values(hubStore.nodesList);
+  return Object.values(hubStore.nodesList).map(node => {
+    console.debug('node', node);
+    const automations = reactive(
+        servicesStore.getService(ServiceNames.Automations, node.commsAddress, node.commsName)
+    );
+    servicesStore.refreshMetadata(ServiceNames.Automations, node.commsAddress, node.commsName);
+    return {
+      ...node,
+      automations
+    };
+  });
 });
 
-const servicesStore = useServicesStore();
-/**
- *
- * @param node
- */
-async function fetchDrivers(node) {
-  servicesStore.getService();
-}
 
 </script>
 
