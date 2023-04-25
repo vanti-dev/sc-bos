@@ -11,7 +11,6 @@ export const useHubStore = defineStore('hub', () => {
 
   watch(() => appConfig.config, async config => {
     closeResource(nodesListCollection);
-    console.debug('config changed', config);
 
     if (config?.hub) {
       pullHubNodes(nodesListCollection);
@@ -32,7 +31,7 @@ export const useHubStore = defineStore('hub', () => {
       nodes[node.name] = {
         ...node,
         commsAddress: proxiedAddress(node.address),
-        commsName: proxiedName(node.name)
+        commsName: proxiedName(node.name, node.address)
       };
     });
     return nodes;
@@ -44,10 +43,12 @@ export const useHubStore = defineStore('hub', () => {
    * resource, otherwise it will return the resource name as-is.
    *
    * @param {string} name
+   * @param {string} address
    * @return {string}
    */
-  function proxiedName(name) {
-    if (appConfig.config?.proxy) {
+  async function proxiedName(name, address) {
+    // check if running in proxy mode, and that the node address is not the same as our endpoint address
+    if (appConfig.config?.proxy && (await grpcWebEndpoint()) !== address) {
       return name;
     }
     return '';

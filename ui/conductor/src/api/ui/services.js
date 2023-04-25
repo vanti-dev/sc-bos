@@ -1,8 +1,7 @@
+import {fieldMaskFromObject, setProperties} from '@/api/convpb';
+import {clientOptions} from '@/api/grpcweb';
 import {pullResource, setCollection, trackAction} from '@/api/resource';
 import {ServicesApiPromiseClient} from '@sc-bos/ui-gen/proto/services_grpc_web_pb';
-import {clientOptions} from '@/api/grpcweb';
-import {GetMetadataRequest} from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb';
-import {fieldMaskFromObject, setProperties} from '@/api/convpb';
 import {
   ConfigureServiceRequest,
   ListServicesRequest,
@@ -10,6 +9,7 @@ import {
   StartServiceRequest,
   StopServiceRequest
 } from '@sc-bos/ui-gen/proto/services_pb';
+import {GetMetadataRequest} from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb';
 
 
 /**
@@ -19,6 +19,7 @@ import {
  */
 export function getServiceMetadata(request, tracker) {
   const name = String(request.name);
+  console.debug('getServiceMetadata', name);
   if (!name) throw new Error('request.name must be specified');
   return trackAction('Services.GetServiceMetadata', tracker ?? {}, endpoint => {
     const api = client(endpoint);

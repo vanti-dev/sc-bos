@@ -20,28 +20,36 @@ export const useServicesStore = defineStore('services', () => {
   /**
    * @param {string} service
    * @param {string} address
-   * @param {string} name
+   * @param {string} controllerName
    * @return {Service}
    */
-  function getService(service, address= '', name = '') {
+  function getService(service, address= '', controllerName = '') {
     if (!metadataTrackers.hasOwnProperty(address)) metadataTrackers[address] = {};
     if (!servicesCollections.hasOwnProperty(address)) servicesCollections[address] = {};
-    if (!metadataTrackers[address].hasOwnProperty(service)) metadataTrackers[address][service] = newActionTracker();
-    if (!servicesCollections[address].hasOwnProperty(service)) {
-      servicesCollections[address][service] = newServicesCollection(name);
+    const _serviceName = serviceName(controllerName, service);
+    if (!metadataTrackers[address].hasOwnProperty(_serviceName)) {
+      metadataTrackers[address][_serviceName] = newActionTracker();
+    }
+    if (!servicesCollections[address].hasOwnProperty(_serviceName)) {
+      servicesCollections[address][_serviceName] = newServicesCollection(service);
     }
     return {
-      metadataTracker: metadataTrackers[address][service],
-      servicesCollection: servicesCollections[address][service]
+      metadataTracker: metadataTrackers[address][_serviceName],
+      servicesCollection: servicesCollections[address][_serviceName]
     };
   }
 
   /**
    * @param {string} service
    * @param {string} address
+   * @param {string} controllerName
    */
-  async function refreshMetadata(service, address='') {
-    await getServiceMetadata({name: service}, getService(service, address).metadataTracker);
+  async function refreshMetadata(service, address='', controllerName='') {
+    console.debug('refreshMetadata', serviceName(controllerName, service));
+    await getServiceMetadata(
+        {name: serviceName(controllerName, service)},
+        await getService(service, address, controllerName).metadataTracker
+    );
   }
 
   /**
@@ -51,6 +59,7 @@ export const useServicesStore = defineStore('services', () => {
    */
   function newServicesCollection(controllerName = '') {
     const listFn = async (name, tracker, pageToken, recordFn) => {
+      console.debug('listFn', serviceName(controllerName, name));
       const page = await listServices({name: serviceName(controllerName, name),
         pageToken, pageSize: 100}, tracker);
       for (const service of page.servicesList) {
