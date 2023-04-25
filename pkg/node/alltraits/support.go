@@ -32,6 +32,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/mqttpb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
@@ -194,6 +195,16 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 	mqttpb.TraitName: func(s node.Supporter) {
 		r := gen.NewMqttServiceRouter()
 		s.Support(node.Routing(r), node.Clients(gen.WrapMqttService(r)))
+	},
+	statuspb.TraitName: func(s node.Supporter) {
+		{
+			r := gen.NewStatusApiRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapStatusApi(r)))
+		}
+		{
+			r := gen.NewStatusHistoryRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapStatusHistory(r)))
+		}
 	},
 	udmipb.TraitName: func(s node.Supporter) {
 		r := gen.NewUdmiServiceRouter()
