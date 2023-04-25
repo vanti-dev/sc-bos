@@ -7,6 +7,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/mqttpb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -90,6 +91,8 @@ func APIClient(conn grpc.ClientConnInterface, t trait.Name) any {
 		return gen.NewMeterApiClient(conn)
 	case mqttpb.TraitName:
 		return gen.NewMqttServiceClient(conn)
+	case statuspb.TraitName:
+		return gen.NewStatusApiClient(conn)
 	case udmipb.TraitName:
 		return gen.NewUdmiServiceClient(conn)
 	}
@@ -110,6 +113,8 @@ func HistoryClient(conn grpc.ClientConnInterface, t trait.Name) any {
 		// (not yet) Smart Core traits
 	case meter.TraitName:
 		return gen.NewMeterHistoryClient(conn)
+	case statuspb.TraitName:
+		return gen.NewStatusHistoryClient(conn)
 	default:
 		return nil
 	}

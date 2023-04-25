@@ -15,6 +15,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/history"
 	"github.com/vanti-dev/sc-bos/pkg/history/memstore"
 	"github.com/vanti-dev/sc-bos/pkg/history/pgxstore"
@@ -73,6 +74,9 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	case trait.OccupancySensor:
 		serverClient = gen.WrapOccupancySensorHistory(historypb.NewOccupancySensorServer(store))
 		go a.collectOccupancyChanges(ctx, cfg.Source.Name, payloads)
+	case statuspb.TraitName:
+		serverClient = gen.WrapStatusHistory(historypb.NewStatusServer(store))
+		go a.collectCurrentStatusChanges(ctx, cfg.Source.Name, payloads)
 	default:
 		return fmt.Errorf("unsupported trait %s", cfg.Source.Trait)
 	}
