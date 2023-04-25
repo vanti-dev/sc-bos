@@ -24,6 +24,7 @@ export async function serverConfig() {
  * @return {Promise<string>}
  */
 export async function grpcWebEndpoint() {
+  // Use the endpoint from the environment if it's set (likely for development)
   const envEndpoint = import.meta.env.VITE_GRPC_ENDPOINT || '';
   if (envEndpoint) {
     return envEndpoint;
