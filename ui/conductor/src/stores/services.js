@@ -1,11 +1,13 @@
-import {defineStore} from 'pinia';
 import {newActionTracker} from '@/api/resource';
-import {reactive} from 'vue';
 import {getServiceMetadata, listServices, pullServices} from '@/api/ui/services';
+import {serviceName} from '@/util/proxy';
 import {Collection} from '@/util/query';
+import {defineStore} from 'pinia';
+import {reactive} from 'vue';
 
 export const useServicesStore = defineStore('services', () => {
-  const metadataTrackers = reactive(/** @type {Map<string, ActionTracker<ServiceMetadata.AsObject>>} */{});
+  const metadataTrackers =
+      reactive(/** @type {Map<string, ActionTracker<ServiceMetadata.AsObject>>} */{});
   const servicesCollections =
       reactive(/** @type {Map<string, Collection>} */{});
 
@@ -17,31 +19,40 @@ export const useServicesStore = defineStore('services', () => {
    */
   /**
    * @param {string} service
+   * @param {string} address
+   * @param {string} name
    * @return {Service}
    */
-  function getService(service) {
-    if (!metadataTrackers.hasOwnProperty(service)) metadataTrackers[service] = newActionTracker();
-    if (!servicesCollections.hasOwnProperty(service)) servicesCollections[service] = newServicesCollection();
+  function getService(service, address= '', name = '') {
+    if (!metadataTrackers.hasOwnProperty(address)) metadataTrackers[address] = {};
+    if (!servicesCollections.hasOwnProperty(address)) servicesCollections[address] = {};
+    if (!metadataTrackers[address].hasOwnProperty(service)) metadataTrackers[address][service] = newActionTracker();
+    if (!servicesCollections[address].hasOwnProperty(service)) {
+      servicesCollections[address][service] = newServicesCollection(name);
+    }
     return {
-      metadataTracker: metadataTrackers[service],
-      servicesCollection: servicesCollections[service]
+      metadataTracker: metadataTrackers[address][service],
+      servicesCollection: servicesCollections[address][service]
     };
   }
 
   /**
    * @param {string} service
+   * @param {string} address
    */
-  async function refreshMetadata(service) {
-    await getServiceMetadata({name: service}, getService(service).metadataTracker);
+  async function refreshMetadata(service, address='') {
+    await getServiceMetadata({name: service}, getService(service, address).metadataTracker);
   }
 
   /**
    *
+   * @param {string} controllerName
    * @return {Collection}
    */
-  function newServicesCollection() {
+  function newServicesCollection(controllerName = '') {
     const listFn = async (name, tracker, pageToken, recordFn) => {
-      const page = await listServices({name, pageToken, pageSize: 100}, tracker);
+      const page = await listServices({name: serviceName(controllerName, name),
+        pageToken, pageSize: 100}, tracker);
       for (const service of page.servicesList) {
         service.config = JSON.parse(service.configRaw);
         recordFn(service, service.id);
@@ -49,7 +60,7 @@ export const useServicesStore = defineStore('services', () => {
       return page.nextPageToken;
     };
     const pullFn = (name, resources) => {
-      pullServices({name}, resources);
+      pullServices({name: serviceName(controllerName, name)}, resources);
     };
     return new Collection(listFn, pullFn);
   }
