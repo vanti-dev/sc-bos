@@ -141,7 +141,7 @@ func (g *Group) PullOccupancy(request *traits.PullOccupancyRequest, server trait
 func mergeOccupancy(all []*traits.Occupancy) (*traits.Occupancy, error) {
 	switch len(all) {
 	case 0:
-		return nil, status.Error(codes.FailedPrecondition, "zone has no hvac names")
+		return nil, status.Error(codes.FailedPrecondition, "zone has no occupancy sensor names")
 	case 1:
 		return all[0], nil
 	default:

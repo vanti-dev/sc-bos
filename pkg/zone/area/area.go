@@ -14,6 +14,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/lighting"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/meter"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/occupancy"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/status"
 )
 
 // DefaultFeatures lists all the default features for an area.
@@ -23,6 +24,7 @@ var DefaultFeatures = []zone.Factory{
 	lighting.Feature,
 	meter.Feature,
 	occupancy.Feature,
+	status.Feature,
 }
 
 // Factory builds a generic area using DefaultFeatures.

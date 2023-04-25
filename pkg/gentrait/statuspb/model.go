@@ -44,51 +44,9 @@ func (m *Model) GetCurrentStatus(readMask *fieldmaskpb.FieldMask) (*gen.StatusLo
 }
 
 func (m *Model) problemsToStatusLog(problemMsgs []proto.Message) *gen.StatusLog {
-	out := &gen.StatusLog{}
-	var biggestProblem *gen.StatusLog_Problem
-	var mostRecentNominal *gen.StatusLog_Problem
-	for _, problemMsg := range problemMsgs {
-		problem := problemMsg.(*gen.StatusLog_Problem)
-		if problem.Level == gen.StatusLog_NOMINAL {
-			switch {
-			case mostRecentNominal == nil:
-				mostRecentNominal = problem
-			case mostRecentNominal.RecordTime == nil:
-				mostRecentNominal = problem
-			case problem.RecordTime == nil:
-			case problem.RecordTime.AsTime().After(mostRecentNominal.RecordTime.AsTime()):
-				mostRecentNominal = problem
-			}
-			continue
-		}
-		out.Problems = append(out.Problems, problem)
-		if biggestProblem == nil || problem.Level > biggestProblem.Level {
-			biggestProblem = problem
-		}
-		if biggestProblem.Level == problem.Level && problem.RecordTime != nil {
-			// make sure we're reporting the earliest problem at this level
-			switch {
-			case biggestProblem.RecordTime == nil:
-				biggestProblem = problem
-			case problem.RecordTime.AsTime().Before(biggestProblem.RecordTime.AsTime()):
-				biggestProblem = problem
-			}
-		}
-	}
-	if biggestProblem == nil {
-		// no problems
-		out.Level = gen.StatusLog_NOMINAL
-		if mostRecentNominal != nil {
-			out.Level = mostRecentNominal.Level
-			out.Description = mostRecentNominal.Description
-			out.RecordTime = mostRecentNominal.RecordTime
-		}
-	} else {
-		out.Level = biggestProblem.Level
-		out.Description = biggestProblem.Description
-		out.RecordTime = biggestProblem.RecordTime
-	}
-	return out
+	pm := &ProblemMerger{}
+	pm.AddProblemMessages(problemMsgs)
+	return pm.Build()
 }
 
 // UpdateProblem will add or update the given problem in the model.
