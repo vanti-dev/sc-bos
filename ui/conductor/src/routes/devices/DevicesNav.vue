@@ -20,7 +20,7 @@
     </v-list-item>
     <v-list-item to="/devices/metering">
       <v-list-item-icon>
-        <v-icon>mdi-gauge</v-icon>
+        <v-icon>mdi-meter-electric</v-icon>
       </v-list-item-icon>
       <v-list-item-content>Metering</v-list-item-content>
     </v-list-item>
