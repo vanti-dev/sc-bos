@@ -22,7 +22,8 @@
     },
     "system": {
       "drivers": true,
-      "features": true
+      "features": true,
+      "components": true
     }
   },
   "config": {
