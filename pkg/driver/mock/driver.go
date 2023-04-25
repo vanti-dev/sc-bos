@@ -32,6 +32,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -229,6 +230,8 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 	case meter.TraitName:
 		model := meter.NewModel()
 		return gen.WrapMeterApi(meter.NewModelServer(model)), auto.MeterAuto(model)
+	case statuspb.TraitName:
+		return gen.WrapStatusApi(statuspb.NewModelServer(statuspb.NewModel())), nil
 	case udmipb.TraitName:
 		return gen.WrapUdmiService(auto.NewUdmiServer(logger, deviceName)), nil
 	}
