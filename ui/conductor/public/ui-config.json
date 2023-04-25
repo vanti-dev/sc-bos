@@ -26,6 +26,8 @@
     }
   },
   "config": {
+    "hub": true,
+    "proxy": true,
     "home": "/ops",
     "ops": {
       "buildingZone": "building"
