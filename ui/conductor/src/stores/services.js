@@ -46,7 +46,6 @@ export const useServicesStore = defineStore('services', () => {
    * @return {Promise<ServiceMetadata.AsObject>}
    */
   function refreshMetadata(service, address='', controllerName='') {
-    console.debug('refreshMetadata', serviceName(controllerName, service));
     return getServiceMetadata(
         {name: serviceName(controllerName, service)},
         getService(service, address, controllerName).metadataTracker
@@ -60,17 +59,22 @@ export const useServicesStore = defineStore('services', () => {
    */
   function newServicesCollection(controllerName = '') {
     const listFn = async (name, tracker, pageToken, recordFn) => {
-      console.debug('listFn', serviceName(controllerName, name));
-      const page = await listServices({name: serviceName(controllerName, name),
-        pageToken, pageSize: 100}, tracker);
-      for (const service of page.servicesList) {
-        service.config = JSON.parse(service.configRaw);
-        recordFn(service, service.id);
+      if (name) {
+        const page = await listServices({
+          name: serviceName(controllerName, name),
+          pageToken, pageSize: 100
+        }, tracker);
+        for (const service of page.servicesList) {
+          service.config = JSON.parse(service.configRaw);
+          recordFn(service, service.id);
+        }
+        return page.nextPageToken;
       }
-      return page.nextPageToken;
     };
     const pullFn = (name, resources) => {
-      pullServices({name: serviceName(controllerName, name)}, resources);
+      if (name) {
+        pullServices({name: serviceName(controllerName, name)}, resources);
+      }
     };
     return new Collection(listFn, pullFn);
   }
