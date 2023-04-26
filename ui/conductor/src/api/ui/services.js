@@ -19,7 +19,6 @@ import {GetMetadataRequest} from '@smart-core-os/sc-api-grpc-web/traits/metadata
  */
 export function getServiceMetadata(request, tracker) {
   const name = String(request.name);
-  console.debug('getServiceMetadata', name);
   if (!name) throw new Error('request.name must be specified');
   return trackAction('Services.GetServiceMetadata', tracker ?? {}, endpoint => {
     const api = client(endpoint);

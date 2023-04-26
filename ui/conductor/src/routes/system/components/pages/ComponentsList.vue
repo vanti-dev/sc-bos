@@ -33,9 +33,9 @@ const automationTrackers = reactive({});
 
 const nodesList = computed(() => {
   return Object.values(hubStore.nodesList).map(node => {
-    console.debug('node', node);
     Promise.all([node.commsAddress, node.commsName])
         .then(([address, name]) => {
+          console.debug('node', node);
           set(automationTrackers, node.name, servicesStore.getService(ServiceNames.Automations, address, name));
           errorStore.registerTracker(automationTrackers[node.name].metadataTracker);
           return servicesStore.refreshMetadata(ServiceNames.Automations, address, name);
