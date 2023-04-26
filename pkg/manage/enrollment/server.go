@@ -35,6 +35,25 @@ type Server struct {
 	enrollmentChanged minibus.Bus[Enrollment]
 }
 
+func (es *Server) GetEnrollment(_ context.Context, _ *gen.GetEnrollmentRequest) (*gen.Enrollment, error) {
+	es.m.Lock()
+	defer es.m.Unlock()
+
+	select {
+	case <-es.done:
+		e := es.enrollment
+		eProto := &gen.Enrollment{
+			TargetName:     e.RootDeviceName,
+			TargetAddress:  e.LocalAddress,
+			ManagerName:    e.ManagerName,
+			ManagerAddress: e.ManagerAddress,
+		}
+		return eProto, nil
+	default:
+		return nil, status.Error(codes.NotFound, "not enrolled")
+	}
+}
+
 // NewServer creates an enrollment server, without attempting to load an existing enrollment.
 // The new server will be in an un-enrolled state.
 // New enrollments will be saved in the provided directory.
