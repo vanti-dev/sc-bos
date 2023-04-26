@@ -185,9 +185,14 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			ttl = after
 		}
 
+		if ttl < 0 {
+			b.logger.Warn("ttl < 0; using refreshEvery instead")
+		}
 		// ensure it's not too long before we wake up, so the lights are refreshed regularly
 		// so external changes don't stick around forever
-		if ttl == 0 || ttl > refreshEvery {
+		if ttl <= 0 || ttl > refreshEvery {
+			b.logger.Debug("waking up sooner to ensure lights aren't stale",
+				zap.Duration("after", refreshEvery))
 			ttl = refreshEvery
 		}
 		// Setup ttl for the transformed model.
