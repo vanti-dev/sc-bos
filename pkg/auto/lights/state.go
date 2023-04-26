@@ -15,7 +15,8 @@ import (
 type ReadState struct {
 	Config config.Root
 
-	Occupancy map[string]*traits.Occupancy
+	AutoStartTime time.Time // time that the automation started up
+	Occupancy     map[string]*traits.Occupancy
 	// used for daylight dimming
 	AmbientBrightness map[string]*traits.AmbientBrightness
 	Buttons           map[string]*gen.ButtonState
@@ -23,8 +24,9 @@ type ReadState struct {
 	Modes *traits.ModeValues
 }
 
-func NewReadState() *ReadState {
+func NewReadState(t time.Time) *ReadState {
 	return &ReadState{
+		AutoStartTime:     t,
 		Occupancy:         make(map[string]*traits.Occupancy),
 		AmbientBrightness: make(map[string]*traits.AmbientBrightness),
 		Buttons:           make(map[string]*gen.ButtonState),
@@ -32,7 +34,7 @@ func NewReadState() *ReadState {
 }
 
 func (s *ReadState) Clone() *ReadState {
-	clone := NewReadState()
+	clone := NewReadState(s.AutoStartTime)
 	clone.Config = s.Config
 	// assume values in the map are immutable!
 	for name, val := range s.Occupancy {
