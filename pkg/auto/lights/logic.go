@@ -76,29 +76,27 @@ func decideAction(now time.Time, readState *ReadState, writeState *WriteState, l
 	if buttonOnTime := writeState.LastButtonOnTime; buttonOnTime.After(becameUnoccupied) {
 		becameUnoccupied = buttonOnTime
 	}
+	if readState.AutoStartTime.After(becameUnoccupied) {
+		// we don't know when the lights were last switched on, but we know it must have been before the automation
+		// started, so we can use this time
+		becameUnoccupied = readState.AutoStartTime
+		logger.Debug("Both time last unoccupied and last button press are zero; assuming start time",
+			zap.Time("becameUnoccupied", becameUnoccupied))
+	}
 
-	if becameUnoccupied.IsZero() {
-		logger.Debug("Both time last unoccupied and last button press are zero.")
-		if hasOnlyButtons(readState.Config) {
-			logger.Debug("button-only space defaulting to off...")
-			switchOff = true
-			return
-		}
+	sinceUnoccupied := now.Sub(becameUnoccupied)
+	unoccupiedDelayBeforeDarkness := mode.UnoccupiedOffDelay.Duration
+
+	if sinceUnoccupied >= unoccupiedDelayBeforeDarkness {
+		// we've been unoccupied for long enough, turn things off now
+		logger.Debug("Occupancy expired. Switching off")
+		switchOff = true
+		return
 	} else {
-		sinceUnoccupied := now.Sub(becameUnoccupied)
-		unoccupiedDelayBeforeDarkness := mode.UnoccupiedOffDelay.Duration
-
-		if sinceUnoccupied >= unoccupiedDelayBeforeDarkness {
-			// we've been unoccupied for long enough, turn things off now
-			logger.Debug("Occupancy expired. Switching off")
-			switchOff = true
-			return
-		} else {
-			// we haven't written anything, but in `unoccupiedDelayBeforeDarkness - sinceUnoccupied` time we will, let the
-			// caller know
-			if wait := unoccupiedDelayBeforeDarkness - sinceUnoccupied; rerunAfter == 0 || wait < rerunAfter {
-				rerunAfter = wait
-			}
+		// we haven't written anything, but in `unoccupiedDelayBeforeDarkness - sinceUnoccupied` time we will, let the
+		// caller know
+		if wait := unoccupiedDelayBeforeDarkness - sinceUnoccupied; rerunAfter == 0 || wait < rerunAfter {
+			rerunAfter = wait
 		}
 	}
 

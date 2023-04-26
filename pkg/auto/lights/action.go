@@ -12,7 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
-const brightnessCacheValidity = 2 * time.Minute
+const brightnessCacheValidity = 45 * time.Second
 
 // actions defines the only side effects the automation can have.
 // This is intended to allow easier testing of the business logic, a bit like a DAO would for database access.
@@ -76,6 +76,11 @@ func refreshBrightnessLevel(ctx context.Context, now time.Time, state *WriteStat
 	for _, name := range names {
 		val, ok := state.Brightness[name]
 		if !ok {
+			continue
+		}
+		expired := now.After(val.WriteTime.Add(brightnessCacheValidity))
+		if !expired {
+			// don't need to refresh if recently written
 			continue
 		}
 

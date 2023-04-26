@@ -14,7 +14,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
-const refreshEvery = 3 * time.Minute
+const refreshEvery = 1 * time.Minute
 
 // BrightnessAutomation implements turning lights on or off based on occupancy readings from PIRs and other devices.
 type BrightnessAutomation struct {
@@ -91,7 +91,7 @@ func (b *BrightnessAutomation) Start(_ context.Context) error {
 	// readStates receives state that should be processed, for example to work out if lights should be turned on.
 	// readStates is how state changes are communicates to the func that processes those state changes.
 	readStates := make(chan *ReadState)
-	initialState := NewReadState()
+	initialState := NewReadState(time.Now())
 
 	// collect and collate the state changes
 	group.Go(func() error {
