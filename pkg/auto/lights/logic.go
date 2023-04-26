@@ -19,21 +19,37 @@ import (
 // Returning a non-zero duration indicates that processing should be rerun after this delay even if ReadState doesn't
 // change.
 func processState(ctx context.Context, readState *ReadState, writeState *WriteState, actions actions, logger *zap.Logger) (time.Duration, error) {
-	var rerunAfter time.Duration
-
-	// Work out what we need to do to apply the given writeState and make those changes for as long as ctx is valid
-
 	now := readState.Now()
-	var mode config.ModeOption
+	switchOn, switchOff, mode, rerunAfter := decideAction(now, readState, writeState, logger)
+	if switchOn {
+		level, ok := computeOnLevelPercent(mode, readState, writeState)
+		// logger.Debug("Setting level.", zap.Float32("level", level))
+		if !ok {
+			logger.Debug("Not enough read information for daylight dimming calculations")
+			// todo: here we are in a position where daylight dimming is supposed to be enabled but we don't have enough
+			//  info to actually choose the output light level. We should probably not make any changes and wait for
+			//  more data to come in, but we'll leave that to future us as part of snagging.
+		}
+		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, level, logger, readState.Config.Lights...)
+	} else if switchOff {
+		offLevel := computeOffLevelPercent(mode)
+		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, offLevel, logger, readState.Config.Lights...)
+	} else {
+		return rerunAfter, refreshBrightnessLevel(ctx, now, writeState, actions, logger, readState.Config.Lights...)
+	}
+}
+
+func decideAction(now time.Time, readState *ReadState, writeState *WriteState, logger *zap.Logger) (switchOn, switchOff bool, mode config.ModeOption, rerunAfter time.Duration) {
+	// Work out what we need to do to apply the given writeState and make those changes for as long as ctx is valid
 	mode, rerunAfter = activeMode(now, readState)
 	logger = logger.With(zap.String("mode", mode.Name))
 
 	onButtonClicked, offButtonClicked := captureButtonActions(readState, writeState, logger)
 
 	if offButtonClicked {
-		offLevel := computeOffLevelPercent(mode)
-		logger.Debug("Switched off by button press. Setting level to zero", zap.Float32("offLevel", offLevel))
-		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, offLevel, logger, readState.Config.Lights...)
+		logger.Debug("Switched off by button press")
+		switchOff = true
+		return
 	}
 
 	anyOccupied := areAnyOccupied(readState.Config.OccupancySensors, readState.Occupancy)
@@ -46,16 +62,8 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 			}
 		}
 
-		// logger.Debug("Occupied or button pressed. Computing on level percent ", zap.Float32("brightness", combinedLuxLevel(readState.AmbientBrightness)))
-		level, ok := computeOnLevelPercent(mode, readState, writeState)
-		// logger.Debug("Setting level.", zap.Float32("level", level))
-		if !ok {
-			logger.Debug("Not enough read information for daylight dimming calculations")
-			// todo: here we are in a position where daylight dimming is supposed to be enabled but we don't have enough
-			//  info to actually choose the output light level. We should probably not make any changes and wait for
-			//  more data to come in, but we'll leave that to future us as part of snagging.
-		}
-		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, level, logger, readState.Config.Lights...)
+		switchOn = true
+		return
 	}
 
 	// This code check when occupancy last reported unoccupied and only turns the lights off
@@ -71,15 +79,20 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 
 	if becameUnoccupied.IsZero() {
 		logger.Debug("Both time last unoccupied and last button press are zero.")
+		if hasOnlyButtons(readState.Config) {
+			logger.Debug("button-only space defaulting to off...")
+			switchOff = true
+			return
+		}
 	} else {
 		sinceUnoccupied := now.Sub(becameUnoccupied)
 		unoccupiedDelayBeforeDarkness := mode.UnoccupiedOffDelay.Duration
 
 		if sinceUnoccupied >= unoccupiedDelayBeforeDarkness {
 			// we've been unoccupied for long enough, turn things off now
-			offLevel := computeOffLevelPercent(mode)
-			logger.Debug("Occupancy expired. Setting level to zero", zap.Float32("offLevel", offLevel))
-			return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, offLevel, logger, readState.Config.Lights...)
+			logger.Debug("Occupancy expired. Switching off")
+			switchOff = true
+			return
 		} else {
 			// we haven't written anything, but in `unoccupiedDelayBeforeDarkness - sinceUnoccupied` time we will, let the
 			// caller know
@@ -90,7 +103,7 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	}
 
 	// no change
-	return rerunAfter, nil
+	return
 }
 
 const (
@@ -317,4 +330,10 @@ func closestThresholdBelow(lux float32, thresholds []config.LevelThreshold) (con
 		return thresholds[0], true
 	}
 	return config.LevelThreshold{}, false
+}
+
+func hasOnlyButtons(conf config.Root) bool {
+	hasAnyButtons := len(conf.OnButtons) > 0 || len(conf.OffButtons) > 0 || len(conf.ToggleButtons) > 0
+	hasAnySensors := len(conf.OccupancySensors) > 0
+	return hasAnyButtons && !hasAnySensors
 }

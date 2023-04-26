@@ -71,3 +71,25 @@ func updateBrightnessLevelIfNeeded(ctx context.Context, now time.Time, state *Wr
 	}
 	return nil
 }
+
+func refreshBrightnessLevel(ctx context.Context, now time.Time, state *WriteState, actions actions, logger *zap.Logger, names ...string) error {
+	for _, name := range names {
+		val, ok := state.Brightness[name]
+		if !ok {
+			continue
+		}
+
+		logger.Debug("refreshing brightness for light fitting",
+			zap.String("fitting name", name),
+			zap.Float32("level", val.Brightness.LevelPercent),
+		)
+		err := actions.UpdateBrightness(ctx, now, &traits.UpdateBrightnessRequest{
+			Name:       name,
+			Brightness: val.Brightness,
+		}, state)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
