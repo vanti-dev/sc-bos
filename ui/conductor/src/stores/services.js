@@ -31,7 +31,7 @@ export const useServicesStore = defineStore('services', () => {
       metadataTrackers[address][_serviceName] = newActionTracker();
     }
     if (!servicesCollections[address].hasOwnProperty(_serviceName)) {
-      servicesCollections[address][_serviceName] = newServicesCollection(service);
+      servicesCollections[address][_serviceName] = newServicesCollection(controllerName);
     }
     return {
       metadataTracker: metadataTrackers[address][_serviceName],
@@ -43,12 +43,13 @@ export const useServicesStore = defineStore('services', () => {
    * @param {string} service
    * @param {string} address
    * @param {string} controllerName
+   * @return {Promise<ServiceMetadata.AsObject>}
    */
-  async function refreshMetadata(service, address='', controllerName='') {
+  function refreshMetadata(service, address='', controllerName='') {
     console.debug('refreshMetadata', serviceName(controllerName, service));
-    await getServiceMetadata(
+    return getServiceMetadata(
         {name: serviceName(controllerName, service)},
-        await getService(service, address, controllerName).metadataTracker
+        getService(service, address, controllerName).metadataTracker
     );
   }
 

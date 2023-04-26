@@ -9,7 +9,7 @@
             {{ node.address }}
           </v-list-item>
           <v-list-item class="pa-0">
-            Automations: {{ node.automations?.metadataTracker?.response?.totalCount }}
+            Automations: {{ automationTrackers[node.name]?.metadataTracker?.response?.totalCount }}
           </v-list-item>
         </v-list>
       </v-card-text>
@@ -20,23 +20,31 @@
 
 <script setup>
 import {ServiceNames} from '@/api/ui/services';
+import {useErrorStore} from '@/components/ui-error/error';
 import {useHubStore} from '@/stores/hub';
 import {useServicesStore} from '@/stores/services';
-import {computed, reactive} from 'vue';
+import {computed, reactive, set} from 'vue';
 
 const hubStore = useHubStore();
 const servicesStore = useServicesStore();
+const errorStore = useErrorStore();
+
+const automationTrackers = reactive({});
 
 const nodesList = computed(() => {
   return Object.values(hubStore.nodesList).map(node => {
     console.debug('node', node);
-    const automations = reactive(
-        servicesStore.getService(ServiceNames.Automations, node.commsAddress, node.commsName)
-    );
-    servicesStore.refreshMetadata(ServiceNames.Automations, node.commsAddress, node.commsName);
+    Promise.all([node.commsAddress, node.commsName])
+        .then(([address, name]) => {
+          set(automationTrackers, node.name, servicesStore.getService(ServiceNames.Automations, address, name));
+          errorStore.registerTracker(automationTrackers[node.name].metadataTracker);
+          return servicesStore.refreshMetadata(ServiceNames.Automations, address, name);
+        })
+        .catch(e => {
+          // should be caught by error store
+        });
     return {
-      ...node,
-      automations
+      ...node
     };
   });
 });

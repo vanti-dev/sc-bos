@@ -1,13 +1,13 @@
 /**
  *
- * @param {Promise<string>} controllerName
+ * @param {string} controllerName
  * @param {string} serviceName
  * @return {string}
  */
-export async function serviceName(controllerName, serviceName) {
-  if (await controllerName === '') {
+export function serviceName(controllerName, serviceName) {
+  if (controllerName === '') {
     return serviceName;
   } else {
-    return await controllerName+ '/' + serviceName;
+    return controllerName+ '/' + serviceName;
   }
 }

@@ -25,7 +25,17 @@ export const useHubStore = defineStore('hub', () => {
     }
   }, {immediate: true});
 
+  /**
+   * @typedef {Object} Node
+   * @property {string} name - the Smart Core name of the node
+   * @property {string} address - the address of the node
+   * @property {string} description - a human-readable description of the node
+   * @property {string} commsAddress - the address to use to communicate with the node (based on proxy settings)
+   * @property {string} commsName - the name to use to communicate with the node (based on proxy settings)
+   */
+
   const nodesList = computed(() => {
+    /** @type {Record<string, Node>} */
     const nodes = {};
     Object.values(nodesListCollection?.value || {}).forEach((node, name) => {
       nodes[node.name] = {
