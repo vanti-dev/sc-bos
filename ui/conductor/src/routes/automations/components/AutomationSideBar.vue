@@ -12,24 +12,29 @@
 </template>
 
 <script setup>
-import SideBar from '@/components/SideBar.vue';
-import EditConfigCard from '@/routes/system/components/service-cards/EditConfigCard.vue';
-import LightsConfigCard from '@/routes/automations/components/config-cards/LightsConfigCard.vue';
-import {usePageStore} from '@/stores/page';
-import {storeToRefs} from 'pinia';
-import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 import {newActionTracker} from '@/api/resource';
 import {configureService, ServiceNames as ServiceTypes} from '@/api/ui/services';
+import SideBar from '@/components/SideBar.vue';
 import {useErrorStore} from '@/components/ui-error/error';
+import LightsConfigCard from '@/routes/automations/components/config-cards/LightsConfigCard.vue';
+import EditConfigCard from '@/routes/system/components/service-cards/EditConfigCard.vue';
+import {usePageStore} from '@/stores/page';
+import {serviceName} from '@/util/proxy';
+import {storeToRefs} from 'pinia';
+import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 
 const pageStore = usePageStore();
-const {sidebarData} = storeToRefs(pageStore);
+const {sidebarData, sidebarNode} = storeToRefs(pageStore);
 
 const saveTracker = reactive(/** @type {ActionTracker<Service.AsObject>} */ newActionTracker());
 const saveConfirm = ref(false);
 
 const automationType = computed(() => {
   return sidebarData.value?.config?.type ?? '';
+});
+
+const node = computed(() => {
+  return sidebarNode.value?.name;
 });
 
 // UI error handling
@@ -48,7 +53,7 @@ onUnmounted(() => {
  */
 async function saveConfig() {
   const req = {
-    name: ServiceTypes.Automations,
+    name: serviceName(node.value, ServiceTypes.Automations),
     id: sidebarData.value.id,
     configRaw: JSON.stringify(sidebarData.value.config, null, 2)
   };

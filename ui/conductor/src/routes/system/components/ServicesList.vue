@@ -64,7 +64,14 @@ const props = defineProps({
   }
 });
 
-const node = ref({name: ''});
+const node = computed({
+  get() {
+    return pageStore.sidebarNode;
+  },
+  set(val) {
+    pageStore.sidebarNode = val;
+  }
+});
 const search = ref('');
 
 const headers = [
