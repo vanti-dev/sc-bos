@@ -7,7 +7,7 @@ export const usePageStore = defineStore('page', () => {
   const sidebarTitle = ref('');
 
   // for use when targeting a specific node
-  const sidebarNode = ref({});
+  const sidebarNode = ref({name: ''});
 
   /**
    *

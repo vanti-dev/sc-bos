@@ -95,10 +95,6 @@ watch(() => node.value, (value) => {
   serviceCollection.value.query(props.name);
 }, {immediate: true});
 
-watch(() => hubStore.hubNode, (value) => {
-  node.value = value;
-}, {immediate: true});
-
 // UI error handling
 let unwatchErrors; let unwatchStartStopErrors;
 onMounted(() => {
