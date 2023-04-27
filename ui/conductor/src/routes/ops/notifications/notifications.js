@@ -1,12 +1,13 @@
 import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource';
 import {acknowledgeAlert, listAlerts, pullAlerts, unacknowledgeAlert} from '@/api/ui/alerts.js';
+import {useErrorStore} from '@/components/ui-error/error';
 import {useAccountStore} from '@/stores/account';
-import {useControllerStore} from '@/stores/controller';
+import {useAppConfigStore} from '@/stores/app-config';
+import {useHubStore} from '@/stores/hub';
 import {Collection} from '@/util/query.js';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
 import {acceptHMRUpdate, defineStore} from 'pinia';
 import {computed, onMounted, onUnmounted, reactive, set, watch} from 'vue';
-import {useErrorStore} from '@/components/ui-error/error';
 
 
 const SeverityStrings = {
@@ -23,15 +24,33 @@ const SeverityColor = {
 };
 
 export const useNotifications = defineStore('notifications', () => {
-  const controller = useControllerStore();
+  const appConfig = useAppConfigStore();
+  const hubStore = useHubStore();
 
   // holds all the alerts we can show
   const alerts = reactive(/** @type {ResourceCollection<Alert.AsObject, Alert>} */newResourceCollection());
   // tracks the fetching of a single page
   const fetchingPage = reactive(/** @type {ActionTracker<ListAlertsResponse.AsObject>} */ newActionTracker());
 
-  watch(() => controller.controllerName, async name => {
+  watch(() => appConfig.config, () => {
+    init();
+  }, {immediate: true});
+  watch(() => hubStore.hubNode, () => {
+    init();
+  }, {immediate: true});
+
+  /**
+   *
+   */
+  async function init() {
+    // check config is loaded
+    if (!appConfig.config) return;
+    // check hubNode is loaded if proxy is enabled
+    if (appConfig.config.proxy && !hubStore.hubNode) return;
+
     closeResource(alerts);
+    const name = appConfig.config.proxy? hubStore.hubNode.name : '';
+    console.debug('Fetching alert metadata for', name);
     pullAlerts({name}, alerts);
     try {
       const firstPage = await listAlerts({name, pageSize: 100, pageToken: undefined}, fetchingPage);
@@ -42,7 +61,7 @@ export const useNotifications = defineStore('notifications', () => {
     } catch (e) {
       console.warn('Error fetching first page', e);
     }
-  }, {immediate: true});
+  }
 
   // UI Error Handling
   const errorStore = useErrorStore();

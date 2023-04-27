@@ -9,7 +9,7 @@ import {computed, reactive, ref, set, watch} from 'vue';
 export const useHubStore = defineStore('hub', () => {
   const appConfig = useAppConfigStore();
   const nodesListCollection = reactive(newResourceCollection());
-  const hubNode = ref({});
+  const hubNode = ref();
 
   watch(() => appConfig.config, async config => {
     closeResource(nodesListCollection);
