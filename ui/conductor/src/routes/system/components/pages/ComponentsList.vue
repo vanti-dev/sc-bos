@@ -33,13 +33,18 @@ import {ServiceNames} from '@/api/ui/services';
 import {useErrorStore} from '@/components/ui-error/error';
 import {useHubStore} from '@/stores/hub';
 import {useServicesStore} from '@/stores/services';
-import {computed, reactive, set} from 'vue';
+import {computed, onUnmounted, reactive, set} from 'vue';
 
 const hubStore = useHubStore();
 const servicesStore = useServicesStore();
 const errorStore = useErrorStore();
 
 const nodeDetails = reactive({});
+
+const unwatchTrackers = [];
+onUnmounted(() => {
+  unwatchTrackers.forEach(unwatch => unwatch());
+});
 
 const nodesList = computed(() => {
   return Object.values(hubStore.nodesList).map(node => {
@@ -51,9 +56,9 @@ const nodesList = computed(() => {
             drivers: servicesStore.getService(ServiceNames.Drivers, address, name),
             systems: servicesStore.getService(ServiceNames.Systems, address, name)
           });
-          errorStore.registerTracker(nodeDetails[node.name].automations.metadataTracker);
-          errorStore.registerTracker(nodeDetails[node.name].drivers.metadataTracker);
-          errorStore.registerTracker(nodeDetails[node.name].systems.metadataTracker);
+          unwatchTrackers.push(errorStore.registerTracker(nodeDetails[node.name].automations.metadataTracker));
+          unwatchTrackers.push(errorStore.registerTracker(nodeDetails[node.name].drivers.metadataTracker));
+          unwatchTrackers.push(errorStore.registerTracker(nodeDetails[node.name].systems.metadataTracker));
           return Promise.all([
             servicesStore.refreshMetadata(ServiceNames.Automations, address, name),
             servicesStore.refreshMetadata(ServiceNames.Drivers, address, name),
