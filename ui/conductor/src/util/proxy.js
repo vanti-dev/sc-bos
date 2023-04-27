@@ -5,7 +5,7 @@
  * @return {string}
  */
 export function serviceName(controllerName, serviceName) {
-  if (controllerName === '') {
+  if (!controllerName || controllerName === '') {
     return serviceName;
   } else {
     return controllerName+ '/' + serviceName;

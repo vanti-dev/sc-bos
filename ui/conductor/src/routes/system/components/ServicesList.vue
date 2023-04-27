@@ -8,7 +8,6 @@
           item-text="name"
           item-value="name"
           hide-details="auto"
-          auto-select-first
           :loading="hubStore.nodesListCollection.loading ?? true"
           outlined/>
       <v-spacer/>
@@ -51,7 +50,6 @@ const errors = useErrorStore();
 const configStore = useAppConfigStore();
 const hubStore = useHubStore();
 
-const serviceCollection = reactive(serviceStore.getService(props.name).servicesCollection);
 const startStopTracker = reactive(newActionTracker());
 
 const props = defineProps({
@@ -66,7 +64,7 @@ const props = defineProps({
   }
 });
 
-const node = ref('');
+const node = ref({name: ''});
 const search = ref('');
 
 const headers = [
@@ -75,15 +73,19 @@ const headers = [
   {text: '', value: 'actions', align: 'end', width: '100'}
 ];
 
-// todo: this causes us to load all pages, connect with paging logic instead
-serviceCollection.needsMorePages = true;
+const serviceCollection = computed(() => {
+  const c = serviceStore.getService(props.name, node.value.address, node.value.name).servicesCollection;
+  // todo: this causes us to load all pages, connect with paging logic instead
+  c.needsMorePages = true;
+  return c;
+});
 
 // query watchers
 watch(() => props.name, (value) => {
-  runQuery();
+  serviceCollection.value.query(props.name);
 }, {immediate: true});
 watch(() => node.value, (value) => {
-  runQuery();
+  serviceCollection.value.query(props.name);
 }, {immediate: true});
 
 watch(() => hubStore.hubNode, (value) => {
@@ -99,19 +101,11 @@ onMounted(() => {
 onUnmounted(() => {
   if (unwatchErrors) unwatchErrors();
   if (unwatchStartStopErrors) unwatchStartStopErrors();
-  serviceCollection.reset();
+  serviceCollection.value.reset();
 });
 
-/**
- *
- */
-function runQuery() {
-  console.log('runQuery', props.name, node.value.name, serviceName(node.value.name || '', props.name));
-  serviceCollection.query(serviceName(node.value.name || '', props.name));
-}
-
 const serviceList = computed(() => {
-  return Object.values(serviceCollection.resources.value).filter(service => {
+  return Object.values(serviceCollection.value.resources.value).filter(service => {
     return props.type === '' || props.type === 'all' || service.type === props.type;
   });
 });
@@ -133,8 +127,8 @@ function showService(service, row) {
  * @param {Service.AsObject} service
  */
 async function _startService(service) {
-  console.debug('Starting:', service.id);
-  await startService({name: props.name, id: service.id}, startStopTracker);
+  console.debug('Starting:', serviceName(node.value.name, props.name), service.id);
+  await startService({name: serviceName(node.value.name, props.name), id: service.id}, startStopTracker);
 }
 
 /**
@@ -142,8 +136,8 @@ async function _startService(service) {
  * @param {Service.AsObject} service
  */
 async function _stopService(service) {
-  console.debug('Stopping:', service.id);
-  await stopService({name: props.name, id: service.id}, startStopTracker);
+  console.debug('Stopping:', serviceName(node.value.name, props.name), service.id);
+  await stopService({name: serviceName(node.value.name, props.name), id: service.id}, startStopTracker);
 }
 
 </script>
