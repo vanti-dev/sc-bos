@@ -14,8 +14,6 @@ export const useAppConfigStore = defineStore('appConfig', () => {
    * @private
    */
   const _defaultConfig = {
-    hub: false, // specifies if we're talking to a hub or an area controller
-    proxy: false, // specifies if we're using querying via an proxy (e.g. EdgeGateway) or not
     features: {
       'auth': {
         'users': true,
@@ -46,7 +44,9 @@ export const useAppConfigStore = defineStore('appConfig', () => {
       }
     },
     config: {
-      home: '/devices'
+      home: '/devices',
+      hub: false, // specifies if we're talking to a hub or an area controller
+      proxy: false // specifies if we're using querying via an proxy (e.g. EdgeGateway) or not
     }
   };
 
