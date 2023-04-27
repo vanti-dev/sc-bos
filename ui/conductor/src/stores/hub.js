@@ -4,11 +4,12 @@ import {getEnrollment} from '@/api/sc/traits/enrollment';
 import {listHubNodes, pullHubNodes} from '@/api/sc/traits/hub';
 import {useAppConfigStore} from '@/stores/app-config';
 import {defineStore} from 'pinia';
-import {computed, reactive, set, watch} from 'vue';
+import {computed, reactive, ref, set, watch} from 'vue';
 
 export const useHubStore = defineStore('hub', () => {
   const appConfig = useAppConfigStore();
   const nodesListCollection = reactive(newResourceCollection());
+  const hubNode = ref({});
 
   watch(() => appConfig.config, async config => {
     closeResource(nodesListCollection);
@@ -17,11 +18,12 @@ export const useHubStore = defineStore('hub', () => {
       pullHubNodes(nodesListCollection);
       try {
         if (!nodesListCollection.value) set(nodesListCollection, 'value', {});
-        const hubNode = await getEnrollment(newActionTracker());
-        set(nodesListCollection.value, hubNode.managerName, {
-          name: hubNode.managerName,
-          address: hubNode.managerAddress
-        });
+        const hub = await getEnrollment(newActionTracker());
+        hubNode.value = {
+          name: hub.managerName,
+          address: hub.managerAddress
+        };
+        set(nodesListCollection.value, hubNode.value.name, hubNode);
         const nodes = await listHubNodes(newActionTracker());
         for (const node of nodes.nodesList) {
           set(nodesListCollection.value, node.name, node);
@@ -45,7 +47,6 @@ export const useHubStore = defineStore('hub', () => {
     /** @type {Record<string, Node>} */
     const nodes = {};
     Object.values(nodesListCollection?.value || {}).forEach((node, name) => {
-      console.log('node', node);
       nodes[node.name] = {
         ...node,
         commsAddress: proxiedAddress(node.address),
@@ -87,6 +88,8 @@ export const useHubStore = defineStore('hub', () => {
   }
 
   return {
-    nodesList
+    nodesList,
+    hubNode,
+    nodesListCollection
   };
 });

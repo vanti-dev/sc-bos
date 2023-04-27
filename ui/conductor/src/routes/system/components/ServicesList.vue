@@ -1,5 +1,18 @@
 <template>
   <content-card>
+    <v-row class="pa-4" v-if="configStore.config?.hub">
+      <v-combobox
+          v-model="node"
+          :items="Object.values(hubStore.nodesList)"
+          label="System Component"
+          item-text="name"
+          item-value="name"
+          hide-details="auto"
+          auto-select-first
+          :loading="hubStore.nodesListCollection.loading ?? true"
+          outlined/>
+      <v-spacer/>
+    </v-row>
     <v-data-table
         :headers="headers"
         :items="serviceList"
@@ -21,17 +34,22 @@
 </template>
 
 <script setup>
-import ContentCard from '@/components/ContentCard.vue';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
-import {useServicesStore} from '@/stores/services';
-import {ServiceNames, startService, stopService} from '@/api/ui/services';
-import {usePageStore} from '@/stores/page';
 import {newActionTracker} from '@/api/resource';
+import {ServiceNames, startService, stopService} from '@/api/ui/services';
+import ContentCard from '@/components/ContentCard.vue';
 import {useErrorStore} from '@/components/ui-error/error';
+import {useAppConfigStore} from '@/stores/app-config';
+import {useHubStore} from '@/stores/hub';
+import {usePageStore} from '@/stores/page';
+import {useServicesStore} from '@/stores/services';
+import {serviceName} from '@/util/proxy';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const serviceStore = useServicesStore();
 const pageStore = usePageStore();
 const errors = useErrorStore();
+const configStore = useAppConfigStore();
+const hubStore = useHubStore();
 
 const serviceCollection = reactive(serviceStore.getService(props.name).servicesCollection);
 const startStopTracker = reactive(newActionTracker());
@@ -48,6 +66,7 @@ const props = defineProps({
   }
 });
 
+const node = ref('');
 const search = ref('');
 
 const headers = [
@@ -59,10 +78,18 @@ const headers = [
 // todo: this causes us to load all pages, connect with paging logic instead
 serviceCollection.needsMorePages = true;
 
-// setup query
+// query watchers
 watch(() => props.name, (value) => {
-  serviceCollection.query(props.name);
+  runQuery();
 }, {immediate: true});
+watch(() => node.value, (value) => {
+  runQuery();
+}, {immediate: true});
+
+watch(() => hubStore.hubNode, (value) => {
+  node.value = value;
+}, {immediate: true});
+
 // UI error handling
 let unwatchErrors; let unwatchStartStopErrors;
 onMounted(() => {
@@ -74,6 +101,14 @@ onUnmounted(() => {
   if (unwatchStartStopErrors) unwatchStartStopErrors();
   serviceCollection.reset();
 });
+
+/**
+ *
+ */
+function runQuery() {
+  console.log('runQuery', props.name, node.value.name, serviceName(node.value.name || '', props.name));
+  serviceCollection.query(serviceName(node.value.name || '', props.name));
+}
 
 const serviceList = computed(() => {
   return Object.values(serviceCollection.resources.value).filter(service => {
