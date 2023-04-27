@@ -80,20 +80,24 @@ const headers = [
   {text: '', value: 'actions', align: 'end', width: '100'}
 ];
 
-const serviceCollection = computed(() => {
-  const c = serviceStore.getService(props.name, node.value.address, node.value.name).servicesCollection;
-  // todo: this causes us to load all pages, connect with paging logic instead
-  c.needsMorePages = true;
-  return c;
-});
+const serviceCollection = ref({});
 
 // query watchers
-watch(() => props.name, (value) => {
+watch(() => props.name, async () => {
+  serviceCollection.value =
+      serviceStore.getService(props.name, await node.value.commsAddress, await node.value.commsName).servicesCollection;
   serviceCollection.value.query(props.name);
 }, {immediate: true});
-watch(() => node.value, (value) => {
+watch(node, async () => {
+  serviceCollection.value =
+      serviceStore.getService(props.name, await node.value.commsAddress, await node.value.commsName).servicesCollection;
   serviceCollection.value.query(props.name);
 }, {immediate: true});
+
+watch(serviceCollection, () => {
+  // todo: this causes us to load all pages, connect with paging logic instead
+  serviceCollection.value.needsMorePages = true;
+});
 
 // UI error handling
 let unwatchErrors; let unwatchStartStopErrors;
@@ -108,7 +112,7 @@ onUnmounted(() => {
 });
 
 const serviceList = computed(() => {
-  return Object.values(serviceCollection.value.resources.value).filter(service => {
+  return Object.values(serviceCollection.value?.resources?.value ?? []).filter(service => {
     return props.type === '' || props.type === 'all' || service.type === props.type;
   });
 });
@@ -131,7 +135,7 @@ function showService(service, row) {
  */
 async function _startService(service) {
   console.debug('Starting:', serviceName(node.value.name, props.name), service.id);
-  await startService({name: serviceName(node.value.name, props.name), id: service.id}, startStopTracker);
+  await startService({name: serviceName(await node.value.commsName, props.name), id: service.id}, startStopTracker);
 }
 
 /**
@@ -140,7 +144,7 @@ async function _startService(service) {
  */
 async function _stopService(service) {
   console.debug('Stopping:', serviceName(node.value.name, props.name), service.id);
-  await stopService({name: serviceName(node.value.name, props.name), id: service.id}, startStopTracker);
+  await stopService({name: serviceName(await node.value.commsName, props.name), id: service.id}, startStopTracker);
 }
 
 </script>
