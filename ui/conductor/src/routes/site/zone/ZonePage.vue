@@ -2,6 +2,7 @@
   <v-container fluid>
     <v-toolbar flat dense color="transparent" class="mb-3">
       <v-combobox
+          v-if="configStore.config?.hub"
           v-model="node"
           :items="Object.values(hubStore.nodesList)"
           label="System Component"
@@ -43,6 +44,7 @@ import {ServiceNames} from '@/api/ui/services';
 import DeviceTable from '@/routes/devices/components/DeviceTable.vue';
 import {Zone} from '@/routes/site/zone/zone';
 import ZoneMap from '@/routes/site/zone/ZoneMap.vue';
+import {useAppConfigStore} from '@/stores/app-config';
 import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
@@ -51,6 +53,7 @@ import {computed, ref, watch} from 'vue';
 
 const servicesStore = useServicesStore();
 const pageStore = usePageStore();
+const configStore = useAppConfigStore();
 const hubStore = useHubStore();
 const zoneCollection = ref();
 
