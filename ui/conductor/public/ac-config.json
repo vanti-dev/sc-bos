@@ -1,0 +1,30 @@
+{
+  "features": {
+    "auth": {
+      "users": false,
+      "third-party": true
+    },
+    "devices": {
+      "*": true
+    },
+    "ops": {
+      "emergency-lighting": true,
+      "notifications": true
+    },
+    "site": {
+      "zone": {
+        "*": true
+      }
+    },
+    "automations": {
+      "*": true
+    },
+    "system": {
+      "drivers": true,
+      "features": true
+    }
+  },
+  "config": {
+    "home": "/devices"
+  }
+}
