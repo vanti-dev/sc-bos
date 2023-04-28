@@ -3766,6 +3766,11 @@ vite-plugin-eslint@^1.8.1:
     "@types/eslint" "^8.4.5"
     rollup "^2.77.2"
 
+vite-plugin-git-revision@^0.1.9:
+  version "0.1.9"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/vite-plugin-git-revision/-/vite-plugin-git-revision-0.1.9.tgz#83a9d84ec814f76e09af87aed2e389cf4355a21a"
+  integrity sha512-gq4JxxMu6kZVizULpq5WU0MgW3raVq1OLQJljFv2W3wz99C6UwO3Zek3lVID5XAxYUgei91TepfLmVcqzxFxyA==
+
 vite@^3.0.0:
   version "3.0.9"
   resolved "https://registry.npmjs.org/vite/-/vite-3.0.9.tgz"

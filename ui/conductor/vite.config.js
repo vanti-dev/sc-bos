@@ -7,6 +7,7 @@ import Components from 'unplugin-vue-components/vite';
 import {fileURLToPath, URL} from 'url';
 import {defineConfig} from 'vite';
 import eslintPlugin from 'vite-plugin-eslint';
+import gitRevision from 'vite-plugin-git-revision';
 
 const _require = createRequire(import.meta.url);
 
@@ -27,6 +28,7 @@ for (const dep of ['@sc-bos/ui-gen']) {
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {},
   optimizeDeps: {
     include: optimizeDepsInclude
   },
@@ -43,6 +45,9 @@ export default defineConfig({
   plugins: [
     vue(),
     eslintPlugin(),
+    gitRevision({
+      versionCommand: 'describe --tags --always --match ui/*'
+    }),
     // can't fix imported var names, so tell eslint to ignore them
     // eslint-disable-next-line new-cap
     Components({
