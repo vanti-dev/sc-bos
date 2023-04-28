@@ -29,7 +29,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
       },
       'ops': {
         'overview': false,
-        'emergency-lighting': true,
+        'emergency-lighting': false,
         'notifications': true
       },
       'automations': {
