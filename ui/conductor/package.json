@@ -41,6 +41,7 @@
     "sass": "~1.32",
     "unplugin-vue-components": "^0.22.4",
     "vite": "^3.0.0",
-    "vite-plugin-eslint": "^1.8.1"
+    "vite-plugin-eslint": "^1.8.1",
+    "vite-plugin-git-revision": "^0.1.9"
   }
 }
