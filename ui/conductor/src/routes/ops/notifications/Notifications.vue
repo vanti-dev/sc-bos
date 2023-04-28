@@ -26,8 +26,8 @@
         <template #item.acknowledged="{ item }">
           <acknowledgement
               :ack="item.acknowledgement"
-              @acknowledge="notifications.setAcknowledged(true, item)"
-              @unacknowledge="notifications.setAcknowledged(false, item)"/>
+              @acknowledge="notifications.setAcknowledged(true, item, name)"
+              @unacknowledge="notifications.setAcknowledged(false, item, name)"/>
         </template>
       </v-data-table>
     </v-card>
@@ -35,6 +35,7 @@
 </template>
 <script setup>
 import {timestampToDate} from '@/api/convpb.js';
+import {useErrorStore} from '@/components/ui-error/error';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import Filters from '@/routes/ops/notifications/Filters.vue';
@@ -48,6 +49,7 @@ const alertMetadata = useAlertMetadata();
 
 const appConfig = useAppConfigStore();
 const hubStore = useHubStore();
+const errors = useErrorStore();
 
 const query = reactive({
   createdNotBefore: undefined,
@@ -82,6 +84,7 @@ const headers = computed(() => {
 });
 
 const alertsCollection = ref({});
+const name = computed(() => appConfig.config.proxy? hubStore.hubNode.name : '');
 
 watch(() => appConfig.config, () => {
   init();
@@ -89,6 +92,8 @@ watch(() => appConfig.config, () => {
 watch(() => hubStore.hubNode, () => {
   init();
 }, {immediate: true});
+
+let unwatchErrors;
 
 /**
  *
@@ -108,14 +113,18 @@ async function init() {
 watch(alertsCollection, () => {
   // todo: this causes all pages to be loaded, which is not ideal - connect with paging logic
   alertsCollection.value.needsMorePages = true;
+  unwatchErrors = errors.registerCollection(alertsCollection);
 });
 
 watch(query, () => {
   alertsCollection.value.query(query);
 }, {deep: true});
 
+
+// UI error handling
 onUnmounted(() => {
-  alertsCollection.value.reset(); // stop listening when the component is unmounted
+  if (unwatchErrors) unwatchErrors();
+  alertsCollection.value.reset();
 });
 
 const tableData = computed(() => {
