@@ -39,10 +39,15 @@ import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import Filters from '@/routes/ops/notifications/Filters.vue';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
-import {computed, onUnmounted, reactive, watch} from 'vue';
+import {useAppConfigStore} from '@/stores/app-config';
+import {useHubStore} from '@/stores/hub';
+import {computed, onUnmounted, reactive, ref, watch} from 'vue';
 
 const notifications = useNotifications();
 const alertMetadata = useAlertMetadata();
+
+const appConfig = useAppConfigStore();
+const hubStore = useHubStore();
 
 const query = reactive({
   createdNotBefore: undefined,
@@ -76,18 +81,45 @@ const headers = computed(() => {
   });
 });
 
-/** @type {Collection} */
-const collection = notifications.newCollection();
-collection.needsMorePages = true; // todo: this causes us to load all pages, connect with paging logic instead
+const alertsCollection = ref({});
 
-watch(query, () => collection.query(query), {deep: true, immediate: true});
+watch(() => appConfig.config, () => {
+  init();
+}, {immediate: true});
+watch(() => hubStore.hubNode, () => {
+  init();
+}, {immediate: true});
+
+/**
+ *
+ */
+async function init() {
+  // check config is loaded
+  if (!appConfig.config) return;
+  // check hubNode is loaded if proxy is enabled
+  if (appConfig.config.proxy && !hubStore.hubNode) return;
+
+  const name = appConfig.config.proxy? hubStore.hubNode.name : '';
+  alertsCollection.value = notifications.newCollection(name);
+  console.debug('Fetching alert metadata for', name, alertsCollection);
+  alertsCollection.value.query(query);
+}
+
+watch(alertsCollection, () => {
+  // todo: this causes all pages to be loaded, which is not ideal - connect with paging logic
+  alertsCollection.value.needsMorePages = true;
+});
+
+watch(query, () => {
+  alertsCollection.value.query(query);
+}, {deep: true});
 
 onUnmounted(() => {
-  collection.reset(); // stop listening when the component is unmounted
+  alertsCollection.value.reset(); // stop listening when the component is unmounted
 });
 
 const tableData = computed(() => {
-  return Object.values(collection.resources.value)
+  return Object.values(alertsCollection.value.resources?.value ?? [])
       .map(alert => ({
         ...alert,
         createTime: timestampToDate(alert.createTime),
