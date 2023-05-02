@@ -39,7 +39,9 @@
         <v-footer class="pa-0" style="background:transparent">
           <v-col class="pa-0">
             <v-divider/>
-            <p class="my-2 text-caption text-center neutral--text text--lighten-2">Smart Core {{ appVersion }}</p>
+            <p class="my-2 text-caption text-center neutral--text text--lighten-2">
+              Smart Core {{ appVersion }}
+            </p>
           </v-col>
         </v-footer>
       </template>
@@ -54,7 +56,7 @@
 <script setup>
 import AccountBtn from '@/components/AccountBtn.vue';
 import AppMenu from '@/components/AppMenu.vue';
-import {usePage} from '@/components/page.js';
+import {usePage} from '@/helpers/page.js';
 import ScLogo from '@/components/ScLogo.vue';
 import ErrorView from '@/components/ui-error/ErrorView.vue';
 import {useAccountStore} from '@/stores/account.js';

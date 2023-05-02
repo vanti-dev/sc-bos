@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import {usePage} from '@/components/page';
+import {usePage} from '@/helpers/page';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
 

@@ -1,4 +1,4 @@
-import SidebarPage from '@/components/page-layout/SidebarPage.vue';
+import SidebarPage from '@/layout/SidebarPage.vue';
 import {useAppConfigStore} from '@/stores/app-config';
 
 export default {

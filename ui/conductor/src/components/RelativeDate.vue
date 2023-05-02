@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import {DAY, useNow} from '@/components/now.js';
+import {DAY, useNow} from '@/helpers/now.js';
 import {format, milliseconds} from 'date-fns';
 import {computed} from 'vue';
 

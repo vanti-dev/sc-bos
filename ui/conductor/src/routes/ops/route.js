@@ -1,4 +1,4 @@
-import ChildOnlyPage from '@/components/page-layout/ChildOnlyPage.vue';
+import ChildOnlyPage from '@/layout/ChildOnlyPage.vue';
 import notifications from '@/routes/ops/notifications/route.js';
 
 import {route} from '@/util/router.js';

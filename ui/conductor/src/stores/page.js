@@ -13,10 +13,20 @@ export const usePageStore = defineStore('page', () => {
     showSidebar.value = !showSidebar.value;
   }
 
+  /**
+   *
+   */
+  function closeSidebar() {
+    toggleSidebar();
+    sidebarTitle.value = '';
+    sidebarData.value = {};
+  };
+
   return {
     showSidebar,
     sidebarData,
     sidebarTitle,
-    toggleSidebar
+    toggleSidebar,
+    closeSidebar
   };
 });
