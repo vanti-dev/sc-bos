@@ -4,7 +4,7 @@
       <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Temperature</v-subheader>
       <v-list-item v-for="(val, key) of airTempData" :key="key" class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">{{ camelToSentence(key) }}</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">{{ val }}</v-list-item-subtitle>
+        <v-list-item-subtitle class="text-capitalize font-weight-medium">{{ val }}</v-list-item-subtitle>
       </v-list-item>
     </v-list>
     <v-progress-linear
@@ -12,17 +12,13 @@
         class="mx-4 my-2"
         :value="tempProgress()"
         background-color="neutral lighten-1"
-        color="accent"/>
+        color="accent">
+      <template #default>
+        <strong class="white--text">{{ airTempData.currentTemp }}</strong>
+      </template>
+    </v-progress-linear>
     <v-card-actions class="px-4">
       <v-spacer/>
-      <v-btn
-          small
-          color="neutral lighten-1"
-          elevation="0"
-          @click="changeSetPoint(0.1)"
-          :disabled="(airTempValue.value?.temperatureSetPoint === undefined)">
-        Up
-      </v-btn>
       <v-btn
           small
           color="neutral lighten-1"
@@ -30,6 +26,14 @@
           @click="changeSetPoint(-0.1)"
           :disabled="(airTempValue.value?.temperatureSetPoint === undefined)">
         Down
+      </v-btn>
+      <v-btn
+          small
+          color="neutral lighten-1"
+          elevation="0"
+          @click="changeSetPoint(0.1)"
+          :disabled="(airTempValue.value?.temperatureSetPoint === undefined)">
+        Up
       </v-btn>
     </v-card-actions>
     <v-progress-linear color="primary" indeterminate :active="updateValue.loading"/>
@@ -112,20 +116,20 @@ const airTempData = computed(() => {
             data[key] = airTemperatureModeToString(value);
             break;
           }
-          case 'ambientTemperature': {
-            data['currentTemp'] = temperatureToString(value);
+          case 'ambientHumidity': {
+            data['humidity'] = (value * 100).toFixed(1) + '%';
             break;
           }
           case 'temperatureSetPoint': {
             data['setPoint'] = temperatureToString(value);
             break;
           }
-          case 'ambientHumidity': {
-            data['humidity'] = (value * 100).toFixed(1) + '%';
-            break;
-          }
           case 'dewPoint': {
             data[key] = temperatureToString(value);
+            break;
+          }
+          case 'ambientTemperature': {
+            data['currentTemp'] = temperatureToString(value);
             break;
           }
           default: {
@@ -138,7 +142,6 @@ const airTempData = computed(() => {
   }
   return {};
 });
-
 
 /**
  * @param {number} value
