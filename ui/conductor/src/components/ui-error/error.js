@@ -1,7 +1,7 @@
+import {statusCodeToString} from '@/components/ui-error/util';
+import {StatusCode} from 'grpc-web';
 import {defineStore} from 'pinia';
 import Vue, {computed, ref, watch} from 'vue';
-import {StatusCode} from 'grpc-web';
-import {statusCodeToString} from '@/components/ui-error/util';
 
 /**
  * @typedef {Object} UiError
@@ -91,7 +91,7 @@ export const useErrorStore = defineStore('error', () => {
         }
       });
     } else {
-      return watch(() => collection.resources.streamError, (error) => {
+      return watch(() => collection.resources?.streamError, (error) => {
         if (error && error.code !== StatusCode.OK) {
           addError(collection.resources, error);
         }

@@ -22,12 +22,13 @@
     },
     "system": {
       "drivers": true,
-      "features": true
+      "features": true,
+      "components": true
     }
   },
   "config": {
     "hub": true,
-    "proxy": true,
+    "proxy": false,
     "home": "/ops",
     "ops": {
       "buildingZone": "building"

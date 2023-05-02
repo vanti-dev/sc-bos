@@ -19,12 +19,17 @@
 </template>
 
 <script setup>
-import {useServicesStore} from '@/stores/services';
-import {computed, onMounted, ref} from 'vue';
 import {ServiceNames} from '@/api/ui/services';
+import {usePageStore} from '@/stores/page';
+import {useServicesStore} from '@/stores/services';
+import {storeToRefs} from 'pinia';
+import {computed, ref, watch} from 'vue';
 
 const serviceStore = useServicesStore();
-const metadataTracker = ref(serviceStore.getService(ServiceNames.Automations).metadataTracker);
+const pageStore = usePageStore();
+const {sidebarNode} = storeToRefs(pageStore);
+
+const metadataTracker = ref({});
 
 // filter out automations that have no instances, and map to {type, number} obj
 const automationTypeList = computed(() => {
@@ -44,7 +49,18 @@ const icon = ref({
   history: 'mdi-history'
 });
 
-onMounted(() => serviceStore.refreshMetadata(ServiceNames.Automations));
+watch(sidebarNode, async () => {
+  console.log('sidebarNode', sidebarNode);
+  metadataTracker.value = serviceStore.getService(
+      ServiceNames.Automations,
+      await sidebarNode.value.commsAddress,
+      await sidebarNode.value.commsName).metadataTracker;
+  await serviceStore.refreshMetadata(
+      ServiceNames.Automations,
+      await sidebarNode.value.commsAddress,
+      await sidebarNode.value.commsName);
+},
+{immediate: true});
 
 </script>
 

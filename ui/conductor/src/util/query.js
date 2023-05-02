@@ -9,15 +9,18 @@ export class Collection {
     this.listFn = listFn;
     this.pullFn = pullFn;
 
-    // _resources holds all the items we've fetched or updates via listFn or pullFn
-    this._resources = reactive(newResourceCollection());
-    // _fetchingPage tracks the fetching of the next page of results
-    this._fetchingPage = reactive(newActionTracker());
-
+    this.init();
     this._needsMorePages = false;
     this._nextPageToken = null;
 
     this._errors = useErrorStore();
+  }
+
+  init() {
+    // _resources holds all the items we've fetched or updates via listFn or pullFn
+    this._resources = reactive(newResourceCollection());
+    // _fetchingPage tracks the fetching of the next page of results
+    this._fetchingPage = reactive(newActionTracker());
   }
 
   query(q = undefined) {

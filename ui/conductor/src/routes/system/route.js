@@ -22,6 +22,12 @@ export default {
         default: () => import('./components/pages/FeaturesList.vue'),
         sidebar: () => import('./components/ServicesSideBar.vue')
       }
+    },
+    {
+      path: 'components',
+      components: {
+        default: () => import('./components/pages/ComponentsList.vue')
+      }
     }
   ],
   meta: {

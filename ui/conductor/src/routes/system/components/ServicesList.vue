@@ -1,5 +1,17 @@
 <template>
   <content-card>
+    <v-row class="pa-4" v-if="configStore.config?.hub">
+      <v-combobox
+          v-model="node"
+          :items="Object.values(hubStore.nodesList)"
+          label="System Component"
+          item-text="name"
+          item-value="name"
+          hide-details="auto"
+          :loading="hubStore.nodesListCollection.loading ?? true"
+          outlined/>
+      <v-spacer/>
+    </v-row>
     <v-data-table
         :headers="headers"
         :items="serviceList"
@@ -21,19 +33,23 @@
 </template>
 
 <script setup>
-import ContentCard from '@/components/ContentCard.vue';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
-import {useServicesStore} from '@/stores/services';
-import {ServiceNames, startService, stopService} from '@/api/ui/services';
-import {usePageStore} from '@/stores/page';
 import {newActionTracker} from '@/api/resource';
+import {ServiceNames, startService, stopService} from '@/api/ui/services';
+import ContentCard from '@/components/ContentCard.vue';
 import {useErrorStore} from '@/components/ui-error/error';
+import {useAppConfigStore} from '@/stores/app-config';
+import {useHubStore} from '@/stores/hub';
+import {usePageStore} from '@/stores/page';
+import {useServicesStore} from '@/stores/services';
+import {serviceName} from '@/util/proxy';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const serviceStore = useServicesStore();
 const pageStore = usePageStore();
 const errors = useErrorStore();
+const configStore = useAppConfigStore();
+const hubStore = useHubStore();
 
-const serviceCollection = reactive(serviceStore.getService(props.name).servicesCollection);
 const startStopTracker = reactive(newActionTracker());
 
 const props = defineProps({
@@ -48,6 +64,14 @@ const props = defineProps({
   }
 });
 
+const node = computed({
+  get() {
+    return pageStore.sidebarNode;
+  },
+  set(val) {
+    pageStore.sidebarNode = val;
+  }
+});
 const search = ref('');
 
 const headers = [
@@ -56,13 +80,31 @@ const headers = [
   {text: '', value: 'actions', align: 'end', width: '100'}
 ];
 
-// todo: this causes us to load all pages, connect with paging logic instead
-serviceCollection.needsMorePages = true;
+const serviceCollection = ref({});
 
-// setup query
-watch(() => props.name, (value) => {
-  serviceCollection.query(props.name);
+// query watchers
+watch(() => props.name, async () => {
+  if (serviceCollection.value.reset) serviceCollection.value.reset();
+  serviceCollection.value =
+      serviceStore.getService(props.name, await node.value.commsAddress, await node.value.commsName).servicesCollection;
+  // reinitialise in case this service collection has been previously reset;
+  serviceCollection.value.init();
+  serviceCollection.value.query(props.name);
 }, {immediate: true});
+watch(node, async () => {
+  if (serviceCollection.value.reset) serviceCollection.value.reset();
+  serviceCollection.value =
+      serviceStore.getService(props.name, await node.value.commsAddress, await node.value.commsName).servicesCollection;
+  serviceCollection.value.init();
+  serviceCollection.value.query(props.name);
+}, {immediate: true});
+
+
+watch(serviceCollection, () => {
+  // todo: this causes us to load all pages, connect with paging logic instead
+  serviceCollection.value.needsMorePages = true;
+});
+
 // UI error handling
 let unwatchErrors; let unwatchStartStopErrors;
 onMounted(() => {
@@ -72,11 +114,11 @@ onMounted(() => {
 onUnmounted(() => {
   if (unwatchErrors) unwatchErrors();
   if (unwatchStartStopErrors) unwatchStartStopErrors();
-  serviceCollection.reset();
+  serviceCollection.value.reset();
 });
 
 const serviceList = computed(() => {
-  return Object.values(serviceCollection.resources.value).filter(service => {
+  return Object.values(serviceCollection.value?.resources?.value ?? []).filter(service => {
     return props.type === '' || props.type === 'all' || service.type === props.type;
   });
 });
@@ -98,8 +140,8 @@ function showService(service, row) {
  * @param {Service.AsObject} service
  */
 async function _startService(service) {
-  console.debug('Starting:', service.id);
-  await startService({name: props.name, id: service.id}, startStopTracker);
+  console.debug('Starting:', serviceName(node.value.name, props.name), service.id);
+  await startService({name: serviceName(await node.value.commsName, props.name), id: service.id}, startStopTracker);
 }
 
 /**
@@ -107,8 +149,8 @@ async function _startService(service) {
  * @param {Service.AsObject} service
  */
 async function _stopService(service) {
-  console.debug('Stopping:', service.id);
-  await stopService({name: props.name, id: service.id}, startStopTracker);
+  console.debug('Stopping:', serviceName(node.value.name, props.name), service.id);
+  await stopService({name: serviceName(await node.value.commsName, props.name), id: service.id}, startStopTracker);
 }
 
 </script>
