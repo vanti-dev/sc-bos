@@ -13,8 +13,8 @@
         </span>
       </template>
       <template #item.actions="{item}">
-        <v-btn outlined v-if="item.active" @click.stop="_stopService(item)">Stop</v-btn>
-        <v-btn outlined v-else @click.stop="_startService(item)">Start</v-btn>
+        <v-btn outlined v-if="item.active" class="mr-1" color="red" @click.stop="_stopService(item)">Stop</v-btn>
+        <v-btn outlined v-else color="green" @click.stop="_startService(item)">Start</v-btn>
       </template>
     </v-data-table>
   </content-card>
