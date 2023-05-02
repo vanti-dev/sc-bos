@@ -16,7 +16,7 @@
               <v-col class="text-capitalize text-caption" cols="6">
                 {{ camelToSentence(key) }}:
               </v-col>
-              <v-col class="d-flex flex-column flex-nowrap justify-end ml-n3 font-weight-medium text-wrap">
+              <v-col class="d-flex flex-column flex-nowrap justify-end ml-n3 pt-4 font-weight-medium text-wrap">
                 {{ val }}
               </v-col>
             </v-row>
