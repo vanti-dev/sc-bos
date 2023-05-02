@@ -16,11 +16,21 @@ export const usePageStore = defineStore('page', () => {
     showSidebar.value = !showSidebar.value;
   }
 
+  /**
+   *
+   */
+  function closeSidebar() {
+    toggleSidebar();
+    sidebarTitle.value = '';
+    sidebarData.value = {};
+  };
+
   return {
     showSidebar,
     sidebarData,
     sidebarTitle,
     sidebarNode,
-    toggleSidebar
+    toggleSidebar,
+    closeSidebar
   };
 });
