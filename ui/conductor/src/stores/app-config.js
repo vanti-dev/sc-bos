@@ -6,6 +6,8 @@ export const useAppConfigStore = defineStore('appConfig', () => {
    * @private
    */
   const _config = ref({});
+  let _configResolve;
+  const configPromise = new Promise((resolve) => _configResolve = resolve);
 
   /**
    * The default config for the UI - this should mostly be targeted as though it was running on an Area Controller, as
@@ -46,7 +48,9 @@ export const useAppConfigStore = defineStore('appConfig', () => {
       }
     },
     config: {
-      home: '/devices'
+      home: '/devices',
+      hub: false, // specifies if we're talking to a hub or an area controller
+      proxy: false // specifies if we're using querying via an proxy (e.g. EdgeGateway) or not
     }
   };
 
@@ -63,6 +67,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
       console.warn('Failed to load config from server, using default config', e);
       _config.value = _defaultConfig;
     }
+    _configResolve(config.value);
   }
 
   /**
@@ -120,11 +125,14 @@ export const useAppConfigStore = defineStore('appConfig', () => {
     return false;
   }
 
+  const config = computed(() => _config.value?.config ?? {});
+
   return {
     loadConfig,
     enabledPaths,
     pathEnabled,
-    config: computed(() => _config.value?.config ?? {}),
+    config,
+    configPromise,
     homePath: computed(() => _config.value?.config?.home ?? _defaultConfig.config.home)
   };
 });

@@ -1,12 +1,8 @@
-import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource';
 import {acknowledgeAlert, listAlerts, pullAlerts, unacknowledgeAlert} from '@/api/ui/alerts.js';
 import {useAccountStore} from '@/stores/account';
-import {useControllerStore} from '@/stores/controller';
 import {Collection} from '@/util/query.js';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
 import {acceptHMRUpdate, defineStore} from 'pinia';
-import {computed, onMounted, onUnmounted, reactive, set, watch} from 'vue';
-import {useErrorStore} from '@/components/ui-error/error';
 
 
 const SeverityStrings = {
@@ -23,39 +19,6 @@ const SeverityColor = {
 };
 
 export const useNotifications = defineStore('notifications', () => {
-  const controller = useControllerStore();
-
-  // holds all the alerts we can show
-  const alerts = reactive(/** @type {ResourceCollection<Alert.AsObject, Alert>} */newResourceCollection());
-  // tracks the fetching of a single page
-  const fetchingPage = reactive(/** @type {ActionTracker<ListAlertsResponse.AsObject>} */ newActionTracker());
-
-  watch(() => controller.controllerName, async name => {
-    closeResource(alerts);
-    pullAlerts({name}, alerts);
-    try {
-      const firstPage = await listAlerts({name, pageSize: 100, pageToken: undefined}, fetchingPage);
-      for (const alert of firstPage.alertsList) {
-        set(alerts.value, alert.id, alert);
-      }
-      fetchingPage.response = null;
-    } catch (e) {
-      console.warn('Error fetching first page', e);
-    }
-  }, {immediate: true});
-
-  // UI Error Handling
-  const errorStore = useErrorStore();
-  let unwatchAlertErrors; let unwatchPageErrors;
-  onMounted(() => {
-    unwatchAlertErrors = errorStore.registerCollection(alerts);
-    unwatchPageErrors = errorStore.registerValue(fetchingPage);
-  });
-  onUnmounted(() => {
-    if (unwatchAlertErrors) unwatchAlertErrors();
-    if (unwatchPageErrors) unwatchPageErrors();
-  });
-
   /**
    *
    * @param {Severity} severity
@@ -80,8 +43,9 @@ export const useNotifications = defineStore('notifications', () => {
    *
    * @param {boolean} e
    * @param {Alert.AsObject} alert
+   * @param {string} name
    */
-  function setAcknowledged(e, alert) {
+  function setAcknowledged(e, alert, name='') {
     if (e) {
       let author = undefined;
       if (account.email || account.fullName) {
@@ -91,11 +55,11 @@ export const useNotifications = defineStore('notifications', () => {
         };
       }
       acknowledgeAlert({
-        name: controller.controllerName, id: alert.id, allowAcknowledged: false, allowMissing: false, author
+        name, id: alert.id, allowAcknowledged: false, allowMissing: false, author
       })
           .catch(err => console.error(err));
     } else {
-      unacknowledgeAlert({name: controller.controllerName, id: alert.id, allowAcknowledged: false, allowMissing: false})
+      unacknowledgeAlert({name, id: alert.id, allowAcknowledged: false, allowMissing: false})
           .catch(err => console.error(err));
     }
   }
@@ -111,26 +75,24 @@ export const useNotifications = defineStore('notifications', () => {
 
   /**
    *
+   * @param {string} name
    * @return {Collection}
    */
-  function newCollection() {
+  function newCollection(name='') {
     const listFn = async (query, tracker, pageToken, recordFn) => {
-      const page = await listAlerts({name: controller.controllerName, pageToken, query, pageSize: 100}, tracker);
+      const page = await listAlerts({name, pageToken, query, pageSize: 100}, tracker);
       for (const alert of page.alertsList) {
         recordFn(alert, alert.id);
       }
       return page.nextPageToken;
     };
     const pullFn = (query, resources) => {
-      pullAlerts({name: controller.controllerName, query}, resources);
+      pullAlerts({name, query}, resources);
     };
     return new Collection(listFn, pullFn);
   }
 
   return {
-    name,
-    alerts,
-    loading: computed(() => alerts.loading || fetchingPage.loading),
     newCollection,
     severityData,
     setAcknowledged,

@@ -10,19 +10,24 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
 import {useAppConfigStore} from '@/stores/app-config';
+import {computed} from 'vue';
 
 const menuItems = [
   {
     title: 'Drivers',
-    icon: 'mdi-memory',
+    icon: 'mdi-arrow-left-right-bold',
     link: {path: '/system/drivers'}
   },
   {
     title: 'Features',
     icon: 'mdi-tools',
     link: {path: '/system/features'}
+  },
+  {
+    title: 'Components',
+    icon: 'mdi-memory',
+    link: {path: '/system/components'}
   }
 ];
 

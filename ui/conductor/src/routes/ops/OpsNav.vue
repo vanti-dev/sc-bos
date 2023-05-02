@@ -19,8 +19,8 @@
         <v-list-item-title>{{ item.title }}</v-list-item-title>
       </v-list-item-content>
 
-      <v-chip class="font-weight-bold text primary" v-if="item.count?.value">
-        {{ item.count.value }}
+      <v-chip class="font-weight-bold text primary" v-if="item.count">
+        {{ counts[item.count] }}
       </v-chip>
     </v-list-item>
   </v-list>
@@ -29,16 +29,20 @@
 <script setup>
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import {useAppConfigStore} from '@/stores/app-config';
-import {computed, ref} from 'vue';
+import {computed, reactive} from 'vue';
 
 const alertMetadata = useAlertMetadata();
+
+const counts = reactive({
+  unacknowledgedAlertCount: computed(() => alertMetadata.unacknowledgedAlertCount)
+});
 
 const menuItems = [
   {
     title: 'Notifications',
     icon: 'mdi-bell-outline',
     link: {path: '/ops/notifications'},
-    count: ref(alertMetadata.unacknowledgedAlertCount)
+    count: 'unacknowledgedAlertCount'
   },
   {
     title: 'Emergency Lighting',

@@ -26,8 +26,8 @@
         <template #item.acknowledged="{ item }">
           <acknowledgement
               :ack="item.acknowledgement"
-              @acknowledge="notifications.setAcknowledged(true, item)"
-              @unacknowledge="notifications.setAcknowledged(false, item)"/>
+              @acknowledge="notifications.setAcknowledged(true, item, name)"
+              @unacknowledge="notifications.setAcknowledged(false, item, name)"/>
         </template>
       </v-data-table>
     </v-card>
@@ -35,14 +35,21 @@
 </template>
 <script setup>
 import {timestampToDate} from '@/api/convpb.js';
+import {useErrorStore} from '@/components/ui-error/error';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import Filters from '@/routes/ops/notifications/Filters.vue';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
-import {computed, onUnmounted, reactive, watch} from 'vue';
+import {useAppConfigStore} from '@/stores/app-config';
+import {useHubStore} from '@/stores/hub';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const notifications = useNotifications();
 const alertMetadata = useAlertMetadata();
+
+const appConfig = useAppConfigStore();
+const hubStore = useHubStore();
+const errors = useErrorStore();
 
 const query = reactive({
   createdNotBefore: undefined,
@@ -76,18 +83,57 @@ const headers = computed(() => {
   });
 });
 
-/** @type {Collection} */
-const collection = notifications.newCollection();
-collection.needsMorePages = true; // todo: this causes us to load all pages, connect with paging logic instead
+const alertsCollection = ref({});
+const name = computed(() => appConfig.config.proxy? hubStore.hubNode.name : '');
 
-watch(query, () => collection.query(query), {deep: true, immediate: true});
+onMounted(() => {
+  init();
+});
 
+let unwatchErrors;
+
+/**
+ *
+ */
+function init() {
+  // wait for config to load
+  return appConfig.configPromise.then(config => {
+    if (config.proxy) {
+      // wait for hub info to load
+      hubStore.hubPromise.then(hub => {
+        // query for notifications on the hub (via proxy)
+        console.debug('querying for notifications from ', hub.name);
+        alertsCollection.value = notifications.newCollection(hub.name);
+        alertsCollection.value.query(query);
+      });
+    } else {
+      // query for notifications on '' (current controller/node)
+      console.debug('querying for notifications from current node');
+      alertsCollection.value = notifications.newCollection();
+      alertsCollection.value.query(query);
+    }
+  });
+}
+
+watch(alertsCollection, () => {
+  // todo: this causes all pages to be loaded, which is not ideal - connect with paging logic
+  alertsCollection.value.needsMorePages = true;
+  unwatchErrors = errors.registerCollection(alertsCollection);
+});
+
+watch(query, () => {
+  alertsCollection.value.query(query);
+}, {deep: true});
+
+
+// UI error handling
 onUnmounted(() => {
-  collection.reset(); // stop listening when the component is unmounted
+  if (unwatchErrors) unwatchErrors();
+  alertsCollection.value.reset();
 });
 
 const tableData = computed(() => {
-  return Object.values(collection.resources.value)
+  return Object.values(alertsCollection.value.resources?.value ?? [])
       .map(alert => ({
         ...alert,
         createTime: timestampToDate(alert.createTime),

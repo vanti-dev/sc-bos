@@ -1,17 +1,39 @@
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullAlertMetadata} from '@/api/ui/alerts';
-import {useControllerStore} from '@/stores/controller';
-import {defineStore} from 'pinia';
-import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
 import {useErrorStore} from '@/components/ui-error/error';
+import {useAppConfigStore} from '@/stores/app-config';
+import {useHubStore} from '@/stores/hub';
+import {convertProtoMap} from '@/util/proto';
+import {defineStore} from 'pinia';
+import {computed, onMounted, onUnmounted, reactive} from 'vue';
 
 export const useAlertMetadata = defineStore('alertMetadata', () => {
-  const controller = useControllerStore();
   const alertMetadata = reactive(/** @type {ResourceValue<AlertMetadata.AsObject, AlertMetadata>} */newResourceValue());
-  watch(() => controller.controllerName, async name => {
-    closeResource(alertMetadata);
-    pullAlertMetadata({name, updatesOnly: false}, alertMetadata);
-  }, {immediate: true});
+  const appConfig = useAppConfigStore();
+  const hubStore = useHubStore();
+
+  onMounted(() => {
+    init();
+  });
+
+  /**
+   *
+   */
+  function init() {
+    // wait for config to load
+    return appConfig.configPromise.then(config => {
+      if (config.proxy) {
+        // wait for hub info to load
+        hubStore.hubPromise.then(hub => {
+          console.debug('Fetching alert metadata for', hub.name);
+          pullAlertMetadata({name: hub.name, updatesOnly: false}, alertMetadata);
+        });
+      } else {
+        console.debug('Fetching alert metadata for current node');
+        pullAlertMetadata({name: '', updatesOnly: false}, alertMetadata);
+      }
+    });
+  }
 
   // Ui Error Handling
   const errorStore = useErrorStore();
@@ -21,23 +43,8 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
   });
   onUnmounted(() => {
     if (unwatchErrors) unwatchErrors();
+    closeResource(alertMetadata);
   });
-
-  /**
-   * Converts a proto map, which is an array of [k,v] into a js object.
-   *
-   * @param {Array<[K,V]>} arr
-   * @return {Object<K,V>}
-   * @template K,V
-   */
-  function convertProtoMap(arr) {
-    if (!arr) return {};
-    const dst = {};
-    for (const [k, v] of arr || []) {
-      dst[k] = v;
-    }
-    return dst;
-  }
 
   const acknowledgedCountMap = computed(() => convertProtoMap(alertMetadata.value?.acknowledgedCountsMap));
   const floorCountsMap = computed(() => convertProtoMap(alertMetadata.value?.floorCountsMap));
