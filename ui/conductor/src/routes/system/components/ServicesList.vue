@@ -84,15 +84,21 @@ const serviceCollection = ref({});
 
 // query watchers
 watch(() => props.name, async () => {
+  if (serviceCollection.value.reset) serviceCollection.value.reset();
   serviceCollection.value =
       serviceStore.getService(props.name, await node.value.commsAddress, await node.value.commsName).servicesCollection;
+  // reinitialise in case this service collection has been previously reset;
+  serviceCollection.value.init();
   serviceCollection.value.query(props.name);
 }, {immediate: true});
 watch(node, async () => {
+  if (serviceCollection.value.reset) serviceCollection.value.reset();
   serviceCollection.value =
       serviceStore.getService(props.name, await node.value.commsAddress, await node.value.commsName).servicesCollection;
+  serviceCollection.value.init();
   serviceCollection.value.query(props.name);
 }, {immediate: true});
+
 
 watch(serviceCollection, () => {
   // todo: this causes us to load all pages, connect with paging logic instead
