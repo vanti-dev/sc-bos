@@ -25,8 +25,21 @@
         </span>
       </template>
       <template #item.actions="{item}">
-        <v-btn outlined v-if="item.active" @click.stop="_stopService(item)">Stop</v-btn>
-        <v-btn outlined v-else @click.stop="_startService(item)">Start</v-btn>
+        <v-btn
+            v-if="item.active"
+            outlined
+            color="red"
+            width="100%"
+            @click.stop="_stopService(item)">
+          Stop
+        </v-btn>
+        <v-btn
+            v-else
+            outlined
+            color="green"
+            @click.stop="_startService(item)">
+          Start
+        </v-btn>
       </template>
     </v-data-table>
   </content-card>
@@ -170,4 +183,8 @@ async function _stopService(service) {
 .v-data-table :deep(.item-selected) {
   background-color: var(--v-primary-darken4);
 }
+
+// .start-stop-btn {
+//   width: 100%;
+// }
 </style>
