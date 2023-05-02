@@ -10,6 +10,11 @@ export const useHubStore = defineStore('hub', () => {
   const appConfig = useAppConfigStore();
   const nodesListCollection = reactive(newResourceCollection());
   const hubNode = ref();
+  let _hubResolve; let _hubReject;
+  const hubPromise = new Promise((resolve, reject) => {
+    _hubResolve = resolve;
+    _hubReject = reject;
+  });
 
   watch(() => appConfig.config, async config => {
     closeResource(nodesListCollection);
@@ -28,8 +33,11 @@ export const useHubStore = defineStore('hub', () => {
         for (const node of nodes.nodesList) {
           set(nodesListCollection.value, node.name, node);
         }
+        console.debug('resolving hubPromise with', hubNode.value);
+        _hubResolve(hubNode.value);
       } catch (e) {
         console.warn('Error fetching first page', e);
+        _hubReject(e);
       }
     }
   }, {immediate: true});
@@ -90,6 +98,7 @@ export const useHubStore = defineStore('hub', () => {
   return {
     nodesList,
     hubNode,
+    hubPromise,
     nodesListCollection
   };
 });

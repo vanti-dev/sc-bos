@@ -42,7 +42,7 @@ import Filters from '@/routes/ops/notifications/Filters.vue';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import {useAppConfigStore} from '@/stores/app-config';
 import {useHubStore} from '@/stores/hub';
-import {computed, onUnmounted, reactive, ref, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const notifications = useNotifications();
 const alertMetadata = useAlertMetadata();
@@ -86,28 +86,33 @@ const headers = computed(() => {
 const alertsCollection = ref({});
 const name = computed(() => appConfig.config.proxy? hubStore.hubNode.name : '');
 
-watch(() => appConfig.config, () => {
+onMounted(() => {
   init();
-}, {immediate: true});
-watch(() => hubStore.hubNode, () => {
-  init();
-}, {immediate: true});
+});
 
 let unwatchErrors;
 
 /**
  *
  */
-async function init() {
-  // check config is loaded
-  if (!appConfig.config) return;
-  // check hubNode is loaded if proxy is enabled
-  if (appConfig.config.proxy && !hubStore.hubNode) return;
-
-  const name = appConfig.config.proxy? hubStore.hubNode.name : '';
-  alertsCollection.value = notifications.newCollection(name);
-  console.debug('Fetching alert metadata for', name, alertsCollection);
-  alertsCollection.value.query(query);
+function init() {
+  // wait for config to load
+  return appConfig.configPromise.then(config => {
+    if (config.proxy) {
+      // wait for hub info to load
+      hubStore.hubPromise.then(hub => {
+        // query for notifications on the hub (via proxy)
+        console.debug('querying for notifications from ', hub.name);
+        alertsCollection.value = notifications.newCollection(hub.name);
+        alertsCollection.value.query(query);
+      });
+    } else {
+      // query for notifications on '' (current controller/node)
+      console.debug('querying for notifications from current node');
+      alertsCollection.value = notifications.newCollection();
+      alertsCollection.value.query(query);
+    }
+  });
 }
 
 watch(alertsCollection, () => {
