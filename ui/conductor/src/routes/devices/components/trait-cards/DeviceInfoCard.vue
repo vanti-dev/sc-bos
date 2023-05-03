@@ -1,28 +1,46 @@
 <template>
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0" two-line>
-      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Information</v-subheader>
-      <v-list-item v-for="(val, key) in deviceInfo[0]" :key="key" class="py-1">
-        <v-list-item-title class="text-body-small text-capitalize">{{ camelToSentence(key) }}</v-list-item-title>
-        <v-list-item-subtitle class="py-1 font-weight-medium">{{ val }}</v-list-item-subtitle>
-      </v-list-item>
-      <v-list-item v-for="(subVal, subKey) in deviceInfo[1]" :key="subKey" class="pt-2">
-        <v-list-item-content class="py-0">
-          <v-list-item-title class="text-body-small text-capitalize">
-            {{ camelToSentence(subKey) }}
-          </v-list-item-title>
-          <v-list-item-subtitle v-for="(val, key) in subVal" :key="key" class="py-1">
-            <v-row class="d-flex flex-row flex-nowrap">
-              <v-col class="text-capitalize text-caption" cols="6">
-                {{ camelToSentence(key) }}:
-              </v-col>
-              <v-col class="d-flex flex-column flex-nowrap justify-end ml-n3 pt-4 font-weight-medium text-wrap">
-                {{ val }}
+      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">
+        Information
+      </v-subheader>
+
+      <v-col v-for="(val, key) in deviceInfo[0]" :key="key" class="pa-0" cols="align-self">
+        <v-list-item class="py-1">
+          <v-list-item-content class="py-0 pb-3">
+            <v-list-item-title class="text-body-small text-capitalize">
+              {{ camelToSentence(key) }}
+            </v-list-item-title>
+            <v-list-item-subtitle class="text-subtitle-1 py-1 font-weight-medium text-wrap ml-2">
+              {{ val }}
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </v-col>
+
+      <v-col v-for="(subValue, subKey) in deviceInfo[1]" :key="subKey" class="pa-0" cols="align-self">
+        <v-list-item class="py-1">
+          <v-list-item-content class="py-0 pb-3">
+            <v-list-item-title class="text-body-small text-capitalize">
+              {{ camelToSentence(subKey) }}
+            </v-list-item-title>
+            <v-row class="py-0">
+              <v-col v-for="(val, key) in subValue" :key="key" cols="align-self">
+                <v-list-item-subtitle class="py-1 mx-2">
+                  <v-col cols="align-self">
+                    <v-row class="text-capitalize text-caption">
+                      {{ camelToSentence(key) }}
+                    </v-row>
+                    <v-row class="text-subtitle-1">
+                      {{ val }}
+                    </v-row>
+                  </v-col>
+                </v-list-item-subtitle>
               </v-col>
             </v-row>
-          </v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
+          </v-list-item-content>
+        </v-list-item>
+      </v-col>
     </v-list>
   </v-card>
 </template>
@@ -36,53 +54,61 @@ import {computed} from 'vue';
 const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);
 
-// calculate deviceInfo based on sidebarData
 const deviceInfo = computed(() => {
+  // Initialize variables for info and subInfo
   const info = {};
-  let subInfo = {};
+  const subInfo = {};
+
+  // Check if sidebarData has metadata property
   if (sidebarData?.value?.metadata) {
+    // Get all properties of metadata as an array of [key, value] pairs
     const data = Object.entries(sidebarData.value.metadata);
-    // filter data
+
+    // Filter out properties that are traitsList or membership or empty arrays or undefined values
     const filtered = data.filter(([key, value]) => {
-      // don't display traits or membership
-      if (['traitsList', 'membership'].includes(key)) {
-        return false;
-      // ignore empty arrays
-      } else if (Array.isArray(value)) {
-        return value.length > 0;
-      }
-      // ignore undefined props
-      return value !== undefined;
+      const notIncluded = !['traitsList', 'membership'].includes(key);
+      const hasValue = Array.isArray(value) ? value.length > 0 : value !== undefined;
+      return notIncluded && hasValue;
     });
 
-    // expand and flatten data
+    // Flatten out the filtered data
     filtered.forEach(([key, value]) => {
-      if (key === 'location') {
-        info['zone'] = value.title;
-        if (value.moreMap.length) {
-          for (const more of sidebarData.value.metadata.location.moreMap) {
-            info[more[0]] = more[1];
-          }
-        }
-      } else {
-        // any inner-object to be flattened
-        if (typeof value === 'object') {
-          // if there is no sub info yet then add
-          if (!subInfo.length) subInfo = {[key]: {}};
-          // loop through the object for inner values
-          for (const subVal in value) {
-            // if we find actual data then collect them
-            if (value.hasOwnProperty(subVal) && value[subVal] && subVal !== 'moreMap') {
-              subInfo[key] = {...subInfo[key], [subVal]: value[subVal]};
-            }
-          };
-        } else {
+      // If value is not empty
+      if (value) {
+        // If value is not an object
+        if (typeof value !== 'object') {
           info[key] = value;
+        } else {
+          // If key is location
+          if (key === 'location') {
+            // Set zone value if it exists
+            info['zone'] = value?.zone ? value.zone : value.title;
+            // Add any properties from moreMap array to info object
+            if (value.moreMap.length) {
+              for (const more of sidebarData.value.metadata.location.moreMap) {
+                info[more[0]] = more[1];
+              }
+            }
+          } else {
+            // Loop through the object for inner values
+            for (const subValue in value) {
+              // If subValue and is not moreMap and has a value
+              if (subValue && value[subValue] && subValue !== 'moreMap') {
+                // If subInfo[key] does not exist, create it
+                if (!subInfo[key]) {
+                  subInfo[key] = {};
+                }
+                // Add subValue and its value to subInfo[key]
+                subInfo[key][subValue] = value[subValue];
+              }
+            };
+          };
         }
       }
     });
   }
 
+  // Return info and subInfo objects within an array
   return [info, subInfo];
 });
 
