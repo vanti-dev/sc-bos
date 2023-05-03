@@ -76,12 +76,15 @@ func decideAction(now time.Time, readState *ReadState, writeState *WriteState, l
 	if buttonOnTime := writeState.LastButtonOnTime; buttonOnTime.After(becameUnoccupied) {
 		becameUnoccupied = buttonOnTime
 	}
-	if readState.AutoStartTime.After(becameUnoccupied) {
+	if becameUnoccupied.IsZero() {
 		// we don't know when the lights were last switched on, but we know it must have been before the automation
 		// started, so we can use this time
 		becameUnoccupied = readState.AutoStartTime
 		logger.Debug("Both time last unoccupied and last button press are zero; assuming start time",
 			zap.Time("becameUnoccupied", becameUnoccupied))
+	}
+	if becameUnoccupied.After(now) {
+		logger.Warn("last recorded occupancy time is in the future")
 	}
 
 	sinceUnoccupied := now.Sub(becameUnoccupied)
