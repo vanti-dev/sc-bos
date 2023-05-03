@@ -20,18 +20,20 @@ import (
 
 func Test_processState(t *testing.T) {
 	now := time.Unix(0, 0)
+	autoStartTime := now.Add(-time.Hour)
+
 	t.Run("empty", func(t *testing.T) {
-		readState := NewReadState(now)
+		readState := NewReadState(autoStartTime)
 		writeState := NewWriteState()
 		actions := newTestActions(t)
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		assertNoTTLOrErr(t, ttl, err)
+		assertNoErrAndTtl(t, ttl, err, 0)
 		actions.assertNoMoreCalls()
 	})
 
 	t.Run("turn on when occupied", func(t *testing.T) {
-		readState := NewReadState(now)
+		readState := NewReadState(autoStartTime)
 		writeState := NewWriteState()
 		actions := newTestActions(t)
 
@@ -41,7 +43,7 @@ func Test_processState(t *testing.T) {
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		assertNoTTLOrErr(t, ttl, err)
+		assertNoErrAndTtl(t, ttl, err, 0)
 		actions.assertNextCall(&traits.UpdateBrightnessRequest{
 			Name: "light01",
 			Brightness: &traits.Brightness{
@@ -52,25 +54,27 @@ func Test_processState(t *testing.T) {
 	})
 
 	t.Run("ignore non-relevant occupancy", func(t *testing.T) {
-		readState := NewReadState(now)
+		readState := testReadState(autoStartTime, now)
 		writeState := NewWriteState()
 		actions := newTestActions(t)
 
+		// to ensure the automation start time doesn't consider it unoccupied
+		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 2 * time.Hour}
 		readState.Config.OccupancySensors = []string{"pir02"}
 		readState.Config.Lights = []string{"light01"}
 		readState.Occupancy["pir01"] = &traits.Occupancy{State: traits.Occupancy_OCCUPIED}
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		assertNoTTLOrErr(t, ttl, err)
+		// automation start time should expire after one hour
+		assertNoErrAndTtl(t, ttl, err, time.Hour)
 		actions.assertNoMoreCalls()
 	})
 
 	t.Run("turns lights off when unoccupied", func(t *testing.T) {
-		readState := NewReadState(now)
+		readState := testReadState(autoStartTime, now)
 		writeState := NewWriteState()
 		actions := newTestActions(t)
-		now := time.Unix(0, 0)
 
 		readState.Config.Now = func() time.Time { return now }
 		readState.Config.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
@@ -84,7 +88,7 @@ func Test_processState(t *testing.T) {
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 
-		assertNoTTLOrErr(t, ttl, err)
+		assertNoErrAndTtl(t, ttl, err, 0)
 		actions.assertNextCall(&traits.UpdateBrightnessRequest{
 			Name: "light01",
 			Brightness: &traits.Brightness{
@@ -94,7 +98,7 @@ func Test_processState(t *testing.T) {
 		actions.assertNoMoreCalls()
 	})
 	t.Run("pir ttl", func(t *testing.T) {
-		readState := NewReadState(now)
+		readState := testReadState(autoStartTime, now)
 		writeState := NewWriteState()
 		actions := newTestActions(t)
 		now := time.Unix(0, 0)
@@ -166,7 +170,7 @@ func Test_processState(t *testing.T) {
 
 				logger, _ := zap.NewDevelopment()
 				ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-				assertNoTTLOrErr(t, ttl, err)
+				assertNoErrAndTtl(t, ttl, err, 0)
 				actions.assertNextCall(&traits.UpdateBrightnessRequest{
 					Name: "light01",
 					Brightness: &traits.Brightness{
@@ -330,7 +334,7 @@ func Test_processState(t *testing.T) {
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		assertNoTTLOrErr(t, ttl, err)
+		assertNoErrAndTtl(t, ttl, err, 0)
 
 		actions.assertNoMoreCalls()
 	})
@@ -359,7 +363,7 @@ func Test_processState(t *testing.T) {
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		assertNoTTLOrErr(t, ttl, err)
+		assertNoErrAndTtl(t, ttl, err, 0)
 
 		actions.assertNoMoreCalls()
 	})
@@ -388,7 +392,7 @@ func Test_processState(t *testing.T) {
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		assertNoTTLOrErr(t, ttl, err)
+		assertNoErrAndTtl(t, ttl, err, 0)
 
 		actions.assertNoMoreCalls()
 	})
@@ -535,7 +539,7 @@ func Test_processState(t *testing.T) {
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		assertNoTTLOrErr(t, ttl, err)
+		assertNoErrAndTtl(t, ttl, err, 0)
 
 		actions.assertNextCall(&traits.UpdateBrightnessRequest{
 			Name: "light01",
@@ -547,8 +551,7 @@ func Test_processState(t *testing.T) {
 	})
 
 	t.Run("off button pressed and off", func(t *testing.T) {
-		now := time.Unix(0, 0)
-		readState := NewReadState(now)
+		readState := testReadState(autoStartTime, now)
 		writeState := NewWriteState()
 		actions := newTestActions(t)
 
@@ -570,14 +573,13 @@ func Test_processState(t *testing.T) {
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		assertNoTTLOrErr(t, ttl, err)
+		assertNoErrAndTtl(t, ttl, err, 0)
 
 		actions.assertNoMoreCalls()
 	})
 
 	t.Run("button ttl", func(t *testing.T) {
-		now := time.Unix(0, 0)
-		readState := NewReadState(now)
+		readState := testReadState(autoStartTime, now)
 		writeState := NewWriteState()
 		actions := newTestActions(t)
 
@@ -600,8 +602,7 @@ func Test_processState(t *testing.T) {
 	})
 
 	t.Run("button+pir ttl, button last", func(t *testing.T) {
-		now := time.Unix(0, 0)
-		readState := NewReadState(now)
+		readState := testReadState(autoStartTime, now)
 		writeState := NewWriteState()
 		actions := newTestActions(t)
 
@@ -629,8 +630,7 @@ func Test_processState(t *testing.T) {
 	})
 
 	t.Run("button+pir ttl, pir last", func(t *testing.T) {
-		now := time.Unix(0, 0)
-		readState := NewReadState(now)
+		readState := testReadState(autoStartTime, now)
 		writeState := NewWriteState()
 		actions := newTestActions(t)
 
@@ -658,8 +658,7 @@ func Test_processState(t *testing.T) {
 	})
 
 	t.Run("button+pir ttl, both old", func(t *testing.T) {
-		now := time.Unix(0, 0)
-		readState := NewReadState(now)
+		readState := testReadState(autoStartTime, now)
 		writeState := NewWriteState()
 		actions := newTestActions(t)
 
@@ -677,7 +676,7 @@ func Test_processState(t *testing.T) {
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		assertNoTTLOrErr(t, ttl, err)
+		assertNoErrAndTtl(t, ttl, err, 0)
 		actions.assertNextCall(&traits.UpdateBrightnessRequest{
 			Name: "light01",
 			Brightness: &traits.Brightness{
@@ -703,7 +702,7 @@ func Test_processState(t *testing.T) {
 
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
-		assertNoTTLOrErr(t, ttl, err)
+		assertNoErrAndTtl(t, ttl, err, 0)
 		actions.assertNextCall(&traits.UpdateBrightnessRequest{
 			Name: "light01",
 			Brightness: &traits.Brightness{
@@ -735,7 +734,7 @@ func Test_processState(t *testing.T) {
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
 
-		assertNoTTLOrErr(t, ttl, err)
+		assertNoErrAndTtl(t, ttl, err, 0)
 		actions.assertNextCall(&traits.UpdateBrightnessRequest{
 			Name: "light01",
 			Brightness: &traits.Brightness{
@@ -805,9 +804,9 @@ func Test_processState(t *testing.T) {
 	})
 }
 
-func assertNoTTLOrErr(t *testing.T, ttl time.Duration, err error) {
-	if ttl != 0 {
-		t.Fatalf("TTL want 0, got %v", ttl)
+func assertNoErrAndTtl(t *testing.T, ttl time.Duration, err error, targetTtl time.Duration) {
+	if ttl != targetTtl {
+		t.Fatalf("TTL want %v, got %v", targetTtl, ttl)
 	}
 	if err != nil {
 		t.Fatalf("Error want <nil>, got %v", err)
@@ -932,4 +931,12 @@ func Test_activeMode(t *testing.T) {
 			}
 		})
 	}
+}
+
+func testReadState(start time.Time, now time.Time) *ReadState {
+	rs := NewReadState(start)
+	rs.Config.Now = func() time.Time {
+		return now
+	}
+	return rs
 }

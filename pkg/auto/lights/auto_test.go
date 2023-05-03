@@ -14,6 +14,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
+
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -48,10 +49,11 @@ func TestPirsTurnLightsOn(t *testing.T) {
 
 	testActions := newTestActions(t)
 
+	now := time.Unix(0, 0)
+
 	automation := PirsTurnLightsOn(clients, zap.NewNop())
 	automation.makeActions = func(_ node.Clienter) (actions, error) { return testActions, nil }
-
-	now := time.Unix(0, 0)
+	automation.autoStartTime = now
 
 	cfg := config.Default()
 	cfg.Now = func() time.Time { return now }
@@ -99,7 +101,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		}
 		return o.State == traits.Occupancy_OCCUPIED
 	})
-	assertNoTTLOrErr(t, ttl, err)
+	assertNoErrAndTtl(t, ttl, err, 0)
 
 	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
 		Name: "light01",
@@ -123,7 +125,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		}
 		return o.State == traits.Occupancy_OCCUPIED
 	})
-	assertNoTTLOrErr(t, ttl, err)
+	assertNoErrAndTtl(t, ttl, err, 0)
 	testActions.assertNoMoreCalls()
 
 	// check that making both PIRs unoccupied doesn't do anything, but then does
@@ -143,8 +145,8 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		}
 		return o01.State == traits.Occupancy_UNOCCUPIED && o02.State == traits.Occupancy_UNOCCUPIED
 	})
-	if ttl != 7*time.Minute {
-		t.Fatalf("TTL want %v, got %v", 5*time.Minute, ttl)
+	if want := 7 * time.Minute; ttl != want {
+		t.Fatalf("TTL want %v, got %v", want, ttl)
 	}
 	if err != nil {
 		t.Fatalf("Got error %v", err)
@@ -155,7 +157,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	ttl, err = waitForState(func(state *ReadState) bool {
 		return true // no state change, only time change
 	})
-	assertNoTTLOrErr(t, ttl, err)
+	assertNoErrAndTtl(t, ttl, err, 0)
 	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
 		Name: "light01",
 		Brightness: &traits.Brightness{

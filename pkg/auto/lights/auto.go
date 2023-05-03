@@ -24,8 +24,9 @@ type BrightnessAutomation struct {
 	// bus emits "stop" and "config" events triggered by Stop and Configure.
 	bus *emitter.Emitter
 
-	makeActions func(clienter node.Clienter) (actions, error)                // override for testing
-	newTimer    func(duration time.Duration) (<-chan time.Time, func() bool) // override for testing
+	makeActions   func(clienter node.Clienter) (actions, error)                // override for testing
+	newTimer      func(duration time.Duration) (<-chan time.Time, func() bool) // override for testing
+	autoStartTime time.Time                                                    // override for testing
 }
 
 // PirsTurnLightsOn creates an automation that controls light brightness based on PIR occupancy status.
@@ -91,7 +92,11 @@ func (b *BrightnessAutomation) Start(_ context.Context) error {
 	// readStates receives state that should be processed, for example to work out if lights should be turned on.
 	// readStates is how state changes are communicates to the func that processes those state changes.
 	readStates := make(chan *ReadState)
-	initialState := NewReadState(time.Now())
+	startTime := time.Now()
+	if !b.autoStartTime.IsZero() {
+		startTime = b.autoStartTime
+	}
+	initialState := NewReadState(startTime)
 
 	// collect and collate the state changes
 	group.Go(func() error {
