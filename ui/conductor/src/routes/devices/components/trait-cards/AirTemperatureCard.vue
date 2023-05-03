@@ -4,7 +4,7 @@
       <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Temperature</v-subheader>
       <v-list-item v-for="(val, key) of airTempData" :key="key" class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">{{ camelToSentence(key) }}</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">{{ val }}</v-list-item-subtitle>
+        <v-list-item-subtitle class="text-capitalize font-weight-medium">{{ val }}</v-list-item-subtitle>
       </v-list-item>
     </v-list>
     <v-progress-linear
@@ -19,17 +19,17 @@
           small
           color="neutral lighten-1"
           elevation="0"
-          @click="changeSetPoint(0.1)"
+          @click="changeSetPoint(-0.1)"
           :disabled="(airTempValue.value?.temperatureSetPoint === undefined)">
-        Up
+        Down
       </v-btn>
       <v-btn
           small
           color="neutral lighten-1"
           elevation="0"
-          @click="changeSetPoint(-0.1)"
+          @click="changeSetPoint(0.1)"
           :disabled="(airTempValue.value?.temperatureSetPoint === undefined)">
-        Down
+        Up
       </v-btn>
     </v-card-actions>
     <v-progress-linear color="primary" indeterminate :active="updateValue.loading"/>

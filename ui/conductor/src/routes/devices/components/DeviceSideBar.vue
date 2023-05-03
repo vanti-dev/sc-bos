@@ -1,11 +1,17 @@
 <template>
   <side-bar>
     <device-info-card/>
+    <v-divider v-if="traits['smartcore.traits.AirTemperature']" class="mt-4 mb-1"/>
     <air-temperature-card :name="deviceId" v-if="traits['smartcore.traits.AirTemperature']"/>
+    <v-divider v-if="traits['smartcore.traits.Light']" class="mt-4 mb-1"/>
     <light-card :name="deviceId" v-if="traits['smartcore.traits.Light']"/>
+    <v-divider v-if="traits['smartcore.traits.OccupancySensor']" class="mt-4 mb-1"/>
     <occupancy-card :name="deviceId" v-if="traits['smartcore.traits.OccupancySensor']"/>
+    <v-divider v-if="traits['smartcore.bsp.EmergencyLight']" class="mt-4 mb-1"/>
     <emergency-light :name="deviceId" v-if="traits['smartcore.bsp.EmergencyLight']"/>
+    <v-divider v-if="traits['smartcore.traits.Mode']" class="mt-4 mb-1"/>
     <mode-card :name="deviceId" v-if="traits['smartcore.traits.Mode']"/>
+    <v-divider v-if="traits['smartcore.bos.UDMI']" class="mt-4 mb-1"/>
     <udmi-card :name="deviceId" v-if="traits['smartcore.bos.UDMI']"/>
   </side-bar>
 </template>
