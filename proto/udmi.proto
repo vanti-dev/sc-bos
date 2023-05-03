@@ -16,6 +16,10 @@ service UdmiService {
   rpc OnMessage(OnMessageRequest) returns (OnMessageResponse);
   // PullExportMessages, which are to be published to the MQTT broker for data export
   rpc PullExportMessages(PullExportMessagesRequest) returns (stream PullExportMessagesResponse);
+  // GetExportMessage returns a single MqttMessage.
+  // Servers may return the last message returned by PullExportMessages, or collect data explicitly to return.
+  // If the server does not have a message to return, it may return an Unavailable error.
+  rpc GetExportMessage(GetExportMessageRequest) returns (MqttMessage);
 }
 
 message PullControlTopicsRequest {
@@ -38,11 +42,17 @@ message OnMessageResponse {
 
 message PullExportMessagesRequest {
   string name = 1;
+  // When true the last sent message will be sent immediately as the first message in the response stream.
+  bool include_last = 2;
 }
 
 message PullExportMessagesResponse {
   string name = 1;
   MqttMessage message = 2;
+}
+
+message GetExportMessageRequest {
+  string name = 1;
 }
 
 message MqttMessage {

@@ -25,6 +25,13 @@ export class UdmiServiceClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<udmi_pb.PullExportMessagesResponse>;
 
+  getExportMessage(
+    request: udmi_pb.GetExportMessageRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: udmi_pb.MqttMessage) => void
+  ): grpcWeb.ClientReadableStream<udmi_pb.MqttMessage>;
+
 }
 
 export class UdmiServicePromiseClient {
@@ -46,6 +53,11 @@ export class UdmiServicePromiseClient {
     request: udmi_pb.PullExportMessagesRequest,
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<udmi_pb.PullExportMessagesResponse>;
+
+  getExportMessage(
+    request: udmi_pb.GetExportMessageRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<udmi_pb.MqttMessage>;
 
 }
 

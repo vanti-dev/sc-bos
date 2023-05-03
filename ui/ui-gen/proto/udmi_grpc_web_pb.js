@@ -248,5 +248,66 @@ proto.smartcore.bos.UdmiServicePromiseClient.prototype.pullExportMessages =
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.GetExportMessageRequest,
+ *   !proto.smartcore.bos.MqttMessage>}
+ */
+const methodDescriptor_UdmiService_GetExportMessage = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.UdmiService/GetExportMessage',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.GetExportMessageRequest,
+  proto.smartcore.bos.MqttMessage,
+  /**
+   * @param {!proto.smartcore.bos.GetExportMessageRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.MqttMessage.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.GetExportMessageRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.MqttMessage)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.MqttMessage>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.UdmiServiceClient.prototype.getExportMessage =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.UdmiService/GetExportMessage',
+      request,
+      metadata || {},
+      methodDescriptor_UdmiService_GetExportMessage,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.GetExportMessageRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.MqttMessage>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.UdmiServicePromiseClient.prototype.getExportMessage =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.UdmiService/GetExportMessage',
+      request,
+      metadata || {},
+      methodDescriptor_UdmiService_GetExportMessage);
+};
+
+
 module.exports = proto.smartcore.bos;
 

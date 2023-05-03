@@ -204,3 +204,12 @@ func (r *UdmiServiceRouter) PullExportMessages(request *PullExportMessagesReques
 		return err
 	}
 }
+
+func (r *UdmiServiceRouter) GetExportMessage(ctx context.Context, request *GetExportMessageRequest) (*MqttMessage, error) {
+	child, err := r.GetUdmiServiceClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.GetExportMessage(ctx, request)
+}

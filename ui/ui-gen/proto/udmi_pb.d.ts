@@ -90,6 +90,9 @@ export class PullExportMessagesRequest extends jspb.Message {
   getName(): string;
   setName(value: string): PullExportMessagesRequest;
 
+  getIncludeLast(): boolean;
+  setIncludeLast(value: boolean): PullExportMessagesRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PullExportMessagesRequest.AsObject;
   static toObject(includeInstance: boolean, msg: PullExportMessagesRequest): PullExportMessagesRequest.AsObject;
@@ -101,6 +104,7 @@ export class PullExportMessagesRequest extends jspb.Message {
 export namespace PullExportMessagesRequest {
   export type AsObject = {
     name: string,
+    includeLast: boolean,
   }
 }
 
@@ -125,6 +129,24 @@ export namespace PullExportMessagesResponse {
   export type AsObject = {
     name: string,
     message?: MqttMessage.AsObject,
+  }
+}
+
+export class GetExportMessageRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): GetExportMessageRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetExportMessageRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetExportMessageRequest): GetExportMessageRequest.AsObject;
+  static serializeBinaryToWriter(message: GetExportMessageRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetExportMessageRequest;
+  static deserializeBinaryFromReader(message: GetExportMessageRequest, reader: jspb.BinaryReader): GetExportMessageRequest;
+}
+
+export namespace GetExportMessageRequest {
+  export type AsObject = {
+    name: string,
   }
 }
 

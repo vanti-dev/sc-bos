@@ -95,3 +95,7 @@ type pullExportMessagesUdmiServiceServerWrapper struct {
 func (s *pullExportMessagesUdmiServiceServerWrapper) Send(response *PullExportMessagesResponse) error {
 	return s.ServerStream.SendMsg(response)
 }
+
+func (w *udmiServiceWrapper) GetExportMessage(ctx context.Context, req *GetExportMessageRequest, _ ...grpc.CallOption) (*MqttMessage, error) {
+	return w.server.GetExportMessage(ctx, req)
+}

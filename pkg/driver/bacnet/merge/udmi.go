@@ -113,9 +113,54 @@ func (f *udmiMerge) OnMessage(ctx context.Context, request *gen.OnMessageRequest
 	return &gen.OnMessageResponse{Name: f.config.Name}, nil
 }
 
+func (f *udmiMerge) GetExportMessage(ctx context.Context, request *gen.GetExportMessageRequest) (*gen.MqttMessage, error) {
+	pollCtx, cleanup := context.WithTimeout(ctx, f.config.PollTimeoutDuration()/4)
+	defer cleanup()
+	events := f.bus.Listen(pollCtx)
+	_ = f.pollTask.Attach(pollCtx)
+	select {
+	case <-pollCtx.Done():
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+		}
+		f.pointsLock.Lock()
+		points := f.points
+		f.pointsLock.Unlock()
+		if len(points) == 0 {
+			return nil, status.Error(codes.Unavailable, "no recent events")
+		}
+		return f.pointsToPointSet(f.config.TopicPrefix, points)
+	case msg := <-events:
+		return msg.Message, nil
+	}
+}
+
 func (f *udmiMerge) PullExportMessages(request *gen.PullExportMessagesRequest, server gen.UdmiService_PullExportMessagesServer) error {
+	events := f.bus.Listen(server.Context())
 	_ = f.pollTask.Attach(server.Context())
-	for msg := range f.bus.Listen(server.Context()) {
+
+	// initial value
+	if request.IncludeLast {
+		f.pointsLock.Lock()
+		points := f.points
+		f.pointsLock.Unlock()
+		if len(points) > 0 {
+			msg, err := f.pointsToPointSet(f.config.TopicPrefix, points)
+			if err != nil {
+				return err
+			}
+			err = server.Send(&gen.PullExportMessagesResponse{
+				Name:    request.Name,
+				Message: msg,
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+	for msg := range events {
 		err := server.Send(msg)
 		if err != nil {
 			return err
@@ -174,7 +219,6 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 		default:
 		}
 		f.logger.Debug("ignoring some errors", zap.Errors("errs", errs))
-
 	}
 
 	f.pointsLock.Lock()
@@ -186,17 +230,25 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 	f.pointsLock.Unlock()
 	if hasUpdate {
 		// send the update
-		b, err := json.Marshal(f.points)
+		msg, err := f.pointsToPointSet(f.config.TopicPrefix, events)
 		if err != nil {
 			return err
 		}
 		f.bus.Send(ctx, &gen.PullExportMessagesResponse{
-			Name: f.config.Name,
-			Message: &gen.MqttMessage{
-				Topic:   f.config.TopicPrefix + "/event/pointset/points",
-				Payload: string(b),
-			},
+			Name:    f.config.Name,
+			Message: msg,
 		})
 	}
 	return nil
+}
+
+func (f *udmiMerge) pointsToPointSet(topicPrefix string, points udmi.PointsEvent) (*gen.MqttMessage, error) {
+	b, err := json.Marshal(points)
+	if err != nil {
+		return nil, err
+	}
+	return &gen.MqttMessage{
+		Topic:   topicPrefix + "/event/pointset/points",
+		Payload: string(b),
+	}, nil
 }

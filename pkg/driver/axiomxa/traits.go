@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/olebedev/emitter"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
 	"github.com/vanti-dev/sc-bos/pkg/driver/axiomxa/config"
@@ -48,6 +51,9 @@ type udmiServer struct {
 	pipe         *task.Intermittent        // task that converts msgs to udmiMessages
 	udmiMessages *minibus.Bus[udmiMessage] // emits converted and processed message ports
 
+	mu       sync.Mutex
+	lastSent *gen.MqttMessage
+
 	names *devices
 	log   *zap.Logger
 }
@@ -63,43 +69,75 @@ func (u *udmiServer) OnMessage(ctx context.Context, request *gen.OnMessageReques
 	return &gen.OnMessageResponse{}, nil
 }
 
+func (u *udmiServer) GetExportMessage(ctx context.Context, request *gen.GetExportMessageRequest) (*gen.MqttMessage, error) {
+	pollCtx, cleanup := context.WithTimeout(ctx, 3*time.Second)
+	defer cleanup()
+	events := u.udmiMessages.Listen(pollCtx)
+	if err := u.pipe.Attach(pollCtx); err != nil {
+		return nil, err
+	}
+	select {
+	case <-pollCtx.Done():
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+		}
+		u.mu.Lock()
+		msg := u.lastSent
+		u.mu.Unlock()
+		if msg == nil {
+			return nil, status.Error(codes.Unavailable, "no recent events")
+		}
+		return msg, nil
+	case msg := <-events:
+		return msg.toMqttMessage()
+	}
+}
+
 func (u *udmiServer) PullExportMessages(request *gen.PullExportMessagesRequest, messagesServer gen.UdmiService_PullExportMessagesServer) error {
+	events := u.udmiMessages.Listen(messagesServer.Context())
 	if err := u.pipe.Attach(messagesServer.Context()); err != nil {
 		return err
 	}
 
-	for msg := range u.udmiMessages.Listen(messagesServer.Context()) {
+	if request.IncludeLast {
+		u.mu.Lock()
+		msg := u.lastSent
+		u.mu.Unlock()
+		if msg != nil {
+			res := &gen.PullExportMessagesResponse{Name: request.Name, Message: msg}
+			if err := messagesServer.Send(res); err != nil {
+				return err
+			}
+		}
+	}
+
+	for msg := range events {
 		if msg.name != request.Name {
 			continue
 		}
 
-		var points *udmi.PointsEvent
-		switch msg.topic {
-		case KeyAccessGranted:
-			points = u.toCardReaderPoints(msg.data, "access granted")
-		case KeyAccessDenied:
-			points = u.toCardReaderPoints(msg.data, "access denied")
-		case KeySecure:
-			points = u.toDoorPoints(msg.data, "not open")
-		case KeyDoorHeldOpen, KeyForcedEntry:
-			points = u.toDoorPoints(msg.data, "held open")
-		default:
+		mqttMsg, err := msg.toMqttMessage()
+		if err != nil {
+			u.log.Warn("Failed to marshal UDMI payload", zap.Error(err))
+			continue
+		}
+		if mqttMsg == nil {
 			continue
 		}
 
-		if err := u.sendPoints(messagesServer, points, msg.udmiTopic, msg.name); err != nil {
+		u.mu.Lock()
+		u.lastSent = mqttMsg
+		u.mu.Unlock()
+
+		toSend := &gen.PullExportMessagesResponse{Name: request.Name, Message: mqttMsg}
+		if err := messagesServer.Send(toSend); err != nil {
 			return err
 		}
 	}
 
 	return nil
-}
-
-type udmiMessage struct {
-	topic     string
-	name      string
-	udmiTopic string
-	data      mps.Fields
 }
 
 func (u *udmiServer) mpsToUDMIMessages(_ context.Context) (task.StopFn, error) {
@@ -145,20 +183,43 @@ func (u *udmiServer) lookupNames(fields mps.Fields) (name, topic string, ok bool
 	return name, topic, true
 }
 
-func (u *udmiServer) sendPoints(stream gen.UdmiService_PullExportMessagesServer, points *udmi.PointsEvent, name string, topic string) error {
-	body, err := json.Marshal(points)
-	if err != nil {
-		u.log.Warn("Failed to marshal UDMI payload", zap.Any("points", points), zap.Error(err))
-		return nil
-	}
-	toSend := &gen.PullExportMessagesResponse{Name: name, Message: &gen.MqttMessage{
-		Topic:   topic + "/event/pointset/points",
-		Payload: string(body),
-	}}
-	return stream.Send(toSend)
+type udmiMessage struct {
+	topic     string
+	name      string
+	udmiTopic string
+	data      mps.Fields
 }
 
-func (u *udmiServer) toCardReaderPoints(data mps.Fields, state string) *udmi.PointsEvent {
+func (um udmiMessage) toMqttMessage() (*gen.MqttMessage, error) {
+	var points *udmi.PointsEvent
+	switch um.topic {
+	case KeyAccessGranted:
+		points = um.toCardReaderPoints(um.data, "access granted")
+	case KeyAccessDenied:
+		points = um.toCardReaderPoints(um.data, "access denied")
+	case KeySecure:
+		points = um.toDoorPoints(um.data, "not open")
+	case KeyDoorHeldOpen, KeyForcedEntry:
+		points = um.toDoorPoints(um.data, "held open")
+	default:
+		return nil, nil
+	}
+	return um.pointsToMessage(points, um.udmiTopic)
+}
+
+func (_ udmiMessage) pointsToMessage(points *udmi.PointsEvent, topic string) (*gen.MqttMessage, error) {
+	body, err := json.Marshal(points)
+	if err != nil {
+		return nil, err
+	}
+	msg := &gen.MqttMessage{
+		Topic:   topic + "/event/pointset/points",
+		Payload: string(body),
+	}
+	return msg, nil
+}
+
+func (_ udmiMessage) toCardReaderPoints(data mps.Fields, state string) *udmi.PointsEvent {
 	return &udmi.PointsEvent{
 		"CardRderType":       udmi.PointValue{PresentValue: "CardRder"},
 		"CardRderLstRdState": udmi.PointValue{PresentValue: state},
@@ -167,7 +228,7 @@ func (u *udmiServer) toCardReaderPoints(data mps.Fields, state string) *udmi.Poi
 	}
 }
 
-func (u *udmiServer) toDoorPoints(data mps.Fields, state string) *udmi.PointsEvent {
+func (_ udmiMessage) toDoorPoints(data mps.Fields, state string) *udmi.PointsEvent {
 	return &udmi.PointsEvent{
 		"DrType":    udmi.PointValue{PresentValue: "Dr"},
 		"DrState":   udmi.PointValue{PresentValue: state},

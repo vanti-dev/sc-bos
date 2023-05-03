@@ -31,6 +31,10 @@ type UdmiServiceClient interface {
 	OnMessage(ctx context.Context, in *OnMessageRequest, opts ...grpc.CallOption) (*OnMessageResponse, error)
 	// PullExportMessages, which are to be published to the MQTT broker for data export
 	PullExportMessages(ctx context.Context, in *PullExportMessagesRequest, opts ...grpc.CallOption) (UdmiService_PullExportMessagesClient, error)
+	// GetExportMessage returns a single MqttMessage.
+	// Servers may return the last message returned by PullExportMessages, or collect data explicitly to return.
+	// If the server does not have a message to return, it may return an Unavailable error.
+	GetExportMessage(ctx context.Context, in *GetExportMessageRequest, opts ...grpc.CallOption) (*MqttMessage, error)
 }
 
 type udmiServiceClient struct {
@@ -114,6 +118,15 @@ func (x *udmiServicePullExportMessagesClient) Recv() (*PullExportMessagesRespons
 	return m, nil
 }
 
+func (c *udmiServiceClient) GetExportMessage(ctx context.Context, in *GetExportMessageRequest, opts ...grpc.CallOption) (*MqttMessage, error) {
+	out := new(MqttMessage)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.UdmiService/GetExportMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UdmiServiceServer is the server API for UdmiService service.
 // All implementations must embed UnimplementedUdmiServiceServer
 // for forward compatibility
@@ -127,6 +140,10 @@ type UdmiServiceServer interface {
 	OnMessage(context.Context, *OnMessageRequest) (*OnMessageResponse, error)
 	// PullExportMessages, which are to be published to the MQTT broker for data export
 	PullExportMessages(*PullExportMessagesRequest, UdmiService_PullExportMessagesServer) error
+	// GetExportMessage returns a single MqttMessage.
+	// Servers may return the last message returned by PullExportMessages, or collect data explicitly to return.
+	// If the server does not have a message to return, it may return an Unavailable error.
+	GetExportMessage(context.Context, *GetExportMessageRequest) (*MqttMessage, error)
 	mustEmbedUnimplementedUdmiServiceServer()
 }
 
@@ -142,6 +159,9 @@ func (UnimplementedUdmiServiceServer) OnMessage(context.Context, *OnMessageReque
 }
 func (UnimplementedUdmiServiceServer) PullExportMessages(*PullExportMessagesRequest, UdmiService_PullExportMessagesServer) error {
 	return status.Errorf(codes.Unimplemented, "method PullExportMessages not implemented")
+}
+func (UnimplementedUdmiServiceServer) GetExportMessage(context.Context, *GetExportMessageRequest) (*MqttMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetExportMessage not implemented")
 }
 func (UnimplementedUdmiServiceServer) mustEmbedUnimplementedUdmiServiceServer() {}
 
@@ -216,6 +236,24 @@ func (x *udmiServicePullExportMessagesServer) Send(m *PullExportMessagesResponse
 	return x.ServerStream.SendMsg(m)
 }
 
+func _UdmiService_GetExportMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetExportMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UdmiServiceServer).GetExportMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/smartcore.bos.UdmiService/GetExportMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UdmiServiceServer).GetExportMessage(ctx, req.(*GetExportMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UdmiService_ServiceDesc is the grpc.ServiceDesc for UdmiService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -226,6 +264,10 @@ var UdmiService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "OnMessage",
 			Handler:    _UdmiService_OnMessage_Handler,
+		},
+		{
+			MethodName: "GetExportMessage",
+			Handler:    _UdmiService_GetExportMessage_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
