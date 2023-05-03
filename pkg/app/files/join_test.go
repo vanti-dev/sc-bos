@@ -1,6 +1,7 @@
 package files
 
 import (
+	"path/filepath"
 	"testing"
 )
 
@@ -15,7 +16,7 @@ func TestPath(t *testing.T) {
 		{"empty dataDir", "", "foo", "foo"},
 		{"empty path", "bar", "", ""},
 		{"absolute path", "bar", "/foo", "/foo"},
-		{"relative path", "bar", "foo", "bar/foo"},
+		{"relative path", "bar", "foo", filepath.Join("bar", "foo")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

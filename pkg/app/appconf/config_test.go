@@ -87,7 +87,7 @@ func TestLoadLocalConfig(t *testing.T) {
 			},
 			dir:    "data",
 			file:   "base.json",
-			config: &Config{Name: "my-config", FilePath: "data/base.json"},
+			config: &Config{Name: "my-config", FilePath: filepath.Join("data", "base.json")},
 		},
 		{
 			name: "with include",
@@ -115,7 +115,7 @@ func TestLoadLocalConfig(t *testing.T) {
 					driverNamed("driver-1"),
 					driverNamed("driver-part-1"),
 				},
-				FilePath: "data/base.json",
+				FilePath: filepath.Join("data", "base.json"),
 			},
 		},
 		{
@@ -202,7 +202,7 @@ func TestLoadLocalConfig(t *testing.T) {
 					driverNamed("driver-part-2b"),
 					driverNamed("driver-part-3a"),
 				},
-				FilePath: "data/base.json",
+				FilePath: filepath.Join("data", "base.json"),
 			},
 		},
 		{
@@ -242,7 +242,7 @@ func TestLoadLocalConfig(t *testing.T) {
 					driverNamed("driver-part-1"),
 					driverNamed("driver-part-1a"),
 				},
-				FilePath: "data/base.json",
+				FilePath: filepath.Join("data", "base.json"),
 			},
 		},
 		{
@@ -270,7 +270,7 @@ func TestLoadLocalConfig(t *testing.T) {
 				Drivers: []driver.RawConfig{
 					driverWithType("driver-1", "d-1"),
 				},
-				FilePath: "data/base.json",
+				FilePath: filepath.Join("data", "base.json"),
 			},
 		},
 		{
@@ -305,7 +305,7 @@ func TestLoadLocalConfig(t *testing.T) {
 					driverWithType("driver-1", "d-1"),
 					driverWithType("driver-2", "d-1a"),
 				},
-				FilePath: "data/base.json",
+				FilePath: filepath.Join("data", "base.json"),
 			},
 		},
 		{
@@ -347,7 +347,7 @@ func TestLoadLocalConfig(t *testing.T) {
 					driverWithType("dir2", "dir2"),
 					driverWithType("dir/more1", "dir/more1"),
 				},
-				FilePath: "data/base.json",
+				FilePath: filepath.Join("data", "base.json"),
 			},
 		},
 		{
@@ -411,7 +411,7 @@ func TestLoadLocalConfig(t *testing.T) {
 					driverWithType("dir2/1", "dir2/1"),
 					driverWithType("file2", "file2"),
 				},
-				FilePath: "data/base.json",
+				FilePath: filepath.Join("data", "base.json"),
 			},
 		},
 		{
@@ -428,7 +428,7 @@ func TestLoadLocalConfig(t *testing.T) {
 			file: "base.json",
 			config: &Config{
 				Name:     "base",
-				FilePath: "data/base.json",
+				FilePath: filepath.Join("data", "base.json"),
 			},
 		},
 	}
