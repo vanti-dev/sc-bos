@@ -12,11 +12,7 @@
         class="mx-4 my-2"
         :value="tempProgress()"
         background-color="neutral lighten-1"
-        color="accent">
-      <template #default>
-        <strong class="white--text">{{ airTempData.currentTemp }}</strong>
-      </template>
-    </v-progress-linear>
+        color="accent"/>
     <v-card-actions class="px-4">
       <v-spacer/>
       <v-btn
