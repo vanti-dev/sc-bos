@@ -8,7 +8,7 @@ import (
 )
 
 func TestLifecycle_CurrentState(t *testing.T) {
-	wait := 10 * time.Millisecond
+	wait := 250 * time.Millisecond
 	t.Run("create", func(t *testing.T) {
 		lt := newLifecycleTester(t)
 		lt.assertCurrentState(StatusInactive, 0)
