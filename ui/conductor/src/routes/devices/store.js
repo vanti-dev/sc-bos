@@ -14,7 +14,7 @@ export const useDevicesStore = defineStore('devices', () => {
    * @param {ActionTracker<GetDevicesMetadataResponse.AsObject>} tracker
    * @return {Collection}
    */
-  async function fetchDevicesMetadata(tracker) {
+  async function fetchDeviceSubsystemCounts(tracker) {
     // Fetch devices data
     const devices = await getDevicesMetadata({includes: {fieldsList: ['metadata.membership.subsystem']}}, tracker);
 
@@ -55,7 +55,7 @@ export const useDevicesStore = defineStore('devices', () => {
     deviceList,
     subSystems,
 
-    fetchDevicesMetadata,
+    fetchDeviceSubsystemCounts,
     newCollection
   };
 });

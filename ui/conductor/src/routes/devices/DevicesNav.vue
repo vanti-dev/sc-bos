@@ -61,7 +61,7 @@ const availableSubSystems = computed(() => {
 });
 
 // onCreate
-deviceStore.fetchDevicesMetadata(tracker);
+deviceStore.fetchDeviceSubsystemCounts(tracker);
 </script>
 
 <style scoped>
