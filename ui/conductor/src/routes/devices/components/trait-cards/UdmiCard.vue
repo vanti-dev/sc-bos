@@ -62,7 +62,7 @@ watch(() => props.name, async (name) => {
   closeResource(message);
   // create new
   if (name && name !== '') {
-    pullExportMessages(name, message);
+    pullExportMessages({name, includeLast: true}, message);
   }
 }, {immediate: true});
 
