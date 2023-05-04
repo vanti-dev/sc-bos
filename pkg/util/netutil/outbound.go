@@ -20,3 +20,31 @@ func OutboundAddr() (netip.Addr, error) {
 	ip, _ := netip.AddrFromSlice(localAddr.IP)
 	return ip, nil
 }
+
+// InterfaceNameForAddr returns the name of the interface that the given IP address is associated with.
+func InterfaceNameForAddr(addr netip.Addr) (string, error) {
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return "", err
+	}
+
+	var lastErr error
+	for _, iface := range interfaces {
+		addrs, err := iface.Addrs()
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		for _, ifaceAddr := range addrs {
+			ifacePrefix, err := netip.ParsePrefix(ifaceAddr.String())
+			if err != nil {
+				lastErr = err
+				continue
+			}
+			if ifacePrefix.Addr() == addr {
+				return iface.Name, nil
+			}
+		}
+	}
+	return "", lastErr
+}
