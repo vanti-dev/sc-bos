@@ -11,13 +11,12 @@ export const useDevicesStore = defineStore('devices', () => {
   const subSystems = ref({});
 
   /**
-   * @param {string} endpoint
    * @param {ActionTracker<GetDevicesMetadataResponse.AsObject>} tracker
    * @return {Collection}
    */
-  async function fetchDevicesMetadata(endpoint, tracker) {
+  async function fetchDevicesMetadata(tracker) {
     // Fetch devices data
-    const devices = await getDevicesMetadata(endpoint, tracker);
+    const devices = await getDevicesMetadata({includes: {fieldsList: ['metadata.membership.subsystem']}}, tracker);
 
     // Extract the countsMap array from the devices object and set it to a var
     const countsMap = devices?.fieldCountsList[0].countsMap;
