@@ -2,7 +2,7 @@ import {setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {trackAction} from '@/api/resource.js';
 import {DevicesApiPromiseClient} from '@sc-bos/ui-gen/proto/devices_grpc_web_pb';
-import {Device, ListDevicesRequest} from '@sc-bos/ui-gen/proto/devices_pb';
+import {Device, DevicesMetadata, GetDevicesMetadataRequest, ListDevicesRequest} from '@sc-bos/ui-gen/proto/devices_pb';
 
 /**
  * @param {ListDevicesRequest.AsObject} request
@@ -53,3 +53,20 @@ function deviceQueryFromObject(obj) {
   }
   return dst;
 }
+
+/**
+ *
+ * @param {string} endpoint
+ * @param {ActionTracker<GetDevicesMetadataResponse.AsObject>} tracker
+ * @return {Promise<GetDevicesMetadataResponse.AsObject>}
+ */
+export function getDevicesMetadata(endpoint, tracker) {
+  return trackAction('Devices.getDevicesMetadata', tracker ?? {}, endpoint => {
+    const api = client(endpoint);
+    const request = new GetDevicesMetadataRequest();
+    const includes = new DevicesMetadata.Include();
+    includes.addFields('metadata.membership.subsystem');
+    request.setIncludes(includes);
+    return api.getDevicesMetadata(request);
+  });
+};
