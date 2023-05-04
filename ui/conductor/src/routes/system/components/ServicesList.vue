@@ -28,6 +28,7 @@
         <v-btn
             v-if="item.active"
             outlined
+            class="automation-device__btn--red"
             color="red"
             width="100%"
             @click.stop="_stopService(item)">
@@ -36,7 +37,9 @@
         <v-btn
             v-else
             outlined
+            class="automation-device__btn--green"
             color="green"
+            width="100%"
             @click.stop="_startService(item)">
           Start
         </v-btn>
@@ -184,7 +187,21 @@ async function _stopService(service) {
   background-color: var(--v-primary-darken4);
 }
 
-// .start-stop-btn {
-//   width: 100%;
-// }
+
+.v-data-table :deep(tr:hover) {
+  .automation-device__btn {
+    &--red {
+      background-color: red;
+      .v-btn__content {
+        color: white;
+      }
+    }
+    &--green {
+      background-color: green;
+      .v-btn__content {
+        color: white;
+      }
+    }
+  }
+}
 </style>
