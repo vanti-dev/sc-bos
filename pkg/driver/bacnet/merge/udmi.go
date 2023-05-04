@@ -3,6 +3,7 @@ package merge
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sync"
 	"time"
 
@@ -173,11 +174,17 @@ func (f *udmiMerge) startPoll(init context.Context) (stop task.StopFn, err error
 	ctx, cancel := context.WithCancel(context.Background())
 	ticker := time.NewTicker(f.config.PollPeriodDuration())
 	go func() {
+		fmt.Println("new startPoll go routine")
+		cleanup := func() {}
+		defer func() {
+			cleanup()
+		}()
 		for {
-			ctx, cleanup := context.WithTimeout(ctx, f.config.PollTimeoutDuration())
+			cleanup()
+			ctx, stop := context.WithTimeout(ctx, f.config.PollTimeoutDuration())
+			cleanup = stop
 			err := f.pollPeer(ctx)
 			LogPollError(f.logger, "udmi poll error", err)
-			cleanup()
 			select {
 			case <-ticker.C:
 			case <-ctx.Done():

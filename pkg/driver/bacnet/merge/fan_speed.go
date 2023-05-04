@@ -66,11 +66,14 @@ func (t *fanSpeed) startPoll(init context.Context) (stop task.StopFn, err error)
 	ctx, cancel := context.WithCancel(context.Background())
 	ticker := time.NewTicker(t.config.PollPeriodDuration())
 	go func() {
+		cleanup := func() {}
+		defer func() { cleanup() }()
 		for {
-			ctx, cleanup := context.WithTimeout(ctx, t.config.PollTimeoutDuration())
+			cleanup()
+			ctx, stop := context.WithTimeout(ctx, t.config.PollTimeoutDuration())
+			cleanup = stop
 			_, err := t.pollPeer(ctx)
 			LogPollError(t.logger, "fan speed poll error", err)
-			cleanup()
 			select {
 			case <-ticker.C:
 			case <-ctx.Done():
