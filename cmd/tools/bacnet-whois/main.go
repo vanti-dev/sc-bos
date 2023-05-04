@@ -9,8 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/vanti-dev/gobacnet"
 	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/sc-bos/pkg/util/netutil"
@@ -18,7 +16,7 @@ import (
 
 var (
 	LocalPort      = 47808
-	LocalInterface = "10.211.55.2"
+	LocalInterface = ""
 	OutFile        = "bacnet-iam.csv"
 	ScanSize       = bactypes.MaxInstance/4 + 1
 )
@@ -59,7 +57,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer client.Close()
-	client.Log.Level = logrus.FatalLevel
+	// client.Log.Level = logrus.FatalLevel
 
 	outFile, err := os.Create(OutFile)
 	if err != nil {
@@ -67,22 +65,18 @@ func main() {
 		os.Exit(1)
 	}
 	defer outFile.Close()
-	out := io.MultiWriter(os.Stdout, outFile)
-	fmt.Fprintf(out, "BACnet Device ID,IP:Port,Network,Address,Max APDU,Segmentation,Vendor\n")
+	fmt.Fprintf(outFile, "BACnet Device ID,IP:Port,Network,Address,Max APDU,Segmentation,Vendor\n")
 
-	min, max := 0, bactypes.MaxInstance
-	for i := min; i <= max; i += ScanSize {
-		max = i + ScanSize
-		if max > bactypes.MaxInstance {
-			max = bactypes.MaxInstance
-		}
-		doWhoIs(out, client, i, max)
-	}
+	doWhoIs(outFile, client, -1, -1)
 }
 
 func doWhoIs(out io.Writer, client *gobacnet.Client, min, max int) {
-	fmt.Printf("Finding devices with IDs %d-%d\n", min, max)
-	wait := 5 * time.Second
+	if min < 0 {
+		fmt.Printf("Finding all devices\n")
+	} else {
+		fmt.Printf("Finding devices with IDs %d-%d\n", min, max)
+	}
+	wait := 10 * time.Second
 	ctx, stop := context.WithTimeout(context.Background(), wait)
 	defer stop()
 	iAm, err := client.WhoIs(ctx, min, max)

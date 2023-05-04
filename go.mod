@@ -23,7 +23,7 @@ require (
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.39
 	github.com/smart-core-os/sc-golang v0.0.0-20230424174906-1b41d034fb5a
 	github.com/timshannon/bolthold v0.0.0-20210913165410-232392fc8a6a
-	github.com/vanti-dev/gobacnet v0.0.0-20230227161032-9f3d079e441a
+	github.com/vanti-dev/gobacnet v0.0.0-20230504135724-3bce5567c99c
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
 	go.uber.org/zap v1.19.1
