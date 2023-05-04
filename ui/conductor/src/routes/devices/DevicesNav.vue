@@ -45,7 +45,7 @@ const availableSubSystems = computed(() => {
         // and reconstruct the object according to the template needs
         const listItem = {
           to: '/devices/' + subSystem,
-          icon: navigationItemIcons[subSystem],
+          icon: navigationItemIcons[subSystem] ? navigationItemIcons[subSystem] : 'mdi-chevron-right',
           label: subSystem,
           class: subSystem === 'hvac' ? 'text-uppercase' : 'text-capitalize' // potential issue with acronyms
         };
