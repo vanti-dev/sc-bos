@@ -25,6 +25,11 @@ type Node struct {
 	// If absent then the remote node should support empty/default names for Parent requests.
 	Name string `json:"name,omitempty"`
 
+	// SkipChild skips associating the node and node children with this nodes parent trait.
+	// When true this doesn't stop clients of this node from communicating with the child, but it does stop discovery of
+	// this name from working.
+	SkipChild bool `json:"skipChild,omitempty"`
+
 	// Traits defines the exact named traits we proxy for this remote.
 	// If absent or empty the remote will be inspected using the Parent trait including all found traits.
 	// Traits []Trait `json:"traits,omitempty"` // todo: support manual traits

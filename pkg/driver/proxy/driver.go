@@ -81,6 +81,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			config:    n,
 			conn:      conn,
 			announcer: d.announcer,
+			skipChild: n.SkipChild,
 			logger:    d.logger.Named(n.Host),
 			shutdown:  shutdown,
 		}
@@ -123,9 +124,10 @@ func proxyTLSConfig(tlsConfig *tls.Config, n config.Node) *tls.Config {
 type proxy struct {
 	config    config.Node
 	conn      *grpc.ClientConn // used if the proxy updates its children
+	skipChild bool             // if true we don't announce the child trait on this node
 	announcer node.Announcer
-	logger    *zap.Logger
 
+	logger   *zap.Logger
 	shutdown context.CancelFunc
 }
 
@@ -161,7 +163,12 @@ func (p *proxy) announceChange(announced announcedTraits, change *traits.PullChi
 			p.logger.Warn(fmt.Sprintf("remote child implements unknown trait %s", tn))
 			continue
 		}
-		undo := p.announcer.Announce(childName, node.HasTrait(tn, node.WithClients(client)))
+		var undo node.Undo
+		if p.skipChild {
+			undo = p.announcer.Announce(childName, node.HasClient(client))
+		} else {
+			undo = p.announcer.Announce(childName, node.HasTrait(tn, node.WithClients(client)))
+		}
 		announced.add(childName, tn, undo)
 	}
 }
