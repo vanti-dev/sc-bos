@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="EG-01 [23201,24201]" type="GoApplicationRunConfiguration" factoryName="Go Application">
+  <configuration default="false" name="EG-01 [23201,24201]" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="Hub">
     <module name="sc-bos" />
     <working_directory value="$PROJECT_DIR$" />
     <parameters value="--insecure-disable-policy --data-dir .data/eg-01 --listen-grpc :23201 --listen-https :24201" />
