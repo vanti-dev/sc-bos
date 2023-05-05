@@ -37,6 +37,12 @@ const availableSubSystems = computed(() => {
     sensor: 'mdi-leak' // we might need to change this icon
   };
 
+  const navigationItemLabels = {
+    acs: 'Access Control',
+    vt: 'Vertical Transportation'
+  };
+
+
   // array of navigationItems with a default item value - 'All'
   const navigationItems = [
     {to: '/devices/all', icon: 'mdi-view-list', label: 'all', class: 'text-capitalize'}
@@ -52,10 +58,8 @@ const availableSubSystems = computed(() => {
         const listItem = {
           to: '/devices/' + subSystem,
           icon: navigationItemIcons[subSystem] ? navigationItemIcons[subSystem] : 'mdi-chevron-right',
-          label: subSystem,
-          class: ['hvac', 'acs', 'cctv', 'vt'].includes(subSystem) ?
-            'text-uppercase' :
-            'text-capitalize' // potential issue with acronyms
+          label: navigationItemLabels[subSystem] ? navigationItemLabels[subSystem] : subSystem,
+          class: ['hvac', 'cctv'].includes(subSystem) ? 'text-uppercase' : 'text-capitalize'
         };
 
         // then fill the array with the new object(s)
