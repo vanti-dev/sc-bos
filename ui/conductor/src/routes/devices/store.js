@@ -1,13 +1,39 @@
 import {defineStore} from 'pinia';
-import {reactive} from 'vue';
+import {reactive, ref} from 'vue';
 
-import {listDevices} from '@/api/ui/devices';
+import {listDevices, getDevicesMetadata} from '@/api/ui/devices';
 import {newResourceCollection} from '@/api/resource';
 import {Collection} from '@/util/query';
 
 export const useDevicesStore = defineStore('devices', () => {
   // holds all the devices we can show
   const deviceList = reactive(/** @type {ResourceCollection<Device.AsObject, Device>} */newResourceCollection());
+  const subSystems = ref({});
+
+  /**
+   * @param {ActionTracker<GetDevicesMetadataResponse.AsObject>} tracker
+   * @return {Collection}
+   */
+  async function fetchDeviceSubsystemCounts(tracker) {
+    // Fetch devices data
+    const devices = await getDevicesMetadata({includes: {fieldsList: ['metadata.membership.subsystem']}}, tracker);
+
+    // Extract the countsMap array from the devices object and set it to a var
+    const countsMap = devices?.fieldCountsList[0].countsMap;
+
+    // Format countsMap array -> object with the keys/values
+    const subs = countsMap.reduce((accumulator, [key, value]) => {
+      if (key) accumulator[key] = value;
+      else accumulator['noType'] = value;
+      return accumulator;
+    }, {});
+
+    // Reconstruct object to include subs & totalCount
+    subSystems.value = {
+      subs,
+      totalCount: devices.totalCount
+    };
+  }
 
   /**
    *
@@ -24,8 +50,12 @@ export const useDevicesStore = defineStore('devices', () => {
     return new Collection(listFn);
   }
 
+
   return {
     deviceList,
+    subSystems,
+
+    fetchDeviceSubsystemCounts,
     newCollection
   };
 });

@@ -1,8 +1,8 @@
-import {setProperties} from '@/api/convpb.js';
+import {fieldMaskFromObject, setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {trackAction} from '@/api/resource.js';
 import {DevicesApiPromiseClient} from '@sc-bos/ui-gen/proto/devices_grpc_web_pb';
-import {Device, ListDevicesRequest} from '@sc-bos/ui-gen/proto/devices_pb';
+import {Device, DevicesMetadata, GetDevicesMetadataRequest, ListDevicesRequest} from '@sc-bos/ui-gen/proto/devices_pb';
 
 /**
  * @param {ListDevicesRequest.AsObject} request
@@ -15,6 +15,19 @@ export function listDevices(request, tracker) {
     return api.listDevices(listDevicesRequestFromObject(request));
   });
 }
+
+/**
+ *
+ * @param {Promise<GetDevicesMetadataRequest.AsObject>} request
+ * @param {ActionTracker<GetDevicesMetadataResponse.AsObject>} tracker
+ * @return {Promise<GetDevicesMetadataResponse.AsObject>}
+ */
+export function getDevicesMetadata(request, tracker) {
+  return trackAction('Devices.getDevicesMetadata', tracker ?? {}, endpoint => {
+    const api = client(endpoint);
+    return api.getDevicesMetadata(getDevicesMetadataRequestFromObject(request));
+  });
+};
 
 /**
  * @param {string} endpoint
@@ -51,5 +64,30 @@ function deviceQueryFromObject(obj) {
     );
     dst.addConditions(dstItem);
   }
+  return dst;
+}
+
+/**
+ *
+ * @param {GetDevicesMetadataRequest.AsObject} obj
+ * @return {undefined|DevicesMetadata.Include}
+ */
+function devicesMetadataIncludeFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new DevicesMetadata.Include();
+  dst.setFieldsList(obj.fieldsList);
+  return dst;
+}
+
+/**
+ *
+ * @param {GetDevicesMetadataRequest.AsObject} obj
+ * @return {undefined|GetDevicesMetadataRequest}
+ */
+function getDevicesMetadataRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new GetDevicesMetadataRequest();
+  dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  dst.setIncludes(devicesMetadataIncludeFromObject(obj.includes));
   return dst;
 }
