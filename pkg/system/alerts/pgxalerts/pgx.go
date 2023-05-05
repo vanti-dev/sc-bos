@@ -520,10 +520,20 @@ const selectAlertSQL = `SELECT id, description, severity, create_time, floor, zo
 
 func scanAlert(scanner pgx.Row, dst *gen.Alert) error {
 	var createTime, ackTime *time.Time
+	var floor, zone, source *string
 	var ackAuthorId, ackAuthorName, ackAuthorEmail *string
-	err := scanner.Scan(&dst.Id, &dst.Description, &dst.Severity, &createTime, &dst.Floor, &dst.Zone, &dst.Source, &dst.Federation, &ackTime, &ackAuthorId, &ackAuthorName, &ackAuthorEmail)
+	err := scanner.Scan(&dst.Id, &dst.Description, &dst.Severity, &createTime, &floor, &zone, &source, &dst.Federation, &ackTime, &ackAuthorId, &ackAuthorName, &ackAuthorEmail)
 	if err != nil {
 		return err
+	}
+	if floor != nil {
+		dst.Floor = *floor
+	}
+	if zone != nil {
+		dst.Zone = *zone
+	}
+	if source != nil {
+		dst.Source = *source
 	}
 	if createTime != nil {
 		dst.CreateTime = timestamppb.New(*createTime)

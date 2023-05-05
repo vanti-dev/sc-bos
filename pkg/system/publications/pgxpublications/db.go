@@ -229,12 +229,16 @@ func GetAcknowledgement(ctx context.Context, tx pgx.Tx, versionID string) (*Ackn
 	row := tx.QueryRow(ctx, query, versionID)
 
 	var ack Acknowledgement
-	err := row.Scan(&ack.ID, &ack.Accepted, &ack.Time, &ack.RejectedReason)
+	var rejectedReason *string
+	err := row.Scan(&ack.ID, &ack.Accepted, &ack.Time, &rejectedReason)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	}
 	if err != nil {
 		return nil, err
+	}
+	if rejectedReason != nil {
+		ack.RejectedReason = *rejectedReason
 	}
 
 	return &ack, nil
