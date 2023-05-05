@@ -24,10 +24,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
         'third-party': true
       },
       'devices': {
-        'all': true,
-        'lighting': true,
-        'hvac': true,
-        'meters': true
+        '*': true
       },
       'ops': {
         'overview': false,
