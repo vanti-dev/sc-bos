@@ -245,13 +245,17 @@ func queryGroupCounts[K comparable](ctx context.Context, tx pgx.Tx, col string, 
 		return nil, fmt.Errorf("query %w", err)
 	}
 	for query.Next() {
-		var id K
+		var id *K
 		var count uint32
 		err = query.Scan(&id, &count)
 		if err != nil {
 			return nil, fmt.Errorf("row scan %w", err)
 		}
-		all[id] = count
+		if id == nil {
+			var zero K
+			id = &zero
+		}
+		all[*id] = count
 	}
 	return all, nil
 }

@@ -520,9 +520,9 @@ const selectAlertSQL = `SELECT id, description, severity, create_time, floor, zo
 
 func scanAlert(scanner pgx.Row, dst *gen.Alert) error {
 	var createTime, ackTime *time.Time
-	var floor, zone, source *string
+	var floor, zone, source, federation *string
 	var ackAuthorId, ackAuthorName, ackAuthorEmail *string
-	err := scanner.Scan(&dst.Id, &dst.Description, &dst.Severity, &createTime, &floor, &zone, &source, &dst.Federation, &ackTime, &ackAuthorId, &ackAuthorName, &ackAuthorEmail)
+	err := scanner.Scan(&dst.Id, &dst.Description, &dst.Severity, &createTime, &floor, &zone, &source, &federation, &ackTime, &ackAuthorId, &ackAuthorName, &ackAuthorEmail)
 	if err != nil {
 		return err
 	}
@@ -534,6 +534,9 @@ func scanAlert(scanner pgx.Row, dst *gen.Alert) error {
 	}
 	if source != nil {
 		dst.Source = *source
+	}
+	if federation != nil {
+		dst.Federation = *federation
 	}
 	if createTime != nil {
 		dst.CreateTime = timestamppb.New(*createTime)
