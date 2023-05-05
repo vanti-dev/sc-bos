@@ -28,7 +28,13 @@ const availableSubSystems = computed(() => {
   const navigationItemIcons = {
     lighting: 'mdi-lightbulb',
     hvac: 'mdi-thermometer',
-    metering: 'mdi-meter-electric'
+    metering: 'mdi-meter-electric',
+    acs: 'mdi-badge-account-horizontal',
+    cctv: 'mdi-cctv',
+    fire: 'mdi-fire',
+    smart: 'mdi-memory',
+    vt: 'mdi-elevator-passenger',
+    sensor: 'mdi-leak' // we might need to change this icon
   };
 
   // array of navigationItems with a default item value - 'All'
@@ -47,7 +53,9 @@ const availableSubSystems = computed(() => {
           to: '/devices/' + subSystem,
           icon: navigationItemIcons[subSystem] ? navigationItemIcons[subSystem] : 'mdi-chevron-right',
           label: subSystem,
-          class: subSystem === 'hvac' ? 'text-uppercase' : 'text-capitalize' // potential issue with acronyms
+          class: ['hvac', 'acs', 'cctv', 'vt'].includes(subSystem) ?
+            'text-uppercase' :
+            'text-capitalize' // potential issue with acronyms
         };
 
         // then fill the array with the new object(s)
