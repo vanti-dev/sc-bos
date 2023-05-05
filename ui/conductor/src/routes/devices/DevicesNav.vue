@@ -56,7 +56,8 @@ const availableSubSystems = computed(() => {
       if (subSystem !== 'noType') {
         // and reconstruct the object according to the template needs
         const listItem = {
-          to: '/devices/' + subSystem,
+          // to: '/devices/' + subSystem,
+          to: '/devices/' + encodeURIComponent(subSystem),
           icon: navigationItemIcons[subSystem] ? navigationItemIcons[subSystem] : 'mdi-chevron-right',
           label: navigationItemLabels[subSystem] ? navigationItemLabels[subSystem] : subSystem,
           class: ['hvac', 'cctv'].includes(subSystem) ? 'text-uppercase' : 'text-capitalize'
