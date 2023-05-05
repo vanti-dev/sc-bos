@@ -29,16 +29,14 @@
           small
           color="neutral lighten-1"
           elevation="0"
-          @click="updateLight(brightness-1)"
-          :disabled="brightness <= 0">
+          @click="updateLight(brightness-1)">
         Down
       </v-btn>
       <v-btn
           small
           color="neutral lighten-1"
           elevation="0"
-          @click="updateLight(brightness+1)"
-          :disabled="brightness >= 100">
+          @click="updateLight(brightness+1)">
         Up
       </v-btn>
     </v-card-actions>
