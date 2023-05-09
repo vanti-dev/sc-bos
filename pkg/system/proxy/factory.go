@@ -399,14 +399,16 @@ func (s *System) announceTrait(announcer node.Announcer, nodeConn *grpc.ClientCo
 	var clients []any
 	if c := alltraits.APIClient(nodeConn, traitName); c != nil {
 		clients = append(clients, c)
-	} else {
-		s.logger.Warn("unable to proxy unknown trait on child",
-			zap.String("target", nodeConn.Target()), zap.String("name", name), zap.Stringer("trait", traitName))
 	}
 	if c := alltraits.HistoryClient(nodeConn, traitName); c != nil {
 		clients = append(clients, c)
-	} else {
-		// traitName doesn't support history, but most of them don't so don't spam the logs
+	}
+	if c := alltraits.InfoClient(nodeConn, traitName); c != nil {
+		clients = append(clients, c)
+	}
+	if len(clients) == 0 {
+		s.logger.Warn("unable to proxy unknown trait on child",
+			zap.String("target", nodeConn.Target()), zap.String("name", name), zap.Stringer("trait", traitName))
 	}
 
 	return announcer.Announce(name, node.HasTrait(traitName, node.WithClients(clients...)))
