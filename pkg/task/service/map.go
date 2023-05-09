@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
 	"strconv"
 	"sync"
@@ -23,9 +24,10 @@ var (
 
 // Map tracks multiple Record with the ability to create, delete, and listen for changes to the tracked records.
 type Map struct {
-	mu    sync.Mutex
-	known map[string]*Record
-	bus   *minibus.Bus[*Change]
+	mu      sync.Mutex
+	known   map[string]*Record
+	bus     *minibus.Bus[*Change]
+	lastCID uint64 // tracks changes to known, guarded by mu. Events in bus record which cID they were created with.
 
 	idFunc IdFunc
 	create CreateFunc
@@ -126,7 +128,7 @@ type Record struct {
 // Lifecycle. If either are present and the corresponding Lifecycle call returns an error, then creating the new record
 // will be aborted and that error will be returned.
 func (m *Map) Create(id, kind string, state State) (string, State, error) {
-	r, err := m.createRecord(id, kind)
+	r, cID, err := m.createRecord(id, kind)
 	if err != nil {
 		return "", State{}, err
 	}
@@ -157,24 +159,22 @@ func (m *Map) Create(id, kind string, state State) (string, State, error) {
 		outState, err = r.Service.Configure(state.Config)
 	}
 
-	if err != nil {
-		return "", State{}, err
-	}
-
 	change := &Change{
 		ChangeTime: m.now(),
 		ChangeType: types.ChangeType_ADD,
 		NewValue:   r,
+		cID:        cID,
 	}
 	go m.bus.Send(context.Background(), change)
-	return r.Id, outState, nil
+
+	return r.Id, outState, err
 }
 
 // Delete stops and removes the record with the given ID from m.
 // If id is not found, returns ErrNotFound.
 // Delete does not error if the record is already stopped.
 func (m *Map) Delete(id string) (State, error) {
-	r, err := m.deleteRecord(id)
+	r, cID, err := m.deleteRecord(id)
 	if err != nil {
 		return State{}, err
 	}
@@ -189,6 +189,7 @@ func (m *Map) Delete(id string) (State, error) {
 		ChangeTime: m.now(),
 		ChangeType: types.ChangeType_REMOVE,
 		OldValue:   r,
+		cID:        cID,
 	})
 	return state, err
 }
@@ -229,10 +230,29 @@ func (m *Map) Listen(ctx context.Context) <-chan *Change {
 }
 
 func (m *Map) GetAndListen(ctx context.Context) ([]*Record, <-chan *Change) {
-	// todo: this isn't safe!
+	// must listen before getting values
 	ch := m.bus.Listen(ctx)
-	vs := m.Values()
-	return vs, ch
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	values := maps.Values(m.known)
+	cID := m.lastCID // the id of the event that is associated with values
+
+	// skip events that are already recorded in values.
+	// this avoids, for example, having an item in values that also has a CREATED event waiting in bus.
+	// The main reason for this is to avoid holding mu while sending on bus as that's blocking based on caller code
+	out := make(chan *Change)
+	go func() {
+		defer close(out)
+		for change := range ch {
+			if change.cID == cID+1 {
+				cID++
+				if err := chans.SendContext(ctx, out, change); err != nil {
+					return
+				}
+			}
+		}
+	}()
+	return values, out
 }
 
 func (m *Map) GetAndListenState(ctx context.Context) ([]*StateRecord, <-chan *StateChange) {
@@ -270,6 +290,7 @@ func (m *Map) GetAndListenState(ctx context.Context) ([]*StateRecord, <-chan *St
 			case change.OldValue == nil: // add
 				// just in case
 				if stop, ok := stopByID[change.NewValue.Id]; ok {
+					log.Printf("state listener for %s already exists, stopping", change.NewValue.Id)
 					stop()
 				}
 
@@ -340,13 +361,13 @@ func (m *Map) listenRecordStates(ctx context.Context, record *Record, stateRecor
 	_ = chans.SendContext(ctx, out, removedChange)
 }
 
-func (m *Map) createRecord(id, kind string) (*Record, error) {
+func (m *Map) createRecord(id, kind string) (*Record, uint64, error) {
 	if m.create == nil {
-		return nil, ErrImmutable
+		return nil, 0, ErrImmutable
 	}
 	s, err := m.create(kind)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	m.mu.Lock()
@@ -356,7 +377,7 @@ func (m *Map) createRecord(id, kind string) (*Record, error) {
 		var err error
 		id, err = m.idFunc(kind, m.idExists)
 		if err != nil {
-			return nil, fmt.Errorf("bad id %w", err)
+			return nil, 0, fmt.Errorf("bad id %w", err)
 		}
 	}
 
@@ -366,21 +387,23 @@ func (m *Map) createRecord(id, kind string) (*Record, error) {
 		Service: s,
 	}
 	m.known[id] = r
-	return r, nil
+	m.lastCID++
+	return r, m.lastCID, nil
 }
 
-func (m *Map) deleteRecord(id string) (*Record, error) {
+func (m *Map) deleteRecord(id string) (*Record, uint64, error) {
 	if m.create == nil {
-		return nil, ErrImmutable
+		return nil, 0, ErrImmutable
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	r, ok := m.known[id]
 	if !ok {
-		return nil, ErrNotFound
+		return nil, 0, ErrNotFound
 	}
 	delete(m.known, id)
-	return r, nil
+	m.lastCID++
+	return r, m.lastCID, nil
 }
 
 // idExists returns whether the given id exists in m.known.
@@ -395,6 +418,7 @@ type Change struct {
 	ChangeType types.ChangeType
 	OldValue   *Record
 	NewValue   *Record
+	cID        uint64
 }
 
 type StateRecord struct {
