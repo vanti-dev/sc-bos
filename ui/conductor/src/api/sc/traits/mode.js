@@ -2,9 +2,12 @@ import {fieldMaskFromObject, setProperties} from '@/api/convpb';
 import {clientOptions} from '@/api/grpcweb.js';
 import {trackAction} from '@/api/resource';
 import {pullResource, setValue} from '@/api/resource.js';
-import {ModeApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/mode_grpc_web_pb';
+import {ModeApiPromiseClient, ModeInfoPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/mode_grpc_web_pb';
 import {
-  ModeValues, ModeValuesRelative,
+  DescribeModesRequest,
+  ModesSupport,
+  ModeValues,
+  ModeValuesRelative,
   PullModeValuesRequest,
   UpdateModeValuesRequest
 } from '@smart-core-os/sc-api-grpc-web/traits/mode_pb';
@@ -41,6 +44,19 @@ export function updateModeValues(request, tracker) {
 }
 
 /**
+ *
+ * @param {DescribeModesRequest.AsObject} request
+ * @param {ActionTracker<ModesSupport.AsObject>} tracker
+ * @return {Promise<ModesSupport.AsObject>}
+ */
+export function describeModes(request, tracker) {
+  return trackAction('ModeSettings.describeModes', tracker ?? {}, endpoint => {
+    const api = new ModeInfoPromiseClient(endpoint, null, clientOptions());
+    return api.describeModes(describeModesRequestFromObject(request));
+  });
+}
+
+/**
  * @param {UpdateModeValuesRequest.AsObject} obj
  * @return {UpdateModeValuesRequest}
  */
@@ -52,6 +68,18 @@ export function updateModeValuesRequestFromObject(obj) {
   req.setModeValues(modeValuesFromObject(obj.modeValues));
   req.setRelative(modeValuesRelativeFromObject(obj.relative));
   req.setUpdateMask(fieldMaskFromObject(obj.updateMask));
+  return req;
+}
+
+/**
+ * @param {DescribeModesRequest.AsObject} obj
+ * @return {DescribeModesRequest|undefined}
+ */
+function describeModesRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const req = new DescribeModesRequest();
+  setProperties(req, obj, 'name');
   return req;
 }
 

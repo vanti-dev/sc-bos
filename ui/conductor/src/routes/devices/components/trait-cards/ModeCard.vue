@@ -3,25 +3,25 @@
     <v-card elevation="0" tile>
       <v-list tile class="ma-0 pa-0">
         <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Modes</v-subheader>
-        <v-list-item v-for="mode in modes" :key="mode[0]">
+        <v-list-item v-for="mode in modesDisplay" :key="mode.key">
           <v-list-item-content>
-            <template v-if="mode[0] === 'lighting.mode'">
+            <template v-if="mode.values">
               <v-select
-                  label="Lighting Mode"
-                  :items="['auto', 'normal', 'extended', 'night', 'maintenance', 'test']"
-                  :value="mode[1]"
-                  @input="updateMode(mode[0], $event, true)"
-                  :disabled="updateValue.loading"
+                  :label="mode.title"
+                  :items="mode.values"
+                  :value="mode.value"
+                  @input="updateMode(mode.key, $event, true)"
+                  :disabled="loading"
                   outlined
                   dense
                   hide-details/>
             </template>
             <template v-else>
               <v-text-field
-                  :label="mode[0]"
-                  :value="mode[1]"
-                  @input="updateMode(mode[0], $event)"
-                  :disabled="updateValue.loading"
+                  :label="mode.title"
+                  :value="mode.value"
+                  @input="updateMode(mode.key, $event)"
+                  :disabled="loading"
                   outlined
                   dense
                   hide-details/>
@@ -41,7 +41,7 @@
 <script setup>
 
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
-import {pullModeValues, updateModeValues} from '@/api/sc/traits/mode';
+import {describeModes, pullModeValues, updateModeValues} from '@/api/sc/traits/mode';
 import {useErrorStore} from '@/components/ui-error/error';
 import {computed, onMounted, onUnmounted, reactive, set, watch} from 'vue';
 
@@ -55,6 +55,9 @@ const props = defineProps({
 
 const modeValue = reactive(newResourceValue());
 const updateValue = reactive(newActionTracker());
+const modeInfo = reactive(newActionTracker());
+
+const loading = computed(() => modeValue.loading || updateValue.loading || describeModes.loading);
 
 // track edits so we can commit them all in one go, or show a dirty flag if needed
 const edits = reactive({});
@@ -74,13 +77,16 @@ const dirty = computed(() => {
 const errorStore = useErrorStore();
 let unwatchModeError;
 let unwatchUpdateError;
+let unwatchDescribeError;
 onMounted(() => {
   unwatchModeError = errorStore.registerValue(modeValue);
   unwatchUpdateError = errorStore.registerTracker(updateValue);
+  unwatchDescribeError = errorStore.registerTracker(modeInfo);
 });
 onUnmounted(() => {
   if (unwatchModeError) unwatchModeError();
   if (unwatchUpdateError) unwatchUpdateError();
+  if (unwatchDescribeError) unwatchDescribeError();
 });
 
 // if device name changes
@@ -89,6 +95,8 @@ watch(() => props.name, async (name) => {
   closeResource(modeValue);
   // create new stream
   if (name && name !== '') {
+    // noinspection ES6MissingAwait - handled by tracker
+    describeModes({name}, modeInfo);
     pullModeValues(name, modeValue);
   }
 }, {immediate: true});
@@ -103,6 +111,43 @@ const modes = computed(() => {
   }
   return [];
 });
+const modesDisplay = computed(() => modes.value.map(m => modeDisplay(m)));
+
+// like {"myMode": ["opt1", "opt2"]}
+const modeInfoMap = computed(() => {
+  const modesList = modeInfo.response?.availableModes?.modesList || [];
+  const res = {};
+  for (const mode of modesList) {
+    res[mode.name] = mode.valuesList.map(v => v.name);
+  }
+  return res;
+});
+
+/**
+ * @param {string[]} mode
+ * @return {{key: string, value: string, values?: string[], title: string}}
+ */
+function modeDisplay([k, v]) {
+  let items = undefined;
+  if (modeInfoMap.value[k]) {
+    items = modeInfoMap.value[k];
+  }
+  if (k === 'lighting.mode') {
+    return {
+      key: k,
+      value: v,
+      title: 'Lighting Mode',
+      values: items || ['auto', 'normal', 'extended', 'night', 'maintenance', 'test']
+    };
+  } else {
+    return {
+      key: k,
+      value: v,
+      title: k,
+      values: items || undefined
+    };
+  }
+}
 
 /**
  * @param {string} key

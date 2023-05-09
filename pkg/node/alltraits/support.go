@@ -123,8 +123,14 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 		s.Support(node.Routing(r), node.Clients(microphone.WrapApi(r)))
 	},
 	trait.Mode: func(s node.Supporter) {
-		r := mode.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(mode.WrapApi(r)))
+		{
+			r := mode.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(mode.WrapApi(r)))
+		}
+		{
+			r := mode.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(mode.WrapInfo(r)))
+		}
 	},
 	trait.MotionSensor: func(s node.Supporter) {
 		r := motionsensor.NewApiRouter()

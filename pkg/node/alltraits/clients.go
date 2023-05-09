@@ -119,3 +119,94 @@ func HistoryClient(conn grpc.ClientConnInterface, t trait.Name) any {
 		return nil
 	}
 }
+
+// InfoClient returns the {trait}InfoClient implementation for the named trait.
+// For example passing trait.Meter would return traits.NewMeterInfoClient.
+// Returns nil if the trait is not known or has no info aspect.
+func InfoClient(conn grpc.ClientConnInterface, t trait.Name) any {
+	// todo: I feel this should really live in sc-golang somewhere
+
+	switch t {
+	case trait.AirQualitySensor:
+		return traits.NewAirQualitySensorInfoClient(conn)
+	case trait.AirTemperature:
+		return traits.NewAirTemperatureInfoClient(conn)
+	case trait.Booking:
+		return traits.NewBookingInfoClient(conn)
+	case trait.BrightnessSensor:
+		return traits.NewBrightnessSensorInfoClient(conn)
+	case trait.Channel:
+		return traits.NewChannelInfoClient(conn)
+	case trait.Count:
+		return traits.NewCountInfoClient(conn)
+	case trait.Electric:
+		return traits.NewElectricInfoClient(conn)
+	case trait.Emergency:
+		return traits.NewEmergencyInfoClient(conn)
+	case trait.EnergyStorage:
+		return traits.NewEnergyStorageInfoClient(conn)
+	case trait.EnterLeaveSensor:
+		return traits.NewEnterLeaveSensorInfoClient(conn)
+	case trait.ExtendRetract:
+		return traits.NewExtendRetractInfoClient(conn)
+	case trait.FanSpeed:
+		return traits.NewFanSpeedInfoClient(conn)
+	case trait.Hail:
+		return traits.NewHailInfoClient(conn)
+	case trait.InputSelect:
+		return traits.NewInputSelectInfoClient(conn)
+	case trait.Light:
+		return traits.NewLightInfoClient(conn)
+	case trait.LockUnlock:
+		return traits.NewLockUnlockInfoClient(conn)
+	case trait.Metadata:
+		return traits.NewMetadataInfoClient(conn)
+	case trait.Microphone:
+		return traits.NewMicrophoneInfoClient(conn)
+	case trait.Mode:
+		return traits.NewModeInfoClient(conn)
+	case trait.MotionSensor:
+		// return traits.NewMotionSensorInfoClient(conn)
+		return nil
+	case trait.OccupancySensor:
+		return traits.NewOccupancySensorInfoClient(conn)
+	case trait.OnOff:
+		return traits.NewOnOffInfoClient(conn)
+	case trait.OpenClose:
+		return traits.NewOpenCloseInfoClient(conn)
+	case trait.Parent:
+		return traits.NewParentInfoClient(conn)
+	case trait.Publication:
+		// return traits.NewPublicationInfoClient(conn)
+		return nil
+	case trait.Ptz:
+		return traits.NewPtzInfoClient(conn)
+	case trait.Speaker:
+		return traits.NewSpeakerInfoClient(conn)
+	case trait.Vending:
+		return traits.NewVendingInfoClient(conn)
+
+		// sc-bos private traits
+	case button.TraitName:
+		// return gen.NewButtonInfoClient(conn)
+		return nil
+	case color.TraitName:
+		return gen.NewColorInfoClient(conn)
+	case emergencylight.TraitName:
+		// return gen.NewDaliInfoClient(conn)
+		return nil
+	case meter.TraitName:
+		// return gen.NewMeterInfoClient(conn)
+		return nil
+	case mqttpb.TraitName:
+		// return gen.NewMqttInfoClient(conn)
+		return nil
+	case statuspb.TraitName:
+		// return gen.NewStatusInfoClient(conn)
+		return nil
+	case udmipb.TraitName:
+		// return gen.NewUdmiInfoClient(conn)
+		return nil
+	}
+	return nil
+}
