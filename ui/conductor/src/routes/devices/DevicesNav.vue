@@ -1,6 +1,13 @@
 <template>
   <v-list class="pa-0" dense nav>
-    <v-list-item v-for="(device, key) in availableSubSystems" :key="key" :to="device.to">
+    <v-list-item
+        v-for="(device, key) in availableSubSystems"
+        :id="device.label"
+        :key="key"
+        :to="device.to"
+        @keyup.down="keyboardNavigation($event, device)"
+        @keyup.up="keyboardNavigation($event, device)"
+        @click="keyboardNavigation($event, device)">
       <v-list-item-icon>
         <v-icon>{{ device.icon }}</v-icon>
       </v-list-item-icon>
@@ -10,10 +17,13 @@
 </template>
 
 <script setup>
+
 import {computed, reactive} from 'vue';
 import {useDevicesStore} from './store';
 import {newActionTracker} from '@/api/resource';
+import {useRouter, useRoute} from 'vue-router/composables';
 
+const routeTo = useRouter();
 const deviceStore = useDevicesStore();
 const tracker = reactive(newActionTracker());
 
@@ -73,6 +83,36 @@ const availableSubSystems = computed(() => {
   // finally return the array of objects
   return navigationItems;
 });
+
+/**
+ * @typedef {Object} Device
+ * @property {string} to
+ * @property {string} icon
+ * @property {string} label
+ * @property {string} class
+ * @param {KeyboardEvent|MouseEvent} event
+ * @param {Device} device
+ */
+function keyboardNavigation(event, device) {
+  const keyCode = event.keyCode;
+  const isArrowKey = [38, 40].includes(keyCode); // up and down arrow codes
+
+  if (isArrowKey || event.type === 'click') {
+    event.preventDefault();
+
+    const currentIndex = availableSubSystems.value.findIndex(subSystem => subSystem.label === device.label);
+    const nextIndex = isArrowKey ? (keyCode === 40 ? currentIndex + 1 : currentIndex - 1) : -1;
+
+    const nextItem = availableSubSystems.value[nextIndex];
+    if (nextItem) {
+      routeTo.push({path: nextItem.to});
+      document.getElementById(nextItem.label).focus();
+    } else if (event.type === 'click') {
+      routeTo.push({path: device.to});
+      event.currentTarget.focus();
+    }
+  }
+}
 
 // onCreate
 deviceStore.fetchDeviceSubsystemCounts(tracker);
