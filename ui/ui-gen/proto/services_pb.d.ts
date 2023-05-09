@@ -86,6 +86,12 @@ export class ServiceMetadata extends jspb.Message {
   getTypeCountsMap(): jspb.Map<string, number>;
   clearTypeCountsMap(): ServiceMetadata;
 
+  getTotalActiveCount(): number;
+  setTotalActiveCount(value: number): ServiceMetadata;
+
+  getTotalErrorCount(): number;
+  setTotalErrorCount(value: number): ServiceMetadata;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ServiceMetadata.AsObject;
   static toObject(includeInstance: boolean, msg: ServiceMetadata): ServiceMetadata.AsObject;
@@ -98,6 +104,8 @@ export namespace ServiceMetadata {
   export type AsObject = {
     totalCount: number,
     typeCountsMap: Array<[string, number]>,
+    totalActiveCount: number,
+    totalErrorCount: number,
   }
 }
 

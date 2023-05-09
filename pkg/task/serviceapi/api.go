@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"golang.org/x/exp/constraints"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -391,7 +392,7 @@ func (a *Api) StopService(_ context.Context, request *gen.StopServiceRequest) (*
 
 func (a *Api) GetServiceMetadata(_ context.Context, request *gen.GetServiceMetadataRequest) (*gen.ServiceMetadata, error) {
 	md := a.newMetadata()
-	a.seedMetadata(md)
+	a.seedMetadata(md, a.m.States())
 
 	filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 	filter.Filter(md)
@@ -405,19 +406,24 @@ func (a *Api) PullServiceMetadata(request *gen.PullServiceMetadataRequest, serve
 	ctx, stop := context.WithCancel(server.Context())
 	defer stop()
 
-	changes := a.m.Listen(ctx) // do this before getting the map values
-	a.seedMetadata(md)
+	current, changes := a.m.GetAndListenState(ctx)
+	a.seedMetadata(md, current)
 
 	filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 
 	var lastSent *gen.ServiceMetadata
 	send := func(md *gen.ServiceMetadata) error {
-		md = filter.FilterClone(md).(*gen.ServiceMetadata)
+		md = proto.Clone(md).(*gen.ServiceMetadata)
+		filter.Filter(md)
 		if proto.Equal(md, lastSent) {
 			return nil // no change, don't send
 		}
 		lastSent = md
-		change := &gen.PullServiceMetadataResponse_Change{Metadata: md}
+		change := &gen.PullServiceMetadataResponse_Change{
+			Name:       request.Name,
+			Metadata:   md,
+			ChangeTime: timestamppb.Now(),
+		}
 		response := &gen.PullServiceMetadataResponse{Changes: []*gen.PullServiceMetadataResponse_Change{change}}
 		return server.Send(response)
 	}
@@ -429,20 +435,7 @@ func (a *Api) PullServiceMetadata(request *gen.PullServiceMetadataRequest, serve
 	}
 
 	for change := range changes {
-		if change.OldValue == nil && change.NewValue != nil {
-			// add
-			md.TotalCount++
-			md.TypeCounts[change.NewValue.Kind]++
-		} else if change.OldValue != nil && change.NewValue == nil {
-			// delete
-			md.TotalCount--
-			if md.TypeCounts[change.OldValue.Kind] > 0 { // just in case
-				md.TypeCounts[change.OldValue.Kind]--
-			}
-		} else {
-			continue // no change worth sending
-		}
-
+		updateRecord(md, change.OldValue, change.NewValue)
 		if err := send(md); err != nil {
 			return err
 		}
@@ -460,10 +453,53 @@ func (a *Api) newMetadata() *gen.ServiceMetadata {
 	return md
 }
 
-func (a *Api) seedMetadata(md *gen.ServiceMetadata) {
-	for _, record := range a.m.Values() {
-		md.TotalCount++
-		md.TypeCounts[record.Kind]++
+func (a *Api) seedMetadata(md *gen.ServiceMetadata, states []*service.StateRecord) {
+	for _, record := range states {
+		incRecord(md, record, 1)
+	}
+}
+
+func incRecord(md *gen.ServiceMetadata, record *service.StateRecord, inc int) {
+	addIntP(&md.TotalCount, inc)
+	md.TypeCounts[record.Kind] = addInt(md.TypeCounts[record.Kind], inc)
+	s := record.State
+	if s.Active {
+		addIntP(&md.TotalActiveCount, inc)
+	}
+	if !s.Active && s.Err != nil {
+		addIntP(&md.TotalErrorCount, inc)
+	}
+}
+
+func updateRecord(md *gen.ServiceMetadata, oldVal, newVal *service.StateRecord) {
+	// this does a little more than strictly needed, but works and is simple
+	if oldVal != nil {
+		incRecord(md, oldVal, -1)
+	}
+	if newVal != nil {
+		incRecord(md, newVal, 1)
+	}
+}
+
+func addIntP[N constraints.Integer](a *N, b int) {
+	*a = addInt(*a, b)
+}
+
+func addInt[N constraints.Integer](a N, b int) N {
+	if b < 0 {
+		a2 := a - N(-b)
+		// check for underflow
+		if a2 > a {
+			return a
+		}
+		return a2
+	} else {
+		a2 := a + N(b)
+		// check for overflow
+		if a2 < a {
+			return a
+		}
+		return a2
 	}
 }
 

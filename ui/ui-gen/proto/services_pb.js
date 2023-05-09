@@ -1086,7 +1086,9 @@ proto.smartcore.bos.ServiceMetadata.prototype.toObject = function(opt_includeIns
 proto.smartcore.bos.ServiceMetadata.toObject = function(includeInstance, msg) {
   var f, obj = {
     totalCount: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    typeCountsMap: (f = msg.getTypeCountsMap()) ? f.toObject(includeInstance, undefined) : []
+    typeCountsMap: (f = msg.getTypeCountsMap()) ? f.toObject(includeInstance, undefined) : [],
+    totalActiveCount: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    totalErrorCount: jspb.Message.getFieldWithDefault(msg, 4, 0)
   };
 
   if (includeInstance) {
@@ -1124,7 +1126,7 @@ proto.smartcore.bos.ServiceMetadata.deserializeBinaryFromReader = function(msg, 
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {number} */ (reader.readInt32());
+      var value = /** @type {number} */ (reader.readUint32());
       msg.setTotalCount(value);
       break;
     case 2:
@@ -1132,6 +1134,14 @@ proto.smartcore.bos.ServiceMetadata.deserializeBinaryFromReader = function(msg, 
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readUint32, null, "", 0);
          });
+      break;
+    case 3:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setTotalActiveCount(value);
+      break;
+    case 4:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setTotalErrorCount(value);
       break;
     default:
       reader.skipField();
@@ -1164,7 +1174,7 @@ proto.smartcore.bos.ServiceMetadata.serializeBinaryToWriter = function(message, 
   var f = undefined;
   f = message.getTotalCount();
   if (f !== 0) {
-    writer.writeInt32(
+    writer.writeUint32(
       1,
       f
     );
@@ -1173,11 +1183,25 @@ proto.smartcore.bos.ServiceMetadata.serializeBinaryToWriter = function(message, 
   if (f && f.getLength() > 0) {
     f.serializeBinary(2, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeUint32);
   }
+  f = message.getTotalActiveCount();
+  if (f !== 0) {
+    writer.writeUint32(
+      3,
+      f
+    );
+  }
+  f = message.getTotalErrorCount();
+  if (f !== 0) {
+    writer.writeUint32(
+      4,
+      f
+    );
+  }
 };
 
 
 /**
- * optional int32 total_count = 1;
+ * optional uint32 total_count = 1;
  * @return {number}
  */
 proto.smartcore.bos.ServiceMetadata.prototype.getTotalCount = function() {
@@ -1214,6 +1238,42 @@ proto.smartcore.bos.ServiceMetadata.prototype.getTypeCountsMap = function(opt_no
 proto.smartcore.bos.ServiceMetadata.prototype.clearTypeCountsMap = function() {
   this.getTypeCountsMap().clear();
   return this;
+};
+
+
+/**
+ * optional uint32 total_active_count = 3;
+ * @return {number}
+ */
+proto.smartcore.bos.ServiceMetadata.prototype.getTotalActiveCount = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.smartcore.bos.ServiceMetadata} returns this
+ */
+proto.smartcore.bos.ServiceMetadata.prototype.setTotalActiveCount = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
+};
+
+
+/**
+ * optional uint32 total_error_count = 4;
+ * @return {number}
+ */
+proto.smartcore.bos.ServiceMetadata.prototype.getTotalErrorCount = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.smartcore.bos.ServiceMetadata} returns this
+ */
+proto.smartcore.bos.ServiceMetadata.prototype.setTotalErrorCount = function(value) {
+  return jspb.Message.setProto3IntField(this, 4, value);
 };
 
 

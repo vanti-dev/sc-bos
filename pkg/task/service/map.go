@@ -13,6 +13,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
+	"github.com/vanti-dev/sc-bos/pkg/util/chans"
 	"github.com/vanti-dev/sc-bos/pkg/util/maps"
 )
 
@@ -206,9 +207,137 @@ func (m *Map) Values() []*Record {
 	return maps.Values(m.known)
 }
 
+// States returns all known states in an indeterminate order.
+func (m *Map) States() []*StateRecord {
+	m.mu.Lock()
+	records := maps.Values(m.known)
+	m.mu.Unlock()
+	out := make([]*StateRecord, len(records))
+	for i, val := range records {
+		r := &StateRecord{
+			Record: val,
+			State:  val.Service.State(),
+		}
+		out[i] = r
+	}
+	return out
+}
+
 // Listen emits changes to m on the returns chan until ctx is done.
 func (m *Map) Listen(ctx context.Context) <-chan *Change {
 	return m.bus.Listen(ctx)
+}
+
+func (m *Map) GetAndListen(ctx context.Context) ([]*Record, <-chan *Change) {
+	// todo: this isn't safe!
+	ch := m.bus.Listen(ctx)
+	vs := m.Values()
+	return vs, ch
+}
+
+func (m *Map) GetAndListenState(ctx context.Context) ([]*StateRecord, <-chan *StateChange) {
+	var states []*StateRecord
+	out := make(chan *StateChange)
+	var wg sync.WaitGroup // tracks go routines that can send to out, we only close out when there are no more
+	listen := func(record *Record, stateRecord *StateRecord, changes <-chan State) {
+		wg.Add(1)
+		defer wg.Done()
+		m.listenRecordStates(ctx, record, stateRecord, changes, out)
+	}
+
+	records, changes := m.GetAndListen(ctx)
+	stopByID := make(map[string]context.CancelFunc)
+
+	// current values
+	for _, record := range records {
+		ctx, stop := context.WithCancel(ctx)
+		stopByID[record.Id] = stop
+
+		state, stateChanges := record.Service.StateAndChanges(ctx)
+		stateRecord := &StateRecord{
+			Record: record,
+			State:  state,
+		}
+		states = append(states, stateRecord)
+		go listen(record, stateRecord, stateChanges)
+	}
+
+	// updates
+	go func() {
+		for change := range changes {
+			switch {
+			case change.OldValue == nil && change.NewValue == nil: // just in case
+			case change.OldValue == nil: // add
+				// just in case
+				if stop, ok := stopByID[change.NewValue.Id]; ok {
+					stop()
+				}
+
+				// this ctx tracks the listener on the records state
+				ctx, stop := context.WithCancel(ctx)
+				stopByID[change.NewValue.Id] = stop
+
+				record := change.NewValue
+				state, stateChanges := record.Service.StateAndChanges(ctx)
+				stateRecord := &StateRecord{
+					Record: record,
+					State:  state,
+				}
+				stateChange := &StateChange{
+					OldValue:   nil,
+					NewValue:   stateRecord,
+					ChangeTime: change.ChangeTime,
+					ChangeType: types.ChangeType_ADD,
+				}
+				if err := chans.SendContext(ctx, out, stateChange); err != nil {
+					return
+				}
+				go listen(record, stateRecord, stateChanges)
+			case change.NewValue == nil: // remove
+				if stop, ok := stopByID[change.OldValue.Id]; ok {
+					stop()
+					delete(stopByID, change.OldValue.Id)
+				}
+			}
+		}
+
+		// ctx is done, that's the only way changes is closed
+		wg.Wait()
+		close(out)
+	}()
+
+	return states, out
+}
+
+// listenRecordStates sends on out each time stateChanges sends.
+// ctx should be the context for the overarching listen, the one associated with _all_ records.
+// stateChanges should close when no more changes are going to be sent.
+// This function will send a REMOVE to out before it returns, so out should not be closed until then.
+func (m *Map) listenRecordStates(ctx context.Context, record *Record, stateRecord *StateRecord, stateChanges <-chan State, out chan<- *StateChange) {
+	for newState := range stateChanges {
+		old := stateRecord
+		stateRecord = &StateRecord{
+			Record: record,
+			State:  newState,
+		}
+		change := &StateChange{
+			OldValue:   old,
+			NewValue:   stateRecord,
+			ChangeType: types.ChangeType_UPDATE,
+			ChangeTime: m.now(),
+		}
+		if err := chans.SendContext(ctx, out, change); err != nil {
+			return
+		}
+	}
+
+	removedChange := &StateChange{
+		OldValue:   stateRecord,
+		ChangeType: types.ChangeType_REMOVE,
+		ChangeTime: m.now(),
+	}
+	// ignore the error because this is the last thing we're doing anyway
+	_ = chans.SendContext(ctx, out, removedChange)
 }
 
 func (m *Map) createRecord(id, kind string) (*Record, error) {
@@ -266,4 +395,16 @@ type Change struct {
 	ChangeType types.ChangeType
 	OldValue   *Record
 	NewValue   *Record
+}
+
+type StateRecord struct {
+	*Record
+	State State
+}
+
+type StateChange struct {
+	ChangeTime time.Time
+	ChangeType types.ChangeType
+	OldValue   *StateRecord
+	NewValue   *StateRecord
 }

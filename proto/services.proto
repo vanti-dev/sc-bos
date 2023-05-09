@@ -73,7 +73,7 @@ message Service {
 }
 
 message ServiceMetadata {
-  int32 total_count = 1;
+  uint32 total_count = 1;
 
   // These counts have a key that matches the value in Service,
   // and a value equal to the total number of services that have that value.
@@ -84,6 +84,10 @@ message ServiceMetadata {
   // The server may include keys that have a zero value.
 
   map<string, uint32> type_counts = 2;
+  // The total number of active services, services whose active property is true.
+  uint32 total_active_count = 3;
+  // The total number of services who are inactive due to error.
+  uint32 total_error_count = 4;
 }
 
 message GetServiceRequest {
