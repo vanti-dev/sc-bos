@@ -134,73 +134,44 @@ func (c *Controller) startZones() (*service.Map, error) {
 }
 
 func logServiceMapChanges(ctx context.Context, logger *zap.Logger, m *service.Map) {
-	known := map[string]func(){}
-	changes := m.Listen(ctx)
-	for _, record := range m.Values() {
-		ctx, stop := context.WithCancel(ctx)
-		known[record.Id] = stop
-		record := record
-		go logServiceRecordChanges(ctx, logger, record)
+	now, changes := m.GetAndListenState(ctx)
+	for _, record := range now {
+		logServiceRecordChange(logger, nil, record)
 	}
 	for change := range changes {
-		if change.OldValue == nil && change.NewValue != nil {
-			// add
-			if _, ok := known[change.NewValue.Id]; ok {
-				continue // deal with potential race between Listen and Values
-			}
-			ctx, stop := context.WithCancel(ctx)
-			known[change.NewValue.Id] = stop
-			go logServiceRecordChanges(ctx, logger, change.NewValue)
-		} else if change.OldValue != nil && change.NewValue == nil {
-			// remove
-			stop, ok := known[change.OldValue.Id]
-			if !ok {
-				continue
-			}
-			delete(known, change.OldValue.Id)
-			stop()
-		}
+		logServiceRecordChange(logger, change.OldValue, change.NewValue)
 	}
 }
 
-func logServiceRecordChanges(ctx context.Context, logger *zap.Logger, r *service.Record) {
-	logger = logger.With(zap.String("id", r.Id), zap.String("kind", r.Kind))
-	state, changes := r.Service.StateAndChanges(ctx)
-	lastMode := ""
-	logMode := func(change service.State) {
-		mode := ""
-		switch {
-		case !change.Active && change.Err != nil:
-			mode = "error"
-		case !change.Active:
-			mode = "Stopped"
-		case change.Loading:
-			mode = "Loading"
-		case change.Active:
-			mode = "Running"
-		}
-		if mode == lastMode {
-			return
-		}
-		switch mode {
-		case "error":
-			logger.Warn("Failed to load", zap.Error(change.Err))
-		case "":
-			return
-		case "Stopped":
-			if lastMode == "" {
-				logger.Debug("Created")
-			} else {
-				logger.Debug(mode)
-			}
-		default:
-			logger.Debug(mode)
-		}
-		lastMode = mode
+func logServiceRecordChange(logger *zap.Logger, oldVal, newVal *service.StateRecord) {
+	switch {
+	case newVal != nil:
+		logger = logger.With(zap.String("id", newVal.Id), zap.String("kind", newVal.Kind))
+	case oldVal != nil:
+		logger = logger.With(zap.String("id", oldVal.Id), zap.String("kind", oldVal.Kind))
 	}
-	logMode(state)
-	for change := range changes {
-		logMode(change)
+	switch {
+	case oldVal == nil && newVal != nil: // do nothing
+	case newVal == nil: // removed
+		logger.Debug("Removed")
+	case oldVal == nil: // created
+		logger.Debug("Created", zap.Bool("active", newVal.State.Active), zap.Bool("loading", newVal.State.Loading), zap.Error(newVal.State.Err))
+	case newVal.State.Err != nil && oldVal.State.Err == nil: // error
+		logger.Warn("Failed to load", zap.Error(newVal.State.Err))
+	case oldVal.State.Active && !newVal.State.Active: // stopped
+		logger.Debug("Stopped", zap.Error(newVal.State.Err))
+	case !oldVal.State.Active && newVal.State.Active || oldVal.State.Loading && !newVal.State.Loading: // started
+		logger.Debug("Started")
+	case newVal.State.Active && newVal.State.Loading: // loading
+		logger.Debug("Loading")
+	default:
+		type state struct {
+			Active, Loading bool
+			Error           error
+		}
+		oldState := state{Active: oldVal.State.Active, Loading: oldVal.State.Loading, Error: oldVal.State.Err}
+		newState := state{Active: newVal.State.Active, Loading: newVal.State.Loading, Error: newVal.State.Err}
+		logger.Debug("Updated", zap.Any("old", oldState), zap.Any("new", newState))
 	}
 }
 
