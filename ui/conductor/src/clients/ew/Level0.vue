@@ -11,7 +11,7 @@
         <path
             d="M3543.34,27388L36940.8,27388L36940.8,33301.2L48810,33301.2L48810,60484L9938,60484L9938,51447L3543.34,51447L3543.34,27388Z"
             style="fill:none;stroke:rgb(0,129,213);stroke-width:400px;"/>
-        <g id="Doors" style="fill:#03BD5B">
+        <g id="Doors" style="fill:#03BD5B" v-if="showDoors">
           <rect x="9615" y="54479" width="672" height="2921"/>
           <g transform="matrix(6.12323e-17,1,-0.637111,3.90118e-17,49608.1,17437)">
             <rect x="9615" y="54479" width="672" height="2921"/>
@@ -47,6 +47,13 @@
 </template>
 
 <script setup>
+
+defineProps({
+  showDoors: {
+    type: Boolean,
+    default: false
+  }
+});
 
 </script>
 

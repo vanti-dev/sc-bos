@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="pa-0">
     <div>
-      <Level0/>
+      <Level0 show-doors/>
     </div>
   </v-container>
 </template>
