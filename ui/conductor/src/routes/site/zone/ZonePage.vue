@@ -13,7 +13,7 @@
           outlined/>
       <v-spacer/>
       <v-btn-toggle mandatory dense v-model="viewType">
-        <v-btn value="map" disabled>Map View</v-btn>
+        <v-btn value="map">Map View</v-btn>
         <v-btn value="list">List View</v-btn>
       </v-btn-toggle>
       <v-btn class="ml-6" v-if="editMode" @click="save" color="accent">
