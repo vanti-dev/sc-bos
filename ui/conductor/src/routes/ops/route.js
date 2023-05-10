@@ -1,8 +1,8 @@
 import ChildOnlyPage from '@/components/page-layout/ChildOnlyPage.vue';
 import notifications from '@/routes/ops/notifications/route.js';
+import {useAppConfigStore} from '@/stores/app-config';
 
 import {route} from '@/util/router.js';
-import {useAppConfigStore} from '@/stores/app-config';
 
 export default {
   name: 'ops',
@@ -14,6 +14,7 @@ export default {
   children: [
     {path: 'overview', component: () => import('./OpsHome.vue')},
     {path: 'emergency-lighting', component: () => import('./emergency-lighting/EmergencyLighting.vue')},
+    {path: 'security', component: () => import('./security/SecurityHome.vue')},
     ...route(notifications)
   ],
   meta: {
@@ -28,6 +29,8 @@ export default {
         next('/ops/notifications');
       } else if (appConfig.pathEnabled('/ops/emergency-lighting')) {
         next('/ops/emergency-lighting');
+      } else if (appConfig.pathEnabled('/ops/security')) {
+        next('/ops/security');
       }
     } else {
       next();

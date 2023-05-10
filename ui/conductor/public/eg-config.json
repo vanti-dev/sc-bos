@@ -10,7 +10,8 @@
     "ops": {
       "overview": true,
       "emergency-lighting": true,
-      "notifications": true
+      "notifications": true,
+      "security": true
     },
     "site": {
       "zone": {

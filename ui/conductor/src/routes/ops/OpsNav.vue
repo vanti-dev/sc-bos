@@ -48,6 +48,11 @@ const menuItems = [
     title: 'Emergency Lighting',
     icon: 'mdi-alarm-light-outline',
     link: {path: '/ops/emergency-lighting'}
+  },
+  {
+    title: 'Security',
+    icon: 'mdi-shield-key',
+    link: {path: '/ops/security'}
   }
 ];
 
