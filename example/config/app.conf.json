@@ -108,7 +108,7 @@
       "name": "Floor 3",
       "type": "area",
       "lights": ["lights/01", "lights/02", "lights/03"],
-      "hvac": ["FCU/01", "FCU/02"],
+      "thermostats": ["FCU/01", "FCU/02"],
       "occupancySensors": ["pir/01", "pir/02", "pir/03"]
     },
     {
@@ -120,7 +120,7 @@
         "speaker": ["lights/01"],
         "audience": ["lights/02", "lights/03"]
       },
-      "hvac": ["FCU/01"]
+      "thermostats": ["FCU/01"]
     },
     {
       "disabled": true,
@@ -131,7 +131,7 @@
         "speaker": ["lights/01"],
         "audience": ["lights/02", "lights/03"]
       },
-      "hvac": ["FCU/01"]
+      "thermostats": ["FCU/01"]
     },
     {
       "disabled": true,
@@ -142,7 +142,7 @@
         "speaker": ["lights/01"],
         "audience": ["lights/02", "lights/03"]
       },
-      "hvac": ["FCU/01"]
+      "thermostats": ["FCU/01"]
     }
   ]
 }
