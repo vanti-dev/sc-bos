@@ -5,10 +5,12 @@
         :class="tableClasses"
         fixed-header
         :headers="headers"
-        id="deviceTable"
+        hide-default-footer
         :items="tableData"
         :item-class="rowClass"
-        item-key="name">
+        item-key="name"
+        :items-per-page="itemsPerPage"
+        :page.sync="activePage">
       <template #top>
         <!-- todo: bulk actions -->
         <!-- filters -->
@@ -55,12 +57,10 @@
           <tr
               v-for="item in items"
               v-intersect="{
-                handler: (entries, observer) => onRowIntersect(entries, observer, item),
+                handler: (entries, observer) => onRowIntersect(entries, observer, item.name),
                 options: {
                   rootMargin: '80px 0px 58px 0px',
-                  threshold: 1,
-                  trackVisibility: true,
-                  delay: 100
+                  threshold: 1
                 }
               }"
               :key="item.name"
@@ -72,8 +72,8 @@
               <WithOccupancy
                   v-if="findOccupancySensor(item)"
                   class="text-center"
-                  :item="item"
-                  :table="true"
+                  :name="item.name"
+                  :paused="!intersectedItemNames[item.name]"
                   v-slot="{ occupancyState, occupancyValue }">
                 <p :class="[occupancyState.toLowerCase(), 'ma-0 text-body-2']">{{ occupancyState }}</p>
                 <v-progress-linear color="primary" indeterminate :active="occupancyValue.loading"/>
@@ -81,6 +81,42 @@
             </td>
           </tr>
         </tbody>
+      </template>
+      <template #footer>
+        <v-divider/>
+        <v-row class="ma-0 pa-0 pt-2 mb-n2">
+          <v-spacer/>
+          <v-col cols="auto">
+            <v-pagination
+                v-show="itemsPerPage < tableData.length"
+                :length="pageCount"
+                :value="activePage"
+                @input="setPageData($event)"/>
+          </v-col>
+          <v-col cols="auto">
+            <v-select
+                dense
+                outlined
+                hide-details
+                :value="itemsPerPage"
+                label="Items per page"
+                :items="[...perPageChoices, {text: 'All', value: tableData.length}]"
+                style="width: 150px; cursor: pointer;"
+                @change="itemsPerPage = parseInt($event, 10)"/>
+          </v-col>
+          <v-col cols="auto">
+            <v-text-field
+                v-show="itemsPerPage < tableData.length"
+                v-model="activePage"
+                label="Go to page"
+                type="number"
+                outlined
+                hide-details
+                dense
+                style="width: 100px"
+                @input="activePage = parseInt($event, 10)"/>
+          </v-col>
+        </v-row>
       </template>
     </v-data-table>
   </content-card>
@@ -97,9 +133,11 @@ import {useErrorStore} from '@/components/ui-error/error';
 import {useDevicesStore} from '@/routes/devices/store';
 import {Zone} from '@/routes/site/zone/zone';
 import {usePageStore} from '@/stores/page';
+import {useOccupancyStore} from '@/routes/devices/components/renderless-components/occupancyStore';
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();
+const {findOccupancySensor, intersectedItemNames, onRowIntersect, resetIntersectedItemNames} = useOccupancyStore();
 const errorStore = useErrorStore();
 
 const props = defineProps({
@@ -138,6 +176,7 @@ const headers = ref([
   {text: 'Location', value: 'metadata.location.title'},
   {text: '', value: 'hotpoints', align: 'end', width: '100'}
 ]);
+
 
 const search = ref('');
 
@@ -225,32 +264,24 @@ const query = computed(() => {
 
 const tableData = computed(() => {
   return Object.values(collection.resources.value)
-      .filter(props.filter)
-      .map(item => {
-        return {
-          ...item,
-          isIntersected: false
-        };
-      });
+      .filter(props.filter);
 });
+
+//
+// Table footer
+const activePage = ref(1);
+const itemsPerPage = ref(10);
+const totalRecords = computed(() => tableData.value.length);
+const pageCount = computed(() => Math.ceil(totalRecords.value / itemsPerPage.value));
+const perPageChoices = [
+  {text: '5', value: 5},
+  {text: '10', value: 10},
+  {text: '20', value: 20}
+];
 
 
 // Methods
 // /////
-
-/**
- *
- * @param {Device} item
- * @return {undefined|occupancyTrait}
- */
-function findOccupancySensor(item) {
-  const occupancyTrait = item.metadata.traitsList.find(trait => {
-    if (trait.name.includes('Occupancy')) return trait;
-  });
-
-  if (occupancyTrait) return occupancyTrait;
-  else return undefined;
-}
 
 /**
  * Shows the device in the sidebar
@@ -274,6 +305,16 @@ function rowClass(item) {
   return '';
 }
 
+/**
+ *
+ * @param test
+ * @param page
+ */
+function setPageData(page) {
+  resetIntersectedItemNames();
+  activePage.value = page;
+}
+
 // Watchers
 // ////
 // watch for changes to the query object and fetch new device list
@@ -292,22 +333,7 @@ onUnmounted(() => {
   collection.reset(); // stop listening when the component is unmounted
 });
 
-// ///////////////////
-//
-// Intersection
-/**
- *
- * @param {IntersectionObserverEntry} entries
- * @param {IntersectionObserver} observer
- * @param {Device} item
- */
-function onRowIntersect(entries, observer, item) {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      item.isIntersected = true;
-    } else item.isIntersected = false;
-  });
-};
+
 </script>
 
 <style lang="scss" scoped>
