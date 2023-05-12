@@ -2,13 +2,13 @@
   <content-card>
     <v-data-table
         v-model="selectedDevicesComp"
-        :headers="headers"
-        :items="tableData"
-        item-key="name"
-        :item-class="rowClass"
-        :show-select="showSelect"
         :class="tableClasses"
-        @click:row="showDevice">
+        fixed-header
+        :headers="headers"
+        id="deviceTable"
+        :items="tableData"
+        :item-class="rowClass"
+        item-key="name">
       <template #top>
         <!-- todo: bulk actions -->
         <!-- filters -->
@@ -43,19 +43,60 @@
           </v-row>
         </v-container>
       </template>
+      <template #header="{headers}">
+        <thead>
+          <tr>
+            <th v-for="header in headers" :key="header.value">{{ header.text }}</th>
+          </tr>
+        </thead>
+      </template>
+      <template #body="{items}">
+        <tbody>
+          <tr
+              v-for="item in items"
+              v-intersect="{
+                handler: (entries, observer) => onRowIntersect(entries, observer, item),
+                options: {
+                  rootMargin: '80px 0px 58px 0px',
+                  threshold: 1,
+                  trackVisibility: true,
+                  delay: 100
+                }
+              }"
+              :key="item.name"
+              @click="showDevice(item)">
+            <td>{{ item.metadata.appearance ? item.metadata.appearance.title : item.name }}</td>
+            <td>{{ item.metadata?.location?.floor ?? '' }}</td>
+            <td>{{ item.metadata?.location?.title ?? '' }}</td>
+            <td>
+              <WithOccupancy
+                  v-if="findOccupancySensor(item)"
+                  class="text-center"
+                  :item="item"
+                  :table="true"
+                  v-slot="{ occupancyState, occupancyValue }">
+                <p :class="[occupancyState.toLowerCase(), 'ma-0 text-body-2']">{{ occupancyState }}</p>
+                <v-progress-linear color="primary" indeterminate :active="occupancyValue.loading"/>
+              </WithOccupancy>
+            </td>
+          </tr>
+        </tbody>
+      </template>
     </v-data-table>
   </content-card>
 </template>
 
 <script setup>
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullDevicesMetadata} from '@/api/ui/devices';
 import ContentCard from '@/components/ContentCard.vue';
+import WithOccupancy from '@/routes/devices/components/renderless-components/WithOccupancy.vue';
+
 import {useErrorStore} from '@/components/ui-error/error';
 import {useDevicesStore} from '@/routes/devices/store';
 import {Zone} from '@/routes/site/zone/zone';
 import {usePageStore} from '@/stores/page';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();
@@ -94,24 +135,9 @@ const emit = defineEmits(['update:selectedDevices']);
 const headers = ref([
   {text: 'Device name', value: 'name'},
   {text: 'Floor', value: 'metadata.location.floor'},
-  {text: 'Location', value: 'metadata.location.title'}
+  {text: 'Location', value: 'metadata.location.title'},
+  {text: '', value: 'hotpoints', align: 'end', width: '100'}
 ]);
-
-const tableClasses = computed(() => {
-  const c = [];
-  if (props.showSelect) c.push('selectable');
-  if (props.rowSelect) c.push('rowSelectable');
-  return c.join(' ');
-});
-
-const selectedDevicesComp = computed({
-  get() {
-    return tableData.value.filter(device => props.selectedDevices.indexOf(device.name) >= 0);
-  },
-  set(value) {
-    emit('update:selectedDevices', value);
-  }
-});
 
 const search = ref('');
 
@@ -152,6 +178,24 @@ const filterZone = ref(zoneList.value[0]); */
 const collection = reactive(devicesStore.newCollection());
 collection.needsMorePages = true; // todo: this causes us to load all pages, connect with paging logic instead
 
+// Computed
+// ////
+const tableClasses = computed(() => {
+  const c = [];
+  if (props.showSelect) c.push('selectable');
+  if (props.rowSelect) c.push('rowSelectable');
+  return c.join(' ');
+});
+
+const selectedDevicesComp = computed({
+  get() {
+    return tableData.value.filter(device => props.selectedDevices.indexOf(device.name) >= 0);
+  },
+  set(value) {
+    emit('update:selectedDevices', value);
+  }
+});
+
 /** @type {ComputedRef<Device.Query.AsObject>} */
 const query = computed(() => {
   const q = {conditionsList: []};
@@ -179,31 +223,41 @@ const query = computed(() => {
   return q;
 });
 
-// watch for changes to the query object and fetch new device list
-watch(query, () => collection.query(query.value), {deep: true, immediate: true});
-
-// UI error handling
-let unwatchErrors;
-onMounted(() => {
-  unwatchErrors = errorStore.registerCollection(collection);
-});
-onUnmounted(() => {
-  if (unwatchErrors) unwatchErrors();
-  collection.reset(); // stop listening when the component is unmounted
-});
-
 const tableData = computed(() => {
   return Object.values(collection.resources.value)
-      .filter(props.filter);
+      .filter(props.filter)
+      .map(item => {
+        return {
+          ...item,
+          isIntersected: false
+        };
+      });
 });
+
+
+// Methods
+// /////
+
+/**
+ *
+ * @param {Device} item
+ * @return {undefined|occupancyTrait}
+ */
+function findOccupancySensor(item) {
+  const occupancyTrait = item.metadata.traitsList.find(trait => {
+    if (trait.name.includes('Occupancy')) return trait;
+  });
+
+  if (occupancyTrait) return occupancyTrait;
+  else return undefined;
+}
 
 /**
  * Shows the device in the sidebar
  *
  * @param {*} item
- * @param {*} row
  */
-function showDevice(item, row) {
+function showDevice(item) {
   pageStore.showSidebar = true;
   pageStore.sidebarTitle = item.name;
   pageStore.sidebarData = item;
@@ -220,6 +274,40 @@ function rowClass(item) {
   return '';
 }
 
+// Watchers
+// ////
+// watch for changes to the query object and fetch new device list
+watch(query, () => collection.query(query.value), {deep: true, immediate: true});
+
+
+// Lifecycle
+// ////
+// UI error handling
+let unwatchErrors;
+onMounted(() => {
+  unwatchErrors = errorStore.registerCollection(collection);
+});
+onUnmounted(() => {
+  if (unwatchErrors) unwatchErrors();
+  collection.reset(); // stop listening when the component is unmounted
+});
+
+// ///////////////////
+//
+// Intersection
+/**
+ *
+ * @param {IntersectionObserverEntry} entries
+ * @param {IntersectionObserver} observer
+ * @param {Device} item
+ */
+function onRowIntersect(entries, observer, item) {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      item.isIntersected = true;
+    } else item.isIntersected = false;
+  });
+};
 </script>
 
 <style lang="scss" scoped>
