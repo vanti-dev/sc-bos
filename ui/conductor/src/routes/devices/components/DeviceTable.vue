@@ -137,7 +137,12 @@ import {useOccupancyStore} from '@/routes/devices/components/renderless-componen
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();
-const {findOccupancySensor, intersectedItemNames, onRowIntersect, resetIntersectedItemNames} = useOccupancyStore();
+const {
+  findOccupancySensor,
+  intersectedItemNames,
+  onRowIntersect,
+  resetIntersectedItemNames
+} = useOccupancyStore();
 const errorStore = useErrorStore();
 
 const props = defineProps({

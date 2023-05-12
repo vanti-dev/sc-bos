@@ -5,27 +5,26 @@ import {pullOccupancy} from '@/api/sc/traits/occupancy';
 
 export const useOccupancyStore = defineStore('occupancy', () =>{
   //
+  // State
+  const intersectedItemNames = reactive(/** @type{[{[string]: boolean}]} */{});
+
+
   //
-  // Methods
+  // Actions
   /**
    *
    * @param {Device.AsObject} item
    * @return {undefined|occupancyTrait}
    */
-  function findOccupancySensor(item) {
+  const findOccupancySensor = (item) => {
     const occupancyTrait = item.metadata.traitsList.find(trait => {
       if (trait.name.includes('Occupancy')) return trait;
     });
 
     if (occupancyTrait) return occupancyTrait;
     else return undefined;
-  }
+  };
 
-
-  // ///////////////////
-  //
-  // Intersection
-  const intersectedItemNames = reactive(/** @type{[{[string]: boolean}]} */{});
 
   /**
    *
@@ -43,9 +42,7 @@ export const useOccupancyStore = defineStore('occupancy', () =>{
     });
   };
 
-  //
-  // Action
-  // Let's see if the row is intersecting
+
   const handleStream = (name, paused, occupancyValue) => {
     closeResource(occupancyValue);
 
@@ -55,6 +52,7 @@ export const useOccupancyStore = defineStore('occupancy', () =>{
 
     pullOccupancy(name, occupancyValue);
   };
+
 
   const resetIntersectedItemNames = () => {
     Object.keys(intersectedItemNames).forEach(key => del(intersectedItemNames, key));
