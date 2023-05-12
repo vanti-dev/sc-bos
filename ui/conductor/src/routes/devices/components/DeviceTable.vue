@@ -114,7 +114,7 @@
                 hide-details
                 dense
                 style="width: 100px"
-                @input="activePage = parseInt($event, 10)"/>
+                @input="setPageData($event), activePage = parseInt($event, 10)"/>
           </v-col>
         </v-row>
       </template>
