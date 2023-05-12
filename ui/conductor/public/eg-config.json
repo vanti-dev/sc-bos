@@ -1,9 +1,6 @@
 {
   "features": {
-    "auth": {
-      "users": false,
-      "third-party": true
-    },
+    "auth": false,
     "devices": {
       "*": true
     },
