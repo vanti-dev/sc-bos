@@ -21,6 +21,13 @@ import (
 func processState(ctx context.Context, readState *ReadState, writeState *WriteState, actions actions, logger *zap.Logger) (time.Duration, error) {
 	now := readState.Now()
 	switchOn, switchOff, mode, rerunAfter := decideAction(now, readState, writeState, logger)
+
+	// ActiveMode is the mode which was most recently asserted on the lights
+	// this is used in the logic next time to detect when a mode has changed
+	if switchOn || switchOff {
+		writeState.ActiveMode = mode.Name
+	}
+
 	if switchOn {
 		level, ok := computeOnLevelPercent(mode, readState, writeState)
 		// logger.Debug("Setting level.", zap.Float32("level", level))
@@ -43,6 +50,13 @@ func decideAction(now time.Time, readState *ReadState, writeState *WriteState, l
 	// Work out what we need to do to apply the given writeState and make those changes for as long as ctx is valid
 	mode, rerunAfter = activeMode(now, readState)
 	logger = logger.With(zap.String("mode", mode.Name))
+
+	// determine if we had already asserted a mode, and then changed to a different one
+	// if no brightness was asserted yet, then we don't set modeChanged as that would force a reassertion which we don't want
+	var modeChanged bool
+	if anyLightsAsserted(writeState) && writeState.ActiveMode != mode.Name {
+		modeChanged = true
+	}
 
 	onButtonClicked, offButtonClicked := captureButtonActions(readState, writeState, logger)
 
@@ -96,6 +110,13 @@ func decideAction(now time.Time, readState *ReadState, writeState *WriteState, l
 		switchOff = true
 		return
 	} else {
+		// when the mode changes, we always want to re-assert the lighting state, so that the new mode will
+		// apply
+		if modeChanged {
+			logger.Debug("switching zone on because it's occupied and the mode changed")
+			switchOn = true
+		}
+
 		// we haven't written anything, but in `unoccupiedDelayBeforeDarkness - sinceUnoccupied` time we will, let the
 		// caller know
 		if wait := unoccupiedDelayBeforeDarkness - sinceUnoccupied; rerunAfter == 0 || wait < rerunAfter {
@@ -103,7 +124,6 @@ func decideAction(now time.Time, readState *ReadState, writeState *WriteState, l
 		}
 	}
 
-	// no change
 	return
 }
 
@@ -333,8 +353,6 @@ func closestThresholdBelow(lux float32, thresholds []config.LevelThreshold) (con
 	return config.LevelThreshold{}, false
 }
 
-func hasOnlyButtons(conf config.Root) bool {
-	hasAnyButtons := len(conf.OnButtons) > 0 || len(conf.OffButtons) > 0 || len(conf.ToggleButtons) > 0
-	hasAnySensors := len(conf.OccupancySensors) > 0
-	return hasAnyButtons && !hasAnySensors
+func anyLightsAsserted(writeState *WriteState) bool {
+	return len(writeState.Brightness) > 0
 }

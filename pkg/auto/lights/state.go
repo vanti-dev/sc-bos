@@ -63,6 +63,7 @@ type WriteState struct {
 	Brightness       map[string]BrightnessWriteState
 	LastButtonAction time.Time // used for button press deduplication, the last time we did anything due to a button press
 	LastButtonOnTime time.Time // used for occupancy related darkness, the last time lights were turned on due to button press
+	ActiveMode       string
 }
 
 type BrightnessWriteState struct {
@@ -70,12 +71,12 @@ type BrightnessWriteState struct {
 	Brightness *traits.Brightness
 }
 
-func NewWriteState() *WriteState {
+func NewWriteState(startTime time.Time) *WriteState {
 	return &WriteState{
 		Brightness: make(map[string]BrightnessWriteState),
 		// This causes all button presses before we boot to be ignored for action purposes - i.e. they don't directly turn lights on or off.
 		// This doesn't affect occupancy timeouts, so if a button was pressed 2 mins ago it still counts towards unoccupied darkness.
-		LastButtonAction: time.Now(),
+		LastButtonAction: startTime,
 	}
 }
 
