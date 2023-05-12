@@ -1,8 +1,15 @@
 import {fieldMaskFromObject, setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
+import {pullResource, setValue} from '@/api/resource';
 import {trackAction} from '@/api/resource.js';
 import {DevicesApiPromiseClient} from '@sc-bos/ui-gen/proto/devices_grpc_web_pb';
-import {Device, DevicesMetadata, GetDevicesMetadataRequest, ListDevicesRequest} from '@sc-bos/ui-gen/proto/devices_pb';
+import {
+  Device,
+  DevicesMetadata,
+  GetDevicesMetadataRequest,
+  ListDevicesRequest,
+  PullDevicesMetadataRequest
+} from '@sc-bos/ui-gen/proto/devices_pb';
 
 /**
  * @param {ListDevicesRequest.AsObject} request
@@ -27,7 +34,25 @@ export function getDevicesMetadata(request, tracker) {
     const api = client(endpoint);
     return api.getDevicesMetadata(getDevicesMetadataRequestFromObject(request));
   });
-};
+}
+
+/**
+ * @param {PullDevicesMetadataRequest.AsObject} request
+ * @param {ResourceValue<DevicesMetadata.AsObject, DevicesMetadata>} resource
+ */
+export function pullDevicesMetadata(request, resource) {
+  pullResource('Devices.pullDevicesMetadata', resource, endpoint => {
+    const api = client(endpoint);
+    const stream = api.pullDevicesMetadata(pullDevicesMetadataRequestFromObject(request));
+    stream.on('data', msg => {
+      const changes = msg.getChangesList();
+      for (const change of changes) {
+        setValue(resource, change.getDevicesMetadata().toObject());
+      }
+    });
+    return stream;
+  });
+}
 
 /**
  * @param {string} endpoint
@@ -87,6 +112,20 @@ function devicesMetadataIncludeFromObject(obj) {
 function getDevicesMetadataRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new GetDevicesMetadataRequest();
+  dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  dst.setIncludes(devicesMetadataIncludeFromObject(obj.includes));
+  return dst;
+}
+
+/**
+ *
+ * @param {PullDevicesMetadataRequest.AsObject} obj
+ * @return {undefined|PullDevicesMetadataRequest}
+ */
+function pullDevicesMetadataRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new PullDevicesMetadataRequest();
+  setProperties(dst, obj, 'updatesOnly');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setIncludes(devicesMetadataIncludeFromObject(obj.includes));
   return dst;
