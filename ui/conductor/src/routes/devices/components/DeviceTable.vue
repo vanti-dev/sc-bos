@@ -25,7 +25,7 @@
             <v-spacer/>
             <v-col cols="12" md="2">
               <v-select
-                  disabled
+                  :disabled="floorList.length <= 1"
                   v-model="filterFloor"
                   :items="floorList"
                   label="Floor"
@@ -48,12 +48,14 @@
 </template>
 
 <script setup>
+import {closeResource, newResourceValue} from '@/api/resource';
+import {pullDevicesMetadata} from '@/api/ui/devices';
 import ContentCard from '@/components/ContentCard.vue';
-import {useDevicesStore} from '@/routes/devices/store';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
-import {usePageStore} from '@/stores/page';
-import {Zone} from '@/routes/site/zone/zone';
 import {useErrorStore} from '@/components/ui-error/error';
+import {useDevicesStore} from '@/routes/devices/store';
+import {Zone} from '@/routes/site/zone/zone';
+import {usePageStore} from '@/stores/page';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();
@@ -66,7 +68,8 @@ const props = defineProps({
   },
   zone: {
     type: Zone,
-    default: () => {}
+    default: () => {
+    }
   },
   showSelect: {
     type: Boolean,
@@ -112,11 +115,29 @@ const selectedDevicesComp = computed({
 
 const search = ref('');
 
-// todo: get this from somewhere
-const floorList = ref([
-  'All', 'L00', 'L01', 'L02', 'L03', 'L04'
-]);
-const filterFloor = ref(floorList.value[0]);
+// todo: this information should come from a store and be reusable between components.
+const floorListResource = reactive(newResourceValue());
+onMounted(() => {
+  const req = {includes: {fieldsList: ['metadata.location.floor']}, updatesOnly: false};
+  pullDevicesMetadata(req, floorListResource);
+});
+onUnmounted(() => {
+  closeResource(floorListResource);
+});
+const NO_FLOOR = '< no floor >';
+const floorList = computed(() => {
+  const fieldCounts = floorListResource.value?.fieldCountsList || [];
+  const floorFieldCounts = fieldCounts.find(v => v.field === 'metadata.location.floor');
+  if (!floorFieldCounts) return [];
+  if (floorFieldCounts.countsMap.size <= 0) return [];
+  const dst = floorFieldCounts.countsMap.map(([k]) => {
+    if (k === '') return NO_FLOOR;
+    return k;
+  });
+  dst.unshift('All');
+  return dst;
+});
+const filterFloor = ref('All');
 
 // todo: get this from somewhere. Probably also filter by floor
 /* const zoneList = ref([
@@ -140,6 +161,17 @@ const query = computed(() => {
   }
   if (props.subsystem.toLowerCase() !== 'all') {
     q.conditionsList.push({field: 'metadata.membership.subsystem', stringEqualFold: props.subsystem});
+  }
+  switch (filterFloor.value.toLowerCase()) {
+    case 'all':
+      // no filter
+      break;
+    case NO_FLOOR:
+      q.conditionsList.push({field: 'metadata.location.floor', stringEqualFold: ''});
+      break;
+    default:
+      q.conditionsList.push({field: 'metadata.location.floor', stringEqualFold: filterFloor.value});
+      break;
   }
   /*   if (filterZone.value.toLowerCase() !== 'all') {
     q.conditionsList.push({field: 'metadata.location.title', stringEqualFold: filterZone.value});
@@ -203,7 +235,7 @@ function rowClass(item) {
 }
 
 
-.v-data-table:not(.selectable) :deep(.v-data-table__selected){
+.v-data-table:not(.selectable) :deep(.v-data-table__selected) {
   background: none;
 }
 
