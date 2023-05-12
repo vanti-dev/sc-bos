@@ -17,7 +17,6 @@ import {
  * @return {Promise<ListAlertsResponse.AsObject>}
  */
 export function listAlerts(request, tracker) {
-  console.debug('listAlerts', request);
   return trackAction('Alerts.listAlerts', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.listAlerts(listAlertsRequestFromObject(request));
@@ -29,7 +28,6 @@ export function listAlerts(request, tracker) {
  * @param {ResourceCollection<Alert.AsObject, Alert>} resource
  */
 export function pullAlerts(request, resource) {
-  console.debug('pullAlerts', request);
   pullResource('Alerts.pullAlerts', resource, endpoint => {
     const api = client(endpoint);
     const stream = api.pullAlerts(pullAlertsRequestFromObject(request));
