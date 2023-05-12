@@ -18,9 +18,9 @@ export function listDevices(request, tracker) {
 
 /**
  *
- * @param {Promise<GetDevicesMetadataRequest.AsObject>} request
- * @param {ActionTracker<GetDevicesMetadataResponse.AsObject>} tracker
- * @return {Promise<GetDevicesMetadataResponse.AsObject>}
+ * @param {GetDevicesMetadataRequest.AsObject} request
+ * @param {ActionTracker<GetDevicesMetadataRequest.AsObject>} tracker
+ * @return {Promise<DevicesMetadata.AsObject>}
  */
 export function getDevicesMetadata(request, tracker) {
   return trackAction('Devices.getDevicesMetadata', tracker ?? {}, endpoint => {
@@ -69,7 +69,7 @@ function deviceQueryFromObject(obj) {
 
 /**
  *
- * @param {GetDevicesMetadataRequest.AsObject} obj
+ * @param {DevicesMetadata.Include.AsObject} obj
  * @return {undefined|DevicesMetadata.Include}
  */
 function devicesMetadataIncludeFromObject(obj) {
