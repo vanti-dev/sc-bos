@@ -1,26 +1,35 @@
 <template>
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0">
-      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Occupancy Sensor</v-subheader>
-      <v-list-item class="py-1">
-        <v-list-item-title class="text-body-small text-capitalize">State</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize" :class="state.toLowerCase()">{{ state }}</v-list-item-subtitle>
-      </v-list-item>
-      <v-list-item class="py-1" v-if="count !== 0">
-        <v-list-item-title class="text-body-small text-capitalize">Count</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">{{ count }}</v-list-item-subtitle>
-      </v-list-item>
+      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">
+        Occupancy Sensor
+      </v-subheader>
+      <WithOccupancy
+          :item-name="props.name"
+          :table="false"
+          v-slot="{occupantCount, occupancyState, occupancyValue}">
+        <v-list-item class="py-1">
+          <v-list-item-title class="text-body-small text-capitalize">State</v-list-item-title>
+          <v-list-item-subtitle
+              :class="[
+                occupancyState.toLowerCase(),
+                'text-capitalize text-subtitle-2 py-1 font-weight-medium'
+              ]">
+            {{ occupancyState }}
+          </v-list-item-subtitle>
+        </v-list-item>
+        <v-list-item class="py-1" v-if="occupantCount !== 0">
+          <v-list-item-title class="text-body-small text-capitalize">Count</v-list-item-title>
+          <v-list-item-subtitle class="text-capitalize">{{ occupantCount }}</v-list-item-subtitle>
+        </v-list-item>
+        <v-progress-linear color="primary" indeterminate :active="occupancyValue.loading"/>
+      </WithOccupancy>
     </v-list>
-    <v-progress-linear color="primary" indeterminate :active="occupancyValue.loading"/>
   </v-card>
 </template>
 
 <script setup>
-
-import {closeResource, newResourceValue} from '@/api/resource';
-import {occupancyStateToString, pullOccupancy} from '@/api/sc/traits/occupancy';
-import {useErrorStore} from '@/components/ui-error/error';
-import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
+import WithOccupancy from '@/routes/devices/components/renderless-components/WithOccupancy.vue';
 
 const props = defineProps({
   // unique name of the device
@@ -28,40 +37,6 @@ const props = defineProps({
     type: String,
     default: ''
   }
-});
-
-const occupancyValue = reactive(/** @type{ResourceValue<Occupancy.AsObject, Occupancy>} */newResourceValue());
-
-const state = computed(() => {
-  if (occupancyValue.value) {
-    return occupancyStateToString(occupancyValue.value.state);
-  }
-  return 'unknown';
-});
-const count = computed(() => {
-  if (occupancyValue.value) {
-    return occupancyValue.value.peopleCount;
-  }
-  return 0;
-});
-
-watch(() => props.name, async (name) => {
-  // close existing stream if present
-  closeResource(occupancyValue);
-  // create new stream
-  if (name && name !== '') {
-    await pullOccupancy(name, occupancyValue);
-  }
-}, {immediate: true});
-
-// UI error handling
-const errorStore = useErrorStore();
-let unwatchOccupancyError;
-onMounted(() => {
-  unwatchOccupancyError = errorStore.registerValue(occupancyValue);
-});
-onUnmounted(() => {
-  if (unwatchOccupancyError) unwatchOccupancyError();
 });
 
 </script>
