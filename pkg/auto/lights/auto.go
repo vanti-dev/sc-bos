@@ -166,7 +166,7 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 	cancelRetryTimer := func() bool { return false }
 
 	// writeState is only accessed from this go routine.
-	writeState := NewWriteState()
+	writeState := NewWriteState(time.Now())
 
 	processStateFn := func(readState *ReadState) error {
 		cancelTtlTimer()

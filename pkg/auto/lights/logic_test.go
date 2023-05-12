@@ -24,7 +24,7 @@ func Test_processState(t *testing.T) {
 
 	t.Run("empty", func(t *testing.T) {
 		readState := NewReadState(autoStartTime)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 		logger, _ := zap.NewDevelopment()
 		ttl, err := processState(context.Background(), readState, writeState, actions, logger)
@@ -34,7 +34,7 @@ func Test_processState(t *testing.T) {
 
 	t.Run("turn on when occupied", func(t *testing.T) {
 		readState := NewReadState(autoStartTime)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.OccupancySensors = []string{"pir01"}
@@ -55,7 +55,7 @@ func Test_processState(t *testing.T) {
 
 	t.Run("ignore non-relevant occupancy", func(t *testing.T) {
 		readState := testReadState(autoStartTime, now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		// to ensure the automation start time doesn't consider it unoccupied
@@ -73,7 +73,7 @@ func Test_processState(t *testing.T) {
 
 	t.Run("turns lights off when unoccupied", func(t *testing.T) {
 		readState := testReadState(autoStartTime, now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -99,7 +99,7 @@ func Test_processState(t *testing.T) {
 	})
 	t.Run("pir ttl", func(t *testing.T) {
 		readState := testReadState(autoStartTime, now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 		now := time.Unix(0, 0)
 
@@ -153,7 +153,7 @@ func Test_processState(t *testing.T) {
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				readState := NewReadState(now)
-				writeState := NewWriteState()
+				writeState := NewWriteState(time.Now())
 				actions := newTestActions(t)
 
 				readState.Config.DaylightDimming = &dd
@@ -186,7 +186,7 @@ func Test_processState(t *testing.T) {
 	t.Run("toggle pressed currently on", func(t *testing.T) {
 		now := time.Unix(0, 0)
 		readState := NewReadState(now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -227,7 +227,7 @@ func Test_processState(t *testing.T) {
 	t.Run("toggle pressed currently half on", func(t *testing.T) {
 		now := time.Unix(0, 0)
 		readState := NewReadState(now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -272,7 +272,7 @@ func Test_processState(t *testing.T) {
 	t.Run("toggle pressed currently off", func(t *testing.T) {
 		now := time.Unix(0, 0)
 		readState := NewReadState(now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -313,7 +313,7 @@ func Test_processState(t *testing.T) {
 	t.Run("no op on ButtonState_PRESSED", func(t *testing.T) {
 		now := time.Unix(0, 0)
 		readState := NewReadState(now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -342,7 +342,7 @@ func Test_processState(t *testing.T) {
 	t.Run("toggle pressed dont action", func(t *testing.T) {
 		now := time.Unix(0, 0)
 		readState := NewReadState(now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -371,7 +371,7 @@ func Test_processState(t *testing.T) {
 	t.Run("toggle pressed in past dont action", func(t *testing.T) {
 		now := time.Unix(0, 0)
 		readState := NewReadState(now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -400,7 +400,7 @@ func Test_processState(t *testing.T) {
 	t.Run("on button pressed and off", func(t *testing.T) {
 		now := time.Unix(0, 0)
 		readState := NewReadState(now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -441,7 +441,7 @@ func Test_processState(t *testing.T) {
 	t.Run("on button pressed in the past", func(t *testing.T) {
 		now := time.Unix(0, 0)
 		readState := NewReadState(now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -482,7 +482,7 @@ func Test_processState(t *testing.T) {
 	t.Run("on button pressed and on", func(t *testing.T) {
 		now := time.Unix(0, 0)
 		readState := NewReadState(now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -517,7 +517,7 @@ func Test_processState(t *testing.T) {
 	t.Run("off button pressed and on", func(t *testing.T) {
 		now := time.Unix(0, 0)
 		readState := NewReadState(now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -552,7 +552,7 @@ func Test_processState(t *testing.T) {
 
 	t.Run("off button pressed and off", func(t *testing.T) {
 		readState := testReadState(autoStartTime, now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -580,7 +580,7 @@ func Test_processState(t *testing.T) {
 
 	t.Run("button ttl", func(t *testing.T) {
 		readState := testReadState(autoStartTime, now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -603,7 +603,7 @@ func Test_processState(t *testing.T) {
 
 	t.Run("button+pir ttl, button last", func(t *testing.T) {
 		readState := testReadState(autoStartTime, now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -631,7 +631,7 @@ func Test_processState(t *testing.T) {
 
 	t.Run("button+pir ttl, pir last", func(t *testing.T) {
 		readState := testReadState(autoStartTime, now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -659,7 +659,7 @@ func Test_processState(t *testing.T) {
 
 	t.Run("button+pir ttl, both old", func(t *testing.T) {
 		readState := testReadState(autoStartTime, now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -689,7 +689,7 @@ func Test_processState(t *testing.T) {
 	t.Run("set on level from default mode", func(t *testing.T) {
 		startTime := time.Date(2023, 4, 26, 0, 0, 0, 0, time.UTC)
 		readState := NewReadState(startTime)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.OccupancySensors = []string{"pir01"}
@@ -715,7 +715,7 @@ func Test_processState(t *testing.T) {
 	t.Run("set off level from default mode", func(t *testing.T) {
 		now := time.Unix(0, 0)
 		readState := NewReadState(now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.Now = func() time.Time { return now }
@@ -748,7 +748,7 @@ func Test_processState(t *testing.T) {
 		now := time.Unix(0, 0)
 		now = now.In(time.UTC)
 		readState := NewReadState(now)
-		writeState := NewWriteState()
+		writeState := NewWriteState(time.Now())
 		actions := newTestActions(t)
 
 		readState.Config.OccupancySensors = []string{"pir01"}
@@ -798,6 +798,80 @@ func Test_processState(t *testing.T) {
 			Name: "light01",
 			Brightness: &traits.Brightness{
 				LevelPercent: onLevel,
+			},
+		})
+		actions.assertNoMoreCalls()
+	})
+
+	t.Run("reassert level on mode change", func(t *testing.T) {
+		logger, _ := zap.NewDevelopment()
+		startTime := time.Unix(0, 0).In(time.UTC)
+		readState := NewReadState(now)
+
+		now := startTime.Add(time.Minute)
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.Modes = []config.ModeOption{
+			{
+				Name: "a",
+				Mode: config.Mode{
+					UnoccupiedOffDelay: jsontypes.Duration{Duration: time.Hour},
+					OnLevelPercent:     asPtr[float32](33),
+				},
+			},
+			{
+				Name: "b",
+				Mode: config.Mode{
+					UnoccupiedOffDelay: jsontypes.Duration{Duration: time.Hour},
+					OnLevelPercent:     asPtr[float32](66),
+				},
+			},
+		}
+		readState.Modes = &traits.ModeValues{
+			Values: map[string]string{
+				ModeValueKey: "a",
+			},
+		}
+		readState.Config.ToggleButtons = []string{"button01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Buttons = map[string]*gen.ButtonState{
+			"button01": {
+				State:           gen.ButtonState_UNPRESSED,
+				StateChangeTime: timestamppb.New(now),
+				MostRecentGesture: &gen.ButtonState_Gesture{
+					Id:        "foo",
+					Kind:      gen.ButtonState_Gesture_CLICK,
+					StartTime: timestamppb.New(now),
+					EndTime:   timestamppb.New(now),
+				},
+			},
+		}
+		writeState := NewWriteState(startTime)
+
+		actions := newTestActions(t)
+
+		// check that we use mode a
+		_, err := processState(context.Background(), readState, writeState, actions, logger)
+		if err != nil {
+			t.Fatalf("unexpected error %v", err)
+		}
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: 33,
+			},
+		})
+
+		// switch to mode b
+		readState.Modes.Values[ModeValueKey] = "b"
+		// check that we use mode b
+		_, err = processState(context.Background(), readState, writeState, actions, logger)
+		if err != nil {
+			t.Fatalf("unexpected error %v", err)
+		}
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: 66,
 			},
 		})
 		actions.assertNoMoreCalls()
@@ -939,4 +1013,8 @@ func testReadState(start time.Time, now time.Time) *ReadState {
 		return now
 	}
 	return rs
+}
+
+func asPtr[T any](v T) *T {
+	return &v
 }
