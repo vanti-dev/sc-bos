@@ -5,8 +5,7 @@
         Occupancy Sensor
       </v-subheader>
       <WithOccupancy
-          :item-name="props.name"
-          :table="false"
+          :name="props.name"
           v-slot="{occupantCount, occupancyState, occupancyValue}">
         <v-list-item class="py-1">
           <v-list-item-title class="text-body-small text-capitalize">State</v-list-item-title>
