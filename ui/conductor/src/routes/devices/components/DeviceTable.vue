@@ -94,17 +94,6 @@
                 @input="setPageData($event)"/>
           </v-col>
           <v-col cols="auto">
-            <v-select
-                dense
-                outlined
-                hide-details
-                :value="itemsPerPage"
-                label="Items per page"
-                :items="[...perPageChoices, {text: 'All', value: tableData.length}]"
-                style="width: 150px; cursor: pointer;"
-                @change="itemsPerPage = parseInt($event, 10)"/>
-          </v-col>
-          <v-col cols="auto">
             <v-text-field
                 v-show="itemsPerPage < tableData.length"
                 v-model="activePage"
@@ -115,6 +104,17 @@
                 dense
                 style="width: 100px"
                 @input="setPageData($event), activePage = parseInt($event, 10)"/>
+          </v-col>
+          <v-col cols="auto">
+            <v-select
+                dense
+                outlined
+                hide-details
+                :value="itemsPerPage"
+                label="Items per page"
+                :items="[...perPageChoices, {text: 'All', value: tableData.length}]"
+                style="width: 150px; cursor: pointer;"
+                @change="itemsPerPage = parseInt($event, 10)"/>
           </v-col>
         </v-row>
       </template>
