@@ -45,13 +45,6 @@
           </v-row>
         </v-container>
       </template>
-      <template #header="{headers}">
-        <thead>
-          <tr>
-            <th v-for="header in headers" :key="header.value">{{ header.text }}</th>
-          </tr>
-        </thead>
-      </template>
       <template #body="{items}">
         <tbody>
           <tr
