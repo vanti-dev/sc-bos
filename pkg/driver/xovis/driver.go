@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"mime"
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -46,6 +48,7 @@ type Driver struct {
 	m                 sync.Mutex
 	config            DriverConfig
 	client            *Client
+	server            *http.Server // only used if httpPort is configured for the webhook
 	unannounceDevices []node.Undo
 }
 
@@ -99,8 +102,26 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 		d.unannounceDevices = append(d.unannounceDevices, d.Node.Announce(dev.Name, features...))
 	}
 	// register data push webhook
+	if d.server != nil {
+		d.server.Close()
+		d.server = nil
+	}
 	if dp := conf.DataPush; dp != nil && dp.WebhookPath != "" {
-		d.HTTPMux.HandleFunc(dp.WebhookPath, d.handleWebhook)
+		if dp.HTTPPort > 0 {
+			// setup a dedicate http server for the webhook, we use http
+			lis, err := net.Listen("tcp", fmt.Sprintf(":%d", dp.HTTPPort))
+			if err != nil {
+				return err
+			}
+			mux := http.NewServeMux()
+			mux.HandleFunc(dp.WebhookPath, d.handleWebhook)
+			d.server = &http.Server{
+				Handler: mux,
+			}
+			go d.server.Serve(lis)
+		} else {
+			d.HTTPMux.HandleFunc(dp.WebhookPath, d.handleWebhook)
+		}
 	}
 
 	d.config = conf

@@ -37,5 +37,6 @@ type LogicConfig struct {
 }
 
 type DataPushConfig struct {
+	HTTPPort    int    `json:"httpPort,omitempty"`
 	WebhookPath string `json:"webhookPath"`
 }
