@@ -50,7 +50,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 
 		announcer.Announce(device.Name, node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensor.WrapApi(sensor))))
 	}
-	
+
 	// Connect to MQTT
 	var err error
 	d.client, err = newMqttClient(cfg)
@@ -65,7 +65,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	d.logger.Debug("connected")
 
 	var responseHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-		go handleResponse(msg.Payload(), d.devices)
+		go handleResponse(msg.Payload(), d.devices, d.logger)
 	}
 
 	token := d.client.Subscribe(cfg.Broker.Topic, 0, responseHandler)
