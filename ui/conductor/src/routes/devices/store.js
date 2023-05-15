@@ -1,14 +1,22 @@
 import {defineStore} from 'pinia';
-import {reactive, ref} from 'vue';
+import {reactive, ref, watch} from 'vue';
+import {useOccupancyStore} from '@/routes/devices/components/renderless-components/occupancyStore';
 
-import {listDevices, getDevicesMetadata} from '@/api/ui/devices';
-import {newResourceCollection} from '@/api/resource';
+import {listDevices, getDevicesMetadata, pullDevicesMetadata} from '@/api/ui/devices';
+import {closeResource, newResourceCollection, newResourceValue} from '@/api/resource';
 import {Collection} from '@/util/query';
 
 export const useDevicesStore = defineStore('devices', () => {
+  const {resetIntersectedItemNames} = useOccupancyStore();
   // holds all the devices we can show
   const deviceList = reactive(/** @type {ResourceCollection<Device.AsObject, Device>} */newResourceCollection());
   const subSystems = ref({});
+  const filterFloor = ref('All');
+  const floorListResource = reactive(newResourceValue());
+
+  //
+  //
+  // Actions
 
   /**
    * @param {ActionTracker<GetDevicesMetadataResponse.AsObject>} tracker
@@ -50,12 +58,35 @@ export const useDevicesStore = defineStore('devices', () => {
     return new Collection(listFn);
   }
 
+  /**
+   * @param {string} action
+   */
+  async function handleFloorListLoad(action) {
+    if (action === 'pull') {
+      const req = {includes: {fieldsList: ['metadata.location.floor']}, updatesOnly: false};
+      await pullDevicesMetadata(req, floorListResource);
+    } else {
+      closeResource(floorListResource);
+    }
+  }
+
+  //
+  //
+  // Watchers
+
+  // removing previously displayed table data
+  watch(() => filterFloor.value, (newFloor, oldFloor) => {
+    resetIntersectedItemNames();
+  });
 
   return {
     deviceList,
     subSystems,
+    filterFloor,
+    floorListResource,
 
     fetchDeviceSubsystemCounts,
-    newCollection
+    newCollection,
+    handleFloorListLoad
   };
 });

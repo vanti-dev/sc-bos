@@ -1,27 +1,35 @@
 import {defineStore} from 'pinia';
-import {del, reactive, set} from 'vue';
+import {del, reactive, ref, set, watch} from 'vue';
 import {closeResource} from '@/api/resource';
 import {pullOccupancy} from '@/api/sc/traits/occupancy';
 
 export const useOccupancyStore = defineStore('occupancy', () =>{
   //
   // State
+  const activePage = ref(1);
+  const devicesPerPage = ref(10);
   const intersectedItemNames = reactive(/** @type{[{[string]: boolean}]} */{});
-
+  const perPageChoices = [
+    {text: '5', value: 5},
+    {text: '10', value: 10},
+    {text: '20', value: 20},
+    {text: 'All', value: -1}
+  ];
 
   //
   // Actions
   /**
    *
    * @param {Device.AsObject} item
-   * @return {undefined|occupancyTrait}
+   * @param {string} type
+   * @return {undefined|trait}
    */
-  const findOccupancySensor = (item) => {
-    const occupancyTrait = item.metadata.traitsList.find(trait => {
-      if (trait.name.includes('Occupancy')) return trait;
+  const findSensor = (item, type) => {
+    const trait = item.metadata.traitsList.find(trait => {
+      if (trait.name.includes(type)) return trait;
     });
 
-    if (occupancyTrait) return occupancyTrait;
+    if (trait) return trait;
     else return undefined;
   };
 
@@ -43,23 +51,56 @@ export const useOccupancyStore = defineStore('occupancy', () =>{
   };
 
 
-  const handleStream = (name, paused, occupancyValue) => {
-    closeResource(occupancyValue);
+  const handleStream = (name, paused, value) => {
+    closeResource(value);
 
     if (!name || paused) {
       return;
     }
 
-    pullOccupancy(name, occupancyValue);
+    pullOccupancy(name, value);
   };
 
-
+  // stopping left over streams
   const resetIntersectedItemNames = () => {
-    Object.keys(intersectedItemNames).forEach(key => del(intersectedItemNames, key));
+    Object.keys(intersectedItemNames).forEach((key, index) => {
+      del(intersectedItemNames, key);
+    });
   };
+
+
+  //
+  //
+  // Watchers
+
+  let timeoutId;
+  // 3 seconds timeout to reset go to page input to active page
+  watch(activePage, (newPage, oldPage) => {
+    clearTimeout(timeoutId);
+
+    // if we specified the new page
+    if (newPage && oldPage !== '' && newPage !== oldPage) resetIntersectedItemNames();
+
+    // if we have an empty input
+    if (newPage === '' || isNaN(newPage)) {
+      timeoutId = setTimeout(() => {
+        activePage.value = Number(oldPage);
+      }, 3000);
+    }
+  });
+
+  // stopping left over streams on device per page value change
+  watch(devicesPerPage, value => {
+    if (value !== -1 && Object.keys(intersectedItemNames).length > value) {
+      resetIntersectedItemNames();
+    }
+  });
 
   return {
-    findOccupancySensor,
+    activePage,
+    devicesPerPage,
+    perPageChoices,
+    findSensor,
 
     // Intersection
     intersectedItemNames,

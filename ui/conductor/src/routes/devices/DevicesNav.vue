@@ -1,6 +1,10 @@
 <template>
   <v-list class="pa-0" dense nav>
-    <v-list-item v-for="(device, key) in availableSubSystems" :key="key" :to="device.to">
+    <v-list-item
+        v-for="(device, key) in availableSubSystems"
+        :key="key"
+        :to="device.to"
+        @click="resetIntersectedItemNames()">
       <v-list-item-icon>
         <v-icon>{{ device.icon }}</v-icon>
       </v-list-item-icon>
@@ -12,9 +16,11 @@
 <script setup>
 import {computed, reactive} from 'vue';
 import {useDevicesStore} from './store';
+import {useOccupancyStore} from '@/routes/devices/components/renderless-components/occupancyStore';
 import {newActionTracker} from '@/api/resource';
 
 const deviceStore = useDevicesStore();
+const {resetIntersectedItemNames} = useOccupancyStore();
 const tracker = reactive(newActionTracker());
 
 // computed

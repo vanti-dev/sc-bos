@@ -9,7 +9,7 @@
         :items="tableData"
         :item-class="rowClass"
         item-key="name"
-        :items-per-page="itemsPerPage"
+        :items-per-page="devicesPerPage"
         :page.sync="activePage">
       <template #top>
         <!-- todo: bulk actions -->
@@ -52,18 +52,18 @@
               v-intersect="{
                 handler: (entries, observer) => onRowIntersect(entries, observer, item.name),
                 options: {
-                  rootMargin: '80px 0px 58px 0px',
-                  threshold: 1
+                  rootMargin: '-50px 0px 0px 0px',
+                  threshold: 0.75
                 }
               }"
-              :key="item.name"
+              :key="item.name + devicesPerPage"
               @click="showDevice(item)">
             <td>{{ item.metadata.appearance ? item.metadata.appearance.title : item.name }}</td>
             <td>{{ item.metadata?.location?.floor ?? '' }}</td>
             <td>{{ item.metadata?.location?.title ?? '' }}</td>
             <td>
               <WithOccupancy
-                  v-if="findOccupancySensor(item)"
+                  v-if="findSensor(item, 'Occupancy')"
                   class="text-center"
                   :name="item.name"
                   :paused="!intersectedItemNames[item.name]"
@@ -81,33 +81,37 @@
           <v-spacer/>
           <v-col cols="auto">
             <v-pagination
-                v-show="itemsPerPage < tableData.length"
+                v-show="devicesPerPage !== -1"
                 :length="pageCount"
+                show-current-page
+                total-visible="5"
                 :value="activePage"
-                @input="setPageData($event)"/>
+                @input="activePage = $event"/>
           </v-col>
           <v-col cols="auto">
             <v-text-field
-                v-show="itemsPerPage < tableData.length"
+                v-show="devicesPerPage !== -1"
                 v-model="activePage"
                 label="Go to page"
                 type="number"
+                min="1"
+                :max="pageCount"
                 outlined
                 hide-details
                 dense
                 style="width: 100px"
-                @input="setPageData($event), activePage = parseInt($event, 10)"/>
+                @input="activePage = parseInt($event, 10)"/>
           </v-col>
           <v-col cols="auto">
             <v-select
                 dense
                 outlined
                 hide-details
-                :value="itemsPerPage"
-                label="Items per page"
-                :items="[...perPageChoices, {text: 'All', value: tableData.length}]"
+                :value="devicesPerPage"
+                label="Devices per page"
+                :items="perPageChoices"
                 style="width: 150px; cursor: pointer;"
-                @change="itemsPerPage = parseInt($event, 10)"/>
+                @change="devicesPerPage = parseInt($event, 10);"/>
           </v-col>
         </v-row>
       </template>
@@ -116,9 +120,8 @@
 </template>
 
 <script setup>
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
-import {closeResource, newResourceValue} from '@/api/resource';
-import {pullDevicesMetadata} from '@/api/ui/devices';
+import {computed, onBeforeMount, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import {storeToRefs} from 'pinia';
 import ContentCard from '@/components/ContentCard.vue';
 import WithOccupancy from '@/routes/devices/components/renderless-components/WithOccupancy.vue';
 
@@ -130,12 +133,18 @@ import {useOccupancyStore} from '@/routes/devices/components/renderless-componen
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();
+
 const {
-  findOccupancySensor,
+  findSensor,
   intersectedItemNames,
   onRowIntersect,
   resetIntersectedItemNames
 } = useOccupancyStore();
+const {activePage, devicesPerPage, perPageChoices} = storeToRefs(useOccupancyStore());
+
+const {floorListResource, handleFloorListLoad} = devicesStore;
+const {filterFloor} = storeToRefs(devicesStore);
+
 const errorStore = useErrorStore();
 
 const props = defineProps({
@@ -178,15 +187,15 @@ const headers = ref([
 
 const search = ref('');
 
-// todo: this information should come from a store and be reusable between components.
-const floorListResource = reactive(newResourceValue());
-onMounted(() => {
-  const req = {includes: {fieldsList: ['metadata.location.floor']}, updatesOnly: false};
-  pullDevicesMetadata(req, floorListResource);
+
+onBeforeMount(() => {
+  handleFloorListLoad('pull');
 });
 onUnmounted(() => {
-  closeResource(floorListResource);
+  handleFloorListLoad('close');
 });
+
+
 const NO_FLOOR = '< no floor >';
 const floorList = computed(() => {
   const fieldCounts = floorListResource.value?.fieldCountsList || [];
@@ -200,7 +209,6 @@ const floorList = computed(() => {
   dst.unshift('All');
   return dst;
 });
-const filterFloor = ref('All');
 
 // todo: get this from somewhere. Probably also filter by floor
 /* const zoneList = ref([
@@ -267,20 +275,12 @@ const tableData = computed(() => {
 
 //
 // Table footer
-const activePage = ref(1);
-const itemsPerPage = ref(10);
 const totalRecords = computed(() => tableData.value.length);
-const pageCount = computed(() => Math.ceil(totalRecords.value / itemsPerPage.value));
-const perPageChoices = [
-  {text: '5', value: 5},
-  {text: '10', value: 10},
-  {text: '20', value: 20}
-];
+const pageCount = computed(() => Math.ceil(totalRecords.value / devicesPerPage.value));
 
 
 // Methods
 // /////
-
 /**
  * Shows the device in the sidebar
  *
@@ -303,20 +303,12 @@ function rowClass(item) {
   return '';
 }
 
-/**
- *
- * @param test
- * @param page
- */
-function setPageData(page) {
-  resetIntersectedItemNames();
-  activePage.value = page;
-}
 
 // Watchers
 // ////
 // watch for changes to the query object and fetch new device list
 watch(query, () => collection.query(query.value), {deep: true, immediate: true});
+watch(search, () => resetIntersectedItemNames()); // remove old streams
 
 
 // Lifecycle
@@ -353,5 +345,9 @@ onUnmounted(() => {
 
 .v-data-table.rowSelectable :deep(.item-selected) {
   background-color: var(--v-primary-darken4);
+}
+
+:deep(.v-pagination .v-pagination__item) {
+  background-color: var(--v-neutral-lighten1);
 }
 </style>
