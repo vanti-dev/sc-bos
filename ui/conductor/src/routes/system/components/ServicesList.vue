@@ -90,11 +90,16 @@ const node = computed({
 });
 const search = ref('');
 
-const headers = [
-  {text: 'ID', value: 'id'},
-  {text: 'Status', value: 'active'},
-  {text: '', value: 'actions', align: 'end', width: '100'}
-];
+const headers = computed(() => {
+  const labels = [
+    {text: 'ID', value: 'id'},
+    props.name === 'drivers' ? {text: 'Type', value: 'type'} : null,
+    {text: 'Status', value: 'active'},
+    {text: '', value: 'actions', align: 'end', width: '100'}
+  ];
+
+  return labels.filter((label) => label);
+});
 
 const serviceCollection = ref({});
 
