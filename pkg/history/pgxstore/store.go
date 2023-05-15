@@ -111,7 +111,7 @@ func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
 		if err != nil {
 			return 0, err
 		}
-		into[i].ID = strconv.FormatInt(id, 10)
+		into[i].ID = idFromSql(id)
 		i++
 	}
 	return i, nil
