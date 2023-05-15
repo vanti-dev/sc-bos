@@ -2,10 +2,12 @@ package hd2
 
 import (
 	"context"
-	"fmt"
 
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -34,17 +36,21 @@ type Driver struct {
 	announcer node.Announcer
 
 	client *Client
+
+	airQualitySensor AirQualitySensor
+	occupancy        Occupancy
 }
 
 func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
+	announcer := node.AnnounceContext(ctx, d.announcer)
+
 	d.client = NewInsecureClient(cfg.IpAddress)
-	response := AccessResponse{}
-	err := doGetRequest(d.client, &response, "access")
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println("Response from hd2 driver access request: " + response.Rights)
-	}
+
+	d.airQualitySensor = NewAirQualitySensor(d.client, d.logger.Named("AirQuality"), 0)
+	announcer.Announce(cfg.Name+"/airQuality", node.HasTrait(trait.AirQualitySensor, node.WithClients(airqualitysensor.WrapApi(&d.airQualitySensor))))
+
+	d.occupancy = Occupancy{client: d.client}
+	announcer.Announce(cfg.Name+"/occupancy", node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensor.WrapApi(&d.occupancy))))
 
 	return nil
 }

@@ -23,7 +23,7 @@ func NewInsecureClient(host string) *Client {
 		BaseURL: url.URL{
 			Scheme: "https",
 			Host:   host,
-			Path:   "/api",
+			Path:   "/rest",
 		},
 		Client: &http.Client{
 			Transport: &http.Transport{
@@ -67,8 +67,26 @@ type DeviceDataEntry struct {
 	Name string `json:"name"`
 }
 
-type AccessResponse struct {
-	Rights string `json:"rights"`
+type SensorResponse struct {
+	SensorName                   string  `json:"SensorName"`
+	SensorSWVersion              string  `json:"SensorSWVersion"`
+	DetectorFWVersion            string  `json:"DetectorFWVersion"`
+	Motion1                      bool    `json:"Motion1"`
+	Presence1                    bool    `json:"Presence1"`
+	TruePresence1                bool    `json:"TruePresence1"`
+	Brightness1                  int     `json:"Brightness1"`
+	Temperature                  float64 `json:"Temperature"`
+	Humidity                     float64 `json:"Humidity"`
+	VOC                          int     `json:"VOC"`
+	CO2                          int     `json:"CO2"`
+	AirPressure                  float64 `json:"AirPressure"`
+	Noise                        int     `json:"Noise"`
+	AerosolStaleAirStatus        int     `json:"AerosolStaleAirStatus"`
+	AerosolRiskOfInfectionStatus int     `json:"AerosolRiskOfInfectionStatus"`
+	ComfortZone                  bool    `json:"ComfortZone"`
+	DewPoint                     float64 `json:"DewPoint"`
+	AerosolStaleAir              int     `json:"AerosolStaleAir"`
+	AerosolRiskOfInfection       int     `json:"AerosolRiskOfInfection"`
 }
 
 func doGetRequest(conn *Client, target any, endpoint string) error {
