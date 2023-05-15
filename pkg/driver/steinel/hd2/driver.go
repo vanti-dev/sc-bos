@@ -7,6 +7,7 @@ import (
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -39,6 +40,7 @@ type Driver struct {
 
 	airQualitySensor AirQualitySensor
 	occupancy        Occupancy
+	temperature      TemperatureSensor
 }
 
 func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
@@ -49,8 +51,11 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	d.airQualitySensor = NewAirQualitySensor(d.client, d.logger.Named("AirQuality"), 0)
 	announcer.Announce(cfg.Name+"/airQuality", node.HasTrait(trait.AirQualitySensor, node.WithClients(airqualitysensor.WrapApi(&d.airQualitySensor))))
 
-	d.occupancy = Occupancy{client: d.client}
+	d.occupancy = NewOccupancySensor(d.client, d.logger.Named("Occupancy"), 0)
 	announcer.Announce(cfg.Name+"/occupancy", node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensor.WrapApi(&d.occupancy))))
+
+	d.temperature = NewTemperatureSensor(d.client, d.logger.Named("Temperature"), 0)
+	announcer.Announce(cfg.Name+"/temperature", node.HasTrait(trait.AirTemperature, node.WithClients(airtemperature.WrapApi(&d.temperature))))
 
 	return nil
 }
