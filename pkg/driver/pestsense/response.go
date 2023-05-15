@@ -45,10 +45,10 @@ func handleResponse(body []byte, devices map[string]*PestSensor, logger *zap.Log
 	if exists {
 		if occupied {
 			logger.Debug("Setting occupied for device " + response.DeviceNumber)
-			device.Occupancy.Set(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
+			device.Occupancy.Set(&traits.Occupancy{State: traits.Occupancy_OCCUPIED, PeopleCount: int32(response.IndividualDeviceDetections)})
 		} else {
 			logger.Debug("Setting unoccupied for device " + response.DeviceNumber)
-			device.Occupancy.Set(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED})
+			device.Occupancy.Set(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, PeopleCount: int32(response.IndividualDeviceDetections)})
 		}
 	}
 }
