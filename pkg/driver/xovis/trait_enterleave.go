@@ -59,6 +59,10 @@ func (e *enterLeaveServer) PullEnterLeaveEvents(request *traits.PullEnterLeaveEv
 			return err
 		}
 
+		if len(events) == 0 {
+			continue
+		}
+
 		var enterLeaveChanges []*traits.PullEnterLeaveEventsResponse_Change
 		for _, event := range events {
 			enterLeaveChanges = append(enterLeaveChanges, &traits.PullEnterLeaveEventsResponse_Change{
