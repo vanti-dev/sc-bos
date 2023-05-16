@@ -16,11 +16,28 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 )
 
+type ClientFactory func(conn grpc.ClientConnInterface) any
+
+var apiClientFactories map[trait.Name]ClientFactory
+
+// RegisterAPIClientFactory registers a {trait}ApiClient factory for the named trait.
+// This factory will take president over the default generated factory.
+// Should be called before any call to APIClient, typically in init().
+func RegisterAPIClientFactory(t trait.Name, f ClientFactory) {
+	if apiClientFactories == nil {
+		apiClientFactories = make(map[trait.Name]ClientFactory)
+	}
+	apiClientFactories[t] = f
+}
+
 // APIClient returns the {trait}ApiClient implementation for the named trait.
 // For example passing trait.OnOff would return traits.NewOnOffApiClient.
 // Returns nil if the trait is not known.
 func APIClient(conn grpc.ClientConnInterface, t trait.Name) any {
 	// todo: I feel this should really live in sc-golang somewhere
+	if d, ok := apiClientFactories[t]; ok {
+		return d(conn)
+	}
 
 	switch t {
 	case trait.AirQualitySensor:
@@ -99,10 +116,26 @@ func APIClient(conn grpc.ClientConnInterface, t trait.Name) any {
 	return nil
 }
 
+var historyClientFactories map[trait.Name]ClientFactory
+
+// RegisterHistoryClientFactory registers a {trait}HistoryClient factory for the named trait.
+// This factory will take president over the default generated factory.
+// Should be called before any call to HistoryClient, typically in init().
+func RegisterHistoryClientFactory(t trait.Name, f ClientFactory) {
+	if historyClientFactories == nil {
+		historyClientFactories = make(map[trait.Name]ClientFactory)
+	}
+	historyClientFactories[t] = f
+}
+
 // HistoryClient returns the {trait}HistoryClient implementation for the named trait.
 // For example passing trait.Meter would return traits.NewMeterHistoryClient.
 // Returns nil if the trait is not known.
 func HistoryClient(conn grpc.ClientConnInterface, t trait.Name) any {
+	if d, ok := historyClientFactories[t]; ok {
+		return d(conn)
+	}
+
 	switch t {
 	// Smart Core traits
 	case trait.Electric:
@@ -120,11 +153,26 @@ func HistoryClient(conn grpc.ClientConnInterface, t trait.Name) any {
 	}
 }
 
+var infoClientFactories map[trait.Name]ClientFactory
+
+// RegisterInfoClientFactory registers a {trait}InfoClient factory for the named trait.
+// This factory will take president over the default generated factory.
+// Should be called before any call to InfoClient, typically in init().
+func RegisterInfoClientFactory(t trait.Name, f ClientFactory) {
+	if infoClientFactories == nil {
+		infoClientFactories = make(map[trait.Name]ClientFactory)
+	}
+	infoClientFactories[t] = f
+}
+
 // InfoClient returns the {trait}InfoClient implementation for the named trait.
 // For example passing trait.Meter would return traits.NewMeterInfoClient.
 // Returns nil if the trait is not known or has no info aspect.
 func InfoClient(conn grpc.ClientConnInterface, t trait.Name) any {
 	// todo: I feel this should really live in sc-golang somewhere
+	if d, ok := infoClientFactories[t]; ok {
+		return d(conn)
+	}
 
 	switch t {
 	case trait.AirQualitySensor:
