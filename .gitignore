@@ -3,3 +3,4 @@
 .data/
 .DS_Store
 results_*.csv
+.secrets/
