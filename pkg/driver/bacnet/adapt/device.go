@@ -68,7 +68,7 @@ func (d *DeviceBacnetService) ReadProperty(ctx context.Context, request *rpc.Rea
 
 	result, err := PropertyToProtoReadResult(readProperty.Object.Properties[0])
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Reading property %v", err)
+		return nil, status.Errorf(codes.Internal, "Usage property %v", err)
 	}
 	return &rpc.ReadPropertyResponse{
 		ObjectIdentifier: ObjectIDToProto(readProperty.Object.ID),
@@ -116,7 +116,7 @@ func (d *DeviceBacnetService) ReadPropertyMultiple(ctx context.Context, request 
 		res.ReadResults = append(res.ReadResults, item)
 	}
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Reading properties %v", err)
+		return nil, status.Errorf(codes.Internal, "Usage properties %v", err)
 	}
 	return res, nil
 }

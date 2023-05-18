@@ -66,25 +66,10 @@ func newAirTemperature(client *gobacnet.Client, devices known.Context, statuses 
 }
 
 func (t *airTemperature) startPoll(init context.Context) (stop task.StopFn, err error) {
-	ctx, cancel := context.WithCancel(context.Background())
-	ticker := time.NewTicker(t.config.PollPeriodDuration())
-	go func() {
-		cleanup := func() {}
-		defer func() { cleanup() }()
-		for {
-			cleanup()
-			ctx, stop := context.WithTimeout(ctx, t.config.PollTimeoutDuration())
-			cleanup = stop
-			_, err := t.pollPeer(ctx)
-			LogPollError(t.logger, "air temperature poll error", err)
-			select {
-			case <-ticker.C:
-			case <-ctx.Done():
-				return
-			}
-		}
-	}()
-	return cancel, nil
+	return startPoll(init, "air temperature", t.config.PollPeriodDuration(), t.config.PollTimeoutDuration(), t.logger, func(ctx context.Context) error {
+		_, err := t.pollPeer(ctx)
+		return err
+	})
 }
 
 func (t *airTemperature) AnnounceSelf(a node.Announcer) node.Undo {
