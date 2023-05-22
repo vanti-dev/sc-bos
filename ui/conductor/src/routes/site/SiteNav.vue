@@ -12,7 +12,8 @@
           <v-list-item
               v-for="zone of zoneList"
               :key="zone"
-              :to="'/site/zone/'+zone">
+              :to="'/site/zone/'+zone"
+              @click="activeZone = zone">
             <v-list-item-icon>
               <v-icon>mdi-select-all</v-icon>
             </v-list-item-icon>
@@ -29,12 +30,16 @@ import {ServiceNames} from '@/api/ui/services';
 import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
 import {storeToRefs} from 'pinia';
-import {computed, onUnmounted, ref, watch} from 'vue';
+import {useZoneStore} from '@/routes/site/zone/zoneStore';
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue';
 
 const servicesStore = useServicesStore();
 const pageStore = usePageStore();
+const zoneStore = useZoneStore();
 const {sidebarNode} = storeToRefs(pageStore);
 const zoneCollection = ref({});
+
+const {activeZone} = storeToRefs(zoneStore);
 
 watch(sidebarNode, async () => {
   zoneCollection.value = servicesStore.getService(
@@ -50,7 +55,14 @@ watch(zoneCollection, () => {
   zoneCollection.value.query(ServiceNames.Zones);
 });
 
-onUnmounted(() => zoneCollection.value.reset());
+onMounted(() => {
+  activeZone.value = zoneList.value;
+}),
+
+onUnmounted(() => {
+  zoneCollection.value.reset();
+  activeZone.value = '';
+});
 
 const zoneList = computed(() => {
   return Object.values(zoneCollection.value?.resources?.value ?? []).map(zone => {

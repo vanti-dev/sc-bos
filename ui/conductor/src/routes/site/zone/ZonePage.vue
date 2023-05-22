@@ -16,11 +16,11 @@
         <v-btn value="map">Map View</v-btn>
         <v-btn value="list">List View</v-btn>
       </v-btn-toggle>
-      <v-btn class="ml-6" v-if="editMode" @click="save" color="accent">
+      <v-btn class="ml-6" v-if="siteEditor.editMode" @click="save" color="accent">
         <v-icon left>mdi-content-save</v-icon>
         Save
       </v-btn>
-      <v-btn class="ml-6" v-else @click="editMode=true">
+      <v-btn class="ml-6" v-else @click="siteEditor.editMode=true">
         <v-icon left>mdi-pencil</v-icon>
         Edit
       </v-btn>
@@ -30,7 +30,7 @@
     <device-table
         v-else-if="viewType === 'list'"
         :zone="zoneObj"
-        :show-select="editMode"
+        :show-select="siteEditor.editMode"
         :row-select="false"
         :filter="zoneDevicesFilter"
         :selected-devices="deviceList"
@@ -39,23 +39,29 @@
 </template>
 
 <script setup>
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue';
+import {storeToRefs} from 'pinia';
+
+import {Zone} from '@/routes/site/zone/zone';
+import {Service} from '@sc-bos/ui-gen/proto/services_pb';
 import {newActionTracker} from '@/api/resource';
 import {ServiceNames} from '@/api/ui/services';
 import DeviceTable from '@/routes/devices/components/DeviceTable.vue';
-import {Zone} from '@/routes/site/zone/zone';
 import ZoneMap from '@/routes/site/zone/ZoneMap.vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
-import {Service} from '@sc-bos/ui-gen/proto/services_pb';
-import {computed, ref, watch} from 'vue';
+import {useZoneStore} from '@/routes/site/zone/zoneStore';
+import {useTableDataStore} from '@/stores/tableDataStore';
 
 const servicesStore = useServicesStore();
 const pageStore = usePageStore();
 const configStore = useAppConfigStore();
+const tableDataStore = useTableDataStore();
+const {siteEditor} = storeToRefs(tableDataStore);
 const hubStore = useHubStore();
-const zoneCollection = ref();
+const zoneStore = useZoneStore();
 
 const props = defineProps({
   zone: {
@@ -63,6 +69,10 @@ const props = defineProps({
     default: ''
   }
 });
+
+const {activeZone, zoneCollection} = storeToRefs(zoneStore);
+
+const viewType = ref('list');
 
 const node = computed({
   get() {
@@ -73,20 +83,18 @@ const node = computed({
   }
 });
 
-watch(node, async () => {
-  zoneCollection.value = servicesStore.getService(
-      ServiceNames.Zones,
-      await node.value.commsAddress,
-      await node.value.commsName).servicesCollection;
-}, {immediate: true});
+/**
+ * @param {Device.AsObject} device
+ * @return {boolean}
+ */
+function zoneDevicesFilter(device) {
+  return siteEditor.value.editMode || (zoneObj?.value?.deviceIds?.indexOf(device.name) >= 0 ?? true);
+}
 
 const zoneObj = computed(() => {
   const z = zoneCollection?.value?.resources?.value[props.zone] ?? (new Service()).toObject();
   return new Zone(z);
 });
-
-const viewType = ref('list');
-const editMode = ref(false);
 
 const deviceList = computed({
   get() {
@@ -97,15 +105,6 @@ const deviceList = computed({
   }
 });
 
-
-/**
- * @param {Device.AsObject} device
- * @return {boolean}
- */
-function zoneDevicesFilter(device) {
-  return editMode.value || (zoneObj?.value?.deviceIds?.indexOf(device.name) >= 0 ?? true);
-}
-
 const saveTracker = newActionTracker();
 
 /**
@@ -113,9 +112,25 @@ const saveTracker = newActionTracker();
  */
 function save() {
   zoneObj.value.save(saveTracker);
-  editMode.value = false;
+  siteEditor.value.editMode = false;
 }
 
+/** Hide/Show table hot points */
+onMounted(() => {
+  siteEditor.value.zone = true;
+});
+
+onUnmounted(() => {
+  siteEditor.value.zone = false;
+  activeZone.value = '';
+});
+
+watch(node, async () => {
+  zoneCollection.value = servicesStore.getService(
+      ServiceNames.Zones,
+      await node.value.commsAddress,
+      await node.value.commsName).servicesCollection;
+}, {immediate: true});
 </script>
 
 <style scoped>

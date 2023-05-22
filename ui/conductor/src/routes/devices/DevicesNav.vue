@@ -16,11 +16,11 @@
 <script setup>
 import {computed, reactive} from 'vue';
 import {useDevicesStore} from './store';
-import {useOccupancyStore} from '@/routes/devices/components/renderless-components/occupancyStore';
+import {useTableDataStore} from '@/stores/tableDataStore';
 import {newActionTracker} from '@/api/resource';
 
 const deviceStore = useDevicesStore();
-const {resetIntersectedItemNames} = useOccupancyStore();
+const {resetIntersectedItemNames} = useTableDataStore();
 const tracker = reactive(newActionTracker());
 
 // computed
