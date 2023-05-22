@@ -4,7 +4,7 @@
       <v-subheader class="text-title-caps-large neutral--text text--lighten-3">
         Occupancy Sensor
       </v-subheader>
-      <WithOccupancy
+      <WithHotpoint
           :name="props.name"
           v-slot="{occupantCount, occupancyState, occupancyValue}">
         <v-list-item class="py-1">
@@ -22,13 +22,13 @@
           <v-list-item-subtitle class="text-capitalize">{{ occupantCount }}</v-list-item-subtitle>
         </v-list-item>
         <v-progress-linear color="primary" indeterminate :active="occupancyValue.loading"/>
-      </WithOccupancy>
+      </WithHotpoint>
     </v-list>
   </v-card>
 </template>
 
 <script setup>
-import WithOccupancy from '@/routes/devices/components/renderless-components/WithOccupancy.vue';
+import WithHotpoint from '@/routes/devices/components/renderless-components/WithHotpoint.vue';
 
 const props = defineProps({
   // unique name of the device
