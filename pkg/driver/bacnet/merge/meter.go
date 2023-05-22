@@ -7,6 +7,7 @@ import (
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
@@ -45,7 +46,9 @@ func newMeter(client *gobacnet.Client, devices known.Context, statuses *statuspb
 	if err != nil {
 		return nil, err
 	}
-	model := meter.NewModel(resource.WithNoDuplicates())
+	model := meter.NewModel(resource.WithMessageEquivalence(cmp.Equal(
+		cmp.FloatValueApprox(0, 0.0001),
+	)))
 	t := &meterTrait{
 		client:      client,
 		known:       devices,
@@ -76,6 +79,16 @@ func (t *meterTrait) PullMeterReadings(request *gen.PullMeterReadingsRequest, se
 	if err != nil {
 		return err
 	}
+
+	// avoid returning the zero value if we are the first to attach since reboot
+	timeoutCtx, cleanup := context.WithTimeout(server.Context(), t.config.PollTimeoutDuration())
+	defer cleanup()
+	for change := range t.model.PullMeterReadings(timeoutCtx) {
+		if change.Value.Usage != 0 {
+			break
+		}
+	}
+
 	return t.ModelServer.PullMeterReadings(request, server)
 }
 
