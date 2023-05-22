@@ -1,23 +1,29 @@
 import {defineStore} from 'pinia';
 import {reactive, ref, watch} from 'vue';
-import {useOccupancyStore} from '@/routes/devices/components/renderless-components/occupancyStore';
+import {useTableDataStore} from '@/stores/tableDataStore';
 
 import {listDevices, getDevicesMetadata, pullDevicesMetadata} from '@/api/ui/devices';
 import {closeResource, newResourceCollection, newResourceValue} from '@/api/resource';
 import {Collection} from '@/util/query';
 
 export const useDevicesStore = defineStore('devices', () => {
-  const {resetIntersectedItemNames} = useOccupancyStore();
+  const {resetIntersectedItemNames} = useTableDataStore();
+
+  //
+  //
+  // State
+  const collection = reactive(/** @type {Collection} */ newCollection());
   // holds all the devices we can show
   const deviceList = reactive(/** @type {ResourceCollection<Device.AsObject, Device>} */newResourceCollection());
   const subSystems = ref({});
+
   const filterFloor = ref('All');
   const floorListResource = reactive(newResourceValue());
+
 
   //
   //
   // Actions
-
   /**
    * @param {ActionTracker<GetDevicesMetadataResponse.AsObject>} tracker
    * @return {Collection}
@@ -80,6 +86,7 @@ export const useDevicesStore = defineStore('devices', () => {
   });
 
   return {
+    collection,
     deviceList,
     subSystems,
     filterFloor,
