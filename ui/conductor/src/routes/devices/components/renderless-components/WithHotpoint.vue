@@ -12,10 +12,10 @@ import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
 import {newResourceValue} from '@/api/resource';
 import {occupancyStateToString} from '@/api/sc/traits/occupancy';
 
-import {useOccupancyStore} from '@/routes/devices/components/renderless-components/occupancyStore';
+import {useTableDataStore} from '@/stores/tableDataStore';
 import {useErrorStore} from '@/components/ui-error/error';
 
-const {handleStream} = useOccupancyStore();
+const {handleStream} = useTableDataStore();
 const errorStore = useErrorStore();
 
 const props = defineProps({
@@ -26,7 +26,10 @@ const props = defineProps({
   paused: Boolean
 });
 
-const occupancyValue = reactive(/** @type{ResourceValue<Occupancy.AsObject, Occupancy>} */newResourceValue());
+const occupancyValue = reactive(
+    /** @type {ResourceValue<Occupancy.AsObject, Occupancy>} */
+    newResourceValue()
+);
 
 //
 //
