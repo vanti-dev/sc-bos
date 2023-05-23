@@ -123,7 +123,8 @@ const data = computed(() => {
       const t1 = timestampToDate(record.recordTime);
       const d = t1 - t0;
       if (d > span) {
-        const diff = record.meterReading.usage - lastReading.meterReading.usage;
+        const segmentCount = Math.floor(d / span);
+        const diff = (record.meterReading.usage - lastReading.meterReading.usage) / segmentCount;
         lastReading = record;
         dst.push({
           x: new Date(t1),
