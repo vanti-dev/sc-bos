@@ -136,7 +136,7 @@ const data = computed(() => {
     const finalReading = records[records.length - 1];
     const t0 = timestampToDate(lastReading.recordTime);
     const t1 = timestampToDate(finalReading.recordTime);
-    if (t0 !== t1) {
+    if (t0.getTime() !== t1.getTime()) {
       const diff = finalReading.meterReading.usage - lastReading.meterReading.usage;
       dst.push({
         x: new Date(t1),
