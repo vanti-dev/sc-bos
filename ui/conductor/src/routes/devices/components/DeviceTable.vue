@@ -19,10 +19,13 @@
             class="text-center"
             :name="item.name"
             :paused="!intersectedItemNames[item.name]"
-            style="min-width: 75px;"
-            v-slot="{ occupancyState, occupancyValue }">
-          <p :class="[occupancyState.toLowerCase(), 'ma-0 text-body-2']">{{ occupancyState }}</p>
-          <v-progress-linear color="primary" indeterminate :active="occupancyValue.loading"/>
+            style="min-width: 75px;">
+          <template #occupancy="{ occupancyData }">
+            <p :class="[occupancyData.occupancyState.toLowerCase(), 'ma-0 text-body-2']">
+              {{ occupancyData.occupancyState }}
+            </p>
+            <v-progress-linear color="primary" indeterminate :active="occupancyData.occupancyValue.loading"/>
+          </template>
         </WithHotpoint>
       </template>
     </DataTable>

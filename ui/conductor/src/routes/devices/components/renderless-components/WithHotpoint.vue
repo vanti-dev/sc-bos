@@ -1,9 +1,11 @@
 <template>
   <div>
     <slot
-        :occupant-count="occupantCount"
-        :occupancy-state="occupancyState"
-        :occupancy-value="occupancyValue"/>
+        name="occupancy"
+        :occupancy-data="{occupantCount, occupancyState, occupancyValue}"/>
+
+        <!-- Worth to think of a for-loop here -->
+    <!-- <slot v-for="sub in subSystems.subs" :name="sub" :[`${sub}Data`]="'test'"/> -->
   </div>
 </template>
 
@@ -12,11 +14,13 @@ import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
 import {newResourceValue} from '@/api/resource';
 import {occupancyStateToString} from '@/api/sc/traits/occupancy';
 
+// import {useDevicesStore} from '@/routes/devices/store';
 import {useTableDataStore} from '@/stores/tableDataStore';
 import {useErrorStore} from '@/components/ui-error/error';
 
 const {handleStream} = useTableDataStore();
 const errorStore = useErrorStore();
+// const {subSystems} = useDevicesStore();
 
 const props = defineProps({
   name: {
