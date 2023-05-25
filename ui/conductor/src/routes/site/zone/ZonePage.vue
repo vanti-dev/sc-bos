@@ -16,11 +16,11 @@
         <v-btn value="map">Map View</v-btn>
         <v-btn value="list">List View</v-btn>
       </v-btn-toggle>
-      <v-btn class="ml-6" v-if="siteEditor.editMode" @click="save" color="accent">
+      <v-btn class="ml-6" v-if="pageType.editorMode" @click="save" color="accent">
         <v-icon left>mdi-content-save</v-icon>
         Save
       </v-btn>
-      <v-btn class="ml-6" v-else @click="siteEditor.editMode=true">
+      <v-btn class="ml-6" v-else @click="pageType.editorMode=true">
         <v-icon left>mdi-pencil</v-icon>
         Edit
       </v-btn>
@@ -30,7 +30,7 @@
     <device-table
         v-else-if="viewType === 'list'"
         :zone="zoneObj"
-        :show-select="siteEditor.editMode"
+        :show-select="pageType.editorMode"
         :row-select="false"
         :filter="zoneDevicesFilter"
         :selected-devices="deviceList"
@@ -53,13 +53,11 @@ import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
 import {useZoneStore} from '@/routes/site/zone/zoneStore';
-import {useTableDataStore} from '@/stores/tableDataStore';
 
 const servicesStore = useServicesStore();
 const pageStore = usePageStore();
 const configStore = useAppConfigStore();
-const tableDataStore = useTableDataStore();
-const {siteEditor} = storeToRefs(tableDataStore);
+const {pageType} = storeToRefs(pageStore);
 const hubStore = useHubStore();
 const zoneStore = useZoneStore();
 
@@ -88,7 +86,7 @@ const node = computed({
  * @return {boolean}
  */
 function zoneDevicesFilter(device) {
-  return siteEditor.value.editMode || (zoneObj?.value?.deviceIds?.indexOf(device.name) >= 0 ?? true);
+  return pageType.value.editorMode || (zoneObj?.value?.deviceIds?.indexOf(device.name) >= 0 ?? true);
 }
 
 const zoneObj = computed(() => {
@@ -112,16 +110,14 @@ const saveTracker = newActionTracker();
  */
 function save() {
   zoneObj.value.save(saveTracker);
-  siteEditor.value.editMode = false;
+  pageType.value.editorMode = false;
 }
 
 /** Hide/Show table hot points */
 onMounted(() => {
-  siteEditor.value.zone = true;
 });
 
 onUnmounted(() => {
-  siteEditor.value.zone = false;
   activeZone.value = '';
 });
 

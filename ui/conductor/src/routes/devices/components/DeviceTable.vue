@@ -6,17 +6,20 @@
           dropdownLabel: 'Floor',
           dropdownValue: filterFloor
         }"
-        :table-headers="tableHeaders"
+        :table-headers="[...headerCollection.staticDataHeaders, ...headerCollection.liveDataHeaders]"
         :table-items="tableData"
         :row-select="props.rowSelect"
         :selected-items="computeSelectedDevices"
         :zone="props.zone"
+        :required-slots="requiredSlots"
+        @onClick:row="showDevice"
         @update:dropdownValue="filterFloor = $event"
         @update:selectedItems="emit('update:selectedDevices', $event)">
-      <template #hotpoint="{findSensor, item, intersectedItemNames}">
+      <template #hotpoints="{item, values}">
         <WithHotpoint
-            v-if="findSensor(item, 'Occupancy')"
+            v-if="values.findSensor(item, 'Occupancy')"
             class="text-center"
+            device-type="occupancy"
             :name="item.name"
             :paused="!intersectedItemNames[item.name]"
             style="min-width: 75px;">
@@ -45,18 +48,26 @@ import WithHotpoint from '@/routes/devices/components/renderless-components/With
 import {useErrorStore} from '@/components/ui-error/error';
 import {useDevicesStore} from '@/routes/devices/store';
 import {useTableDataStore} from '@/stores/tableDataStore';
+import {useTableHeaderStore} from '@/components/composables/DataTable/tableHeaderStore';
 
 // Type imports
 import {Zone} from '@/routes/site/zone/zone';
+import {usePageStore} from '@/stores/page';
 
+
+const pageStore = usePageStore();
 const tableDataStore = useTableDataStore();
-const {resetIntersectedItemNames, siteEditor} = tableDataStore;
-const {search} = storeToRefs(tableDataStore);
+const tableHeaderStore = useTableHeaderStore();
 const devicesStore = useDevicesStore();
+const errorStore = useErrorStore();
+
+const {requiredSlots} = pageStore;
+const {resetIntersectedItemNames, intersectedItemNames} = tableDataStore;
+const {search} = storeToRefs(tableDataStore);
+const {headerCollection} = tableHeaderStore;
 const {collection, floorListResource, handleFloorListLoad} = devicesStore;
 const {filterFloor} = storeToRefs(devicesStore);
 
-const errorStore = useErrorStore();
 
 const props = defineProps({
   subsystem: {
@@ -82,6 +93,10 @@ const props = defineProps({
   filter: {
     type: Function,
     default: () => true
+  },
+  colSpan: {
+    type: String,
+    default: ''
   }
 });
 
@@ -96,16 +111,6 @@ onUnmounted(() => {
 
 // Computed
 // ////
-const tableHeaders = computed(() => {
-  const headers = [
-    {text: 'Device name', value: 'name'},
-    {text: 'Floor', value: 'metadata.location.floor'},
-    {text: 'Location', value: 'metadata.location.title'},
-    !siteEditor.zone ?? {text: '', value: 'hotpoints', align: 'end', width: '100'}
-  ];
-  return headers.filter(header => header);
-});
-
 const NO_FLOOR = '< no floor >';
 const floorList = computed(() => {
   const fieldCounts = floorListResource.value?.fieldCountsList || [];
@@ -165,6 +170,16 @@ const query = computed(() => {
   } */
   return q;
 });
+
+/**
+ *
+ * @param {*} item
+ */
+function showDevice(item) {
+  pageStore.showSidebar = true;
+  pageStore.sidebarTitle = item.metadata.appearance ? item.metadata.appearance.title : item.name;
+  pageStore.sidebarData = item;
+}
 
 // Watchers
 // ////

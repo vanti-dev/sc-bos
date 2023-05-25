@@ -5,7 +5,7 @@
         v-intersect="onIntersection(item)"
         :key="item[props.itemKey] + triggerRerender"
         :class="tableItemClass(item)"
-        @click="showDevice(item)">
+        @click="emits('onClick:row', item)">
       <td v-if="props.showSelect">
         <v-checkbox
             class="ma-0 pa-0 mb-n5"
@@ -14,33 +14,41 @@
             :value="item"
             @change="onSelect(item)"/>
       </td>
-      <td>
-        {{ item.metadata.appearance ?
-          item.metadata.appearance.title :
-          item.name }}
-      </td>
-      <td>{{ item.metadata?.location?.floor ?? '' }}</td>
-      <td>{{ item.metadata?.location?.title ?? '' }}</td>
 
+      <!-- Static / Text content -->
+      <td
+          v-for="(header, headerIndex) in [...headerCollection.staticDataHeaders]"
+          :key="headerIndex"
+          :class="header.value === 'active' ? [item.active ? 'success--text' : 'error--text', 'text--lighten-2'] : ''">
+        {{
+          collectStaticData(header, item)
+        }}
+      </td>
+
+      <!-- Live / Dynamic content -->
       <!-- Deepest slot for hot points -->
-      <td v-if="!siteEditor.zone" class="d-flex justify-end align-center">
+      <td
+          v-for="(slot, slotIndex) in slotsToGenerate"
+          :key="slot.slotName + '_' + slotIndex"
+          :class="slot.tdClass">
         <slot
-            name="hotpoint"
-            :find-sensor="findSensor"
+            :name="slot.slotName"
+            :slot-name="slot.slotName"
             :item="item"
-            :intersected-item-names="intersectedItemNames"/>
+            :values="slot.slotData"/>
       </td>
     </tr>
   </tbody>
 </template>
 
 <script setup>
-import {onUnmounted, ref, watch} from 'vue';
+import {computed, onUnmounted, ref, watch} from 'vue';
 import {storeToRefs} from 'pinia';
 
 // Store imports
 import {usePageStore} from '@/stores/page';
 import {useTableDataStore} from '@/stores/tableDataStore';
+import {useTableHeaderStore} from './tableHeaderStore';
 
 const props = defineProps({
   items: {
@@ -54,25 +62,101 @@ const props = defineProps({
   showSelect: {
     type: Boolean,
     default: false
+  },
+  tableHeaders: {
+    type: Array,
+    default: () => []
   }
 });
 
-const emits = defineEmits(['onItemSelect']);
+const emits = defineEmits(['onClick:row', 'onItemSelect']);
 
 // Stores
 const pageStore = usePageStore();
 const tableDataStore = useTableDataStore();
+const tableHeaderStore = useTableHeaderStore();
 
 
 // Store values
+const {pageType, requiredSlots} = pageStore;
 const {
-  findSensor, intersectionHandler, intersectedItemNames, siteEditor
+  findSensor, intersectionHandler
 } = tableDataStore;
 const {tableSelection, triggerRerender} = storeToRefs(tableDataStore);
+const {headerCollection} = tableHeaderStore;
 
+
+// Local data
 const itemSelection = ref([]);
 
+// Computeds
+const slotsToGenerate = computed(() => {
+  let slots = [];
+
+  if (requiredSlots.length) {
+    if (pageType.automations || pageType.system) {
+      slots = [
+        {
+          slotName: 'actions'
+        }
+      ];
+    } else if (!pageType.site || !pageType.automations) {
+      slots = [
+        {
+          slotName: 'hotpoints',
+          tdClass: 'd-flex justify-end align-center',
+          slotData: {findSensor}
+        }
+      ];
+    }
+  }
+
+  return slots;
+});
+
 // Methods
+/**
+ *
+ * @param {*} header
+ * @param {*} item
+ * @return {*}
+ */
+function collectStaticData(header, item) {
+  let staticData;
+
+  if (header.text) {
+    const headerValue = header.value;
+    const nestedObjects = headerValue.split('.');
+
+    let result = item;
+
+    for (let i = 0; i < nestedObjects.length; i++) {
+      if (result && result.hasOwnProperty(nestedObjects[i])) {
+        staticData = {
+          key: nestedObjects[i],
+          value: result[nestedObjects[i]]
+        };
+        result = result[nestedObjects[i]];
+      } else {
+        staticData = null;
+        break;
+      }
+    }
+
+    if (staticData?.key === 'name' && item.metadata?.appearance?.title) {
+      staticData.value = item.metadata.appearance.title;
+    }
+
+    if (staticData?.key === 'active') {
+      if (item.active) {
+        staticData.value = 'Running';
+      } else staticData.value = 'Stopped';
+    }
+  }
+
+  if (staticData) return staticData.value;
+}
+
 /**
  *
  * @param {*} item
@@ -101,24 +185,17 @@ function onIntersection(item) {
  * @return {string}
  */
 function tableItemClass(item) {
+  const matchingName = pageType.automations ?
+   pageStore.sidebarData?.id === item.id :
+   pageStore.sidebarData?.name === item.name;
+
   if (
-    pageStore.showSidebar && pageStore.sidebarData?.name === item.name ||
-    siteEditor.editMode && itemSelection.value.includes(item)
+    pageStore.showSidebar && matchingName ||
+    pageType.editorMode && itemSelection.value.includes(item)
   ) {
     return 'item-selected';
   }
   return '';
-}
-
-
-/**
- *
- * @param {*} item
- */
-function showDevice(item) {
-  pageStore.showSidebar = true;
-  pageStore.sidebarTitle = item.metadata.appearance ? item.metadata.appearance.title : item.name;
-  pageStore.sidebarData = item;
 }
 
 /**
@@ -158,6 +235,7 @@ watch(tableSelection, items => {
 }
 
 .item-selected {
-  background-color: rgba(100, 100, 100, 0.7);
+  // background-color: rgba(100, 100, 100, 0.7);
+  background-color: var(--v-primary-darken4);
 }
 </style>

@@ -2,25 +2,21 @@
   <v-data-table
       :class="tableClasses"
       fixed-header
-      :headers="props.tableHeaders"
       hide-default-footer
-      :hide-default-header="!props.tableItems.length"
+      :headers="props.tableHeaders"
+      :loading="props.tableLoading"
       :items="props.tableItems"
       :items-per-page="itemsPerPage"
       :page.sync="activePage"
-      :show-select="siteEditor.editMode"
+      :show-select="pageType.editorMode"
       :value="tableSelection"
       @toggle-select-all="onToggleSelectAll($event)">
     <!-- Search and Filter bar -->
     <template #top>
       <TopBar
+          v-if="!pageType.automations"
           :dropdown="props.dropdown"
           @onDropdownSelect="emits('update:dropdownValue', $event)"/>
-    </template>
-
-    <!-- Column labels -->
-    <template #header="{headers}">
-      <TableHeader :table-headers="headers"/>
     </template>
 
     <!-- Table data -->
@@ -32,15 +28,18 @@
           v-else
           :items="items"
           :item-key="props.tableItemKey"
-          :show-select="siteEditor.editMode"
+          :show-select="pageType.editorMode"
+          @onClick:row="emits('onClick:row', $event)"
           @onItemSelect="emits('update:selectedItems', $event)">
         <!-- Middle - bridge slot -->
-        <template #hotpoint="{item, intersectedItemNames}">
+        <!-- Item row end with live data / possible user actions-->
+        <template
+            v-for="requiredSlot in props.requiredSlots"
+            #[requiredSlot]="{slotName, item, values}">
           <slot
-              name="hotpoint"
-              :find-sensor="findSensor"
+              :name="slotName"
               :item="item"
-              :intersected-item-names="intersectedItemNames"/>
+              :values="values"/>
         </template>
       </TableBody>
     </template>
@@ -58,20 +57,24 @@ import {storeToRefs} from 'pinia';
 
 // Component import
 import TopBar from '@/components/composables/DataTable/TableTopBar.vue';
-import TableHeader from '@/components/composables/DataTable/TableHeader.vue';
 import TableBody from '@/components/composables/DataTable/TableBody.vue';
 import TableFooter from '@/components/composables/DataTable/TableFooter.vue';
 
 // Store imports
 import {useTableDataStore} from '@/stores/tableDataStore';
+import {usePageStore} from '@/stores/page';
 
 // Stores
+const {pageType} = usePageStore();
 const tableDataStore = useTableDataStore();
-const {siteEditor, findSensor} = tableDataStore;
 
 const {activePage, itemsPerPage, tableSelection, search} = storeToRefs(tableDataStore);
 
 const props = defineProps({
+  colSpan: {
+    type: String,
+    default: ''
+  },
   dropdown: {
     type: Object,
     default: () => {}
@@ -92,6 +95,10 @@ const props = defineProps({
     type: Number,
     default: 10
   },
+  tableLoading: {
+    type: Boolean,
+    default: false
+  },
   selectedItems: {
     type: Array,
     default: () => []
@@ -99,15 +106,19 @@ const props = defineProps({
   rowSelect: {
     type: Boolean,
     default: true
+  },
+  requiredSlots: {
+    type: Array,
+    default: () => []
   }
 });
 
-const emits = defineEmits(['update:dropdownValue', 'update:selectedItems']);
+const emits = defineEmits(['onClick:row', 'update:dropdownValue', 'update:selectedItems']);
 
 // Computeds
 const tableClasses = computed(() => {
   const c = [];
-  if (siteEditor.editMode) c.push('selectable');
+  if (pageType.editorMode) c.push('selectable');
   if (props.rowSelect) c.push('rowSelectable');
   return c.join(' ');
 });

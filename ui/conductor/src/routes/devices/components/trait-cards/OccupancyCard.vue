@@ -4,24 +4,24 @@
       <v-subheader class="text-title-caps-large neutral--text text--lighten-3">
         Occupancy Sensor
       </v-subheader>
-      <WithHotpoint
-          :name="props.name"
-          v-slot="{occupantCount, occupancyState, occupancyValue}">
-        <v-list-item class="py-1">
-          <v-list-item-title class="text-body-small text-capitalize">State</v-list-item-title>
-          <v-list-item-subtitle
-              :class="[
-                occupancyState.toLowerCase(),
-                'text-capitalize text-subtitle-2 py-1 font-weight-medium'
-              ]">
-            {{ occupancyState }}
-          </v-list-item-subtitle>
-        </v-list-item>
-        <v-list-item class="py-1" v-if="occupantCount !== 0">
-          <v-list-item-title class="text-body-small text-capitalize">Count</v-list-item-title>
-          <v-list-item-subtitle class="text-capitalize">{{ occupantCount }}</v-list-item-subtitle>
-        </v-list-item>
-        <v-progress-linear color="primary" indeterminate :active="occupancyValue.loading"/>
+      <WithHotpoint device-type="occupancy" :name="props.name">
+        <template #occupancy="{occupancyData}">
+          <v-list-item class="py-1">
+            <v-list-item-title class="text-body-small text-capitalize">State</v-list-item-title>
+            <v-list-item-subtitle
+                :class="[
+                  occupancyData.occupancyState.toLowerCase(),
+                  'text-capitalize text-subtitle-2 py-1 font-weight-medium'
+                ]">
+              {{ occupancyData.occupancyState }}
+            </v-list-item-subtitle>
+          </v-list-item>
+          <v-list-item class="py-1" v-if="occupancyData.occupantCount !== 0">
+            <v-list-item-title class="text-body-small text-capitalize">Count</v-list-item-title>
+            <v-list-item-subtitle class="text-capitalize">{{ occupancyData.occupantCount }}</v-list-item-subtitle>
+          </v-list-item>
+          <v-progress-linear color="primary" indeterminate :active="occupancyData.occupancyValue.loading"/>
+        </template>
       </WithHotpoint>
     </v-list>
   </v-card>

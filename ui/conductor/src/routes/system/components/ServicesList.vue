@@ -12,25 +12,20 @@
           outlined/>
       <v-spacer/>
     </v-row>
-    <v-data-table
-        :headers="headers"
-        :items="serviceList"
-        item-key="id"
-        :search="search"
-        :loading="serviceCollection.loading"
-        @click:row="showService">
-      <template #item.active="{value}">
-        <span :class="value?'success--text':'error--text'" class="text--lighten-2">
-          {{ value ? 'Running' : 'Stopped' }}
-        </span>
-      </template>
-      <template #item.actions="{item}">
+    <DataTable
+        :table-headers="[...headerCollection.staticDataHeaders, ...headerCollection.liveDataHeaders]"
+        :table-items="serviceList"
+        table-item-key="id"
+        :table-loading="serviceCollection.loading"
+        :required-slots="requiredSlots"
+        @onClick:row="showService">
+      <template #actions="{item}">
         <v-btn
             v-if="item.active"
             outlined
             class="automation-device__btn--red"
             color="red"
-            width="100%"
+            width="75px"
             @click.stop="_stopService(item)">
           Stop
         </v-btn>
@@ -39,12 +34,12 @@
             outlined
             class="automation-device__btn--green"
             color="green"
-            width="100%"
+            width="75px"
             @click.stop="_startService(item)">
           Start
         </v-btn>
       </template>
-    </v-data-table>
+    </DataTable>
   </content-card>
 </template>
 
@@ -52,6 +47,7 @@
 import {newActionTracker} from '@/api/resource';
 import {ServiceNames, startService, stopService} from '@/api/ui/services';
 import ContentCard from '@/components/ContentCard.vue';
+import {useTableHeaderStore} from '@/components/composables/DataTable/tableHeaderStore';
 import {useErrorStore} from '@/components/ui-error/error';
 import {useAppConfigStore} from '@/stores/app-config';
 import {useHubStore} from '@/stores/hub';
@@ -66,6 +62,9 @@ const errors = useErrorStore();
 const configStore = useAppConfigStore();
 const hubStore = useHubStore();
 
+
+const {requiredSlots} = pageStore;
+const {headerCollection} = useTableHeaderStore();
 const startStopTracker = reactive(newActionTracker());
 
 const props = defineProps({
@@ -88,13 +87,6 @@ const node = computed({
     pageStore.sidebarNode = val;
   }
 });
-const search = ref('');
-
-const headers = [
-  {text: 'ID', value: 'id'},
-  {text: 'Status', value: 'active'},
-  {text: '', value: 'actions', align: 'end', width: '100'}
-];
 
 const serviceCollection = ref({});
 

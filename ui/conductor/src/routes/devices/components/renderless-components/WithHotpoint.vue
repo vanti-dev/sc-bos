@@ -1,11 +1,8 @@
 <template>
   <div>
     <slot
-        name="occupancy"
-        :occupancy-data="{occupantCount, occupancyState, occupancyValue}"/>
-
-        <!-- Worth to think of a for-loop here -->
-    <!-- <slot v-for="sub in subSystems.subs" :name="sub" :[`${sub}Data`]="'test'"/> -->
+        :name="props.deviceType"
+        :[`${slotData(props.deviceType).name}`]="slotData(props.deviceType).data"/>
   </div>
 </template>
 
@@ -14,21 +11,29 @@ import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
 import {newResourceValue} from '@/api/resource';
 import {occupancyStateToString} from '@/api/sc/traits/occupancy';
 
-// import {useDevicesStore} from '@/routes/devices/store';
 import {useTableDataStore} from '@/stores/tableDataStore';
 import {useErrorStore} from '@/components/ui-error/error';
+import {Device} from '@sc-bos/ui-gen/proto/devices_pb';
 
 const {handleStream} = useTableDataStore();
 const errorStore = useErrorStore();
-// const {subSystems} = useDevicesStore();
 
 const props = defineProps({
+  deviceType: {
+    type: String,
+    default: ''
+  },
+  item: {
+    type: Device,
+    default: () => {}
+  },
   name: {
     type: String,
     default: ''
   },
   paused: Boolean
 });
+
 
 const occupancyValue = reactive(
     /** @type {ResourceValue<Occupancy.AsObject, Occupancy>} */
@@ -52,6 +57,21 @@ const occupancyState = computed(() => {
   return 'unknown';
 });
 
+const slotData = (sensorType) => {
+  let data = {};
+  let name = '';
+
+  if (sensorType === 'occupancy') {
+    name = sensorType + 'Data';
+    data = {
+      occupantCount: occupantCount.value,
+      occupancyState: occupancyState.value,
+      occupancyValue: occupancyValue
+    };
+  }
+
+  return {name, data};
+};
 
 //
 //

@@ -8,7 +8,7 @@ export const useTableDataStore = defineStore('tableData', () => {
   // State
   const activePage = ref(1);
   const itemsPerPage = ref(10);
-  const triggerRerender = ref(1);
+  const triggerRerender = ref(0);
   const intersectedItemNames = reactive(
       /** @type {Object.<string, boolean>} */
       {}
@@ -21,13 +21,6 @@ export const useTableDataStore = defineStore('tableData', () => {
   ];
 
   const tableSelection = ref([]);
-  const siteEditor = ref(
-      /** @type {Object.<string, boolean>} */
-      {
-        editMode: false,
-        zone: false
-      }
-  );
   const search = ref('');
 
   //
@@ -66,6 +59,12 @@ export const useTableDataStore = defineStore('tableData', () => {
     });
   };
 
+  /**
+   *
+   * @param {string} name
+   * @param {boolean} paused
+   * @param {*} value
+   */
   const handleStream = (name, paused, value) => {
     closeResource(value);
 
@@ -116,7 +115,6 @@ export const useTableDataStore = defineStore('tableData', () => {
     perPageChoices,
     findSensor,
     tableSelection,
-    siteEditor,
     search,
 
     // Intersection
