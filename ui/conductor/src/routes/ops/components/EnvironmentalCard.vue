@@ -34,12 +34,12 @@
 
 <script setup>
 
-import ContentCard from '@/components/ContentCard.vue';
-import CircularGauge from '@/components/CircularGauge.vue';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullAirTemperature} from '@/api/sc/traits/air-temperature';
+import CircularGauge from '@/components/CircularGauge.vue';
+import ContentCard from '@/components/ContentCard.vue';
 import {useErrorStore} from '@/components/ui-error/error';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
   // name of the device/zone to query for internal temperature data
@@ -60,8 +60,10 @@ const temperatureRange = ref({
   high: 24.0
 });
 
-const indoorTempValue = reactive(/** @type {ResourceValue<AirTemperature.AsObject, AirTemperature>} */ newResourceValue());
-const outdoorTempValue = reactive(/** @type {ResourceValue<AirTemperature.AsObject, AirTemperature>} */ newResourceValue());
+const indoorTempValue = reactive(
+    /** @type {ResourceValue<AirTemperature.AsObject, AirTemperature>} */ newResourceValue());
+const outdoorTempValue = reactive(
+    /** @type {ResourceValue<AirTemperature.AsObject, AirTemperature>} */ newResourceValue());
 
 const temperature = computed(() => indoorTempValue.value?.ambientTemperature?.valueCelsius ?? 0);
 const humidity = computed(() => indoorTempValue.value?.ambientHumidity ?? 0);
@@ -95,7 +97,8 @@ onUnmounted(() => {
 
 // UI Error handling
 const errorStore = useErrorStore();
-let unwatchIndoorTempErrors; let unwatchOutdoorTempErrors;
+let unwatchIndoorTempErrors;
+let unwatchOutdoorTempErrors;
 onMounted(() => {
   unwatchIndoorTempErrors = errorStore.registerValue(indoorTempValue);
   unwatchOutdoorTempErrors = errorStore.registerValue(outdoorTempValue);
