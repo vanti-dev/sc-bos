@@ -181,7 +181,7 @@ function collectStaticData(header, item) {
  */
 function onIntersection(item) {
   return {
-    handler: (entries, observer) => intersectionHandler(entries, observer, item.name),
+    handler: (entries, observer) => intersectionHandler(entries, observer, item[props.itemKey]),
     options: {
       rootMargin: '-50px 0px 0px 0px',
       threshold: 0.75,

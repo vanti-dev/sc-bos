@@ -56,8 +56,6 @@ export const useTableDataStore = defineStore('tableData', () => {
    */
   const intersectionHandler = (entries, observer, name) => {
     entries.forEach((entry, index) => {
-      // console.log(Object.keys(intersectedItemNames) === entry.target.firstElementChild.innerText);
-
       if (entry.isIntersecting) {
         set(intersectedItemNames, name, true);
         //
