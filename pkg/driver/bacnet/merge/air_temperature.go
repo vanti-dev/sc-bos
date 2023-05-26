@@ -107,26 +107,47 @@ func (t *airTemperature) PullAirTemperature(request *traits.PullAirTemperatureRe
 
 // pollPeer fetches data from the peer device and saves the data locally.
 func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, error) {
-	responses := readProperties(ctx, t.client, t.known, *t.config.SetPoint, *t.config.AmbientTemperature)
+	data := &traits.AirTemperature{}
+	var resProcessors []func(response any) error
+	var readValues []config.ValueSource
+
+	if t.config.SetPoint != nil {
+		readValues = append(readValues, *t.config.SetPoint)
+		resProcessors = append(resProcessors, func(response any) error {
+			setPoint, err := float64Value(response)
+			if err != nil {
+				return ErrReadProperty{Prop: "setPoint", Cause: err}
+			}
+			data.TemperatureGoal = &traits.AirTemperature_TemperatureSetPoint{
+				TemperatureSetPoint: &types.Temperature{ValueCelsius: setPoint},
+			}
+			return nil
+		})
+	}
+	if t.config.AmbientTemperature != nil {
+		readValues = append(readValues, *t.config.AmbientTemperature)
+		resProcessors = append(resProcessors, func(response any) error {
+			ambientTemperature, err := float64Value(response)
+			if err != nil {
+				return ErrReadProperty{Prop: "ambientTemperature", Cause: err}
+			}
+			data.AmbientTemperature = &types.Temperature{ValueCelsius: ambientTemperature}
+			return nil
+		})
+	}
+	responses := readProperties(ctx, t.client, t.known, readValues...)
 	var errs []error
-	setPoint, err := float64Value(responses[0])
-	if err != nil {
-		errs = append(errs, ErrReadProperty{Prop: "setPoint", Cause: err})
+	for i, response := range responses {
+		err := resProcessors[i](response)
+		if err != nil {
+			errs = append(errs, err)
+		}
 	}
-	ambientTemperature, err := float64Value(responses[1])
-	if err != nil {
-		errs = append(errs, ErrReadProperty{Prop: "ambientTemperature", Cause: err})
-	}
-	updatePollErrorStatus(t.statuses, t.config.Name, 2, errs...)
+	updatePollErrorStatus(t.statuses, t.config.Name, len(readValues), errs...)
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}
-	data := &traits.AirTemperature{
-		AmbientTemperature: &types.Temperature{ValueCelsius: ambientTemperature},
-		TemperatureGoal: &traits.AirTemperature_TemperatureSetPoint{
-			TemperatureSetPoint: &types.Temperature{ValueCelsius: setPoint},
-		},
-	}
+
 	return t.model.UpdateAirTemperature(data)
 }
 
