@@ -57,6 +57,11 @@ const occupancyState = computed(() => {
   return 'unknown';
 });
 
+//
+//
+// Methods
+
+// Defining slot data depending on sensor (device) type
 const slotData = (sensorType) => {
   let data = {};
   let name = '';

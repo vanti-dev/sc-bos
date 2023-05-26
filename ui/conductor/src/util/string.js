@@ -20,3 +20,16 @@ export function capitaliseString(string) {
 
   return capitalisedString;
 }
+
+/**
+ *
+ * @param {string} string
+ * @return {string}
+ */
+export function camelCasingString(string) {
+  let camelCasedString;
+
+  if (string) camelCasedString = string.replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
+
+  return camelCasedString;
+}

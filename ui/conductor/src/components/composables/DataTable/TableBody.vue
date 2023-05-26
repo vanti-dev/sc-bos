@@ -15,40 +15,44 @@
             @change="onSelect(item)"/>
       </td>
 
-      <!-- Static / Text content -->
       <td
-          v-for="(header, headerIndex) in [...headerCollection.staticDataHeaders]"
-          :key="headerIndex"
-          :class="header.value === 'active' ? [item.active ? 'success--text' : 'error--text', 'text--lighten-2'] : ''">
-        {{
-          collectStaticData(header, item)
-        }}
-      </td>
+          v-for="(header, headerIndex) in props.tableHeaders"
+          :key="header.slotName ? header.slotName + '_' + headerIndex : headerIndex"
+          :class="[
+            header.value === 'active' ?
+              [item.active ? 'success--text' : 'error--text', 'text--lighten-2'] :
+              ''
+          ]">
+        <!-- Live / Dynamic content -->
+        <template v-if="!header.text && !pageType.site">
+          <span
+              v-for="dynamicSlot in slotsToGenerate()"
+              :key="dynamicSlot.slotName"
+              :class="dynamicSlot.tdClass">
+            <slot
+                :name="dynamicSlot.slotName"
+                :slot-name="dynamicSlot.slotName"
+                :item="item"
+                :values="dynamicSlot.slotData"/>
+          </span>
+        </template>
 
-      <!-- Live / Dynamic content -->
-      <!-- Deepest slot for hot points -->
-      <td
-          v-for="(slot, slotIndex) in slotsToGenerate"
-          :key="slot.slotName + '_' + slotIndex"
-          :class="slot.tdClass">
-        <slot
-            :name="slot.slotName"
-            :slot-name="slot.slotName"
-            :item="item"
-            :values="slot.slotData"/>
+        <!-- Static / Text content -->
+        <template v-else>
+          {{ collectStaticData(header, item) }}
+        </template>
       </td>
     </tr>
   </tbody>
 </template>
 
 <script setup>
-import {computed, onUnmounted, ref, watch} from 'vue';
+import {onUnmounted, ref, watch} from 'vue';
 import {storeToRefs} from 'pinia';
 
 // Store imports
 import {usePageStore} from '@/stores/page';
 import {useTableDataStore} from '@/stores/tableDataStore';
-import {useTableHeaderStore} from './tableHeaderStore';
 
 const props = defineProps({
   items: {
@@ -74,47 +78,54 @@ const emits = defineEmits(['onClick:row', 'onItemSelect']);
 // Stores
 const pageStore = usePageStore();
 const tableDataStore = useTableDataStore();
-const tableHeaderStore = useTableHeaderStore();
-
 
 // Store values
 const {pageType, requiredSlots} = pageStore;
-const {
-  findSensor, intersectionHandler
-} = tableDataStore;
+const {findSensor, intersectionHandler} = tableDataStore;
 const {tableSelection, triggerRerender} = storeToRefs(tableDataStore);
-const {headerCollection} = tableHeaderStore;
 
 
 // Local data
 const itemSelection = ref([]);
 
-// Computeds
-const slotsToGenerate = computed(() => {
-  let slots = [];
+// Methods
+/**
+ * Within this function we are going to collect
+ * the relevant data and styles (css classes) for the props being generated
+ *
+ * Keep in mind, this function MUST BE UPDATED if we require/add any new action/hotpoint
+ *
+ *  @return {Array.<{ slotName: string, tdClass: string, slotData: Object }>}
+ */
+function slotsToGenerate() {
+  let slots;
 
   if (requiredSlots.length) {
-    if (pageType.automations || pageType.system) {
-      slots = [
-        {
-          slotName: 'actions'
-        }
-      ];
-    } else if (!pageType.site || !pageType.automations) {
-      slots = [
-        {
-          slotName: 'hotpoints',
-          tdClass: 'd-flex justify-end align-center',
-          slotData: {findSensor}
-        }
-      ];
-    }
+    requiredSlots.forEach(slot => {
+      //
+      if (slot === 'actions' && (pageType.automations || pageType.system)) {
+        slots = [
+          {
+            slotName: 'actions',
+            tdClass: 'd-flex justify-end align-center mx-auto'
+          }
+        ];
+        //
+      } else if (slot === 'hotpoints' && pageType.devices) {
+        slots = [
+          {
+            slotName: 'hotpoints',
+            tdClass: 'd-flex justify-end align-center mx-auto',
+            slotData: {findSensor}
+          }
+        ];
+      }
+    });
   }
 
   return slots;
-});
+};
 
-// Methods
 /**
  *
  * @param {*} header
@@ -185,7 +196,7 @@ function onIntersection(item) {
  * @return {string}
  */
 function tableItemClass(item) {
-  const matchingName = pageType.automations ?
+  const matchingName = pageType.automations || pageType.system ?
    pageStore.sidebarData?.id === item.id :
    pageStore.sidebarData?.name === item.name;
 
@@ -226,16 +237,43 @@ watch(tableSelection, items => {
 </script>
 
 <style lang="scss" scoped>
+:deep(tr) {
+  cursor: pointer;
+}
 .v-data-table:not(.selectable) :deep(.v-data-table__selected) {
   background: none;
 }
 
-.v-data-table.rowSelectable :deep(.item-selected) {
-  background-color: var(--v-primary-darken4);
+:deep(tr:hover) {
+  .automation-device__btn {
+    &--red {
+      background-color: red;
+      .v-btn__content {
+        color: white;
+      }
+    }
+    &--green {
+      background-color: green;
+      .v-btn__content {
+        color: white;
+      }
+    }
+  }
 }
 
-.item-selected {
-  // background-color: rgba(100, 100, 100, 0.7);
+:deep(.item-selected) {
   background-color: var(--v-primary-darken4);
-}
+  .automation-device__btn--red {
+      background-color: red;
+      .v-btn__content {
+        color: white;
+      }
+    }
+    .automation-device__btn--green {
+      background-color: green;
+      .v-btn__content {
+        color: white;
+      }
+    }
+  }
 </style>

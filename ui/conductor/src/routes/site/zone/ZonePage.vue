@@ -29,6 +29,7 @@
     <zone-map v-else-if="viewType === 'map'" :zone="zoneObj"/>
     <device-table
         v-else-if="viewType === 'list'"
+        :table-headers="headers"
         :zone="zoneObj"
         :show-select="pageType.editorMode"
         :row-select="false"
@@ -71,6 +72,12 @@ const props = defineProps({
 const {activeZone, zoneCollection} = storeToRefs(zoneStore);
 
 const viewType = ref('list');
+
+const headers = ref([
+  {text: 'Device name', value: 'name'},
+  {text: 'Floor', value: 'metadata.location.floor'},
+  {text: 'Location', value: 'metadata.location.title'}
+]);
 
 const node = computed({
   get() {

@@ -13,7 +13,7 @@
       <v-spacer/>
     </v-row>
     <DataTable
-        :table-headers="[...headerCollection.staticDataHeaders, ...headerCollection.liveDataHeaders]"
+        :table-headers="headers"
         :table-items="serviceList"
         table-item-key="id"
         :table-loading="serviceCollection.loading"
@@ -47,13 +47,14 @@
 import {newActionTracker} from '@/api/resource';
 import {ServiceNames, startService, stopService} from '@/api/ui/services';
 import ContentCard from '@/components/ContentCard.vue';
-import {useTableHeaderStore} from '@/components/composables/DataTable/tableHeaderStore';
 import {useErrorStore} from '@/components/ui-error/error';
 import {useAppConfigStore} from '@/stores/app-config';
 import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
+import {useTableDataStore} from '@/stores/tableDataStore';
 import {serviceName} from '@/util/proxy';
+import {storeToRefs} from 'pinia';
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const serviceStore = useServicesStore();
@@ -63,8 +64,8 @@ const configStore = useAppConfigStore();
 const hubStore = useHubStore();
 
 
-const {requiredSlots} = pageStore;
-const {headerCollection} = useTableHeaderStore();
+const {subPageType, requiredSlots} = pageStore;
+const {search} = storeToRefs(useTableDataStore());
 const startStopTracker = reactive(newActionTracker());
 
 const props = defineProps({
@@ -78,6 +79,34 @@ const props = defineProps({
     default: ''
   }
 });
+
+const headers = ref([
+  {text: 'ID', value: 'id'},
+  {text: 'Status', value: 'active'},
+  {text: '', value: 'actions', align: 'end'}
+]);
+
+/**
+ * Setting different header values depending on active sidebar nav option
+ */
+function setHeaders() {
+  if (subPageType.drivers) {
+    headers.value = [
+      {text: 'ID', value: 'id'},
+      {text: 'Type', value: 'type'},
+      {text: 'Status', value: 'active'},
+      {text: '', value: 'actions', align: 'end'}
+    ];
+  } else {
+    headers.value = [
+      {text: 'ID', value: 'id'},
+      {text: 'Status', value: 'active'},
+      {text: '', value: 'actions', align: 'end'}
+    ];
+  }
+}
+// Triggering the header value update when DOM created
+setHeaders();
 
 const node = computed({
   get() {
@@ -106,7 +135,6 @@ watch(node, async () => {
   serviceCollection.value.init();
   serviceCollection.value.query(props.name);
 }, {immediate: true});
-
 
 watch(serviceCollection, () => {
   // todo: this causes us to load all pages, connect with paging logic instead
@@ -160,40 +188,7 @@ async function _stopService(service) {
   console.debug('Stopping:', serviceName(node.value.name, props.name), service.id);
   await stopService({name: serviceName(await node.value.commsName, props.name), id: service.id}, startStopTracker);
 }
-
 </script>
 
 <style lang="scss" scoped>
-:deep(.v-data-table-header__icon) {
-  margin-left: 8px;
-}
-
-.v-data-table :deep(.v-data-footer) {
-  background: var(--v-neutral-lighten1) !important;
-  border-radius: 0px 0px $border-radius-root*2 $border-radius-root*2;
-  border: none;
-  margin: 0 -12px -12px;
-}
-
-.v-data-table :deep(.item-selected) {
-  background-color: var(--v-primary-darken4);
-}
-
-
-.v-data-table :deep(tr:hover) {
-  .automation-device__btn {
-    &--red {
-      background-color: red;
-      .v-btn__content {
-        color: white;
-      }
-    }
-    &--green {
-      background-color: green;
-      .v-btn__content {
-        color: white;
-      }
-    }
-  }
-}
 </style>

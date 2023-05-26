@@ -14,21 +14,18 @@
     <!-- Search and Filter bar -->
     <template #top>
       <TopBar
-          v-if="!pageType.automations"
+          v-if="withTopBar[pageRoute]"
           :dropdown="props.dropdown"
           @onDropdownSelect="emits('update:dropdownValue', $event)"/>
     </template>
 
     <!-- Table data -->
     <template #body="{items}">
-      <tr v-if="!props.tableItems.length && !search.length">
-        <td class="text-center py-4">No data to be displayed.</td>
-      </tr>
       <TableBody
-          v-else
           :items="items"
           :item-key="props.tableItemKey"
           :show-select="pageType.editorMode"
+          :table-headers="props.tableHeaders"
           @onClick:row="emits('onClick:row', $event)"
           @onItemSelect="emits('update:selectedItems', $event)">
         <!-- Middle - bridge slot -->
@@ -65,10 +62,11 @@ import {useTableDataStore} from '@/stores/tableDataStore';
 import {usePageStore} from '@/stores/page';
 
 // Stores
-const {pageType} = usePageStore();
+const {pageRoute, pageType} = usePageStore();
 const tableDataStore = useTableDataStore();
+const {withTopBar} = tableDataStore;
 
-const {activePage, itemsPerPage, tableSelection, search} = storeToRefs(tableDataStore);
+const {activePage, itemsPerPage, tableSelection} = storeToRefs(tableDataStore);
 
 const props = defineProps({
   colSpan: {
@@ -114,6 +112,7 @@ const props = defineProps({
 });
 
 const emits = defineEmits(['onClick:row', 'update:dropdownValue', 'update:selectedItems']);
+
 
 // Computeds
 const tableClasses = computed(() => {

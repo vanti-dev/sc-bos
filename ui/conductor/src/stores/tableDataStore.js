@@ -20,8 +20,16 @@ export const useTableDataStore = defineStore('tableData', () => {
     {text: 'All', value: -1}
   ];
 
-  const tableSelection = ref([]);
   const search = ref('');
+  const tableSelection = ref([]);
+  const withTopBar = ref({
+    /** @type {Object.<string, boolean>} */
+    automations: false,
+    devices: true,
+    ops: false,
+    site: true,
+    system: false
+  });
 
   //
   // Actions
@@ -114,8 +122,9 @@ export const useTableDataStore = defineStore('tableData', () => {
     triggerRerender,
     perPageChoices,
     findSensor,
-    tableSelection,
     search,
+    tableSelection,
+    withTopBar,
 
     // Intersection
     intersectedItemNames,
