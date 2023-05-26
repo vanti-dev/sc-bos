@@ -13,8 +13,8 @@
         <energy-card :zone-name="energyZone"/>
       </div>
       <div class="d-flex flex-column" style="min-width: 250px;">
-        <occupancy-card :name="zoneName"/>
-        <environmental-card :name="zoneName"/>
+        <occupancy-card :name="occupancyZone"/>
+        <environmental-card :name="environmentalZone"/>
       </div>
     </div>
   </v-container>
@@ -22,7 +22,7 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import {computed, ref} from 'vue';
+import {computed} from 'vue';
 import BuildingStatus from '@/clients/ew/BuildingStatus_EW.vue';
 import OccupancyCard from '@/routes/ops/components/OccupancyCard.vue';
 import EnvironmentalCard from '@/routes/ops/components/EnvironmentalCard.vue';
@@ -32,9 +32,9 @@ import {useAppConfigStore} from '@/stores/app-config';
 
 const appConfig = useAppConfigStore();
 
-const energyZone = appConfig.config?.ops?.buildingZone ?? '';
-
-// todo: should probably get this from somewhere
-const zoneName = 'Floor 3'; // building-wide zone to use for collecting data
+const buildingZone = computed(() => appConfig.config?.ops?.buildingZone ?? '');
+const energyZone = buildingZone;
+const environmentalZone = buildingZone;
+const occupancyZone = buildingZone;
 
 </script>
