@@ -14,7 +14,7 @@
       </div>
       <div class="d-flex flex-column" style="min-width: 250px;">
         <occupancy-card :name="occupancyZone"/>
-        <environmental-card :name="environmentalZone"/>
+        <environmental-card :name="environmentalZone" :external-name="externalZone"/>
       </div>
     </div>
   </v-container>
@@ -35,6 +35,7 @@ const appConfig = useAppConfigStore();
 const buildingZone = computed(() => appConfig.config?.ops?.buildingZone ?? '');
 const energyZone = buildingZone;
 const environmentalZone = buildingZone;
+const externalZone = computed(() => environmentalZone.value + '/outside');
 const occupancyZone = buildingZone;
 
 </script>

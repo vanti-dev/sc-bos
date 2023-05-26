@@ -60,8 +60,8 @@ const temperatureRange = ref({
   high: 24.0
 });
 
-const indoorTempValue = reactive(newResourceValue());
-const outdoorTempValue = reactive(newResourceValue());
+const indoorTempValue = reactive(/** @type {ResourceValue<AirTemperature.AsObject, AirTemperature>} */ newResourceValue());
+const outdoorTempValue = reactive(/** @type {ResourceValue<AirTemperature.AsObject, AirTemperature>} */ newResourceValue());
 
 const temperature = computed(() => indoorTempValue.value?.ambientTemperature?.valueCelsius ?? 0);
 const humidity = computed(() => indoorTempValue.value?.ambientHumidity ?? 0);
