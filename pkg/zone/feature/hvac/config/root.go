@@ -7,6 +7,11 @@ import (
 type Root struct {
 	zone.Config
 
-	ReadOnlyThermostats bool     `json:"readOnlyThermostats,omitempty"`
-	Thermostats         []string `json:"thermostats,omitempty"`
+	Thermostat                             // announced as {zone}
+	ThermostatGroups map[string]Thermostat `json:"thermostatGroups,omitempty"` // announced as {zone}/{key}
+}
+
+type Thermostat struct {
+	ReadOnlyThermostat bool     `json:"thermostatReadOnly,omitempty"`
+	Thermostats        []string `json:"thermostats,omitempty"`
 }

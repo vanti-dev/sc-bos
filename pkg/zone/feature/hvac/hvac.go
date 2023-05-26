@@ -2,6 +2,7 @@ package hvac
 
 import (
 	"context"
+	"path"
 
 	"go.uber.org/zap"
 
@@ -34,8 +35,7 @@ type feature struct {
 func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := node.AnnounceContext(ctx, f.announce)
 	logger := f.logger.With(zap.String("zone", cfg.Name))
-
-	if len(cfg.Thermostats) > 0 {
+	publish := func(name string, t config.Thermostat) error {
 		var client traits.AirTemperatureApiClient
 		if err := f.clients.Client(&client); err != nil {
 			return err
@@ -44,10 +44,24 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		group := &Group{
 			client:   client,
 			names:    cfg.Thermostats,
-			readOnly: cfg.ReadOnlyThermostats,
+			readOnly: cfg.ReadOnlyThermostat,
 			logger:   logger,
 		}
-		announce.Announce(cfg.Name, node.HasTrait(trait.AirTemperature, node.WithClients(airtemperature.WrapApi(group))))
+		announce.Announce(name, node.HasTrait(trait.AirTemperature, node.WithClients(airtemperature.WrapApi(group))))
+		return nil
+	}
+
+	if len(cfg.Thermostats) > 0 {
+		if err := publish(cfg.Name, cfg.Thermostat); err != nil {
+			return err
+		}
+	}
+
+	for k, t := range cfg.ThermostatGroups {
+		name := path.Join(cfg.Name, k)
+		if err := publish(name, t); err != nil {
+			return err
+		}
 	}
 
 	return nil
