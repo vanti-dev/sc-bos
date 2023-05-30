@@ -28,7 +28,7 @@ const props = defineProps({
   },
   sensorTypes: {
     type: Array,
-    default: () => []
+    default: () => ['OccupancySensor']
   }
 });
 
