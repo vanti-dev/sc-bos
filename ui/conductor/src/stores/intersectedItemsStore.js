@@ -1,33 +1,48 @@
 import {defineStore} from 'pinia';
-import {reactive} from 'vue';
+import {del, reactive, set} from 'vue';
 
 export const useIntersectedItemsStore = defineStore('intersectedItems', () => {
   const intersectedItemNames = reactive(
-      /** @type {Array<Object.<string, boolean>>} */
-      []
+      /** @type {Object.<string, boolean>} */
+      {}
   );
 
   /**
    *
    * @param {IntersectionObserverEntry} entries
    * @param {IntersectionObserver} observer
-   * @param {string} table
    * @param {string} name
    */
-  const intersectionHandler = (entries, observer, table, name) => {
+  const intersectionHandler = (entries, observer, name) => {
     entries.forEach((entry, index) => {
       if (entry.isIntersecting) {
-        set(intersectedItemNames[table], name, true);
+        createName(name);
         //
       } else {
-        del(intersectedItemNames[table], name);
+        clearName(name);
       }
     });
+  };
+
+  const clearName = (name) => {
+    del(intersectedItemNames, name);
+  };
+
+  const createName = (name) => {
+    const match = Object.keys(intersectedItemNames).find((itemName) => itemName) === name;
+
+    if (match) {
+      intersectedItemNames[name]++;
+    } else {
+      set(intersectedItemNames, name, 1);
+    }
   };
 
   return {
     intersectedItemNames,
 
-    intersectionHandler
+    intersectionHandler,
+    clearName,
+    createName
   };
 });
