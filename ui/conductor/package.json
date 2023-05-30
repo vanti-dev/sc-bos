@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@sc-bos/ui-gen": "file:../ui-gen",
-    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.40",
+    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.41",
     "apexcharts": "^3.37.0",
     "date-fns": "^2.29.2",
     "dayjs": "^1.11.7",
