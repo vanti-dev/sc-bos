@@ -2,12 +2,15 @@ package xovis
 
 import (
 	"encoding/json"
+	"os"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 )
 
 func DefaultConfig() DriverConfig {
-	return DriverConfig{}
+	return DriverConfig{
+		PasswordFile: "/run/secrets/xovis-password",
+	}
 }
 
 func ParseConfig(raw []byte) (DriverConfig, error) {
@@ -18,12 +21,21 @@ func ParseConfig(raw []byte) (DriverConfig, error) {
 
 type DriverConfig struct {
 	driver.BaseConfig
-	MultiSensor bool            `json:"multiSensor"`
-	Host        string          `json:"host"`
-	Username    string          `json:"username"`
-	Password    string          `json:"password"`
-	DataPush    *DataPushConfig `json:"dataPush"`
-	Devices     []DeviceConfig  `json:"devices,omitempty"`
+	MultiSensor  bool            `json:"multiSensor"`
+	Host         string          `json:"host"`
+	Username     string          `json:"username"`
+	Password     string          `json:"password,omitempty"`
+	PasswordFile string          `json:"passwordFile,omitempty"`
+	DataPush     *DataPushConfig `json:"dataPush"`
+	Devices      []DeviceConfig  `json:"devices,omitempty"`
+}
+
+func (c DriverConfig) LoadPassword() (string, error) {
+	if c.Password != "" {
+		return c.Password, nil
+	}
+	bs, err := os.ReadFile(c.PasswordFile)
+	return string(bs), err
 }
 
 type DeviceConfig struct {

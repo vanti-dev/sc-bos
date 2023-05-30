@@ -73,7 +73,11 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 	}
 
 	// create a new client to communicate with the Xovis sensor
-	d.client = NewInsecureClient(conf.Host, conf.Username, conf.Password)
+	pass, err := conf.LoadPassword()
+	if err != nil {
+		return err
+	}
+	d.client = NewInsecureClient(conf.Host, conf.Username, pass)
 	// unannounce any devices left over from a previous configuration
 	for _, unannounce := range d.unannounceDevices {
 		unannounce()
