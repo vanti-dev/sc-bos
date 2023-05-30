@@ -30,7 +30,7 @@ func (c *countAccumulator) consumeRecords(records []LogicRecord) ([]countEvent, 
 		if ok {
 			delta := newForwardCount - c.forwardCountValue
 			if delta < 0 {
-				return nil, status.Error(codes.DataLoss, "logic forwards counter desynchronised")
+				return nil, status.Errorf(codes.DataLoss, "logic forwards counter desynchronised: %d -> %d", c.forwardCountValue, newForwardCount)
 			}
 
 			event := countEvent{
@@ -48,7 +48,7 @@ func (c *countAccumulator) consumeRecords(records []LogicRecord) ([]countEvent, 
 		if ok {
 			delta := newBackwardCount - c.backwardCountValue
 			if delta < 0 {
-				return nil, status.Error(codes.DataLoss, "logic backwards counter desynchronised")
+				return nil, status.Errorf(codes.DataLoss, "logic backwards counter desynchronised: %d -> %d", c.backwardCountValue, newBackwardCount)
 			}
 
 			event := countEvent{
