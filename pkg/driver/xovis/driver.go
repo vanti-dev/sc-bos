@@ -86,6 +86,9 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 	// announce new devices
 	for _, dev := range conf.Devices {
 		var features []node.Feature
+		if dev.Metadata != nil {
+			features = append(features, node.HasMetadata(dev.Metadata))
+		}
 		if dev.Occupancy != nil {
 			features = append(features, node.HasTrait(trait.OccupancySensor,
 				node.WithClients(occupancysensor.WrapApi(&occupancyServer{

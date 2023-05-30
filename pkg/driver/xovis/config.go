@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 )
 
@@ -39,9 +40,10 @@ func (c DriverConfig) LoadPassword() (string, error) {
 }
 
 type DeviceConfig struct {
-	Name       string       `json:"name"`
-	Occupancy  *LogicConfig `json:"occupancy"`  // an Occupancy logic
-	EnterLeave *LogicConfig `json:"enterLeave"` // an In/Out logic
+	Name       string           `json:"name"`
+	Occupancy  *LogicConfig     `json:"occupancy"`  // an Occupancy logic
+	EnterLeave *LogicConfig     `json:"enterLeave"` // an In/Out logic
+	Metadata   *traits.Metadata `json:"metadata,omitempty"`
 }
 
 type LogicConfig struct {
