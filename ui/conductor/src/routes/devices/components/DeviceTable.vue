@@ -47,8 +47,6 @@
         <HotPoint :item="item" :item-key="item.name">
           <template #hotpoint="{live, sensorTypes}">
             <WithOccupancy
-                :item="item"
-                :key="rerenderTableItems"
                 :name="item.name"
                 :paused="!live"
                 :sensor-types="sensorTypes">
@@ -67,22 +65,23 @@
 </template>
 
 <script setup>
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullDevicesMetadata} from '@/api/ui/devices';
-import ContentCard from '@/components/ContentCard.vue';
+
 import {useErrorStore} from '@/components/ui-error/error';
 import {useDevicesStore} from '@/routes/devices/store';
-import {Zone} from '@/routes/site/zone/zone';
 import {usePageStore} from '@/stores/page';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+
+import {Zone} from '@/routes/site/zone/zone';
+
+import ContentCard from '@/components/ContentCard.vue';
 import WithOccupancy from './renderless/WithOccupancy.vue';
 import HotPoint from '@/components/HotPoint.vue';
-import {useIntersectedItemsStore} from '@/stores/intersectedItemsStore';
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();
 const errorStore = useErrorStore();
-const {rerenderTableItems} = useIntersectedItemsStore();
 
 const props = defineProps({
   subsystem: {
