@@ -90,12 +90,17 @@ func (s *System) announceHub(ctx context.Context, hubConn *grpc.ClientConn) (tas
 	}
 
 	undo := node.NilUndo // called if the hubName changes to un-announce previous apis
+	success := false
 	for {
 		msg, err := stream.Recv()
 		if err != nil {
-			// at least one request worked so try again immediately
-			return task.ResetBackoff, err
+			if success {
+				// at least one request worked so try again immediately
+				return task.ResetBackoff, err
+			}
+			return task.Normal, err
 		}
+		success = true
 		if len(msg.Changes) == 0 {
 			continue
 		}
@@ -138,11 +143,16 @@ func (s *System) announceNodes(ctx context.Context, hubConn *grpc.ClientConn, ig
 	}
 
 	knownNodes := make(map[string]context.CancelFunc)
+	success := false
 	for {
 		nodeChanges, err := stream.Recv()
 		if err != nil {
-			return task.ResetBackoff, err
+			if success {
+				return task.ResetBackoff, err
+			}
+			return task.Normal, err
 		}
+		success = true
 
 		for _, change := range nodeChanges.Changes {
 			// todo: this could be more efficient but I'm low on time right now
@@ -253,11 +263,16 @@ func (s *System) announceNodeParent(ctx context.Context, nodeConn *grpc.ClientCo
 	}
 
 	undo := func() {}
+	success := false
 	for {
 		mdUpdate, err := mdStream.Recv()
 		if err != nil {
-			return task.ResetBackoff, err // it's an error, but we did succeed with at least one request
+			if success {
+				return task.ResetBackoff, err // it's an error, but we did succeed with at least one request
+			}
+			return task.Normal, err
 		}
+		success = true
 		if len(mdUpdate.Changes) == 0 {
 			continue
 		}
@@ -292,11 +307,16 @@ func (s *System) announceNodeChildren(ctx context.Context, nodeConn *grpc.Client
 	}
 
 	announcedChildren := make(map[string]node.Undo)
+	success := false
 	for {
 		childUpdate, err := childStream.Recv()
 		if err != nil {
-			return task.ResetBackoff, err // it's an error, but we did succeed with at least one request
+			if success {
+				return task.ResetBackoff, err // it's an error, but we did succeed with at least one request
+			}
+			return task.Normal, err
 		}
+		success = true
 		for _, change := range childUpdate.Changes {
 			if change.OldValue != nil {
 				if undo, ok := announcedChildren[change.OldValue.Name]; ok {
@@ -349,11 +369,16 @@ func (s *System) announceMetadata(ctx context.Context, conn *grpc.ClientConn, na
 		<-ctx.Done()
 		lastAnnounce()
 	}()
+	success := false
 	for {
 		msg, err := stream.Recv()
 		if err != nil {
-			return task.ResetBackoff, err
+			if success {
+				return task.ResetBackoff, err
+			}
+			return task.Normal, err
 		}
+		success = true
 		for _, change := range msg.Changes {
 			lastAnnounce()
 			md := change.Metadata
