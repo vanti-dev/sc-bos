@@ -43,6 +43,25 @@
           </v-row>
         </v-container>
       </template>
+      <template #item.hotpoint="{item}">
+        <HotPoint :item="item" :item-key="item.name">
+          <template #hotpoint="{live, sensorTypes}">
+            <WithOccupancy
+                :item="item"
+                :key="rerenderTableItems"
+                :name="item.name"
+                :paused="!live"
+                :sensor-types="sensorTypes">
+              <template #occupancy="{occupancyData}">
+                <p :class="[occupancyData.occupancyState.toLowerCase(), 'ma-0 text-body-2']">
+                  {{ occupancyData.occupancyState }}
+                </p>
+                <v-progress-linear color="primary" indeterminate :active="occupancyData.occupancyValue.loading"/>
+              </template>
+            </WithOccupancy>
+          </template>
+        </HotPoint>
+      </template>
     </v-data-table>
   </content-card>
 </template>
@@ -56,10 +75,14 @@ import {useDevicesStore} from '@/routes/devices/store';
 import {Zone} from '@/routes/site/zone/zone';
 import {usePageStore} from '@/stores/page';
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import WithOccupancy from './renderless/WithOccupancy.vue';
+import HotPoint from '@/components/HotPoint.vue';
+import {useIntersectedItemsStore} from '@/stores/intersectedItemsStore';
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();
 const errorStore = useErrorStore();
+const {rerenderTableItems} = useIntersectedItemsStore();
 
 const props = defineProps({
   subsystem: {
@@ -73,7 +96,7 @@ const props = defineProps({
   },
   showSelect: {
     type: Boolean,
-    default: true
+    default: false
   },
   rowSelect: {
     type: Boolean,
@@ -94,7 +117,8 @@ const emit = defineEmits(['update:selectedDevices']);
 const headers = ref([
   {text: 'Device name', value: 'name'},
   {text: 'Floor', value: 'metadata.location.floor'},
-  {text: 'Location', value: 'metadata.location.title'}
+  {text: 'Location', value: 'metadata.location.title'},
+  {text: '', value: 'hotpoint', align: 'end', width: '100'}
 ]);
 
 const tableClasses = computed(() => {
