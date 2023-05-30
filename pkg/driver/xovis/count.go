@@ -3,9 +3,6 @@ package xovis
 import (
 	"time"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"github.com/smart-core-os/sc-api/go/traits"
 )
 
@@ -26,49 +23,37 @@ type countEvent struct {
 func (c *countAccumulator) consumeRecords(records []LogicRecord) ([]countEvent, error) {
 	var events []countEvent
 	for _, record := range records {
-		newForwardCount, ok := findCountValueByID(record.Counts, c.forwardCountID)
+		fwDelta, ok := findCountValueByID(record.Counts, c.forwardCountID)
 		if ok {
-			delta := newForwardCount - c.forwardCountValue
-			if delta < 0 {
-				return nil, status.Errorf(codes.DataLoss, "logic forwards counter desynchronised: %d -> %d", c.forwardCountValue, newForwardCount)
-			}
-
+			c.forwardCountValue += fwDelta
 			event := countEvent{
 				time:      record.To,
 				direction: traits.EnterLeaveEvent_ENTER,
 			}
-			for i := 0; i < delta; i++ {
+			for i := 0; i < fwDelta; i++ {
 				events = append(events, event)
 			}
-
-			c.forwardCountValue = newForwardCount
 		}
 
-		newBackwardCount, ok := findCountValueByID(record.Counts, c.backwardCountID)
+		bwDelta, ok := findCountValueByID(record.Counts, c.backwardCountID)
 		if ok {
-			delta := newBackwardCount - c.backwardCountValue
-			if delta < 0 {
-				return nil, status.Errorf(codes.DataLoss, "logic backwards counter desynchronised: %d -> %d", c.backwardCountValue, newBackwardCount)
-			}
-
+			c.backwardCountValue += bwDelta // always write this, if the count is reset we only want to desync once
 			event := countEvent{
 				time:      record.To,
 				direction: traits.EnterLeaveEvent_LEAVE,
 			}
-			for i := 0; i < delta; i++ {
+			for i := 0; i < bwDelta; i++ {
 				events = append(events, event)
 			}
-
-			c.backwardCountValue = newBackwardCount
 		}
 	}
 	return events, nil
 }
 
-func findCountIDByName(counts []Count, name string) (id int, ok bool) {
+func findCountByName(counts []Count, name string) (id, value int, ok bool) {
 	for _, count := range counts {
 		if count.Name == name {
-			return count.ID, true
+			return count.ID, count.Value, true
 		}
 	}
 	return

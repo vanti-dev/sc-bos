@@ -76,7 +76,7 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 		unannounce()
 	}
 	d.unannounceDevices = nil
-	// annouce new devices
+	// announce new devices
 	for _, dev := range conf.Devices {
 		var features []node.Feature
 		if dev.Occupancy != nil {

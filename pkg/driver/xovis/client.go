@@ -1,6 +1,7 @@
 package xovis
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,9 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Client struct {
@@ -53,7 +57,11 @@ func handleResponse(res *http.Response, destPtr any) error {
 	defer func() {
 		_ = res.Body.Close()
 	}()
-	if res.StatusCode != 200 {
+	switch res.StatusCode {
+	case 200: // continue
+	case 401:
+		return status.Error(codes.FailedPrecondition, "server credentials are invalid")
+	default:
 		return readError(res.Body)
 	}
 	rawJSON, err := io.ReadAll(res.Body)
@@ -116,8 +124,26 @@ type Count struct {
 	Value int    `json:"value"`
 }
 
-func doSimpleRequest(conn *Client, target any, endpoint string) error {
+func doGet(conn *Client, target any, endpoint string) error {
 	req := conn.newRequest("GET", endpoint)
+	res, err := conn.Client.Do(req)
+	if err != nil {
+		return err
+	}
+	err = handleResponse(res, &target)
+	return err
+}
+
+func doPost(conn *Client, target any, endpoint string, body any) error {
+	req := conn.newRequest("POST", endpoint)
+	if body != nil {
+		req.Header.Add("Content-Type", "application/json")
+		bs, err := json.Marshal(body)
+		if err != nil {
+			return err
+		}
+		req.Body = io.NopCloser(bytes.NewReader(bs))
+	}
 	res, err := conn.Client.Do(req)
 	if err != nil {
 		return err
@@ -128,18 +154,27 @@ func doSimpleRequest(conn *Client, target any, endpoint string) error {
 
 func GetLiveLogics(conn *Client, multiSensor bool) (res LiveLogicsResponse, err error) {
 	if multiSensor {
-		err = doSimpleRequest(conn, &res, "/multisensor/data/live/logics")
+		err = doGet(conn, &res, "/multisensor/data/live/logics")
 	} else {
-		err = doSimpleRequest(conn, &res, "/singlesensor/data/live/logics")
+		err = doGet(conn, &res, "/singlesensor/data/live/logics")
 	}
 	return
 }
 
 func GetLiveLogic(conn *Client, multiSensor bool, id int) (res LiveLogicResponse, err error) {
 	if multiSensor {
-		err = doSimpleRequest(conn, &res, fmt.Sprintf("/multisensor/data/live/logics/%d", id))
+		err = doGet(conn, &res, fmt.Sprintf("/multisensor/data/live/logics/%d", id))
 	} else {
-		err = doSimpleRequest(conn, &res, fmt.Sprintf("/singlesensor/data/live/logics/%d", id))
+		err = doGet(conn, &res, fmt.Sprintf("/singlesensor/data/live/logics/%d", id))
 	}
 	return
+}
+
+func ResetLiveLogic(conn *Client, multiSensor bool, id int) error {
+	var res []byte
+	if multiSensor {
+		return doPost(conn, &res, fmt.Sprintf("/multisensor/data/live/logics/%d/reset", id), nil)
+	} else {
+		return doPost(conn, &res, fmt.Sprintf("/singlesensor/data/live/logics/%d/reset", id), nil)
+	}
 }
