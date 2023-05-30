@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/enterleavesensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
@@ -29,6 +31,7 @@ var Factory driver.Factory = factory{}
 type factory struct{}
 
 func (f factory) New(services driver.Services) service.Lifecycle {
+	services.Logger = services.Logger.Named(DriverName)
 	d := &Driver{
 		Services:    services,
 		pushDataBus: &minibus.Bus[PushData]{},
@@ -160,10 +163,17 @@ func (d *Driver) handleWebhook(response http.ResponseWriter, request *http.Reque
 	var body PushData
 	err = json.Unmarshal(rawBody, &body)
 	if err != nil {
+		d.Logger.Debug("failed to parse webhook body", zap.Error(err))
 		response.WriteHeader(http.StatusBadRequest)
 		_, _ = response.Write([]byte(err.Error()))
 		return
 	}
+
+	n := 150
+	if len(rawBody) < n {
+		n = len(rawBody)
+	}
+	d.Logger.Debug("received webhook", zap.ByteString("body", rawBody[:n]))
 
 	// send the data to the bus
 	ctx, cancel := context.WithTimeout(request.Context(), 5*time.Second)
