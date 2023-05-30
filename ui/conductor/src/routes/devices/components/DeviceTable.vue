@@ -6,6 +6,13 @@
         :items="tableData"
         item-key="name"
         :item-class="rowClass"
+        :footer-props="{
+          'items-per-page-options': [
+            20,
+            50,
+            100
+          ]
+        }"
         :show-select="showSelect"
         :class="tableClasses"
         @click:row="showDevice">
