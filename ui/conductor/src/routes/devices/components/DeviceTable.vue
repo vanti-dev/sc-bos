@@ -52,11 +52,11 @@
       </template>
       <template #item.hotpoint="{item}">
         <HotPoint :item="item" :item-key="item.name">
-          <template #hotpoint="{live, sensorTypes}">
+          <template #hotpoint="{live}">
             <WithOccupancy
+                v-if="hasTrait(item, 'OccupancySensor')"
                 :name="item.name"
-                :paused="!live"
-                :sensor-types="sensorTypes">
+                :paused="!live">
               <template #occupancy="{occupancyData}">
                 <p :class="[occupancyData.occupancyState.toLowerCase(), 'ma-0 text-body-2']">
                   {{ occupancyData.occupancyState }}
@@ -85,6 +85,7 @@ import {Zone} from '@/routes/site/zone/zone';
 import ContentCard from '@/components/ContentCard.vue';
 import WithOccupancy from './renderless/WithOccupancy.vue';
 import HotPoint from '@/components/HotPoint.vue';
+import {hasTrait} from '@/util/devices';
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();

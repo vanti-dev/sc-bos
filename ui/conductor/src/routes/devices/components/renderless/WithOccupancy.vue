@@ -25,10 +25,6 @@ const props = defineProps({
   paused: {
     type: Boolean,
     default: false
-  },
-  sensorTypes: {
-    type: Array,
-    default: () => ['OccupancySensor']
   }
 });
 
@@ -63,17 +59,15 @@ watch(
     [() => props.paused, () => props.name],
     ([newPaused, newName], [oldPaused, oldName]) => {
       // only for OccupancySensor
-      if (props.sensorTypes.includes('OccupancySensor')) {
-        if (newPaused === oldPaused && newName === oldName) return;
+      if (newPaused === oldPaused && newName === oldName) return;
 
-        if (newPaused) {
-          closeResource(occupancyValue);
-        }
+      if (newPaused) {
+        closeResource(occupancyValue);
+      }
 
-        if (!newPaused && (oldPaused || newName !== oldName)) {
-          closeResource(occupancyValue);
-          pullOccupancy(newName, occupancyValue);
-        }
+      if (!newPaused && (oldPaused || newName !== oldName)) {
+        closeResource(occupancyValue);
+        pullOccupancy(newName, occupancyValue);
       }
     },
     {immediate: true, deep: true, flush: 'sync'}
