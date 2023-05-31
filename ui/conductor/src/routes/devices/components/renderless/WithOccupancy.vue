@@ -1,12 +1,6 @@
 <template>
   <div>
-    <slot
-        name="occupancy"
-        :occupancy-data="{
-          occupantCount,
-          occupancyState,
-          occupancyValue
-        }"/>
+    <slot :value="slotValue"/>
   </div>
 </template>
 
@@ -49,6 +43,14 @@ const occupancyState = computed(() => {
     return occupancyStateToString(occupancyValue.value.state);
   }
   return '';
+});
+
+const slotValue = computed(() => {
+  return {
+    occupantCount: occupantCount.value,
+    occupancyState: occupancyState.value,
+    occupancyValue
+  };
 });
 
 //
