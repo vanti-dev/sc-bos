@@ -7,7 +7,7 @@
 <script setup>
 import {useIntersectedItemsStore} from '@/stores/intersectedItemsStore';
 import {storeToRefs} from 'pinia';
-import {onBeforeUnmount, ref, watch} from 'vue';
+import {computed, onBeforeUnmount, watch} from 'vue';
 
 const props = defineProps({
   itemKey: {
@@ -18,7 +18,10 @@ const props = defineProps({
 const intersectedItemsStore = useIntersectedItemsStore();
 const {clearName, createName, intersectionHandler} = intersectedItemsStore;
 const {intersectedItemNames} = storeToRefs(intersectedItemsStore);
-const isLive = ref(true);
+
+const isLive = computed(() => {
+  return Boolean(intersectedItemNames.value[props.itemKey]);
+});
 
 const onIntersect = {
   handler: (entries, observer) => intersectionHandler(entries, observer, props.itemKey),
@@ -32,12 +35,6 @@ const onIntersect = {
 //
 //
 // Watchers
-// Watching (matching) the live/paused state
-watch(() => intersectedItemNames.value, names => {
-  if (names[props.itemKey]) isLive.value = true;
-  else isLive.value = false;
-}, {immediate: true, deep: true, flush: 'sync'});
-
 // Updating intersectedItemNames if there is a device name change
 watch(() => props.itemKey, (newKey, oldKey) => {
   if (newKey !== oldKey && oldKey) {
