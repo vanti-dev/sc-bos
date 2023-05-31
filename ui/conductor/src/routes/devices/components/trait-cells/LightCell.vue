@@ -6,7 +6,7 @@
       {{ brightnessHotpoint }}
     </v-col>
     <v-col class="px-1">
-      <v-icon :color="props.value.brightness > 0 ? 'yellow' : 'white' " size="20">
+      <v-icon :color="props.brightness > 0 ? 'yellow' : 'white' " size="20">
         {{ lightingIcon }}
       </v-icon>
     </v-col>
@@ -17,9 +17,9 @@
 import {computed} from 'vue';
 
 const props = defineProps({
-  value: {
-    type: Object,
-    default: () => {}
+  brightness: {
+    type: [String, Number],
+    default: ''
   }
 });
 
@@ -28,12 +28,12 @@ const props = defineProps({
 // Computed
 
 const brightnessHotpoint = computed(() => {
-  if (props.value.brightness === 0) {
+  if (props.brightness === 0) {
     return 'Off';
-  } else if (props.value.brightness === 100) {
+  } else if (props.brightness === 100) {
     return 'Max';
-  } else if (props.value.brightness > 0 && props.value.brightness < 100) {
-    return `${props.value.brightness}%`;
+  } else if (props.brightness > 0 && props.brightness < 100) {
+    return `${props.brightness}%`;
   }
 
   return '';

@@ -8,10 +8,10 @@
   </WithOccupancy>
   <WithLighting
       v-else-if="hasTrait(props.item, 'Light')"
-      v-slot="{value}"
+      v-slot="value"
       :name="props.item.name"
       :paused="props.paused">
-    <LightCell v-bind="{value}"/>
+    <LightCell v-bind="value"/>
   </WithLighting>
 </template>
 

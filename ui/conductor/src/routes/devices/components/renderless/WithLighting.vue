@@ -1,6 +1,6 @@
 <template>
   <div>
-    <slot :value="slotValue"/>
+    <slot v-bind="slotValue"/>
   </div>
 </template>
 
