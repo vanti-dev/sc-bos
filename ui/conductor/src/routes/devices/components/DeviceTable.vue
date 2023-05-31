@@ -51,7 +51,7 @@
         </v-container>
       </template>
       <template #item.hotpoint="{item}">
-        <HotPoint :item-key="item.name">
+        <HotPoint :item-key="item.name" style="height:100%" class="d-flex align-center justify-center">
           <template #hotpoint="{live}">
             <WithOccupancy
                 v-if="hasTrait(item, 'OccupancySensor')"
