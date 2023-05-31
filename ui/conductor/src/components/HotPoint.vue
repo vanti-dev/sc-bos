@@ -10,13 +10,7 @@ import {storeToRefs} from 'pinia';
 
 import {useIntersectedItemsStore} from '@/stores/intersectedItemsStore';
 
-import {Device} from '@sc-bos/ui-gen/proto/devices_pb';
-
 const props = defineProps({
-  item: {
-    type: Device,
-    default: () => {}
-  },
   itemKey: {
     type: String,
     default: ''
