@@ -44,7 +44,7 @@ watch(() => intersectedItemNames.value, names => {
 
 // Updating intersectedItemNames if there is a device name change
 watch(() => props.itemKey, (newKey, oldKey) => {
-  if (newKey !== oldKey) {
+  if (newKey !== oldKey && oldKey) {
     clearName(oldKey);
     createName(newKey);
   }
