@@ -45,32 +45,74 @@ import (
 
 var traitSupport = map[trait.Name]func(s node.Supporter){
 	trait.AirQualitySensor: func(s node.Supporter) {
-		r := airqualitysensor.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(airqualitysensor.WrapApi(r)))
+		{
+			r := airqualitysensor.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(airqualitysensor.WrapApi(r)))
+		}
+		{
+			r := airqualitysensor.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(airqualitysensor.WrapInfo(r)))
+		}
 	},
 	trait.AirTemperature: func(s node.Supporter) {
-		r := airtemperature.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(airtemperature.WrapApi(r)))
+		{
+			r := airtemperature.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(airtemperature.WrapApi(r)))
+		}
+		{
+			r := airtemperature.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(airtemperature.WrapInfo(r)))
+		}
 	},
 	trait.Booking: func(s node.Supporter) {
-		r := booking.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(booking.WrapApi(r)))
+		{
+			r := booking.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(booking.WrapApi(r)))
+		}
+		{
+			r := booking.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(booking.WrapInfo(r)))
+		}
 	},
 	trait.BrightnessSensor: func(s node.Supporter) {
-		r := brightnesssensor.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(brightnesssensor.WrapApi(r)))
+		{
+			r := brightnesssensor.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(brightnesssensor.WrapApi(r)))
+		}
+		{
+			r := brightnesssensor.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(brightnesssensor.WrapInfo(r)))
+		}
 	},
 	trait.Channel: func(s node.Supporter) {
-		r := channel.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(channel.WrapApi(r)))
+		{
+			r := channel.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(channel.WrapApi(r)))
+		}
+		{
+			r := channel.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(channel.WrapInfo(r)))
+		}
 	},
 	trait.Count: func(s node.Supporter) {
-		r := count.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(count.WrapApi(r)))
+		{
+			r := count.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(count.WrapApi(r)))
+		}
+		{
+			r := count.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(count.WrapInfo(r)))
+		}
 	},
 	trait.Electric: func(s node.Supporter) {
-		r := electric.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(electric.WrapApi(r)))
+		{
+			r := electric.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(electric.WrapApi(r)))
+		}
+		{
+			r := electric.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(electric.WrapInfo(r)))
+		}
 	},
 	trait.Emergency: func(s node.Supporter) {
 		{
@@ -78,49 +120,113 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 			s.Support(node.Routing(r), node.Clients(emergency.WrapApi(r)))
 		}
 		{
+			r := emergency.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(emergency.WrapInfo(r)))
+		}
+		{
 			r := gen.NewElectricHistoryRouter()
 			s.Support(node.Routing(r), node.Clients(gen.WrapElectricHistory(r)))
 		}
 	},
 	trait.EnergyStorage: func(s node.Supporter) {
-		r := energystorage.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(energystorage.WrapApi(r)))
+		{
+			r := energystorage.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(energystorage.WrapApi(r)))
+		}
+		{
+			r := energystorage.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(energystorage.WrapInfo(r)))
+		}
 	},
 	trait.EnterLeaveSensor: func(s node.Supporter) {
-		r := enterleavesensor.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(enterleavesensor.WrapApi(r)))
+		{
+			r := enterleavesensor.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(enterleavesensor.WrapApi(r)))
+		}
+		{
+			r := enterleavesensor.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(enterleavesensor.WrapInfo(r)))
+		}
 	},
 	trait.ExtendRetract: func(s node.Supporter) {
-		r := extendretract.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(extendretract.WrapApi(r)))
+		{
+			r := extendretract.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(extendretract.WrapApi(r)))
+		}
+		{
+			r := extendretract.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(extendretract.WrapInfo(r)))
+		}
 	},
 	trait.FanSpeed: func(s node.Supporter) {
-		r := fanspeed.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(fanspeed.WrapApi(r)))
+		{
+			r := fanspeed.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(fanspeed.WrapApi(r)))
+		}
+		{
+			r := fanspeed.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(fanspeed.WrapInfo(r)))
+		}
 	},
 	trait.Hail: func(s node.Supporter) {
-		r := hail.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(hail.WrapApi(r)))
+		{
+			r := hail.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(hail.WrapApi(r)))
+		}
+		{
+			r := hail.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(hail.WrapInfo(r)))
+		}
 	},
 	trait.InputSelect: func(s node.Supporter) {
-		r := inputselect.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(inputselect.WrapApi(r)))
+		{
+			r := inputselect.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(inputselect.WrapApi(r)))
+		}
+		{
+			r := inputselect.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(inputselect.WrapInfo(r)))
+		}
 	},
 	trait.Light: func(s node.Supporter) {
-		r := light.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(light.WrapApi(r)))
+		{
+			r := light.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(light.WrapApi(r)))
+		}
+		{
+			r := light.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(light.WrapInfo(r)))
+		}
 	},
 	trait.LockUnlock: func(s node.Supporter) {
-		r := lockunlock.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(lockunlock.WrapApi(r)))
+		{
+			r := lockunlock.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(lockunlock.WrapApi(r)))
+		}
+		{
+			r := lockunlock.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(lockunlock.WrapInfo(r)))
+		}
 	},
 	trait.Metadata: func(s node.Supporter) {
-		r := metadata.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(metadata.WrapApi(r)))
+		{
+			r := metadata.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(metadata.WrapApi(r)))
+		}
+		{
+			r := metadata.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(metadata.WrapInfo(r)))
+		}
 	},
 	trait.Microphone: func(s node.Supporter) {
-		r := microphone.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(microphone.WrapApi(r)))
+		{
+			r := microphone.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(microphone.WrapApi(r)))
+		}
+		{
+			r := microphone.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(microphone.WrapInfo(r)))
+		}
 	},
 	trait.Mode: func(s node.Supporter) {
 		{
@@ -133,8 +239,14 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 		}
 	},
 	trait.MotionSensor: func(s node.Supporter) {
-		r := motionsensor.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(motionsensor.WrapApi(r)))
+		{
+			r := motionsensor.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(motionsensor.WrapApi(r)))
+		}
+		{
+			r := motionsensor.NewSensorInfoRouter()
+			s.Support(node.Routing(r), node.Clients(motionsensor.WrapSensorInfo(r)))
+		}
 	},
 	trait.OccupancySensor: func(s node.Supporter) {
 		{
@@ -142,37 +254,79 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 			s.Support(node.Routing(r), node.Clients(occupancysensor.WrapApi(r)))
 		}
 		{
+			r := occupancysensor.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(occupancysensor.WrapInfo(r)))
+		}
+		{
 			r := gen.NewOccupancySensorHistoryRouter()
 			s.Support(node.Routing(r), node.Clients(gen.WrapOccupancySensorHistory(r)))
 		}
 	},
 	trait.OnOff: func(s node.Supporter) {
-		r := onoff.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(onoff.WrapApi(r)))
+		{
+			r := onoff.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(onoff.WrapApi(r)))
+		}
+		{
+			r := onoff.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(onoff.WrapInfo(r)))
+		}
 	},
 	trait.OpenClose: func(s node.Supporter) {
-		r := openclose.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(openclose.WrapApi(r)))
+		{
+			r := openclose.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(openclose.WrapApi(r)))
+		}
+		{
+			r := openclose.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(openclose.WrapInfo(r)))
+		}
 	},
 	trait.Parent: func(s node.Supporter) {
-		r := parent.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(parent.WrapApi(r)))
+		{
+			r := parent.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(parent.WrapApi(r)))
+		}
+		{
+			r := parent.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(parent.WrapInfo(r)))
+		}
 	},
 	trait.Publication: func(s node.Supporter) {
-		r := publication.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(publication.WrapApi(r)))
+		{
+			r := publication.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(publication.WrapApi(r)))
+		}
 	},
 	trait.Ptz: func(s node.Supporter) {
-		r := ptz.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(ptz.WrapApi(r)))
+		{
+			r := ptz.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(ptz.WrapApi(r)))
+		}
+		{
+			r := ptz.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(ptz.WrapInfo(r)))
+		}
 	},
 	trait.Speaker: func(s node.Supporter) {
-		r := speaker.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(speaker.WrapApi(r)))
+		{
+			r := speaker.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(speaker.WrapApi(r)))
+		}
+		{
+			r := speaker.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(speaker.WrapInfo(r)))
+		}
 	},
 	trait.Vending: func(s node.Supporter) {
-		r := vending.NewApiRouter()
-		s.Support(node.Routing(r), node.Clients(vending.WrapApi(r)))
+		{
+			r := vending.NewApiRouter()
+			s.Support(node.Routing(r), node.Clients(vending.WrapApi(r)))
+		}
+		{
+			r := vending.NewInfoRouter()
+			s.Support(node.Routing(r), node.Clients(vending.WrapInfo(r)))
+		}
 	},
 
 	// sc-bos private traits
@@ -181,8 +335,14 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 		s.Support(node.Routing(r), node.Clients(gen.WrapButtonApi(r)))
 	},
 	color.TraitName: func(s node.Supporter) {
-		r := gen.NewColorApiRouter()
-		s.Support(node.Routing(r), node.Clients(gen.WrapColorApi(r)))
+		{
+			r := gen.NewColorApiRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapColorApi(r)))
+		}
+		{
+			r := gen.NewColorInfoRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapColorInfo(r)))
+		}
 	},
 	emergencylight.TraitName: func(s node.Supporter) {
 		// We don't do anything here, there is no trait that this supports exclusively.
