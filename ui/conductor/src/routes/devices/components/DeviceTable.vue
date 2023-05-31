@@ -6,6 +6,13 @@
         :items="tableData"
         item-key="name"
         :item-class="rowClass"
+        :footer-props="{
+          'items-per-page-options': [
+            20,
+            50,
+            100
+          ]
+        }"
         :show-select="showSelect"
         :class="tableClasses"
         @click:row="showDevice">
@@ -43,19 +50,42 @@
           </v-row>
         </v-container>
       </template>
+      <template #item.hotpoint="{item}">
+        <HotPoint :item-key="item.name" style="height:100%" class="d-flex align-center justify-center">
+          <template #hotpoint="{live}">
+            <WithOccupancy
+                v-if="hasTrait(item, 'OccupancySensor')"
+                :name="item.name"
+                :paused="!live">
+              <template #occupancy="{occupancyData}">
+                <p :class="[occupancyData.occupancyState.toLowerCase(), 'ma-0 text-body-2']">
+                  {{ occupancyData.occupancyState }}
+                </p>
+                <v-progress-linear color="primary" indeterminate :active="occupancyData.occupancyValue.loading"/>
+              </template>
+            </WithOccupancy>
+          </template>
+        </HotPoint>
+      </template>
     </v-data-table>
   </content-card>
 </template>
 
 <script setup>
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullDevicesMetadata} from '@/api/ui/devices';
-import ContentCard from '@/components/ContentCard.vue';
+
 import {useErrorStore} from '@/components/ui-error/error';
 import {useDevicesStore} from '@/routes/devices/store';
-import {Zone} from '@/routes/site/zone/zone';
 import {usePageStore} from '@/stores/page';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+
+import {Zone} from '@/routes/site/zone/zone';
+
+import ContentCard from '@/components/ContentCard.vue';
+import WithOccupancy from './renderless/WithOccupancy.vue';
+import HotPoint from '@/components/HotPoint.vue';
+import {hasTrait} from '@/util/devices';
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();
@@ -73,7 +103,7 @@ const props = defineProps({
   },
   showSelect: {
     type: Boolean,
-    default: true
+    default: false
   },
   rowSelect: {
     type: Boolean,
@@ -94,7 +124,8 @@ const emit = defineEmits(['update:selectedDevices']);
 const headers = ref([
   {text: 'Device name', value: 'name'},
   {text: 'Floor', value: 'metadata.location.floor'},
-  {text: 'Location', value: 'metadata.location.title'}
+  {text: 'Location', value: 'metadata.location.title'},
+  {text: '', value: 'hotpoint', align: 'end', width: '100'}
 ]);
 
 const tableClasses = computed(() => {
