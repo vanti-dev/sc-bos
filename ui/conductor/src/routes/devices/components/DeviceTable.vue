@@ -91,6 +91,13 @@
                 </v-row>
               </template>
             </WithLighting>
+            <WithStatus
+                v-if="hasTrait(item, 'smartcore.bos.Status')"
+                :name="item.name"
+                :paused="!live"
+                v-slot="{ value }">
+              <StatusLogCell v-bind="value"/>
+            </WithStatus>
           </template>
         </HotPoint>
       </template>
@@ -99,21 +106,23 @@
 </template>
 
 <script setup>
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullDevicesMetadata} from '@/api/ui/devices';
 
+import ContentCard from '@/components/ContentCard.vue';
+import HotPoint from '@/components/HotPoint.vue';
+
 import {useErrorStore} from '@/components/ui-error/error';
+import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
+import StatusLogCell from '@/routes/devices/components/trait-cells/StatusLogCell.vue';
 import {useDevicesStore} from '@/routes/devices/store';
-import {usePageStore} from '@/stores/page';
 
 import {Zone} from '@/routes/site/zone/zone';
-
-import ContentCard from '@/components/ContentCard.vue';
-import WithOccupancy from './renderless/WithOccupancy.vue';
-import HotPoint from '@/components/HotPoint.vue';
+import {usePageStore} from '@/stores/page';
 import {hasTrait} from '@/util/devices';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 import WithLighting from './renderless/WithLighting.vue';
+import WithOccupancy from './renderless/WithOccupancy.vue';
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();

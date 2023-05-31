@@ -14,9 +14,9 @@ export function setCollection<V>(resource: ResourceCollection<V, any>, change: C
 
 export function setError(resource: RemoteResource<any>, err: Error);
 
-export function pullResource<M extends Msg<V>, V>(logPrefix: string, resource: RemoteResource<M>, newStream: StreamFactory<M>);
+export function pullResource<M, V>(logPrefix: string, resource: RemoteResource<M>, newStream: StreamFactory<M>);
 
-export function trackAction<V, M extends Msg<V>>(logPrefix: string, tracker: ActionTracker<V>, action: Action<V, M>): Promise<V>
+export function trackAction<V, M>(logPrefix: string, tracker: ActionTracker<V>, action: Action<V, M>): Promise<V>
 
 export function newActionTracker<T>(): ActionTracker<T>;
 export function newResourceValue<T, M extends Msg<T>>(): ResourceValue<T, M>;
