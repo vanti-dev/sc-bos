@@ -1,6 +1,6 @@
 <template>
   <div v-intersect="onIntersect">
-    <slot name="hotpoint" :live="isLive"/>
+    <slot :live="isLive"/>
   </div>
 </template>
 
