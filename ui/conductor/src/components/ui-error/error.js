@@ -46,7 +46,7 @@ export const useErrorStore = defineStore('error', () => {
   });
 
   /**
-   * @param {ActionTracker} actionTracker
+   * @param {ActionTracker<?>} actionTracker
    * @return {WatchStopHandle}
    */
   function registerTracker(actionTracker) {
@@ -67,7 +67,7 @@ export const useErrorStore = defineStore('error', () => {
 
   /**
    *
-   * @param {ResourceValue} resourceValue
+   * @param {ResourceValue<?, ?>} resourceValue
    * @return {WatchStopHandle}
    */
   function registerValue(resourceValue) {
@@ -80,7 +80,7 @@ export const useErrorStore = defineStore('error', () => {
 
   /**
    *
-   * @param {Collection} collection
+   * @param {ResourceCollection<?, ?>} collection
    * @return {WatchStopHandle}
    */
   function registerCollection(collection) {
