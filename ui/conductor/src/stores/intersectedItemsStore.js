@@ -14,14 +14,13 @@ export const useIntersectedItemsStore = defineStore('intersectedItems', () => {
    * @param {string} name
    */
   const intersectionHandler = (entries, observer, name) => {
-    entries.forEach((entry, index) => {
-      if (entry.isIntersecting) {
-        createName(name);
-        //
-      } else {
-        clearName(name);
-      }
-    });
+    const anyIntersect = entries.some((entry) => entry.isIntersecting);
+    if (anyIntersect) {
+      createName(name);
+      //
+    } else {
+      clearName(name);
+    }
   };
 
   const hasName = (name) => {
