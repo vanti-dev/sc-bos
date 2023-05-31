@@ -5,10 +5,9 @@
 </template>
 
 <script setup>
-import {onBeforeUnmount, ref, watch} from 'vue';
-import {storeToRefs} from 'pinia';
-
 import {useIntersectedItemsStore} from '@/stores/intersectedItemsStore';
+import {storeToRefs} from 'pinia';
+import {onBeforeUnmount, ref, watch} from 'vue';
 
 const props = defineProps({
   itemKey: {
