@@ -9,7 +9,7 @@ export const useIntersectedItemsStore = defineStore('intersectedItems', () => {
 
   /**
    *
-   * @param {IntersectionObserverEntry} entries
+   * @param {IntersectionObserverEntry[]} entries
    * @param {IntersectionObserver} observer
    * @param {string} name
    */
