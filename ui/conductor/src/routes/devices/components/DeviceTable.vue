@@ -68,7 +68,7 @@
               <template #lighting="{lightingData}">
                 <v-row class="d-flex flex-row flex-nowrap">
                   <v-col
-                      class="text-caption d-flex flex-row justify-end px-1"
+                      class="text-caption d-flex flex-row justify-center px-1"
                       style="min-width: 2.75em; width: 100%;">
                     {{
                       lightingData.brightness === 0 ?
