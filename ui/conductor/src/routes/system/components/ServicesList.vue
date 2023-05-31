@@ -19,9 +19,21 @@
         :search="search"
         :loading="serviceCollection.loading"
         @click:row="showService">
-      <template #item.active="{value}">
-        <span :class="value?'success--text':'error--text'" class="text--lighten-2">
-          {{ value ? 'Running' : 'Stopped' }}
+      <template #item.active="{item, value}">
+        <span v-if="value" class="success--text text--lighten-2">Running</span>
+        <span v-else class="error--text text--lighten-2">
+          Stopped
+          <v-menu v-if="item.error" offset-y :close-on-content-click="false">
+            <template #activator="{ on, attrs }">
+              <v-icon v-on="on" v-bind="attrs" class="error--text text--lighten-2" right>
+                mdi-alert-circle-outline
+              </v-icon>
+            </template>
+            <v-card>
+              <v-card-title class="text-h5">Error</v-card-title>
+              <v-card-text>{{ item.error }}</v-card-text>
+            </v-card>
+          </v-menu>
         </span>
       </template>
       <template #item.actions="{item}">
