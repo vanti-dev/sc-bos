@@ -1,10 +1,10 @@
 <template>
   <span class="text-no-wrap root" v-if="value">
-    <v-icon left :class="{justEntered}">mdi-location-enter</v-icon>
+    <v-icon left :class="{justEntered}" size="20">mdi-location-enter</v-icon>
     <span :class="{justEntered}" v-if="hasTotals">{{ enterTotal }}</span>
     <v-divider vertical class="mx-2"/>
     <span :class="{justLeft}" v-if="hasTotals">{{ leaveTotal }}</span>
-    <v-icon right :class="{justLeft}">mdi-location-exit</v-icon>
+    <v-icon right :class="{justLeft}" size="20">mdi-location-exit</v-icon>
   </span>
 </template>
 <script setup>
