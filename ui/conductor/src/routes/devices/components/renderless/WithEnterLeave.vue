@@ -1,12 +1,12 @@
 <template>
   <div>
-    <slot :value="statusLogValue"/>
+    <slot :value="enterLeaveEventValue"/>
   </div>
 </template>
 
 <script setup>
 import {closeResource, newResourceValue} from '@/api/resource';
-import {pullCurrentStatus} from '@/api/sc/traits/status';
+import {pullEnterLeaveEvents} from '@/api/sc/traits/enter-leave';
 import {useErrorStore} from '@/components/ui-error/error';
 import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
 import {deepEqual} from 'vuetify/src/util/helpers';
@@ -18,7 +18,7 @@ const props = defineProps({
     default: ''
   },
   request: {
-    type: Object, // of type PullCurrentStatusRequest.AsObject
+    type: Object, // of type PullEnterLeaveEventsRequest.AsObject
     default: () => {
     }
   },
@@ -28,7 +28,8 @@ const props = defineProps({
   }
 });
 
-const statusLogValue = reactive(/** @type {ResourceValue<StatusLog.AsObject>} */ newResourceValue());
+const enterLeaveEventValue = reactive(
+    /** @type {ResourceValue<EnterLeaveEvent.AsObject, PullEnterLeaveEventsResponse>} */ newResourceValue());
 const _request = computed(() => {
   if (props.request) {
     return props.request;
@@ -44,12 +45,12 @@ watch(
       if (newPaused === oldPaused && reqEqual) return;
 
       if (newPaused) {
-        closeResource(statusLogValue);
+        closeResource(enterLeaveEventValue);
       }
 
       if (!newPaused && (oldPaused || !reqEqual)) {
-        closeResource(statusLogValue);
-        pullCurrentStatus(newReq, statusLogValue);
+        closeResource(enterLeaveEventValue);
+        pullEnterLeaveEvents(newReq, enterLeaveEventValue);
       }
     },
     {immediate: true, deep: true, flush: 'sync'}
@@ -60,12 +61,11 @@ const errorStore = useErrorStore();
 const unwatchErrors = [];
 onMounted(() => {
   unwatchErrors.push(
-      errorStore.registerValue(statusLogValue)
+      errorStore.registerValue(enterLeaveEventValue)
   );
 });
 onUnmounted(() => {
-  closeResource(statusLogValue);
+  closeResource(enterLeaveEventValue);
   unwatchErrors.forEach(unwatch => unwatch());
 });
-
 </script>

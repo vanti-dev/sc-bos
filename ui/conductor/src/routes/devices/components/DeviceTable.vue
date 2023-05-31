@@ -91,6 +91,13 @@
                 </v-row>
               </template>
             </WithLighting>
+            <WithEnterLeave
+                v-else-if="hasTrait(item, 'smartcore.traits.EnterLeaveSensor')"
+                :name="item.name"
+                :paused="!live"
+                v-slot="{ value }">
+              <EnterLeaveEventCell v-bind="value"/>
+            </WithEnterLeave>
             <WithStatus
                 v-if="hasTrait(item, 'smartcore.bos.Status')"
                 :name="item.name"
@@ -113,7 +120,9 @@ import ContentCard from '@/components/ContentCard.vue';
 import HotPoint from '@/components/HotPoint.vue';
 
 import {useErrorStore} from '@/components/ui-error/error';
+import WithEnterLeave from '@/routes/devices/components/renderless/WithEnterLeave.vue';
 import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
+import EnterLeaveEventCell from '@/routes/devices/components/trait-cells/EnterLeaveEventCell.vue';
 import StatusLogCell from '@/routes/devices/components/trait-cells/StatusLogCell.vue';
 import {useDevicesStore} from '@/routes/devices/store';
 
