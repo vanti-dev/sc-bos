@@ -78,7 +78,7 @@
                           lightingData.brightness + '%'
                     }}
                   </v-col>
-                  <v-col class="px-2">
+                  <v-col class="px-1">
                     <v-icon :color="lightingData.brightness > 0 ? 'yellow' : 'white' " size="20">
                       {{ lightingData.brightness > 0 ? 'mdi-lightbulb-on' : 'mdi-lightbulb-outline' }}
                     </v-icon>
