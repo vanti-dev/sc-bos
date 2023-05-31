@@ -4,6 +4,7 @@
         name="lighting"
         :lighting-data="{
           brightness,
+          brightnessHotpoint,
           updateLight,
           updateValue
         }"/>
@@ -45,6 +46,18 @@ const brightness = computed(() => {
   if (lightValue && lightValue.value) {
     return Math.round(lightValue.value.levelPercent);
   }
+  return '';
+});
+
+const brightnessHotpoint = computed(() => {
+  if (brightness.value === 0) {
+    return 'Off';
+  } else if (brightness.value === 100) {
+    return 'Max';
+  } else if (brightness.value > 0 && brightness.value < 100) {
+    return `${brightness.value}%`;
+  }
+
   return '';
 });
 

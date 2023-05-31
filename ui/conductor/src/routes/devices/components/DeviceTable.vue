@@ -64,23 +64,28 @@
                 <v-progress-linear color="primary" indeterminate :active="occupancyData.occupancyValue.loading"/>
               </template>
             </WithOccupancy>
-            <WithLighting v-else-if="hasTrait(item, 'Light')" :name="item.name" :paused="!live">
+            <WithLighting
+                v-else-if="hasTrait(item, 'Light')"
+                :name="item.name"
+                :paused="!live">
               <template #lighting="{lightingData}">
                 <v-row class="d-flex flex-row flex-nowrap">
                   <v-col
                       class="text-caption d-flex flex-row justify-center px-1"
                       style="min-width: 2.75em; width: 100%;">
                     {{
-                      lightingData.brightness === 0 ?
-                        'Off' :
-                        lightingData.brightness === 100 ?
-                          'Max' :
-                          lightingData.brightness + '%'
+                      lightingData.brightnessHotpoint
                     }}
                   </v-col>
                   <v-col class="px-1">
                     <v-icon :color="lightingData.brightness > 0 ? 'yellow' : 'white' " size="20">
-                      {{ lightingData.brightness > 0 ? 'mdi-lightbulb-on' : 'mdi-lightbulb-outline' }}
+                      {{
+                        lightingData.brightnessHotpoint !== '' ?
+                          lightingData.brightnessHotpoint !== 'Off' ?
+                            'mdi-lightbulb-on' :
+                            'mdi-lightbulb-outline' :
+                          ''
+                      }}
                     </v-icon>
                   </v-col>
                 </v-row>
