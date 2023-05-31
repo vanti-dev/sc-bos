@@ -51,47 +51,12 @@
         </v-container>
       </template>
       <template #item.hotpoint="{item}">
-        <HotPoint :item-key="item.name" style="height:100%" class="d-flex align-center justify-center">
-          <template #hotpoint="{live}">
-            <WithOccupancy
-                v-if="hasTrait(item, 'OccupancySensor')"
-                :name="item.name"
-                :paused="!live">
-              <template #occupancy="{occupancyData}">
-                <p :class="[occupancyData.occupancyState.toLowerCase(), 'ma-0 text-body-2']">
-                  {{ occupancyData.occupancyState }}
-                </p>
-                <v-progress-linear color="primary" indeterminate :active="occupancyData.occupancyValue.loading"/>
-              </template>
-            </WithOccupancy>
-            <WithLighting
-                v-else-if="hasTrait(item, 'Light')"
-                :name="item.name"
-                :paused="!live">
-              <template #lighting="{lightingData}">
-                <v-row class="d-flex flex-row flex-nowrap">
-                  <v-col
-                      class="text-caption d-flex flex-row justify-center px-1"
-                      style="min-width: 2.75em; width: 100%;">
-                    {{
-                      lightingData.brightnessHotpoint
-                    }}
-                  </v-col>
-                  <v-col class="px-1">
-                    <v-icon :color="lightingData.brightness > 0 ? 'yellow' : 'white' " size="20">
-                      {{
-                        lightingData.brightnessHotpoint !== '' ?
-                          lightingData.brightnessHotpoint !== 'Off' ?
-                            'mdi-lightbulb-on' :
-                            'mdi-lightbulb-outline' :
-                          ''
-                      }}
-                    </v-icon>
-                  </v-col>
-                </v-row>
-              </template>
-            </WithLighting>
-          </template>
+        <HotPoint
+            v-slot="{live}"
+            class="d-flex align-center justify-center"
+            :item-key="item.name"
+            style="height:100%">
+          <DeviceCell :paused="!live" :item="item"/>
         </HotPoint>
       </template>
     </v-data-table>
@@ -110,10 +75,8 @@ import {usePageStore} from '@/stores/page';
 import {Zone} from '@/routes/site/zone/zone';
 
 import ContentCard from '@/components/ContentCard.vue';
-import WithOccupancy from './renderless/WithOccupancy.vue';
 import HotPoint from '@/components/HotPoint.vue';
-import {hasTrait} from '@/util/devices';
-import WithLighting from './renderless/WithLighting.vue';
+import DeviceCell from './trait-cells/DeviceCell.vue';
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();
