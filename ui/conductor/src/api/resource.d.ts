@@ -34,11 +34,11 @@ export interface RemoteResource<M> {
   updateTime?: Date;
 }
 
-export interface ResourceValue<V, M extends Msg<V>> extends RemoteResource<M> {
+export interface ResourceValue<V, M extends Msg<?>> extends RemoteResource<M> {
   value?: V;
 }
 
-export interface ResourceCollection<V, M extends Msg<V>> extends RemoteResource<any> {
+export interface ResourceCollection<V, M extends Msg<?>> extends RemoteResource<any> {
   value?: { [id: string]: V };
 }
 
