@@ -1,6 +1,6 @@
 <template>
   <div>
-    <slot :value="enterLeaveEventValue"/>
+    <slot v-bind="enterLeaveEventValue"/>
   </div>
 </template>
 
@@ -39,8 +39,17 @@ const _request = computed(() => {
 });
 
 watch(
+    () => enterLeaveEventValue.value,
+    (newVal, oldVal) => {
+      console.log('watching el value', newVal, oldVal);
+    },
+    {immediate: true, deep: true}
+);
+
+watch(
     [() => _request.value, () => props.paused],
     ([newReq, newPaused], [oldReq, oldPaused]) => {
+      console.log('watching', newReq, newPaused, oldReq, oldPaused);
       const reqEqual = deepEqual(newReq, oldReq);
       if (newPaused === oldPaused && reqEqual) return;
 
