@@ -3,7 +3,7 @@ import {del, reactive, set} from 'vue';
 
 export const useIntersectedItemsStore = defineStore('intersectedItems', () => {
   const intersectedItemNames = reactive(
-      /** @type {Object.<string, boolean>} */
+      /** @type {Object.<string, number>} */
       {}
   );
 
@@ -24,14 +24,21 @@ export const useIntersectedItemsStore = defineStore('intersectedItems', () => {
     });
   };
 
+  const hasName = (name) => {
+    return intersectedItemNames[name] > 0;
+  };
+
   const clearName = (name) => {
-    del(intersectedItemNames, name);
+    if (hasName(name)) {
+      intersectedItemNames[name]--;
+      if (!hasName(name)) {
+        del(intersectedItemNames, name);
+      }
+    }
   };
 
   const createName = (name) => {
-    const match = Object.keys(intersectedItemNames).find((itemName) => itemName) === name;
-
-    if (match) {
+    if (hasName(name)) {
       intersectedItemNames[name]++;
     } else {
       set(intersectedItemNames, name, 1);
@@ -42,6 +49,7 @@ export const useIntersectedItemsStore = defineStore('intersectedItems', () => {
     intersectedItemNames,
 
     intersectionHandler,
+    hasName,
     clearName,
     createName
   };
