@@ -28,10 +28,9 @@ const onIntersect = {
   ) =>
     intersectionHandler(entries, observer, props.itemKey),
   options: {
-    rootMargin: '-50px 0px 0px 0px',
-    threshold: 0.75,
-    trackVisibility: true,
-    delay: 100
+    // 60 for the page header
+    rootMargin: '-60px 0px 0px 0px',
+    threshold: 0
   }
 };
 
