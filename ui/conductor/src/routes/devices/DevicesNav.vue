@@ -34,7 +34,7 @@ const availableSubSystems = computed(() => {
     fire: 'mdi-fire',
     smart: 'mdi-memory',
     vt: 'mdi-elevator-passenger',
-    sensor: 'mdi-leak', // we might need to change this icon
+    sensors: 'mdi-leak', // we might need to change this icon
     zones: 'mdi-select-all'
   };
 
