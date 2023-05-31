@@ -3,6 +3,7 @@ package xovis
 import (
 	"encoding/json"
 	"os"
+	"strings"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
@@ -36,7 +37,7 @@ func (c DriverConfig) LoadPassword() (string, error) {
 		return c.Password, nil
 	}
 	bs, err := os.ReadFile(c.PasswordFile)
-	return string(bs), err
+	return strings.TrimSpace(string(bs)), err
 }
 
 type DeviceConfig struct {
