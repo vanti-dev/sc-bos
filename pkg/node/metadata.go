@@ -116,9 +116,8 @@ func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
 }
 
 func (n *Node) metadataApiRouter() router.Router {
-	metadataApiClient := metadata.WrapApi(traits.UnimplementedMetadataApiServer{})
 	for _, r := range n.routers {
-		if r.HoldsType(metadataApiClient) {
+		if _, ok := r.(*metadata.ApiRouter); ok {
 			return r
 		}
 	}
