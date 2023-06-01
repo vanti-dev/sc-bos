@@ -169,6 +169,21 @@ func float32Value(data any) (float32, error) {
 	return 0, fmt.Errorf("unsupported conversion %T -> float32 for val %v", data, data)
 }
 
+func stringValue(data any) (string, error) {
+	switch v := data.(type) {
+	case error:
+		return "", v
+	case string:
+		return v, nil
+	default:
+		return fmt.Sprintf("%v", v), nil
+	}
+}
+
+func valuesEquivalent(a, b any) bool {
+	return fmt.Sprintf("%v", a) == fmt.Sprintf("%v", b)
+}
+
 func readPropertyFloat32(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource) (float32, error) {
 	data, err := readProperty(ctx, client, known, value)
 	if err != nil {
