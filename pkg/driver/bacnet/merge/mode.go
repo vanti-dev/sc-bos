@@ -73,6 +73,7 @@ func newMode(client *gobacnet.Client, devices known.Context, statuses *statuspb.
 		return nil, err
 	}
 	model := modepb.NewModel()
+	_, _ = model.UpdateModeValues(&traits.ModeValues{}) // clear the default initial value
 	t := &mode{
 		client:      client,
 		known:       devices,
