@@ -1,7 +1,7 @@
 <template>
   <v-tooltip left transition="slide-x-reverse-transition" :color="colorStr">
     <template #activator="{on}">
-      <v-icon :class="state" :color="iconColor" v-on="on">{{ iconStr }}</v-icon>
+      <v-icon :class="state" :color="iconColor" v-on="on" size="20">{{ iconStr }}</v-icon>
     </template>
     <span>{{ stateStr }}</span>
   </v-tooltip>
