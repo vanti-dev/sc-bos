@@ -3,6 +3,7 @@ package merge
 import (
 	"context"
 	"fmt"
+	"math"
 	"time"
 
 	"go.uber.org/zap"
@@ -30,4 +31,55 @@ func startPoll(init context.Context, name string, pollDelay, pollTimeout time.Du
 		}
 	}()
 	return cancel, nil
+}
+
+// pollUntil calls poll until test returns true.
+// Returns early with error if
+//
+//  1. ctx is done
+//  2. the number of polls is tries
+//  3. pollPeer returns an error
+//
+// An backoff delay will be added between each call to pollPeer
+func pollUntil[T any](ctx context.Context, tries int, poll func(context.Context) (T, error), test func(T) bool) (T, error) {
+	fail := func(err error) (T, error) {
+		var zero T
+		return zero, err
+	}
+	if tries == 0 {
+		tries = math.MaxInt
+	}
+
+	var delay time.Duration
+	delayMulti := 1.2
+	var attempt int
+	for {
+		attempt++ // start with attempt 1 (not 0)
+
+		res, err := poll(ctx)
+		if err != nil {
+			return fail(err)
+		}
+
+		if test(res) {
+			return res, nil
+		}
+
+		if delay == 0 {
+			delay = 10 * time.Millisecond
+		} else {
+			delay = time.Duration(float64(delay) * delayMulti)
+		}
+
+		if attempt >= tries {
+			break
+		}
+
+		select {
+		case <-ctx.Done():
+			return fail(ctx.Err())
+		case <-time.After(delay):
+		}
+	}
+	return fail(fmt.Errorf("ran out of tries: %d", tries))
 }

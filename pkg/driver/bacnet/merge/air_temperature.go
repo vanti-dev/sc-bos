@@ -3,9 +3,6 @@ package merge
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"math"
-	"time"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -95,7 +92,7 @@ func (t *airTemperature) UpdateAirTemperature(ctx context.Context, request *trai
 	}
 
 	// todo: not strictly correct as we're not paying attention to the require customisation properties that ModelServer would give us
-	return t.pollUntil(ctx, 5, func(temperature *traits.AirTemperature) bool {
+	return pollUntil(ctx, 5, t.pollPeer, func(temperature *traits.AirTemperature) bool {
 		return temperature.GetTemperatureSetPoint().ValueCelsius == float64(newSetPoint)
 	})
 }
@@ -149,51 +146,4 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 	}
 
 	return t.model.UpdateAirTemperature(data)
-}
-
-// pollUntil calls pollPeer until test returns true.
-// Returns early with error if
-//
-//  1. ctx is done
-//  2. the number of polls is tries
-//  3. pollPeer returns an error
-//
-// An backoff delay will be added between each call to pollPeer
-func (t *airTemperature) pollUntil(ctx context.Context, tries int, test func(temperature *traits.AirTemperature) bool) (*traits.AirTemperature, error) {
-	if tries == 0 {
-		tries = math.MaxInt
-	}
-
-	var delay time.Duration
-	delayMulti := 1.2
-	var attempt int
-	for {
-		attempt++ // start with attempt 1 (not 0)
-
-		res, err := t.pollPeer(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		if test(res) {
-			return res, nil
-		}
-
-		if delay == 0 {
-			delay = 10 * time.Millisecond
-		} else {
-			delay = time.Duration(float64(delay) * delayMulti)
-		}
-
-		if attempt >= tries {
-			break
-		}
-
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		case <-time.After(delay):
-		}
-	}
-	return nil, fmt.Errorf("ran out of tries: %d", tries)
 }
