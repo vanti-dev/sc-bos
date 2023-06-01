@@ -1,5 +1,5 @@
 <template>
-  <span class="text-no-wrap root" v-if="value">
+  <span class="text-no-wrap el-cell" v-if="value">
     <v-icon left :class="{justEntered}" size="20">mdi-location-enter</v-icon>
     <span :class="{justEntered}" v-if="hasTotals">{{ enterTotal }}</span>
     <v-divider vertical class="mx-2"/>
@@ -62,12 +62,12 @@ const justLeft = ref(false);
 </script>
 
 <style scoped>
-.root {
+.el-cell {
   display: flex;
   align-items: center;
 }
 
-.root > * {
+.el-cell > * {
   transition: color 0.2s ease-in-out;
 }
 
