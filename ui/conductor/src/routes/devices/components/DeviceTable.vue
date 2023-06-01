@@ -53,7 +53,7 @@
       <template #item.hotpoint="{item}">
         <HotPoint
             v-slot="{live}"
-            class="d-flex align-center justify-center"
+            class="d-flex align-center justify-end"
             :item-key="item.name"
             style="height:100%">
           <DeviceCell :paused="!live" :item="item"/>
