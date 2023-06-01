@@ -76,7 +76,7 @@ import {Zone} from '@/routes/site/zone/zone';
 
 import ContentCard from '@/components/ContentCard.vue';
 import HotPoint from '@/components/HotPoint.vue';
-import DeviceCell from './trait-cells/DeviceCell.vue';
+import DeviceCell from './DeviceCell.vue';
 
 const devicesStore = useDevicesStore();
 const pageStore = usePageStore();

@@ -37,10 +37,10 @@ import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
 import EnterLeaveEventCell from '@/routes/devices/components/trait-cells/EnterLeaveEventCell.vue';
 import StatusLogCell from '@/routes/devices/components/trait-cells/StatusLogCell.vue';
 import {hasTrait} from '@/util/devices';
-import WithLighting from '../renderless/WithLighting.vue';
-import WithOccupancy from '../renderless/WithOccupancy.vue';
-import LightCell from './LightCell.vue';
-import OccupancyCell from './OccupancyCell.vue';
+import WithLighting from './renderless/WithLighting.vue';
+import WithOccupancy from './renderless/WithOccupancy.vue';
+import LightCell from './trait-cells/LightCell.vue';
+import OccupancyCell from './trait-cells/OccupancyCell.vue';
 
 const props = defineProps({
   paused: {
