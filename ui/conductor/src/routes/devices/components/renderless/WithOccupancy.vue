@@ -5,10 +5,10 @@
 </template>
 
 <script setup>
-import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
-import {occupancyStateToString, pullOccupancy} from '@/api/sc/traits/occupancy';
+import {pullOccupancy} from '@/api/sc/traits/occupancy';
 import {useErrorStore} from '@/components/ui-error/error';
+import {onMounted, onUnmounted, reactive, watch} from 'vue';
 
 const errorStore = useErrorStore();
 const props = defineProps({
@@ -69,9 +69,11 @@ onUnmounted(() => {
 .occupied {
   color: var(--v-success-lighten1) !important;
 }
+
 .idle {
   color: var(--v-info-base) !important;
 }
+
 .unoccupied {
   color: var(--v-warning-base) !important;
 }
