@@ -1,6 +1,6 @@
 <template>
   <div>
-    <slot :value="slotValue"/>
+    <slot :resource="occupancyValue"/>
   </div>
 </template>
 
@@ -27,31 +27,6 @@ const occupancyValue = reactive(
     /** @type {ResourceValue<Occupancy.AsObject, Occupancy>} */
     newResourceValue()
 );
-
-//
-//
-// Computed
-const occupantCount = computed(() => {
-  if (occupancyValue.value) {
-    return occupancyValue.value.peopleCount;
-  }
-  return 0;
-});
-
-const occupancyState = computed(() => {
-  if (occupancyValue.value) {
-    return occupancyStateToString(occupancyValue.value.state);
-  }
-  return '';
-});
-
-const slotValue = computed(() => {
-  return {
-    occupantCount: occupantCount.value,
-    occupancyState: occupancyState.value,
-    occupancyValue
-  };
-});
 
 //
 //

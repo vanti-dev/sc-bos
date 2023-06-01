@@ -2,31 +2,31 @@
   <span>
     <WithOccupancy
         v-if="hasTrait(props.item, 'OccupancySensor')"
-        v-slot="{value}"
+        v-slot="{resource}"
         :name="props.item.name"
         :paused="props.paused">
-      <OccupancyCell v-bind="{value}"/>
+      <OccupancyCell v-bind="resource"/>
     </WithOccupancy>
     <WithLighting
         v-else-if="hasTrait(props.item, 'Light')"
-        v-slot="value"
+        v-slot="{resource}"
         :name="props.item.name"
         :paused="props.paused">
-      <LightCell v-bind="value"/>
+      <LightCell v-bind="resource"/>
     </WithLighting>
     <WithEnterLeave
         v-else-if="hasTrait(props.item, 'smartcore.traits.EnterLeaveSensor')"
-        v-slot="value"
+        v-slot="{resource}"
         :name="props.item.name"
         :paused="props.paused">
-      <EnterLeaveEventCell v-bind="value"/>
+      <EnterLeaveEventCell v-bind="resource"/>
     </WithEnterLeave>
     <WithStatus
         v-if="hasTrait(props.item, 'smartcore.bos.Status')"
-        v-slot="value"
+        v-slot="{resource}"
         :name="props.item.name"
         :paused="props.paused">
-      <StatusLogCell v-bind="value"/>
+      <StatusLogCell v-bind="resource"/>
     </WithStatus>
   </span>
 </template>

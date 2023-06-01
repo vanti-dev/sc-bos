@@ -3,10 +3,10 @@
     <v-col
         class="text-caption d-flex flex-row justify-center px-1"
         style="min-width: 2.75em; width: 100%;">
-      {{ brightnessHotpoint }}
+      {{ brightnessStr }}
     </v-col>
     <v-col class="px-1">
-      <v-icon :color="props.brightness > 0 ? 'yellow' : 'white' " size="20">
+      <v-icon :color="brightness > 0 ? 'yellow' : 'white' " size="20">
         {{ lightingIcon }}
       </v-icon>
     </v-col>
@@ -17,34 +17,31 @@
 import {computed} from 'vue';
 
 const props = defineProps({
-  brightness: {
-    type: [String, Number],
-    default: ''
+  value: {
+    type: Object, // of type Brightness.AsObject
+    default: () => {}
   }
 });
 
 //
 //
 // Computed
-
-const brightnessHotpoint = computed(() => {
-  if (props.brightness === 0) {
+const brightness = computed(() => props.value?.levelPercent);
+const brightnessStr = computed(() => {
+  if (brightness.value === 0) {
     return 'Off';
-  } else if (props.brightness === 100) {
+  } else if (brightness.value === 100) {
     return 'Max';
-  } else if (props.brightness > 0 && props.brightness < 100) {
-    return `${props.brightness}%`;
+  } else if (brightness.value > 0 && brightness.value < 100) {
+    return `${brightness.value}%`;
   }
 
   return '';
 });
 
 const lightingIcon = computed(() => {
-  if (brightnessHotpoint.value !== '') {
-    if (brightnessHotpoint.value !== 'Off') return 'mdi-lightbulb-on';
-    else return 'mdi-lightbulb-outline';
-  }
-
+  if (brightness.value === 0) return 'mdi-lightbulb-outline';
+  if (brightness.value > 0) return 'mdi-lightbulb-on';
   return '';
 });
 </script>

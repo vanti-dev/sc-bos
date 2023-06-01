@@ -1,6 +1,6 @@
 <template>
   <div>
-    <slot v-bind="statusLogValue"/>
+    <slot :resource="statusLogValue"/>
   </div>
 </template>
 

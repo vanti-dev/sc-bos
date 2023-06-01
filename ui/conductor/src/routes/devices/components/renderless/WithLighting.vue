@@ -1,14 +1,14 @@
 <template>
   <div>
-    <slot v-bind="slotValue"/>
+    <slot :resource="lightValue" :update="doUpdateBrightness" :update-tracker="updateValue"/>
   </div>
 </template>
 
 <script setup>
-import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
 import {pullBrightness, updateBrightness} from '@/api/sc/traits/light';
 import {useErrorStore} from '@/components/ui-error/error';
+import {onMounted, onUnmounted, reactive, watch} from 'vue';
 
 const props = defineProps({
   // unique name of the device
@@ -32,39 +32,21 @@ const updateValue = reactive(
     /** @type {ActionTracker<Brightness.AsObject>}  */
     newActionTracker());
 
-//
-//
-// Computed
-const brightness = computed(() => {
-  if (lightValue && lightValue.value) {
-    return Math.round(lightValue.value.levelPercent);
-  }
-  return '';
-});
-
-const slotValue = computed(() => {
-  return {
-    lightValue,
-    updateValue,
-    brightness: brightness.value,
-    updateLight
-  };
-});
 
 //
 //
 // Methods
 /**
- * @param {number} value
+ * @param {number|Brightness.AsObject|UpdateBrightnessRequest.AsObject} req
  */
-function updateLight(value) {
-  /* @type {UpdateBrightnessRequest.AsObject} */
-  const req = {
-    name: props.name,
-    brightness: {
-      levelPercent: Math.min(100, Math.round(value))
-    }
-  };
+function doUpdateBrightness(req) {
+  if (typeof req === 'number') {
+    req = {levelPercent: Math.min(100, Math.round(req))};
+  }
+  if (!req.hasOwnProperty('brightness')) {
+    req = {brightness: req};
+  }
+  req.name = props.name;
   updateBrightness(req, updateValue);
 }
 
@@ -93,7 +75,8 @@ watch(
 //
 //
 // UI error handling
-let unwatchLightError; let unwatchUpdateError;
+let unwatchLightError;
+let unwatchUpdateError;
 onMounted(() => {
   unwatchLightError = errorStore.registerValue(lightValue);
   unwatchUpdateError = errorStore.registerTracker(updateValue);
@@ -109,9 +92,11 @@ onUnmounted(() => {
 .occupied {
   color: var(--v-success-lighten1) !important;
 }
+
 .idle {
   color: var(--v-info-base) !important;
 }
+
 .unoccupied {
   color: var(--v-warning-base) !important;
 }
