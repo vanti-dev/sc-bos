@@ -38,7 +38,7 @@ func readProperty(ctx context.Context, client *gobacnet.Client, known known.Cont
 		// Shouldn't happen, but has on occasion. I guess it depends how the device responds to our request
 		return nil, errors.New("zero length object properties")
 	}
-	return res.Object.Properties[0].Data, nil
+	return value.Scaled(res.Object.Properties[0].Data), nil
 }
 
 type key struct {
@@ -112,6 +112,10 @@ func readProperties(ctx context.Context, client *gobacnet.Client, known known.Co
 
 	for id, req := range reqsPerDevice {
 		readMultiProperties(ctx, client, devices[id], *req, resIndexes, res)
+	}
+
+	for i, v := range res {
+		res[i] = values[i].Scaled(v)
 	}
 
 	return res
@@ -198,6 +202,10 @@ func float32Value(data any) (float32, error) {
 	}
 
 	return 0, fmt.Errorf("unsupported conversion %T -> float32 for val %v", data, data)
+}
+
+func ptr[T any](v T, err error) (*T, error) {
+	return &v, err
 }
 
 func stringValue(data any) (string, error) {

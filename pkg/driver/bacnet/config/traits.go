@@ -71,6 +71,10 @@ type ValueSource struct {
 	Device   *DeviceRef  `json:"device,omitempty"`
 	Object   *ObjectRef  `json:"object,omitempty"`
 	Property *PropertyID `json:"property,omitempty"`
+	// used for converting simple units like kW -> W.
+	// The value from the source will be multiplied by Scale when reading, and divided when writing.
+	// For example if the trait is in watts and the device is in kW then Scale should be 1000 (aka kilo).
+	Scale float64 `json:"scale,omitempty"`
 }
 
 // Lookup finds the gobacnet device, object, and property this ValueSource refers to.
@@ -90,6 +94,36 @@ func (vs ValueSource) Lookup(ctx known.Context) (bactypes.Device, bactypes.Objec
 	}
 	object, err := vs.Object.Lookup(device, ctx)
 	return device, object, p, err
+}
+
+// Scaled returns v scaled by the Scale factor.
+// If vs.Scale is 0 or v is not a number then v is returned unchanged.
+func (vs ValueSource) Scaled(v any) any {
+	if v == nil {
+		return v
+	}
+	if vs.Scale == 0 {
+		return v
+	}
+	switch v := v.(type) {
+	case float32:
+		return float32(float64(v) * vs.Scale)
+	case float64:
+		return v * vs.Scale
+	case int:
+		return int(float64(v) * vs.Scale)
+	case int32:
+		return int32(float64(v) * vs.Scale)
+	case int64:
+		return int64(float64(v) * vs.Scale)
+	case uint:
+		return uint(float64(v) * vs.Scale)
+	case uint32:
+		return uint32(float64(v) * vs.Scale)
+	case uint64:
+		return uint64(float64(v) * vs.Scale)
+	}
+	return v
 }
 
 type DeviceRef struct {
