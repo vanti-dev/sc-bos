@@ -100,7 +100,7 @@ func (t *electricTrait) PullDemand(request *traits.PullDemandRequest, server tra
 	timeoutCtx, cleanup := context.WithTimeout(server.Context(), t.config.PollTimeoutDuration())
 	defer cleanup()
 	for change := range t.model.PullDemand(timeoutCtx) {
-		if proto.Equal(change.Value, &traits.ElectricDemand{}) { // skip zero value
+		if !proto.Equal(change.Value, &traits.ElectricDemand{}) { // skip zero value
 			break
 		}
 	}
