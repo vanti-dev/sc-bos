@@ -182,7 +182,7 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 		requestValues = append(requestValues, *cfg)
 		keys = append(keys, key)
 	}
-	for i, result := range readProperties(ctx, f.client, f.known, requestValues...) {
+	for i, result := range readPropertiesChunked(ctx, f.client, f.known, f.config.ChunkSize, requestValues...) {
 		switch e := result.(type) {
 		case error:
 			errs = append(errs, ErrReadProperty{Prop: keys[i], Cause: e})

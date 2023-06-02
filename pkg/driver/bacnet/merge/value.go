@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
+	"sync"
 
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
@@ -43,6 +45,35 @@ type key struct {
 	did bactypes.ObjectInstance
 	oid bactypes.ObjectID
 	pid property.ID
+}
+
+// readPropertiesChunked is like readProperties but splits values into chunks of at most chunkSize that are executed in parallel.
+func readPropertiesChunked(ctx context.Context, client *gobacnet.Client, known known.Context, chunkSize int, values ...config.ValueSource) []any {
+	if chunkSize == 0 {
+		return readProperties(ctx, client, known, values...)
+	}
+
+	var wg sync.WaitGroup
+	chunkCount := int(math.Ceil(float64(len(values)) / float64(chunkSize)))
+	wg.Add(chunkCount)
+	n := int(math.Ceil(float64(len(values)) / float64(chunkCount)))
+
+	results := make([]any, len(values))
+
+	for i := 0; i < chunkCount; i++ {
+		from, to := i*n, (i+1)*n
+		if to > len(values) {
+			to = len(values)
+		}
+		go func() {
+			defer wg.Done()
+			props := readProperties(ctx, client, known, values[from:to]...)
+			copy(results[from:to], props)
+		}()
+	}
+
+	wg.Wait()
+	return results
 }
 
 func readProperties(ctx context.Context, client *gobacnet.Client, known known.Context, values ...config.ValueSource) []any {
