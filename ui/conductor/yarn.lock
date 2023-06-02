@@ -1073,10 +1073,10 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@mdi/font@^7.0.96":
-  version "7.0.96"
-  resolved "https://registry.npmjs.org/@mdi/font/-/font-7.0.96.tgz"
-  integrity sha512-rzlxTfR64hqY8yiBzDjmANfcd8rv+T5C0Yedv/TWk2QyAQYdc66e0kaN1ipmnYU3RukHRTRcBARHzzm+tIhL7w==
+"@mdi/font@^7.2.96":
+  version "7.2.96"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/@mdi/font/-/font-7.2.96.tgz#af800d9fe3b424f85ad45e9baa755bd003ab4986"
+  integrity sha512-e//lmkmpFUMZKhmCY9zdjRe4zNXfbOIJnn6xveHbaV2kSw5aJ5dLXUxcRt1Gxfi7ZYpFLUWlkG2MGSFAiqAu7w==
 
 "@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1":
   version "5.1.1-v1"
@@ -1124,7 +1124,7 @@
 "@sc-bos/ui-gen@file:../ui-gen":
   version "1.0.0-beta.5"
   dependencies:
-    "@smart-core-os/sc-api-grpc-web" "^1.0.0-beta.40"
+    "@smart-core-os/sc-api-grpc-web" "^1.0.0-beta.41"
     google-protobuf "^3.21.2"
     grpc-web "^1.4.2"
 
@@ -1145,18 +1145,18 @@
   resolved "https://nexus.vanti.co.uk/repository/npm-public/@sideway/pinpoint/-/pinpoint-2.0.0.tgz#cff8ffadc372ad29fd3f78277aeb29e632cc70df"
   integrity sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==
 
-"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.40":
-  version "1.0.0-beta.40"
-  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.40.tgz#311117e9df458c8518e2328d7994bd1f2f7e4dc8"
-  integrity sha512-o9ZkLi0yAhKF6MDsCOh7BbGBiloeX83qwWHpEUX8whVoTQ0GFFYntsKXZtrJqtiZAYtEU/HHtKgk13vRE8hq9w==
-  dependencies:
-    google-protobuf "^3.21.2"
-    grpc-web "^1.4.2"
-
 "@smart-core-os/sc-api-grpc-web@^1.0.0-beta.41":
   version "1.0.0-beta.41"
   resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.41.tgz#56961d74ce45c803b01faceb320239564a2784b0"
   integrity sha512-JOYjC2ShsEwUKaeQCj0SbHe6PB1g0lPo9BXv+lEqsAAxk0CLARHm50t4mOjfICNy4+Aq4A0OACH2sow+tvyYag==
+  dependencies:
+    google-protobuf "^3.21.2"
+    grpc-web "^1.4.2"
+
+"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.42":
+  version "1.0.0-beta.42"
+  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.42.tgz#77b3bf36bdd95980f51eb84a6967c4b5f8ef7ed4"
+  integrity sha512-JxgKw7XjAbSDMcasSAgRrZLoGcmVLNialO9gLoSFeI74DLXp+gSKT3rwiGesDMLe3sZ08jyPFyssJWW8xr5HNw==
   dependencies:
     google-protobuf "^3.21.2"
     grpc-web "^1.4.2"

@@ -7,6 +7,13 @@
         :paused="props.paused">
       <EnterLeaveEventCell v-bind="resource"/>
     </WithEnterLeave>
+    <WithElectricDemand
+        v-if="hasCell('ElectricDemand')"
+        v-slot="{resource}"
+        :name="props.item.name"
+        :paused="props.paused">
+      <ElectricDemandCell v-bind="resource"/>
+    </WithElectricDemand>
     <WithLighting
         v-if="hasCell('Light')"
         v-slot="{resource}"
@@ -32,8 +39,10 @@
 </template>
 
 <script setup>
+import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
 import WithEnterLeave from '@/routes/devices/components/renderless/WithEnterLeave.vue';
 import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
+import ElectricDemandCell from '@/routes/devices/components/trait-cells/ElectricDemandCell.vue';
 import EnterLeaveEventCell from '@/routes/devices/components/trait-cells/EnterLeaveEventCell.vue';
 import StatusLogCell from '@/routes/devices/components/trait-cells/StatusLogCell.vue';
 import {hasTrait} from '@/util/devices';
@@ -61,6 +70,9 @@ const visibleCells = computed(() => {
   }
   if (hasTrait(props.item, 'smartcore.traits.Light')) {
     cells['Light'] = true;
+  }
+  if (hasTrait(props.item, 'smartcore.traits.Electric')) {
+    cells['ElectricDemand'] = true;
   }
   if (hasTrait(props.item, 'smartcore.traits.EnterLeaveSensor')) {
     cells['EnterLeaveEvent'] = true;
