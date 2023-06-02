@@ -11,6 +11,10 @@
     <WithOccupancy v-if="traits['smartcore.traits.OccupancySensor']" :name="deviceId" v-slot="{resource}">
       <occupancy-card v-bind="resource"/>
     </WithOccupancy>
+    <WithElectricDemand v-if="traits['smartcore.traits.Electric']" :name="deviceId" v-slot="{resource}">
+      <v-divider class="mt-4 mb-1"/>
+      <electric-demand-card v-bind="resource"/>
+    </WithElectricDemand>
     <v-divider v-if="traits['smartcore.bsp.EmergencyLight']" class="mt-4 mb-1"/>
     <emergency-light :name="deviceId" v-if="traits['smartcore.bsp.EmergencyLight']"/>
     <v-divider v-if="traits['smartcore.traits.Mode']" class="mt-4 mb-1"/>
@@ -22,10 +26,12 @@
 
 <script setup>
 import SideBar from '@/components/SideBar.vue';
+import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
 import WithLighting from '@/routes/devices/components/renderless/WithLighting.vue';
 import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
 import AirTemperatureCard from '@/routes/devices/components/trait-cards/AirTemperatureCard.vue';
 import DeviceInfoCard from '@/routes/devices/components/trait-cards/DeviceInfoCard.vue';
+import ElectricDemandCard from '@/routes/devices/components/trait-cards/ElectricDemandCard.vue';
 import EmergencyLight from '@/routes/devices/components/trait-cards/EmergencyLight.vue';
 import LightCard from '@/routes/devices/components/trait-cards/LightCard.vue';
 import ModeCard from '@/routes/devices/components/trait-cards/ModeCard.vue';
