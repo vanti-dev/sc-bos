@@ -2,6 +2,7 @@ package meter
 
 import (
 	"context"
+	"path"
 
 	"go.uber.org/zap"
 
@@ -36,10 +37,15 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := node.AnnounceContext(ctx, f.announce)
 	logger := f.logger.With(zap.String("zone", cfg.Name))
 
-	if len(cfg.Meters) > 0 {
-		var client gen.MeterApiClient
+	var client gen.MeterApiClient
+	if len(cfg.Meters) > 0 || len(cfg.MeterGroups) > 0 {
 		if err := f.clients.Client(&client); err != nil {
 			return err
+		}
+	}
+	announceGroup := func(name string, devices []string) {
+		if len(devices) == 0 {
+			return
 		}
 
 		group := &Group{
@@ -48,7 +54,12 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 			logger: logger,
 		}
 		f.devices.Add(cfg.Meters...)
-		announce.Announce(cfg.Name, node.HasTrait(meter.TraitName, node.WithClients(gen.WrapMeterApi(group))))
+		announce.Announce(name, node.HasTrait(meter.TraitName, node.WithClients(gen.WrapMeterApi(group))))
+	}
+
+	announceGroup(cfg.Name, cfg.Meters)
+	for name, meters := range cfg.MeterGroups {
+		announceGroup(path.Join(cfg.Name, name), meters)
 	}
 
 	return nil
