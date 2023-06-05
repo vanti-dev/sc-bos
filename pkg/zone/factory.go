@@ -8,8 +8,9 @@ import (
 )
 
 type Services struct {
-	Logger *zap.Logger
-	Node   *node.Node
+	Logger  *zap.Logger
+	Node    *node.Node
+	Devices *Devices
 }
 
 type Factory interface {

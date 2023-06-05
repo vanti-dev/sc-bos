@@ -20,6 +20,7 @@ import (
 var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
 	f := &feature{
 		announce: services.Node,
+		devices:  services.Devices,
 		clients:  services.Node,
 		logger:   services.Logger,
 	}
@@ -30,6 +31,7 @@ var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
 type feature struct {
 	*service.Service[config.Root]
 	announce node.Announcer
+	devices  *zone.Devices
 	clients  node.Clienter
 	logger   *zap.Logger
 }
@@ -50,6 +52,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 			readOnly: cfg.ReadOnlyLights,
 			logger:   logger.Named("lights"),
 		}
+		f.devices.Add(cfg.Lights...)
 		announce.Announce(cfg.Name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group))))
 	}
 	for key, lights := range cfg.LightGroups {
@@ -64,6 +67,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 			logger:   logger.Named("lightGroup").With(zap.String("lightGroup", key)),
 		}
 		name := fmt.Sprintf("%s/lights/%s", cfg.Name, key)
+		f.devices.Add(lights...)
 		announce.Announce(name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group))))
 	}
 

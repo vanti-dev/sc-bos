@@ -17,6 +17,7 @@ import (
 var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
 	f := &feature{
 		announce: services.Node,
+		devices:  services.Devices,
 		clients:  services.Node,
 		logger:   services.Logger,
 	}
@@ -27,6 +28,7 @@ var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
 type feature struct {
 	*service.Service[config.Root]
 	announce node.Announcer
+	devices  *zone.Devices
 	clients  node.Clienter
 	logger   *zap.Logger
 }
@@ -55,6 +57,8 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 			group.clients = append(group.clients, occupancysensor.WrapApi(elServer))
 		}
 
+		f.devices.Add(cfg.OccupancySensors...)
+		f.devices.Add(cfg.EnterLeaveOccupancySensors...)
 		announce.Announce(cfg.Name, node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensor.WrapApi(group))))
 	}
 

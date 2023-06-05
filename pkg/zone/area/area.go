@@ -55,9 +55,12 @@ func (a *Area) applyConfig(ctx context.Context, cfg config.Root) error {
 		announce.Announce(cfg.Name, node.HasMetadata(cfg.Metadata))
 	}
 
+	services := a.services
+	services.Devices = &zone.Devices{}
+
 	featureImpls := make([]service.Lifecycle, len(a.features))
 	for i, feature := range a.features {
-		featureImpls[i] = feature.New(a.services)
+		featureImpls[i] = feature.New(services)
 	}
 
 	// make the zone area implement the ServicesApi
@@ -88,5 +91,30 @@ func (a *Area) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 	}
 
+	for _, impl := range featureImpls {
+		a.waitUntilLoaded(ctx, impl)
+	}
+	services.Devices.Freeze()
+
 	return nil
+}
+
+func (a *Area) waitUntilLoaded(ctx context.Context, impl service.Lifecycle) {
+	ctx, stop := context.WithCancel(ctx)
+	defer stop()
+
+	settled := func(state service.State) bool {
+		return state.Active && !state.Loading ||
+			!state.Active && state.Err != nil
+	}
+
+	state, changes := impl.StateAndChanges(ctx)
+	if settled(state) {
+		return
+	}
+	for state := range changes {
+		if settled(state) {
+			return
+		}
+	}
 }

@@ -7,5 +7,7 @@ import (
 type Root struct {
 	zone.Config
 
-	StatusLogs []string `json:"statusLogs,omitempty"`
+	// 'All' meaning all devices that are mentioned elsewhere in the config.
+	StatusLogAll bool     `json:"statusLogAll,omitempty"`
+	StatusLogs   []string `json:"statusLogs,omitempty"`
 }
