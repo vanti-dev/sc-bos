@@ -21,6 +21,8 @@ type Group struct {
 	client traits.OccupancySensorApiClient
 	names  []string
 
+	clients []traits.OccupancySensorApiClient // dedicated clients that don't use names for anything
+
 	logger *zap.Logger
 }
 
@@ -30,6 +32,14 @@ func (g *Group) GetOccupancy(ctx context.Context, request *traits.GetOccupancyRe
 	for _, name := range g.names {
 		request.Name = name
 		res, err := g.client.GetOccupancy(ctx, request)
+		if err != nil {
+			allErrs = append(allErrs, err)
+			continue
+		}
+		allRes = append(allRes, res)
+	}
+	for _, client := range g.clients {
+		res, err := client.GetOccupancy(ctx, request)
 		if err != nil {
 			allErrs = append(allErrs, err)
 			continue
@@ -50,21 +60,24 @@ func (g *Group) GetOccupancy(ctx context.Context, request *traits.GetOccupancyRe
 }
 
 func (g *Group) PullOccupancy(request *traits.PullOccupancyRequest, server traits.OccupancySensorApi_PullOccupancyServer) error {
-	if len(g.names) == 0 {
-		return status.Error(codes.FailedPrecondition, "zone has no occupancy sensor names")
+	if len(g.names) == 0 && len(g.clients) == 0 {
+		return status.Error(codes.FailedPrecondition, "zone has no occupancy sensors")
 	}
 
 	type c struct {
-		name string
-		val  *traits.Occupancy
+		index int
+		val   *traits.Occupancy
 	}
 	changes := make(chan c)
 	defer close(changes)
 
 	group, ctx := errgroup.WithContext(server.Context())
-	for _, name := range g.names {
+
+	// get occupancy from each of the named devices
+	for i, name := range g.names {
 		request := proto.Clone(request).(*traits.PullOccupancyRequest)
 		request.Name = name
+		index := i
 		group.Go(func() error {
 			return pull.Changes(ctx, pull.NewFetcher(
 				func(ctx context.Context, changes chan<- c) error {
@@ -78,7 +91,7 @@ func (g *Group) PullOccupancy(request *traits.PullOccupancyRequest, server trait
 							return err
 						}
 						for _, change := range res.Changes {
-							changes <- c{name: request.Name, val: change.Occupancy}
+							changes <- c{index: index, val: change.Occupancy}
 						}
 					}
 				},
@@ -87,7 +100,7 @@ func (g *Group) PullOccupancy(request *traits.PullOccupancyRequest, server trait
 					if err != nil {
 						return err
 					}
-					changes <- c{name: request.Name, val: res}
+					changes <- c{index: index, val: res}
 					return nil
 				}),
 				changes,
@@ -95,13 +108,44 @@ func (g *Group) PullOccupancy(request *traits.PullOccupancyRequest, server trait
 		})
 	}
 
+	// get occupancy from each of the dedicated clients
+	for i, client := range g.clients {
+		client := client
+		index := len(g.names) + i
+		group.Go(func() error {
+			return pull.Changes(ctx, pull.NewFetcher(
+				func(ctx context.Context, changes chan<- c) error {
+					stream, err := client.PullOccupancy(ctx, request)
+					if err != nil {
+						return err
+					}
+					for {
+						res, err := stream.Recv()
+						if err != nil {
+							return err
+						}
+						for _, change := range res.Changes {
+							changes <- c{index: index, val: change.Occupancy}
+						}
+					}
+				},
+				func(ctx context.Context, changes chan<- c) error {
+					res, err := client.GetOccupancy(ctx, &traits.GetOccupancyRequest{Name: request.Name, ReadMask: request.ReadMask})
+					if err != nil {
+						return err
+					}
+					changes <- c{index: index, val: res}
+					return nil
+				}),
+				changes,
+			)
+		})
+	}
+
+	// merge all the changes into one occupancy and send to server
 	group.Go(func() error {
 		// indexes reports which index in values each name name has
-		indexes := make(map[string]int, len(g.names))
-		for i, name := range g.names {
-			indexes[name] = i
-		}
-		values := make([]*traits.Occupancy, len(g.names))
+		values := make([]*traits.Occupancy, len(g.names)+len(g.clients))
 
 		var last *traits.Occupancy
 		eq := cmp.Equal(cmp.FloatValueApprox(0, 0.001))
@@ -111,7 +155,7 @@ func (g *Group) PullOccupancy(request *traits.PullOccupancyRequest, server trait
 			case <-ctx.Done():
 				return ctx.Err()
 			case change := <-changes:
-				values[indexes[change.name]] = change.val
+				values[change.index] = change.val
 				r, err := mergeOccupancy(values)
 				if err != nil {
 					return err

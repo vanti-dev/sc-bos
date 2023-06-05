@@ -35,17 +35,26 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := node.AnnounceContext(ctx, f.announce)
 	logger := f.logger.With(zap.String("zone", cfg.Name))
 
-	if len(cfg.OccupancySensors) > 0 {
-		var client traits.OccupancySensorApiClient
-		if err := f.clients.Client(&client); err != nil {
-			return err
+	if len(cfg.OccupancySensors) > 0 || len(cfg.EnterLeaveOccupancySensors) > 0 {
+		group := &Group{logger: logger}
+
+		if len(cfg.OccupancySensors) > 0 {
+			if err := f.clients.Client(&group.client); err != nil {
+				return err
+			}
+			group.names = cfg.OccupancySensors
+		}
+		if len(cfg.EnterLeaveOccupancySensors) > 0 {
+			elServer := &enterLeave{
+				model: occupancysensor.NewModel(&traits.Occupancy{}),
+				names: cfg.EnterLeaveOccupancySensors,
+			}
+			if err := f.clients.Client(&elServer.client); err != nil {
+				return err
+			}
+			group.clients = append(group.clients, occupancysensor.WrapApi(elServer))
 		}
 
-		group := &Group{
-			client: client,
-			names:  cfg.OccupancySensors,
-			logger: logger,
-		}
 		announce.Announce(cfg.Name, node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensor.WrapApi(group))))
 	}
 

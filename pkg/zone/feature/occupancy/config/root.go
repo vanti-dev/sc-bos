@@ -8,4 +8,6 @@ type Root struct {
 	zone.Config
 
 	OccupancySensors []string `json:"occupancySensors,omitempty"`
+	// These EnterLeave devices get converted to occupancy using `EnterTotal - LeaveTotal`
+	EnterLeaveOccupancySensors []string `json:"enterLeaveOccupancySensors,omitempty"`
 }
