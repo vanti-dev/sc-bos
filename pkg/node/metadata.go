@@ -68,19 +68,9 @@ func (n *Node) PullAllMetadata(ctx context.Context, opts ...resource.ReadOption)
 }
 
 func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
-	undo := NilUndo
-
-	metadataModel, err := n.metadataModel(name)
+	metadataModel, undo, err := n.initMetadataModel(name)
 	if err != nil {
-		if !n.isNotFound(err) {
-			return undo, err
-		}
-		metadataModel, undo = n.announceMetadata(name)
-
-		// send that the metadata was removed if the merge is undone.
-		undo = UndoAll(undo, func() {
-			_, _ = n.allMetadata.Delete(name, resource.WithAllowMissing(true))
-		})
+		return undo, err
 	}
 
 	var newMd *traits.Metadata
@@ -115,6 +105,26 @@ func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
 	return undo, nil
 }
 
+// initMetadataModel gets or creates a named metadata model, storing it in the nodes routers as needed.
+func (n *Node) initMetadataModel(name string) (*metadata.Model, Undo, error) {
+	undo := NilUndo
+	n.mdMu.Lock()
+	defer n.mdMu.Unlock()
+	metadataModel, err := n.metadataModel(name)
+	if err != nil {
+		if !n.isNotFound(err) {
+			return nil, nil, err
+		}
+		metadataModel, undo = n.announceMetadata(name)
+
+		// send that the metadata was removed if the merge is undone.
+		undo = UndoAll(undo, func() {
+			_, _ = n.allMetadata.Delete(name, resource.WithAllowMissing(true))
+		})
+	}
+	return metadataModel, undo, nil
+}
+
 func (n *Node) metadataApiRouter() router.Router {
 	for _, r := range n.routers {
 		if _, ok := r.(*metadata.ApiRouter); ok {
@@ -146,8 +156,10 @@ func (n *Node) isNotFound(err error) bool {
 
 func (n *Node) announceMetadata(name string) (*metadata.Model, Undo) {
 	// auto add metadata support for devices that are asking to add metadata to that device
-	md := &traits.Metadata{Name: name}
+	md := &traits.Metadata{Name: name, Traits: []*traits.TraitMetadata{{Name: string(trait.Metadata)}}}
 	model := metadata.NewModel(resource.WithInitialValue(md))
-	undo := n.Announce(name, HasTrait(trait.Metadata, WithClients(metadata.WrapApi(metadata.NewModelServer(model)))))
+	undo := n.Announce(name, HasTrait(trait.Metadata, WithClients(metadata.WrapApi(metadata.NewModelServer(model)))),
+		// avoid cycles when announcing metadata for the first time
+		HasNoAutoMetadata())
 	return model, undo
 }

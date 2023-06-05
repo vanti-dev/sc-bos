@@ -75,11 +75,12 @@ func AnnounceFeatures(a Announcer, moreFeatures ...Feature) Announcer {
 }
 
 type announcement struct {
-	name     string
-	traits   []traitFeature
-	clients  []interface{}
-	metadata []*traits.Metadata
-	undo     []Undo
+	name           string
+	traits         []traitFeature
+	clients        []interface{}
+	metadata       []*traits.Metadata
+	noAutoMetadata bool
+	undo           []Undo
 }
 
 type traitFeature struct {
@@ -141,6 +142,15 @@ func HasMetadata(md *traits.Metadata) Feature {
 		// then the passed md is used as is instead of cloning which can cause unexpected mutation
 		// from the pov of the caller.
 		a.metadata = append(a.metadata, proto.Clone(md).(*traits.Metadata))
+	})
+}
+
+// HasNoAutoMetadata indicates that announcing the device should not announce automatic metadata for the device.
+// Announcing will normally inspect all traits and announce basic metadata for them, this feature turns that off.
+// HasMetadata will still be applied.
+func HasNoAutoMetadata() Feature {
+	return featureFunc(func(a *announcement) {
+		a.noAutoMetadata = true
 	})
 }
 

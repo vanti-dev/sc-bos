@@ -3,6 +3,7 @@ package node
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -41,6 +42,7 @@ type Node struct {
 	// Populated via Support(Api) explicitly, or Support(Routing) if the router implements server.GrpcApi.
 	apis []server.GrpcApi
 
+	mdMu sync.Mutex // used when announcing metadata to avoid it being created more than once
 	// allMetadata allows users of the node to be notified of any metadata changes via Announce or when
 	// that announcement is undone.
 	allMetadata *resource.Collection // of *traits.Metadata
@@ -106,7 +108,7 @@ func (n *Node) Announce(name string, features ...Feature) Undo {
 	}
 
 	mds := a.metadata
-	if len(a.traits) > 0 {
+	if !a.noAutoMetadata && len(a.traits) > 0 {
 		md := &traits.Metadata{}
 		for _, t := range a.traits {
 			md.Traits = append(md.Traits, &traits.TraitMetadata{Name: string(t.name)})
