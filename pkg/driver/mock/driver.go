@@ -231,7 +231,10 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 		model := meter.NewModel()
 		return gen.WrapMeterApi(meter.NewModelServer(model)), auto.MeterAuto(model)
 	case statuspb.TraitName:
-		return gen.WrapStatusApi(statuspb.NewModelServer(statuspb.NewModel())), nil
+		model := statuspb.NewModel()
+		// set an initial value or Pull methods can hang
+		model.UpdateProblem(&gen.StatusLog_Problem{Name: deviceName, Level: gen.StatusLog_NOMINAL})
+		return gen.WrapStatusApi(statuspb.NewModelServer(model)), nil
 	case udmipb.TraitName:
 		return gen.WrapUdmiService(auto.NewUdmiServer(logger, deviceName)), nil
 	}
