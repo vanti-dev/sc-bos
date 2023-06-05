@@ -2,6 +2,7 @@ package occupancy
 
 import (
 	"context"
+	"time"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -192,6 +193,7 @@ func mergeOccupancy(all []*traits.Occupancy) (*traits.Occupancy, error) {
 		out := &traits.Occupancy{}
 		nilCount := 0
 		occupiedCount := 0
+		var earliestOccupiedTime, latestUnoccupiedTime time.Time
 		for _, occupancy := range all {
 			if occupancy == nil {
 				nilCount++
@@ -200,29 +202,35 @@ func mergeOccupancy(all []*traits.Occupancy) (*traits.Occupancy, error) {
 
 			out.PeopleCount += occupancy.PeopleCount
 
-			// I don't think this logic is correct.
-			// What it does is report the last change from sensors as the last change of the group.
-			// What we want to do is report the last change from the sensor that caused out to change state as the last change of the group.
-			// For example if sensor 1 reports occupied at 2, and sensor 2 reports unoccupied at 3, the state change time should be 2 not 3.
-			if out.StateChangeTime == nil {
-				out.StateChangeTime = occupancy.StateChangeTime
-			} else if occupancy.StateChangeTime != nil {
-				if out.StateChangeTime.AsTime().Before(occupancy.StateChangeTime.AsTime()) {
-					out.StateChangeTime = occupancy.StateChangeTime
-				}
-			}
-
 			switch occupancy.State {
 			case traits.Occupancy_OCCUPIED:
 				occupiedCount++
+
+				// Recording the state change time takes our priority for occupied over unoccupied.
+				// We do this by recording the earliest unoccupied time in out.StateChangeTime, and the earliest occupied time
+				// in earliestOccupiedTime.
+				// If after processing all the records we determine that we should be occupied then we swap out the state change time.
+				if earliestOccupiedTime.IsZero() || earliestOccupiedTime.After(occupancy.StateChangeTime.AsTime()) {
+					earliestOccupiedTime = occupancy.StateChangeTime.AsTime()
+				}
+			default:
+				if latestUnoccupiedTime.IsZero() || latestUnoccupiedTime.Before(occupancy.StateChangeTime.AsTime()) {
+					latestUnoccupiedTime = occupancy.StateChangeTime.AsTime()
+				}
 			}
 		}
 		if occupiedCount > 0 {
 			out.State = traits.Occupancy_OCCUPIED
+			if !earliestOccupiedTime.IsZero() {
+				out.StateChangeTime = timestamppb.New(earliestOccupiedTime)
+			}
 		} else {
 			if len(all) > nilCount {
 				out.State = traits.Occupancy_UNOCCUPIED
 				out.Confidence = float64(nilCount) / float64(len(all))
+				if !latestUnoccupiedTime.IsZero() {
+					out.StateChangeTime = timestamppb.New(latestUnoccupiedTime)
+				}
 			}
 		}
 		return out, nil
