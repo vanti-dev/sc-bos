@@ -2,11 +2,13 @@ package status
 
 import (
 	"context"
+	"sync"
+	"time"
 
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -51,7 +53,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 				case <-ctx.Done():
 					return
 				case <-f.devices.Frozen():
-					names := f.namesThatImplementTrait(ctx, statuspb.TraitName, f.devices.Names()...)
+					names := f.namesThatImplementStatus(ctx, f.devices.Names()...)
 					group := &Group{
 						client: client,
 						names:  names,
@@ -73,25 +75,65 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	return nil
 }
 
-func (f *feature) namesThatImplementTrait(ctx context.Context, tn trait.Name, names ...string) []string {
+func (f *feature) namesThatImplementStatus(ctx context.Context, names ...string) []string {
 	var mdClient traits.MetadataApiClient
 	if err := f.clients.Client(&mdClient); err != nil {
 		f.logger.Warn("cannot discover status devices, metadata api client not supported")
 		return nil
 	}
 
-	var res []string
-	for _, name := range names {
-		md, err := mdClient.GetMetadata(ctx, &traits.GetMetadataRequest{Name: name})
-		if err != nil {
-			continue
-		}
-		for _, tmd := range md.Traits {
-			if tmd.Name == string(tn) {
-				res = append(res, name)
-				break
+	res := make([]string, len(names))
+	var wg sync.WaitGroup
+	wg.Add(len(names))
+	for i, name := range names {
+		i, name := i, name
+		ctx, stop := context.WithTimeout(ctx, 10*time.Second)
+		go func() {
+			defer stop()
+			defer wg.Done()
+			if f.retryNameImplementsStatus(ctx, mdClient, name) {
+				res[i] = name
 			}
+		}()
+	}
+	wg.Wait()
+
+	var noEmpty []string
+	for _, r := range res {
+		if r != "" {
+			noEmpty = append(noEmpty, r)
 		}
 	}
-	return res
+
+	return noEmpty
+}
+
+func (f *feature) retryNameImplementsStatus(ctx context.Context, client traits.MetadataApiClient, name string) bool {
+	delay := 10 * time.Millisecond
+	const inc = 2
+	for {
+		md, err := client.GetMetadata(ctx, &traits.GetMetadataRequest{Name: name, ReadMask: &fieldmaskpb.FieldMask{Paths: []string{"traits"}}})
+		if err != nil {
+			select {
+			case <-ctx.Done():
+				return false
+			default:
+				select {
+				case <-time.After(delay):
+					delay *= inc
+					continue
+				case <-ctx.Done():
+					return false
+				}
+			}
+
+		}
+		for _, tmd := range md.Traits {
+			if tmd.Name == string(statuspb.TraitName) {
+				return true
+			}
+		}
+
+		return false
+	}
 }
