@@ -44,7 +44,16 @@ func (g *Group) GetCurrentStatus(ctx context.Context, request *gen.GetCurrentSta
 
 	if allErrs != nil {
 		if g.logger != nil {
-			g.logger.Warn("some status logs failed", zap.Errors("errors", allErrs))
+			// don't bother logging if all the errors are NotFound or Unimplemented
+			var ignoreCount int
+			for _, err := range allErrs {
+				if c := status.Code(err); c != codes.NotFound && c != codes.Unimplemented {
+					ignoreCount++
+				}
+			}
+			if ignoreCount < len(allErrs) {
+				g.logger.Warn("some status logs failed", zap.Errors("errors", allErrs))
+			}
 		}
 	}
 	return mergeStatusLog(allRes)
@@ -52,7 +61,7 @@ func (g *Group) GetCurrentStatus(ctx context.Context, request *gen.GetCurrentSta
 
 func (g *Group) PullCurrentStatus(request *gen.PullCurrentStatusRequest, server gen.StatusApi_PullCurrentStatusServer) error {
 	if len(g.names) == 0 {
-		return status.Error(codes.FailedPrecondition, "zone has no hvac names")
+		return status.Error(codes.FailedPrecondition, "zone has no status names")
 	}
 
 	type c struct {
@@ -67,7 +76,7 @@ func (g *Group) PullCurrentStatus(request *gen.PullCurrentStatusRequest, server 
 		request := proto.Clone(request).(*gen.PullCurrentStatusRequest)
 		request.Name = name
 		group.Go(func() error {
-			return pull.Changes(ctx, pull.NewFetcher(
+			err := pull.Changes(ctx, pull.NewFetcher(
 				func(ctx context.Context, changes chan<- c) error {
 					stream, err := g.client.PullCurrentStatus(ctx, request)
 					if err != nil {
@@ -93,6 +102,10 @@ func (g *Group) PullCurrentStatus(request *gen.PullCurrentStatusRequest, server 
 				}),
 				changes,
 			)
+			if c := status.Code(err); c == codes.NotFound || c == codes.Unimplemented {
+				return nil // ignore NotFound and Unimplemented
+			}
+			return err
 		})
 	}
 
