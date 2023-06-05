@@ -1,6 +1,10 @@
 <template>
   <side-bar>
     <device-info-card/>
+    <WithStatus v-if="traits['smartcore.bos.Status']" :name="deviceId" v-slot="{resource}">
+      <v-divider class="mt-4 mb-1"/>
+      <status-log-card v-bind="resource"/>
+    </WithStatus>
     <v-divider v-if="traits['smartcore.traits.AirTemperature']" class="mt-4 mb-1"/>
     <air-temperature-card :name="deviceId" v-if="traits['smartcore.traits.AirTemperature']"/>
     <v-divider v-if="traits['smartcore.traits.Light']" class="mt-4 mb-1"/>
@@ -29,6 +33,7 @@ import SideBar from '@/components/SideBar.vue';
 import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
 import WithLighting from '@/routes/devices/components/renderless/WithLighting.vue';
 import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
+import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
 import AirTemperatureCard from '@/routes/devices/components/trait-cards/AirTemperatureCard.vue';
 import DeviceInfoCard from '@/routes/devices/components/trait-cards/DeviceInfoCard.vue';
 import ElectricDemandCard from '@/routes/devices/components/trait-cards/ElectricDemandCard.vue';
@@ -36,6 +41,7 @@ import EmergencyLight from '@/routes/devices/components/trait-cards/EmergencyLig
 import LightCard from '@/routes/devices/components/trait-cards/LightCard.vue';
 import ModeCard from '@/routes/devices/components/trait-cards/ModeCard.vue';
 import OccupancyCard from '@/routes/devices/components/trait-cards/OccupancyCard.vue';
+import StatusLogCard from '@/routes/devices/components/trait-cards/StatusLogCard.vue';
 import UdmiCard from '@/routes/devices/components/trait-cards/UdmiCard.vue';
 
 import {usePageStore} from '@/stores/page';
