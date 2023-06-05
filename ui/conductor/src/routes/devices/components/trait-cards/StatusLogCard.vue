@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="0" tile>
     <v-card-title class="text-title-caps-large neutral--text text--lighten-3">
-      <span>Status: {{ levelStr(level) }}</span>
+      <span>{{ levelStr(level) }}</span>
       <v-spacer/>
       <v-icon right :color="iconColor">{{ iconStr }}</v-icon>
     </v-card-title>
@@ -83,11 +83,11 @@ const showMore = ref(false);
  */
 function levelStr(level) {
   if (level === StatusLog.Level.LEVEL_UNDEFINED) return '';
-  if (level <= StatusLog.Level.NOMINAL) return 'Nominal';
-  if (level <= StatusLog.Level.NOTICE) return 'Notice';
+  if (level <= StatusLog.Level.NOMINAL) return 'Status: Nominal';
+  if (level <= StatusLog.Level.NOTICE) return 'Status: Notice';
   if (level <= StatusLog.Level.REDUCED_FUNCTION) return 'Reduced Function';
   if (level <= StatusLog.Level.NON_FUNCTIONAL) return 'Non-Functional';
-  if (level <= StatusLog.Level.OFFLINE) return 'Offline';
+  if (level <= StatusLog.Level.OFFLINE) return 'Status: Offline';
   return 'Custom Level ' + level;
 }
 
