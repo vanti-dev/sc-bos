@@ -6,7 +6,7 @@
     </div>
     <div class="d-flex flex-column flex-lg-row">
       <div class="flex-grow-1 d-flex flex-column mr-lg-8">
-        <energy-card :zone-name="energyZone"/>
+        <energy-card :zone-name="[energyZone, supplyZone]"/>
       </div>
       <div class="d-flex flex-column" style="min-width: 250px;">
         <occupancy-card :name="occupancyZone"/>
@@ -31,4 +31,7 @@ const energyZone = buildingZone;
 const environmentalZone = buildingZone;
 const externalZone = computed(() => environmentalZone.value + '/outside');
 const occupancyZone = buildingZone;
+
+const supplyZone = computed(() => energyZone.value + '/supply');
+
 </script>
