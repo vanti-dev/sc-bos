@@ -7,5 +7,6 @@ import (
 type Root struct {
 	zone.Config
 
-	Electrics []string `json:"electrics,omitempty"`
+	Electrics      []string            `json:"electrics,omitempty"`
+	ElectricGroups map[string][]string `json:"electricGroups,omitempty"`
 }

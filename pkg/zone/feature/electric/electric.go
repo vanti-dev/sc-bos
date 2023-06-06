@@ -2,6 +2,7 @@ package electric
 
 import (
 	"context"
+	"path"
 
 	"go.uber.org/zap"
 
@@ -34,22 +35,33 @@ type feature struct {
 }
 
 func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
+	if len(cfg.Electrics) == 0 || len(cfg.ElectricGroups) == 0 {
+		return nil
+	}
+	var client traits.ElectricApiClient
+	if err := f.clients.Client(&client); err != nil {
+		return err
+	}
+
 	announce := node.AnnounceContext(ctx, f.announce)
 	logger := f.logger.With(zap.String("zone", cfg.Name))
 
-	if len(cfg.Electrics) > 0 {
-		var client traits.ElectricApiClient
-		if err := f.clients.Client(&client); err != nil {
-			return err
+	announceGroup := func(name string, devices []string) {
+		if len(devices) == 0 {
+			return
 		}
-
 		group := &Group{
 			client: client,
-			names:  cfg.Electrics,
+			names:  devices,
 			logger: logger,
 		}
-		f.devices.Add(cfg.Electrics...)
-		announce.Announce(cfg.Name, node.HasTrait(trait.Electric, node.WithClients(electric.WrapApi(group))))
+		f.devices.Add(devices...)
+		announce.Announce(name, node.HasTrait(trait.Electric, node.WithClients(electric.WrapApi(group))))
+	}
+
+	announceGroup(cfg.Name, cfg.Electrics)
+	for name, group := range cfg.ElectricGroups {
+		announceGroup(path.Join(cfg.Name, name), group)
 	}
 
 	return nil
