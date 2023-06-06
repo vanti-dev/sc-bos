@@ -6,10 +6,6 @@
     </div>
     <div class="d-flex flex-column flex-lg-row">
       <div class="flex-grow-1 d-flex flex-column mr-lg-8">
-        <content-card class="mb-8 d-flex flex-column px-6 pt-md-6">
-          <h4 class="text-h4 order-lg-last pb-4 pb-lg-0 pt-0 pt-lg-4">System Monitor</h4>
-          <building-status/>
-        </content-card>
         <energy-card :zone-name="energyZone"/>
       </div>
       <div class="d-flex flex-column" style="min-width: 250px;">
@@ -21,9 +17,7 @@
 </template>
 
 <script setup>
-import ContentCard from '@/components/ContentCard.vue';
 import {computed} from 'vue';
-import BuildingStatus from '@/clients/ew/BuildingStatus_EW.vue';
 import OccupancyCard from '@/routes/ops/components/OccupancyCard.vue';
 import EnvironmentalCard from '@/routes/ops/components/EnvironmentalCard.vue';
 import EnergyCard from '@/routes/ops/components/EnergyCard.vue';
@@ -37,5 +31,4 @@ const energyZone = buildingZone;
 const environmentalZone = buildingZone;
 const externalZone = computed(() => environmentalZone.value + '/outside');
 const occupancyZone = buildingZone;
-
 </script>
