@@ -1,0 +1,141 @@
+package config
+
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"sort"
+
+	"github.com/vanti-dev/sc-bos/pkg/zone"
+)
+
+type Root struct {
+	zone.Config
+
+	Modes map[string][]Option `json:"modes,omitempty"`
+}
+
+func ReadConfig(in io.Reader) (Root, error) {
+	var root Root
+	if err := json.NewDecoder(in).Decode(&root); err != nil {
+		return Root{}, err
+	}
+	root.Hydrate()
+	return root, nil
+}
+
+func ReadConfigBytes(in []byte) (Root, error) {
+	return ReadConfig(bytes.NewReader(in))
+}
+
+func (r *Root) WriteConfig(out io.Writer) error {
+	r.Unhydrate()
+	return json.NewEncoder(out).Encode(r)
+}
+
+// Hydrate fills defaults with their actual values.
+// Called as part of ReadConfig.
+// r is modified in place, each OptionSource will have its Mode and Value set based on the Modes key or Option.Name.
+func (r *Root) Hydrate() {
+	for mode, options := range r.Modes {
+		for oi, option := range options {
+			for si, source := range option.Sources {
+				if source.Mode == "" {
+					source.Mode = mode
+				}
+				if source.Value == "" {
+					source.Value = option.Name
+				}
+				option.Sources[si] = source
+			}
+			options[oi] = option
+		}
+		r.Modes[mode] = options
+	}
+}
+
+// Unhydrate removes defaults and replaces them with empty strings.
+// Called as part of WriteConfig.
+// r is modified in place, each OptionSource will have its Mode and Value set to "" if it is equal to Modes key or Option.Name.
+func (r *Root) Unhydrate() {
+	for mode, options := range r.Modes {
+		for oi, option := range options {
+			for si, source := range option.Sources {
+				if source.Mode == mode {
+					source.Mode = ""
+				}
+				if source.Value == option.Name {
+					source.Value = ""
+				}
+				option.Sources[si] = source
+			}
+			options[oi] = option
+		}
+		r.Modes[mode] = options
+	}
+}
+
+func (r Root) AllDeviceNames() []string {
+	var dst []string
+	for _, options := range r.Modes {
+		for _, option := range options {
+			for _, source := range option.Sources {
+				for _, device := range source.Devices {
+					i := sort.SearchStrings(dst, device)
+					switch {
+					case i == len(dst):
+						dst = append(dst, device)
+					case dst[i] != device:
+						dst = append(dst, "")
+						copy(dst[i+1:], dst[i:])
+						dst[i] = device
+						// else device is already in dst
+					}
+				}
+			}
+		}
+	}
+	return dst
+}
+
+type Option struct {
+	Name    string
+	Sources []SourceOrString
+}
+
+type OptionSource struct {
+	Devices []string
+	Mode    string // defaults to Root.Modes key
+	Value   string // defaults to Option.Name
+}
+
+// SourceOrString is like OptionSource but for simple cases like `{"devices": ["foo"]}` un/marshals from/to `"foo"`.
+type SourceOrString struct {
+	OptionSource
+}
+
+func (m SourceOrString) MarshalJSON() ([]byte, error) {
+	if m.OptionSource.Mode == "" && m.OptionSource.Value == "" && len(m.OptionSource.Devices) == 1 {
+		return json.Marshal(m.OptionSource.Devices[0])
+	}
+	return json.Marshal(m.OptionSource)
+}
+
+func (m *SourceOrString) UnmarshalJSON(bytes []byte) error {
+	if bytes[0] == '"' {
+		var v string
+		if err := json.Unmarshal(bytes, &v); err != nil {
+			return err
+		}
+		*m = SourceOrString{OptionSource: OptionSource{Devices: []string{v}}}
+		return nil
+	}
+
+	var v OptionSource
+	if err := json.Unmarshal(bytes, &v); err != nil {
+		return err
+	}
+	*m = SourceOrString{OptionSource: v}
+
+	return nil
+}
