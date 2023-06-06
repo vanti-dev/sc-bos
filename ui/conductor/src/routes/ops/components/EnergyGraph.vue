@@ -1,12 +1,10 @@
 <template>
   <div id="energy-graph" :style="{width, height}">
     <apexchart
-        v-if="[...meterData, ...supplyData ].length > 0"
         type="area"
         height="100%"
         :options="options"
         :series="series"/>
-    <v-card-text v-else class="error">No data available</v-card-text>
   </div>
 </template>
 
@@ -27,7 +25,7 @@ const props = defineProps({
   },
   height: {
     type: String,
-    default: '230px'
+    default: '275px'
   },
   span: { // how wide the bars of the histogram are
     type: Number,
@@ -83,6 +81,7 @@ const supplyHistoryRecords = ref(/** @type {MeterReadingRecord.AsObject[]} */ []
 
 const meterPollHandle = ref(0);
 const supplyPollHandle = ref(0);
+const message = ref('');
 
 /**
  *
@@ -90,12 +89,14 @@ const supplyPollHandle = ref(0);
  * @param {string} type
  */
 async function pollReadings(req, type) {
-  const all = [];
+  const generated = [];
+  const supplied = [];
   try {
     while (true) {
       const page = await listMeterReadingHistory(req, {});
 
-      all.push(...page.meterReadingRecordsList);
+      if (type === 'supply') supplied.push(...page.meterReadingRecordsList);
+      else generated.push(...page.meterReadingRecordsList);
       req.pageToken = page.nextPageToken;
       if (!req.pageToken) {
         break;
@@ -106,12 +107,14 @@ async function pollReadings(req, type) {
   }
 
   if (type === 'supply') {
-    supplyHistoryRecords.value = all;
+    supplyHistoryRecords.value = supplied;
     supplyPollHandle.value = setTimeout(pollReadings, pollDelay.value);
   } else {
-    meterHistoryRecords.value = all;
+    meterHistoryRecords.value = generated;
     meterPollHandle.value = setTimeout(pollReadings, pollDelay.value);
   }
+
+  message.value = 'No data available';
 }
 
 onUnmounted(() => {
@@ -122,21 +125,24 @@ onUnmounted(() => {
 watch(() => baseRequest.value, (baseRequest) => {
   baseRequest.forEach(request => {
     // close existing stream if present
-    clearTimeout(meterPollHandle.value);
+    message.value = 'Pulling data';
     meterHistoryRecords.value = [];
+    clearTimeout(meterPollHandle.value);
 
-    clearTimeout(supplyPollHandle.value);
     supplyHistoryRecords.value = [];
+    clearTimeout(supplyPollHandle.value);
 
     // create new stream
     if (request) {
       if (request.name.includes('supply')) pollReadings(request, 'supply');
-      else pollReadings(request, '');
+      else pollReadings(request);
     }
   });
-}, {immediate: true});
+}, {immediate: true, deep: true, flush: 'sync'});
 
-// generated energy
+//
+//
+// Generated energy
 const meterData = computed(() => {
   const span = props.span;
   const dst = [];
@@ -194,6 +200,8 @@ const meterData = computed(() => {
   return dst;
 });
 
+//
+//
 // PV energy
 const supplyData = computed(() => {
   const span = props.span;
@@ -254,22 +262,25 @@ const supplyData = computed(() => {
 
 const options = {
   chart: {
+    animations: {
+      enabled: true,
+      dynamicAnimation: {
+        enabled: true,
+        speed: 100
+      }
+    },
     id: 'energy-chart',
-    toolbar: {show: false},
-    foreColor: '#fff'
+    foreColor: '#fff',
+    toolbar: {
+      show: false
+    },
+    zoom: {
+      enabled: false
+    }
   },
-  xaxis: {
-    type: 'datetime'
-  },
-  yaxis: {
-    decimalsInFloat: 0
-  },
-  dataLabels: {enabled: false},
   colors: ['var(--v-primary-base)', 'orange'],
-  stroke: {
-    width: 2,
-    curve: 'smooth',
-    colors: ['var(--v-primary-base)', 'orange']
+  dataLabels: {
+    enabled: false
   },
   fill: {
     colors: ['var(--v-primary-base)', 'transparent'],
@@ -288,32 +299,67 @@ const options = {
       }
     },
     padding: {
-      top: 0,
-      bottom: 25
+      top: 0
+      // bottom: 25
     }
   },
   legend: {
-    horizontalAlign: 'left',
+    horizontalAlign: 'right',
+    itemMargin: {
+      horizontal: 10 // spacing
+    },
+    offsetY: -5,
     onItemClick: {
       toggleDataSeries: true
     },
     onItemHover: {
       highlightDataSeries: true
+    },
+    position: 'top'
+  },
+  noData: {
+    text: message.value,
+    align: 'center',
+    verticalAlign: 'middle',
+    offsetX: 0,
+    offsetY: 0,
+    style: {
+      color: message.value.includes('Pulling') ? 'white' : 'red',
+      fontSize: '18px'
     }
+  },
+  stroke: {
+    width: 2,
+    curve: 'smooth',
+    colors: ['var(--v-primary-base)', 'orange']
   },
   tooltip: {
     theme: 'dark'
+  },
+  xaxis: {
+    labels: {
+      datetimeFormatter: {
+        year: 'yyyy',
+        month: 'MMM \'yy',
+        day: 'dd MMM',
+        hour: 'HH:mm'
+      }
+    },
+    type: 'datetime'
+  },
+  yaxis: {
+    decimalsInFloat: 0
   }
 };
 
 const series = computed(() => {
   return [{
     name: 'Metered',
-    data: Object.values(meterData.value)
+    data: meterData.value
   },
   {
     name: 'Generated',
-    data: Object.values(supplyData.value)
+    data: supplyData.value
   }];
 });
 
