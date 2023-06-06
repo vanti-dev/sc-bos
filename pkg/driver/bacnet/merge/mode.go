@@ -16,6 +16,7 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	genmodepb "github.com/vanti-dev/sc-bos/pkg/gentrait/modepb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
@@ -62,7 +63,7 @@ type mode struct {
 
 	model *modepb.Model
 	*modepb.ModelServer
-	infoServer *modeInfoServer
+	infoServer *genmodepb.InfoServer
 	config     modeConfig
 	pollTask   *task.Intermittent
 }
@@ -216,7 +217,7 @@ responses:
 	return t.model.UpdateModeValues(dst)
 }
 
-func newModeInfoServer(cfg modeConfig) *modeInfoServer {
+func newModeInfoServer(cfg modeConfig) *genmodepb.InfoServer {
 	modes := &traits.Modes{}
 	for name, point := range cfg.Modes {
 		mm := &traits.Modes_Mode{
@@ -229,18 +230,9 @@ func newModeInfoServer(cfg modeConfig) *modeInfoServer {
 		}
 		modes.Modes = append(modes.Modes, mm)
 	}
-	return &modeInfoServer{
+	return &genmodepb.InfoServer{
 		Modes: &traits.ModesSupport{
 			AvailableModes: modes,
 		},
 	}
-}
-
-type modeInfoServer struct {
-	traits.UnimplementedModeInfoServer
-	Modes *traits.ModesSupport
-}
-
-func (i *modeInfoServer) DescribeModes(context.Context, *traits.DescribeModesRequest) (*traits.ModesSupport, error) {
-	return i.Modes, nil
 }
