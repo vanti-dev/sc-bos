@@ -50,10 +50,10 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 
 		group := &Group{
 			client: client,
-			names:  cfg.Meters,
+			names:  devices,
 			logger: logger,
 		}
-		f.devices.Add(cfg.Meters...)
+		f.devices.Add(devices...)
 		announce.Announce(name, node.HasTrait(meter.TraitName, node.WithClients(gen.WrapMeterApi(group))))
 	}
 
