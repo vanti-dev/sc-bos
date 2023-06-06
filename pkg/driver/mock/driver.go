@@ -171,7 +171,8 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 		// todo: return []any{count.WrapApi(count.NewModelServer(count.NewModel())), nil
 		return nil, nil
 	case trait.Electric:
-		return []any{electric.WrapApi(electric.NewModelServer(electric.NewModel(clock.Real())))}, nil
+		model := electric.NewModel(clock.Real())
+		return []any{electric.WrapApi(electric.NewModelServer(model))}, auto.Electric(model)
 	case trait.Emergency:
 		// todo: return []any{emergency.WrapApi(emergency.NewModelServer(emergency.NewModel()))}, nil
 		return nil, nil
