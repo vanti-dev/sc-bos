@@ -10,6 +10,7 @@ import {Occupancy, PullOccupancyRequest} from '@smart-core-os/sc-api-grpc-web/tr
  */
 export function pullOccupancy(name, resource) {
   pullResource('OccupancySensor.Occupancy', resource, endpoint => {
+    // console.log(name);
     const api = new OccupancySensorApiPromiseClient(endpoint, null, clientOptions());
     const stream = api.pullOccupancy(new PullOccupancyRequest().setName(name));
     stream.on('data', msg => {

@@ -2,6 +2,7 @@ package occupancy
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"go.uber.org/multierr"
@@ -64,6 +65,9 @@ func (g *Group) PullOccupancy(request *traits.PullOccupancyRequest, server trait
 	if len(g.names) == 0 && len(g.clients) == 0 {
 		return status.Error(codes.FailedPrecondition, "zone has no occupancy sensors")
 	}
+
+	log.Printf("PullOccupancy(%v)", request.Name)
+	defer log.Printf("PullOccupancy(%v) done", request.Name)
 
 	type c struct {
 		index int
