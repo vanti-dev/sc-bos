@@ -3,6 +3,8 @@ package pull
 import (
 	"context"
 	"errors"
+	"math"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -15,8 +17,47 @@ func Changes[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, op
 	conf := calcOpts(opts...)
 
 	poll := false
+
+	var mu sync.Mutex
 	var delay time.Duration
 	var errCount int
+	resetErr := func() int {
+		mu.Lock()
+		defer mu.Unlock()
+		old := errCount
+		errCount = 0
+		delay = 0
+		return old
+	}
+	incErr := func() int {
+		mu.Lock()
+		defer mu.Unlock()
+		errCount++
+		return errCount
+	}
+	incDelay := func() {
+		mu.Lock()
+		defer mu.Unlock()
+		if delay == 0 {
+			delay = conf.fallbackInitialDelay
+		} else {
+			delay = time.Duration(float64(delay) * 1.2)
+			if delay > conf.fallbackMaxDelay {
+				delay = conf.fallbackMaxDelay
+			}
+		}
+	}
+
+	// These are used to track successful pulls.
+	// The Pull method itself blocks until error so we have to track separately for success,
+	// mostly for peace of mind and logging.
+	var pullDuration time.Duration
+	const successfulPullMultiplier = 4
+	pullSuccessTimer := time.AfterFunc(math.MaxInt64, func() {
+		attempts := resetErr()
+		conf.logger.Debug("pulls are now succeeding", zap.Int("attempts", attempts))
+	})
+	pullSuccessTimer.Stop() // avoid the timer actually running, the above was just to avoid nil timers
 
 	for {
 		select {
@@ -28,21 +69,27 @@ func Changes[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, op
 		if poll {
 			return runPoll(ctx, poller, changes, conf)
 		} else {
+			if errCount > 0 {
+				pullSuccessTimer.Reset(pullDuration * successfulPullMultiplier)
+			}
+
+			t0 := time.Now()
 			err := poller.Pull(ctx, changes)
+			pullDuration = time.Since(t0)
+
 			if err != nil {
+				pullSuccessTimer.Stop()
 				if shouldReturn(err) {
 					return err
 				}
 				if fallBackToPolling(err) {
 					conf.logger.Debug("pull not supported, polling instead")
 					poll = true
-					delay = 0
-					errCount = 0
+					resetErr()
 					continue // skip the wait
 				}
 				if err != nil {
-					errCount++
-					if errCount == 5 {
+					if incErr() == 5 {
 						conf.logger.Warn("updates are failing, will keep retrying", zap.Error(err))
 					}
 				}
@@ -50,19 +97,11 @@ func Changes[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, op
 				if errCount > 0 {
 					conf.logger.Debug("updates are now succeeding")
 				}
-				errCount = 0
-				delay = 0
+				resetErr()
 			}
 		}
 
-		if delay == 0 {
-			delay = conf.fallbackInitialDelay
-		} else {
-			delay = time.Duration(float64(delay) * 1.2)
-			if delay > conf.fallbackMaxDelay {
-				delay = conf.fallbackMaxDelay
-			}
-		}
+		incDelay()
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
