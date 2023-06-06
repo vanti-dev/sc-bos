@@ -108,8 +108,6 @@ func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
 // initMetadataModel gets or creates a named metadata model, storing it in the nodes routers as needed.
 func (n *Node) initMetadataModel(name string) (*metadata.Model, Undo, error) {
 	undo := NilUndo
-	n.mdMu.Lock()
-	defer n.mdMu.Unlock()
 	metadataModel, err := n.metadataModel(name)
 	if err != nil {
 		if !n.isNotFound(err) {
@@ -158,7 +156,7 @@ func (n *Node) announceMetadata(name string) (*metadata.Model, Undo) {
 	// auto add metadata support for devices that are asking to add metadata to that device
 	md := &traits.Metadata{Name: name, Traits: []*traits.TraitMetadata{{Name: string(trait.Metadata)}}}
 	model := metadata.NewModel(resource.WithInitialValue(md))
-	undo := n.Announce(name, HasTrait(trait.Metadata, WithClients(metadata.WrapApi(metadata.NewModelServer(model)))),
+	undo := n.announceLocked(name, HasTrait(trait.Metadata, WithClients(metadata.WrapApi(metadata.NewModelServer(model)))),
 		// avoid cycles when announcing metadata for the first time
 		HasNoAutoMetadata())
 	return model, undo

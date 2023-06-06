@@ -27,6 +27,7 @@ import (
 // Calling Support after Register will not have any effect on the served apis.
 type Node struct {
 	name string
+	mu   sync.Mutex // protects all fields below, typically Announce, Support, and methods that rely on that data
 
 	// children keeps track of all the names that have been announced to this node.
 	// Lazy, initialised when addChildTrait via Announce(HasTrait) or Register are called.
@@ -42,7 +43,6 @@ type Node struct {
 	// Populated via Support(Api) explicitly, or Support(Routing) if the router implements server.GrpcApi.
 	apis []server.GrpcApi
 
-	mdMu sync.Mutex // used when announcing metadata to avoid it being created more than once
 	// allMetadata allows users of the node to be notified of any metadata changes via Announce or when
 	// that announcement is undone.
 	allMetadata *resource.Collection // of *traits.Metadata
@@ -66,6 +66,8 @@ func (n *Node) Name() string {
 
 // Register implements server.GrpcApi and registers all supported routers with s.
 func (n *Node) Register(s *grpc.Server) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
 	n.parent() // force the parent api to be initialised
 	for _, api := range n.apis {
 		api.Register(s)
@@ -81,6 +83,12 @@ func (n *Node) Register(s *grpc.Server) {
 // The undo process is not perfect but best effort.
 // Hooks and callbacks may have been executed that have side effects that are not undone.
 func (n *Node) Announce(name string, features ...Feature) Undo {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	return n.announceLocked(name, features...)
+}
+
+func (n *Node) announceLocked(name string, features ...Feature) Undo {
 	a := &announcement{name: name}
 	for _, feature := range features {
 		feature.apply(a)
@@ -99,11 +107,13 @@ func (n *Node) Announce(name string, features ...Feature) Undo {
 			log.Debugf("%v no longer implements %v", name, t.name)
 		})
 
-		if !t.noAddChildTrait && name != n.name {
-			undo = append(undo, n.addChildTrait(a.name, t.name))
-		}
+		// adding clients must happen before addChildTrait because addChildTrait can call announce and might look
+		// for the metadata client in order to add the Parent trait to it.
 		for _, client := range t.clients {
 			undo = append(undo, n.addRoute(a.name, client))
+		}
+		if !t.noAddChildTrait && name != n.name {
+			undo = append(undo, n.addChildTrait(a.name, t.name))
 		}
 	}
 
@@ -131,6 +141,8 @@ func (n *Node) Announce(name string, features ...Feature) Undo {
 
 // Support adds new supported functions to this node.
 func (n *Node) Support(functions ...Function) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
 	for _, function := range functions {
 		function.apply(n)
 	}
@@ -192,7 +204,7 @@ func (n *Node) parent() *parent.Model {
 		// add this model as a device
 		n.children = parent.NewModel()
 		client := parent.WrapApi(parent.NewModelServer(n.children))
-		n.Announce(n.name, HasTrait(trait.Parent, WithClients(client)))
+		n.announceLocked(n.name, HasTrait(trait.Parent, WithClients(client)))
 	}
 	return n.children
 }
