@@ -32,6 +32,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/modepb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -106,11 +107,11 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 			}
 
 			if _, ok := d.known[dt]; !ok {
-				client, slc := newMockClient(dt.trait, device.Name, d.logger)
-				if client == nil {
+				clients, slc := newMockClient(dt.trait, device.Name, d.logger)
+				if len(clients) == 0 {
 					d.logger.Sugar().Warnf("Cannot create mock client %s::%s", dt.name, dt.trait)
 				} else {
-					traitOpts = append(traitOpts, node.WithClients(client))
+					traitOpts = append(traitOpts, node.WithClients(clients...))
 
 					// start any mock trait automations - e.g. updating occupancy sensors
 					if slc != nil {
@@ -142,10 +143,10 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 	return nil
 }
 
-func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) (any, service.Lifecycle) {
+func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) ([]any, service.Lifecycle) {
 	switch traitName {
 	case trait.AirQualitySensor:
-		return airqualitysensor.WrapApi(airqualitysensor.NewModelServer(airqualitysensor.NewModel(&traits.AirQuality{}))), nil
+		return []any{airqualitysensor.WrapApi(airqualitysensor.NewModelServer(airqualitysensor.NewModel(&traits.AirQuality{})))}, nil
 	case trait.AirTemperature:
 		h := rand.Float32()
 		t := 15 + (rand.Float64() * 10)
@@ -157,86 +158,89 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 				TemperatureSetPoint: &types.Temperature{ValueCelsius: t},
 			},
 		}
-		return airtemperature.WrapApi(airtemperature.NewModelServer(airtemperature.NewModel(&model))), nil
+		return []any{airtemperature.WrapApi(airtemperature.NewModelServer(airtemperature.NewModel(&model)))}, nil
 	case trait.Booking:
-		return booking.WrapApi(booking.NewModelServer(booking.NewModel())), nil
+		return []any{booking.WrapApi(booking.NewModelServer(booking.NewModel()))}, nil
 	case trait.BrightnessSensor:
-		// todo: return brightnesssensor.WrapApi(brightnesssensor.NewModelServer(brightnesssensor.NewModel())), nil
+		// todo: return []any{brightnesssensor.WrapApi(brightnesssensor.NewModelServer(brightnesssensor.NewModel()))}, nil
 		return nil, nil
 	case trait.Channel:
-		// todo: return channel.WrapApi(channel.NewModelServer(channel.NewModel())), nil
+		// todo: return []any{channel.WrapApi(channel.NewModelServer(channel.NewModel())), nil
 		return nil, nil
 	case trait.Count:
-		// todo: return count.WrapApi(count.NewModelServer(count.NewModel())), nil
+		// todo: return []any{count.WrapApi(count.NewModelServer(count.NewModel())), nil
 		return nil, nil
 	case trait.Electric:
-		return electric.WrapApi(electric.NewModelServer(electric.NewModel(clock.Real()))), nil
+		return []any{electric.WrapApi(electric.NewModelServer(electric.NewModel(clock.Real())))}, nil
 	case trait.Emergency:
-		// todo: return emergency.WrapApi(emergency.NewModelServer(emergency.NewModel())), nil
+		// todo: return []any{emergency.WrapApi(emergency.NewModelServer(emergency.NewModel()))}, nil
 		return nil, nil
 	case trait.EnergyStorage:
-		return energystorage.WrapApi(energystorage.NewModelServer(energystorage.NewModel())), nil
+		return []any{energystorage.WrapApi(energystorage.NewModelServer(energystorage.NewModel()))}, nil
 	case trait.EnterLeaveSensor:
-		return enterleavesensor.WrapApi(enterleavesensor.NewModelServer(enterleavesensor.NewModel())), nil
+		return []any{enterleavesensor.WrapApi(enterleavesensor.NewModelServer(enterleavesensor.NewModel()))}, nil
 	case trait.ExtendRetract:
-		// todo: return extendretract.WrapApi(extendretract.NewModelServer(extendretract.NewModel())), nil
+		// todo: return []any{extendretract.WrapApi(extendretract.NewModelServer(extendretract.NewModel()))}, nil
 		return nil, nil
 	case trait.FanSpeed:
-		return fanspeed.WrapApi(fanspeed.NewModelServer(fanspeed.NewModel())), nil
+		return []any{fanspeed.WrapApi(fanspeed.NewModelServer(fanspeed.NewModel()))}, nil
 	case trait.Hail:
-		return hail.WrapApi(hail.NewModelServer(hail.NewModel())), nil
+		return []any{hail.WrapApi(hail.NewModelServer(hail.NewModel()))}, nil
 	case trait.InputSelect:
-		// todo: return inputselect.WrapApi(inputselect.NewModelServer(inputselect.NewModel())), nil
+		// todo: return []any{inputselect.WrapApi(inputselect.NewModelServer(inputselect.NewModel()))}, nil
 		return nil, nil
 	case trait.Light:
-		// todo: return light.WrapApi(light.NewModelServer(light.NewModel())), nil
-		return light.WrapApi(light.NewMemoryDevice()), nil
+		// todo: return []any{light.WrapApi(light.NewModelServer(light.NewModel())), nil
+		return []any{light.WrapApi(light.NewMemoryDevice())}, nil
 	case trait.LockUnlock:
-		// todo: return lockunlock.WrapApi(lockunlock.NewModelServer(lockunlock.NewModel())), nil
+		// todo: return []any{lockunlock.WrapApi(lockunlock.NewModelServer(lockunlock.NewModel()))}, nil
 		return nil, nil
 	case trait.Metadata:
-		return metadata.WrapApi(metadata.NewModelServer(metadata.NewModel())), nil
+		return []any{metadata.WrapApi(metadata.NewModelServer(metadata.NewModel()))}, nil
 	case trait.Microphone:
-		// todo: return microphone.WrapApi(microphone.NewModelServer(microphone.NewModel())), nil
+		// todo: return []any{microphone.WrapApi(microphone.NewModelServer(microphone.NewModel()))}, nil
 		return nil, nil
 	case trait.Mode:
-		return mode.WrapApi(mode.NewModelServer(mode.NewModel())), nil
+		model := mode.NewModel()
+		modes := model.Modes()
+		infoServer := &modepb.InfoServer{Modes: &traits.ModesSupport{AvailableModes: modes}}
+		return []any{mode.WrapApi(mode.NewModelServer(model)), mode.WrapInfo(infoServer)}, nil
 	case trait.MotionSensor:
-		// todo: return motionsensor.WrapApi(motionsensor.NewModelServer(motionsensor.NewModel())), nil
+		// todo: return []any{motionsensor.WrapApi(motionsensor.NewModelServer(motionsensor.NewModel()))}, nil
 		return nil, nil
 	case trait.OccupancySensor:
 		model := occupancysensor.NewModel(&traits.Occupancy{})
-		return occupancysensor.WrapApi(occupancysensor.NewModelServer(model)), auto.OccupancySensorAuto(model)
+		return []any{occupancysensor.WrapApi(occupancysensor.NewModelServer(model))}, auto.OccupancySensorAuto(model)
 	case trait.OnOff:
-		return onoff.WrapApi(onoff.NewModelServer(onoff.NewModel(traits.OnOff_STATE_UNSPECIFIED))), nil
+		return []any{onoff.WrapApi(onoff.NewModelServer(onoff.NewModel(traits.OnOff_STATE_UNSPECIFIED)))}, nil
 	case trait.OpenClose:
-		// todo: return openclose.WrapApi(openclose.NewModelServer(openclose.NewModel())), nil
+		// todo: return []any{openclose.WrapApi(openclose.NewModelServer(openclose.NewModel()))}, nil
 		return nil, nil
 	case trait.Parent:
-		return parent.WrapApi(parent.NewModelServer(parent.NewModel())), nil
+		return []any{parent.WrapApi(parent.NewModelServer(parent.NewModel()))}, nil
 	case trait.Publication:
-		return publication.WrapApi(publication.NewModelServer(publication.NewModel())), nil
+		return []any{publication.WrapApi(publication.NewModelServer(publication.NewModel()))}, nil
 	case trait.Ptz:
-		// todo: return ptz.WrapApi(ptz.NewModelServer(ptz.NewModel())), nil
+		// todo: return []any{ptz.WrapApi(ptz.NewModelServer(ptz.NewModel()))}, nil
 		return nil, nil
 	case trait.Speaker:
-		// todo: return speaker.WrapApi(speaker.NewModelServer(speaker.NewModel())), nil
+		// todo: return []any{speaker.WrapApi(speaker.NewModelServer(speaker.NewModel())), nil
 		return nil, nil
 	case trait.Vending:
-		return vending.WrapApi(vending.NewModelServer(vending.NewModel())), nil
+		return []any{vending.WrapApi(vending.NewModelServer(vending.NewModel()))}, nil
 
 	case button.TraitName:
-		return gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED))), nil
+		return []any{gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED)))}, nil
 	case meter.TraitName:
 		model := meter.NewModel()
-		return gen.WrapMeterApi(meter.NewModelServer(model)), auto.MeterAuto(model)
+		return []any{gen.WrapMeterApi(meter.NewModelServer(model))}, auto.MeterAuto(model)
 	case statuspb.TraitName:
 		model := statuspb.NewModel()
 		// set an initial value or Pull methods can hang
 		model.UpdateProblem(&gen.StatusLog_Problem{Name: deviceName, Level: gen.StatusLog_NOMINAL})
-		return gen.WrapStatusApi(statuspb.NewModelServer(model)), nil
+		return []any{gen.WrapStatusApi(statuspb.NewModelServer(model))}, nil
 	case udmipb.TraitName:
-		return gen.WrapUdmiService(auto.NewUdmiServer(logger, deviceName)), nil
+		return []any{gen.WrapUdmiService(auto.NewUdmiServer(logger, deviceName))}, nil
 	}
 
 	return nil, nil
