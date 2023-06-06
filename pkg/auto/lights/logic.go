@@ -23,9 +23,13 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 	switchOn, switchOff, mode, rerunAfter := decideAction(now, readState, writeState, logger)
 
 	// ActiveMode is the mode which was most recently asserted on the lights
-	// this is used in the logic next time to detect when a mode has changed
-	if switchOn || switchOff {
+	// this is used in the logic next time to detect when a mode has changed.
+	// We also track when the auto is dis/enabled so we can reassert the light levels on change
+	if switchOn || switchOff || mode.DisableAuto {
 		writeState.ActiveMode = mode.Name
+	}
+	if mode.DisableAuto {
+		return rerunAfter, nil
 	}
 
 	if switchOn {
@@ -50,6 +54,9 @@ func decideAction(now time.Time, readState *ReadState, writeState *WriteState, l
 	// Work out what we need to do to apply the given writeState and make those changes for as long as ctx is valid
 	mode, rerunAfter = activeMode(now, readState)
 	logger = logger.With(zap.String("mode", mode.Name))
+	if mode.DisableAuto {
+		return false, false, mode, 0
+	}
 
 	// determine if we had already asserted a mode, and then changed to a different one
 	// if no brightness was asserted yet, then we don't set modeChanged as that would force a reassertion which we don't want

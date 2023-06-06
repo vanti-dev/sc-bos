@@ -120,7 +120,8 @@ type Mode struct {
 }
 
 type ModeOption struct {
-	Name string `json:"name,omitempty"`
+	Name        string `json:"name,omitempty"`
+	DisableAuto bool   `json:"disableAuto,omitempty"` // causes the automation to no do anything
 	Mode
 	Start *Schedule `json:"start,omitempty"`
 	End   *Schedule `json:"end,omitempty"`

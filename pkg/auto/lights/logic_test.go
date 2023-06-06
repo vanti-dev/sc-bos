@@ -876,6 +876,90 @@ func Test_processState(t *testing.T) {
 		})
 		actions.assertNoMoreCalls()
 	})
+	t.Run("do nothing when mode disables auto", func(t *testing.T) {
+		logger, _ := zap.NewDevelopment()
+		startTime := time.Unix(0, 0).In(time.UTC)
+		readState := NewReadState(now)
+
+		now := startTime.Add(time.Minute)
+		readState.Config.Now = func() time.Time { return now }
+		readState.Config.Modes = []config.ModeOption{
+			{
+				Name: "a",
+				Mode: config.Mode{
+					UnoccupiedOffDelay: jsontypes.Duration{Duration: time.Hour},
+					OnLevelPercent:     asPtr[float32](33),
+				},
+			},
+			{
+				Name: "b",
+				Mode: config.Mode{
+					UnoccupiedOffDelay: jsontypes.Duration{Duration: time.Hour},
+					OnLevelPercent:     asPtr[float32](66),
+				},
+				DisableAuto: true,
+			},
+		}
+		readState.Modes = &traits.ModeValues{
+			Values: map[string]string{
+				ModeValueKey: "a",
+			},
+		}
+		readState.Config.ToggleButtons = []string{"button01"}
+		readState.Config.Lights = []string{"light01"}
+		readState.Buttons = map[string]*gen.ButtonState{
+			"button01": {
+				State:           gen.ButtonState_UNPRESSED,
+				StateChangeTime: timestamppb.New(now),
+				MostRecentGesture: &gen.ButtonState_Gesture{
+					Id:        "foo",
+					Kind:      gen.ButtonState_Gesture_CLICK,
+					StartTime: timestamppb.New(now),
+					EndTime:   timestamppb.New(now),
+				},
+			},
+		}
+		writeState := NewWriteState(startTime)
+
+		actions := newTestActions(t)
+
+		// check that we use mode a
+		_, err := processState(context.Background(), readState, writeState, actions, logger)
+		if err != nil {
+			t.Fatalf("unexpected error %v", err)
+		}
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: 33,
+			},
+		})
+
+		// switch to mode b
+		now = now.Add(time.Minute)
+		readState.Modes.Values[ModeValueKey] = "b"
+		// check that we use mode b
+		_, err = processState(context.Background(), readState, writeState, actions, logger)
+		if err != nil {
+			t.Fatalf("unexpected error %v", err)
+		}
+		actions.assertNoMoreCalls()
+
+		// switch back to mode a
+		now = now.Add(time.Minute)
+		readState.Modes.Values[ModeValueKey] = "a"
+		_, err = processState(context.Background(), readState, writeState, actions, logger)
+		if err != nil {
+			t.Fatalf("unexpected error %v", err)
+		}
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name: "light01",
+			Brightness: &traits.Brightness{
+				LevelPercent: 33,
+			},
+		})
+		actions.assertNoMoreCalls()
+	})
 }
 
 func assertNoErrAndTtl(t *testing.T, ttl time.Duration, err error, targetTtl time.Duration) {
