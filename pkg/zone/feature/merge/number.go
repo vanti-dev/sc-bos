@@ -53,3 +53,10 @@ func Sum[N Number, E any](items []E, f func(E) (N, bool)) (N, bool) {
 	}
 	return res, c > 0
 }
+
+func Ptr[T any](v T, ok bool) *T {
+	if ok {
+		return &v
+	}
+	return nil
+}

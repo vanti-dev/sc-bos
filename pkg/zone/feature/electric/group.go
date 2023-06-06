@@ -174,6 +174,24 @@ func mergeDemand(all []*traits.ElectricDemand) (*traits.ElectricDemand, error) {
 				break
 			}
 		}
+		out.RealPower = merge.Ptr(merge.Sum(all, func(e *traits.ElectricDemand) (float32, bool) {
+			if e == nil || e.RealPower == nil {
+				return 0, false
+			}
+			return *e.RealPower, true
+		}))
+		out.ApparentPower = merge.Ptr(merge.Sum(all, func(e *traits.ElectricDemand) (float32, bool) {
+			if e == nil || e.ApparentPower == nil {
+				return 0, false
+			}
+			return *e.ApparentPower, true
+		}))
+		out.ReactivePower = merge.Ptr(merge.Sum(all, func(e *traits.ElectricDemand) (float32, bool) {
+			if e == nil || e.ReactivePower == nil {
+				return 0, false
+			}
+			return *e.ReactivePower, true
+		}))
 		return out, nil
 	}
 }
