@@ -6,7 +6,7 @@
     </div>
     <div class="d-flex flex-column flex-lg-row">
       <div class="flex-grow-1 d-flex flex-column mr-lg-8">
-        <energy-card :zone-name="[energyZone, supplyZone]"/>
+        <energy-card :generated="supplyZone" :metered="energyZone"/>
       </div>
       <div class="d-flex flex-column" style="min-width: 250px;">
         <occupancy-card :name="occupancyZone"/>

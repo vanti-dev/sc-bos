@@ -11,12 +11,15 @@
 <script setup>
 import {timestampToDate} from '@/api/convpb';
 import {listMeterReadingHistory} from '@/api/sc/traits/meter-history';
-import {useErrorStore} from '@/components/ui-error/error';
-import {computed, onMounted, onUnmounted, ref, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
-  name: {
-    type: [Array, String],
+  metered: {
+    type: String,
+    default: 'building'
+  },
+  generated: {
+    type: String,
     default: ''
   },
   width: {
@@ -48,39 +51,101 @@ onUnmounted(() => {
 // Return an array of object with request details
 // This loops through the props.name array if its array
 // or only creates an object if its a string
-const baseRequest = computed(() => {
-  if (!props.name || !props.name.length) return undefined;
+const baseRequest = (name) => {
+  if (!name) return undefined;
 
   const period = {
     startTime: new Date(now.value - 24 * 60 * 60 * 1000)
   };
-  const req = [];
 
-  if (Array.isArray(props.name)) {
-    props.name.forEach(name => {
-      req.push({
-        name,
-        period,
-        pageSize: 1000,
-        pageToken: ''
+  return {
+    name,
+    period,
+    pageSize: 1000,
+    pageToken: ''
+  };
+};
+
+const data = (span, records) => {
+  const dst = [];
+
+  if (records.length > 0) {
+    // create a list of data points that show the change in value since the previous reading
+    /** @type {MeterReadingRecord.AsObject} */
+    let lastReading = null;
+    /** @type {MeterReadingRecord.AsObject} */
+    let readingCur = null;
+
+    for (const record of records) {
+      if (!lastReading) {
+        lastReading = record;
+        readingCur = record;
+        continue;
+      }
+
+      // special case if the meter was reset
+      if (readingCur.meterReading.usage > record.meterReading.usage) {
+        const diff = readingCur.meterReading.usage - lastReading.meterReading.usage;
+        dst.push({
+          x: new Date(timestampToDate(readingCur.recordTime)),
+          y: diff
+        });
+        lastReading = readingCur = record;
+        continue;
+      }
+      readingCur = record;
+      const t0 = timestampToDate(lastReading.recordTime);
+      const t1 = timestampToDate(record.recordTime);
+      const d = t1 - t0;
+      if (d > span) {
+        const segmentCount = Math.floor(d / span);
+        const diff = (record.meterReading.usage - lastReading.meterReading.usage) / segmentCount;
+        lastReading = record;
+        dst.push({
+          x: new Date(t1),
+          y: diff
+        });
+      }
+    }
+    // process the last reading, if we haven't already
+    const finalReading = records[records.length - 1];
+    const t0 = timestampToDate(lastReading.recordTime);
+    const t1 = timestampToDate(finalReading.recordTime);
+    if (t0.getTime() !== t1.getTime()) {
+      const diff = finalReading.meterReading.usage - lastReading.meterReading.usage;
+      dst.push({
+        x: new Date(t1),
+        y: diff
       });
-    });
-  } else {
-    req.push({
-      name: props.name,
-      period,
-      pageSize: 1000,
-      pageToken: ''
-    });
+    }
   }
+  return dst;
+};
 
-  return req;
+
+const seriesMap = reactive({
+  metered: {
+    baseRequest: computed(() => {
+      return baseRequest(props.metered);
+    }),
+    data: computed(() => {
+      return data(props.span, seriesMap.metered.records);
+    }),
+    handle: 0,
+    records: /** @type {MeterReadingRecord.AsObject[]} */ []
+  },
+  generated: {
+    baseRequest: computed(() => {
+      return baseRequest(props.generated);
+    }),
+    data: computed(() => {
+      return data(props.span, seriesMap.generated.records);
+    }),
+    handle: 0,
+    records: /** @type {MeterReadingRecord.AsObject[]} */ []
+  }
 });
-const meterHistoryRecords = ref(/** @type {MeterReadingRecord.AsObject[]} */ []);
-const supplyHistoryRecords = ref(/** @type {MeterReadingRecord.AsObject[]} */ []);
 
-const meterPollHandle = ref(0);
-const supplyPollHandle = ref(0);
 const message = ref('');
 
 /**
@@ -89,14 +154,12 @@ const message = ref('');
  * @param {string} type
  */
 async function pollReadings(req, type) {
-  const generated = [];
-  const supplied = [];
+  const all = [];
   try {
     while (true) {
       const page = await listMeterReadingHistory(req, {});
 
-      if (type === 'supply') supplied.push(...page.meterReadingRecordsList);
-      else generated.push(...page.meterReadingRecordsList);
+      all.push(...page.meterReadingRecordsList);
       req.pageToken = page.nextPageToken;
       if (!req.pageToken) {
         break;
@@ -106,158 +169,29 @@ async function pollReadings(req, type) {
     console.error('error getting meter readings', e);
   }
 
-  if (type === 'supply') {
-    supplyHistoryRecords.value = supplied;
-    supplyPollHandle.value = setTimeout(pollReadings, pollDelay.value);
-  } else {
-    meterHistoryRecords.value = generated;
-    meterPollHandle.value = setTimeout(pollReadings, pollDelay.value);
-  }
-
+  seriesMap[type].records = all;
+  seriesMap[type].handle = setTimeout(() => pollReadings(req, type), pollDelay.value);
   message.value = 'No data available';
 }
 
 onUnmounted(() => {
-  clearTimeout(supplyPollHandle.value);
-  clearTimeout(meterPollHandle.value);
+  Object.values(seriesMap).forEach(series => {
+    clearTimeout(series.handle);
+  });
 });
 
-watch(() => baseRequest.value, (baseRequest) => {
-  baseRequest.forEach(request => {
-    // close existing stream if present
-    message.value = 'Pulling data';
-    meterHistoryRecords.value = [];
-    clearTimeout(meterPollHandle.value);
 
-    supplyHistoryRecords.value = [];
-    clearTimeout(supplyPollHandle.value);
+Object.entries(seriesMap).forEach(([name, series]) => {
+  watch(() => series.baseRequest, (request) => {
+    message.value = 'Pulling data';
+    clearTimeout(series.handle);
+    series.records = [];
 
     // create new stream
     if (request) {
-      if (request.name.includes('supply')) pollReadings(request, 'supply');
-      else pollReadings(request);
+      pollReadings(request, name);
     }
-  });
-}, {immediate: true, deep: true, flush: 'sync'});
-
-//
-//
-// Generated energy
-const meterData = computed(() => {
-  const span = props.span;
-  const dst = [];
-  const meterRecords = meterHistoryRecords.value;
-
-  if (meterRecords.length > 0) {
-    // create a list of data points that show the change in value since the previous reading
-    /** @type {MeterReadingRecord.AsObject} */
-    let lastReading = null;
-    /** @type {MeterReadingRecord.AsObject} */
-    let readingCur = null;
-    for (const record of meterRecords) {
-      if (!lastReading) {
-        lastReading = record;
-        readingCur = record;
-        continue;
-      }
-
-      // special case if the meter was reset
-      if (readingCur.meterReading.usage > record.meterReading.usage) {
-        const diff = readingCur.meterReading.usage - lastReading.meterReading.usage;
-        dst.push({
-          x: new Date(timestampToDate(readingCur.recordTime)),
-          y: diff
-        });
-        lastReading = readingCur = record;
-        continue;
-      }
-      readingCur = record;
-      const t0 = timestampToDate(lastReading.recordTime);
-      const t1 = timestampToDate(record.recordTime);
-      const d = t1 - t0;
-      if (d > span) {
-        const segmentCount = Math.floor(d / span);
-        const diff = (record.meterReading.usage - lastReading.meterReading.usage) / segmentCount;
-        lastReading = record;
-        dst.push({
-          x: new Date(t1),
-          y: diff
-        });
-      }
-    }
-    // process the last reading, if we haven't already
-    const finalReading = meterRecords[meterRecords.length - 1];
-    const t0 = timestampToDate(lastReading.recordTime);
-    const t1 = timestampToDate(finalReading.recordTime);
-    if (t0.getTime() !== t1.getTime()) {
-      const diff = finalReading.meterReading.usage - lastReading.meterReading.usage;
-      dst.push({
-        x: new Date(t1),
-        y: diff
-      });
-    }
-  }
-  return dst;
-});
-
-//
-//
-// PV energy
-const supplyData = computed(() => {
-  const span = props.span;
-  const dst = [];
-  const supplyRecords = supplyHistoryRecords.value;
-
-  if (supplyRecords.length > 0) {
-    // create a list of data points that show the change in value since the previous reading
-    /** @type {MeterReadingRecord.AsObject} */
-    let lastReading = null;
-    /** @type {MeterReadingRecord.AsObject} */
-    let readingCur = null;
-    for (const record of supplyRecords) {
-      if (!lastReading) {
-        lastReading = record;
-        readingCur = record;
-        continue;
-      }
-
-      // special case if the meter was reset
-      if (readingCur.meterReading.usage > record.meterReading.usage) {
-        const diff = readingCur.meterReading.usage - lastReading.meterReading.usage;
-        dst.push({
-          x: new Date(timestampToDate(readingCur.recordTime)),
-          y: diff
-        });
-        lastReading = readingCur = record;
-        continue;
-      }
-      readingCur = record;
-      const t0 = timestampToDate(lastReading.recordTime);
-      const t1 = timestampToDate(record.recordTime);
-      const d = t1 - t0;
-      if (d > span) {
-        const segmentCount = Math.floor(d / span);
-        const diff = (record.meterReading.usage - lastReading.meterReading.usage) / segmentCount;
-        lastReading = record;
-        dst.push({
-          x: new Date(t1),
-          y: diff
-        });
-      }
-    }
-    // process the last reading, if we haven't already
-    const finalReading = supplyRecords[supplyRecords.length - 1];
-    const t0 = timestampToDate(lastReading.recordTime);
-    const t1 = timestampToDate(finalReading.recordTime);
-    if (t0.getTime() !== t1.getTime()) {
-      const diff = finalReading.meterReading.usage - lastReading.meterReading.usage;
-      dst.push({
-        x: new Date(t1),
-        y: diff
-      });
-    }
-  }
-  return dst;
+  }, {immediate: true, deep: true, flush: 'sync'});
 });
 
 const options = {
@@ -355,25 +289,12 @@ const options = {
 const series = computed(() => {
   return [{
     name: 'Metered',
-    data: meterData.value
+    data: seriesMap.metered.data
   },
   {
     name: 'Generated',
-    data: supplyData.value
+    data: seriesMap.generated.data
   }];
-});
-
-
-// UI Error handling
-const errorStore = useErrorStore();
-const unwatchErrors = [];
-onMounted(() => {
-  unwatchErrors.push(errorStore.registerTracker(meterHistoryRecords));
-});
-onUnmounted(() => {
-  for (const unwatchError of unwatchErrors) {
-    unwatchError();
-  }
 });
 
 </script>
