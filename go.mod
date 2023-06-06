@@ -69,6 +69,6 @@ require (
 	nhooyr.io/websocket v1.8.7 // indirect
 )
 
-replace (
- github.com/smart-core-os/sc-golang => ../sc-golang
-)
+// replace (
+//  github.com/smart-core-os/sc-golang => ../sc-golang
+// )

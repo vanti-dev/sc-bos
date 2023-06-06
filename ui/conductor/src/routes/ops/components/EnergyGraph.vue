@@ -1,7 +1,7 @@
 <template>
   <div id="energy-graph" :style="{width, height}">
     <apexchart
-        v-if="meterData.length > 0"
+        v-if="[...meterData, ...supplyData ].length > 0"
         type="area"
         height="100%"
         :options="options"
@@ -47,14 +47,16 @@ onUnmounted(() => {
   clearInterval(nowHandle.value);
 });
 
+// Return an array of object with request details
+// This loops through the props.name array if its array
+// or only creates an object if its a string
 const baseRequest = computed(() => {
   if (!props.name || !props.name.length) return undefined;
+
   const period = {
     startTime: new Date(now.value - 24 * 60 * 60 * 1000)
   };
   const req = [];
-
-  Array.isArray(props.name);
 
   if (Array.isArray(props.name)) {
     props.name.forEach(name => {
@@ -134,6 +136,7 @@ watch(() => baseRequest.value, (baseRequest) => {
   });
 }, {immediate: true});
 
+// generated energy
 const meterData = computed(() => {
   const span = props.span;
   const dst = [];
@@ -191,6 +194,7 @@ const meterData = computed(() => {
   return dst;
 });
 
+// PV energy
 const supplyData = computed(() => {
   const span = props.span;
   const dst = [];
@@ -308,7 +312,7 @@ const series = computed(() => {
     data: Object.values(meterData.value)
   },
   {
-    name: 'Supplied',
+    name: 'Generated',
     data: Object.values(supplyData.value)
   }];
 });
