@@ -7,9 +7,9 @@
     <div class="d-flex flex-column flex-lg-row">
       <div class="flex-grow-1 d-flex flex-column mr-lg-8">
         <energy-card :generated="supplyZone" :metered="energyZone"/>
+        <occupancy-card :name="occupancyZone"/>
       </div>
       <div class="d-flex flex-column" style="min-width: 250px;">
-        <occupancy-card :name="occupancyZone"/>
         <environmental-card :name="environmentalZone" :external-name="externalZone"/>
       </div>
     </div>
