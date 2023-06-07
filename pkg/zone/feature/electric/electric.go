@@ -35,7 +35,7 @@ type feature struct {
 }
 
 func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
-	if len(cfg.Electrics) == 0 || len(cfg.ElectricGroups) == 0 {
+	if len(cfg.Electrics) == 0 && len(cfg.ElectricGroups) == 0 {
 		return nil
 	}
 	var client traits.ElectricApiClient
