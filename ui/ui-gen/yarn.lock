@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.41":
-  version "1.0.0-beta.41"
-  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.41.tgz#56961d74ce45c803b01faceb320239564a2784b0"
-  integrity sha512-JOYjC2ShsEwUKaeQCj0SbHe6PB1g0lPo9BXv+lEqsAAxk0CLARHm50t4mOjfICNy4+Aq4A0OACH2sow+tvyYag==
+"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.42":
+  version "1.0.0-beta.42"
+  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.42.tgz#77b3bf36bdd95980f51eb84a6967c4b5f8ef7ed4"
+  integrity sha512-JxgKw7XjAbSDMcasSAgRrZLoGcmVLNialO9gLoSFeI74DLXp+gSKT3rwiGesDMLe3sZ08jyPFyssJWW8xr5HNw==
   dependencies:
     google-protobuf "^3.21.2"
     grpc-web "^1.4.2"
