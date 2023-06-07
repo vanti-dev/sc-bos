@@ -49,8 +49,6 @@ onUnmounted(() => {
 });
 
 // Return an array of object with request details
-// This loops through the props.name array if its array
-// or only creates an object if its a string
 const baseRequest = (name) => {
   if (!name) return undefined;
 
@@ -66,6 +64,7 @@ const baseRequest = (name) => {
   };
 };
 
+// Collect the data points which should be displayed on the graph
 const data = (span, records) => {
   const dst = [];
 
@@ -146,6 +145,7 @@ const seriesMap = reactive({
   }
 });
 
+// Graph status message
 const message = ref('');
 
 /**
@@ -164,6 +164,7 @@ async function pollReadings(req, type) {
       if (!req.pageToken) {
         break;
       }
+      message.value = 'No data available';
     }
   } catch (e) {
     console.error('error getting meter readings', e);
@@ -171,7 +172,6 @@ async function pollReadings(req, type) {
 
   seriesMap[type].records = all;
   seriesMap[type].handle = setTimeout(() => pollReadings(req, type), pollDelay.value);
-  message.value = 'No data available';
 }
 
 onUnmounted(() => {
@@ -180,20 +180,27 @@ onUnmounted(() => {
   });
 });
 
+//
+//
+// Computed
+// Generating object with name and data key/values required for graph 'series' prop
+const series = computed(() => {
+  return Object.entries(seriesMap).map(([seriesName, seriesData]) => {
+    const capitalisedName = seriesName.charAt(0).toUpperCase() + seriesName.slice(1);
+    const data = seriesMap[seriesName].data;
 
-Object.entries(seriesMap).forEach(([name, series]) => {
-  watch(() => series.baseRequest, (request) => {
-    message.value = 'Pulling data';
-    clearTimeout(series.handle);
-    series.records = [];
-
-    // create new stream
-    if (request) {
-      pollReadings(request, name);
+    if (data && data.length > 0) {
+      return {name: capitalisedName, data};
+    } else {
+      return null;
     }
-  }, {immediate: true, deep: true, flush: 'sync'});
+  }).filter(obj => obj !== null);
 });
 
+
+//
+//
+// Line graph styling and other options
 const options = {
   chart: {
     animations: {
@@ -286,13 +293,22 @@ const options = {
   }
 };
 
-const series = computed(() => {
-  return Object.entries(seriesMap).map(([seriesName, seriesData]) => {
-    const capitalisedName = seriesName.charAt(0).toUpperCase() + seriesName.slice(1);
-    return {name: capitalisedName, data: seriesMap[seriesName].data};
-  });
-});
 
+//
+//
+// Watcher
+Object.entries(seriesMap).forEach(([name, series]) => {
+  watch(() => series.baseRequest, (request) => {
+    message.value = 'Pulling data';
+    clearTimeout(series.handle);
+    series.records = [];
+
+    // create new stream
+    if (request) {
+      pollReadings(request, name);
+    }
+  }, {immediate: true, deep: true, flush: 'sync'});
+});
 </script>
 
 <style lang="scss" scoped>
