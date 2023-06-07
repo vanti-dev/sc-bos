@@ -1,14 +1,20 @@
 <template>
   <content-card class="mb-8 d-flex flex-column px-6 pt-md-6">
-    <h4 class="text-h4 order-lg-last pb-4 pb-lg-0 pt-0 pt-lg-4">Occupancy</h4>
-    <v-progress-linear height="24" class="mb-3" v-model="occupancyPercentage"/>
-    <div>
-      <div class="text-h2" style="float:left">
-        {{ occupancy }}
-        <span class="text-caption neutral--text text--lighten-5">/{{ maxOccupancy }}</span>
-      </div>
-      <div class="text-h2" style="float:right">{{ occupancyPercentage.toFixed(0) }}%</div>
-    </div>
+    <v-row class="px-6 mb-6">
+      <h4 class="text-h4 pb-4 pb-lg-0 pt-0 pt-lg-4">Occupancy</h4>
+      <v-spacer/>
+      <v-col
+          cols="2"
+          class="d-flex flex-row flex-nowrap mx-0 px-0 justify-space-between"
+          style="max-width: 175px;">
+        <div class="text-h2">
+          {{ occupancy }}
+          <span class="text-caption neutral--text text--lighten-5">/{{ maxOccupancy }}</span>
+        </div>
+        <div class="text-h2">{{ occupancyPercentage.toFixed(0) }}%</div>
+      </v-col>
+    </v-row>
+    <OccupancyGraph/>
   </content-card>
 </template>
 
@@ -16,6 +22,8 @@
 
 import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
 import ContentCard from '@/components/ContentCard.vue';
+import OccupancyGraph from '@/routes/ops/components/OccupancyGraph.vue';
+
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullOccupancy} from '@/api/sc/traits/occupancy';
 import {useErrorStore} from '@/components/ui-error/error';
