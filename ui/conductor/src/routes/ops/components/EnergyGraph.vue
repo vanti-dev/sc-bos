@@ -287,14 +287,10 @@ const options = {
 };
 
 const series = computed(() => {
-  return [{
-    name: 'Metered',
-    data: seriesMap.metered.data
-  },
-  {
-    name: 'Generated',
-    data: seriesMap.generated.data
-  }];
+  return Object.entries(seriesMap).map(([seriesName, seriesData]) => {
+    const capitalisedName = seriesName.charAt(0).toUpperCase() + seriesName.slice(1);
+    return {name: capitalisedName, data: seriesMap[seriesName].data};
+  });
 });
 
 </script>
