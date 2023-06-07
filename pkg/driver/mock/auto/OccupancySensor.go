@@ -18,12 +18,12 @@ func OccupancySensorAuto(model *occupancysensor.Model) *service.Service[string] 
 			ticker := time.NewTicker(30 * time.Second)
 			defer ticker.Stop()
 			for {
+				state := traits.Occupancy_State(rand.Intn(3) + 1)
+				_, _ = model.SetOccupancy(&traits.Occupancy{State: state}, resource.WithUpdatePaths("state"))
 				select {
 				case <-ctx.Done():
 					return
 				case <-ticker.C:
-					state := traits.Occupancy_State(rand.Intn(3) + 1)
-					_, _ = model.SetOccupancy(&traits.Occupancy{State: state}, resource.WithUpdatePaths("state"))
 				}
 			}
 		}()
