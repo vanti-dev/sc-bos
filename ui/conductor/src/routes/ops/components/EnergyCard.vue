@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import {reactive, watch} from 'vue';
+import {computed, reactive} from 'vue';
 
 import ContentCard from '@/components/ContentCard.vue';
 import EnergyGraph from '@/routes/ops/components/EnergyGraph.vue';
@@ -67,7 +67,7 @@ const props = defineProps({
 const energy = reactive({
   generated: 0,
   metered: 0,
-  total: 0
+  total: computed(() => (energy.generated + energy.metered).toFixed(2))
 });
 
 /**
@@ -83,10 +83,6 @@ function storeEnergyValues(type, value) {
 
   return energy[type];
 };
-
-watch(energy, (newEnergy) => {
-  energy.total = (newEnergy.generated + newEnergy.metered).toFixed(2);
-}, {immediate: true, deep: true, flush: 'sync'});
 </script>
 
 <style scoped>
