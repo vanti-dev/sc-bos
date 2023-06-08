@@ -23,7 +23,7 @@ func OccupancySensorAuto(model *occupancysensor.Model) *service.Service[string] 
 				if state == traits.Occupancy_OCCUPIED {
 					occupancy.PeopleCount = int32(rand.Intn(10) + 1)
 				}
-				_, _ = model.SetOccupancy(occupancy, resource.WithUpdatePaths("state"))
+				_, _ = model.SetOccupancy(occupancy, resource.WithUpdatePaths("state", "people_count"))
 				select {
 				case <-ctx.Done():
 					return
