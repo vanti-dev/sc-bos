@@ -36,59 +36,7 @@ const pollDelay = computed(() => props.span / 10);
 const now = ref(Date.now());
 const nowHandle = ref(0);
 const message = ref('No data available');
-// const series = [{
-//   data: [{
-//     x: 'category A',
-//     y: 10
-//   }, {
-//     x: 'category B',
-//     y: 18
-//   }, {
-//     x: 'category C',
-//     y: 13
-//   },
-//   {
-//     x: 'category A',
-//     y: 10
-//   }, {
-//     x: 'category B',
-//     y: 18
-//   }, {
-//     x: 'category C',
-//     y: 13
-//   },
-//   {
-//     x: 'category A',
-//     y: 10
-//   }, {
-//     x: 'category B',
-//     y: 18
-//   }, {
-//     x: 'category C',
-//     y: 13
-//   },
-//   {
-//     x: 'category A',
-//     y: 10
-//   }, {
-//     x: 'category B',
-//     y: 18
-//   }, {
-//     x: 'category C',
-//     y: 13
-//   },
-//   {
-//     x: 'category A',
-//     y: 10
-//   }, {
-//     x: 'category B',
-//     y: 18
-//   }, {
-//     x: 'category C',
-//     y: 13
-//   }
-//   ]
-// }];
+
 const seriesMap = reactive({
   [props.name]: {
     baseRequest: computed(() => {
@@ -105,13 +53,13 @@ const seriesMap = reactive({
 //
 //
 // Computed
+// Formatting the data for the bar chart
 const series = computed(() => {
   return Object.entries(seriesMap).map(([seriesName, seriesData]) => {
-    const capitalisedName = seriesName.charAt(0).toUpperCase() + seriesName.slice(1);
     const data = seriesMap[seriesName].data;
 
     if (data && data.length > 0) {
-      return {name: capitalisedName, data};
+      return {name: 'Occupancy', data};
     } else {
       return null;
     }
@@ -122,7 +70,7 @@ const series = computed(() => {
 //
 //
 // Methods
-// Collect the data points which should be displayed on the graph
+// Collect the data points which should be displayed on the bar chart
 const data = (span, records) => {
   const dst = []; // Array to store data points
 
@@ -140,7 +88,7 @@ const data = (span, records) => {
         continue;
       }
 
-      // special case if the meter was reset
+      // Special case if the meter was reset
       if (readingCur.occupancy.peopleCount > record.occupancy.peopleCount) {
         const diff = readingCur.occupancy.peopleCount - lastReading.occupancy.peopleCount;
         dst.push({
@@ -185,14 +133,13 @@ const data = (span, records) => {
 
   // Reduce data points by interval and update with maximum peopleCount
   const reducedDst = [];
-  const interval = span; // 15 minutes in milliseconds
+  const interval = span * 2; // 15 minutes in milliseconds
 
   for (const dataPoint of dst) {
     const timestamp = dataPoint.x.getTime(); // Get the timestamp in milliseconds
     const hourStart = Math.floor(timestamp / 3600000) * 3600000; // Get the start of the hour in milliseconds
     const intervalStart = Math.floor(
         (timestamp - hourStart) / interval) * interval; // Get the start of the interval in milliseconds
-
     const newTimestamp = hourStart + intervalStart; // Update the timestamp to the start of the interval
 
     // Find existing data point with the same timestamp
@@ -245,7 +192,6 @@ async function pollReadings(req, type) {
       if (!req.pageToken) {
         break;
       }
-      message.value = 'No data available';
     }
   } catch (e) {
     console.error('error getting occupancy readings', e);
@@ -253,6 +199,7 @@ async function pollReadings(req, type) {
 
   seriesMap[type].records = all;
   seriesMap[type].handle = setTimeout(() => pollReadings(req, type), pollDelay.value);
+  message.value = 'No data available';
 }
 
 
@@ -272,6 +219,9 @@ const options = {
     foreColor: '#fff',
     toolbar: {
       show: false
+    },
+    zoom: {
+      enabled: false
     }
   },
   dataLabels: {
@@ -289,7 +239,7 @@ const options = {
     },
     xaxis: {
       lines: {
-        show: false
+        show: true
       }
     },
     padding: {
@@ -309,9 +259,7 @@ const options = {
   },
   plotOptions: {
     bar: {
-      horizontal: false,
-      startingShape: 'flat',
-      endingShape: 'rounded'
+      horizontal: false
     }
   },
   tooltip: {
