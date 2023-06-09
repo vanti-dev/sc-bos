@@ -38,12 +38,12 @@ const nowHandle = ref(0);
 const message = ref('No data available');
 
 const seriesMap = reactive({
-  [props.name]: {
+  occupancy: {
     baseRequest: computed(() => {
       return baseRequest(props.name);
     }),
     data: computed(() => {
-      return data(props.span, seriesMap[props.name].records);
+      return data(props.span, seriesMap.occupancy.records);
     }),
     handle: 0,
     records: /** @type {OccupancyRecord.AsObject[]} */ []
@@ -100,22 +100,6 @@ const data = (span, records) => {
       }
 
       readingCur = record;
-      const t0 = timestampToDate(lastReading.recordTime); // Convert timestamp to Date object
-      const t1 = timestampToDate(record.recordTime); // Convert timestamp to Date object
-      const d = t1 - t0; // Calculate time difference in milliseconds
-
-      // Check time difference against interval
-      if (d > span) {
-        // Calculate the number of segments within the time difference
-        const segmentCount = Math.floor(d / span);
-        // Calculate the difference per segment
-        const diff = (record.occupancy.peopleCount - lastReading.occupancy.peopleCount) / segmentCount;
-        lastReading = record;
-        dst.push({
-          x: new Date(t1),
-          y: diff
-        });
-      }
     }
 
     // process the last reading, if we haven't already
