@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"go.uber.org/multierr"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/app/files"
@@ -42,6 +43,13 @@ type Config struct {
 }
 
 func (c *Config) mergeWith(other *Config) {
+	switch {
+	case c.Metadata == nil:
+		c.Metadata = other.Metadata
+	case other.Metadata != nil:
+		proto.Merge(c.Metadata, other.Metadata)
+	}
+
 	// if any driver/auto/zone has a duplicate name it is ignored in favour of the one already present
 
 	driverNames := c.driverNamesMap()
