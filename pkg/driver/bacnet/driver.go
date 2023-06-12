@@ -186,11 +186,11 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 }
 
 func (d *Driver) initClient(cfg config.Root) error {
-	client, err := gobacnet.NewClient(cfg.LocalInterface, int(cfg.LocalPort))
+	client, err := gobacnet.NewClient(cfg.LocalInterface, int(cfg.LocalPort),
+		gobacnet.WithMaxConcurrentTransactions(cfg.MaxConcurrentTransactions), gobacnet.WithLogLevel(logrus.InfoLevel))
 	if err != nil {
 		return err
 	}
-	client.Log.SetLevel(logrus.InfoLevel)
 	d.client = client
 	if address, err := client.LocalUDPAddress(); err == nil {
 		d.logger.Debug("bacnet client configured", zap.Stringer("local", address),

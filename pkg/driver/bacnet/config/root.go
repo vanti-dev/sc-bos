@@ -23,6 +23,8 @@ type Root struct {
 	LocalInterface string `json:"localInterface,omitempty"`
 	LocalPort      uint16 `json:"localPort,omitempty"`
 
+	MaxConcurrentTransactions uint8 `json:"maxConcurrentTransactions,omitempty"`
+
 	Discovery                *Discovery `json:"discovery,omitempty"`
 	ForceDiscovery           bool       `json:"forceDiscovery,omitempty"`
 	IncludeDiscoveredDevices bool       `json:"includeDiscoveredDevices,omitempty"`

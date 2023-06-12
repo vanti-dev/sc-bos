@@ -23,7 +23,7 @@ require (
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.42
 	github.com/smart-core-os/sc-golang v0.0.0-20230602120706-616ba598942e
 	github.com/timshannon/bolthold v0.0.0-20210913165410-232392fc8a6a
-	github.com/vanti-dev/gobacnet v0.0.0-20230504135724-3bce5567c99c
+	github.com/vanti-dev/gobacnet v0.0.0-20230612150536-526b9d063666
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
 	go.uber.org/zap v1.19.1
@@ -68,7 +68,3 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )
-
-// replace (
-//  github.com/smart-core-os/sc-golang => ../sc-golang
-// )
