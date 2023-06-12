@@ -103,6 +103,12 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 
 		// allow status reporting for this device
 		scDeviceName := cfg.DeviceNamePrefix + deviceName
+
+		// even if devices are offline, they still have metadata
+		if device.Metadata != nil {
+			rootAnnouncer.Announce(device.Name, node.HasMetadata(device.Metadata))
+		}
+
 		statuses.UpdateProblem(scDeviceName, &gen.StatusLog_Problem{
 			Name:        scDeviceName,
 			Level:       gen.StatusLog_NON_FUNCTIONAL,
