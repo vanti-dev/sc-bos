@@ -108,10 +108,11 @@ const airTempData = computed(() => {
     Object.entries(airTempValue.value).forEach(([key, value]) => {
       if (value !== undefined) {
         switch (key) {
-          case 'mode': {
-            data[key] = airTemperatureModeToString(value);
+          case 'mode':
+            if (value !== AirTemperature.Mode.MODE_UNSPECIFIED) {
+              data[key] = airTemperatureModeToString(value);
+            }
             break;
-          }
           case 'ambientTemperature': {
             data['currentTemp'] = temperatureToString(value);
             break;
@@ -120,10 +121,11 @@ const airTempData = computed(() => {
             data['setPoint'] = temperatureToString(value);
             break;
           }
-          case 'ambientHumidity': {
-            data['humidity'] = (value * 100).toFixed(1) + '%';
+          case 'ambientHumidity':
+            if (value !== 0) {
+              data['humidity'] = (value * 100).toFixed(1) + '%';
+            }
             break;
-          }
           case 'dewPoint': {
             data[key] = temperatureToString(value);
             break;
