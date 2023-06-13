@@ -14,6 +14,13 @@
         :paused="props.paused">
       <ElectricDemandCell v-bind="resource"/>
     </WithElectricDemand>
+    <WithAirTemperature
+        v-if="hasCell('AirTemperature')"
+        v-slot="{resource}"
+        :name="props.item.name"
+        :paused="props.paused">
+      <AirTemperatureCell v-bind="resource"/>
+    </WithAirTemperature>
     <WithLighting
         v-if="hasCell('Light')"
         v-slot="{resource}"
@@ -39,9 +46,11 @@
 </template>
 
 <script setup>
+import WithAirTemperature from '@/routes/devices/components/renderless/WithAirTemperature.vue';
 import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
 import WithEnterLeave from '@/routes/devices/components/renderless/WithEnterLeave.vue';
 import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
+import AirTemperatureCell from '@/routes/devices/components/trait-cells/AirTemperatureCell.vue';
 import ElectricDemandCell from '@/routes/devices/components/trait-cells/ElectricDemandCell.vue';
 import EnterLeaveEventCell from '@/routes/devices/components/trait-cells/EnterLeaveEventCell.vue';
 import StatusLogCell from '@/routes/devices/components/trait-cells/StatusLogCell.vue';
@@ -67,6 +76,9 @@ const visibleCells = computed(() => {
   const cells = {};
   if (hasTrait(props.item, 'smartcore.traits.OccupancySensor')) {
     cells['Occupancy'] = true;
+  }
+  if (hasTrait(props.item, 'smartcore.traits.AirTemperature')) {
+    cells['AirTemperature'] = true;
   }
   if (hasTrait(props.item, 'smartcore.traits.Light')) {
     cells['Light'] = true;

@@ -5,8 +5,10 @@
       <v-divider class="mt-4 mb-1"/>
       <status-log-card v-bind="resource"/>
     </WithStatus>
-    <v-divider v-if="traits['smartcore.traits.AirTemperature']" class="mt-4 mb-1"/>
-    <air-temperature-card :name="deviceId" v-if="traits['smartcore.traits.AirTemperature']"/>
+    <WithAirTemperature v-if="traits['smartcore.traits.AirTemperature']" :name="deviceId" v-slot="{resource, update}">
+      <v-divider class="mt-4 mb-1"/>
+      <air-temperature-card v-bind="resource" @updateAirTemperature="update"/>
+    </WithAirTemperature>
     <v-divider v-if="traits['smartcore.traits.Light']" class="mt-4 mb-1"/>
     <WithLighting v-if="traits['smartcore.traits.Light']" :name="deviceId" v-slot="{resource, update}">
       <light-card v-bind="resource" @updateBrightness="update"/>
@@ -30,6 +32,7 @@
 
 <script setup>
 import SideBar from '@/components/SideBar.vue';
+import WithAirTemperature from '@/routes/devices/components/renderless/WithAirTemperature.vue';
 import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
 import WithLighting from '@/routes/devices/components/renderless/WithLighting.vue';
 import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
