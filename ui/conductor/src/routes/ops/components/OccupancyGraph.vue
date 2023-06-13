@@ -72,75 +72,36 @@ const series = computed(() => {
 // Methods
 // Collect the data points which should be displayed on the bar chart
 const data = (span, records) => {
-  const dst = []; // Array to store data points
+  const intervalsMap = [];
 
-  if (records.length > 0) {
-    // create a list of data points that show the change in value since the previous reading
-    /** @type {OccupancyRecord.AsObject} */
-    let lastReading = null; // Variable to store the previous reading
-    /** @type {OccupancyRecord.AsObject} */
-    let readingCur = null; // Variable to store the current reading
+  // Step 1: Split each hour into 30-minute intervals and group the records while finding the highest value
+  for (const record of records) {
+    const recordTime = new Date(record.recordTime.seconds * 1000);
+    const minute = recordTime.getMinutes();
+    // Separating the hours into 30 min intervals
+    const intervalStart = new Date(recordTime);
+    intervalStart.setMinutes(minute < 30 ? 0 : 30, 0, 0); // Start of the interval
+    const intervalEnd = new Date(intervalStart);
+    intervalEnd.setMinutes(intervalEnd.getMinutes() + 30); // End of the interval
 
-    for (const record of records) {
-      if (!lastReading) {
-        lastReading = record;
-        readingCur = record;
-        continue;
-      }
+    const existingInterval = intervalsMap.find(
+        intrvl => intrvl.x.getTime() === intervalStart.getTime()
+    );
 
-      // Special case if the meter was reset
-      if (readingCur.occupancy.peopleCount > record.occupancy.peopleCount) {
-        const diff = readingCur.occupancy.peopleCount - lastReading.occupancy.peopleCount;
-        dst.push({
-          x: new Date(timestampToDate(readingCur.recordTime)), // Convert timestamp to Date object
-          y: diff // Store the difference in peopleCount
-        });
-        lastReading = readingCur = record;
-        continue;
-      }
+    const recordStart = recordTime >= intervalStart;
+    const recordEnd = recordTime < intervalEnd;
 
-      readingCur = record;
-    }
-
-    // process the last reading, if we haven't already
-    const finalReading = records[records.length - 1];
-    const t0 = timestampToDate(lastReading.recordTime); // Convert timestamp to Date object
-    const t1 = timestampToDate(finalReading.recordTime);
-    if (t0.getTime() !== t1.getTime()) {
-      const diff = finalReading.occupancy.peopleCount - lastReading.occupancy.peopleCount;
-      dst.push({
-        x: new Date(t1),
-        y: diff
-      });
+    // if no interval has been collected
+    if (!existingInterval) {
+      // create a new object with data
+      intervalsMap.push({x: intervalStart, y: record.occupancy.peopleCount});
+      // but if exists an interval already, just update the value to the highest.
+    } else if (recordStart && recordEnd && record.occupancy.peopleCount > existingInterval.y) {
+      existingInterval.y = record.occupancy.peopleCount;
     }
   }
 
-  // Reduce data points by interval and update with maximum peopleCount
-  const reducedDst = [];
-  const interval = span * 2; // 15 minutes in milliseconds
-
-  for (const dataPoint of dst) {
-    const timestamp = dataPoint.x.getTime(); // Get the timestamp in milliseconds
-    const hourStart = Math.floor(timestamp / 3600000) * 3600000; // Get the start of the hour in milliseconds
-    const intervalStart = Math.floor(
-        (timestamp - hourStart) / interval) * interval; // Get the start of the interval in milliseconds
-    const newTimestamp = hourStart + intervalStart; // Update the timestamp to the start of the interval
-
-    // Find existing data point with the same timestamp
-    const existingDataPoint = reducedDst.find(dp => dp.x.getTime() === newTimestamp);
-
-    if (existingDataPoint) {
-      // Take the maximum peopleCount value within the interval
-      existingDataPoint.y = Math.max(existingDataPoint.y, dataPoint.y);
-    } else {
-      reducedDst.push({
-        x: new Date(newTimestamp),
-        y: dataPoint.y
-      });
-    }
-  }
-
-  return reducedDst;
+  return intervalsMap;
 };
 
 
@@ -178,12 +139,12 @@ async function pollReadings(req, type) {
       }
     }
   } catch (e) {
+    message.value = 'No data available';
     console.error('error getting occupancy readings', e);
   }
 
   seriesMap[type].records = all;
   seriesMap[type].handle = setTimeout(() => pollReadings(req, type), pollDelay.value);
-  message.value = 'No data available';
 }
 
 
@@ -227,7 +188,8 @@ const options = {
       }
     },
     padding: {
-      top: 0
+      top: 0,
+      bottom: 25
     }
   },
   noData: {
@@ -247,7 +209,14 @@ const options = {
     }
   },
   tooltip: {
-    theme: 'dark'
+    theme: 'dark',
+    x: {
+      format: 'dd MMM yyyy',
+      formatter: function(value, {series, seriesIndex, dataPointIndex, w}) {
+        const newDate = new Date(value);
+        return newDate.toLocaleString();
+      }
+    }
   },
   xaxis: {
     labels: {
@@ -256,7 +225,8 @@ const options = {
         month: 'MMM \'yy',
         day: 'dd MMM',
         hour: 'HH:mm'
-      }
+      },
+      datetimeUTC: false
     },
     type: 'datetime'
   },

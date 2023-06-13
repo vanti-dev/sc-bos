@@ -3,7 +3,7 @@
     <v-row class="px-6 mb-6 pt-1">
       <h4 class="text-h4 pb-4 pb-lg-0 pt-0 pt-lg-4">Occupancy</h4>
       <v-spacer/>
-      <v-col cols="3" class="d-flex flex-row flex-nowrap mx-0 px-0 justify-space-between" style="max-width: 150px;">
+      <v-col cols="3" class="d-flex flex-row flex-nowrap mx-0 px-0 justify-space-between" style="max-width: 175px;">
         <WithOccupancy
             v-slot="{ resource }"
             :name="props.name">
