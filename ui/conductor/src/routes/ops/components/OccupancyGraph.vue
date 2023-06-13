@@ -87,14 +87,13 @@ const data = (span, records) => {
     );
 
     const recordStart = recordTime >= intervalStart;
-    const highestPeopleCount = record.occupancy.peopleCount > existingInterval.y;
 
-    // If no interval has been collected
+    // if no interval has been collected
     if (!existingInterval) {
-      // Create a new object with data
+      // create a new object with data
       intervalsMap.push({x: intervalStart, y: record.occupancy.peopleCount});
       // but if exists an interval already, just update the value to the highest.
-    } else if (recordStart && highestPeopleCount) {
+    } else if (recordStart && record.occupancy.peopleCount > existingInterval.y) {
       existingInterval.y = record.occupancy.peopleCount;
     }
   }
