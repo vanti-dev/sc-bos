@@ -4,7 +4,7 @@
       {{ props.peopleCount }}
       <span class="text-body-1 neutral--text text--lighten-5 pb-1 ml-1">/ {{ maxOccupancy }}</span>
     </div>
-    <div class="text-h2 d-flex flex-row flex-nowrap align-end ml-6">
+    <div class="text-h2 d-flex flex-row flex-nowrap align-end ml-8">
       {{ occupancyPercentageDisplay }}
       <span class="text-body-1 neutral--text text--lighten-9 pb-1 ml-1">%</span>
     </div>
