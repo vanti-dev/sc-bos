@@ -43,7 +43,7 @@ const seriesMap = reactive({
       return baseRequest(props.name);
     }),
     data: computed(() => {
-      return data(props.span, seriesMap.occupancy.records);
+      return data(seriesMap.occupancy.records);
     }),
     handle: 0,
     records: /** @type {OccupancyRecord.AsObject[]} */ []
@@ -70,30 +70,38 @@ const series = computed(() => {
 //
 //
 // Methods
-// Collect the data points which should be displayed on the bar chart
-const data = (span, records) => {
+const data = (records) => {
   const intervalsMap = [];
+  const currentDate = new Date();
 
-  // Split each hour into 30-minute intervals and group the records while finding the highest value
+  // Adjusting current date to nearest half-hour mark
+  currentDate.setMinutes(currentDate.getMinutes() - (currentDate.getMinutes() % 30), 0, 0);
+
+  // Populate the bar chart with data
+  // 24 hour divided into 30 min intervals
+  for (let i = 0; i < 48; i++) {
+    const dataPoint = {
+      x: new Date(currentDate.getTime() - (i * 30 * 60 * 1000)),
+      y: 0
+    };
+
+    intervalsMap.unshift(dataPoint); // Update the array of objects depending on the currentDate
+  }
+
+  // Split each hour into 30min intervals and group the records while finding the highest value
   for (const record of records) {
     const recordTime = new Date(timestampToDate(record.recordTime));
     const minute = recordTime.getMinutes();
     const intervalStart = new Date(recordTime); // Separating the hours into 30 min intervals
     intervalStart.setMinutes(minute < 30 ? 0 : 30, 0, 0); // Start of the interval
 
-
+    // Looking for the existing interval record
     const existingInterval = intervalsMap.find(
         intrvl => intrvl.x.getTime() === intervalStart.getTime()
     );
 
-    const recordStart = recordTime >= intervalStart;
-
-    // if no interval has been collected
-    if (!existingInterval) {
-      // create a new object with data
-      intervalsMap.push({x: intervalStart, y: record.occupancy.peopleCount});
-      // but if exists an interval already, just update the value to the highest.
-    } else if (recordStart && record.occupancy.peopleCount > existingInterval.y) {
+    // Updating the interval record if higher peopleCount comes in
+    if (record.occupancy.peopleCount > existingInterval.y) {
       existingInterval.y = record.occupancy.peopleCount;
     }
   }
@@ -223,7 +231,10 @@ const options = {
         day: 'dd MMM',
         hour: 'HH:mm'
       },
-      datetimeUTC: false
+      datetimeUTC: false,
+      hideOverlappingLabels: true,
+      showDuplicates: false,
+      trim: false
     },
     type: 'datetime'
   },

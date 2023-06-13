@@ -21,7 +21,7 @@ const props = defineProps({
   },
   maxOccupancy: {
     type: Number,
-    default: 12345
+    default: 1234
   }
 });
 
