@@ -275,7 +275,14 @@ const options = {
     colors: ['var(--v-primary-base)', 'orange']
   },
   tooltip: {
-    theme: 'dark'
+    theme: 'dark',
+    x: {
+      format: 'dd MMM yyyy',
+      formatter: function(value, {series, seriesIndex, dataPointIndex, w}) {
+        const newDate = new Date(value);
+        return newDate.toLocaleString();
+      }
+    }
   },
   xaxis: {
     labels: {
@@ -284,7 +291,8 @@ const options = {
         month: 'MMM \'yy',
         day: 'dd MMM',
         hour: 'HH:mm'
-      }
+      },
+      datetimeUTC: false
     },
     type: 'datetime'
   },
