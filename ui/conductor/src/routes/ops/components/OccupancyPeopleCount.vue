@@ -2,7 +2,7 @@
   <div class="d-flex flex-row flex-nowrap">
     <div class="text-h2 d-flex flex-row flex-nowrap align-end">
       {{ props.peopleCount }}
-      <span class="text-body-1 neutral--text text--lighten-5 pb-1 ml-1">/ {{ maxOccupancy }}</span>
+      <span class="text-body-1 neutral--text text--lighten-5 pb-1 ml-1">/ {{ props.maxOccupancy }}</span>
     </div>
     <div class="text-h2 d-flex flex-row flex-nowrap align-end ml-8">
       {{ occupancyPercentageDisplay }}
@@ -18,17 +18,18 @@ const props = defineProps({
   peopleCount: {
     type: Number,
     default: 0
+  },
+  maxOccupancy: {
+    type: Number,
+    default: 12345
   }
 });
-
-// TODO: get this from somewhere
-const maxOccupancy = 1234;
 
 //
 //
 // Methods
 const occupancyPercentage = computed(() => {
-  return (props.peopleCount / maxOccupancy) * 100;
+  return (props.peopleCount / props.maxOccupancy) * 100;
 });
 
 const occupancyPercentageDisplay = computed(() =>
