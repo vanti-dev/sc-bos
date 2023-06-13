@@ -74,29 +74,27 @@ const series = computed(() => {
 const data = (span, records) => {
   const intervalsMap = [];
 
-  // Step 1: Split each hour into 30-minute intervals and group the records while finding the highest value
+  // Split each hour into 30-minute intervals and group the records while finding the highest value
   for (const record of records) {
-    const recordTime = new Date(record.recordTime.seconds * 1000);
+    const recordTime = new Date(timestampToDate(record.recordTime));
     const minute = recordTime.getMinutes();
-    // Separating the hours into 30 min intervals
-    const intervalStart = new Date(recordTime);
+    const intervalStart = new Date(recordTime); // Separating the hours into 30 min intervals
     intervalStart.setMinutes(minute < 30 ? 0 : 30, 0, 0); // Start of the interval
-    const intervalEnd = new Date(intervalStart);
-    intervalEnd.setMinutes(intervalEnd.getMinutes() + 30); // End of the interval
+
 
     const existingInterval = intervalsMap.find(
         intrvl => intrvl.x.getTime() === intervalStart.getTime()
     );
 
     const recordStart = recordTime >= intervalStart;
-    const recordEnd = recordTime < intervalEnd;
+    const highestPeopleCount = record.occupancy.peopleCount > existingInterval.y;
 
-    // if no interval has been collected
+    // If no interval has been collected
     if (!existingInterval) {
-      // create a new object with data
+      // Create a new object with data
       intervalsMap.push({x: intervalStart, y: record.occupancy.peopleCount});
       // but if exists an interval already, just update the value to the highest.
-    } else if (recordStart && recordEnd && record.occupancy.peopleCount > existingInterval.y) {
+    } else if (recordStart && highestPeopleCount) {
       existingInterval.y = record.occupancy.peopleCount;
     }
   }
