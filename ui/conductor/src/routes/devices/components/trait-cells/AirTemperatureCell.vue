@@ -1,5 +1,5 @@
 <template>
-  <span class="text-no-wrap at-cell" v-if="hasTemp || hasSetPoint" v-bind="attrs" v-on="on">
+  <span class="text-no-wrap at-cell" v-if="hasTemp || hasSetPoint">
     <v-tooltip bottom v-if="hasTemp" open-delay="1000">
       <template #activator="{on, attrs}">
         <span v-bind="attrs" v-on="on">{{ tempStr }}</span>

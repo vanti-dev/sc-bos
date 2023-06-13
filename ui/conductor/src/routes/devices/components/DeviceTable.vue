@@ -50,6 +50,9 @@
           </v-row>
         </v-container>
       </template>
+      <template #item.name="{ item }">
+        {{ item.metadata.appearance ? item.metadata.appearance.title : item.name }}
+      </template>
       <template #item.hotpoint="{item}">
         <HotPoint
             v-slot="{live}"
@@ -227,7 +230,7 @@ const tableData = computed(() => {
  */
 function showDevice(item, row) {
   pageStore.showSidebar = true;
-  pageStore.sidebarTitle = item.name;
+  pageStore.sidebarTitle = item.metadata.appearance ? item.metadata.appearance.title : item.name;
   pageStore.sidebarData = item;
 }
 
