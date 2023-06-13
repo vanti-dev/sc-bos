@@ -35,7 +35,6 @@ const props = defineProps({
 const pollDelay = computed(() => props.span / 10);
 const now = ref(Date.now());
 const nowHandle = ref(0);
-const message = ref('No data available');
 
 const seriesMap = reactive({
   occupancy: {
@@ -144,7 +143,6 @@ async function pollReadings(req, type) {
       }
     }
   } catch (e) {
-    message.value = 'No data available';
     console.error('error getting occupancy readings', e);
   }
 
@@ -197,17 +195,6 @@ const options = {
       bottom: 25
     }
   },
-  noData: {
-    text: message.value,
-    align: 'center',
-    verticalAlign: 'middle',
-    offsetX: 0,
-    offsetY: 0,
-    style: {
-      color: message.value.includes('Pulling') ? 'white' : 'red',
-      fontSize: '18px'
-    }
-  },
   plotOptions: {
     bar: {
       horizontal: false
@@ -248,7 +235,6 @@ const options = {
 // Watcher
 Object.entries(seriesMap).forEach(([name, series]) => {
   watch(() => series.baseRequest, (request) => {
-    message.value = 'Pulling data';
     clearTimeout(series.handle);
     series.records = [];
 
