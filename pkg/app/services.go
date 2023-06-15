@@ -160,10 +160,10 @@ func logServiceRecordChange(logger *zap.Logger, oldVal, newVal *service.StateRec
 		logger.Warn("Failed to load", zap.Error(newVal.State.Err))
 	case oldVal.State.Active && !newVal.State.Active: // stopped
 		logger.Debug("Stopped", zap.Error(newVal.State.Err))
-	case !oldVal.State.Active && newVal.State.Active || oldVal.State.Loading && !newVal.State.Loading: // started
-		logger.Debug("Started")
 	case newVal.State.Active && newVal.State.Loading: // loading
 		logger.Debug("Loading")
+	case !oldVal.State.Active && newVal.State.Active || oldVal.State.Loading && !newVal.State.Loading: // started
+		logger.Debug("Started")
 	default:
 		type state struct {
 			Active, Loading bool
