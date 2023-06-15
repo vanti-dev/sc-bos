@@ -9,7 +9,7 @@
         class="pr-7">
       <app-menu/>
       <sc-logo outline="white" style="height: 35px; margin-left: 16px"/>
-      <span class="heading">Smart Core</span>
+      <span class="heading">Smart Core | {{ pageTitle }}</span>
 
       <v-divider
           vertical
@@ -27,7 +27,7 @@
         v-if="hasNav"
         v-model="drawer"
         app
-        class="py-8 ml-4"
+        class="pt-4 pb-8 ml-4"
         clipped
         color="transparent"
         expand-on-hover
@@ -36,17 +36,11 @@
         :mini-variant-width="drawerWidth"
         width="275"
         permanent>
-      <h1
-          :class="[miniVariant ? 'text-subtitle-1 pl-2 my-5' : 'text-h1', 'pl-1 text-truncate']"
-          style="maxHeight: 41px;">
-        {{ pageTitle }}
-      </h1>
-      <v-divider class="my-5"/>
       <router-view
           v-if="hasNav"
           name="nav"
           class="mx-4"
-          :style="miniVariant ? 'width: 40px; margin-top: 12px;' : 'width: auto;'"/>
+          :style="miniVariant ? 'width: 40px;' : 'width: auto;'"/>
       <template #append>
         <v-footer class="pa-0" style="background:transparent">
           <v-col class="pa-0">
