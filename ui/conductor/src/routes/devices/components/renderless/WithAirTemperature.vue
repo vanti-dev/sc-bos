@@ -46,7 +46,7 @@ function doUpdateAirTemperature(req) {
       updateMask: {paths: ['temperature_set_point']}
     };
   }
-  if (!req.hasOwnProperty('temperatureSetPoint')) {
+  if (!req.hasOwnProperty('state')) {
     req = {state: /** @type {AirTemperature.AsObject} */ req};
   }
   req.name = props.name;
