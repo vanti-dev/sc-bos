@@ -6,13 +6,14 @@
           <v-list-item-icon>
             <v-icon>mdi-group</v-icon>
           </v-list-item-icon>
-          <v-list-item-content>Zone Editor</v-list-item-content>
+          <v-list-item-content class="text-truncate">Zone Editor</v-list-item-content>
         </template>
         <v-list-item-group>
           <v-list-item
               v-for="zone of zoneList"
               :key="zone"
-              :to="'/site/zone/'+zone">
+              :to="'/site/zone/'+zone"
+              class="my-2">
             <v-list-item-icon>
               <v-icon>mdi-select-all</v-icon>
             </v-list-item-icon>

@@ -25,21 +25,35 @@
 
     <v-navigation-drawer
         v-if="hasNav"
+        v-model="drawer"
         app
+        class="py-8 ml-4"
         clipped
-        permanent
         color="transparent"
+        expand-on-hover
         floating
+        :mini-variant.sync="miniVariant"
+        :mini-variant-width="drawerWidth"
         width="275"
-        class="pa-8 pr-0 mr-8">
-      <h1 class="pl-1 text-h1">{{ pageTitle }}</h1>
+        permanent>
+      <h1
+          :class="[miniVariant ? 'text-subtitle-1 pl-2 my-5' : 'text-h1', 'pl-1 text-truncate']"
+          style="maxHeight: 41px;">
+        {{ pageTitle }}
+      </h1>
       <v-divider class="my-5"/>
-      <router-view name="nav" v-if="hasNav"/>
+      <router-view
+          v-if="hasNav"
+          name="nav"
+          class="mx-4"
+          :style="miniVariant ? 'width: 40px; margin-top: 12px;' : 'width: auto;'"/>
       <template #append>
         <v-footer class="pa-0" style="background:transparent">
           <v-col class="pa-0">
             <v-divider/>
-            <p class="my-2 text-caption text-center neutral--text text--lighten-2">Smart Core {{ appVersion }}</p>
+            <p class="my-2 text-caption text-center neutral--text text--lighten-2">
+              Smart Core<br>{{ appVersion }}
+            </p>
           </v-col>
         </v-footer>
       </template>
@@ -52,15 +66,20 @@
 </template>
 
 <script setup>
+import {computed, ref, watch} from 'vue';
+
 import AccountBtn from '@/components/AccountBtn.vue';
 import AppMenu from '@/components/AppMenu.vue';
 import {usePage} from '@/components/page.js';
 import ScLogo from '@/components/ScLogo.vue';
 import ErrorView from '@/components/ui-error/ErrorView.vue';
 import {useAccountStore} from '@/stores/account.js';
-import {computed} from 'vue';
 
 const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
+
+const drawer = ref(true);
+const miniVariant = ref(true);
+const drawerWidth = ref(70);
 
 const store = useAccountStore();
 
@@ -72,6 +91,14 @@ const appVersion = computed(() => {
   }
   return GITVERSION;
 });
+
+watch(miniVariant, expanded => {
+  if (expanded) {
+    drawerWidth.value = 70;
+  } else {
+    drawerWidth.value = 275;
+  }
+}, {immediate: true, deep: true, flush: 'sync'});
 </script>
 
 <style scoped>

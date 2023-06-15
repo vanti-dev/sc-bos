@@ -1,10 +1,10 @@
 <template>
   <v-list class="pa-0" dense nav>
-    <v-list-item v-for="(item, key) in enabledMenuItems" :to="item.link" :key="key">
+    <v-list-item v-for="(item, key) in enabledMenuItems" :to="item.link" :key="key" class="my-2">
       <v-list-item-icon>
         <v-icon>{{ item.icon }}</v-icon>
       </v-list-item-icon>
-      <v-list-item-content>{{ item.title }}</v-list-item-content>
+      <v-list-item-content class="text-truncate">{{ item.title }}</v-list-item-content>
     </v-list-item>
   </v-list>
 </template>
