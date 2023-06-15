@@ -13,15 +13,22 @@
 
     <v-list-item v-for="(item, key) in enabledMenuItems" :to="item.link" :key="key" class="my-2">
       <v-list-item-icon>
-        <v-icon>{{ item.icon }}</v-icon>
+        <v-badge
+            v-if="item.count"
+            class="font-weight-bold"
+            color="primary"
+            :content="counts[item.count]"
+            overlap
+            :value="counts[item.count]">
+          <v-icon>
+            {{ item.icon }}
+          </v-icon>
+        </v-badge>
+        <v-icon v-else>{{ item.icon }}</v-icon>
       </v-list-item-icon>
       <v-list-item-content>
         <v-list-item-title class="text-truncate">{{ item.title }}</v-list-item-title>
       </v-list-item-content>
-
-      <v-chip class="font-weight-bold text primary" v-if="item.count">
-        {{ counts[item.count] }}
-      </v-chip>
     </v-list-item>
   </v-list>
 </template>
