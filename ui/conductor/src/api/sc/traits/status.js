@@ -10,7 +10,7 @@ import {GetCurrentStatusRequest, PullCurrentStatusRequest} from '@sc-bos/ui-gen/
  * @param {ResourceValue<StatusLog.AsObject, PullCurrentStatusResponse>} resource
  */
 export function pullCurrentStatus(request, resource) {
-  pullResource('EnterLeave.pullCurrentStatus', resource, endpoint => {
+  pullResource('Status.pullCurrentStatus', resource, endpoint => {
     const api = new StatusApiPromiseClient(endpoint, null, clientOptions());
     const stream = api.pullCurrentStatus(pullCurrentStatusRequestFromObject(request));
     stream.on('data', msg => {
@@ -29,7 +29,7 @@ export function pullCurrentStatus(request, resource) {
  * @return {Promise<StatusLog.AsObject>}
  */
 export function getCurrentStatus(request, tracker) {
-  return trackAction('EnterLeaveSensor.getCurrentStatus', tracker ?? {}, endpoint => {
+  return trackAction('Status.getCurrentStatus', tracker ?? {}, endpoint => {
     const api = new StatusApiPromiseClient(endpoint, null, clientOptions());
     return api.getCurrentStatus(getCurrentStatusRequestFromObject(request));
   });

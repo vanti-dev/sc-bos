@@ -18,7 +18,7 @@
       </v-list-item>
       <v-list-item class="py-1" v-for="(value, key) in messagePayload" :key="key">
         <v-list-item-title class="text-body-small text-capitalize">{{ key }}</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">{{ value['present_value'] }}</v-list-item-subtitle>
+        <v-list-item-subtitle class="text-capitalize">{{ value['present_value'] ?? value }}</v-list-item-subtitle>
       </v-list-item>
       <v-progress-linear color="primary" indeterminate :active="message.loading || message.value === null"/>
     </v-list>
