@@ -11,11 +11,12 @@
             {{ node.address }}
           </v-list-item>
           <v-list-item
-              class="pa-0 ma-0"
+              :class="[{'red--text': trackers.metadataTracker.error}, 'pa-0 ma-0']"
               style="min-height: 20px"
               v-for="(trackers, service) in nodeDetails[node.name]"
               :key="service">
-            {{ service }}: {{ trackers.metadataTracker?.response?.totalCount }}
+            <span class="mr-1">{{ service }}: {{ trackers.metadataTracker?.response?.totalCount }}</span>
+            <StatusAlert :resource="trackers.metadataTracker?.error"/>
           </v-list-item>
         </v-list>
         <v-chip-group>
@@ -29,21 +30,21 @@
 </template>
 
 <script setup>
+import {computed, onUnmounted, reactive, set} from 'vue';
+
 import {ServiceNames} from '@/api/ui/services';
-import {useErrorStore} from '@/components/ui-error/error';
+import StatusAlert from '@/components/StatusAlert.vue';
 import {useHubStore} from '@/stores/hub';
 import {useServicesStore} from '@/stores/services';
-import {computed, onUnmounted, reactive, set} from 'vue';
 
 const hubStore = useHubStore();
 const servicesStore = useServicesStore();
-const errorStore = useErrorStore();
 
 const nodeDetails = reactive({});
 
-const unwatchTrackers = [];
+let unwatchTrackers = [];
 onUnmounted(() => {
-  unwatchTrackers.forEach(unwatch => unwatch());
+  unwatchTrackers = [];
 });
 
 const nodesList = computed(() => {
@@ -56,9 +57,9 @@ const nodesList = computed(() => {
             drivers: servicesStore.getService(ServiceNames.Drivers, address, name),
             systems: servicesStore.getService(ServiceNames.Systems, address, name)
           });
-          unwatchTrackers.push(errorStore.registerTracker(nodeDetails[node.name].automations.metadataTracker));
-          unwatchTrackers.push(errorStore.registerTracker(nodeDetails[node.name].drivers.metadataTracker));
-          unwatchTrackers.push(errorStore.registerTracker(nodeDetails[node.name].systems.metadataTracker));
+          unwatchTrackers.push(nodeDetails[node.name].automations.metadataTracker);
+          unwatchTrackers.push(nodeDetails[node.name].drivers.metadataTracker);
+          unwatchTrackers.push(nodeDetails[node.name].systems.metadataTracker);
           return Promise.all([
             servicesStore.refreshMetadata(ServiceNames.Automations, address, name),
             servicesStore.refreshMetadata(ServiceNames.Drivers, address, name),
