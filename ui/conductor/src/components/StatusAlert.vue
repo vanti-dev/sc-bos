@@ -1,6 +1,6 @@
 <template>
   <v-tooltip
-      v-if="props.resource.streamError"
+      v-if="props.resource"
       v-model="show"
       bottom
       color="error">
@@ -25,7 +25,7 @@ import {statusCodeToString} from '@/components/ui-error/util';
 const props = defineProps({
   resource: {
     type: Object,
-    default: () => {}
+    default: () => null
   }
 });
 
@@ -33,9 +33,9 @@ const show = ref(false);
 
 const errorDetails = computed(() => {
   return {
-    errorCode: statusCodeToString(props.resource.streamError?.error?.code),
-    errorMessage: props.resource.streamError?.error?.message,
-    errorName: props.resource.streamError?.name
+    errorCode: statusCodeToString(props.resource?.error?.code),
+    errorMessage: props.resource?.error?.message,
+    errorName: props.resource?.name
   };
 });
 </script>
