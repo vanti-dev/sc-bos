@@ -68,7 +68,7 @@ func (n *Node) Name() string {
 func (n *Node) Register(s *grpc.Server) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
-	n.parent() // force the parent api to be initialised
+	n.parentLocked() // force the parent api to be initialised
 	for _, api := range n.apis {
 		api.Register(s)
 	}
@@ -178,18 +178,19 @@ func (n *Node) addRoute(name string, impl interface{}) Undo {
 
 func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
 	retryConcurrentOp(func() {
-		n.parent().AddChildTrait(name, traitName...)
+		n.parentLocked().AddChildTrait(name, traitName...)
 	})
 	return func() {
 		var child *traits.Child
+		parentModel := n.parent()
 		retryConcurrentOp(func() {
-			child = n.parent().RemoveChildTrait(name, traitName...)
+			child = parentModel.RemoveChildTrait(name, traitName...)
 		})
 		// There's a huge assumption here that child was added via AddChildTrait,
 		// this should be true but isn't guaranteed
 		if child != nil && len(child.Traits) == 0 {
 			retryConcurrentOp(func() {
-				_, _ = n.parent().RemoveChildByName(child.Name)
+				_, _ = parentModel.RemoveChildByName(child.Name)
 			})
 		}
 	}
@@ -200,6 +201,12 @@ func (n *Node) addClient(c ...any) {
 }
 
 func (n *Node) parent() *parent.Model {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	return n.parentLocked()
+}
+
+func (n *Node) parentLocked() *parent.Model {
 	if n.children == nil {
 		// add this model as a device
 		n.children = parent.NewModel()
