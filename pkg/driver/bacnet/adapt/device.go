@@ -63,7 +63,10 @@ func (d *DeviceBacnetService) ReadProperty(ctx context.Context, request *rpc.Rea
 	}
 
 	if readProperty.ErrorCode != 0 {
-		return nil, status.Errorf(codes.Internal, "Error(%d) from BACnet device", readProperty.ErrorCode)
+		return nil, status.Errorf(codes.Unavailable, "Error(%d) from BACnet device", readProperty.ErrorCode)
+	}
+	if len(readProperty.Object.Properties) == 0 {
+		return nil, status.Errorf(codes.Unavailable, "device responded with no properties")
 	}
 
 	result, err := PropertyToProtoReadResult(readProperty.Object.Properties[0])
