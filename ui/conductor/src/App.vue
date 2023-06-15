@@ -27,7 +27,7 @@
         v-if="hasNav"
         v-model="drawer"
         app
-        class="pt-4 pb-8 ml-4"
+        class="pt-4 pb-8 ml-2"
         clipped
         color="transparent"
         expand-on-hover
@@ -39,13 +39,13 @@
       <router-view
           v-if="hasNav"
           name="nav"
-          class="mx-4"
+          class="ml-1 mt-4"
           :style="miniVariant ? 'width: 40px;' : 'width: auto;'"/>
       <template #append>
         <v-footer class="pa-0" style="background:transparent">
           <v-col class="pa-0">
             <v-divider/>
-            <p class="my-2 text-caption text-center neutral--text text--lighten-2">
+            <p class="mt-2 mb-n4 text-caption text-center neutral--text text--lighten-2">
               Smart Core<br>{{ appVersion }}
             </p>
           </v-col>

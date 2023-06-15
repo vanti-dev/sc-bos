@@ -12,12 +12,9 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
   const appConfig = useAppConfigStore();
   const hubStore = useHubStore();
 
-  onMounted(() => {
-    init();
-  });
 
   /**
-   *
+   * @return {Promise}
    */
   function init() {
     // wait for config to load
@@ -42,8 +39,8 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
     unwatchErrors = errorStore.registerValue(alertMetadata);
   });
   onUnmounted(() => {
-    if (unwatchErrors) unwatchErrors();
     closeResource(alertMetadata);
+    if (unwatchErrors) unwatchErrors();
   });
 
   const acknowledgedCountMap = computed(() => convertProtoMap(alertMetadata.value?.acknowledgedCountsMap));
@@ -55,6 +52,8 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
 
   return {
     alertMetadata,
+
+    init,
 
     acknowledgedCountMap,
     floorCountsMap,
