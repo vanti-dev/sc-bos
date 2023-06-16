@@ -56,7 +56,6 @@ const seriesMap = reactive({
 const series = computed(() => {
   return Object.entries(seriesMap).map(([seriesName, seriesData]) => {
     const data = seriesMap[seriesName].data;
-    console.log(data);
 
     if (data && data.length > 0) {
       return {name: 'Occupancy', data};
