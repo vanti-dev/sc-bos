@@ -15,7 +15,7 @@
       <v-list-item-icon>
         <v-badge
             class="font-weight-bold"
-            :color="item.count ? 'primary' : 'transparent'"
+            :color="item.count && counts[item.count] ? 'primary' : 'transparent'"
             :content="counts[item.count]"
             overlap
             :value="counts[item.count]">
