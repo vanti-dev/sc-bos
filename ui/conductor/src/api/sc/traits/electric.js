@@ -9,7 +9,7 @@ import {GetDemandRequest, PullDemandRequest} from '@smart-core-os/sc-api-grpc-we
  * @param {ResourceValue<ElectricDemand.AsObject, PullDemandResponse>} resource
  */
 export function pullDemand(request, resource) {
-  pullResource('EnterLeave.pullDemand', resource, endpoint => {
+  pullResource('Electric.pullDemand', resource, endpoint => {
     const api = new ElectricApiPromiseClient(endpoint, null, clientOptions());
     const stream = api.pullDemand(pullDemandRequestFromObject(request));
     stream.on('data', msg => {

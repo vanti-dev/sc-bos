@@ -56,6 +56,7 @@ const seriesMap = reactive({
 const series = computed(() => {
   return Object.entries(seriesMap).map(([seriesName, seriesData]) => {
     const data = seriesMap[seriesName].data;
+    console.log(data);
 
     if (data && data.length > 0) {
       return {name: 'Occupancy', data};
@@ -98,9 +99,8 @@ const data = (records) => {
     const existingInterval = intervalsMap.find(
         intrvl => intrvl.x.getTime() === intervalStart.getTime()
     );
-
     // Updating the interval record if higher peopleCount comes in
-    if (record.occupancy.peopleCount > existingInterval.y) {
+    if (existingInterval && record.occupancy.peopleCount > existingInterval.y) {
       existingInterval.y = record.occupancy.peopleCount;
     }
   }
