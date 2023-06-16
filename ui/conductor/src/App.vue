@@ -30,12 +30,27 @@
         class="pt-4 pb-8 ml-2"
         clipped
         color="transparent"
-        expand-on-hover
+        :expand-on-hover="pinDrawer"
         floating
         :mini-variant.sync="miniVariant"
         :mini-variant-width="drawerWidth"
         width="275"
         permanent>
+      <v-tooltip v-if="hasNav && !miniVariant" right>
+        <template #activator="{ on, attrs }">
+          <v-icon
+              class="float-right"
+              color="white"
+              size="20"
+              style="position: absolute; left: 91%; top: 7px;"
+              v-bind="attrs"
+              v-on="on"
+              @click="pinDrawer = !pinDrawer">
+            {{ pinDrawer ? 'mdi-pin-outline' : 'mdi-pin-off-outline' }}
+          </v-icon>
+        </template>
+        {{ pinDrawer ? 'Pin navigation bar' : 'Unpin navigation bar' }}
+      </v-tooltip>
       <router-view
           v-if="hasNav"
           name="nav"
@@ -74,6 +89,7 @@ const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
 const drawer = ref(true);
 const miniVariant = ref(true);
 const drawerWidth = ref(70);
+const pinDrawer = ref(true);
 
 const store = useAccountStore();
 
