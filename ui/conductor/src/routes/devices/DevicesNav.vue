@@ -1,10 +1,16 @@
 <template>
   <v-list class="pa-0" dense nav>
-    <v-list-item v-for="(device, key) in availableSubSystems" :key="key" :to="device.to">
+    <v-list-item
+        v-for="(device, key) in availableSubSystems"
+        :key="key"
+        :to="device.to"
+        class="my-2">
       <v-list-item-icon>
         <v-icon>{{ device.icon }}</v-icon>
       </v-list-item-icon>
-      <v-list-item-content :class="device.class">{{ device.label }}</v-list-item-content>
+      <v-list-item-content :class="[device.class, 'text-truncate']">
+        {{ device.label }}
+      </v-list-item-content>
     </v-list-item>
   </v-list>
 </template>

@@ -9,11 +9,12 @@
     <v-list-item
         v-for="automation of automationTypeList"
         :key="automation.type"
-        :to="'/automations/'+automation.type">
+        :to="'/automations/'+automation.type"
+        class="my-2">
       <v-list-item-icon>
         <v-icon v-if="icon.hasOwnProperty(automation.type)">{{ icon[automation.type] }}</v-icon>
       </v-list-item-icon>
-      <v-list-item-content class="text-capitalize">{{ automation.type }}</v-list-item-content>
+      <v-list-item-content class="text-capitalize text-truncate">{{ automation.type }}</v-list-item-content>
     </v-list-item>
   </v-list>
 </template>
