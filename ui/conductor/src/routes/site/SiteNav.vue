@@ -13,7 +13,7 @@
               v-for="zone of zoneList"
               :key="zone"
               :to="'/site/zone/'+zone"
-              class="my-2">
+              class="my-2 text-truncate">
             <v-list-item-icon>
               <v-icon>mdi-select-all</v-icon>
             </v-list-item-icon>

@@ -27,7 +27,7 @@
         v-if="hasNav"
         v-model="drawer"
         app
-        class="pt-4 pb-8 ml-2"
+        :class="[!miniVariant ? 'pt-0' : 'pt-3', 'pb-8 ml-2']"
         clipped
         color="transparent"
         :expand-on-hover="pinDrawer"
@@ -36,32 +36,26 @@
         :mini-variant-width="drawerWidth"
         width="275"
         permanent>
-      <v-tooltip v-if="hasNav && !miniVariant" right>
-        <template #activator="{ on, attrs }">
-          <v-icon
-              class="float-right"
-              color="white"
-              size="20"
-              style="position: absolute; left: 91%; top: 7px;"
-              v-bind="attrs"
-              v-on="on"
-              @click="pinDrawer = !pinDrawer">
-            {{ pinDrawer ? 'mdi-pin-outline' : 'mdi-pin-off-outline' }}
-          </v-icon>
-        </template>
+      <v-btn
+          v-if="hasNav && !miniVariant"
+          x-small
+          text
+          class="d-block white--text text-caption text-center ma-0 pa-0 mb-n3 ml-1 mt-1"
+          width="100%"
+          @click="pinDrawer = !pinDrawer">
         {{ pinDrawer ? 'Pin navigation bar' : 'Unpin navigation bar' }}
-      </v-tooltip>
+      </v-btn>
       <router-view
           v-if="hasNav"
           name="nav"
           class="ml-1 mt-4"
           :style="miniVariant ? 'width: 40px;' : 'width: auto;'"/>
-      <template #append>
+      <template v-if="!miniVariant" #append>
         <v-footer class="pa-0" style="background:transparent">
           <v-col class="pa-0">
             <v-divider/>
             <p class="mt-2 mb-n4 text-caption text-center neutral--text text--lighten-2">
-              Smart Core<br>{{ appVersion }}
+              Smart Core {{ appVersion }}
             </p>
           </v-col>
         </v-footer>
@@ -104,7 +98,7 @@ const appVersion = computed(() => {
 
 watch(miniVariant, expanded => {
   if (expanded) {
-    drawerWidth.value = 70;
+    drawerWidth.value = 45;
   } else {
     drawerWidth.value = 275;
   }
@@ -131,5 +125,9 @@ watch(miniVariant, expanded => {
 
 .section-divider {
   border-color: currentColor;
+}
+
+.pin-sidebar-btn {
+  width: 100%;
 }
 </style>

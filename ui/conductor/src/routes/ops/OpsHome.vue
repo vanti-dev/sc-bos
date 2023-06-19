@@ -20,10 +20,10 @@
 import {computed} from 'vue';
 import {useAppConfigStore} from '@/stores/app-config';
 
-import OccupancyCard from '@/routes/ops/components/OccupancyCard.vue';
+import ScStatusCard from '@/routes/ops/components/ScStatusCard.vue';
 import EnvironmentalCard from '@/routes/ops/components/EnvironmentalCard.vue';
 import EnergyCard from '@/routes/ops/components/EnergyCard.vue';
-import ScStatusCard from '@/routes/ops/components/ScStatusCard.vue';
+import OccupancyCard from '@/routes/ops/components/OccupancyCard.vue';
 
 const appConfig = useAppConfigStore();
 const buildingZone = computed(() => appConfig.config?.ops?.buildingZone ?? '');
