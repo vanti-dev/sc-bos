@@ -6,6 +6,7 @@
         :name="props.item.name"
         :paused="props.paused">
       <EnterLeaveEventCell v-bind="resource"/>
+      <StatusAlert :resource="resource.streamError"/>
     </WithEnterLeave>
     <WithElectricDemand
         v-if="hasCell('ElectricDemand')"
@@ -13,6 +14,7 @@
         :name="props.item.name"
         :paused="props.paused">
       <ElectricDemandCell v-bind="resource"/>
+      <StatusAlert :resource="resource.streamError"/>
     </WithElectricDemand>
     <WithAirTemperature
         v-if="hasCell('AirTemperature')"
@@ -20,6 +22,7 @@
         :name="props.item.name"
         :paused="props.paused">
       <AirTemperatureCell v-bind="resource"/>
+      <StatusAlert :resource="resource.streamError"/>
     </WithAirTemperature>
     <WithLighting
         v-if="hasCell('Light')"
@@ -27,6 +30,7 @@
         :name="props.item.name"
         :paused="props.paused">
       <LightCell v-bind="resource"/>
+      <StatusAlert :resource="resource.streamError"/>
     </WithLighting>
     <WithOccupancy
         v-if="hasCell('Occupancy')"
@@ -34,6 +38,7 @@
         :name="props.item.name"
         :paused="props.paused">
       <OccupancyCell v-bind="resource"/>
+      <StatusAlert :resource="resource.streamError"/>
     </WithOccupancy>
     <WithStatus
         v-if="hasCell('StatusLog')"
@@ -41,6 +46,7 @@
         :name="props.item.name"
         :paused="props.paused">
       <StatusLogCell v-bind="resource"/>
+      <StatusAlert :resource="resource.streamError"/>
     </WithStatus>
   </span>
 </template>
@@ -60,6 +66,7 @@ import WithLighting from './renderless/WithLighting.vue';
 import WithOccupancy from './renderless/WithOccupancy.vue';
 import LightCell from './trait-cells/LightCell.vue';
 import OccupancyCell from './trait-cells/OccupancyCell.vue';
+import StatusAlert from '@/components/StatusAlert.vue';
 
 const props = defineProps({
   paused: {
