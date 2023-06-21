@@ -20,7 +20,7 @@ const props = defineProps({
   },
   width: {
     type: String,
-    default: '430px'
+    default: '100%'
   },
   height: {
     type: String,
@@ -149,17 +149,17 @@ async function pollReadings(req, type) {
   seriesMap[type].handle = setTimeout(() => pollReadings(req, type), pollDelay.value);
 }
 
-
 //
 //
 // Bar graph styling and other options
 const options = {
   chart: {
     animations: {
+      easing: 'easeinout',
       enabled: true,
-      dynamicAnimation: {
+      animateGradually: {
         enabled: true,
-        speed: 100
+        delay: 150
       }
     },
     id: 'occupancy-chart',
@@ -243,7 +243,6 @@ Object.entries(seriesMap).forEach(([name, series]) => {
     }
   }, {immediate: true, deep: true, flush: 'sync'});
 });
-
 
 //
 //
