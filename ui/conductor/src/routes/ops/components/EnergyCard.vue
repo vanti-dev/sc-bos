@@ -1,12 +1,10 @@
 <template>
-  <content-card class="mb-8 d-flex flex-column px-6 pt-md-6 pb-md-8 pb-sm-8 ">
+  <content-card class="mb-8 d-flex flex-column pt-6 pl-6 pr-8">
     <h4 class="text-h4 py-0 pt-lg-2 pb-4 pl-4">Energy</h4>
     <energy-graph
-        class="flex-grow-1 d-none d-md-block"
-        width="100%"
         :generated="props.generated"
         :metered="props.metered"/>
-    <v-row class="d-flex flex-row justify-center mt-10 mb-1">
+    <v-row class="d-flex flex-row justify-center mt-10 mb-1 ml-12">
       <v-col cols="auto" class="text-h1 align-self-center" style="line-height: 0.3em;">
         <WithElectricDemand
             v-slot="{resource}"

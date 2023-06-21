@@ -24,7 +24,7 @@ const props = defineProps({
   },
   width: {
     type: String,
-    default: '430px'
+    default: '100%'
   },
   height: {
     type: String,
@@ -204,10 +204,11 @@ const series = computed(() => {
 const options = {
   chart: {
     animations: {
+      easing: 'easeinout',
       enabled: true,
-      dynamicAnimation: {
+      animateGradually: {
         enabled: true,
-        speed: 100
+        delay: 150
       }
     },
     id: 'energy-chart',
@@ -320,7 +321,8 @@ Object.entries(seriesMap).forEach(([name, series]) => {
 </script>
 
 <style lang="scss" scoped>
-#energy-graph {
-  height: 135px;
+#energy-chart, #energy-graph {
+  width: 100%;
+  transition: all .5s ease-in-out;
 }
 </style>
