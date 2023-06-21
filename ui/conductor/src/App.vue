@@ -30,7 +30,7 @@
         :class="[!miniVariant ? 'pt-0' : 'pt-3', 'pb-8 ml-2']"
         clipped
         color="transparent"
-        :expand-on-hover="pinDrawer"
+        :expand-on-hover="!pinDrawer"
         floating
         :mini-variant.sync="miniVariant"
         :mini-variant-width="drawerWidth"
@@ -40,10 +40,10 @@
           v-if="hasNav && !miniVariant"
           x-small
           text
-          class="d-block white--text text-caption text-center ma-0 pa-0 mb-n3 ml-1 mt-1"
+          class="d-block neutral--text text--lighten-4 text-caption text-center ma-0 pa-0 mb-n3 ml-1 mt-1"
           width="100%"
           @click="pinDrawer = !pinDrawer">
-        {{ pinDrawer ? 'Pin navigation bar' : 'Unpin navigation bar' }}
+        {{ !pinDrawer ? 'Pin navigation' : 'Unpin navigation' }}
       </v-btn>
       <router-view
           v-if="hasNav"
@@ -69,7 +69,8 @@
 </template>
 
 <script setup>
-import {computed, ref, watch} from 'vue';
+import {computed, watch} from 'vue';
+import {storeToRefs} from 'pinia';
 
 import AccountBtn from '@/components/AccountBtn.vue';
 import AppMenu from '@/components/AppMenu.vue';
@@ -77,13 +78,11 @@ import {usePage} from '@/components/page.js';
 import ScLogo from '@/components/ScLogo.vue';
 import ErrorView from '@/components/ui-error/ErrorView.vue';
 import {useAccountStore} from '@/stores/account.js';
+import {usePageStore} from '@/stores/page';
 
 const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
 
-const drawer = ref(true);
-const miniVariant = ref(true);
-const drawerWidth = ref(70);
-const pinDrawer = ref(true);
+const {drawer, miniVariant, drawerWidth, pinDrawer} = storeToRefs(usePageStore());
 
 const store = useAccountStore();
 

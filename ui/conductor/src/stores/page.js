@@ -2,10 +2,10 @@ import {defineStore} from 'pinia';
 import {ref} from 'vue';
 
 export const usePageStore = defineStore('page', () => {
+  // RIGHT SIDEBAR //
   const showSidebar = ref(false);
   const sidebarData = ref({});
   const sidebarTitle = ref('');
-
   // for use when targeting a specific node
   const sidebarNode = ref({name: ''});
 
@@ -25,12 +25,27 @@ export const usePageStore = defineStore('page', () => {
     sidebarData.value = {};
   };
 
+  //
+  //
+  // LEFT NAVIGATION SIDEBAR
+  const drawer = ref(true);
+  const miniVariant = ref(true);
+  const drawerWidth = ref(70);
+  const pinDrawer = ref(false);
+
   return {
+    // RIGHT SIDEBAR
     showSidebar,
     sidebarData,
     sidebarTitle,
     sidebarNode,
     toggleSidebar,
-    closeSidebar
+    closeSidebar,
+
+    // LEFT NAVIGATION SIDEBAR
+    drawer,
+    miniVariant,
+    drawerWidth,
+    pinDrawer
   };
 });
