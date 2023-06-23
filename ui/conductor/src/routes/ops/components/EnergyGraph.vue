@@ -27,7 +27,7 @@ const props = defineProps({
     type: String,
     default: '275px'
   },
-  span: { // how wide the bars of the histogram are
+  span: {
     type: Number,
     default: 15 * 60 * 1000 // in ms
   }
@@ -74,18 +74,39 @@ const baseRequest = (name) => {
 };
 
 
-// Function to calculate the difference between two data points
+/**
+ * Function to calculate the difference between two data points
+ *
+ * @param {*} lastReading
+ * @param {*} record
+ * @return {number}
+ */
 const calculateDifference = (lastReading, record) => {
   return record.meterReading.usage - lastReading.meterReading.usage;
 };
 
-// Function to add a data point for the difference if the meter was reset
+
+/**
+ * Function to add a data point for the difference if the meter was reset
+ *
+ * @param {*} lastReading
+ * @param {*} records
+ * @param {*} dataPoints
+ */
 const addDataPointForReset = (lastReading, records, dataPoints) => {
   const diff = calculateDifference(records[0], lastReading);
   dataPoints.push({x: new Date(timestampToDate(lastReading.recordTime)), y: diff});
 };
 
-// Function to add data points for each segment if the time difference is greater than the specified span
+
+/**
+ * Function to add data points for each segment if the time difference is greater than the specified span
+ *
+ * @param {*} lastReading
+ * @param {*} record
+ * @param {*} span
+ * @param {*} dataPoints
+ */
 const addDataPointsForSegment = (lastReading, record, span, dataPoints) => {
   const segmentCount = Math.floor(
       (timestampToDate(record.recordTime) - timestampToDate(lastReading.recordTime)) / span
@@ -99,7 +120,13 @@ const addDataPointsForSegment = (lastReading, record, span, dataPoints) => {
   }
 };
 
-// Function to add a data point for the final reading if it hasn't already been added
+/**
+ * Function to add a data point for the final reading if it hasn't already been added
+ *
+ * @param {MeterReadingRecord.AsObject} lastReading
+ * @param {MeterReadingRecord.AsObject[]} records
+ * @param {{x: Date, y: number}[]} dataPoints
+ */
 const addDataPointForFinalReading = (lastReading, records, dataPoints) => {
   const finalReading = records[records.length - 1];
   const [t0, t1] = [timestampToDate(lastReading.recordTime), timestampToDate(finalReading.recordTime)];
@@ -110,7 +137,13 @@ const addDataPointForFinalReading = (lastReading, records, dataPoints) => {
   }
 };
 
-// Function to collect the data points which should be displayed on the graph
+/**
+ * Function to collect the data points which should be displayed on the graph
+ *
+ * @param {number} span
+ * @param {MeterReadingRecord.AsObject[]} records
+ * @return {{x: Date, y: number}[]}
+ */
 const data = (span, records) => {
   // If there are no records, return an empty array
   if (records.length === 0) {
@@ -151,6 +184,7 @@ const data = (span, records) => {
 
 
 /**
+ * Async function to poll for meter readings
  *
  * @param {*} req
  * @param {string} type
@@ -158,11 +192,18 @@ const data = (span, records) => {
 async function pollReadings(req, type) {
   const all = [];
   try {
+    // Loop until all meter reading records have been retrieved
     while (true) {
+      // Retrieve a page of meter reading records
       const page = await listMeterReadingHistory(req, {});
 
+      // Add the records to the 'all' array
       all.push(...page.meterReadingRecordsList);
+
+      // Update the page token for the next page of records
       req.pageToken = page.nextPageToken;
+
+      // If there are no more pages, break out of the loop
       if (!req.pageToken) {
         break;
       }
@@ -171,6 +212,7 @@ async function pollReadings(req, type) {
     console.error('error getting meter readings', e);
   }
 
+  // Update the records and handle for the specified series type
   seriesMap[type].records = all;
   seriesMap[type].handle = setTimeout(() => pollReadings(req, type), pollDelay.value);
 }
@@ -214,6 +256,13 @@ const chartOptions = {
   maintainAspectRatio: false,
   responsive: true,
   plugins: {
+    htmlLegend: {
+      // ID of the container to put the legend in
+      containerID: 'legend-container'
+    },
+    legend: {
+      display: false
+    },
     title: {
       display: true,
       text: '',
@@ -224,9 +273,6 @@ const chartOptions = {
       padding: {
         bottom: 0
       }
-    },
-    legend: {
-      display: true
     },
     tooltip: {
       backgroundColor: 'rgba(0, 0, 0, 1)',
@@ -279,9 +325,9 @@ const chartOptions = {
         color: ''
       }
     }
-  }
+  },
+  type: 'line'
 };
-
 
 // Define a computed property that restructures the data for the chart
 const chartData = computed(() => {
@@ -400,16 +446,16 @@ Object.entries(seriesMap).forEach(([name, series]) => {
       pollReadings(request, name);
     }
   }, {immediate: true, deep: true, flush: 'sync'});
-});
 
-Object.entries(seriesMap).forEach(([name, series]) => {
   // Watching records for changes
   watch(() => series.records, (records) => {
     const seriesCollection = data(props.span, records);
 
+    // On first load, set the series data to the seriesCollection
     if (series.data.length === 0) {
       series.data = seriesCollection;
     } else {
+      // Otherwise, push the last value from the seriesCollection to the series data
       series.data.push(seriesCollection[seriesCollection.length - 1]);
       series.data.shift();
     }
