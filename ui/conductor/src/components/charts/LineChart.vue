@@ -67,7 +67,7 @@ const getOrCreateLegendList = (id) => {
     listContainer.style.display = 'flex';
     listContainer.style.flexDirection = 'row';
     listContainer.style.justifyContent = 'end';
-    listContainer.style.margin = '-40px 15px 20px 0';
+    listContainer.style.margin = '-40px 0 20px 0';
     listContainer.style.padding = 0;
 
     legendContainer.appendChild(listContainer);

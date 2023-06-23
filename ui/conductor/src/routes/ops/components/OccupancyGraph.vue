@@ -38,9 +38,7 @@ const seriesMap = reactive({
     baseRequest: computed(() => {
       return baseRequest(props.name);
     }),
-    data: computed(() => {
-      return data(seriesMap.occupancy.records);
-    }),
+    data: [],
     handle: 0,
     records: /** @type {OccupancyRecord.AsObject[]} */ []
   }
@@ -162,6 +160,7 @@ const chartOptions = {
     }
   },
   maintainAspectRatio: false,
+  mode: 'none',
   responsive: true,
   plugins: {
     title: {
@@ -267,7 +266,28 @@ const chartData = computed(() => {
 //
 //
 // Watcher
+const handleRecords = (newRecords, existingRecords) => {
+  // combine the two parameter array values by matching the x values and updating the y values
+  const combinedRecords = newRecords.map((newRecord) => {
+    const existingRecord = existingRecords.find(
+        (record) => record.x.getTime() === newRecord.x.getTime()
+    );
+
+    if (existingRecord) {
+      return {
+        x: newRecord.x,
+        y: newRecord.y > existingRecord.y ? newRecord.y : existingRecord.y
+      };
+    } else {
+      return newRecord;
+    }
+  });
+
+  return combinedRecords;
+};
+
 Object.entries(seriesMap).forEach(([name, series]) => {
+  // watch for new base request
   watch(() => series.baseRequest, (request) => {
     clearTimeout(series.handle);
     series.records = [];
@@ -275,6 +295,18 @@ Object.entries(seriesMap).forEach(([name, series]) => {
     // create new stream
     if (request) {
       pollReadings(request, name);
+    }
+  }, {immediate: true, deep: true, flush: 'sync'});
+
+  // watch for new records
+  watch(() => series.records, (records) => {
+    const newRecords = data(records);
+
+    if (!series.data.length) {
+      series.data = data(records);
+    } else {
+      const existingRecords = series.data;
+      series.data = handleRecords(newRecords, existingRecords);
     }
   }, {immediate: true, deep: true, flush: 'sync'});
 });

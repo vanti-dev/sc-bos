@@ -14,10 +14,6 @@ import {Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, Lin
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 const props = defineProps({
-  chartId: {
-    type: String,
-    default: 'bar-chart'
-  },
   datasetIdKey: {
     type: String,
     default: 'label'
