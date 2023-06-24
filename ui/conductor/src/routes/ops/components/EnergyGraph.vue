@@ -1,16 +1,13 @@
 <template>
   <div id="energy-graph" :style="{width, height}">
-    <apexchart
-        type="area"
-        height="100%"
-        :options="options"
-        :series="series"/>
+    <LineChart :chart-options="chartOptions" :chart-data="chartData"/>
   </div>
 </template>
 
 <script setup>
 import {timestampToDate} from '@/api/convpb';
 import {listMeterReadingHistory} from '@/api/sc/traits/meter-history';
+import LineChart from '@/components/charts/LineChart.vue';
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
@@ -30,7 +27,7 @@ const props = defineProps({
     type: String,
     default: '275px'
   },
-  span: { // how wide the bars of the histogram are
+  span: {
     type: Number,
     default: 15 * 60 * 1000 // in ms
   }
@@ -39,14 +36,26 @@ const props = defineProps({
 const pollDelay = computed(() => props.span / 10);
 const now = ref(Date.now());
 const nowHandle = ref(0);
-onMounted(() => {
-  nowHandle.value = setInterval(() => {
-    now.value = Date.now();
-  }, pollDelay.value);
+
+const seriesMap = reactive({
+  metered: {
+    baseRequest: computed(() => {
+      return baseRequest(props.metered);
+    }),
+    data: [],
+    handle: 0,
+    records: /** @type {MeterReadingRecord.AsObject[]} */ []
+  },
+  generated: {
+    baseRequest: computed(() => {
+      return baseRequest(props.generated);
+    }),
+    data: [],
+    handle: 0,
+    records: /** @type {MeterReadingRecord.AsObject[]} */ []
+  }
 });
-onUnmounted(() => {
-  clearInterval(nowHandle.value);
-});
+
 
 // Return an array of object with request details
 const baseRequest = (name) => {
@@ -64,91 +73,118 @@ const baseRequest = (name) => {
   };
 };
 
-// Collect the data points which should be displayed on the graph
-const data = (span, records) => {
-  const dst = [];
 
-  if (records.length > 0) {
-    // create a list of data points that show the change in value since the previous reading
-    /** @type {MeterReadingRecord.AsObject} */
-    let lastReading = null;
-    /** @type {MeterReadingRecord.AsObject} */
-    let readingCur = null;
-
-    for (const record of records) {
-      if (!lastReading) {
-        lastReading = record;
-        readingCur = record;
-        continue;
-      }
-
-      // special case if the meter was reset
-      if (readingCur.meterReading.usage > record.meterReading.usage) {
-        const diff = readingCur.meterReading.usage - lastReading.meterReading.usage;
-        dst.push({
-          x: new Date(timestampToDate(readingCur.recordTime)),
-          y: diff
-        });
-        lastReading = readingCur = record;
-        continue;
-      }
-      readingCur = record;
-      const t0 = timestampToDate(lastReading.recordTime);
-      const t1 = timestampToDate(record.recordTime);
-      const d = t1 - t0;
-      if (d > span) {
-        const segmentCount = Math.floor(d / span);
-        const diff = (record.meterReading.usage - lastReading.meterReading.usage) / segmentCount;
-        lastReading = record;
-        dst.push({
-          x: new Date(t1),
-          y: diff
-        });
-      }
-    }
-    // process the last reading, if we haven't already
-    const finalReading = records[records.length - 1];
-    const t0 = timestampToDate(lastReading.recordTime);
-    const t1 = timestampToDate(finalReading.recordTime);
-    if (t0.getTime() !== t1.getTime()) {
-      const diff = finalReading.meterReading.usage - lastReading.meterReading.usage;
-      dst.push({
-        x: new Date(t1),
-        y: diff
-      });
-    }
-  }
-  return dst;
+/**
+ * Function to calculate the difference between two data points
+ *
+ * @param {*} lastReading
+ * @param {*} record
+ * @return {number}
+ */
+const calculateDifference = (lastReading, record) => {
+  return record.meterReading.usage - lastReading.meterReading.usage;
 };
 
 
-const seriesMap = reactive({
-  metered: {
-    baseRequest: computed(() => {
-      return baseRequest(props.metered);
-    }),
-    data: computed(() => {
-      return data(props.span, seriesMap.metered.records);
-    }),
-    handle: 0,
-    records: /** @type {MeterReadingRecord.AsObject[]} */ []
-  },
-  generated: {
-    baseRequest: computed(() => {
-      return baseRequest(props.generated);
-    }),
-    data: computed(() => {
-      return data(props.span, seriesMap.generated.records);
-    }),
-    handle: 0,
-    records: /** @type {MeterReadingRecord.AsObject[]} */ []
-  }
-});
+/**
+ * Function to add a data point for the difference if the meter was reset
+ *
+ * @param {*} lastReading
+ * @param {*} records
+ * @param {*} dataPoints
+ */
+const addDataPointForReset = (lastReading, records, dataPoints) => {
+  const diff = calculateDifference(records[0], lastReading);
+  dataPoints.push({x: new Date(timestampToDate(lastReading.recordTime)), y: diff});
+};
 
-// Graph status message
-const message = ref('');
 
 /**
+ * Function to add data points for each segment if the time difference is greater than the specified span
+ *
+ * @param {*} lastReading
+ * @param {*} record
+ * @param {*} span
+ * @param {*} dataPoints
+ */
+const addDataPointsForSegment = (lastReading, record, span, dataPoints) => {
+  const segmentCount = Math.floor(
+      (timestampToDate(record.recordTime) - timestampToDate(lastReading.recordTime)) / span
+  );
+  const diff = calculateDifference(lastReading, record) / segmentCount;
+
+  for (let i = 1; i <= segmentCount; i++) {
+    const x = new Date(timestampToDate(lastReading.recordTime).getTime() + i * span);
+    const y = diff;
+    dataPoints.push({x, y});
+  }
+};
+
+/**
+ * Function to add a data point for the final reading if it hasn't already been added
+ *
+ * @param {MeterReadingRecord.AsObject} lastReading
+ * @param {MeterReadingRecord.AsObject[]} records
+ * @param {{x: Date, y: number}[]} dataPoints
+ */
+const addDataPointForFinalReading = (lastReading, records, dataPoints) => {
+  const finalReading = records[records.length - 1];
+  const [t0, t1] = [timestampToDate(lastReading.recordTime), timestampToDate(finalReading.recordTime)];
+
+  if (t0.getTime() !== t1.getTime()) {
+    const diff = calculateDifference(lastReading, finalReading);
+    dataPoints.push({x: new Date(t1), y: diff});
+  }
+};
+
+/**
+ * Function to collect the data points which should be displayed on the graph
+ *
+ * @param {number} span
+ * @param {MeterReadingRecord.AsObject[]} records
+ * @return {{x: Date, y: number}[]}
+ */
+const data = (span, records) => {
+  // If there are no records, return an empty array
+  if (records.length === 0) {
+    return [];
+  }
+
+  // Initialize an empty array to hold the data points
+  const dataPoints = [];
+
+  // Initialize the last reading to the first record
+  let lastReading = records[0];
+
+  // Iterate through the records and calculate the data points
+  for (const record of records.slice(1)) {
+    // If the meter was reset, add a data point for the difference
+    if (lastReading.meterReading.usage > record.meterReading.usage) {
+      addDataPointForReset(lastReading, records, dataPoints);
+      lastReading = record;
+      continue;
+    }
+
+    // Calculate the time difference between the last and current records
+    const d = timestampToDate(record.recordTime) - timestampToDate(lastReading.recordTime);
+
+    // If the time difference is greater than the specified span, add data points for each segment
+    if (d > span) {
+      addDataPointsForSegment(lastReading, record, span, dataPoints);
+      lastReading = record;
+    }
+  }
+
+  // Add a data point for the final reading if it hasn't already been added
+  addDataPointForFinalReading(lastReading, records, dataPoints);
+
+  // Return the data points array
+  return dataPoints;
+};
+
+
+/**
+ * Async function to poll for meter readings
  *
  * @param {*} req
  * @param {string} type
@@ -156,29 +192,31 @@ const message = ref('');
 async function pollReadings(req, type) {
   const all = [];
   try {
+    // Loop until all meter reading records have been retrieved
     while (true) {
+      // Retrieve a page of meter reading records
       const page = await listMeterReadingHistory(req, {});
 
+      // Add the records to the 'all' array
       all.push(...page.meterReadingRecordsList);
+
+      // Update the page token for the next page of records
       req.pageToken = page.nextPageToken;
+
+      // If there are no more pages, break out of the loop
       if (!req.pageToken) {
         break;
       }
-      message.value = 'No data available';
     }
   } catch (e) {
     console.error('error getting meter readings', e);
   }
 
+  // Update the records and handle for the specified series type
   seriesMap[type].records = all;
   seriesMap[type].handle = setTimeout(() => pollReadings(req, type), pollDelay.value);
 }
 
-onUnmounted(() => {
-  Object.values(seriesMap).forEach(series => {
-    clearTimeout(series.handle);
-  });
-});
 
 //
 //
@@ -197,118 +235,214 @@ const series = computed(() => {
   }).filter(obj => obj !== null);
 });
 
-
 //
 //
-// Line graph styling and other options
-const options = {
-  chart: {
-    animations: {
-      easing: 'easeinout',
-      enabled: true,
-      animateGradually: {
-        enabled: true,
-        delay: 150
-      }
-    },
-    id: 'energy-chart',
-    foreColor: '#fff',
-    toolbar: {
-      show: false
-    },
-    zoom: {
-      enabled: false
-    }
+// Chart Options and Data
+const chartOptions = {
+  animation: {
+    duration: 500
   },
-  colors: ['var(--v-primary-base)', 'orange'],
-  dataLabels: {
-    enabled: false
+  hover: {
+    intersect: false
   },
-  fill: {
-    colors: ['var(--v-primary-base)', 'transparent'],
-    gradient: {
-      enabled: true,
-      opacityFrom: 0.55,
-      opacityTo: 0.15,
-      gradientToColors: ['var(--v-primary-darken1)']
-    }
-  },
-  grid: {
-    borderColor: 'var(--v-neutral-lighten2)',
-    yaxis: {
-      lines: {
-        show: false
-      }
-    },
+  layout: {
     padding: {
-      top: 0
-      // bottom: 25
+      top: 0,
+      right: 10,
+      bottom: 0,
+      left: 10
     }
   },
-  legend: {
-    horizontalAlign: 'right',
-    itemMargin: {
-      horizontal: 10 // spacing
+  maintainAspectRatio: false,
+  responsive: true,
+  plugins: {
+    htmlLegend: {
+      // ID of the container to put the legend in
+      containerID: 'legend-container'
     },
-    offsetY: -5,
-    onItemClick: {
-      toggleDataSeries: true
+    legend: {
+      display: false
     },
-    onItemHover: {
-      highlightDataSeries: true
+    title: {
+      display: true,
+      text: '',
+      color: '#f0f0f0',
+      font: {
+        size: 16
+      },
+      padding: {
+        bottom: 0
+      }
     },
-    position: 'top'
-  },
-  noData: {
-    text: message.value,
-    align: 'center',
-    verticalAlign: 'middle',
-    offsetX: 0,
-    offsetY: 0,
-    style: {
-      color: message.value.includes('Pulling') ? 'white' : 'red',
-      fontSize: '18px'
+    tooltip: {
+      backgroundColor: 'rgba(0, 0, 0, 1)',
+      bodyColor: '#fff',
+      borderColor: '#000',
+      borderWidth: 2,
+      cornerRadius: 5,
+      displayColors: false,
+      interaction: {
+        axis: 'xy',
+        mode: 'index'
+      },
+      padding: 12,
+      titleColor: '#fff'
     }
   },
-  stroke: {
-    width: 2,
-    curve: 'smooth',
-    colors: ['var(--v-primary-base)', 'orange']
-  },
-  tooltip: {
-    theme: 'dark',
+  scales: {
+    y: {
+      border: {
+        color: 'white'
+      },
+      grid: {
+        color: 'rgba(100, 100, 100, 0.35)'
+      },
+      ticks: {
+        color: '#fff',
+        display: true,
+        font: {
+          size: 12// Specify the desired font size
+        }
+      },
+      title: {
+        display: false,
+        text: ''
+      },
+      min: 0
+    },
     x: {
-      format: 'dd MMM yyyy',
-      formatter: function(value, {series, seriesIndex, dataPointIndex, w}) {
-        const newDate = new Date(value);
-        return newDate.toLocaleString();
+      border: {
+        color: 'white'
+      },
+      ticks: {
+        align: 'center',
+        color: '#fff',
+        display: true,
+        font: {
+          size: 10// Specify the desired font size
+        },
+        // Limit xAxis label rotation to 0 degrees
+        maxRotation: 0,
+        minRotation: 0
+      },
+      grid: {
+        color: ''
       }
     }
   },
-  xaxis: {
-    labels: {
-      datetimeFormatter: {
-        year: 'yyyy',
-        month: 'MMM \'yy',
-        day: 'dd MMM',
-        hour: 'HH:mm'
-      },
-      datetimeUTC: false
-    },
-    type: 'datetime'
-  },
-  yaxis: {
-    decimalsInFloat: 0
-  }
+  type: 'line'
 };
+
+// Define a computed property that restructures the data for the chart
+const chartData = computed(() => {
+  // Initialize empty arrays for labels and values
+  let labels = {
+    metered: [],
+    generated: []
+  };
+
+  const values = {
+    metered: [],
+    generated: []
+  };
+
+  // Get the data from the series prop
+  const dataset = series.value;
+
+  // Define a function to format the time
+  const timeFormat = (time) => {
+    const hour = time.getHours().toString().padStart(2, '0');
+    const minute = time.getMinutes().toString().padStart(2, '0');
+    const formattedTime = hour + ':' + minute;
+
+    return formattedTime;
+  };
+
+  // Loop through each set of data in the dataset
+  dataset.forEach((set, index) => {
+    // Loop through each data point in the set
+    set.data.forEach((data, index) => {
+      // If the data point has an x value
+      if (data && data.x) {
+        // Create a new date object from the x value
+        const newDate = new Date(data.x);
+        // Format the time using the timeFormat function
+        const formattedTime = timeFormat(newDate);
+
+        // If the set is for metered data, add the time and value to the metered arrays
+        if (set.name === 'Metered') {
+          labels.metered.push(formattedTime);
+          values.metered.push(data.y);
+        } else {
+          // Otherwise, add the time and value to the generated arrays
+          labels.generated.push(formattedTime);
+          values.generated.push(data.y);
+        }
+      }
+    });
+  });
+
+  // Reduce duplicate values in the labels array
+  labels = [...labels.metered, ...labels?.generated].reduce((acc, curr) => {
+    if (acc.indexOf(curr) === -1) {
+      acc.push(curr);
+    }
+    return acc;
+  }, []);
+
+  // Return the restructured data for the chart
+  return {
+    labels, // collection of time intervals
+    datasets: [
+      {
+        borderColor: 'orange',
+        data: values.generated,
+        fill: false,
+        label: 'Generated', // tooltip label
+        mode: 'nearest', // 'index' or 'nearest
+        pointBackgroundColor: 'rgba(0, 0, 0, 0)',
+        pointBorderColor: 'rgba(0, 0, 0, 0)',
+        pointHoverBackgroundColor: 'rgb(255, 255, 255)',
+        pointHoverBorderColor: 'orange',
+        pointStyle: 'circle',
+        tension: 0.35
+      },
+      {
+        // Setting background gradient on metered data
+        backgroundColor: (ctx) => {
+          const canvas = ctx.chart.ctx;
+          const gradient = canvas.createLinearGradient(0, 0, 0, 425);
+
+          gradient.addColorStop(0, '#00bed6');
+          gradient.addColorStop(0.5, 'rgba(51, 142, 161, 0.75)');
+          gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // Darker shade of the color
+
+          return gradient;
+        },
+        borderColor: '#00bed6',
+        data: values.metered, // actual data
+        fill: true,
+        label: 'Metered', // tooltip label
+        mode: 'nearest', // 'index' or 'nearest
+        pointBackgroundColor: 'rgba(0, 0, 0, 0)',
+        pointBorderColor: 'rgba(0, 0, 0, 0)',
+        pointHoverBackgroundColor: 'rgb(255, 255, 255)',
+        pointHoverBorderColor: '#00bed6',
+        pointStyle: 'circle',
+        tension: 0.35
+      }
+    ]
+  };
+});
 
 
 //
 //
 // Watcher
+// Watch for changes to the series prop
 Object.entries(seriesMap).forEach(([name, series]) => {
+  // Watching baseRequest for changes
   watch(() => series.baseRequest, (request) => {
-    message.value = 'Pulling data';
     clearTimeout(series.handle);
     series.records = [];
 
@@ -317,12 +451,39 @@ Object.entries(seriesMap).forEach(([name, series]) => {
       pollReadings(request, name);
     }
   }, {immediate: true, deep: true, flush: 'sync'});
+
+  // Watching records for changes
+  watch(() => series.records, (records) => {
+    const seriesCollection = data(props.span, records);
+
+    // On first load, set the series data to the seriesCollection
+    if (series.data.length === 0) {
+      series.data = seriesCollection;
+    } else {
+      // Otherwise, push the last value from the seriesCollection to the series data
+      series.data.push(seriesCollection[seriesCollection.length - 1]);
+      series.data.shift();
+    }
+  }, {immediate: true, deep: true, flush: 'sync'});
+});
+
+//
+//
+// Lifecycle
+onMounted(() => {
+  nowHandle.value = setInterval(() => {
+    now.value = Date.now();
+  }, pollDelay.value);
+});
+
+onUnmounted(() => {
+  clearInterval(nowHandle.value);
+
+  Object.values(seriesMap).forEach(series => {
+    clearTimeout(series.handle);
+  });
 });
 </script>
 
 <style lang="scss" scoped>
-#energy-chart, #energy-graph {
-  width: 100%;
-  transition: all .5s ease-in-out;
-}
 </style>

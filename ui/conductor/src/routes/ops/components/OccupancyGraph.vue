@@ -1,15 +1,12 @@
 <template>
   <div id="occupancy-graph" :style="{width, height}">
-    <apexchart
-        type="bar"
-        height="100%"
-        :options="options"
-        :series="series"/>
+    <BarChart :chart-data="chartData" :chart-options="chartOptions"/>
   </div>
 </template>
 
 <script setup>
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import BarChart from '@/components/charts/BarChart.vue';
 import {listOccupancySensorHistory} from '@/api/sc/traits/occupancy-history';
 import {timestampToDate} from '@/api/convpb';
 
@@ -41,9 +38,7 @@ const seriesMap = reactive({
     baseRequest: computed(() => {
       return baseRequest(props.name);
     }),
-    data: computed(() => {
-      return data(seriesMap.occupancy.records);
-    }),
+    data: [],
     handle: 0,
     records: /** @type {OccupancyRecord.AsObject[]} */ []
   }
@@ -69,6 +64,11 @@ const series = computed(() => {
 //
 //
 // Methods
+/**
+ *
+ * @param {OccupancyRecord.AsObject[]} records
+ * @return {Array<{x: Date, y: number}>}
+ */
 const data = (records) => {
   const intervalsMap = [];
   const currentDate = new Date();
@@ -152,87 +152,158 @@ async function pollReadings(req, type) {
 //
 //
 // Bar graph styling and other options
-const options = {
-  chart: {
-    animations: {
-      easing: 'easeinout',
-      enabled: true,
-      animateGradually: {
-        enabled: true,
-        delay: 150
-      }
-    },
-    id: 'occupancy-chart',
-    foreColor: '#fff',
-    toolbar: {
-      show: false
-    },
-    zoom: {
-      enabled: false
-    }
+const chartOptions = {
+  animation: {
+    duration: 500
   },
-  dataLabels: {
-    enabled: false
-  },
-  fill: {
-    colors: ['#C5CC3CBF']
-  },
-  grid: {
-    borderColor: 'var(--v-neutral-lighten2)',
-    yaxis: {
-      lines: {
-        show: false
-      }
-    },
-    xaxis: {
-      lines: {
-        show: true
-      }
-    },
+  layout: {
     padding: {
       top: 0,
-      bottom: 25
+      right: 10,
+      bottom: 20,
+      left: 10
     }
   },
-  plotOptions: {
-    bar: {
-      horizontal: false
+  maintainAspectRatio: false,
+  mode: 'none',
+  responsive: true,
+  plugins: {
+    title: {
+      display: true,
+      text: '',
+      color: '#f0f0f0',
+      font: {
+        size: 16
+      },
+      padding: {
+        bottom: 0
+      }
+    },
+    legend: {
+      display: false
+    },
+    tooltip: {
+      backgroundColor: 'rgba(0, 0, 0, 1)',
+      padding: 12,
+      cornerRadius: 5,
+      borderColor: '#000',
+      borderWidth: 2,
+      titleColor: '#fff',
+      bodyColor: '#fff',
+      displayColors: false
     }
   },
-  tooltip: {
-    theme: 'dark',
+  scales: {
+    y: {
+      border: {
+        color: 'white'
+      },
+      grid: {
+        color: 'rgba(100, 100, 100, 0.35)'
+      },
+      ticks: {
+        color: '#fff',
+        display: true,
+        font: {
+          size: 12// Specify the desired font size
+        }
+      },
+      title: {
+        display: false,
+        text: ''
+      },
+      min: 0
+    },
     x: {
-      format: 'dd MMM yyyy',
-      formatter: function(value, {series, seriesIndex, dataPointIndex, w}) {
-        const newDate = new Date(value);
-        return newDate.toLocaleString();
+      border: {
+        color: 'white'
+      },
+      ticks: {
+        align: 'center',
+        color: '#fff',
+        display: true,
+        font: {
+          size: 10// Specify the desired font size
+        },
+        // Limit xAxis label rotation to 0 degrees
+        maxRotation: 0,
+        minRotation: 0
+      },
+      grid: {
+        color: ''
       }
     }
-  },
-  xaxis: {
-    labels: {
-      datetimeFormatter: {
-        year: 'yyyy',
-        month: 'MMM \'yy',
-        day: 'dd MMM',
-        hour: 'HH:mm'
-      },
-      datetimeUTC: false,
-      hideOverlappingLabels: true,
-      showDuplicates: false,
-      trim: false
-    },
-    type: 'datetime'
-  },
-  yaxis: {
-    decimalsInFloat: 0
   }
 };
+
+const chartData = computed(() => {
+  let labels = [];
+  let data = [];
+  const dataset = series.value[0].data;
+
+  labels = dataset.map((data) => {
+    const newDate = new Date(data.x);
+    // removing seconds from the time
+    const hour = newDate.getHours().toString().padStart(2, '0');
+    const minute = newDate.getMinutes().toString().padStart(2, '0');
+    const formattedTime = hour + ':' + minute;
+
+    return formattedTime;
+  });
+  data = dataset.map((data) => data.y);
+
+  // returning restructured data for the bar chart
+  return {
+    labels, // collection of time intervals
+    datasets: [
+      {
+        label: 'Occupancy', // tooltip label
+        maxBarThickness: 20,
+        data,
+        backgroundColor: '#C5CC3CBF',
+        borderColor: '#fff',
+        borderRadius: 5
+      }
+    ]
+  };
+});
 
 //
 //
 // Watcher
+/**
+ * This function takes two arrays of records and combines them by matching the x values and updating the y values.
+ *
+ * @param {*} newRecords
+ * @param {*} existingRecords
+ * @return {Array} combinedRecords
+ *
+ * Map over the newRecords array and find the corresponding record in the existingRecords array.
+ * If a match is found, update the y value with the larger of the two values.
+ * If no match is found, return the new record.
+ */
+const handleRecords = (newRecords, existingRecords) => {
+  const combinedRecords = newRecords.map((newRecord) => {
+    const existingRecord = existingRecords.find(
+        (record) => record.x.getTime() === newRecord.x.getTime()
+    );
+
+    if (existingRecord) {
+      return {
+        x: newRecord.x,
+        y: newRecord.y > existingRecord.y ? newRecord.y : existingRecord.y
+      };
+    } else {
+      return newRecord;
+    }
+  });
+
+  return combinedRecords;
+};
+
+// Watch for changes to the seriesMap object
 Object.entries(seriesMap).forEach(([name, series]) => {
+  // watch for new base request
   watch(() => series.baseRequest, (request) => {
     clearTimeout(series.handle);
     series.records = [];
@@ -240,6 +311,18 @@ Object.entries(seriesMap).forEach(([name, series]) => {
     // create new stream
     if (request) {
       pollReadings(request, name);
+    }
+  }, {immediate: true, deep: true, flush: 'sync'});
+
+  // watch for new records
+  watch(() => series.records, (records) => {
+    const newRecords = data(records);
+
+    if (!series.data.length) {
+      series.data = data(records);
+    } else {
+      const existingRecords = series.data;
+      series.data = handleRecords(newRecords, existingRecords);
     }
   }, {immediate: true, deep: true, flush: 'sync'});
 });
