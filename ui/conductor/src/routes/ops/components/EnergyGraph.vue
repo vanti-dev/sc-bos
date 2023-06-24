@@ -276,13 +276,17 @@ const chartOptions = {
     },
     tooltip: {
       backgroundColor: 'rgba(0, 0, 0, 1)',
-      padding: 12,
-      cornerRadius: 5,
+      bodyColor: '#fff',
       borderColor: '#000',
       borderWidth: 2,
-      titleColor: '#fff',
-      bodyColor: '#fff',
-      displayColors: false
+      cornerRadius: 5,
+      displayColors: false,
+      interaction: {
+        axis: 'xy',
+        mode: 'index'
+      },
+      padding: 12,
+      titleColor: '#fff'
     }
   },
   scales: {
@@ -435,6 +439,7 @@ const chartData = computed(() => {
 //
 //
 // Watcher
+// Watch for changes to the series prop
 Object.entries(seriesMap).forEach(([name, series]) => {
   // Watching baseRequest for changes
   watch(() => series.baseRequest, (request) => {

@@ -64,6 +64,11 @@ const series = computed(() => {
 //
 //
 // Methods
+/**
+ *
+ * @param {OccupancyRecord.AsObject[]} records
+ * @return {Array<{x: Date, y: number}>}
+ */
 const data = (records) => {
   const intervalsMap = [];
   const currentDate = new Date();
@@ -266,8 +271,18 @@ const chartData = computed(() => {
 //
 //
 // Watcher
+/**
+ * This function takes two arrays of records and combines them by matching the x values and updating the y values.
+ *
+ * @param {*} newRecords
+ * @param {*} existingRecords
+ * @return {Array} combinedRecords
+ *
+ * Map over the newRecords array and find the corresponding record in the existingRecords array.
+ * If a match is found, update the y value with the larger of the two values.
+ * If no match is found, return the new record.
+ */
 const handleRecords = (newRecords, existingRecords) => {
-  // combine the two parameter array values by matching the x values and updating the y values
   const combinedRecords = newRecords.map((newRecord) => {
     const existingRecord = existingRecords.find(
         (record) => record.x.getTime() === newRecord.x.getTime()
@@ -286,6 +301,7 @@ const handleRecords = (newRecords, existingRecords) => {
   return combinedRecords;
 };
 
+// Watch for changes to the seriesMap object
 Object.entries(seriesMap).forEach(([name, series]) => {
   // watch for new base request
   watch(() => series.baseRequest, (request) => {
