@@ -103,8 +103,12 @@ func run() error {
 					}
 				}
 			}
-			if device.Comm != nil {
-				res.address = device.Comm.IP.String()
+			if comm := device.Comm; comm != nil {
+				res.address = comm.IP.String()
+				if des := comm.Destination; des != nil {
+					res.network = des.Network
+					res.mac = string(des.Address)
+				}
 			}
 			results[key] = append(results[key], res)
 
@@ -255,7 +259,7 @@ func readProp(ctx context.Context, client *gobacnet.Client, device bactypes.Devi
 
 func writeResults(fileName string, results map[string][]*result) error {
 	var rows [][]string
-	rows = append(rows, []string{"Name", "Address", "BACnet ID", "Responding", "Value"})
+	rows = append(rows, []string{"Name", "Address", "Network", "MAC", "BACnet ID", "Responding", "Value"})
 	for _, res := range results {
 		for _, re := range res {
 			rows = append(rows, re.toRow())
@@ -288,13 +292,15 @@ func writeResults(fileName string, results map[string][]*result) error {
 type result struct {
 	name       string
 	address    string
+	network    uint16
+	mac        string
 	deviceId   string
 	responding bool
 	value      any
 }
 
 func (r *result) toRow() []string {
-	return []string{r.name, r.address, r.deviceId, boolYesNo(r.responding), anyToString(r.value)}
+	return []string{r.name, r.address, netString(r.network), r.mac, r.deviceId, boolYesNo(r.responding), anyToString(r.value)}
 }
 
 func anyToString(value any) string {
@@ -307,6 +313,13 @@ func anyToString(value any) string {
 		return fmt.Sprintf("%d", v)
 	}
 	return fmt.Sprintf("%s", value)
+}
+
+func netString(n uint16) string {
+	if n == 0 {
+		return ""
+	}
+	return fmt.Sprintf("%d", n)
 }
 
 func boolYesNo(b bool) string {
