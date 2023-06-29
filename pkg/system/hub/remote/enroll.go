@@ -130,8 +130,8 @@ func Forget(ctx context.Context, enrollment *gen.Enrollment, tlsConfig *tls.Conf
 	case status.Code(err) == codes.NotFound: // not enrolled
 		return ErrNotEnrolled
 	case status.Code(err) == codes.Unavailable: // not trusted, continue to untrusted flow
-		if st, ok := status.FromError(err); !ok || !strings.Contains(st.Message(), "handshake failed") {
-			return err // likely a network error we can't work around, like it's offline
+		if st, ok := status.FromError(err); !ok || strings.Contains(st.Message(), "connection refused") {
+			return err // early err because it's offline
 		}
 	default:
 		return fmt.Errorf("trusted: %w", err)
