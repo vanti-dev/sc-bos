@@ -20,8 +20,8 @@
           </v-list-item>
         </v-list>
         <v-chip-group>
-          <v-chip v-if="isProxy(node.name)" color="accent" small>proxy</v-chip>
-          <v-chip v-if="isHub(node.name)" color="primary" small>hub</v-chip>
+          <v-chip v-if="isProxy(node.name)" color="accent" small>gateway</v-chip>
+          <v-chip v-if="isHub(node.name) && !isProxy(node.name)" color="primary" small>hub</v-chip>
         </v-chip-group>
       </v-card-text>
     </v-card>
