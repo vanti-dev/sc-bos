@@ -27,6 +27,10 @@ func (pm *ProblemMerger) Build() *gen.StatusLog {
 		out.Level = pm.BiggestProblem.Level
 		out.Description = pm.BiggestProblem.Description
 		out.RecordTime = pm.BiggestProblem.RecordTime
+
+		if pm.BiggestProblem.Level == gen.StatusLog_OFFLINE && pm.MostRecentNominal != nil {
+			out.Level = gen.StatusLog_REDUCED_FUNCTION
+		}
 	}
 	out.Problems = pm.problems // this reuses a reference, but for our use I'm sure it's fine
 	return out
