@@ -503,5 +503,66 @@ proto.smartcore.bos.HubApiPromiseClient.prototype.testHubNode =
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.ForgetHubNodeRequest,
+ *   !proto.smartcore.bos.ForgetHubNodeResponse>}
+ */
+const methodDescriptor_HubApi_ForgetHubNode = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.HubApi/ForgetHubNode',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.ForgetHubNodeRequest,
+  proto.smartcore.bos.ForgetHubNodeResponse,
+  /**
+   * @param {!proto.smartcore.bos.ForgetHubNodeRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ForgetHubNodeResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.ForgetHubNodeRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ForgetHubNodeResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ForgetHubNodeResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.HubApiClient.prototype.forgetHubNode =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.HubApi/ForgetHubNode',
+      request,
+      metadata || {},
+      methodDescriptor_HubApi_ForgetHubNode,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.ForgetHubNodeRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.ForgetHubNodeResponse>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.HubApiPromiseClient.prototype.forgetHubNode =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.HubApi/ForgetHubNode',
+      request,
+      metadata || {},
+      methodDescriptor_HubApi_ForgetHubNode);
+};
+
+
 module.exports = proto.smartcore.bos;
 

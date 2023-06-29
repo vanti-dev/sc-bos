@@ -106,6 +106,14 @@ func (s *Server) TestHubNode(ctx context.Context, request *gen.TestHubNodeReques
 	return c.TestHubNode(ctx, request)
 }
 
+func (s *Server) ForgetHubNode(ctx context.Context, request *gen.ForgetHubNodeRequest) (*gen.ForgetHubNodeResponse, error) {
+	c, err := s.client()
+	if err != nil {
+		return nil, err
+	}
+	return c.ForgetHubNode(ctx, request)
+}
+
 func (s *Server) client() (gen.HubApiClient, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

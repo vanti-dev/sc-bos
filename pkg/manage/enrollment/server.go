@@ -237,6 +237,8 @@ func (es *Server) DeleteEnrollment(ctx context.Context, request *gen.DeleteEnrol
 	es.done = make(chan struct{})
 	go es.enrollmentChanged.Send(context.Background(), Enrollment{})
 
+	es.logger.Info("The controller is no longer enrolled with a hub", zap.String("hubAddress", en.ManagerAddress))
+
 	return &gen.Enrollment{
 		TargetName:     en.RootDeviceName,
 		ManagerName:    en.ManagerName,

@@ -5,10 +5,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
@@ -87,6 +91,90 @@ func Enroll(ctx context.Context, enrollment *gen.Enrollment, authority pki.Sourc
 	}
 
 	return enrollment, nil
+}
+
+var (
+	ErrNotEnrolled       = errors.New("not enrolled")
+	ErrNotEnrolledWithUs = errors.New("not enrolled with us")
+	ErrNotTrusted        = errors.New("not trusted")
+)
+
+// Forget asks a remote node to forget that they are enrolled using the given enrollment.
+// Forget assumes that if the remote node trusts us then they also trust us to delete the enrollment.
+// If certificate validation fails, we try again but this time check the remote enrollment against the passed one so
+// we aren't deleting random enrollments.
+func Forget(ctx context.Context, enrollment *gen.Enrollment, tlsConfig *tls.Config) error {
+	// We try a few things to get the remote node to forget about us.
+	// 1. using tlsconfig, ask it to forget about us
+	//    - if that fails with something like "not enrolled" (or succeeds) then we return
+	// 2. if the request failed with something like "cert not valid"
+	//    - connect without verifying the remote cert
+	//    - get the current enrollment and compare it with the one we would have used
+	//    - if it matches, ask the remote node to forget about us
+
+	conn, err := grpc.DialContext(ctx, enrollment.TargetAddress,
+		grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)),
+	)
+	if err != nil {
+		// An error here is because there's something wrong with our options or the target address.
+		// In any case we can't recover from that.
+		return err
+	}
+	defer conn.Close()
+
+	client := gen.NewEnrollmentApiClient(conn)
+	_, err = client.DeleteEnrollment(ctx, &gen.DeleteEnrollmentRequest{})
+	switch {
+	case err == nil: // success
+		return nil
+	case status.Code(err) == codes.NotFound: // not enrolled
+		return ErrNotEnrolled
+	case status.Code(err) == codes.Unavailable: // not trusted, continue to untrusted flow
+		if st, ok := status.FromError(err); !ok || !strings.Contains(st.Message(), "handshake failed") {
+			return err // likely a network error we can't work around, like it's offline
+		}
+	default:
+		return fmt.Errorf("trusted: %w", err)
+	}
+
+	conn, err = grpc.DialContext(ctx, enrollment.TargetAddress,
+		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+		})),
+	)
+	if err != nil {
+		// An error here is because there's something wrong with our options.
+		// In any case we can't recover from that.
+		return err
+	}
+	defer conn.Close()
+	client = gen.NewEnrollmentApiClient(conn)
+	remoteEnrollment, err := client.GetEnrollment(ctx, &gen.GetEnrollmentRequest{})
+	switch {
+	case err == nil: // success
+	case status.Code(err) == codes.NotFound: // not enrolled
+		return ErrNotEnrolled
+	default:
+		return fmt.Errorf("untrusted get: %w", err)
+	}
+
+	if remoteEnrollment.ManagerAddress != enrollment.ManagerAddress {
+		return fmt.Errorf("%w: enrolled with %s", ErrNotEnrolledWithUs, remoteEnrollment.ManagerAddress)
+	}
+
+	_, err = client.DeleteEnrollment(ctx, &gen.DeleteEnrollmentRequest{})
+	if err != nil {
+		switch {
+		case err == nil: // success
+		case status.Code(err) == codes.NotFound: // not enrolled
+			return ErrNotEnrolled
+		default:
+			return fmt.Errorf("untrusted delete: %w", err)
+		}
+		return err
+	}
+
+	return nil
 }
 
 // Renew updates the PKI for a remote Smart Core node.

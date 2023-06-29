@@ -84,3 +84,7 @@ func (w *hubApiWrapper) RenewHubNode(ctx context.Context, req *RenewHubNodeReque
 func (w *hubApiWrapper) TestHubNode(ctx context.Context, req *TestHubNodeRequest, _ ...grpc.CallOption) (*TestHubNodeResponse, error) {
 	return w.server.TestHubNode(ctx, req)
 }
+
+func (w *hubApiWrapper) ForgetHubNode(ctx context.Context, req *ForgetHubNodeRequest, _ ...grpc.CallOption) (*ForgetHubNodeResponse, error) {
+	return w.server.ForgetHubNode(ctx, req)
+}

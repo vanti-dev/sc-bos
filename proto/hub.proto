@@ -28,6 +28,9 @@ service HubApi {
   // This checks communication and the TLS stack, only returning success if the node presents a public certificate signed
   // by this hub.
   rpc TestHubNode(TestHubNodeRequest) returns (TestHubNodeResponse);
+
+  // Forget a node that was previously enrolled with this hub.
+  rpc ForgetHubNode(ForgetHubNodeRequest) returns (ForgetHubNodeResponse);
 }
 
 message HubNode {
@@ -98,4 +101,13 @@ message TestHubNodeRequest {
 }
 
 message TestHubNodeResponse {
+}
+
+message ForgetHubNodeRequest {
+  string address = 1;
+  // When true, no error will be returned if the hub is not already enrolled.
+  bool allow_missing = 2;
+}
+
+message ForgetHubNodeResponse {
 }

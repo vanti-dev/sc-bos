@@ -155,17 +155,12 @@ func (n *Server) EnrollHubNode(ctx context.Context, request *gen.EnrollHubNodeRe
 }
 
 func (n *Server) deleteHubNode(ctx context.Context, reg *gen.HubNode) error {
-	conn, err := grpc.DialContext(ctx, reg.Address, grpc.WithTransportCredentials(credentials.NewTLS(n.TestTLSConfig)))
-	if err != nil {
-		n.logger.Error("failed to connect to node", zap.Error(err))
-		return status.Error(codes.Unavailable, "unable to connect to target node")
-	}
-	client := gen.NewEnrollmentApiClient(conn)
-	_, err = client.DeleteEnrollment(ctx, &gen.DeleteEnrollmentRequest{})
-	if err != nil {
-		return err
-	}
-	return nil
+	return remote.Forget(ctx, &gen.Enrollment{
+		TargetName:     reg.Name,
+		TargetAddress:  reg.Address,
+		ManagerName:    n.ManagerName,
+		ManagerAddress: n.ManagerAddr,
+	}, n.TestTLSConfig)
 }
 
 func (n *Server) ListHubNodes(ctx context.Context, request *gen.ListHubNodesRequest) (*gen.ListHubNodesResponse, error) {
@@ -303,4 +298,52 @@ func (n *Server) TestHubNode(ctx context.Context, request *gen.TestHubNodeReques
 	}
 
 	return &gen.TestHubNodeResponse{}, nil
+}
+
+func (n *Server) ForgetHubNode(ctx context.Context, request *gen.ForgetHubNodeRequest) (*gen.ForgetHubNodeResponse, error) {
+	reg, err := n.GetHubNode(ctx, &gen.GetHubNodeRequest{Address: request.GetAddress()})
+	if err != nil {
+		if request.AllowMissing {
+			return &gen.ForgetHubNodeResponse{}, nil
+		}
+		return nil, err
+	}
+	logger := rpcutil.ServerLogger(ctx, n.logger).With(zap.String("node_address", reg.Address))
+
+	var remoteDeleted bool
+	err = n.deleteHubNode(ctx, reg)
+	switch {
+	case err == nil: // success case
+		remoteDeleted = true
+	case errors.Is(err, remote.ErrNotEnrolled), errors.Is(err, remote.ErrNotEnrolledWithUs):
+		// continue in these cases, our state is out of sync with the node
+	case errors.Is(err, remote.ErrNotTrusted):
+		return nil, status.Error(codes.PermissionDenied, "hub is not trusted by node, unable to delete enrollment")
+	default:
+		logger.Warn("failed to forget area controller", zap.Error(err),
+			zap.String("target_address", reg.Address))
+		return nil, err
+	}
+
+	err = n.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
+		return DeleteEnrollment(ctx, tx, reg.Address)
+	})
+	if err != nil {
+		// failed to rollback!
+		logger.Warn("pool.DeleteEnrollment failed, no rollback", zap.Error(err), zap.Bool("remote_deleted", remoteDeleted))
+		if remoteDeleted {
+			// bad case, we changed the node but failed to update the database
+			return nil, status.Errorf(codes.DataLoss, "the remote node has been changed but local state is corrupt, manual intervention may be required. Retrying may resolve this issue")
+		}
+		return nil, status.Errorf(codes.Unknown, "error removing enrollment from database, retrying may resolve this issue")
+	}
+
+	go n.dbChanges.Send(context.Background(), &gen.PullHubNodesResponse_Change{
+		OldValue:   reg,
+		NewValue:   nil,
+		ChangeTime: timestamppb.Now(),
+		Type:       types.ChangeType_REMOVE,
+	})
+
+	return &gen.ForgetHubNodeResponse{}, nil
 }

@@ -66,6 +66,13 @@ func UpdateEnrollment(ctx context.Context, tx pgx.Tx, en Enrollment) error {
 	return err
 }
 
+func DeleteEnrollment(ctx context.Context, tx pgx.Tx, address string) error {
+	// language=postgresql
+	query := `DELETE FROM enrollment WHERE address=$1`
+	_, err := tx.Exec(ctx, query, address)
+	return err
+}
+
 func SelectEnrollments(ctx context.Context, tx pgx.Tx) ([]Enrollment, error) {
 	// language=postgresql
 	query := `

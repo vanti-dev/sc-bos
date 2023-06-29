@@ -280,3 +280,39 @@ export namespace TestHubNodeResponse {
   }
 }
 
+export class ForgetHubNodeRequest extends jspb.Message {
+  getAddress(): string;
+  setAddress(value: string): ForgetHubNodeRequest;
+
+  getAllowMissing(): boolean;
+  setAllowMissing(value: boolean): ForgetHubNodeRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ForgetHubNodeRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ForgetHubNodeRequest): ForgetHubNodeRequest.AsObject;
+  static serializeBinaryToWriter(message: ForgetHubNodeRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ForgetHubNodeRequest;
+  static deserializeBinaryFromReader(message: ForgetHubNodeRequest, reader: jspb.BinaryReader): ForgetHubNodeRequest;
+}
+
+export namespace ForgetHubNodeRequest {
+  export type AsObject = {
+    address: string,
+    allowMissing: boolean,
+  }
+}
+
+export class ForgetHubNodeResponse extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ForgetHubNodeResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ForgetHubNodeResponse): ForgetHubNodeResponse.AsObject;
+  static serializeBinaryToWriter(message: ForgetHubNodeResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ForgetHubNodeResponse;
+  static deserializeBinaryFromReader(message: ForgetHubNodeResponse, reader: jspb.BinaryReader): ForgetHubNodeResponse;
+}
+
+export namespace ForgetHubNodeResponse {
+  export type AsObject = {
+  }
+}
+

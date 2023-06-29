@@ -40,6 +40,8 @@ type HubApiClient interface {
 	// This checks communication and the TLS stack, only returning success if the node presents a public certificate signed
 	// by this hub.
 	TestHubNode(ctx context.Context, in *TestHubNodeRequest, opts ...grpc.CallOption) (*TestHubNodeResponse, error)
+	// Forget a node that was previously enrolled with this hub.
+	ForgetHubNode(ctx context.Context, in *ForgetHubNodeRequest, opts ...grpc.CallOption) (*ForgetHubNodeResponse, error)
 }
 
 type hubApiClient struct {
@@ -136,6 +138,15 @@ func (c *hubApiClient) TestHubNode(ctx context.Context, in *TestHubNodeRequest, 
 	return out, nil
 }
 
+func (c *hubApiClient) ForgetHubNode(ctx context.Context, in *ForgetHubNodeRequest, opts ...grpc.CallOption) (*ForgetHubNodeResponse, error) {
+	out := new(ForgetHubNodeResponse)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.HubApi/ForgetHubNode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HubApiServer is the server API for HubApi service.
 // All implementations must embed UnimplementedHubApiServer
 // for forward compatibility
@@ -158,6 +169,8 @@ type HubApiServer interface {
 	// This checks communication and the TLS stack, only returning success if the node presents a public certificate signed
 	// by this hub.
 	TestHubNode(context.Context, *TestHubNodeRequest) (*TestHubNodeResponse, error)
+	// Forget a node that was previously enrolled with this hub.
+	ForgetHubNode(context.Context, *ForgetHubNodeRequest) (*ForgetHubNodeResponse, error)
 	mustEmbedUnimplementedHubApiServer()
 }
 
@@ -185,6 +198,9 @@ func (UnimplementedHubApiServer) RenewHubNode(context.Context, *RenewHubNodeRequ
 }
 func (UnimplementedHubApiServer) TestHubNode(context.Context, *TestHubNodeRequest) (*TestHubNodeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TestHubNode not implemented")
+}
+func (UnimplementedHubApiServer) ForgetHubNode(context.Context, *ForgetHubNodeRequest) (*ForgetHubNodeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ForgetHubNode not implemented")
 }
 func (UnimplementedHubApiServer) mustEmbedUnimplementedHubApiServer() {}
 
@@ -328,6 +344,24 @@ func _HubApi_TestHubNode_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HubApi_ForgetHubNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ForgetHubNodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubApiServer).ForgetHubNode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/smartcore.bos.HubApi/ForgetHubNode",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubApiServer).ForgetHubNode(ctx, req.(*ForgetHubNodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HubApi_ServiceDesc is the grpc.ServiceDesc for HubApi service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -358,6 +392,10 @@ var HubApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TestHubNode",
 			Handler:    _HubApi_TestHubNode_Handler,
+		},
+		{
+			MethodName: "ForgetHubNode",
+			Handler:    _HubApi_ForgetHubNode_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

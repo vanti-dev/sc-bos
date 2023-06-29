@@ -55,6 +55,13 @@ export class HubApiClient {
                response: hub_pb.TestHubNodeResponse) => void
   ): grpcWeb.ClientReadableStream<hub_pb.TestHubNodeResponse>;
 
+  forgetHubNode(
+    request: hub_pb.ForgetHubNodeRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: hub_pb.ForgetHubNodeResponse) => void
+  ): grpcWeb.ClientReadableStream<hub_pb.ForgetHubNodeResponse>;
+
 }
 
 export class HubApiPromiseClient {
@@ -96,6 +103,11 @@ export class HubApiPromiseClient {
     request: hub_pb.TestHubNodeRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<hub_pb.TestHubNodeResponse>;
+
+  forgetHubNode(
+    request: hub_pb.ForgetHubNodeRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<hub_pb.ForgetHubNodeResponse>;
 
 }
 
