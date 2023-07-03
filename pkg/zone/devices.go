@@ -7,6 +7,7 @@ import (
 )
 
 type Devices struct {
+	mu    sync.Mutex
 	names []string
 
 	// using Context here as it has the same semantics of Done we want so we don't have to implement it ourselves
@@ -29,6 +30,8 @@ func (d *Devices) Add(names ...string) {
 	default:
 	}
 
+	d.mu.Lock()
+	defer d.mu.Unlock()
 	for _, name := range names {
 		i := sort.SearchStrings(d.names, name)
 		switch {
@@ -49,7 +52,9 @@ func (d *Devices) Names() []string {
 
 func (d *Devices) Freeze() {
 	d.init()
+	d.mu.Lock()
 	d.freeze()
+	d.mu.Unlock()
 }
 
 func (d *Devices) Frozen() <-chan struct{} {
