@@ -87,7 +87,7 @@ func (c *Cache) Pull(ctx context.Context) <-chan *traits.Publication {
 		case <-c.initialised:
 		}
 
-		for change := range c.latest.Pull(ctx, resource.WithBackpressure(false)) {
+		for change := range c.latest.Pull(ctx) {
 			select {
 			case ch <- change.Value.(*traits.Publication):
 			case <-ctx.Done():
