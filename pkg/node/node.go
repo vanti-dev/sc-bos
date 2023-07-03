@@ -132,6 +132,7 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 			if err != MetadataTraitNotSupported {
 				log.Warnf("%v metadata: %v", name, err)
 			}
+			continue
 		}
 		undo = append(undo, undoMd)
 	}
