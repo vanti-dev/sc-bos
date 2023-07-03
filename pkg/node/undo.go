@@ -1,5 +1,9 @@
 package node
 
+import (
+	"sync"
+)
+
 // Undo allows a statement to be undone.
 type Undo func()
 
@@ -12,5 +16,13 @@ func UndoAll(undo ...Undo) Undo {
 		for _, u := range undo {
 			u()
 		}
+	}
+}
+
+// UndoOnce returns an Undo that only calls undo once.
+func UndoOnce(undo Undo) Undo {
+	var once sync.Once
+	return func() {
+		once.Do(undo)
 	}
 }

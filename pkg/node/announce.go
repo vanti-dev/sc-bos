@@ -49,17 +49,38 @@ func AnnounceWithNamePrefix(prefix string, a Announcer) Announcer {
 func AnnounceContext(ctx context.Context, a Announcer) Announcer {
 	mu := sync.Mutex{}
 	var undos []Undo
+	undone := make(chan struct{})
 	go func() {
+		defer close(undone)
 		<-ctx.Done()
+		mu.Lock()
+		defer mu.Unlock()
 		for _, undo := range undos {
 			undo()
 		}
+		undos = nil
 	}()
 	return AnnouncerFunc(func(name string, features ...Feature) Undo {
+		select {
+		case <-ctx.Done():
+			return NilUndo
+		default:
+		}
+
 		undo := a.Announce(name, features...)
 		mu.Lock()
+		defer mu.Unlock()
+
+		select {
+		case <-undone:
+			// undos have been called already, we missed the boat
+			undo()
+			return NilUndo
+		default:
+		}
+
+		undo = UndoOnce(undo)
 		undos = append(undos, undo)
-		mu.Unlock()
 		return undo
 	})
 }
