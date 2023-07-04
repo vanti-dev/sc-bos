@@ -21,18 +21,16 @@ import {
   LineElement,
   Filler,
   LinearScale,
-  TimeScale,
   CategoryScale,
   PointElement
 } from 'chart.js';
-import 'chartjs-adapter-date-fns';
 
-ChartJS.register(Title, Tooltip, Legend, LineElement, LinearScale, TimeScale, Filler, CategoryScale, PointElement);
+ChartJS.register(Title, Tooltip, Legend, LineElement, LinearScale, Filler, CategoryScale, PointElement);
 
 const props = defineProps({
   datasetIdKey: {
     type: String,
-    default: 'x'
+    default: 'label'
   },
   cssClasses: {
     type: String,
