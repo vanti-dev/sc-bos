@@ -19,7 +19,7 @@
           small
           color="neutral lighten-1"
           elevation="0"
-          @click="changeSetPoint(-0.1)"
+          @click="changeSetPoint(-0.5)"
           :disabled="(props.value?.temperatureSetPoint === undefined)">
         Down
       </v-btn>
@@ -27,7 +27,7 @@
           small
           color="neutral lighten-1"
           elevation="0"
-          @click="changeSetPoint(0.1)"
+          @click="changeSetPoint(0.5)"
           :disabled="(props.value?.temperatureSetPoint === undefined)">
         Up
       </v-btn>
