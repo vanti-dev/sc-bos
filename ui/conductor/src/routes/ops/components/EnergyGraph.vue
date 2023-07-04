@@ -222,34 +222,138 @@ const groupRecordsByInterval = (records) => {
 
 
 /**
- * Function to restructure the data for the line chart
+ * Function to calculate the difference between two data points
+ *
+ * @param {MeterReadingRecord.AsObject} lastReading
+ * @param {MeterReadingRecord.AsObject} record
+ * @return {number}
+ */
+const calculateDifference = (lastReading, record) => {
+  return record.meterReading.usage - lastReading.meterReading.usage;
+};
+
+/**
+ * Function to find the index of the matching interval in the dataPoints array
+ *
+ * @param {Date} interval
+ * @param {{x: Date, y: number}[]} dataPoints
+ * @return {{x: Date, y: number}}
+ */
+const findMatchingIntervalIndex = (interval, dataPoints) => {
+  return dataPoints.find((dataPoint) => {
+    return dataPoint.x == interval;
+  });
+};
+
+/**
+ * Function to update the y value of the matching interval in the dataPoints array
+ *
+ * @param {Date} interval
+ * @param {number} newValue
+ * @param {{x: Date, y: number}[]} dataPoints
+ */
+const updateDataPointYValue = (interval, newValue, dataPoints) => {
+  const dataPoint = findMatchingIntervalIndex(interval, dataPoints);
+  dataPoint.y = newValue;
+};
+
+/**
+ * Function to add a data point for the difference if the meter was reset
+ *
+ * @param {MeterReadingRecord.AsObject} lastReading
+ * @param {MeterReadingRecord.AsObject} record
+ * @param {{x: Date, y: number}[]} dataPoints
+ */
+const addDataPointForReset = (lastReading, record, dataPoints) => {
+  const diff = calculateDifference(record.firstRecord, lastReading);
+  updateDataPointYValue(record.interval, diff, dataPoints);
+};
+
+/**
+ * Function to add data points for each segment if the time difference is greater than the specified span
+ *
+ * @param {MeterReadingRecord.AsObject} lastReading
+ * @param {MeterReadingRecord.AsObject} record
+ * @param {number} span
+ * @param {{x: Date, y: number}[]} dataPoints
+ */
+const addDataPointsForSegment = (lastReading, record, span, dataPoints) => {
+  const segmentCount = Math.floor(
+      (timestampToDate(record.firstRecord.recordTime) - timestampToDate(lastReading.recordTime)) / span
+  );
+  const diff = calculateDifference(lastReading, record.firstRecord) / segmentCount;
+
+  updateDataPointYValue(record.interval, diff, dataPoints);
+};
+
+/**
+ * Function to add a data point for the final reading if it hasn't already been added
+ *
+ * @param {MeterReadingRecord.AsObject} lastReading
+ * @param {MeterReadingRecord.AsObject[]} records
+ * @param {{x: Date, y: number}[]} dataPoints
+ */
+const addDataPointForFinalReading = (lastReading, records, dataPoints) => {
+  const finalReading = records[records.length - 1].lastRecord;
+  const finalInterval = records[records.length - 1].interval;
+  const [t0, t1] = [timestampToDate(lastReading.recordTime), timestampToDate(finalReading.recordTime)];
+
+  if (t0.getTime() !== t1.getTime()) {
+    const diff = calculateDifference(lastReading, finalReading);
+    updateDataPointYValue(finalInterval, diff, dataPoints);
+  }
+};
+
+/**
+ * Function to collect the data points which should be displayed on the graph
  *
  * @param {number} span
  * @param {MeterReadingRecord.AsObject[]} records
  * @return {{x: Date, y: number}[]}
  */
 const structureData = (span, records) => {
-  let dataset = [];
+  // Initialize an empty array to hold the data points
+  let dataPoints = [];
 
-  // 1.1 Populate the line chart with default data
-  dataset = populateDefaultData(dataset, span);
+  dataPoints = populateDefaultData(dataPoints, span);
 
   if (records.length) {
-    // 2. Group records by 15 min intervals
+  // Initialize the last reading to the first record
     const groupedRecords = groupRecordsByInterval(records);
-    // I. If there are records, update the line chart with the data
-    groupedRecords.forEach(({interval, firstRecord, lastRecord}, index) => {
-      const usageDiff = lastRecord.meterReading.usage - firstRecord.meterReading.usage;
+    let lastReading = groupedRecords[0].lastRecord;
 
-      dataset.forEach((data) => {
-        if (data.x == interval) {
-          data.y = usageDiff;
-        }
-      });
+
+    // Iterate through the records and calculate the data points
+    groupedRecords.forEach((record, index) => {
+    // If the meter was reset, add a data point for the difference
+      if (lastReading.meterReading.usage > record.firstRecord.meterReading.usage) {
+        addDataPointForReset(lastReading, record, dataPoints);
+      } else {
+        // If the meter was not reset, add a data point for the difference
+        const diff = calculateDifference(lastReading, record.firstRecord);
+        updateDataPointYValue(record.interval, diff, dataPoints);
+      }
+      lastReading = record.lastRecord;
+
+      // Calculate the time difference between the last and current records
+      const d = timestampToDate(record.firstRecord.recordTime) - timestampToDate(lastReading.recordTime);
+
+      // If the time difference is greater than the specified span, add data points for each segment
+      if (d > span) {
+        addDataPointsForSegment(lastReading, record, span, dataPoints);
+        lastReading = record.lastRecord;
+      }
     });
+
+    // Add a data point for the final reading if it hasn't already been added
+    addDataPointForFinalReading(lastReading, groupedRecords, dataPoints);
   }
 
-  return dataset;
+  dataPoints.shift(); // remove the extra time from the beginning
+
+
+  // Return the data points array
+  return dataPoints;
 };
 
 
@@ -482,48 +586,54 @@ const chartData = computed(() => {
   });
 
   // Return the restructured data for the chart
-  return {
-    datasets: [
-      {
-        borderColor: 'orange', // line color
-        data: values.generated, // data for the line
-        fill: false, // fill the area under the line
-        label: 'Generated', // tooltip label
-        mode: 'nearest', // 'index' or 'nearest
-        pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
-        pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
-        pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
-        pointHoverBorderColor: 'orange', // point border color on hover
-        // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
-        pointStyle: 'circle',
-        tension: 0.35 // curve the line
+  const datasets = [];
+  if (props.generated) {
+    datasets.push({
+      borderColor: 'orange', // line color
+      data: values.generated, // data for the line
+      fill: false, // fill the area under the line
+      label: 'Generated', // tooltip label
+      mode: 'nearest', // 'index' or 'nearest
+      pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
+      pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
+      pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
+      pointHoverBorderColor: 'orange', // point border color on hover
+      // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
+      pointStyle: 'circle',
+      tension: 0.35 // curve the line
+    });
+  }
+
+  if (props.metered) {
+    datasets.push({
+    // Setting background gradient on metered data
+      backgroundColor: (ctx) => {
+        const canvas = ctx.chart.ctx;
+        const gradient = canvas.createLinearGradient(0, 0, 0, 425);
+
+        gradient.addColorStop(0, '#00bed6'); // color
+        gradient.addColorStop(0.5, 'rgba(51, 142, 161, 0.75)'); // darker shade of the color
+        gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // almost transparent
+
+        return gradient;
       },
-      {
-        // Setting background gradient on metered data
-        backgroundColor: (ctx) => {
-          const canvas = ctx.chart.ctx;
-          const gradient = canvas.createLinearGradient(0, 0, 0, 425);
+      borderColor: '#00bed6', // line color
+      data: values.metered, // data for the line
+      fill: true, // fill area under the line graph
+      label: 'Metered', // tooltip label
+      mode: 'nearest', // 'index' or 'nearest
+      pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
+      pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
+      pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
+      pointHoverBorderColor: '#00bed6', // point border color on hover
+      // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
+      pointStyle: 'circle',
+      tension: 0.35 // curve the line
+    });
+  }
 
-          gradient.addColorStop(0, '#00bed6'); // color
-          gradient.addColorStop(0.5, 'rgba(51, 142, 161, 0.75)'); // darker shade of the color
-          gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // almost transparent
-
-          return gradient;
-        },
-        borderColor: '#00bed6', // line color
-        data: values.metered, // data for the line
-        fill: true, // fill area under the line graph
-        label: 'Metered', // tooltip label
-        mode: 'nearest', // 'index' or 'nearest
-        pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
-        pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
-        pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
-        pointHoverBorderColor: '#00bed6', // point border color on hover
-        // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
-        pointStyle: 'circle',
-        tension: 0.35 // curve the line
-      }
-    ]
+  return {
+    datasets
   };
 });
 </script>
