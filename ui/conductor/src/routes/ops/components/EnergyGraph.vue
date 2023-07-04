@@ -33,16 +33,37 @@ const props = defineProps({
   }
 });
 
+/** -------------------------------------------- */
+/**
+ * ! Stage 1:
+ */
+
 const pollDelay = computed(() => props.span / 10);
 const now = ref(Date.now());
 const nowHandle = ref(0);
+
+onMounted(() => {
+  nowHandle.value = setInterval(() => {
+    now.value = Date.now();
+  }, pollDelay.value);
+});
+
+onUnmounted(() => {
+  clearInterval(nowHandle.value);
+
+  Object.values(seriesMap).forEach(series => {
+    clearTimeout(series.handle);
+  });
+});
 
 const seriesMap = reactive({
   metered: {
     baseRequest: computed(() => {
       return baseRequest(props.metered);
     }),
-    data: [],
+    data: /** @type {{x: Date, y: number}[]} */ computed(
+        () => structureData(props.span, seriesMap.metered.records)
+    ),
     handle: 0,
     records: /** @type {MeterReadingRecord.AsObject[]} */ []
   },
@@ -50,19 +71,27 @@ const seriesMap = reactive({
     baseRequest: computed(() => {
       return baseRequest(props.generated);
     }),
-    data: [],
+    data: /** @type {{x: Date, y: number}[]} */ computed(
+        () => structureData(props.span, seriesMap.generated.records)
+    ),
     handle: 0,
     records: /** @type {MeterReadingRecord.AsObject[]} */ []
   }
 });
 
-
-// Return an array of object with request details
+/**
+ * Create a request for the metered series
+ *
+ * @param {string} name
+ * @return {MeterReadingHistoryRequest.AsObject}
+ */
 const baseRequest = (name) => {
   if (!name) return undefined;
 
+  // 24 hours and 15 minutes ago,
+  // to account for the fact that the first reading may not be at the start of the hour
   const period = {
-    startTime: new Date(now.value - 24 * 60 * 60 * 1000)
+    startTime: new Date(now.value - (24.25 * 60 * 60 * 1000))
   };
 
   return {
@@ -72,116 +101,6 @@ const baseRequest = (name) => {
     pageToken: ''
   };
 };
-
-
-/**
- * Function to calculate the difference between two data points
- *
- * @param {*} lastReading
- * @param {*} record
- * @return {number}
- */
-const calculateDifference = (lastReading, record) => {
-  return record.meterReading.usage - lastReading.meterReading.usage;
-};
-
-
-/**
- * Function to add a data point for the difference if the meter was reset
- *
- * @param {*} lastReading
- * @param {*} records
- * @param {*} dataPoints
- */
-const addDataPointForReset = (lastReading, records, dataPoints) => {
-  const diff = calculateDifference(records[0], lastReading);
-  dataPoints.push({x: new Date(timestampToDate(lastReading.recordTime)), y: diff});
-};
-
-
-/**
- * Function to add data points for each segment if the time difference is greater than the specified span
- *
- * @param {*} lastReading
- * @param {*} record
- * @param {*} span
- * @param {*} dataPoints
- */
-const addDataPointsForSegment = (lastReading, record, span, dataPoints) => {
-  const segmentCount = Math.floor(
-      (timestampToDate(record.recordTime) - timestampToDate(lastReading.recordTime)) / span
-  );
-  const diff = calculateDifference(lastReading, record) / segmentCount;
-
-  for (let i = 1; i <= segmentCount; i++) {
-    const x = new Date(timestampToDate(lastReading.recordTime).getTime() + i * span);
-    const y = diff;
-    dataPoints.push({x, y});
-  }
-};
-
-/**
- * Function to add a data point for the final reading if it hasn't already been added
- *
- * @param {MeterReadingRecord.AsObject} lastReading
- * @param {MeterReadingRecord.AsObject[]} records
- * @param {{x: Date, y: number}[]} dataPoints
- */
-const addDataPointForFinalReading = (lastReading, records, dataPoints) => {
-  const finalReading = records[records.length - 1];
-  const [t0, t1] = [timestampToDate(lastReading.recordTime), timestampToDate(finalReading.recordTime)];
-
-  if (t0.getTime() !== t1.getTime()) {
-    const diff = calculateDifference(lastReading, finalReading);
-    dataPoints.push({x: new Date(t1), y: diff});
-  }
-};
-
-/**
- * Function to collect the data points which should be displayed on the graph
- *
- * @param {number} span
- * @param {MeterReadingRecord.AsObject[]} records
- * @return {{x: Date, y: number}[]}
- */
-const data = (span, records) => {
-  // If there are no records, return an empty array
-  if (records.length === 0) {
-    return [];
-  }
-
-  // Initialize an empty array to hold the data points
-  const dataPoints = [];
-
-  // Initialize the last reading to the first record
-  let lastReading = records[0];
-
-  // Iterate through the records and calculate the data points
-  for (const record of records.slice(1)) {
-    // If the meter was reset, add a data point for the difference
-    if (lastReading.meterReading.usage > record.meterReading.usage) {
-      addDataPointForReset(lastReading, records, dataPoints);
-      lastReading = record;
-      continue;
-    }
-
-    // Calculate the time difference between the last and current records
-    const d = timestampToDate(record.recordTime) - timestampToDate(lastReading.recordTime);
-
-    // If the time difference is greater than the specified span, add data points for each segment
-    if (d > span) {
-      addDataPointsForSegment(lastReading, record, span, dataPoints);
-      lastReading = record;
-    }
-  }
-
-  // Add a data point for the final reading if it hasn't already been added
-  addDataPointForFinalReading(lastReading, records, dataPoints);
-
-  // Return the data points array
-  return dataPoints;
-};
-
 
 /**
  * Async function to poll for meter readings
@@ -217,10 +136,255 @@ async function pollReadings(req, type) {
   seriesMap[type].handle = setTimeout(() => pollReadings(req, type), pollDelay.value);
 }
 
+/** -------------------------------------------- */
+/**
+ * ! Stage 2:
+ */
 
-//
-//
-// Computed
+/**
+ * Function to populate the line chart with default data
+ * for the last 24 hours and an extra 15 minute in 15 minute intervals
+ *
+ * @param {{x: Date, y: number}[]} dataset
+ * @param {number} span
+ * @return {{x: Date, y: number}[]}
+ */
+const populateDefaultData = (dataset, span) => {
+  // Populate the line chart with default data when dataset is empty
+  const currentDate = new Date();
+
+  // Adjusting current date to nearest 15 min mark
+  currentDate.setMinutes(currentDate.getMinutes() - (currentDate.getMinutes() % 15), 0, 0);
+
+  // Calculate the number of 15 min intervals in 24 hours
+  const numberOfIntervals = 24.25 * 60 / 15;
+
+  // Populate the line chart with default data
+  // 24 hour divided into 15 min intervals
+  for (let i = 0; i < numberOfIntervals; i++) {
+    const dataPoint = {
+      x: new Date(currentDate.getTime() - (i * span)),
+      y: 0
+    };
+
+    dataset.unshift(dataPoint); // Update the array of objects depending on the currentDate
+  }
+
+  // Add an extra 15 min interval to the beginning of the array,
+  // this is to account for the fact that the first reading may not be at the start of the hour
+  dataset.unshift({
+    x: new Date(dataset[0].x.getTime() - span),
+    y: 0
+  });
+
+  return dataset;
+};
+
+/**
+ * Function to group meter reading records by 15 minute intervals
+ *
+ * @param {MeterReadingRecord.AsObject[]} records
+ * @return {{interval: Date, firstRecord: MeterReadingRecord.AsObject, lastRecord: MeterReadingRecord.AsObject}[]}
+ */
+const groupRecordsByInterval = (records) => {
+  const intervalData = [];
+
+  // Group records by 15 min intervals
+  const intervalGroups = records.reduce((groups, record) => {
+    const timestamp = new Date(timestampToDate(record.recordTime));
+    // Round down to the nearest 15 minute interval
+    const interval = new Date(Math.floor(timestamp.getTime() / props.span) * props.span);
+
+    if (!groups[interval]) {
+      groups[interval] = [];
+    }
+
+    groups[interval].push(record);
+
+    return groups;
+  }, []);
+
+  // Convert interval keys to numerical indices
+  const entries = Object.entries(intervalGroups);
+  entries.forEach((entry, index) => {
+    const [interval, records] = entry;
+
+
+    intervalData.push({
+      interval, // The 15 minute interval
+      firstRecord: records[0],
+      lastRecord: records[records.length - 1]
+    });
+  });
+
+  return intervalData;
+};
+
+
+/**
+ * Function to calculate the difference between two data points
+ *
+ * @param {MeterReadingRecord.AsObject} lastReading
+ * @param {MeterReadingRecord.AsObject} record
+ * @return {number}
+ */
+const calculateDifference = (lastReading, record) => {
+  return record.meterReading.usage - lastReading.meterReading.usage;
+};
+
+/**
+ * Function to find the index of the matching interval in the dataPoints array
+ *
+ * @param {Date} interval
+ * @param {{x: Date, y: number}[]} dataPoints
+ * @return {{x: Date, y: number}}
+ */
+const findMatchingIntervalIndex = (interval, dataPoints) => {
+  return dataPoints.find((dataPoint) => {
+    return dataPoint.x == interval;
+  });
+};
+
+/**
+ * Function to update the y value of the matching interval in the dataPoints array
+ *
+ * @param {Date} interval
+ * @param {number} newValue
+ * @param {{x: Date, y: number}[]} dataPoints
+ */
+const updateDataPointYValue = (interval, newValue, dataPoints) => {
+  const dataPoint = findMatchingIntervalIndex(interval, dataPoints);
+  dataPoint.y = newValue;
+};
+
+/**
+ * Function to add a data point for the difference if the meter was reset
+ *
+ * @param {MeterReadingRecord.AsObject} lastReading
+ * @param {MeterReadingRecord.AsObject} record
+ * @param {{x: Date, y: number}[]} dataPoints
+ */
+const addDataPointForReset = (lastReading, record, dataPoints) => {
+  const diff = calculateDifference(record.firstRecord, lastReading);
+  updateDataPointYValue(record.interval, diff, dataPoints);
+};
+
+/**
+ * Function to add data points for each segment if the time difference is greater than the specified span
+ *
+ * @param {MeterReadingRecord.AsObject} lastReading
+ * @param {MeterReadingRecord.AsObject} record
+ * @param {number} span
+ * @param {{x: Date, y: number}[]} dataPoints
+ */
+const addDataPointsForSegment = (lastReading, record, span, dataPoints) => {
+  const segmentCount = Math.floor(
+      (timestampToDate(record.firstRecord.recordTime) - timestampToDate(lastReading.recordTime)) / span
+  );
+  const diff = calculateDifference(lastReading, record.firstRecord) / segmentCount;
+
+  updateDataPointYValue(record.interval, diff, dataPoints);
+};
+
+/**
+ * Function to add a data point for the final reading if it hasn't already been added
+ *
+ * @param {MeterReadingRecord.AsObject} lastReading
+ * @param {MeterReadingRecord.AsObject[]} records
+ * @param {{x: Date, y: number}[]} dataPoints
+ */
+const addDataPointForFinalReading = (lastReading, records, dataPoints) => {
+  const finalReading = records[records.length - 1].lastRecord;
+  const finalInterval = records[records.length - 1].interval;
+  const [t0, t1] = [timestampToDate(lastReading.recordTime), timestampToDate(finalReading.recordTime)];
+
+  if (t0.getTime() !== t1.getTime()) {
+    const diff = calculateDifference(lastReading, finalReading);
+    updateDataPointYValue(finalInterval, diff, dataPoints);
+  }
+};
+
+/**
+ * Function to collect the data points which should be displayed on the graph
+ *
+ * @param {number} span
+ * @param {MeterReadingRecord.AsObject[]} records
+ * @return {{x: Date, y: number}[]}
+ */
+const structureData = (span, records) => {
+  // Initialize an empty array to hold the data points
+  let dataPoints = [];
+
+  dataPoints = populateDefaultData(dataPoints, span);
+
+  if (records.length) {
+  // Initialize the last reading to the first record
+    const groupedRecords = groupRecordsByInterval(records);
+    let lastReading = groupedRecords[0].lastRecord;
+
+
+    // Iterate through the records and calculate the data points
+    groupedRecords.forEach((record, index) => {
+    // If the meter was reset, add a data point for the difference
+      if (lastReading.meterReading.usage > record.firstRecord.meterReading.usage) {
+        addDataPointForReset(lastReading, record, dataPoints);
+      } else {
+        // If the meter was not reset, add a data point for the difference
+        const diff = calculateDifference(lastReading, record.firstRecord);
+        updateDataPointYValue(record.interval, diff, dataPoints);
+      }
+      lastReading = record.lastRecord;
+
+      // Calculate the time difference between the last and current records
+      const d = timestampToDate(record.firstRecord.recordTime) - timestampToDate(lastReading.recordTime);
+
+      // If the time difference is greater than the specified span, add data points for each segment
+      if (d > span) {
+        addDataPointsForSegment(lastReading, record, span, dataPoints);
+        lastReading = record.lastRecord;
+      }
+    });
+
+    // Add a data point for the final reading if it hasn't already been added
+    addDataPointForFinalReading(lastReading, groupedRecords, dataPoints);
+  }
+
+  dataPoints.shift(); // remove the extra time from the beginning
+
+
+  // Return the data points array
+  return dataPoints;
+};
+
+
+/** -------------------------------------------- */
+/**
+ * ! Stage 3:
+ */
+
+
+/**
+ * Loop through the seriesMap and create automation with watch for:
+ * pulling meter readings for the series in a specified interval (pollDelay)
+ */
+Object.entries(seriesMap).forEach(([name, series]) => {
+  // Watching baseRequest for changes
+  watch(() => series.baseRequest, (request) => {
+    clearTimeout(series.handle);
+    series.records = [];
+
+    // create new stream
+    if (request) {
+      pollReadings(request, name);
+    }
+  }, {immediate: true, deep: true, flush: 'sync'});
+});
+
+/** -------------------------------------------- */
+/**
+ * ! Stage 4:
+ */
+
 // Generating object with name and data key/values required for graph 'series' prop
 const series = computed(() => {
   return Object.entries(seriesMap).map(([seriesName, seriesData]) => {
@@ -235,8 +399,6 @@ const series = computed(() => {
   }).filter(obj => obj !== null);
 });
 
-//
-//
 // Chart Options and Data
 const chartOptions = {
   animation: {
@@ -261,7 +423,7 @@ const chartOptions = {
       containerID: 'legend-container'
     },
     legend: {
-      display: false
+      display: false // Legend being overwritten by htmlLegend plugin
     },
     title: {
       display: true,
@@ -275,18 +437,49 @@ const chartOptions = {
       }
     },
     tooltip: {
-      backgroundColor: 'rgba(0, 0, 0, 1)',
+      backgroundColor: '#000',
       bodyColor: '#fff',
       borderColor: '#000',
+      callbacks: {
+        // Format the tooltip title to Month Date, 24 Hour:Minute
+        title: (data) => {
+          const date = new Date(data[0].parsed.x);
+          const title = date.toLocaleString('en-GB', {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: false
+          });
+
+          return title;
+        },
+        labelPointStyle: function(context) {
+          return {
+            pointStyle: 'line',
+            rotation: 0
+          };
+        },
+        labelColor: function(context) {
+          return {
+            borderColor: context.dataset.borderColor,
+            backgroundColor: context.dataset.borderColor,
+            borderWidth: 2,
+            borderDash: [2, 2]
+          };
+        }
+      },
       borderWidth: 2,
       cornerRadius: 5,
-      displayColors: false,
+      displayColors: true,
+      enabled: true,
       interaction: {
         axis: 'xy',
         mode: 'index'
       },
       padding: 12,
-      titleColor: '#fff'
+      titleColor: '#fff',
+      usePointStyle: true
     }
   },
   scales: {
@@ -301,7 +494,7 @@ const chartOptions = {
         color: '#fff',
         display: true,
         font: {
-          size: 12// Specify the desired font size
+          size: 12 // Specify the desired font size
         }
       },
       title: {
@@ -316,31 +509,56 @@ const chartOptions = {
       },
       ticks: {
         align: 'center',
+        // autoSkip: true,
+        callback: (value) => {
+          // Format the xAxis label to either Month Date or 24 Hour:Minute
+          let label = '';
+          const date = new Date(value);
+
+          if (date.getHours() === 0) {
+            label = date.toLocaleString('en-GB', {
+              day: 'numeric',
+              month: 'short'
+            });
+          } else {
+            label = date.toLocaleString('en-GB', {
+              hour: 'numeric',
+              minute: 'numeric',
+              hour12: false
+            });
+          }
+
+          return label;
+        },
         color: '#fff',
         display: true,
         font: {
-          size: 10// Specify the desired font size
+          size: 11 // Specify the desired font size
         },
-        // Limit xAxis label rotation to 0 degrees
-        maxRotation: 0,
-        minRotation: 0
+        includeBounds: true, // Include the first and last ticks
+        maxRotation: 0 // Limit xAxis label rotation to 0 degrees
       },
       grid: {
         color: ''
-      }
+      },
+      time: {
+        displayFormats: {
+          hour: 'HH : mm' // Format the xAxis label to 24 Hour:Minute
+        },
+        min: '00:00', // Set the min time to 00:00
+        max: '23:59', // Set the max time to 23:59
+        stepSize: 1, // Display a label for every hour
+        unit: 'hour'
+      },
+      type: 'time'
     }
   },
   type: 'line'
 };
 
-// Define a computed property that restructures the data for the chart
+// Computed property which restructures the data for the chart
 const chartData = computed(() => {
   // Initialize empty arrays for labels and values
-  let labels = {
-    metered: [],
-    generated: []
-  };
-
   const values = {
     metered: [],
     generated: []
@@ -349,14 +567,6 @@ const chartData = computed(() => {
   // Get the data from the series prop
   const dataset = series.value;
 
-  // Define a function to format the time
-  const timeFormat = (time) => {
-    const hour = time.getHours().toString().padStart(2, '0');
-    const minute = time.getMinutes().toString().padStart(2, '0');
-    const formattedTime = hour + ':' + minute;
-
-    return formattedTime;
-  };
 
   // Loop through each set of data in the dataset
   dataset.forEach((set, index) => {
@@ -366,124 +576,64 @@ const chartData = computed(() => {
       if (data && data.x) {
         // Create a new date object from the x value
         const newDate = new Date(data.x);
-        // Format the time using the timeFormat function
-        const formattedTime = timeFormat(newDate);
+        // Get the name of the set
+        const setName = set.name.toLowerCase();
 
-        // If the set is for metered data, add the time and value to the metered arrays
-        if (set.name === 'Metered') {
-          labels.metered.push(formattedTime);
-          values.metered.push(data.y);
-        } else {
-          // Otherwise, add the time and value to the generated arrays
-          labels.generated.push(formattedTime);
-          values.generated.push(data.y);
-        }
+        // Add the date and y value to the appropriate array
+        values[setName].push({x: newDate, y: data.y});
       }
     });
   });
 
-  // Reduce duplicate values in the labels array
-  labels = [...labels.metered, ...labels?.generated].reduce((acc, curr) => {
-    if (acc.indexOf(curr) === -1) {
-      acc.push(curr);
-    }
-    return acc;
-  }, []);
-
   // Return the restructured data for the chart
-  return {
-    labels, // collection of time intervals
-    datasets: [
-      {
-        borderColor: 'orange',
-        data: values.generated,
-        fill: false,
-        label: 'Generated', // tooltip label
-        mode: 'nearest', // 'index' or 'nearest
-        pointBackgroundColor: 'rgba(0, 0, 0, 0)',
-        pointBorderColor: 'rgba(0, 0, 0, 0)',
-        pointHoverBackgroundColor: 'rgb(255, 255, 255)',
-        pointHoverBorderColor: 'orange',
-        pointStyle: 'circle',
-        tension: 0.35
+  const datasets = [];
+  if (props.generated) {
+    datasets.push({
+      borderColor: 'orange', // line color
+      data: values.generated, // data for the line
+      fill: false, // fill the area under the line
+      label: 'Generated', // tooltip label
+      mode: 'nearest', // 'index' or 'nearest
+      pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
+      pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
+      pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
+      pointHoverBorderColor: 'orange', // point border color on hover
+      // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
+      pointStyle: 'circle',
+      tension: 0.35 // curve the line
+    });
+  }
+
+  if (props.metered) {
+    datasets.push({
+    // Setting background gradient on metered data
+      backgroundColor: (ctx) => {
+        const canvas = ctx.chart.ctx;
+        const gradient = canvas.createLinearGradient(0, 0, 0, 425);
+
+        gradient.addColorStop(0, '#00bed6'); // color
+        gradient.addColorStop(0.5, 'rgba(51, 142, 161, 0.75)'); // darker shade of the color
+        gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // almost transparent
+
+        return gradient;
       },
-      {
-        // Setting background gradient on metered data
-        backgroundColor: (ctx) => {
-          const canvas = ctx.chart.ctx;
-          const gradient = canvas.createLinearGradient(0, 0, 0, 425);
+      borderColor: '#00bed6', // line color
+      data: values.metered, // data for the line
+      fill: true, // fill area under the line graph
+      label: 'Metered', // tooltip label
+      mode: 'nearest', // 'index' or 'nearest
+      pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
+      pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
+      pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
+      pointHoverBorderColor: '#00bed6', // point border color on hover
+      // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
+      pointStyle: 'circle',
+      tension: 0.35 // curve the line
+    });
+  }
 
-          gradient.addColorStop(0, '#00bed6');
-          gradient.addColorStop(0.5, 'rgba(51, 142, 161, 0.75)');
-          gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // Darker shade of the color
-
-          return gradient;
-        },
-        borderColor: '#00bed6',
-        data: values.metered, // actual data
-        fill: true,
-        label: 'Metered', // tooltip label
-        mode: 'nearest', // 'index' or 'nearest
-        pointBackgroundColor: 'rgba(0, 0, 0, 0)',
-        pointBorderColor: 'rgba(0, 0, 0, 0)',
-        pointHoverBackgroundColor: 'rgb(255, 255, 255)',
-        pointHoverBorderColor: '#00bed6',
-        pointStyle: 'circle',
-        tension: 0.35
-      }
-    ]
+  return {
+    datasets
   };
 });
-
-
-//
-//
-// Watcher
-// Watch for changes to the series prop
-Object.entries(seriesMap).forEach(([name, series]) => {
-  // Watching baseRequest for changes
-  watch(() => series.baseRequest, (request) => {
-    clearTimeout(series.handle);
-    series.records = [];
-
-    // create new stream
-    if (request) {
-      pollReadings(request, name);
-    }
-  }, {immediate: true, deep: true, flush: 'sync'});
-
-  // Watching records for changes
-  watch(() => series.records, (records) => {
-    const seriesCollection = data(props.span, records);
-
-    // On first load, set the series data to the seriesCollection
-    if (series.data.length === 0) {
-      series.data = seriesCollection;
-    } else {
-      // Otherwise, push the last value from the seriesCollection to the series data
-      series.data.push(seriesCollection[seriesCollection.length - 1]);
-      series.data.shift();
-    }
-  }, {immediate: true, deep: true, flush: 'sync'});
-});
-
-//
-//
-// Lifecycle
-onMounted(() => {
-  nowHandle.value = setInterval(() => {
-    now.value = Date.now();
-  }, pollDelay.value);
-});
-
-onUnmounted(() => {
-  clearInterval(nowHandle.value);
-
-  Object.values(seriesMap).forEach(series => {
-    clearTimeout(series.handle);
-  });
-});
 </script>
-
-<style lang="scss" scoped>
-</style>

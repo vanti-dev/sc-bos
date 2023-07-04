@@ -1,20 +1,20 @@
 <template>
-  <v-container fluid class="pa-0 d-flex flex-column ops-main">
-    <!-- Top bar -->
-    <div class="d-flex flex-column flex-md-row justify-space-between ma-0 pa-0">
-      <h3 class="text-h3 pt-2 pb-6">Status: Building Overview</h3>
+  <v-container fluid class="d-flex flex-row flex-nowrap pt-0 pr-0">
+    <v-col class="ml-0 pl-0" :style="graphWidth">
+      <v-row class="ml-0 pl-0">
+        <h3 class="text-h3 pt-2 pb-6">Status: Building Overview</h3>
+      </v-row>
+      <v-row class="d-flex flex-row">
+        <v-col cols="12">
+          <energy-card :generated="supplyZone" :metered="energyZone"/>
+          <occupancy-card :name="occupancyZone"/>
+        </v-col>
+      </v-row>
+    </v-col>
+    <v-col cols="2" class="mr-0 pr-0 pt-0" style="width: 260px; max-width: 260px;">
       <sc-status-card/>
-    </div>
-    <v-row class="d-flex flex-row flex-nowrap ops-content ml-0 pl-0">
-      <!-- Main contents -->
-      <div class="ops-content__main mr-6" :style="contentWidth">
-        <energy-card :generated="supplyZone" :metered="energyZone"/>
-        <occupancy-card :name="occupancyZone"/>
-      </div>
-      <div class="ops-sidebar mr-3">
-        <environmental-card :name="environmentalZone" :external-name="externalZone"/>
-      </div>
-    </v-row>
+      <environmental-card class="ops-sidebar mt-5" :name="environmentalZone" :external-name="externalZone"/>
+    </v-col>
   </v-container>
 </template>
 
@@ -31,15 +31,9 @@ import OccupancyCard from '@/routes/ops/components/OccupancyCard.vue';
 const appConfig = useAppConfigStore();
 const pageStore = usePageStore();
 
-// for more smooth chart resize when expanding the navigation drawer
-const contentWidth = computed(() => {
-  const drawerWidth = pageStore.drawerWidth;
-
-  return `max-width: calc(82vw - ${drawerWidth}px); transition: max-width .35s ease-in-out .25s; overflow-x: hidden;`;
-});
+const graphWidth = computed(() => `min-width: calc(100% - 260px - ${pageStore.drawerWidth}px)`);
 
 const buildingZone = computed(() => appConfig.config?.ops?.buildingZone ?? '');
-
 const energyZone = buildingZone;
 const environmentalZone = buildingZone;
 const occupancyZone = buildingZone;
@@ -50,17 +44,6 @@ const supplyZone = computed(() => energyZone.value + '/supply');
 
 </script>
 <style lang="scss">
-.ops-main {
-  width: 100%;
-  .ops-content {
-    &__main {
-      width: 100%;
-      flex-direction: column;
-    }
-    .ops-sidebar {
-      display: block;
-      max-width: 250px;
-    }
-  }
+.ops-sidebar {
 }
 </style>
