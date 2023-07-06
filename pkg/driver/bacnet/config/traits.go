@@ -135,6 +135,10 @@ func NewDeviceRef(name string) *DeviceRef {
 	return &DeviceRef{name: name}
 }
 
+func NewDeviceRefID(id bactypes.ObjectInstance) *DeviceRef {
+	return &DeviceRef{id: id}
+}
+
 func (d DeviceRef) Lookup(ctx known.Context) (bactypes.Device, error) {
 	if d.name != "" {
 		return ctx.LookupDeviceByName(d.name)
@@ -174,6 +178,10 @@ type ObjectRef struct {
 
 func NewObjectRef(name string) *ObjectRef {
 	return &ObjectRef{name: name}
+}
+
+func NewObjectRefID(id ObjectID) *ObjectRef {
+	return &ObjectRef{id: id}
 }
 
 func (o ObjectRef) Lookup(device bactypes.Device, ctx known.Context) (bactypes.Object, error) {
