@@ -1,4 +1,4 @@
-package merge
+package comm
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 )
 
-func readProperty(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource) (any, error) {
+func ReadProperty(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource) (any, error) {
 	device, object, property, err := value.Lookup(known)
 	if err != nil {
 		return nil, err
@@ -47,10 +47,10 @@ type key struct {
 	pid property.ID
 }
 
-// readPropertiesChunked is like readProperties but splits values into chunks of at most chunkSize that are executed in parallel.
-func readPropertiesChunked(ctx context.Context, client *gobacnet.Client, known known.Context, chunkSize int, values ...config.ValueSource) []any {
+// ReadPropertiesChunked is like readProperties but splits values into chunks of at most chunkSize that are executed in parallel.
+func ReadPropertiesChunked(ctx context.Context, client *gobacnet.Client, known known.Context, chunkSize int, values ...config.ValueSource) []any {
 	if chunkSize == 0 {
-		return readProperties(ctx, client, known, values...)
+		return ReadProperties(ctx, client, known, values...)
 	}
 
 	var wg sync.WaitGroup
@@ -67,7 +67,7 @@ func readPropertiesChunked(ctx context.Context, client *gobacnet.Client, known k
 		}
 		go func() {
 			defer wg.Done()
-			props := readProperties(ctx, client, known, values[from:to]...)
+			props := ReadProperties(ctx, client, known, values[from:to]...)
 			copy(results[from:to], props)
 		}()
 	}
@@ -76,7 +76,7 @@ func readPropertiesChunked(ctx context.Context, client *gobacnet.Client, known k
 	return results
 }
 
-func readProperties(ctx context.Context, client *gobacnet.Client, known known.Context, values ...config.ValueSource) []any {
+func ReadProperties(ctx context.Context, client *gobacnet.Client, known known.Context, values ...config.ValueSource) []any {
 	res := make([]any, len(values))
 	resIndexes := make(map[key][]int)
 
@@ -170,7 +170,7 @@ func readMultiProperties(ctx context.Context, client *gobacnet.Client, device ba
 	}
 }
 
-func float64Value(data any) (float64, error) {
+func Float64Value(data any) (float64, error) {
 	switch v := data.(type) {
 	case error:
 		return 0, v
@@ -187,7 +187,7 @@ func float64Value(data any) (float64, error) {
 	return 0, fmt.Errorf("unsupported conversion %T -> float64 for val %v", data, data)
 }
 
-func float32Value(data any) (float32, error) {
+func Float32Value(data any) (float32, error) {
 	switch v := data.(type) {
 	case error:
 		return 0, v
@@ -204,11 +204,41 @@ func float32Value(data any) (float32, error) {
 	return 0, fmt.Errorf("unsupported conversion %T -> float32 for val %v", data, data)
 }
 
-func ptr[T any](v T, err error) (*T, error) {
-	return &v, err
+func BoolValue(data any) (bool, error) {
+	switch v := data.(type) {
+	case error:
+		return false, v
+	case bool:
+		return v, nil
+	case int, int8, int16, int32, uint, uint8, uint16, uint32:
+		return v == 1, nil
+	}
+
+	return false, fmt.Errorf("unsupported conversion %T -> bool for val %v", data, data)
 }
 
-func stringValue(data any) (string, error) {
+func EnumValue(data any) (bactypes.Enumerated, error) {
+	switch v := data.(type) {
+	case error:
+		return 0, v
+	case uint8:
+		return bactypes.Enumerated(v), nil
+	case uint16:
+		return bactypes.Enumerated(v), nil
+	case uint32:
+		return bactypes.Enumerated(v), nil
+	case int8:
+		return bactypes.Enumerated(v), nil
+	case int16:
+		return bactypes.Enumerated(v), nil
+	case int32:
+		return bactypes.Enumerated(v), nil
+	}
+
+	return 0, fmt.Errorf("unsupported conversion %T -> bactypes.Enumerated for val %v", data, data)
+}
+
+func StringValue(data any) (string, error) {
 	switch v := data.(type) {
 	case error:
 		return "", v
@@ -219,19 +249,7 @@ func stringValue(data any) (string, error) {
 	}
 }
 
-func valuesEquivalent(a, b any) bool {
-	return fmt.Sprintf("%v", a) == fmt.Sprintf("%v", b)
-}
-
-func readPropertyFloat32(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource) (float32, error) {
-	data, err := readProperty(ctx, client, known, value)
-	if err != nil {
-		return 0, err
-	}
-	return float32Value(data)
-}
-
-func writeProperty(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource, data any, priority uint) error {
+func WriteProperty(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource, data any, priority uint) error {
 	device, object, property, err := value.Lookup(known)
 	if err != nil {
 		return err

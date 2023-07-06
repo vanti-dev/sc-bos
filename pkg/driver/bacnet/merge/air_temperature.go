@@ -12,6 +12,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
 	"github.com/vanti-dev/gobacnet"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
@@ -86,7 +87,7 @@ func (t *airTemperature) UpdateAirTemperature(ctx context.Context, request *trai
 		return t.GetAirTemperature(ctx, &traits.GetAirTemperatureRequest{Name: request.Name})
 	}
 	newSetPoint := float32(request.GetState().GetTemperatureSetPoint().GetValueCelsius())
-	err := writeProperty(ctx, t.client, t.known, *t.config.SetPoint, newSetPoint, 0)
+	err := comm.WriteProperty(ctx, t.client, t.known, *t.config.SetPoint, newSetPoint, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -111,9 +112,9 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 	if t.config.SetPoint != nil {
 		readValues = append(readValues, *t.config.SetPoint)
 		resProcessors = append(resProcessors, func(response any) error {
-			setPoint, err := float64Value(response)
+			setPoint, err := comm.Float64Value(response)
 			if err != nil {
-				return ErrReadProperty{Prop: "setPoint", Cause: err}
+				return comm.ErrReadProperty{Prop: "setPoint", Cause: err}
 			}
 			data.TemperatureGoal = &traits.AirTemperature_TemperatureSetPoint{
 				TemperatureSetPoint: &types.Temperature{ValueCelsius: setPoint},
@@ -124,15 +125,15 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 	if t.config.AmbientTemperature != nil {
 		readValues = append(readValues, *t.config.AmbientTemperature)
 		resProcessors = append(resProcessors, func(response any) error {
-			ambientTemperature, err := float64Value(response)
+			ambientTemperature, err := comm.Float64Value(response)
 			if err != nil {
-				return ErrReadProperty{Prop: "ambientTemperature", Cause: err}
+				return comm.ErrReadProperty{Prop: "ambientTemperature", Cause: err}
 			}
 			data.AmbientTemperature = &types.Temperature{ValueCelsius: ambientTemperature}
 			return nil
 		})
 	}
-	responses := readProperties(ctx, t.client, t.known, readValues...)
+	responses := comm.ReadProperties(ctx, t.client, t.known, readValues...)
 	var errs []error
 	for i, response := range responses {
 		err := resProcessors[i](response)
@@ -140,7 +141,7 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 			errs = append(errs, err)
 		}
 	}
-	updatePollErrorStatus(t.statuses, t.config.Name, len(readValues), errs...)
+	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "poll", len(readValues), errs...)
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}

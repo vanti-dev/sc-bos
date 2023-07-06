@@ -8,6 +8,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
@@ -22,7 +23,7 @@ func startPoll(init context.Context, name string, pollDelay, pollTimeout time.Du
 			ctx, stop := context.WithTimeout(runUntil, pollTimeout)
 			cleanup = stop
 			err := pollPeer(ctx)
-			LogPollError(logger, fmt.Sprintf("%s poll error", name), err)
+			comm.LogPollError(logger, fmt.Sprintf("%s poll error", name), err)
 			select {
 			case <-ticker.C:
 			case <-runUntil.Done():

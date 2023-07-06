@@ -11,6 +11,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/fanspeed"
 	"github.com/vanti-dev/gobacnet"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
@@ -89,7 +90,7 @@ func (t *fanSpeed) UpdateFanSpeed(ctx context.Context, request *traits.UpdateFan
 		}
 		newFanSpeed = presetSpeed
 	}
-	err := writeProperty(ctx, t.client, t.known, *t.config.Speed, newFanSpeed, 0)
+	err := comm.WriteProperty(ctx, t.client, t.known, *t.config.Speed, newFanSpeed, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -117,9 +118,9 @@ func (t *fanSpeed) speedToPreset(speed float32) string {
 // pollPeer fetches data from the peer device and saves the data locally.
 func (t *fanSpeed) pollPeer(ctx context.Context) (*traits.FanSpeed, error) {
 	speed, err := readPropertyFloat32(ctx, t.client, t.known, *t.config.Speed)
-	updatePollErrorStatus(t.statuses, t.config.Name, 1, err)
+	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "poll", 1, err)
 	if err != nil {
-		return nil, ErrReadProperty{Prop: "speed", Cause: err}
+		return nil, comm.ErrReadProperty{Prop: "speed", Cause: err}
 	}
 	data := &traits.FanSpeed{
 		Percentage: speed,

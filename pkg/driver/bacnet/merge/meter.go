@@ -10,6 +10,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/gobacnet"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -100,13 +101,13 @@ func (t *meterTrait) startPoll(init context.Context) (stop task.StopFn, err erro
 }
 
 func (t *meterTrait) pollPeer(ctx context.Context) (*gen.MeterReading, error) {
-	responses := readProperties(ctx, t.client, t.known, *t.config.Usage)
+	responses := comm.ReadProperties(ctx, t.client, t.known, *t.config.Usage)
 	var errs []error
-	usage, err := float32Value(responses[0])
+	usage, err := comm.Float32Value(responses[0])
 	if err != nil {
-		errs = append(errs, ErrReadProperty{Prop: "usage", Cause: err})
+		errs = append(errs, comm.ErrReadProperty{Prop: "usage", Cause: err})
 	}
-	updatePollErrorStatus(t.statuses, t.config.Name, 1, errs...)
+	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "poll", 1, errs...)
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}

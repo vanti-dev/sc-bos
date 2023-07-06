@@ -13,6 +13,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/electric"
 	"github.com/vanti-dev/gobacnet"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
@@ -125,21 +126,21 @@ func (t *electricTrait) pollPeer(ctx context.Context) (*traits.ElectricDemand, e
 		if cfg.Current != nil {
 			toRead = append(toRead, *cfg.Current)
 			toWrite = append(toWrite, func(v any) (err error) {
-				dst.Current, err = float32Value(v)
+				dst.Current, err = comm.Float32Value(v)
 				return
 			})
 		}
 		if cfg.Voltage != nil {
 			toRead = append(toRead, *cfg.Voltage)
 			toWrite = append(toWrite, func(v any) (err error) {
-				dst.Voltage, err = ptr(float32Value(v))
+				dst.Voltage, err = ptr(comm.Float32Value(v))
 				return
 			})
 		}
 		if cfg.Rating != nil {
 			toRead = append(toRead, *cfg.Rating)
 			toWrite = append(toWrite, func(v any) (err error) {
-				dst.Rating, err = float32Value(v)
+				dst.Rating, err = comm.Float32Value(v)
 				return
 			})
 		}
@@ -148,28 +149,28 @@ func (t *electricTrait) pollPeer(ctx context.Context) (*traits.ElectricDemand, e
 			if phase.PowerFactor != nil {
 				toRead = append(toRead, *phase.PowerFactor)
 				toWrite = append(toWrite, func(v any) (err error) {
-					dst.PowerFactor, err = ptr(float32Value(v))
+					dst.PowerFactor, err = ptr(comm.Float32Value(v))
 					return
 				})
 			}
 			if phase.RealPower != nil {
 				toRead = append(toRead, *phase.RealPower)
 				toWrite = append(toWrite, func(v any) (err error) {
-					dst.RealPower, err = ptr(float32Value(v))
+					dst.RealPower, err = ptr(comm.Float32Value(v))
 					return
 				})
 			}
 			if phase.ApparentPower != nil {
 				toRead = append(toRead, *phase.ApparentPower)
 				toWrite = append(toWrite, func(v any) (err error) {
-					dst.ApparentPower, err = ptr(float32Value(v))
+					dst.ApparentPower, err = ptr(comm.Float32Value(v))
 					return
 				})
 			}
 			if phase.ReactivePower != nil {
 				toRead = append(toRead, *phase.ReactivePower)
 				toWrite = append(toWrite, func(v any) (err error) {
-					dst.ReactivePower, err = ptr(float32Value(v))
+					dst.ReactivePower, err = ptr(comm.Float32Value(v))
 					return
 				})
 			}
@@ -187,7 +188,7 @@ func (t *electricTrait) pollPeer(ctx context.Context) (*traits.ElectricDemand, e
 	}
 
 	var errs []error
-	for i, response := range readPropertiesChunked(ctx, t.client, t.known, t.config.ChunkSize, toRead...) {
+	for i, response := range comm.ReadPropertiesChunked(ctx, t.client, t.known, t.config.ChunkSize, toRead...) {
 		err := toWrite[i](response)
 		if err != nil {
 			errs = append(errs, err)
@@ -222,7 +223,7 @@ func (t *electricTrait) pollPeer(ctx context.Context) (*traits.ElectricDemand, e
 		dst.ReactivePower = &reactive
 	}
 
-	updatePollErrorStatus(t.statuses, t.config.Name, len(toRead), errs...)
+	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "poll", len(toRead), errs...)
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}

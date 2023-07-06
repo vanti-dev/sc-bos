@@ -1,4 +1,4 @@
-package merge
+package comm
 
 import (
 	"context"
@@ -16,7 +16,8 @@ import (
 )
 
 var (
-	ErrTraitNotSupported = errors.New("trait not supported")
+	ErrPropNotFound   = errors.New("property not found")
+	ErrObjectNotFound = errors.New("object not found")
 )
 
 type ErrReadProperty struct {
@@ -97,8 +98,8 @@ func (s stringerFunc) String() string {
 	return s()
 }
 
-func updatePollErrorStatus(statuses *statuspb.Map, name string, requests int, errs ...error) {
-	problemName := fmt.Sprintf("%s.%s", name, "poll")
+func UpdatePollErrorStatus(statuses *statuspb.Map, name, task string, requests int, errs ...error) {
+	problemName := fmt.Sprintf("%s.%s", name, task)
 
 	allFailed := len(errs) == requests
 	someOffline, allOffline := isOfflineError(errs...)
@@ -107,7 +108,7 @@ func updatePollErrorStatus(statuses *statuspb.Map, name string, requests int, er
 		statuses.UpdateProblem(name, &gen.StatusLog_Problem{
 			Name:        problemName,
 			Level:       gen.StatusLog_NOMINAL,
-			Description: fmt.Sprintf("poll success"),
+			Description: fmt.Sprintf("%s success", task),
 		})
 		return
 	}
@@ -119,7 +120,7 @@ func updatePollErrorStatus(statuses *statuspb.Map, name string, requests int, er
 	statuses.UpdateProblem(name, &gen.StatusLog_Problem{
 		Name:        problemName,
 		Level:       level,
-		Description: fmt.Sprintf("poll timeout"),
+		Description: fmt.Sprintf("%s failed", task),
 	})
 }
 

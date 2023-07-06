@@ -12,6 +12,7 @@ import (
 
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -103,7 +104,7 @@ func (f *udmiMerge) OnMessage(ctx context.Context, request *gen.OnMessageRequest
 				// let's assume for now values shouldn't be float64, true for the YABE room simulator at least
 				set = float32(floatValue)
 			}
-			err = writeProperty(ctx, f.client, f.known, *cfg, set, 0)
+			err = comm.WriteProperty(ctx, f.client, f.known, *cfg, set, 0)
 			if err != nil {
 				return nil, status.Errorf(codes.Internal, "failed to write point %s: %s", point, err)
 			}
@@ -182,16 +183,16 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 		requestValues = append(requestValues, *cfg)
 		keys = append(keys, key)
 	}
-	for i, result := range readPropertiesChunked(ctx, f.client, f.known, f.config.ChunkSize, requestValues...) {
+	for i, result := range comm.ReadPropertiesChunked(ctx, f.client, f.known, f.config.ChunkSize, requestValues...) {
 		switch e := result.(type) {
 		case error:
-			errs = append(errs, ErrReadProperty{Prop: keys[i], Cause: e})
+			errs = append(errs, comm.ErrReadProperty{Prop: keys[i], Cause: e})
 		default:
 			events[keys[i]] = udmi.PointValue{PresentValue: e}
 		}
 	}
 
-	updatePollErrorStatus(f.statuses, f.config.Name, len(f.config.Points), errs...)
+	comm.UpdatePollErrorStatus(f.statuses, f.config.Name, "poll", len(f.config.Points), errs...)
 	if len(errs) == len(f.config.Points) {
 		err := multierr.Combine(errs...)
 		return err

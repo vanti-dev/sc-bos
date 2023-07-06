@@ -14,6 +14,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	modepb "github.com/smart-core-os/sc-golang/pkg/trait/mode"
 	"github.com/vanti-dev/gobacnet"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	genmodepb "github.com/vanti-dev/sc-bos/pkg/gentrait/modepb"
@@ -144,7 +145,7 @@ func (t *mode) UpdateModeValues(ctx context.Context, request *traits.UpdateModeV
 
 	var errs []error
 	for _, toWrite := range allToWrite {
-		err := writeProperty(ctx, t.client, t.known, toWrite.point, toWrite.value, 0)
+		err := comm.WriteProperty(ctx, t.client, t.known, toWrite.point, toWrite.value, 0)
 		if err != nil {
 			errs = append(errs, err)
 		}
@@ -189,7 +190,7 @@ func (t *mode) pollPeer(ctx context.Context) (*traits.ModeValues, error) {
 		readValues = append(readValues, *point.Value)
 		readConfig = append(readConfig, nameAndPoint{name: name, point: point})
 	}
-	responses := readProperties(ctx, t.client, t.known, readValues...)
+	responses := comm.ReadProperties(ctx, t.client, t.known, readValues...)
 	dst := &traits.ModeValues{
 		Values: make(map[string]string, len(responses)),
 	}
@@ -203,14 +204,14 @@ responses:
 				continue responses
 			}
 		}
-		value, err := stringValue(response)
+		value, err := comm.StringValue(response)
 		if err != nil {
 			errs = append(errs, err)
 			continue
 		}
 		dst.Values[cfg.name] = value
 	}
-	updatePollErrorStatus(t.statuses, t.config.Name, len(readValues), errs...)
+	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "poll", len(readValues), errs...)
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}
