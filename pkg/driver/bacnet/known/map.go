@@ -29,13 +29,19 @@ func (m *Map) StoreDevice(name string, d bactypes.Device) {
 		m.devicesByName = make(map[string]*device)
 	}
 
-	item := &device{
-		bacDevice:     d,
-		name:          name,
-		objectsByID:   make(map[bactypes.ObjectID]*object),
-		objectsByName: make(map[string]*object),
+	var item *device
+	if e, ok := m.devicesByID[d.ID.Instance]; ok {
+		item = e
+	} else {
+		item = &device{
+			bacDevice:     d,
+			objectsByID:   make(map[bactypes.ObjectID]*object),
+			objectsByName: make(map[string]*object),
+		}
+		m.devicesByID[d.ID.Instance] = item
 	}
-	m.devicesByID[d.ID.Instance] = item
+
+	item.names = append(item.names, name)
 	m.devicesByName[name] = item
 }
 
@@ -63,7 +69,9 @@ func (m *Map) DeleteDeviceByID(id bactypes.ObjectInstance) {
 		return
 	}
 	delete(m.devicesByID, d.bacDevice.ID.Instance)
-	delete(m.devicesByName, d.name)
+	for _, name := range d.names {
+		delete(m.devicesByName, name)
+	}
 }
 
 func (m *Map) DeleteDeviceByName(name string) {
@@ -71,8 +79,16 @@ func (m *Map) DeleteDeviceByName(name string) {
 	if !ok {
 		return
 	}
-	delete(m.devicesByID, d.bacDevice.ID.Instance)
-	delete(m.devicesByName, d.name)
+	for i, s := range d.names {
+		if s == name {
+			d.names = append(d.names[:i], d.names[i+1:]...)
+			break
+		}
+	}
+	delete(m.devicesByName, name)
+	if len(d.names) == 0 {
+		delete(m.devicesByID, d.bacDevice.ID.Instance)
+	}
 }
 
 func (m *Map) DeleteObject(device bactypes.Device, object bactypes.Object) {
@@ -167,7 +183,7 @@ func (m *Map) LookupObjectByName(device bactypes.Device, name string) (bactypes.
 
 type device struct {
 	bacDevice bactypes.Device
-	name      string
+	names     []string
 
 	objectsByID   map[bactypes.ObjectID]*object
 	objectsByName map[string]*object
