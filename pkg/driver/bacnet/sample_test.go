@@ -2,12 +2,24 @@ package bacnet
 
 import (
 	"context"
+	"log"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/gobacnet"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/status"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 func TestYabeRoom(t *testing.T) {
@@ -40,4 +52,67 @@ func TestYabeRoom(t *testing.T) {
 		t.Fatalf("RemoteDevices error %v", err)
 	}
 	t.Logf("RemoteDevices %+v", devices)
+}
+
+func TestSiteFaults(t *testing.T) {
+	t.SkipNow() // only run this test when connected to site
+	ctx, cleanup := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cleanup()
+
+	appConfig, err := appconf.LoadLocalConfig("/Users/matt.nathan/projects/vanti-dev/bsp-ew/config/floor-04", "bms.part.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var bacnetConfig config.Root
+	for _, driver := range appConfig.Drivers {
+		if driver.Type == DriverName {
+			bacnetConfig, err = config.ReadBytes(driver.Raw)
+			break
+		}
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bacnetConfig.Type == "" {
+		t.Fatal("No BACnet driver config found")
+	}
+
+	client, err := gobacnet.NewClient("bridge100", 0, gobacnet.WithLogLevel(logrus.InfoLevel))
+	if err != nil {
+		t.Fatalf("NewClient error %v", err)
+	}
+	t.Cleanup(client.Close)
+
+	knownMap := known.NewMap()
+	statusMap := statuspb.NewMap(node.AnnouncerFunc(func(name string, features ...node.Feature) node.Undo {
+		return node.NilUndo
+	}))
+
+	monitor := status.NewMonitor(client, known.SyncContext(&sync.Mutex{}, knownMap), statusMap)
+	monitor.Logger, _ = zap.NewDevelopment(zap.AddStacktrace(zap.FatalLevel))
+
+	for _, device := range bacnetConfig.Devices {
+		ctx, cleanup := context.WithTimeout(ctx, 2*time.Second)
+		bacDevice, err := FindDevice(ctx, client, device)
+		cleanup()
+		if err != nil {
+			log.Printf("ERR: FindDevice %v %v", device.Name, err)
+			continue
+		}
+		knownMap.StoreDevice(adapt.DeviceName(device), bacDevice)
+		for _, co := range device.Objects {
+			bo := bactypes.Object{
+				ID: bactypes.ObjectID(co.ID),
+			}
+			_ = knownMap.StoreObject(bacDevice, adapt.ObjectName(co), bo)
+		}
+
+		monitor.AddDevice(device.Name, device)
+	}
+
+	err = monitor.Poll(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
