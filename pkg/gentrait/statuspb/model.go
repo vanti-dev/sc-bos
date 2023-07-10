@@ -104,7 +104,7 @@ func (m *Model) PullCurrentStatus(ctx context.Context, readMask *fieldmaskpb.Fie
 			switch {
 			case change.NewValue == nil:
 				if found {
-					problems = slices.Delete(problems, i, 1)
+					problems = slices.Delete(problems, i, i+1)
 				}
 			default:
 				if found {
