@@ -1,9 +1,11 @@
 package statuspb
 
 import (
+	"context"
 	"sync"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
@@ -13,6 +15,13 @@ type Map struct {
 	mu        sync.Mutex
 	known     map[string]model // keyed by sc name used to announce
 	announcer node.Announcer
+
+	watchEvents *minibus.Bus[WatchEvent]
+}
+
+type WatchEvent struct {
+	Name string
+	Ctx  context.Context
 }
 
 type model struct {
@@ -22,8 +31,9 @@ type model struct {
 
 func NewMap(announcer node.Announcer) *Map {
 	return &Map{
-		known:     make(map[string]model),
-		announcer: announcer,
+		known:       make(map[string]model),
+		announcer:   announcer,
+		watchEvents: &minibus.Bus[WatchEvent]{},
 	}
 }
 
@@ -51,12 +61,22 @@ func (m *Map) Forget(name string) {
 	mod.unannounce()
 }
 
+// WatchEvents returns a chan that emits when a client starts pulling the status for a given name.
+// The context of the event is the context of the client's request, so will be cancelled when the client disconnects.
+func (m *Map) WatchEvents(ctx context.Context) <-chan WatchEvent {
+	return m.watchEvents.Listen(ctx)
+}
+
 func (m *Map) getOrCreateModel(name string) model {
 	m.mu.Lock()
 	mod, ok := m.known[name]
 	if !ok {
 		nm := NewModel()
-		client := gen.WrapStatusApi(NewModelServer(nm))
+		srv := &watchEventServer{
+			ModelServer: NewModelServer(nm),
+			m:           m,
+		}
+		client := gen.WrapStatusApi(srv)
 		mod = model{
 			Model:      nm,
 			unannounce: m.announcer.Announce(name, node.HasTrait(TraitName, node.WithClients(client))),
@@ -72,4 +92,17 @@ func (m *Map) getModel(name string) (model, bool) {
 	mod, ok := m.known[name]
 	m.mu.Unlock()
 	return mod, ok
+}
+
+type watchEventServer struct {
+	*ModelServer
+	m *Map
+}
+
+func (s *watchEventServer) PullCurrentStatus(request *gen.PullCurrentStatusRequest, server gen.StatusApi_PullCurrentStatusServer) error {
+	go s.m.watchEvents.Send(server.Context(), WatchEvent{
+		Name: request.Name,
+		Ctx:  server.Context(),
+	})
+	return s.ModelServer.PullCurrentStatus(request, server)
 }
