@@ -78,6 +78,10 @@ func ReadPropertiesChunked(ctx context.Context, client *gobacnet.Client, known k
 
 func ReadProperties(ctx context.Context, client *gobacnet.Client, known known.Context, values ...config.ValueSource) []any {
 	res := make([]any, len(values))
+	for i := range res {
+		res[i] = ErrPropNotFound
+	}
+
 	resIndexes := make(map[key][]int)
 
 	devices := make(map[bactypes.ObjectInstance]bactypes.Device)
@@ -122,10 +126,6 @@ func ReadProperties(ctx context.Context, client *gobacnet.Client, known known.Co
 }
 
 func readMultiProperties(ctx context.Context, client *gobacnet.Client, device bactypes.Device, req bactypes.ReadMultipleProperty, resIndexes map[key][]int, res []any) {
-	for i := range res {
-		res[i] = ErrPropNotFound
-	}
-
 	multiRes, err := client.ReadMultiProperty(ctx, device, req)
 	if err != nil {
 		// todo: be more conservative about which errors we try individual property reads for
