@@ -174,6 +174,13 @@ func readMultiProperties(ctx context.Context, client *gobacnet.Client, device ba
 	}
 }
 
+func AnyValue(data any) (any, error) {
+	if err, ok := data.(error); ok {
+		return nil, err
+	}
+	return data, nil
+}
+
 func Float64Value(data any) (float64, error) {
 	switch v := data.(type) {
 	case error:
