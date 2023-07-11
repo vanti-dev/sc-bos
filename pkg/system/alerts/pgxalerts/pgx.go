@@ -149,8 +149,35 @@ func (s *Server) mergeSourceAlert(ctx context.Context, name string, alert *gen.A
 			return err
 		}
 
-		// if we recorded check_time, here's where we'd write it. But we don't
-		retAlert = queryAlert
+		// a consequence of the below logic is that you are incapable of clearing any of these fields
+		var fields []string
+		var values []any
+		if alert.Description != "" { // technically description will never be empty, but check for consistency
+			fields = append(fields, "description")
+			values = append(values, alert.Description)
+		}
+		if alert.Severity != 0 {
+			fields = append(fields, "severity")
+			values = append(values, alert.Severity)
+		}
+		if alert.Floor != "" {
+			fields = append(fields, "floor")
+			values = append(values, alert.Floor)
+		}
+		if alert.Zone != "" {
+			fields = append(fields, "zone")
+			values = append(values, alert.Zone)
+		}
+
+		if len(fields) > 0 {
+			if err := updateAlert(ctx, tx, queryAlert.Id, fields, values); err != nil {
+				return err
+			}
+			retAlert = &gen.Alert{Id: queryAlert.Id}
+			return readAlertById(ctx, tx, queryAlert.Id, retAlert)
+		} else {
+			retAlert = queryAlert
+		}
 		return nil
 	})
 	if err != nil {
@@ -204,30 +231,14 @@ func (s *Server) UpdateAlert(ctx context.Context, request *gen.UpdateAlertReques
 	original := &gen.Alert{}
 	updated := &gen.Alert{}
 
-	setStr := ""
-	for i, field := range fields {
-		if setStr != "" {
-			setStr += ","
-		}
-		setStr += fmt.Sprintf("%s=$%d", field, i+2) // +2 to make it 1-based leaving room for $1 to be the id
-	}
-	args := append([]any{alert.Id}, values...)
-	sql := fmt.Sprintf(`UPDATE alerts SET %s WHERE id=$1`, setStr)
 	err := s.pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		// record the original value which will be used for event notifications
 		if err := readAlertById(ctx, tx, alert.Id, original); err != nil {
 			return err
 		}
-		res, err := tx.Exec(ctx, sql, args...)
-		if err != nil {
+		if err := updateAlert(ctx, tx, alert.Id, fields, values); err != nil {
 			return err
 		}
-		rows := res.RowsAffected()
-		if rows == 0 {
-			return status.Error(codes.NotFound, "id not found")
-		}
-
-		// get alert so we can return it
 		return readAlertById(ctx, tx, alert.Id, updated)
 	})
 

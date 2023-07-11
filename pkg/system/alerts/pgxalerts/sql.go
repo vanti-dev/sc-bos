@@ -2,9 +2,13 @@ package pgxalerts
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -29,6 +33,31 @@ func insertAlert(ctx context.Context, q QueryRower, alert *gen.Alert) (*gen.Aler
 
 	alert.CreateTime = timestamppb.New(createTime)
 	return alert, nil
+}
+
+type Execer interface {
+	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
+}
+
+func updateAlert(ctx context.Context, ex Execer, id string, fields []string, values []any) error {
+	setStr := ""
+	for i, field := range fields {
+		if setStr != "" {
+			setStr += ","
+		}
+		setStr += fmt.Sprintf("%s=$%d", field, i+2) // +2 to make it 1-based leaving room for $1 to be the id
+	}
+	args := append([]any{id}, values...)
+	sql := fmt.Sprintf(`UPDATE alerts SET %s WHERE id=$1`, setStr)
+	res, err := ex.Exec(ctx, sql, args...)
+	if err != nil {
+		return err
+	}
+	rows := res.RowsAffected()
+	if rows == 0 {
+		return status.Error(codes.NotFound, "alert not found")
+	}
+	return nil
 }
 
 func readAlertById(ctx context.Context, tx QueryRower, id string, dst *gen.Alert) error {
