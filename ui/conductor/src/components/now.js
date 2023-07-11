@@ -1,3 +1,4 @@
+import {toValue} from '@/util/vue';
 import {onBeforeUnmount, onMounted, ref} from 'vue';
 
 export const MILLISECOND = 1;
@@ -8,8 +9,8 @@ export const DAY = 24 * HOUR;
 
 /**
  *
- * @param {number} resolution
- * @return {{now: Date}}
+ * @param {MaybeRefOrGetter<number>} resolution
+ * @return {{now: import('vue').Ref<Date>}}
  */
 export function useNow(resolution = MINUTE) {
   const now = ref(new Date());
@@ -21,8 +22,9 @@ export function useNow(resolution = MINUTE) {
    */
   function nextDelay(t) {
     const ms = t.getTime();
+    const res = toValue(resolution);
     // note: if ms is exactly on a resolution boundary then instead of returning 0 we should wait a full hop
-    return (ms % resolution) || resolution;
+    return (ms % res) || res;
   }
 
   let handle = 0;
