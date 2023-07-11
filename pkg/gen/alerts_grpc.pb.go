@@ -351,6 +351,7 @@ var AlertApi_ServiceDesc = grpc.ServiceDesc{
 type AlertAdminApiClient interface {
 	CreateAlert(ctx context.Context, in *CreateAlertRequest, opts ...grpc.CallOption) (*Alert, error)
 	UpdateAlert(ctx context.Context, in *UpdateAlertRequest, opts ...grpc.CallOption) (*Alert, error)
+	ResolveAlert(ctx context.Context, in *ResolveAlertRequest, opts ...grpc.CallOption) (*Alert, error)
 	DeleteAlert(ctx context.Context, in *DeleteAlertRequest, opts ...grpc.CallOption) (*DeleteAlertResponse, error)
 }
 
@@ -380,6 +381,15 @@ func (c *alertAdminApiClient) UpdateAlert(ctx context.Context, in *UpdateAlertRe
 	return out, nil
 }
 
+func (c *alertAdminApiClient) ResolveAlert(ctx context.Context, in *ResolveAlertRequest, opts ...grpc.CallOption) (*Alert, error) {
+	out := new(Alert)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.AlertAdminApi/ResolveAlert", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *alertAdminApiClient) DeleteAlert(ctx context.Context, in *DeleteAlertRequest, opts ...grpc.CallOption) (*DeleteAlertResponse, error) {
 	out := new(DeleteAlertResponse)
 	err := c.cc.Invoke(ctx, "/smartcore.bos.AlertAdminApi/DeleteAlert", in, out, opts...)
@@ -395,6 +405,7 @@ func (c *alertAdminApiClient) DeleteAlert(ctx context.Context, in *DeleteAlertRe
 type AlertAdminApiServer interface {
 	CreateAlert(context.Context, *CreateAlertRequest) (*Alert, error)
 	UpdateAlert(context.Context, *UpdateAlertRequest) (*Alert, error)
+	ResolveAlert(context.Context, *ResolveAlertRequest) (*Alert, error)
 	DeleteAlert(context.Context, *DeleteAlertRequest) (*DeleteAlertResponse, error)
 	mustEmbedUnimplementedAlertAdminApiServer()
 }
@@ -408,6 +419,9 @@ func (UnimplementedAlertAdminApiServer) CreateAlert(context.Context, *CreateAler
 }
 func (UnimplementedAlertAdminApiServer) UpdateAlert(context.Context, *UpdateAlertRequest) (*Alert, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAlert not implemented")
+}
+func (UnimplementedAlertAdminApiServer) ResolveAlert(context.Context, *ResolveAlertRequest) (*Alert, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResolveAlert not implemented")
 }
 func (UnimplementedAlertAdminApiServer) DeleteAlert(context.Context, *DeleteAlertRequest) (*DeleteAlertResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAlert not implemented")
@@ -461,6 +475,24 @@ func _AlertAdminApi_UpdateAlert_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AlertAdminApi_ResolveAlert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResolveAlertRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AlertAdminApiServer).ResolveAlert(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/smartcore.bos.AlertAdminApi/ResolveAlert",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AlertAdminApiServer).ResolveAlert(ctx, req.(*ResolveAlertRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AlertAdminApi_DeleteAlert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteAlertRequest)
 	if err := dec(in); err != nil {
@@ -493,6 +525,10 @@ var AlertAdminApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateAlert",
 			Handler:    _AlertAdminApi_UpdateAlert_Handler,
+		},
+		{
+			MethodName: "ResolveAlert",
+			Handler:    _AlertAdminApi_ResolveAlert_Handler,
 		},
 		{
 			MethodName: "DeleteAlert",

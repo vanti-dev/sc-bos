@@ -614,6 +614,67 @@ proto.smartcore.bos.AlertAdminApiPromiseClient.prototype.updateAlert =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.ResolveAlertRequest,
+ *   !proto.smartcore.bos.Alert>}
+ */
+const methodDescriptor_AlertAdminApi_ResolveAlert = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AlertAdminApi/ResolveAlert',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.ResolveAlertRequest,
+  proto.smartcore.bos.Alert,
+  /**
+   * @param {!proto.smartcore.bos.ResolveAlertRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Alert.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.ResolveAlertRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.Alert)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Alert>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AlertAdminApiClient.prototype.resolveAlert =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AlertAdminApi/ResolveAlert',
+      request,
+      metadata || {},
+      methodDescriptor_AlertAdminApi_ResolveAlert,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.ResolveAlertRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.Alert>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.AlertAdminApiPromiseClient.prototype.resolveAlert =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AlertAdminApi/ResolveAlert',
+      request,
+      metadata || {},
+      methodDescriptor_AlertAdminApi_ResolveAlert);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.smartcore.bos.DeleteAlertRequest,
  *   !proto.smartcore.bos.DeleteAlertResponse>}
  */

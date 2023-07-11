@@ -37,6 +37,10 @@ func (w *alertAdminApiWrapper) UpdateAlert(ctx context.Context, req *UpdateAlert
 	return w.server.UpdateAlert(ctx, req)
 }
 
+func (w *alertAdminApiWrapper) ResolveAlert(ctx context.Context, req *ResolveAlertRequest, _ ...grpc.CallOption) (*Alert, error) {
+	return w.server.ResolveAlert(ctx, req)
+}
+
 func (w *alertAdminApiWrapper) DeleteAlert(ctx context.Context, req *DeleteAlertRequest, _ ...grpc.CallOption) (*DeleteAlertResponse, error) {
 	return w.server.DeleteAlert(ctx, req)
 }

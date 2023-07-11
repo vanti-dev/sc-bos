@@ -95,6 +95,15 @@ func (r *AlertAdminApiRouter) UpdateAlert(ctx context.Context, request *UpdateAl
 	return child.UpdateAlert(ctx, request)
 }
 
+func (r *AlertAdminApiRouter) ResolveAlert(ctx context.Context, request *ResolveAlertRequest) (*Alert, error) {
+	child, err := r.GetAlertAdminApiClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.ResolveAlert(ctx, request)
+}
+
 func (r *AlertAdminApiRouter) DeleteAlert(ctx context.Context, request *DeleteAlertRequest) (*DeleteAlertResponse, error) {
 	child, err := r.GetAlertAdminApiClient(request.Name)
 	if err != nil {

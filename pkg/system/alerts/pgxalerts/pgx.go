@@ -16,7 +16,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
@@ -103,26 +102,66 @@ func (s *Server) CreateAlert(ctx context.Context, request *gen.CreateAlertReques
 		alert.Severity = gen.Alert_WARNING
 	}
 
-	var createTime time.Time
-	err := s.pool.QueryRow(ctx,
-		`INSERT INTO alerts (description, severity, floor, zone, source, federation) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, create_time`,
-		alert.Description, alert.Severity, alert.Floor, alert.Zone, alert.Source, alert.Federation,
-	).Scan(&alert.Id, &createTime)
+	if request.MergeSource {
+		if alert.GetSource() == "" {
+			return nil, status.Error(codes.InvalidArgument, "source empty")
+		}
+		return s.mergeSourceAlert(ctx, request.Name, alert)
+	}
+	return s.createNewAlert(ctx, request.Name, alert)
+}
+
+func (s *Server) createNewAlert(ctx context.Context, name string, alert *gen.Alert) (*gen.Alert, error) {
+	alert, err := insertAlert(ctx, s.pool, alert)
 	if err != nil {
 		return nil, dbErrToStatus(err)
 	}
 
-	alert.CreateTime = timestamppb.New(createTime)
-
-	// notify
-	go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
-		Name:       request.Name,
-		Type:       types.ChangeType_ADD,
-		ChangeTime: alert.CreateTime,
-		NewValue:   alert,
-	})
+	go s.notifyAdd(name, alert)
 
 	return alert, nil
+}
+
+func (s *Server) mergeSourceAlert(ctx context.Context, name string, alert *gen.Alert) (*gen.Alert, error) {
+	var retAlert *gen.Alert
+	var created bool
+	err := s.pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		args := []any{
+			alert.Source,
+		}
+		sql := selectAlertSQL + ` WHERE source = $1`
+		if alert.Federation != "" {
+			sql += ` AND federation = $2`
+			args = append(args, alert.Federation)
+		}
+		// note: we don't WHERE resolve_time is NULL because we _want_ to see if the last alert was resolved or not
+		sql += ` ORDER BY create_time DESC LIMIT 1 FOR UPDATE`
+
+		queryAlert := &gen.Alert{}
+		row := tx.QueryRow(ctx, sql, args...)
+		err := scanAlert(row, queryAlert)
+		switch {
+		case errors.Is(err, pgx.ErrNoRows) || queryAlert.GetResolveTime() != nil:
+			created = true
+			retAlert, err = insertAlert(ctx, tx, alert)
+			return err
+		case err != nil:
+			return err
+		}
+
+		// if we recorded check_time, here's where we'd write it. But we don't
+		retAlert = queryAlert
+		return nil
+	})
+	if err != nil {
+		return nil, dbErrToStatus(err)
+	}
+
+	if created {
+		go s.notifyAdd(name, retAlert)
+	}
+
+	return retAlert, nil
 }
 
 func (s *Server) UpdateAlert(ctx context.Context, request *gen.UpdateAlertRequest) (*gen.Alert, error) {
@@ -197,15 +236,91 @@ func (s *Server) UpdateAlert(ctx context.Context, request *gen.UpdateAlertReques
 	}
 
 	// notify
-	go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
-		Name:       request.Name,
-		Type:       types.ChangeType_UPDATE,
-		ChangeTime: timestamppb.Now(),
-		OldValue:   original,
-		NewValue:   updated,
-	})
+	go s.notifyUpdate(request.Name, original, updated)
 
 	return updated, nil
+}
+
+func (s *Server) ResolveAlert(ctx context.Context, request *gen.ResolveAlertRequest) (*gen.Alert, error) {
+	alert := request.Alert
+
+	original := &gen.Alert{}
+	updated := &gen.Alert{}
+
+	respond := func(err error) (*gen.Alert, error) {
+		switch {
+		case status.Code(err) == codes.NotFound:
+			if !request.AllowMissing {
+				return nil, err
+			}
+			return original, nil
+		case errors.Is(err, pgx.ErrNoRows):
+			if !request.AllowMissing {
+				return nil, status.Error(codes.NotFound, "alert not found")
+			}
+			return original, nil
+		case err != nil:
+			return nil, dbErrToStatus(err)
+		}
+
+		if !proto.Equal(original, updated) {
+			go s.notifyUpdate(request.Name, original, updated)
+		}
+		return updated, nil
+	}
+
+	now := time.Now()
+	setResolveTime := func(ctx context.Context, tx pgx.Tx, id string) error {
+		sql := `UPDATE alerts SET resolve_time=$1 WHERE id=$2`
+		res, err := tx.Exec(ctx, sql, now, id)
+		if err != nil {
+			return err
+		}
+		rows := res.RowsAffected()
+		if rows == 0 {
+			return status.Error(codes.NotFound, "alert not found")
+		}
+		// get alert so we can return it
+		return readAlertById(ctx, tx, id, updated)
+	}
+
+	switch {
+	case alert.Id != "":
+		return respond(s.pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+			// record the original value which will be used for event notifications
+			if err := readAlertById(ctx, tx, alert.Id, original); err != nil {
+				return err
+			}
+			if original.ResolveTime != nil {
+				// already resolved
+				updated = original
+				return nil
+			}
+			return setResolveTime(ctx, tx, alert.Id)
+		}))
+	case alert.Source != "":
+		return respond(s.pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
+			args := []any{alert.Source}
+			querySql := selectAlertSQL + ` WHERE source=$1`
+			if alert.Federation != "" {
+				querySql += ` AND federation=$2`
+				args = append(args, alert.Federation)
+			}
+			querySql += ` ORDER BY create_time DESC LIMIT 1 FOR UPDATE`
+			row := tx.QueryRow(ctx, querySql, args...)
+			if err := scanAlert(row, original); err != nil {
+				return err
+			}
+			if original.ResolveTime != nil {
+				// already resolved
+				updated = original
+				return nil
+			}
+			return setResolveTime(ctx, tx, original.Id)
+		}))
+	}
+
+	return nil, status.Error(codes.InvalidArgument, "id and source missing")
 }
 
 func (s *Server) DeleteAlert(ctx context.Context, request *gen.DeleteAlertRequest) (*gen.DeleteAlertResponse, error) {
@@ -242,12 +357,7 @@ func (s *Server) DeleteAlert(ctx context.Context, request *gen.DeleteAlertReques
 	}
 
 	// notify
-	go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
-		Name:       request.Name,
-		Type:       types.ChangeType_REMOVE,
-		ChangeTime: timestamppb.Now(),
-		OldValue:   existing,
-	})
+	go s.notifyRemove(request.Name, existing)
 
 	return &gen.DeleteAlertResponse{}, nil
 }
@@ -444,13 +554,7 @@ func (s *Server) AcknowledgeAlert(ctx context.Context, request *gen.AcknowledgeA
 
 	if !proto.Equal(existing, updated) {
 		// notify
-		go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
-			Name:       request.Name,
-			Type:       types.ChangeType_UPDATE,
-			ChangeTime: timestamppb.Now(),
-			OldValue:   existing,
-			NewValue:   updated,
-		})
+		go s.notifyUpdate(request.Name, existing, updated)
 	}
 
 	return updated, nil
@@ -495,77 +599,10 @@ func (s *Server) UnacknowledgeAlert(ctx context.Context, request *gen.Acknowledg
 
 	if !proto.Equal(existing, updated) {
 		// notify
-		go s.bus.Send(context.Background(), &gen.PullAlertsResponse_Change{
-			Name:       request.Name,
-			Type:       types.ChangeType_UPDATE,
-			ChangeTime: timestamppb.Now(),
-			OldValue:   existing,
-			NewValue:   updated,
-		})
+		go s.notifyUpdate(request.Name, existing, updated)
 	}
 
 	return updated, nil
-}
-
-func readAlertById(ctx context.Context, tx pgx.Tx, id string, dst *gen.Alert) error {
-	row := tx.QueryRow(ctx,
-		selectAlertSQL+` WHERE id=$1`,
-		id,
-	)
-	return scanAlert(row, dst)
-}
-
-// selectAlertSQL selects fields in the order expected by scanAlert.
-const selectAlertSQL = `SELECT id, description, severity, create_time, floor, zone, source, federation, ack_time, ack_author_id, ack_author_name, ack_author_email FROM alerts`
-
-func scanAlert(scanner pgx.Row, dst *gen.Alert) error {
-	var createTime, ackTime *time.Time
-	var floor, zone, source, federation *string
-	var ackAuthorId, ackAuthorName, ackAuthorEmail *string
-	err := scanner.Scan(&dst.Id, &dst.Description, &dst.Severity, &createTime, &floor, &zone, &source, &federation, &ackTime, &ackAuthorId, &ackAuthorName, &ackAuthorEmail)
-	if err != nil {
-		return err
-	}
-	if floor != nil {
-		dst.Floor = *floor
-	}
-	if zone != nil {
-		dst.Zone = *zone
-	}
-	if source != nil {
-		dst.Source = *source
-	}
-	if federation != nil {
-		dst.Federation = *federation
-	}
-	if createTime != nil {
-		dst.CreateTime = timestamppb.New(*createTime)
-	}
-	if ackTime != nil {
-		dst.Acknowledgement = &gen.Alert_Acknowledgement{
-			AcknowledgeTime: timestamppb.New(*ackTime),
-		}
-
-		// ack author details, we assume there is an author only if the author has any information
-		var hasAuthor bool
-		author := &gen.Alert_Acknowledgement_Author{}
-		if ackAuthorId != nil {
-			hasAuthor = true
-			author.Id = *ackAuthorId
-		}
-		if ackAuthorName != nil {
-			hasAuthor = true
-			author.DisplayName = *ackAuthorName
-		}
-		if ackAuthorEmail != nil {
-			hasAuthor = true
-			author.Email = *ackAuthorEmail
-		}
-		if hasAuthor {
-			dst.Acknowledgement.Author = author
-		}
-	}
-	return nil
 }
 
 func dbErrToStatus(err error) error {

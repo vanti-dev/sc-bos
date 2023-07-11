@@ -67,6 +67,13 @@ export class AlertAdminApiClient {
                response: alerts_pb.Alert) => void
   ): grpcWeb.ClientReadableStream<alerts_pb.Alert>;
 
+  resolveAlert(
+    request: alerts_pb.ResolveAlertRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: alerts_pb.Alert) => void
+  ): grpcWeb.ClientReadableStream<alerts_pb.Alert>;
+
   deleteAlert(
     request: alerts_pb.DeleteAlertRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -125,6 +132,11 @@ export class AlertAdminApiPromiseClient {
 
   updateAlert(
     request: alerts_pb.UpdateAlertRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<alerts_pb.Alert>;
+
+  resolveAlert(
+    request: alerts_pb.ResolveAlertRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<alerts_pb.Alert>;
 

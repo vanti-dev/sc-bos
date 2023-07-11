@@ -29,6 +29,7 @@ service AlertApi {
 service AlertAdminApi {
   rpc CreateAlert(CreateAlertRequest) returns (Alert);
   rpc UpdateAlert(UpdateAlertRequest) returns (Alert);
+  rpc ResolveAlert(ResolveAlertRequest) returns (Alert);
   rpc DeleteAlert(DeleteAlertRequest) returns (DeleteAlertResponse);
 }
 
@@ -43,6 +44,12 @@ message Alert {
   // The time the alert was created.
   // Output only, set by the device when the alert is created.
   google.protobuf.Timestamp create_time = 3;
+  // The time the alert was resolved.
+  // Output only, set by the device when resolving an alert.
+  // Absent if the alert has not been resolved.
+  // If an alert is resolved more than once, this will be the earliest (first) time it was resolved.
+  // A resolved alert indicates that the alert condition is no longer present or has been fixed.
+  google.protobuf.Timestamp resolve_time = 20;
 
   message Acknowledgement {
     google.protobuf.Timestamp acknowledge_time = 1;
@@ -241,6 +248,10 @@ message CreateAlertRequest {
   // The alert information to use for the new record.
   // Only description, floor, zone, severity, and source will contribute to the new alert.
   Alert alert = 2;
+  // When true, merge this new alert with the most recent unresolved alert matching Alert.source.
+  // Alert.source must exist.
+  // If no such alert exists then a new alert will be created as if this were false.
+  bool merge_source = 3;
 }
 
 message UpdateAlertRequest {
@@ -252,6 +263,17 @@ message UpdateAlertRequest {
   Alert alert = 2;
   // Fields to update relative to the Alert type
   google.protobuf.FieldMask update_mask = 3;
+}
+
+message ResolveAlertRequest {
+  // Name of the device exposing this trait.
+  string name = 1;
+  // The alert to resolve.
+  // One of Alert.id or Alert.source must be present.
+  // Prefers Alert.id to find the alert to resolve, if not will apply to the most recent alert matching Alert.source.
+  Alert alert = 2;
+  // When true, resolving an alert that does not exist will not result in an error.
+  bool allow_missing = 3;
 }
 
 message DeleteAlertRequest {

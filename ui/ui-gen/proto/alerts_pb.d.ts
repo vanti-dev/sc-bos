@@ -17,6 +17,11 @@ export class Alert extends jspb.Message {
   hasCreateTime(): boolean;
   clearCreateTime(): Alert;
 
+  getResolveTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setResolveTime(value?: google_protobuf_timestamp_pb.Timestamp): Alert;
+  hasResolveTime(): boolean;
+  clearResolveTime(): Alert;
+
   getAcknowledgement(): Alert.Acknowledgement | undefined;
   setAcknowledgement(value?: Alert.Acknowledgement): Alert;
   hasAcknowledgement(): boolean;
@@ -50,6 +55,7 @@ export namespace Alert {
     id: string,
     description: string,
     createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    resolveTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     acknowledgement?: Alert.Acknowledgement.AsObject,
     severity: Alert.Severity,
     floor: string,
@@ -522,6 +528,9 @@ export class CreateAlertRequest extends jspb.Message {
   hasAlert(): boolean;
   clearAlert(): CreateAlertRequest;
 
+  getMergeSource(): boolean;
+  setMergeSource(value: boolean): CreateAlertRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): CreateAlertRequest.AsObject;
   static toObject(includeInstance: boolean, msg: CreateAlertRequest): CreateAlertRequest.AsObject;
@@ -534,6 +543,7 @@ export namespace CreateAlertRequest {
   export type AsObject = {
     name: string,
     alert?: Alert.AsObject,
+    mergeSource: boolean,
   }
 }
 
@@ -564,6 +574,34 @@ export namespace UpdateAlertRequest {
     name: string,
     alert?: Alert.AsObject,
     updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+  }
+}
+
+export class ResolveAlertRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): ResolveAlertRequest;
+
+  getAlert(): Alert | undefined;
+  setAlert(value?: Alert): ResolveAlertRequest;
+  hasAlert(): boolean;
+  clearAlert(): ResolveAlertRequest;
+
+  getAllowMissing(): boolean;
+  setAllowMissing(value: boolean): ResolveAlertRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ResolveAlertRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ResolveAlertRequest): ResolveAlertRequest.AsObject;
+  static serializeBinaryToWriter(message: ResolveAlertRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ResolveAlertRequest;
+  static deserializeBinaryFromReader(message: ResolveAlertRequest, reader: jspb.BinaryReader): ResolveAlertRequest;
+}
+
+export namespace ResolveAlertRequest {
+  export type AsObject = {
+    name: string,
+    alert?: Alert.AsObject,
+    allowMissing: boolean,
   }
 }
 

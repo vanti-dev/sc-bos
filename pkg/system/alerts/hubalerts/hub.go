@@ -59,6 +59,15 @@ func (s *Server) UpdateAlert(ctx context.Context, request *gen.UpdateAlertReques
 	return s.alertAdmin.UpdateAlert(ctx, request)
 }
 
+func (s *Server) ResolveAlert(ctx context.Context, request *gen.ResolveAlertRequest) (*gen.Alert, error) {
+	if err := s.initConn(ctx); err != nil {
+		return nil, err
+	}
+	request.Name = s.remoteName
+	request.Alert.Federation = s.federation
+	return s.alertAdmin.ResolveAlert(ctx, request)
+}
+
 func (s *Server) DeleteAlert(ctx context.Context, request *gen.DeleteAlertRequest) (*gen.DeleteAlertResponse, error) {
 	if err := s.initConn(ctx); err != nil {
 		return nil, err
