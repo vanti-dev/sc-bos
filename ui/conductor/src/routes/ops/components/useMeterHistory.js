@@ -1,6 +1,6 @@
 import {timestampToDate} from '@/api/convpb';
 import {listMeterReadingHistory} from '@/api/sc/traits/meter-history';
-import {useNow} from '@/components/now';
+import {HOUR, useNow} from '@/components/now';
 import {toValue} from '@/util/vue';
 import {computed, ref, watch, watchEffect} from 'vue';
 
@@ -187,7 +187,7 @@ export default function(name, periodStart, periodEnd, spanSize) {
       if (val.incomplete) {
         return {x: val.x.getTime(), y: null};
       } else {
-        return {x: val.x.getTime(), y: val.y / val.len * toValue(spanSize)};
+        return {x: val.x.getTime(), y: val.y / val.len * HOUR};
       }
     });
   });
