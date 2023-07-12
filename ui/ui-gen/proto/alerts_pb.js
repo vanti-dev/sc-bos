@@ -1137,7 +1137,10 @@ proto.smartcore.bos.Alert.Query.toObject = function(includeInstance, msg) {
     zone: jspb.Message.getFieldWithDefault(msg, 6, ""),
     source: jspb.Message.getFieldWithDefault(msg, 7, ""),
     federation: jspb.Message.getFieldWithDefault(msg, 9, ""),
-    acknowledged: jspb.Message.getBooleanFieldWithDefault(msg, 8, false)
+    acknowledged: jspb.Message.getBooleanFieldWithDefault(msg, 8, false),
+    resolved: jspb.Message.getBooleanFieldWithDefault(msg, 10, false),
+    resolvedNotBefore: (f = msg.getResolvedNotBefore()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    resolvedNotAfter: (f = msg.getResolvedNotAfter()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1211,6 +1214,20 @@ proto.smartcore.bos.Alert.Query.deserializeBinaryFromReader = function(msg, read
     case 8:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setAcknowledged(value);
+      break;
+    case 10:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setResolved(value);
+      break;
+    case 11:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setResolvedNotBefore(value);
+      break;
+    case 12:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setResolvedNotAfter(value);
       break;
     default:
       reader.skipField();
@@ -1304,6 +1321,29 @@ proto.smartcore.bos.Alert.Query.serializeBinaryToWriter = function(message, writ
     writer.writeBool(
       8,
       f
+    );
+  }
+  f = /** @type {boolean} */ (jspb.Message.getField(message, 10));
+  if (f != null) {
+    writer.writeBool(
+      10,
+      f
+    );
+  }
+  f = message.getResolvedNotBefore();
+  if (f != null) {
+    writer.writeMessage(
+      11,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getResolvedNotAfter();
+  if (f != null) {
+    writer.writeMessage(
+      12,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
 };
@@ -1524,6 +1564,116 @@ proto.smartcore.bos.Alert.Query.prototype.clearAcknowledged = function() {
  */
 proto.smartcore.bos.Alert.Query.prototype.hasAcknowledged = function() {
   return jspb.Message.getField(this, 8) != null;
+};
+
+
+/**
+ * optional bool resolved = 10;
+ * @return {boolean}
+ */
+proto.smartcore.bos.Alert.Query.prototype.getResolved = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 10, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.smartcore.bos.Alert.Query} returns this
+ */
+proto.smartcore.bos.Alert.Query.prototype.setResolved = function(value) {
+  return jspb.Message.setField(this, 10, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.smartcore.bos.Alert.Query} returns this
+ */
+proto.smartcore.bos.Alert.Query.prototype.clearResolved = function() {
+  return jspb.Message.setField(this, 10, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Alert.Query.prototype.hasResolved = function() {
+  return jspb.Message.getField(this, 10) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp resolved_not_before = 11;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.Alert.Query.prototype.getResolvedNotBefore = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 11));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.Alert.Query} returns this
+*/
+proto.smartcore.bos.Alert.Query.prototype.setResolvedNotBefore = function(value) {
+  return jspb.Message.setWrapperField(this, 11, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Alert.Query} returns this
+ */
+proto.smartcore.bos.Alert.Query.prototype.clearResolvedNotBefore = function() {
+  return this.setResolvedNotBefore(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Alert.Query.prototype.hasResolvedNotBefore = function() {
+  return jspb.Message.getField(this, 11) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp resolved_not_after = 12;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.Alert.Query.prototype.getResolvedNotAfter = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 12));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.Alert.Query} returns this
+*/
+proto.smartcore.bos.Alert.Query.prototype.setResolvedNotAfter = function(value) {
+  return jspb.Message.setWrapperField(this, 12, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Alert.Query} returns this
+ */
+proto.smartcore.bos.Alert.Query.prototype.clearResolvedNotAfter = function() {
+  return this.setResolvedNotAfter(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Alert.Query.prototype.hasResolvedNotAfter = function() {
+  return jspb.Message.getField(this, 12) != null;
 };
 
 

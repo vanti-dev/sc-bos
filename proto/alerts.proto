@@ -109,6 +109,15 @@ message Alert {
     // When false, only include alerts that don't have an acknowledgement.
     // When absent, acknowledgement does not affect whether an alert is returned or not.
     optional bool acknowledged = 8;
+
+    // When true, only include alerts that have a resolve time.
+    // When false, only include alerts that don't have a resolve time.
+    // When absent, resolve time does not affect whether an alert is returned or not.
+    optional bool resolved = 10;
+    // Don't return alerts that were resolved before this time
+    google.protobuf.Timestamp resolved_not_before = 11;
+    // Don't return alerts that were resolved after this time
+    google.protobuf.Timestamp resolved_not_after = 12;
   }
 }
 

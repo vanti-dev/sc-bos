@@ -152,6 +152,21 @@ export namespace Alert {
     hasAcknowledged(): boolean;
     clearAcknowledged(): Query;
 
+    getResolved(): boolean;
+    setResolved(value: boolean): Query;
+    hasResolved(): boolean;
+    clearResolved(): Query;
+
+    getResolvedNotBefore(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setResolvedNotBefore(value?: google_protobuf_timestamp_pb.Timestamp): Query;
+    hasResolvedNotBefore(): boolean;
+    clearResolvedNotBefore(): Query;
+
+    getResolvedNotAfter(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setResolvedNotAfter(value?: google_protobuf_timestamp_pb.Timestamp): Query;
+    hasResolvedNotAfter(): boolean;
+    clearResolvedNotAfter(): Query;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Query.AsObject;
     static toObject(includeInstance: boolean, msg: Query): Query.AsObject;
@@ -171,11 +186,19 @@ export namespace Alert {
       source: string,
       federation: string,
       acknowledged?: boolean,
+      resolved?: boolean,
+      resolvedNotBefore?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+      resolvedNotAfter?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     }
 
     export enum AcknowledgedCase { 
       _ACKNOWLEDGED_NOT_SET = 0,
       ACKNOWLEDGED = 8,
+    }
+
+    export enum ResolvedCase { 
+      _RESOLVED_NOT_SET = 0,
+      RESOLVED = 10,
     }
   }
 

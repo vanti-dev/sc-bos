@@ -437,6 +437,23 @@ func (s *Server) ListAlerts(ctx context.Context, request *gen.ListAlertsRequest)
 				where = append(where, `ack_time IS NULL`)
 			}
 		}
+		if q.Resolved != nil {
+			if *q.Resolved {
+				where = append(where, `resolve_time IS NOT NULL`)
+			} else {
+				where = append(where, `resolve_time IS NULL`)
+			}
+		}
+		if q.ResolvedNotBefore != nil {
+			where = append(where, fmt.Sprintf(`resolve_time>=$%d`, argIdx+1))
+			args = append(args, q.ResolvedNotBefore.AsTime())
+			argIdx += 1
+		}
+		if q.ResolvedNotAfter != nil {
+			where = append(where, fmt.Sprintf(`resolve_time<=$%d`, argIdx+1))
+			args = append(args, q.ResolvedNotAfter.AsTime())
+			argIdx += 1
+		}
 	}
 
 	sql := selectAlertSQL
@@ -734,6 +751,31 @@ func alertMatchesQuery(q *gen.Alert_Query, a *gen.Alert) bool {
 			return false
 		}
 		if !wantAck && a.Acknowledgement != nil {
+			return false
+		}
+	}
+	if q.Resolved != nil {
+		wantResolved := *q.Resolved
+		if wantResolved && a.ResolveTime == nil {
+			return false
+		}
+		if !wantResolved && a.ResolveTime != nil {
+			return false
+		}
+	}
+	if q.ResolvedNotBefore != nil {
+		if a.ResolveTime == nil {
+			return false
+		}
+		if a.ResolveTime.AsTime().Before(q.ResolvedNotBefore.AsTime()) {
+			return false
+		}
+	}
+	if q.ResolvedNotAfter != nil {
+		if a.ResolveTime == nil {
+			return false
+		}
+		if a.ResolveTime.AsTime().After(q.ResolvedNotAfter.AsTime()) {
 			return false
 		}
 	}
