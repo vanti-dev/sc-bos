@@ -123,8 +123,7 @@ func (s *Server) createNewAlert(ctx context.Context, name string, alert *gen.Ale
 }
 
 func (s *Server) mergeSourceAlert(ctx context.Context, name string, alert *gen.Alert) (*gen.Alert, error) {
-	var retAlert *gen.Alert
-	var created bool
+	var oldAlert, newAlert *gen.Alert
 	err := s.pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		args := []any{
 			alert.Source,
@@ -137,13 +136,13 @@ func (s *Server) mergeSourceAlert(ctx context.Context, name string, alert *gen.A
 		// note: we don't WHERE resolve_time is NULL because we _want_ to see if the last alert was resolved or not
 		sql += ` ORDER BY create_time DESC LIMIT 1 FOR UPDATE`
 
-		queryAlert := &gen.Alert{}
+		oldAlert = &gen.Alert{}
 		row := tx.QueryRow(ctx, sql, args...)
-		err := scanAlert(row, queryAlert)
+		err := scanAlert(row, oldAlert)
 		switch {
-		case errors.Is(err, pgx.ErrNoRows) || queryAlert.GetResolveTime() != nil:
-			created = true
-			retAlert, err = insertAlert(ctx, tx, alert)
+		case errors.Is(err, pgx.ErrNoRows) || oldAlert.GetResolveTime() != nil:
+			oldAlert = nil
+			newAlert, err = insertAlert(ctx, tx, alert)
 			return err
 		case err != nil:
 			return err
@@ -170,13 +169,13 @@ func (s *Server) mergeSourceAlert(ctx context.Context, name string, alert *gen.A
 		}
 
 		if len(fields) > 0 {
-			if err := updateAlert(ctx, tx, queryAlert.Id, fields, values); err != nil {
+			if err := updateAlert(ctx, tx, oldAlert.Id, fields, values); err != nil {
 				return err
 			}
-			retAlert = &gen.Alert{Id: queryAlert.Id}
-			return readAlertById(ctx, tx, queryAlert.Id, retAlert)
+			newAlert = &gen.Alert{Id: oldAlert.Id}
+			return readAlertById(ctx, tx, oldAlert.Id, newAlert)
 		} else {
-			retAlert = queryAlert
+			newAlert = oldAlert // no change made
 		}
 		return nil
 	})
@@ -184,11 +183,13 @@ func (s *Server) mergeSourceAlert(ctx context.Context, name string, alert *gen.A
 		return nil, dbErrToStatus(err)
 	}
 
-	if created {
-		go s.notifyAdd(name, retAlert)
+	if oldAlert == nil {
+		go s.notifyAdd(name, newAlert)
+	} else if !proto.Equal(oldAlert, newAlert) {
+		go s.notifyUpdate(name, oldAlert, newAlert)
 	}
 
-	return retAlert, nil
+	return newAlert, nil
 }
 
 func (s *Server) UpdateAlert(ctx context.Context, request *gen.UpdateAlertRequest) (*gen.Alert, error) {
