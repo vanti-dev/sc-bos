@@ -1126,8 +1126,10 @@
     estree-walker "^2.0.1"
     picomatch "^2.2.2"
 
-"@sc-bos/ui-gen@file:../ui-gen":
-  version "1.0.0-beta.6"
+"@sc-bos/ui-gen@1.0.0-beta.7":
+  version "1.0.0-beta.7"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/ui-gen/-/ui-gen-1.0.0-beta.7.tgz#5fcc858b55f046261673ac3386e949e307d1a722"
+  integrity sha512-RFNNzdqmSqMZMYydGGqlVDDlGgxEd+5+xCLaovtgT2VNCHxeQufjYvQEkMd2zl4fL2IdSgZRcRhTXMpBcUxc+A==
   dependencies:
     "@smart-core-os/sc-api-grpc-web" "^1.0.0-beta.42"
     google-protobuf "^3.21.2"
