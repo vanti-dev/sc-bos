@@ -3,7 +3,8 @@
   "version": "1.0.0-beta.8",
   "type": "commonjs",
   "scripts": {
-    "gen": "node gen.mjs"
+    "gen": "node gen.mjs",
+    "deploy:nexus": "yarn publish --prerelease --preid beta --no-git-tag-version"
   },
   "publishConfig": {
     "registry": "https://nexus.vanti.co.uk/repository/npm-releases/"
