@@ -183,13 +183,35 @@ export default function(name, periodStart, periodEnd, spanSize) {
 
   // the series data, but with incomplete spans set to 0
   const seriesData = computed(() => {
-    return allSeriesData.value.map(val => {
+    const data = allSeriesData.value.map(val => {
       if (val.incomplete) {
         return {x: val.x.getTime(), y: null};
       } else {
         return {x: val.x.getTime(), y: val.y / val.len * HOUR};
       }
     });
+
+    // add predicted values to fill in gaps in the series
+    let lastItemWithValue = null;
+    let lastIndexWithValue = -1;
+    for (let i = 0; i < data.length; i++) {
+      const item = data[i];
+      if (item.y !== null) {
+        if (lastItemWithValue !== null) {
+          // fill in items from lastIndexWithValue to i using an average progression between lastIndexWithValue and i
+          const diff = item.y - lastItemWithValue.y;
+          const inc = diff / (i - lastIndexWithValue);
+          for (let j = lastIndexWithValue + 1; j < i; j++) {
+            data[j].y = lastItemWithValue.y + inc * (j - lastIndexWithValue);
+            data[j].predicted = true;
+          }
+        }
+        lastItemWithValue = item;
+        lastIndexWithValue = i;
+      }
+    }
+
+    return data;
   });
 
   return {
