@@ -95,6 +95,11 @@ export default function(name, periodStart, periodEnd, spanSize) {
             // We've fetched new r
             records.value = deleteGarbageRecords(records.value, periodStartDate, periodEndDate);
             // If we need to sort the records, here's where we'd do it.
+            let s = '';
+            for (const record of records.value) {
+              s += `${timestampToDate(record.recordTime).toISOString()}, ${record.meterReading.usage}\n`;
+            }
+            console.log(s);
           }
         })
         .catch((err) => {
@@ -110,7 +115,9 @@ export default function(name, periodStart, periodEnd, spanSize) {
   //
   // Incomplete spans are included but marked with "incomplete: true".
   const allSeriesData = computed(() => {
-    const series = /** @type {Array<{x:Date,y:number,incomplete:boolean}>} */[];
+    const series =
+        /** @type {Array<{x:Date,y:number,incomplete:boolean,len:number}>} */
+        [];
 
     const size = toValue(spanSize); // how big are each span
     const lastSpanEnd = toValue(periodEnd).getTime(); // when do we stop
@@ -135,16 +142,24 @@ export default function(name, periodStart, periodEnd, spanSize) {
 
       if (recordBeforeStart === null) {
         // we have no records before the start of this span, so we can't calculate a value
-        series.push({x: new Date(spanEnd), y: 0, incomplete: true});
+        series.push({x: new Date(spanEnd), y: 0, incomplete: true, len: 0});
       } else if (recordBeforeEnd === null) {
         // we have no records before the end of this span, so we can't calculate a value
-        series.push({x: new Date(spanEnd), y: 0, incomplete: true});
+        series.push({x: new Date(spanEnd), y: 0, incomplete: true, len: 0});
       } else {
         // we have a record before the start and before the end, so we can calculate a value
         const startValue = recordBeforeStart.meterReading.usage;
         const endValue = recordBeforeEnd.meterReading.usage;
         const spanValue = endValue - startValue;
-        series.push({x: new Date(spanEnd), y: spanValue, incomplete: spanValue < 0});
+        const startRecordTime = timestampToDate(recordBeforeStart.recordTime).getTime();
+        const endRecordTime = timestampToDate(recordBeforeEnd.recordTime).getTime();
+        const len = endRecordTime - startRecordTime;
+        series.push({
+          x: new Date(spanEnd),
+          y: spanValue,
+          incomplete: spanValue < 0 || len <= 0,
+          len: len
+        });
       }
 
       recordBeforeStart = recordBeforeEnd;
@@ -159,7 +174,7 @@ export default function(name, periodStart, periodEnd, spanSize) {
       if (val.incomplete) {
         return {x: val.x.getTime(), y: null};
       } else {
-        return {x: val.x.getTime(), y: val.y};
+        return {x: val.x.getTime(), y: val.y / val.len * toValue(spanSize)};
       }
     });
   });
