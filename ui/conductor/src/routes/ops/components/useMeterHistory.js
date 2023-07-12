@@ -100,11 +100,6 @@ export default function(name, periodStart, periodEnd, spanSize) {
             // We've fetched new r
             records.value = deleteGarbageRecords(records.value, periodStartDate, periodEndDate);
             // If we need to sort the records, here's where we'd do it.
-            let s = '';
-            for (const record of records.value) {
-              s += `${timestampToDate(record.recordTime).toISOString()}, ${record.meterReading.usage}\n`;
-            }
-            console.log(s);
           }
         })
         .catch((err) => {
