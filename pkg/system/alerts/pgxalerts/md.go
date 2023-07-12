@@ -258,27 +258,14 @@ func mapDelta[T comparable](o, n T, m map[T]uint32) {
 }
 
 func boolMapDelta(o, n *gen.Alert, m map[bool]uint32, f func(*gen.Alert) bool) {
-	if o == nil && n != nil {
-		if f(n) {
-			m[true]++
-		} else {
-			m[false]++
-		}
-	} else if o != nil && n == nil {
-		if f(o) {
-			mapSub(true, m)
-		} else {
-			mapSub(false, m)
-		}
-	} else {
-		oOK, nOK := f(o), f(n)
-		if oOK && !nOK {
-			m[true]++
-			mapSub(false, m)
-		} else if !oOK && nOK {
-			mapSub(true, m)
-			m[false]++
-		}
+	switch {
+	case o == nil && n != nil:
+		m[f(n)]++
+	case o != nil && n == nil:
+		mapSub(f(o), m)
+	case o != nil && n != nil:
+		m[f(n)]++
+		mapSub(f(o), m)
 	}
 }
 
