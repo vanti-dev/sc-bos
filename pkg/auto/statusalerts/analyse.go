@@ -2,7 +2,6 @@ package statusalerts
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"go.uber.org/zap"
@@ -71,8 +70,6 @@ func analyseStatusLogs(ctx context.Context, source config.Source, c <-chan *gen.
 			}
 			msg = m
 		}
-
-		log.Printf("analyseStatusLogs: %v %v", msg.Level, msg.Description)
 
 		switch {
 		case msg.Level == gen.StatusLog_NOMINAL:
