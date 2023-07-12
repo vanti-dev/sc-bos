@@ -21,10 +21,15 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
     return appConfig.configPromise.then(config => {
       if (config.proxy) {
         // wait for hub info to load
-        hubStore.hubPromise.then(hub => {
-          console.debug('Fetching alert metadata for', hub.name);
-          pullAlertMetadata({name: hub.name, updatesOnly: false}, alertMetadata);
-        });
+        hubStore.hubPromise
+            .then(hub => {
+              console.debug('Fetching alert metadata for', hub.name);
+              pullAlertMetadata({name: hub.name, updatesOnly: false}, alertMetadata);
+            })
+            .catch(() => {
+              console.debug('Fetching alert metadata for current node [hub failed]');
+              pullAlertMetadata({name: '', updatesOnly: false}, alertMetadata);
+            });
       } else {
         console.debug('Fetching alert metadata for current node');
         pullAlertMetadata({name: '', updatesOnly: false}, alertMetadata);

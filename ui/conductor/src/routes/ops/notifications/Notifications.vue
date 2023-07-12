@@ -6,6 +6,7 @@
           :items="tableData"
           :sort-by="['createTime']"
           :sort-desc="[true]"
+          :item-class="rowClass"
           :loading="notifications.loading"
           class="pt-4">
         <template #top>
@@ -18,8 +19,25 @@
         <template #item.createTime="{ item }">
           {{ item.createTime.toLocaleString() }}
         </template>
+        <template #item.source="{ item }">
+          <v-tooltip bottom>
+            <template #activator="{ on }">
+              <span v-on="on">{{ formatSource(item.source) }}</span>
+            </template>
+            <span>{{ item.source }}</span>
+          </v-tooltip>
+        </template>
         <template #item.severity="{ item }">
-          <span :class="notifications.severityData(item.severity).color">
+          <v-tooltip v-if="item.resolveTime" bottom>
+            <template #activator="{ on }">
+              <span v-on="on">RESOLVED</span>
+            </template>
+            Was:
+            <span :class="notifications.severityData(item.severity).color">
+              {{ notifications.severityData(item.severity).text }}
+            </span>
+          </v-tooltip>
+          <span v-else :class="notifications.severityData(item.severity).color">
             {{ notifications.severityData(item.severity).text }}
           </span>
         </template>
@@ -67,9 +85,10 @@ const zones = computed(() => Object.keys(alertMetadata.zoneCountsMap).sort());
 
 const allHeaders = [
   {text: 'Timestamp', value: 'createTime', width: '15em'},
+  {text: 'Source', value: 'source', width: '15em'},
   {text: 'Floor', value: 'floor', width: '10em'},
   {text: 'Zone', value: 'zone', width: '10em'},
-  {text: 'Severity', value: 'severity', width: '9em'},
+  {text: 'Severity', value: 'severity', width: '9em', align: 'center'},
   {text: 'Description', value: 'description', width: '100%'},
   {text: 'Acknowledged', value: 'acknowledged', align: 'center', width: '12em'}
 ];
@@ -84,7 +103,7 @@ const headers = computed(() => {
 });
 
 const alertsCollection = ref({});
-const name = computed(() => appConfig.config.proxy? hubStore.hubNode.name : '');
+const name = computed(() => hubStore.hubNode?.name ?? '');
 
 onMounted(() => {
   init();
@@ -100,12 +119,18 @@ function init() {
   return appConfig.configPromise.then(config => {
     if (config.proxy) {
       // wait for hub info to load
-      hubStore.hubPromise.then(hub => {
-        // query for notifications on the hub (via proxy)
-        console.debug('querying for notifications from ', hub.name);
-        alertsCollection.value = notifications.newCollection(hub.name);
-        alertsCollection.value.query(query);
-      });
+      hubStore.hubPromise
+          .then(hub => {
+            // query for notifications on the hub (via proxy)
+            console.debug('querying for notifications from ', hub.name);
+            alertsCollection.value = notifications.newCollection(hub.name);
+            alertsCollection.value.query(query);
+          })
+          .catch(() => {
+            console.debug('querying for notifications from current node [hub failed]');
+            alertsCollection.value = notifications.newCollection();
+            alertsCollection.value.query(query);
+          });
     } else {
       // query for notifications on '' (current controller/node)
       console.debug('querying for notifications from current node');
@@ -140,11 +165,24 @@ const tableData = computed(() => {
         acknowledged: notifications.isAcknowledged(alert)
       }));
 });
+
+const formatSource = (source) => {
+  const parts = source.split('/');
+  return parts[parts.length - 1];
+};
+const rowClass = (item) => {
+  if (item.resolveTime) return 'resolved';
+  return '';
+};
 </script>
 
 <style scoped>
 :deep(table) {
   table-layout: fixed;
+}
+
+:deep(.resolved) {
+  color: #FFF5 !important;
 }
 </style>
 
