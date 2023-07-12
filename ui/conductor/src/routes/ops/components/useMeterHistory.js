@@ -49,13 +49,18 @@ export default function(name, periodStart, periodEnd, spanSize) {
     return timestampToDate(records.value[records.value.length - 1].recordTime);
   });
 
+  const queryExtraLeadingSpans = 2; // how many extra spans at the start should we attempt to fetch
+  const queryStart = computed(
+      () => new Date(toValue(periodStart).getTime() - toValue(spanSize) * queryExtraLeadingSpans));
+  const queryEnd = computed(() => toValue(periodEnd));
+
   // Inspects both [periodStart,periodEnd] and records to calculate which slices of time we don't have.
   const missingPeriods = computed(() => {
     if (records.value.length === 0) {
-      return [{start: toValue(periodStart), end: toValue(periodEnd), type: 'set'}];
+      return [{start: toValue(queryStart), end: toValue(queryEnd), type: 'set'}];
     }
-    const periodStartDate = toValue(periodStart);
-    const periodEndDate = toValue(periodEnd);
+    const periodStartDate = toValue(queryStart);
+    const periodEndDate = toValue(queryEnd);
     const firstRecordDate = firstRecordTime.value;
     const lastRecordDate = lastRecordTime.value;
     if (firstRecordDate > periodEndDate || lastRecordDate < periodStartDate) {
@@ -84,8 +89,8 @@ export default function(name, periodStart, periodEnd, spanSize) {
 
     // We use these later to trim the records array and remove items that aren't needed any more.
     // We grab them now so that they are tracked for reactivity before we await anything.
-    const periodStartDate = toValue(periodStart);
-    const periodEndDate = toValue(periodEnd);
+    const periodStartDate = toValue(queryStart);
+    const periodEndDate = toValue(queryEnd);
     const periods = missingPeriods.value;
 
     fetching.value = true;
@@ -127,6 +132,19 @@ export default function(name, periodStart, periodEnd, spanSize) {
 
     let recordBeforeStart = /** @type {MeterReadingRecord.AsObject|null} */ null;
     let recordIndex = 0; // the record we're currently looking at
+
+    // account for records that are before the start of this span
+    for (let i = 0; i < records.value.length; i++) {
+      const record = records.value[i];
+      const recordTime = timestampToDate(record.recordTime).getTime();
+      if (recordTime >= spanStart) {
+        recordIndex = i;
+        break;
+      } else {
+        recordBeforeStart = record;
+      }
+    }
+
     for (; spanEnd <= lastSpanEnd; spanStart += size, spanEnd += size) {
       let recordBeforeEnd = recordBeforeStart;
       for (let i = recordIndex; i < records.value.length; i++) {
