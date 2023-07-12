@@ -30,7 +30,7 @@ const props = defineProps({
   },
   span: {
     type: Number,
-    default: 15 * MINUTE
+    default: 20 * MINUTE
   },
   timeFrame: {
     type: Number,
