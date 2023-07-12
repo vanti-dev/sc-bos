@@ -41,7 +41,7 @@ const alertMetadata = useAlertMetadata();
 const appConfig = useAppConfigStore();
 
 const counts = reactive({
-  unacknowledgedAlertCount: computed(() => alertMetadata.unacknowledgedAlertCount)
+  unacknowledgedAlertCount: computed(() => alertMetadata.badgeCount)
 });
 
 const menuItems = [

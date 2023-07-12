@@ -205,6 +205,12 @@ export class AlertMetadata extends jspb.Message {
   getSeverityCountsMap(): jspb.Map<number, number>;
   clearSeverityCountsMap(): AlertMetadata;
 
+  getResolvedCountsMap(): jspb.Map<boolean, number>;
+  clearResolvedCountsMap(): AlertMetadata;
+
+  getNeedsAttentionCountsMap(): jspb.Map<string, number>;
+  clearNeedsAttentionCountsMap(): AlertMetadata;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): AlertMetadata.AsObject;
   static toObject(includeInstance: boolean, msg: AlertMetadata): AlertMetadata.AsObject;
@@ -220,6 +226,8 @@ export namespace AlertMetadata {
     zoneCountsMap: Array<[string, number]>,
     acknowledgedCountsMap: Array<[boolean, number]>,
     severityCountsMap: Array<[number, number]>,
+    resolvedCountsMap: Array<[boolean, number]>,
+    needsAttentionCountsMap: Array<[string, number]>,
   }
 }
 

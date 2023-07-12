@@ -23,15 +23,12 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
         // wait for hub info to load
         hubStore.hubPromise
             .then(hub => {
-              console.debug('Fetching alert metadata for', hub.name);
               pullAlertMetadata({name: hub.name, updatesOnly: false}, alertMetadata);
             })
             .catch(() => {
-              console.debug('Fetching alert metadata for current node [hub failed]');
               pullAlertMetadata({name: '', updatesOnly: false}, alertMetadata);
             });
       } else {
-        console.debug('Fetching alert metadata for current node');
         pullAlertMetadata({name: '', updatesOnly: false}, alertMetadata);
       }
     });
@@ -49,10 +46,13 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
   });
 
   const acknowledgedCountMap = computed(() => convertProtoMap(alertMetadata.value?.acknowledgedCountsMap));
+  const resolvedCountMap = computed(() => convertProtoMap(alertMetadata.value?.resolvedCountsMap));
   const floorCountsMap = computed(() => convertProtoMap(alertMetadata.value?.floorCountsMap));
   const zoneCountsMap = computed(() => convertProtoMap(alertMetadata.value?.zoneCountsMap));
   const severityCountsMap = computed(() => convertProtoMap(alertMetadata.value?.severityCountsMap));
+  const needsAttentionCountsMap = computed(() => convertProtoMap(alertMetadata.value?.needsAttentionCountsMap));
 
+  const badgeCount = computed(() => needsAttentionCountsMap.value['nack_unresolved']);
   const unacknowledgedAlertCount = computed(() => acknowledgedCountMap.value[false]);
 
   return {
@@ -61,10 +61,13 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
     init,
 
     acknowledgedCountMap,
+    resolvedCountMap,
     floorCountsMap,
     zoneCountsMap,
     severityCountsMap,
+    needsAttentionCountsMap,
 
+    badgeCount,
     unacknowledgedAlertCount
   };
 });

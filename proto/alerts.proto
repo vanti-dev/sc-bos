@@ -128,6 +128,10 @@ message AlertMetadata {
   // map<string, uint32> source_counts = 4; // not sure this is needed and is likely to have poor performance
   map<bool, uint32> acknowledged_counts = 5;
   map<sint32, uint32> severity_counts = 6;
+  map<bool, uint32> resolved_counts = 7;
+  // Combines acknowledged and resolved in different combinations.
+  // The key will each combination of [ack, nack] x [resolved, unresolved], for example ack_resolved, nack_resolved.
+  map<string, uint32> needs_attention_counts = 8; // combines resolved with acknowledged
 }
 
 message ListAlertsRequest {

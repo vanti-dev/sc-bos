@@ -1800,7 +1800,9 @@ proto.smartcore.bos.AlertMetadata.toObject = function(includeInstance, msg) {
     floorCountsMap: (f = msg.getFloorCountsMap()) ? f.toObject(includeInstance, undefined) : [],
     zoneCountsMap: (f = msg.getZoneCountsMap()) ? f.toObject(includeInstance, undefined) : [],
     acknowledgedCountsMap: (f = msg.getAcknowledgedCountsMap()) ? f.toObject(includeInstance, undefined) : [],
-    severityCountsMap: (f = msg.getSeverityCountsMap()) ? f.toObject(includeInstance, undefined) : []
+    severityCountsMap: (f = msg.getSeverityCountsMap()) ? f.toObject(includeInstance, undefined) : [],
+    resolvedCountsMap: (f = msg.getResolvedCountsMap()) ? f.toObject(includeInstance, undefined) : [],
+    needsAttentionCountsMap: (f = msg.getNeedsAttentionCountsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -1865,6 +1867,18 @@ proto.smartcore.bos.AlertMetadata.deserializeBinaryFromReader = function(msg, re
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readSint32, jspb.BinaryReader.prototype.readUint32, null, 0, 0);
          });
       break;
+    case 7:
+      var value = msg.getResolvedCountsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readBool, jspb.BinaryReader.prototype.readUint32, null, false, 0);
+         });
+      break;
+    case 8:
+      var value = msg.getNeedsAttentionCountsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readUint32, null, "", 0);
+         });
+      break;
     default:
       reader.skipField();
       break;
@@ -1916,6 +1930,14 @@ proto.smartcore.bos.AlertMetadata.serializeBinaryToWriter = function(message, wr
   f = message.getSeverityCountsMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(6, writer, jspb.BinaryWriter.prototype.writeSint32, jspb.BinaryWriter.prototype.writeUint32);
+  }
+  f = message.getResolvedCountsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(7, writer, jspb.BinaryWriter.prototype.writeBool, jspb.BinaryWriter.prototype.writeUint32);
+  }
+  f = message.getNeedsAttentionCountsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(8, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeUint32);
   }
 };
 
@@ -2026,6 +2048,52 @@ proto.smartcore.bos.AlertMetadata.prototype.getSeverityCountsMap = function(opt_
  */
 proto.smartcore.bos.AlertMetadata.prototype.clearSeverityCountsMap = function() {
   this.getSeverityCountsMap().clear();
+  return this;
+};
+
+
+/**
+ * map<bool, uint32> resolved_counts = 7;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<boolean,number>}
+ */
+proto.smartcore.bos.AlertMetadata.prototype.getResolvedCountsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<boolean,number>} */ (
+      jspb.Message.getMapField(this, 7, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.smartcore.bos.AlertMetadata} returns this
+ */
+proto.smartcore.bos.AlertMetadata.prototype.clearResolvedCountsMap = function() {
+  this.getResolvedCountsMap().clear();
+  return this;
+};
+
+
+/**
+ * map<string, uint32> needs_attention_counts = 8;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,number>}
+ */
+proto.smartcore.bos.AlertMetadata.prototype.getNeedsAttentionCountsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,number>} */ (
+      jspb.Message.getMapField(this, 8, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.smartcore.bos.AlertMetadata} returns this
+ */
+proto.smartcore.bos.AlertMetadata.prototype.clearNeedsAttentionCountsMap = function() {
+  this.getNeedsAttentionCountsMap().clear();
   return this;
 };
 

@@ -77,10 +77,12 @@ func (s *Server) initAlertMetadata(ctx context.Context) error {
 
 		// Collect initial stats from the DB
 		md := &gen.AlertMetadata{
-			AcknowledgedCounts: make(map[bool]uint32),
-			FloorCounts:        make(map[string]uint32),
-			ZoneCounts:         make(map[string]uint32),
-			SeverityCounts:     make(map[int32]uint32),
+			AcknowledgedCounts:   make(map[bool]uint32),
+			FloorCounts:          make(map[string]uint32),
+			ZoneCounts:           make(map[string]uint32),
+			SeverityCounts:       make(map[int32]uint32),
+			ResolvedCounts:       make(map[bool]uint32),
+			NeedsAttentionCounts: make(map[string]uint32),
 		}
 		err := s.pool.BeginTxFunc(ctx, pgx.TxOptions{}, func(tx pgx.Tx) error {
 			// totals
@@ -99,6 +101,39 @@ func (s *Server) initAlertMetadata(ctx context.Context) error {
 				true:  ackCount,
 				false: md.TotalCount - ackCount,
 			}
+			// resolved and unresolved counts
+			var resolveCounts uint32
+			err = tx.QueryRow(ctx, `SELECT COUNT(*) FROM alerts WHERE resolve_time IS NOT NULL`).Scan(&resolveCounts)
+			if err != nil {
+				return fmt.Errorf("resolve count %w", err)
+			}
+			md.ResolvedCounts = map[bool]uint32{
+				true:  resolveCounts,
+				false: md.TotalCount - resolveCounts,
+			}
+
+			// needs attention counts
+			var needsAttentionCount uint32
+			err = tx.QueryRow(ctx, `SELECT COUNT(*) FROM alerts WHERE ack_time IS NOT NULL AND resolve_time IS NOT NULL`).Scan(&needsAttentionCount)
+			if err != nil {
+				return fmt.Errorf("ack and resolved count %w", err)
+			}
+			md.NeedsAttentionCounts["ack_resolved"] = needsAttentionCount
+			err = tx.QueryRow(ctx, `SELECT COUNT(*) FROM alerts WHERE ack_time IS NOT NULL AND resolve_time IS NULL`).Scan(&needsAttentionCount)
+			if err != nil {
+				return fmt.Errorf("ack and unresolved count %w", err)
+			}
+			md.NeedsAttentionCounts["ack_unresolved"] = needsAttentionCount
+			err = tx.QueryRow(ctx, `SELECT COUNT(*) FROM alerts WHERE ack_time IS NULL AND resolve_time IS NOT NULL`).Scan(&needsAttentionCount)
+			if err != nil {
+				return fmt.Errorf("ack and resolved count %w", err)
+			}
+			md.NeedsAttentionCounts["nack_resolved"] = needsAttentionCount
+			err = tx.QueryRow(ctx, `SELECT COUNT(*) FROM alerts WHERE ack_time IS NULL AND resolve_time IS NULL`).Scan(&needsAttentionCount)
+			if err != nil {
+				return fmt.Errorf("ack and unresolved count %w", err)
+			}
+			md.NeedsAttentionCounts["nack_unresolved"] = needsAttentionCount
 
 			// floors
 			floors, err := queryGroupCounts(ctx, tx, "floor", s.Floors)
@@ -169,6 +204,12 @@ func applyMdDelta(md *resource.Value, e *gen.PullAlertsResponse_Change) error {
 		if newMd.AcknowledgedCounts == nil {
 			newMd.AcknowledgedCounts = make(map[bool]uint32)
 		}
+		if newMd.ResolvedCounts == nil {
+			newMd.ResolvedCounts = make(map[bool]uint32)
+		}
+		if newMd.NeedsAttentionCounts == nil {
+			newMd.NeedsAttentionCounts = make(map[string]uint32)
+		}
 
 		// total
 		if e.OldValue == nil && e.NewValue != nil {
@@ -181,40 +222,21 @@ func applyMdDelta(md *resource.Value, e *gen.PullAlertsResponse_Change) error {
 		}
 
 		// ack/nak
-		if e.OldValue == nil && e.NewValue != nil {
-			acked := e.NewValue.GetAcknowledgement().GetAcknowledgeTime() != nil
-			if acked {
-				newMd.AcknowledgedCounts[true]++
-			} else {
-				newMd.AcknowledgedCounts[false]++
-			}
-		} else if e.OldValue != nil && e.NewValue == nil {
-			acked := e.OldValue.GetAcknowledgement().GetAcknowledgeTime() != nil
-			if acked {
-				newMd.AcknowledgedCounts[true]--
-			} else {
-				newMd.AcknowledgedCounts[false]--
-			}
-		} else {
-			oldAck, newAck := e.GetOldValue().GetAcknowledgement().GetAcknowledgeTime(),
-				e.GetNewValue().GetAcknowledgement().GetAcknowledgeTime()
-			if oldAck == nil && newAck != nil {
-				newMd.AcknowledgedCounts[true]++
-				if newMd.AcknowledgedCounts[false] > 0 { // just in case
-					newMd.AcknowledgedCounts[false]--
-				}
-			} else if oldAck != nil && newAck == nil {
-				if newMd.AcknowledgedCounts[true] > 0 { // just in case
-					newMd.AcknowledgedCounts[true]--
-				}
-				newMd.AcknowledgedCounts[false]++
-			}
-		}
+		boolMapDelta(e.OldValue, e.NewValue, newMd.AcknowledgedCounts, func(v *gen.Alert) bool {
+			return v.GetAcknowledgement().GetAcknowledgeTime() != nil
+		})
+		// resolved/unresolved
+		boolMapDelta(e.OldValue, e.NewValue, newMd.ResolvedCounts, func(v *gen.Alert) bool {
+			return v.GetResolveTime() != nil
+		})
 
 		// floors, zones, and severity
 		mapDelta(e.GetOldValue().GetFloor(), e.GetNewValue().GetFloor(), newMd.FloorCounts)
 		mapDelta(e.GetOldValue().GetZone(), e.GetNewValue().GetZone(), newMd.ZoneCounts)
 		mapDelta(int32(e.GetOldValue().GetSeverity()), int32(e.GetNewValue().GetSeverity()), newMd.SeverityCounts)
+
+		// needs attention
+		needsAttentionMap(e.GetOldValue(), e.GetNewValue(), newMd.NeedsAttentionCounts)
 	}))
 
 	return err
@@ -233,6 +255,99 @@ func mapDelta[T comparable](o, n T, m map[T]uint32) {
 	if n != zero {
 		m[n]++
 	}
+}
+
+func boolMapDelta(o, n *gen.Alert, m map[bool]uint32, f func(*gen.Alert) bool) {
+	if o == nil && n != nil {
+		if f(n) {
+			m[true]++
+		} else {
+			m[false]++
+		}
+	} else if o != nil && n == nil {
+		if f(o) {
+			mapSub(true, m)
+		} else {
+			mapSub(false, m)
+		}
+	} else {
+		oOK, nOK := f(o), f(n)
+		if oOK && !nOK {
+			m[true]++
+			mapSub(false, m)
+		} else if !oOK && nOK {
+			mapSub(true, m)
+			m[false]++
+		}
+	}
+}
+
+func mapSub[K comparable](k K, m map[K]uint32) {
+	if m[k] > 0 {
+		m[k]--
+	}
+}
+
+func mapCmpBool[K comparable](k K, o, n bool, m map[K]uint32) {
+	switch {
+	case !o && n:
+		m[k]++
+	case o && !n:
+		mapSub(k, m)
+	}
+}
+
+func needsAttentionMap(o, n *gen.Alert, m map[string]uint32) {
+	switch {
+	case o == nil && n != nil:
+		ackResolved, ackUnresolved, nackResolved, nackUnresolved := needsAttentionFlags(n)
+		if ackResolved {
+			m["ack_resolved"]++
+		}
+		if ackUnresolved {
+			m["ack_unresolved"]++
+		}
+		if nackResolved {
+			m["nack_resolved"]++
+		}
+		if nackUnresolved {
+			m["nack_unresolved"]++
+		}
+	case o != nil && n == nil:
+		ackResolved, ackUnresolved, nackResolved, nackUnresolved := needsAttentionFlags(o)
+		if ackResolved {
+			mapSub("ack_resolved", m)
+		}
+		if ackUnresolved {
+			mapSub("ack_unresolved", m)
+		}
+		if nackResolved {
+			mapSub("nack_resolved", m)
+		}
+		if nackUnresolved {
+			mapSub("nack_unresolved", m)
+		}
+	case o != nil && n != nil:
+		oAckResolved, oAckUnresolved, oNackResolved, oNackUnresolved := needsAttentionFlags(o)
+		nAckResolved, nAckUnresolved, nNackResolved, nNackUnresolved := needsAttentionFlags(n)
+		mapCmpBool("ack_resolved", oAckResolved, nAckResolved, m)
+		mapCmpBool("ack_unresolved", oAckUnresolved, nAckUnresolved, m)
+		mapCmpBool("nack_resolved", oNackResolved, nNackResolved, m)
+		mapCmpBool("nack_unresolved", oNackUnresolved, nNackUnresolved, m)
+	}
+}
+
+func needsAttentionFlags(a *gen.Alert) (ackResolved, ackUnresolved, nackResolved, nackUnresolved bool) {
+	if a == nil {
+		return
+	}
+	ack := a.GetAcknowledgement().GetAcknowledgeTime() != nil
+	resolved := a.GetResolveTime() != nil
+	ackResolved = ack && resolved
+	ackUnresolved = ack && !resolved
+	nackResolved = !ack && resolved
+	nackUnresolved = !ack && !resolved
+	return
 }
 
 func queryGroupCounts[K comparable](ctx context.Context, tx pgx.Tx, col string, seed []K) (map[K]uint32, error) {
