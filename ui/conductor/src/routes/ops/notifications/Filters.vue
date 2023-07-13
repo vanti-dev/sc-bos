@@ -39,11 +39,21 @@ const props = defineProps({
   zoneItems: {
     type: Array,
     default: () => []
+  },
+  acknowledged: {
+    type: Boolean,
+    default: undefined
+  },
+  resolved: {
+    type: Boolean,
+    default: undefined
   }
 });
 const emit = defineEmits({
   'update:floor': String,
-  'update:zone': String
+  'update:zone': String,
+  'update:acknowledged': Boolean,
+  'update:resolved': Boolean
 });
 
 const floors = computed(() => {

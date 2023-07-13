@@ -14,7 +14,9 @@
               :floor.sync="query.floor"
               :floor-items="floors"
               :zone.sync="query.zone"
-              :zone-items="zones"/>
+              :zone-items="zones"
+              :acknowledged.sync="query.acknowledged"
+              :resolved.sync="query.acknowledged"/>
         </template>
         <template #item.createTime="{ item }">
           {{ item.createTime.toLocaleString() }}
@@ -77,7 +79,10 @@ const query = reactive({
   floor: undefined,
   zone: undefined,
   source: undefined,
-  acknowledged: undefined
+  acknowledged: undefined,
+  resolved: false,
+  resolvedNotBefore: undefined,
+  resolvedNotAfter: undefined
 });
 
 const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
