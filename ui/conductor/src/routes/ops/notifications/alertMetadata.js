@@ -7,6 +7,8 @@ import {convertProtoMap} from '@/util/proto';
 import {defineStore} from 'pinia';
 import {computed, onMounted, onUnmounted, reactive} from 'vue';
 
+/** @typedef {import('@sc-bos/ui-gen/proto/alerts_pb').AlertMetadata} AlertMetadata */
+
 export const useAlertMetadata = defineStore('alertMetadata', () => {
   const alertMetadata = reactive(/** @type {ResourceValue<AlertMetadata.AsObject, AlertMetadata>} */newResourceValue());
   const appConfig = useAppConfigStore();
@@ -60,6 +62,7 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
 
     init,
 
+    totalCount: computed(() => alertMetadata.value?.totalCount),
     acknowledgedCountMap,
     resolvedCountMap,
     floorCountsMap,

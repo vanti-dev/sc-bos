@@ -3,11 +3,13 @@
     <v-card>
       <v-data-table
           :headers="headers"
-          :items="tableData"
-          :sort-by="['createTime']"
-          :sort-desc="[true]"
+          :items="alerts.pageItems"
+          disable-sort
+          :server-items-length="queryTotalCount"
           :item-class="rowClass"
-          :loading="notifications.loading"
+          :options.sync="dataTableOptions"
+          :footer-props="{itemsPerPageOptions}"
+          :loading="alerts.loading"
           class="pt-4">
         <template #top>
           <filters
@@ -54,22 +56,17 @@
   </v-container>
 </template>
 <script setup>
-import {timestampToDate} from '@/api/convpb.js';
-import {useErrorStore} from '@/components/ui-error/error';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import Filters from '@/routes/ops/notifications/Filters.vue';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
-import {useAppConfigStore} from '@/stores/app-config';
+import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useHubStore} from '@/stores/hub';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import {computed, reactive, ref, watch} from 'vue';
 
 const notifications = useNotifications();
 const alertMetadata = useAlertMetadata();
-
-const appConfig = useAppConfigStore();
 const hubStore = useHubStore();
-const errors = useErrorStore();
 
 const query = reactive({
   createdNotBefore: undefined,
@@ -85,8 +82,71 @@ const query = reactive({
   resolvedNotAfter: undefined
 });
 
+const dataTableOptions = ref({
+  itemsPerPage: 20,
+  page: 1
+});
+const itemsPerPageOptions = [20, 50, 100];
+
+const name = computed(() => hubStore.hubNode?.name ?? '');
+const alerts = reactive(useAlertsApi(name, query));
+watch(dataTableOptions, () => {
+  alerts.pageSize = dataTableOptions.value.itemsPerPage;
+  alerts.pageIndex = dataTableOptions.value.page - 1;
+}, {deep: true, immediate: true});
+
 const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
 const zones = computed(() => Object.keys(alertMetadata.zoneCountsMap).sort());
+
+// How many query fields are not undefined.
+const queryFieldCount = computed(() => Object.values(query).filter(value => value !== undefined).length);
+// How many items are there using the current query.
+// This isn't always accurate, but we do our best.
+const queryTotalCount = computed(() => {
+  const fieldCount = queryFieldCount.value;
+  switch (fieldCount) {
+    case 0:
+      return alertMetadata.totalCount;
+    case 1:
+      if (query.floor !== undefined) return alertMetadata.floorCountsMap[query.floor];
+      if (query.zone !== undefined) return alertMetadata.zoneCountsMap[query.zone];
+      if (query.acknowledged !== undefined) return alertMetadata.acknowledgedCountMap[query.acknowledged];
+      if (query.resolved !== undefined) return alertMetadata.resolvedCountMap[query.resolved];
+      if (query.severityNotAbove !== undefined) {
+        let total = 0;
+        for (const [level, count] of Object.entries(alertMetadata.severityCountsMap)) {
+          if (level <= query.severityNotAbove) total += count;
+        }
+        return total;
+      }
+      if (query.severityNotBelow !== undefined) {
+        let total = 0;
+        for (const [level, count] of Object.entries(alertMetadata.severityCountsMap)) {
+          if (level >= query.severityNotBelow) total += count;
+        }
+        return total;
+      }
+      break;
+    case 2:
+      if (query.acknowledged !== undefined && query.resolved !== undefined) {
+        const key = [
+          query.acknowledged ? 'ack' : 'nack',
+          query.resolved ? 'resolved' : 'unresolved'
+        ].join('_');
+        return alertMetadata.needsAttentionCountsMap[key];
+      }
+      if (query.severityNotBelow !== undefined && query.severityNotAbove !== undefined) {
+        let total = 0;
+        for (const [level, count] of Object.entries(alertMetadata.severityCountsMap)) {
+          if (level <= query.severityNotAbove) total += count;
+          if (level >= query.severityNotBelow) total += count;
+        }
+        return total;
+      }
+      break;
+  }
+  return undefined;
+});
 
 const allHeaders = [
   {text: 'Timestamp', value: 'createTime', width: '15em'},
@@ -105,70 +165,6 @@ const headers = computed(() => {
     if (!['floor', 'zone', 'source', 'acknowledged'].includes(header.value)) return true;
     return query[header.value] === undefined;
   });
-});
-
-const alertsCollection = ref({});
-const name = computed(() => hubStore.hubNode?.name ?? '');
-
-onMounted(() => {
-  init();
-});
-
-let unwatchErrors;
-
-/**
- *
- */
-function init() {
-  // wait for config to load
-  return appConfig.configPromise.then(config => {
-    if (config.proxy) {
-      // wait for hub info to load
-      hubStore.hubPromise
-          .then(hub => {
-            // query for notifications on the hub (via proxy)
-            console.debug('querying for notifications from ', hub.name);
-            alertsCollection.value = notifications.newCollection(hub.name);
-            alertsCollection.value.query(query);
-          })
-          .catch(() => {
-            console.debug('querying for notifications from current node [hub failed]');
-            alertsCollection.value = notifications.newCollection();
-            alertsCollection.value.query(query);
-          });
-    } else {
-      // query for notifications on '' (current controller/node)
-      console.debug('querying for notifications from current node');
-      alertsCollection.value = notifications.newCollection();
-      alertsCollection.value.query(query);
-    }
-  });
-}
-
-watch(alertsCollection, () => {
-  // todo: this causes all pages to be loaded, which is not ideal - connect with paging logic
-  alertsCollection.value.needsMorePages = true;
-  unwatchErrors = errors.registerCollection(alertsCollection);
-});
-
-watch(query, () => {
-  alertsCollection.value.query(query);
-}, {deep: true});
-
-
-// UI error handling
-onUnmounted(() => {
-  if (unwatchErrors) unwatchErrors();
-  alertsCollection.value.reset();
-});
-
-const tableData = computed(() => {
-  return Object.values(alertsCollection.value.resources?.value ?? [])
-      .map(alert => ({
-        ...alert,
-        createTime: timestampToDate(alert.createTime),
-        acknowledged: notifications.isAcknowledged(alert)
-      }));
 });
 
 const formatSource = (source) => {

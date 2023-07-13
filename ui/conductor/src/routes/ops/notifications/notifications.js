@@ -1,6 +1,5 @@
-import {acknowledgeAlert, listAlerts, pullAlerts, unacknowledgeAlert} from '@/api/ui/alerts.js';
+import {acknowledgeAlert, unacknowledgeAlert} from '@/api/ui/alerts.js';
 import {useAccountStore} from '@/stores/account';
-import {Collection} from '@/util/query.js';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
 import {acceptHMRUpdate, defineStore} from 'pinia';
 
@@ -45,7 +44,7 @@ export const useNotifications = defineStore('notifications', () => {
    * @param {Alert.AsObject} alert
    * @param {string} name
    */
-  function setAcknowledged(e, alert, name='') {
+  function setAcknowledged(e, alert, name = '') {
     if (e) {
       let author = undefined;
       if (account.email || account.fullName) {
@@ -64,39 +63,9 @@ export const useNotifications = defineStore('notifications', () => {
     }
   }
 
-  /**
-   *
-   * @param {Alert.AsObject} alert
-   * @return {boolean}
-   */
-  function isAcknowledged(alert) {
-    return Boolean(alert.acknowledgement);
-  }
-
-  /**
-   *
-   * @param {string} name
-   * @return {Collection}
-   */
-  function newCollection(name='') {
-    const listFn = async (query, tracker, pageToken, recordFn) => {
-      const page = await listAlerts({name, pageToken, query, pageSize: 100}, tracker);
-      for (const alert of page.alertsList) {
-        recordFn(alert, alert.id);
-      }
-      return page.nextPageToken;
-    };
-    const pullFn = (query, resources) => {
-      pullAlerts({name, query}, resources);
-    };
-    return new Collection(listFn, pullFn);
-  }
-
   return {
-    newCollection,
     severityData,
-    setAcknowledged,
-    isAcknowledged
+    setAcknowledged
   };
 });
 
