@@ -43,7 +43,7 @@ const setBorderWidth = () => {
   const innerElement = mainElement.querySelector('.v-navigation-drawer__border');
   innerElement.style.width = sideBar.value.borderSize + 'px';
   innerElement.style.cursor = 'ew-resize';
-  innerElement.style.backgroundColor = 'var(--v-primary-base)';
+  innerElement.style.backgroundColor = 'var(--v-primary-darken4)';
 };
 
 /**
