@@ -6,29 +6,97 @@
     <v-navigation-drawer
         v-if="hasSidebar"
         v-model="showSidebar"
-        right
+        id="right-sidebar"
         app
-        clipped
-        floating
-        width="275"
         class="pa-0"
-        color="neutral">
+        clipped
+        color="neutral"
+        floating
+        right
+        :width="sideBar.width">
       <router-view name="sidebar"/>
     </v-navigation-drawer>
   </v-container>
 </template>
 
 <script setup>
+import {ref, onMounted} from 'vue';
+import {storeToRefs} from 'pinia';
 import {usePage} from '@/components/page';
 import {usePageStore} from '@/stores/page';
-import {storeToRefs} from 'pinia';
 
 const {hasSidebar} = usePage();
 
 const pageStore = usePageStore();
 const {showSidebar} = storeToRefs(pageStore);
 
-</script>
+const sideBar = ref({
+  width: 275,
+  borderSize: 4
+});
 
-<style scoped>
-</style>
+/**
+ * Set the initial border width and styles of the sidebar.
+ */
+const setBorderWidth = () => {
+  const mainElement = document.querySelector('#right-sidebar');
+  const innerElement = mainElement.querySelector('.v-navigation-drawer__border');
+  innerElement.style.width = sideBar.value.borderSize + 'px';
+  innerElement.style.cursor = 'ew-resize';
+  innerElement.style.backgroundColor = 'var(--v-primary-base)';
+};
+
+/**
+ * Set event listeners for sidebar resizing.
+ */
+const setEvents = () => {
+  const minSize = sideBar.value.borderSize;
+  const mainElement = document.querySelector('#right-sidebar');
+  const drawerBorder = mainElement.querySelector('.v-navigation-drawer__border');
+  const direction = mainElement.classList.contains('v-navigation-drawer--right') ?
+    'right' :
+    'left';
+
+  /**
+   * Handle the resizing of the sidebar.
+   *
+   * @param {MouseEvent} event - The mouse event object.
+   */
+  const resize = (event) => {
+    document.body.style.cursor = 'ew-resize';
+    let forced =
+      direction === 'right' ?
+        document.body.scrollWidth - event.clientX :
+        event.clientX;
+
+    // Enforce maximum width of 600px
+    forced = Math.min(forced, 600);
+
+    // Enforce minimum width of 275px
+    forced = Math.max(forced, 275);
+
+    mainElement.style.width = forced + 'px';
+  };
+
+  drawerBorder.addEventListener('mousedown', (event) => {
+    if (event.offsetX < minSize) {
+      mainElement.style.transition = 'initial';
+      document.addEventListener('mousemove', resize, false);
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    mainElement.style.transition = '';
+    sideBar.value.width = mainElement.style.width;
+    document.body.style.cursor = '';
+    document.removeEventListener('mousemove', resize, false);
+  });
+};
+
+onMounted(() => {
+  if (hasSidebar.value) {
+    setBorderWidth();
+    setEvents();
+  }
+});
+</script>
