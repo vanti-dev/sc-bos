@@ -13,6 +13,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/status"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
@@ -107,7 +108,7 @@ func (t *meterTrait) pollPeer(ctx context.Context) (*gen.MeterReading, error) {
 	if err != nil {
 		errs = append(errs, comm.ErrReadProperty{Prop: "usage", Cause: err})
 	}
-	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "Meter", 1, errs...)
+	status.UpdatePollErrorStatus(t.statuses, t.config.Name, "Meter", []string{"usage"}, errs)
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}

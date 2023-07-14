@@ -140,19 +140,11 @@ func (m *Monitor) Poll(ctx context.Context) error {
 	var resultsCursor int
 	results := comm.ReadPropertiesChunked(ctx, m.client, m.known, 30, allFields...)
 	for _, o := range m.objects {
-		var reqs []string  // requests we check
-		notFoundCount := 0 // total responses that indicate the property doesn't exist
-		timeoutCount := 0  // total responses that indicate the property timed out
-
+		var reqs []string
 		var errs []error
 		handleErr := func(prop string, err error) {
 			reqs = append(reqs, prop)
-			switch {
-			case errors.Is(err, comm.ErrPropNotFound):
-				notFoundCount++
-			case errors.Is(err, context.DeadlineExceeded):
-				timeoutCount++
-			case err != nil:
+			if err != nil {
 				errs = append(errs, comm.ErrReadProperty{Cause: err, Prop: prop})
 			}
 		}
@@ -204,30 +196,16 @@ func (m *Monitor) Poll(ctx context.Context) error {
 			handleErr("PresentValue", err)
 		}
 
-		problem := &gen.StatusLog_Problem{
-			Name:        fmt.Sprintf("%s:%s", o.Name, o.Test),
-			Level:       gen.StatusLog_NOMINAL,
-			Description: fmt.Sprintf("object %q nominal", o.Test),
-		}
-		level := gen.StatusLog_REDUCED_FUNCTION
-		if o.Level != 0 {
+		problem := &gen.StatusLog_Problem{Name: fmt.Sprintf("%s:%s", o.Name, o.Test)}
+
+		level, desc := SummariseRequestErrors(o.Test, reqs, errs)
+		if o.Level != 0 && level == gen.StatusLog_REDUCED_FUNCTION {
 			level = o.Level
 		}
+		problem.Level = level
+		problem.Description = desc
 
 		switch {
-		case notFoundCount == len(reqs):
-			problem.Level = gen.StatusLog_NOTICE
-			problem.Description = fmt.Sprintf("configured object %s not found", o.Test)
-		case timeoutCount == len(reqs):
-			problem.Level = level
-			problem.Description = fmt.Sprintf("reading %s points %s timed out", o.Test, strings.Join(reqs, ", "))
-		case len(errs) > 0:
-			problem.Level = level
-			problem.Description = fmt.Sprintf("error reading %s points %s", o.Test, strings.Join(reqs, ", "))
-			m.Logger.Warn("device status: error reading properties",
-				zap.String("test", o.Test),
-				zap.Errors("errs", errs),
-			)
 		case hasValue && !nominalValue(valueVal, o.NominalValue):
 			problem.Level = level
 			problem.Description = fmt.Sprintf("read value %v: want %v, got %v", o.Test, o.NominalValue, valueVal)
@@ -272,6 +250,9 @@ func (m *Monitor) Poll(ctx context.Context) error {
 			// )
 		}
 
+		if problem.Level == gen.StatusLog_LEVEL_UNDEFINED {
+			continue
+		}
 		m.status.UpdateProblem(o.Name, problem)
 	}
 

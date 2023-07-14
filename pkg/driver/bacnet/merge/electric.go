@@ -3,6 +3,7 @@ package merge
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -16,6 +17,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/status"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
@@ -119,11 +121,13 @@ func (t *electricTrait) startPoll(init context.Context) (stop task.StopFn, err e
 func (t *electricTrait) pollPeer(ctx context.Context) (*traits.ElectricDemand, error) {
 	var toRead []config.ValueSource
 	var toWrite []func(v any) error // already scaled
+	var requestNames []string
 	dst := &traits.ElectricDemand{}
 	var phaseDemand [3]*traits.ElectricDemand
 
 	if cfg := t.config.Demand; cfg != nil {
 		if cfg.Current != nil {
+			requestNames = append(requestNames, "current")
 			toRead = append(toRead, *cfg.Current)
 			toWrite = append(toWrite, func(v any) (err error) {
 				dst.Current, err = comm.Float32Value(v)
@@ -131,6 +135,7 @@ func (t *electricTrait) pollPeer(ctx context.Context) (*traits.ElectricDemand, e
 			})
 		}
 		if cfg.Voltage != nil {
+			requestNames = append(requestNames, "voltage")
 			toRead = append(toRead, *cfg.Voltage)
 			toWrite = append(toWrite, func(v any) (err error) {
 				dst.Voltage, err = ptr(comm.Float32Value(v))
@@ -139,14 +144,20 @@ func (t *electricTrait) pollPeer(ctx context.Context) (*traits.ElectricDemand, e
 		}
 		if cfg.Rating != nil {
 			toRead = append(toRead, *cfg.Rating)
+			requestNames = append(requestNames, "rating")
 			toWrite = append(toWrite, func(v any) (err error) {
 				dst.Rating, err = comm.Float32Value(v)
 				return
 			})
 		}
 
-		readPhase := func(phase ElectricPhaseConfig, dst *traits.ElectricDemand) {
+		readPhase := func(i int, phase ElectricPhaseConfig, dst *traits.ElectricDemand) {
+			suffix := ""
+			if i >= 0 {
+				suffix = fmt.Sprintf("L%d", i)
+			}
 			if phase.PowerFactor != nil {
+				requestNames = append(requestNames, "powerFactor"+suffix)
 				toRead = append(toRead, *phase.PowerFactor)
 				toWrite = append(toWrite, func(v any) (err error) {
 					dst.PowerFactor, err = ptr(comm.Float32Value(v))
@@ -154,6 +165,7 @@ func (t *electricTrait) pollPeer(ctx context.Context) (*traits.ElectricDemand, e
 				})
 			}
 			if phase.RealPower != nil {
+				requestNames = append(requestNames, "realPower"+suffix)
 				toRead = append(toRead, *phase.RealPower)
 				toWrite = append(toWrite, func(v any) (err error) {
 					dst.RealPower, err = ptr(comm.Float32Value(v))
@@ -161,6 +173,7 @@ func (t *electricTrait) pollPeer(ctx context.Context) (*traits.ElectricDemand, e
 				})
 			}
 			if phase.ApparentPower != nil {
+				requestNames = append(requestNames, "apparentPower"+suffix)
 				toRead = append(toRead, *phase.ApparentPower)
 				toWrite = append(toWrite, func(v any) (err error) {
 					dst.ApparentPower, err = ptr(comm.Float32Value(v))
@@ -168,6 +181,7 @@ func (t *electricTrait) pollPeer(ctx context.Context) (*traits.ElectricDemand, e
 				})
 			}
 			if phase.ReactivePower != nil {
+				requestNames = append(requestNames, "reactivePower"+suffix)
 				toRead = append(toRead, *phase.ReactivePower)
 				toWrite = append(toWrite, func(v any) (err error) {
 					dst.ReactivePower, err = ptr(comm.Float32Value(v))
@@ -177,13 +191,13 @@ func (t *electricTrait) pollPeer(ctx context.Context) (*traits.ElectricDemand, e
 		}
 
 		if cfg.ElectricPhaseConfig != nil {
-			readPhase(*cfg.ElectricPhaseConfig, dst)
+			readPhase(-1, *cfg.ElectricPhaseConfig, dst)
 		}
 
 		for i, phase := range cfg.Phases {
 			dst := &traits.ElectricDemand{}
 			phaseDemand[i] = dst
-			readPhase(phase, dst)
+			readPhase(i, phase, dst)
 		}
 	}
 
@@ -223,7 +237,7 @@ func (t *electricTrait) pollPeer(ctx context.Context) (*traits.ElectricDemand, e
 		dst.ReactivePower = &reactive
 	}
 
-	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "Electric", len(toRead), errs...)
+	status.UpdatePollErrorStatus(t.statuses, t.config.Name, "Electric", requestNames, errs)
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}

@@ -14,6 +14,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/status"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
@@ -118,7 +119,7 @@ func (t *fanSpeed) speedToPreset(speed float32) string {
 // pollPeer fetches data from the peer device and saves the data locally.
 func (t *fanSpeed) pollPeer(ctx context.Context) (*traits.FanSpeed, error) {
 	speed, err := readPropertyFloat32(ctx, t.client, t.known, *t.config.Speed)
-	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "FanSpeed", 1, err)
+	status.UpdatePollErrorStatus(t.statuses, t.config.Name, "FanSpeed", []string{"speed"}, []error{err})
 	if err != nil {
 		return nil, comm.ErrReadProperty{Prop: "speed", Cause: err}
 	}

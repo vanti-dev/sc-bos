@@ -15,6 +15,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	status2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/status"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
@@ -192,7 +193,7 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 		}
 	}
 
-	comm.UpdatePollErrorStatus(f.statuses, f.config.Name, "UDMI", len(f.config.Points), errs...)
+	status2.UpdatePollErrorStatus(f.statuses, f.config.Name, "UDMI", keys, errs)
 	if len(errs) == len(f.config.Points) {
 		err := multierr.Combine(errs...)
 		return err

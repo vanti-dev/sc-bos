@@ -15,6 +15,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/status"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
@@ -108,8 +109,10 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 	data := &traits.AirTemperature{}
 	var resProcessors []func(response any) error
 	var readValues []config.ValueSource
+	var requestNames []string
 
 	if t.config.SetPoint != nil {
+		requestNames = append(requestNames, "setPoint")
 		readValues = append(readValues, *t.config.SetPoint)
 		resProcessors = append(resProcessors, func(response any) error {
 			setPoint, err := comm.Float64Value(response)
@@ -123,6 +126,7 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 		})
 	}
 	if t.config.AmbientTemperature != nil {
+		requestNames = append(requestNames, "ambientTemperature")
 		readValues = append(readValues, *t.config.AmbientTemperature)
 		resProcessors = append(resProcessors, func(response any) error {
 			ambientTemperature, err := comm.Float64Value(response)
@@ -141,7 +145,7 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 			errs = append(errs, err)
 		}
 	}
-	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "AirTemperature", len(readValues), errs...)
+	status.UpdatePollErrorStatus(t.statuses, t.config.Name, "AirTemperature", requestNames, errs)
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}

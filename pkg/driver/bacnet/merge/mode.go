@@ -17,6 +17,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	status2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/status"
 	genmodepb "github.com/vanti-dev/sc-bos/pkg/gentrait/modepb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -178,6 +179,7 @@ func (t *mode) startPoll(init context.Context) (stop task.StopFn, err error) {
 
 func (t *mode) pollPeer(ctx context.Context) (*traits.ModeValues, error) {
 	var readValues []config.ValueSource
+	var requestNames []string
 	type nameAndPoint struct {
 		name  string
 		point modeConfigPoint
@@ -187,6 +189,7 @@ func (t *mode) pollPeer(ctx context.Context) (*traits.ModeValues, error) {
 		if point.Value == nil {
 			continue
 		}
+		requestNames = append(requestNames, name)
 		readValues = append(readValues, *point.Value)
 		readConfig = append(readConfig, nameAndPoint{name: name, point: point})
 	}
@@ -211,7 +214,7 @@ responses:
 		}
 		dst.Values[cfg.name] = value
 	}
-	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "Mode", len(readValues), errs...)
+	status2.UpdatePollErrorStatus(t.statuses, t.config.Name, "Mode", requestNames, errs)
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}
