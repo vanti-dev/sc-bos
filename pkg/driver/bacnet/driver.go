@@ -110,7 +110,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 
 		statuses.UpdateProblem(scDeviceName, &gen.StatusLog_Problem{
-			Name:        scDeviceName,
+			Name:        scDeviceName + ":setup",
 			Level:       gen.StatusLog_NON_FUNCTIONAL,
 			Description: "device has not yet been configured",
 		})
@@ -213,9 +213,9 @@ func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announc
 	if err != nil {
 		err := fmt.Errorf("device comm handshake: %w", ctxerr.Cause(ctx, err))
 		statuses.UpdateProblem(scDeviceName, &gen.StatusLog_Problem{
-			Name:        scDeviceName,
+			Name:        scDeviceName + ":setup",
 			Level:       gen.StatusLog_OFFLINE,
-			Description: err.Error(),
+			Description: "unable to complete initial handshake with device",
 		})
 		return err
 	}
@@ -228,7 +228,7 @@ func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announc
 
 	// assume we're online unless we get an error
 	statuses.UpdateProblem(scDeviceName, &gen.StatusLog_Problem{
-		Name:        scDeviceName,
+		Name:        scDeviceName + ":setup",
 		Level:       gen.StatusLog_NOMINAL,
 		Description: "handshake successful",
 	})
