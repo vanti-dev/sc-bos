@@ -99,32 +99,38 @@ func (s stringerFunc) String() string {
 }
 
 func UpdatePollErrorStatus(statuses *statuspb.Map, name, task string, requests int, errs ...error) {
-	problemName := fmt.Sprintf("%s.%s", name, task)
+	problemName := fmt.Sprintf("%s:%s", name, task)
 
 	allFailed := len(errs) == requests
-	someOffline, allOffline := isOfflineError(errs...)
+	someTimedOut, allTimedOut := isTimeoutError(errs...)
 
-	if !someOffline {
+	if len(errs) == 0 {
 		statuses.UpdateProblem(name, &gen.StatusLog_Problem{
 			Name:        problemName,
 			Level:       gen.StatusLog_NOMINAL,
-			Description: fmt.Sprintf("%s success", task),
+			Description: fmt.Sprintf("reading point %s success", task),
 		})
 		return
 	}
 
 	level := gen.StatusLog_REDUCED_FUNCTION
-	if allOffline && allFailed {
+	if allTimedOut && allFailed {
 		level = gen.StatusLog_OFFLINE
+	}
+	var desc string
+	if someTimedOut {
+		desc = fmt.Sprintf("reading point %s timed out", task)
+	} else {
+		desc = fmt.Sprintf("reading point %s failed", task)
 	}
 	statuses.UpdateProblem(name, &gen.StatusLog_Problem{
 		Name:        problemName,
 		Level:       level,
-		Description: fmt.Sprintf("%s failed", task),
+		Description: desc,
 	})
 }
 
-func isOfflineError(errs ...error) (some, all bool) {
+func isTimeoutError(errs ...error) (some, all bool) {
 	offlineCount := 0
 	for _, err := range errs {
 		if errors.Is(err, context.DeadlineExceeded) {

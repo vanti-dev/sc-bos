@@ -140,15 +140,18 @@ func (m *Monitor) Poll(ctx context.Context) error {
 	var resultsCursor int
 	results := comm.ReadPropertiesChunked(ctx, m.client, m.known, 30, allFields...)
 	for _, o := range m.objects {
-		reqs := 0          // total requests we check
-		notFoundCount := 0 // total responses that indicate the proper doesn't exist
+		var reqs []string  // requests we check
+		notFoundCount := 0 // total responses that indicate the property doesn't exist
+		timeoutCount := 0  // total responses that indicate the property timed out
 
 		var errs []error
 		handleErr := func(prop string, err error) {
-			reqs++
+			reqs = append(reqs, prop)
 			switch {
 			case errors.Is(err, comm.ErrPropNotFound):
 				notFoundCount++
+			case errors.Is(err, context.DeadlineExceeded):
+				timeoutCount++
 			case err != nil:
 				errs = append(errs, comm.ErrReadProperty{Cause: err, Prop: prop})
 			}
@@ -201,55 +204,36 @@ func (m *Monitor) Poll(ctx context.Context) error {
 			handleErr("PresentValue", err)
 		}
 
-		if notFoundCount == reqs {
-			// the entire object wasn't found (likely, we aren't actually checking every property)
-			errs = []error{comm.ErrObjectNotFound}
+		problem := &gen.StatusLog_Problem{
+			Name:        fmt.Sprintf("%s:%s", o.Name, o.Test),
+			Level:       gen.StatusLog_NOMINAL,
+			Description: fmt.Sprintf("object %q nominal", o.Test),
 		}
-
-		switch {
-		case notFoundCount == reqs:
-			m.Logger.Warn("device status: object not found",
-				zap.String("name", o.Name), zap.String("test", o.Test),
-			)
-		case len(errs) > 0 && errors.Is(errs[0], context.DeadlineExceeded):
-			m.Logger.Warn("device status: timeout",
-				zap.String("name", o.Name), zap.String("test", o.Test),
-			)
-		case len(errs) > 0:
-			m.Logger.Warn("device status: error reading properties",
-				zap.String("name", o.Name), zap.String("test", o.Test),
-				zap.Errors("errs", errs),
-			)
-		case !hasLimits:
-			m.Logger.Debug("device status",
-				zap.String("name", o.Name), zap.String("test", o.Test),
-				zap.Stringer("eventState", eventStateVal), zap.Stringer("reliability", reliabilityVal), zap.Bool("outOfService", outOfServiceVal),
-			)
-		default:
-			m.Logger.Debug("device status",
-				zap.String("name", o.Name), zap.String("test", o.Test),
-				zap.Stringer("eventState", eventStateVal), zap.Stringer("reliability", reliabilityVal), zap.Bool("outOfService", outOfServiceVal),
-				zap.Bool("hasLimits", hasLimits), zap.Float32("lowLimit", lowLimitVal), zap.Float32("highLimit", highLimitVal),
-			)
-		}
-
-		problemName := fmt.Sprintf("%s:%s", o.Name, o.Test)
 		level := gen.StatusLog_REDUCED_FUNCTION
 		if o.Level != 0 {
 			level = o.Level
 		}
+
 		switch {
+		case notFoundCount == len(reqs):
+			problem.Level = gen.StatusLog_NOTICE
+			problem.Description = fmt.Sprintf("configured object %s not found", o.Test)
+		case timeoutCount == len(reqs):
+			problem.Level = level
+			problem.Description = fmt.Sprintf("reading %s points %s timed out", o.Test, strings.Join(reqs, ", "))
 		case len(errs) > 0:
-			comm.UpdatePollErrorStatus(m.status, o.Name, o.Test, reqs, errs...)
+			problem.Level = level
+			problem.Description = fmt.Sprintf("error reading %s points %s", o.Test, strings.Join(reqs, ", "))
+			m.Logger.Warn("device status: error reading properties",
+				zap.String("test", o.Test),
+				zap.Errors("errs", errs),
+			)
 		case hasValue && !nominalValue(valueVal, o.NominalValue):
-			m.status.UpdateProblem(o.Name, &gen.StatusLog_Problem{
-				Name:        problemName,
-				Level:       level,
-				Description: fmt.Sprintf("read value %v: want %v, got %v", o.Test, o.NominalValue, valueVal),
-			})
+			problem.Level = level
+			problem.Description = fmt.Sprintf("read value %v: want %v, got %v", o.Test, o.NominalValue, valueVal)
 		case hasStatus && (reliabilityVal != reliability.NoFaultDetected || eventStateVal != eventstate.Normal):
 			var desc strings.Builder
-			fmt.Fprintf(&desc, "status %v: ", o.Test)
+			fmt.Fprintf(&desc, "object %v ", o.Test)
 			var comma bool
 			writeComma := func() {
 				if comma {
@@ -273,15 +257,22 @@ func (m *Monitor) Poll(ctx context.Context) error {
 				writeComma()
 				fmt.Fprintf(&desc, "limits [%v,%v]", lowLimitVal, highLimitVal)
 			}
-
-			m.status.UpdateProblem(o.Name, &gen.StatusLog_Problem{
-				Name:        problemName,
-				Level:       level,
-				Description: desc.String(),
-			})
+			problem.Level = level
+			problem.Description = desc.String()
+		case !hasLimits:
+			// m.Logger.Debug("device status",
+			// 	zap.String("test", o.Test),
+			// 	zap.Stringer("eventState", eventStateVal), zap.Stringer("reliability", reliabilityVal), zap.Bool("outOfService", outOfServiceVal),
+			// )
 		default:
-			m.status.DeleteProblem(o.Name, problemName)
+			// m.Logger.Debug("device status",
+			// 	zap.String("test", o.Test),
+			// 	zap.Stringer("eventState", eventStateVal), zap.Stringer("reliability", reliabilityVal), zap.Bool("outOfService", outOfServiceVal),
+			// 	zap.Bool("hasLimits", hasLimits), zap.Float32("lowLimit", lowLimitVal), zap.Float32("highLimit", highLimitVal),
+			// )
 		}
+
+		m.status.UpdateProblem(o.Name, problem)
 	}
 
 	return nil

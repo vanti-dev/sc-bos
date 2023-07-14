@@ -105,6 +105,7 @@ func newStatus(client *gobacnet.Client, devices known.Context, statuses *statusp
 		return nil, err
 	}
 	monitor := status.NewMonitor(client, devices, statuses)
+	monitor.Logger = logger
 	impl := &statusImpl{
 		cfg:      cfg,
 		devices:  devices,
