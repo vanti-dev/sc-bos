@@ -3,6 +3,7 @@ package statusalerts
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -82,6 +83,16 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	// setup discovered sources
 	if cfg.DiscoverSources {
 		go func() {
+			// we use a replacer here because it's an easy and memory efficient way to do prefix matching.
+			// strings.Replacer uses a Trie internally.
+			ignore := func() *strings.Replacer {
+				replacements := make([]string, len(cfg.IgnorePrefixes)*2)
+				for _, prefix := range cfg.IgnorePrefixes {
+					replacements = append(replacements, prefix, "!")
+				}
+				return strings.NewReplacer(replacements...)
+			}()
+
 			for { // loop in case we get errors
 				select {
 				case <-ctx.Done():
@@ -89,6 +100,9 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 				default:
 				}
 				for change := range a.Node.PullAllMetadata(ctx, resource.WithReadPaths(&traits.Metadata{}, "traits", "location")) {
+					if s := ignore.Replace(change.Name); len(s) == 0 || s[0] == '!' {
+						continue // ignore
+					}
 					hadTrait, hasTrait := hasStatusTrait(change.OldValue), hasStatusTrait(change.NewValue)
 					switch {
 					case hadTrait && !hasTrait: // remove

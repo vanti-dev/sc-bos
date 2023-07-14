@@ -17,6 +17,9 @@ type Root struct {
 	Sources []Source `json:"sources,omitempty"`
 	// Delay querying the status of devices by this much, to allow them to boot up.
 	DelayStart *jsontypes.Duration `json:"delayStart,omitempty"`
+	// Device name prefixes to ignore.
+	// Only used if DiscoverSources is true.
+	IgnorePrefixes []string `json:"ignorePrefixes,omitempty"`
 }
 
 type Source struct {
