@@ -107,7 +107,7 @@ func (t *meterTrait) pollPeer(ctx context.Context) (*gen.MeterReading, error) {
 	if err != nil {
 		errs = append(errs, comm.ErrReadProperty{Prop: "usage", Cause: err})
 	}
-	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "poll", 1, errs...)
+	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "Meter", 1, errs...)
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}

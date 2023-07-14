@@ -223,7 +223,7 @@ func (t *electricTrait) pollPeer(ctx context.Context) (*traits.ElectricDemand, e
 		dst.ReactivePower = &reactive
 	}
 
-	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "poll", len(toRead), errs...)
+	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "Electric", len(toRead), errs...)
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}

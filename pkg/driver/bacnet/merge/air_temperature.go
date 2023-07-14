@@ -141,7 +141,7 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 			errs = append(errs, err)
 		}
 	}
-	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "poll", len(readValues), errs...)
+	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "AirTemperature", len(readValues), errs...)
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}

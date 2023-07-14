@@ -211,7 +211,7 @@ responses:
 		}
 		dst.Values[cfg.name] = value
 	}
-	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "poll", len(readValues), errs...)
+	comm.UpdatePollErrorStatus(t.statuses, t.config.Name, "Mode", len(readValues), errs...)
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}

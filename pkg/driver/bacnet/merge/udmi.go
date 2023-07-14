@@ -192,7 +192,7 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 		}
 	}
 
-	comm.UpdatePollErrorStatus(f.statuses, f.config.Name, "poll", len(f.config.Points), errs...)
+	comm.UpdatePollErrorStatus(f.statuses, f.config.Name, "UDMI", len(f.config.Points), errs...)
 	if len(errs) == len(f.config.Points) {
 		err := multierr.Combine(errs...)
 		return err
