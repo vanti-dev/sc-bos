@@ -1,15 +1,20 @@
 <template>
   <div id="energy-graph" :style="{width, height}">
-    <LineChart :chart-options="chartOptions" :chart-data="chartData" dataset-id-key="label"/>
+    <LineChart
+        :chart-options="chartOptions"
+        :chart-data="chartData"
+        :show-conversion="showConversion"
+        @toggleConversion="showConversion = !showConversion"
+        dataset-id-key="label"/>
   </div>
 </template>
 
 <script setup>
+import {computed, ref} from 'vue';
 import LineChart from '@/components/charts/LineChart.vue';
 import {HOUR, MINUTE, useNow} from '@/components/now';
 import useMeterHistory from '@/routes/ops/components/useMeterHistory';
 import useTimePeriod from '@/routes/ops/components/useTimePeriod';
-import {computed} from 'vue';
 
 const props = defineProps({
   metered: {
@@ -39,13 +44,50 @@ const props = defineProps({
 });
 const {now} = useNow(() => props.span);
 const {periodStart, periodEnd} = useTimePeriod(now, () => props.span, () => props.timeFrame);
+const showConversion = ref(false);
+
 
 const metered = useMeterHistory(() => props.metered, periodStart, periodEnd, () => props.span);
 const generated = useMeterHistory(() => props.generated, periodStart, periodEnd, () => props.span);
+const co2 = computed(() => {
+  return metered.seriesData.value.map((value, index) => {
+    return {
+      x: value.x,
+      y: value.y * 0.76
+    };
+  });
+});
 
 const chartData = computed(() => {
   // Return the restructured data for the chart
   const datasets = [];
+  if (showConversion.value) {
+    datasets.push({
+      backgroundColor: (ctx) => {
+        const canvas = ctx.chart.ctx;
+        const gradient = canvas.createLinearGradient(0, 0, 0, 425);
+
+        gradient.addColorStop(0, '#330000'); // color
+        gradient.addColorStop(0.4, 'rgba(175, 0, 0, 0.25)'); // darker shade of the color
+        gradient.addColorStop(1, 'rgba(80, 0, 0, 0.1)'); // almost transparent
+
+        return gradient;
+      },
+      borderColor: 'red', // line color
+      data: co2.value, // data for the line
+      fill: true, // fill the area under the line
+      label: 'CO₂', // tooltip label
+      mode: 'nearest', // 'index' or 'nearest
+      pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
+      pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
+      pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
+      pointHoverBorderColor: 'orange', // point border color on hover
+      // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
+      pointStyle: 'circle',
+      tension: 0.35 // curve the line
+    });
+  }
+
   if (props.generated) {
     datasets.push({
       borderColor: 'orange', // line color
@@ -63,7 +105,7 @@ const chartData = computed(() => {
     });
   }
 
-  if (props.metered) {
+  if (props.metered && !showConversion.value) {
     datasets.push({
       // Setting background gradient on metered data
       backgroundColor: (ctx) => {
@@ -253,7 +295,6 @@ const chartOptions = computed(() => {
     type: 'line'
   };
 });
-
 /** -------------------------------------------- */
 /**
  * Lifecycle hooks

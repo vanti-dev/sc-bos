@@ -1,6 +1,28 @@
 <template>
   <div style="height: 100%; max-height: 275px;">
-    <div id="legend-container"/>
+    <div
+        class="d-flex flex-row flex-nowrap justify-end align-center"
+        style="max-height: 30px;">
+      <div id="legend-container" class="mr-2"/>
+      <div class="vl mr-6"/>
+      <v-switch
+          v-model="showConversion"
+          color="primary"
+          dense
+          hide-details
+          inset
+
+          :value="showConversion"
+          style="margin-top: -75px;"
+          @change="() => emits('toggleConversion', showConversion)">
+        <template #append>
+          <span class="text-caption white--text ml-n4">CO₂</span>
+        </template>
+        <template #prepend>
+          <span class="text-caption white--text">kWh</span>
+        </template>
+      </v-switch>
+    </div>
     <LineChartGenerator
         :options="props.chartOptions"
         :data="props.chartData"
@@ -12,6 +34,7 @@
 </template>
 
 <script setup>
+import {ref} from 'vue';
 import {Line as LineChartGenerator} from 'vue-chartjs';
 import {
   Chart as ChartJS,
@@ -57,8 +80,15 @@ const props = defineProps({
     default: () => {
       return {};
     }
+  },
+  showConversion: {
+    type: Boolean,
+    default: false
   }
 });
+
+const emits = defineEmits(['toggleConversion']);
+const showConversion = ref(props.showConversion);
 
 const getOrCreateLegendList = (id) => {
   const legendContainer = document.getElementById(id);
@@ -142,4 +172,11 @@ const htmlLegendPlugin = {
 </script>
 
 <style lang="scss">
+.vl {
+  border-left: 3px solid grey;
+  opacity: 0.5;
+  height: 20px;
+  padding-top: 0;
+  margin-top: -75px;
+}
 </style>
