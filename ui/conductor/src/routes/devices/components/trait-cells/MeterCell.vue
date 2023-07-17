@@ -1,6 +1,6 @@
 <template>
   <span class="text-no-wrap ed-cell" v-if="meterReading">
-    <span>{{ meterReading }} kWh</span>
+    <span>{{ meterReading }}</span>
   </span>
 </template>
 <script setup>
