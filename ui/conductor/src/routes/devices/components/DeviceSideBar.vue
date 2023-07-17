@@ -21,6 +21,10 @@
       <v-divider class="mt-4 mb-1"/>
       <electric-demand-card v-bind="resource"/>
     </WithElectricDemand>
+    <WithMeter v-if="traits['smartcore.bos.Meter']" :name="deviceId" v-slot="{resource}">
+      <v-divider class="mt-4 mb-1"/>
+      <meter-card v-bind="resource"/>
+    </WithMeter>
     <v-divider v-if="traits['smartcore.bsp.EmergencyLight']" class="mt-4 mb-1"/>
     <emergency-light :name="deviceId" v-if="traits['smartcore.bsp.EmergencyLight']"/>
     <v-divider v-if="traits['smartcore.traits.Mode']" class="mt-4 mb-1"/>
@@ -37,6 +41,7 @@ import WithElectricDemand from '@/routes/devices/components/renderless/WithElect
 import WithLighting from '@/routes/devices/components/renderless/WithLighting.vue';
 import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
 import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
+import WithMeter from '@/routes/devices/components/renderless/WithMeter.vue';
 import AirTemperatureCard from '@/routes/devices/components/trait-cards/AirTemperatureCard.vue';
 import DeviceInfoCard from '@/routes/devices/components/trait-cards/DeviceInfoCard.vue';
 import ElectricDemandCard from '@/routes/devices/components/trait-cards/ElectricDemandCard.vue';
@@ -46,6 +51,7 @@ import ModeCard from '@/routes/devices/components/trait-cards/ModeCard.vue';
 import OccupancyCard from '@/routes/devices/components/trait-cards/OccupancyCard.vue';
 import StatusLogCard from '@/routes/devices/components/trait-cards/StatusLogCard.vue';
 import UdmiCard from '@/routes/devices/components/trait-cards/UdmiCard.vue';
+import MeterCard from '@/routes/devices/components/trait-cards/MeterCard.vue';
 
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
