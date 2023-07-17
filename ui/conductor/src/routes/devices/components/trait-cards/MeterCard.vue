@@ -4,7 +4,7 @@
       <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Meter</v-subheader>
       <v-list-item class="py-1" v-for="(detail, key) in meterDetails" :key="key">
         <v-list-item-title class="text-body-small text-capitalize">{{ detail.key }}</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">{{ detail.value.toFixed(2) }}</v-list-item-subtitle>
+        <v-list-item-subtitle class="text-end">{{ detail.value.toFixed(2) }}</v-list-item-subtitle>
       </v-list-item>
     </v-list>
 

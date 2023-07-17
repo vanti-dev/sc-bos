@@ -4,7 +4,9 @@
       <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Occupancy Sensor</v-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">State</v-list-item-title>
-        <v-list-item-subtitle :class="[state.toLowerCase(), 'text-capitalize text-subtitle-2 py-1 font-weight-medium']">
+        <v-list-item-subtitle
+            :class="[
+              state.toLowerCase(), 'text-capitalize text-subtitle-2 py-1 font-weight-medium text-end']">
           {{ state }}
         </v-list-item-subtitle>
       </v-list-item>
