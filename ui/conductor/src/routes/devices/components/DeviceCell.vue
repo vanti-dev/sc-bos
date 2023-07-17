@@ -48,6 +48,14 @@
       <StatusLogCell v-bind="resource"/>
       <StatusAlert :resource="resource.streamError"/>
     </WithStatus>
+    <WithMeter
+        v-if="hasCell('Meter')"
+        v-slot="{resource}"
+        :name="props.item.name"
+        :paused="props.paused">
+      <MeterCell v-bind="resource"/>
+      <StatusAlert :resource="resource.streamError"/>
+    </WithMeter>
   </span>
 </template>
 
@@ -56,10 +64,12 @@ import WithAirTemperature from '@/routes/devices/components/renderless/WithAirTe
 import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
 import WithEnterLeave from '@/routes/devices/components/renderless/WithEnterLeave.vue';
 import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
+import WithMeter from '@/routes/devices/components/renderless/WithMeter.vue';
 import AirTemperatureCell from '@/routes/devices/components/trait-cells/AirTemperatureCell.vue';
 import ElectricDemandCell from '@/routes/devices/components/trait-cells/ElectricDemandCell.vue';
 import EnterLeaveEventCell from '@/routes/devices/components/trait-cells/EnterLeaveEventCell.vue';
 import StatusLogCell from '@/routes/devices/components/trait-cells/StatusLogCell.vue';
+import MeterCell from '@/routes/devices/components/trait-cells/MeterCell.vue';
 import {hasTrait} from '@/util/devices';
 import {computed} from 'vue';
 import WithLighting from './renderless/WithLighting.vue';
@@ -98,6 +108,9 @@ const visibleCells = computed(() => {
   }
   if (hasTrait(props.item, 'smartcore.bos.Status')) {
     cells['StatusLog'] = true;
+  }
+  if (hasTrait(props.item, 'smartcore.bos.Meter')) {
+    cells['Meter'] = true;
   }
   return cells;
 });
