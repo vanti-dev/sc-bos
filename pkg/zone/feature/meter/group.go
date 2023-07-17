@@ -2,6 +2,7 @@ package meter
 
 import (
 	"context"
+	"time"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -11,19 +12,59 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/util/once"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/merge"
 )
 
 type Group struct {
 	gen.UnimplementedMeterApiServer
-	client   gen.MeterApiClient
-	names    []string
-	readOnly bool
+	gen.UnimplementedMeterInfoServer
+	apiClient  gen.MeterApiClient
+	infoClient gen.MeterInfoClient
+	names      []string
+	readOnly   bool
+
+	unit     string
+	unitOnce once.RetryError
 
 	logger *zap.Logger
+}
+
+func (g *Group) DescribeMeterReading(ctx context.Context, _ *gen.DescribeMeterReadingRequest) (*gen.MeterReadingSupport, error) {
+	err := g.unitOnce.Do(ctx, func() error {
+		if g.unit != "" {
+			return nil
+		}
+
+		var err error
+		for _, name := range g.names {
+			ctx, cleanup := context.WithTimeout(context.Background(), 5*time.Second)
+			var s *gen.MeterReadingSupport
+			s, err = g.infoClient.DescribeMeterReading(ctx, &gen.DescribeMeterReadingRequest{Name: name})
+			cleanup()
+			if err == nil && s.Unit != "" {
+				g.unit = s.Unit
+				return nil
+			}
+		}
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &gen.MeterReadingSupport{
+		ResourceSupport: &types.ResourceSupport{
+			Readable:   true,
+			Writable:   !g.readOnly,
+			Observable: true,
+		},
+		Unit: g.unit,
+	}, nil
 }
 
 func (g *Group) GetMeterReading(ctx context.Context, request *gen.GetMeterReadingRequest) (*gen.MeterReading, error) {
@@ -31,7 +72,7 @@ func (g *Group) GetMeterReading(ctx context.Context, request *gen.GetMeterReadin
 	var allRes []*gen.MeterReading
 	for _, name := range g.names {
 		request.Name = name
-		res, err := g.client.GetMeterReading(ctx, request)
+		res, err := g.apiClient.GetMeterReading(ctx, request)
 		if err != nil {
 			allErrs = append(allErrs, err)
 			continue
@@ -70,7 +111,7 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 		group.Go(func() error {
 			return pull.Changes(ctx, pull.NewFetcher(
 				func(ctx context.Context, changes chan<- c) error {
-					stream, err := g.client.PullMeterReadings(ctx, request)
+					stream, err := g.apiClient.PullMeterReadings(ctx, request)
 					if err != nil {
 						return err
 					}
@@ -85,7 +126,7 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 					}
 				},
 				func(ctx context.Context, changes chan<- c) error {
-					res, err := g.client.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: name, ReadMask: request.ReadMask})
+					res, err := g.apiClient.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: name, ReadMask: request.ReadMask})
 					if err != nil {
 						return err
 					}

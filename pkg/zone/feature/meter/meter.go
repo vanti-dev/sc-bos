@@ -37,9 +37,13 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := node.AnnounceContext(ctx, f.announce)
 	logger := f.logger.With(zap.String("zone", cfg.Name))
 
-	var client gen.MeterApiClient
+	var apiClient gen.MeterApiClient
+	var infoClient gen.MeterInfoClient
 	if len(cfg.Meters) > 0 || len(cfg.MeterGroups) > 0 {
-		if err := f.clients.Client(&client); err != nil {
+		if err := f.clients.Client(&apiClient); err != nil {
+			return err
+		}
+		if err := f.clients.Client(&infoClient); err != nil {
 			return err
 		}
 	}
@@ -49,12 +53,13 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 
 		group := &Group{
-			client: client,
-			names:  devices,
-			logger: logger,
+			apiClient:  apiClient,
+			infoClient: infoClient,
+			names:      devices,
+			logger:     logger,
 		}
 		f.devices.Add(devices...)
-		announce.Announce(name, node.HasTrait(meter.TraitName, node.WithClients(gen.WrapMeterApi(group))))
+		announce.Announce(name, node.HasTrait(meter.TraitName, node.WithClients(gen.WrapMeterApi(group), gen.WrapMeterInfo(group))))
 	}
 
 	announceGroup(cfg.Name, cfg.Meters)
