@@ -7,6 +7,7 @@ import (
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/gobacnet"
@@ -24,6 +25,7 @@ import (
 type meterConfig struct {
 	config.Trait
 	Usage *config.ValueSource `json:"usage,omitempty"`
+	Unit  string              `json:"unit,omitempty"`
 }
 
 func readMeterConfig(raw []byte) (cfg meterConfig, err error) {
@@ -65,7 +67,12 @@ func newMeter(client *gobacnet.Client, devices known.Context, statuses *statuspb
 }
 
 func (t *meterTrait) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(t.config.Name, node.HasTrait(meter.TraitName, node.WithClients(gen.WrapMeterApi(t))))
+	return a.Announce(t.config.Name, node.HasTrait(meter.TraitName, node.WithClients(gen.WrapMeterApi(t), gen.WrapMeterInfo(&meter.InfoServer{
+		MeterReading: &gen.MeterReadingSupport{
+			ResourceSupport: &types.ResourceSupport{Readable: true, Observable: true},
+			Unit:            t.config.Unit,
+		},
+	}))))
 }
 
 func (t *meterTrait) GetMeterReading(ctx context.Context, request *gen.GetMeterReadingRequest) (*gen.MeterReading, error) {

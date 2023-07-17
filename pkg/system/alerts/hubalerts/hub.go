@@ -4,13 +4,13 @@ import (
 	"context"
 	"time"
 
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/system/alerts/alertmd"
 	"github.com/vanti-dev/sc-bos/pkg/util/once"
 )
 
@@ -179,12 +179,7 @@ func (s *Server) initAlertMetadata(ctx context.Context) error {
 		ctx, s.mdStop = context.WithCancel(context.Background())
 
 		// Collect initial stats from the DB
-		md := &gen.AlertMetadata{
-			AcknowledgedCounts: make(map[bool]uint32),
-			FloorCounts:        make(map[string]uint32),
-			ZoneCounts:         make(map[string]uint32),
-			SeverityCounts:     make(map[int32]uint32),
-		}
+		md := alertmd.New()
 		val := resource.NewValue(resource.WithInitialValue(md))
 
 		// We need to pull and list the alerts from the server.
@@ -204,7 +199,7 @@ func (s *Server) initAlertMetadata(ctx context.Context) error {
 			listReq.PageToken = list.NextPageToken
 
 			for _, alert := range list.Alerts {
-				err := applyMdDelta(val, &gen.PullAlertsResponse_Change{
+				err := alertmd.ApplyMdDelta(val, &gen.PullAlertsResponse_Change{
 					Type:     types.ChangeType_ADD,
 					NewValue: alert,
 				})
@@ -232,83 +227,12 @@ func (s *Server) initAlertMetadata(ctx context.Context) error {
 				}
 
 				for _, change := range msg.Changes {
-					applyMdDelta(s.md, change)
+					alertmd.ApplyMdDelta(s.md, change)
 				}
 			}
 		}()
 		return nil
 	})
-}
-
-func applyMdDelta(md *resource.Value, e *gen.PullAlertsResponse_Change) error {
-	// note: AlertMetadata uses uint32 so we can't use it to store our deltas
-	_, err := md.Set(&gen.AlertMetadata{}, resource.InterceptBefore(func(old, new proto.Message) {
-		oldMd, newMd := old.(*gen.AlertMetadata), new.(*gen.AlertMetadata)
-		proto.Merge(newMd, oldMd)
-
-		// total
-		if e.OldValue == nil && e.NewValue != nil {
-			newMd.TotalCount++
-		} else if e.OldValue != nil && e.NewValue == nil {
-			newMd.TotalCount--
-			if newMd.TotalCount < 0 { // shouldn't be needed, but just in case
-				newMd.TotalCount = 0
-			}
-		}
-
-		// ack/nak
-		if e.OldValue == nil && e.NewValue != nil {
-			acked := e.NewValue.GetAcknowledgement().GetAcknowledgeTime() != nil
-			if acked {
-				newMd.AcknowledgedCounts[true]++
-			} else {
-				newMd.AcknowledgedCounts[false]++
-			}
-		} else if e.OldValue != nil && e.NewValue == nil {
-			acked := e.OldValue.GetAcknowledgement().GetAcknowledgeTime() != nil
-			if acked {
-				newMd.AcknowledgedCounts[true]--
-			} else {
-				newMd.AcknowledgedCounts[false]--
-			}
-		} else {
-			oldAck, newAck := e.GetOldValue().GetAcknowledgement().GetAcknowledgeTime(),
-				e.GetNewValue().GetAcknowledgement().GetAcknowledgeTime()
-			if oldAck == nil && newAck != nil {
-				newMd.AcknowledgedCounts[true]++
-				if newMd.AcknowledgedCounts[false] > 0 { // just in case
-					newMd.AcknowledgedCounts[false]--
-				}
-			} else if oldAck != nil && newAck == nil {
-				if newMd.AcknowledgedCounts[true] > 0 { // just in case
-					newMd.AcknowledgedCounts[true]--
-				}
-				newMd.AcknowledgedCounts[false]++
-			}
-		}
-
-		// floors, zones, and severity
-		mapDelta(e.GetOldValue().GetFloor(), e.GetNewValue().GetFloor(), newMd.FloorCounts)
-		mapDelta(e.GetOldValue().GetZone(), e.GetNewValue().GetZone(), newMd.ZoneCounts)
-		mapDelta(int32(e.GetOldValue().GetSeverity()), int32(e.GetNewValue().GetSeverity()), newMd.SeverityCounts)
-	}))
-
-	return err
-}
-
-func mapDelta[T comparable](o, n T, m map[T]uint32) {
-	if o == n {
-		return
-	}
-	var zero T
-	if o != zero {
-		if c, ok := m[o]; ok && c > 0 {
-			m[o] = c - 1
-		}
-	}
-	if n != zero {
-		m[n]++
-	}
 }
 
 // pullAlertsAgain calls s.alerts.PullAlerts, retrying on failure until ctx is done.

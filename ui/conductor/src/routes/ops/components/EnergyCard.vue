@@ -9,7 +9,7 @@
         <WithElectricDemand
             v-slot="{resource}"
             :name="props.generated">
-          {{ storeEnergyValues('generated', resource.value) }}<span style="font-size: 0.5em;">kW</span><br>
+          {{ Math.abs(storeEnergyValues('generated', resource.value)) }}<span style="font-size: 0.5em;">kW</span><br>
         </WithElectricDemand>
         <span class="pl-1 text-title orange--text" style="line-height: 0.35em;">Generated</span>
       </v-col>

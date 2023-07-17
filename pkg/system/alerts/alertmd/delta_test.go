@@ -1,4 +1,4 @@
-package pgxalerts
+package alertmd
 
 import (
 	"testing"
@@ -12,7 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-func Test_applyMdDelta(t *testing.T) {
+func Test_ApplyMdDelta(t *testing.T) {
 	before := &gen.AlertMetadata{
 		TotalCount: 100,
 		AcknowledgedCounts: map[bool]uint32{
@@ -113,7 +113,7 @@ func Test_applyMdDelta(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			res := resource.NewValue(resource.WithInitialValue(tt.before))
-			err := applyMdDelta(res, tt.e)
+			err := ApplyMdDelta(res, tt.e)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("applyMdDelta error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -136,7 +136,7 @@ func Test_applyMdDelta(t *testing.T) {
 			ResolvedCounts:       make(map[bool]uint32),
 			NeedsAttentionCounts: make(map[string]uint32),
 		}))
-		err := applyMdDelta(res, &gen.PullAlertsResponse_Change{
+		err := ApplyMdDelta(res, &gen.PullAlertsResponse_Change{
 			NewValue: &gen.Alert{Floor: "foo", Zone: "bar", Severity: 1},
 		})
 		if err != nil {

@@ -6,6 +6,7 @@ option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
+import "types/info.proto";
 
 // MeterApi represents a metering device, like an electric meter.
 // The device records total usage since some fixed point in time, this trait provides access to that usage value.
@@ -13,6 +14,10 @@ import "google/protobuf/timestamp.proto";
 service MeterApi {
   rpc GetMeterReading(GetMeterReadingRequest) returns (MeterReading);
   rpc PullMeterReadings(PullMeterReadingsRequest) returns (stream PullMeterReadingsResponse);
+}
+
+service MeterInfo {
+  rpc DescribeMeterReading(DescribeMeterReadingRequest) returns (MeterReadingSupport);
 }
 
 message MeterReading {
@@ -26,6 +31,14 @@ message MeterReading {
   // The end of the period usage is recorded relative to, i.e. the time the reading was taken.
   // This time might not be now if the device has a low resolution for taking readings.
   google.protobuf.Timestamp end_time = 3;
+}
+
+// MeterReadingSupport describes the capabilities of devices implementing this trait
+message MeterReadingSupport {
+  // How a named device supports read/write/pull apis
+  smartcore.types.ResourceSupport resource_support = 1;
+  // The unit associated with the usage value
+  string unit = 2;
 }
 
 message GetMeterReadingRequest {
@@ -47,4 +60,8 @@ message PullMeterReadingsResponse {
     google.protobuf.Timestamp change_time = 2;
     MeterReading meter_reading = 3;
   }
+}
+
+message DescribeMeterReadingRequest {
+  string name = 1;
 }
