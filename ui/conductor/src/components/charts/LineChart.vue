@@ -4,7 +4,7 @@
         class="d-flex flex-row flex-nowrap justify-end align-center"
         style="max-height: 30px;">
       <div id="legend-container" class="mr-2"/>
-      <div class="vl mr-6"/>
+      <v-divider vertical class="mr-6" style="margin-top: -38px; height: 20px;"/>
       <v-switch
           v-model="showConversion"
           color="primary"
@@ -12,14 +12,13 @@
           hide-details
           inset
 
-          :value="showConversion"
           style="margin-top: -75px;"
-          @change="() => emits('toggleConversion', showConversion)">
-        <template #append>
-          <span class="text-caption white--text ml-n4">CO₂</span>
-        </template>
+          @change="() => emits('update:showConversion', showConversion)">
         <template #prepend>
           <span class="text-caption white--text">kWh</span>
+        </template>
+        <template #append>
+          <span class="text-caption white--text ml-n4">CO₂</span>
         </template>
       </v-switch>
     </div>
@@ -87,7 +86,7 @@ const props = defineProps({
   }
 });
 
-const emits = defineEmits(['toggleConversion']);
+const emits = defineEmits(['update:showConversion']);
 const showConversion = ref(props.showConversion);
 
 const getOrCreateLegendList = (id) => {
@@ -170,13 +169,3 @@ const htmlLegendPlugin = {
   }
 };
 </script>
-
-<style lang="scss">
-.vl {
-  border-left: 3px solid grey;
-  opacity: 0.5;
-  height: 20px;
-  padding-top: 0;
-  margin-top: -75px;
-}
-</style>
