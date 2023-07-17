@@ -2,6 +2,7 @@ import * as jspb from 'google-protobuf'
 
 import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb';
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
+import * as types_info_pb from '@smart-core-os/sc-api-grpc-web/types/info_pb';
 
 
 export class MeterReading extends jspb.Message {
@@ -31,6 +32,30 @@ export namespace MeterReading {
     usage: number,
     startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+  }
+}
+
+export class MeterReadingSupport extends jspb.Message {
+  getResourceSupport(): types_info_pb.ResourceSupport | undefined;
+  setResourceSupport(value?: types_info_pb.ResourceSupport): MeterReadingSupport;
+  hasResourceSupport(): boolean;
+  clearResourceSupport(): MeterReadingSupport;
+
+  getUnit(): string;
+  setUnit(value: string): MeterReadingSupport;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): MeterReadingSupport.AsObject;
+  static toObject(includeInstance: boolean, msg: MeterReadingSupport): MeterReadingSupport.AsObject;
+  static serializeBinaryToWriter(message: MeterReadingSupport, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): MeterReadingSupport;
+  static deserializeBinaryFromReader(message: MeterReadingSupport, reader: jspb.BinaryReader): MeterReadingSupport;
+}
+
+export namespace MeterReadingSupport {
+  export type AsObject = {
+    resourceSupport?: types_info_pb.ResourceSupport.AsObject,
+    unit: string,
   }
 }
 
@@ -135,5 +160,23 @@ export namespace PullMeterReadingsResponse {
     }
   }
 
+}
+
+export class DescribeMeterReadingRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): DescribeMeterReadingRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DescribeMeterReadingRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: DescribeMeterReadingRequest): DescribeMeterReadingRequest.AsObject;
+  static serializeBinaryToWriter(message: DescribeMeterReadingRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DescribeMeterReadingRequest;
+  static deserializeBinaryFromReader(message: DescribeMeterReadingRequest, reader: jspb.BinaryReader): DescribeMeterReadingRequest;
+}
+
+export namespace DescribeMeterReadingRequest {
+  export type AsObject = {
+    name: string,
+  }
 }
 

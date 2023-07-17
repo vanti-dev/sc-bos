@@ -22,6 +22,20 @@ export class MeterApiClient {
 
 }
 
+export class MeterInfoClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  describeMeterReading(
+    request: meter_pb.DescribeMeterReadingRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: meter_pb.MeterReadingSupport) => void
+  ): grpcWeb.ClientReadableStream<meter_pb.MeterReadingSupport>;
+
+}
+
 export class MeterApiPromiseClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
@@ -36,6 +50,18 @@ export class MeterApiPromiseClient {
     request: meter_pb.PullMeterReadingsRequest,
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<meter_pb.PullMeterReadingsResponse>;
+
+}
+
+export class MeterInfoPromiseClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  describeMeterReading(
+    request: meter_pb.DescribeMeterReadingRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<meter_pb.MeterReadingSupport>;
 
 }
 

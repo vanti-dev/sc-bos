@@ -244,8 +244,7 @@ func InfoClient(conn grpc.ClientConnInterface, t trait.Name) any {
 		// return gen.NewDaliInfoClient(conn)
 		return nil
 	case meter.TraitName:
-		// return gen.NewMeterInfoClient(conn)
-		return nil
+		return gen.NewMeterInfoClient(conn)
 	case mqttpb.TraitName:
 		// return gen.NewMqttInfoClient(conn)
 		return nil

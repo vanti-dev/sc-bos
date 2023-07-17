@@ -354,6 +354,10 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 			s.Support(node.Routing(r), node.Clients(gen.WrapMeterApi(r)))
 		}
 		{
+			r := gen.NewMeterInfoRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapMeterInfo(r)))
+		}
+		{
 			r := gen.NewMeterHistoryRouter()
 			s.Support(node.Routing(r), node.Clients(gen.WrapMeterHistory(r)))
 		}

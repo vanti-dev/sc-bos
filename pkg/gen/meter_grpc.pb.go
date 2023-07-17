@@ -167,3 +167,89 @@ var MeterApi_ServiceDesc = grpc.ServiceDesc{
 	},
 	Metadata: "meter.proto",
 }
+
+// MeterInfoClient is the client API for MeterInfo service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type MeterInfoClient interface {
+	DescribeMeterReading(ctx context.Context, in *DescribeMeterReadingRequest, opts ...grpc.CallOption) (*MeterReadingSupport, error)
+}
+
+type meterInfoClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewMeterInfoClient(cc grpc.ClientConnInterface) MeterInfoClient {
+	return &meterInfoClient{cc}
+}
+
+func (c *meterInfoClient) DescribeMeterReading(ctx context.Context, in *DescribeMeterReadingRequest, opts ...grpc.CallOption) (*MeterReadingSupport, error) {
+	out := new(MeterReadingSupport)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.MeterInfo/DescribeMeterReading", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// MeterInfoServer is the server API for MeterInfo service.
+// All implementations must embed UnimplementedMeterInfoServer
+// for forward compatibility
+type MeterInfoServer interface {
+	DescribeMeterReading(context.Context, *DescribeMeterReadingRequest) (*MeterReadingSupport, error)
+	mustEmbedUnimplementedMeterInfoServer()
+}
+
+// UnimplementedMeterInfoServer must be embedded to have forward compatible implementations.
+type UnimplementedMeterInfoServer struct {
+}
+
+func (UnimplementedMeterInfoServer) DescribeMeterReading(context.Context, *DescribeMeterReadingRequest) (*MeterReadingSupport, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DescribeMeterReading not implemented")
+}
+func (UnimplementedMeterInfoServer) mustEmbedUnimplementedMeterInfoServer() {}
+
+// UnsafeMeterInfoServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to MeterInfoServer will
+// result in compilation errors.
+type UnsafeMeterInfoServer interface {
+	mustEmbedUnimplementedMeterInfoServer()
+}
+
+func RegisterMeterInfoServer(s grpc.ServiceRegistrar, srv MeterInfoServer) {
+	s.RegisterService(&MeterInfo_ServiceDesc, srv)
+}
+
+func _MeterInfo_DescribeMeterReading_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DescribeMeterReadingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MeterInfoServer).DescribeMeterReading(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/smartcore.bos.MeterInfo/DescribeMeterReading",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MeterInfoServer).DescribeMeterReading(ctx, req.(*DescribeMeterReadingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// MeterInfo_ServiceDesc is the grpc.ServiceDesc for MeterInfo service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var MeterInfo_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "smartcore.bos.MeterInfo",
+	HandlerType: (*MeterInfoServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "DescribeMeterReading",
+			Handler:    _MeterInfo_DescribeMeterReading_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "meter.proto",
+}
