@@ -3,8 +3,8 @@
     <LineChart
         :chart-options="chartOptions"
         :chart-data="chartData"
-        :show-conversion="showConversion"
-        @toggleConversion="showConversion = !showConversion"
+        :show-conversion.sync="showConversion"
+        @update:show-conversion="showConversion = $event"
         dataset-id-key="label"/>
   </div>
 </template>
@@ -49,10 +49,18 @@ const showConversion = ref(false);
 
 const metered = useMeterHistory(() => props.metered, periodStart, periodEnd, () => props.span);
 const generated = useMeterHistory(() => props.generated, periodStart, periodEnd, () => props.span);
-const co2 = computed(() => {
+const co2Metered = computed(() => {
   return metered.seriesData.value.map((value, index) => {
     return {
-      x: value.x,
+      ...value,
+      y: value.y * 0.76
+    };
+  });
+});
+const co2Generated = computed(() => {
+  return generated.seriesData.value.map((value, index) => {
+    return {
+      ...value,
       y: value.y * 0.76
     };
   });
@@ -61,76 +69,98 @@ const co2 = computed(() => {
 const chartData = computed(() => {
   // Return the restructured data for the chart
   const datasets = [];
+
   if (showConversion.value) {
-    datasets.push({
-      backgroundColor: (ctx) => {
-        const canvas = ctx.chart.ctx;
-        const gradient = canvas.createLinearGradient(0, 0, 0, 425);
+    if (props.generated) {
+      datasets.push({
+        borderColor: 'orange', // line color
+        data: co2Generated.value, // data for the line
+        fill: false, // fill the area under the line
+        label: 'Generated', // tooltip label
+        mode: 'nearest', // 'index' or 'nearest
+        pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
+        pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
+        pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
+        pointHoverBorderColor: 'orange', // point border color on hover
+        // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
+        pointStyle: 'circle',
+        tension: 0.35 // curve the line
+      });
+    }
 
-        gradient.addColorStop(0, '#00bed6'); // color
-        gradient.addColorStop(0.5, 'rgba(51, 142, 161, 0.75)'); // darker shade of the color
-        gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // almost transparent
+    if (props.metered) {
+      datasets.push({
+        backgroundColor: (ctx) => {
+          const canvas = ctx.chart.ctx;
+          const gradient = canvas.createLinearGradient(0, 0, 0, 425);
 
-        return gradient;
-      },
-      borderColor: '#00bed6', // line color
-      data: co2.value, // data for the line
-      fill: true, // fill the area under the line
-      label: 'CO₂', // tooltip label
-      mode: 'nearest', // 'index' or 'nearest
-      pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
-      pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
-      pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
-      pointHoverBorderColor: 'orange', // point border color on hover
-      // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
-      pointStyle: 'circle',
-      tension: 0.35 // curve the line
-    });
+          gradient.addColorStop(0, '#00bed6'); // color
+          gradient.addColorStop(0.5, 'rgba(51, 142, 161, 0.75)'); // darker shade of the color
+          gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // almost transparent
+
+          return gradient;
+        },
+        borderColor: '#00bed6', // line color
+        data: co2Metered.value, // data for the line
+        fill: true, // fill the area under the line
+        label: 'Metered', // tooltip label
+        mode: 'nearest', // 'index' or 'nearest
+        pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
+        pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
+        pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
+        pointHoverBorderColor: 'orange', // point border color on hover
+        // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
+        pointStyle: 'circle',
+        tension: 0.35 // curve the line
+      });
+    }
   }
 
-  if (props.generated) {
-    datasets.push({
-      borderColor: 'orange', // line color
-      data: generated.seriesData.value, // data for the line
-      fill: false, // fill the area under the line
-      label: 'Generated', // tooltip label
-      mode: 'nearest', // 'index' or 'nearest
-      pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
-      pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
-      pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
-      pointHoverBorderColor: 'orange', // point border color on hover
-      // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
-      pointStyle: 'circle',
-      tension: 0.35 // curve the line
-    });
-  }
+  if (!showConversion.value) {
+    if (props.generated) {
+      datasets.push({
+        borderColor: 'orange', // line color
+        data: generated.seriesData.value, // data for the line
+        fill: false, // fill the area under the line
+        label: 'Generated', // tooltip label
+        mode: 'nearest', // 'index' or 'nearest
+        pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
+        pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
+        pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
+        pointHoverBorderColor: 'orange', // point border color on hover
+        // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
+        pointStyle: 'circle',
+        tension: 0.35 // curve the line
+      });
+    }
 
-  if (props.metered && !showConversion.value) {
-    datasets.push({
+    if (props.metered) {
+      datasets.push({
       // Setting background gradient on metered data
-      backgroundColor: (ctx) => {
-        const canvas = ctx.chart.ctx;
-        const gradient = canvas.createLinearGradient(0, 0, 0, 425);
+        backgroundColor: (ctx) => {
+          const canvas = ctx.chart.ctx;
+          const gradient = canvas.createLinearGradient(0, 0, 0, 425);
 
-        gradient.addColorStop(0, '#00bed6'); // color
-        gradient.addColorStop(0.5, 'rgba(51, 142, 161, 0.75)'); // darker shade of the color
-        gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // almost transparent
+          gradient.addColorStop(0, '#00bed6'); // color
+          gradient.addColorStop(0.5, 'rgba(51, 142, 161, 0.75)'); // darker shade of the color
+          gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // almost transparent
 
-        return gradient;
-      },
-      borderColor: '#00bed6', // line color
-      data: metered.seriesData.value, // data for the line
-      fill: true, // fill area under the line graph
-      label: 'Metered', // tooltip label
-      mode: 'nearest', // 'index' or 'nearest
-      pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
-      pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
-      pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
-      pointHoverBorderColor: '#00bed6', // point border color on hover
-      // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
-      pointStyle: 'circle',
-      tension: 0.35 // curve the line
-    });
+          return gradient;
+        },
+        borderColor: '#00bed6', // line color
+        data: metered.seriesData.value, // data for the line
+        fill: true, // fill area under the line graph
+        label: 'Metered', // tooltip label
+        mode: 'nearest', // 'index' or 'nearest
+        pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
+        pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
+        pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
+        pointHoverBorderColor: '#00bed6', // point border color on hover
+        // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
+        pointStyle: 'circle',
+        tension: 0.35 // curve the line
+      });
+    }
   }
 
   return {
