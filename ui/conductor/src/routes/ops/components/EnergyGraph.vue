@@ -67,13 +67,13 @@ const chartData = computed(() => {
         const canvas = ctx.chart.ctx;
         const gradient = canvas.createLinearGradient(0, 0, 0, 425);
 
-        gradient.addColorStop(0, '#330000'); // color
-        gradient.addColorStop(0.4, 'rgba(175, 0, 0, 0.25)'); // darker shade of the color
-        gradient.addColorStop(1, 'rgba(80, 0, 0, 0.1)'); // almost transparent
+        gradient.addColorStop(0, '#00bed6'); // color
+        gradient.addColorStop(0.5, 'rgba(51, 142, 161, 0.75)'); // darker shade of the color
+        gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // almost transparent
 
         return gradient;
       },
-      borderColor: 'red', // line color
+      borderColor: '#00bed6', // line color
       data: co2.value, // data for the line
       fill: true, // fill the area under the line
       label: 'CO₂', // tooltip label
