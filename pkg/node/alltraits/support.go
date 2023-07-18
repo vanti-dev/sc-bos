@@ -30,6 +30,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/speaker"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/dalipb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/mqttpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
@@ -342,6 +343,12 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 		{
 			r := gen.NewColorInfoRouter()
 			s.Support(node.Routing(r), node.Clients(gen.WrapColorInfo(r)))
+		}
+	},
+	dalipb.TraitName: func(s node.Supporter) {
+		{
+			r := gen.NewDaliApiRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapDaliApi(r)))
 		}
 	},
 	emergencylight.TraitName: func(s node.Supporter) {

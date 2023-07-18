@@ -5,6 +5,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/dalipb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/mqttpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
@@ -102,6 +103,8 @@ func APIClient(conn grpc.ClientConnInterface, t trait.Name) any {
 		return gen.NewButtonApiClient(conn)
 	case color.TraitName:
 		return gen.NewColorApiClient(conn)
+	case dalipb.TraitName:
+		return gen.NewDaliApiClient(conn)
 	case emergencylight.TraitName:
 		return gen.NewDaliApiClient(conn)
 	case meter.TraitName:
