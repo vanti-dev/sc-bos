@@ -50,10 +50,10 @@
     </WithStatus>
     <WithMeter
         v-if="hasCell('Meter')"
-        v-slot="{resource}"
+        v-slot="{resource, type}"
         :name="props.item.name"
         :paused="props.paused">
-      <MeterCell v-bind="resource"/>
+      <MeterCell :value="resource" :type="type"/>
       <StatusAlert :resource="resource.streamError"/>
     </WithMeter>
   </span>
