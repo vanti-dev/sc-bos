@@ -13,14 +13,20 @@ const props = defineProps({
     default: () => {
     }
   },
+  type: {
+    type: Object,
+    default: () => {
+    }
+  },
   loading: {
     type: Boolean,
     default: false
   }
+
 });
 
 const meterReading = computed(() => {
-  return props.value?.usage.toFixed(2);
+  return `${props.value?.value?.usage.toFixed(2)} ${props.type?.response?.unit}`;
 });
 </script>
 

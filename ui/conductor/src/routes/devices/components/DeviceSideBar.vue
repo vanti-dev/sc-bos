@@ -21,9 +21,9 @@
       <v-divider class="mt-4 mb-1"/>
       <electric-demand-card v-bind="resource"/>
     </WithElectricDemand>
-    <WithMeter v-if="traits['smartcore.bos.Meter']" :name="deviceId" v-slot="{resource}">
+    <WithMeter v-if="traits['smartcore.bos.Meter']" :name="deviceId" v-slot="{resource, type}">
       <v-divider class="mt-4 mb-1"/>
-      <meter-card v-bind="resource"/>
+      <meter-card :value="resource" :type="type"/>
     </WithMeter>
     <v-divider v-if="traits['smartcore.bsp.EmergencyLight']" class="mt-4 mb-1"/>
     <emergency-light :name="deviceId" v-if="traits['smartcore.bsp.EmergencyLight']"/>
