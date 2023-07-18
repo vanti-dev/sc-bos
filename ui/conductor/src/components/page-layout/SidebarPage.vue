@@ -41,7 +41,7 @@ let originalCursor = '';
 
 const handleMouseDown = (event) => {
   originalCursor = originalCursor || document.body.style.cursor; // Store original cursor value
-  rightSidebar.value.$el.style.transition = 'all 0.1s ease'; // Add transition
+  rightSidebar.value.$el.style.transition = 'none'; // Add transition
   drawerBorder.value.style.backgroundColor = 'var(--v-primary-darken1)'; // Highlight border while moving
   drawerBorder.value.style.width = '8px'; // Set border width
   document.addEventListener('mousemove', handleMouseMove, false); // Add event listener
