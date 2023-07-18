@@ -256,7 +256,7 @@ export function pullResource(logPrefix, resource, address= '', newStream) {
  *
  * @param {string} logPrefix
  * @param {ActionTracker<V>} tracker
- * @param {string} endpoint
+ * @param {string} [endpoint]
  * @param {Action<V, M>} action
  * @return {Promise<V>}
  * @template V, M
