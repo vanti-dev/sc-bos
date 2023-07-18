@@ -204,7 +204,6 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 			return ctx.Err()
 		default:
 		}
-		f.logger.Debug("ignoring some errors", zap.Errors("errs", errs))
 	}
 
 	f.pointsLock.Lock()
