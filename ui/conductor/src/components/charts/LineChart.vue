@@ -1,26 +1,13 @@
 <template>
   <div style="height: 100%; max-height: 275px;">
-    <div
-        class="d-flex flex-row flex-nowrap justify-end align-center"
-        style="max-height: 30px;">
+    <div class="d-flex flex-row flex-nowrap justify-end align-center mb-6">
       <div id="legend-container" class="mr-2"/>
-      <v-divider vertical class="mr-6" style="margin-top: -38px; height: 20px;"/>
-      <v-switch
-          v-model="showConversion"
-          color="primary"
-          dense
-          hide-details
-          inset
-
-          style="margin-top: -75px;"
-          @change="() => emits('update:showConversion', showConversion)">
-        <template #prepend>
-          <span class="text-caption white--text">kWh</span>
-        </template>
-        <template #append>
-          <span class="text-caption white--text ml-n4">CO₂</span>
-        </template>
-      </v-switch>
+      <template v-if="$slots.options">
+        <v-divider vertical class="mr-6" style="height: auto"/>
+        <span>
+          <slot name="options"/>
+        </span>
+      </template>
     </div>
     <LineChartGenerator
         :options="props.chartOptions"
@@ -33,7 +20,6 @@
 </template>
 
 <script setup>
-import {ref} from 'vue';
 import {Line as LineChartGenerator} from 'vue-chartjs';
 import {
   Chart as ChartJS,
@@ -79,15 +65,8 @@ const props = defineProps({
     default: () => {
       return {};
     }
-  },
-  showConversion: {
-    type: Boolean,
-    default: false
   }
 });
-
-const emits = defineEmits(['update:showConversion']);
-const showConversion = ref(props.showConversion);
 
 const getOrCreateLegendList = (id) => {
   const legendContainer = document.getElementById(id);
@@ -98,8 +77,8 @@ const getOrCreateLegendList = (id) => {
     listContainer.style.display = 'flex';
     listContainer.style.flexDirection = 'row';
     listContainer.style.justifyContent = 'end';
-    listContainer.style.margin = '-40px 0 20px 0';
-    listContainer.style.padding = 0;
+    listContainer.style.margin = '0';
+    listContainer.style.padding = '0';
 
     legendContainer.appendChild(listContainer);
   }
@@ -138,14 +117,14 @@ const htmlLegendPlugin = {
       boxSpan.style.display = 'inline-block';
       boxSpan.style.height = '5px';
       boxSpan.style.marginRight = '15px';
-      boxSpan.style.marginTop = '-15px';
       boxSpan.style.width = '15px';
 
       // Text
       const textContainer = document.createElement('p');
       textContainer.style.color = 'white';
       textContainer.style.marginRight = '15px';
-      textContainer.style.padding = 0;
+      textContainer.style.marginBottom = '0';
+      textContainer.style.padding = '0';
       textContainer.style.textDecoration = item.hidden ? 'line-through' : '';
 
       const text = document.createTextNode(item.text);

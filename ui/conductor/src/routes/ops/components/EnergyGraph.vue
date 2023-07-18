@@ -3,18 +3,34 @@
     <LineChart
         :chart-options="chartOptions"
         :chart-data="chartData"
-        :show-conversion.sync="showConversion"
-        @update:show-conversion="showConversion = $event"
-        dataset-id-key="label"/>
+        dataset-id-key="label"
+        class="mt-n10">
+      <template #options>
+        <v-switch
+            v-model="showConversion"
+            color="primary"
+            dense
+            hide-details
+            inset
+            class="my-0">
+          <template #prepend>
+            <span class="text-caption white--text">kWh</span>
+          </template>
+          <template #append>
+            <span class="text-caption white--text ml-n4">CO₂</span>
+          </template>
+        </v-switch>
+      </template>
+    </LineChart>
   </div>
 </template>
 
 <script setup>
-import {computed, ref} from 'vue';
 import LineChart from '@/components/charts/LineChart.vue';
 import {HOUR, MINUTE, useNow} from '@/components/now';
 import useMeterHistory from '@/routes/ops/components/useMeterHistory';
 import useTimePeriod from '@/routes/ops/components/useTimePeriod';
+import {computed, ref} from 'vue';
 
 const props = defineProps({
   metered: {
@@ -47,13 +63,14 @@ const {periodStart, periodEnd} = useTimePeriod(now, () => props.span, () => prop
 const showConversion = ref(false);
 
 
+const gramsOfCO2PerKWh = ref(0.76);
 const metered = useMeterHistory(() => props.metered, periodStart, periodEnd, () => props.span);
 const generated = useMeterHistory(() => props.generated, periodStart, periodEnd, () => props.span);
 const co2Metered = computed(() => {
   return metered.seriesData.value.map((value, index) => {
     return {
       ...value,
-      y: value.y * 0.76
+      y: value.y * gramsOfCO2PerKWh.value
     };
   });
 });
@@ -61,7 +78,7 @@ const co2Generated = computed(() => {
   return generated.seriesData.value.map((value, index) => {
     return {
       ...value,
-      y: value.y * 0.76
+      y: value.y * gramsOfCO2PerKWh.value
     };
   });
 });
@@ -136,7 +153,7 @@ const chartData = computed(() => {
 
     if (props.metered) {
       datasets.push({
-      // Setting background gradient on metered data
+        // Setting background gradient on metered data
         backgroundColor: (ctx) => {
           const canvas = ctx.chart.ctx;
           const gradient = canvas.createLinearGradient(0, 0, 0, 425);
