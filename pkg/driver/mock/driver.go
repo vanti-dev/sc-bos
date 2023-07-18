@@ -234,7 +234,15 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 		return []any{gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED)))}, nil
 	case meter.TraitName:
 		model := meter.NewModel()
-		return []any{gen.WrapMeterApi(meter.NewModelServer(model))}, auto.MeterAuto(model)
+		info := &meter.InfoServer{MeterReading: &gen.MeterReadingSupport{
+			ResourceSupport: &types.ResourceSupport{
+				Readable:   true,
+				Writable:   true,
+				Observable: true,
+			},
+			Unit: "kWh",
+		}}
+		return []any{gen.WrapMeterApi(meter.NewModelServer(model)), gen.WrapMeterInfo(info)}, auto.MeterAuto(model)
 	case statuspb.TraitName:
 		model := statuspb.NewModel()
 		// set an initial value or Pull methods can hang
