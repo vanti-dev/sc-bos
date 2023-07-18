@@ -8,7 +8,7 @@
         </v-list-item-title>
 
         <v-list-item-subtitle class="text-end">
-          {{ meterDetails.value }} {{ meterDetails.type }}
+          {{ meterDetails.value }} {{ meterDetails.unit }}
         </v-list-item-subtitle>
       </v-list-item>
     </v-list>
@@ -27,10 +27,9 @@ const props = defineProps({
     default: () => {
     }
   },
-  type: {
-    type: Object,
-    default: () => {
-    }
+  unit: {
+    type: String,
+    default: ''
   },
   loading: {
     type: Boolean,
@@ -41,8 +40,8 @@ const props = defineProps({
 const meterDetails = computed(() => {
   return {
     key: 'Usage',
-    value: props.value?.value ? props.value.value.usage.toFixed(2) : 0,
-    type: props.type?.response?.unit
+    value: props.value?.usage?.toFixed(2) ?? '-',
+    unit: props.unit
   };
 });
 </script>

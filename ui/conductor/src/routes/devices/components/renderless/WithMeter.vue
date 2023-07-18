@@ -1,15 +1,15 @@
 <template>
   <div>
-    <slot :resource="meterValue" :type="meterType"/>
+    <slot :resource="meterReadings" :info="meterReadingInfo"/>
   </div>
 </template>
 
 <script setup>
-import {onMounted, onUnmounted, reactive, watch} from 'vue';
-import {closeResource, newResourceValue, newActionTracker} from '@/api/resource';
-import {pullMeterReading, describeMeterReading} from '@/api/sc/traits/meter';
-import {deepEqual} from 'vuetify/src/util/helpers';
+import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
+import {describeMeterReading, pullMeterReading} from '@/api/sc/traits/meter';
 import {useErrorStore} from '@/components/ui-error/error';
+import {onMounted, onUnmounted, reactive, watch} from 'vue';
+import {deepEqual} from 'vuetify/src/util/helpers';
 
 const props = defineProps({
   // unique name of the device
@@ -23,12 +23,12 @@ const props = defineProps({
   }
 });
 
-const meterValue = reactive(
-    /** @type {ResourceValue<MeterReading.AsObject, MeterReading>} */
+const meterReadings = reactive(
+    /** @type {ResourceValue<MeterReading.AsObject, PullMeterReadingsResponse>} */
     newResourceValue()
 );
-const meterType = reactive(
-    /** @type {ActionTracker<MeterReadingSupport.AsObject, MeterReadingSupport>} */
+const meterReadingInfo = reactive(
+    /** @type {ActionTracker<MeterReadingSupport.AsObject>} */
     newActionTracker()
 );
 
@@ -39,13 +39,13 @@ watch(
       if (newPaused === oldPaused && nameEqual) return;
 
       if (newPaused) {
-        closeResource(meterValue);
+        closeResource(meterReadings);
       }
 
       if (!newPaused && (oldPaused || !nameEqual)) {
-        closeResource(meterValue);
-        pullMeterReading(newName, meterValue); // pulls in unit value
-        describeMeterReading(newName, meterType); // pulls in unit type
+        closeResource(meterReadings);
+        pullMeterReading({name: newName}, meterReadings); // pulls in unit value
+        describeMeterReading({name: newName}, meterReadingInfo); // pulls in unit type
       }
     },
     {immediate: true, deep: true, flush: 'sync'}
@@ -56,11 +56,11 @@ const errorStore = useErrorStore();
 const unwatchErrors = [];
 onMounted(() => {
   unwatchErrors.push(
-      errorStore.registerValue(meterValue)
+      errorStore.registerValue(meterReadings)
   );
 });
 onUnmounted(() => {
-  closeResource(meterValue);
+  closeResource(meterReadings);
   unwatchErrors.forEach(unwatch => unwatch());
 });
 </script>

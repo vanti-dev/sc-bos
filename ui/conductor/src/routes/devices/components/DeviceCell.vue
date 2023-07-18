@@ -16,6 +16,14 @@
       <ElectricDemandCell v-bind="resource"/>
       <StatusAlert :resource="resource.streamError"/>
     </WithElectricDemand>
+    <WithMeter
+        v-if="hasCell('Meter')"
+        v-slot="{resource, info}"
+        :name="props.item.name"
+        :paused="props.paused">
+      <MeterCell v-bind="resource" :unit="info?.response?.unit"/>
+      <StatusAlert :resource="resource.streamError"/>
+    </WithMeter>
     <WithAirTemperature
         v-if="hasCell('AirTemperature')"
         v-slot="{resource}"
@@ -48,14 +56,6 @@
       <StatusLogCell v-bind="resource"/>
       <StatusAlert :resource="resource.streamError"/>
     </WithStatus>
-    <WithMeter
-        v-if="hasCell('Meter')"
-        v-slot="{resource, type}"
-        :name="props.item.name"
-        :paused="props.paused">
-      <MeterCell :value="resource" :type="type"/>
-      <StatusAlert :resource="resource.streamError"/>
-    </WithMeter>
   </span>
 </template>
 
