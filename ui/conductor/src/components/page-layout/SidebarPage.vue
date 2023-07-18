@@ -39,6 +39,16 @@ const sideBar = ref({
 
 let originalCursor = '';
 
+const handleMouseDown = (event) => {
+  originalCursor = originalCursor || document.body.style.cursor; // Store original cursor value
+  rightSidebar.value.$el.style.transition = 'all 0.1s ease'; // Add transition
+  drawerBorder.value.style.backgroundColor = 'var(--v-primary-darken1)'; // Highlight border while moving
+  drawerBorder.value.style.width = '8px'; // Set border width
+  document.addEventListener('mousemove', handleMouseMove, false); // Add event listener
+
+  rightSidebar.value.$el.style.userSelect = 'none'; // Disable text selection
+};
+
 // Handle mouse move for sidebar resizing
 const handleMouseMove = (event) => {
   document.body.style.cursor = 'ew-resize'; // Set cursor
@@ -64,18 +74,8 @@ const handleMouseUp = () => {
 
 // Set event listeners for sidebar resizing
 const setEvents = () => {
-  drawerBorder.value.addEventListener('mousedown', (event) => {
-    originalCursor = originalCursor || document.body.style.cursor; // Store original cursor value
-    rightSidebar.value.$el.style.transition = 'all 0.1s ease'; // Add transition
-    drawerBorder.value.style.backgroundColor = 'var(--v-primary-darken1)'; // Highlight border while moving
-    drawerBorder.value.style.width = '8px'; // Set border width
-    document.addEventListener('mousemove', handleMouseMove, false); // Add event listener
-
-    rightSidebar.value.$el.style.userSelect = 'none'; // Disable text selection
-  });
-
-
-  document.addEventListener('mouseup', handleMouseUp); // Add event listener
+  drawerBorder.value.addEventListener('mousedown', handleMouseDown);
+  document.addEventListener('mouseup', handleMouseUp);
 };
 
 onMounted(() => {
@@ -87,6 +87,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  drawerBorder.value.removeEventListener('mousedown', handleMouseDown, false); // Remove event listener
   document.removeEventListener('mousemove', handleMouseMove, false); // Remove event listener
   document.removeEventListener('mouseup', handleMouseUp, false); // Remove event listener
 });
