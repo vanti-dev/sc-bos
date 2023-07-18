@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/vanti-dev/gobacnet/enum/errorcode"
+	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
@@ -94,7 +96,20 @@ func SummariseRequestErrors(name string, requests []string, errs []error) (gen.S
 }
 
 func countErrTypes(errs ...error) (cancelled, notFound, timeout, other int) {
+	countBacErr := func(bacErr bactypes.Error) {
+		switch bacErr.Code {
+		case errorcode.UnknownObject, errorcode.UnknownProperty:
+			notFound++
+		case errorcode.Timeout:
+			timeout++
+		default:
+			other++
+		}
+	}
+
 	for _, err := range errs {
+		var propErr bactypes.PropertyAccessError
+		var bacErr bactypes.Error
 		switch {
 		case errors.Is(err, context.Canceled):
 			cancelled++
@@ -102,6 +117,10 @@ func countErrTypes(errs ...error) (cancelled, notFound, timeout, other int) {
 			notFound++
 		case errors.Is(err, context.DeadlineExceeded):
 			timeout++
+		case errors.As(err, &propErr):
+			countBacErr(propErr.Err)
+		case errors.As(err, &bacErr):
+			countBacErr(bacErr)
 		default:
 			other++
 		}

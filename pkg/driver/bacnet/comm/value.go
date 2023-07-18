@@ -7,6 +7,8 @@ import (
 	"math"
 	"sync"
 
+	"go.uber.org/multierr"
+
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
@@ -143,23 +145,38 @@ func readMultiProperties(ctx context.Context, client *gobacnet.Client, device ba
 			return
 		}
 
-		// read the properties one at a time as the multi read failed
-		for _, object := range req.Objects {
-			for _, prop := range object.Properties {
-				oneRes, err := client.ReadProperty(ctx, device, bactypes.ReadPropertyData{
-					Object: bactypes.Object{
-						ID:         object.ID,
-						Properties: []bactypes.Property{prop},
-					},
-				})
-				if err != nil {
-					k := key{device.ID.Instance, object.ID, prop.ID}
-					for _, i := range resIndexes[k] {
-						res[i] = ctxerr.Cause(ctx, err)
-					}
-					continue
+		// check if there are errors recorded for individual properties
+		var propErrLen int
+		errs := multierr.Errors(err)
+		for _, err := range errs {
+			var propErr bactypes.PropertyAccessError
+			if errors.As(err, &propErr) {
+				propErrLen++
+				k := key{device.ID.Instance, propErr.ObjectID, propErr.Property}
+				for _, i := range resIndexes[k] {
+					res[i] = err
 				}
-				multiRes.Objects = append(multiRes.Objects, oneRes.Object)
+			}
+		}
+		if propErrLen != len(errs) {
+			// read the properties one at a time as the multi read failed
+			for _, object := range req.Objects {
+				for _, prop := range object.Properties {
+					oneRes, err := client.ReadProperty(ctx, device, bactypes.ReadPropertyData{
+						Object: bactypes.Object{
+							ID:         object.ID,
+							Properties: []bactypes.Property{prop},
+						},
+					})
+					if err != nil {
+						k := key{device.ID.Instance, object.ID, prop.ID}
+						for _, i := range resIndexes[k] {
+							res[i] = ctxerr.Cause(ctx, err)
+						}
+						continue
+					}
+					multiRes.Objects = append(multiRes.Objects, oneRes.Object)
+				}
 			}
 		}
 	}

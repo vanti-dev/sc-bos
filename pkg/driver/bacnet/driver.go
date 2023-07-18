@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/gobacnet"
@@ -22,6 +23,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/merge"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/status"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -211,13 +213,15 @@ func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announc
 
 	bacDevice, err := d.findDevice(ctx, device)
 	if err != nil {
-		err := fmt.Errorf("device comm handshake: %w", ctxerr.Cause(ctx, err))
+		_, msg := status.SummariseRequestErrors("net handshake:",
+			[]string{"MaxApduLengthAccepted", "SegmentationSupported", "VendorIdentifier"},
+			multierr.Errors(err))
 		statuses.UpdateProblem(scDeviceName, &gen.StatusLog_Problem{
 			Name:        scDeviceName + ":setup",
 			Level:       gen.StatusLog_OFFLINE,
-			Description: "unable to complete initial handshake with device",
+			Description: msg,
 		})
-		return err
+		return fmt.Errorf("device comm handshake: %w", ctxerr.Cause(ctx, err))
 	}
 
 	d.storeDevice(deviceName, bacDevice)
