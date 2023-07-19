@@ -35,7 +35,7 @@
         </template>
       </v-card-text>
       <v-card-actions>
-        <v-btn @click.stop="$emit('unacknowledge')" text block color="error">
+        <v-btn @click="$emit('unacknowledge')" text block color="error">
           <v-icon left>mdi-close</v-icon>
           Clear Acknowledgement
         </v-btn>
