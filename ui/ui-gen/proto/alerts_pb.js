@@ -509,7 +509,8 @@ proto.smartcore.bos.Alert.toObject = function(includeInstance, msg) {
     floor: jspb.Message.getFieldWithDefault(msg, 7, ""),
     zone: jspb.Message.getFieldWithDefault(msg, 8, ""),
     source: jspb.Message.getFieldWithDefault(msg, 9, ""),
-    federation: jspb.Message.getFieldWithDefault(msg, 10, "")
+    federation: jspb.Message.getFieldWithDefault(msg, 10, ""),
+    subsystem: jspb.Message.getFieldWithDefault(msg, 11, "")
   };
 
   if (includeInstance) {
@@ -588,6 +589,10 @@ proto.smartcore.bos.Alert.deserializeBinaryFromReader = function(msg, reader) {
     case 10:
       var value = /** @type {string} */ (reader.readString());
       msg.setFederation(value);
+      break;
+    case 11:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSubsystem(value);
       break;
     default:
       reader.skipField();
@@ -688,6 +693,13 @@ proto.smartcore.bos.Alert.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       10,
+      f
+    );
+  }
+  f = message.getSubsystem();
+  if (f.length > 0) {
+    writer.writeString(
+      11,
       f
     );
   }
@@ -1137,6 +1149,7 @@ proto.smartcore.bos.Alert.Query.toObject = function(includeInstance, msg) {
     zone: jspb.Message.getFieldWithDefault(msg, 6, ""),
     source: jspb.Message.getFieldWithDefault(msg, 7, ""),
     federation: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    subsystem: jspb.Message.getFieldWithDefault(msg, 13, ""),
     acknowledged: jspb.Message.getBooleanFieldWithDefault(msg, 8, false),
     resolved: jspb.Message.getBooleanFieldWithDefault(msg, 10, false),
     resolvedNotBefore: (f = msg.getResolvedNotBefore()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
@@ -1210,6 +1223,10 @@ proto.smartcore.bos.Alert.Query.deserializeBinaryFromReader = function(msg, read
     case 9:
       var value = /** @type {string} */ (reader.readString());
       msg.setFederation(value);
+      break;
+    case 13:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSubsystem(value);
       break;
     case 8:
       var value = /** @type {boolean} */ (reader.readBool());
@@ -1313,6 +1330,13 @@ proto.smartcore.bos.Alert.Query.serializeBinaryToWriter = function(message, writ
   if (f.length > 0) {
     writer.writeString(
       9,
+      f
+    );
+  }
+  f = message.getSubsystem();
+  if (f.length > 0) {
+    writer.writeString(
+      13,
       f
     );
   }
@@ -1528,6 +1552,24 @@ proto.smartcore.bos.Alert.Query.prototype.getFederation = function() {
  */
 proto.smartcore.bos.Alert.Query.prototype.setFederation = function(value) {
   return jspb.Message.setProto3StringField(this, 9, value);
+};
+
+
+/**
+ * optional string subsystem = 13;
+ * @return {string}
+ */
+proto.smartcore.bos.Alert.Query.prototype.getSubsystem = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 13, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.Alert.Query} returns this
+ */
+proto.smartcore.bos.Alert.Query.prototype.setSubsystem = function(value) {
+  return jspb.Message.setProto3StringField(this, 13, value);
 };
 
 
@@ -1914,6 +1956,24 @@ proto.smartcore.bos.Alert.prototype.setFederation = function(value) {
 };
 
 
+/**
+ * optional string subsystem = 11;
+ * @return {string}
+ */
+proto.smartcore.bos.Alert.prototype.getSubsystem = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.Alert} returns this
+ */
+proto.smartcore.bos.Alert.prototype.setSubsystem = function(value) {
+  return jspb.Message.setProto3StringField(this, 11, value);
+};
+
+
 
 
 
@@ -1952,7 +2012,8 @@ proto.smartcore.bos.AlertMetadata.toObject = function(includeInstance, msg) {
     acknowledgedCountsMap: (f = msg.getAcknowledgedCountsMap()) ? f.toObject(includeInstance, undefined) : [],
     severityCountsMap: (f = msg.getSeverityCountsMap()) ? f.toObject(includeInstance, undefined) : [],
     resolvedCountsMap: (f = msg.getResolvedCountsMap()) ? f.toObject(includeInstance, undefined) : [],
-    needsAttentionCountsMap: (f = msg.getNeedsAttentionCountsMap()) ? f.toObject(includeInstance, undefined) : []
+    needsAttentionCountsMap: (f = msg.getNeedsAttentionCountsMap()) ? f.toObject(includeInstance, undefined) : [],
+    subsystemCountsMap: (f = msg.getSubsystemCountsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -2029,6 +2090,12 @@ proto.smartcore.bos.AlertMetadata.deserializeBinaryFromReader = function(msg, re
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readUint32, null, "", 0);
          });
       break;
+    case 9:
+      var value = msg.getSubsystemCountsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readUint32, null, "", 0);
+         });
+      break;
     default:
       reader.skipField();
       break;
@@ -2088,6 +2155,10 @@ proto.smartcore.bos.AlertMetadata.serializeBinaryToWriter = function(message, wr
   f = message.getNeedsAttentionCountsMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(8, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeUint32);
+  }
+  f = message.getSubsystemCountsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(9, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeUint32);
   }
 };
 
@@ -2244,6 +2315,29 @@ proto.smartcore.bos.AlertMetadata.prototype.getNeedsAttentionCountsMap = functio
  */
 proto.smartcore.bos.AlertMetadata.prototype.clearNeedsAttentionCountsMap = function() {
   this.getNeedsAttentionCountsMap().clear();
+  return this;
+};
+
+
+/**
+ * map<string, uint32> subsystem_counts = 9;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,number>}
+ */
+proto.smartcore.bos.AlertMetadata.prototype.getSubsystemCountsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,number>} */ (
+      jspb.Message.getMapField(this, 9, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.smartcore.bos.AlertMetadata} returns this
+ */
+proto.smartcore.bos.AlertMetadata.prototype.clearSubsystemCountsMap = function() {
+  this.getSubsystemCountsMap().clear();
   return this;
 };
 

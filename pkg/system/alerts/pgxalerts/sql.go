@@ -15,7 +15,7 @@ import (
 )
 
 // selectAlertSQL selects fields in the order expected by scanAlert.
-const selectAlertSQL = `SELECT id, description, severity, create_time, resolve_time, floor, zone, source, federation, ack_time, ack_author_id, ack_author_name, ack_author_email FROM alerts`
+const selectAlertSQL = `SELECT id, description, severity, create_time, resolve_time, floor, zone, subsystem, source, federation, ack_time, ack_author_id, ack_author_name, ack_author_email FROM alerts`
 
 type QueryRower interface {
 	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
@@ -24,8 +24,8 @@ type QueryRower interface {
 func insertAlert(ctx context.Context, q QueryRower, alert *gen.Alert) (*gen.Alert, error) {
 	var createTime time.Time
 	err := q.QueryRow(ctx,
-		`INSERT INTO alerts (description, severity, floor, zone, source, federation) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, create_time`,
-		alert.Description, alert.Severity, alert.Floor, alert.Zone, alert.Source, alert.Federation,
+		`INSERT INTO alerts (description, severity, floor, zone, subsystem, source, federation) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, create_time`,
+		alert.Description, alert.Severity, alert.Floor, alert.Zone, alert.Subsystem, alert.Source, alert.Federation,
 	).Scan(&alert.Id, &createTime)
 	if err != nil {
 		return nil, err
@@ -70,9 +70,9 @@ func readAlertById(ctx context.Context, tx QueryRower, id string, dst *gen.Alert
 
 func scanAlert(scanner pgx.Row, dst *gen.Alert) error {
 	var createTime, resolveTime, ackTime *time.Time
-	var floor, zone, source, federation *string
+	var floor, zone, subsystem, source, federation *string
 	var ackAuthorId, ackAuthorName, ackAuthorEmail *string
-	err := scanner.Scan(&dst.Id, &dst.Description, &dst.Severity, &createTime, &resolveTime, &floor, &zone, &source, &federation, &ackTime, &ackAuthorId, &ackAuthorName, &ackAuthorEmail)
+	err := scanner.Scan(&dst.Id, &dst.Description, &dst.Severity, &createTime, &resolveTime, &floor, &zone, &subsystem, &source, &federation, &ackTime, &ackAuthorId, &ackAuthorName, &ackAuthorEmail)
 	if err != nil {
 		return err
 	}
@@ -81,6 +81,9 @@ func scanAlert(scanner pgx.Row, dst *gen.Alert) error {
 	}
 	if zone != nil {
 		dst.Zone = *zone
+	}
+	if subsystem != nil {
+		dst.Subsystem = *subsystem
 	}
 	if source != nil {
 		dst.Source = *source

@@ -51,6 +51,7 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
   const resolvedCountMap = computed(() => convertProtoMap(alertMetadata.value?.resolvedCountsMap));
   const floorCountsMap = computed(() => convertProtoMap(alertMetadata.value?.floorCountsMap));
   const zoneCountsMap = computed(() => convertProtoMap(alertMetadata.value?.zoneCountsMap));
+  const subsystemCountsMap = computed(() => convertProtoMap(alertMetadata.value?.subsystemCountsMap));
   const severityCountsMap = computed(() => convertProtoMap(alertMetadata.value?.severityCountsMap));
   const needsAttentionCountsMap = computed(() => convertProtoMap(alertMetadata.value?.needsAttentionCountsMap));
 
@@ -67,6 +68,7 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
     resolvedCountMap,
     floorCountsMap,
     zoneCountsMap,
+    subsystemCountsMap,
     severityCountsMap,
     needsAttentionCountsMap,
 

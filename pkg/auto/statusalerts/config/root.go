@@ -23,7 +23,8 @@ type Root struct {
 }
 
 type Source struct {
-	Name  string `json:"name,omitempty"`
-	Floor string `json:"floor,omitempty"`
-	Zone  string `json:"zone,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Floor     string `json:"floor,omitempty"`
+	Zone      string `json:"zone,omitempty"`
+	Subsystem string `json:"subsystem,omitempty"`
 }

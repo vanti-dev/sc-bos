@@ -17,6 +17,8 @@
               :floor-items="floors"
               :zone.sync="query.zone"
               :zone-items="zones"
+              :subsystem.sync="query.subsystem"
+              :subsystem-items="subsystems"
               :acknowledged.sync="query.acknowledged"
               :resolved.sync="query.acknowledged"/>
         </template>
@@ -75,6 +77,7 @@ const query = reactive({
   severityNotBelow: undefined,
   floor: undefined,
   zone: undefined,
+  subsystem: undefined,
   source: undefined,
   acknowledged: undefined,
   resolved: false,
@@ -97,6 +100,7 @@ watch(dataTableOptions, () => {
 
 const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
 const zones = computed(() => Object.keys(alertMetadata.zoneCountsMap).sort());
+const subsystems = computed(() => Object.keys(alertMetadata.subsystemCountsMap).sort());
 
 // How many query fields are not undefined.
 const queryFieldCount = computed(() => Object.values(query).filter(value => value !== undefined).length);

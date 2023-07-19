@@ -87,6 +87,7 @@ func analyseStatusLogs(ctx context.Context, source config.Source, c <-chan *gen.
 					Severity:    levelToSeverity(msg.Level),
 					Floor:       source.Floor,
 					Zone:        source.Zone,
+					Subsystem:   source.Subsystem,
 					Source:      source.Name,
 				},
 				MergeSource: true,

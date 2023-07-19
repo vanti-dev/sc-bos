@@ -47,6 +47,10 @@ func Test_ApplyMdDelta(t *testing.T) {
 			3: 50,
 			4: 0,
 		},
+		SubsystemCounts: map[string]uint32{
+			"Subsystem1": 20,
+			"Subsystem2": 30,
+		},
 	}
 	// base structs for an added and removed alert without acknowledgement
 	added := patch(before, &gen.AlertMetadata{
@@ -91,6 +95,8 @@ func Test_ApplyMdDelta(t *testing.T) {
 		{"remove zone", before, patch(removed, &gen.AlertMetadata{ZoneCounts: map[string]uint32{"Zone1": 19}}), &gen.PullAlertsResponse_Change{OldValue: &gen.Alert{Zone: "Zone1"}}, false},
 		{"add severity", before, patch(added, &gen.AlertMetadata{SeverityCounts: map[int32]uint32{1: 21}}), &gen.PullAlertsResponse_Change{NewValue: &gen.Alert{Severity: 1}}, false},
 		{"remove severity", before, patch(removed, &gen.AlertMetadata{SeverityCounts: map[int32]uint32{1: 19}}), &gen.PullAlertsResponse_Change{OldValue: &gen.Alert{Severity: 1}}, false},
+		{"add subsystem", before, patch(added, &gen.AlertMetadata{SubsystemCounts: map[string]uint32{"Subsystem1": 21}}), &gen.PullAlertsResponse_Change{NewValue: &gen.Alert{Subsystem: "Subsystem1"}}, false},
+		{"remove subsystem", before, patch(removed, &gen.AlertMetadata{SubsystemCounts: map[string]uint32{"Subsystem1": 19}}), &gen.PullAlertsResponse_Change{OldValue: &gen.Alert{Subsystem: "Subsystem1"}}, false},
 
 		{"update ack (ack->nak)", before, patch(before, &gen.AlertMetadata{
 			AcknowledgedCounts:   map[bool]uint32{true: 79, false: 21},
@@ -109,6 +115,9 @@ func Test_ApplyMdDelta(t *testing.T) {
 		{"update severity", before, patch(before, &gen.AlertMetadata{SeverityCounts: map[int32]uint32{1: 19, 2: 31}}), &gen.PullAlertsResponse_Change{OldValue: &gen.Alert{Severity: 1}, NewValue: &gen.Alert{Severity: 2}}, false},
 		{"update severity (zero->)", before, patch(before, &gen.AlertMetadata{SeverityCounts: map[int32]uint32{1: 21}}), &gen.PullAlertsResponse_Change{OldValue: &gen.Alert{Severity: 0}, NewValue: &gen.Alert{Severity: 1}}, false},
 		{"update severity (->zero)", before, patch(before, &gen.AlertMetadata{SeverityCounts: map[int32]uint32{1: 19}}), &gen.PullAlertsResponse_Change{OldValue: &gen.Alert{Severity: 1}, NewValue: &gen.Alert{Severity: 0}}, false},
+		{"update subsystem", before, patch(before, &gen.AlertMetadata{SubsystemCounts: map[string]uint32{"Subsystem1": 19, "Subsystem2": 31}}), &gen.PullAlertsResponse_Change{OldValue: &gen.Alert{Subsystem: "Subsystem1"}, NewValue: &gen.Alert{Subsystem: "Subsystem2"}}, false},
+		{"update subsystem (zero->)", before, patch(before, &gen.AlertMetadata{SubsystemCounts: map[string]uint32{"Subsystem1": 21}}), &gen.PullAlertsResponse_Change{OldValue: &gen.Alert{Subsystem: ""}, NewValue: &gen.Alert{Subsystem: "Subsystem1"}}, false},
+		{"update subsystem (->zero)", before, patch(before, &gen.AlertMetadata{SubsystemCounts: map[string]uint32{"Subsystem1": 19}}), &gen.PullAlertsResponse_Change{OldValue: &gen.Alert{Subsystem: "Subsystem1"}, NewValue: &gen.Alert{Subsystem: ""}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

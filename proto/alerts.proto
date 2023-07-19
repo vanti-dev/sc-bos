@@ -81,6 +81,7 @@ message Alert {
   string zone = 8;   // the spacial zone the alert relates to, typically the zone the source is located in.
   string source = 9; // the originator of the alert
   string federation = 10; // the system source is associated with, typically a controller name
+  string subsystem = 11; // the subsystem the source is part of, bms or lighting for example
 
   // Query allows filtering for list and pull requests.
   // If multiple fields are present they are ANDed together.
@@ -104,6 +105,8 @@ message Alert {
     string source = 7;
     // When collating alerts from multiple systems, federation records that remote system.
     string federation = 9;
+    // Only return alerts that match this subsystem.
+    string subsystem = 13;
 
     // When true, only include alerts that have an acknowledgement.
     // When false, only include alerts that don't have an acknowledgement.
@@ -141,6 +144,7 @@ message AlertMetadata {
   // Combines acknowledged and resolved in different combinations.
   // The key will each combination of [ack, nack] x [resolved, unresolved], for example ack_resolved, nack_resolved.
   map<string, uint32> needs_attention_counts = 8; // combines resolved with acknowledged
+  map<string, uint32> subsystem_counts = 9;
 }
 
 message ListAlertsRequest {

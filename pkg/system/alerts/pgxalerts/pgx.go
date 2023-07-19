@@ -71,6 +71,8 @@ type Server struct {
 	Zones []string
 	// Severity, if set, is used to pre-populate AlertMetadata with zero values for cases when no alerts have a severity.
 	Severity []gen.Alert_Severity
+	// Subsystems, if set, is used to pre-populate AlertMetadata with zero values for cases when no alerts appear in a subsystem.
+	Subsystems []string
 
 	pool *pgxpool.Pool
 	bus  *minibus.Bus[*gen.PullAlertsResponse_Change]
@@ -167,6 +169,10 @@ func (s *Server) mergeSourceAlert(ctx context.Context, name string, alert *gen.A
 			fields = append(fields, "zone")
 			values = append(values, alert.Zone)
 		}
+		if alert.Subsystem != "" {
+			fields = append(fields, "subsystem")
+			values = append(values, alert.Subsystem)
+		}
 
 		if len(fields) > 0 {
 			if err := updateAlert(ctx, tx, oldAlert.Id, fields, values); err != nil {
@@ -215,6 +221,10 @@ func (s *Server) UpdateAlert(ctx context.Context, request *gen.UpdateAlertReques
 	if shouldUpdateField(request.UpdateMask, "zone", alert.Zone) {
 		fields = append(fields, "zone")
 		values = append(values, alert.Zone)
+	}
+	if shouldUpdateField(request.UpdateMask, "subsystem", alert.Subsystem) {
+		fields = append(fields, "subsystem")
+		values = append(values, alert.Subsystem)
 	}
 	if shouldUpdateField(request.UpdateMask, "source", alert.Source) {
 		fields = append(fields, "source")
@@ -418,6 +428,11 @@ func (s *Server) ListAlerts(ctx context.Context, request *gen.ListAlertsRequest)
 		if q.Zone != "" {
 			where = append(where, fmt.Sprintf(`zone=$%d`, argIdx+1))
 			args = append(args, q.Zone)
+			argIdx += 1
+		}
+		if q.Subsystem != "" {
+			where = append(where, fmt.Sprintf(`subsystem=$%d`, argIdx+1))
+			args = append(args, q.Subsystem)
 			argIdx += 1
 		}
 		if q.Source != "" {
@@ -736,6 +751,9 @@ func alertMatchesQuery(q *gen.Alert_Query, a *gen.Alert) bool {
 		return false
 	}
 	if q.Zone != "" && q.Zone != a.Zone {
+		return false
+	}
+	if q.Subsystem != "" && q.Subsystem != a.Subsystem {
 		return false
 	}
 	if q.Source != "" && q.Source != a.Source {
