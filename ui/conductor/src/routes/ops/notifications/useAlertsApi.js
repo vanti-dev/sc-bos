@@ -21,7 +21,7 @@ export default function(name, query) {
   // Items in pullResource, sorted by createTime, and transformed.
   const pulledItems = computed(() => {
     return Object.values(pullResource.value ?? {})
-        .map(i => transform(i))
+        .map((i) => transform(i))
         .sort(comparator);
   });
   // Both items created via pull and those listed via paging, in order with dupes removed.
@@ -61,10 +61,14 @@ export default function(name, query) {
   // pagination state
   const pageSize = ref(100);
   const pageIndex = ref(0);
-  watch([pageSize, pageIndex], () => {
-    // could optimise this to not require items that we've pulled into the tip.
-    targetItemCount.value = pageSize.value * (pageIndex.value + 1);
-  }, {immediate: true});
+  watch(
+      [pageSize, pageIndex],
+      () => {
+      // could optimise this to not require items that we've pulled into the tip.
+        targetItemCount.value = pageSize.value * (pageIndex.value + 1);
+      },
+      {immediate: true}
+  );
 
   // Items on the page identified by pageSize and pageIndex
   const pageItems = computed(() => {
@@ -75,11 +79,13 @@ export default function(name, query) {
   // tracks our pull request
   const pullResource = reactive(
       /** @type {ResourceCollection<Alert.AsObject, PullAlertsResponse>} */
-      newResourceCollection());
+      newResourceCollection()
+  );
   // tracks each fetch of a new page, resource value may be outdated
   const listPageTracker = reactive(
       /** @type {ActionTracker<ListAlertsResponse.AsObject>} */
-      newActionTracker());
+      newActionTracker()
+  );
   const nextPageToken = ref('');
 
   // queries we run against the server
@@ -94,20 +100,19 @@ export default function(name, query) {
   });
 
   const mounted = ref(false);
-  onMounted(() => mounted.value = true);
-  onUnmounted(() => mounted.value = false);
+  onMounted(() => (mounted.value = true));
+  onUnmounted(() => (mounted.value = false));
 
   const hasFetchedAnyPages = ref(false);
   const shouldFetchMorePages = computed(() => {
     if (!mounted.value) return false;
     // do we want more alerts, and do we think there are more alerts?
-    return listedItemCount.value < targetItemCount.value &&
-        (!hasFetchedAnyPages.value || Boolean(nextPageToken.value));
+    return listedItemCount.value < targetItemCount.value && (!hasFetchedAnyPages.value || Boolean(nextPageToken.value));
   });
 
   // Debug property that keeps track of past ListAlerts requests we've made.
   const pastListRequests = ref(/** @type {ListAlertsRequest.AsObject[]} */ []);
-  const recordListRequest = req => {
+  const recordListRequest = (req) => {
     pastListRequests.value.push(req);
     if (pastListRequests.value.length > 5) pastListRequests.value.shift();
   };
@@ -117,7 +122,8 @@ export default function(name, query) {
   // This is set if fetchMore is called with a new query version while a fetch is ongoing.
   const nextQuery = ref(
       /** @type {{query: ListAlertsRequest.AsObject, version: boolean} | null} */
-      null);
+      null
+  );
   // Fetches more pages from the server to meet the targetItemCount.
   // Will loop fetching more pages until the alertCount is >= targetItemCount.
   const fetchMore = async (query, version) => {
@@ -148,7 +154,7 @@ export default function(name, query) {
 
         // are the results still useful, i.e. is the query we started with still valid?
         // success case, we fetched a page and nothing updated while we waited.
-        listedItems.value.push(...page.alertsList.map(a => transform(a)));
+        listedItems.value.push(...page.alertsList.map((a) => transform(a)));
         nextPageToken.value = page.nextPageToken;
         hasFetchedAnyPages.value = true;
       }
@@ -170,20 +176,23 @@ export default function(name, query) {
       {immediate: true, deep: true}
   );
   const queryVersionCounter = ref(0);
-  watch(listQuery, () => {
-    queryVersionCounter.value++;
-    // tidy up state, if the query has changed then these are no longer valid.
-    hasFetchedAnyPages.value = false;
-    nextPageToken.value = '';
-    listedItems.value = [];
-  }, {deep: true});
+  watch(
+      listQuery,
+      () => {
+        queryVersionCounter.value++;
+        // tidy up state, if the query has changed then these are no longer valid.
+        hasFetchedAnyPages.value = false;
+        nextPageToken.value = '';
+        listedItems.value = [];
+      },
+      {deep: true}
+  );
   watch(
       [shouldFetchMorePages, queryVersionCounter],
       ([_, v]) => {
         fetchMore(listQuery.value, v)
-            // errors are tracked by listPageTracker
-            .catch(() => {
-            });
+        // errors are tracked by listPageTracker
+            .catch(() => {});
       },
       {immediate: true}
   );

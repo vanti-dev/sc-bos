@@ -29,6 +29,6 @@ const {sidebarTitle} = storeToRefs(pageStore);
 .sidebar-title-text {
   display: block;
   overflow-wrap: break-word;
-  max-width: 210px;
+  min-width: 210px;
 }
 </style>
