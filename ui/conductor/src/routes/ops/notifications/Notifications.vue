@@ -183,12 +183,15 @@ const rowClass = (item) => {
  * Shows the device in the sidebar
  *
  * @param {*} item
- * @param {*} row
  */
-function showNotification(item) {
+async function showNotification(item) {
   pageStore.showSidebar = true;
   pageStore.sidebarTitle = item.source;
-  pageStore.sidebarData = item;
+  const past10 = await alerts.pullPastRecords(name.value, item.source);
+  pageStore.sidebarData = {
+    ...item,
+    past10
+  };
 }
 </script>
 
