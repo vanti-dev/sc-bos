@@ -67,16 +67,16 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	switch cfg.Source.Trait {
 	case trait.Electric:
 		serverClient = gen.WrapElectricHistory(historypb.NewElectricServer(store))
-		go a.collectElectricDemandChanges(ctx, cfg.Source.Name, payloads)
+		go a.collectElectricDemandChanges(ctx, *cfg.Source, payloads)
 	case meter.TraitName:
 		serverClient = gen.WrapMeterHistory(historypb.NewMeterServer(store))
-		go a.collectMeterReadingChanges(ctx, cfg.Source.Name, payloads)
+		go a.collectMeterReadingChanges(ctx, *cfg.Source, payloads)
 	case trait.OccupancySensor:
 		serverClient = gen.WrapOccupancySensorHistory(historypb.NewOccupancySensorServer(store))
-		go a.collectOccupancyChanges(ctx, cfg.Source.Name, payloads)
+		go a.collectOccupancyChanges(ctx, *cfg.Source, payloads)
 	case statuspb.TraitName:
 		serverClient = gen.WrapStatusHistory(historypb.NewStatusServer(store))
-		go a.collectCurrentStatusChanges(ctx, cfg.Source.Name, payloads)
+		go a.collectCurrentStatusChanges(ctx, *cfg.Source, payloads)
 	default:
 		return fmt.Errorf("unsupported trait %s", cfg.Source.Trait)
 	}
