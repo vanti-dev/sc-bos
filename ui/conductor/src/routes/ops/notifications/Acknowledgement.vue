@@ -1,7 +1,7 @@
 <template>
   <v-tooltip v-if="!acked" left transition="slide-x-reverse-transition" color="neutral lighten-4">
     <template #activator="{on, attr}">
-      <v-btn v-on="on" v-bind="attr" icon v-if="!acked" color="warning" small @click="$emit('acknowledge')">
+      <v-btn v-on="on" v-bind="attr" icon v-if="!acked" color="warning" small @click.stop="$emit('acknowledge')">
         <v-icon>mdi-circle-outline</v-icon>
       </v-btn>
     </template>
@@ -35,7 +35,7 @@
         </template>
       </v-card-text>
       <v-card-actions>
-        <v-btn @click="$emit('unacknowledge')" text block color="error">
+        <v-btn @click.stop="$emit('unacknowledge')" text block color="error">
           <v-icon left>mdi-close</v-icon>
           Clear Acknowledgement
         </v-btn>
