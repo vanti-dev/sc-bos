@@ -39,7 +39,7 @@ import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
-import {computed, reactive} from 'vue';
+import {computed} from 'vue';
 
 
 const pageStore = usePageStore();
