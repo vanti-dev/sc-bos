@@ -61,7 +61,7 @@
 </template>
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-// import SubsystemIcon from '@/components/SubsystemIcon.vue';
+import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import Filters from '@/routes/ops/notifications/Filters.vue';

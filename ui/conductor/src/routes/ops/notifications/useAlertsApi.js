@@ -200,8 +200,8 @@ export default function(name, query) {
   const past10Alerts = reactive(newActionTracker());
   /**
    *
-   * @param hubName
-   * @param itemName
+   * @param {string} hubName
+   * @param {string} itemName
    */
   async function pullPastRecords(hubName, itemName) {
     const pageSize = 10; // Number of records to pull
