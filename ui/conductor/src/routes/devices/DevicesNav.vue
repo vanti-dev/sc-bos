@@ -6,7 +6,8 @@
         :to="device.to"
         class="my-2">
       <v-list-item-icon>
-        <v-icon>{{ device.icon }}</v-icon>
+        <v-icon v-if="device.icon">{{ device.icon }}</v-icon>
+        <subsystem-icon v-else :subsystem="device.subSystem"/>
       </v-list-item-icon>
       <v-list-item-content :class="[device.class, 'text-truncate']">
         {{ device.label }}
@@ -16,6 +17,7 @@
 </template>
 
 <script setup>
+import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import {computed, reactive} from 'vue';
 import {useDevicesStore} from './store';
 import {newActionTracker} from '@/api/resource';
@@ -29,20 +31,6 @@ const tracker = reactive(newActionTracker());
 const availableSubSystems = computed(() => {
   // Pinia store value
   const subSystems = deviceStore.subSystems.subs;
-
-  // navigationItemIcons
-  const navigationItemIcons = {
-    lighting: 'mdi-lightbulb',
-    hvac: 'mdi-thermometer',
-    metering: 'mdi-meter-electric',
-    acs: 'mdi-badge-account-horizontal',
-    cctv: 'mdi-cctv',
-    fire: 'mdi-fire',
-    smart: 'mdi-memory',
-    vt: 'mdi-elevator-passenger',
-    sensors: 'mdi-leak', // we might need to change this icon
-    zones: 'mdi-select-all'
-  };
 
   const navigationItemLabels = {
     acs: 'Access Control',
@@ -65,7 +53,7 @@ const availableSubSystems = computed(() => {
         const listItem = {
           // to: '/devices/' + subSystem,
           to: '/devices/' + encodeURIComponent(subSystem),
-          icon: navigationItemIcons[subSystem] ? navigationItemIcons[subSystem] : 'mdi-chevron-right',
+          subSystem,
           label: navigationItemLabels[subSystem] ? navigationItemLabels[subSystem] : subSystem,
           class: ['hvac', 'cctv'].includes(subSystem) ? 'text-uppercase' : 'text-capitalize'
         };

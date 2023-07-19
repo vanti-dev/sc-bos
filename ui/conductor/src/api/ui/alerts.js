@@ -162,7 +162,7 @@ function pullAlertMetadataRequestFromObject(obj) {
 function alertQueryFromObject(obj) {
   if (!obj) return undefined;
   const dst = new Alert.Query();
-  setProperties(dst, obj, 'floor', 'zone', 'severity', 'source',
+  setProperties(dst, obj, 'floor', 'zone', 'subsystem', 'severity', 'source',
       'severityNotBefore', 'severityNotAfter',
       'acknowledged', 'resolved');
   convertProperties(dst, obj, timestampFromObject,
