@@ -123,7 +123,7 @@ const headers = ref([
   {value: 'metadata.membership.subsystem', width: '20px', class: 'pl-4 pr-0', cellClass: 'pl-4 pr-0', sortable: false},
   {text: 'Device name', value: 'name'},
   {text: 'Floor', value: 'metadata.location.floor'},
-  {text: 'Location', value: 'metadata.location.title'},
+  {text: 'Zone', value: 'metadata.location.zone'},
   {text: '', value: 'hotpoint', align: 'end', width: '100'}
 ]);
 
