@@ -25,6 +25,9 @@
         <template #item.createTime="{ item }">
           {{ item.createTime.toLocaleString() }}
         </template>
+        <template #item.subsystem="{ item }">
+          <subsystem-icon size="20px" :subsystem="item.subsystem" no-default/>
+        </template>
         <template #item.source="{ item }">
           <v-tooltip bottom>
             <template #activator="{ on }">
@@ -58,6 +61,7 @@
   </v-container>
 </template>
 <script setup>
+import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import Filters from '@/routes/ops/notifications/Filters.vue';
@@ -154,6 +158,7 @@ const queryTotalCount = computed(() => {
 
 const allHeaders = [
   {text: 'Timestamp', value: 'createTime', width: '15em'},
+  {value: 'subsystem', width: '20px', class: 'pl-2 pr-0', cellClass: 'pl-2 pr-0'},
   {text: 'Source', value: 'source', width: '15em'},
   {text: 'Floor', value: 'floor', width: '10em'},
   {text: 'Zone', value: 'zone', width: '10em'},
@@ -166,8 +171,8 @@ const allHeaders = [
 // see over and over.
 const headers = computed(() => {
   return allHeaders.filter(header => {
-    if (!['floor', 'zone', 'source', 'acknowledged'].includes(header.value)) return true;
-    return true || query[header.value] === undefined;
+    if (!['floor', 'zone', 'subsystem', 'source', 'acknowledged'].includes(header.value)) return true;
+    return query[header.value] === undefined;
   });
 });
 

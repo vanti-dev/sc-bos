@@ -50,6 +50,9 @@
           </v-row>
         </v-container>
       </template>
+      <template #item.metadata.membership.subsystem="{ item }">
+        <subsystem-icon size="20px" :subsystem="item.metadata?.membership?.subsystem" no-default/>
+      </template>
       <template #item.name="{ item }">
         {{ item.metadata.appearance ? item.metadata.appearance.title : item.name }}
       </template>
@@ -67,6 +70,7 @@
 </template>
 
 <script setup>
+import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullDevicesMetadata} from '@/api/ui/devices';
@@ -116,6 +120,7 @@ const props = defineProps({
 const emit = defineEmits(['update:selectedDevices']);
 
 const headers = ref([
+  {value: 'metadata.membership.subsystem', width: '20px', class: 'pl-4 pr-0', cellClass: 'pl-4 pr-0', sortable: false},
   {text: 'Device name', value: 'name'},
   {text: 'Floor', value: 'metadata.location.floor'},
   {text: 'Location', value: 'metadata.location.title'},
