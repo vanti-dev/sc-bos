@@ -186,6 +186,7 @@ const rowClass = (item) => {
   if (item.resolveTime) return 'resolved';
   return '';
 };
+
 /**
  * Shows the device in the sidebar
  *
@@ -194,11 +195,7 @@ const rowClass = (item) => {
 async function showNotification(item) {
   pageStore.showSidebar = true;
   pageStore.sidebarTitle = item.source;
-  const past10 = await alerts.pullPastRecords(name.value, item.source);
-  pageStore.sidebarData = {
-    ...item,
-    past10
-  };
+  pageStore.sidebarData = {name, item};
 }
 </script>
 

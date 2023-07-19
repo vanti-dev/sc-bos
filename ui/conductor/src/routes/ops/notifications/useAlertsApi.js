@@ -197,28 +197,6 @@ export default function(name, query) {
       {immediate: true}
   );
 
-  const past10Alerts = reactive(newActionTracker());
-  /**
-   *
-   * @param {string} hubName
-   * @param {string} itemName
-   */
-  async function pullPastRecords(hubName, itemName) {
-    const pageSize = 10; // Number of records to pull
-    const request = {
-      name: hubName,
-      pageSize,
-      query: {
-        source: itemName
-      }
-    };
-
-    const pullResponse = await listAlerts(request, past10Alerts);
-    const pastRecords = pullResponse.alertsList.map(transform);
-
-    return pastRecords;
-  }
-
   const loading = computed(() => {
     return fetchingPages.value !== false || pullResource.loading;
   });
@@ -241,8 +219,6 @@ export default function(name, query) {
     // used for troubleshooting
     pullQuery,
     pullResource,
-    past10Alerts,
-    pullPastRecords,
     listQuery,
     listPageTracker,
     nextPageToken,

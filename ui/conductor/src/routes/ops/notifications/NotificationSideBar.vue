@@ -1,6 +1,7 @@
 <template>
   <side-bar>
-    <v-subheader v-if="!notificationSidebar.length" class="text-title-caps-large neutral--text text--lighten-3">
+    <v-progress-linear indeterminate v-if="loading"/>
+    <v-subheader v-else-if="!notificationSidebar.length" class="text-title-caps-large neutral--text text--lighten-3">
       No Past Notifications
     </v-subheader>
     <div v-else>
@@ -31,73 +32,48 @@
 </template>
 
 <script setup>
+import {timestampToDate} from '@/api/convpb';
 import SideBar from '@/components/SideBar.vue';
 
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
+import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
-import {computed} from 'vue';
+import {computed, reactive} from 'vue';
 
 
 const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);
 const notification = useNotifications();
 
+const name = computed(() => sidebarData.value?.name);
+const item = computed(() => sidebarData.value?.item);
+const query = computed(() => ({source: item.value?.source}));
+const {pageItems, pageSize, targetItemCount, loading} = useAlertsApi(name, query);
+pageSize.value = 10;
+targetItemCount.value = 10;
+
+
+const icons = {
+  info: 'mdi-information-outline',
+  warn: 'mdi-alert-circle-outline',
+  alert: 'mdi-alert-box-outline',
+  danger: 'mdi-close-octagon'
+};
 const notificationSidebar = computed(() => {
-  // if sidebarData is not an object, or if it is an object but does not have a value property, return an empty array
-  if (!sidebarData || !sidebarData.value || typeof sidebarData.value !== 'object') {
-    return []; // or handle the unexpected data structure appropriately
-  } else {
-    // otherwise, continue with the expected data structure
-    const icons = {
-      info: 'mdi-information-outline',
-      warn: 'mdi-alert-circle-outline',
-      alert: 'mdi-alert-box-outline',
-      danger: 'mdi-close-octagon'
+  if (pageItems.value.length === 0) return [];
+
+  return pageItems.value.map(item => {
+    const icon = icons[notification.severityData(item.severity).text.toLowerCase()];
+    const color = item.resolveTime ?
+        'grey--text' :
+        notification.severityData(item.severity).color;
+    return {
+      ...item,
+      severity: {icon, color},
+      created: timestampToDate(item.createTime).toLocaleString()
     };
-
-    // filter out the sidebarData entries that are not 'past10'
-    const filteredEntries = Object.entries(sidebarData.value).filter(([key, value]) => {
-      return key === 'past10';
-    });
-
-    // reduce the filtered entries to an array of objects
-    const mergedData = filteredEntries.map(([key, value]) => {
-      // reduce the value array to an array of objects
-      const reducedValue = [];
-      value.forEach(item => {
-        // if the item has a resolveTime, set the severity color to grey
-        let severityColor = '';
-        if (item.resolveTime) {
-          severityColor = 'grey--text';
-          // otherwise, set the severity color to the severity color
-        } else {
-          severityColor = notification.severityData(item.severity).color;
-        }
-
-        // push the reduced item to the reducedValue array
-        reducedValue.push({
-          severity: {
-            icon: icons[notification.severityData(item.severity).text.toLowerCase()],
-            color: severityColor
-          },
-          description: item.description,
-          created: new Date(item.createTime).toLocaleString()
-        });
-      });
-
-      return {
-        value: reducedValue
-      };
-    });
-
-    // if mergedData is not an array, or if it is an array but does not have a length property, return an empty array
-    if (!mergedData || !mergedData.length || typeof mergedData[0] !== 'object') {
-      return []; // or handle the unexpected data structure appropriately
-    } else {
-      return mergedData[0].value;
-    }
-  }
+  });
 });
 </script>
 
