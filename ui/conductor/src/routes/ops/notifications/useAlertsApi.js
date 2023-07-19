@@ -167,7 +167,7 @@ export default function(name, query) {
           pullAlerts(request, pullResource);
         }
       },
-      {immediate: true}
+      {immediate: true, deep: true}
   );
   const queryVersionCounter = ref(0);
   watch(listQuery, () => {
@@ -175,6 +175,7 @@ export default function(name, query) {
     // tidy up state, if the query has changed then these are no longer valid.
     hasFetchedAnyPages.value = false;
     nextPageToken.value = '';
+    listedItems.value = [];
   }, {deep: true});
   watch(
       [shouldFetchMorePages, queryVersionCounter],
