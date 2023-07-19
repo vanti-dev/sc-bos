@@ -1,74 +1,74 @@
 <template>
-  <v-container fluid>
-    <v-card>
-      <v-data-table
-          :headers="headers"
-          :items="alerts.pageItems"
-          disable-sort
-          :server-items-length="queryTotalCount"
-          :item-class="rowClass"
-          :options.sync="dataTableOptions"
-          :footer-props="{itemsPerPageOptions}"
-          :loading="alerts.loading"
-          class="pt-4">
-        <template #top>
-          <filters
-              :floor.sync="query.floor"
-              :floor-items="floors"
-              :zone.sync="query.zone"
-              :zone-items="zones"
-              :subsystem.sync="query.subsystem"
-              :subsystem-items="subsystems"
-              :acknowledged.sync="query.acknowledged"
-              :resolved.sync="query.acknowledged"/>
-        </template>
-        <template #item.createTime="{ item }">
-          {{ item.createTime.toLocaleString() }}
-        </template>
-        <template #item.source="{ item }">
-          <v-tooltip bottom>
-            <template #activator="{ on }">
-              <span v-on="on">{{ formatSource(item.source) }}</span>
-            </template>
-            <span>{{ item.source }}</span>
-          </v-tooltip>
-        </template>
-        <template #item.severity="{ item }">
-          <v-tooltip v-if="item.resolveTime" bottom>
-            <template #activator="{ on }">
-              <span v-on="on">RESOLVED</span>
-            </template>
-            Was:
-            <span :class="notifications.severityData(item.severity).color">
-              {{ notifications.severityData(item.severity).text }}
-            </span>
-          </v-tooltip>
-          <span v-else :class="notifications.severityData(item.severity).color">
+  <content-card>
+    <v-data-table
+        :headers="headers"
+        :items="alerts.pageItems"
+        disable-sort
+        :server-items-length="queryTotalCount"
+        :item-class="rowClass"
+        :options.sync="dataTableOptions"
+        :footer-props="{itemsPerPageOptions}"
+        :loading="alerts.loading"
+        class="pt-4"
+        @click:row="showNotification">
+      <template #top>
+        <filters
+            :floor.sync="query.floor"
+            :floor-items="floors"
+            :zone.sync="query.zone"
+            :zone-items="zones"
+            :acknowledged.sync="query.acknowledged"
+            :resolved.sync="query.acknowledged"/>
+      </template>
+      <template #item.createTime="{ item }">
+        {{ item.createTime.toLocaleString() }}
+      </template>
+      <template #item.source="{ item }">
+        <v-tooltip bottom>
+          <template #activator="{ on }">
+            <span v-on="on">{{ formatSource(item.source) }}</span>
+          </template>
+          <span>{{ item.source }}</span>
+        </v-tooltip>
+      </template>
+      <template #item.severity="{ item }">
+        <v-tooltip v-if="item.resolveTime" bottom>
+          <template #activator="{ on }">
+            <span v-on="on">RESOLVED</span>
+          </template>
+          Was:
+          <span :class="notifications.severityData(item.severity).color">
             {{ notifications.severityData(item.severity).text }}
           </span>
-        </template>
-        <template #item.acknowledged="{ item }">
-          <acknowledgement
-              :ack="item.acknowledgement"
-              @acknowledge="notifications.setAcknowledged(true, item, name)"
-              @unacknowledge="notifications.setAcknowledged(false, item, name)"/>
-        </template>
-      </v-data-table>
-    </v-card>
-  </v-container>
+        </v-tooltip>
+        <span v-else :class="notifications.severityData(item.severity).color">
+          {{ notifications.severityData(item.severity).text }}
+        </span>
+      </template>
+      <template #item.acknowledged="{ item }">
+        <acknowledgement
+            :ack="item.acknowledgement"
+            @acknowledge="notifications.setAcknowledged(true, item, name)"
+            @unacknowledge="notifications.setAcknowledged(false, item, name)"/>
+      </template>
+    </v-data-table>
+  </content-card>
 </template>
 <script setup>
+import ContentCard from '@/components/ContentCard.vue';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import Filters from '@/routes/ops/notifications/Filters.vue';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useHubStore} from '@/stores/hub';
+import {usePageStore} from '@/stores/page';
 import {computed, reactive, ref, watch} from 'vue';
 
 const notifications = useNotifications();
 const alertMetadata = useAlertMetadata();
 const hubStore = useHubStore();
+const pageStore = usePageStore();
 
 const query = reactive({
   createdNotBefore: undefined,
@@ -179,6 +179,17 @@ const rowClass = (item) => {
   if (item.resolveTime) return 'resolved';
   return '';
 };
+/**
+ * Shows the device in the sidebar
+ *
+ * @param {*} item
+ * @param {*} row
+ */
+function showNotification(item) {
+  pageStore.showSidebar = true;
+  pageStore.sidebarTitle = item.source;
+  pageStore.sidebarData = item;
+}
 </script>
 
 <style scoped>
