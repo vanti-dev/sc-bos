@@ -1,25 +1,30 @@
 <template>
   <side-bar>
-    <div v-if="sidebar.length">
+    <v-subheader v-if="!notificationSidebar.length" class="text-title-caps-large neutral--text text--lighten-3">
+      No Past Notifications
+    </v-subheader>
+    <div v-else>
       <v-subheader class="text-title-caps-large neutral--text text--lighten-3">
-        {{ sidebar[0].key }}
+        Past {{ notificationSidebar.length }} {{
+          notificationSidebar.length === 1 ? 'Notification' : 'Notifications'
+        }}
       </v-subheader>
       <v-card
-          v-for="(data, index) in sidebar[0].value"
+          v-for="(data, index) in notificationSidebar"
           :key="index"
-          class="mt-6"
+          class="mt-4"
           elevation="0">
-        <span class="d-flex flex-row flex-nowrap px-4 mb-4">
-          <v-icon :class="[data.severity.color, 'mt-n2']" size="28">{{ icons[data.severity.text] }}</v-icon>
+        <span class="d-flex flex-row flex-nowrap px-4 mb-2">
+          <v-icon :class="[data.severity.color, 'mt-n2']" size="22">{{ data.severity.icon }}</v-icon>
           <v-spacer/>
           <v-card-subtitle class="text-caption pa-0 pb-2 grey--text">
             {{ data.created }}
           </v-card-subtitle>
         </span>
-        <v-card-title class="text-subtitle-1 ma-0 pa-0 px-4 mt-2 text-capitalize">
+        <v-card-subtitle class="ma-0 pa-0 px-4 white--text text-capitalize">
           {{ data.description }}
-        </v-card-title>
-        <v-divider v-if="index < sidebar[0].value.length - 1" class="mt-4 mb-6"/>
+        </v-card-subtitle>
+        <v-divider v-if="index < notificationSidebar.length - 1" class="my-3"/>
       </v-card>
     </div>
   </side-bar>
@@ -38,45 +43,61 @@ const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);
 const notification = useNotifications();
 
-const icons = computed(() => {
-  return {
-    info: 'mdi-information-outline',
-    warn: 'mdi-alert-circle-outline',
-    alert: 'mdi-alert-box-outline',
-    danger: 'mdi-close-octagon'
-  };
-});
-
-const sidebar = computed(() => {
+const notificationSidebar = computed(() => {
+  // if sidebarData is not an object, or if it is an object but does not have a value property, return an empty array
   if (!sidebarData || !sidebarData.value || typeof sidebarData.value !== 'object') {
     return []; // or handle the unexpected data structure appropriately
-  }
+  } else {
+    // otherwise, continue with the expected data structure
+    const icons = {
+      info: 'mdi-information-outline',
+      warn: 'mdi-alert-circle-outline',
+      alert: 'mdi-alert-box-outline',
+      danger: 'mdi-close-octagon'
+    };
 
-  const filteredEntries = Object.entries(sidebarData.value).filter(([key, value]) => {
-    return key === 'past10';
-  });
-
-  const mergedData = filteredEntries.map(([key, value]) => {
-    const reducedValue = [];
-
-    value.forEach(item => {
-      reducedValue.push({
-        severity: {
-          text: notification.severityData(item.severity).text.toLowerCase(),
-          color: notification.severityData(item.severity).color
-        },
-        description: item.description,
-        created: new Date(item.createTime).toLocaleString()
-      });
+    // filter out the sidebarData entries that are not 'past10'
+    const filteredEntries = Object.entries(sidebarData.value).filter(([key, value]) => {
+      return key === 'past10';
     });
 
-    return {
-      key: 'Past 10 notification',
-      value: reducedValue
-    };
-  });
+    // reduce the filtered entries to an array of objects
+    const mergedData = filteredEntries.map(([key, value]) => {
+      // reduce the value array to an array of objects
+      const reducedValue = [];
+      value.forEach(item => {
+        // if the item has a resolveTime, set the severity color to grey
+        let severityColor = '';
+        if (item.resolveTime) {
+          severityColor = 'grey--text';
+          // otherwise, set the severity color to the severity color
+        } else {
+          severityColor = notification.severityData(item.severity).color;
+        }
 
-  return mergedData;
+        // push the reduced item to the reducedValue array
+        reducedValue.push({
+          severity: {
+            icon: icons[notification.severityData(item.severity).text.toLowerCase()],
+            color: severityColor
+          },
+          description: item.description,
+          created: new Date(item.createTime).toLocaleString()
+        });
+      });
+
+      return {
+        value: reducedValue
+      };
+    });
+
+    // if mergedData is not an array, or if it is an array but does not have a length property, return an empty array
+    if (!mergedData || !mergedData.length || typeof mergedData[0] !== 'object') {
+      return []; // or handle the unexpected data structure appropriately
+    } else {
+      return mergedData[0].value;
+    }
+  }
 });
 </script>
 
