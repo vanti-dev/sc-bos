@@ -14,6 +14,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
+	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/util/once"
@@ -148,6 +149,7 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 
 		var last *gen.MeterReading
 		eq := cmp.Equal(cmp.FloatValueApprox(0, 0.001))
+		filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 
 		for {
 			select {
@@ -159,6 +161,7 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 				if err != nil {
 					return err
 				}
+				filter.Filter(r)
 
 				// don't send duplicates
 				if eq(last, r) {

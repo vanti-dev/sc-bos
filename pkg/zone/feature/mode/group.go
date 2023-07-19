@@ -210,12 +210,12 @@ func (g *Group) PullModeValues(request *traits.PullModeValuesRequest, server tra
 		})
 	}
 
-	filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 	group.Go(func() error {
 		all := make(map[string]*traits.ModeValues, len(names))
 
 		var last *traits.ModeValues
 		eq := cmp.Equal()
+		filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 
 		for {
 			select {
