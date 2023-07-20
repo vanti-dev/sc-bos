@@ -30,6 +30,7 @@ import LineChart from '@/components/charts/LineChart.vue';
 import {HOUR, MINUTE, useNow} from '@/components/now';
 import useMeterHistory from '@/routes/ops/components/useMeterHistory';
 import useTimePeriod from '@/routes/ops/components/useTimePeriod';
+import {useCarbonIntensity} from '@/stores/carbonIntensity';
 import {computed, ref} from 'vue';
 
 const props = defineProps({
@@ -63,14 +64,37 @@ const {periodStart, periodEnd} = useTimePeriod(now, () => props.span, () => prop
 const showConversion = ref(false);
 
 
-const gramsOfCO2PerKWh = ref(0.76);
+const carbonIntensity = useCarbonIntensity();
+const gramsOfCO2PerKWh = ref(86);
+const kwhToGramsOfCO2 = (date) => {
+  if (!carbonIntensity.last24Hours) {
+    return gramsOfCO2PerKWh.value;
+  }
+  const first = carbonIntensity.last24Hours[0];
+  const last = carbonIntensity.last24Hours[carbonIntensity.last24Hours.length - 1];
+  if (date < first.from) {
+    return first.intensity.actual ?? first.intensity.forecast;
+  }
+  if (date > last.to) {
+    return last.intensity.actual ?? last.intensity.forecast;
+  }
+  for (const range of carbonIntensity.last24Hours) {
+    if (range.from <= date && date <= range.to) {
+      return range.intensity.actual ?? range.intensity.forecast;
+    }
+  }
+  return last.actual ?? last.forecast;
+};
+const yAxisUnit = computed(() => {
+  return showConversion.value ? 'Grams of CO₂' : 'kW';
+});
 const metered = useMeterHistory(() => props.metered, periodStart, periodEnd, () => props.span);
 const generated = useMeterHistory(() => props.generated, periodStart, periodEnd, () => props.span);
 const co2Metered = computed(() => {
   return metered.seriesData.value.map((value, index) => {
     return {
       ...value,
-      y: value.y * gramsOfCO2PerKWh.value
+      y: value.y * kwhToGramsOfCO2(value.x)
     };
   });
 });
@@ -78,7 +102,7 @@ const co2Generated = computed(() => {
   return generated.seriesData.value.map((value, index) => {
     return {
       ...value,
-      y: value.y * gramsOfCO2PerKWh.value
+      y: value.y * kwhToGramsOfCO2(value.x)
     };
   });
 });
@@ -284,8 +308,8 @@ const chartOptions = computed(() => {
           }
         },
         title: {
-          display: false,
-          text: ''
+          display: true,
+          text: yAxisUnit.value
         },
         min: 0
       },
