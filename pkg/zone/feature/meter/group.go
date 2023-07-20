@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
@@ -69,26 +68,11 @@ func (g *Group) DescribeMeterReading(ctx context.Context, _ *gen.DescribeMeterRe
 }
 
 func (g *Group) GetMeterReading(ctx context.Context, request *gen.GetMeterReadingRequest) (*gen.MeterReading, error) {
-	var allErrs []error
-	var allRes []*gen.MeterReading
+	var allRes []value
 	for _, name := range g.names {
 		request.Name = name
 		res, err := g.apiClient.GetMeterReading(ctx, request)
-		if err != nil {
-			allErrs = append(allErrs, err)
-			continue
-		}
-		allRes = append(allRes, res)
-	}
-
-	if len(allErrs) == len(g.names) {
-		return nil, multierr.Combine(allErrs...)
-	}
-
-	if allErrs != nil {
-		if g.logger != nil {
-			g.logger.Warn("some meters failed", zap.Errors("errors", allErrs))
-		}
+		allRes = append(allRes, value{name: name, val: res, err: err})
 	}
 	return mergeMeterReading(allRes)
 }
@@ -98,40 +82,40 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 		return status.Error(codes.FailedPrecondition, "zone has no meter names")
 	}
 
-	type c struct {
-		name string
-		val  *gen.MeterReading
-	}
-	changes := make(chan c)
+	changes := make(chan value)
 	defer close(changes)
 
 	group, ctx := errgroup.WithContext(server.Context())
 	for _, name := range g.names {
 		request := proto.Clone(request).(*gen.PullMeterReadingsRequest)
 		request.Name = name
+		sendError := func(err error) error {
+			changes <- value{name: request.Name, err: err}
+			return err
+		}
 		group.Go(func() error {
 			return pull.Changes(ctx, pull.NewFetcher(
-				func(ctx context.Context, changes chan<- c) error {
+				func(ctx context.Context, changes chan<- value) error {
 					stream, err := g.apiClient.PullMeterReadings(ctx, request)
 					if err != nil {
-						return err
+						return sendError(err)
 					}
 					for {
 						res, err := stream.Recv()
 						if err != nil {
-							return err
+							return sendError(err)
 						}
 						for _, change := range res.Changes {
-							changes <- c{name: request.Name, val: change.MeterReading}
+							changes <- value{name: request.Name, val: change.MeterReading}
 						}
 					}
 				},
-				func(ctx context.Context, changes chan<- c) error {
+				func(ctx context.Context, changes chan<- value) error {
 					res, err := g.apiClient.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: name, ReadMask: request.ReadMask})
 					if err != nil {
-						return err
+						return sendError(err)
 					}
-					changes <- c{name: request.Name, val: res}
+					changes <- value{name: request.Name, val: res}
 					return nil
 				}),
 				changes,
@@ -145,7 +129,7 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 		for i, name := range g.names {
 			indexes[name] = i
 		}
-		values := make([]*gen.MeterReading, len(g.names))
+		values := make([]value, len(g.names))
 
 		var last *gen.MeterReading
 		eq := cmp.Equal(cmp.FloatValueApprox(0, 0.001))
@@ -156,10 +140,10 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 			case <-ctx.Done():
 				return ctx.Err()
 			case change := <-changes:
-				values[indexes[change.name]] = change.val
+				values[indexes[change.name]] = change
 				r, err := mergeMeterReading(values)
 				if err != nil {
-					return err
+					continue
 				}
 				filter.Filter(r)
 
@@ -184,31 +168,49 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 	return group.Wait()
 }
 
-func mergeMeterReading(all []*gen.MeterReading) (*gen.MeterReading, error) {
+type value struct {
+	name string
+	val  *gen.MeterReading
+	err  error
+}
+
+func mergeMeterReading(all []value) (*gen.MeterReading, error) {
 	switch len(all) {
 	case 0:
 		return nil, status.Error(codes.FailedPrecondition, "zone has no meter names")
-	case 1:
-		return all[0], nil
 	default:
+		// we need all configured meters to be present and have values for this meter to make any sense.
+		valCount := 0
+		for _, v := range all {
+			if v.err != nil {
+				return nil, v.err
+			}
+			if v.val != nil {
+				valCount++
+			}
+		}
+		if valCount < len(all) {
+			return nil, status.Errorf(codes.Unavailable, "collecting initial data, please try again soon (%d/%d)", valCount, len(all))
+		}
+
 		out := &gen.MeterReading{}
-		out.Usage, _ = merge.Sum(all, func(e *gen.MeterReading) (float32, bool) {
-			if e == nil {
+		out.Usage, _ = merge.Sum(all, func(v value) (float32, bool) {
+			if v.err != nil || v.val == nil {
 				return 0, false
 			}
-			return e.Usage, true
+			return v.val.Usage, true
 		})
-		out.StartTime = merge.EarliestTimestamp(all, func(e *gen.MeterReading) *timestamppb.Timestamp {
-			if e == nil {
+		out.StartTime = merge.EarliestTimestamp(all, func(v value) *timestamppb.Timestamp {
+			if v.err != nil || v.val == nil {
 				return nil
 			}
-			return e.StartTime
+			return v.val.StartTime
 		})
-		out.EndTime = merge.LatestTimestamp(all, func(e *gen.MeterReading) *timestamppb.Timestamp {
-			if e == nil {
+		out.EndTime = merge.LatestTimestamp(all, func(v value) *timestamppb.Timestamp {
+			if v.err != nil || v.val == nil {
 				return nil
 			}
-			return e.EndTime
+			return v.val.EndTime
 		})
 		return out, nil
 	}
