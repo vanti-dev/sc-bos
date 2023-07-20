@@ -51,7 +51,7 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 		if err != nil {
 			return err
 		}
-		store, err = pgxstore.NewStoreFromPool(ctx, fmt.Sprintf("%s[%s]", cfg.Source.Name, cfg.Source.Trait), pool)
+		store, err = pgxstore.SetupStoreFromPool(ctx, cfg.Source.SourceName(), pool)
 		if err != nil {
 			return err
 		}

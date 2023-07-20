@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
@@ -20,6 +22,10 @@ type Source struct {
 	Trait trait.Name `json:"trait,omitempty"`
 	// ReadMask instructs the history service to only read the specified fields
 	ReadMask *FieldMask `json:"readMask,omitempty"`
+}
+
+func (s Source) SourceName() string {
+	return fmt.Sprintf("%s[%s]", s.Name, s.Trait)
 }
 
 type FieldMask fieldmaskpb.FieldMask
