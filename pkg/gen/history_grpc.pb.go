@@ -18,6 +18,128 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
+// HistoryAdminApiClient is the client API for HistoryAdminApi service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type HistoryAdminApiClient interface {
+	CreateHistoryRecord(ctx context.Context, in *CreateHistoryRecordRequest, opts ...grpc.CallOption) (*HistoryRecord, error)
+	ListHistoryRecords(ctx context.Context, in *ListHistoryRecordsRequest, opts ...grpc.CallOption) (*ListHistoryRecordsResponse, error)
+}
+
+type historyAdminApiClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewHistoryAdminApiClient(cc grpc.ClientConnInterface) HistoryAdminApiClient {
+	return &historyAdminApiClient{cc}
+}
+
+func (c *historyAdminApiClient) CreateHistoryRecord(ctx context.Context, in *CreateHistoryRecordRequest, opts ...grpc.CallOption) (*HistoryRecord, error) {
+	out := new(HistoryRecord)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.HistoryAdminApi/CreateHistoryRecord", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *historyAdminApiClient) ListHistoryRecords(ctx context.Context, in *ListHistoryRecordsRequest, opts ...grpc.CallOption) (*ListHistoryRecordsResponse, error) {
+	out := new(ListHistoryRecordsResponse)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.HistoryAdminApi/ListHistoryRecords", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// HistoryAdminApiServer is the server API for HistoryAdminApi service.
+// All implementations must embed UnimplementedHistoryAdminApiServer
+// for forward compatibility
+type HistoryAdminApiServer interface {
+	CreateHistoryRecord(context.Context, *CreateHistoryRecordRequest) (*HistoryRecord, error)
+	ListHistoryRecords(context.Context, *ListHistoryRecordsRequest) (*ListHistoryRecordsResponse, error)
+	mustEmbedUnimplementedHistoryAdminApiServer()
+}
+
+// UnimplementedHistoryAdminApiServer must be embedded to have forward compatible implementations.
+type UnimplementedHistoryAdminApiServer struct {
+}
+
+func (UnimplementedHistoryAdminApiServer) CreateHistoryRecord(context.Context, *CreateHistoryRecordRequest) (*HistoryRecord, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateHistoryRecord not implemented")
+}
+func (UnimplementedHistoryAdminApiServer) ListHistoryRecords(context.Context, *ListHistoryRecordsRequest) (*ListHistoryRecordsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListHistoryRecords not implemented")
+}
+func (UnimplementedHistoryAdminApiServer) mustEmbedUnimplementedHistoryAdminApiServer() {}
+
+// UnsafeHistoryAdminApiServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to HistoryAdminApiServer will
+// result in compilation errors.
+type UnsafeHistoryAdminApiServer interface {
+	mustEmbedUnimplementedHistoryAdminApiServer()
+}
+
+func RegisterHistoryAdminApiServer(s grpc.ServiceRegistrar, srv HistoryAdminApiServer) {
+	s.RegisterService(&HistoryAdminApi_ServiceDesc, srv)
+}
+
+func _HistoryAdminApi_CreateHistoryRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateHistoryRecordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HistoryAdminApiServer).CreateHistoryRecord(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/smartcore.bos.HistoryAdminApi/CreateHistoryRecord",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HistoryAdminApiServer).CreateHistoryRecord(ctx, req.(*CreateHistoryRecordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HistoryAdminApi_ListHistoryRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListHistoryRecordsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HistoryAdminApiServer).ListHistoryRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/smartcore.bos.HistoryAdminApi/ListHistoryRecords",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HistoryAdminApiServer).ListHistoryRecords(ctx, req.(*ListHistoryRecordsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// HistoryAdminApi_ServiceDesc is the grpc.ServiceDesc for HistoryAdminApi service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var HistoryAdminApi_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "smartcore.bos.HistoryAdminApi",
+	HandlerType: (*HistoryAdminApiServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateHistoryRecord",
+			Handler:    _HistoryAdminApi_CreateHistoryRecord_Handler,
+		},
+		{
+			MethodName: "ListHistoryRecords",
+			Handler:    _HistoryAdminApi_ListHistoryRecords_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "history.proto",
+}
+
 // MeterHistoryClient is the client API for MeterHistory service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
