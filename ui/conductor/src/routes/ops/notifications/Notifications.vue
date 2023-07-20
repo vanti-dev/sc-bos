@@ -207,5 +207,9 @@ async function showNotification(item) {
 :deep(.resolved) {
   color: #FFF5 !important;
 }
+
+.v-data-table :deep(tr:hover) {
+  cursor: pointer;
+}
 </style>
 
