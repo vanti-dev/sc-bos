@@ -1,5 +1,5 @@
 import {timestampToDate} from '@/api/convpb';
-import {listMeterReadingHistory} from '@/api/sc/traits/meter-history';
+import {listMeterReadingHistory} from '@/api/sc/traits/meter';
 import {HOUR, useNow} from '@/components/now';
 import {toValue} from '@/util/vue';
 import {computed, ref, watch, watchEffect} from 'vue';

@@ -10,7 +10,7 @@ import {GetDemandRequest, PullDemandRequest} from '@smart-core-os/sc-api-grpc-we
  */
 export function pullDemand(request, resource) {
   pullResource('Electric.pullDemand', resource, endpoint => {
-    const api = new ElectricApiPromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     const stream = api.pullDemand(pullDemandRequestFromObject(request));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
@@ -24,7 +24,7 @@ export function pullDemand(request, resource) {
 
 /**
  * @param {GetDemandRequest.AsObject} request
- * @param {ActionTracker<ElectricDemand.AsObject>} tracker
+ * @param {ActionTracker<ElectricDemand.AsObject>} [tracker]
  * @return {Promise<ElectricDemand.AsObject>}
  */
 export function getDemand(request, tracker) {
@@ -32,6 +32,14 @@ export function getDemand(request, tracker) {
     const api = new ElectricApiPromiseClient(endpoint, null, clientOptions());
     return api.getDemand(getDemandRequestFromObject(request));
   });
+}
+
+/**
+ * @param {string} endpoint
+ * @return {ElectricApiPromiseClient}
+ */
+function apiClient(endpoint) {
+  return new ElectricApiPromiseClient(endpoint, null, clientOptions());
 }
 
 /**

@@ -5,23 +5,23 @@ import {ListHubNodesRequest, PullHubNodesRequest} from '@sc-bos/ui-gen/proto/hub
 
 /**
  *
- * @param {ActionTracker<ListHubNodesResponse.AsObject>} tracker
+ * @param {ActionTracker<ListHubNodesResponse.AsObject>} [tracker]
  * @return {Promise<ListHubNodesResponse.AsObject>}
  */
 export function listHubNodes(tracker) {
   return trackAction('Hub.listHubNodes', tracker ?? {}, endpoint => {
-    const api = new HubApiPromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     return api.listHubNodes(new ListHubNodesRequest());
   });
 }
 
 /**
  *
- * @param {ResourceCollection<HubNode.AsObject, HubNode>} resource
+ * @param {ResourceCollection<HubNode.AsObject, PullHubNodesResponse>} resource
  */
 export function pullHubNodes(resource) {
   pullResource('Hub.pullHubNodes', resource, endpoint => {
-    const api = new HubApiPromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     const stream = api.pullHubNodes(new PullHubNodesRequest());
     stream.on('data', msg => {
       const changes = msg.getChangesList();
@@ -31,4 +31,12 @@ export function pullHubNodes(resource) {
     });
     return stream;
   });
+}
+
+/**
+ * @param {string} endpoint
+ * @return {HubApiPromiseClient}
+ */
+function apiClient(endpoint) {
+  return new HubApiPromiseClient(endpoint, null, clientOptions());
 }

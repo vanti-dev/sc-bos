@@ -11,7 +11,7 @@ import {GetCurrentStatusRequest, PullCurrentStatusRequest} from '@sc-bos/ui-gen/
  */
 export function pullCurrentStatus(request, resource) {
   pullResource('Status.pullCurrentStatus', resource, endpoint => {
-    const api = new StatusApiPromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     const stream = api.pullCurrentStatus(pullCurrentStatusRequestFromObject(request));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
@@ -25,14 +25,22 @@ export function pullCurrentStatus(request, resource) {
 
 /**
  * @param {GetCurrentStatusRequest.AsObject} request
- * @param {ActionTracker<StatusLog.AsObject>} tracker
+ * @param {ActionTracker<StatusLog.AsObject>} [tracker]
  * @return {Promise<StatusLog.AsObject>}
  */
 export function getCurrentStatus(request, tracker) {
   return trackAction('Status.getCurrentStatus', tracker ?? {}, endpoint => {
-    const api = new StatusApiPromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     return api.getCurrentStatus(getCurrentStatusRequestFromObject(request));
   });
+}
+
+/**
+ * @param {string} endpoint
+ * @return {StatusApiPromiseClient}
+ */
+function apiClient(endpoint) {
+  return new StatusApiPromiseClient(endpoint, null, clientOptions());
 }
 
 /**

@@ -97,7 +97,7 @@ watch(() => props.name, async (name) => {
   if (name && name !== '') {
     // noinspection ES6MissingAwait - handled by tracker
     describeModes({name}, modeInfo);
-    pullModeValues(name, modeValue);
+    pullModeValues({name}, modeValue);
   }
 }, {immediate: true});
 

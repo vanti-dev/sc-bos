@@ -7,19 +7,25 @@ import {PullExportMessagesRequest} from '@sc-bos/ui-gen/proto/udmi_pb';
 /**
  *
  * @param {PullExportMessagesRequest.AsObject} request
- * @param {ResourceValue<MqttMessage.AsObject, MqttMessage>} resource
+ * @param {ResourceValue<MqttMessage.AsObject, PullExportMessagesResponse>} resource
  */
 export function pullExportMessages(request, resource) {
-  if (!request.name) throw new Error('name must be specified');
   pullResource('UDMI.pullExportMessages', resource, endpoint => {
-    const api = new UdmiServicePromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     const stream = api.pullExportMessages(pullExportMessagesRequestFromObject(request));
     stream.on('data', msg => {
-      const obj = msg.getMessage().toObject();
-      setValue(resource, obj);
+      setValue(resource, msg.getMessage().toObject());
     });
     return stream;
   });
+}
+
+/**
+ * @param {string} endpoint
+ * @return {UdmiServicePromiseClient}
+ */
+function apiClient(endpoint) {
+  return new UdmiServicePromiseClient(endpoint, null, clientOptions());
 }
 
 /**

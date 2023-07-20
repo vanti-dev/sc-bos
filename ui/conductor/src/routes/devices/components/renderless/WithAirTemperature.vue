@@ -69,7 +69,7 @@ watch(
 
       if (!newPaused && (oldPaused || newName !== oldName)) {
         closeResource(airTemperatureResource);
-        pullAirTemperature(newName, airTemperatureResource);
+        pullAirTemperature({name: newName}, airTemperatureResource);
       }
     },
     {immediate: true, deep: true, flush: 'sync'}

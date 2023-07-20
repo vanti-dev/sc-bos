@@ -44,7 +44,7 @@ watch(
 
       if (!newPaused && (oldPaused || newName !== oldName)) {
         closeResource(occupancyValue);
-        pullOccupancy(newName, occupancyValue);
+        pullOccupancy({name: newName}, occupancyValue);
       }
     },
     {immediate: true, deep: true, flush: 'sync'}

@@ -5,13 +5,21 @@ import {GetEnrollmentRequest} from '@sc-bos/ui-gen/proto/enrollment_pb';
 
 /**
  *
- * @param {ActionTracker<GetEnrollmentResponse.AsObject>} tracker
+ * @param {ActionTracker<GetEnrollmentResponse.AsObject>} [tracker]
  * @return {Promise<GetEnrollmentResponse.AsObject>}
  */
 export function getEnrollment(tracker) {
   return trackAction('Enrollment.getEnrollment', tracker ?? {}, endpoint => {
-    const api = new EnrollmentApiPromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     return api.getEnrollment(new GetEnrollmentRequest());
   });
+}
+
+/**
+ * @param {string} endpoint
+ * @return {EnrollmentApiPromiseClient}
+ */
+function apiClient(endpoint) {
+  return new EnrollmentApiPromiseClient(endpoint, null, clientOptions());
 }
 

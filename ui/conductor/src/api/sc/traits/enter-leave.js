@@ -13,7 +13,7 @@ import {
  */
 export function pullEnterLeaveEvents(request, resource) {
   pullResource('EnterLeave.pullEnterLeaveEvents', resource, endpoint => {
-    const api = new EnterLeaveSensorApiPromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     const stream = api.pullEnterLeaveEvents(pullEnterLeaveEventsRequestFromObject(request));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
@@ -27,26 +27,34 @@ export function pullEnterLeaveEvents(request, resource) {
 
 /**
  * @param {GetEnterLeaveEventRequest.AsObject} request
- * @param {ActionTracker<EnterLeaveEvent.AsObject>} tracker
+ * @param {ActionTracker<EnterLeaveEvent.AsObject>} [tracker]
  * @return {Promise<EnterLeaveEvent.AsObject>}
  */
 export function getEnterLeaveEvent(request, tracker) {
   return trackAction('EnterLeaveSensor.getEnterLeaveEvent', tracker ?? {}, endpoint => {
-    const api = new EnterLeaveSensorApiPromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     return api.getEnterLeaveEvent(getEnterLeaveEventRequestFromObject(request));
   });
 }
 
 /**
  * @param {GetEnterLeaveEventRequest.AsObject} request
- * @param {ActionTracker<ResetEnterLeaveTotalsResponse.AsObject>} tracker
+ * @param {ActionTracker<ResetEnterLeaveTotalsResponse.AsObject>} [tracker]
  * @return {Promise<ResetEnterLeaveTotalsResponse.AsObject>}
  */
 export function resetEnterLeaveTotals(request, tracker) {
   return trackAction('EnterLeaveSensor.resetEnterLeaveTotals', tracker ?? {}, endpoint => {
-    const api = new EnterLeaveSensorApiPromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     return api.resetEnterLeaveTotals(resetEnterLeaveTotalsRequestFromObject(request));
   });
+}
+
+/**
+ * @param {string} endpoint
+ * @return {EnterLeaveSensorApiPromiseClient}
+ */
+function apiClient(endpoint) {
+  return new EnterLeaveSensorApiPromiseClient(endpoint, null, clientOptions());
 }
 
 /**

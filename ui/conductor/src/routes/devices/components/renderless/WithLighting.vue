@@ -66,7 +66,7 @@ watch(
 
       if (!newPaused && (oldPaused || newName !== oldName)) {
         closeResource(lightValue);
-        pullBrightness(newName, lightValue);
+        pullBrightness({name: newName}, lightValue);
       }
     },
     {immediate: true, deep: true, flush: 'sync'}

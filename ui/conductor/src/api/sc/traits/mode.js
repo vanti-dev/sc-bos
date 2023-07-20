@@ -5,7 +5,6 @@ import {pullResource, setValue} from '@/api/resource.js';
 import {ModeApiPromiseClient, ModeInfoPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/mode_grpc_web_pb';
 import {
   DescribeModesRequest,
-  ModesSupport,
   ModeValues,
   ModeValuesRelative,
   PullModeValuesRequest,
@@ -13,13 +12,13 @@ import {
 } from '@smart-core-os/sc-api-grpc-web/traits/mode_pb';
 
 /**
- * @param {string} name
- * @param {ResourceValue<ModeValues.AsObject, ModeValues>} resource
+ * @param {PullModeValuesRequest.AsObject} request
+ * @param {ResourceValue<ModeValues.AsObject, PullModeValuesResponse>} resource
  */
-export function pullModeValues(name, resource) {
-  pullResource('Mode.ModeValues', resource, endpoint => {
-    const api = new ModeApiPromiseClient(endpoint, null, clientOptions());
-    const stream = api.pullModeValues(new PullModeValuesRequest().setName(name));
+export function pullModeValues(request, resource) {
+  pullResource('Mode.pullModeValues', resource, endpoint => {
+    const api = apiClient(endpoint);
+    const stream = api.pullModeValues(pullModeValuesRequestFromObject(request));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
       for (const change of changes) {
@@ -33,12 +32,12 @@ export function pullModeValues(name, resource) {
 /**
  *
  * @param {UpdateModeValuesRequest.AsObject} request
- * @param {ActionTracker<ModeValues.AsObject>} tracker
+ * @param {ActionTracker<ModeValues.AsObject>} [tracker]
  * @return {Promise<ModeValues.AsObject>}
  */
 export function updateModeValues(request, tracker) {
   return trackAction('ModeValues.updateModeValues', tracker ?? {}, endpoint => {
-    const api = new ModeApiPromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     return api.updateModeValues(updateModeValuesRequestFromObject(request));
   });
 }
@@ -46,21 +45,50 @@ export function updateModeValues(request, tracker) {
 /**
  *
  * @param {DescribeModesRequest.AsObject} request
- * @param {ActionTracker<ModesSupport.AsObject>} tracker
+ * @param {ActionTracker<ModesSupport.AsObject>} [tracker]
  * @return {Promise<ModesSupport.AsObject>}
  */
 export function describeModes(request, tracker) {
   return trackAction('ModeSettings.describeModes', tracker ?? {}, endpoint => {
-    const api = new ModeInfoPromiseClient(endpoint, null, clientOptions());
+    const api = infoClient(endpoint);
     return api.describeModes(describeModesRequestFromObject(request));
   });
+}
+
+/**
+ * @param {string} endpoint
+ * @return {ModeApiPromiseClient}
+ */
+function apiClient(endpoint) {
+  return new ModeApiPromiseClient(endpoint, null, clientOptions());
+}
+
+/**
+ * @param {string} endpoint
+ * @return {ModeInfoPromiseClient}
+ */
+function infoClient(endpoint) {
+  return new ModeInfoPromiseClient(endpoint, null, clientOptions());
+}
+
+/**
+ * @param {PullModeValuesRequest.AsObject} obj
+ * @return {PullModeValuesRequest|undefined}
+ */
+function pullModeValuesRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const req = new PullModeValuesRequest();
+  setProperties(req, obj, 'name', 'updatesOnly');
+  req.setReadMask(fieldMaskFromObject(obj.readMask));
+  return req;
 }
 
 /**
  * @param {UpdateModeValuesRequest.AsObject} obj
  * @return {UpdateModeValuesRequest}
  */
-export function updateModeValuesRequestFromObject(obj) {
+function updateModeValuesRequestFromObject(obj) {
   if (!obj) return undefined;
 
   const req = new UpdateModeValuesRequest();
@@ -87,7 +115,7 @@ function describeModesRequestFromObject(obj) {
  * @param {ModeValues.AsObject} obj
  * @return {undefined|ModeValues}
  */
-export function modeValuesFromObject(obj) {
+function modeValuesFromObject(obj) {
   if (!obj) return undefined;
 
   const state = new ModeValues();
@@ -107,7 +135,7 @@ export function modeValuesFromObject(obj) {
  * @param {ModeValuesRelative.AsObject} obj
  * @return {undefined|ModeValuesRelative}
  */
-export function modeValuesRelativeFromObject(obj) {
+function modeValuesRelativeFromObject(obj) {
   if (!obj) return undefined;
 
   const state = new ModeValuesRelative();
