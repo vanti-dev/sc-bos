@@ -48,4 +48,5 @@ func (f *FieldMask) MarshalJSON() ([]byte, error) {
 type Storage struct {
 	Type string `json:"type,omitempty"`
 	pgxutil.ConnectConfig
+	Name string `json:"name,omitempty"`
 }

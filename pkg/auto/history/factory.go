@@ -4,6 +4,7 @@ package history
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go.uber.org/zap"
@@ -17,6 +18,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/history"
+	"github.com/vanti-dev/sc-bos/pkg/history/apistore"
 	"github.com/vanti-dev/sc-bos/pkg/history/memstore"
 	"github.com/vanti-dev/sc-bos/pkg/history/pgxstore"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -30,6 +32,9 @@ func NewAutomation(services auto.Services) service.Lifecycle {
 		clients:  services.Node,
 		announce: services.Node,
 		logger:   services.Logger.Named("history"),
+
+		cohortManagerName: "", // use the default
+		cohortManager:     services.CohortManager,
 	}
 	a.Service = service.New(service.MonoApply(a.applyConfig))
 	return a
@@ -40,6 +45,9 @@ type automation struct {
 	clients  node.Clienter
 	announce node.Announcer
 	logger   *zap.Logger
+
+	cohortManagerName string
+	cohortManager     node.Remote
 }
 
 func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
@@ -57,6 +65,23 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 	case "memory":
 		store = memstore.New()
+	case "api":
+		name := cfg.Storage.Name
+		if name == "" {
+			return errors.New("storage.name missing, must exist when storage.type is \"api\"")
+		}
+		var client gen.HistoryAdminApiClient
+		if err := a.clients.Client(&client); err != nil {
+			return err
+		}
+		store = apistore.New(client, name, cfg.Source.SourceName())
+	case "hub":
+		conn, err := a.cohortManager.Connect(ctx)
+		if err != nil {
+			return err
+		}
+		client := gen.NewHistoryAdminApiClient(conn)
+		store = apistore.New(client, a.cohortManagerName, cfg.Source.SourceName())
 	default:
 		return fmt.Errorf("unsupported storage type %s", cfg.Storage.Type)
 	}
