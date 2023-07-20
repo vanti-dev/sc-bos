@@ -10,10 +10,11 @@ import (
 )
 
 type Services struct {
-	Logger       *zap.Logger
-	Node         *node.Node // for advertising devices
-	Database     *bolthold.Store
-	GRPCServices grpc.ServiceRegistrar // for registering non-routed services
+	Logger        *zap.Logger
+	Node          *node.Node // for advertising devices
+	Database      *bolthold.Store
+	GRPCServices  grpc.ServiceRegistrar // for registering non-routed services
+	CohortManager node.Remote
 }
 
 // Factory constructs new automation instances.
