@@ -1,6 +1,6 @@
 import {timestampToDate} from '@/api/convpb';
 import {listMeterReadingHistory} from '@/api/sc/traits/meter';
-import {HOUR, useNow} from '@/components/now';
+import {HOUR, MINUTE, useNow} from '@/components/now';
 import {toValue} from '@/util/vue';
 import {computed, ref, watch, watchEffect} from 'vue';
 
@@ -30,7 +30,7 @@ export default function(name, periodStart, periodEnd, spanSize) {
     lastFetchTime.value = null; // reset if the period changes
   });
   // How often do we retry a fetch that didn't return all the data we're after.
-  const fetchPeriod = computed(() => toValue(spanSize) / 4);
+  const fetchPeriod = computed(() => Math.max(toValue(spanSize) / 4, 10 * MINUTE));
   // Track the current time so we know how long it's been since the last fetch.
   const {now} = useNow(() => fetchPeriod.value);
   // A boolean indicating whether an attempted fetch should proceed.
@@ -50,8 +50,9 @@ export default function(name, periodStart, periodEnd, spanSize) {
   });
 
   const queryExtraLeadingSpans = 2; // how many extra spans at the start should we attempt to fetch
+  const queryExtraLeadingTime = computed(() => Math.max(toValue(spanSize) * queryExtraLeadingSpans, 20 * MINUTE));
   const queryStart = computed(
-      () => new Date(toValue(periodStart).getTime() - toValue(spanSize) * queryExtraLeadingSpans));
+      () => new Date(toValue(periodStart).getTime() - queryExtraLeadingTime.value));
   const queryEnd = computed(() => toValue(periodEnd));
 
   // Inspects both [periodStart,periodEnd] and records to calculate which slices of time we don't have.
@@ -108,13 +109,21 @@ export default function(name, periodStart, periodEnd, spanSize) {
         .finally(() => fetching.value = false);
   });
 
+  const shouldSampleData = computed(() => toValue(spanSize) > 0);
   // Converts the records into series data for the chart.
+  const allSeriesData = computed(() => {
+    if (shouldSampleData.value) {
+      return sampledSeriesData.value;
+    } else {
+      return unsampledSeriesData.value;
+    }
+  });
   // We work out the reading value before the start of a span, and the reading before the end of a span,
   // and diff them to calculate the y value for that span.
   // The x value will be the end date of the span.
   //
   // Incomplete spans are included but marked with "incomplete: true".
-  const allSeriesData = computed(() => {
+  const sampledSeriesData = computed(() => {
     const series =
         /** @type {Array<{x:Date,y:number,incomplete:boolean,len:number}>} */
         [];
@@ -178,6 +187,38 @@ export default function(name, periodStart, periodEnd, spanSize) {
       recordBeforeStart = recordBeforeEnd;
     }
 
+    return series;
+  });
+  // Every pair of readings (within the period) that change the value of the reading are exported as a data point.
+  const unsampledSeriesData = computed(() => {
+    const series =
+        /** @type {Array<{x:Date,y:number,incomplete:boolean,len:number}>} */
+        [];
+    const start = toValue(periodStart).getTime(); // tracks the start of the current span
+    let lastRecord = null;
+    for (const record of records.value) {
+      const recordDate = timestampToDate(record.recordTime);
+      const recordTimestamp = recordDate.getTime();
+      if (recordTimestamp < start) {
+        continue;
+      }
+      if (lastRecord === null) {
+        lastRecord = record;
+        continue;
+      }
+      const diff = record.meterReading.usage - lastRecord.meterReading.usage;
+      if (diff === 0) {
+        continue;
+      }
+      const len = recordTimestamp - timestampToDate(lastRecord.recordTime).getTime();
+      series.push({
+        x: recordDate,
+        y: diff,
+        incomplete: false,
+        len
+      });
+      lastRecord = record;
+    }
     return series;
   });
 
