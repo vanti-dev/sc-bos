@@ -14,7 +14,7 @@
             inset
             class="my-0">
           <template #prepend>
-            <span class="text-caption white--text">kWh</span>
+            <span class="text-caption white--text">kW</span>
           </template>
           <template #append>
             <span class="text-caption white--text ml-n4">CO₂</span>
@@ -86,7 +86,7 @@ const kwhToGramsOfCO2 = (date) => {
   return last.actual ?? last.forecast;
 };
 const yAxisUnit = computed(() => {
-  return showConversion.value ? 'Grams of CO₂' : 'kW';
+  return showConversion.value ? 'Grams of CO₂ / hour' : 'kW';
 });
 const metered = useMeterHistory(() => props.metered, periodStart, periodEnd, () => props.span);
 const generated = useMeterHistory(() => props.generated, periodStart, periodEnd, () => props.span);
