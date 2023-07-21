@@ -14,12 +14,15 @@ func analyseStatusLogs(ctx context.Context, source config.Source, c <-chan *gen.
 	var failedLog *gen.StatusLog
 	var failedCount int
 
-	// a stopped timer
 	retryTimer := newStoppedTimer()
 	nextAttemptDelay := 200 * time.Millisecond
 	var firstAttemptTime time.Time
 	const nextAttemptScale = 1.2
 	const maxAttemptDelay = 10 * time.Second
+
+	debounceTimer := newStoppedTimer()
+	debounceDelay := source.DebounceOrDefault()
+	var debouncedLog *gen.StatusLog
 
 	recordResult := func(msg *gen.StatusLog, err error) {
 		switch {
@@ -39,10 +42,14 @@ func analyseStatusLogs(ctx context.Context, source config.Source, c <-chan *gen.
 			if failedLog == nil {
 				firstAttemptTime = time.Now()
 			}
+			if !retryTimer.Stop() && failedLog != nil {
+				<-retryTimer.C
+			}
+			retryTimer.Reset(nextAttemptDelay)
+
 			failedLog = msg
 			failedCount++
 			// setup the next attempt to send the msg
-			retryTimer.Reset(nextAttemptDelay)
 			nextAttemptDelay = time.Duration(float64(nextAttemptDelay) * nextAttemptScale)
 			if nextAttemptDelay > maxAttemptDelay {
 				nextAttemptDelay = maxAttemptDelay
@@ -64,9 +71,21 @@ func analyseStatusLogs(ctx context.Context, source config.Source, c <-chan *gen.
 		select {
 		case <-retryTimer.C:
 			msg = failedLog
+			failedLog = nil
+		case <-debounceTimer.C:
+			msg = debouncedLog
+			debouncedLog = nil
 		case m, ok := <-c:
 			if !ok {
 				return ctx.Err()
+			}
+			if debounceDelay > 0 {
+				if !debounceTimer.Stop() && debouncedLog != nil {
+					<-debounceTimer.C
+				}
+				debounceTimer.Reset(debounceDelay)
+				debouncedLog = m
+				continue
 			}
 			msg = m
 		}

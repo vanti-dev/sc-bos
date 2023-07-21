@@ -26,7 +26,7 @@ type factory struct{}
 
 func (f factory) New(services auto.Services) service.Lifecycle {
 	a := &autoImpl{Services: services}
-	a.Service = service.New(service.MonoApply(a.applyConfig))
+	a.Service = service.New(service.MonoApply(a.applyConfig), service.WithParser(config.ReadBytes))
 	a.Logger = a.Logger.Named(AutoName)
 	return a
 }
