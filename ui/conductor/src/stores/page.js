@@ -22,7 +22,7 @@ export const usePageStore = defineStore('page', () => {
    *
    */
   function closeSidebar() {
-    toggleSidebar();
+    showSidebar.value = false;
     sidebarTitle.value = '';
     sidebarData.value = {};
     listedDevice.value = {};
