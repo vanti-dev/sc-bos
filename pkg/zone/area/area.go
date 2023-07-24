@@ -2,7 +2,9 @@ package area
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -60,9 +62,32 @@ func (a *Area) applyConfig(ctx context.Context, cfg config.Root) error {
 	services := a.services
 	services.Devices = &zone.Devices{}
 
-	featureImpls := make([]service.Lifecycle, len(a.features))
-	for i, feature := range a.features {
-		featureImpls[i] = feature.New(services)
+	type serviceConfig struct {
+		service.Lifecycle
+		cfg []byte
+	}
+	serviceConfigs := make([]serviceConfig, 0, len(a.features)+len(cfg.Drivers))
+	featureImpls := make([]service.Lifecycle, 0, len(a.features)+len(cfg.Drivers))
+	for _, feature := range a.features {
+		impl := feature.New(services)
+		serviceConfigs = append(serviceConfigs, serviceConfig{Lifecycle: impl, cfg: cfg.Raw})
+		featureImpls = append(featureImpls, impl)
+	}
+
+	driverServices := driver.Services{
+		Logger:          a.services.Logger.Named("driver"),
+		Node:            a.services.Node,
+		ClientTLSConfig: a.services.ClientTLSConfig,
+		HTTPMux:         a.services.HTTPMux,
+	}
+	for _, d := range cfg.Drivers {
+		f, ok := a.services.DriverFactories[d.Type]
+		if !ok {
+			return fmt.Errorf("unsupported driver type %v", d.Type)
+		}
+		impl := f.New(driverServices)
+		serviceConfigs = append(serviceConfigs, serviceConfig{Lifecycle: impl, cfg: d.Raw})
+		featureImpls = append(featureImpls, impl)
 	}
 
 	// make the zone area implement the ServicesApi
@@ -80,8 +105,8 @@ func (a *Area) applyConfig(ctx context.Context, cfg config.Root) error {
 
 	// configure and start all the features
 	// might want to split the configure and start steps to pick up on any config errors early?
-	for _, impl := range featureImpls {
-		_, err := impl.Configure(cfg.Raw)
+	for _, impl := range serviceConfigs {
+		_, err := impl.Configure(impl.cfg)
 		if err != nil {
 			// change this if we ever want to support incomplete area deployments
 			return err
