@@ -80,10 +80,14 @@ func analyseStatusLogs(ctx context.Context, source config.Source, c <-chan *gen.
 				return ctx.Err()
 			}
 			if debounceDelay > 0 {
-				if !debounceTimer.Stop() && debouncedLog != nil {
-					<-debounceTimer.C
+				// Checking for level changes means that devices that send a constant stream of description changes
+				// don't cause an infinite debounce where we never actually store the alert
+				if debouncedLog == nil || m.Level != debouncedLog.Level {
+					if !debounceTimer.Stop() && debouncedLog != nil {
+						<-debounceTimer.C
+					}
+					debounceTimer.Reset(debounceDelay)
 				}
-				debounceTimer.Reset(debounceDelay)
 				debouncedLog = m
 				continue
 			}
