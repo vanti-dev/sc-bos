@@ -52,7 +52,7 @@ import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 
 const pageStore = usePageStore();
-const {sidebarData} = storeToRefs(pageStore);
+const {sidebarData, listedDevice} = storeToRefs(pageStore);
 
 const deviceInfo = computed(() => {
   // Initialize variables for info and subInfo
@@ -60,9 +60,11 @@ const deviceInfo = computed(() => {
   const subInfo = {};
 
   // Check if sidebarData has metadata property
-  if (sidebarData?.value?.metadata) {
+  if (sidebarData?.value?.metadata || listedDevice?.value?.metadata) {
+    const deviceData = sidebarData?.value?.metadata || listedDevice?.value?.metadata;
+
     // Get all properties of metadata as an array of [key, value] pairs
-    const data = Object.entries(sidebarData.value.metadata);
+    const data = Object.entries(deviceData);
 
     // Filter out properties that are traitsList or membership or empty arrays or undefined values
     const filtered = data.filter(([key, value]) => {
@@ -85,7 +87,7 @@ const deviceInfo = computed(() => {
             info['zone'] = value?.zone ? value.zone : value.title;
             // Add any properties from moreMap array to info object
             if (value.moreMap.length) {
-              for (const more of sidebarData.value.metadata.location.moreMap) {
+              for (const more of deviceData.location.moreMap) {
                 info[more[0]] = more[1];
               }
             }
