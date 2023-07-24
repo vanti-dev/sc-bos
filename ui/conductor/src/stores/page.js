@@ -9,6 +9,8 @@ export const usePageStore = defineStore('page', () => {
   // for use when targeting a specific node
   const sidebarNode = ref({name: ''});
 
+  const listedDevice = ref({});
+
   /**
    *
    */
@@ -23,6 +25,7 @@ export const usePageStore = defineStore('page', () => {
     toggleSidebar();
     sidebarTitle.value = '';
     sidebarData.value = {};
+    listedDevice.value = {};
   };
 
   //
@@ -39,6 +42,7 @@ export const usePageStore = defineStore('page', () => {
     sidebarData,
     sidebarTitle,
     sidebarNode,
+    listedDevice,
     toggleSidebar,
     closeSidebar,
 
