@@ -39,9 +39,12 @@ func (r *Root) WriteConfig(out io.Writer) error {
 func (r *Root) Hydrate() {
 	for mode, options := range r.Modes {
 		for oi, option := range options {
+			if option.Key == "" {
+				option.Key = mode
+			}
 			for si, source := range option.Sources {
 				if source.Mode == "" {
-					source.Mode = mode
+					source.Mode = option.Key
 				}
 				if source.Value == "" {
 					source.Value = option.Name
@@ -61,13 +64,16 @@ func (r *Root) Unhydrate() {
 	for mode, options := range r.Modes {
 		for oi, option := range options {
 			for si, source := range option.Sources {
-				if source.Mode == mode {
+				if source.Mode == option.Key {
 					source.Mode = ""
 				}
 				if source.Value == option.Name {
 					source.Value = ""
 				}
 				option.Sources[si] = source
+			}
+			if option.Key == mode {
+				option.Key = ""
 			}
 			options[oi] = option
 		}
@@ -99,14 +105,15 @@ func (r Root) AllDeviceNames() []string {
 }
 
 type Option struct {
-	Name    string
-	Sources []SourceOrString
+	Name    string           `json:"name,omitempty"` // The name of the option. Used as default for OptionSource.Value
+	Key     string           `json:"key,omitempty"`  // The mode name, defaults to Root.Modes key. e.g. "occupancy". Used as default for OptionSource.Mode
+	Sources []SourceOrString `json:"sources,omitempty"`
 }
 
 type OptionSource struct {
-	Devices []string
-	Mode    string // defaults to Root.Modes key
-	Value   string // defaults to Option.Name
+	Devices []string `json:"devices,omitempty"`
+	Mode    string   `json:"mode,omitempty"`  // The mode name, defaults to Option.Key. e.g. "occupancy"
+	Value   string   `json:"value,omitempty"` // The value used by this option, defaults to Option.Name. e.g. "occupied"
 }
 
 // SourceOrString is like OptionSource but for simple cases like `{"devices": ["foo"]}` un/marshals from/to `"foo"`.
