@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import {computed, reactive, watch} from 'vue';
+import {reactive, watch} from 'vue';
 import {listDevices} from '@/api/ui/devices';
 import {newActionTracker} from '@/api/resource';
 import {usePageStore} from '@/stores/page';
@@ -47,7 +47,9 @@ watch(() => pageStore.sidebarTitle, (newVal, oldVal) => {
       }
     };
 
-    listDevices(newQuery, listedDevice);
+    if (newVal) {
+      listDevices(newQuery, listedDevice);
+    }
   }
 }, {immediate: true, deep: true});
 
