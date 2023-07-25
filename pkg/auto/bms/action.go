@@ -3,10 +3,10 @@ package bms
 import (
 	"context"
 	"fmt"
+	"math"
 	"time"
 
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -86,7 +86,7 @@ type cacheWriteActions struct {
 func (a cacheWriteActions) UpdateAirTemperature(ctx context.Context, req *traits.UpdateAirTemperatureRequest, ws *WriteState) error {
 	if oldWrite, ok := ws.AirTemperatures[req.Name]; ok {
 		if cacheValid(oldWrite, ws.Now(), a.cacheExpiry, func(v *traits.AirTemperature) bool {
-			return proto.Equal(v.GetTemperatureSetPoint(), req.GetState().GetTemperatureSetPoint())
+			return math.Abs(v.GetTemperatureSetPoint().GetValueCelsius()-req.GetState().GetTemperatureSetPoint().GetValueCelsius()) < 0.01
 		}) {
 			oldWrite.hit()
 			ws.AirTemperatures[req.Name] = oldWrite // update the hit count
