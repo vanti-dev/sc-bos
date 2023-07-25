@@ -4,7 +4,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/testing/protocmp"
+
+	"github.com/smart-core-os/sc-api/go/traits"
 )
 
 func logWrites(logger *zap.Logger, rs *ReadState, ws *WriteState, counts *ActionCounts, ttl time.Duration, err error) {
@@ -59,4 +64,20 @@ type formattedDuration time.Duration
 
 func (f formattedDuration) String() string {
 	return formatDuration(time.Duration(f))
+}
+
+func logReads(logger *zap.Logger, oldState, newState *ReadState) {
+	if oldState == nil {
+		logger.Debug("processReadState first run")
+		return
+	}
+	if diff := cmp.Diff(oldState, newState,
+		cmpopts.IgnoreFields(ReadState{}, "Now", "Config", "StartTime"),
+		cmpopts.IgnoreFields(Value[*traits.AirTemperature]{}, "At", "Hit"),
+		cmpopts.IgnoreFields(Value[string]{}, "At", "Hit"),
+		cmpopts.IgnoreFields(Value[*traits.ModeValues]{}, "At", "Hit"),
+		protocmp.Transform()); diff != "" {
+		logger.Debug("processReadState read state changed", zap.String("diff", diff))
+		return
+	}
 }

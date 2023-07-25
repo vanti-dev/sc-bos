@@ -31,6 +31,7 @@ type Root struct {
 	LogDeviceWrites     bool `json:"logDeviceWrites,omitempty"`     // Log each write to a device as they happen
 	LogDuplicateChanges bool `json:"logDuplicateChanges,omitempty"` // Log even if all writes were blocked by caching
 	LogTTLDelays        bool `json:"logTTLDelays,omitempty"`        // Log the TTL when no writes were performed
+	LogReads            bool `json:"logReads,omitempty"`            // Log each read from a device as they happen. Warning this is noisy
 
 	// How long should a past write affect future writes.
 	WriteCacheExpiry *jsontypes.Duration `json:"writeCacheExpiry,omitempty"` // Defaults to no expiry.

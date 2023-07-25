@@ -148,10 +148,17 @@ func (a *Auto) processReadStates(ctx context.Context, readStates <-chan *ReadSta
 	writeState := NewWriteState()
 	writeState.Now = a.now
 
+	var lastProcessedState *ReadState
 	processStateFn := func(readState *ReadState) error {
 		cancelTtlTimer()
 		cancelRetryTimer()
 		logger := a.logger.With(zap.String("auto", readState.Config.Name))
+
+		if readState.Config.LogReads {
+			logReads(logger, lastProcessedState, readState)
+			lastProcessedState = readState
+		}
+
 		actions := actions
 		if readState.Config.DryRun {
 			actions = NilActions{}
