@@ -217,12 +217,16 @@ func mergeOccupancy(all []*traits.Occupancy) (*traits.Occupancy, error) {
 				// We do this by recording the earliest unoccupied time in out.StateChangeTime, and the earliest occupied time
 				// in earliestOccupiedTime.
 				// If after processing all the records we determine that we should be occupied then we swap out the state change time.
-				if earliestOccupiedTime.IsZero() || earliestOccupiedTime.After(occupancy.StateChangeTime.AsTime()) {
-					earliestOccupiedTime = occupancy.StateChangeTime.AsTime()
+				if occupancy.StateChangeTime != nil {
+					if earliestOccupiedTime.IsZero() || earliestOccupiedTime.After(occupancy.StateChangeTime.AsTime()) {
+						earliestOccupiedTime = occupancy.StateChangeTime.AsTime()
+					}
 				}
 			default:
-				if latestUnoccupiedTime.IsZero() || latestUnoccupiedTime.Before(occupancy.StateChangeTime.AsTime()) {
-					latestUnoccupiedTime = occupancy.StateChangeTime.AsTime()
+				if occupancy.StateChangeTime != nil {
+					if latestUnoccupiedTime.IsZero() || latestUnoccupiedTime.Before(occupancy.StateChangeTime.AsTime()) {
+						latestUnoccupiedTime = occupancy.StateChangeTime.AsTime()
+					}
 				}
 			}
 		}
