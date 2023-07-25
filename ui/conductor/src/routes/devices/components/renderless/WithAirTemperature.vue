@@ -43,7 +43,7 @@ function doUpdateAirTemperature(req) {
   if (typeof req === 'number') {
     req = {
       state: {temperatureSetPoint: {valueCelsius: /** @type {number} */ req}},
-      updateMask: {paths: ['temperature_set_point']}
+      updateMask: {pathsList: ['temperature_set_point']}
     };
   }
   if (!req.hasOwnProperty('state')) {
