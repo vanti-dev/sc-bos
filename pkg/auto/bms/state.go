@@ -53,7 +53,7 @@ func (s *ReadState) Clone() *ReadState {
 
 type WriteState struct {
 	Now     func() time.Time // override for testing
-	At      time.Time
+	T0, T1  time.Time
 	Reasons []string
 
 	Modes           map[DeviceName]Value[*traits.ModeValues]
@@ -62,12 +62,13 @@ type WriteState struct {
 
 // Before should be called before processing starts.
 func (ws *WriteState) Before() {
-	ws.At = ws.Now()
+	ws.T0 = ws.Now()
 	ws.Reasons = ws.Reasons[:0] // save some allocations
 }
 
 // After should be called after processing has completed.
 func (ws *WriteState) After() {
+	ws.T1 = ws.Now()
 }
 
 // CopyFromReadState copies the values from rs into ws.

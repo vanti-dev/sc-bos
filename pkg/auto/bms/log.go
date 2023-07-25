@@ -17,6 +17,7 @@ func logWrites(logger *zap.Logger, rs *ReadState, ws *WriteState, counts *Action
 	case err != nil:
 		logger.Warn("processReadState failed; scheduling retry",
 			zap.Error(err),
+			zap.Stringer("time", formattedDuration(ws.T1.Sub(ws.T0))),
 			zap.Stringer("retryAfter", formattedDuration(ttl)),
 		)
 	case counts.TotalWrites > 0 || rs.Config.LogDuplicateChanges:
@@ -24,10 +25,12 @@ func logWrites(logger *zap.Logger, rs *ReadState, ws *WriteState, counts *Action
 		logger.Debug("processReadState complete",
 			zap.Strings("changes", counts.Changes()),
 			zap.Strings("reasons", ws.Reasons),
+			zap.Stringer("time", formattedDuration(ws.T1.Sub(ws.T0))),
 			zap.Stringer("ttl", formattedDuration(ttl)))
 	case ttl > 0 && rs.Config.LogTTLDelays:
 		logger.Debug("processReadState made no changes",
 			zap.Strings("reasons", ws.Reasons),
+			zap.Stringer("time", formattedDuration(ws.T1.Sub(ws.T0))),
 			zap.Stringer("ttl", formattedDuration(ttl)))
 	}
 }
