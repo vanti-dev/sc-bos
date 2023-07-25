@@ -55,7 +55,9 @@ func Changes[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, op
 	const successfulPullMultiplier = 4
 	pullSuccessTimer := time.AfterFunc(math.MaxInt64, func() {
 		attempts := resetErr()
-		conf.logger.Debug("pulls are now succeeding", zap.Int("attempts", attempts))
+		if attempts > 5 { // we only log failure after 5 attempts
+			conf.logger.Debug("pulls are now succeeding", zap.Int("attempts", attempts))
+		}
 	})
 	pullSuccessTimer.Stop() // avoid the timer actually running, the above was just to avoid nil timers
 
