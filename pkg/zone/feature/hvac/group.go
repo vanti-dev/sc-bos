@@ -60,6 +60,7 @@ func (g *Group) UpdateAirTemperature(ctx context.Context, request *traits.Update
 	var allErrs []error
 	var allRes []*traits.AirTemperature
 	for _, name := range g.names {
+		request := proto.Clone(request).(*traits.UpdateAirTemperatureRequest)
 		request.Name = name
 		res, err := g.client.UpdateAirTemperature(ctx, request)
 		if err != nil {
