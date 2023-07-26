@@ -10,6 +10,7 @@
         :footer-props="footerProps"
         :loading="alerts.loading"
         class="pt-4"
+        :class="{'hide-pagination': modifyFooter}"
         @click:row="showNotification">
       <template #top>
         <filters
@@ -96,6 +97,7 @@ const dataTableOptions = ref({
   page: 1
 });
 const itemsPerPageOptions = [20, 50, 100];
+const modifyFooter = ref(false);
 
 const name = computed(() => hubStore.hubNode?.name ?? '');
 const alerts = reactive(useAlertsApi(name, query));
@@ -184,6 +186,7 @@ watchEffect(() => {
   const fieldCount = queryFieldCount.value;
 
   if (fieldCount >= 2) {
+    modifyFooter.value = true;
     const nextPageToken = alerts.nextPageToken;
 
     // If there is a next page token 'ready' to be used, then we know there are more pages available.
@@ -210,6 +213,7 @@ watchEffect(() => {
       };
     }
   } else {
+    modifyFooter.value = false;
     // If there are less than 2 filters, then we can reset the pagination options.
     dataTableOptions.value = {
       itemsPerPage: 20,
@@ -275,5 +279,13 @@ async function showNotification(item) {
 
 .v-data-table :deep(tr:hover) {
   cursor: pointer;
+}
+</style>
+
+<style lang="scss">
+.hide-pagination {
+  .v-data-footer__pagination {
+    display: none;
+  }
 }
 </style>
