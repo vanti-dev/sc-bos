@@ -114,7 +114,7 @@ func (c *Controller) startSystems() (*service.Map, error) {
 
 func (c *Controller) startZones() (*service.Map, error) {
 	ctxServices := zone.Services{
-		Logger:          c.Logger.Named("auto"),
+		Logger:          c.Logger.Named("zone"),
 		Node:            c.Node,
 		ClientTLSConfig: c.ClientTLSConfig,
 		HTTPMux:         c.Mux,

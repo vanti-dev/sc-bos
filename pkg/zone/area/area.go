@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -37,6 +39,7 @@ var Factory = FactoryWithFeatures(DefaultFeatures...)
 // FactoryWithFeatures returns an area with the given features.
 func FactoryWithFeatures(features ...zone.Factory) zone.Factory {
 	return zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
+		services.Logger = services.Logger.Named("area")
 		f := &Area{
 			services: services,
 			features: features,
@@ -54,12 +57,12 @@ type Area struct {
 
 func (a *Area) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := node.AnnounceContext(ctx, a.services.Node)
-
 	if cfg.Metadata != nil {
 		announce.Announce(cfg.Name, node.HasMetadata(cfg.Metadata))
 	}
 
 	services := a.services
+	services.Logger = a.services.Logger.With(zap.String("zone", cfg.Name))
 	services.Devices = &zone.Devices{}
 
 	type serviceConfig struct {
@@ -75,10 +78,10 @@ func (a *Area) applyConfig(ctx context.Context, cfg config.Root) error {
 	}
 
 	driverServices := driver.Services{
-		Logger:          a.services.Logger.Named("driver"),
-		Node:            a.services.Node,
-		ClientTLSConfig: a.services.ClientTLSConfig,
-		HTTPMux:         a.services.HTTPMux,
+		Logger:          services.Logger.Named("driver"),
+		Node:            services.Node,
+		ClientTLSConfig: services.ClientTLSConfig,
+		HTTPMux:         services.HTTPMux,
 	}
 	for _, d := range cfg.Drivers {
 		f, ok := a.services.DriverFactories[d.Type]
