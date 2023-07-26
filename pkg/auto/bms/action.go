@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -68,6 +69,23 @@ func (a clientActions) UpdateModeValues(ctx context.Context, req *traits.UpdateM
 		V:   got,
 		At:  ws.Now(),
 		Err: err,
+	}
+	if err != nil {
+		return err
+	}
+	// check the response matches what we're expecting (i.e. did some but not all modes get written)
+	var mismatchValues []string
+	for key, sendVal := range req.ModeValues.Values {
+		if got.Values[key] != sendVal {
+			mismatchValues = append(mismatchValues, fmt.Sprintf("%s[%s!=%s]", key, got.Values[key], sendVal))
+		}
+	}
+	if len(mismatchValues) > 0 {
+		return UnexpectedResponseError{
+			Message: fmt.Sprintf("mode %v", strings.Join(mismatchValues, ",")),
+			Got:     got,
+			Want:    req.ModeValues,
+		}
 	}
 	return err
 }
