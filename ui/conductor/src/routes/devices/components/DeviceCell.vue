@@ -5,56 +5,56 @@
         v-slot="{resource}"
         :name="props.item.name"
         :paused="props.paused">
-      <EnterLeaveEventCell v-bind="resource"/>
-      <StatusAlert :resource="resource.streamError"/>
+      <EnterLeaveEventCell v-if="!resource.streamError" v-bind="resource"/>
+      <StatusAlert v-else :resource="resource.streamError"/>
     </WithEnterLeave>
     <WithElectricDemand
         v-if="hasCell('ElectricDemand')"
         v-slot="{resource}"
         :name="props.item.name"
         :paused="props.paused">
-      <ElectricDemandCell v-bind="resource"/>
-      <StatusAlert :resource="resource.streamError"/>
+      <ElectricDemandCell v-if="!resource.streamError" v-bind="resource"/>
+      <StatusAlert v-else icon="mdi-meter-electric-outline" :resource="resource.streamError"/>
     </WithElectricDemand>
     <WithMeter
         v-if="hasCell('Meter')"
         v-slot="{resource, info}"
         :name="props.item.name"
         :paused="props.paused">
-      <MeterCell v-bind="resource" :unit="info?.response?.unit"/>
-      <StatusAlert :resource="resource.streamError"/>
+      <MeterCell v-if="!resource.streamError" v-bind="resource" :unit="info?.response?.unit"/>
+      <StatusAlert v-else icon="mdi-counter" :resource="resource.streamError"/>
     </WithMeter>
     <WithAirTemperature
         v-if="hasCell('AirTemperature')"
         v-slot="{resource}"
         :name="props.item.name"
         :paused="props.paused">
-      <AirTemperatureCell v-bind="resource"/>
-      <StatusAlert :resource="resource.streamError"/>
+      <AirTemperatureCell v-if="!resource.streamError" v-bind="resource"/>
+      <StatusAlert v-else icon="mdi-thermometer-low" :resource="resource.streamError"/>
     </WithAirTemperature>
     <WithLighting
         v-if="hasCell('Light')"
         v-slot="{resource}"
         :name="props.item.name"
         :paused="props.paused">
-      <LightCell v-bind="resource"/>
-      <StatusAlert :resource="resource.streamError"/>
+      <LightCell v-if="!resource.streamError" v-bind="resource"/>
+      <StatusAlert v-else icon="mdi-lightbulb-outline" :resource="resource.streamError"/>
     </WithLighting>
     <WithOccupancy
         v-if="hasCell('Occupancy')"
         v-slot="{resource}"
         :name="props.item.name"
         :paused="props.paused">
-      <OccupancyCell v-bind="resource"/>
-      <StatusAlert :resource="resource.streamError"/>
+      <OccupancyCell v-if="!resource.streamError" v-bind="resource"/>
+      <StatusAlert v-else icon="mdi-crosshairs" :resource="resource.streamError"/>
     </WithOccupancy>
     <WithStatus
         v-if="hasCell('StatusLog')"
         v-slot="{resource}"
         :name="props.item.name"
         :paused="props.paused">
-      <StatusLogCell v-bind="resource"/>
-      <StatusAlert :resource="resource.streamError"/>
+      <StatusLogCell v-if="!resource.streamError" v-bind="resource"/>
+      <StatusAlert v-else icon="mdi-connection" :resource="resource.streamError"/>
     </WithStatus>
   </span>
 </template>
@@ -85,8 +85,7 @@ const props = defineProps({
   },
   item: {
     type: Object,
-    default: () => {
-    }
+    default: () => {}
   }
 });
 const visibleCells = computed(() => {

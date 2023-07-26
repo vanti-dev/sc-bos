@@ -75,15 +75,12 @@ watch(
 //
 //
 // UI error handling
-let unwatchLightError;
 let unwatchUpdateError;
 onMounted(() => {
-  unwatchLightError = errorStore.registerValue(lightValue);
   unwatchUpdateError = errorStore.registerTracker(updateValue);
 });
 onUnmounted(() => {
   closeResource(lightValue);
-  if (unwatchLightError) unwatchLightError();
   if (unwatchUpdateError) unwatchUpdateError();
 });
 </script>
