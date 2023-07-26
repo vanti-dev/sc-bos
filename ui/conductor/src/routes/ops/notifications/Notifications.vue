@@ -70,7 +70,7 @@ import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
-import {computed, reactive, ref, watch, watchEffect} from 'vue';
+import {computed, reactive, ref, watch} from 'vue';
 
 const notifications = useNotifications();
 const alertMetadata = useAlertMetadata();
@@ -97,7 +97,7 @@ const dataTableOptions = ref({
   page: 1
 });
 const itemsPerPageOptions = [20, 50, 100];
-const modifyFooter = ref(false);
+const modifyFooter = computed(() => queryMetadataCount.value === undefined);
 
 const name = computed(() => hubStore.hubNode?.name ?? '');
 const alerts = reactive(useAlertsApi(name, query));
@@ -113,10 +113,6 @@ watch(
 const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
 const zones = computed(() => Object.keys(alertMetadata.zoneCountsMap).sort());
 const subsystems = computed(() => Object.keys(alertMetadata.subsystemCountsMap).sort());
-
-const footerProps = ref({
-  itemsPerPageOptions // Set the pagination options
-});
 
 const queryFieldCount = computed(() => Object.values(query).filter((value) => value !== undefined).length);
 
@@ -248,7 +244,7 @@ const setFooterProps = computed(() => {
 watch(
     query,
     () => {
-    // Reset the page to 1
+      // Reset the page to 1
       dataTableOptions.value = {
         ...dataTableOptions.value,
         page: 1
@@ -256,12 +252,6 @@ watch(
     },
     {immediate: true, deep: true}
 );
-
-watch(queryMetadataCount, () => {
-  // Set to true so pagination will be hidden in footer (x - y of z)
-  if (queryMetadataCount.value === undefined) modifyFooter.value = true;
-  else modifyFooter.value = false; // Set to false so pagination will be shown in footer (x - y of z)
-});
 
 const allHeaders = [
   {text: 'Timestamp', value: 'createTime', width: '15em'},
