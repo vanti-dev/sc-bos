@@ -6,11 +6,12 @@
       color="error">
     <template #activator="{ on, attrs }">
       <v-icon
+          class="mx-auto"
           color="error"
-          size="20"
+          size="21"
           v-bind="attrs"
           v-on="on">
-        mdi-alert-circle-outline
+        {{ props.icon }}
       </v-icon>
     </template>
     <span class="error-name">{{ errorDetails.errorName }}</span>
@@ -26,6 +27,10 @@ const props = defineProps({
   resource: {
     type: Object,
     default: () => null
+  },
+  icon: {
+    type: String,
+    default: 'mdi-alert-circle-outline'
   }
 });
 

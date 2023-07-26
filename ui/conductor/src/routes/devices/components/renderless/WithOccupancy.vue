@@ -7,10 +7,9 @@
 <script setup>
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullOccupancy} from '@/api/sc/traits/occupancy';
-import {useErrorStore} from '@/components/ui-error/error';
-import {onMounted, onUnmounted, reactive, watch} from 'vue';
+import {onUnmounted, reactive, watch} from 'vue';
 
-const errorStore = useErrorStore();
+
 const props = defineProps({
   name: {
     type: String,
@@ -50,18 +49,8 @@ watch(
     {immediate: true, deep: true, flush: 'sync'}
 );
 
-//
-//
-// UI error handling
-let unwatchOccupancyError;
-
-onMounted(() => {
-  unwatchOccupancyError = errorStore.registerValue(occupancyValue);
-});
-
 onUnmounted(() => {
   closeResource(occupancyValue);
-  if (unwatchOccupancyError) unwatchOccupancyError();
 });
 </script>
 

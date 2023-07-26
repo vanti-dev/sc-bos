@@ -81,7 +81,6 @@ watch(
 const errorHandlers = [];
 onMounted(() => {
   errorHandlers.push(
-      errorStore.registerValue(airTemperatureResource),
       errorStore.registerTracker(updateTracker)
   );
 });
