@@ -10,21 +10,22 @@ import {computed, onMounted, onUnmounted, reactive} from 'vue';
 /** @typedef {import('@sc-bos/ui-gen/proto/alerts_pb').AlertMetadata} AlertMetadata */
 
 export const useAlertMetadata = defineStore('alertMetadata', () => {
-  const alertMetadata = reactive(/** @type {ResourceValue<AlertMetadata.AsObject, AlertMetadata>} */newResourceValue());
+  const alertMetadata = reactive(
+      /** @type {ResourceValue<AlertMetadata.AsObject, AlertMetadata>} */ newResourceValue()
+  );
   const appConfig = useAppConfigStore();
   const hubStore = useHubStore();
-
 
   /**
    * @return {Promise}
    */
   function init() {
     // wait for config to load
-    return appConfig.configPromise.then(config => {
+    return appConfig.configPromise.then((config) => {
       if (config.proxy) {
         // wait for hub info to load
         hubStore.hubPromise
-            .then(hub => {
+            .then((hub) => {
               pullAlertMetadata({name: hub.name, updatesOnly: false}, alertMetadata);
             })
             .catch(() => {
@@ -63,7 +64,8 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
 
     init,
 
-    totalCount: computed(() => alertMetadata.value?.totalCount),
+    // Return undefined when the total count is not known
+    totalCount: computed(() => (alertMetadata.value?.totalCount === 0 ? 0 : undefined)),
     acknowledgedCountMap,
     resolvedCountMap,
     floorCountsMap,
