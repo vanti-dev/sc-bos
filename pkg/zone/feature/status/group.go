@@ -43,7 +43,7 @@ func (g *Group) GetCurrentStatus(ctx context.Context, request *gen.GetCurrentSta
 		return nil, multierr.Combine(allErrs...)
 	}
 
-	if allErrs != nil {
+	if len(allErrs) > 0 {
 		if g.logger != nil {
 			// don't bother logging if all the errors are NotFound or Unimplemented
 			var ignoreCount int
@@ -53,7 +53,9 @@ func (g *Group) GetCurrentStatus(ctx context.Context, request *gen.GetCurrentSta
 				}
 			}
 			if ignoreCount < len(allErrs) {
-				g.logger.Warn("some status logs failed", zap.Errors("errors", allErrs))
+				g.logger.Warn("some status logs failed to get",
+					zap.Int("success", len(g.names)-len(allErrs)), zap.Int("failed", len(allErrs)),
+					zap.Errors("errors", allErrs))
 			}
 		}
 	}

@@ -43,9 +43,11 @@ func (g *Group) GetDemand(ctx context.Context, request *traits.GetDemandRequest)
 		return nil, multierr.Combine(allErrs...)
 	}
 
-	if allErrs != nil {
+	if len(allErrs) > 0 {
 		if g.logger != nil {
-			g.logger.Warn("some electrics failed", zap.Errors("errors", allErrs))
+			g.logger.Warn("some electrics failed to get",
+				zap.Int("success", len(g.names)-len(allErrs)), zap.Int("failed", len(allErrs)),
+				zap.Errors("errors", allErrs))
 		}
 	}
 	return mergeDemand(allRes)

@@ -45,9 +45,11 @@ func (g *Group) GetAirTemperature(ctx context.Context, request *traits.GetAirTem
 		return nil, multierr.Combine(allErrs...)
 	}
 
-	if allErrs != nil {
+	if len(allErrs) > 0 {
 		if g.logger != nil {
-			g.logger.Warn("some hvacs failed", zap.Errors("errors", allErrs))
+			g.logger.Warn("some hvacs failed to get",
+				zap.Int("success", len(g.names)-len(allErrs)), zap.Int("failed", len(allErrs)),
+				zap.Errors("errors", allErrs))
 		}
 	}
 	return mergeAirTemperature(allRes)
@@ -74,9 +76,11 @@ func (g *Group) UpdateAirTemperature(ctx context.Context, request *traits.Update
 		return nil, multierr.Combine(allErrs...)
 	}
 
-	if allErrs != nil {
+	if len(allErrs) > 0 {
 		if g.logger != nil {
-			g.logger.Warn("some hvacs failed", zap.Errors("errors", allErrs))
+			g.logger.Warn("some hvacs failed to update",
+				zap.Int("success", len(g.names)-len(allErrs)), zap.Int("failed", len(allErrs)),
+				zap.Errors("errors", allErrs))
 		}
 	}
 	return mergeAirTemperature(allRes)

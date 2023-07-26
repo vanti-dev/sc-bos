@@ -98,7 +98,11 @@ func (g *Group) GetModeValues(ctx context.Context, request *traits.GetModeValues
 		return nil, multierr.Combine(allErrs...)
 	}
 	if len(allErrs) > 0 {
-		g.logger.Warn("some devices failed to get mode values", zap.Errors("errors", allErrs))
+		if g.logger != nil {
+			g.logger.Warn("some modes failed to get",
+				zap.Int("success", len(results)-len(allErrs)), zap.Int("failed", len(allErrs)),
+				zap.Errors("errors", allErrs))
+		}
 	}
 
 	return g.mergeModeValues(all), nil
@@ -170,7 +174,11 @@ func (g *Group) UpdateModeValues(ctx context.Context, request *traits.UpdateMode
 		return nil, multierr.Combine(allErrs...)
 	}
 	if len(allErrs) > 0 {
-		g.logger.Warn("some devices failed to update mode values", zap.Errors("errors", allErrs))
+		if g.logger != nil {
+			g.logger.Warn("some modes failed to update",
+				zap.Int("success", len(results)-len(allErrs)), zap.Int("failed", len(allErrs)),
+				zap.Errors("errors", allErrs))
+		}
 	}
 	return g.mergeModeValues(all), nil
 }
