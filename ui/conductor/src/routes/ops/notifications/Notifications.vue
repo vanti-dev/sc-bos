@@ -7,7 +7,7 @@
         :server-items-length="queryTotalCount"
         :item-class="rowClass"
         :options.sync="dataTableOptions"
-        :footer-props="{itemsPerPageOptions}"
+        :footer-props="footerProps"
         :loading="alerts.loading"
         class="pt-4"
         @click:row="showNotification">
@@ -69,7 +69,7 @@ import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
-import {computed, reactive, ref, watch} from 'vue';
+import {computed, reactive, ref, watch, watchEffect} from 'vue';
 
 const notifications = useNotifications();
 const alertMetadata = useAlertMetadata();
@@ -99,17 +99,22 @@ const itemsPerPageOptions = [20, 50, 100];
 
 const name = computed(() => hubStore.hubNode?.name ?? '');
 const alerts = reactive(useAlertsApi(name, query));
-watch(dataTableOptions, () => {
-  alerts.pageSize = dataTableOptions.value.itemsPerPage;
-  alerts.pageIndex = dataTableOptions.value.page - 1;
-}, {deep: true, immediate: true});
+watch(
+    dataTableOptions,
+    () => {
+      alerts.pageSize = dataTableOptions.value.itemsPerPage;
+      alerts.pageIndex = dataTableOptions.value.page - 1;
+    },
+    {deep: true, immediate: true}
+);
 
 const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
 const zones = computed(() => Object.keys(alertMetadata.zoneCountsMap).sort());
 const subsystems = computed(() => Object.keys(alertMetadata.subsystemCountsMap).sort());
 
 // How many query fields are not undefined.
-const queryFieldCount = computed(() => Object.values(query).filter(value => value !== undefined).length);
+const queryFieldCount = computed(() => Object.values(query).filter((value) => value !== undefined).length);
+
 // How many items are there using the current query.
 // This isn't always accurate, but we do our best.
 const queryTotalCount = computed(() => {
@@ -118,6 +123,7 @@ const queryTotalCount = computed(() => {
     case 0:
       return alertMetadata.totalCount;
     case 1:
+      if (query.subsystem !== undefined) return alertMetadata.subsystemCountsMap[query.subsystem];
       if (query.floor !== undefined) return alertMetadata.floorCountsMap[query.floor];
       if (query.zone !== undefined) return alertMetadata.zoneCountsMap[query.zone];
       if (query.acknowledged !== undefined) return alertMetadata.acknowledgedCountMap[query.acknowledged];
@@ -138,11 +144,11 @@ const queryTotalCount = computed(() => {
       }
       break;
     case 2:
+      // case 3:
+      // if (hasMorePages.value) return alerts.pageItems.length + alerts.pageSize * alerts.pageIndex + 1;
+
       if (query.acknowledged !== undefined && query.resolved !== undefined) {
-        const key = [
-          query.acknowledged ? 'ack' : 'nack',
-          query.resolved ? 'resolved' : 'unresolved'
-        ].join('_');
+        const key = [query.acknowledged ? 'ack' : 'nack', query.resolved ? 'resolved' : 'unresolved'].join('_');
         return alertMetadata.needsAttentionCountsMap[key];
       }
       if (query.severityNotBelow !== undefined && query.severityNotAbove !== undefined) {
@@ -153,9 +159,67 @@ const queryTotalCount = computed(() => {
         }
         return total;
       }
+
       break;
+    default:
+      if (hasMorePages.value) return alerts.pageItems.length + alerts.pageSize * alerts.pageIndex + 1;
   }
+
   return undefined;
+});
+
+// Set the pagination options
+const footerProps = ref({
+  itemsPerPageOptions
+});
+
+// Compute whether there are more pages available
+const hasMorePages = computed(() => {
+  const totalCount = alertMetadata.value?.totalCount;
+  return totalCount === undefined || totalCount > 0;
+});
+
+// Use watchEffect to handle the side effect
+watchEffect(() => {
+  const fieldCount = queryFieldCount.value;
+
+  if (fieldCount >= 2) {
+    const nextPageToken = alerts.nextPageToken;
+
+    // If there is a next page token 'ready' to be used, then we know there are more pages available.
+    if (nextPageToken) {
+      // Keeping the item pp options and pagination object empty will show the next page button
+      footerProps.value = {
+        itemsPerPageOptions,
+        pagination: {} // clearing the pagination object will show the next page button
+      };
+      // If there is no next page token, then we know there are no more pages available.
+      // So if we change any of the filters, we need to reset the pagination options.
+      dataTableOptions.value = {
+        itemsPerPage: 20,
+        page: 1
+      };
+    } else {
+      // If there is no next page token, then we know there are no more pages available.
+      // We can block the next button by setting the itemsLength to the total number of items.
+      footerProps.value = {
+        itemsPerPageOptions,
+        pagination: {
+          itemsLength: alerts.allItems.length // setting the itemsLength will disable the next page button
+        }
+      };
+    }
+  } else {
+    // If there are less than 2 filters, then we can reset the pagination options.
+    dataTableOptions.value = {
+      itemsPerPage: 20,
+      page: 1
+    };
+    // We can also reset the footer props.
+    footerProps.value = {
+      itemsPerPageOptions
+    };
+  }
 });
 
 const allHeaders = [
@@ -168,11 +232,12 @@ const allHeaders = [
   {text: 'Description', value: 'description', width: '100%'},
   {text: 'Acknowledged', value: 'acknowledged', align: 'center', width: '12em'}
 ];
+
 // We don't include _some_ headers we're filtering out to avoid repetition,
 // for example if we're filtering to show Floor1, then all rows would show Floor1 in that column which we don't need to
 // see over and over.
 const headers = computed(() => {
-  return allHeaders.filter(header => {
+  return allHeaders.filter((header) => {
     if (!['floor', 'zone', 'subsystem', 'source', 'acknowledged'].includes(header.value)) return true;
     return query[header.value] === undefined;
   });
@@ -205,11 +270,10 @@ async function showNotification(item) {
 }
 
 :deep(.resolved) {
-  color: #FFF5 !important;
+  color: #fff5 !important;
 }
 
 .v-data-table :deep(tr:hover) {
   cursor: pointer;
 }
 </style>
-
