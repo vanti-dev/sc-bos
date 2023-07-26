@@ -182,6 +182,7 @@ watch(queryFieldCount, (newCount, oldCount) => {
   if (newCount !== oldCount) {
     // If the number of query fields changes, then we need to reset the pagination options.
     dataTableOptions.value = {
+      ...dataTableOptions.value,
       page: 1
     };
   }
