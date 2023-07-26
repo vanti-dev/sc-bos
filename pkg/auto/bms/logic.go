@@ -59,6 +59,8 @@ func processReadState(ctx context.Context, readState *ReadState, writeState *Wri
 		for _, target := range readState.Config.DeadbandModeTargets {
 			modeUpdates.setMode(target.Name, target.Key, target.On)
 		}
+	case !deadbandOn && deadbandChangesIn == 0:
+		// not configured
 	case !deadbandOn:
 		writeState.AddReasonf("day starts in %v", formatDuration(deadbandChangesIn))
 		for _, target := range readState.Config.DeadbandModeTargets {
