@@ -64,8 +64,8 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
 
     init,
 
-    // Return undefined when the total count is not known
-    totalCount: computed(() => (alertMetadata.value?.totalCount === 0 ? 0 : undefined)),
+    // Return 0 when the total count is not known
+    totalCount: computed(() => (alertMetadata.value?.totalCount ?? 0)),
     acknowledgedCountMap,
     resolvedCountMap,
     floorCountsMap,

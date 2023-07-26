@@ -114,79 +114,123 @@ const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
 const zones = computed(() => Object.keys(alertMetadata.zoneCountsMap).sort());
 const subsystems = computed(() => Object.keys(alertMetadata.subsystemCountsMap).sort());
 
-// How many query fields are not undefined.
+const footerProps = ref({
+  itemsPerPageOptions // Set the pagination options
+});
+
 const queryFieldCount = computed(() => Object.values(query).filter((value) => value !== undefined).length);
 
-// How many items are there using the current query.
-// This isn't always accurate, but we do our best.
-const queryTotalCount = computed(() => {
+/**
+ *  Calculate the total number of items in the query
+ *
+ * @param {AlertMetadata.AsObject} alertMetadata
+ * @param {typeof query} query
+ * @return {number|undefined}
+ */
+function calculateQueryMetadataCount(alertMetadata, query) {
   const fieldCount = queryFieldCount.value;
-  switch (fieldCount) {
-    case 0:
-      return alertMetadata.totalCount;
-    case 1:
-      if (query.subsystem !== undefined) return alertMetadata.subsystemCountsMap[query.subsystem];
-      if (query.floor !== undefined) return alertMetadata.floorCountsMap[query.floor];
-      if (query.zone !== undefined) return alertMetadata.zoneCountsMap[query.zone];
-      if (query.acknowledged !== undefined) return alertMetadata.acknowledgedCountMap[query.acknowledged];
-      if (query.resolved !== undefined) return alertMetadata.resolvedCountMap[query.resolved];
-      if (query.severityNotAbove !== undefined) {
-        let total = 0;
-        for (const [level, count] of Object.entries(alertMetadata.severityCountsMap)) {
-          if (level <= query.severityNotAbove) total += count;
-        }
-        return total;
-      }
-      if (query.severityNotBelow !== undefined) {
-        let total = 0;
-        for (const [level, count] of Object.entries(alertMetadata.severityCountsMap)) {
-          if (level >= query.severityNotBelow) total += count;
-        }
-        return total;
-      }
-      break;
-    case 2:
-    case 3:
-      if (hasMorePages.value) return alerts.pageItems.length + alerts.pageSize * alerts.pageIndex + 1;
-      if (query.acknowledged !== undefined && query.resolved !== undefined) {
-        const key = [query.acknowledged ? 'ack' : 'nack', query.resolved ? 'resolved' : 'unresolved'].join('_');
-        return alertMetadata.needsAttentionCountsMap[key];
-      }
-      if (query.severityNotBelow !== undefined && query.severityNotAbove !== undefined) {
-        let total = 0;
-        for (const [level, count] of Object.entries(alertMetadata.severityCountsMap)) {
-          if (level <= query.severityNotAbove) total += count;
-          if (level >= query.severityNotBelow) total += count;
-        }
-        return total;
-      }
 
-      break;
+  /**
+   * Get the total number of alerts for the given severity range
+   *
+   * @param {typeof query} query
+   * @param {AlertMetadata.AsObject} alertMetadata
+   * @return {number|undefined}
+   */
+  function getSeverityTotal(query, alertMetadata) {
+    let total = 0;
+    for (const [level, count] of Object.entries(alertMetadata.severityCountsMap)) {
+      if (level <= query.severityNotAbove && level >= query.severityNotBelow) total += count;
+    }
+    return total;
   }
 
-  return undefined;
+  /**
+   * Get the total number of alerts for the given needs attention range
+   *
+   * @param {typeof query} query
+   * @param {AlertMetadata.AsObject} alertMetadata
+   * @return {number|undefined}
+   */
+  function getNeedsAttentionTotal(query, alertMetadata) {
+    const key = [
+      query.acknowledged ? 'ack' : 'nack',
+      query.resolved ? 'resolved' : 'unresolved'
+    ].join('_');
+    return alertMetadata.needsAttentionCountsMap[key];
+  }
+
+  // Switch on the number of query fields
+  switch (fieldCount) {
+    // If there are no query fields, then we can use the total count from the metadata
+    case 0:
+      return alertMetadata.totalCount;
+    // If there is one query field, then we can use the count from the metadata
+    case 1:
+      for (const [key, value] of Object.entries(query)) {
+        if (value !== undefined) {
+          switch (key) {
+            case 'subsystem':
+              return alertMetadata.subsystemCountsMap[value];
+            case 'floor':
+              return alertMetadata.floorCountsMap[value];
+            case 'zone':
+              return alertMetadata.zoneCountsMap[value];
+            case 'acknowledged':
+              return alertMetadata.acknowledgedCountMap[value];
+            case 'resolved':
+              return alertMetadata.resolvedCountMap[value];
+            case 'severityNotAbove':
+              return getSeverityTotal(query, alertMetadata);
+            case 'severityNotBelow':
+              return getSeverityTotal(query, alertMetadata);
+            default:
+              return undefined;
+          }
+        }
+      }
+      break;
+    // If there are two or more query fields, then we need to calculate the total ourselves
+    case 2:
+      if (query.acknowledged !== undefined && query.resolved !== undefined) {
+        return getNeedsAttentionTotal(query, alertMetadata);
+      }
+      if (query.severityNotBelow !== undefined && query.severityNotAbove !== undefined) {
+        return getSeverityTotal(query, alertMetadata);
+      }
+      break;
+
+    default:
+      return undefined;
+  }
+}
+
+
+// Calculate the total number of items in the query
+const queryMetadataCount = computed(() => calculateQueryMetadataCount(alertMetadata, query));
+const queryTotalCount = computed(() => {
+  const totalCount = queryMetadataCount.value;
+
+  // If the query metadata count is defined, then we can use it
+  if (totalCount >= 0) return totalCount;
+  // If the query metadata count is undefined, then we need to calculate it ourselves
+  else return alerts.pageItems.length + alerts.pageSize * alerts.pageIndex + 1;
 });
 
-// Set the pagination options
-const footerProps = ref({
-  itemsPerPageOptions
-});
+// Watch the query object for changes
+watch(
+    query,
+    () => {
+      // Reset the page to 1
+      dataTableOptions.value = {
+        ...dataTableOptions.value,
+        page: 1
+      };
+    },
+    {immediate: true, deep: true}
+);
 
-// Compute whether there are more pages available
-const hasMorePages = computed(() => {
-  const totalCount = alertMetadata.value?.totalCount;
-  return totalCount === undefined || totalCount > 0;
-});
-
-
-watch(queryFieldCount, () => {
-  dataTableOptions.value = {
-    ...dataTableOptions.value,
-    page: 1
-  };
-}, {immediate: true, deep: true});
-
-// Use watchEffect to handle the side effect
+// Watch the query field count for changes
 watchEffect(() => {
   const fieldCount = queryFieldCount.value;
 
@@ -218,6 +262,7 @@ watchEffect(() => {
     footerProps.value = {itemsPerPageOptions};
   }
 });
+
 
 const allHeaders = [
   {text: 'Timestamp', value: 'createTime', width: '15em'},
@@ -261,7 +306,7 @@ async function showNotification(item) {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 :deep(table) {
   table-layout: fixed;
 }
@@ -273,11 +318,9 @@ async function showNotification(item) {
 .v-data-table :deep(tr:hover) {
   cursor: pointer;
 }
-</style>
 
-<style lang="scss">
 .hide-pagination {
-  .v-data-footer__pagination {
+  :deep(.v-data-footer__pagination) {
     display: none;
   }
 }
