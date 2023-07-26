@@ -7,7 +7,7 @@
         :server-items-length="queryTotalCount"
         :item-class="rowClass"
         :options.sync="dataTableOptions"
-        :footer-props="footerProps"
+        :footer-props="setFooterProps"
         :loading="alerts.loading"
         class="pt-4"
         :class="{ 'hide-pagination': modifyFooter }"
@@ -153,10 +153,7 @@ function calculateQueryMetadataCount(alertMetadata, query) {
    * @return {number|undefined}
    */
   function getNeedsAttentionTotal(query, alertMetadata) {
-    const key = [
-      query.acknowledged ? 'ack' : 'nack',
-      query.resolved ? 'resolved' : 'unresolved'
-    ].join('_');
+    const key = [query.acknowledged ? 'ack' : 'nack', query.resolved ? 'resolved' : 'unresolved'].join('_');
     return alertMetadata.needsAttentionCountsMap[key];
   }
 
@@ -199,12 +196,10 @@ function calculateQueryMetadataCount(alertMetadata, query) {
         return getSeverityTotal(query, alertMetadata);
       }
       break;
-
-    default:
-      return undefined;
   }
-}
 
+  return undefined;
+}
 
 // Calculate the total number of items in the query
 const queryMetadataCount = computed(() => calculateQueryMetadataCount(alertMetadata, query));
@@ -213,15 +208,47 @@ const queryTotalCount = computed(() => {
 
   // If the query metadata count is defined, then we can use it
   if (totalCount >= 0) return totalCount;
-  // If the query metadata count is undefined, then we need to calculate it ourselves
-  else return alerts.pageItems.length + alerts.pageSize * alerts.pageIndex + 1;
+  // If there is a next page token, then we know there are more pages available.
+  else if (alerts.nextPageToken) return alerts.allItems.length + 1;
+  // If there is no next page token, then we know there are no more pages available.
+  else return alerts.allItems.length;
+});
+
+
+// Set the footer props
+const setFooterProps = computed(() => {
+  // If there are more than 2 query fields, then we need to hide the pagination
+  if (queryMetadataCount.value === undefined) {
+    const nextPageToken = alerts.nextPageToken; // Get the next page token
+
+    // If there is a next page token 'ready' to be used, then we know there are more pages available.
+    if (nextPageToken) {
+      // Keeping the item pp options and pagination object empty will show the next page button
+      return {
+        itemsPerPageOptions,
+        pagination: {}
+      };
+    } else {
+      // If there is no next page token, then we know there are no more pages available.
+      // We can block the next button by setting the itemsLength to the total number of items.
+      return {
+        itemsPerPageOptions,
+        pagination: {
+          itemsLength: alerts.allItems.length
+        }
+      };
+    }
+  } else {
+    // If there are less than 2 query fields, then we can use the default pagination options.
+    return {itemsPerPageOptions};
+  }
 });
 
 // Watch the query object for changes
 watch(
     query,
     () => {
-      // Reset the page to 1
+    // Reset the page to 1
       dataTableOptions.value = {
         ...dataTableOptions.value,
         page: 1
@@ -230,39 +257,11 @@ watch(
     {immediate: true, deep: true}
 );
 
-// Watch the query field count for changes
-watchEffect(() => {
-  const fieldCount = queryFieldCount.value;
-
-  if (fieldCount >= 2) {
-    modifyFooter.value = true; // Set to true so pagination will be hidden in footer (x - y of z)
-    const nextPageToken = alerts.nextPageToken; // Get the next page token
-
-    // If there is a next page token 'ready' to be used, then we know there are more pages available.
-    if (nextPageToken) {
-      // Keeping the item pp options and pagination object empty will show the next page button
-      footerProps.value = {
-        itemsPerPageOptions,
-        pagination: {}
-      };
-    } else {
-      // If there is no next page token, then we know there are no more pages available.
-      // We can block the next button by setting the itemsLength to the total number of items.
-      footerProps.value = {
-        itemsPerPageOptions,
-        pagination: {
-          itemsLength: alerts.allItems.length
-        }
-      };
-    }
-  } else {
-    modifyFooter.value = false; // Set to false so pagination will be shown in footer (x - y of z)
-
-    // If there are less than 2 query fields, then we can use the default pagination options.
-    footerProps.value = {itemsPerPageOptions};
-  }
+watch(queryMetadataCount, () => {
+  // Set to true so pagination will be hidden in footer (x - y of z)
+  if (queryMetadataCount.value === undefined) modifyFooter.value = true;
+  else modifyFooter.value = false; // Set to false so pagination will be shown in footer (x - y of z)
 });
-
 
 const allHeaders = [
   {text: 'Timestamp', value: 'createTime', width: '15em'},
