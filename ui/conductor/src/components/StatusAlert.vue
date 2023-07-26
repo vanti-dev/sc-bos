@@ -8,7 +8,7 @@
       <v-icon
           class="mx-auto"
           color="error"
-          size="21"
+          size="20"
           v-bind="attrs"
           v-on="on">
         {{ props.icon }}
