@@ -119,21 +119,17 @@ const queryFieldCount = computed(() => Object.values(query).filter((value) => va
 /**
  *  Calculate the total number of items in the query
  *
- * @param {AlertMetadata.AsObject} alertMetadata
- * @param {typeof query} query
  * @return {number|undefined}
  */
-function calculateQueryMetadataCount(alertMetadata, query) {
+function calculateQueryMetadataCount() {
   const fieldCount = queryFieldCount.value;
 
   /**
    * Get the total number of alerts for the given severity range
    *
-   * @param {typeof query} query
-   * @param {AlertMetadata.AsObject} alertMetadata
    * @return {number|undefined}
    */
-  function getSeverityTotal(query, alertMetadata) {
+  function getSeverityTotal() {
     let total = 0;
     for (const [level, count] of Object.entries(alertMetadata.severityCountsMap)) {
       if (level <= query.severityNotAbove && level >= query.severityNotBelow) total += count;
@@ -144,22 +140,19 @@ function calculateQueryMetadataCount(alertMetadata, query) {
   /**
    * Get the total number of alerts for the given needs attention range
    *
-   * @param {typeof query} query
-   * @param {AlertMetadata.AsObject} alertMetadata
    * @return {number|undefined}
    */
-  function getNeedsAttentionTotal(query, alertMetadata) {
+  function getNeedsAttentionTotal() {
     const key = [query.acknowledged ? 'ack' : 'nack', query.resolved ? 'resolved' : 'unresolved'].join('_');
     return alertMetadata.needsAttentionCountsMap[key];
   }
 
   // Switch on the number of query fields
   switch (fieldCount) {
-    // If there are no query fields, then we can use the total count from the metadata
-    case 0:
+    case 0: // If there are no query fields, then we can use the total count from the metadata
       return alertMetadata.totalCount;
-    // If there is one query field, then we can use the count from the metadata
-    case 1:
+
+    case 1: // If there is one query field, then we can use the count from the metadata
       for (const [key, value] of Object.entries(query)) {
         if (value !== undefined) {
           switch (key) {
@@ -174,22 +167,21 @@ function calculateQueryMetadataCount(alertMetadata, query) {
             case 'resolved':
               return alertMetadata.resolvedCountMap[value];
             case 'severityNotAbove':
-              return getSeverityTotal(query, alertMetadata);
+              return getSeverityTotal();
             case 'severityNotBelow':
-              return getSeverityTotal(query, alertMetadata);
+              return getSeverityTotal();
             default:
               return undefined;
           }
         }
       }
       break;
-    // If there are two or more query fields, then we need to calculate the total ourselves
-    case 2:
+    case 2: // If there are two or more query fields, then we need to calculate the total ourselves
       if (query.acknowledged !== undefined && query.resolved !== undefined) {
-        return getNeedsAttentionTotal(query, alertMetadata);
+        return getNeedsAttentionTotal();
       }
       if (query.severityNotBelow !== undefined && query.severityNotAbove !== undefined) {
-        return getSeverityTotal(query, alertMetadata);
+        return getSeverityTotal();
       }
       break;
   }
@@ -198,7 +190,7 @@ function calculateQueryMetadataCount(alertMetadata, query) {
 }
 
 // Calculate the total number of items in the query
-const queryMetadataCount = computed(() => calculateQueryMetadataCount(alertMetadata, query));
+const queryMetadataCount = computed(() => calculateQueryMetadataCount());
 const queryTotalCount = computed(() => {
   const totalCount = queryMetadataCount.value;
 
