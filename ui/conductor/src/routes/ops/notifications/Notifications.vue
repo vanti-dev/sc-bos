@@ -162,8 +162,6 @@ const queryTotalCount = computed(() => {
       }
 
       break;
-    // default:
-    //   if (hasMorePages.value) return alerts.pageItems.length + alerts.pageSize * alerts.pageIndex + 1;
   }
 
   return undefined;
