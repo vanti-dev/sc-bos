@@ -10,7 +10,7 @@
         :footer-props="footerProps"
         :loading="alerts.loading"
         class="pt-4"
-        :class="{'hide-pagination': modifyFooter}"
+        :class="{ 'hide-pagination': modifyFooter }"
         @click:row="showNotification">
       <template #top>
         <filters
@@ -146,9 +146,8 @@ const queryTotalCount = computed(() => {
       }
       break;
     case 2:
-      // case 3:
-      // if (hasMorePages.value) return alerts.pageItems.length + alerts.pageSize * alerts.pageIndex + 1;
-
+    case 3:
+      if (hasMorePages.value) return alerts.pageItems.length + alerts.pageSize * alerts.pageIndex + 1;
       if (query.acknowledged !== undefined && query.resolved !== undefined) {
         const key = [query.acknowledged ? 'ack' : 'nack', query.resolved ? 'resolved' : 'unresolved'].join('_');
         return alertMetadata.needsAttentionCountsMap[key];
@@ -163,8 +162,8 @@ const queryTotalCount = computed(() => {
       }
 
       break;
-    default:
-      if (hasMorePages.value) return alerts.pageItems.length + alerts.pageSize * alerts.pageIndex + 1;
+    // default:
+    //   if (hasMorePages.value) return alerts.pageItems.length + alerts.pageSize * alerts.pageIndex + 1;
   }
 
   return undefined;
@@ -181,26 +180,30 @@ const hasMorePages = computed(() => {
   return totalCount === undefined || totalCount > 0;
 });
 
+watch(queryFieldCount, (newCount, oldCount) => {
+  if (newCount !== oldCount) {
+    // If the number of query fields changes, then we need to reset the pagination options.
+    dataTableOptions.value = {
+      itemsPerPage: 20,
+      page: 1
+    };
+  }
+});
+
 // Use watchEffect to handle the side effect
 watchEffect(() => {
   const fieldCount = queryFieldCount.value;
 
   if (fieldCount >= 2) {
-    modifyFooter.value = true;
-    const nextPageToken = alerts.nextPageToken;
+    modifyFooter.value = true; // Set to true so pagination will be hidden in footer (x - y of z)
+    const nextPageToken = alerts.nextPageToken; // Get the next page token
 
     // If there is a next page token 'ready' to be used, then we know there are more pages available.
     if (nextPageToken) {
       // Keeping the item pp options and pagination object empty will show the next page button
       footerProps.value = {
         itemsPerPageOptions,
-        pagination: {} // clearing the pagination object will show the next page button
-      };
-      // If there is no next page token, then we know there are no more pages available.
-      // So if we change any of the filters, we need to reset the pagination options.
-      dataTableOptions.value = {
-        itemsPerPage: 20,
-        page: 1
+        pagination: {}
       };
     } else {
       // If there is no next page token, then we know there are no more pages available.
@@ -208,21 +211,15 @@ watchEffect(() => {
       footerProps.value = {
         itemsPerPageOptions,
         pagination: {
-          itemsLength: alerts.allItems.length // setting the itemsLength will disable the next page button
+          itemsLength: alerts.allItems.length
         }
       };
     }
   } else {
-    modifyFooter.value = false;
-    // If there are less than 2 filters, then we can reset the pagination options.
-    dataTableOptions.value = {
-      itemsPerPage: 20,
-      page: 1
-    };
-    // We can also reset the footer props.
-    footerProps.value = {
-      itemsPerPageOptions
-    };
+    modifyFooter.value = false; // Set to false so pagination will be shown in footer (x - y of z)
+
+    // If there are less than 2 query fields, then we can use the default pagination options.
+    footerProps.value = {itemsPerPageOptions};
   }
 });
 
