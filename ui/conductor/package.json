@@ -13,6 +13,7 @@
     "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.42",
     "chart.js": "^4.3.0",
     "chartjs-adapter-date-fns": "^3.0.0",
+    "chartjs-plugin-annotation": "^3.0.1",
     "date-fns": "^2.29.2",
     "dayjs": "^1.11.7",
     "google-protobuf": "^3.21.0",
