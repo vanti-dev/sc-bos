@@ -13,6 +13,10 @@ type ProblemMerger struct {
 	problems []*gen.StatusLog_Problem
 }
 
+func (pm *ProblemMerger) Empty() bool {
+	return len(pm.problems) == 0 && pm.BiggestProblem == nil && pm.MostRecentNominal == nil
+}
+
 func (pm *ProblemMerger) Build() *gen.StatusLog {
 	out := &gen.StatusLog{}
 	if pm.BiggestProblem == nil {
