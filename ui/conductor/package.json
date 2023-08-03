@@ -9,7 +9,7 @@
     "lint": "eslint . --ext .vue,.js --fix"
   },
   "dependencies": {
-    "@sc-bos/ui-gen": "1.0.0-beta.10",
+    "@sc-bos/ui-gen": "1.0.0-beta.11",
     "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.42",
     "chart.js": "^4.3.0",
     "chartjs-adapter-date-fns": "^3.0.0",
