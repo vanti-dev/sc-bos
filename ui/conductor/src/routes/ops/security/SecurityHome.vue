@@ -3,17 +3,11 @@
     <v-row class="px-3 pt-3 mb-5">
       <h3 class="text-h3 py-2">Security Overview</h3>
       <v-spacer/>
-      <sc-status-card style="min-width: 248px;"/>
+      <sc-status-card style="min-width: 248px"/>
     </v-row>
     <content-card class="mb-8 d-flex flex-column pt-6">
       <v-row class="d-flex flex-row align-center mt-0 mb-4 px-6">
-        <v-text-field
-            v-model="search"
-            append-icon="mdi-magnify"
-            dense
-            filled
-            hide-details
-            label="Search devices"/>
+        <v-text-field v-model="search" append-icon="mdi-magnify" dense filled hide-details label="Search devices"/>
         <v-spacer/>
         <v-btn-toggle v-model="viewType" dense mandatory>
           <v-btn large text value="list">List View</v-btn>
@@ -29,7 +23,7 @@
             :items="floorList"
             label="Floor"
             outlined
-            style="max-width: 100px"/>
+            style="min-width: 100px; width: 100%; max-width: 170px"/>
         <v-select
             v-model="notificationStateSelection"
             class="ml-4"
@@ -41,30 +35,21 @@
             outlined
             style="max-width: 100px"/>
       </v-row>
-      <v-container
-          fluid
-          v-if="viewType === 'list'"
-          class="d-flex flex-row flex-wrap justify-space-between pt-4 mx-0 px-3">
-        <AlertCard class="mb-6"/>
-        <AlertCard/>
-        <AlertCard/>
-        <AlertCard/>
-        <AlertCard/>
-      </v-container>
-      <Level0 v-else show-doors/>
+      <ListView v-if="viewType === 'list'" :devices="devicesData" :filter="filter"/>
+      <MapView v-else/>
     </content-card>
   </v-container>
 </template>
 
 <script setup>
-import {computed, ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
+import ListView from '@/routes/ops/security/components/ListView.vue';
+import MapView from '@/routes/ops/security/components/MapView.vue';
 
-import {useDevices} from '@/composables/useDevices';
+import useDevices from '@/composables/useDevices';
 
 import ContentCard from '@/components/ContentCard.vue';
 import ScStatusCard from '@/routes/ops/components/ScStatusCard.vue';
-import Level0 from '@/clients/ew/Level0.vue';
-import AlertCard from './components/AlertCard.vue';
 
 const props = defineProps({
   subsystem: {
@@ -80,11 +65,9 @@ const props = defineProps({
 const viewType = ref('list');
 const notificationStateSelection = ref('All');
 
+const {floorList, filterFloor, search, devicesData} = useDevices(props);
 
-const {
-  floorList,
-  filterFloor,
-  search,
-  devicesData
-} = useDevices(props);
+// import Level0 from '@/clients/ew/level0.svg';
 </script>
+
+<style scoped></style>
