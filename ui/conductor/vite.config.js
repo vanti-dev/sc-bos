@@ -12,7 +12,7 @@ import gitRevision from 'vite-plugin-git-revision';
 const _require = createRequire(import.meta.url);
 
 // Any import that resolves to a local filesystem dependency that isn't an ESM dependency needs to be in this list.
-const optimizeDepsInclude = [];
+const optimizeDepsInclude = ['@/thirdparty/panzoom/panzoom.js'];
 // Typically that includes local proto files that are referenced via either `file:../` dependencies in package.json
 // or via yarn/npm linking the generated sources into this project (or both).
 // This snippet will find all *_pb.js files and ensure that they will be handled correctly by vite.
