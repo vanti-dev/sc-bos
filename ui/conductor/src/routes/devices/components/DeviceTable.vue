@@ -69,7 +69,7 @@
 <script setup>
 import {computed, ref} from 'vue';
 
-import {useDevices} from '@/composables/useDevices';
+import useDevices from '@/composables/useDevices';
 import {usePageStore} from '@/stores/page';
 import {Zone} from '@/routes/site/zone/zone';
 
