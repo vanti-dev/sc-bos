@@ -56,7 +56,7 @@ export default {
   grid-gap: 8px;
   grid-template-columns: repeat(3, auto);
   grid-template-rows: repeat(2, auto) 8px repeat(3, auto);
-  margin-bottom: 2px;
+  margin-bottom: 4em;
 }
 
 .v-btn {

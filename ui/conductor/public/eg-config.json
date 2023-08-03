@@ -30,6 +30,9 @@
     "home": "/ops",
     "ops": {
       "buildingZone": "building"
-    }
+    },
+    "siteFloorPlans": [
+      {"name": "level0", "svgPath": "/floorPlans/level0.svg"}
+    ]
   }
 }
