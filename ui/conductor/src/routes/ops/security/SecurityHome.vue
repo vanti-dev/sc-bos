@@ -36,7 +36,7 @@
             style="max-width: 100px"/>
       </v-row>
       <ListView v-if="viewType === 'list'" :devices="devicesData" :filter="filter"/>
-      <MapView v-else/>
+      <MapView v-else :floor="filterFloor"/>
     </content-card>
   </v-container>
 </template>
