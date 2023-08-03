@@ -13,6 +13,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
+	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 )
 
@@ -135,6 +136,7 @@ func (g *Group) PullBrightness(request *traits.PullBrightnessRequest, server tra
 
 		var last *traits.Brightness
 		eq := cmp.Equal(cmp.FloatValueApprox(0, 0.001))
+		filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 
 		for {
 			select {
@@ -146,6 +148,7 @@ func (g *Group) PullBrightness(request *traits.PullBrightnessRequest, server tra
 				if err != nil {
 					return err
 				}
+				filter.Filter(b)
 
 				// don't send duplicates
 				if eq(last, b) {

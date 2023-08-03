@@ -67,7 +67,7 @@ func run() error {
 				return err
 			}
 			for _, change := range res.Changes {
-				log.Printf("got change for %s: %s", name, change.Occupancy.State)
+				log.Printf("got change for %s: %v", name, change.Occupancy)
 			}
 		}
 	}

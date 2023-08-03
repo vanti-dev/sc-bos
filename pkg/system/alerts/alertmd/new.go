@@ -12,5 +12,6 @@ func New() *gen.AlertMetadata {
 		SeverityCounts:       make(map[int32]uint32),
 		ResolvedCounts:       make(map[bool]uint32),
 		NeedsAttentionCounts: make(map[string]uint32),
+		SubsystemCounts:      make(map[string]uint32),
 	}
 }

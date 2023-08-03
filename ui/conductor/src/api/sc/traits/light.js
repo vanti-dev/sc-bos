@@ -12,13 +12,13 @@ import {
 } from '@smart-core-os/sc-api-grpc-web/traits/light_pb';
 
 /**
- * @param {string} name
- * @param {ResourceValue<Brightness.AsObject, Brightness>} resource
+ * @param {PullBrightnessRequest.AsObject} request
+ * @param {ResourceValue<Brightness.AsObject, PullBrightnessResponse>} resource
  */
-export function pullBrightness(name, resource) {
-  pullResource('Light.Brightness', resource, endpoint => {
-    const api = new LightApiPromiseClient(endpoint, null, clientOptions());
-    const stream = api.pullBrightness(new PullBrightnessRequest().setName(name));
+export function pullBrightness(request, resource) {
+  pullResource('Light.pullBrightness', resource, endpoint => {
+    const api = apiClient(endpoint);
+    const stream = api.pullBrightness(pullBrightnessRequestFromObject(request));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
       for (const change of changes) {
@@ -31,26 +31,47 @@ export function pullBrightness(name, resource) {
 
 /**
  * @param {GetBrightnessRequest.AsObject} request
- * @param {ActionTracker<Brightness.AsObject>} tracker
+ * @param {ActionTracker<Brightness.AsObject>} [tracker]
  * @return {Promise<Brightness.AsObject>}
  */
 export function getBrightness(request, tracker) {
   return trackAction('Light.getBrightness', tracker ?? {}, endpoint => {
-    const api = new LightApiPromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     return api.getBrightness(getBrightnessRequestFromObject(request));
   });
 }
 
 /**
  * @param {UpdateBrightnessRequest.AsObject} request
- * @param {ActionTracker<Brightness.AsObject>} tracker
+ * @param {ActionTracker<Brightness.AsObject>} [tracker]
  * @return {Promise<Brightness.AsObject>}
  */
 export function updateBrightness(request, tracker) {
   return trackAction('Light.updateBrightness', tracker ?? {}, endpoint => {
-    const api = new LightApiPromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     return api.updateBrightness(updateBrightnessRequestFromObject(request));
   });
+}
+
+/**
+ * @param {string} endpoint
+ * @return {LightApiPromiseClient}
+ */
+function apiClient(endpoint) {
+  return new LightApiPromiseClient(endpoint, null, clientOptions());
+}
+
+/**
+ * @param {PullBrightnessRequest.AsObject} obj
+ * @return {PullBrightnessRequest|undefined}
+ */
+function pullBrightnessRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const dst = new PullBrightnessRequest();
+  setProperties(dst, obj, 'name', 'excludeRamping', 'updatesOnly');
+  dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  return dst;
 }
 
 /**

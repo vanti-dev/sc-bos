@@ -1,6 +1,9 @@
 import {fieldMaskFromObject, setProperties} from '@/api/convpb';
 import {clientOptions} from '@/api/grpcweb';
 import {pullResource, setValue, trackAction} from '@/api/resource.js';
+import {periodFromObject} from '@/api/sc/types/period';
+import {MeterHistoryPromiseClient} from '@sc-bos/ui-gen/proto/history_grpc_web_pb';
+import {ListMeterReadingHistoryRequest} from '@sc-bos/ui-gen/proto/history_pb';
 import {MeterApiPromiseClient, MeterInfoPromiseClient} from '@sc-bos/ui-gen/proto/meter_grpc_web_pb';
 import {DescribeMeterReadingRequest, PullMeterReadingsRequest} from '@sc-bos/ui-gen/proto/meter_pb';
 
@@ -9,7 +12,7 @@ import {DescribeMeterReadingRequest, PullMeterReadingsRequest} from '@sc-bos/ui-
  * @param {ResourceValue<MeterReading.AsObject, PullMeterReadingsResponse>} resource
  */
 export function pullMeterReading(request, resource) {
-  pullResource('MeterApi.PullMeterReadings', resource, (endpoint) => {
+  pullResource('MeterApi.pullMeterReadings', resource, (endpoint) => {
     const api = apiClient(endpoint);
     const stream = api.pullMeterReadings(pullMeterReadingsRequestFromObject(request));
     stream.on('data', (msg) => {
@@ -25,7 +28,7 @@ export function pullMeterReading(request, resource) {
 /**
  *
  * @param {DescribeMeterReadingRequest.AsObject} request
- * @param {ActionTracker<MeterReadingSupport.AsObject>} tracker
+ * @param {ActionTracker<MeterReadingSupport.AsObject>} [tracker]
  * @return {Promise<MeterReadingSupport.AsObject>}
  */
 export function describeMeterReading(request, tracker) {
@@ -36,12 +39,36 @@ export function describeMeterReading(request, tracker) {
 }
 
 /**
+ *
+ * @param {ListMeterReadingHistoryRequest.AsObject} request
+ * @param {ActionTracker<ListMeterReadingHistoryResponse.AsObject>} [tracker]
+ * @return {Promise<ListMeterReadingHistoryResponse.AsObject>}
+ */
+export function listMeterReadingHistory(request, tracker) {
+  return trackAction('MeterReadingHistory.listMeterReadingHistory', tracker, endpoint => {
+    const api = historyClient(endpoint);
+    return api.listMeterReadingHistory(listMeterReadingHistoryRequestFromObject(request));
+  });
+}
+
+
+/**
+ *
+ * @param {string} endpoint
+ * @return {MeterHistoryPromiseClient}
+ */
+function historyClient(endpoint) {
+  return new MeterHistoryPromiseClient(endpoint, null, clientOptions());
+}
+
+/**
  * @param {string} endpoint
  * @return {MeterApiPromiseClient}
  */
 function apiClient(endpoint) {
   return new MeterApiPromiseClient(endpoint, null, clientOptions());
 }
+
 
 /**
  * @param {string} endpoint
@@ -63,9 +90,26 @@ function pullMeterReadingsRequestFromObject(obj) {
   return dst;
 }
 
+/**
+ * @param {DescribeMeterReadingRequest.AsObject} obj
+ * @return {undefined|DescribeMeterReadingRequest}
+ */
 function describeMeterReadingRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new DescribeMeterReadingRequest();
   setProperties(dst, obj, 'name');
+  return dst;
+}
+
+/**
+ * @param {ListMeterReadingHistoryRequest.AsObject} obj
+ * @return {ListMeterReadingHistoryRequest|undefined}
+ */
+function listMeterReadingHistoryRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new ListMeterReadingHistoryRequest();
+  setProperties(dst, obj, 'name', 'pageToken', 'pageSize');
+  dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  dst.setPeriod(periodFromObject(obj.period));
   return dst;
 }

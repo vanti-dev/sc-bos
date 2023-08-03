@@ -1,4 +1,4 @@
-import {setProperties} from '@/api/convpb.js';
+import {fieldMaskFromObject, setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setCollection, trackAction} from '@/api/resource.js';
 import {PublicationApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/publication_grpc_web_pb';
@@ -11,13 +11,13 @@ import {
 } from '@smart-core-os/sc-api-grpc-web/traits/publication_pb';
 
 /**
- * @param {string} name
+ * @param {PullPublicationsRequest.AsObject} request
  * @param {ResourceCollection<Publication.AsObject, OpenClosePositions>} resource
  */
-export function pullPublications(name, resource) {
-  pullResource('Publication', resource, endpoint => {
-    const api = new PublicationApiPromiseClient(endpoint, null, clientOptions());
-    const stream = api.pullPublications(new PullPublicationsRequest().setName(name));
+export function pullPublications(request, resource) {
+  pullResource('Publication.pullPublications', resource, endpoint => {
+    const api = apiClient(endpoint);
+    const stream = api.pullPublications(pullPublicationsRequestFromObject(request));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
       for (const change of changes) {
@@ -29,59 +29,106 @@ export function pullPublications(name, resource) {
 }
 
 /**
- * @param {string} name
- * @param {Publication.AsObject} publication
+ * @param {CreatePublicationRequest.AsObject} request
  * @param {ActionTracker<Publication.AsObject>} [tracker]
  * @return {Promise<Publication.AsObject>}
  */
-export function createPublication(name, publication, tracker) {
+export function createPublication(request, tracker) {
   return trackAction('Publication.createPublication', tracker ?? {}, endpoint => {
-    const api = new PublicationApiPromiseClient(endpoint, null, clientOptions());
-    return api.createPublication(new CreatePublicationRequest()
-        .setName(name)
-        .setPublication(fromObject(publication)));
+    const api = apiClient(endpoint);
+    return api.createPublication(createPublicationRequestFromObject(request));
   });
 }
 
 /**
- * @param {string} name
- * @param {Publication.AsObject} publication
- * @param {ActionTracker} [tracker]
+ * @param {UpdatePublicationRequest.AsObject} request
+ * @param {ActionTracker<Publication.AsObject>} [tracker]
  * @return {Promise<Publication.AsObject>}
  */
-export async function updatePublication(name, publication, tracker) {
+export async function updatePublication(request, tracker) {
   return trackAction('Publication.updatePublication', tracker ?? {}, endpoint => {
-    const api = new PublicationApiPromiseClient(endpoint, null, clientOptions());
-    return api.updatePublication(new UpdatePublicationRequest()
-        .setName(name)
-        .setVersion(publication.version)
-        .setPublication(fromObject(publication)));
+    const api = apiClient(endpoint);
+    return api.updatePublication(updatePublicationRequestFromObject(request));
   });
 }
 
 /**
  * @param {AcknowledgePublicationRequest.AsObject} request
- * @param {ActionTracker} [tracker]
+ * @param {ActionTracker<Publication.AsObject>} [tracker]
  * @return {Promise<Publication.AsObject>}
  */
 export async function acknowledgePublication(request, tracker) {
   return trackAction('Publication.acknowledgePublication', tracker ?? {}, endpoint => {
-    const api = new PublicationApiPromiseClient(endpoint, null, clientOptions());
-    return api.acknowledgePublication(new AcknowledgePublicationRequest()
-        .setName(request.name)
-        .setId(request.id)
-        .setVersion(request.version)
-        .setReceipt(request.receipt ?? Publication.Audience.Receipt.ACCEPTED)
-        .setReceiptRejectedReason(request.receiptRejectedReason ?? '')
-        .setAllowAcknowledged(request.allowAcknowledged ?? false));
+    const api = apiClient(endpoint);
+    return api.acknowledgePublication(acknowledgePublicationRequestFromObject(request));
   });
 }
 
 /**
- * @param {Publication.AsObject} obj
- * @return {Publication}
+ * @param {string} endpoint
+ * @return {PublicationApiPromiseClient}
  */
-export function fromObject(obj) {
+function apiClient(endpoint) {
+  return new PublicationApiPromiseClient(endpoint, null, clientOptions());
+}
+
+/**
+ * @param {PullPublicationsRequest.AsObject} obj
+ * @return {undefined|PullPublicationsRequest}
+ */
+function pullPublicationsRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const dst = new PullPublicationsRequest();
+  setProperties(dst, obj, 'name', 'updatesOnly');
+  dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  return dst;
+}
+
+/**
+ * @param {CreatePublicationRequest.AsObject} obj
+ * @return {CreatePublicationRequest|undefined}
+ */
+function createPublicationRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const dst = new CreatePublicationRequest();
+  setProperties(dst, obj, 'name');
+  dst.setPublication(publicationFromObject(obj.publication));
+  return dst;
+}
+
+/**
+ * @param {UpdatePublicationRequest.AsObject} obj
+ * @return {undefined|UpdatePublicationRequest}
+ */
+function updatePublicationRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const dst = new UpdatePublicationRequest();
+  setProperties(dst, obj, 'name', 'version');
+  dst.setUpdateMask(fieldMaskFromObject(obj.updateMask));
+  dst.setPublication(publicationFromObject(obj.publication));
+  return dst;
+}
+
+/**
+ * @param {UpdatePublicationRequest.AsObject} obj
+ * @return {AcknowledgePublicationRequest|undefined}
+ */
+function acknowledgePublicationRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const dst = new AcknowledgePublicationRequest();
+  setProperties(dst, obj, 'name', 'id', 'version', 'receipt', 'receiptRejectedReason', 'allowAcknowledged');
+  return dst;
+}
+
+/**
+ * @param {Publication.AsObject} obj
+ * @return {undefined|Publication}
+ */
+export function publicationFromObject(obj) {
   if (!obj) return undefined;
 
   const publication = new Publication();

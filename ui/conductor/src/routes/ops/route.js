@@ -1,4 +1,4 @@
-import ChildOnlyPage from '@/components/page-layout/ChildOnlyPage.vue';
+import SidebarPage from '@/components/page-layout/SidebarPage.vue';
 import notifications from '@/routes/ops/notifications/route.js';
 import {useAppConfigStore} from '@/stores/app-config';
 
@@ -8,7 +8,7 @@ export default {
   name: 'ops',
   path: '/ops',
   components: {
-    default: ChildOnlyPage,
+    default: SidebarPage,
     nav: () => import('./OpsNav.vue')
   },
   children: [

@@ -66,7 +66,7 @@ watch(
 
       if (!newPaused && (oldPaused || newName !== oldName)) {
         closeResource(lightValue);
-        pullBrightness(newName, lightValue);
+        pullBrightness({name: newName}, lightValue);
       }
     },
     {immediate: true, deep: true, flush: 'sync'}
@@ -75,15 +75,12 @@ watch(
 //
 //
 // UI error handling
-let unwatchLightError;
 let unwatchUpdateError;
 onMounted(() => {
-  unwatchLightError = errorStore.registerValue(lightValue);
   unwatchUpdateError = errorStore.registerTracker(updateValue);
 });
 onUnmounted(() => {
   closeResource(lightValue);
-  if (unwatchLightError) unwatchLightError();
   if (unwatchUpdateError) unwatchUpdateError();
 });
 </script>

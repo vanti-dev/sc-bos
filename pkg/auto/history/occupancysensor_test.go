@@ -12,6 +12,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
+	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/util/chans"
 )
@@ -32,7 +33,7 @@ func Test_automation_collectOccupancyChanges(t *testing.T) {
 	ctx, stop := context.WithCancel(context.Background())
 	t.Cleanup(stop)
 	go func() {
-		collector.collectOccupancyChanges(ctx, "anything", payloads)
+		collector.collectOccupancyChanges(ctx, config.Source{Name: "anything"}, payloads)
 	}()
 
 	if err := chans.IsEmptyWithin(payloads, time.Second); err != nil {

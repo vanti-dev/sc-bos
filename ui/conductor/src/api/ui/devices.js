@@ -13,12 +13,12 @@ import {
 
 /**
  * @param {ListDevicesRequest.AsObject} request
- * @param {ActionTracker<ListDevicesResponse.AsObject>} tracker
+ * @param {ActionTracker<ListDevicesResponse.AsObject>} [tracker]
  * @return {Promise<ListDevicesResponse.AsObject>}
  */
 export function listDevices(request, tracker) {
   return trackAction('Devices.listDevices', tracker ?? {}, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     return api.listDevices(listDevicesRequestFromObject(request));
   });
 }
@@ -26,12 +26,12 @@ export function listDevices(request, tracker) {
 /**
  *
  * @param {GetDevicesMetadataRequest.AsObject} request
- * @param {ActionTracker<GetDevicesMetadataRequest.AsObject>} tracker
+ * @param {ActionTracker<GetDevicesMetadataRequest.AsObject>} [tracker]
  * @return {Promise<DevicesMetadata.AsObject>}
  */
 export function getDevicesMetadata(request, tracker) {
   return trackAction('Devices.getDevicesMetadata', tracker ?? {}, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     return api.getDevicesMetadata(getDevicesMetadataRequestFromObject(request));
   });
 }
@@ -42,7 +42,7 @@ export function getDevicesMetadata(request, tracker) {
  */
 export function pullDevicesMetadata(request, resource) {
   pullResource('Devices.pullDevicesMetadata', resource, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     const stream = api.pullDevicesMetadata(pullDevicesMetadataRequestFromObject(request));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
@@ -58,7 +58,7 @@ export function pullDevicesMetadata(request, resource) {
  * @param {string} endpoint
  * @return {DevicesApiPromiseClient}
  */
-function client(endpoint) {
+function apiClient(endpoint) {
   return new DevicesApiPromiseClient(endpoint, null, clientOptions());
 }
 

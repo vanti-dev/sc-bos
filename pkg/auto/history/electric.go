@@ -9,9 +9,10 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 )
 
-func (a *automation) collectElectricDemandChanges(ctx context.Context, name string, payloads chan<- []byte) {
+func (a *automation) collectElectricDemandChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
 	var client traits.ElectricApiClient
 	if err := a.clients.Client(&client); err != nil {
 		a.logger.Error("collection aborted", zap.Error(err))
@@ -19,7 +20,7 @@ func (a *automation) collectElectricDemandChanges(ctx context.Context, name stri
 	}
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
-		stream, err := client.PullDemand(ctx, &traits.PullDemandRequest{Name: name, UpdatesOnly: true})
+		stream, err := client.PullDemand(ctx, &traits.PullDemandRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}
@@ -42,7 +43,7 @@ func (a *automation) collectElectricDemandChanges(ctx context.Context, name stri
 		}
 	}
 	pollFn := func(ctx context.Context, changes chan<- []byte) error {
-		demand, err := client.GetDemand(ctx, &traits.GetDemandRequest{Name: name})
+		demand, err := client.GetDemand(ctx, &traits.GetDemandRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}

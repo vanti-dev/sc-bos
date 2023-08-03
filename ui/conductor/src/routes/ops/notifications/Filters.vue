@@ -5,6 +5,14 @@
         hide-details
         filled
         :menu-props="{offsetY: true}"
+        label="Subsystem"
+        :items="subsystems"
+        :value="selectedSubsystem"
+        @change="updateSubsystem"/>
+    <v-select
+        hide-details
+        filled
+        :menu-props="{offsetY: true}"
         label="Floor"
         :items="floors"
         :value="selectedFloor"
@@ -40,6 +48,14 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
+  subsystem: {
+    type: String,
+    default: ''
+  },
+  subsystemItems: {
+    type: Array,
+    default: () => []
+  },
   acknowledged: {
     type: Boolean,
     default: undefined
@@ -52,15 +68,19 @@ const props = defineProps({
 const emit = defineEmits({
   'update:floor': String,
   'update:zone': String,
+  'update:subsystem': String,
   'update:acknowledged': Boolean,
   'update:resolved': Boolean
 });
 
 const floors = computed(() => {
-  return ['All', ...props.floorItems];
+  return ['All', ...props.floorItems.filter(v => Boolean(v))];
 });
 const zones = computed(() => {
-  return ['All', ...props.zoneItems];
+  return ['All', ...props.zoneItems.filter(v => Boolean(v))];
+});
+const subsystems = computed(() => {
+  return ['All', ...props.subsystemItems.filter(v => Boolean(v))];
 });
 
 const selectedFloor = computed(() => {
@@ -92,6 +112,22 @@ function updateZone(z) {
     emit('update:zone', undefined);
   } else {
     emit('update:zone', z);
+  }
+}
+
+const selectedSubsystem = computed(() => {
+  return props.subsystem || 'All';
+});
+
+/**
+ *
+ * @param {string} s
+ */
+function updateSubsystem(s) {
+  if (s === 'All') {
+    emit('update:subsystem', undefined);
+  } else {
+    emit('update:subsystem', s);
   }
 }
 </script>

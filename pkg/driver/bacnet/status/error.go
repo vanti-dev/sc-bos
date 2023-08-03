@@ -49,7 +49,7 @@ func SummariseRequestErrors(name string, requests []string, errs []error) (gen.S
 	case notFoundCount == len(requests):
 		return gen.StatusLog_NOTICE, fmt.Sprintf("%s not found on device", name)
 	case timeoutCount == len(requests):
-		return gen.StatusLog_REDUCED_FUNCTION, fmt.Sprintf("%s points %s timed out", name, strings.Join(requests, ", "))
+		return gen.StatusLog_REDUCED_FUNCTION, fmt.Sprintf("%s points timed out", name)
 	default:
 		failedPropNames := failedPropReads(errs...)
 		var desc strings.Builder

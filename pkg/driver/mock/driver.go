@@ -30,6 +30,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/modepb"
@@ -230,6 +231,9 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 	case trait.Vending:
 		return []any{vending.WrapApi(vending.NewModelServer(vending.NewModel()))}, nil
 
+	case accesspb.TraitName:
+		model := accesspb.NewModel()
+		return []any{gen.WrapAccessApi(accesspb.NewModelServer(model))}, auto.Access(model)
 	case button.TraitName:
 		return []any{gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED)))}, nil
 	case meter.TraitName:

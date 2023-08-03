@@ -1,28 +1,13 @@
 <template>
   <v-card elevation="0" tile>
-    <v-list tile class="ma-0 pa-0">
-      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Electric</v-subheader>
-      <v-list-item class="py-1" v-if="realPowerStr">
-        <v-list-item-title class="text-body-small text-capitalize">Real Power</v-list-item-title>
-        <v-list-item-subtitle class="text-end">{{ realPowerStr }}</v-list-item-subtitle>
-      </v-list-item>
-      <v-list-item class="py-1" v-if="apparentPowerStr">
-        <v-list-item-title class="text-body-small text-capitalize">Apparent Power</v-list-item-title>
-        <v-list-item-subtitle class="text-end">{{ apparentPowerStr }}</v-list-item-subtitle>
-      </v-list-item>
-      <v-list-item class="py-1" v-if="reactivePowerStr">
-        <v-list-item-title class="text-body-small text-capitalize">Reactive Power</v-list-item-title>
-        <v-list-item-subtitle class="text-end">{{ reactivePowerStr }}</v-list-item-subtitle>
-      </v-list-item>
-      <v-list-item class="py-1" v-if="powerFactorStr">
-        <v-list-item-title class="text-body-small text-capitalize">Power Factor</v-list-item-title>
-        <v-list-item-subtitle class="text-end">
-          {{ powerFactorStr }}
-          <!-- for alignment purposes -->
-          <span style="visibility: hidden"> kW</span>
-        </v-list-item-subtitle>
-      </v-list-item>
-    </v-list>
+    <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Electric</v-subheader>
+    <div class="layout mx-4">
+      <template v-for="(row, i) in rows">
+        <span :key="i+'label'" class="label text-body-small">{{ row.label }}</span>
+        <span :key="i+'value'" class="value">{{ row.value ?? '' }}</span>
+        <span :key="i+'unit'" class="unit">{{ row.unit ?? '' }}</span>
+      </template>
+    </div>
     <v-progress-linear color="primary" indeterminate :active="props.loading"/>
   </v-card>
 </template>
@@ -42,29 +27,48 @@ const props = defineProps({
 });
 
 const realPower = computed(() => props.value?.realPower);
-const realPowerStr = computed(() => powerStr(realPower.value));
 const apparentPower = computed(() => props.value?.apparentPower);
-const apparentPowerStr = computed(() => powerStr(apparentPower.value));
 const reactivePower = computed(() => props.value?.reactivePower);
-const reactivePowerStr = computed(() => powerStr(reactivePower.value));
 const powerFactor = computed(() => props.value?.powerFactor);
-const powerFactorStr = computed(() => {
-  if (powerFactor.value === undefined) return '';
-  return powerFactor.value.toFixed(2);
-});
 
-/**
- * @param {number} val
- * @return {string}
- */
-function powerStr(val) {
-  if (val === undefined) return '';
-  return `${(val / 1000).toFixed(3)} kW`;
-}
+const rows = computed(() => {
+  return [
+    {
+      label: 'Real Power',
+      value: (realPower.value ? realPower.value / 1000 : 0).toFixed(3),
+      unit: 'kW'
+    },
+    {
+      label: 'Apparent Power',
+      value: (apparentPower.value ? apparentPower.value / 1000 : 0).toFixed(3),
+      unit: 'kVA'
+    },
+    {
+      label: 'Reactive Power',
+      value: (reactivePower.value ? reactivePower.value / 1000 : 0).toFixed(3),
+      unit: 'kVAr'
+    },
+    {
+      label: 'Power Factor',
+      value: powerFactor.value?.toFixed(2),
+      unit: undefined
+    }
+  ];
+});
 </script>
 
 <style scoped>
-.v-list-item {
-  min-height: auto;
+.layout {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-gap: 4px 0.3em;
+  align-items: baseline;
+}
+.value {
+  text-align: right;
+}
+
+.value, .unit {
+  color: rgba(255, 255, 255, 0.7);
 }
 </style>

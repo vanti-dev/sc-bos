@@ -18,6 +18,7 @@ import (
 )
 
 var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
+	services.Logger = services.Logger.Named("lighting")
 	f := &feature{
 		announce: services.Node,
 		devices:  services.Devices,
@@ -38,7 +39,7 @@ type feature struct {
 
 func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := node.AnnounceContext(ctx, f.announce)
-	logger := f.logger.With(zap.String("zone", cfg.Name))
+	logger := f.logger
 
 	if len(cfg.Lights) > 0 {
 		var lightClient traits.LightApiClient
@@ -50,7 +51,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 			client:   lightClient,
 			names:    cfg.Lights,
 			readOnly: cfg.ReadOnlyLights,
-			logger:   logger.Named("lights"),
+			logger:   logger,
 		}
 		f.devices.Add(cfg.Lights...)
 		announce.Announce(cfg.Name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group))))
@@ -64,7 +65,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 			client:   lightClient,
 			names:    lights,
 			readOnly: cfg.ReadOnlyLights,
-			logger:   logger.Named("lightGroup").With(zap.String("lightGroup", key)),
+			logger:   logger.With(zap.String("lightGroup", key)),
 		}
 		name := fmt.Sprintf("%s/lights/%s", cfg.Name, key)
 		f.devices.Add(lights...)

@@ -7,7 +7,7 @@
 <script setup>
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 import BarChart from '@/components/charts/BarChart.vue';
-import {listOccupancySensorHistory} from '@/api/sc/traits/occupancy-history';
+import {listOccupancySensorHistory} from '@/api/sc/traits/occupancy';
 import {timestampToDate} from '@/api/convpb';
 
 const props = defineProps({

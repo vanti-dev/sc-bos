@@ -32,6 +32,9 @@ func ApplyMdDelta(md *resource.Value, e *gen.PullAlertsResponse_Change) error {
 		if newMd.NeedsAttentionCounts == nil {
 			newMd.NeedsAttentionCounts = make(map[string]uint32)
 		}
+		if newMd.SubsystemCounts == nil {
+			newMd.SubsystemCounts = make(map[string]uint32)
+		}
 
 		// total
 		if e.OldValue == nil && e.NewValue != nil {
@@ -56,6 +59,7 @@ func ApplyMdDelta(md *resource.Value, e *gen.PullAlertsResponse_Change) error {
 		mapDelta(e.GetOldValue().GetFloor(), e.GetNewValue().GetFloor(), newMd.FloorCounts)
 		mapDelta(e.GetOldValue().GetZone(), e.GetNewValue().GetZone(), newMd.ZoneCounts)
 		mapDelta(int32(e.GetOldValue().GetSeverity()), int32(e.GetNewValue().GetSeverity()), newMd.SeverityCounts)
+		mapDelta(e.GetOldValue().GetSubsystem(), e.GetNewValue().GetSubsystem(), newMd.SubsystemCounts)
 
 		// needs attention
 		needsAttentionMap(e.GetOldValue(), e.GetNewValue(), newMd.NeedsAttentionCounts)

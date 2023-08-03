@@ -13,23 +13,23 @@ import {
 
 /**
  * @param {ListAlertsRequest.AsObject} request
- * @param {ActionTracker<ListAlertsResponse.AsObject>} tracker
+ * @param {ActionTracker<ListAlertsResponse.AsObject>} [tracker]
  * @return {Promise<ListAlertsResponse.AsObject>}
  */
 export function listAlerts(request, tracker) {
   return trackAction('Alerts.listAlerts', tracker ?? {}, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     return api.listAlerts(listAlertsRequestFromObject(request));
   });
 }
 
 /**
  * @param {PullAlertsRequest.AsObject} request
- * @param {ResourceCollection<Alert.AsObject, Alert>} resource
+ * @param {ResourceCollection<Alert.AsObject, PullAlertsResponse>} resource
  */
 export function pullAlerts(request, resource) {
   pullResource('Alerts.pullAlerts', resource, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     const stream = api.pullAlerts(pullAlertsRequestFromObject(request));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
@@ -43,13 +43,13 @@ export function pullAlerts(request, resource) {
 
 /**
  * @param {GetAlertMetadataRequest.AsObject} request
- * @param {ActionTracker<AlertMetadata.AsObject>}tracker
+ * @param {ActionTracker<AlertMetadata.AsObject>} [tracker]
  * @return {Promise<AlertMetadata.AsObject>}
  */
 export function getAlertMetadata(request, tracker) {
   console.debug('getAlertMetadata', request);
   return trackAction('Alerts.getAlertMetadata', tracker ?? {}, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     return api.getAlertMetadata(getAlertMetadataRequestFromObject(request));
   });
 }
@@ -61,7 +61,7 @@ export function getAlertMetadata(request, tracker) {
 export function pullAlertMetadata(request, resource) {
   console.debug('pullAlertMetadata', request);
   pullResource('Alerts.pullAlertMetadata', resource, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     const stream = api.pullAlertMetadata(pullAlertMetadataRequestFromObject(request));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
@@ -80,7 +80,7 @@ export function pullAlertMetadata(request, resource) {
  */
 export function acknowledgeAlert(request, tracker) {
   return trackAction('Alerts.acknowledgeAlert', tracker ?? {}, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     return api.acknowledgeAlert(acknowledgeAlertRequestFromObject(request));
   });
 }
@@ -92,7 +92,7 @@ export function acknowledgeAlert(request, tracker) {
  */
 export function unacknowledgeAlert(request, tracker) {
   return trackAction('Alerts.unacknowledgeAlert', tracker ?? {}, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     return api.unacknowledgeAlert(acknowledgeAlertRequestFromObject(request));
   });
 }
@@ -101,7 +101,7 @@ export function unacknowledgeAlert(request, tracker) {
  * @param {string} endpoint
  * @return {AlertApiPromiseClient}
  */
-function client(endpoint) {
+function apiClient(endpoint) {
   return new AlertApiPromiseClient(endpoint, null, clientOptions());
 }
 
@@ -162,7 +162,7 @@ function pullAlertMetadataRequestFromObject(obj) {
 function alertQueryFromObject(obj) {
   if (!obj) return undefined;
   const dst = new Alert.Query();
-  setProperties(dst, obj, 'floor', 'zone', 'source',
+  setProperties(dst, obj, 'floor', 'zone', 'subsystem', 'severity', 'source',
       'severityNotBefore', 'severityNotAfter',
       'acknowledged', 'resolved');
   convertProperties(dst, obj, timestampFromObject,

@@ -7,8 +7,7 @@
 <script setup>
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
 import {describeMeterReading, pullMeterReading} from '@/api/sc/traits/meter';
-import {useErrorStore} from '@/components/ui-error/error';
-import {onMounted, onUnmounted, reactive, watch} from 'vue';
+import {onUnmounted, reactive, watch} from 'vue';
 import {deepEqual} from 'vuetify/src/util/helpers';
 
 const props = defineProps({
@@ -51,16 +50,7 @@ watch(
     {immediate: true, deep: true, flush: 'sync'}
 );
 
-// UI error handling
-const errorStore = useErrorStore();
-const unwatchErrors = [];
-onMounted(() => {
-  unwatchErrors.push(
-      errorStore.registerValue(meterReadings)
-  );
-});
 onUnmounted(() => {
   closeResource(meterReadings);
-  unwatchErrors.forEach(unwatch => unwatch());
 });
 </script>

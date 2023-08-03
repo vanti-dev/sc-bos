@@ -11,13 +11,13 @@ import {fieldMaskFromObject, setProperties} from '@/api/convpb';
 import {Temperature} from '@smart-core-os/sc-api-grpc-web/types/unit_pb';
 
 /**
- * @param {string} name
- * @param {ResourceValue<AirTemperature.AsObject, AirTemperature>} resource
+ * @param {PullAirTemperatureRequest.AsObject} request
+ * @param {ResourceValue<AirTemperature.AsObject, PullAirTemperatureResponse>} resource
  */
-export function pullAirTemperature(name, resource) {
-  pullResource('AirTemperature', resource, endpoint => {
-    const api = new AirTemperatureApiPromiseClient(endpoint, null, clientOptions());
-    const stream = api.pullAirTemperature(new PullAirTemperatureRequest().setName(name));
+export function pullAirTemperature(request, resource) {
+  pullResource('AirTemperature.pullAirTemperature', resource, endpoint => {
+    const api = apiClient(endpoint);
+    const stream = api.pullAirTemperature(pullAirTemperatureRequestFromObject(request));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
       for (const change of changes) {
@@ -31,21 +31,42 @@ export function pullAirTemperature(name, resource) {
 /**
  *
  * @param {UpdateAirTemperatureRequest.AsObject} request
- * @param {ActionTracker<AirTemperature.AsObject>} tracker
+ * @param {ActionTracker<AirTemperature.AsObject>} [tracker]
  * @return {Promise<AirTemperature.AsObject>}
  */
 export function updateAirTemperature(request, tracker) {
   return trackAction('AirTemperature.updateAirTemperature', tracker ?? {}, endpoint => {
-    const api = new AirTemperatureApiPromiseClient(endpoint, null, clientOptions());
+    const api = apiClient(endpoint);
     return api.updateAirTemperature(updateAirTemperatureRequestFromObject(request));
   });
+}
+
+/**
+ * @param {string} endpoint
+ * @return {AirTemperatureApiPromiseClient}
+ */
+function apiClient(endpoint) {
+  return new AirTemperatureApiPromiseClient(endpoint, null, clientOptions());
+}
+
+/**
+ * @param {PullAirTemperatureRequest.AsObject} obj
+ * @return {PullAirTemperatureRequest|undefined}
+ */
+function pullAirTemperatureRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const req = new PullAirTemperatureRequest();
+  setProperties(req, obj, 'name', 'updatesOnly');
+  req.setReadMask(fieldMaskFromObject(obj.readMask));
+  return req;
 }
 
 /**
  * @param {UpdateAirTemperatureRequest.AsObject} obj
  * @return {UpdateAirTemperatureRequest}
  */
-export function updateAirTemperatureRequestFromObject(obj) {
+function updateAirTemperatureRequestFromObject(obj) {
   if (!obj) return undefined;
 
   const req = new UpdateAirTemperatureRequest();
@@ -59,7 +80,7 @@ export function updateAirTemperatureRequestFromObject(obj) {
  * @param {AirTemperature.AsObject} obj
  * @return {AirTemperature}
  */
-export function stateFromObject(obj) {
+function stateFromObject(obj) {
   if (!obj) return undefined;
 
   const state = new AirTemperature();
@@ -72,7 +93,7 @@ export function stateFromObject(obj) {
  * @param {Temperature.AsObject} obj
  * @return {Temperature}
  */
-export function temperatureFromObject(obj) {
+function temperatureFromObject(obj) {
   if (!obj) return undefined;
 
   const t = new Temperature();

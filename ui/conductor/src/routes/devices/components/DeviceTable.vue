@@ -50,6 +50,9 @@
           </v-row>
         </v-container>
       </template>
+      <template #item.metadata.membership.subsystem="{ item }">
+        <subsystem-icon size="20px" :subsystem="item.metadata?.membership?.subsystem" no-default/>
+      </template>
       <template #item.name="{ item }">
         {{ item.metadata.appearance ? item.metadata.appearance.title : item.name }}
       </template>
@@ -116,9 +119,10 @@ const {
 const emit = defineEmits(['update:selectedDevices']);
 
 const headers = ref([
+  {value: 'metadata.membership.subsystem', width: '20px', class: 'pl-4 pr-0', cellClass: 'pl-4 pr-0', sortable: false},
   {text: 'Device name', value: 'name'},
   {text: 'Floor', value: 'metadata.location.floor'},
-  {text: 'Location', value: 'metadata.location.title'},
+  {text: 'Zone', value: 'metadata.location.zone'},
   {text: '', value: 'hotpoint', align: 'end', width: '100'}
 ]);
 
@@ -183,4 +187,3 @@ function rowClass(item) {
   background-color: var(--v-primary-darken4);
 }
 </style>
-@/composables/useDevices

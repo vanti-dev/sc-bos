@@ -97,7 +97,7 @@ watch(() => props.name, async (name) => {
   if (name && name !== '') {
     // noinspection ES6MissingAwait - handled by tracker
     describeModes({name}, modeInfo);
-    pullModeValues(name, modeValue);
+    pullModeValues({name}, modeValue);
   }
 }, {immediate: true});
 
@@ -123,6 +123,11 @@ const modeInfoMap = computed(() => {
   return res;
 });
 
+// used for case replacement
+const acronyms = {
+  'hvac': 'HVAC'
+};
+
 /**
  * @param {string[]} mode
  * @return {{key: string, value: string, values?: string[], title: string}}
@@ -132,21 +137,18 @@ function modeDisplay([k, v]) {
   if (modeInfoMap.value[k]) {
     items = modeInfoMap.value[k];
   }
-  if (k === 'lighting.mode') {
-    return {
-      key: k,
-      value: v,
-      title: 'Lighting Mode',
-      values: items || ['auto', 'normal', 'extended', 'night', 'maintenance', 'test']
-    };
-  } else {
-    return {
-      key: k,
-      value: v,
-      title: k,
-      values: items || undefined
-    };
-  }
+  const parts = k.split('.').map(s => {
+    if (acronyms[s]) {
+      return acronyms[s];
+    }
+    return s[0].toUpperCase() + s.slice(1);
+  });
+  return {
+    key: k,
+    value: v,
+    title: parts.join(' '),
+    values: items || undefined
+  };
 }
 
 /**
@@ -178,10 +180,10 @@ function saveModeValues() {
 
 <style scoped>
 .v-list-item {
-    min-height: auto;
+  min-height: auto;
 }
 
 .v-progress-linear {
-    width: auto;
+  width: auto;
 }
 </style>

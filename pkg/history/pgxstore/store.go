@@ -32,19 +32,23 @@ func New(ctx context.Context, source, connStr string) (history.Store, error) {
 		return nil, fmt.Errorf("connect %w", err)
 	}
 
-	return NewStoreFromPool(ctx, source, pool)
+	return SetupStoreFromPool(ctx, source, pool)
 }
 
-func NewStoreFromPool(ctx context.Context, source string, pool *pgxpool.Pool) (history.Store, error) {
+func SetupStoreFromPool(ctx context.Context, source string, pool *pgxpool.Pool) (history.Store, error) {
 	err := SetupDB(ctx, pool)
 	if err != nil {
 		return nil, fmt.Errorf("setup %w", err)
 	}
 
+	return NewStoreFromPool(source, pool), nil
+}
+
+func NewStoreFromPool(source string, pool *pgxpool.Pool) history.Store {
 	return &Store{
 		slice: slice{pool: pool, source: source},
 		now:   time.Now,
-	}, nil
+	}
 }
 
 type Store struct {

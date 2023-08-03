@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
+	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
@@ -42,7 +43,7 @@ func (g *Group) GetCurrentStatus(ctx context.Context, request *gen.GetCurrentSta
 		return nil, multierr.Combine(allErrs...)
 	}
 
-	if allErrs != nil {
+	if len(allErrs) > 0 {
 		if g.logger != nil {
 			// don't bother logging if all the errors are NotFound or Unimplemented
 			var ignoreCount int
@@ -52,7 +53,9 @@ func (g *Group) GetCurrentStatus(ctx context.Context, request *gen.GetCurrentSta
 				}
 			}
 			if ignoreCount < len(allErrs) {
-				g.logger.Warn("some status logs failed", zap.Errors("errors", allErrs))
+				g.logger.Warn("some status logs failed to get",
+					zap.Int("success", len(g.names)-len(allErrs)), zap.Int("failed", len(allErrs)),
+					zap.Errors("errors", allErrs))
 			}
 		}
 	}
@@ -119,6 +122,7 @@ func (g *Group) PullCurrentStatus(request *gen.PullCurrentStatusRequest, server 
 
 		var last *gen.StatusLog
 		eq := cmp.Equal(cmp.FloatValueApprox(0, 0.001))
+		filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 
 		for {
 			select {
@@ -130,6 +134,7 @@ func (g *Group) PullCurrentStatus(request *gen.PullCurrentStatusRequest, server 
 				if err != nil {
 					return err
 				}
+				filter.Filter(r)
 
 				// don't send duplicates
 				if eq(last, r) {

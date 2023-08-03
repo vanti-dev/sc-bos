@@ -1,6 +1,6 @@
 <template>
   <content-card class="mb-8 d-flex flex-column pt-6 pl-6 pr-8">
-    <h4 class="text-h4 py-0 pt-lg-2 pb-4 pl-4">Energy</h4>
+    <h4 class="text-h4 py-0 pt-lg-2 pb-4 pl-4">Power</h4>
     <energy-graph
         :generated="props.generated"
         :metered="props.metered"/>
@@ -65,7 +65,7 @@ const props = defineProps({
 const energy = reactive({
   generated: 0,
   metered: 0,
-  total: computed(() => (energy.generated + energy.metered).toFixed(2))
+  total: computed(() => (energy.metered - energy.generated).toFixed(2))
 });
 
 /**

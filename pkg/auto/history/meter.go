@@ -8,10 +8,11 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-func (a *automation) collectMeterReadingChanges(ctx context.Context, name string, payloads chan<- []byte) {
+func (a *automation) collectMeterReadingChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
 	var client gen.MeterApiClient
 	if err := a.clients.Client(&client); err != nil {
 		a.logger.Error("collection aborted", zap.Error(err))
@@ -19,7 +20,7 @@ func (a *automation) collectMeterReadingChanges(ctx context.Context, name string
 	}
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
-		stream, err := client.PullMeterReadings(ctx, &gen.PullMeterReadingsRequest{Name: name, UpdatesOnly: true})
+		stream, err := client.PullMeterReadings(ctx, &gen.PullMeterReadingsRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}
@@ -42,7 +43,7 @@ func (a *automation) collectMeterReadingChanges(ctx context.Context, name string
 		}
 	}
 	pollFn := func(ctx context.Context, changes chan<- []byte) error {
-		demand, err := client.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: name})
+		demand, err := client.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}

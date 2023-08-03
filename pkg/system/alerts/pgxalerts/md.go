@@ -146,6 +146,12 @@ func (s *Server) initAlertMetadata(ctx context.Context) error {
 				return fmt.Errorf("severity %w", err)
 			}
 			md.SeverityCounts = severityCountMapToProto(severity)
+			// subsystems
+			subsystems, err := queryGroupCounts(ctx, tx, "subsystem", s.Subsystems)
+			if err != nil {
+				return fmt.Errorf("subsystems %w", err)
+			}
+			md.SubsystemCounts = subsystems
 
 			if eventsCancel != nil {
 				eventsCancel()

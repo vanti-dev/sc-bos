@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS alerts
     floor            TEXT        NULL,
     zone             TEXT        NULL,
     source           TEXT        NULL,
+    subsystem        TEXT        NULL,
     federation       TEXT        NULL,
 
     ack_time         TIMESTAMPTZ NULL,
@@ -20,3 +21,5 @@ ALTER TABLE alerts
     ADD COLUMN IF NOT EXISTS federation TEXT NULL;
 ALTER TABLE alerts
     ADD COLUMN IF NOT EXISTS resolve_time TIMESTAMPTZ NULL;
+ALTER TABLE alerts
+    ADD COLUMN IF NOT EXISTS subsystem TEXT NULL;

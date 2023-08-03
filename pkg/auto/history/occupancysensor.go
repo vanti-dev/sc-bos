@@ -9,9 +9,10 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 )
 
-func (a *automation) collectOccupancyChanges(ctx context.Context, name string, payloads chan<- []byte) {
+func (a *automation) collectOccupancyChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
 	var client traits.OccupancySensorApiClient
 	if err := a.clients.Client(&client); err != nil {
 		a.logger.Error("collection aborted", zap.Error(err))
@@ -19,7 +20,7 @@ func (a *automation) collectOccupancyChanges(ctx context.Context, name string, p
 	}
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
-		stream, err := client.PullOccupancy(ctx, &traits.PullOccupancyRequest{Name: name, UpdatesOnly: true})
+		stream, err := client.PullOccupancy(ctx, &traits.PullOccupancyRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}
@@ -42,7 +43,7 @@ func (a *automation) collectOccupancyChanges(ctx context.Context, name string, p
 		}
 	}
 	pollFn := func(ctx context.Context, changes chan<- []byte) error {
-		demand, err := client.GetOccupancy(ctx, &traits.GetOccupancyRequest{Name: name})
+		demand, err := client.GetOccupancy(ctx, &traits.GetOccupancyRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}

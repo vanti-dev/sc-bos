@@ -16,7 +16,7 @@ import {
 
 /**
  * @param {ListTenantsRequest.AsObject} request
- * @param {ActionTracker<ListTenantsResponse.AsObject>} tracker
+ * @param {ActionTracker<ListTenantsResponse.AsObject>} [tracker]
  * @return {Promise<ListTenantsResponse.AsObject>}
  */
 export function listTenants(request, tracker) {
@@ -29,11 +29,11 @@ export function listTenants(request, tracker) {
 /**
  *
  * @param {CreateTenantRequest.AsObject} request
- * @param {ActionTracker<CreateTenantRequest.AsObject>} tracker
+ * @param {ActionTracker<CreateTenantRequest.AsObject>} [tracker]
  * @return {Promise<Tenant.AsObject>}
  */
 export function createTenant(request, tracker) {
-  return trackAction('Tenant.createTenant', tracker ?? {}, async endpoint => {
+  return trackAction('Tenant.createTenant', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.createTenant(createTenantRequestFromObject(request));
   });
@@ -54,7 +54,7 @@ function createTenantRequestFromObject(obj) {
 /**
  *
  * @param {DeleteTenantRequest.AsObject} obj
- * @param {ActionTracker<DeleteTenantRequest.AsObject>} tracker
+ * @param {ActionTracker<DeleteTenantRequest.AsObject>} [tracker]
  * @return {Promise<DeleteTenantResponse>}
  */
 export function deleteTenant(obj, tracker) {
@@ -80,13 +80,13 @@ function deleteTenantRequestFromObject(obj) {
 /**
  *
  * @param {GetTenantRequest.AsObject} request
- * @param {ActionTracker<GetTenantRequest.AsObject>} tracker
+ * @param {ActionTracker<GetTenantRequest.AsObject>} [tracker]
  * @return {Promise<Tenant.AsObject>}
  */
 export function getTenant(request, tracker) {
   const id = String(request.id);
   if (!id) throw new Error('request.id must be specified');
-  return trackAction('Tenant.getTenant', tracker ?? {}, async endpoint => {
+  return trackAction('Tenant.getTenant', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.getTenant(new GetTenantRequest().setId(id));
   });
@@ -95,13 +95,13 @@ export function getTenant(request, tracker) {
 /**
  *
  * @param {ListSecretsRequest.AsObject} request
- * @param {ActionTracker<ListSecretsRequest.AsObject>} tracker
+ * @param {ActionTracker<ListSecretsRequest.AsObject>} [tracker]
  * @return {Promise<ListSecretsResponse.AsObject>}
  */
 export function listSecrets(request, tracker) {
   const tenantId = String(request.tenantId);
   if (!tenantId) throw new Error('request.tenantId must be specified');
-  return trackAction('Tenant.listSecrets', tracker ?? {}, async endpoint => {
+  return trackAction('Tenant.listSecrets', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.listSecrets(new ListSecretsRequest().setFilter(`tenant.id=${tenantId}`));
   });
@@ -110,13 +110,13 @@ export function listSecrets(request, tracker) {
 /**
  *
  * @param {CreateSecretRequest.AsObject} request
- * @param {ActionTracker<CreateSecretRequest.AsObject>} tracker
+ * @param {ActionTracker<CreateSecretRequest.AsObject>} [tracker]
  * @return {Promise<Secret.AsObject>}
  */
 export function createSecret(request, tracker) {
   const secret = request.secret;
   if (!secret) throw new Error('request.secret must be specified');
-  return trackAction('Tenant.createSecret', tracker ?? {}, async endpoint => {
+  return trackAction('Tenant.createSecret', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.createSecret(new CreateSecretRequest().setSecret(secretFromObject(secret)));
   });
@@ -125,13 +125,13 @@ export function createSecret(request, tracker) {
 /**
  *
  * @param {DeleteSecretRequest.AsObject} request
- * @param {ActionTracker<DeleteSecretRequest.AsObject>} tracker
+ * @param {ActionTracker<DeleteSecretRequest.AsObject>} [tracker]
  * @return {Promise<DeleteSecretResponse.AsObject>}
  */
 export function deleteSecret(request, tracker) {
   const secretId = request.id;
   if (!secretId) throw new Error('request.id must be specified');
-  return trackAction('Tenant.deleteSecret', tracker ?? {}, async endpoint => {
+  return trackAction('Tenant.deleteSecret', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.deleteSecret(new DeleteSecretRequest().setId(secretId));
   });

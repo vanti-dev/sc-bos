@@ -14,28 +14,28 @@ import {GetMetadataRequest} from '@smart-core-os/sc-api-grpc-web/traits/metadata
 
 /**
  * @param {GetMetadataRequest.AsObject} request
- * @param {ActionTracker<ServiceMetadata.AsObject>} tracker
+ * @param {ActionTracker<ServiceMetadata.AsObject>} [tracker]
  * @return {Promise<ServiceMetadata.AsObject>}
  */
 export function getServiceMetadata(request, tracker) {
   const name = String(request.name);
   if (!name) throw new Error('request.name must be specified');
   return trackAction('Services.GetServiceMetadata', tracker ?? {}, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     return api.getServiceMetadata(createGetMetadataRequestFromObject(request));
   });
 }
 
 /**
  * @param {ListServicesRequest.AsObject} request
- * @param {ActionTracker<ListServicesRequest.AsObject>} tracker
+ * @param {ActionTracker<ListServicesRequest.AsObject>} [tracker]
  * @return {Promise<ListServicesResponse.AsObject>}
  */
 export function listServices(request, tracker) {
   const name = String(request.name);
   if (!name) throw new Error('request.name must be specified');
   return trackAction('Services.ListServices', tracker ?? {}, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     return api.listServices(createListServicesRequestFromObject(request));
   });
 }
@@ -48,7 +48,7 @@ export function listServices(request, tracker) {
 export function pullServices(request, resource) {
   if (!request.name) throw new Error('request.name must be specified');
   pullResource('Services.PullServices', resource, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     const stream = api.pullServices(pullServicesRequestFromObject(request));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
@@ -62,38 +62,38 @@ export function pullServices(request, resource) {
 
 /**
  * @param {ConfigureServiceRequest.AsObject} request
- * @param {ActionTracker<Service.AsObject>} tracker
+ * @param {ActionTracker<Service.AsObject>} [tracker]
  * @return {Promise<Service.AsObject>}
  */
 export function configureService(request, tracker) {
   if (!(request.name && request.id)) throw new Error('request.name and request.id must be specified');
   return trackAction('Services.ConfigureService', tracker ?? {}, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     return api.configureService(createConfigureServiceRequestFromObject(request));
   });
 }
 
 /**
  * @param {StartServiceRequest.AsObject} request
- * @param {ActionTracker<Service.AsObject>} tracker
+ * @param {ActionTracker<Service.AsObject>} [tracker]
  * @return {Promise<Service.AsObject>}
  */
 export function startService(request, tracker) {
   if (!(request.name && request.id)) throw new Error('request.name and request.id must be specified');
   return trackAction('Services.StartService', tracker ?? {}, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     return api.startService(createStartServiceRequestFromObject(request));
   });
 }
 /**
  * @param {StopServiceRequest.AsObject} request
- * @param {ActionTracker<Service.AsObject>} tracker
+ * @param {ActionTracker<Service.AsObject>} [tracker]
  * @return {Promise<Service.AsObject>}
  */
 export function stopService(request, tracker) {
   if (!(request.name && request.id)) throw new Error('request.name and request.id must be specified');
   return trackAction('Services.StopService', tracker ?? {}, endpoint => {
-    const api = client(endpoint);
+    const api = apiClient(endpoint);
     return api.stopService(createStopServiceRequestFromObject(request));
   });
 }
@@ -102,7 +102,7 @@ export function stopService(request, tracker) {
  * @param {string} endpoint
  * @return {ServicesApiPromiseClient}
  */
-function client(endpoint) {
+function apiClient(endpoint) {
   return new ServicesApiPromiseClient(endpoint, null, clientOptions());
 }
 

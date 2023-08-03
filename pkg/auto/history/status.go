@@ -8,10 +8,11 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-func (a *automation) collectCurrentStatusChanges(ctx context.Context, name string, payloads chan<- []byte) {
+func (a *automation) collectCurrentStatusChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
 	var client gen.StatusApiClient
 	if err := a.clients.Client(&client); err != nil {
 		a.logger.Error("collection aborted", zap.Error(err))
@@ -19,7 +20,7 @@ func (a *automation) collectCurrentStatusChanges(ctx context.Context, name strin
 	}
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
-		stream, err := client.PullCurrentStatus(ctx, &gen.PullCurrentStatusRequest{Name: name, UpdatesOnly: true})
+		stream, err := client.PullCurrentStatus(ctx, &gen.PullCurrentStatusRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}
@@ -42,7 +43,7 @@ func (a *automation) collectCurrentStatusChanges(ctx context.Context, name strin
 		}
 	}
 	pollFn := func(ctx context.Context, changes chan<- []byte) error {
-		demand, err := client.GetCurrentStatus(ctx, &gen.GetCurrentStatusRequest{Name: name})
+		demand, err := client.GetCurrentStatus(ctx, &gen.GetCurrentStatusRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}

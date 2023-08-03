@@ -77,7 +77,7 @@ watch(() => props.name, async (name) => {
   closeResource(indoorTempValue);
   // create new stream
   if (name && name !== '') {
-    pullAirTemperature(name, indoorTempValue);
+    pullAirTemperature({name}, indoorTempValue);
   }
 }, {immediate: true});
 
@@ -90,7 +90,7 @@ watch(() => props.externalName, async (name) => {
   closeResource(outdoorTempValue);
   // create new stream
   if (name && name !== '') {
-    pullAirTemperature(name, outdoorTempValue);
+    pullAirTemperature({name}, outdoorTempValue);
   }
 }, {immediate: true});
 

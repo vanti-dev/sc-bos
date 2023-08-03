@@ -8,7 +8,7 @@ import {setProperties} from '@/api/convpb';
 
 /**
  *
- * @param {ActionTracker<ReportCSV.AsObject>} tracker
+ * @param {ActionTracker<ReportCSV.AsObject>} [tracker]
  * @return {Promise<ReportCSV.AsObject>}
  */
 export function getReportCSV(tracker) {
@@ -22,7 +22,7 @@ export function getReportCSV(tracker) {
 
 /**
  *
- * @param {ActionTracker<ListLightHealthResponse.AsObject>} tracker
+ * @param {ActionTracker<ListLightHealthResponse.AsObject>} [tracker]
  * @return {Promise<ListLightHealthResponse.AsObject>}
  */
 export function listLightHealth(tracker) {
@@ -35,7 +35,7 @@ export function listLightHealth(tracker) {
 /**
  *
  * @param {StartTestRequest.AsObject} request
- * @param {ActionTracker<StartTestRequest.AsObject>} tracker
+ * @param {ActionTracker<StartTestRequest.AsObject>} [tracker]
  * @return {Promise<StartTestResponse.AsObject>}
  */
 export function runTest(request, tracker) {

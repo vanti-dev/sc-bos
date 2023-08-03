@@ -42,6 +42,9 @@ export class Alert extends jspb.Message {
   getFederation(): string;
   setFederation(value: string): Alert;
 
+  getSubsystem(): string;
+  setSubsystem(value: string): Alert;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Alert.AsObject;
   static toObject(includeInstance: boolean, msg: Alert): Alert.AsObject;
@@ -62,6 +65,7 @@ export namespace Alert {
     zone: string,
     source: string,
     federation: string,
+    subsystem: string,
   }
 
   export class Acknowledgement extends jspb.Message {
@@ -147,6 +151,9 @@ export namespace Alert {
     getFederation(): string;
     setFederation(value: string): Query;
 
+    getSubsystem(): string;
+    setSubsystem(value: string): Query;
+
     getAcknowledged(): boolean;
     setAcknowledged(value: boolean): Query;
     hasAcknowledged(): boolean;
@@ -185,6 +192,7 @@ export namespace Alert {
       zone: string,
       source: string,
       federation: string,
+      subsystem: string,
       acknowledged?: boolean,
       resolved?: boolean,
       resolvedNotBefore?: google_protobuf_timestamp_pb.Timestamp.AsObject,
@@ -234,6 +242,9 @@ export class AlertMetadata extends jspb.Message {
   getNeedsAttentionCountsMap(): jspb.Map<string, number>;
   clearNeedsAttentionCountsMap(): AlertMetadata;
 
+  getSubsystemCountsMap(): jspb.Map<string, number>;
+  clearSubsystemCountsMap(): AlertMetadata;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): AlertMetadata.AsObject;
   static toObject(includeInstance: boolean, msg: AlertMetadata): AlertMetadata.AsObject;
@@ -251,6 +262,7 @@ export namespace AlertMetadata {
     severityCountsMap: Array<[number, number]>,
     resolvedCountsMap: Array<[boolean, number]>,
     needsAttentionCountsMap: Array<[string, number]>,
+    subsystemCountsMap: Array<[string, number]>,
   }
 }
 

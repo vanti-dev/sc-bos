@@ -26,7 +26,7 @@ type factory struct{}
 
 func (f factory) New(services auto.Services) service.Lifecycle {
 	a := &autoImpl{Services: services}
-	a.Service = service.New(service.MonoApply(a.applyConfig))
+	a.Service = service.New(service.MonoApply(a.applyConfig), service.WithParser(config.ReadBytes))
 	a.Logger = a.Logger.Named(AutoName)
 	return a
 }
@@ -99,7 +99,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 					return
 				default:
 				}
-				for change := range a.Node.PullAllMetadata(ctx, resource.WithReadPaths(&traits.Metadata{}, "traits", "location")) {
+				for change := range a.Node.PullAllMetadata(ctx, resource.WithReadPaths(&traits.Metadata{}, "traits", "location", "membership")) {
 					if s := ignore.Replace(change.Name); len(s) == 0 || s[0] == '!' {
 						continue // ignore
 					}
@@ -112,9 +112,10 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 						}
 					case !hadTrait && hasTrait: // add
 						source := config.Source{
-							Name:  change.Name,
-							Floor: change.NewValue.GetLocation().GetFloor(),
-							Zone:  change.NewValue.GetLocation().GetZone(),
+							Name:      change.Name,
+							Floor:     change.NewValue.GetLocation().GetFloor(),
+							Zone:      change.NewValue.GetLocation().GetZone(),
+							Subsystem: change.NewValue.GetMembership().GetSubsystem(),
 						}
 						go pullFrom(source)
 					}

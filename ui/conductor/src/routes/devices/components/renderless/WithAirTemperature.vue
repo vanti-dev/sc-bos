@@ -43,7 +43,7 @@ function doUpdateAirTemperature(req) {
   if (typeof req === 'number') {
     req = {
       state: {temperatureSetPoint: {valueCelsius: /** @type {number} */ req}},
-      updateMask: {paths: ['temperature_set_point']}
+      updateMask: {pathsList: ['temperature_set_point']}
     };
   }
   if (!req.hasOwnProperty('state')) {
@@ -69,7 +69,7 @@ watch(
 
       if (!newPaused && (oldPaused || newName !== oldName)) {
         closeResource(airTemperatureResource);
-        pullAirTemperature(newName, airTemperatureResource);
+        pullAirTemperature({name: newName}, airTemperatureResource);
       }
     },
     {immediate: true, deep: true, flush: 'sync'}
@@ -81,7 +81,6 @@ watch(
 const errorHandlers = [];
 onMounted(() => {
   errorHandlers.push(
-      errorStore.registerValue(airTemperatureResource),
       errorStore.registerTracker(updateTracker)
   );
 });

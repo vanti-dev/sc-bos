@@ -157,15 +157,10 @@ export function setError(resource, err, name = '') {
  *
  * @param {string} logPrefix
  * @param {RemoteResource<O, T>} resource
- * @param {string} address
  * @param {StreamFactory<T>} newStream
  * @template T,O
  */
-export function pullResource(logPrefix, resource, address= '', newStream) {
-  if (typeof address === 'function') {
-    newStream = address;
-    address = '';
-  }
+export function pullResource(logPrefix, resource, newStream) {
   const doPull = (retryDelayMs = 1000) => {
     let retryCalled = false;
     const retry = () => {
@@ -184,9 +179,7 @@ export function pullResource(logPrefix, resource, address= '', newStream) {
       });
     };
 
-    if (address === '') {
-      address = grpcWebEndpoint();
-    }
+    const address = grpcWebEndpoint();
     Promise.resolve(address)
         .then((endpoint) => {
           const stream = newStream(endpoint);
@@ -256,17 +249,13 @@ export function pullResource(logPrefix, resource, address= '', newStream) {
  *
  * @param {string} logPrefix
  * @param {ActionTracker<V>} tracker
- * @param {string} [endpoint]
  * @param {Action<V, M>} action
  * @return {Promise<V>}
  * @template V, M
  */
-export async function trackAction(logPrefix, tracker, endpoint, action) {
+export async function trackAction(logPrefix, tracker, action) {
   Vue.set(tracker, 'loading', true);
-  if (typeof endpoint === 'function') {
-    action = endpoint;
-    endpoint = await grpcWebEndpoint();
-  }
+  const endpoint = await grpcWebEndpoint();
   try {
     const msg = await action(endpoint);
     const value = msg.toObject();

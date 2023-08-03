@@ -15,6 +15,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
+	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 )
 
@@ -53,9 +54,11 @@ func (g *Group) GetOccupancy(ctx context.Context, request *traits.GetOccupancyRe
 		return nil, multierr.Combine(allErrs...)
 	}
 
-	if allErrs != nil {
+	if len(allErrs) > 0 {
 		if g.logger != nil {
-			g.logger.Warn("some occupancy sensors failed", zap.Errors("errors", allErrs))
+			g.logger.Warn("some occupancy sensors failed to get",
+				zap.Int("success", len(g.names)-len(allErrs)), zap.Int("failed", len(allErrs)),
+				zap.Errors("errors", allErrs))
 		}
 	}
 	return mergeOccupancy(allRes)
@@ -154,6 +157,7 @@ func (g *Group) PullOccupancy(request *traits.PullOccupancyRequest, server trait
 
 		var last *traits.Occupancy
 		eq := cmp.Equal(cmp.FloatValueApprox(0, 0.001))
+		filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 
 		for {
 			select {
@@ -165,6 +169,7 @@ func (g *Group) PullOccupancy(request *traits.PullOccupancyRequest, server trait
 				if err != nil {
 					return err
 				}
+				filter.Filter(r)
 
 				// don't send duplicates
 				if eq(last, r) {
@@ -214,12 +219,16 @@ func mergeOccupancy(all []*traits.Occupancy) (*traits.Occupancy, error) {
 				// We do this by recording the earliest unoccupied time in out.StateChangeTime, and the earliest occupied time
 				// in earliestOccupiedTime.
 				// If after processing all the records we determine that we should be occupied then we swap out the state change time.
-				if earliestOccupiedTime.IsZero() || earliestOccupiedTime.After(occupancy.StateChangeTime.AsTime()) {
-					earliestOccupiedTime = occupancy.StateChangeTime.AsTime()
+				if occupancy.StateChangeTime != nil {
+					if earliestOccupiedTime.IsZero() || earliestOccupiedTime.After(occupancy.StateChangeTime.AsTime()) {
+						earliestOccupiedTime = occupancy.StateChangeTime.AsTime()
+					}
 				}
 			default:
-				if latestUnoccupiedTime.IsZero() || latestUnoccupiedTime.Before(occupancy.StateChangeTime.AsTime()) {
-					latestUnoccupiedTime = occupancy.StateChangeTime.AsTime()
+				if occupancy.StateChangeTime != nil {
+					if latestUnoccupiedTime.IsZero() || latestUnoccupiedTime.Before(occupancy.StateChangeTime.AsTime()) {
+						latestUnoccupiedTime = occupancy.StateChangeTime.AsTime()
+					}
 				}
 			}
 		}

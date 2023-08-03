@@ -1,5 +1,5 @@
 <template>
-  <v-icon v-if="ok" color="white" v-show="showOk" size="20">mdi-check</v-icon>
+  <v-icon v-if="ok" color="white" :style="{visibility: showOk ? 'initial' : 'hidden'}" size="20">mdi-check</v-icon>
   <v-menu v-else-if="notOK" :close-on-content-click="false" offset-y left max-width="500px" min-width="500px">
     <template #activator="{ on }">
       <v-icon v-on="on" :color="iconColor" size="20">{{ iconStr }}</v-icon>

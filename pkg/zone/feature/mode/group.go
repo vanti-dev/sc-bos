@@ -15,6 +15,8 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
+	"github.com/vanti-dev/sc-bos/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/util/chans"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/mode/config"
 )
 
@@ -96,7 +98,11 @@ func (g *Group) GetModeValues(ctx context.Context, request *traits.GetModeValues
 		return nil, multierr.Combine(allErrs...)
 	}
 	if len(allErrs) > 0 {
-		g.logger.Warn("some devices failed to get mode values", zap.Errors("errors", allErrs))
+		if g.logger != nil {
+			g.logger.Warn("some modes failed to get",
+				zap.Int("success", len(results)-len(allErrs)), zap.Int("failed", len(allErrs)),
+				zap.Errors("errors", allErrs))
+		}
 	}
 
 	return g.mergeModeValues(all), nil
@@ -168,7 +174,11 @@ func (g *Group) UpdateModeValues(ctx context.Context, request *traits.UpdateMode
 		return nil, multierr.Combine(allErrs...)
 	}
 	if len(allErrs) > 0 {
-		g.logger.Warn("some devices failed to update mode values", zap.Errors("errors", allErrs))
+		if g.logger != nil {
+			g.logger.Warn("some modes failed to update",
+				zap.Int("success", len(results)-len(allErrs)), zap.Int("failed", len(allErrs)),
+				zap.Errors("errors", allErrs))
+		}
 	}
 	return g.mergeModeValues(all), nil
 }
@@ -190,32 +200,42 @@ func (g *Group) PullModeValues(request *traits.PullModeValuesRequest, server tra
 	for _, name := range names {
 		name := name
 		group.Go(func() error {
-			stream, err := g.client.PullModeValues(ctx, &traits.PullModeValuesRequest{Name: name})
-			if err != nil {
-				return err
-			}
-			for {
-				val, err := stream.Recv()
-				if err != nil {
-					return err
-				}
-				for _, change := range val.Changes {
-					select {
-					case <-ctx.Done():
-						return ctx.Err()
-					case changes <- c{name: name, val: change.ModeValues}:
+			return pull.Changes(ctx, pull.NewFetcher(
+				func(ctx context.Context, changes chan<- c) error {
+					stream, err := g.client.PullModeValues(ctx, &traits.PullModeValuesRequest{Name: name})
+					if err != nil {
+						return err
 					}
-				}
-			}
+					for {
+						res, err := stream.Recv()
+						if err != nil {
+							return err
+						}
+						for _, change := range res.Changes {
+							err := chans.SendContext(ctx, changes, c{name: name, val: change.ModeValues})
+							if err != nil {
+								return err
+							}
+						}
+					}
+				},
+				func(ctx context.Context, changes chan<- c) error {
+					res, err := g.client.GetModeValues(ctx, &traits.GetModeValuesRequest{Name: name})
+					if err != nil {
+						return err
+					}
+					return chans.SendContext(ctx, changes, c{name: name, val: res})
+				},
+			), changes)
 		})
 	}
 
-	filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 	group.Go(func() error {
 		all := make(map[string]*traits.ModeValues, len(names))
 
 		var last *traits.ModeValues
 		eq := cmp.Equal()
+		filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 
 		for {
 			select {

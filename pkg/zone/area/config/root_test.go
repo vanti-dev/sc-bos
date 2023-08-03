@@ -31,7 +31,7 @@ func TestRoot_UnmarshalJSON(t *testing.T) {
 			Name: "test",
 			Type: "area",
 		},
-		MetadataCfg: MetadataCfg{
+		Self: Self{
 			Metadata: &traits.Metadata{
 				Appearance: &traits.Metadata_Appearance{Title: "TEST"},
 			},

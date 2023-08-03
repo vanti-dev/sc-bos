@@ -14,6 +14,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
+	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/merge"
 )
@@ -44,9 +45,11 @@ func (g *Group) GetAirTemperature(ctx context.Context, request *traits.GetAirTem
 		return nil, multierr.Combine(allErrs...)
 	}
 
-	if allErrs != nil {
+	if len(allErrs) > 0 {
 		if g.logger != nil {
-			g.logger.Warn("some hvacs failed", zap.Errors("errors", allErrs))
+			g.logger.Warn("some hvacs failed to get",
+				zap.Int("success", len(g.names)-len(allErrs)), zap.Int("failed", len(allErrs)),
+				zap.Errors("errors", allErrs))
 		}
 	}
 	return mergeAirTemperature(allRes)
@@ -59,6 +62,7 @@ func (g *Group) UpdateAirTemperature(ctx context.Context, request *traits.Update
 	var allErrs []error
 	var allRes []*traits.AirTemperature
 	for _, name := range g.names {
+		request := proto.Clone(request).(*traits.UpdateAirTemperatureRequest)
 		request.Name = name
 		res, err := g.client.UpdateAirTemperature(ctx, request)
 		if err != nil {
@@ -72,9 +76,11 @@ func (g *Group) UpdateAirTemperature(ctx context.Context, request *traits.Update
 		return nil, multierr.Combine(allErrs...)
 	}
 
-	if allErrs != nil {
+	if len(allErrs) > 0 {
 		if g.logger != nil {
-			g.logger.Warn("some hvacs failed", zap.Errors("errors", allErrs))
+			g.logger.Warn("some hvacs failed to update",
+				zap.Int("success", len(g.names)-len(allErrs)), zap.Int("failed", len(allErrs)),
+				zap.Errors("errors", allErrs))
 		}
 	}
 	return mergeAirTemperature(allRes)
@@ -136,6 +142,7 @@ func (g *Group) PullAirTemperature(request *traits.PullAirTemperatureRequest, se
 
 		var last *traits.AirTemperature
 		eq := cmp.Equal(cmp.FloatValueApprox(0, 0.001))
+		filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 
 		for {
 			select {
@@ -147,6 +154,7 @@ func (g *Group) PullAirTemperature(request *traits.PullAirTemperatureRequest, se
 				if err != nil {
 					return err
 				}
+				filter.Filter(r)
 
 				// don't send duplicates
 				if eq(last, r) {
