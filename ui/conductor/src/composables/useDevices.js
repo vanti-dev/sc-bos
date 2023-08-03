@@ -11,7 +11,7 @@ const NO_FLOOR = '< no floor >';
  *
  * @param {Object} props
  */
-export function useDevices(props) {
+export default function(props) {
   const devicesStore = useDevicesStore();
   const errorStore = useErrorStore();
 
