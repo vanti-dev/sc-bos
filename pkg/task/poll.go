@@ -19,8 +19,8 @@ func Poll(action func(context.Context), interval time.Duration) *Intermittent {
 		go func() {
 			ticker := time.NewTicker(interval)
 			defer ticker.Stop()
-			action(ctx)
 			for {
+				action(ctx)
 				select {
 				case <-ctx.Done():
 					return
