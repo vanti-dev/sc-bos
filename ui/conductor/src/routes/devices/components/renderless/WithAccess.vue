@@ -5,8 +5,8 @@
 </template>
 
 <script setup>
-import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
-import {getLastAccessAttempt, pullAccessAttempts} from '@/api/sc/traits/access';
+import {closeResource, newResourceValue} from '@/api/resource';
+import {pullAccessAttempts} from '@/api/sc/traits/access';
 import {computed, onUnmounted, reactive, watch} from 'vue';
 import {deepEqual} from 'vuetify/src/util/helpers';
 
