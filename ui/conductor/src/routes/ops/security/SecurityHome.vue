@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import {computed, onMounted, ref} from 'vue';
+import {ref} from 'vue';
 import ListView from '@/routes/ops/security/components/ListView.vue';
 import MapView from '@/routes/ops/security/components/MapView.vue';
 
@@ -66,8 +66,6 @@ const viewType = ref('list');
 const notificationStateSelection = ref('All');
 
 const {floorList, filterFloor, search, devicesData} = useDevices(props);
-
-// import Level0 from '@/clients/ew/level0.svg';
 </script>
 
 <style scoped></style>
