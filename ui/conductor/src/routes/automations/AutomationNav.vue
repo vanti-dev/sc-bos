@@ -9,12 +9,14 @@
     <v-list-item
         v-for="automation of automationTypeList"
         :key="automation.type"
-        :to="'/automations/'+automation.type"
+        :to="'/automations/' + automation.type"
         class="my-2">
       <v-list-item-icon>
         <v-icon v-if="icon.hasOwnProperty(automation.type)">{{ icon[automation.type] }}</v-icon>
       </v-list-item-icon>
-      <v-list-item-content class="text-capitalize text-truncate">{{ automation.type }}</v-list-item-content>
+      <v-list-item-content class="text-capitalize text-truncate">
+        {{ formatNaming(automation.type) }}
+      </v-list-item-content>
     </v-list-item>
   </v-list>
 </template>
@@ -47,22 +49,72 @@ const automationTypeList = computed(() => {
 // map of icons to use for different automation sections
 const icon = ref({
   lights: 'mdi-lightbulb',
-  history: 'mdi-history'
+  history: 'mdi-history',
+  bms: 'mdi-office-building-cog-outline',
+  udmi: 'mdi-transit-connection-variant'
 });
 
-watch(sidebarNode, async () => {
-  console.log('sidebarNode', sidebarNode);
-  metadataTracker.value = serviceStore.getService(
-      ServiceNames.Automations,
-      await sidebarNode.value.commsAddress,
-      await sidebarNode.value.commsName).metadataTracker;
-  await serviceStore.refreshMetadata(
-      ServiceNames.Automations,
-      await sidebarNode.value.commsAddress,
-      await sidebarNode.value.commsName);
-},
-{immediate: true});
+const setIconForAutomationType = (name) => {
+  const words = ['report', 'reports', 'alert', 'alerts'];
+  const iconMapping = {
+    report: 'mdi-file-chart-outline',
+    alert: 'mdi-alert-circle-outline'
+  };
 
+  for (const word of words) {
+    if (name.includes(word)) {
+      const baseWord = word.endsWith('s') ? word.slice(0, -1) : word;
+      icon.value[name] = iconMapping[baseWord];
+      return;
+    }
+  }
+};
+
+const formatNaming = (name) => {
+  const words = ['report', 'reports', 'alert', 'alerts'];
+  //
+  for (const word of words) {
+    if (name.includes(word)) {
+      return name.split(word).join(' ' + word);
+    }
+  }
+
+  const acronyms = ['bms', 'udmi'];
+
+  for (const acronym of acronyms) {
+    if (name.includes(acronym)) {
+      return name.toUpperCase();
+    }
+  }
+
+  return name;
+};
+
+watch(
+    sidebarNode,
+    async () => {
+      console.log('sidebarNode', sidebarNode);
+      metadataTracker.value = serviceStore.getService(
+          ServiceNames.Automations,
+          await sidebarNode.value.commsAddress,
+          await sidebarNode.value.commsName
+      ).metadataTracker;
+      await serviceStore.refreshMetadata(
+          ServiceNames.Automations,
+          await sidebarNode.value.commsAddress,
+          await sidebarNode.value.commsName
+      );
+    },
+    {immediate: true}
+);
+
+watch(
+    automationTypeList,
+    (newList) => {
+      newList.forEach((item) => setIconForAutomationType(item.type));
+    },
+    {immediate: true}
+);
 </script>
 
 <style scoped>
