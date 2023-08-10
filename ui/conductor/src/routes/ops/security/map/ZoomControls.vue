@@ -3,7 +3,7 @@
     <v-btn
         v-for="b in activeBtns"
         :key="b.c"
-        :class="[b.c, 'black--text']"
+        :class="[b.c, 'black--text zoom-control__button']"
         @click="handleClick(b.c)"
         icon
         elevation="2">
@@ -56,7 +56,7 @@ export default {
   grid-gap: 8px;
   grid-template-columns: repeat(3, auto);
   grid-template-rows: repeat(2, auto) 8px repeat(3, auto);
-  margin-bottom: 4em;
+  margin-bottom: 1em;
 }
 
 .v-btn {
