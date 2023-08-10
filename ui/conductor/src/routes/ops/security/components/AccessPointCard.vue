@@ -18,7 +18,7 @@
         {{ formatString(grantStates) }}
       </span>
     </v-card-text>
-    <v-card-text class="text-h6 white--text d-flex flex-column pt-1">
+    <v-card-text class="text-h6 white--text d-flex flex-column pt-1" style="max-width: 350px;">
       <span class="text-subtitle-1"> {{ user.name }} ({{ user.cardId }}) </span>
       <!-- <span class="text-subtitle-2">{{ accessPointCardData.user.accessTime }}</span> -->
     </v-card-text>
@@ -52,7 +52,7 @@
 </template>
 
 <script setup>
-import {computed, reactive, ref} from 'vue';
+import {computed, reactive} from 'vue';
 import {AccessAttempt} from '@sc-bos/ui-gen/proto/access_pb';
 import {useHubStore} from '@/stores/hub';
 import {useNotifications} from '../../notifications/notifications';
@@ -109,7 +109,7 @@ const query = reactive({
   floor: props.floor === 'All' ? undefined : props.floor,
   zone: undefined,
   subsystem: undefined,
-  source: props.source,
+  source: props.source === '' ? undefined : props.source,
   acknowledged: undefined,
   resolved: false,
   resolvedNotBefore: undefined,
@@ -135,7 +135,6 @@ const alert = computed(() => {
 const user = computed(() => {
   return {
     name: props.value?.actor?.displayName ?? 'Unknown',
-    alerts,
     cardId: props.value?.actor?.idsMap[0][1] ?? 'Unknown'
   };
 });

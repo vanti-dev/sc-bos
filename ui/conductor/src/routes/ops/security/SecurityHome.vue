@@ -5,7 +5,7 @@
       <v-spacer/>
       <sc-status-card style="min-width: 248px"/>
     </v-row>
-    <content-card class="mb-8 d-flex flex-column pt-6">
+    <content-card class="mb-8 d-flex flex-column pt-6" style="z-index: 8">
       <v-row class="d-flex flex-row align-center mt-0 mb-4 px-6">
         <v-text-field v-model="search" append-icon="mdi-magnify" dense filled hide-details label="Search devices"/>
         <v-spacer/>
@@ -35,14 +35,15 @@
             outlined
             style="max-width: 100px"/>
       </v-row>
-      <ListView v-if="viewType === 'list'" :devices="devicesData" :filter="filter"/>
-      <MapView v-else :floor="filterFloor"/>
+      <ListView v-if="viewType === 'list'" :device-names="deviceNames" :filter="filter"/>
+      <!-- TODO: add :floor="filterFloor" when multiple floor plans available -->
+      <MapView v-else :device-names="deviceNames"/>
     </content-card>
   </v-container>
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {computed, ref} from 'vue';
 import ListView from '@/routes/ops/security/components/ListView.vue';
 import MapView from '@/routes/ops/security/components/MapView.vue';
 
@@ -66,6 +67,16 @@ const viewType = ref('list');
 const notificationStateSelection = ref('All');
 
 const {floorList, filterFloor, search, devicesData} = useDevices(props);
+
+const deviceNames = computed(() => {
+  return devicesData.value.map((device) => {
+    return {
+      source: device.metadata.name,
+      name: device.metadata?.appearance ? device.metadata?.appearance.title : device.metadata.name
+    };
+  }
+  );
+});
 </script>
 
 <style scoped></style>
