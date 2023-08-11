@@ -41,14 +41,21 @@ const grantStates = computed(() => {
 
 <style scoped>
 .granted {
-  color: green;
+  color: var(--success);
 }
-.denied, .forced, .failed {
-  color: red;
+
+.denied {
+  color: var(--v-warning-base);
 }
-.pending, .aborted, .tailgate {
-  color: orange;
+
+.tailgate, .forced, .failed {
+  color: var(--v-error-base);
 }
+
+.pending, .aborted {
+  color: var(--v-info-base);
+}
+
 .grant_unknown {
   color: grey;
 }
