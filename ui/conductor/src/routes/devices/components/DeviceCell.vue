@@ -48,14 +48,6 @@
       <OccupancyCell v-if="!resource.streamError" v-bind="resource"/>
       <StatusAlert v-else icon="mdi-crosshairs" :resource="resource.streamError"/>
     </WithOccupancy>
-    <WithStatus
-        v-if="hasCell('StatusLog')"
-        v-slot="{resource}"
-        :name="props.item.name"
-        :paused="props.paused">
-      <StatusLogCell v-if="!resource.streamError" v-bind="resource"/>
-      <StatusAlert v-else icon="mdi-connection" :resource="resource.streamError"/>
-    </WithStatus>
     <WithAccess
         v-if="hasCell('AccessAttempt')"
         v-slot="{resource}"
@@ -64,6 +56,14 @@
       <AccessAttemptCell v-if="!resource.streamError" v-bind="resource"/>
       <StatusAlert v-else icon="mdi-cancel" :resource="resource.streamError"/>
     </WithAccess>
+    <WithStatus
+        v-if="hasCell('StatusLog')"
+        v-slot="{resource}"
+        :name="props.item.name"
+        :paused="props.paused">
+      <StatusLogCell v-if="!resource.streamError" v-bind="resource"/>
+      <StatusAlert v-else icon="mdi-connection" :resource="resource.streamError"/>
+    </WithStatus>
   </span>
 </template>
 
