@@ -19,7 +19,7 @@ export function pullEnterLeaveEvents(request, resource) {
     stream.on('data', (msg) => {
       const changes = msg.getChangesList();
       for (const change of changes) {
-        setValue(resource, enterLeaveEventToObject(change));
+        setValue(resource, enterLeaveEventToObject(change.getEnterLeaveEvent()));
       }
     });
     return stream;
@@ -98,18 +98,18 @@ function resetEnterLeaveTotalsRequestFromObject(obj) {
 
 /**
  *
- * @param {EnterLeaveEvent.AsObject} obj
- * @return {PullEnterLeaveEventsResponse}
+ * @param {EnterLeaveEvent} obj
+ * @return {EnterLeaveEvent.AsObject}
  */
-export function enterLeaveEventToObject(obj) {
+function enterLeaveEventToObject(obj) {
   if (!obj) return undefined;
 
-  const dst = obj.getEnterLeaveEvent().toObject();
+  const dst = obj.toObject();
 
-  if (!obj.getEnterLeaveEvent().hasEnterTotal()) {
+  if (!obj.hasEnterTotal()) {
     dst.enterTotal = undefined;
   }
-  if (!obj.getEnterLeaveEvent().hasLeaveTotal()) {
+  if (!obj.hasLeaveTotal()) {
     dst.leaveTotal = undefined;
   }
 
