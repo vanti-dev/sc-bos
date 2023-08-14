@@ -10,6 +10,7 @@
             dense
             outlined
             :rules="[delayRule]"
+            readonly
             style="width: 100px;"/>
         <!-- todo: display error message -->
       </v-list-item>
