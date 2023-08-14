@@ -41,7 +41,7 @@ const grantStates = computed(() => {
 
 <style scoped>
 .granted {
-  color: var(--success);
+  color: var(--v-success-base);
 }
 
 .denied {
