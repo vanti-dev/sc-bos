@@ -2,7 +2,7 @@
   <side-bar>
     <lights-config-card v-if="automationType === 'lights'"/>
     <edit-config-card/>
-    <v-card-actions class="justify-end px-4 pt-0">
+    <v-card-actions class="justify-end px-4 pt-0" v-if="false">
       <v-btn class="primary" @click="saveConfig">Save</v-btn>
     </v-card-actions>
     <v-snackbar v-model="saveConfirm" timeout="2000" color="success" max-width="250" min-width="200">

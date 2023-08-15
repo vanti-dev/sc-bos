@@ -48,6 +48,14 @@
       <OccupancyCell v-if="!resource.streamError" v-bind="resource"/>
       <StatusAlert v-else icon="mdi-crosshairs" :resource="resource.streamError"/>
     </WithOccupancy>
+    <WithAccess
+        v-if="hasCell('AccessAttempt')"
+        v-slot="{resource}"
+        :name="props.item.name"
+        :paused="props.paused">
+      <AccessAttemptCell v-if="!resource.streamError" v-bind="resource"/>
+      <StatusAlert v-else icon="mdi-cancel" :resource="resource.streamError"/>
+    </WithAccess>
     <WithStatus
         v-if="hasCell('StatusLog')"
         v-slot="{resource}"
@@ -65,11 +73,13 @@ import WithElectricDemand from '@/routes/devices/components/renderless/WithElect
 import WithEnterLeave from '@/routes/devices/components/renderless/WithEnterLeave.vue';
 import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
 import WithMeter from '@/routes/devices/components/renderless/WithMeter.vue';
+import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
 import AirTemperatureCell from '@/routes/devices/components/trait-cells/AirTemperatureCell.vue';
 import ElectricDemandCell from '@/routes/devices/components/trait-cells/ElectricDemandCell.vue';
 import EnterLeaveEventCell from '@/routes/devices/components/trait-cells/EnterLeaveEventCell.vue';
 import StatusLogCell from '@/routes/devices/components/trait-cells/StatusLogCell.vue';
 import MeterCell from '@/routes/devices/components/trait-cells/MeterCell.vue';
+import AccessAttemptCell from '@/routes/devices/components/trait-cells/AccessAttemptCell.vue';
 import {hasTrait} from '@/util/devices';
 import {computed} from 'vue';
 import WithLighting from './renderless/WithLighting.vue';
@@ -110,6 +120,9 @@ const visibleCells = computed(() => {
   }
   if (hasTrait(props.item, 'smartcore.bos.Meter')) {
     cells['Meter'] = true;
+  }
+  if (hasTrait(props.item, 'smartcore.bos.Access')) {
+    cells['AccessAttempt'] = true;
   }
   return cells;
 });

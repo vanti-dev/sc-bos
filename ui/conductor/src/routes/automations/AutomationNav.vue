@@ -9,12 +9,14 @@
     <v-list-item
         v-for="automation of automationTypeList"
         :key="automation.type"
-        :to="'/automations/'+automation.type"
+        :to="'/automations/' + automation.type"
         class="my-2">
       <v-list-item-icon>
-        <v-icon v-if="icon.hasOwnProperty(automation.type)">{{ icon[automation.type] }}</v-icon>
+        <v-icon v-if="icon.hasOwnProperty(automation.type)">{{ icon[automation.type] ?? defaultIcon }}</v-icon>
       </v-list-item-icon>
-      <v-list-item-content class="text-capitalize text-truncate">{{ automation.type }}</v-list-item-content>
+      <v-list-item-content class="text-capitalize text-truncate">
+        {{ formatNaming(automation.type) }}
+      </v-list-item-content>
     </v-list-item>
   </v-list>
 </template>
@@ -41,28 +43,60 @@ const automationTypeList = computed(() => {
       list.push({type, number});
     }
   });
+  list.sort();
   return list;
 });
 
 // map of icons to use for different automation sections
 const icon = ref({
+  bms: 'mdi-office-building-cog-outline',
+  history: 'mdi-history',
+  lightreport: 'mdi-file-chart-outline',
   lights: 'mdi-lightbulb',
-  history: 'mdi-history'
+  statusalerts: 'mdi-alert-circle-outline',
+  udmi: 'mdi-transit-connection-variant'
 });
+const defaultIcon = 'mdi-auto-mode';
 
-watch(sidebarNode, async () => {
-  console.log('sidebarNode', sidebarNode);
-  metadataTracker.value = serviceStore.getService(
-      ServiceNames.Automations,
-      await sidebarNode.value.commsAddress,
-      await sidebarNode.value.commsName).metadataTracker;
-  await serviceStore.refreshMetadata(
-      ServiceNames.Automations,
-      await sidebarNode.value.commsAddress,
-      await sidebarNode.value.commsName);
-},
-{immediate: true});
+const acronyms = ['bms', 'udmi'];
+const suffixes = ['report', 'reports', 'alert', 'alerts'];
 
+/**
+ * @param {string} name
+ * @return {string}
+ */
+const formatNaming = (name) => {
+  for (const word of suffixes) {
+    if (name.endsWith(word)) {
+      return name.substring(0, name.length - word.length) + ' ' + word;
+    }
+  }
+
+  for (const acronym of acronyms) {
+    if (name === acronym) {
+      return name.toUpperCase();
+    }
+  }
+
+  return name;
+};
+
+watch(
+    sidebarNode,
+    async () => {
+      metadataTracker.value = serviceStore.getService(
+          ServiceNames.Automations,
+          await sidebarNode.value.commsAddress,
+          await sidebarNode.value.commsName
+      ).metadataTracker;
+      await serviceStore.refreshMetadata(
+          ServiceNames.Automations,
+          await sidebarNode.value.commsAddress,
+          await sidebarNode.value.commsName
+      );
+    },
+    {immediate: true}
+);
 </script>
 
 <style scoped>

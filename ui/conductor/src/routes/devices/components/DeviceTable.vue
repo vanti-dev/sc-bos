@@ -3,7 +3,7 @@
     <v-data-table
         v-model="selectedDevicesComp"
         :headers="headers"
-        :items="tableData"
+        :items="devicesData"
         item-key="name"
         :item-class="rowClass"
         :footer-props="{
@@ -70,24 +70,16 @@
 </template>
 
 <script setup>
-import SubsystemIcon from '@/components/SubsystemIcon.vue';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
-import {closeResource, newResourceValue} from '@/api/resource';
-import {pullDevicesMetadata} from '@/api/ui/devices';
+import {computed, ref} from 'vue';
 
-import {useErrorStore} from '@/components/ui-error/error';
-import {useDevicesStore} from '@/routes/devices/store';
+import useDevices from '@/composables/useDevices';
 import {usePageStore} from '@/stores/page';
-
 import {Zone} from '@/routes/site/zone/zone';
 
+import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import ContentCard from '@/components/ContentCard.vue';
 import HotPoint from '@/components/HotPoint.vue';
 import DeviceCell from './DeviceCell.vue';
-
-const devicesStore = useDevicesStore();
-const pageStore = usePageStore();
-const errorStore = useErrorStore();
 
 const props = defineProps({
   subsystem: {
@@ -117,6 +109,14 @@ const props = defineProps({
   }
 });
 
+const pageStore = usePageStore();
+const {
+  floorList,
+  filterFloor,
+  search,
+  devicesData
+} = useDevices(props); // composables/useDevices
+
 const emit = defineEmits(['update:selectedDevices']);
 
 const headers = ref([
@@ -124,7 +124,7 @@ const headers = ref([
   {text: 'Device name', value: 'name'},
   {text: 'Floor', value: 'metadata.location.floor'},
   {text: 'Zone', value: 'metadata.location.zone'},
-  {text: '', value: 'hotpoint', align: 'end', width: '100'}
+  {text: '', value: 'hotpoint', align: 'end', width: '100', sortable: false}
 ]);
 
 const tableClasses = computed(() => {
@@ -136,104 +136,19 @@ const tableClasses = computed(() => {
 
 const selectedDevicesComp = computed({
   get() {
-    return tableData.value.filter(device => props.selectedDevices.indexOf(device.name) >= 0);
+    return devicesData.value.filter(device => props.selectedDevices.indexOf(device.name) >= 0);
   },
   set(value) {
     emit('update:selectedDevices', value);
   }
 });
 
-const search = ref('');
-
-// todo: this information should come from a store and be reusable between components.
-const floorListResource = reactive(newResourceValue());
-onMounted(() => {
-  const req = {includes: {fieldsList: ['metadata.location.floor']}, updatesOnly: false};
-  pullDevicesMetadata(req, floorListResource);
-});
-onUnmounted(() => {
-  closeResource(floorListResource);
-});
-const NO_FLOOR = '< no floor >';
-const floorList = computed(() => {
-  const fieldCounts = floorListResource.value?.fieldCountsList || [];
-  const floorFieldCounts = fieldCounts.find(v => v.field === 'metadata.location.floor');
-  if (!floorFieldCounts) return [];
-  if (floorFieldCounts.countsMap.size <= 0) return [];
-  const dst = floorFieldCounts.countsMap.map(([k]) => {
-    if (k === '') return NO_FLOOR;
-    return k;
-  });
-  dst.unshift('All');
-  return dst;
-});
-const filterFloor = ref('All');
-
-// todo: get this from somewhere. Probably also filter by floor
-/* const zoneList = ref([
-  'All',
-  'L03_013/Meeting Room 1',
-  'L03_014/Reception',
-  'L03_015/Meeting Room 2'
-]);
-const filterZone = ref(zoneList.value[0]); */
-
-/** @type {Collection} */
-const collection = reactive(devicesStore.newCollection());
-collection.needsMorePages = true; // todo: this causes us to load all pages, connect with paging logic instead
-
-/** @type {ComputedRef<Device.Query.AsObject>} */
-const query = computed(() => {
-  const q = {conditionsList: []};
-  if (search.value) {
-    const words = search.value.split(/\s+/);
-    q.conditionsList.push(...words.map(word => ({stringContainsFold: word})));
-  }
-  if (props.subsystem.toLowerCase() !== 'all') {
-    q.conditionsList.push({field: 'metadata.membership.subsystem', stringEqualFold: props.subsystem});
-  }
-  switch (filterFloor.value.toLowerCase()) {
-    case 'all':
-      // no filter
-      break;
-    case NO_FLOOR:
-      q.conditionsList.push({field: 'metadata.location.floor', stringEqualFold: ''});
-      break;
-    default:
-      q.conditionsList.push({field: 'metadata.location.floor', stringEqualFold: filterFloor.value});
-      break;
-  }
-  /*   if (filterZone.value.toLowerCase() !== 'all') {
-    q.conditionsList.push({field: 'metadata.location.title', stringEqualFold: filterZone.value});
-  } */
-  return q;
-});
-
-// watch for changes to the query object and fetch new device list
-watch(query, () => collection.query(query.value), {deep: true, immediate: true});
-
-// UI error handling
-let unwatchErrors;
-onMounted(() => {
-  unwatchErrors = errorStore.registerCollection(collection);
-});
-onUnmounted(() => {
-  if (unwatchErrors) unwatchErrors();
-  collection.reset(); // stop listening when the component is unmounted
-});
-
-const tableData = computed(() => {
-  return Object.values(collection.resources.value)
-      .filter(props.filter);
-});
-
 /**
  * Shows the device in the sidebar
  *
  * @param {*} item
- * @param {*} row
  */
-function showDevice(item, row) {
+function showDevice(item) {
   pageStore.showSidebar = true;
   pageStore.sidebarTitle = item.metadata.appearance ? item.metadata.appearance.title : item.name;
   pageStore.sidebarData = item;

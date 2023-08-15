@@ -5,12 +5,13 @@
       <div class="text-caption pb-1 neutral--text text--lighten-6">Import/Export</div>
       <v-textarea
           v-model="config"
-          class="text-body-code"
-          full-width
-          filled
           auto-grow
+          class="text-body-code"
+          :error-messages="jsonError"
+          filled
+          full-width
           hide-details="auto"
-          :error-messages="jsonError"/>
+          readonly/>
       <v-btn icon tile class="copy-btn" @click="copyConfig"><v-icon>mdi-content-copy</v-icon></v-btn>
       <v-snackbar v-model="copyConfirm" timeout="2000" color="success" max-width="250" min-width="200">
         <span class="text-body-large align-baseline"><v-icon left>mdi-check-circle</v-icon>Config copied</span>
@@ -41,11 +42,10 @@ const config = computed({
        * @param {Error} e
        */
     } catch (e) {
-      jsonError.value = 'JSON error: '+e.message;
+      jsonError.value = 'JSON error: ' + e.message;
     }
   }
 });
-
 
 const copyConfirm = ref(false);
 /**
@@ -55,11 +55,10 @@ function copyConfig() {
   navigator.clipboard.writeText(sidebarData.value.configRaw);
   copyConfirm.value = true;
 }
-
 </script>
 
 <style scoped>
-.json-form{
+.json-form {
   position: relative;
 }
 .copy-btn {
