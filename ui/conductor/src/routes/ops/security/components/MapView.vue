@@ -1,50 +1,39 @@
 <template>
-  <v-container fluid class="mb-0 pb-0 floor-plan__container">
+  <v-container fluid class="mb-0 mt-0 pb-0 pt-0 floor-plan__container">
     <PinchZoom @click="handleClick">
       <template #default="{ scale }">
-        <!-- eslint-disable vue/no-v-html -->
-        <div
-            v-html="activeFloorPlan"
-            :id="props.floor"
-            ref="floorPlanSVG"
-            :style="{ '--map-scale': scale, width: '50%', margin: '0 auto' }"/>
-        <!-- eslint-enable vue/no-v-html -->
+        <Stack>
+          <!-- eslint-disable vue/no-v-html -->
+          <div
+              v-html="activeFloorPlan"
+              :id="props.floor"
+              ref="floorPlanSVG"
+              :style="{ '--map-scale': scale }"/>
+          <!-- eslint-enable vue/no-v-html -->
+          <div v-if="showMenu">
+            <v-tooltip bottom>
+              <template #activator="{ on, attrs }">
+                <v-btn
+                    class="mt-2 elevation-4"
+                    color="grey darken-2"
+                    fab
+                    x-small
+                    style="top: -5px; left: 91.5%"
+                    v-bind="attrs"
+                    v-on="on"
+                    @click="closeMenu">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </template>
+              <span>Close</span>
+            </v-tooltip>
+            <WithAccess v-slot="{ resource }" :name="elementWithMenu?.deviceId">
+              <AccessPointCard v-bind="resource" :source="elementWithMenu?.source" :name="elementWithMenu?.deviceId"/>
+            </WithAccess>
+          </div>
+        </Stack>
       </template>
     </PinchZoom>
-
-    <v-menu
-        v-model="showMenu"
-        absolute
-        bottom
-        :close-on-click="false"
-        :close-on-content-click="false"
-        max-width="400px"
-        :position-x="elementWithMenu.x"
-        :position-y="elementWithMenu.y"
-        transition="fade-transition-v2">
-      <template #activator="{ on }">
-        <div v-bind="on" ref="menuActivator"/>
-      </template>
-      <v-tooltip bottom>
-        <template #activator="{ on, attrs }">
-          <v-btn
-              class="mt-2 elevation-4"
-              color="grey darken-2"
-              fab
-              x-small
-              style="top: -5px; left: 91.5%"
-              v-bind="attrs"
-              v-on="on"
-              @click="closeMenu">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </template>
-        <span>Close</span>
-      </v-tooltip>
-      <WithAccess v-slot="{ resource }" :name="elementWithMenu?.deviceId">
-        <AccessPointCard v-bind="resource" :source="elementWithMenu?.source" :name="elementWithMenu?.deviceId"/>
-      </WithAccess>
-    </v-menu>
   </v-container>
 </template>
 
@@ -52,6 +41,7 @@
 import {onMounted, onBeforeUnmount, reactive, ref, watch} from 'vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
+import Stack from '@/routes/ops/security/components/Stack.vue';
 import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
 import AccessPointCard from './AccessPointCard.vue';
 
@@ -71,16 +61,12 @@ const props = defineProps({
 const {config} = useAppConfigStore();
 const activeFloorPlan = ref('');
 const floorPlanSVG = ref(null);
-const observer = ref(null);
-const menuActivator = ref(null);
 
 const showMenu = ref(false);
 let elementWithMenu = reactive({
   deviceId: null,
   source: null,
-  target: null,
-  x: 0,
-  y: 0
+  target: null
 });
 const groupedIds = ref({});
 
@@ -107,7 +93,7 @@ const fetchFloorPlan = async (selectedFloor) => {
 // Close the menu with X button click
 const closeMenu = () => {
   showMenu.value = false;
-  elementWithMenu = {deviceId: null, source: null, target: null, x: 0, y: 0};
+  elementWithMenu = {deviceId: null, source: null, target: null};
 };
 
 /**
@@ -175,53 +161,8 @@ const handleClick = (event) => {
   elementWithMenu.deviceId = findDevice(clickedElement).name;
   elementWithMenu.source = findDevice(clickedElement).source;
 
-  // Calculate menu position - this is being reused on window resize/scroll and move
-  updateMenuPosition();
-
   // Show menu
   showMenu.value = true;
-};
-
-// Update the menu position
-// Reuse this function on window resize/scroll and move
-const updateMenuPosition = () => {
-  if (elementWithMenu.target) {
-    // Check if the clicked element is still in the DOM
-    if (!isElementTopmost(elementWithMenu.target)) {
-      showMenu.value = false; // Hide the menu if the clicked element is no longer in the DOM
-      return;
-    } else {
-      showMenu.value = true; // Show the menu if the clicked element is still/again in the DOM
-
-      // Get the bounding rect of the clicked element
-      const clickedRect = elementWithMenu.target.getBoundingClientRect();
-
-      // Calculate the menu position
-      elementWithMenu.x = clickedRect.left + window.scrollX - 172; // -172 to move left
-      elementWithMenu.y = clickedRect.top + clickedRect.height + window.scrollY;
-    }
-  }
-};
-
-/**
- *
- * @param {HTMLElement} element
- * @return {boolean}
- */
-const isElementTopmost = (element) => {
-  // Get the bounding box of the element relative to the viewport
-  const bbox = element.getBoundingClientRect();
-
-  // Calculate the center point of the element
-  const centerX = bbox.left + bbox.width / 2;
-  const centerY = bbox.top + bbox.height / 2;
-
-  // Use elementFromPoint to get the topmost element at the center point
-  const topmostElement = document.elementFromPoint(centerX, centerY);
-
-  // Check if the topmost element is the same as the given element or if
-  // the given element contains the topmost element (for nested SVG elements)
-  return element === topmostElement || element.contains(topmostElement);
 };
 
 /**
@@ -231,28 +172,6 @@ const isElementTopmost = (element) => {
  */
 const manageEventListeners = (action) => {
   floorPlanSVG.value[action + 'EventListener']('click', handleClick);
-  floorPlanSVG.value[action + 'EventListener']('mousemove', updateMenuPosition);
-
-  // Initiate the MutationObserver to watch for changes in the SVG
-  if (action === 'add') {
-    observer.value = new MutationObserver(updateMenuPosition);
-    observer.value.observe(floorPlanSVG.value, {attributes: true, childList: true, subtree: true});
-  } else {
-    observer.value.disconnect();
-  }
-
-  // Add event listeners for window resize, scroll and click on zoom controls
-  window[action + 'EventListener']('resize', updateMenuPosition);
-  window[action + 'EventListener']('scroll', updateMenuPosition);
-
-  // Add event listeners for zoom controls so on clicks the menu can be re
-  const zoomControls = document.getElementsByClassName('zoom-control__button');
-
-  for (let i = 0; i < zoomControls.length; i++) {
-    // Add event listener to each element
-    zoomControls[i][action + 'EventListener']('click', updateMenuPosition);
-    zoomControls[i][action + 'EventListener']('mousemove', updateMenuPosition);
-  }
 };
 
 // -------------- Lifecycle Hooks -------------- //
@@ -302,7 +221,7 @@ watch(
 .floor-plan__container {
   position: relative;
   /* fill the container, minus the top bar and sc status bar */
-  height: calc(100vh - 320px);
+  height: calc(100vh - 215px);
   overflow: hidden;
 }
 

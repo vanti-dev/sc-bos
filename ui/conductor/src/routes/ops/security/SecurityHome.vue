@@ -5,9 +5,18 @@
       <v-spacer/>
       <sc-status-card style="min-width: 248px"/>
     </v-row>
-    <content-card class="mb-8 d-flex flex-column pt-6" style="z-index: 8">
-      <v-row class="d-flex flex-row align-center mt-0 mb-4 px-6">
-        <v-text-field v-model="search" append-icon="mdi-magnify" dense filled hide-details label="Search devices"/>
+    <content-card class="mb-8 d-flex flex-column py-0 px-0">
+      <v-row
+          class="d-flex flex-row align-center mt-0 pt-6 px-6 mx-auto"
+          style="position: absolute; width: 100%; z-index: 1">
+        <v-text-field
+            v-model="search"
+            append-icon="mdi-magnify"
+            class="neutral"
+            dense
+            filled
+            hide-details
+            label="Search devices"/>
         <v-spacer/>
         <v-btn-toggle v-model="viewType" dense mandatory>
           <v-btn large text value="list">List View</v-btn>
@@ -74,8 +83,7 @@ const deviceNames = computed(() => {
       source: device.metadata.name,
       name: device.metadata?.appearance ? device.metadata?.appearance.title : device.metadata.name
     };
-  }
-  );
+  });
 });
 </script>
 
