@@ -1,6 +1,7 @@
-import {ref, computed, reactive, watch, onMounted, onUnmounted} from 'vue';
-import {listOccupancySensorHistory} from '@/api/sc/traits/occupancy';
 import {timestampToDate} from '@/api/convpb';
+import {listOccupancySensorHistory} from '@/api/sc/traits/occupancy';
+import {Occupancy} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 /**
  *
@@ -31,7 +32,7 @@ export default function(props) {
    * Return an array of object with request details
    *
    * @param {string} name
-   * @return {OccupancySensorHistoryRequest.AsObject|undefined}
+   * @return {ListOccupancyHistoryRequest.AsObject|undefined}
    */
   const baseRequest = (name) => {
     if (!name) return undefined;
@@ -53,7 +54,7 @@ export default function(props) {
   const chartSeries = computed(() => {
     return Object.entries(seriesMap)
         .map(([seriesName, seriesData]) =>
-        seriesData.data.length > 0 ? {name: 'Occupancy', data: seriesData.data} : null
+            seriesData.data.length > 0 ? {name: 'Occupancy', data: seriesData.data} : null
         )
         .filter((obj) => obj !== null);
   });

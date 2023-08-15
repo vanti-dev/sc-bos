@@ -2,7 +2,7 @@
  * This function generates the background color for the chart based on the segments
  *
  * @see https://www.chartjs.org/chartjs-plugin-annotation/latest/samples/box/basic.html
- * @param {number[]} segments
+ * @param {Array<[number,number,string]>} segments
  * @param {string} conditionValue
  * @param {string} mainColor
  * @param {string} secondaryColor
