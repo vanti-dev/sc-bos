@@ -2,33 +2,20 @@
   <v-container fluid class="mb-0 mt-0 pb-0 pt-0 floor-plan__container">
     <PinchZoom @click="handleClick">
       <template #default="{ scale }">
-        <Stack>
+        <Stack id="groupingContainer">
           <!-- eslint-disable vue/no-v-html -->
-          <div
-              v-html="activeFloorPlan"
-              :id="props.floor"
-              ref="floorPlanSVG"
-              :style="{ '--map-scale': scale }"/>
+          <div v-html="activeFloorPlan" :id="props.floor" ref="floorPlanSVG" :style="{ '--map-scale': scale }"/>
           <!-- eslint-enable vue/no-v-html -->
-          <div v-if="showMenu">
-            <v-tooltip bottom>
-              <template #activator="{ on, attrs }">
-                <v-btn
-                    class="mt-2 elevation-4"
-                    color="grey darken-2"
-                    fab
-                    x-small
-                    style="top: -5px; left: 91.5%"
-                    v-bind="attrs"
-                    v-on="on"
-                    @click="closeMenu">
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
-              </template>
-              <span>Close</span>
-            </v-tooltip>
+          <div
+              v-if="showMenu"
+              :style="{ width: '400px', transform: `translate(${elementWithMenu.x}px, ${elementWithMenu.y}px)` }">
             <WithAccess v-slot="{ resource }" :name="elementWithMenu?.deviceId">
-              <AccessPointCard v-bind="resource" :source="elementWithMenu?.source" :name="elementWithMenu?.deviceId"/>
+              <AccessPointCard
+                  v-bind="resource"
+                  :source="elementWithMenu?.source"
+                  :name="elementWithMenu?.deviceId"
+                  show-close
+                  @onClose="closeMenu"/>
             </WithAccess>
           </div>
         </Stack>
@@ -38,7 +25,7 @@
 </template>
 
 <script setup>
-import {onMounted, onBeforeUnmount, reactive, ref, watch} from 'vue';
+import {computed, onMounted, onBeforeUnmount, reactive, ref, watch} from 'vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
 import Stack from '@/routes/ops/security/components/Stack.vue';
@@ -66,7 +53,9 @@ const showMenu = ref(false);
 let elementWithMenu = reactive({
   deviceId: null,
   source: null,
-  target: null
+  target: null,
+  x: 0,
+  y: 0
 });
 const groupedIds = ref({});
 
@@ -161,8 +150,26 @@ const handleClick = (event) => {
   elementWithMenu.deviceId = findDevice(clickedElement).name;
   elementWithMenu.source = findDevice(clickedElement).source;
 
+  elementWithMenu.x = calculateCardPosition().x;
+  elementWithMenu.y = calculateCardPosition().y;
+
   // Show menu
   showMenu.value = true;
+};
+
+// create a function which calculates the clicked element's position from the top-left corner of the groupingContainer
+const calculateCardPosition = () => {
+  if (!elementWithMenu.target) {
+    return {x: 0, y: 0};
+  }
+
+  const targetRect = elementWithMenu.target.getBoundingClientRect();
+  const containerRect = document.getElementById('groupingContainer').getBoundingClientRect();
+
+  const x = (targetRect.x - containerRect.x) - 175; // from the left of the container - 200px
+  const y = 40 + (targetRect.y - containerRect.y); // from the top of the container + 40px
+
+  return {x, y};
 };
 
 /**

@@ -2,7 +2,7 @@
   <v-card color="#40464D" elevation="0" dark min-width="400px" height="100%" max-height="240px">
     <div
         :class="[notifications.severityData(alert.severity).background, 'd-flex flex-row align-center']"
-        style="height: 36px">
+        style="height: 44px">
       <v-card-title class="text-uppercase text-body-large">
         {{ props.name }}
       </v-card-title>
@@ -10,6 +10,20 @@
       <v-card-title class="text-body-large font-weight-bold text-uppercase">
         {{ notifications.severityData(alert.severity).text }}
       </v-card-title>
+      <v-tooltip v-if="showClose" bottom>
+        <template #activator="{ on, attrs }">
+          <v-btn
+              class="elevation-0 mr-1"
+              icon
+              small
+              v-bind="attrs"
+              v-on="on"
+              @click="emits('onClose')">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
+        <span>Close</span>
+      </v-tooltip>
     </div>
 
     <v-card-text class="text-h6 white--text font-weight-regular d-flex flex-row pa-0 px-4 pt-4">
@@ -18,7 +32,7 @@
         {{ formatString(grantStates) }}
       </span>
     </v-card-text>
-    <v-card-text class="text-h6 white--text d-flex flex-column pt-1" style="max-width: 350px;">
+    <v-card-text class="text-h6 white--text d-flex flex-column pt-1" style="max-width: 350px">
       <span class="text-subtitle-1"> {{ user.name }} ({{ user.cardId }}) </span>
       <!-- <span class="text-subtitle-2">{{ accessPointCardData.user.accessTime }}</span> -->
     </v-card-text>
@@ -60,6 +74,8 @@ import useAlertsApi from '../../notifications/useAlertsApi';
 
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 
+const emits = defineEmits(['onClose']);
+
 const props = defineProps({
   value: {
     type: Object,
@@ -78,6 +94,10 @@ const props = defineProps({
     default: ''
   },
   isAcknowledged: {
+    type: Boolean,
+    default: false
+  },
+  showClose: {
     type: Boolean,
     default: false
   }

@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="d-flex flex-row flex-wrap justify-space-between pt-10 mt-14 mx-0 px-3">
+  <v-container fluid class="d-flex flex-row flex-wrap justify-space-between pt-10 mt-14 mx-0 px-6">
     <WithAccess
         v-for="(device, deviceIndex) in props.deviceNames"
         :key="deviceIndex"
