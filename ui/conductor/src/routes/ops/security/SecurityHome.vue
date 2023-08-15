@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import {computed, onMounted, ref} from 'vue';
+import {ref} from 'vue';
 import ListView from '@/routes/ops/security/components/ListView.vue';
 import MapView from '@/routes/ops/security/components/MapView.vue';
 
@@ -50,8 +50,6 @@ import useDevices from '@/composables/useDevices';
 
 import ContentCard from '@/components/ContentCard.vue';
 import ScStatusCard from '@/routes/ops/components/ScStatusCard.vue';
-import Level0 from '@/clients/ew/Level0.vue';
-import AlertCard from './components/AlertCard.vue';
 
 const props = defineProps({
   subsystem: {
