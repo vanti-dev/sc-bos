@@ -2,21 +2,25 @@
   <v-container fluid class="mb-0 mt-0 pb-0 pt-0 floor-plan__container">
     <PinchZoom @click="handleClick">
       <template #default="{ scale }">
-        <Stack id="groupingContainer">
+        <Stack ref="groupingContainer">
           <!-- eslint-disable vue/no-v-html -->
-          <div v-html="activeFloorPlan" :id="props.floor" ref="floorPlanSVG" :style="{ '--map-scale': scale }"/>
+          <div v-html="activeFloorPlan" ref="floorPlanSVG" :style="{ '--map-scale': scale }"/>
           <!-- eslint-enable vue/no-v-html -->
-          <div
-              v-if="showMenu"
-              :style="{ width: '400px', transform: `translate(${elementWithMenu.x}px, ${elementWithMenu.y}px)` }">
-            <WithAccess v-slot="{ resource }" :name="elementWithMenu?.deviceId">
-              <AccessPointCard
-                  v-bind="resource"
-                  :source="elementWithMenu?.source"
+          <div v-if="showMenu">
+            <div :style="calculateAnchorStyle">
+              <WithAccess
+                  v-slot="{ resource }"
                   :name="elementWithMenu?.deviceId"
-                  show-close
-                  @onClose="closeMenu"/>
-            </WithAccess>
+                  style="position: relative; top: 100%; transform-origin: 0 0"
+                  :style="`transform: scale(${1 / scale})`">
+                <AccessPointCard
+                    v-bind="resource"
+                    :name="elementWithMenu?.deviceId"
+                    show-close
+                    :source="elementWithMenu?.source"
+                    @onClose="closeMenu"/>
+              </WithAccess>
+            </div>
           </div>
         </Stack>
       </template>
@@ -31,6 +35,8 @@ import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
 import Stack from '@/routes/ops/security/components/Stack.vue';
 import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
 import AccessPointCard from './AccessPointCard.vue';
+
+import {convertSVGToPercentage} from '@/util/svg';
 
 // -------------- Props -------------- //
 const props = defineProps({
@@ -48,6 +54,7 @@ const props = defineProps({
 const {config} = useAppConfigStore();
 const activeFloorPlan = ref('');
 const floorPlanSVG = ref(null);
+const groupingContainer = ref(null);
 
 const showMenu = ref(false);
 let elementWithMenu = reactive({
@@ -58,6 +65,53 @@ let elementWithMenu = reactive({
   y: 0
 });
 const groupedIds = ref({});
+
+
+// -------------- Computed Properties -------------- //
+const getSVGViewBox = computed(() => {
+  const [x, y, w, h] = floorPlanSVG.value.querySelector('svg').getAttribute('viewBox').split(' ');
+
+  return {
+    x: parseInt(x),
+    y: parseInt(y),
+    width: parseInt(w),
+    height: parseInt(h)
+  };
+});
+
+
+const getClickedRectBBox = computed(() => {
+  if (!elementWithMenu.target) {
+    return {};
+  }
+
+  return elementWithMenu.target.getBBox();
+});
+
+const calculateAnchorStyle = computed(() => {
+  if (!elementWithMenu.target || !groupingContainer.value) {
+    return {};
+  }
+
+  // Get the bounding rectangle of the SVG element
+  const clickedRect = getClickedRectBBox.value;
+  const viewBox = getSVGViewBox.value;
+
+  const percentage = convertSVGToPercentage(viewBox, clickedRect);
+
+  const x = percentage.x * 100;
+  const y = percentage.y * 100;
+  const width = percentage.width * 100;
+  const height = percentage.height * 100;
+
+  return {
+    width: `${width}%`,
+    height: `${height}%`,
+    left: `${x}%`,
+    top: `${y + 1}%`,
+    position: 'relative'
+  };
+});
 
 // -------------- Methods -------------- //
 /**
@@ -150,26 +204,8 @@ const handleClick = (event) => {
   elementWithMenu.deviceId = findDevice(clickedElement).name;
   elementWithMenu.source = findDevice(clickedElement).source;
 
-  elementWithMenu.x = calculateCardPosition().x;
-  elementWithMenu.y = calculateCardPosition().y;
-
   // Show menu
   showMenu.value = true;
-};
-
-// create a function which calculates the clicked element's position from the top-left corner of the groupingContainer
-const calculateCardPosition = () => {
-  if (!elementWithMenu.target) {
-    return {x: 0, y: 0};
-  }
-
-  const targetRect = elementWithMenu.target.getBoundingClientRect();
-  const containerRect = document.getElementById('groupingContainer').getBoundingClientRect();
-
-  const x = (targetRect.x - containerRect.x) - 175; // from the left of the container - 200px
-  const y = 40 + (targetRect.y - containerRect.y); // from the top of the container + 40px
-
-  return {x, y};
 };
 
 /**
@@ -221,10 +257,6 @@ watch(
 </script>
 
 <style lang="scss" scoped>
-.v-menu__content {
-  box-shadow: none;
-}
-
 .floor-plan__container {
   position: relative;
   /* fill the container, minus the top bar and sc status bar */
@@ -242,31 +274,5 @@ watch(
   --map-scale: 1;
   --translate-x: 0;
   --translate-y: 0;
-  /* todo: this may need to be set depending on svg scale */
-  --map-marker-scale-factor: 100;
-}
-
-/**
- * This is a custom transition for the menu card above,
- * because the default one is not working properly - on close flies to the top-left corner
-*/
-.fade-transition-v2 {
-  &-leave-active {
-    opacity: 0;
-  }
-
-  &-enter-active {
-    transition: opacity 0.2s ease-in-out;
-  }
-
-  &-leave,
-  &-leave-to {
-    transition: opacity 0s ease-in-out;
-  }
-
-  &-enter,
-  &-leave-to {
-    opacity: 0;
-  }
 }
 </style>
