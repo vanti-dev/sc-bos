@@ -7,9 +7,10 @@
     </v-row>
     <content-card class="mb-8 d-flex flex-column py-0 px-0">
       <v-row
-          class="d-flex flex-row align-center mt-0 pt-6 px-6 mx-auto"
-          style="position: absolute; width: 100%; z-index: 1">
+          class="d-flex flex-row align-center mt-0 px-6 mx-auto"
+          style="position: absolute; width: 100%; z-index: 1; height: 0; top: 25px">
         <v-text-field
+            v-show="viewType !== 'map'"
             v-model="search"
             append-icon="mdi-magnify"
             class="neutral"
@@ -17,7 +18,7 @@
             filled
             hide-details
             label="Search devices"/>
-        <v-spacer/>
+        <v-spacer style="pointer-events: none"/>
         <v-btn-toggle v-model="viewType" dense mandatory>
           <v-btn large text value="list">List View</v-btn>
           <v-btn large text value="map">Map View</v-btn>
@@ -25,7 +26,6 @@
         <v-select
             v-model="filterFloor"
             class="ml-4"
-            dense
             :disabled="floorList.length <= 1"
             filled
             hide-details
@@ -34,9 +34,9 @@
             outlined
             style="min-width: 100px; width: 100%; max-width: 170px"/>
         <v-select
+            v-if="viewType !== 'map'"
             v-model="notificationStateSelection"
             class="ml-4"
-            dense
             filled
             hide-details
             :items="['All', 'Alert', 'Offline', 'Open', 'Closed']"
@@ -46,7 +46,7 @@
       </v-row>
       <ListView v-if="viewType === 'list'" :device-names="deviceNames" :filter="filter"/>
       <!-- TODO: add :floor="filterFloor" when multiple floor plans available -->
-      <MapView v-else :device-names="deviceNames"/>
+      <MapView v-else :device-names="deviceNames" :filter="filter"/>
     </content-card>
   </v-container>
 </template>
