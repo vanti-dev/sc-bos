@@ -628,6 +628,7 @@ type Device_Query_Condition struct {
 	// If absent then any field may be matched against the value.
 	Field string `protobuf:"bytes,1,opt,name=field,proto3" json:"field,omitempty"`
 	// Types that are assignable to Value:
+	//
 	//	*Device_Query_Condition_StringEqual
 	//	*Device_Query_Condition_StringEqualFold
 	//	*Device_Query_Condition_StringContains

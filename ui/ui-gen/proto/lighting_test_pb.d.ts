@@ -241,6 +241,9 @@ export class ListLightEventsResponse extends jspb.Message {
   getNextPageToken(): string;
   setNextPageToken(value: string): ListLightEventsResponse;
 
+  getFuturePageToken(): string;
+  setFuturePageToken(value: string): ListLightEventsResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListLightEventsResponse.AsObject;
   static toObject(includeInstance: boolean, msg: ListLightEventsResponse): ListLightEventsResponse.AsObject;
@@ -253,6 +256,7 @@ export namespace ListLightEventsResponse {
   export type AsObject = {
     eventsList: Array<LightingEvent.AsObject>,
     nextPageToken: string,
+    futurePageToken: string,
   }
 }
 

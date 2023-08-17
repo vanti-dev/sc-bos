@@ -928,6 +928,7 @@ type HistoryRecord_Query struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Source:
+	//
 	//	*HistoryRecord_Query_SourceEqual
 	Source isHistoryRecord_Query_Source `protobuf_oneof:"source"`
 	// The bounding records to select: from_record <= record < to_record.

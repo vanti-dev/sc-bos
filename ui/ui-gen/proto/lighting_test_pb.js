@@ -2012,7 +2012,8 @@ proto.smartcore.bos.ListLightEventsResponse.toObject = function(includeInstance,
   var f, obj = {
     eventsList: jspb.Message.toObjectList(msg.getEventsList(),
     proto.smartcore.bos.LightingEvent.toObject, includeInstance),
-    nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, "")
+    nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    futurePageToken: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -2058,6 +2059,10 @@ proto.smartcore.bos.ListLightEventsResponse.deserializeBinaryFromReader = functi
       var value = /** @type {string} */ (reader.readString());
       msg.setNextPageToken(value);
       break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setFuturePageToken(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -2099,6 +2104,13 @@ proto.smartcore.bos.ListLightEventsResponse.serializeBinaryToWriter = function(m
   if (f.length > 0) {
     writer.writeString(
       2,
+      f
+    );
+  }
+  f = message.getFuturePageToken();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
       f
     );
   }
@@ -2158,6 +2170,24 @@ proto.smartcore.bos.ListLightEventsResponse.prototype.getNextPageToken = functio
  */
 proto.smartcore.bos.ListLightEventsResponse.prototype.setNextPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string future_page_token = 3;
+ * @return {string}
+ */
+proto.smartcore.bos.ListLightEventsResponse.prototype.getFuturePageToken = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.ListLightEventsResponse} returns this
+ */
+proto.smartcore.bos.ListLightEventsResponse.prototype.setFuturePageToken = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
