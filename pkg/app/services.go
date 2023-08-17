@@ -55,11 +55,12 @@ func (c *Controller) startDrivers() (*service.Map, error) {
 
 func (c *Controller) startAutomations() (*service.Map, error) {
 	ctxServices := auto.Services{
-		Logger:        c.Logger.Named("auto"),
-		Node:          c.Node,
-		Database:      c.Database,
-		GRPCServices:  c.GRPC,
-		CohortManager: c.ManagerConn,
+		Logger:          c.Logger.Named("auto"),
+		Node:            c.Node,
+		Database:        c.Database,
+		GRPCServices:    c.GRPC,
+		CohortManager:   c.ManagerConn,
+		ClientTLSConfig: c.ClientTLSConfig,
 	}
 
 	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
