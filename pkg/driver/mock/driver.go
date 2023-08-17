@@ -23,6 +23,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/smart-core-os/sc-golang/pkg/trait/openclose"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
@@ -216,8 +217,8 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 	case trait.OnOff:
 		return []any{onoff.WrapApi(onoff.NewModelServer(onoff.NewModel(traits.OnOff_STATE_UNSPECIFIED)))}, nil
 	case trait.OpenClose:
-		// todo: return []any{openclose.WrapApi(openclose.NewModelServer(openclose.NewModel()))}, nil
-		return nil, nil
+		model := openclose.NewModel()
+		return []any{openclose.WrapApi(openclose.NewModelServer(model))}, auto.OpenClose(model)
 	case trait.Parent:
 		return []any{parent.WrapApi(parent.NewModelServer(parent.NewModel()))}, nil
 	case trait.Publication:

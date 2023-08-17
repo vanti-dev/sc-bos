@@ -1,22 +1,19 @@
 <template>
-  <v-container fluid class="d-flex flex-row flex-wrap justify-space-between pt-10 mt-14 mx-0 px-6">
-    <WithAccess
-        v-for="(device, deviceIndex) in props.deviceNames"
+  <v-container fluid class="d-flex flex-row flex-wrap justify-space-between pt-4 mx-0 px-3">
+    <AccessPointCard
+        v-for="(deviceName, deviceIndex) in deviceNames"
         :key="deviceIndex"
-        :name="device.source"
         class="mb-8"
-        v-slot="{ resource }">
-      <AccessPointCard v-bind="resource" :source="device.source" :name="device.name"/>
-    </WithAccess>
+        :name="deviceName"/>
   </v-container>
 </template>
 
 <script setup>
-import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
+import {computed} from 'vue';
 import AccessPointCard from '@/routes/ops/security/components/AccessPointCard.vue';
 
 const props = defineProps({
-  deviceNames: {
+  devices: {
     type: Array,
     default: () => []
   },
@@ -24,5 +21,9 @@ const props = defineProps({
     type: Function,
     default: () => ({})
   }
+});
+
+const deviceNames = computed(() => {
+  return props.devices.map((device) => device.metadata.name);
 });
 </script>

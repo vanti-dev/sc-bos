@@ -3,7 +3,7 @@
     <v-btn
         v-for="b in activeBtns"
         :key="b.c"
-        :class="[b.c, 'black--text zoom-control__button']"
+        :class="[b.c, 'black--text']"
         @click="handleClick(b.c)"
         icon
         elevation="2">

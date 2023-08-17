@@ -12,6 +12,7 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+	"github.com/vanti-dev/gobacnet/types/objecttype"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/ctxerr"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
@@ -283,6 +284,8 @@ func WriteProperty(ctx context.Context, client *gobacnet.Client, known known.Con
 		return err
 	}
 
+	data = massageValueForWrite(device, object, property, data)
+
 	req := bactypes.ReadPropertyData{
 		Object: bactypes.Object{
 			ID: object.ID,
@@ -297,4 +300,44 @@ func WriteProperty(ctx context.Context, client *gobacnet.Client, known known.Con
 	}
 	err = client.WriteProperty(ctx, device, req, priority)
 	return ctxerr.Cause(ctx, err)
+}
+
+// massageValueForWrite converts value to a more correct type for the given BACnet object and property.
+// For example BinaryValue.PresentValue is defined to be of type enumeration, which looks very much like a uint32, but not exactly so we convert it here.
+func massageValueForWrite(_ bactypes.Device, obj bactypes.Object, prop property.ID, value any) any {
+	switch obj.ID.Type {
+	case objecttype.BinaryValue, objecttype.BinaryOutput:
+		switch prop {
+		case property.PresentValue:
+			switch v := value.(type) {
+			case bool:
+				if v {
+					return bactypes.Enumerated(1)
+				} else {
+					return bactypes.Enumerated(0)
+				}
+			case float32:
+				return bactypes.Enumerated(v)
+			case float64:
+				return bactypes.Enumerated(v)
+			case int:
+				return bactypes.Enumerated(v)
+			case int8:
+				return bactypes.Enumerated(v)
+			case int16:
+				return bactypes.Enumerated(v)
+			case int32:
+				return bactypes.Enumerated(v)
+			case int64:
+				return bactypes.Enumerated(v)
+			case uint:
+				return bactypes.Enumerated(v)
+			case uint32:
+				return bactypes.Enumerated(v)
+			case uint64:
+				return bactypes.Enumerated(v)
+			}
+		}
+	}
+	return value
 }

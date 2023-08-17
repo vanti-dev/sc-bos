@@ -76,6 +76,7 @@ import useDevices from '@/composables/useDevices';
 import {usePageStore} from '@/stores/page';
 import {Zone} from '@/routes/site/zone/zone';
 
+import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import ContentCard from '@/components/ContentCard.vue';
 import HotPoint from '@/components/HotPoint.vue';
 import DeviceCell from './DeviceCell.vue';
@@ -123,7 +124,7 @@ const headers = ref([
   {text: 'Device name', value: 'name'},
   {text: 'Floor', value: 'metadata.location.floor'},
   {text: 'Zone', value: 'metadata.location.zone'},
-  {text: '', value: 'hotpoint', align: 'end', width: '100'}
+  {text: '', value: 'hotpoint', align: 'end', width: '100', sortable: false}
 ]);
 
 const tableClasses = computed(() => {
