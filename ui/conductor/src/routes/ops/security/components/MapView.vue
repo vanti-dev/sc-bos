@@ -8,18 +8,11 @@
           <!-- eslint-enable vue/no-v-html -->
           <div v-if="showMenu">
             <div :style="calculateAnchorStyle">
-              <WithAccess
-                  v-slot="{ resource }"
-                  :name="elementWithMenu?.deviceId"
+              <AccessPointCard
+                  :device="findDevice(elementWithMenu?.deviceId)"
                   style="position: relative; top: 100%; transform-origin: 0 0"
-                  :style="`transform: scale(${1 / scale})`">
-                <AccessPointCard
-                    v-bind="resource"
-                    :name="elementWithMenu?.deviceId"
-                    show-close
-                    :source="elementWithMenu?.source"
-                    @onClose="closeMenu"/>
-              </WithAccess>
+                  :style="`transform: scale(${1 / scale})`"
+                  @onClose="closeMenu"/>
             </div>
           </div>
         </Stack>
@@ -30,12 +23,13 @@
 
 <script setup>
 import {computed, onMounted, onBeforeUnmount, reactive, ref, watch} from 'vue';
+import {storeToRefs} from 'pinia';
 import {useAppConfigStore} from '@/stores/app-config';
 import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
 import Stack from '@/routes/ops/security/components/Stack.vue';
-import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
 import AccessPointCard from './AccessPointCard.vue';
 
+import {useStatusBarStore} from '@/routes/ops/security/components/access-point-card/statusBarStore';
 import {convertSVGToPercentage} from '@/util/svg';
 
 // -------------- Props -------------- //
@@ -46,12 +40,13 @@ const props = defineProps({
   },
   floor: {
     type: String,
-    default: 'level0' // TODO: change to actual ground floor
+    default: 'Ground Floor'
   }
 });
 
 // -------------- Data & Reactive References -------------- //
 const {config} = useAppConfigStore();
+const {showClose} = storeToRefs(useStatusBarStore());
 const activeFloorPlan = ref('');
 const floorPlanSVG = ref(null);
 const groupingContainer = ref(null);
@@ -66,7 +61,6 @@ let elementWithMenu = reactive({
 });
 const groupedIds = ref({});
 
-
 // -------------- Computed Properties -------------- //
 const getSVGViewBox = computed(() => {
   const [x, y, w, h] = floorPlanSVG.value.querySelector('svg').getAttribute('viewBox').split(' ');
@@ -78,7 +72,6 @@ const getSVGViewBox = computed(() => {
     height: parseInt(h)
   };
 });
-
 
 const getClickedRectBBox = computed(() => {
   if (!elementWithMenu.target) {
@@ -146,30 +139,27 @@ const closeMenu = () => {
  * @param {HTMLElement} element
  */
 const traverseAndCollectIds = (element) => {
-  // If the element is a 'g', then we simply ignore and don't traverse its children.
-  if (element.tagName === 'g' || ['detail', 'outline'].includes(element.id)) {
-    return;
-  }
+  // Check if the element is a group with an ID containing 'door' or 'doors'
+  if (element.tagName === 'g' && element.id && element.id.toLowerCase().includes('door')) {
+    const groupKey = element.id.split('_')[1];
 
-  // If the element is a <path> or <rect> and is not inside a <g>, then collect its ID.
-  if (element.tagName === 'path' || element.tagName === 'rect') {
-    const parts = element.id.split('_');
-    if (parts.length > 1) {
-      const groupName = parts[0] + 's';
-      const itemId = parts.slice(1).join('_'); // This is to handle cases with multiple underscores
-
-      if (!groupedIds.value[groupName]) {
-        groupedIds.value[groupName] = [];
-      }
-      groupedIds.value[groupName].push(itemId);
+    // If the key doesn't exist in the dictionary, create an empty array for it
+    if (!groupedIds.value[groupKey]) {
+      groupedIds.value[groupKey] = [];
     }
+
+    // Collecting the IDs of <path> and <rect> elements
+    Array.from(element.children).forEach((child) => {
+      if (['path', 'rect'].includes(child.tagName) && child.id) {
+        groupedIds.value[groupKey].push(child.id.toLowerCase());
+      }
+    });
   }
 
-  // Continue traversal for other children.
-  const children = element.children;
-  for (let i = 0; i < children.length; i++) {
-    traverseAndCollectIds(children[i]);
-  }
+  // Continue traversal for other children
+  Array.from(element.children).forEach((child) => {
+    traverseAndCollectIds(child);
+  });
 };
 
 /**
@@ -179,7 +169,9 @@ const traverseAndCollectIds = (element) => {
  * @return {{name: string, source: string} | undefined}
  */
 const findDevice = (element) => {
-  return props.deviceNames.find((deviceName) => deviceName.name === element.id.split('_')[1]);
+  if (element.id) {
+    return props.deviceNames.find((deviceName) => deviceName.name.toLowerCase() === element.id.toLowerCase());
+  } else return props.deviceNames.find((deviceName) => deviceName.name.toLowerCase() === element.toLowerCase());
 };
 
 /**
@@ -187,29 +179,42 @@ const findDevice = (element) => {
  * @param {PointerEvent} event
  */
 const handleClick = (event) => {
+  const clickedElement = event.target;
+
   // Do not react to clicks on the svg itself (blank space around the floor plan)
-  if (event.target.tagName === 'svg') {
+  if (clickedElement.tagName === 'svg') {
     return;
   }
 
-  const clickedElement = event.target;
+  // Check if the parent of the clicked element is 'outline' or 'detail' group.
+  const parentGroup = clickedElement.parentElement;
+  if (parentGroup && (parentGroup.id === 'outline' || parentGroup.id === 'detail')) {
+    return;
+  }
+
+  // Check if the parent group of the clicked element contains 'door' or 'doors'
+  if (!parentGroup || !parentGroup.id || !parentGroup.id.toLowerCase().includes('door')) {
+    return; // Do not proceed if the clicked element is not inside a 'door' or 'doors' group
+  }
 
   // Does the device sends a signal?
-  if (!findDevice(clickedElement)) {
+  const device = findDevice(clickedElement);
+  if (!device) {
     return; // Do not proceed if the device does not send a signal
   }
 
   // Collect all the ids of the elements in the svg
   elementWithMenu.target = clickedElement;
-  elementWithMenu.deviceId = findDevice(clickedElement).name;
-  elementWithMenu.source = findDevice(clickedElement).source;
+  elementWithMenu.deviceId = device.name;
+  elementWithMenu.source = device.source;
 
   // Show menu
   showMenu.value = true;
+  showClose.value = true;
 };
 
 /**
- * Add or remove event listeners and MutationObserver
+ * Add or remove event listeners
  *
  * @param {string} action
  */
@@ -254,6 +259,14 @@ watch(
     },
     {immediate: true}
 );
+
+// Watch for changes in the showClose prop then close menu
+watch(showClose, (newValue) => {
+  if (!newValue) {
+    closeMenu();
+  }
+});
+
 </script>
 
 <style lang="scss" scoped>

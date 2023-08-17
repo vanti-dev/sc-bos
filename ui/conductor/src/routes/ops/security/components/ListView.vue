@@ -1,29 +1,21 @@
 <template>
-  <v-container fluid class="d-flex flex-row flex-wrap justify-space-between pt-4 mx-0 px-3">
-    <AccessPointCard
-        v-for="(deviceName, deviceIndex) in deviceNames"
-        :key="deviceIndex"
-        class="mb-8"
-        :name="deviceName"/>
+  <v-container fluid class="d-flex flex-row flex-wrap justify-space-between pt-14 mt-14 mx-0 px-6">
+    <span v-for="(device, deviceIndex) in props.deviceNames" :key="deviceIndex" class="mb-8">
+      <HotPoint v-slot="{ live }" :item-key="device.name">
+        <AccessPointCard :device="device" :paused="!live"/>
+      </HotPoint>
+    </span>
   </v-container>
 </template>
 
 <script setup>
-import {computed} from 'vue';
+import HotPoint from '@/components/HotPoint.vue';
 import AccessPointCard from '@/routes/ops/security/components/AccessPointCard.vue';
 
 const props = defineProps({
-  devices: {
+  deviceNames: {
     type: Array,
     default: () => []
-  },
-  filter: {
-    type: Function,
-    default: () => ({})
   }
-});
-
-const deviceNames = computed(() => {
-  return props.devices.map((device) => device.metadata.name);
 });
 </script>
