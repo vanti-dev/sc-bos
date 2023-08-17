@@ -18,6 +18,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/util/once"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/merge"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
 )
 
 type Group struct {
@@ -68,11 +69,19 @@ func (g *Group) DescribeMeterReading(ctx context.Context, _ *gen.DescribeMeterRe
 }
 
 func (g *Group) GetMeterReading(ctx context.Context, request *gen.GetMeterReadingRequest) (*gen.MeterReading, error) {
-	var allRes []value
-	for _, name := range g.names {
+	allRes := make([]value, len(g.names))
+	fns := make([]func(), len(g.names))
+	for i, name := range g.names {
+		request := proto.Clone(request).(*gen.GetMeterReadingRequest)
 		request.Name = name
-		res, err := g.apiClient.GetMeterReading(ctx, request)
-		allRes = append(allRes, value{name: name, val: res, err: err})
+		i := i
+		fns[i] = func() {
+			res, err := g.apiClient.GetMeterReading(ctx, request)
+			allRes[i] = value{name: name, val: res, err: err}
+		}
+	}
+	if err := run.InParallel(ctx, run.DefaultConcurrency, fns...); err != nil {
+		return nil, err
 	}
 	return mergeMeterReading(allRes)
 }

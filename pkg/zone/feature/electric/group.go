@@ -16,6 +16,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/merge"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
 )
 
 type Group struct {
@@ -27,27 +28,24 @@ type Group struct {
 }
 
 func (g *Group) GetDemand(ctx context.Context, request *traits.GetDemandRequest) (*traits.ElectricDemand, error) {
-	var allErrs []error
-	var allRes []*traits.ElectricDemand
-	for _, name := range g.names {
+	fns := make([]func() (*traits.ElectricDemand, error), len(g.names))
+	for i, name := range g.names {
+		request := proto.Clone(request).(*traits.GetDemandRequest)
 		request.Name = name
-		res, err := g.client.GetDemand(ctx, request)
-		if err != nil {
-			allErrs = append(allErrs, err)
-			continue
+		fns[i] = func() (*traits.ElectricDemand, error) {
+			return g.client.GetDemand(ctx, request)
 		}
-		allRes = append(allRes, res)
+	}
+	allRes, allErrs := run.Collect(ctx, run.DefaultConcurrency, fns...)
+
+	err := multierr.Combine(allErrs...)
+	if len(multierr.Errors(err)) == len(g.names) {
+		return nil, err
 	}
 
-	if len(allErrs) == len(g.names) {
-		return nil, multierr.Combine(allErrs...)
-	}
-
-	if len(allErrs) > 0 {
+	if err != nil {
 		if g.logger != nil {
-			g.logger.Warn("some electrics failed to get",
-				zap.Int("success", len(g.names)-len(allErrs)), zap.Int("failed", len(allErrs)),
-				zap.Errors("errors", allErrs))
+			g.logger.Warn("some electrics failed to get", zap.Errors("errors", multierr.Errors(err)))
 		}
 	}
 	return mergeDemand(allRes)

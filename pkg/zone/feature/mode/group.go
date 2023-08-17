@@ -18,6 +18,7 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/util/chans"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/mode/config"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
 )
 
 // MixedValue is used as ModeValues.Value when underlying devices disagree on the actual value for a mode.
@@ -55,54 +56,33 @@ func (g *Group) GetModeValues(ctx context.Context, request *traits.GetModeValues
 	if len(names) == 0 {
 		return nil, status.Error(codes.FailedPrecondition, "zone has no mode names")
 	}
-	type result struct {
-		val *traits.ModeValues
-		err error
-	}
-	results := make([]result, len(names))
-
-	var wg sync.WaitGroup
-	wg.Add(len(names))
+	fns := make([]func() (*traits.ModeValues, error), len(names))
 	for i, name := range names {
-		i := i
 		name := name
-		go func() {
-			defer wg.Done()
-			values, err := g.client.GetModeValues(ctx, &traits.GetModeValuesRequest{Name: name})
-			results[i] = result{val: values, err: err}
-		}()
+		fns[i] = func() (*traits.ModeValues, error) {
+			return g.client.GetModeValues(ctx, &traits.GetModeValuesRequest{Name: name})
+		}
 	}
 
-	wgDone := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(wgDone)
-	}()
+	allRes, allErrs := run.Collect(ctx, run.DefaultConcurrency, fns...)
 
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case <-wgDone:
+	err := multierr.Combine(allErrs...)
+	if len(multierr.Errors(err)) == len(names) {
+		return nil, err
 	}
 
-	var allErrs []error
+	if err != nil {
+		if g.logger != nil {
+			g.logger.Warn("some modes failed to get", zap.Errors("errors", multierr.Errors(err)))
+		}
+	}
+
 	all := make(map[string]*traits.ModeValues)
-	for i, r := range results {
-		if r.err != nil {
-			allErrs = append(allErrs, r.err)
+	for i, res := range allRes {
+		if res == nil {
 			continue
 		}
-		all[names[i]] = r.val
-	}
-	if len(allErrs) == len(names) {
-		return nil, multierr.Combine(allErrs...)
-	}
-	if len(allErrs) > 0 {
-		if g.logger != nil {
-			g.logger.Warn("some modes failed to get",
-				zap.Int("success", len(results)-len(allErrs)), zap.Int("failed", len(allErrs)),
-				zap.Errors("errors", allErrs))
-		}
+		all[names[i]] = res
 	}
 
 	return g.mergeModeValues(all), nil

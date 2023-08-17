@@ -17,6 +17,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
 )
 
 type Group struct {
@@ -30,35 +31,29 @@ type Group struct {
 }
 
 func (g *Group) GetOccupancy(ctx context.Context, request *traits.GetOccupancyRequest) (*traits.Occupancy, error) {
-	var allErrs []error
-	var allRes []*traits.Occupancy
-	for _, name := range g.names {
+	fns := make([]func() (*traits.Occupancy, error), len(g.names)+len(g.clients))
+	for i, name := range g.names {
+		request := proto.Clone(request).(*traits.GetOccupancyRequest)
 		request.Name = name
-		res, err := g.client.GetOccupancy(ctx, request)
-		if err != nil {
-			allErrs = append(allErrs, err)
-			continue
+		fns[i] = func() (*traits.Occupancy, error) {
+			return g.client.GetOccupancy(ctx, request)
 		}
-		allRes = append(allRes, res)
 	}
-	for _, client := range g.clients {
-		res, err := client.GetOccupancy(ctx, request)
-		if err != nil {
-			allErrs = append(allErrs, err)
-			continue
+	for i, client := range g.clients {
+		fns[i+len(g.names)] = func() (*traits.Occupancy, error) {
+			return client.GetOccupancy(ctx, request)
 		}
-		allRes = append(allRes, res)
+	}
+	allRes, allErrs := run.Collect(ctx, run.DefaultConcurrency, fns...)
+
+	err := multierr.Combine(allErrs...)
+	if len(multierr.Errors(err)) == len(g.names) {
+		return nil, err
 	}
 
-	if len(allErrs) == len(g.names) {
-		return nil, multierr.Combine(allErrs...)
-	}
-
-	if len(allErrs) > 0 {
+	if err != nil {
 		if g.logger != nil {
-			g.logger.Warn("some occupancy sensors failed to get",
-				zap.Int("success", len(g.names)-len(allErrs)), zap.Int("failed", len(allErrs)),
-				zap.Errors("errors", allErrs))
+			g.logger.Warn("some occupancy sensors failed to get", zap.Errors("errors", multierr.Errors(err)))
 		}
 	}
 	return mergeOccupancy(allRes)

@@ -16,6 +16,7 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
 )
 
 type Group struct {
@@ -27,36 +28,24 @@ type Group struct {
 }
 
 func (g *Group) GetCurrentStatus(ctx context.Context, request *gen.GetCurrentStatusRequest) (*gen.StatusLog, error) {
-	var allErrs []error
-	var allRes []*gen.StatusLog
-	for _, name := range g.names {
+	fns := make([]func() (*gen.StatusLog, error), len(g.names))
+	for i, name := range g.names {
+		request := proto.Clone(request).(*gen.GetCurrentStatusRequest)
 		request.Name = name
-		res, err := g.client.GetCurrentStatus(ctx, request)
-		if err != nil {
-			allErrs = append(allErrs, err)
-			continue
+		fns[i] = func() (*gen.StatusLog, error) {
+			return g.client.GetCurrentStatus(ctx, request)
 		}
-		allRes = append(allRes, res)
+	}
+	allRes, allErrs := run.Collect(ctx, run.DefaultConcurrency, fns...)
+
+	err := multierr.Combine(allErrs...)
+	if len(multierr.Errors(err)) == len(g.names) {
+		return nil, err
 	}
 
-	if len(allErrs) == len(g.names) {
-		return nil, multierr.Combine(allErrs...)
-	}
-
-	if len(allErrs) > 0 {
+	if err != nil {
 		if g.logger != nil {
-			// don't bother logging if all the errors are NotFound or Unimplemented
-			var ignoreCount int
-			for _, err := range allErrs {
-				if c := status.Code(err); c != codes.NotFound && c != codes.Unimplemented {
-					ignoreCount++
-				}
-			}
-			if ignoreCount < len(allErrs) {
-				g.logger.Warn("some status logs failed to get",
-					zap.Int("success", len(g.names)-len(allErrs)), zap.Int("failed", len(allErrs)),
-					zap.Errors("errors", allErrs))
-			}
+			g.logger.Warn("some status logs failed to get", zap.Errors("errors", multierr.Errors(err)))
 		}
 	}
 	return mergeStatusLog(allRes)
