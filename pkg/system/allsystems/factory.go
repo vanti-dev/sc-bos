@@ -18,7 +18,7 @@ func Factories() map[string]system.Factory {
 		"authn":        authn.Factory(),
 		"history":      history.Factory,
 		"hub":          hub.Factory(),
-		proxy.Name:     proxy.Factory,
+		proxy.Name:     proxy.Factory(),
 		"publications": publications.Factory,
 		"tenants":      tenants.Factory,
 	}
