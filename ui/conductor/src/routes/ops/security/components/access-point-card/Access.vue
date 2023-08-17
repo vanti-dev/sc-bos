@@ -18,7 +18,7 @@
       </v-card-text>
 
       <!-- Alert/Acknowledge area -->
-      <v-card-actions class="mt-4">
+      <v-card-actions v-if="alert.source === props.device.source" class="mt-4">
         <v-col class="mx-0 px-0" cols="align-self" style="max-width: 370px">
           <v-list-item class="px-2">
             <v-list-item-content>
@@ -105,7 +105,7 @@ const query = reactive({
   floor: props.floor === 'All' ? undefined : props.floor,
   zone: undefined,
   subsystem: undefined,
-  source: props.source === '' ? undefined : props.source,
+  source: props.device.source === '' ? undefined : props.device.source,
   acknowledged: undefined,
   resolved: false,
   resolvedNotBefore: undefined,
