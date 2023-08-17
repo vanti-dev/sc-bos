@@ -5,10 +5,20 @@
       <v-spacer/>
       <sc-status-card style="min-width: 248px"/>
     </v-row>
-    <content-card class="mb-8 d-flex flex-column pt-6">
-      <v-row class="d-flex flex-row align-center mt-0 mb-4 px-6">
-        <v-text-field v-model="search" append-icon="mdi-magnify" dense filled hide-details label="Search devices"/>
-        <v-spacer/>
+    <content-card class="mb-8 d-flex flex-column py-0 px-0">
+      <v-row
+          class="d-flex flex-row align-center mt-0 px-6 mx-auto"
+          style="position: absolute; width: 100%; z-index: 1; height: 0; top: 25px">
+        <v-text-field
+            v-show="!hiddenOnMap"
+            v-model="search"
+            append-icon="mdi-magnify"
+            class="neutral"
+            dense
+            filled
+            hide-details
+            label="Search devices"/>
+        <v-spacer style="pointer-events: none"/>
         <v-btn-toggle v-model="viewType" dense mandatory>
           <v-btn large text value="list">List View</v-btn>
           <v-btn large text value="map">Map View</v-btn>
@@ -24,25 +34,15 @@
             label="Floor"
             outlined
             style="min-width: 100px; width: 100%; max-width: 170px"/>
-        <v-select
-            v-model="notificationStateSelection"
-            class="ml-4"
-            dense
-            filled
-            hide-details
-            :items="['All', 'Alert', 'Offline', 'Open', 'Closed']"
-            label="State"
-            outlined
-            style="max-width: 100px"/>
       </v-row>
-      <ListView v-if="viewType === 'list'" :devices="devicesData" :filter="filter"/>
-      <MapView v-else :floor="filterFloor"/>
+      <ListView v-if="viewType === 'list'" :device-names="deviceNames"/>
+      <MapView v-else :device-names="deviceNames" :floor="filterFloor === 'All' ? 'Ground Floor' : filterFloor"/>
     </content-card>
   </v-container>
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {computed, ref, watch} from 'vue';
 import ListView from '@/routes/ops/security/components/ListView.vue';
 import MapView from '@/routes/ops/security/components/MapView.vue';
 
@@ -63,13 +63,30 @@ const props = defineProps({
 });
 
 const viewType = ref('list');
-const notificationStateSelection = ref('All');
+const hiddenOnMap = ref(false);
 
+const {floorList, filterFloor, search, devicesData} = useDevices(props);
 
-const {
-  floorList,
-  filterFloor,
-  search,
-  devicesData
-} = useDevices(props);
+const deviceNames = computed(() => {
+  return devicesData.value.map((device) => {
+    return {
+      source: device.metadata.name,
+      name: device.name,
+      title: device.metadata?.appearance ? device.metadata?.appearance.title : device.metadata.name
+    };
+  });
+});
+
+// Remove severity filter when switching to map view
+watch(
+    viewType,
+    (newVal) => {
+      if (newVal === 'map') {
+        hiddenOnMap.value = true;
+      } else {
+        hiddenOnMap.value = false;
+      }
+    },
+    {immediate: true}
+);
 </script>
