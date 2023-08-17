@@ -32,7 +32,17 @@
       "buildingZone": "building"
     },
     "siteFloorPlans": [
-      {"name": "level0", "svgPath": "/floorPlans/level0.svg"}
+      {"name": "Ground Floor", "svgPath": "/floorPlans/L00.svg"},
+      {"name": "Floor 1", "svgPath": "/floorPlans/L01.svg"},
+      {"name": "Floor 2", "svgPath": "/floorPlans/L02.svg"},
+      {"name": "Floor 3", "svgPath": "/floorPlans/L03.svg"},
+      {"name": "Floor 4", "svgPath": "/floorPlans/L04.svg"},
+      {"name": "Floor 5", "svgPath": "/floorPlans/L05.svg"},
+      {"name": "Floor 6", "svgPath": "/floorPlans/L06.svg"},
+      {"name": "Floor 7", "svgPath": "/floorPlans/L07.svg"},
+      {"name": "Floor 8", "svgPath": "/floorPlans/L08.svg"},
+      {"name": "Floor 9", "svgPath": "/floorPlans/L09.svg"},
+      {"name": "Floor 10", "svgPath": "/floorPlans/L10.svg"}
     ]
   }
 }
