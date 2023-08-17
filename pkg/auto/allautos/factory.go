@@ -2,6 +2,7 @@ package allautos
 
 import (
 	"github.com/vanti-dev/sc-bos/pkg/auto"
+	"github.com/vanti-dev/sc-bos/pkg/auto/azureiot"
 	"github.com/vanti-dev/sc-bos/pkg/auto/bms"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history"
@@ -21,5 +22,6 @@ func Factories() map[string]auto.Factory {
 		statusalerts.AutoName: statusalerts.Factory,
 		statusemail.AutoName:  statusemail.Factory,
 		udmi.AutoType:         udmi.Factory,
+		azureiot.DriverType:   azureiot.Factory,
 	}
 }

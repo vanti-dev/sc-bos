@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/field_mask.proto";
+
+service PointApi {
+    rpc GetPoints(GetPointsRequest) returns (Points);
+    rpc PullPoints(PullPointsRequest) returns (stream PullPointsResponse);
+}
+
+message GetPointsRequest {
+    string name = 1; // device name to get points for
+    google.protobuf.FieldMask read_mask = 2;
+}
+
+message PullPointsRequest {
+    string name = 1;
+    google.protobuf.FieldMask read_mask = 2;
+}
+message PullPointsResponse {
+    Points points = 1;
+}
+
+message Points {
+    google.protobuf.Struct values = 1;
+}
+
+service PointInfo {
+    rpc DescribePoints(DescribePointsRequest) returns (PointsSupport);
+}
+
+message DescribePointsRequest {}
+
+message PointsSupport {
+    repeated PointMetadata points = 1;
+}
+
+message PointMetadata {
+    string name = 1;
+    PointKind kind = 2;
+    PointUnit unit = 3;
+}
+
+enum PointKind {
+    POINT_KIND_UNSPECIFIED = 0;
+    // TODO: fill in semantic kinds of points
+    COUNT = 1; // A generic, integer count of objects or events.
+    TEMPERATURE = 2;
+}
+
+enum PointUnit {
+    POINT_UNIT_UNSPECIFIED = 0;
+    // TODO: fill in units for points
+
+    // Units for the TEMPERATURE kind.
+    CELSIUS = 1;
+    KELVIN = 2;
+    FAHRENHEIT = 3;
+}
