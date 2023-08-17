@@ -64,14 +64,6 @@
       <StatusLogCell v-if="!resource.streamError" v-bind="resource"/>
       <StatusAlert v-else icon="mdi-connection" :resource="resource.streamError"/>
     </WithStatus>
-    <WithAccess
-        v-if="hasCell('AccessAttempt')"
-        v-slot="{resource}"
-        :name="props.item.name"
-        :paused="props.paused">
-      <AccessAttemptCell v-if="!resource.streamError" v-bind="resource"/>
-      <StatusAlert v-else icon="mdi-cancel" :resource="resource.streamError"/>
-    </WithAccess>
   </span>
 </template>
 
