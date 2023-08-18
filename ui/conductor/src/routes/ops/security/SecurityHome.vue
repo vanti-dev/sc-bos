@@ -43,7 +43,9 @@
 
 <script setup>
 import {computed, onMounted, ref, watch} from 'vue';
+import {storeToRefs} from 'pinia';
 import {useAppConfigStore} from '@/stores/app-config';
+import {useStatusBarStore} from '@/routes/ops/security/components/access-point-card/statusBarStore';
 import ListView from '@/routes/ops/security/components/ListView.vue';
 import MapView from '@/routes/ops/security/components/MapView.vue';
 
@@ -64,6 +66,7 @@ const props = defineProps({
 });
 
 const {config} = useAppConfigStore();
+const {showClose} = storeToRefs(useStatusBarStore());
 
 const viewType = ref('list');
 const hiddenOnMap = ref(false);
@@ -108,6 +111,7 @@ watch(
         hiddenOnMap.value = true;
       } else {
         hiddenOnMap.value = false;
+        showClose.value = false;
       }
     },
     {immediate: true}
