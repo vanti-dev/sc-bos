@@ -10,12 +10,12 @@
             <div :style="calculateAnchorStyle" style="pointer-events: none">
               <HotPoint
                   v-slot="{ live }"
-                  :item-key="elementWithMenu?.deviceId"
+                  :item-key="elementWithMenu?.device?.name"
                   style="position: relative; top: 100%; transform-origin: 0 0; pointer-events: auto"
                   :style="{
                     transform: `scale(${1 / scale})`,
                   }">
-                <AccessPointCard :device="findDevice(elementWithMenu?.deviceId)" :paused="!live" @onClose="closeMenu"/>
+                <AccessPointCard :device="elementWithMenu?.device" :paused="!live" @onClose="closeMenu"/>
               </HotPoint>
             </div>
           </div>
@@ -26,16 +26,16 @@
 </template>
 
 <script setup>
-import {computed, onMounted, onBeforeUnmount, reactive, ref, watch} from 'vue';
-import {storeToRefs} from 'pinia';
-import {useAppConfigStore} from '@/stores/app-config';
-import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
-import Stack from '@/routes/ops/security/components/Stack.vue';
-import AccessPointCard from './AccessPointCard.vue';
 import HotPoint from '@/components/HotPoint.vue';
 
 import {useStatusBarStore} from '@/routes/ops/security/components/access-point-card/statusBarStore';
+import Stack from '@/routes/ops/security/components/Stack.vue';
+import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
+import {useAppConfigStore} from '@/stores/app-config';
 import {convertSVGToPercentage} from '@/util/svg';
+import {storeToRefs} from 'pinia';
+import {computed, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue';
+import AccessPointCard from './AccessPointCard.vue';
 
 // -------------- Props -------------- //
 const props = defineProps({
@@ -58,13 +58,12 @@ const groupingContainer = ref(null);
 
 const showMenu = ref(false);
 const elementWithMenu = reactive({
-  deviceId: null,
+  device: null,
   source: null,
   target: null,
   x: 0,
   y: 0
 });
-const groupedIds = ref({});
 
 // -------------- Computed Properties -------------- //
 const getSVGViewBox = computed(() => {
@@ -135,7 +134,7 @@ const fetchFloorPlan = async (selectedFloor) => {
 const closeMenu = () => {
   showMenu.value = false;
   showClose.value = false;
-  elementWithMenu.deviceId = null;
+  elementWithMenu.device = null;
   elementWithMenu.source = null;
   elementWithMenu.target = null;
   elementWithMenu.x = 0;
@@ -143,42 +142,13 @@ const closeMenu = () => {
 };
 
 /**
- * Collecting all the ids of the elements in the svg
- * and grouping them by the parent group id
- *
- * @param {HTMLElement} element
- */
-const traverseAndCollectIds = (element) => {
-  // Check if the element is a group with an ID containing 'door' or 'doors'
-  if (element.tagName === 'g' && element.id && element.id.toLowerCase().includes('door')) {
-    const groupKey = element.id.split('_')[1];
-
-    // If the key doesn't exist in the dictionary, create an empty array for it
-    if (!groupedIds.value[groupKey]) {
-      groupedIds.value[groupKey] = [];
-    }
-
-    // Collecting the IDs of <path> and <rect> elements
-    Array.from(element.children).forEach((child) => {
-      if (['path', 'rect'].includes(child.tagName) && child.id) {
-        groupedIds.value[groupKey].push(child.id.toLowerCase());
-      }
-    });
-  }
-
-  // Continue traversal for other children
-  Array.from(element.children).forEach((child) => {
-    traverseAndCollectIds(child);
-  });
-};
-/**
  * Find the device name in the props.deviceNames array
  *
- * @param {HTMLElement} element
+ * @param {string} needle
  * @return {{name: string, source: string} | undefined}
  */
-const findDevice = (element) => {
-  return props.deviceNames.find((deviceName) => deviceName.name.toLowerCase().includes(element.toLowerCase()));
+const findDevice = (needle) => {
+  return props.deviceNames.find((deviceName) => deviceName.name.toLowerCase().endsWith('/' + needle.toLowerCase()));
 };
 
 /**
@@ -186,22 +156,12 @@ const findDevice = (element) => {
  * @param {PointerEvent} event
  */
 const handleClick = (event) => {
-  const clickedElement = event.target;
+  const clickedElement = event.target.closest('[id]');
 
-  // Do not react to clicks on the svg itself (blank space around the floor plan)
-  if (clickedElement.tagName === 'svg') {
+  // Find the parent group of the clicked element
+  const parentGroup = clickedElement.closest('g[id^="doors_"]');
+  if (!parentGroup) {
     return;
-  }
-
-  // Check if the parent of the clicked element is 'outline' or 'detail' group.
-  const parentGroup = clickedElement.parentElement;
-  if (parentGroup && (parentGroup.id === 'outline' || parentGroup.id === 'detail')) {
-    return;
-  }
-
-  // Check if the parent group of the clicked element contains 'door' or 'doors'
-  if (!parentGroup || !parentGroup.id || !parentGroup.id.toLowerCase().includes('door') || !clickedElement.id) {
-    return; // Do not proceed if the clicked element is not inside a 'door' or 'doors' group
   }
 
   // Does the device sends a signal?
@@ -212,7 +172,7 @@ const handleClick = (event) => {
 
   // Collect all the ids of the elements in the svg
   elementWithMenu.target = clickedElement;
-  elementWithMenu.deviceId = device.name;
+  elementWithMenu.device = device;
   elementWithMenu.source = device.source;
 
   // Show menu
@@ -254,17 +214,6 @@ watch(
       }
     },
     {immediate: true, deep: true, flush: 'sync'}
-);
-
-// Watch for floorPlanSVG changes and traverse the svg to collect all the ids
-watch(
-    floorPlanSVG,
-    (newValue, oldValue) => {
-      if (newValue && newValue !== oldValue) {
-        traverseAndCollectIds(newValue);
-      }
-    },
-    {immediate: true}
 );
 
 // Watch for changes in the showClose prop then close menu
