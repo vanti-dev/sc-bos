@@ -3,9 +3,8 @@
     <PinchZoom @click="handleClick">
       <template #default="{ scale }">
         <Stack ref="groupingContainer">
-          <!-- eslint-disable vue/no-v-html -->
+          <!-- eslint-disable-next-line vue/no-v-html -->
           <div v-html="activeFloorPlan" ref="floorPlanSVG" :style="{ '--map-scale': scale }"/>
-          <!-- eslint-enable vue/no-v-html -->
           <div v-if="showMenu" style="pointer-events: none">
             <div :style="calculateAnchorStyle" style="pointer-events: none">
               <HotPoint
