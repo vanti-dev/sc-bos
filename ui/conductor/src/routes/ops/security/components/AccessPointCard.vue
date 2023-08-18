@@ -26,10 +26,6 @@ const props = defineProps({
     type: Object,
     default: () => ({})
   },
-  floor: {
-    type: String,
-    default: ''
-  },
   paused: {
     type: Boolean,
     default: false

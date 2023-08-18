@@ -49,7 +49,8 @@
 </template>
 
 <script setup>
-import {reactive, computed} from 'vue';
+import {computed, onUnmounted, reactive} from 'vue';
+import {closeResource} from '@/api/resource';
 import {AccessAttempt} from '@sc-bos/ui-gen/proto/access_pb';
 import {useHubStore} from '@/stores/hub';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
@@ -133,6 +134,11 @@ const user = computed(() => {
     name: props.value?.actor?.displayName ?? 'Unknown',
     cardId: props.value?.actor?.idsMap?.[0]?.[1] ?? 'Unknown'
   };
+});
+
+onUnmounted(() => {
+  closeResource(alerts.pullResource);
+  closeResource(alerts.listPageTracker);
 });
 </script>
 <style lang="scss" scoped>

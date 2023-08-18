@@ -15,7 +15,7 @@
                   :style="{
                     transform: `scale(${1 / scale})`,
                   }">
-                <AccessPointCard :device="elementWithMenu?.device" :paused="!live" @onClose="closeMenu"/>
+                <AccessPointCard :device="elementWithMenu?.device" :paused="!live"/>
               </HotPoint>
             </div>
           </div>
