@@ -36,13 +36,14 @@
             style="min-width: 100px; width: 100%; max-width: 170px"/>
       </v-row>
       <ListView v-if="viewType === 'list'" :device-names="deviceQuery"/>
-      <MapView v-else :device-names="deviceNames" :floor="filterFloor === 'All' ? 'Ground Floor' : filterFloor"/>
+      <MapView v-else :device-names="deviceNames" :floor="filterFloor"/>
     </content-card>
   </v-container>
 </template>
 
 <script setup>
 import {computed, onMounted, ref, watch} from 'vue';
+import {useAppConfigStore} from '@/stores/app-config';
 import ListView from '@/routes/ops/security/components/ListView.vue';
 import MapView from '@/routes/ops/security/components/MapView.vue';
 
@@ -62,15 +63,13 @@ const props = defineProps({
   }
 });
 
+const {config} = useAppConfigStore();
+
 const viewType = ref('list');
 const hiddenOnMap = ref(false);
 const search = ref('');
 
 const {floorList, filterFloor, devicesData} = useDevices(props);
-
-const formattedFloorList = computed(() => {
-  return floorList.value.filter((floor) => !['All', '< no floor >'].includes(floor));
-});
 
 const deviceNames = computed(() => {
   return devicesData.value.map((device) => {
@@ -80,6 +79,11 @@ const deviceNames = computed(() => {
       title: device.metadata?.appearance ? device.metadata?.appearance.title : device.metadata.name
     };
   });
+});
+
+const formattedFloorList = computed(() => {
+  if (viewType.value === 'list') return floorList.value.filter((floor) => !['All', '< no floor >'].includes(floor));
+  else return config.siteFloorPlans.map((floor) => floor.name);
 });
 
 const deviceQuery = computed(() => {
