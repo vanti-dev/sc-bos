@@ -18,6 +18,26 @@
               </HotPoint>
             </div>
           </div>
+          <div class="door-status-tracker">
+            <HotPoint
+                v-slot="{live}"
+                v-for="door in doors"
+                :key="door.name"
+                :item-key="door.name"
+                class="door-status-tracker__item"
+                :style="door.style">
+              <WithAccess :name="door.name" :paused="!live" v-slot="{resource: accessResource}">
+                <WithStatus :name="door.name" :paused="!live" v-slot="{resource: statusResource}">
+                  <door-color
+                      :name="door.name"
+                      :access-attempt="accessResource.value"
+                      :status-log="statusResource.value"
+                      class="door-status-tracker__item"
+                      @update="setDoorColor"/>
+                </WithStatus>
+              </WithAccess>
+            </HotPoint>
+          </div>
         </Stack>
       </template>
     </PinchZoom>
@@ -26,11 +46,14 @@
 
 <script setup>
 import HotPoint from '@/components/HotPoint.vue';
+import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
+import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
+import DoorColor from '@/routes/ops/security/components/DoorColor.vue';
 import Stack from '@/routes/ops/security/components/Stack.vue';
 import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import {convertSVGToPercentage} from '@/util/svg';
-import {computed, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue';
+import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, set, watch} from 'vue';
 import AccessPointCard from './AccessPointCard.vue';
 
 // -------------- Props -------------- //
@@ -62,8 +85,25 @@ const elementWithMenu = reactive({
 });
 
 // -------------- Computed Properties -------------- //
-const getSVGViewBox = computed(() => {
-  const [x, y, w, h] = floorPlanSVG.value.querySelector('svg').getAttribute('viewBox').split(' ');
+const svgVersion = ref(0);
+const getSvgEl = () => {
+  svgVersion.value; // register interest in this ref
+  const svgContainer = floorPlanSVG.value;
+  if (!svgContainer) {
+    return undefined;
+  }
+  const svgEl = svgContainer?.querySelector('svg');
+  if (!svgEl) {
+    return undefined;
+  }
+  return svgEl;
+};
+const getSVGViewBox = () => {
+  const svgEl = getSvgEl();
+  if (!svgEl) {
+    return undefined;
+  }
+  const [x, y, w, h] = svgEl.getAttribute('viewBox').split(' ');
 
   return {
     x: parseInt(x),
@@ -71,7 +111,7 @@ const getSVGViewBox = computed(() => {
     width: parseInt(w),
     height: parseInt(h)
   };
-});
+};
 
 const getClickedRectBBox = computed(() => {
   if (!elementWithMenu.target) {
@@ -88,7 +128,10 @@ const calculateAnchorStyle = computed(() => {
 
   // Get the bounding rectangle of the SVG element
   const clickedRect = getClickedRectBBox.value;
-  const viewBox = getSVGViewBox.value;
+  const viewBox = getSVGViewBox();
+  if (!viewBox) {
+    return {};
+  }
 
   const percentage = convertSVGToPercentage(viewBox, clickedRect);
 
@@ -176,6 +219,66 @@ const handleClick = (event) => {
   showMenu.value = true;
 };
 
+// doors contains door names, location on the map, and the svg element.
+const doors = computed(() => {
+  if (!floorPlanSVG.value) {
+    return [];
+  }
+
+  const viewBox = getSVGViewBox();
+  if (!viewBox) {
+    return [];
+  }
+  const svgEl = getSvgEl();
+  if (!svgEl) {
+    return [];
+  }
+  return props.deviceNames
+      .map((device) => {
+        const localId = device.name.split('/').pop();
+        const door = svgEl.querySelector(`#${localId}`);
+        if (!door) return undefined;
+
+        const elRect = door.getBBox();
+        const percentage = convertSVGToPercentage(viewBox, elRect);
+
+        const inset = 0.02;
+        const x = (percentage.x - inset) * 100;
+        const y = (percentage.y - inset) * 100;
+        const width = (percentage.width + 2 * inset) * 100;
+        const height = (percentage.height + 2 * inset) * 100;
+        return {
+          name: device.name,
+          el: door,
+          style: {
+            width: `${width}%`,
+            height: `${height}%`,
+            left: `${x}%`,
+            top: `${y + 1}%`
+          }
+        };
+      })
+      .filter(d => Boolean(d));
+});
+// doorColors contains the intended colour for each door.
+// We keep this as a data structure instead of just setting the value in case we know what colour it should be
+// before the svg is loaded.
+const doorColors = ref({});
+const setDoorColor = ({name, color}) => {
+  set(doorColors.value, name, color);
+};
+
+// watch for changes in the colours and svg and invoke dom actions to update the svg.
+watch([doorColors, doors], () => {
+  doors.value.forEach(({el, name}) => {
+    const color = doorColors.value[name] ?? 'grey';
+    if (color && el) {
+      el.removeAttribute('style');
+      el.setAttribute('class', color);
+    }
+  });
+}, {deep: true});
+
 /**
  * Add or remove event listeners
  *
@@ -205,6 +308,9 @@ watch(
         fetchFloorPlan(newValue).then((response) => {
           response.text().then((text) => {
             activeFloorPlan.value = text;
+            nextTick(() => {
+              svgVersion.value++;
+            });
           });
         });
       }
@@ -235,10 +341,27 @@ watch(
 
 .floor-plan__container ::v-deep path[id],
 .floor-plan__container ::v-deep rect[id] {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .door-status-tracker {
+  position: relative;
   pointer-events: none;
+}
+
+.door-status-tracker__item {
+  position: absolute;
+}
+
+::v-deep(svg .success) {
+  fill: var(--v-success-base);
+}
+
+::v-deep(svg .warning) {
+  fill: var(--v-warning-base);
+}
+
+::v-deep(svg .error) {
+  fill: var(--v-error-base);
 }
 </style>
