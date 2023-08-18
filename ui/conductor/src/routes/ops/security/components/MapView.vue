@@ -14,7 +14,7 @@
                   :style="{
                     transform: `scale(${1 / scale})`,
                   }">
-                <AccessPointCard :device="elementWithMenu?.device" :paused="!live"/>
+                <AccessPointCard :device="elementWithMenu?.device" :paused="!live" @click:close="closeMenu" show-close/>
               </HotPoint>
             </div>
           </div>
@@ -26,13 +26,10 @@
 
 <script setup>
 import HotPoint from '@/components/HotPoint.vue';
-
-import {useStatusBarStore} from '@/routes/ops/security/components/access-point-card/statusBarStore';
 import Stack from '@/routes/ops/security/components/Stack.vue';
 import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import {convertSVGToPercentage} from '@/util/svg';
-import {storeToRefs} from 'pinia';
 import {computed, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue';
 import AccessPointCard from './AccessPointCard.vue';
 
@@ -50,7 +47,7 @@ const props = defineProps({
 
 // -------------- Data & Reactive References -------------- //
 const {config} = useAppConfigStore();
-const {showClose} = storeToRefs(useStatusBarStore());
+const showClose = ref(false);
 const activeFloorPlan = ref('');
 const floorPlanSVG = ref(null);
 const groupingContainer = ref(null);
@@ -214,17 +211,6 @@ watch(
     },
     {immediate: true, deep: true, flush: 'sync'}
 );
-
-// Watch for changes in the showClose prop then close menu
-watch(
-    showClose,
-    (newValue, oldValue) => {
-      if (newValue === false) {
-        closeMenu();
-      }
-    },
-    {immediate: true}
-);
 </script>
 
 <style lang="scss" scoped>
@@ -250,5 +236,9 @@ watch(
 .floor-plan__container ::v-deep path[id],
 .floor-plan__container ::v-deep rect[id] {
     cursor: pointer;
+}
+
+.door-status-tracker {
+  pointer-events: none;
 }
 </style>

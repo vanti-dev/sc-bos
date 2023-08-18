@@ -1,15 +1,17 @@
 <template>
   <div>
     <!-- Status bar -->
-    <WithStatus v-slot="{ resource }" :name="props.device.name" :paused="props.paused">
-      <Status v-bind="resource" :device="props.device" :status-bar-color="setBarColor(resource.live, grantStates)"/>
-    </WithStatus>
+    <Status
+        :title="props.device.title"
+        :status-bar-color="statusColor"
+        :show-close="props.showClose"
+        @click:close="emit('click:close')"/>
 
     <!-- Grant area -->
     <div class="d-flex flex-column justify-space-between">
       <v-card-text class="text-h6 white--text font-weight-regular d-flex flex-row pa-0 px-4 pt-4">
         <span>Last access:</span>
-        <span :class="[grantStates, 'ml-auto font-weight-bold']">
+        <span :class="[`${statusColor}--text`, 'ml-auto font-weight-bold']">
           {{ formatString(grantStates) }}
         </span>
       </v-card-text>
@@ -49,21 +51,25 @@
 </template>
 
 <script setup>
-import {computed, onUnmounted, reactive} from 'vue';
-import {closeResource} from '@/api/resource';
-import {AccessAttempt} from '@sc-bos/ui-gen/proto/access_pb';
-import {useHubStore} from '@/stores/hub';
-import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
-import {useStatusBarStore} from '@/routes/ops/security/components/access-point-card/statusBarStore';
-
-import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
-import Status from '@/routes/ops/security/components/access-point-card/StatusBar.vue';
+import {grantNamesByID} from '@/api/sc/traits/access';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
+import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
+
+import Status from '@/routes/ops/security/components/access-point-card/StatusBar.vue';
+import {useStatus} from '@/routes/ops/security/components/access-point-card/useStatus';
+import {useHubStore} from '@/stores/hub';
+import {computed, onUnmounted, reactive} from 'vue';
 
 const props = defineProps({
-  value: {
+  accessAttempt: {
     type: Object,
-    default: () => {}
+    default: () => {
+    }
+  },
+  statusLog: {
+    type: Object,
+    default: () => {
+    }
   },
   floor: {
     type: String,
@@ -71,25 +77,26 @@ const props = defineProps({
   },
   device: {
     type: Object,
-    default: () => {}
+    default: () => {
+    }
   },
   paused: {
     type: Boolean,
     default: false
+  },
+  showClose: {
+    type: Boolean,
+    default: false
   }
 });
+const emit = defineEmits(['click:close']);
 
-const statusBarStore = useStatusBarStore();
-const {setBarColor} = statusBarStore;
+const {color: statusColor} = useStatus(() => props.accessAttempt, () => props.statusLog);
 
 // ----------------- Access Attempt ----------------- //
-const grantId = computed(() => props.value?.grant);
-const grantNamesByID = Object.entries(AccessAttempt.Grant).reduce((all, [name, id]) => {
-  all[id] = name.toLowerCase();
-  return all;
-}, {});
+const grantId = computed(() => props.accessAttempt?.grant);
 const grantStates = computed(() => {
-  return grantNamesByID[grantId.value || 0];
+  return grantNamesByID[grantId.value || 0].toLowerCase();
 });
 const formatString = (str) => {
   return str.split('_').join(' ').charAt(0).toUpperCase() + str.split('_').join(' ').slice(1);
@@ -146,16 +153,19 @@ onUnmounted(() => {
   color: green;
   transition: color 0.5s ease-in-out;
 }
+
 .denied,
 .forced,
 .failed {
   color: red;
 }
+
 .pending,
 .aborted,
 .tailgate {
   color: orange;
 }
+
 .grant_unknown {
   color: grey;
 }

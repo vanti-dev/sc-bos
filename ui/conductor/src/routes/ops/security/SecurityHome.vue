@@ -42,17 +42,14 @@
 </template>
 
 <script setup>
-import {computed, onMounted, ref, watch} from 'vue';
-import {storeToRefs} from 'pinia';
-import {useAppConfigStore} from '@/stores/app-config';
-import {useStatusBarStore} from '@/routes/ops/security/components/access-point-card/statusBarStore';
-import ListView from '@/routes/ops/security/components/ListView.vue';
-import MapView from '@/routes/ops/security/components/MapView.vue';
+import ContentCard from '@/components/ContentCard.vue';
 
 import useDevices from '@/composables/useDevices';
-
-import ContentCard from '@/components/ContentCard.vue';
 import ScStatusCard from '@/routes/ops/components/ScStatusCard.vue';
+import ListView from '@/routes/ops/security/components/ListView.vue';
+import MapView from '@/routes/ops/security/components/MapView.vue';
+import {useAppConfigStore} from '@/stores/app-config';
+import {computed, onMounted, ref, watch} from 'vue';
 
 const props = defineProps({
   subsystem: {
@@ -66,7 +63,6 @@ const props = defineProps({
 });
 
 const {config} = useAppConfigStore();
-const {showClose} = storeToRefs(useStatusBarStore());
 
 const viewType = ref('list');
 const hiddenOnMap = ref(false);
@@ -93,9 +89,9 @@ const deviceQuery = computed(() => {
   if (search.value.toLowerCase()) {
     return deviceNames.value.filter((device) => {
       return (
-        device.name.toLowerCase().includes(search.value.toLowerCase()) ||
-        device.title.toLowerCase().includes(search.value.toLowerCase()) ||
-        device.source.toLowerCase().includes(search.value.toLowerCase())
+          device.name.toLowerCase().includes(search.value.toLowerCase()) ||
+          device.title.toLowerCase().includes(search.value.toLowerCase()) ||
+          device.source.toLowerCase().includes(search.value.toLowerCase())
       );
     });
   } else {
@@ -113,7 +109,6 @@ watch(
       } else {
         filterFloor.value = 'All';
         hiddenOnMap.value = false;
-        showClose.value = false;
       }
     },
     {immediate: true}
