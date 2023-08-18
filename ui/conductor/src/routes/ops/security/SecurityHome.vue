@@ -30,7 +30,7 @@
             :disabled="floorList.length <= 1"
             filled
             hide-details
-            :items="floorList"
+            :items="formattedFloorList"
             label="Floor"
             outlined
             style="min-width: 100px; width: 100%; max-width: 170px"/>
@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import {computed, ref, watch} from 'vue';
+import {computed, onMounted, ref, watch} from 'vue';
 import ListView from '@/routes/ops/security/components/ListView.vue';
 import MapView from '@/routes/ops/security/components/MapView.vue';
 
@@ -67,6 +67,10 @@ const hiddenOnMap = ref(false);
 
 const {floorList, filterFloor, search, devicesData} = useDevices(props);
 
+const formattedFloorList = computed(() => {
+  return floorList.value.filter((floor) => !['All', '< no floor >'].includes(floor));
+});
+
 const deviceNames = computed(() => {
   return devicesData.value.map((device) => {
     return {
@@ -89,4 +93,8 @@ watch(
     },
     {immediate: true}
 );
+
+onMounted(() => {
+  filterFloor.value = 'Ground Floor';
+});
 </script>
