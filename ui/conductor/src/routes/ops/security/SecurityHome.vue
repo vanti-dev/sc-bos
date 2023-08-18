@@ -49,7 +49,7 @@ import ScStatusCard from '@/routes/ops/components/ScStatusCard.vue';
 import ListView from '@/routes/ops/security/components/ListView.vue';
 import MapView from '@/routes/ops/security/components/MapView.vue';
 import {useAppConfigStore} from '@/stores/app-config';
-import {computed, onMounted, ref, watch} from 'vue';
+import {computed, ref, watch} from 'vue';
 
 const props = defineProps({
   subsystem: {
@@ -89,9 +89,9 @@ const deviceQuery = computed(() => {
   if (search.value.toLowerCase()) {
     return deviceNames.value.filter((device) => {
       return (
-          device.name.toLowerCase().includes(search.value.toLowerCase()) ||
-          device.title.toLowerCase().includes(search.value.toLowerCase()) ||
-          device.source.toLowerCase().includes(search.value.toLowerCase())
+        device.name.toLowerCase().includes(search.value.toLowerCase()) ||
+        device.title.toLowerCase().includes(search.value.toLowerCase()) ||
+        device.source.toLowerCase().includes(search.value.toLowerCase())
       );
     });
   } else {
