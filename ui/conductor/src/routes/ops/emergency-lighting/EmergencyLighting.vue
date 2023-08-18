@@ -52,12 +52,14 @@ const csvTracker = reactive(
 const lightHealthTracker = reactive(
     /** @type {ActionTracker<ListLightHealthResponse.AsObject>}*/ newActionTracker()
 );
+const allLightsHealth = ref([]);
 
 const lightHealth = computed(() => {
-  return lightHealthTracker.response?.emergencyLightsList ?? [];
+  return allLightsHealth.value;
 });
 
-onMounted(() => refreshLightHealth());
+onMounted(() => refreshLightHealth().catch(err => console.error('Error fetching light health: ', err)));
+onUnmounted(() => allLightsHealth.value = []);
 
 // Ui Error handling
 const errorStore = useErrorStore();
@@ -74,8 +76,14 @@ onUnmounted(() => {
 /**
  *
  */
-function refreshLightHealth() {
-  listLightHealth(lightHealthTracker);
+async function refreshLightHealth() {
+  const req = {pageSize: 100};
+  while (true) {
+    const resp = await listLightHealth(req, lightHealthTracker);
+    allLightsHealth.value.push(...resp.emergencyLightsList);
+    if (!resp.nextPageToken) break;
+    req.pageToken = resp.nextPageToken;
+  }
 }
 
 /**

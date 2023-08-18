@@ -22,13 +22,14 @@ export function getReportCSV(tracker) {
 
 /**
  *
+ * @param {Partial<ListLightHealthRequest.AsObject>} request
  * @param {ActionTracker<ListLightHealthResponse.AsObject>} [tracker]
  * @return {Promise<ListLightHealthResponse.AsObject>}
  */
-export function listLightHealth(tracker) {
+export function listLightHealth(request, tracker) {
   return trackAction('LightingTest.listLightHealth', tracker ?? {}, endpoint => {
     const api = client(endpoint);
-    return api.listLightHealth(new ListLightHealthRequest());
+    return api.listLightHealth(listLightHealthRequestFromObject(request));
   });
 }
 
@@ -81,4 +82,16 @@ function startTestRequestFromObject(obj) {
   const req = new StartTestRequest();
   setProperties(req, obj, 'name', 'test');
   return req;
+}
+
+/**
+ * @param {ListLightHealthRequest.AsObject} obj
+ * @return {undefined|ListLightHealthRequest}
+ */
+function listLightHealthRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const dst = new ListLightHealthRequest();
+  setProperties(dst, obj, 'pageSize', 'pageToken');
+  return dst;
 }
