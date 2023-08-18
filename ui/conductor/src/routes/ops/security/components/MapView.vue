@@ -171,7 +171,6 @@ const traverseAndCollectIds = (element) => {
     traverseAndCollectIds(child);
   });
 };
-
 /**
  * Find the device name in the props.deviceNames array
  *
@@ -201,7 +200,7 @@ const handleClick = (event) => {
   }
 
   // Check if the parent group of the clicked element contains 'door' or 'doors'
-  if (!parentGroup || !parentGroup.id || !parentGroup.id.toLowerCase().includes('door')) {
+  if (!parentGroup || !parentGroup.id || !parentGroup.id.toLowerCase().includes('door') || !clickedElement.id) {
     return; // Do not proceed if the clicked element is not inside a 'door' or 'doors' group
   }
 
