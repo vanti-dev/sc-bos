@@ -247,4 +247,9 @@ watch(
   --translate-x: 0;
   --translate-y: 0;
 }
+
+.floor-plan__container ::v-deep path[id],
+.floor-plan__container ::v-deep rect[id] {
+    cursor: pointer;
+}
 </style>
