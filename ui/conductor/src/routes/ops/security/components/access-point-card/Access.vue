@@ -16,11 +16,11 @@
         </span>
       </v-card-text>
       <v-card-text class="text-h6 white--text d-flex flex-column pt-1" style="max-width: 350px">
-        <span class="text-subtitle-1"> {{ user.name }} ({{ user.cardId }}) </span>
+        <span class="text-subtitle-1"> {{ user.name }} {{ user.cardId }} </span>
       </v-card-text>
 
       <!-- Alert/Acknowledge area -->
-      <v-card-actions v-if="alert.source === props.device.source" class="mt-4">
+      <v-card-actions v-if="alert.length" class="mt-4">
         <v-col class="mx-0 px-0" cols="align-self" style="max-width: 370px">
           <v-list-item class="px-2">
             <v-list-item-content>
@@ -55,31 +55,25 @@ import {closeResource} from '@/api/resource';
 import {grantNamesByID} from '@/api/sc/traits/access';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
+import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 
 import Status from '@/routes/ops/security/components/access-point-card/StatusBar.vue';
 import {useStatus} from '@/routes/ops/security/components/access-point-card/useStatus';
 import {useHubStore} from '@/stores/hub';
-import {computed, onUnmounted, reactive} from 'vue';
+import {computed, onUnmounted, reactive, watch} from 'vue';
 
 const props = defineProps({
   accessAttempt: {
     type: Object,
-    default: () => {
-    }
+    default: () => {}
   },
   statusLog: {
     type: Object,
-    default: () => {
-    }
-  },
-  floor: {
-    type: String,
-    default: ''
+    default: () => {}
   },
   device: {
     type: Object,
-    default: () => {
-    }
+    default: () => {}
   },
   paused: {
     type: Boolean,
@@ -92,7 +86,11 @@ const props = defineProps({
 });
 const emit = defineEmits(['click:close']);
 
-const {color: statusColor} = useStatus(() => props.accessAttempt, () => props.statusLog);
+const {alertMetadata} = useAlertMetadata();
+const {color: statusColor} = useStatus(
+    () => props.accessAttempt,
+    () => props.statusLog
+);
 
 // ----------------- Access Attempt ----------------- //
 const grantId = computed(() => props.accessAttempt?.grant);
@@ -111,7 +109,7 @@ const query = reactive({
   createdNotAfter: undefined,
   severityNotAbove: undefined,
   severityNotBelow: undefined,
-  floor: props.floor === 'All' ? undefined : props.floor,
+  floor: undefined,
   zone: undefined,
   subsystem: undefined,
   source: props.device.source === '' ? undefined : props.device.source,
@@ -122,7 +120,12 @@ const query = reactive({
 });
 
 const alerts = reactive(useAlertsApi(hubName, query));
-alerts.pageSize = 10;
+
+watch(() => props.device, () => {
+  if (!props.device.length) {
+    alerts.pageSize = 0;
+  } else alerts.pageSize = 5;
+}, {immediate: true, deep: true});
 
 const alert = computed(() => {
   const alertData = alerts.allItems[0];
@@ -133,20 +136,29 @@ const alert = computed(() => {
 
   return {
     ...alertData,
-    createTime: alertData.createTime.toLocaleString()
+    createTime: alertData.createTime
   };
 });
 
 const user = computed(() => {
+  if (!props.accessAttempt?.actor?.displayName && !props.accessAttempt?.actor?.idsMap?.[0]?.[1]) {
+    return {
+      name: 'No card details provided'
+    };
+  }
+
   return {
-    name: props.value?.actor?.displayName ?? 'Unknown',
-    cardId: props.value?.actor?.idsMap?.[0]?.[1] ?? 'Unknown'
+    name: props.accessAttempt?.actor?.displayName ?? 'Unknown',
+    cardId: `(${props.accessAttempt?.actor?.idsMap?.[0]?.[1] ?? 'Unknown'})`
   };
 });
 
 onUnmounted(() => {
   closeResource(alerts.pullResource);
   closeResource(alerts.listPageTracker);
+  closeResource(props.accessAttempt);
+  closeResource(props.statusLog);
+  closeResource(alertMetadata);
 });
 </script>
 <style lang="scss" scoped>
