@@ -51,6 +51,7 @@
 </template>
 
 <script setup>
+import {closeResource} from '@/api/resource';
 import {grantNamesByID} from '@/api/sc/traits/access';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
