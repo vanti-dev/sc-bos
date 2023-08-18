@@ -35,7 +35,7 @@
             outlined
             style="min-width: 100px; width: 100%; max-width: 170px"/>
       </v-row>
-      <ListView v-if="viewType === 'list'" :device-names="deviceNames"/>
+      <ListView v-if="viewType === 'list'" :device-names="deviceQuery"/>
       <MapView v-else :device-names="deviceNames" :floor="filterFloor === 'All' ? 'Ground Floor' : filterFloor"/>
     </content-card>
   </v-container>
@@ -64,8 +64,9 @@ const props = defineProps({
 
 const viewType = ref('list');
 const hiddenOnMap = ref(false);
+const search = ref('');
 
-const {floorList, filterFloor, search, devicesData} = useDevices(props);
+const {floorList, filterFloor, devicesData} = useDevices(props);
 
 const formattedFloorList = computed(() => {
   return floorList.value.filter((floor) => !['All', '< no floor >'].includes(floor));
@@ -81,7 +82,21 @@ const deviceNames = computed(() => {
   });
 });
 
-// Remove severity filter when switching to map view
+const deviceQuery = computed(() => {
+  if (search.value.toLowerCase()) {
+    return deviceNames.value.filter((device) => {
+      return (
+        device.name.toLowerCase().includes(search.value.toLowerCase()) ||
+        device.title.toLowerCase().includes(search.value.toLowerCase()) ||
+        device.source.toLowerCase().includes(search.value.toLowerCase())
+      );
+    });
+  } else {
+    return deviceNames.value;
+  }
+});
+
+// Remove search when switching to map view
 watch(
     viewType,
     (newVal) => {
