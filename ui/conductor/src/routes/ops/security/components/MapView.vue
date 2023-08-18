@@ -6,13 +6,20 @@
           <!-- eslint-disable vue/no-v-html -->
           <div v-html="activeFloorPlan" ref="floorPlanSVG" :style="{ '--map-scale': scale }"/>
           <!-- eslint-enable vue/no-v-html -->
-          <div v-if="showMenu">
-            <div :style="calculateAnchorStyle">
-              <AccessPointCard
-                  :device="findDevice(elementWithMenu?.deviceId)"
-                  style="position: relative; top: 100%; transform-origin: 0 0"
-                  :style="`transform: scale(${1 / scale})`"
-                  @onClose="closeMenu"/>
+          <div v-if="showMenu" style="pointer-events: none">
+            <div :style="calculateAnchorStyle" style="pointer-events: none">
+              <span
+                  style="position: relative; top: 100%; transform-origin: 0 0; pointer-events: auto"
+                  :style="{
+                    transform: `scale(${1 / scale})`,
+                  }">
+                <HotPoint v-slot="{ live }" :item-key="elementWithMenu?.deviceId">
+                  <AccessPointCard
+                      :device="findDevice(elementWithMenu?.deviceId)"
+                      :paused="!live"
+                      @onClose="closeMenu"/>
+                </HotPoint>
+              </span>
             </div>
           </div>
         </Stack>
@@ -28,6 +35,7 @@ import {useAppConfigStore} from '@/stores/app-config';
 import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
 import Stack from '@/routes/ops/security/components/Stack.vue';
 import AccessPointCard from './AccessPointCard.vue';
+import HotPoint from '@/components/HotPoint.vue';
 
 import {useStatusBarStore} from '@/routes/ops/security/components/access-point-card/statusBarStore';
 import {convertSVGToPercentage} from '@/util/svg';
@@ -52,7 +60,7 @@ const floorPlanSVG = ref(null);
 const groupingContainer = ref(null);
 
 const showMenu = ref(false);
-let elementWithMenu = reactive({
+const elementWithMenu = reactive({
   deviceId: null,
   source: null,
   target: null,
@@ -129,7 +137,12 @@ const fetchFloorPlan = async (selectedFloor) => {
 // Close the menu with X button click
 const closeMenu = () => {
   showMenu.value = false;
-  elementWithMenu = {deviceId: null, source: null, target: null};
+  showClose.value = false;
+  elementWithMenu.deviceId = null;
+  elementWithMenu.source = null;
+  elementWithMenu.target = null;
+  elementWithMenu.x = 0;
+  elementWithMenu.y = 0;
 };
 
 /**
@@ -169,9 +182,7 @@ const traverseAndCollectIds = (element) => {
  * @return {{name: string, source: string} | undefined}
  */
 const findDevice = (element) => {
-  if (element.id) {
-    return props.deviceNames.find((deviceName) => deviceName.name.toLowerCase() === element.id.toLowerCase());
-  } else return props.deviceNames.find((deviceName) => deviceName.name.toLowerCase() === element.toLowerCase());
+  return props.deviceNames.find((deviceName) => deviceName.name.toLowerCase().includes(element.toLowerCase()));
 };
 
 /**
@@ -198,7 +209,7 @@ const handleClick = (event) => {
   }
 
   // Does the device sends a signal?
-  const device = findDevice(clickedElement);
+  const device = findDevice(clickedElement.id);
   if (!device) {
     return; // Do not proceed if the device does not send a signal
   }
@@ -209,8 +220,8 @@ const handleClick = (event) => {
   elementWithMenu.source = device.source;
 
   // Show menu
-  showMenu.value = true;
   showClose.value = true;
+  showMenu.value = true;
 };
 
 /**
@@ -261,12 +272,15 @@ watch(
 );
 
 // Watch for changes in the showClose prop then close menu
-watch(showClose, (newValue) => {
-  if (!newValue) {
-    closeMenu();
-  }
-});
-
+watch(
+    showClose,
+    (newValue, oldValue) => {
+      if (newValue === false) {
+        closeMenu();
+      }
+    },
+    {immediate: true}
+);
 </script>
 
 <style lang="scss" scoped>

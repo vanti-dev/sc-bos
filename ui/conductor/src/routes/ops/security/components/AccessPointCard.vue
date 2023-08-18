@@ -1,5 +1,12 @@
 <template>
-  <v-card color="#40464D" elevation="0" dark min-width="420px" height="100%" min-height="240px" max-height="240px">
+  <v-card
+      color="#40464D"
+      elevation="0"
+      dark
+      min-width="420px"
+      height="100%"
+      min-height="240px"
+      max-height="240px">
     <WithAccess v-slot="{ resource }" :name="props.device.name" :paused="props.paused">
       <Access v-bind="resource" :device="props.device"/>
     </WithAccess>
