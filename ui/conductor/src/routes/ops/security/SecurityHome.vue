@@ -85,7 +85,7 @@ const deviceNames = computed(() => {
 });
 
 const formattedFloorList = computed(() => {
-  if (viewType.value === 'list') return floorList.value.filter((floor) => !['All', '< no floor >'].includes(floor));
+  if (viewType.value === 'list') return floorList.value;
   else return config.siteFloorPlans.map((floor) => floor.name);
 });
 
@@ -108,16 +108,14 @@ watch(
     viewType,
     (newVal) => {
       if (newVal === 'map') {
+        filterFloor.value = 'Ground Floor';
         hiddenOnMap.value = true;
       } else {
+        filterFloor.value = 'All';
         hiddenOnMap.value = false;
         showClose.value = false;
       }
     },
     {immediate: true}
 );
-
-onMounted(() => {
-  filterFloor.value = 'Ground Floor';
-});
 </script>
