@@ -3,9 +3,10 @@ package proxy
 import (
 	"context"
 	"crypto/tls"
-	"github.com/vanti-dev/sc-bos/pkg/system/proxy/lighttest"
 	"strings"
 	"time"
+
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/lighttest"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -26,9 +27,9 @@ import (
 
 const Name = "proxy"
 
-func Factory() system.Factory {
+func Factory(holder *lighttest.Holder) system.Factory {
 	return &factory{
-		server: &lighttest.Holder{},
+		server: holder,
 	}
 }
 
@@ -47,10 +48,6 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 		logger:    services.Logger.Named("proxy"),
 	}
 	return service.New(service.MonoApply(s.applyConfig))
-}
-
-func (f *factory) AddSupport(supporter node.Supporter) {
-	supporter.Support(node.Api(f.server), node.Clients(gen.WrapLightingTestApi(f.server)))
 }
 
 type System struct {
