@@ -4,22 +4,19 @@
       <template #default="{ scale }">
         <Stack ref="groupingContainer">
           <!-- eslint-disable vue/no-v-html -->
-          <div v-html="activeFloorPlan" ref="floorPlanSVG" :style="{ '--map-scale': scale }"/>
+          <div v-html="activeFloorPlan" :id="props.floor" ref="floorPlanSVG" :style="{ '--map-scale': scale }"/>
           <!-- eslint-enable vue/no-v-html -->
           <div v-if="showMenu" style="pointer-events: none">
             <div :style="calculateAnchorStyle" style="pointer-events: none">
-              <span
+              <HotPoint
+                  v-slot="{ live }"
+                  :item-key="elementWithMenu?.deviceId"
                   style="position: relative; top: 100%; transform-origin: 0 0; pointer-events: auto"
                   :style="{
                     transform: `scale(${1 / scale})`,
                   }">
-                <HotPoint v-slot="{ live }" :item-key="elementWithMenu?.deviceId">
-                  <AccessPointCard
-                      :device="findDevice(elementWithMenu?.deviceId)"
-                      :paused="!live"
-                      @onClose="closeMenu"/>
-                </HotPoint>
-              </span>
+                <AccessPointCard :device="findDevice(elementWithMenu?.deviceId)" :paused="!live" @onClose="closeMenu"/>
+              </HotPoint>
             </div>
           </div>
         </Stack>
