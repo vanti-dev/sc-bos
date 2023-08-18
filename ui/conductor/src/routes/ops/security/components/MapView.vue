@@ -4,7 +4,7 @@
       <template #default="{ scale }">
         <Stack ref="groupingContainer">
           <!-- eslint-disable vue/no-v-html -->
-          <div v-html="activeFloorPlan" :id="props.floor" ref="floorPlanSVG" :style="{ '--map-scale': scale }"/>
+          <div v-html="activeFloorPlan" ref="floorPlanSVG" :style="{ '--map-scale': scale }"/>
           <!-- eslint-enable vue/no-v-html -->
           <div v-if="showMenu" style="pointer-events: none">
             <div :style="calculateAnchorStyle" style="pointer-events: none">
@@ -246,7 +246,7 @@ watch(
     () => props.floor,
     (newValue, oldValue) => {
       if (newValue !== oldValue) {
-        floorPlanSVG.value = document.getElementById(newValue);
+        closeMenu();
         fetchFloorPlan(newValue).then((response) => {
           response.text().then((text) => {
             activeFloorPlan.value = text;
