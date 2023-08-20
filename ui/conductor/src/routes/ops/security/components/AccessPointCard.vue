@@ -15,6 +15,7 @@
             :loading="accessResource.loading || statusResource.loading"
             :device="props.device"
             :show-close="props.showClose"
+            :paused="props.paused"
             @click:close="emit('click:close')"/>
       </WithStatus>
     </WithAccess>

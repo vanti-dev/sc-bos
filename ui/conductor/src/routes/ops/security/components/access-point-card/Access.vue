@@ -56,11 +56,12 @@ import {grantNamesByID} from '@/api/sc/traits/access';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
+import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 
 import Status from '@/routes/ops/security/components/access-point-card/StatusBar.vue';
 import {useStatus} from '@/routes/ops/security/components/access-point-card/useStatus';
 import {useHubStore} from '@/stores/hub';
-import {computed, onUnmounted, reactive, watch} from 'vue';
+import {computed, onBeforeUnmount, reactive} from 'vue';
 
 const props = defineProps({
   accessAttempt: {
@@ -84,6 +85,7 @@ const props = defineProps({
     default: false
   }
 });
+const notifications = useNotifications();
 const emit = defineEmits(['click:close']);
 
 const {alertMetadata} = useAlertMetadata();
@@ -120,14 +122,13 @@ const query = reactive({
 });
 
 const alerts = reactive(useAlertsApi(hubName, query));
-
-watch(() => props.device, () => {
-  if (!props.device.length) {
-    alerts.pageSize = 0;
-  } else alerts.pageSize = 5;
-}, {immediate: true, deep: true});
+alerts.pageSize = 1;
 
 const alert = computed(() => {
+  if (!alerts.allItems) {
+    return {};
+  }
+
   const alertData = alerts.allItems[0];
 
   if (!alertData) {
@@ -153,12 +154,12 @@ const user = computed(() => {
   };
 });
 
-onUnmounted(() => {
-  closeResource(alerts.pullResource);
-  closeResource(alerts.listPageTracker);
+onBeforeUnmount(() => {
+  closeResource(alertMetadata.value);
   closeResource(props.accessAttempt);
   closeResource(props.statusLog);
-  closeResource(alertMetadata);
+  closeResource(alerts.listPageTracker);
+  closeResource(alerts.pullResource);
 });
 </script>
 <style lang="scss" scoped>
