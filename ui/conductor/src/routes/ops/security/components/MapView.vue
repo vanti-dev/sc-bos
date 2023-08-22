@@ -1,169 +1,166 @@
 <template>
-  <v-container fluid class="mb-0 pb-0 floor-plan__container">
-    <PinchZoom @click="handleClick(event)">
+  <v-container fluid class="mb-0 mt-0 pb-0 pt-0 floor-plan__container">
+    <PinchZoom @click="handleClick">
       <template #default="{ scale }">
-        <!-- eslint-disable-next-line vue/no-v-html -->
-        <div v-html="activeFloorPlan" :id="props.floor" ref="svgContainer" :style="{ '--map-scale': scale }"/>
-        <div>
-          <v-menu
-              v-model="showMenu"
-              absolute
-              bottom
-              :position-x="elementWithMenu.x"
-              :position-y="elementWithMenu.y"
-              transition="fade-transition-v2">
-            <template #activator="{ on }">
-              <div v-bind="on" ref="menuActivator"/>
-            </template>
-            <v-tooltip bottom>
-              <template #activator="{ on, attrs }">
-                <v-btn
-                    class="mt-2 elevation-4"
-                    color="grey darken-2"
-                    fab
-                    x-small
-                    style="top: -5px; left: 91.5%"
-                    v-bind="attrs"
-                    v-on="on"
-                    @click="closeMenu">
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
-              </template>
-              <span>Close</span>
-            </v-tooltip>
-            <AccessPointCard/>
-          </v-menu>
-        </div>
+        <Stack ref="groupingContainer">
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div v-html="activeFloorPlan" ref="floorPlanSVG" :style="{ '--map-scale': scale }"/>
+          <div v-if="showMenu" style="pointer-events: none">
+            <div :style="calculateAnchorStyle" style="pointer-events: none">
+              <HotPoint
+                  v-slot="{ live }"
+                  :item-key="elementWithMenu?.device?.name"
+                  style="position: relative; top: 100%; transform-origin: 0 0; pointer-events: auto"
+                  :style="{
+                    transform: `scale(${1 / scale})`,
+                  }">
+                <AccessPointCard :device="elementWithMenu?.device" :paused="!live" @click:close="closeMenu" show-close/>
+              </HotPoint>
+            </div>
+          </div>
+          <div class="door-status-tracker">
+            <HotPoint
+                v-slot="{live}"
+                v-for="door in doors"
+                :key="door.name"
+                :item-key="door.name"
+                class="door-status-tracker__item"
+                :style="door.style">
+              <WithAccess :name="door.name" :paused="!live" v-slot="{resource: accessResource}">
+                <WithStatus :name="door.name" :paused="!live" v-slot="{resource: statusResource}">
+                  <door-color
+                      :name="door.name"
+                      :access-attempt="accessResource.value"
+                      :status-log="statusResource.value"
+                      class="door-status-tracker__item"
+                      @update="setDoorColor"/>
+                </WithStatus>
+              </WithAccess>
+            </HotPoint>
+          </div>
+        </Stack>
       </template>
     </PinchZoom>
   </v-container>
 </template>
 
 <script setup>
-import {onMounted, onUnmounted, ref, watch} from 'vue';
-import {useAppConfigStore} from '@/stores/app-config';
-
+import HotPoint from '@/components/HotPoint.vue';
+import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
+import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
+import DoorColor from '@/routes/ops/security/components/DoorColor.vue';
+import Stack from '@/routes/ops/security/components/Stack.vue';
 import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
+import {useAppConfigStore} from '@/stores/app-config';
+import {convertSVGToPercentage} from '@/util/svg';
+import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, set, watch} from 'vue';
 import AccessPointCard from './AccessPointCard.vue';
 
-// ------------------- Props ------------------- //
+// -------------- Props -------------- //
 const props = defineProps({
+  deviceNames: {
+    type: Array,
+    default: () => []
+  },
   floor: {
     type: String,
-    default: 'level0'
+    default: 'Ground Floor'
   }
 });
 
-// ------------------- Data ------------------- //
+// -------------- Data & Reactive References -------------- //
 const {config} = useAppConfigStore();
-
+const showClose = ref(false);
 const activeFloorPlan = ref('');
 const floorPlanSVG = ref(null);
-const elementWithMenu = ref({
-  target: '' | null,
+const groupingContainer = ref(null);
+
+const showMenu = ref(false);
+const elementWithMenu = reactive({
+  device: null,
+  source: null,
+  target: null,
   x: 0,
   y: 0
 });
-const showMenu = ref(false);
-const closeMenu = () => {
-  showMenu.value = false;
-  elementWithMenu.value = {
-    target: null,
-    x: 0,
-    y: 0
+
+// -------------- Computed Properties -------------- //
+const svgVersion = ref(0);
+const getSvgEl = () => {
+  svgVersion.value; // register interest in this ref
+  const svgContainer = floorPlanSVG.value;
+  if (!svgContainer) {
+    return undefined;
+  }
+  const svgEl = svgContainer?.querySelector('svg');
+  if (!svgEl) {
+    return undefined;
+  }
+  return svgEl;
+};
+const getSVGViewBox = () => {
+  const svgEl = getSvgEl();
+  if (!svgEl) {
+    return undefined;
+  }
+  const [x, y, w, h] = svgEl.getAttribute('viewBox').split(' ');
+
+  return {
+    x: parseInt(x),
+    y: parseInt(y),
+    width: parseInt(w),
+    height: parseInt(h)
   };
 };
-const groupedIds = ref({});
 
-// ------------------- Methods ------------------- //
+const getClickedRectBBox = computed(() => {
+  if (!elementWithMenu.target) {
+    return {};
+  }
 
+  return elementWithMenu.target.getBBox();
+});
+
+const calculateAnchorStyle = computed(() => {
+  if (!elementWithMenu.target || !groupingContainer.value) {
+    return {};
+  }
+
+  // Get the bounding rectangle of the SVG element
+  const clickedRect = getClickedRectBBox.value;
+  const viewBox = getSVGViewBox();
+  if (!viewBox) {
+    return {};
+  }
+
+  const percentage = convertSVGToPercentage(viewBox, clickedRect);
+
+  const x = percentage.x * 100;
+  const y = percentage.y * 100;
+  const width = percentage.width * 100;
+  const height = percentage.height * 100;
+
+  return {
+    width: `${width}%`,
+    height: `${height}%`,
+    left: `${x}%`,
+    top: `${y + 1}%`,
+    position: 'relative'
+  };
+});
+
+// -------------- Methods -------------- //
 /**
- * Collecting all the ids of the elements in the svg
- * and grouping them by the parent group id
+ * Fetch function to get the floor plan svg
  *
- * @param {HTMLElement} element
+ * @param {string} selectedFloor
+ * @return {Promise<Response>}
  */
-const traverseAndCollectIds = (element) => {
-  const svgContainer = element.id === props.floor;
-  const svgGroup = element.tagName === 'g';
-  let group;
+const fetchFloorPlan = async (selectedFloor) => {
+  const floorPlan = config.siteFloorPlans.find((floorPlan) => floorPlan.name === selectedFloor);
 
-  if (!svgContainer && element.id) {
-    group = svgGroup ? element.id : element.closest('g')?.id;
-    if (group) {
-      if (!groupedIds.value[group]) {
-        groupedIds.value[group] = [];
-      }
-    }
-  }
-
-  if (!svgContainer && !svgGroup && element.id && group === element.closest('g')?.id) {
-    groupedIds.value[group].push(element.id);
-  }
-
-  const children = element.children;
-  for (let i = 0; i < children.length; i++) {
-    traverseAndCollectIds(children[i]);
-  }
-};
-
-/**
- *
- * @param {HTMLElement} element
- * @return {HTMLElement|undefined}
- */
-function findDeepestChild(element) {
-  let deepestChild = element;
-
-  while (deepestChild.lastElementChild) {
-    deepestChild = deepestChild.lastElementChild;
-  }
-
-  if (deepestChild.id) {
-    return deepestChild;
-  } else return;
-}
-
-/**
- *
- * @param {MouseEvent} event
- */
-function handleClick(event) {
-  // Find deepest child
-  const clickedElement = event.target;
-  elementWithMenu.value.target = findDeepestChild(clickedElement);
-  // elementWithMenu.value.target = findDeepestChild(clickedElement);
-
-  // If no child found, return
-  if (!elementWithMenu.value.target) {
-    return;
-  }
-
-  // Reset menu state
-  elementWithMenu.value.target = null;
-  elementWithMenu.value.x = 0;
-  elementWithMenu.value.y = 0;
-
-  // Calculate menu position
-  const clickedRect = clickedElement.getBoundingClientRect();
-
-  // calculate position to the left
-  elementWithMenu.value.x = clickedRect.left - Math.floor((clickedRect.left / 100) * 25);
-  // calculate position to the bottom
-  elementWithMenu.value.y = clickedRect.top + clickedRect.height * 1.5;
-
-  // Show/Hide menu
-  showMenu.value = true;
-}
-
-// -------------------- //
-// fetch function to get the floor plan svg
-const fetchFloorPlan = async () => {
-  // TODO: change level0 to props.floor
-  const floorPlan = config.siteFloorPlans.find((floorPlan) => floorPlan.name === 'level0');
-
-  // fetch the svg
-  // add ?raw to the end of the url to get the raw svg
+  // Fetch the floor plan svg
+  // Don't forget to add ?raw to the end of the url to get the raw svg (string injected into v-html)
   const response = await fetch(floorPlan.svgPath + '?raw', {
     headers: {
       'Content-Type': 'image/svg+xml'
@@ -172,44 +169,161 @@ const fetchFloorPlan = async () => {
   return response;
 };
 
+// Close the menu with X button click
+const closeMenu = () => {
+  showMenu.value = false;
+  showClose.value = false;
+  elementWithMenu.device = null;
+  elementWithMenu.source = null;
+  elementWithMenu.target = null;
+  elementWithMenu.x = 0;
+  elementWithMenu.y = 0;
+};
+
+/**
+ * Find the device name in the props.deviceNames array
+ *
+ * @param {string} needle
+ * @return {{name: string, source: string} | undefined}
+ */
+const findDevice = (needle) => {
+  return props.deviceNames.find((deviceName) => deviceName.name.toLowerCase().endsWith('/' + needle.toLowerCase()));
+};
+
+/**
+ *
+ * @param {PointerEvent} event
+ */
+const handleClick = (event) => {
+  const clickedElement = event.target.closest('[id]');
+
+  // Find the parent group of the clicked element
+  const parentGroup = clickedElement.closest('g[id^="doors_"]');
+  if (!parentGroup) {
+    return;
+  }
+
+  // Does the device sends a signal?
+  const device = findDevice(clickedElement.id);
+  if (!device) {
+    return; // Do not proceed if the device does not send a signal
+  }
+
+  // Collect all the ids of the elements in the svg
+  elementWithMenu.target = clickedElement;
+  elementWithMenu.device = device;
+  elementWithMenu.source = device.source;
+
+  // Show menu
+  showClose.value = true;
+  showMenu.value = true;
+};
+
+// doors contains door names, location on the map, and the svg element.
+const doors = computed(() => {
+  if (!floorPlanSVG.value) {
+    return [];
+  }
+
+  const viewBox = getSVGViewBox();
+  if (!viewBox) {
+    return [];
+  }
+  const svgEl = getSvgEl();
+  if (!svgEl) {
+    return [];
+  }
+  return props.deviceNames
+      .map((device) => {
+        const localId = device.name.split('/').pop();
+        const door = svgEl.querySelector(`#${localId}`);
+        if (!door) return undefined;
+
+        const elRect = door.getBBox();
+        const percentage = convertSVGToPercentage(viewBox, elRect);
+
+        const inset = 0.02;
+        const x = (percentage.x - inset) * 100;
+        const y = (percentage.y - inset) * 100;
+        const width = (percentage.width + 2 * inset) * 100;
+        const height = (percentage.height + 2 * inset) * 100;
+        return {
+          name: device.name,
+          el: door,
+          style: {
+            width: `${width}%`,
+            height: `${height}%`,
+            left: `${x}%`,
+            top: `${y + 1}%`
+          }
+        };
+      })
+      .filter(d => Boolean(d));
+});
+// doorColors contains the intended colour for each door.
+// We keep this as a data structure instead of just setting the value in case we know what colour it should be
+// before the svg is loaded.
+const doorColors = ref({});
+const setDoorColor = ({name, color}) => {
+  set(doorColors.value, name, color);
+};
+
+// watch for changes in the colours and svg and invoke dom actions to update the svg.
+watch([doorColors, doors], () => {
+  doors.value.forEach(({el, name}) => {
+    const color = doorColors.value[name] ?? 'grey';
+    if (color && el) {
+      el.removeAttribute('style');
+      el.setAttribute('class', color);
+    }
+  });
+}, {deep: true});
+
+/**
+ * Add or remove event listeners
+ *
+ * @param {string} action
+ */
+const manageEventListeners = (action) => {
+  floorPlanSVG.value[action + 'EventListener']('click', handleClick);
+};
+
+// -------------- Lifecycle Hooks -------------- //
+onMounted(() => {
+  manageEventListeners('add');
+});
+
+onBeforeUnmount(() => {
+  manageEventListeners('remove');
+});
+
+// -------------- Watchers -------------- //
 // Watch for changes in the floor prop then
 // fetch the floor plan svg
 watch(
     () => props.floor,
     (newValue, oldValue) => {
       if (newValue !== oldValue) {
-        fetchFloorPlan().then((response) => {
+        closeMenu();
+        fetchFloorPlan(newValue).then((response) => {
           response.text().then((text) => {
             activeFloorPlan.value = text;
+            nextTick(() => {
+              svgVersion.value++;
+            });
           });
         });
       }
     },
-    {immediate: true}
+    {immediate: true, deep: true, flush: 'sync'}
 );
-
-// ------------------- Lifecycle hooks ------------------- //
-
-onMounted(() => {
-  floorPlanSVG.value = document.getElementById(props.floor);
-  floorPlanSVG.value.addEventListener('click', handleClick);
-  traverseAndCollectIds(floorPlanSVG.value);
-});
-
-onUnmounted(() => {
-  floorPlanSVG.value.removeEventListener('click', handleClick);
-});
 </script>
 
 <style lang="scss" scoped>
-.v-menu__content {
-  box-shadow: none;
-}
-
 .floor-plan__container {
   position: relative;
   /* fill the container, minus the top bar and sc status bar */
-  height: calc(100vh - 320px);
+  height: calc(100vh - 215px);
   overflow: hidden;
 }
 
@@ -218,27 +332,36 @@ onUnmounted(() => {
   height: 100%;
 }
 
-/**
- * This is a custom transition for the menu card above,
- * because the default one is not working properly - on close flies to the top-left corner
-*/
-.fade-transition-v2 {
-  &-leave-active {
-    opacity: 0;
-  }
+.pinch-zoom {
+  /* defaults, overridden in the template & deviceMarkers() */
+  --map-scale: 1;
+  --translate-x: 0;
+  --translate-y: 0;
+}
 
-  &-enter-active {
-    transition: opacity 0.2s ease-in-out;
-  }
+.floor-plan__container ::v-deep path[id],
+.floor-plan__container ::v-deep rect[id] {
+  cursor: pointer;
+}
 
-  &-leave,
-  &-leave-to {
-    transition: opacity 0s ease-in-out;
-  }
+.door-status-tracker {
+  position: relative;
+  pointer-events: none;
+}
 
-  &-enter,
-  &-leave-to {
-    opacity: 0;
-  }
+.door-status-tracker__item {
+  position: absolute;
+}
+
+::v-deep(svg .success) {
+  fill: var(--v-success-base);
+}
+
+::v-deep(svg .warning) {
+  fill: var(--v-warning-base);
+}
+
+::v-deep(svg .error) {
+  fill: var(--v-error-base);
 }
 </style>

@@ -8,7 +8,7 @@ import {timestampToDate} from '@/api/convpb';
 import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource';
 import {listAlerts, pullAlerts} from '@/api/ui/alerts';
 import {toValue} from '@/util/vue';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import {computed, onMounted, onBeforeUnmount, reactive, ref, watch} from 'vue';
 
 /**
  * @param {MaybeRefOrGetter<string>} name
@@ -101,7 +101,9 @@ export default function(name, query) {
 
   const mounted = ref(false);
   onMounted(() => (mounted.value = true));
-  onUnmounted(() => (mounted.value = false));
+  onBeforeUnmount(() => {
+    mounted.value = false;
+  });
 
   const hasFetchedAnyPages = ref(false);
   const shouldFetchMorePages = computed(() => {

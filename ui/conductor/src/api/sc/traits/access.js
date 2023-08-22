@@ -2,7 +2,7 @@ import {fieldMaskFromObject, setProperties} from '@/api/convpb';
 import {clientOptions} from '@/api/grpcweb';
 import {pullResource, setValue, trackAction} from '@/api/resource';
 import {AccessApiPromiseClient} from '@sc-bos/ui-gen/proto/access_grpc_web_pb';
-import {GetLastAccessAttemptRequest, PullAccessAttemptsRequest} from '@sc-bos/ui-gen/proto/access_pb';
+import {AccessAttempt, GetLastAccessAttemptRequest, PullAccessAttemptsRequest} from '@sc-bos/ui-gen/proto/access_pb';
 
 /**
  * @param {PullAccessAttemptsRequest.AsObject} request
@@ -33,6 +33,16 @@ export function getLastAccessAttempt(request, tracker) {
     return api.getLastAccessAttempt(getLastAccessAttemptRequestFromObject(request));
   });
 }
+
+/**
+ * A map from id to name for AccessAttempt.Grant.
+ *
+ * @type {Object<number, string>}
+ */
+export const grantNamesByID = Object.entries(AccessAttempt.Grant).reduce((all, [name, id]) => {
+  all[id] = name;
+  return all;
+}, {});
 
 /**
  * @param {string} endpoint
