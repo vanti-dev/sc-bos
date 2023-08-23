@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import * as panzoom from '@/thirdparty/panzoom/panzoom.js';
+import panzoom from '@/plugins/panzoomWrapper';
 
 // names of events we support
 const names = ['start', 'change', 'zoom', 'end', 'pan', 'reset'];
