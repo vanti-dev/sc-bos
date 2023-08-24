@@ -1,0 +1,6 @@
+{
+  "staticHosting": [
+    {"filePath": "/usr/share/sc-bos/conductor", "path": "/"}
+  ],
+  "dataDir": "/var/sc-bos"
+}

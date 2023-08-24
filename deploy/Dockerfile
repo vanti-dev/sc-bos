@@ -14,11 +14,12 @@ COPY go.mod go.sum ./
 COPY cmd ./cmd
 COPY internal ./internal
 COPY pkg ./pkg
-RUN go build -o areacontroller ./cmd/bos
+RUN go build -o sc-bos ./cmd/bos
 
 FROM docker.io/alpine:3.18
 
-COPY --from=ui-build /ui/conductor/dist /static
-COPY --from=ac-build /work/areacontroller /areacontroller
+COPY --from=ui-build /ui/conductor/dist /usr/share/sc-bos/conductor
+COPY --from=ac-build /work/sc-bos /bin/sc-bos
+COPY deploy/default-system-config.json /etc/sc-bos/system.json
 
-ENTRYPOINT ["/areacontroller"]
+ENTRYPOINT ["/bin/sc-bos"]
