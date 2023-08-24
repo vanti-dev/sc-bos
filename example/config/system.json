@@ -45,6 +45,15 @@
         "uri": "postgres://postgres@localhost:5432/smart_core",
         "passwordFile": "./.data/secrets/postgres-password"
       }
-    }
+    },
+    "listenHTTPS": ":8443",
+    "cors": {
+      "debugMode": true,
+      "corsOrigins": ["https://localhost:8443"]
+    },
+    "staticHosting": [{
+      "filePath": "./ui/conductor/dist",
+      "path": "/"
+    }]
   }
 }
