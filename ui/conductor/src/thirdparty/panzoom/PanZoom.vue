@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import panzoom from '@/plugins/panzoomWrapper';
+import panzoom from 'panzoom-package'; // Locally installed panzoom-package (see the ui folder - panzoom-package)
 
 // names of events we support
 const names = ['start', 'change', 'zoom', 'end', 'pan', 'reset'];
