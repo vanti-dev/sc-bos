@@ -10,7 +10,8 @@
 </template>
 
 <script>
-import panzoom from 'panzoom-package'; // Locally installed panzoom-package (see the ui folder - panzoom-package)
+// Locally installed panzoom-package (see the ui folder - panzoom-package)
+import panzoom from '@sc-bos/panzoom-package';
 
 // names of events we support
 const names = ['start', 'change', 'zoom', 'end', 'pan', 'reset'];

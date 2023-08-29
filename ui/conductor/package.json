@@ -9,6 +9,7 @@
     "lint": "eslint . --ext .vue,.js --fix"
   },
   "dependencies": {
+    "@sc-bos/panzoom-package": "file:../panzoom-package",
     "@sc-bos/ui-gen": "1.0.0-beta.11",
     "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.42",
     "chart.js": "^4.3.0",
@@ -18,7 +19,6 @@
     "google-protobuf": "^3.21.0",
     "grpc-web": "^1.4.2",
     "keycloak-js": "^19.0.1",
-    "panzoom-package": "file:../panzoom-package",
     "pinia": "^2.0.17",
     "vue": "2.7",
     "vue-chartjs": "^5.2.0",
