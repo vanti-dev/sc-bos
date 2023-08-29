@@ -1,7 +1,7 @@
 {
-"name": "panzoom-package",
-"version": "1.0.0",
-"main": "panzoom.js",
-"scripts": {},
-"dependencies": {}
+  "name": "@sc-bos/panzoom-package",
+  "version": "1.0.0",
+  "main": "panzoom.js",
+  "scripts": {},
+  "dependencies": {}
 }
