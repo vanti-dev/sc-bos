@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/lighttest"
+
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -25,8 +27,19 @@ import (
 
 const Name = "proxy"
 
-var Factory = system.FactoryFunc(func(services system.Services) service.Lifecycle {
+func Factory(holder *lighttest.Holder) system.Factory {
+	return &factory{
+		server: holder,
+	}
+}
+
+type factory struct {
+	server *lighttest.Holder
+}
+
+func (f *factory) New(services system.Services) service.Lifecycle {
 	s := &System{
+		holder:    f.server,
 		self:      services.Node,
 		hub:       services.CohortManager,
 		ignore:    []string{services.GRPCEndpoint}, // avoid infinite recursion
@@ -35,7 +48,7 @@ var Factory = system.FactoryFunc(func(services system.Services) service.Lifecycl
 		logger:    services.Logger.Named("proxy"),
 	}
 	return service.New(service.MonoApply(s.applyConfig))
-})
+}
 
 type System struct {
 	self      *node.Node
@@ -44,6 +57,7 @@ type System struct {
 	tlsConfig *tls.Config
 	announcer node.Announcer
 	logger    *zap.Logger
+	holder    *lighttest.Holder
 }
 
 // applyConfig runs this system based on the given config.
@@ -66,6 +80,9 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	go s.retry(ctx, "announceNodes", func(ctx context.Context) (task.Next, error) {
 		return s.announceNodes(ctx, hubConn, ignore...)
 	})
+
+	s.holder.Fill(gen.NewLightingTestApiClient(hubConn))
+
 	return nil
 }
 
