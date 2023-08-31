@@ -197,6 +197,10 @@ func (m *Monitor) Poll(ctx context.Context) error {
 		}
 
 		problem := &gen.StatusLog_Problem{Name: fmt.Sprintf("%s:%s", o.Name, o.Test)}
+		problemLevel := o.Level
+		if problemLevel == 0 {
+			problemLevel = gen.StatusLog_REDUCED_FUNCTION
+		}
 
 		level, desc := SummariseRequestErrors(o.Test, reqs, errs)
 		if o.Level != 0 && level == gen.StatusLog_REDUCED_FUNCTION {
@@ -207,7 +211,7 @@ func (m *Monitor) Poll(ctx context.Context) error {
 
 		switch {
 		case hasValue && !nominalValue(valueVal, o.NominalValue):
-			problem.Level = level
+			problem.Level = problemLevel
 			problem.Description = fmt.Sprintf("read value %v: want %v, got %v", o.Test, o.NominalValue, valueVal)
 		case hasStatus && (reliabilityVal != reliability.NoFaultDetected || eventStateVal != eventstate.Normal):
 			var desc strings.Builder
@@ -235,7 +239,7 @@ func (m *Monitor) Poll(ctx context.Context) error {
 				writeComma()
 				fmt.Fprintf(&desc, "limits [%v,%v]", lowLimitVal, highLimitVal)
 			}
-			problem.Level = level
+			problem.Level = problemLevel
 			problem.Description = desc.String()
 		case !hasLimits:
 			// m.Logger.Debug("device status",
