@@ -167,6 +167,10 @@ func (s *System) newCA(cfg config.Root) pki.Source {
 	}
 
 	selfSignedCA := pki.LazySource(func() (pki.Source, error) {
+		name := s.name
+		if name == "" {
+			name = "hub-ca"
+		}
 		key, _, err := pki.LoadOrGeneratePrivateKey(filepath.Join(s.dataDir, "hub-self-signed-ca.key.pem"), s.logger)
 		if err != nil {
 			return nil, err
@@ -174,11 +178,12 @@ func (s *System) newCA(cfg config.Root) pki.Source {
 		return pki.CacheSource(
 			pki.SelfSignedSourceT(key,
 				&x509.Certificate{
-					Subject:               pkix.Name{CommonName: "hub-ca"},
+					Subject:               pkix.Name{CommonName: name},
 					KeyUsage:              x509.KeyUsageCertSign,
 					IsCA:                  true,
 					BasicConstraintsValid: true,
 				},
+				pki.WithExpireAfter(10*365*24*time.Hour),
 			),
 			expire.AfterProgress(0.5),
 			pki.WithFSCache(
