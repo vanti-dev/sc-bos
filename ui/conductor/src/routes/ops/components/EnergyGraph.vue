@@ -67,6 +67,8 @@ const showConversion = ref(false);
 const carbonIntensity = useCarbonIntensity();
 const gramsOfCO2PerKWh = ref(86);
 const kwhToGramsOfCO2 = (date) => {
+  date = date + 24 * 60 * 60 * 1000;
+
   if (!carbonIntensity.last24Hours) {
     return gramsOfCO2PerKWh.value;
   }
@@ -88,8 +90,12 @@ const kwhToGramsOfCO2 = (date) => {
 const yAxisUnit = computed(() => {
   return showConversion.value ? 'Grams of CO₂ / hour' : 'kW';
 });
-const metered = useMeterHistory(() => props.metered, periodStart, periodEnd, () => props.span);
-const generated = useMeterHistory(() => props.generated, periodStart, periodEnd, () => props.span);
+
+const tempPeriodStart = computed(() => new Date(periodStart.value - 24 * 60 * 60 * 1000));
+const tempPeriodEnd = computed(() => new Date(periodEnd.value - 24 * 60 * 60 * 1000));
+
+const metered = useMeterHistory(() => props.metered, tempPeriodStart, tempPeriodEnd, () => props.span);
+const generated = useMeterHistory(() => props.generated, tempPeriodStart, tempPeriodEnd, () => props.span);
 const co2Metered = computed(() => {
   return metered.seriesData.value.map((value, index) => {
     return {
@@ -254,6 +260,7 @@ const chartOptions = computed(() => {
           // Format the tooltip title to Month Date, 24 Hour:Minute
           title: (data) => {
             const date = new Date(data[0].parsed.x);
+            date.setTime(date.getTime() + 24 * 60 * 60 * 1000);
             const title = date.toLocaleString('en-GB', {
               month: 'short',
               day: 'numeric',
@@ -324,6 +331,7 @@ const chartOptions = computed(() => {
             // Format the xAxis label to either Month Date or 24 Hour:Minute
             let label = '';
             const date = new Date(value);
+            date.setTime(date.getTime() + 24 * 60 * 60 * 1000);
 
             if (date.getHours() === 0) {
               label = date.toLocaleString('en-GB', {
