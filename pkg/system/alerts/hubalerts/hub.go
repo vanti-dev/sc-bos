@@ -227,6 +227,7 @@ func (s *Server) initAlertMetadata(ctx context.Context) error {
 					if err != nil {
 						return // ctx done, aka server stopped
 					}
+					continue // receive from the new stream
 				}
 
 				for _, change := range msg.Changes {
