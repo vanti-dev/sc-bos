@@ -174,6 +174,9 @@ func (s *Server) initConn(ctx context.Context) error {
 // initAlertMetadata blocks until either s.md is seeded or an error occurs or ctx expires.
 // If an error occurs seeding s.md then it is returned
 func (s *Server) initAlertMetadata(ctx context.Context) error {
+	if err := s.initConn(ctx); err != nil {
+		return err
+	}
 	return s.mdOnce.Do(ctx, func() error {
 		var ctx context.Context
 		ctx, s.mdStop = context.WithCancel(context.Background())
