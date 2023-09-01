@@ -29,19 +29,14 @@ func (s *motionServer) DescribeMotionDetection(context.Context, *traits.Describe
 }
 
 func (s *motionServer) GetMotionDetection(ctx context.Context, _ *traits.GetMotionDetectionRequest) (*traits.MotionDetection, error) {
-	value, err := s.client.FetchSensorData(ctx, pointMotion1)
+	points, err := FetchPoints(ctx, s.client, PointMotion1)
 	if err != nil {
 		s.logger.Error("unable to fetch motion points from device", zap.Error(err))
 		return nil, status.Error(codes.Unavailable, "unable to fetch motion points from device")
 	}
-	motion, ok := value.(bool)
-	if !ok {
-		s.logger.Error("data point is not a boolean", zap.String("point", pointMotion1), zap.Any("value", value))
-		return nil, status.Error(codes.Internal, "device returned an unexpected data type")
-	}
 
 	var state traits.MotionDetection_State
-	if motion {
+	if points.Motion1 {
 		state = traits.MotionDetection_DETECTED
 	} else {
 		state = traits.MotionDetection_NOT_DETECTED
