@@ -2,7 +2,6 @@ package hpd3
 
 import (
 	"context"
-	"math"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
@@ -45,6 +44,6 @@ func (s *occupancyServer) DescribeOccupancy(context.Context, *traits.DescribeOcc
 			Writable:   false,
 			Observable: false,
 		},
-		MaxPeople: math.MaxInt32,
+		MaxPeople: 100, // documented in the sensor_table.pdf hosted from the device web UI
 	}, nil
 }
