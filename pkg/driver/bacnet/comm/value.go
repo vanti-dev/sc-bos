@@ -278,6 +278,17 @@ func StringValue(data any) (string, error) {
 	}
 }
 
+func BitStringValue(data any) (bactypes.BitString, error) {
+	switch v := data.(type) {
+	case error:
+		return bactypes.BitString{}, v
+	case bactypes.BitString:
+		return v, nil
+	}
+
+	return bactypes.BitString{}, fmt.Errorf("unsupported conversion %T -> bactypes.BitString for val %v", data, data)
+}
+
 func WriteProperty(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource, data any, priority uint) error {
 	device, object, property, err := value.Lookup(known)
 	if err != nil {

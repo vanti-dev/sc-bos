@@ -6,8 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/smart-core-os/sc-golang/pkg/router"
 	"google.golang.org/grpc"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
 )
 
 // BacnetDriverServiceRouter is a rpc.BacnetDriverServiceServer that allows routing named requests to specific rpc.BacnetDriverServiceClient
@@ -29,7 +30,7 @@ func NewBacnetDriverServiceRouter(opts ...router.Option) *BacnetDriverServiceRou
 // WithBacnetDriverServiceClientFactory instructs the router to create a new
 // client the first time Get is called for that name.
 func WithBacnetDriverServiceClientFactory(f func(name string) (BacnetDriverServiceClient, error)) router.Option {
-	return router.WithFactory(func(name string) (interface{}, error) {
+	return router.WithFactory(func(name string) (any, error) {
 		return f(name)
 	})
 }
@@ -39,14 +40,14 @@ func (r *BacnetDriverServiceRouter) Register(server *grpc.Server) {
 }
 
 // Add extends Router.Add to panic if client is not of type rpc.BacnetDriverServiceClient.
-func (r *BacnetDriverServiceRouter) Add(name string, client interface{}) interface{} {
+func (r *BacnetDriverServiceRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
 		panic(fmt.Sprintf("not correct type: client of type %T is not a rpc.BacnetDriverServiceClient", client))
 	}
 	return r.Router.Add(name, client)
 }
 
-func (r *BacnetDriverServiceRouter) HoldsType(client interface{}) bool {
+func (r *BacnetDriverServiceRouter) HoldsType(client any) bool {
 	_, ok := client.(BacnetDriverServiceClient)
 	return ok
 }

@@ -26,7 +26,7 @@ func (w *bacnetDriverServiceWrapper) UnwrapServer() BacnetDriverServiceServer {
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *bacnetDriverServiceWrapper) Unwrap() interface{} {
+func (w *bacnetDriverServiceWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
