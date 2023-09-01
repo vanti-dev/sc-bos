@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
 	"github.com/smart-core-os/sc-golang/pkg/trait/motionsensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
@@ -15,9 +16,10 @@ import (
 type Device struct {
 	client Client
 
-	occupancyServer *occupancyServer
-	motionServer    *motionServer
-	airTempServer   *airTemperatureServer
+	occupancyServer  *occupancyServer
+	motionServer     *motionServer
+	airTempServer    *airTemperatureServer
+	airQualityServer *airQualityServer
 }
 
 func newDevice(conf DeviceConfig, logger *zap.Logger) (*Device, error) {
@@ -46,6 +48,10 @@ func newDevice(conf DeviceConfig, logger *zap.Logger) (*Device, error) {
 			client: client,
 			logger: logger.With(zap.String("trait", string(trait.AirTemperature))),
 		},
+		airQualityServer: &airQualityServer{
+			client: client,
+			logger: logger.With(zap.String("trait", string(trait.AirQualitySensor))),
+		},
 	}
 	return dev, nil
 }
@@ -63,6 +69,10 @@ func (d *Device) features() []node.Feature {
 		node.HasTrait(trait.AirTemperature, node.WithClients(
 			airtemperature.WrapApi(d.airTempServer),
 			airtemperature.WrapInfo(d.airTempServer),
+		)),
+		node.HasTrait(trait.AirQualitySensor, node.WithClients(
+			airqualitysensor.WrapApi(d.airQualityServer),
+			airqualitysensor.WrapInfo(d.airQualityServer),
 		)),
 	}
 }
