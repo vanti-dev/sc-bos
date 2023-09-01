@@ -14,7 +14,9 @@ import (
 )
 
 type Client interface {
-	FetchSensorData(ctx context.Context, point string) (out any, err error)
+	// FetchSensorData mutates out to insert the data from a single data point.
+	// If the data cannot be fetched, then out is left unmodified and an error is returned.
+	FetchSensorData(ctx context.Context, point string, out *PointData) error
 }
 
 type HTTPClient struct {
@@ -23,18 +25,10 @@ type HTTPClient struct {
 	Password string
 }
 
-func (c *HTTPClient) FetchSensorData(ctx context.Context, point string) (any, error) {
+func (c *HTTPClient) FetchSensorData(ctx context.Context, point string, out *PointData) error {
 	sensorPath := path.Join("rest", "sensor", url.PathEscape(point))
-	output := make(map[string]any)
-	err := c.getJSON(ctx, sensorPath, output)
-	if err != nil {
-		return nil, err
-	}
-	value, ok := output[point]
-	if !ok {
-		return nil, errors.New("response did not contain requested point")
-	}
-	return value, nil
+	err := c.getJSON(ctx, sensorPath, out)
+	return err
 }
 
 func (c *HTTPClient) getJSON(ctx context.Context, path string, out any) (err error) {
@@ -77,16 +71,15 @@ func basicAuth(password string) string {
 	return "Basic " + base64.StdEncoding.EncodeToString([]byte(":"+password))
 }
 
-func FetchPoints(ctx context.Context, client Client, points ...string) (map[string]any, error) {
+func FetchPoints(ctx context.Context, client Client, points ...string) (PointData, error) {
 	var errs error
-	values := make(map[string]any)
+	var out PointData
 	for _, point := range points {
-		value, err := client.FetchSensorData(ctx, point)
+		err := client.FetchSensorData(ctx, point, &out)
 		if err != nil {
 			errs = multierr.Append(errs, err)
 			continue
 		}
-		values[point] = value
 	}
-	return values, errs
+	return out, errs
 }
