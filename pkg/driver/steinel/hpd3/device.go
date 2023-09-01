@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/smart-core-os/sc-golang/pkg/trait/motionsensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"go.uber.org/zap"
 
@@ -14,6 +15,7 @@ type Device struct {
 	client Client
 
 	occupancyServer *occupancyServer
+	motionServer    *motionServer
 }
 
 func newDevice(conf DeviceConfig, logger *zap.Logger) (*Device, error) {
@@ -34,6 +36,10 @@ func newDevice(conf DeviceConfig, logger *zap.Logger) (*Device, error) {
 			client: client,
 			logger: logger.With(zap.String("trait", string(trait.OccupancySensor))),
 		},
+		motionServer: &motionServer{
+			client: client,
+			logger: logger.With(zap.String("trait", string(trait.MotionSensor))),
+		},
 	}
 	return dev, nil
 }
@@ -43,6 +49,10 @@ func (d *Device) features() []node.Feature {
 		node.HasTrait(trait.OccupancySensor, node.WithClients(
 			occupancysensor.WrapApi(d.occupancyServer),
 			occupancysensor.WrapInfo(d.occupancyServer),
+		)),
+		node.HasTrait(trait.MotionSensor, node.WithClients(
+			motionsensor.WrapApi(d.motionServer),
+			motionsensor.WrapSensorInfo(d.motionServer),
 		)),
 	}
 }
