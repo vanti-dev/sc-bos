@@ -11,8 +11,11 @@ import (
 	"io/fs"
 	"log"
 	"os"
+	"os/signal"
+	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -20,19 +23,31 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+	"github.com/vanti-dev/gobacnet/types/objecttype"
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 )
 
 var (
-	dir         = flag.String("dir", ".", "directory to scan for config")
-	configFile  = flag.String("config-file", "area-controller.local.json", "file name to look for and load")
-	resultsFile = flag.String("results-file", "results", "file name to save results to, timestamp will be appended")
-	devicesOnly = flag.Bool("devices-only", false, "only check devices, not objects")
-	timeout     = flag.Duration("timeout", time.Second*2, "timeout for requests")
-	localPort   = flag.Int("local-port", 0, "local port to use for bacnet requests, overrides any found in config")
+	dir             = flag.String("dir", ".", "directory to scan for config")
+	configFile      = flag.String("config-file", "area-controller.local.json", "file name to look for and load")
+	resultsFile     = flag.String("results-file", "results", "file name to save results to, timestamp will be appended")
+	devicesOnly     = flag.Bool("devices-only", false, "only check devices, not objects")
+	discoverObjects = flag.Bool("discover-objects", false, "discover objects for devices that don't have them configured, overrides similar setting in config")
+	timeout         = flag.Duration("timeout", time.Second*2, "timeout for requests")
+	localPort       = flag.Int("local-port", 0, "local port to use for bacnet requests, overrides any found in config")
 )
+
+const concurrency = 20
+
+var objectProperties = []property.ID{
+	property.ObjectName,
+	property.PresentValue,
+	property.NotificationClass,
+	property.EventEnable,
+}
+var deviceProperties = objectProperties[:1] // must be a strict prefix for the CSV to work
 
 func main() {
 	flag.Parse()
@@ -56,7 +71,16 @@ func run() error {
 		return err
 	}
 	results := make(map[string][]*result, len(bacnetConfigs))
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
 	for key, cfg := range bacnetConfigs {
+		select {
+		case <-ctx.Done():
+			continue
+		default:
+		}
 		log.Printf("config: %s, devices: %d", key, len(cfg.Devices))
 
 		port := int(cfg.LocalPort)
@@ -75,33 +99,14 @@ func run() error {
 		}
 
 		for _, device := range cfg.Devices {
-			ctx, cancel := context.WithTimeout(context.Background(), *timeout)
-			defer cancel()
-			if device.Comm != nil {
-				log.Printf("check device: %s (id:%d)", device.Comm.IP, device.ID)
-			} else {
-				log.Printf("check deviceId: %d", device.ID)
+			select {
+			case <-ctx.Done():
+				continue
+			default:
 			}
-			dev, err := bacnet.FindDevice(ctx, client, device)
 			res := &result{
 				name:     device.Name,
-				deviceId: fmt.Sprintf("%d", device.ID),
-				value:    "",
-			}
-			if err == nil {
-				res.responding = true
-				readId := fmt.Sprintf("%d", dev.ID.Instance)
-				if readId != res.deviceId {
-					log.Printf("configured device %v is really %v", res.deviceId, readId)
-					res.deviceId = readId
-				}
-				if res.name == "" {
-					res.name, err = readObjectName(client, dev, dev.ID)
-					device.Name = res.name
-					if err != nil {
-						log.Printf("unable to discover device name %v %v", dev.ID, err)
-					}
-				}
+				objectId: fmt.Sprintf("Device:%d", device.ID),
 			}
 			if comm := device.Comm; comm != nil {
 				res.address = comm.IP.String()
@@ -110,88 +115,114 @@ func run() error {
 					res.mac = string(des.Address)
 				}
 			}
-			results[key] = append(results[key], res)
 
-			if res.responding && !*devicesOnly {
-				cfgObjects := device.Objects
+			switch {
+			case res.mac != "":
+				log.Printf("check device: ip:%s mac:%s net:%v id:%d", res.address, res.mac, res.network, device.ID)
+			case res.address != "":
+				log.Printf("check device: ip:%s id:%d", res.address, device.ID)
+			default:
+				log.Printf("check device: id:%d", device.ID)
+			}
 
-				// Discover device objects if we're asked to
-				if shouldDiscoverObjects(cfg, device) {
-					ctx, cancel := context.WithTimeout(context.Background(), (*timeout)*10)
-					defer cancel()
-					objects, err := client.Objects(ctx, dev)
-					if err != nil {
-						log.Printf("Unable to discover objects %v : %v", device.ID, err)
-					}
+			var dev bactypes.Device
+			{
+				ctx, cancel := context.WithTimeout(ctx, *timeout)
+				dev, err = bacnet.FindDevice(ctx, client, device)
+				cancel()
 
-					uniqueObjIds := make(map[string]bool, len(cfgObjects))
-					for _, object := range cfgObjects {
-						uniqueObjIds[object.ID.String()] = true
+				if err == nil {
+					res.responding = true
+					readId := fmt.Sprintf("Device:%d", dev.ID.Instance)
+					if readId != res.objectId {
+						log.Printf("configured device %v is really %v", res.objectId, readId)
+						res.objectId = readId
 					}
-					for _, obj := range objects.Objects {
-						for _, object := range obj {
-							id := object.ID
-							if !uniqueObjIds[id.String()] {
-								uniqueObjIds[id.String()] = true
-								// log.Printf("discovered device object %v:%v (name=%v)", id.Type, id.Instance, object.Name)
-								cfgObjects = append(cfgObjects, config.Object{ID: config.ObjectID(id), Name: object.Name})
-							}
-						}
-					}
-				}
-
-				// Discover all the names for objects that don't have them
-				for i, obj := range cfgObjects {
-					if obj.Name == "" {
-						obj.Name, err = readObjectName(client, dev, bactypes.ObjectID(obj.ID))
-						if err != nil {
-							log.Printf("unable to get name for %v/%v", device.Name, obj.ID)
-							continue
-						}
-						cfgObjects[i] = obj
-					}
-				}
-
-				// Fetch the PresentValue for the objects and record them in the results
-				for _, obj := range cfgObjects {
-					objRes := &result{
-						name:     fmt.Sprintf("%s/%s", device.Name, obj.Name),
-						deviceId: obj.ID.String(),
-						value:    "",
-					}
-					ctx, cancel := context.WithTimeout(context.Background(), *timeout)
-					defer cancel()
-					value, err := readProp(ctx, client, dev, obj, property.PresentValue)
-					if err == nil {
-						objRes.responding = true
-						objRes.value = value
-					}
-					results[key] = append(results[key], objRes)
+					readObjectProps(ctx, client, dev, config.ObjectID{Type: objecttype.Device, Instance: device.ID}, res, deviceProperties...)
 				}
 			}
+			results[key] = append(results[key], res)
+			if !res.responding || *devicesOnly {
+				continue
+			}
+
+			cfgObjects := device.Objects
+			// Discover device objects if we're asked to
+			if shouldDiscoverObjects(cfg, device) {
+				ctx, cancel := context.WithTimeout(ctx, (*timeout)*10)
+				objects, err := client.Objects(ctx, dev)
+				cancel()
+				if err != nil {
+					log.Printf("Unable to discover objects %v : %v", device.ID, err)
+				}
+
+				uniqueObjIds := make(map[string]bool, len(cfgObjects))
+				for _, object := range cfgObjects {
+					uniqueObjIds[object.ID.String()] = true
+				}
+				for _, obj := range objects.Objects {
+					for _, object := range obj {
+						id := object.ID
+						if !uniqueObjIds[id.String()] {
+							uniqueObjIds[id.String()] = true
+							// log.Printf("discovered device object %v:%v (name=%v)", id.Type, id.Instance, object.Name)
+							cfgObjects = append(cfgObjects, config.Object{ID: config.ObjectID(id), Name: object.Name})
+						}
+					}
+				}
+			}
+			// Fetch the object properties for the objects and record them in the results
+			readAllObjectProps(ctx, client, dev, res, key, cfgObjects, results)
 		}
 		client.Close()
 	}
+
 	fileName := *resultsFile + "_" + time.Now().Format("2006-01-02T15_04") + ".csv"
 	return writeResults(fileName, results)
 }
 
-func readObjectName(client *gobacnet.Client, dev bactypes.Device, objId bactypes.ObjectID) (string, error) {
-	ctx, clean := context.WithTimeout(context.Background(), *timeout)
-	propVal, err := client.ReadProperty(ctx, dev, bactypes.ReadPropertyData{Object: bactypes.Object{ID: objId, Properties: []bactypes.Property{
-		{ID: property.ObjectName, ArrayIndex: bactypes.ArrayAll},
-	}}})
-	clean()
-	if err != nil {
-		return "", err
-	}
-	for _, p := range propVal.Object.Properties {
-		if p.ID == property.ObjectName {
-			return p.Data.(string), nil
+func readAllObjectProps(ctx context.Context, client *gobacnet.Client, dev bactypes.Device, baseResult *result, key string, cfgObjects []config.Object, results map[string][]*result) {
+	worker := func(jobs <-chan config.Object, results chan<- *result) {
+		for obj := range jobs {
+			objRes := baseResult.child(obj.Name, obj.ID.String())
+			ctx, cancel := context.WithTimeout(ctx, *timeout)
+			readObjectProps(ctx, client, dev, obj.ID, objRes, objectProperties...)
+			cancel()
+			results <- objRes
 		}
 	}
 
-	return "", errors.New("response did not include ObjectName property")
+	jobs := make(chan config.Object, concurrency)
+	resultsChan := make(chan *result, len(cfgObjects))
+	var jobsComplete sync.WaitGroup
+	jobsComplete.Add(concurrency)
+	for i := 0; i < concurrency; i++ {
+		go func() {
+			defer jobsComplete.Done()
+			worker(jobs, resultsChan)
+		}()
+	}
+
+	for _, device := range cfgObjects {
+		jobs <- device
+	}
+	close(jobs)
+	jobsComplete.Wait()
+	close(resultsChan) // safe, nothing is sending here anymore
+	for result := range resultsChan {
+		results[key] = append(results[key], result)
+	}
+}
+
+func readObjectProps(ctx context.Context, client *gobacnet.Client, dev bactypes.Device, objId config.ObjectID, res *result, props ...property.ID) {
+	values, err := readProps(ctx, client, dev, objId, objectProperties...)
+	if err == nil {
+		res.responding = true
+		res.properties = make(map[property.ID]any, len(props))
+		for i, key := range props {
+			res.properties[key] = values[i]
+		}
+	}
 }
 
 func loadConfigs() (map[string]config.Root, error) {
@@ -233,33 +264,49 @@ func loadConfigs() (map[string]config.Root, error) {
 	return bacnetConfigs, nil
 }
 
-func readProp(ctx context.Context, client *gobacnet.Client, device bactypes.Device, obj config.Object, prop property.ID) (any, error) {
-	req := bactypes.ReadPropertyData{
-		Object: bactypes.Object{
-			ID: bactypes.ObjectID(obj.ID),
-			Properties: []bactypes.Property{
-				{ID: prop, ArrayIndex: bactypes.ArrayAll},
-			},
-		},
+func readProps(ctx context.Context, client *gobacnet.Client, device bactypes.Device, objId config.ObjectID, props ...property.ID) ([]any, error) {
+	objReq := bactypes.Object{
+		ID: bactypes.ObjectID(objId),
 	}
-	res, err := client.ReadProperty(ctx, device, req)
+	for _, id := range props {
+		objReq.Properties = append(objReq.Properties, bactypes.Property{ID: id, ArrayIndex: bactypes.ArrayAll})
+	}
+	req := bactypes.ReadMultipleProperty{
+		Objects: []bactypes.Object{objReq},
+	}
+	res, err := client.ReadProperties(ctx, device, req)
 	if err != nil {
 		return nil, err
 	}
-	if len(res.Object.Properties) == 0 {
+	if len(res.Objects) == 0 {
+		return nil, errors.New("zero length objects")
+	}
+	objRes := res.Objects[0]
+	if len(objRes.Properties) == 0 {
 		// Shouldn't happen, but has on occasion. I guess it depends how the device responds to our request
 		return nil, errors.New("zero length object properties")
 	}
-	value := res.Object.Properties[0].Data
-	if strings.HasPrefix(obj.ID.String(), "Binary") {
-		value = value == 1
+	vals := make([]any, len(props))
+	for i, prop := range objRes.Properties {
+		if prop.ID != props[i] {
+			return nil, fmt.Errorf("unexpected property: %v", prop.ID)
+		}
+		value := prop.Data
+		if prop.ID == property.PresentValue && strings.HasPrefix(objId.String(), "Binary") {
+			value = value == 1
+		}
+		vals[i] = value
 	}
-	return value, nil
+	return vals, nil
 }
 
 func writeResults(fileName string, results map[string][]*result) error {
 	var rows [][]string
-	rows = append(rows, []string{"Name", "Address", "Network", "MAC", "BACnet ID", "Responding", "Value"})
+	header := []string{"Name", "Address", "Network", "MAC", "BACnet ID", "Responding"}
+	for _, objectProperty := range objectProperties {
+		header = append(header, objectProperty.String())
+	}
+	rows = append(rows, header)
 	for _, res := range results {
 		for _, re := range res {
 			rows = append(rows, re.toRow())
@@ -294,17 +341,36 @@ type result struct {
 	address    string
 	network    uint16
 	mac        string
-	deviceId   string
+	objectId   string
 	responding bool
-	value      any
+
+	// additional properties we've been asked for
+	properties map[property.ID]any
+}
+
+func (r *result) child(name, id string) *result {
+	return &result{
+		name:       path.Join(r.name, name),
+		address:    r.address,
+		network:    r.network,
+		mac:        r.mac,
+		objectId:   id,
+		responding: r.responding,
+	}
 }
 
 func (r *result) toRow() []string {
-	return []string{r.name, r.address, netString(r.network), r.mac, r.deviceId, boolYesNo(r.responding), anyToString(r.value)}
+	row := []string{r.name, r.address, netString(r.network), r.mac, r.objectId, boolYesNo(r.responding)}
+	for _, key := range objectProperties {
+		row = append(row, anyToString(r.properties[key]))
+	}
+	return row
 }
 
 func anyToString(value any) string {
 	switch v := value.(type) {
+	case nil:
+		return ""
 	case bool:
 		return fmt.Sprintf("%t", v)
 	case float32:
@@ -312,7 +378,7 @@ func anyToString(value any) string {
 	case uint32:
 		return fmt.Sprintf("%d", v)
 	}
-	return fmt.Sprintf("%s", value)
+	return fmt.Sprintf("%v", value)
 }
 
 func netString(n uint16) string {
