@@ -30,7 +30,7 @@ func (s *airTemperatureServer) DescribeAirTemperature(context.Context, *traits.D
 }
 
 func (s *airTemperatureServer) GetAirTemperature(ctx context.Context, _ *traits.GetAirTemperatureRequest) (*traits.AirTemperature, error) {
-	points, err := FetchPoints(ctx, s.client, PointTemperature, PointHumidity, PointDewPoint)
+	points, err := FetchPoints(ctx, s.client, PointTemperature, PointHumidity)
 	if err != nil {
 		s.logger.Error("failed to fetch air temperature points", zap.Error(err))
 		return nil, status.Error(codes.Unavailable, "failed to fetch air temperature points")
@@ -40,6 +40,5 @@ func (s *airTemperatureServer) GetAirTemperature(ctx context.Context, _ *traits.
 	return &traits.AirTemperature{
 		AmbientTemperature: &types.Temperature{ValueCelsius: points.Temperature},
 		AmbientHumidity:    &humidity,
-		DewPoint:           &types.Temperature{ValueCelsius: points.DewPoint},
 	}, nil
 }
