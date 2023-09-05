@@ -6,7 +6,6 @@ const (
 	PointTemperature         = "Temperature"
 	PointHumidity            = "Humidity"
 	PointNumberOfPeopleTotal = "NumberOfPeopleTotal"
-	PointDewPoint            = "DewPoint"
 	PointCO2                 = "CO2"
 	PointVOC                 = "VOC"
 )
@@ -17,7 +16,6 @@ type PointData struct {
 	Temperature         float64 `json:"Temperature"` // degrees C
 	Humidity            float64 `json:"Humidity"`    // percent relative humidity
 	NumberOfPeopleTotal int     `json:"NumberOfPeopleTotal"`
-	DewPoint            float64 `json:"DewPoint"` // degrees C
-	CO2                 float64 `json:"CO2"`      // ppm
-	VOC                 float64 `json:"VOC"`      // ppb
+	CO2                 float64 `json:"CO2"` // ppm
+	VOC                 float64 `json:"VOC"` // ppb
 }

@@ -23,12 +23,10 @@ func TestAirTemperatureServer_GetAirTemperature(t *testing.T) {
 			points: PointData{
 				Temperature: 25.5,
 				Humidity:    50.5,
-				DewPoint:    12.125,
 			},
 			expect: &traits.AirTemperature{
 				AmbientTemperature: &types.Temperature{ValueCelsius: 25.5},
 				AmbientHumidity:    ptr[float32](50.5),
-				DewPoint:           &types.Temperature{ValueCelsius: 12.125},
 			},
 		},
 	}
