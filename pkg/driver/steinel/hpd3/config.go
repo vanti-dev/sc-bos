@@ -11,7 +11,8 @@ import (
 
 type DriverConfig struct {
 	driver.BaseConfig
-	Devices []DeviceConfig `json:"devices"`
+	InsecureSkipVerify bool           `json:"insecureSkipVerify,omitempty"`
+	Devices            []DeviceConfig `json:"devices"`
 }
 
 func ParseDriverConfig(buf []byte) (conf DriverConfig, err error) {

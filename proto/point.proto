@@ -33,7 +33,9 @@ service PointInfo {
     rpc DescribePoints(DescribePointsRequest) returns (PointsSupport);
 }
 
-message DescribePointsRequest {}
+message DescribePointsRequest {
+    string name = 1;
+}
 
 message PointsSupport {
     repeated PointMetadata points = 1;
