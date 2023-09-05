@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -77,7 +78,7 @@ func FetchPoints(ctx context.Context, client Client, points ...string) (PointDat
 	for _, point := range points {
 		err := client.FetchSensorData(ctx, point, &out)
 		if err != nil {
-			errs = multierr.Append(errs, err)
+			errs = multierr.Append(errs, fmt.Errorf("%s: %w", point, err))
 			continue
 		}
 	}

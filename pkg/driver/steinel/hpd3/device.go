@@ -2,6 +2,7 @@ package hpd3
 
 import (
 	"errors"
+	"net/http"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
@@ -22,7 +23,7 @@ type Device struct {
 	airQualityServer *airQualityServer
 }
 
-func newDevice(conf DeviceConfig, logger *zap.Logger) (*Device, error) {
+func newDevice(conf DeviceConfig, logger *zap.Logger, httpClient *http.Client) (*Device, error) {
 	if conf.Host == "" {
 		return nil, errors.New("host not specified")
 	}
@@ -31,6 +32,7 @@ func newDevice(conf DeviceConfig, logger *zap.Logger) (*Device, error) {
 		return nil, err
 	}
 	client := &HTTPClient{
+		Client:   httpClient,
 		Password: password,
 		Host:     conf.Host,
 	}

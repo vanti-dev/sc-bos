@@ -2,6 +2,8 @@ package hpd3
 
 import (
 	"context"
+	"crypto/tls"
+	"net/http"
 	"sync"
 
 	"go.uber.org/zap"
@@ -45,9 +47,19 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 	}
 	d.unannouncers = nil
 
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: conf.InsecureSkipVerify,
+	}
+	transport := &http.Transport{
+		TLSClientConfig: tlsConfig,
+	}
+	httpClient := &http.Client{
+		Transport: transport,
+	}
+
 	for _, devConf := range conf.Devices {
 		logger := d.services.Logger.With(zap.String("deviceName", devConf.Name))
-		dev, err := newDevice(devConf, logger)
+		dev, err := newDevice(devConf, logger, httpClient)
 		if err != nil {
 			d.services.Logger.Error("failed to initialise a hpd3 device",
 				zap.String("name", devConf.Name),
