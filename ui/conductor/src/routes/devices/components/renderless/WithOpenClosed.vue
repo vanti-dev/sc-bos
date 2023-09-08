@@ -26,7 +26,7 @@ const props = defineProps({
   }
 });
 
-const openCloseValue = reactive(
+const openClosedValue = reactive(
     /** @type {ResourceValue<OpenClose.AsObject, PullOpenClosesResponse>} */ newResourceValue()
 );
 
@@ -45,18 +45,18 @@ watch(
       if (newPaused === oldPaused && reqEqual) return;
 
       if (newPaused) {
-        closeResource(openCloseValue);
+        closeResource(openClosedValue);
       }
 
       if (!newPaused && (oldPaused || !reqEqual)) {
-        closeResource(openCloseValue);
-        pullOpenClosePositions(newReq, openCloseValue);
+        closeResource(openClosedValue);
+        pullOpenClosePositions(newReq, openClosedValue);
       }
     },
     {immediate: true, deep: true, flush: 'sync'}
 );
 
 onUnmounted(() => {
-  closeResource(openCloseValue);
+  closeResource(openClosedValue);
 });
 </script>
