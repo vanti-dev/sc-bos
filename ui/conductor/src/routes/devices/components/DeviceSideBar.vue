@@ -9,6 +9,10 @@
       <v-divider class="mt-4 mb-1"/>
       <access-attempt-card v-bind="resource"/>
     </WithAccess>
+    <WithOpenClosed v-if="traits['smartcore.traits.OpenClose']" :name="deviceId" v-slot="{resource}">
+      <v-divider class="mt-4 mb-1"/>
+      <open-closed-card v-bind="resource"/>
+    </WithOpenClosed>
     <WithAirTemperature v-if="traits['smartcore.traits.AirTemperature']" :name="deviceId" v-slot="{resource, update}">
       <v-divider class="mt-4 mb-1"/>
       <air-temperature-card v-bind="resource" @updateAirTemperature="update"/>
@@ -47,6 +51,7 @@ import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.
 import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
 import WithMeter from '@/routes/devices/components/renderless/WithMeter.vue';
 import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
+import WithOpenClosed from '@/routes/devices/components/renderless/WithOpenClosed.vue';
 import AirTemperatureCard from '@/routes/devices/components/trait-cards/AirTemperatureCard.vue';
 import DeviceInfoCard from '@/routes/devices/components/trait-cards/DeviceInfoCard.vue';
 import ElectricDemandCard from '@/routes/devices/components/trait-cards/ElectricDemandCard.vue';
@@ -58,6 +63,7 @@ import StatusLogCard from '@/routes/devices/components/trait-cards/StatusLogCard
 import UdmiCard from '@/routes/devices/components/trait-cards/UdmiCard.vue';
 import MeterCard from '@/routes/devices/components/trait-cards/MeterCard.vue';
 import AccessAttemptCard from '@/routes/devices/components/trait-cards/AccessAttemptCard.vue';
+import OpenClosedCard from '@/routes/devices/components/trait-cards/OpenClosedCard.vue';
 
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
