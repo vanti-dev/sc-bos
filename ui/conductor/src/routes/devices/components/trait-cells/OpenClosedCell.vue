@@ -22,11 +22,11 @@ const props = defineProps({
 });
 
 const doorState = computed(() => {
-  if (!props.openClosePercentage?.value) return {icon: 'mdi-door', class: 'unknown', text: ''};
+  if (!props.value) return {icon: 'mdi-door', class: 'unknown', text: ''};
 
-  return props.openClosePercentage?.value.statesList[0].openPercent === 0 ?
+  return props.value?.statesList[0].openPercent === 0 ?
     {icon: 'mdi-door-closed', class: 'closed', text: 'Closed'} :
-    props.openClosePercentage?.value.statesList[0].openPercent === 100 ?
+    props.value?.statesList[0].openPercent === 100 ?
     {icon: 'mdi-door-open', class: 'open', text: 'Open'} :
     {icon: 'mdi-door', class: 'moving', text: '' + props.openClosePercentage?.value.statesList[0].openPercent + '%'};
 });

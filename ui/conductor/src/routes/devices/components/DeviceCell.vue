@@ -38,8 +38,12 @@
     </WithOccupancy>
 
     <!-- If door has no access data reading and has OpenClose reading -->
-    <WithOpenClosed v-if="hasCell('OpenClose') && !hasCell('AccessAttempt')" v-slot="{ resource }">
-      <OpenClosedCell v-if="!resource?.streamError" v-bind="resource" :name="props.item.name" :paused="props.paused"/>
+    <WithOpenClosed
+        v-if="hasCell('OpenClose') && !hasCell('AccessAttempt')"
+        v-slot="{ resource }"
+        :name="props.item.name"
+        :paused="props.paused">
+      <OpenClosedCell v-if="!resource?.streamError" v-bind="resource"/>
       <StatusAlert v-else icon="mdi-cancel" :resource="resource.streamError"/>
     </WithOpenClosed>
 
@@ -84,30 +88,27 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
-import {hasTrait} from '@/util/devices';
-
+import StatusAlert from '@/components/StatusAlert.vue';
+import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
 import WithAirTemperature from '@/routes/devices/components/renderless/WithAirTemperature.vue';
 import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
 import WithEnterLeave from '@/routes/devices/components/renderless/WithEnterLeave.vue';
-import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
-import WithMeter from '@/routes/devices/components/renderless/WithMeter.vue';
-import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
-import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
 import WithLighting from '@/routes/devices/components/renderless/WithLighting.vue';
+import WithMeter from '@/routes/devices/components/renderless/WithMeter.vue';
+import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
 import WithOpenClosed from '@/routes/devices/components/renderless/WithOpenClosed.vue';
-
-import StatusAlert from '@/components/StatusAlert.vue';
-
+import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
+import AccessAttemptCell from '@/routes/devices/components/trait-cells/AccessAttemptCell.vue';
 import AirTemperatureCell from '@/routes/devices/components/trait-cells/AirTemperatureCell.vue';
 import ElectricDemandCell from '@/routes/devices/components/trait-cells/ElectricDemandCell.vue';
 import EnterLeaveEventCell from '@/routes/devices/components/trait-cells/EnterLeaveEventCell.vue';
-import StatusLogCell from '@/routes/devices/components/trait-cells/StatusLogCell.vue';
-import MeterCell from '@/routes/devices/components/trait-cells/MeterCell.vue';
-import AccessAttemptCell from '@/routes/devices/components/trait-cells/AccessAttemptCell.vue';
 import LightCell from '@/routes/devices/components/trait-cells/LightCell.vue';
+import MeterCell from '@/routes/devices/components/trait-cells/MeterCell.vue';
 import OccupancyCell from '@/routes/devices/components/trait-cells/OccupancyCell.vue';
 import OpenClosedCell from '@/routes/devices/components/trait-cells/OpenClosedCell.vue';
+import StatusLogCell from '@/routes/devices/components/trait-cells/StatusLogCell.vue';
+import {hasTrait} from '@/util/devices';
+import {computed} from 'vue';
 
 const props = defineProps({
   paused: {
@@ -116,7 +117,8 @@ const props = defineProps({
   },
   item: {
     type: Object,
-    default: () => {}
+    default: () => {
+    }
   }
 });
 const visibleCells = computed(() => {
