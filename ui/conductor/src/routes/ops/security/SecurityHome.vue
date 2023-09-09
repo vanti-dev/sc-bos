@@ -75,7 +75,8 @@ const deviceNames = computed(() => {
     return {
       source: device.metadata.name,
       name: device.name,
-      title: device.metadata?.appearance ? device.metadata?.appearance.title : device.metadata.name
+      title: device.metadata?.appearance ? device.metadata?.appearance.title : device.metadata.name,
+      traits: device.metadata?.traitsList ? device.metadata?.traitsList.map((trait) => trait.name) : []
     };
   });
 });
