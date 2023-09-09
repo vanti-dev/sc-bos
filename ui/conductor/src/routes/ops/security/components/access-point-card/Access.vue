@@ -4,6 +4,7 @@
     <Status
         :title="props.device.title"
         :status-bar-color="statusColor"
+        :door-status-text="doorStatusText"
         :show-close="props.showClose"
         @click:close="emit('click:close')"/>
 
@@ -11,7 +12,7 @@
     <div class="d-flex flex-column justify-space-between">
       <v-card-text class="text-h6 white--text font-weight-regular d-flex flex-row pa-0 px-4 pt-4">
         <span>Last access:</span>
-        <span :class="[`${statusColor}--text`, 'ml-auto font-weight-bold']">
+        <span :class="[`${color}--text`, 'ml-auto font-weight-bold']">
           {{ formatString(grantStates) }}
         </span>
       </v-card-text>
@@ -68,6 +69,10 @@ const props = defineProps({
     type: Object,
     default: () => {}
   },
+  openClosed: {
+    type: Object,
+    default: () => {}
+  },
   statusLog: {
     type: Object,
     default: () => {}
@@ -89,10 +94,31 @@ const notifications = useNotifications();
 const emit = defineEmits(['click:close']);
 
 const {alertMetadata} = useAlertMetadata();
-const {color: statusColor} = useStatus(
+const {color} = useStatus(
     () => props.accessAttempt,
     () => props.statusLog
 );
+
+const statusColor = computed(() => {
+  if (props.openClosed) {
+    const percentage = props.openClosed.statesList[0].openPercent;
+
+    if (percentage === 0) return 'warning'; // closed
+    if (percentage > 0 && percentage <= 100) return 'success'; // moving and open
+    else return 'grey'; // unknown
+  } else return color.value;
+});
+
+const doorStatusText = computed(() => {
+  if (props.openClosed) {
+    const percentage = props.openClosed.statesList[0].openPercent;
+
+    if (percentage === 0) return 'closed'; // closed
+    if (percentage > 0 && percentage < 100) return 'moving'; // moving
+    if (percentage === 100) return 'open'; // open
+    else return 'unknown'; // unknown
+  } else return undefined;
+});
 
 // ----------------- Access Attempt ----------------- //
 const grantId = computed(() => props.accessAttempt?.grant);
@@ -164,20 +190,20 @@ onBeforeUnmount(() => {
 </script>
 <style lang="scss" scoped>
 .granted {
-  color: green;
+  color: var(--v-success-base);
   transition: color 0.5s ease-in-out;
 }
 
 .denied,
 .forced,
 .failed {
-  color: red;
+  color: var(--v-error-base);
 }
 
 .pending,
 .aborted,
 .tailgate {
-  color: orange;
+  color: var(--v-warning-base);
 }
 
 .grant_unknown {
