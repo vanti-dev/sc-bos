@@ -14,27 +14,70 @@
                   :style="{
                     transform: `scale(${1 / scale})`,
                   }">
-                <AccessPointCard :device="elementWithMenu?.device" :paused="!live" @click:close="closeMenu" show-close/>
+                <AccessPointCard
+                    :device="elementWithMenu?.device"
+                    :paused="!live"
+                    @click:close="closeMenu"
+                    show-close/>
               </HotPoint>
             </div>
           </div>
           <div class="door-status-tracker">
             <HotPoint
-                v-slot="{live}"
+                v-slot="{ live }"
                 v-for="door in doors"
                 :key="door.name"
                 :item-key="door.name"
                 class="door-status-tracker__item"
                 :style="door.style">
-              <WithAccess :name="door.name" :paused="!live" v-slot="{resource: accessResource}">
-                <WithStatus :name="door.name" :paused="!live" v-slot="{resource: statusResource}">
+              <!-- If door has Access data reading and has no OpenClose reading -->
+              <WithAccess
+                  v-if="hasTrait(door.name, 'Access') && !hasTrait(door.name, 'OpenClose')"
+                  :name="door.name"
+                  :paused="!live"
+                  v-slot="{ resource: accessResource }">
+                <WithStatus :name="door.name" :paused="!live" v-slot="{ resource: statusResource }">
                   <door-color
                       :name="door.name"
                       :access-attempt="accessResource.value"
                       :status-log="statusResource.value"
                       class="door-status-tracker__item"
-                      @update="setDoorColor"/>
+                      @updateFill="setDoorFill"/>
                 </WithStatus>
+              </WithAccess>
+              <!-- If door has no Access data reading and has OpenClose reading -->
+              <WithOpenClosed
+                  v-if="!hasTrait(door.name, 'Access') && hasTrait(door.name, 'OpenClose')"
+                  :name="door.name"
+                  :paused="!live"
+                  v-slot="{ resource: openClosedResource }">
+                <WithStatus :name="door.name" :paused="!live" v-slot="{ resource: statusResource }">
+                  <door-color
+                      :name="door.name"
+                      :open-closed="openClosedResource.value"
+                      :status-log="statusResource.value"
+                      class="door-status-tracker__item"
+                      @updateStroke="setDoorStroke"/>
+                </WithStatus>
+              </WithOpenClosed>
+              <!-- If door has Access data reading and has OpenClose reading -->
+              <WithAccess
+                  v-if="hasTrait(door.name, 'Access') && hasTrait(door.name, 'OpenClose')"
+                  :name="door.name"
+                  :paused="!live"
+                  v-slot="{ resource: accessResource }">
+                <WithOpenClosed :name="door.name" :paused="!live" v-slot="{ resource: openClosedResource }">
+                  <WithStatus :name="door.name" :paused="!live" v-slot="{ resource: statusResource }">
+                    <door-color
+                        :name="door.name"
+                        :access-attempt="accessResource.value"
+                        :open-closed="openClosedResource.value"
+                        :status-log="statusResource.value"
+                        class="door-status-tracker__item"
+                        @updateFill="setDoorFill"
+                        @updateStroke="setDoorStroke"/>
+                  </WithStatus>
+                </WithOpenClosed>
               </WithAccess>
             </HotPoint>
           </div>
@@ -45,16 +88,19 @@
 </template>
 
 <script setup>
+import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, set, watch} from 'vue';
+import {useAppConfigStore} from '@/stores/app-config';
+
+import AccessPointCard from './AccessPointCard.vue';
 import HotPoint from '@/components/HotPoint.vue';
 import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
 import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
 import DoorColor from '@/routes/ops/security/components/DoorColor.vue';
 import Stack from '@/routes/ops/security/components/Stack.vue';
 import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
-import {useAppConfigStore} from '@/stores/app-config';
+
 import {convertSVGToPercentage} from '@/util/svg';
-import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, set, watch} from 'vue';
-import AccessPointCard from './AccessPointCard.vue';
+import WithOpenClosed from '@/routes/devices/components/renderless/WithOpenClosed.vue';
 
 // -------------- Props -------------- //
 const props = defineProps({
@@ -258,26 +304,69 @@ const doors = computed(() => {
           }
         };
       })
-      .filter(d => Boolean(d));
+      .filter((d) => Boolean(d));
 });
 // doorColors contains the intended colour for each door.
 // We keep this as a data structure instead of just setting the value in case we know what colour it should be
 // before the svg is loaded.
-const doorColors = ref({});
-const setDoorColor = ({name, color}) => {
-  set(doorColors.value, name, color);
+const doorFills = ref({});
+const doorStrokes = ref({});
+const setDoorFill = ({name, color}) => {
+  set(doorFills.value, name, color);
+};
+const setDoorStroke = ({name, color}) => {
+  set(doorStrokes.value, name, color);
 };
 
 // watch for changes in the colours and svg and invoke dom actions to update the svg.
-watch([doorColors, doors], () => {
-  doors.value.forEach(({el, name}) => {
-    const color = doorColors.value[name] ?? 'grey';
-    if (color && el) {
-      el.removeAttribute('style');
-      el.setAttribute('class', color);
-    }
+watch(
+    [doorFills, doors],
+    () => {
+      doors.value.forEach(({el, name}) => {
+        const color = doorFills.value[name] ?? 'grey';
+        if (color && el) {
+          el.removeAttribute('style');
+          el.classList.remove('success', 'error', 'warning', 'grant_unknown', 'grey');
+          el.classList.add(color);
+        }
+      });
+    },
+    {deep: true}
+);
+watch(
+    [doorStrokes, doors],
+    () => {
+      doors.value.forEach(({el, name}) => {
+        const color = doorStrokes.value[name] ?? 'unknown';
+        if (color && el) {
+          el.removeAttribute('style');
+          el.classList.remove('open', 'closed', 'moving', 'unknown');
+          el.classList.add(color);
+        }
+      });
+    },
+    {deep: true}
+);
+
+const hasTrait = (device, traitName) => {
+  const traits = {};
+  let traitFullName;
+
+  const findDevice = props.deviceNames.find((deviceName) => {
+    return deviceName.name === device;
   });
-}, {deep: true});
+
+  if (!findDevice) return false;
+
+  if (traitName === 'OpenClose') traitFullName = 'smartcore.traits.OpenClose';
+  else if (traitName === 'Access') traitFullName = 'smartcore.bos.Access';
+
+  if (findDevice.traits.includes(traitFullName)) {
+    traits[traitName] = true;
+  }
+
+  return traits[traitName];
+};
 
 /**
  * Add or remove event listeners
@@ -363,5 +452,22 @@ watch(
 
 ::v-deep(svg .error) {
   fill: var(--v-error-base);
+}
+
+::v-deep(svg .open),
+::v-deep(svg .moving) {
+  stroke: var(--v-success-base);
+  stroke-width: 125px;
+  transition: all 0.5s ease-in-out;
+}
+::v-deep(svg .closed) {
+  stroke: var(--v-warning-base);
+  stroke-width: 75px;
+  transition: all 0.5s ease-in-out;
+}
+::v-deep(svg .unknown) {
+  stroke: #ffffff5e;
+  stroke-width: 75px;
+  transition: all 0.5s ease-in-out;
 }
 </style>
