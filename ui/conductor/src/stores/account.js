@@ -1,5 +1,6 @@
 import {events, keycloak} from '@/api/keycloak.js';
 import localLogin from '@/api/localLogin.js';
+import jwtDecode from 'jwt-decode';
 import {defineStore} from 'pinia';
 import {computed, ref} from 'vue';
 
@@ -45,7 +46,8 @@ export const useAccountStore = defineStore('accountStore', () => {
         token.value = payload.access_token;
         loggedIn.value = true;
         claims.value = {
-          email: username
+          email: username,
+          ...jwtDecode(payload.access_token)
         };
         toggleLoginDialog();
         saveLocalStorage();
@@ -73,7 +75,7 @@ export const useAccountStore = defineStore('accountStore', () => {
 
   const logout = async () => {
     localStorage.getItem('keyclock') === 'true' &&
-      kcp.then((kc) => kc.logout());
+    kcp.then((kc) => kc.logout());
     loggedIn.value = false;
     token.value = '';
     claims.value = {};

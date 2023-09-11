@@ -85,6 +85,7 @@ type Identity struct {
 	ID      string   `json:"id,omitempty"`
 	Secrets []Secret `json:"secrets,omitempty"`
 	Zones   []string `json:"zones,omitempty"`
+	Roles   []string `json:"roles,omitempty"`
 }
 
 type Secret struct {
