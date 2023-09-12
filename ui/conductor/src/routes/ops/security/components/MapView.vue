@@ -337,11 +337,16 @@ watch(
     [doorStrokes, doors],
     () => {
       doors.value.forEach(({el, name}) => {
-        const color = doorStrokes.value[name] ?? 'unknown';
-        if (color && el) {
+        const stroke = doorStrokes.value[name] ?? 'unknown';
+        if (stroke && el) {
           el.removeAttribute('style');
           el.classList.remove('open', 'closed', 'moving', 'unknown');
-          el.classList.add(color);
+          el.classList.add(stroke);
+
+          const fill = doorFills.value[name] ? doorFills.value[name] : doorStrokes.value[name] + '-fill';
+
+          el.classList.remove('open-fill', 'closed-fill', 'moving-fill', 'unknown-fill');
+          el.classList.add(fill);
         }
       });
     },
@@ -468,6 +473,20 @@ watch(
 ::v-deep(svg .unknown) {
   stroke: #ffffff5e;
   stroke-width: 75px;
+  transition: all 0.5s ease-in-out;
+}
+
+::v-deep(svg .open-fill),
+::v-deep(svg .moving-fill) {
+  fill: var(--v-success-base);
+  transition: all 0.5s ease-in-out;
+}
+::v-deep(svg .closed-fill) {
+  fill: var(--v-warning-base);
+  transition: all 0.5s ease-in-out;
+}
+::v-deep(svg .unknown-fill) {
+  fill: #ffffff85;
   transition: all 0.5s ease-in-out;
 }
 </style>
