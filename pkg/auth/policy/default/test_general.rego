@@ -1,0 +1,90 @@
+package scos
+
+import future.keywords.in
+
+user_request(service, method, request, roles) := input {
+  input := {
+    "service": service,
+    "method": method,
+    "stream": {"is_server_stream": false, "is_client_stream": false, "open": false},
+    "request": request,
+    "certificate_valid": false,
+    "certificate": null,
+    "token_valid": true,
+    "token_claims": {
+      "roles": roles,
+      "scopes": null,
+      "zones": null,
+      "is_service": true
+    }
+  }
+}
+
+test_viewer_GetBrightness {
+  data.smartcore.allow with input as user_request("smartcore.traits.LightApi", "GetBrightness", {}, ["viewer"])
+}
+test_viewer_UpdateBrightness {
+  not data.smartcore.traits.LightApi.allow with input as user_request("smartcore.traits.LightApi", "UpdateBrightness", {}, ["viewer"])
+  not data.smartcore.traits.allow with input as user_request("smartcore.traits.LightApi", "UpdateBrightness", {}, ["viewer"])
+  not data.smartcore.allow with input as user_request("smartcore.traits.LightApi", "UpdateBrightness", {}, ["viewer"])
+  not data.grpc_default.allow with input as user_request("smartcore.traits.LightApi", "UpdateBrightness", {}, ["viewer"])
+}
+
+test_operator_GetBrightness {
+  data.smartcore.allow with input as user_request("smartcore.traits.LightApi", "GetBrightness", {}, ["operator"])
+}
+test_operator_UpdateBrightness {
+  data.smartcore.allow with input as user_request("smartcore.traits.LightApi", "UpdateBrightness", {}, ["operator"])
+}
+test_operator_StartService {
+  data.smartcore.bos.ServicesApi.allow with input as user_request("smartcore.bos.ServicesApi", "StartService", {}, ["operator"])
+}
+test_operator_ConfigureService {
+  not data.smartcore.bos.ServicesApi.allow with input as user_request("smartcore.bos.ServicesApi", "ConfigureService", {}, ["operator"])
+  not data.smartcore.bos.allow with input as user_request("smartcore.bos.ServicesApi", "ConfigureService", {}, ["operator"])
+  not data.smartcore.allow with input as user_request("smartcore.bos.ServicesApi", "ConfigureService", {}, ["operator"])
+  not data.grpc_default.allow with input as user_request("smartcore.bos.ServicesApi", "ConfigureService", {}, ["operator"])
+}
+test_operator_ConfigureService_zones {
+  input := user_request("smartcore.bos.ServicesApi", "ConfigureService", {
+    "name": "zones"
+  }, ["operator"])
+  data.smartcore.bos.ServicesApi.allow with input as input
+}
+test_operator_ConfigureService_zones {
+  input := user_request("smartcore.bos.ServicesApi", "ConfigureService", {
+    "name": "ns/1/zones"
+  }, ["operator"])
+  data.smartcore.bos.ServicesApi.allow with input as input
+}
+
+tenant_request(service, method, request, zones) := input {
+  input := {
+    "service": service,
+    "method": method,
+    "stream": {"is_server_stream": false, "is_client_stream": false, "open": false},
+    "request": request,
+    "certificate_valid": false,
+    "certificate": null,
+    "token_valid": true,
+    "token_claims": {
+      "roles": null,
+      "scopes": null,
+      "zones": zones,
+      "is_service": true
+    }
+  }
+}
+
+test_zone_exact {
+  data.smartcore.allow with input as tenant_request("smartcore.traits.LightApi", "GetBrightness", {"name": "zone/1"}, ["zone/1"])
+}
+test_zone_parent {
+  data.smartcore.allow with input as tenant_request("smartcore.traits.LightApi", "GetBrightness", {"name": "zone/1/child"}, ["zone/1"])
+}
+test_zone_mismatch {
+  not data.smartcore.traits.LightApi.allow with input as tenant_request("smartcore.traits.LightApi", "GetBrightness", {"name": "zone/2"}, ["zone/1"])
+  not data.smartcore.traits.allow with input as tenant_request("smartcore.traits.LightApi", "GetBrightness", {"name": "zone/2"}, ["zone/1"])
+  not data.smartcore.allow with input as tenant_request("smartcore.traits.LightApi", "GetBrightness", {"name": "zone/2"}, ["zone/1"])
+  not data.grpc_default.allow with input as tenant_request("smartcore.traits.LightApi", "GetBrightness", {"name": "zone/2"}, ["zone/1"])
+}

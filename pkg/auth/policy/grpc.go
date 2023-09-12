@@ -138,13 +138,7 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 		addr = p.Addr.String()
 	}
 	if err != nil {
-		i.logger.Warn("request blocked by policy",
-			zap.Any("attributes", input),
-			zap.String("addr", addr),
-			zap.Strings("queries", queries),
-		)
-	} else {
-		i.logger.Debug("request permitted by policy",
+		i.logger.Debug("request blocked by policy",
 			zap.Any("attributes", input),
 			zap.String("addr", addr),
 			zap.Strings("queries", queries),
