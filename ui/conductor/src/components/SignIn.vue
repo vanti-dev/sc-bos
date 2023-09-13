@@ -1,10 +1,5 @@
 <template>
   <v-card class="pa-4">
-    <div class="d-flex justify-end">
-      <v-btn @click="store.toggleLoginDialog()" text dense>
-        <v-icon> mdi-close </v-icon>
-      </v-btn>
-    </div>
     <v-card-title class="justify-center text-h3 font-weight-semibold">
       Sign in to Smart Core
     </v-card-title>

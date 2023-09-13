@@ -2,7 +2,7 @@ import {events, keycloak} from '@/api/keycloak.js';
 import localLogin from '@/api/localLogin.js';
 import jwtDecode from 'jwt-decode';
 import {defineStore} from 'pinia';
-import {computed, ref} from 'vue';
+import {computed, ref, watch} from 'vue';
 
 export const useAccountStore = defineStore('accountStore', () => {
   const kcp = keycloak();
@@ -74,7 +74,8 @@ export const useAccountStore = defineStore('accountStore', () => {
   };
 
   const logout = async () => {
-    localStorage.getItem('keyclock') === 'true' && kcp.then((kc) => kc.logout());
+    localStorage.getItem('keyclock') === 'true' &&
+    kcp.then((kc) => kc.logout());
     loggedIn.value = false;
     token.value = '';
     claims.value = {};
@@ -82,6 +83,11 @@ export const useAccountStore = defineStore('accountStore', () => {
   };
 
   kcEvents.addEventListener('authSuccess', updateRefs);
+
+  // Keep login modal permanently on screen if user is not logged in
+  watch([loggedIn, token], () => {
+    if (!loggedIn.value || !token.value) loginDialog.value = true;
+  }, {immediate: true, deep: true});
 
   return {
     loggedIn,
@@ -96,9 +102,10 @@ export const useAccountStore = defineStore('accountStore', () => {
     loadLocalStorage,
     snackbar,
 
+    isLoggedIn: computed(() => loggedIn.value),
     fullName: computed(() => claims.value?.name || ''),
     email: computed(() => claims.value?.email || ''),
-    role: computed(() => claims.value?.roles[0] || 'viewer'),
+    role: computed(() => claims.value?.roles?.[0] || ''),
 
     login: (scopes) => {
       return kcp.then((kc) => kc.login({scope: scopes.join(' ')}));
