@@ -8,7 +8,9 @@
       {{ zoneList.join(', ') }}
     </v-card-text>
     <v-card-text v-else class="pt-1">
-      <span class="font-italic">No zones associated with this account</span>
+      <span class="font-italic">
+        No zones associated with this account, they will not be able to access any devices.
+      </span>
     </v-card-text>
   </v-card>
 </template>
