@@ -7,9 +7,9 @@
         :clipped-right="hasSidebar"
         elevation="0"
         class="pr-7">
-      <app-menu/>
+      <app-menu v-if="isLoggedIn"/>
       <sc-logo outline="white" style="height: 35px; margin-left: 16px"/>
-      <span class="heading">Smart Core | {{ pageTitle }}</span>
+      <span class="heading">Smart Core {{ isLoggedIn ? ' | ' + pageTitle : '' }}</span>
 
       <v-divider
           vertical
@@ -24,7 +24,7 @@
     </v-app-bar>
 
     <v-navigation-drawer
-        v-if="hasNav"
+        v-if="hasNav && isLoggedIn"
         v-model="drawer"
         app
         :class="[!miniVariant ? 'pt-0' : 'pt-3', 'pb-8 ml-2']"
@@ -61,8 +61,7 @@
         </v-footer>
       </template>
     </v-navigation-drawer>
-
-    <router-view/>
+    <router-view v-if="isLoggedIn"/>
 
     <error-view/>
   </v-app>
@@ -80,12 +79,14 @@ import ErrorView from '@/components/ui-error/ErrorView.vue';
 import {useAccountStore} from '@/stores/account.js';
 import {usePageStore} from '@/stores/page';
 
+import useAuthSetup from '@/composables/useAuthSetup';
+const {isLoggedIn} = useAuthSetup();
+
 const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
 
 const {drawer, miniVariant, drawerWidth, pinDrawer} = storeToRefs(usePageStore());
 
 const store = useAccountStore();
-
 store.loadLocalStorage();
 
 const appVersion = computed(() => {
@@ -94,6 +95,7 @@ const appVersion = computed(() => {
   }
   return GITVERSION;
 });
+
 
 watch(miniVariant, expanded => {
   if (expanded) {
@@ -130,3 +132,4 @@ watch(miniVariant, expanded => {
   width: 100%;
 }
 </style>
+@/composables/useAuthSetup

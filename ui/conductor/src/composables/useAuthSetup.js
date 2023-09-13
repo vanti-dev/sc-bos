@@ -61,16 +61,16 @@ export default function() {
   });
 
   const blockSystemEdit = computed(() => {
-    if (role.value === 'viewer') return true;
+    if (role.value === 'viewer' || role.value === 'operator') return true;
     return false;
   });
-
 
   return {
     init,
 
     role,
     accessLevel,
+    isLoggedIn: computed(() => accountStore.isLoggedIn),
 
     blockActions,
     blockSystemEdit
