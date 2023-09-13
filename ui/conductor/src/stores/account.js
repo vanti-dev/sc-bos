@@ -74,8 +74,7 @@ export const useAccountStore = defineStore('accountStore', () => {
   };
 
   const logout = async () => {
-    localStorage.getItem('keyclock') === 'true' &&
-    kcp.then((kc) => kc.logout());
+    localStorage.getItem('keyclock') === 'true' && kcp.then((kc) => kc.logout());
     loggedIn.value = false;
     token.value = '';
     claims.value = {};
@@ -99,6 +98,7 @@ export const useAccountStore = defineStore('accountStore', () => {
 
     fullName: computed(() => claims.value?.name || ''),
     email: computed(() => claims.value?.email || ''),
+    role: computed(() => claims.value?.roles[0] || 'viewer'),
 
     login: (scopes) => {
       return kcp.then((kc) => kc.login({scope: scopes.join(' ')}));
