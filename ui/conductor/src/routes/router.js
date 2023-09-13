@@ -8,7 +8,10 @@ import {route, routeTitle} from '@/util/router.js';
 import Vue, {nextTick} from 'vue';
 import VueRouter from 'vue-router';
 import {useAppConfigStore} from '@/stores/app-config';
+import pinia from '@/plugins/pinia.js';
+import useAuthSetup from '@/composables/useAuthSetup';
 
+Vue.use(pinia);
 Vue.use(VueRouter);
 
 const router = new VueRouter({
@@ -37,13 +40,10 @@ if (window) {
   router.beforeEach(async (to, from, next) => {
     const appConfig = useAppConfigStore();
     await appConfig.loadConfig();
-    if (to.path==='/') {
-      next(appConfig.homePath);
-    } else {
-      next(appConfig.pathEnabled(to.path));
-    }
+
+    const authSetup = useAuthSetup();
+    authSetup.init(to.path, next); // initialize the authentication setup
   });
 }
-
 
 export default router;
