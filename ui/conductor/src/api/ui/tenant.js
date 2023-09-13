@@ -3,6 +3,7 @@ import {clientOptions} from '@/api/grpcweb.js';
 import {trackAction} from '@/api/resource.js';
 import {TenantApiPromiseClient} from '@sc-bos/ui-gen/proto/tenants_grpc_web_pb';
 import {
+  AddTenantZonesRequest,
   CreateSecretRequest,
   CreateTenantRequest,
   DeleteSecretRequest,
@@ -10,6 +11,7 @@ import {
   GetTenantRequest,
   ListSecretsRequest,
   ListTenantsRequest,
+  RemoveTenantZonesRequest,
   Secret,
   Tenant
 } from '@sc-bos/ui-gen/proto/tenants_pb';
@@ -40,18 +42,6 @@ export function createTenant(request, tracker) {
 }
 
 /**
- * @param {CreateTenantRequest.AsObject} obj
- * @return {CreateTenantRequest}
- */
-function createTenantRequestFromObject(obj) {
-  if (!obj) return undefined;
-
-  const req = new CreateTenantRequest();
-  req.setTenant(tenantFromObject(obj.tenant));
-  return req;
-}
-
-/**
  *
  * @param {DeleteTenantRequest.AsObject} obj
  * @param {ActionTracker<DeleteTenantRequest.AsObject>} [tracker]
@@ -62,19 +52,6 @@ export function deleteTenant(obj, tracker) {
     const api = client(endpoint);
     return api.deleteTenant(deleteTenantRequestFromObject(obj));
   });
-}
-
-/**
- *
- * @param {DeleteTenantRequest.AsObject} obj
- * @return {DeleteTenantRequest}
- */
-function deleteTenantRequestFromObject(obj) {
-  if (!obj) return undefined;
-
-  const req = new DeleteTenantRequest();
-  setProperties(req, obj, 'id');
-  return req;
 }
 
 /**
@@ -138,11 +115,60 @@ export function deleteSecret(request, tracker) {
 }
 
 /**
+ * @param {AddTenantZonesRequest.AsObject} request
+ * @param {ActionTracker<AddTenantZonesRequest.AsObject>} [tracker]
+ * @return {Promise<Tenant.AsObject>}
+ */
+export function addTenantZones(request, tracker) {
+  return trackAction('Tenant.addTenantZones', tracker ?? {}, endpoint => {
+    const api = client(endpoint);
+    return api.addTenantZones(addTenantZonesRequestFromObject(request));
+  });
+}
+
+/**
+ * @param {RemoveTenantZonesRequest.AsObject} request
+ * @param {ActionTracker<RemoveTenantZonesRequest.AsObject>} [tracker]
+ * @return {Promise<Tenant.AsObject>}
+ */
+export function removeTenantZones(request, tracker) {
+  return trackAction('Tenant.removeTenantZones', tracker ?? {}, endpoint => {
+    const api = client(endpoint);
+    return api.removeTenantZones(removeTenantZonesRequestFromObject(request));
+  });
+}
+
+/**
  * @param {string} endpoint
  * @return {TenantApiPromiseClient}
  */
 function client(endpoint) {
   return new TenantApiPromiseClient(endpoint, null, clientOptions());
+}
+
+/**
+ * @param {CreateTenantRequest.AsObject} obj
+ * @return {CreateTenantRequest}
+ */
+function createTenantRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const req = new CreateTenantRequest();
+  req.setTenant(tenantFromObject(obj.tenant));
+  return req;
+}
+
+/**
+ *
+ * @param {DeleteTenantRequest.AsObject} obj
+ * @return {DeleteTenantRequest}
+ */
+function deleteTenantRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const req = new DeleteTenantRequest();
+  setProperties(req, obj, 'id');
+  return req;
 }
 
 /**
@@ -158,6 +184,7 @@ function secretFromObject(obj) {
   dst.setTenant(tenantFromObject(obj.tenant));
   return dst;
 }
+
 /**
  * @param {Secret|Secret.AsObject|null} s
  * @return {Secret.AsObject&{createTime?: Date, expireTime?:Date, lastUseTime?:Date, firstUseTime?:Date} | null}
@@ -183,5 +210,27 @@ function tenantFromObject(obj) {
   const dst = new Tenant();
   setProperties(dst, obj, 'id', 'title', 'etag', 'zoneNamesList');
   dst.setCreateTime(timestampFromObject(obj.createTime));
+  return dst;
+}
+
+/**
+ * @param {AddTenantZonesRequest.AsObject} obj
+ * @return {undefined|AddTenantZonesRequest}
+ */
+function addTenantZonesRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new AddTenantZonesRequest();
+  setProperties(dst, obj, 'tenantId', 'addZoneNamesList');
+  return dst;
+}
+
+/**
+ * @param {RemoveTenantZonesRequest.AsObject} obj
+ * @return {undefined|RemoveTenantZonesRequest}
+ */
+function removeTenantZonesRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new RemoveTenantZonesRequest();
+  setProperties(dst, obj, 'tenantId', 'removeZoneNamesList');
   return dst;
 }
