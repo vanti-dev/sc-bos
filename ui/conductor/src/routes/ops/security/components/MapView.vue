@@ -320,31 +320,24 @@ const setDoorStroke = ({name, color}) => {
 
 // watch for changes in the colours and svg and invoke dom actions to update the svg.
 watch(
-    [doorFills, doors],
+    [doorFills, doorStrokes, doors],
     () => {
       doors.value.forEach(({el, name}) => {
         const color = doorFills.value[name] ?? 'grey';
-        if (color && el) {
+        const stroke = doorStrokes.value[name] ?? 'unknown';
+
+        if (el) {
           el.removeAttribute('style');
+
+          // Handle fill class updates
           el.classList.remove('success', 'error', 'warning', 'grant_unknown', 'grey');
           el.classList.add(color);
-        }
-      });
-    },
-    {deep: true}
-);
-watch(
-    [doorStrokes, doors],
-    () => {
-      doors.value.forEach(({el, name}) => {
-        const stroke = doorStrokes.value[name] ?? 'unknown';
-        if (stroke && el) {
-          el.removeAttribute('style');
+
+          // Handle stroke class updates
           el.classList.remove('open', 'closed', 'moving', 'unknown');
           el.classList.add(stroke);
 
           const fill = doorFills.value[name] ? doorFills.value[name] : doorStrokes.value[name] + '-fill';
-
           el.classList.remove('open-fill', 'closed-fill', 'moving-fill', 'unknown-fill');
           el.classList.add(fill);
         }
@@ -352,6 +345,7 @@ watch(
     },
     {deep: true}
 );
+
 
 const hasTrait = (device, traitName) => {
   const traits = {};
