@@ -2,7 +2,7 @@
   <v-card class="pa-0" flat tile>
     <v-subheader class="text-title-caps-large neutral--text text--lighten-3">
       Zones<v-spacer/>
-      <v-btn outlined>Edit<v-icon right>mdi-pencil</v-icon></v-btn>
+      <v-btn outlined :disabled="blockActions">Edit<v-icon right>mdi-pencil</v-icon></v-btn>
     </v-subheader>
     <v-card-text v-if="zoneList.length > 0" class="pt-1">
       {{ zoneList.join(', ') }}
@@ -14,14 +14,19 @@
 </template>
 
 <script setup>
+import useAuthSetup from '@/composables/useAuthSetup';
+
 defineProps({
   zoneList: {
     type: Array,
     default: () => []
   }
 });
+
+// ------------------------------ //
+// ----- Authentication settings ----- //
+
+const {blockActions} = useAuthSetup();
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

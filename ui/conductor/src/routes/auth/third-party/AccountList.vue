@@ -12,9 +12,7 @@
         @click:row="showTenant">
       <template #item.zones="{ index, value }">
         <span class="d-inline-flex justify-start" style="gap: 8px">
-          <v-chip v-for="zone in value" :key="index + zone" small outlined>{{
-            zone
-          }}</v-chip>
+          <v-chip v-for="zone in value" :key="index + zone" small outlined>{{ zone }}</v-chip>
         </span>
       </template>
       <template #top>
@@ -30,8 +28,14 @@
             </v-col>
             <v-spacer/>
             <new-account-dialog @finished="tenantStore.refreshTenants">
-              <template #activator="{on, attrs}">
-                <v-btn outlined v-bind="attrs" v-on="on">Add Account<v-icon right>mdi-plus</v-icon></v-btn>
+              <template #activator="{ on, attrs }">
+                <v-btn
+                    outlined
+                    v-bind="attrs"
+                    v-on="on"
+                    :disabled="blockActions">
+                  Add Account<v-icon right>mdi-plus</v-icon>
+                </v-btn>
               </template>
             </new-account-dialog>
           </v-row>
@@ -49,6 +53,7 @@ import {usePageStore} from '@/stores/page';
 import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
 import {storeToRefs} from 'pinia';
 import {useErrorStore} from '@/components/ui-error/error';
+import useAuthSetup from '@/composables/useAuthSetup';
 
 const pageStore = usePageStore();
 const tenantStore = useTenantStore();
@@ -69,7 +74,7 @@ onMounted(() => {
   unwatchErrors = errorStore.registerTracker(tenantsTracker);
   tenantStore.refreshTenants();
 });
-onUnmounted( () => {
+onUnmounted(() => {
   if (unwatchErrors) unwatchErrors();
 });
 
@@ -93,6 +98,11 @@ function rowClass(item) {
   }
   return '';
 }
+
+// ------------------------------ //
+// ----- Authentication settings ----- //
+
+const {blockActions} = useAuthSetup();
 </script>
 
 <style lang="scss" scoped>
@@ -106,7 +116,7 @@ function rowClass(item) {
 
 .v-data-table :deep(.v-data-footer) {
   background: var(--v-neutral-lighten1) !important;
-  border-radius: 0px 0px $border-radius-root*2 $border-radius-root*2;
+  border-radius: 0px 0px $border-radius-root * 2 $border-radius-root * 2;
   border: none;
   margin: 0 -12px -12px;
 }
