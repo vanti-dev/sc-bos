@@ -6,6 +6,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
    * @private
    */
   const _config = ref({});
+  const _loaded = ref(false);
   let _configResolve;
   const configPromise = new Promise((resolve) => _configResolve = resolve);
 
@@ -56,6 +57,9 @@ export const useAppConfigStore = defineStore('appConfig', () => {
    * Loads the config from the server
    */
   async function loadConfig() {
+    if (_loaded.value) {
+      return;
+    }
     const url = import.meta.env.VITE_UI_CONFIG_URL || '/__/scos/ui-config.json';
     try {
       const res = await fetch(url);
@@ -65,6 +69,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
       _config.value = _defaultConfig;
     }
     _configResolve(config.value);
+    _loaded.value = true;
   }
 
   /**

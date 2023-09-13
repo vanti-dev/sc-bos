@@ -5,7 +5,7 @@
     </v-card-text>
     <v-card-actions>
       <v-btn
-          @click="store.login(['profile'])"
+          @click="doLogin()"
           color="primary"
           block
           large
@@ -34,4 +34,6 @@
 import {useAccountStore} from '@/stores/account.js';
 
 const store = useAccountStore();
+const doLogin = () => store.login(['profile', 'roles'])
+    .catch(err => console.error(err));
 </script>

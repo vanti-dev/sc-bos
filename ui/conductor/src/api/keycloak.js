@@ -1,3 +1,4 @@
+import {useAppConfigStore} from '@/stores/app-config';
 import Keycloak from 'keycloak-js';
 
 /**
@@ -62,11 +63,12 @@ async function newKeycloak() {
  * @return {Promise<import('keycloak-js').KeycloakConfig | string>}
  */
 async function constructorConfig() {
-  // todo: get keycloak config from somewhere non-hard-coded
-  return {
-    realm: 'smart-core',
-    url: 'http://localhost:8888/',
-    clientId: 'sc-apps'
+  const useAppConfig = useAppConfigStore();
+  const config = await useAppConfig.configPromise;
+  return config?.keycloak ?? {
+    realm: import.meta.env.VITE_KEYCLOAK_REALM || 'smart-core',
+    url: import.meta.env.VITE_KEYCLOAK_URL || 'http://localhost:8888/',
+    clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'sc-apps'
   };
 }
 

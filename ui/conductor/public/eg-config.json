@@ -43,6 +43,11 @@
       {"name": "Floor 8", "svgPath": "/floorPlans/L08.svg"},
       {"name": "Floor 9", "svgPath": "/floorPlans/L09.svg"},
       {"name": "Floor 10", "svgPath": "/floorPlans/L10.svg"}
-    ]
+    ],
+    "keycloak": {
+      "realm": "Smartcore",
+      "url": "https://keycloak.ocw.paradisebuild.uk:8443/",
+      "clientId": "scos-opsui"
+    }
   }
 }
