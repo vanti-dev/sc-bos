@@ -1,6 +1,9 @@
 import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource.js';
+import {statusCodeToString} from '@/components/ui-error/util';
 import {useErrorStore} from '@/components/ui-error/error';
 import {nextTick, reactive, set} from 'vue';
+
+import {useAccountStore} from '@/stores/account';
 
 export class Collection {
   constructor(listFn, pullFn) {
@@ -24,12 +27,21 @@ export class Collection {
   }
 
   query(q = undefined) {
+    const account = useAccountStore();
     this.reset();
 
     this.queryRaw = q;
     this._queryVersion = Math.random();
-    this.fetchPages()
-        .catch(err => this._errors.addError(this._resources, {name: `Collection.query`, error: err}));
+    this.fetchPages().catch((err) => {
+      this._errors.addError(this._resources, {name: `Collection.query`, error: err});
+
+      // Log the user out if we get a permission denied error
+      // and clear the local storage
+      if (statusCodeToString(err.code) === 'PERMISSION DENIED') {
+        account.logout();
+        localStorage.clear();
+      }
+    });
   }
 
   pullIfNeeded() {
@@ -59,8 +71,7 @@ export class Collection {
     if (b === this._needsMorePages) return;
 
     this._needsMorePages = b;
-    this.fetchPages()
-        .catch(err => this._errors.addError(this._resources, {name: `Collection.query`, error: err}));
+    this.fetchPages().catch((err) => this._errors.addError(this._resources, {name: `Collection.query`, error: err}));
   }
 
   get needsMorePages() {
