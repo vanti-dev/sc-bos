@@ -1,5 +1,12 @@
-import {convertProperties, setProperties, timestampFromObject, timestampToDate} from '@/api/convpb.js';
+import {
+  convertProperties,
+  fieldMaskFromObject,
+  setProperties,
+  timestampFromObject,
+  timestampToDate
+} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
+import {pullResource, setValue} from '@/api/resource';
 import {trackAction} from '@/api/resource.js';
 import {TenantApiPromiseClient} from '@sc-bos/ui-gen/proto/tenants_grpc_web_pb';
 import {
@@ -11,9 +18,11 @@ import {
   GetTenantRequest,
   ListSecretsRequest,
   ListTenantsRequest,
+  PullTenantRequest,
   RemoveTenantZonesRequest,
   Secret,
-  Tenant
+  Tenant,
+  UpdateTenantRequest
 } from '@sc-bos/ui-gen/proto/tenants_pb';
 
 /**
@@ -29,6 +38,24 @@ export function listTenants(request, tracker) {
 }
 
 /**
+ * @param {Partial<PullTenantRequest.AsObject>} request
+ * @param {ResourceValue<Tenant.AsObject, PullTenantResponse>} resource
+ */
+export function pullTenant(request, resource) {
+  pullResource('Tenant.pullTenant', resource, endpoint => {
+    const api = client(endpoint);
+    const stream = api.pullTenant(pullTenantRequestFromObject(request));
+    stream.on('data', msg => {
+      const changes = msg.getChangesList();
+      for (const change of changes) {
+        setValue(resource, change.getTenant().toObject());
+      }
+    });
+    return stream;
+  });
+}
+
+/**
  *
  * @param {CreateTenantRequest.AsObject} request
  * @param {ActionTracker<CreateTenantRequest.AsObject>} [tracker]
@@ -38,6 +65,19 @@ export function createTenant(request, tracker) {
   return trackAction('Tenant.createTenant', tracker ?? {}, endpoint => {
     const api = client(endpoint);
     return api.createTenant(createTenantRequestFromObject(request));
+  });
+}
+
+/**
+ *
+ * @param {UpdateTenantRequest.AsObject} request
+ * @param {ActionTracker<CreateTenantRequest.AsObject>} [tracker]
+ * @return {Promise<Tenant.AsObject>}
+ */
+export function updateTenant(request, tracker) {
+  return trackAction('Tenant.updateTenant', tracker ?? {}, endpoint => {
+    const api = client(endpoint);
+    return api.updateTenant(updateTenantRequestFromObject(request));
   });
 }
 
@@ -115,7 +155,7 @@ export function deleteSecret(request, tracker) {
 }
 
 /**
- * @param {AddTenantZonesRequest.AsObject} request
+ * @param {Partial<AddTenantZonesRequest.AsObject>} request
  * @param {ActionTracker<AddTenantZonesRequest.AsObject>} [tracker]
  * @return {Promise<Tenant.AsObject>}
  */
@@ -146,6 +186,14 @@ function client(endpoint) {
   return new TenantApiPromiseClient(endpoint, null, clientOptions());
 }
 
+function pullTenantRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const dst = new PullTenantRequest();
+  setProperties(dst, obj, 'id');
+  return dst;
+}
+
 /**
  * @param {CreateTenantRequest.AsObject} obj
  * @return {CreateTenantRequest}
@@ -155,6 +203,19 @@ function createTenantRequestFromObject(obj) {
 
   const req = new CreateTenantRequest();
   req.setTenant(tenantFromObject(obj.tenant));
+  return req;
+}
+
+/**
+ * @param {UpdateTenantRequest.AsObject} obj
+ * @return {UpdateTenantRequest}
+ */
+function updateTenantRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const req = new UpdateTenantRequest();
+  req.setTenant(tenantFromObject(obj.tenant));
+  req.setUpdateMask(fieldMaskFromObject(obj.updateMask));
   return req;
 }
 

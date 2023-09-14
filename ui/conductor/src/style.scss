@@ -64,3 +64,12 @@ Also center the text when it's small
         }
     }
 }
+
+// increase the contrast between dark card based menus and their background
+.v-menu__content.theme--dark {
+    > .v-card.theme--dark,
+    > .v-list.theme--dark {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-top-color: rgba(255, 255, 255, 0.25);
+    }
+}
