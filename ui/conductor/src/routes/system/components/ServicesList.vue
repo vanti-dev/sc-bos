@@ -42,6 +42,7 @@
             outlined
             class="automation-device__btn--red"
             color="red"
+            :disabled="blockActions"
             width="100%"
             @click.stop="_stopService(item)">
           Stop
@@ -51,6 +52,7 @@
             outlined
             class="automation-device__btn--green"
             color="green"
+            :disabled="blockActions"
             width="100%"
             @click.stop="_startService(item)">
           Start
@@ -71,6 +73,9 @@ import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
 import {serviceName} from '@/util/proxy';
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+const {blockActions} = useAuthSetup();
 
 const serviceStore = useServicesStore();
 const pageStore = usePageStore();

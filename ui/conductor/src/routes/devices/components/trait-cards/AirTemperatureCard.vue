@@ -20,7 +20,7 @@
           color="neutral lighten-1"
           elevation="0"
           @click="changeSetPoint(-0.5)"
-          :disabled="(props.value?.temperatureSetPoint === undefined)">
+          :disabled="blockActions || (props.value?.temperatureSetPoint === undefined)">
         Down
       </v-btn>
       <v-btn
@@ -28,7 +28,7 @@
           color="neutral lighten-1"
           elevation="0"
           @click="changeSetPoint(0.5)"
-          :disabled="(props.value?.temperatureSetPoint === undefined)">
+          :disabled="blockActions || (props.value?.temperatureSetPoint === undefined)">
         Up
       </v-btn>
     </v-card-actions>
@@ -42,6 +42,10 @@ import {airTemperatureModeToString, temperatureToString} from '@/api/sc/traits/a
 import {camelToSentence} from '@/util/string';
 import {AirTemperature} from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb';
 import {computed, reactive, ref} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+const {blockActions} = useAuthSetup();
+
 
 const temperatureRange = ref({
   low: 18.0,

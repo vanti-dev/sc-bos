@@ -7,12 +7,20 @@
           v-model="config"
           auto-grow
           class="text-body-code"
+          :disabled="blockSystemEdit"
           :error-messages="jsonError"
           filled
           full-width
           hide-details="auto"
           readonly/>
-      <v-btn icon tile class="copy-btn" @click="copyConfig"><v-icon>mdi-content-copy</v-icon></v-btn>
+      <v-btn
+          icon
+          tile
+          class="copy-btn"
+          :disabled="blockSystemEdit"
+          @click="copyConfig">
+        <v-icon>mdi-content-copy</v-icon>
+      </v-btn>
       <v-snackbar v-model="copyConfirm" timeout="2000" color="success" max-width="250" min-width="200">
         <span class="text-body-large align-baseline"><v-icon left>mdi-check-circle</v-icon>Config copied</span>
       </v-snackbar>
@@ -24,6 +32,9 @@
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
 import {computed, ref} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+const {blockSystemEdit} = useAuthSetup();
 
 const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);
