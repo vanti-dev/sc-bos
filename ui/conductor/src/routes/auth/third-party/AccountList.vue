@@ -10,9 +10,9 @@
         :loading="tenantsTracker.loading"
         :item-class="rowClass"
         @click:row="showTenant">
-      <template #item.zones="{ index, value }">
+      <template #item.zoneNamesList="{ index, value }">
         <span class="d-inline-flex justify-start" style="gap: 8px">
-          <v-chip v-for="zone in value" :key="index + zone" small outlined>{{ zone }}</v-chip>
+          <name-chip v-for="zone in value" :key="index + zone" small outlined :name="zone"/>
         </span>
       </template>
       <template #top>
@@ -47,12 +47,13 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import {onMounted, onUnmounted, ref} from 'vue';
-import NewAccountDialog from '@/routes/auth/third-party/components/NewAccountDialog.vue';
-import {usePageStore} from '@/stores/page';
-import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
-import {storeToRefs} from 'pinia';
 import {useErrorStore} from '@/components/ui-error/error';
+import NameChip from '@/routes/auth/third-party/components/NameChip.vue';
+import NewAccountDialog from '@/routes/auth/third-party/components/NewAccountDialog.vue';
+import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
+import {usePageStore} from '@/stores/page';
+import {storeToRefs} from 'pinia';
+import {onMounted, onUnmounted, ref, watch} from 'vue';
 import useAuthSetup from '@/composables/useAuthSetup';
 
 const pageStore = usePageStore();
@@ -63,9 +64,9 @@ const errorStore = useErrorStore();
 const search = ref('');
 
 const headers = [
-  {text: 'Name', value: 'title'},
+  {text: 'Name', value: 'title', width: '30%'},
   // {text: 'Permissions', value: 'permissions'},
-  {text: 'Zones', value: 'zones'}
+  {text: 'Zones', value: 'zoneNamesList'}
 ];
 
 // UI error handling
@@ -87,6 +88,16 @@ function showTenant(item) {
   pageStore.sidebarTitle = item.title;
   pageStore.sidebarData = item;
 }
+
+// update the sidebar data if the tenant list is updated
+watch(tenantsList, () => {
+  const tenant = tenantsList.value.find(tenant => tenant.id === pageStore.sidebarData.id);
+  if (!tenant) {
+    return;
+  }
+  pageStore.sidebarTitle = tenant.title;
+  pageStore.sidebarData = tenant;
+}, {deep: true});
 
 /**
  * @param {*} item

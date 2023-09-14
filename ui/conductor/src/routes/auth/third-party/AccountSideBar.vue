@@ -1,7 +1,7 @@
 <template>
   <side-bar>
     <v-list>
-      <account-zone-list-card :zone-list="sidebarData.zoneNamesList ?? []"/>
+      <account-zone-list-card :zone-list="sidebarData.zoneNamesList ?? []" @update:zone-list="saveZones"/>
       <v-divider/>
       <account-secrets-card :account="sidebarData"/>
       <v-divider/>
@@ -35,23 +35,30 @@
 </template>
 
 <script setup>
+import {newActionTracker} from '@/api/resource';
+import {deleteTenant, updateTenant} from '@/api/ui/tenant';
 import SideBar from '@/components/SideBar.vue';
+import AccountSecretsCard from '@/routes/auth/third-party/components/AccountSecretsCard.vue';
+import AccountZoneListCard from '@/routes/auth/third-party/components/AccountZoneListCard.vue';
+import DeleteConfirmationDialog from '@/routes/auth/third-party/components/DeleteConfirmationDialog.vue';
+import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
 import {reactive} from 'vue';
-import {deleteTenant} from '@/api/ui/tenant';
-import {newActionTracker} from '@/api/resource';
-import AccountZoneListCard from '@/routes/auth/third-party/components/AccountZoneListCard.vue';
-import AccountSecretsCard from '@/routes/auth/third-party/components/AccountSecretsCard.vue';
-import DeleteConfirmationDialog from '@/routes/auth/third-party/components/DeleteConfirmationDialog.vue';
-import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
+
 import useAuthSetup from '@/composables/useAuthSetup';
 
 const pageStore = usePageStore();
 const {sidebarTitle, sidebarData} = storeToRefs(pageStore);
 const tenantStore = useTenantStore();
 
-const deleteTracker = reactive(/** @type {ActionTracker<DeleteTenantResponse.AsObject>} */ newActionTracker());
+const deleteTracker = reactive(
+    /** @type {ActionTracker<DeleteTenantResponse.AsObject>} */ newActionTracker()
+);
+const updateZonesTracker = reactive(
+    /** @type {ActionTracker<Tenant.AsObject>} */
+    newActionTracker()
+);
 
 /**
  *
@@ -65,6 +72,23 @@ async function deleteAccount() {
   );
   tenantStore.refreshTenants();
   pageStore.showSidebar = false;
+}
+
+/**
+ * @param {string[]} zones
+ * @return {Promise<void>}
+ */
+async function saveZones(zones) {
+  await updateTenant({
+    tenant: {
+      id: sidebarData.value.id,
+      zoneNamesList: zones
+    },
+    updateMask: {
+      pathsList: ['zone_names']
+    }
+  }, updateZonesTracker);
+  tenantStore.refreshTenants();
 }
 
 // ------------------------------ //

@@ -157,7 +157,6 @@ type LightingEvent struct {
 	Id        string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`     // An opaque, unique identifier for this log entry
 	Timestamp *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	// Types that are assignable to Event:
-	//
 	//	*LightingEvent_DurationTestPass_
 	//	*LightingEvent_FunctionTestPass_
 	//	*LightingEvent_StatusReport_

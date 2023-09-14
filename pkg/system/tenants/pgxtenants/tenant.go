@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4"
+	"github.com/pborman/uuid"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -136,7 +137,9 @@ func AddTenantZones(ctx context.Context, tx pgx.Tx, tenantID string, zones []str
 	cols := []string{"tenant", "zone_name"}
 	var rows [][]any
 	for _, zoneID := range zones {
-		rows = append(rows, []any{tenantID, zoneID})
+		// CopyFrom doesn't do automatic UUID/string conversion for us
+		id := uuid.Parse(tenantID)
+		rows = append(rows, []any{id, zoneID})
 	}
 	_, err := tx.CopyFrom(ctx, pgx.Identifier{"tenant_zone"}, cols, pgx.CopyFromRows(rows))
 	return err

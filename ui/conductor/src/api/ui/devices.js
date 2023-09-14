@@ -12,7 +12,7 @@ import {
 } from '@sc-bos/ui-gen/proto/devices_pb';
 
 /**
- * @param {ListDevicesRequest.AsObject} request
+ * @param {Partial<ListDevicesRequest.AsObject>} request
  * @param {ActionTracker<ListDevicesResponse.AsObject>} [tracker]
  * @return {Promise<ListDevicesResponse.AsObject>}
  */

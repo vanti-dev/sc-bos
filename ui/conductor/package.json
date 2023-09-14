@@ -16,6 +16,7 @@
     "chartjs-adapter-date-fns": "^3.0.0",
     "date-fns": "^2.29.2",
     "dayjs": "^1.11.7",
+    "debounce": "^1.2.1",
     "google-protobuf": "^3.21.0",
     "grpc-web": "^1.4.2",
     "jwt-decode": "^3.1.2",

@@ -10,6 +10,8 @@ import VueRouter from 'vue-router';
 import {useAppConfigStore} from '@/stores/app-config';
 import pinia from '@/plugins/pinia.js';
 import useAuthSetup from '@/composables/useAuthSetup';
+import {usePageStore} from '@/stores/page';
+import {storeToRefs} from 'pinia';
 
 Vue.use(pinia);
 Vue.use(VueRouter);
@@ -43,6 +45,17 @@ if (window) {
 
     const authSetup = useAuthSetup();
     authSetup.init(to.path, next); // initialize the authentication setup
+
+    // Clear the sidebar when navigating to a different main path
+    const {showSidebar, sidebarTitle, sidebarData} = storeToRefs(usePageStore());
+    const mainPathFrom = from.path.split('/')[1];
+    const mainPathTo = to.path.split('/')[1];
+
+    if (mainPathFrom !== mainPathTo) {
+      showSidebar.value = false;
+      sidebarTitle.value = '';
+      sidebarData.value = {};
+    }
   });
 }
 
