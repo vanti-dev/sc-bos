@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onBeforeUnmount} from 'vue';
+import {ref, onMounted, onBeforeUnmount, watch} from 'vue';
 import {storeToRefs} from 'pinia';
 import {usePage} from '@/components/page';
 import {usePageStore} from '@/stores/page';
@@ -62,14 +62,23 @@ const handleMouseMove = (event) => {
 };
 
 const handleMouseUp = () => {
-  rightSidebar.value.$el.style.transition = ''; // Remove transition
-  sideBar.value.width = rightSidebar.value.$el.style.width; // Update sidebar width
-  drawerBorder.value.style.backgroundColor = ''; // Remove border highlight on button release
-  drawerBorder.value.style.width = ''; // Reset border width
+  if (rightSidebar.value && rightSidebar.value.$el) {
+    rightSidebar.value.$el.style.transition = ''; // Remove transition
+    sideBar.value.width = rightSidebar.value.$el.style.width; // Update sidebar width
+  }
+
+  if (drawerBorder.value) {
+    drawerBorder.value.style.backgroundColor = ''; // Remove border highlight on button release
+    drawerBorder.value.style.width = ''; // Reset border width
+  }
+
   document.removeEventListener('mousemove', handleMouseMove, false); // Remove event listener
 
   document.body.style.cursor = originalCursor; // Restore original cursor value
-  rightSidebar.value.$el.style.userSelect = ''; // Enable text selection
+
+  if (rightSidebar.value && rightSidebar.value.$el) {
+    rightSidebar.value.$el.style.userSelect = ''; // Enable text selection
+  }
 };
 
 // Set event listeners for sidebar resizing
@@ -86,12 +95,21 @@ onMounted(() => {
   }
 });
 
+// Re-set event listeners if sidebar is mounted after initial mount
+// (navigating away from a page with open sidebar to a page)
+watch(hasSidebar, (newValue) => {
+  if (newValue && rightSidebar.value?.$el) {
+    drawerBorder.value = rightSidebar.value.$el.querySelector('.v-navigation-drawer__border'); // Get border element
+    setEvents(); // Set event listeners
+  }
+});
+
 onBeforeUnmount(() => {
   drawerBorder.value.removeEventListener('mousedown', handleMouseDown, false); // Remove event listener
   document.removeEventListener('mousemove', handleMouseMove, false); // Remove event listener
   document.removeEventListener('mouseup', handleMouseUp, false); // Remove event listener
+  showSidebar.value = false; // Close sidebar
 });
-
 </script>
 
 <style lang="scss">
