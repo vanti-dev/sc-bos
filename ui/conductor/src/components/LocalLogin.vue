@@ -5,6 +5,7 @@
         <p class="text-center">Sign in locally.</p>
       </v-card-text>
       <v-text-field
+          autofocus
           label="Username"
           placeholder="Username"
           :rules="[rules.required]"

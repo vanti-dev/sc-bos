@@ -12,8 +12,9 @@
           <v-list-item
               v-for="zone of zoneList"
               :key="zone"
-              :to="'/site/zone/'+zone"
-              class="my-2 text-truncate">
+              :to="'/site/zone/' + zone"
+              class="my-2 text-truncate"
+              :disabled="accessLevel('/site/zone/' + zone).blockedAccess">
             <v-list-item-icon>
               <v-icon>mdi-select-all</v-icon>
             </v-list-item-icon>
@@ -31,21 +32,30 @@ import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
 import {storeToRefs} from 'pinia';
 import {computed, onUnmounted, ref, watch} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+const {accessLevel} = useAuthSetup();
 
 const servicesStore = useServicesStore();
 const pageStore = usePageStore();
 const {sidebarNode} = storeToRefs(pageStore);
 const zoneCollection = ref({});
 
-watch(sidebarNode, async () => {
-  zoneCollection.value = servicesStore.getService(
-      ServiceNames.Zones,
-      await sidebarNode.value.commsAddress,
-      await sidebarNode.value.commsName).servicesCollection;
+watch(
+    sidebarNode,
+    async () => {
+      zoneCollection.value = servicesStore.getService(
+          ServiceNames.Zones,
+          await sidebarNode.value.commsAddress,
+          await sidebarNode.value.commsName
+      ).servicesCollection;
 
-  // todo: this causes us to load all pages, connect with paging logic instead - although we might want it in this case
-  zoneCollection.value.needsMorePages = true;
-}, {immediate: true});
+      // todo: this causes us to load all pages, connect with paging logic instead
+      // - although we might want it in this case
+      zoneCollection.value.needsMorePages = true;
+    },
+    {immediate: true}
+);
 
 watch(zoneCollection, () => {
   zoneCollection.value.query(ServiceNames.Zones);
@@ -54,12 +64,12 @@ watch(zoneCollection, () => {
 onUnmounted(() => zoneCollection.value.reset());
 
 const zoneList = computed(() => {
-  return Object.values(zoneCollection.value?.resources?.value ?? []).map(zone => {
-    return zone.id;
-  }).sort();
+  return Object.values(zoneCollection.value?.resources?.value ?? [])
+      .map((zone) => {
+        return zone.id;
+      })
+      .sort();
 });
-
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

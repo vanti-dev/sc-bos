@@ -1,27 +1,33 @@
-import {computed, reactive, ref, watch} from 'vue';
+import {computed} from 'vue';
 import {useAccountStore} from '@/stores/account';
 import {useAppConfigStore} from '@/stores/app-config';
 import {roleToPermissions} from '@/routes/auth/roleToPermissions';
-import router from '@/routes/router';
 
 /**
  * Initializing the authentication setup
  *
- * @return {{init: (function(*, *): void), role: ComputedRef<null|string>, accessLevel: ComputedRef<boolean>}}
+ * @return {{
+ * init: (function(*, *): void),
+ * role: ComputedRef<null|string>,
+ * accessLevel: ComputedRef<boolean>,
+ * isLoggedIn: ComputedRef<boolean>,
+ * blockActions: ComputedRef<boolean>,
+ * blockSystemEdit: ComputedRef<boolean>
+ * }}
  */
 export default function() {
   const appConfig = useAppConfigStore();
   const accountStore = useAccountStore();
 
   /**
-   * @param {string} to
+   * @param {string} toPath
    * @param {NavigationGuardNext} next
    */
-  const init = (to, next) => {
-    if (to === '/') {
+  const init = (toPath, next) => {
+    if (toPath === '/') {
       next(appConfig.homePath);
     } else {
-      next(appConfig.pathEnabled(to));
+      next(appConfig.pathEnabled(toPath));
     }
   };
 
@@ -29,13 +35,15 @@ export default function() {
   const role = computed(() => accountStore.role);
   // Logged in user's permissions depending on the role
   const rolePermissions = computed(() => roleToPermissions[role.value]);
-  // Current route path
-  const path = computed(() => router.currentRoute.path);
 
   // The user should have 3 access levels: fullAccess, limitedAccess, blockedAccess
   // Depending on the role and role permissions, we are going to check if the user has
   // permission (and access) to certain pages and functionalities
-  const accessLevel = computed(() => {
+  const accessLevel = (name) => {
+    // Formatting the name to match the main path (e.g. /site or /devices)
+    const formattedName = !name.includes('/') ? `/${name}` : name;
+
+    // If the role or role permissions are not defined, the user has blocked access
     if (!role.value || !rolePermissions.value) {
       return {
         fullAccess: false,
@@ -44,22 +52,25 @@ export default function() {
       };
     }
 
-    const fullAccess = rolePermissions.value.fullAccess.includes(path.value);
-    const limitedAccess = rolePermissions.value.limitedAccess.includes(path.value);
-    const blockedAccess = rolePermissions.value.blockedAccess.includes(path.value);
+    // Match the main path (e.g. /site or /devices) with the role permissions
+    const fullAccess = rolePermissions.value.fullAccess.includes(formattedName);
+    const limitedAccess = rolePermissions.value.limitedAccess.includes(formattedName);
+    const blockedAccess = rolePermissions.value.blockedAccess.includes(formattedName);
 
     return {
       fullAccess,
       limitedAccess,
       blockedAccess
     };
-  });
+  };
 
+  // Blocking actions (e.g. edit, delete, light control etc.)
   const blockActions = computed(() => {
     if (role.value === 'viewer') return true;
     return false;
   });
 
+  // Blocking system edit (e.g. add, edit, delete, restart etc.)
   const blockSystemEdit = computed(() => {
     if (role.value === 'viewer' || role.value === 'operator') return true;
     return false;
