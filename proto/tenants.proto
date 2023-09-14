@@ -110,7 +110,8 @@ message DeleteTenantRequest {
 message DeleteTenantResponse {}
 
 message PullTenantRequest {
-  bool updates_only = 1;
+  string id = 1;
+  bool updates_only = 2;
 }
 message PullTenantResponse {
   repeated Change changes = 1;
