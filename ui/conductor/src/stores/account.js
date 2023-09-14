@@ -3,8 +3,11 @@ import localLogin from '@/api/localLogin.js';
 import jwtDecode from 'jwt-decode';
 import {defineStore} from 'pinia';
 import {computed, ref, watch} from 'vue';
+import {useAppConfigStore} from '@/stores/app-config';
 
 export const useAccountStore = defineStore('accountStore', () => {
+  const appConfig = useAppConfigStore();
+
   const kcp = keycloak();
   const kcEvents = events;
 
@@ -84,10 +87,16 @@ export const useAccountStore = defineStore('accountStore', () => {
 
   kcEvents.addEventListener('authSuccess', updateRefs);
 
-  // Keep login modal permanently on screen if user is not logged in
-  watch([loggedIn, token], () => {
-    if (!loggedIn.value || !token.value) loginDialog.value = true;
-  }, {immediate: true, deep: true});
+  // Keep login modal permanently on screen if user is not logged in and we require authentication
+  watch(
+      [loggedIn, token, () => appConfig.config?.disableAuthentication],
+      () => {
+        if (appConfig.config?.disableAuthentication === false) {
+          if (!loggedIn.value || !token.value) loginDialog.value = true;
+        }
+      },
+      {immediate: true, deep: true}
+  );
 
   return {
     loggedIn,

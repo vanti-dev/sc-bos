@@ -48,7 +48,8 @@ export const useAppConfigStore = defineStore('appConfig', () => {
     config: {
       home: '/devices',
       hub: false, // specifies if we're talking to a hub or an area controller
-      proxy: false // specifies if we're using querying via an proxy (e.g. EdgeGateway) or not
+      proxy: false, // specifies if we're using querying via an proxy (e.g. EdgeGateway) or not
+      disableAuthentication: false // specifies if we're using authentication or not
     }
   };
 

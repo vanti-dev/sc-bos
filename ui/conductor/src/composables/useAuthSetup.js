@@ -9,7 +9,7 @@ import {roleToPermissions} from '@/routes/auth/roleToPermissions';
  * @return {{
  * init: (function(*, *): void),
  * role: ComputedRef<null|string>,
- * accessLevel: ComputedRef<boolean>,
+ * accessLevel: (function(string): boolean),
  * isLoggedIn: ComputedRef<boolean>,
  * blockActions: ComputedRef<boolean>,
  * blockSystemEdit: ComputedRef<boolean>
@@ -40,40 +40,52 @@ export default function() {
   // Depending on the role and role permissions, we are going to check if the user has
   // permission (and access) to certain pages and functionalities
   const accessLevel = (name) => {
-    // Formatting the name to match the main path (e.g. /site or /devices)
-    const formattedName = !name.includes('/') ? `/${name}` : name;
+    if (!appConfig.config?.disableAuthentication) {
+      // Formatting the name to match the main path (e.g. /site or /devices)
+      const formattedName = !name.includes('/') ? `/${name}` : name;
 
-    // If the role or role permissions are not defined, the user has blocked access
-    if (!role.value || !rolePermissions.value) {
+      // If the role or role permissions are not defined, the user has blocked access
+      if (!role.value || !rolePermissions.value) {
+        return {
+          fullAccess: false,
+          limitedAccess: false,
+          blockedAccess: true
+        };
+      }
+
+      // Match the main path (e.g. /site or /devices) with the role permissions
+      const fullAccess = rolePermissions.value.fullAccess.includes(formattedName);
+      const limitedAccess = rolePermissions.value.limitedAccess.includes(formattedName);
+      const blockedAccess = rolePermissions.value.blockedAccess.includes(formattedName);
+
       return {
-        fullAccess: false,
+        fullAccess,
+        limitedAccess,
+        blockedAccess
+      };
+    } else {
+      return {
+        fullAccess: true,
         limitedAccess: false,
-        blockedAccess: true
+        blockedAccess: false
       };
     }
-
-    // Match the main path (e.g. /site or /devices) with the role permissions
-    const fullAccess = rolePermissions.value.fullAccess.includes(formattedName);
-    const limitedAccess = rolePermissions.value.limitedAccess.includes(formattedName);
-    const blockedAccess = rolePermissions.value.blockedAccess.includes(formattedName);
-
-    return {
-      fullAccess,
-      limitedAccess,
-      blockedAccess
-    };
   };
 
   // Blocking actions (e.g. edit, delete, light control etc.)
   const blockActions = computed(() => {
-    if (role.value === 'viewer') return true;
-    return false;
+    if (!appConfig.config?.disableAuthentication) {
+      if (role.value === 'viewer') return true;
+      return false;
+    } else return false;
   });
 
   // Blocking system edit (e.g. add, edit, delete, restart etc.)
   const blockSystemEdit = computed(() => {
-    if (role.value === 'viewer' || role.value === 'operator') return true;
-    return false;
+    if (!appConfig.config?.disableAuthentication) {
+      if (role.value === 'viewer' || role.value === 'operator') return true;
+      return false;
+    } else return false;
   });
 
   return {
@@ -81,7 +93,11 @@ export default function() {
 
     role,
     accessLevel,
-    isLoggedIn: computed(() => accountStore.isLoggedIn),
+    isLoggedIn: computed(() => {
+      if (!appConfig.config?.disableAuthentication) {
+        return accountStore.isLoggedIn;
+      } else return true;
+    }),
 
     blockActions,
     blockSystemEdit
