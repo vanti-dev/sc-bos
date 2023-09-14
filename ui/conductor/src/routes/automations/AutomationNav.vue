@@ -1,6 +1,6 @@
 <template>
   <v-list class="pa-0" dense nav>
-    <v-list-item :disabled="accessLevel('/automations/all').blockedAccess" to="/automations/all">
+    <v-list-item :disabled="hasNoAccess('/automations/all')" to="/automations/all">
       <v-list-item-icon>
         <v-icon>mdi-view-list</v-icon>
       </v-list-item-icon>
@@ -11,7 +11,7 @@
         :key="automation.type"
         :to="'/automations/' + automation.type"
         class="my-2"
-        :disabled="accessLevel('/automations/' + automation.type).blockedAccess">
+        :disabled="hasNoAccess('/automations/' + automation.type)">
       <v-list-item-icon>
         <v-icon v-if="icon.hasOwnProperty(automation.type)">{{ icon[automation.type] ?? defaultIcon }}</v-icon>
       </v-list-item-icon>
@@ -30,7 +30,7 @@ import {storeToRefs} from 'pinia';
 import {computed, ref, watch} from 'vue';
 import useAuthSetup from '@/composables/useAuthSetup';
 
-const {accessLevel} = useAuthSetup();
+const {hasNoAccess} = useAuthSetup();
 
 const serviceStore = useServicesStore();
 const pageStore = usePageStore();

@@ -57,6 +57,8 @@ export const roleToPermissions = {
   },
   operator: {
     fullAccess: [
+      '/auth',
+      '/auth/third-party',
       '/devices',
       '/devices/.*',
       '/ops',
@@ -78,9 +80,7 @@ export const roleToPermissions = {
       '/system/components'
     ],
     blockedAccess: [
-      '/auth',
-      '/auth/users',
-      '/auth/third-party'
+      '/auth/users'
     ]
   },
   signage: {

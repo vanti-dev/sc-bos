@@ -32,9 +32,15 @@ export default function() {
   };
 
   // Logged in user's role
-  const role = computed(() => accountStore.role);
+  const roles = computed(() => accountStore.roles);
+
   // Logged in user's permissions depending on the role
-  const rolePermissions = computed(() => roleToPermissions[role.value]);
+  const rolePermissions = computed(() => {
+    return roles.value.map((role) => ({
+      role,
+      permissions: roleToPermissions[role] || {fullAccess: [], limitedAccess: [], blockedAccess: []}
+    }));
+  });
 
   // The user should have 3 access levels: fullAccess, limitedAccess, blockedAccess
   // Depending on the role and role permissions, we are going to check if the user has
@@ -44,8 +50,8 @@ export default function() {
       // Formatting the name to match the main path (e.g. /site or /devices)
       const formattedName = !name.includes('/') ? `/${name}` : name;
 
-      // If the role or role permissions are not defined, the user has blocked access
-      if (!role.value || !rolePermissions.value) {
+      // If the roles or role permissions are not defined, the user has blocked access
+      if (roles.value.length === 0 || !rolePermissions.value.length) {
         return {
           fullAccess: false,
           limitedAccess: false,
@@ -54,15 +60,14 @@ export default function() {
       }
 
       // Match the main path (e.g. /site or /devices) with the role permissions
-      const fullAccess = rolePermissions.value.fullAccess.includes(formattedName);
-      const limitedAccess = rolePermissions.value.limitedAccess.includes(formattedName);
-      const blockedAccess = rolePermissions.value.blockedAccess.includes(formattedName);
+      const access = rolePermissions.value.map((rp) => ({
+        role: rp.role,
+        fullAccess: rp.permissions.fullAccess.includes(formattedName),
+        limitedAccess: rp.permissions.limitedAccess.includes(formattedName),
+        blockedAccess: rp.permissions.blockedAccess.includes(formattedName)
+      }));
 
-      return {
-        fullAccess,
-        limitedAccess,
-        blockedAccess
-      };
+      return access;
     } else {
       return {
         fullAccess: true,
@@ -72,27 +77,43 @@ export default function() {
     }
   };
 
+  // Checking if the user has no access to certain pages and functionalities
+  // depending on multiple roles and role permissions
+  const hasNoAccess = (name) => {
+    const accessLevels = accessLevel(name);
+
+    if (Array.isArray(accessLevels)) {
+      return accessLevels.some(access => access.blockedAccess);
+    }
+
+    return accessLevels.blockedAccess;
+  };
+
   // Blocking actions (e.g. edit, delete, light control etc.)
   const blockActions = computed(() => {
     if (!appConfig.config?.disableAuthentication) {
-      if (role.value === 'viewer') return true;
+      return roles.value.includes('viewer');
+    } else {
       return false;
-    } else return false;
+    }
   });
 
   // Blocking system edit (e.g. add, edit, delete, restart etc.)
   const blockSystemEdit = computed(() => {
     if (!appConfig.config?.disableAuthentication) {
-      if (role.value === 'viewer' || role.value === 'operator') return true;
+      return roles.value.includes('viewer') || roles.value.includes('operator');
+    } else {
       return false;
-    } else return false;
+    }
   });
+
 
   return {
     init,
 
-    role,
+    roles,
     accessLevel,
+    hasNoAccess,
     isLoggedIn: computed(() => {
       if (!appConfig.config?.disableAuthentication) {
         return accountStore.isLoggedIn;

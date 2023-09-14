@@ -5,7 +5,7 @@
         :to="item.link"
         :key="key"
         class="my-2"
-        :disabled="accessLevel(item.link.path).blockedAccess">
+        :disabled="hasNoAccess(item.link.path)">
       <v-list-item-icon>
         <v-icon>{{ item.icon }}</v-icon>
       </v-list-item-icon>
@@ -19,7 +19,7 @@ import {useAppConfigStore} from '@/stores/app-config';
 import {computed} from 'vue';
 import useAuthSetup from '@/composables/useAuthSetup';
 
-const {accessLevel} = useAuthSetup();
+const {hasNoAccess} = useAuthSetup();
 
 const menuItems = [
   {

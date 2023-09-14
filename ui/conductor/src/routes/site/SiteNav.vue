@@ -14,7 +14,7 @@
               :key="zone"
               :to="'/site/zone/' + zone"
               class="my-2 text-truncate"
-              :disabled="accessLevel('/site/zone/' + zone).blockedAccess">
+              :disabled="hasNoAccess('/site/zone/' + zone)">
             <v-list-item-icon>
               <v-icon>mdi-select-all</v-icon>
             </v-list-item-icon>
@@ -34,7 +34,7 @@ import {storeToRefs} from 'pinia';
 import {computed, onUnmounted, ref, watch} from 'vue';
 import useAuthSetup from '@/composables/useAuthSetup';
 
-const {accessLevel} = useAuthSetup();
+const {hasNoAccess} = useAuthSetup();
 
 const servicesStore = useServicesStore();
 const pageStore = usePageStore();

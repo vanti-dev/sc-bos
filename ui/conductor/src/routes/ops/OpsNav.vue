@@ -1,7 +1,7 @@
 <template>
   <v-list class="pa-0" dense nav>
     <v-list-item-group>
-      <v-list-item :disabled="accessLevel('/ops/overview').blockedAccess" to="/ops/overview" v-if="overviewEnabled">
+      <v-list-item :disabled="hasNoAccess('/ops/overview')" to="/ops/overview" v-if="overviewEnabled">
         <v-list-item-icon>
           <v-icon>mdi-domain</v-icon>
         </v-list-item-icon>
@@ -16,7 +16,7 @@
         :to="item.link"
         :key="key"
         class="my-2"
-        :disabled="accessLevel(item.link.path).blockedAccess">
+        :disabled="hasNoAccess(item.link.path)">
       <v-list-item-icon>
         <v-badge
             class="font-weight-bold"
@@ -43,7 +43,7 @@ import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import {useAppConfigStore} from '@/stores/app-config';
 import useAuthSetup from '@/composables/useAuthSetup';
 
-const {accessLevel} = useAuthSetup();
+const {hasNoAccess} = useAuthSetup();
 
 const alertMetadata = useAlertMetadata();
 const appConfig = useAppConfigStore();

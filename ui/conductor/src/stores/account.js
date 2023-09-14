@@ -114,7 +114,7 @@ export const useAccountStore = defineStore('accountStore', () => {
     isLoggedIn: computed(() => loggedIn.value),
     fullName: computed(() => claims.value?.name || ''),
     email: computed(() => claims.value?.email || ''),
-    role: computed(() => claims.value?.roles?.[0] || ''),
+    roles: computed(() => claims.value?.roles || []),
 
     login: (scopes) => {
       return kcp.then((kc) => kc.login({scope: scopes.join(' ')}));

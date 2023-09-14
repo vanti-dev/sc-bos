@@ -10,7 +10,7 @@
         <v-list-item
             v-for="(item, key) in enabledMenuItems"
             :to="item.link"
-            :disabled="accessLevel(item.link.name).blockedAccess"
+            :disabled="hasNoAccess(item.link.name)"
             :key="key">
           <v-list-item-icon>
             <v-icon x-large>{{ item.icon }}</v-icon>
@@ -30,7 +30,7 @@ import MenuIcon from '@/components/MenuIcon.vue';
 import {computed, ref} from 'vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import useAuthSetup from '@/composables/useAuthSetup';
-const {accessLevel} = useAuthSetup();
+const {hasNoAccess} = useAuthSetup();
 
 const showMenu = ref(false);
 
