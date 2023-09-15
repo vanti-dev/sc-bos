@@ -3,6 +3,8 @@ import {StatusCode} from 'grpc-web';
 import {defineStore} from 'pinia';
 import Vue, {computed, ref, watch} from 'vue';
 
+import {useAccountStore} from '@/stores/account';
+
 /**
  * @typedef {Object} UiError
  * @property {string} name
@@ -23,6 +25,15 @@ export const useErrorStore = defineStore('error', () => {
     const e = /** @type {UiError} */{name: error.name, source: error.error, timestamp: Date.now(), id: _id++};
     // eslint-disable-next-line max-len
     console.error(`[${(new Date(e.timestamp)).toLocaleTimeString()}] ${e.name} | ${statusCodeToString(e.source.code)}: ${e.source.message}`, e.source);
+
+    const account = useAccountStore();
+    // Log the user out if we get a permission denied error
+    // and clear the local storage
+    if (statusCodeToString(e.source.code) === 'PERMISSION DENIED') {
+      account.logout();
+      localStorage.clear();
+    }
+
     Vue.set(_errorMap.value, e.id, e);
     // auto-clear errors after 1 minute
     setTimeout(() => {
