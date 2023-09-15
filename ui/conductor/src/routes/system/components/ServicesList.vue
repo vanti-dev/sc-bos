@@ -19,22 +19,8 @@
         :search="search"
         :loading="serviceCollection.loading"
         @click:row="showService">
-      <template #item.active="{item, value}">
-        <span v-if="value" class="success--text text--lighten-2">Running</span>
-        <span v-else class="error--text text--lighten-2">
-          Stopped
-          <v-menu v-if="item.error" offset-y :close-on-content-click="false">
-            <template #activator="{ on, attrs }">
-              <v-icon v-on="on" v-bind="attrs" class="error--text text--lighten-2" right>
-                mdi-alert-circle-outline
-              </v-icon>
-            </template>
-            <v-card>
-              <v-card-title class="text-h5">Error</v-card-title>
-              <v-card-text>{{ item.error }}</v-card-text>
-            </v-card>
-          </v-menu>
-        </span>
+      <template #item.active="{item}">
+        <service-status :service="item"/>
       </template>
       <template #item.actions="{item}">
         <v-btn
@@ -65,6 +51,7 @@ import {newActionTracker} from '@/api/resource';
 import {ServiceNames, startService, stopService} from '@/api/ui/services';
 import ContentCard from '@/components/ContentCard.vue';
 import {useErrorStore} from '@/components/ui-error/error';
+import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
@@ -107,13 +94,13 @@ const headers = computed(() => {
     return [
       {text: 'ID', value: 'id'},
       {text: 'Type', value: 'type'},
-      {text: 'Status', value: 'active'},
+      {text: 'Status', value: 'active', width: '20em'},
       {text: '', value: 'actions', align: 'end', width: '100'}
     ];
   } else {
     return [
       {text: 'ID', value: 'id'},
-      {text: 'Status', value: 'active'},
+      {text: 'Status', value: 'active', width: '20em'},
       {text: '', value: 'actions', align: 'end', width: '100'}
     ];
   }

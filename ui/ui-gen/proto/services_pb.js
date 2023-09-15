@@ -510,7 +510,9 @@ proto.smartcore.bos.Service.toObject = function(includeInstance, msg) {
     error: jspb.Message.getFieldWithDefault(msg, 9, ""),
     lastErrorTime: (f = msg.getLastErrorTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     configRaw: jspb.Message.getFieldWithDefault(msg, 11, ""),
-    lastConfigTime: (f = msg.getLastConfigTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+    lastConfigTime: (f = msg.getLastConfigTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    failedAttempts: jspb.Message.getFieldWithDefault(msg, 13, 0),
+    nextAttemptTime: (f = msg.getNextAttemptTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -600,6 +602,15 @@ proto.smartcore.bos.Service.deserializeBinaryFromReader = function(msg, reader) 
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setLastConfigTime(value);
+      break;
+    case 13:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setFailedAttempts(value);
+      break;
+    case 14:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setNextAttemptTime(value);
       break;
     default:
       reader.skipField();
@@ -716,6 +727,21 @@ proto.smartcore.bos.Service.serializeBinaryToWriter = function(message, writer) 
   if (f != null) {
     writer.writeMessage(
       12,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getFailedAttempts();
+  if (f !== 0) {
+    writer.writeInt32(
+      13,
+      f
+    );
+  }
+  f = message.getNextAttemptTime();
+  if (f != null) {
+    writer.writeMessage(
+      14,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
@@ -1050,6 +1076,61 @@ proto.smartcore.bos.Service.prototype.clearLastConfigTime = function() {
  */
 proto.smartcore.bos.Service.prototype.hasLastConfigTime = function() {
   return jspb.Message.getField(this, 12) != null;
+};
+
+
+/**
+ * optional int32 failed_attempts = 13;
+ * @return {number}
+ */
+proto.smartcore.bos.Service.prototype.getFailedAttempts = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 13, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.smartcore.bos.Service} returns this
+ */
+proto.smartcore.bos.Service.prototype.setFailedAttempts = function(value) {
+  return jspb.Message.setProto3IntField(this, 13, value);
+};
+
+
+/**
+ * optional google.protobuf.Timestamp next_attempt_time = 14;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.Service.prototype.getNextAttemptTime = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 14));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.Service} returns this
+*/
+proto.smartcore.bos.Service.prototype.setNextAttemptTime = function(value) {
+  return jspb.Message.setWrapperField(this, 14, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Service} returns this
+ */
+proto.smartcore.bos.Service.prototype.clearNextAttemptTime = function() {
+  return this.setNextAttemptTime(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Service.prototype.hasNextAttemptTime = function() {
+  return jspb.Message.getField(this, 14) != null;
 };
 
 

@@ -50,9 +50,15 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 		certs:           services.GRPCCerts,
 		logger:          services.Logger.Named("hub"),
 	}
-	s.Service = service.New(service.MonoApply(s.applyConfig), service.WithOnStop[config.Root](func() {
-		s.Clear()
-	}))
+	s.Service = service.New(
+		service.MonoApply(s.applyConfig),
+		service.WithOnStop[config.Root](func() {
+			s.Clear()
+		}),
+		service.WithRetry[config.Root](service.RetryWithLogger(func(logContext service.RetryContext) {
+			logContext.LogTo("applyConfig", s.logger)
+		})),
+	)
 	return s
 }
 

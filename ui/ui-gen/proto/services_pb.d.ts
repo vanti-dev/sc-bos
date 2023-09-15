@@ -54,6 +54,14 @@ export class Service extends jspb.Message {
   hasLastConfigTime(): boolean;
   clearLastConfigTime(): Service;
 
+  getFailedAttempts(): number;
+  setFailedAttempts(value: number): Service;
+
+  getNextAttemptTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setNextAttemptTime(value?: google_protobuf_timestamp_pb.Timestamp): Service;
+  hasNextAttemptTime(): boolean;
+  clearNextAttemptTime(): Service;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Service.AsObject;
   static toObject(includeInstance: boolean, msg: Service): Service.AsObject;
@@ -76,6 +84,8 @@ export namespace Service {
     lastErrorTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     configRaw: string,
     lastConfigTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    failedAttempts: number,
+    nextAttemptTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
   }
 }
 

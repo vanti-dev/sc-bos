@@ -36,7 +36,12 @@ func NewAutomation(services auto.Services) service.Lifecycle {
 		cohortManagerName: "", // use the default
 		cohortManager:     services.CohortManager,
 	}
-	a.Service = service.New(service.MonoApply(a.applyConfig))
+	a.Service = service.New(
+		service.MonoApply(a.applyConfig),
+		service.WithRetry[config.Root](service.RetryWithLogger(func(logContext service.RetryContext) {
+			logContext.LogTo("applyConfig", a.logger)
+		})),
+	)
 	return a
 }
 

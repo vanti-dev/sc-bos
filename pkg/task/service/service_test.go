@@ -197,6 +197,7 @@ func TestLifecycle(t *testing.T) {
 		wantState.LastInactiveTime = tt.nextTick()
 		wantState.Err = wantErr
 		wantState.LastErrTime = tt.nextTick()
+		wantState.FailedAttempts = 1
 
 		unblock()
 		tt.waitForState(wantState, time.Millisecond)
@@ -231,6 +232,7 @@ func TestLifecycle(t *testing.T) {
 		wantState.LastInactiveTime = tt.nextTick()
 		wantState.Err = wantErr
 		wantState.LastErrTime = tt.nextTick()
+		wantState.FailedAttempts = 1
 
 		unblock()
 		tt.waitForState(wantState, time.Millisecond)
@@ -308,7 +310,44 @@ func TestLifecycle(t *testing.T) {
 		tt.assertNoErr(err)
 		tt.testState(wantState, gotState)
 		tt.assertCurrentState(wantState)
-		tt.assertNextApplyContextCancelled(0)
+		tt.assertNextApplyContextCancelled(time.Millisecond)
+	})
+
+	t.Run("retry", func(t *testing.T) {
+		l := newRetryLogger(t)
+		tt := newLifecycleTester(t, WithRetry[string](RetryWithLogger(l.Log), RetryWithInitialDelay(10*time.Millisecond)))
+		applyErr := errors.New("expected apply error")
+		tt.setupApply().withErr(applyErr)
+		unblock := tt.setupApply().withTick().blockUntilCall()
+
+		wantState := State{}
+		wantState.Active = true
+		wantState.Loading = true
+		wantState.Config = []byte("hello")
+		wantState.LastInactiveTime = tt.now
+		wantState.LastActiveTime = tt.now
+		wantState.LastLoadingStartTime = tt.now
+		wantState.LastConfigTime = tt.now
+		wantState.NextAttemptTime = tt.now.Add(10 * time.Millisecond) // initial delay
+		wantState.Err = applyErr
+		wantState.FailedAttempts = 1
+		_, _ = tt.sub.Configure([]byte("hello"))
+		_, _ = tt.sub.Start()
+
+		tt.waitForState(wantState, time.Millisecond)
+		l.assertLog(RetryContext{
+			Attempt: 1,
+			Err:     applyErr,
+			Delay:   10 * time.Millisecond,
+			T0:      tt.now,
+		})
+		tt.assertNextApplyContextCancelled(time.Millisecond)
+
+		unblock()
+		wantState.Loading = false
+		wantState.NextAttemptTime = time.Time{}
+		wantState.LastLoadingEndTime = tt.nextTick()
+		tt.waitForState(wantState, 20*time.Millisecond)
 	})
 }
 
@@ -362,11 +401,24 @@ func (a *applySetup) blockUntilCall() func() {
 	}
 }
 
-func newLifecycleTester(t *testing.T) *lifecycleTester {
+func newLifecycleTester(t *testing.T, opts ...Option[string]) *lifecycleTester {
 	tt := &lifecycleTester{
 		T:   t,
 		now: time.UnixMilli(0), // make sure time isn't the zero time
 	}
+	opts = append([]Option[string]{
+		WithNow[string](func() time.Time { return tt.now }),
+		WithParser(func(data []byte) (string, error) {
+			if len(tt.parseSetup) > 0 {
+				setup := tt.parseSetup[0]
+				tt.parseSetup = tt.parseSetup[1:]
+				if setup.err != nil {
+					return "", setup.err
+				}
+			}
+			return string(data), nil
+		}),
+	}, opts...)
 	s := New[string](func(ctx context.Context, config string) error {
 		tt.applyCalls = append(tt.applyCalls, applyCall{ctx, config})
 		if len(tt.applySetup) > 0 {
@@ -384,17 +436,7 @@ func newLifecycleTester(t *testing.T) *lifecycleTester {
 		}
 		return nil
 	},
-		WithNow[string](func() time.Time { return tt.now }),
-		WithParser(func(data []byte) (string, error) {
-			if len(tt.parseSetup) > 0 {
-				setup := tt.parseSetup[0]
-				tt.parseSetup = tt.parseSetup[1:]
-				if setup.err != nil {
-					return "", setup.err
-				}
-			}
-			return string(data), nil
-		}),
+		opts...,
 	)
 	tt.sub = s
 	return tt
@@ -476,6 +518,7 @@ func (tt *lifecycleTester) assertNextApplyContextCancelled(wait time.Duration) {
 }
 
 func (tt *lifecycleTester) waitForState(want State, wait time.Duration) {
+	tt.Helper()
 	ctx, stop := context.WithCancel(context.Background())
 	defer stop()
 	timer := time.NewTimer(wait)
@@ -519,4 +562,29 @@ func stateDiff(want, got State) string {
 		cmp.Transformer("byteSliceToString", byteStringTransformer),
 		cmpopts.EquateErrors(),
 	)
+}
+
+func newRetryLogger(t *testing.T) *testRetryLogger {
+	return &testRetryLogger{T: t}
+}
+
+type testRetryLogger struct {
+	*testing.T
+	logs []RetryContext
+}
+
+func (l *testRetryLogger) Log(ctx RetryContext) {
+	l.logs = append(l.logs, ctx)
+}
+
+func (l *testRetryLogger) assertLog(want RetryContext) {
+	l.Helper()
+	if len(l.logs) == 0 {
+		l.Fatalf("Expecting at least one retry log")
+	}
+	got := l.logs[0]
+	l.logs = l.logs[1:]
+	if diff := cmp.Diff(want, got, cmpopts.EquateErrors()); diff != "" {
+		l.Fatalf("Retry log (-want, +got)\n%s", diff)
+	}
 }

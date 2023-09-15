@@ -1129,10 +1129,10 @@
 "@sc-bos/panzoom-package@file:../panzoom-package":
   version "1.0.0"
 
-"@sc-bos/ui-gen@1.0.0-beta.11":
-  version "1.0.0-beta.11"
-  resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/ui-gen/-/ui-gen-1.0.0-beta.11.tgz#775308d863faecf7c948ac65fc09ea9c052708f6"
-  integrity sha512-fOqGmNuWeCCuP3+TV2RRYBsD956wBrHbwCjNIwBBarjPR0ctH1MiZAogQkF3ZxJl96HQIYNGLBxVOO2lkLoh8w==
+"@sc-bos/ui-gen@1.0.0-beta.12":
+  version "1.0.0-beta.12"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/ui-gen/-/ui-gen-1.0.0-beta.12.tgz#f49f55bbd5900b9cef984fddcff1696986e94139"
+  integrity sha512-SVTpLLe/p8FwJqKqz0/yGwLuiBB1brMsfEACyep2TSCnEiaavdh4CzL1IedwPIVNl2cCLB+lxd2kb/YPmuL+Jg==
   dependencies:
     "@smart-core-os/sc-api-grpc-web" "^1.0.0-beta.42"
     google-protobuf "^3.21.2"
