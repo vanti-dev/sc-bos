@@ -49,7 +49,8 @@ func main() {
 		Name:     clientConfig.Name,
 		PageSize: 1000,
 		Query: &gen.Alert_Query{
-			Resolved: &falseVal,
+			// Resolved: &falseVal,
+			Subsystem: "lighting",
 		},
 	}
 
@@ -81,6 +82,7 @@ func main() {
 		"Source",
 		"Severity",
 		"Create Time",
+		"Resolve Time",
 		"Message",
 		"Floor",
 		"Zone",
@@ -91,10 +93,15 @@ func main() {
 		return alerts[i].Source < alerts[j].Source
 	})
 	for _, alert := range alerts {
+		var resolveTimeStr string
+		if alert.ResolveTime != nil {
+			resolveTimeStr = alert.ResolveTime.AsTime().Format(time.RFC3339)
+		}
 		fmt.Fprintln(out, strings.Join([]string{
 			csvEscape(alert.Source),
 			csvEscape(alert.Severity.String()),
 			csvEscape(alert.CreateTime.AsTime().Format(time.RFC3339)),
+			csvEscape(resolveTimeStr),
 			csvEscape(alert.Description),
 			csvEscape(alert.Floor),
 			csvEscape(alert.Zone),
