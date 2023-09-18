@@ -9,25 +9,29 @@ import (
 // TLSServerConfig returns a *tls.Config for use by a server using source to provide the server cert.
 // If the returned tls.Config requires validation of client certificates then sources roots will be used to validate
 // the client certificates.
-//
-// Warning: if tls.Config.ClientAuth is configured to verify client certificates then this happens _before_ source is
-// consulted for ClientCAs which will likely cause verification to fail.
 func TLSServerConfig(source Source) *tls.Config {
-	r := &resolver{
-		server: true,
-		source: source,
-		config: new(tls.Config),
+	cfg := &tls.Config{}
+	cfg.ClientAuth = tls.VerifyClientCertIfGiven
+	cfg.GetCertificate = func(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
+		// This shouldn't be necessary, however http.ServeTLS attempts to load ssl key/cert from disk.
+		cert, _, err := source.Certs()
+		return cert, err
+	}
+	cfg.GetConfigForClient = func(_ *tls.ClientHelloInfo) (*tls.Config, error) {
+		cert, roots, err := source.Certs()
+		if err != nil {
+			return nil, err
+		}
+		cfg := cfg.Clone()
+		cfg.Certificates = []tls.Certificate{*cert}
+		cfg.ClientCAs = x509.NewCertPool()
+		for _, root := range roots {
+			cfg.ClientCAs.AddCert(root)
+		}
+		return cfg, nil
 	}
 
-	// We want to set config.ClientAuth to tls.VerifyClientCertIfGiven but this triggers cert validation that doesn't use source.
-	// So we have to use non-verifying ClientAuth settings and take over the verification ourselves using r.clientAuth.
-	r.config.ClientAuth = tls.RequestClientCert
-	r.clientAuth = tls.VerifyClientCertIfGiven
-
-	r.config.GetCertificate = r.getCertificate
-	r.config.VerifyConnection = r.verifyConnection
-
-	return r.config
+	return cfg
 }
 
 // TLSClientConfig returns a *tls.Config for use by a client using sources roots to validate the server certificate.
@@ -51,11 +55,6 @@ type resolver struct {
 	source Source
 
 	clientAuth tls.ClientAuthType
-}
-
-func (r *resolver) getCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	cert, _, err := r.source.Certs()
-	return cert, err
 }
 
 func (r *resolver) getClientCertificate(_ *tls.CertificateRequestInfo) (*tls.Certificate, error) {
