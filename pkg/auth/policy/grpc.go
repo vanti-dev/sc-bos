@@ -99,12 +99,8 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 
 	if creds == nil {
 		tkn, err := grpc_auth.AuthFromMD(ctx, "Bearer")
-		if err != nil {
-			log.Printf("no request bearer token: %s", err.Error())
-		}
-
 		var tokenClaims *token.Claims
-		if tkn != "" && i.verifier != nil {
+		if err == nil && tkn != "" && i.verifier != nil {
 			tokenClaims, err = i.verifier.ValidateAccessToken(ctx, tkn)
 			if err != nil {
 				tokenClaims = nil
