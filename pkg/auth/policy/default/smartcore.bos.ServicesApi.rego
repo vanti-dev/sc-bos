@@ -40,3 +40,7 @@ allow {
 }
 
 # signage has no rights here
+
+# Allow anyone to get service metadata about any service.
+allow { input.method == "GetServiceMetadata" }
+allow { input.method == "PullServiceMetadata" }
