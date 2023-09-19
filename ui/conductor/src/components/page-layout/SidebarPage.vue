@@ -105,7 +105,7 @@ watch(hasSidebar, (newValue) => {
 });
 
 onBeforeUnmount(() => {
-  drawerBorder.value.removeEventListener('mousedown', handleMouseDown, false); // Remove event listener
+  drawerBorder.value?.removeEventListener('mousedown', handleMouseDown, false); // Remove event listener
   document.removeEventListener('mousemove', handleMouseMove, false); // Remove event listener
   document.removeEventListener('mouseup', handleMouseUp, false); // Remove event listener
   showSidebar.value = false; // Close sidebar
