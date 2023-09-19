@@ -32,6 +32,9 @@ func stateToProto(id, kind string, state service.State) *gen.Service {
 
 		Error:         errorToString(state.Err),
 		LastErrorTime: timeToTimestamp(state.LastErrTime),
+
+		FailedAttempts:  int32(state.FailedAttempts),
+		NextAttemptTime: timeToTimestamp(state.NextAttemptTime),
 	}
 }
 

@@ -31,7 +31,12 @@ func NewSystem(services system.Services) *System {
 		name:      services.Node.Name(),
 		announcer: services.Node,
 	}
-	s.Service = service.New(service.MonoApply(s.applyConfig))
+	s.Service = service.New(
+		service.MonoApply(s.applyConfig),
+		service.WithRetry[config.Root](service.RetryWithLogger(func(logContext service.RetryContext) {
+			logContext.LogTo("applyConfig", s.logger)
+		})),
+	)
 	return s
 }
 

@@ -161,10 +161,12 @@ func logServiceRecordChange(logger *zap.Logger, oldVal, newVal *service.StateRec
 		logger.Debug("Removed")
 	case oldVal == nil: // created
 		logger.Debug("Created", zap.Bool("active", newVal.State.Active), zap.Bool("loading", newVal.State.Loading), zap.Error(newVal.State.Err))
-	case newVal.State.Err != nil && oldVal.State.Err == nil: // error
+	case !newVal.State.Active && newVal.State.Err != nil && oldVal.State.Err == nil: // error
 		logger.Warn("Failed to load", zap.Error(newVal.State.Err))
 	case oldVal.State.Active && !newVal.State.Active: // stopped
 		logger.Debug("Stopped", zap.Error(newVal.State.Err))
+	case newVal.State.Active && newVal.State.Loading && !newVal.State.NextAttemptTime.IsZero(): // retrying
+		// rely on the service itself to log any issues that caused the retry
 	case newVal.State.Active && newVal.State.Loading: // loading
 		logger.Debug("Loading")
 	case !oldVal.State.Active && newVal.State.Active || oldVal.State.Loading && !newVal.State.Loading: // started

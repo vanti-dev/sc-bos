@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"math"
 	"sync"
 	"time"
 
@@ -32,9 +33,13 @@ type State struct {
 	// The contents of Config should not be modified after calling Configure
 	Config []byte
 	// Loading indicates that the service is Active and is processing an update to config.
+	// If configured to retry and loading fails, this will remain true but Err and NextAttemptTime will be set.
 	Loading bool
 	// Err holds the error returned by the ApplyFunc.
 	Err error
+	// FailedAttempts records how many start attempts have resulted in error.
+	// This is reset on stop and when the configuration is updated.
+	FailedAttempts int
 
 	// Times active was last set to false or true respectively.
 	LastInactiveTime, LastActiveTime time.Time
@@ -44,6 +49,9 @@ type State struct {
 	// Times when loading was set to true or false respectively.
 	// lastLoadingEndTime will be set to the zero time when loading is set to true.
 	LastLoadingStartTime, LastLoadingEndTime time.Time
+	// The time the service will next attempt to load.
+	// An active service that fails to load may attempt to retry the load, this is the time of that attempt.
+	NextAttemptTime time.Time
 }
 
 type Lifecycle interface {
@@ -86,6 +94,8 @@ type Service[C any] struct {
 	onStop func()
 
 	now func() time.Time
+
+	retry *retryOptions
 }
 
 // New creates a new Service using apply to spin up background tasks based on config of type C.
@@ -210,24 +220,114 @@ func (l *Service[C]) applyConfig(state State, config C) (State, error) {
 	state.Loading = true
 	state.LastLoadingStartTime = l.now()
 	ctx := l.stopCtx
+	retry := RetryContext{
+		T0: l.now(),
+	}
 	go func() {
-		err := l.apply(ctx, config)
+		for {
+			attemptCtx, cleanup := context.WithCancel(ctx)
+			retry.Err = l.apply(attemptCtx, config)
 
-		l.mu.Lock()
-		defer l.mu.Unlock()
-		state := l.state
-		state.LastLoadingEndTime = l.now()
-		state.Loading = false
-		if err != nil && ctx == l.stopCtx {
-			// only record the error if we're active, otherwise we've stopped and the error is likely because
-			// the context has been cancelled
-			state.Err = err
-			state.Active = false
-			state.LastErrTime = l.now()
-			state.LastInactiveTime = l.now()
-			l.stopLocked()
+			// success case
+			if retry.Err == nil {
+				go func() { // cleanup when ctx is no longer needed
+					<-ctx.Done()
+					cleanup()
+				}()
+				retry.Delay = 0 // no retry
+				if l.retry != nil {
+					l.retry.Logger(retry)
+				}
+
+				l.mu.Lock()
+				state := l.state
+				state.FailedAttempts = retry.Attempt
+				state.Loading = false
+				state.LastLoadingEndTime = l.now()
+				state.NextAttemptTime = time.Time{}
+				_, _ = l.saveLocked(state)
+				l.mu.Unlock()
+				return
+			}
+
+			cleanup() // when apply returns an error the ctx passed to it is good to cancel
+			retry.Attempt++
+
+			handleAbort := func(err error) {
+				retry.Delay = 0 // no retry
+				if l.retry != nil {
+					l.retry.Logger(retry)
+				}
+
+				l.mu.Lock()
+				defer l.mu.Unlock()
+				now := l.now()
+				state := l.state
+				state.FailedAttempts = retry.Attempt
+				state.Loading = false
+				state.LastLoadingEndTime = now
+				state.Err = err
+				state.Active = false
+				state.LastErrTime = now
+				state.LastInactiveTime = now
+				state.NextAttemptTime = time.Time{}
+				l.stopLocked()
+				_, _ = l.saveLocked(state)
+			}
+
+			// should we abort?
+			var abort abortRetry
+			if errors.As(retry.Err, &abort) {
+				handleAbort(abort.Unwrap())
+				return
+			}
+
+			// abort if the service has been stopped
+			if ctx != l.stopCtx {
+				l.mu.Lock()
+				state := l.state
+				state.LastLoadingEndTime = l.now()
+				state.Loading = false
+				_, _ = l.saveLocked(state)
+				l.mu.Unlock()
+				return
+			}
+
+			// abort if we haven't been asked to retry
+			if l.retry == nil {
+				handleAbort(retry.Err)
+				return
+			}
+
+			// calc retry info
+			retry.Delay = time.Duration(float64(l.retry.InitialDelay) * math.Pow(l.retry.Factor, float64(retry.Attempt-1)))
+			if retry.Delay > l.retry.MaxDelay {
+				retry.Delay = l.retry.MaxDelay
+			}
+
+			// abort if we've exhausted our retry attempts
+			if l.retry.MaxAttempts > 0 && retry.Attempt >= l.retry.MaxAttempts {
+				handleAbort(retry.Err)
+				return
+			}
+
+			l.retry.Logger(retry)
+
+			// otherwise we should retry the applyConfig process
+			l.mu.Lock()
+			state := l.state
+			state.FailedAttempts = retry.Attempt
+			state.NextAttemptTime = l.now().Add(retry.Delay)
+			state.Err = retry.Err
+			_, _ = l.saveLocked(state)
+			l.mu.Unlock()
+
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(retry.Delay):
+			}
 		}
-		_, _ = l.saveLocked(state)
 	}()
 
 	return l.saveLocked(state)

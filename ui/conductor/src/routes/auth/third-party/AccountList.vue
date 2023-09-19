@@ -65,6 +65,7 @@ const search = ref('');
 
 const headers = [
   {text: 'Name', value: 'title', width: '30%'},
+  {text: 'Client ID', value: 'id', width: '28em'},
   // {text: 'Permissions', value: 'permissions'},
   {text: 'Zones', value: 'zoneNamesList'}
 ];

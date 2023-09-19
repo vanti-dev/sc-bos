@@ -30,11 +30,17 @@ func (_ factory) AddSupport(supporter node.Supporter) {
 }
 
 func NewSystem(services system.Services) *System {
+	logger := services.Logger.Named("history")
 	s := &System{
 		name:      services.Node.Name(),
 		announcer: services.Node,
 	}
-	s.Service = service.New(service.MonoApply(s.applyConfig))
+	s.Service = service.New(
+		service.MonoApply(s.applyConfig),
+		service.WithRetry[config.Root](service.RetryWithLogger(func(logContext service.RetryContext) {
+			logContext.LogTo("applyConfig", logger)
+		})),
+	)
 	return s
 }
 func Register(supporter node.Supporter) {
