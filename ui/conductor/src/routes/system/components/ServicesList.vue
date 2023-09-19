@@ -27,7 +27,7 @@
             v-if="item.active"
             outlined
             class="automation-device__btn--red"
-            color="red"
+            color="error"
             :disabled="blockActions"
             width="100%"
             @click.stop="_stopService(item)">
@@ -37,7 +37,7 @@
             v-else
             outlined
             class="automation-device__btn--green"
-            color="green"
+            color="success"
             :disabled="blockActions"
             width="100%"
             @click.stop="_startService(item)">
@@ -206,15 +206,21 @@ async function _stopService(service) {
 .v-data-table :deep(tr:hover) {
   .automation-device__btn {
     &--red {
-      background-color: red;
+      background-color: var(--v-error-base);
       .v-btn__content {
         color: white;
       }
+      &.v-btn--disabled {
+        filter: grayscale(100%);
+      }
     }
     &--green {
-      background-color: green;
+      background-color: var(--v-success-base);
       .v-btn__content {
         color: white;
+      }
+      &.v-btn--disabled {
+        filter: grayscale(100%);
       }
     }
   }
