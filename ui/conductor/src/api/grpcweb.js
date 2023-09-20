@@ -1,10 +1,14 @@
 import {apiToken} from '@/api/auth.js';
+import {statusCodeToString} from '@/components/ui-error/util';
+import {useAccountStore} from '@/stores/account';
 
 /**
  * @param {import('grpc-web').GrpcWebClientBaseOptions} [options]
  * @return {import('grpc-web').GrpcWebClientBaseOptions}
  */
 export function clientOptions(options = {}) {
+  const account = useAccountStore();
+
   return {
     ...options,
     unaryInterceptors: [
@@ -16,6 +20,15 @@ export function clientOptions(options = {}) {
               request.getMetadata()['Authorization'] = `Bearer ${token}`;
             }
             return invoker(request);
+          }).catch(e => {
+            // Log the user out if we get a permission denied error
+            // and clear the local storage
+            if (statusCodeToString(e.code) === 'PERMISSION DENIED') {
+              account.logout();
+              localStorage.clear();
+            }
+
+            throw e;
           });
         }
       }],

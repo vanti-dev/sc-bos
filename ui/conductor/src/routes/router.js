@@ -8,12 +8,10 @@ import {route, routeTitle} from '@/util/router.js';
 import Vue, {nextTick} from 'vue';
 import VueRouter from 'vue-router';
 import {useAppConfigStore} from '@/stores/app-config';
-import pinia from '@/plugins/pinia.js';
 import useAuthSetup from '@/composables/useAuthSetup';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
 
-Vue.use(pinia);
 Vue.use(VueRouter);
 
 const router = new VueRouter({
@@ -44,7 +42,7 @@ if (window) {
     await appConfig.loadConfig();
 
     const authSetup = useAuthSetup();
-    authSetup.init(to.path, next); // initialize the authentication setup
+    authSetup.navigate(to.path, next);
 
     // Clear the sidebar when navigating to a different main path
     const {showSidebar, sidebarTitle, sidebarData} = storeToRefs(usePageStore());

@@ -1,13 +1,13 @@
 import {computed} from 'vue';
 import {useAccountStore} from '@/stores/account';
 import {useAppConfigStore} from '@/stores/app-config';
-import {roleToPermissions} from '@/routes/auth/roleToPermissions';
+import {roleToPermissions} from '@/assets/roleToPermissions';
 
 /**
  * Initializing the authentication setup
  *
  * @return {{
- * init: (function(*, *): void),
+ * navigate: (function(*, *): void),
  * role: ComputedRef<null|string>,
  * accessLevel: (function(string): boolean),
  * isLoggedIn: ComputedRef<boolean>,
@@ -23,7 +23,7 @@ export default function() {
    * @param {string} toPath
    * @param {NavigationGuardNext} next
    */
-  const init = (toPath, next) => {
+  const navigate = (toPath, next) => {
     if (toPath === '/') {
       next(appConfig.homePath);
     } else {
@@ -31,8 +31,11 @@ export default function() {
     }
   };
 
-  // Logged in user's role
-  const roles = computed(() => accountStore.roles);
+  // Logged in user's roles
+  // replace - in a role to be camelCase
+  const roles = computed(() => {
+    return accountStore.roles.map((role) => role.replace(/-([a-z])/g, (g) => g[1].toUpperCase()));
+  });
 
   // Logged in user's permissions depending on the role
   const rolePermissions = computed(() => {
@@ -77,6 +80,10 @@ export default function() {
     }
   };
 
+  const hasAnyRole = (...targetRoles) => {
+    return targetRoles.some(role => roles.value.includes(role));
+  };
+
   // Checking if the user has no access to certain pages and functionalities
   // depending on multiple roles and role permissions
   const hasNoAccess = (name) => {
@@ -89,19 +96,20 @@ export default function() {
     return accessLevels.blockedAccess;
   };
 
+  const allowActions = computed(() => hasAnyRole('admin', 'superAdmin', 'commissioner', 'operator'));
+  const allowEdits = computed(() => hasAnyRole('admin', 'superAdmin', 'commissioner'));
+
   // Blocking actions (e.g. edit, delete, light control etc.)
   const blockActions = computed(() => {
     if (!appConfig.config?.disableAuthentication) {
-      return roles.value.includes('viewer');
-    } else {
-      return false;
-    }
+      return !allowActions.value;
+    } else return false;
   });
 
   // Blocking system edit (e.g. add, edit, delete, restart etc.)
   const blockSystemEdit = computed(() => {
     if (!appConfig.config?.disableAuthentication) {
-      return roles.value.includes('viewer') || roles.value.includes('operator');
+      return !allowEdits.value;
     } else {
       return false;
     }
@@ -109,7 +117,7 @@ export default function() {
 
 
   return {
-    init,
+    navigate,
 
     roles,
     accessLevel,

@@ -96,7 +96,6 @@ const appVersion = computed(() => {
   return GITVERSION;
 });
 
-
 watch(miniVariant, expanded => {
   if (expanded) {
     drawerWidth.value = 45;
@@ -132,4 +131,3 @@ watch(miniVariant, expanded => {
   width: 100%;
 }
 </style>
-@/composables/useAuthSetup
