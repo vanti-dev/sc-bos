@@ -192,6 +192,6 @@ func mergeBrightness(allRes []*traits.Brightness) (*traits.Brightness, error) {
 			}
 		}
 		out.LevelPercent = averageBrightness
-		return allRes[0], nil
+		return out, nil
 	}
 }
