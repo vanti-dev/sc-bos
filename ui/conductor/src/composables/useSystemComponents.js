@@ -1,17 +1,14 @@
-import {computed, onUnmounted, reactive, ref, set, watch, watchEffect} from 'vue';
-import {closeResource, newActionTracker} from '@/api/resource';
-import {enrollHubNode, forgetHubNode, inspectHubNode, testHubNode} from '@/api/sc/traits/hub';
+import {computed, onUnmounted, reactive, ref, set, watchEffect} from 'vue';
+import {newActionTracker} from '@/api/resource';
+import {enrollHubNode, forgetHubNode, inspectHubNode} from '@/api/sc/traits/hub';
 import {ServiceNames} from '@/api/ui/services';
-import {useEnrollmentStore} from '@/stores/enrollmentStore';
 import {useHubStore} from '@/stores/hub';
 import {useServicesStore} from '@/stores/services';
 import {parseCertificate} from '@/util/certificates';
 
-// generate ServiceTracker type
 /**
  * @typedef {import('@/api/ui/services').ServiceTracker} ServiceTracker
  * @return {{
- *   hubNodeValue: ActionTracker<TestHubNodeResponse.AsObject>,
  *   enrollHubNodeValue: ActionTracker<HubNode.AsObject>,
  *   enrollHubNodeAction: (address: string) => Promise<void>,
  *   forgetHubNodeAction: (address: string) => Promise<void>,
@@ -56,23 +53,6 @@ import {parseCertificate} from '@/util/certificates';
 export default function() {
   const hubStore = useHubStore();
   const servicesStore = useServicesStore();
-  const {enrollmentValue} = useEnrollmentStore();
-
-
-  // --------------------------- //
-  // Test Hub Nodes
-  const hubNodeValue = reactive(newActionTracker());
-
-
-  watch(enrollmentValue, (newValue) => {
-    if (newValue?.response?.targetAddress) {
-      const request = {
-        address: newValue.response.targetAddress
-      };
-
-      testHubNode(request, hubNodeValue);
-    }
-  }, {immediate: true, deep: true});
 
 
   // --------------------------- //
@@ -237,11 +217,9 @@ export default function() {
   // Clean up on unmount
   onUnmounted(() => {
     unwatchTrackers = [];
-    closeResource(hubNodeValue);
   });
 
   return {
-    hubNodeValue,
     enrollHubNodeValue,
     forgetHubNodeValue,
     inspectHubNodeValue,

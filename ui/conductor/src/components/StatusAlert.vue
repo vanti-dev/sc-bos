@@ -3,19 +3,19 @@
       v-if="props.resource"
       v-model="show"
       bottom
-      color="error">
+      :color="props.color">
     <template #activator="{ on, attrs }">
       <v-icon
           class="mx-auto"
-          color="error"
+          :color="props.color"
           size="20"
           v-bind="attrs"
           v-on="on">
         {{ props.icon }}
       </v-icon>
     </template>
-    <span class="error-name">{{ errorDetails.errorName }}</span>
-    <span class="error-details">{{ errorDetails.errorCode }}: {{ errorDetails.errorMessage }}</span>
+    <span class="error-name">{{ statusDetails.statusName }}</span>
+    <span class="error-details">{{ statusDetails.statusCode }}: {{ statusDetails.statusMessage }}</span>
   </v-tooltip>
 </template>
 
@@ -24,23 +24,45 @@ import {computed, ref} from 'vue';
 import {statusCodeToString} from '@/components/ui-error/util';
 
 const props = defineProps({
-  resource: {
-    type: Object,
-    default: () => null
+  color: {
+    type: String,
+    default: 'error'
   },
   icon: {
     type: String,
     default: 'mdi-alert-circle-outline'
+  },
+  resource: {
+    type: Object,
+    default: () => null
+  },
+  type: {
+    type: String,
+    default: 'error'
   }
 });
 
 const show = ref(false);
 
-const errorDetails = computed(() => {
+const statusDetails = computed(() => {
+  if (props.type === 'error') {
+    return {
+      statusCode: statusCodeToString(props.resource?.error?.code),
+      statusMessage: props.resource?.error?.message,
+      statusName: props.resource?.name
+    };
+  } else if (props.type === 'success') {
+    return {
+      statusCode: props.resource?.status?.code,
+      statusMessage: props.resource?.status?.message,
+      statusName: props.resource?.name
+    };
+  }
+
   return {
-    errorCode: statusCodeToString(props.resource?.error?.code),
-    errorMessage: props.resource?.error?.message,
-    errorName: props.resource?.name
+    statusCode: 'Unknown',
+    statusMessage: '',
+    statusName: ''
   };
 });
 </script>
@@ -55,6 +77,7 @@ const errorDetails = computed(() => {
   display: block;
   font-size: .8em;
 }
+
 .error-details {
   display: block;
   font-size: .9em;

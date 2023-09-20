@@ -1,10 +1,14 @@
-import {defineStore} from 'pinia';
 import {onMounted, onUnmounted, reactive} from 'vue';
 
-import {getEnrollment, testEnrollment} from '@/api/sc/traits/enrollment';
 import {closeResource, newActionTracker} from '@/api/resource';
+import {getEnrollment, testEnrollment} from '@/api/sc/traits/enrollment';
+import {useHubStore} from '@/stores/hub';
 
-export const useEnrollmentStore = defineStore('enrollment', () => {
+/**
+ *
+ */
+export default function() {
+  const {listHubNodesAction} = useHubStore();
   const enrollmentValue = reactive(newActionTracker());
   const testEnrollmentValue = reactive(newActionTracker());
 
@@ -18,22 +22,17 @@ export const useEnrollmentStore = defineStore('enrollment', () => {
     return enrollmentValue;
   };
 
-  // Getting enrollment on mount
-  onMounted(async () => {
-    await getEnrollmentValue();
-    testEnrollment(testEnrollmentValue);
-  });
-
   // Closing enrollment on unmount
   onUnmounted(() => {
     closeResource(enrollmentValue);
     closeResource(testEnrollmentValue);
   });
 
-  return {
-    enrollmentValue,
-    testEnrollmentValue,
+  onMounted(async () => {
+    await listHubNodesAction();
+    await getEnrollmentValue();
+    testEnrollment(testEnrollmentValue);
+  });
 
-    getEnrollmentValue
-  };
-});
+  return {};
+}

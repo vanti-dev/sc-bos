@@ -2,8 +2,6 @@
   <v-container fluid class="pa-0">
     <v-row class="px-3 pt-3 mb-5">
       <h3 class="text-h3 py-2">Security Overview</h3>
-      <v-spacer/>
-      <sc-status-card style="min-width: 248px"/>
     </v-row>
     <content-card class="mb-8 d-flex flex-column py-0 px-0">
       <v-row
@@ -45,7 +43,6 @@
 import ContentCard from '@/components/ContentCard.vue';
 
 import useDevices from '@/composables/useDevices';
-import ScStatusCard from '@/routes/ops/components/ScStatusCard.vue';
 import ListView from '@/routes/ops/security/components/ListView.vue';
 import MapView from '@/routes/ops/security/components/MapView.vue';
 import {useAppConfigStore} from '@/stores/app-config';
