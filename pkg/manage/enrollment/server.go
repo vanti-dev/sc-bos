@@ -246,6 +246,33 @@ func (es *Server) DeleteEnrollment(ctx context.Context, request *gen.DeleteEnrol
 	}, nil
 }
 
+func (es *Server) TestEnrollment(ctx context.Context, _ *gen.TestEnrollmentRequest) (*gen.TestEnrollmentResponse, error) {
+	e, ok := es.Enrollment()
+	if !ok {
+		return nil, status.Error(codes.NotFound, "not enrolled")
+	}
+
+	tlsConfig := pki.TLSClientConfig(pki.FuncSource(func() (*tls.Certificate, []*x509.Certificate, error) {
+		return &e.Cert, []*x509.Certificate{e.RootCA}, nil
+	}))
+	conn, err := grpc.DialContext(ctx, e.ManagerAddress, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	if err != nil {
+		return nil, err
+	}
+	client := gen.NewHubApiClient(conn)
+	_, err = client.TestHubNode(ctx, &gen.TestHubNodeRequest{Address: e.LocalAddress})
+	res := &gen.TestEnrollmentResponse{}
+	if err != nil {
+		if s, ok := status.FromError(err); ok {
+			res.Code = int32(s.Code())
+			res.Error = s.Message()
+		} else {
+			res.Error = err.Error()
+		}
+	}
+	return res, nil
+}
+
 func (es *Server) Wait(ctx context.Context) (enrollment Enrollment, done bool) {
 	select {
 	case <-es.done:
