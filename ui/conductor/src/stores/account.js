@@ -91,7 +91,7 @@ export const useAccountStore = defineStore('accountStore', () => {
   watch(
       [loggedIn, token, () => appConfig.config?.disableAuthentication],
       () => {
-        if (appConfig.config?.disableAuthentication === false) {
+        if (!appConfig.config?.disableAuthentication) {
           if (!loggedIn.value || !token.value) loginDialog.value = true;
         }
       },
