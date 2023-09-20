@@ -26,6 +26,10 @@ type EnrollmentApiClient interface {
 	CreateEnrollment(ctx context.Context, in *CreateEnrollmentRequest, opts ...grpc.CallOption) (*Enrollment, error)
 	UpdateEnrollment(ctx context.Context, in *UpdateEnrollmentRequest, opts ...grpc.CallOption) (*Enrollment, error)
 	DeleteEnrollment(ctx context.Context, in *DeleteEnrollmentRequest, opts ...grpc.CallOption) (*Enrollment, error)
+	// TestEnrollment checks whether this node can communicate with the manager.
+	// If the node is not enrolled, returns a NotFound grpc error.
+	// A failed tests returns a successful grpc response with an error message.
+	TestEnrollment(ctx context.Context, in *TestEnrollmentRequest, opts ...grpc.CallOption) (*TestEnrollmentResponse, error)
 }
 
 type enrollmentApiClient struct {
@@ -72,6 +76,15 @@ func (c *enrollmentApiClient) DeleteEnrollment(ctx context.Context, in *DeleteEn
 	return out, nil
 }
 
+func (c *enrollmentApiClient) TestEnrollment(ctx context.Context, in *TestEnrollmentRequest, opts ...grpc.CallOption) (*TestEnrollmentResponse, error) {
+	out := new(TestEnrollmentResponse)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.EnrollmentApi/TestEnrollment", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EnrollmentApiServer is the server API for EnrollmentApi service.
 // All implementations must embed UnimplementedEnrollmentApiServer
 // for forward compatibility
@@ -80,6 +93,10 @@ type EnrollmentApiServer interface {
 	CreateEnrollment(context.Context, *CreateEnrollmentRequest) (*Enrollment, error)
 	UpdateEnrollment(context.Context, *UpdateEnrollmentRequest) (*Enrollment, error)
 	DeleteEnrollment(context.Context, *DeleteEnrollmentRequest) (*Enrollment, error)
+	// TestEnrollment checks whether this node can communicate with the manager.
+	// If the node is not enrolled, returns a NotFound grpc error.
+	// A failed tests returns a successful grpc response with an error message.
+	TestEnrollment(context.Context, *TestEnrollmentRequest) (*TestEnrollmentResponse, error)
 	mustEmbedUnimplementedEnrollmentApiServer()
 }
 
@@ -98,6 +115,9 @@ func (UnimplementedEnrollmentApiServer) UpdateEnrollment(context.Context, *Updat
 }
 func (UnimplementedEnrollmentApiServer) DeleteEnrollment(context.Context, *DeleteEnrollmentRequest) (*Enrollment, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteEnrollment not implemented")
+}
+func (UnimplementedEnrollmentApiServer) TestEnrollment(context.Context, *TestEnrollmentRequest) (*TestEnrollmentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TestEnrollment not implemented")
 }
 func (UnimplementedEnrollmentApiServer) mustEmbedUnimplementedEnrollmentApiServer() {}
 
@@ -184,6 +204,24 @@ func _EnrollmentApi_DeleteEnrollment_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EnrollmentApi_TestEnrollment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TestEnrollmentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EnrollmentApiServer).TestEnrollment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/smartcore.bos.EnrollmentApi/TestEnrollment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EnrollmentApiServer).TestEnrollment(ctx, req.(*TestEnrollmentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EnrollmentApi_ServiceDesc is the grpc.ServiceDesc for EnrollmentApi service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +244,10 @@ var EnrollmentApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteEnrollment",
 			Handler:    _EnrollmentApi_DeleteEnrollment_Handler,
+		},
+		{
+			MethodName: "TestEnrollment",
+			Handler:    _EnrollmentApi_TestEnrollment_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

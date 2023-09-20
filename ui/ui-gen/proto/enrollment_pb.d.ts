@@ -112,3 +112,39 @@ export namespace DeleteEnrollmentRequest {
   }
 }
 
+export class TestEnrollmentRequest extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): TestEnrollmentRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: TestEnrollmentRequest): TestEnrollmentRequest.AsObject;
+  static serializeBinaryToWriter(message: TestEnrollmentRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TestEnrollmentRequest;
+  static deserializeBinaryFromReader(message: TestEnrollmentRequest, reader: jspb.BinaryReader): TestEnrollmentRequest;
+}
+
+export namespace TestEnrollmentRequest {
+  export type AsObject = {
+  }
+}
+
+export class TestEnrollmentResponse extends jspb.Message {
+  getError(): string;
+  setError(value: string): TestEnrollmentResponse;
+
+  getCode(): number;
+  setCode(value: number): TestEnrollmentResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): TestEnrollmentResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: TestEnrollmentResponse): TestEnrollmentResponse.AsObject;
+  static serializeBinaryToWriter(message: TestEnrollmentResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TestEnrollmentResponse;
+  static deserializeBinaryFromReader(message: TestEnrollmentResponse, reader: jspb.BinaryReader): TestEnrollmentResponse;
+}
+
+export namespace TestEnrollmentResponse {
+  export type AsObject = {
+    error: string,
+    code: number,
+  }
+}
+

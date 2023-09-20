@@ -319,5 +319,66 @@ proto.smartcore.bos.EnrollmentApiPromiseClient.prototype.deleteEnrollment =
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.TestEnrollmentRequest,
+ *   !proto.smartcore.bos.TestEnrollmentResponse>}
+ */
+const methodDescriptor_EnrollmentApi_TestEnrollment = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.EnrollmentApi/TestEnrollment',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.TestEnrollmentRequest,
+  proto.smartcore.bos.TestEnrollmentResponse,
+  /**
+   * @param {!proto.smartcore.bos.TestEnrollmentRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.TestEnrollmentResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.TestEnrollmentRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.TestEnrollmentResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.TestEnrollmentResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.EnrollmentApiClient.prototype.testEnrollment =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.EnrollmentApi/TestEnrollment',
+      request,
+      metadata || {},
+      methodDescriptor_EnrollmentApi_TestEnrollment,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.TestEnrollmentRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.TestEnrollmentResponse>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.EnrollmentApiPromiseClient.prototype.testEnrollment =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.EnrollmentApi/TestEnrollment',
+      request,
+      metadata || {},
+      methodDescriptor_EnrollmentApi_TestEnrollment);
+};
+
+
 module.exports = proto.smartcore.bos;
 
