@@ -116,31 +116,31 @@
 
 ### Admin role
 
-> A user with `admin` privilege can read, write and manage the whole Smart-Core system - without any exclusions.[^Options]
+> A user with `admin` privilege can read, write and manage the whole Smart-Core system - highest level of access with full access to all of the routes and no blocked routes or actions.[^Options]
 
 ---
 
 ### Commissioner role
 
-> Can read, write and manage the system - excluding users page.
+> A role with considerable access but restricted from accessing authentication-related routes.
 
 ---
 
 ### Operator role
 
-> Can read, write. Limited system management allowed - can't write settings and can't access users page.
+> A role with a mixture of full and limited access to various routes, ideal for operation-related tasks - has limited system management capabilities.
 
 ---
 
 ### Signage role
 
-> Access to the `Signage` page allowed only.
+> Primarily has access to signage related routes, with all other routes being blocked.
 
 ---
 
 ### Super-Admin role
 
-> Vanti/Smart-Core Admin. The `admin` role details applies.
+> Vanti/Smart-Core Admin. Similar to the admin but tailored for supervisory roles, with extensive full access routes.
 
 ---
 
