@@ -1,7 +1,7 @@
 import {clientOptions} from '@/api/grpcweb';
 import {trackAction} from '@/api/resource';
 import {EnrollmentApiPromiseClient} from '@sc-bos/ui-gen/proto/enrollment_grpc_web_pb';
-import {GetEnrollmentRequest} from '@sc-bos/ui-gen/proto/enrollment_pb';
+import {GetEnrollmentRequest, TestEnrollmentRequest} from '@sc-bos/ui-gen/proto/enrollment_pb';
 
 /**
  *
@@ -12,6 +12,17 @@ export function getEnrollment(tracker) {
   return trackAction('Enrollment.getEnrollment', tracker ?? {}, endpoint => {
     const api = apiClient(endpoint);
     return api.getEnrollment(new GetEnrollmentRequest());
+  });
+}
+
+/**
+ * @param {ActionTracker<TestEnrollmentResponse.AsObject>} [tracker]
+ * @return {Promise<GetEnrollmentResponse.AsObject>}
+ */
+export function testEnrollment(tracker) {
+  return trackAction('Enrollment.testEnrollment', tracker ?? {}, endpoint => {
+    const api = apiClient(endpoint);
+    return api.testEnrollment(new TestEnrollmentRequest());
   });
 }
 
