@@ -7,3 +7,4 @@ import data.scutil.rpc.verb_match
 # Allow anybody to request information about their enrollment.
 # This is useful for status monitoring.
 allow { read_request }
+allow { input.method == "TestEnrollment" }
