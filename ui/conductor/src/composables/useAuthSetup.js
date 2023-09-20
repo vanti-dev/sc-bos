@@ -32,7 +32,7 @@ export default function() {
   };
 
   // Logged in user's roles
-  // replace - in a role to be camelCase
+  // replacing '-' in a role to be camelCase
   const roles = computed(() => {
     return accountStore.roles.map((role) => role.replace(/-([a-z])/g, (g) => g[1].toUpperCase()));
   });
@@ -80,6 +80,7 @@ export default function() {
     }
   };
 
+  // Checking if the user has any of the roles
   const hasAnyRole = (...targetRoles) => {
     return targetRoles.some(role => roles.value.includes(role));
   };
@@ -96,7 +97,12 @@ export default function() {
     return accessLevels.blockedAccess;
   };
 
+  // The following roles have access to actions
+  // (e.g. edit, delete, light control etc.) - depending on where we use these roles for disabling actions
   const allowActions = computed(() => hasAnyRole('admin', 'superAdmin', 'commissioner', 'operator'));
+
+  // The following roles have access to system edit
+  // (e.g. add, edit, delete, restart etc.) - depending on where we use these roles for disabling system edit
   const allowEdits = computed(() => hasAnyRole('admin', 'superAdmin', 'commissioner'));
 
   // Blocking actions (e.g. edit, delete, light control etc.)
