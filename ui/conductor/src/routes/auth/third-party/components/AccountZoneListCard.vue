@@ -3,7 +3,7 @@
     <v-subheader class="text-title-caps-large neutral--text text--lighten-3">
       Zones
       <v-spacer/>
-      <v-btn v-if="hasZoneChanges" color="primary" @click="emitZoneChanges">Save</v-btn>
+      <v-btn v-if="hasZoneChanges" color="primary" :disabled="blockActions" @click="emitZoneChanges">Save</v-btn>
     </v-subheader>
     <v-card-actions>
       <AccountZoneChooser :zones.sync="chooserZones" class="mx-2 flex-grow-1"/>
@@ -16,8 +16,10 @@
 </template>
 
 <script setup>
-import AccountZoneChooser from '@/routes/auth/third-party/components/AccountZoneChooser.vue';
 import {computed, ref} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+import AccountZoneChooser from '@/routes/auth/third-party/components/AccountZoneChooser.vue';
 
 const props = defineProps({
   zoneList: {
@@ -25,6 +27,7 @@ const props = defineProps({
     default: () => []
   }
 });
+
 const emit = defineEmits(['update:zone-list']);
 
 const zoneChanges = ref(null);
@@ -55,11 +58,15 @@ const hasZoneChanges = computed(() => {
   }, {});
   return zoneChanges.value?.some(zone => !zoneNames[zone.name]) ?? false;
 });
+
 const emitZoneChanges = () => {
   emit('update:zone-list', zoneChanges.value.map(zone => zone.name));
 };
+
+// ------------------------------ //
+// ----- Authentication settings ----- //
+
+const {blockActions} = useAuthSetup();
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

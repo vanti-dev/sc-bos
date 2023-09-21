@@ -12,11 +12,11 @@
           :loading="hubStore.nodesListCollection.loading ?? true"
           outlined/>
       <v-spacer/>
-      <v-btn class="ml-6" v-if="editMode" @click="save" color="accent">
+      <v-btn class="ml-6" v-if="editMode" @click="save" color="accent" :disabled="blockActions">
         <v-icon left>mdi-content-save</v-icon>
         Save
       </v-btn>
-      <v-btn class="ml-6" v-else @click="editMode=true">
+      <v-btn class="ml-6" v-else @click="editMode=true" :disabled="blockActions">
         <v-icon left>mdi-pencil</v-icon>
         Edit
       </v-btn>
@@ -44,6 +44,9 @@ import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
 import {Service} from '@sc-bos/ui-gen/proto/services_pb';
 import {computed, ref, watch} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+const {blockActions} = useAuthSetup();
 
 const servicesStore = useServicesStore();
 const pageStore = usePageStore();

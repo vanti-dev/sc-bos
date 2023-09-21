@@ -23,6 +23,7 @@ export const useErrorStore = defineStore('error', () => {
     const e = /** @type {UiError} */{name: error.name, source: error.error, timestamp: Date.now(), id: _id++};
     // eslint-disable-next-line max-len
     console.error(`[${(new Date(e.timestamp)).toLocaleTimeString()}] ${e.name} | ${statusCodeToString(e.source.code)}: ${e.source.message}`, e.source);
+
     Vue.set(_errorMap.value, e.id, e);
     // auto-clear errors after 1 minute
     setTimeout(() => {

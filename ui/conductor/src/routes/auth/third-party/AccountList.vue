@@ -28,9 +28,13 @@
             </v-col>
             <v-spacer/>
             <new-account-dialog @finished="tenantStore.refreshTenants">
-              <template #activator="{on, attrs}">
-                <v-btn outlined v-bind="attrs" v-on="on">Add Account
-                  <v-icon right>mdi-plus</v-icon>
+              <template #activator="{ on, attrs }">
+                <v-btn
+                    outlined
+                    v-bind="attrs"
+                    v-on="on"
+                    :disabled="blockActions">
+                  Add Account<v-icon right>mdi-plus</v-icon>
                 </v-btn>
               </template>
             </new-account-dialog>
@@ -50,6 +54,7 @@ import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
 import {onMounted, onUnmounted, ref, watch} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
 
 const pageStore = usePageStore();
 const tenantStore = useTenantStore();
@@ -105,6 +110,11 @@ function rowClass(item) {
   }
   return '';
 }
+
+// ------------------------------ //
+// ----- Authentication settings ----- //
+
+const {blockActions} = useAuthSetup();
 </script>
 
 <style lang="scss" scoped>
@@ -118,7 +128,7 @@ function rowClass(item) {
 
 .v-data-table :deep(.v-data-footer) {
   background: var(--v-neutral-lighten1) !important;
-  border-radius: 0px 0px $border-radius-root*2 $border-radius-root*2;
+  border-radius: 0px 0px $border-radius-root * 2 $border-radius-root * 2;
   border: none;
   margin: 0 -12px -12px;
 }

@@ -4,6 +4,7 @@
         v-for="(device, key) in availableSubSystems"
         :key="key"
         :to="device.to"
+        :disabled="hasNoAccess(device.to)"
         class="my-2">
       <v-list-item-icon>
         <v-icon v-if="device.icon">{{ device.icon }}</v-icon>
@@ -21,7 +22,9 @@ import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import {computed, reactive} from 'vue';
 import {useDevicesStore} from './store';
 import {newActionTracker} from '@/api/resource';
+import useAuthSetup from '@/composables/useAuthSetup';
 
+const {hasNoAccess} = useAuthSetup();
 const deviceStore = useDevicesStore();
 const tracker = reactive(newActionTracker());
 

@@ -14,23 +14,23 @@
         background-color="neutral lighten-1"
         color="accent"/>
     <v-card-actions class="px-4">
-      <v-btn small color="neutral lighten-1" elevation="0" @click="updateLight(100)">On</v-btn>
-      <v-btn small color="neutral lighten-1" elevation="0" @click="updateLight(0)">Off</v-btn>
+      <v-btn small color="neutral lighten-1" :disabled="blockActions" elevation="0" @click="updateLight(100)">On</v-btn>
+      <v-btn small color="neutral lighten-1" :disabled="blockActions" elevation="0" @click="updateLight(0)">Off</v-btn>
       <v-spacer/>
       <v-btn
           small
           color="neutral lighten-1"
           elevation="0"
-          @click="updateLight(brightness+1)"
-          :disabled="brightness >= 100">
+          @click="updateLight(brightness + 1)"
+          :disabled="blockActions || brightness >= 100">
         Up
       </v-btn>
       <v-btn
           small
           color="neutral lighten-1"
           elevation="0"
-          @click="updateLight(brightness-1)"
-          :disabled="brightness <= 0">
+          @click="updateLight(brightness - 1)"
+          :disabled="blockActions || brightness <= 0">
         Down
       </v-btn>
     </v-card-actions>
@@ -39,14 +39,15 @@
 </template>
 
 <script setup>
-
 import {computed} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+const {blockActions} = useAuthSetup();
 
 const props = defineProps({
   value: {
     type: Object, // of type Brightness.AsObject
-    default: () => {
-    }
+    default: () => {}
   },
   loading: {
     type: Boolean,
@@ -77,7 +78,6 @@ function updateLight(brightness) {
     }
   });
 }
-
 </script>
 
 <style scoped>

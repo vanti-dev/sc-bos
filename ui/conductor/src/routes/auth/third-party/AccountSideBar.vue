@@ -17,8 +17,16 @@
             This action cannot be undone.
           </template>
           <template #confirmBtn>I understand, delete account</template>
-          <template #activator="{on, attrs}">
-            <v-btn outlined color="error" width="100%" v-on="on" v-bind="attrs">Delete Account</v-btn>
+          <template #activator="{ on, attrs }">
+            <v-btn
+                outlined
+                color="error"
+                :disabled="blockActions"
+                width="100%"
+                v-on="on"
+                v-bind="attrs">
+              Delete Account
+            </v-btn>
           </template>
         </delete-confirmation-dialog>
       </v-list-item>
@@ -38,6 +46,8 @@ import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
 import {reactive} from 'vue';
 
+import useAuthSetup from '@/composables/useAuthSetup';
+
 const pageStore = usePageStore();
 const {sidebarTitle, sidebarData} = storeToRefs(pageStore);
 const tenantStore = useTenantStore();
@@ -54,9 +64,12 @@ const updateZonesTracker = reactive(
  *
  */
 async function deleteAccount() {
-  await deleteTenant({
-    id: sidebarData.value.id
-  }, deleteTracker);
+  await deleteTenant(
+      {
+        id: sidebarData.value.id
+      },
+      deleteTracker
+  );
   tenantStore.refreshTenants();
   pageStore.showSidebar = false;
 }
@@ -78,8 +91,10 @@ async function saveZones(zones) {
   tenantStore.refreshTenants();
 }
 
+// ------------------------------ //
+// ----- Authentication settings ----- //
+
+const {blockActions} = useAuthSetup();
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -2,9 +2,12 @@ import {events, keycloak} from '@/api/keycloak.js';
 import localLogin from '@/api/localLogin.js';
 import jwtDecode from 'jwt-decode';
 import {defineStore} from 'pinia';
-import {computed, ref} from 'vue';
+import {computed, ref, watch} from 'vue';
+import {useAppConfigStore} from '@/stores/app-config';
 
 export const useAccountStore = defineStore('accountStore', () => {
+  const appConfig = useAppConfigStore();
+
   const kcp = keycloak();
   const kcEvents = events;
 
@@ -84,6 +87,19 @@ export const useAccountStore = defineStore('accountStore', () => {
 
   kcEvents.addEventListener('authSuccess', updateRefs);
 
+  // Keep login modal permanently on screen if user is not logged in and we require authentication
+  watch(
+      [loggedIn, token, () => appConfig.config?.disableAuthentication],
+      () => {
+        if (!appConfig.config?.disableAuthentication) {
+          if (!loggedIn.value || !token.value) loginDialog.value = true;
+        } else {
+          loginDialog.value = false;
+        }
+      },
+      {immediate: true, deep: true}
+  );
+
   return {
     loggedIn,
     token,
@@ -97,8 +113,10 @@ export const useAccountStore = defineStore('accountStore', () => {
     loadLocalStorage,
     snackbar,
 
+    isLoggedIn: computed(() => loggedIn.value),
     fullName: computed(() => claims.value?.name || ''),
     email: computed(() => claims.value?.email || ''),
+    roles: computed(() => claims.value?.roles || []),
 
     login: (scopes) => {
       return kcp.then((kc) => kc.login({scope: scopes.join(' ')}));

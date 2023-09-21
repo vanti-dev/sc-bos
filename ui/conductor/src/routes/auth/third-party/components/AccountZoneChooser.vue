@@ -18,7 +18,8 @@
         outlined
         multiple
         auto-select-first
-        return-object>
+        return-object
+        :disabled="blockActions">
       <template #append-item v-if="findZonesTracker.response?.nextPageToken">
         <v-divider class="my-2"/>
         <v-subheader class="mx-2">
@@ -39,7 +40,7 @@
         </v-list-item-content>
       </template>
     </v-combobox>
-    <v-menu bottom offset-y nudge-top="-8">
+    <v-menu bottom offset-y nudge-top="-8" v-if="!blockActions">
       <template #activator="{on, attrs}">
         <v-btn icon v-on="on" v-bind="attrs" class="ml-2 mr-n2">
           <v-icon>mdi-dots-vertical</v-icon>
@@ -64,6 +65,7 @@
 <script setup>
 import {newActionTracker} from '@/api/resource';
 import {listDevices} from '@/api/ui/devices';
+import useAuthSetup from '@/composables/useAuthSetup';
 import debounce from 'debounce';
 import {computed, reactive, ref, watch} from 'vue';
 
@@ -154,10 +156,13 @@ const findZonesQuery = computed(() => {
 // do the fetch of zones, debounced to avoid spamming the server
 const fetchZones = debounce((query) => {
   listDevices({query, pageSize: props.maxResultSize}, findZonesTracker)
-      .catch(() => {}); // errors are recorded in findZonesTracker
+      .catch(() => {
+      }); // errors are recorded in findZonesTracker
 }, 500);
 // watch for changes in the query and fetch zones when it changes
 watch(findZonesQuery, (query) => fetchZones(query), {immediate: true});
+
+const {blockActions} = useAuthSetup();
 </script>
 
 <style scoped>

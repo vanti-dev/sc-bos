@@ -3,7 +3,7 @@
     <lights-config-card v-if="automationType === 'lights'"/>
     <edit-config-card/>
     <v-card-actions class="justify-end px-4 pt-0" v-if="false">
-      <v-btn class="primary" @click="saveConfig">Save</v-btn>
+      <v-btn class="primary" :disabled="blockActions" @click="saveConfig">Save</v-btn>
     </v-card-actions>
     <v-snackbar v-model="saveConfirm" timeout="2000" color="success" max-width="250" min-width="200">
       <span class="text-body-large align-baseline"><v-icon left>mdi-content-save-check</v-icon>Config saved</span>
@@ -22,6 +22,9 @@ import {usePageStore} from '@/stores/page';
 import {serviceName} from '@/util/proxy';
 import {storeToRefs} from 'pinia';
 import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+const {blockActions} = useAuthSetup();
 
 const pageStore = usePageStore();
 const {sidebarData, sidebarNode} = storeToRefs(pageStore);
