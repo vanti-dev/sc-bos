@@ -88,6 +88,7 @@
 </template>
 
 <script setup>
+import {storeToRefs} from 'pinia';
 import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, set, watch} from 'vue';
 import {useAppConfigStore} from '@/stores/app-config';
 
@@ -115,7 +116,7 @@ const props = defineProps({
 });
 
 // -------------- Data & Reactive References -------------- //
-const {config} = useAppConfigStore();
+const {config} = storeToRefs(useAppConfigStore());
 const showClose = ref(false);
 const activeFloorPlan = ref('');
 const floorPlanSVG = ref(null);

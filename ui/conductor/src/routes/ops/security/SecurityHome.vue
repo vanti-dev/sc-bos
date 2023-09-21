@@ -49,6 +49,7 @@ import ScStatusCard from '@/routes/ops/components/ScStatusCard.vue';
 import ListView from '@/routes/ops/security/components/ListView.vue';
 import MapView from '@/routes/ops/security/components/MapView.vue';
 import {useAppConfigStore} from '@/stores/app-config';
+import {storeToRefs} from 'pinia';
 import {computed, ref, watch} from 'vue';
 
 const props = defineProps({
@@ -62,7 +63,7 @@ const props = defineProps({
   }
 });
 
-const {config} = useAppConfigStore();
+const {config} = storeToRefs(useAppConfigStore());
 
 const viewType = ref('list');
 const hiddenOnMap = ref(false);

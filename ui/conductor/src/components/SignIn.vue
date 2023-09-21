@@ -19,7 +19,7 @@ import {useAccountStore} from '@/stores/account.js';
 import {useAppConfigStore} from '@/stores/app-config';
 import {storeToRefs} from 'pinia';
 
-const {config} = useAppConfigStore();
+const {config} = storeToRefs(useAppConfigStore());
 const store = useAccountStore();
 
 const {loginForm} = storeToRefs(store);
