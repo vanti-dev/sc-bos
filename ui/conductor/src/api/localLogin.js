@@ -1,4 +1,4 @@
-const api = import.meta.env.VITE_AUTH_URL || '/';
+const api = import.meta.env.VITE_AUTH_URL || '';
 
 const localLogin = (username, password) => {
   const formData = new FormData();
