@@ -8,4 +8,5 @@ type Root struct {
 	driver.BaseConfig
 
 	IpAddress string `json:"ipAddress"`
+	Password  string `json:"password, omitempty"`
 }

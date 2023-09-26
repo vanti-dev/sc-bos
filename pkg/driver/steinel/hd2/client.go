@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -13,13 +12,14 @@ import (
 type Client struct {
 	// BaseURL is the root of the API.
 	// e.g. https://1.2.3.4/api/
-	BaseURL url.URL
-	Client  *http.Client
+	BaseURL  url.URL
+	Client   *http.Client
+	Password string `default:""`
 }
 
 // NewInsecureClient creates a Client that connects over HTTPS but does not verify the server certificate.
-func NewInsecureClient(host string) *Client {
-	return &Client{
+func NewInsecureClient(host string, password string) *Client {
+	client := &Client{
 		BaseURL: url.URL{
 			Scheme: "https",
 			Host:   host,
@@ -33,6 +33,12 @@ func NewInsecureClient(host string) *Client {
 			},
 		},
 	}
+	if len(password) > 0 {
+		client.Password = password
+	} else {
+		client.Password = "Steinel123"
+	}
+	return client
 }
 
 func (c *Client) newRequest(method string, endpoint string) *http.Request {
@@ -55,7 +61,7 @@ func handleResponse(res *http.Response, destPtr any) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Got response " + string(rawJSON))
+	// fmt.Println("Got response " + string(rawJSON))
 	return json.Unmarshal(rawJSON, destPtr)
 }
 
@@ -92,7 +98,7 @@ type SensorResponse struct {
 func doGetRequest(conn *Client, target any, endpoint string) error {
 	req := conn.newRequest("GET", endpoint)
 
-	req.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(":Steinel123")))
+	req.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(":"+conn.Password)))
 
 	res, err := conn.Client.Do(req)
 	if err != nil {
