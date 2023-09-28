@@ -7,6 +7,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto/history"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights"
 	"github.com/vanti-dev/sc-bos/pkg/auto/statusalerts"
+	"github.com/vanti-dev/sc-bos/pkg/auto/statusemail"
 	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
 )
 
@@ -18,6 +19,7 @@ func Factories() map[string]auto.Factory {
 		"history":             history.Factory,
 		lights.AutoType:       lights.Factory,
 		statusalerts.AutoName: statusalerts.Factory,
+		statusemail.AutoName:  statusemail.Factory,
 		udmi.AutoType:         udmi.Factory,
 	}
 }
