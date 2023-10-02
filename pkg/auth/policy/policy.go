@@ -26,10 +26,12 @@ type Attributes struct {
 	// message once Stream.Open is true.
 	Request any `json:"request"`
 
-	CertificateValid bool              `json:"certificate_valid"` // A cert is present and validated against the CA
-	Certificate      *x509.Certificate `json:"certificate"`       // Claims in the validated certificate
-	TokenValid       bool              `json:"token_valid"`       // A token is present and signature validated
-	TokenClaims      any               `json:"token_claims"`      // Claims in the validated token
+	CertificatePresent bool              `json:"certificate_present"` // A client cert was provided
+	CertificateValid   bool              `json:"certificate_valid"`   // A cert is present and validated against the CA
+	Certificate        *x509.Certificate `json:"certificate"`         // Claims in the validated certificate
+	TokenPresent       bool              `json:"token_present"`       // A token is present
+	TokenValid         bool              `json:"token_valid"`         // A token is present and signature validated
+	TokenClaims        any               `json:"token_claims"`        // Claims in the validated token
 }
 
 type StreamAttributes struct {

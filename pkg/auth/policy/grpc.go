@@ -108,24 +108,27 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 			}
 		}
 
-		cert := rpcutil.VerifiedCertFromServerContext(ctx)
+		cert, valid := rpcutil.CertFromServerContext(ctx)
 
 		creds = &verifiedCreds{
 			cert:        cert,
+			certValid:   valid,
 			token:       tkn,
 			tokenClaims: tokenClaims,
 		}
 	}
 
 	input := Attributes{
-		Service:          service,
-		Method:           method,
-		Stream:           stream,
-		Request:          req,
-		CertificateValid: creds.cert != nil,
-		Certificate:      creds.cert,
-		TokenValid:       creds.tokenClaims != nil,
-		TokenClaims:      creds.tokenClaims,
+		Service:            service,
+		Method:             method,
+		Stream:             stream,
+		Request:            req,
+		CertificatePresent: creds.cert != nil,
+		CertificateValid:   creds.certValid,
+		Certificate:        creds.cert,
+		TokenPresent:       creds.token != "",
+		TokenValid:         creds.tokenClaims != nil,
+		TokenClaims:        creds.tokenClaims,
 	}
 
 	queries, err := Validate(ctx, i.policy, input)
@@ -159,6 +162,7 @@ func WithTokenVerifier(tv token.Validator) InterceptorOption {
 
 type verifiedCreds struct {
 	cert        *x509.Certificate
+	certValid   bool
 	token       string
 	tokenClaims *token.Claims
 }

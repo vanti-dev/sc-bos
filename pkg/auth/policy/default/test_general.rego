@@ -8,8 +8,10 @@ user_request(service, method, request, roles) := input {
     "method": method,
     "stream": {"is_server_stream": false, "is_client_stream": false, "open": false},
     "request": request,
+    "certificate_present": false,
     "certificate_valid": false,
     "certificate": null,
+    "token_present": true,
     "token_valid": true,
     "token_claims": {
       "roles": roles,
@@ -64,8 +66,10 @@ tenant_request(service, method, request, zones) := input {
     "method": method,
     "stream": {"is_server_stream": false, "is_client_stream": false, "open": false},
     "request": request,
+    "certificate_present": false,
     "certificate_valid": false,
     "certificate": null,
+    "token_present": true,
     "token_valid": true,
     "token_claims": {
       "roles": null,
