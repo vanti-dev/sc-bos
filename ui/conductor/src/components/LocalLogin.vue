@@ -32,7 +32,7 @@
           Sign In
         </v-btn>
       </v-card-actions>
-      <v-card-text class="d-flex justify-center">
+      <v-card-text v-if="appConfig?.config?.keycloak" class="d-flex justify-center">
         <a @click="store.toggleLoginForm()" class="text-center">
           Use a different sign in method
         </a>
@@ -53,9 +53,11 @@
 
 <script setup>
 import {useAccountStore} from '@/stores/account.js';
+import {useAppConfigStore} from '@/stores/app-config';
 import {storeToRefs} from 'pinia';
 import {computed, ref} from 'vue';
 
+const appConfig = useAppConfigStore();
 const store = useAccountStore();
 const password = ref('');
 const username = ref('');
