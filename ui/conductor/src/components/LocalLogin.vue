@@ -82,9 +82,13 @@ const disableSignIn = computed(() => {
   else return false;
 });
 
+// Show/Hide the login switch depending on whether KeyCloak is enabled or not
 const displayLoginSwitch = computed(() => {
+  // If KeyCloak config not available, we can only use local login, hide switcher
   if (!appConfig.config?.keycloak) {
     return false;
+
+    // If KeyCloak config available, we can toggle between login variants
   } else {
     return true;
   }
