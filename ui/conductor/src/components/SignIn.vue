@@ -9,13 +9,13 @@
       Sign in to Smart Core
     </v-card-title>
 
-    <LocalLogin v-if="loginForm"/>
+    <LocalLogin v-if="displayLoginForm"/>
     <LoginChoice v-else/>
   </v-card>
 </template>
 
 <script setup>
-import {watch} from 'vue';
+import {computed} from 'vue';
 import {useAccountStore} from '@/stores/account.js';
 import {useAppConfigStore} from '@/stores/app-config';
 import {storeToRefs} from 'pinia';
@@ -25,9 +25,13 @@ const store = useAccountStore();
 
 const {loginForm} = storeToRefs(store);
 
-watch(config, () => {
-  if (!config.keycloak) loginForm.value = true;
-}, {immediate: true});
+const displayLoginForm = computed(() => {
+  if (config.value?.keycloak) {
+    return loginForm.value;
+  } else {
+    return true;
+  }
+});
 </script>
 
 <style lang="scss" scoped></style>

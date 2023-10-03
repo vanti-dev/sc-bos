@@ -32,7 +32,7 @@
           Sign In
         </v-btn>
       </v-card-actions>
-      <v-card-text v-if="appConfig?.config?.keycloak" class="d-flex justify-center">
+      <v-card-text v-if="displayLoginSwitch" class="d-flex justify-center">
         <a @click="store.toggleLoginForm()" class="text-center">
           Use a different sign in method
         </a>
@@ -80,6 +80,14 @@ const disableSignIn = computed(() => {
   const hasOne = !username.value && password.value || username.value && !password.value;
   if (hasNone || hasOne) return true;
   else return false;
+});
+
+const displayLoginSwitch = computed(() => {
+  if (!appConfig.config?.keycloak) {
+    return false;
+  } else {
+    return true;
+  }
 });
 </script>
 

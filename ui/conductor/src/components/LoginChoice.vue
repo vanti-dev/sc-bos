@@ -1,11 +1,11 @@
 <template>
   <div>
-    <v-card-text :class="[{'mb-5': appConfig?.config?.keycloak }, 'text-center']">
+    <v-card-text :class="[{'mb-5': appConfig.config?.keycloak }, 'text-center']">
       {{ keycloakMessage.top }}
     </v-card-text>
     <v-card-actions>
       <v-btn
-          v-if="appConfig?.config?.keycloak"
+          v-if="appConfig.config?.keycloak"
           @click="doLogin()"
           color="primary"
           block
@@ -41,7 +41,7 @@ const doLogin = () => store.login(['profile', 'roles'])
     .catch(err => console.error(err));
 
 const keycloakMessage = computed(() => {
-  if (appConfig.config.keycloak) {
+  if (appConfig.config?.keycloak) {
     return {
       top: 'You can sign in using Keycloak or sign in locally.',
       bottom: 'Local accounts are used to setup Smart Core, prefer signing in with Keycloak.'
