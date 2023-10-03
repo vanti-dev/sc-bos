@@ -15,6 +15,7 @@
 </template>
 
 <script setup>
+import {watch} from 'vue';
 import {useAccountStore} from '@/stores/account.js';
 import {useAppConfigStore} from '@/stores/app-config';
 import {storeToRefs} from 'pinia';
@@ -23,6 +24,10 @@ const {config} = storeToRefs(useAppConfigStore());
 const store = useAccountStore();
 
 const {loginForm} = storeToRefs(store);
+
+watch(config, () => {
+  if (!config.keycloak) loginForm.value = true;
+}, {immediate: true});
 </script>
 
 <style lang="scss" scoped></style>
