@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/open-policy-agent/opa/rego"
 	"github.com/rs/cors"
 	"github.com/timshannon/bolthold"
 	"go.uber.org/multierr"
@@ -187,12 +188,8 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	tokenValidator := &token.ValidatorSet{}
 
 	// configure request authorisation, here we setup grpc interceptors that decide if a request is denied or not.
-	if !config.DisablePolicy {
-		pol := policy.Default(false)
-		if config.Policy != nil {
-			pol = config.Policy
-		}
-
+	logPolicyMode(config.PolicyMode, logger)
+	if pol := configPolicy(config); pol != nil {
 		interceptor := policy.NewInterceptor(pol,
 			policy.WithLogger(logger.Named("policy")),
 			policy.WithTokenVerifier(tokenValidator),
@@ -278,6 +275,52 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	}
 	c.Defer(manager.Close)
 	return c, nil
+}
+
+// logPolicyMode lets the user know if they are using an insecure policy mode.
+func logPolicyMode(mode sysconf.PolicyMode, logger *zap.Logger) {
+	switch mode {
+	case sysconf.PolicyOn: // don't log the default mode
+	case sysconf.PolicyOff:
+		logger.Warn("no request authorization will be performed (--policy-mode=off)")
+	case sysconf.PolicyCheck:
+		logger.Warn("unauthenticated requests will be permitted (--policy-mode=check)")
+	default:
+		// this shouldn't happen as unknown modes are caught in the config parsing
+		logger.Warn("unknown policy mode", zap.String("mode", string(mode)))
+	}
+}
+
+// configPolicy converts the given config into a policy.Policy.
+// Returns nil if no policy should be applied.
+func configPolicy(config sysconf.Config) policy.Policy {
+	if config.PolicyMode == sysconf.PolicyOff {
+		return nil
+	}
+
+	pol := config.Policy
+	if pol == nil {
+		pol = policy.Default(false)
+	}
+
+	// only invoke the policy if we have a token or certificate
+	if config.PolicyMode == sysconf.PolicyCheck {
+		oldPol := pol
+		pol = policy.Func(func(ctx context.Context, query string, input policy.Attributes) (rego.ResultSet, error) {
+			if !input.TokenPresent && !input.CertificatePresent {
+				// No token or cert, so we don't need to check the policy.
+				// Return that the policy is satisfied.
+				// See [rego.ResultSet.Allowed] for what conditions we are satisfying.
+				return rego.ResultSet{{
+					Expressions: []*rego.ExpressionValue{{
+						Value: true,
+					}},
+				}}, nil
+			}
+			return oldPol.EvalPolicy(ctx, query, input)
+		})
+	}
+	return pol
 }
 
 type Controller struct {
