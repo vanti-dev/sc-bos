@@ -48,6 +48,13 @@ type Policy interface {
 	EvalPolicy(ctx context.Context, query string, input Attributes) (rego.ResultSet, error)
 }
 
+// Func implements Policy by calling a function.
+type Func func(ctx context.Context, query string, input Attributes) (rego.ResultSet, error)
+
+func (f Func) EvalPolicy(ctx context.Context, query string, input Attributes) (rego.ResultSet, error) {
+	return f(ctx, query, input)
+}
+
 // Validate will validate a set of decision attributes against a policy.
 // It uses a hierarchical query system based on the service's name and package, querying the policy from most specific
 // to least specific until the query returns a result.
