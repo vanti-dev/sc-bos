@@ -40,6 +40,7 @@ const store = useAccountStore();
 const doLogin = () => store.login(['profile', 'roles'])
     .catch(err => console.error(err));
 
+// Tweak the message depending on whether KeyCloak is enabled or not
 const keycloakMessage = computed(() => {
   if (appConfig.config?.keycloak) {
     return {

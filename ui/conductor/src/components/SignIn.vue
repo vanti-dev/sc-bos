@@ -26,8 +26,11 @@ const store = useAccountStore();
 const {loginForm} = storeToRefs(store);
 
 const displayLoginForm = computed(() => {
+  // If KeyCloak config available, we can toggle between login variants
   if (config.value?.keycloak) {
     return loginForm.value;
+
+    // If KeyCloak config not available, we can only use local login
   } else {
     return true;
   }
