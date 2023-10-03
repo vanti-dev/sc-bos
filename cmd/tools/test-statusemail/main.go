@@ -46,7 +46,7 @@ func main() {
   "destination": {
     "host": "smtp.gmail.com",
     "from": "Enterprise Wharf <no-reply@enterprisewharf.co.uk>",
-    "to": ["Matt Nathan <matt.nathan@gmail.com>"],
+    "to": ["Matt Nathan <matt.nathan@vanti.co.uk>"],
     "passwordFile": ".secrets/ew-email-pass",
     "minInterval": "30s"
   }
