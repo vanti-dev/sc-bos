@@ -80,7 +80,7 @@ async function initConfig() {
   return {
     onLoad: 'check-sso',
     silentCheckSsoRedirectUri:
-      window.location.origin + '/silent-check-sso.html',
+      import.meta.env.BASE_URL + 'silent-check-sso-v2.html',
     silentCheckSsoFallback: false
   };
 }
