@@ -204,7 +204,7 @@ const calculateAnchorStyle = computed(() => {
  * @return {Promise<Response>}
  */
 const fetchFloorPlan = async (selectedFloor) => {
-  const floorPlan = config.siteFloorPlans.find((floorPlan) => floorPlan.name === selectedFloor);
+  const floorPlan = config.value.siteFloorPlans.find((floorPlan) => floorPlan.name === selectedFloor);
 
   // Fetch the floor plan svg
   // Don't forget to add ?raw to the end of the url to get the raw svg (string injected into v-html)
