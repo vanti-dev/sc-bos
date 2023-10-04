@@ -84,7 +84,7 @@ const deviceNames = computed(() => {
 
 const formattedFloorList = computed(() => {
   if (viewType.value === 'list') return floorList.value;
-  else return config.siteFloorPlans.map((floor) => floor.name);
+  else return config.value.siteFloorPlans.map((floor) => floor.name);
 });
 
 const deviceQuery = computed(() => {
