@@ -456,12 +456,12 @@ watch(
 
 ::v-deep(svg .open),
 ::v-deep(svg .moving) {
-  stroke: var(--v-success-base);
+  stroke: var(--v-warning-base);
   stroke-width: 125px;
   transition: all 0.5s ease-in-out;
 }
 ::v-deep(svg .closed) {
-  stroke: var(--v-warning-base);
+  stroke: var(--v-success-base);
   stroke-width: 75px;
   transition: all 0.5s ease-in-out;
 }
@@ -473,11 +473,11 @@ watch(
 
 ::v-deep(svg .open-fill),
 ::v-deep(svg .moving-fill) {
-  fill: var(--v-success-base);
+  fill: var(--v-warning-base);
   transition: all 0.5s ease-in-out;
 }
 ::v-deep(svg .closed-fill) {
-  fill: var(--v-warning-base);
+  fill: var(--v-success-base);
   transition: all 0.5s ease-in-out;
 }
 ::v-deep(svg .unknown-fill) {
