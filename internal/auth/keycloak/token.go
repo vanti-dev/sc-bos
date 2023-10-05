@@ -45,8 +45,9 @@ func NewTokenValidator(config *Config, keySet jwks.KeySet) token.Validator {
 	return &tokenValidator{
 		keySet: keySet,
 		expected: jwt.Expected{
-			Audience: jwt.Audience{config.ClientID},
-			Issuer:   config.Issuer(),
+			// todo: enable audience checking once we've figured out how to configure KeyCloak
+			// Audience: jwt.Audience{config.ClientID},
+			Issuer: config.Issuer(),
 		},
 	}
 }
