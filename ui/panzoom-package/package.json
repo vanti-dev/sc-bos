@@ -1,7 +1,11 @@
 {
   "name": "@sc-bos/panzoom-package",
-  "version": "1.0.0",
+  "version": "1.0.1-vanti.0",
   "main": "panzoom.js",
-  "scripts": {},
-  "dependencies": {}
+  "scripts": {
+    "deploy:nexus": "yarn publish --prerelease --preid vanti --no-git-tag-version"
+  },
+  "publishConfig": {
+    "registry": "https://nexus.vanti.co.uk/repository/npm-releases/"
+  }
 }
