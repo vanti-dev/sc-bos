@@ -6,7 +6,7 @@
       <v-col
           cols="4"
           class="d-flex flex-row flex-nowrap mx-0 px-0 mr-n5 justify-space-between"
-          style="max-width: 175px;">
+          style="max-width: 225px;">
         <WithOccupancy
             v-slot="{ resource }"
             :name="props.name">
