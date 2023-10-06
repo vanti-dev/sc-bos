@@ -252,6 +252,32 @@ const chartData = computed(() => {
   });
   data = dataset.map((data) => data.y);
 
+
+  // Back and Forward fills
+  // If not enough data is available for the bar chart, the chart will be filled non-zero values if any available
+  // If no non-zero values are available, the chart will be filled with zero values
+  //
+  // Backward fill for zero values
+  let nextNonZero = null;
+  for (let i = data.length - 1; i >= 0; i--) {
+    if (data[i] !== 0) {
+      nextNonZero = data[i];
+    } else if (nextNonZero !== null) {
+      data[i] = nextNonZero;
+    }
+  }
+  //
+  // Forward fill for zero values
+  let previousNonZero = null;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i] !== 0) {
+      previousNonZero = data[i];
+    } else if (previousNonZero !== null) {
+      data[i] = previousNonZero;
+    }
+  }
+
+
   // returning restructured data for the bar chart
   return {
     labels, // collection of time intervals
