@@ -27,49 +27,12 @@
 </template>
 
 <script setup>
-import {ServiceNames} from '@/api/ui/services';
-import {usePageStore} from '@/stores/page';
-import {useServicesStore} from '@/stores/services';
-import {storeToRefs} from 'pinia';
-import {computed, onUnmounted, ref, watch} from 'vue';
 import useAuthSetup from '@/composables/useAuthSetup';
+import useZones from '@/composables/useZones';
 
 const {hasNoAccess} = useAuthSetup();
+const {zoneList} = useZones();
 
-const servicesStore = useServicesStore();
-const pageStore = usePageStore();
-const {sidebarNode} = storeToRefs(pageStore);
-const zoneCollection = ref({});
-
-watch(
-    sidebarNode,
-    async () => {
-      zoneCollection.value = servicesStore.getService(
-          ServiceNames.Zones,
-          await sidebarNode.value.commsAddress,
-          await sidebarNode.value.commsName
-      ).servicesCollection;
-
-      // todo: this causes us to load all pages, connect with paging logic instead
-      // - although we might want it in this case
-      zoneCollection.value.needsMorePages = true;
-    },
-    {immediate: true}
-);
-
-watch(zoneCollection, () => {
-  zoneCollection.value.query(ServiceNames.Zones);
-});
-
-onUnmounted(() => zoneCollection.value.reset());
-
-const zoneList = computed(() => {
-  return Object.values(zoneCollection.value?.resources?.value ?? [])
-      .map((zone) => {
-        return zone.id;
-      })
-      .sort();
-});
 </script>
 
 <style scoped></style>
