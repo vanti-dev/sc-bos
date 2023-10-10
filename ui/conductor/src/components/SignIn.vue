@@ -5,8 +5,9 @@
         <v-icon> mdi-close </v-icon>
       </v-btn>
     </div>
-    <v-card-title class="justify-center text-h3 font-weight-semibold">
-      Sign in to Smart Core
+    <v-card-title class="justify-center text-h1 font-weight-semibold">
+      <sc-logo outline="white" style="height: 65px;"/>
+      Smart Core
     </v-card-title>
 
     <LocalLogin v-if="displayLoginForm"/>
@@ -15,6 +16,7 @@
 </template>
 
 <script setup>
+import ScLogo from '@/components/ScLogo.vue';
 import {computed} from 'vue';
 import {useAccountStore} from '@/stores/account.js';
 import {useAppConfigStore} from '@/stores/app-config';
