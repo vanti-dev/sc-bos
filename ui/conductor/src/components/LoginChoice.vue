@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card-text :class="[{'mb-0': appConfig.config?.keycloak }, 'text-center mx-auto']">
+    <v-card-text :class="[{'mb-8': appConfig.config?.keycloak }, 'text-center mx-auto']" style="max-width: 320px;">
       {{ keycloakMessage.top }}
     </v-card-text>
     <v-card-actions class="d-flex flex-column align-center justify-center">
@@ -10,11 +10,11 @@
           color="primary"
           block
           large
-          class="text-body-1 font-weight-bold mx-0">
+          class="text-body-1 font-weight-bold">
         Sign in
       </v-btn>
     </v-card-actions>
-    <v-card-text class="text-body-2 text-center mt-10">
+    <v-card-text class="text-body-2 text-center mt-10 mx-auto" style="max-width: 350px;">
       {{ keycloakMessage.bottom }}
     </v-card-text>
     <v-card-actions class="d-flex flex-column align-center justify-center mt-n2">
