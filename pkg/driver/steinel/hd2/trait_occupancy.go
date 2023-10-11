@@ -96,6 +96,8 @@ func (a *Occupancy) GetUpdate() error {
 		return err
 	}
 
+	peopleCount := 0
+
 	state := traits.Occupancy_STATE_UNSPECIFIED
 	if response.TruePresence1 {
 		state = traits.Occupancy_OCCUPIED
@@ -103,8 +105,14 @@ func (a *Occupancy) GetUpdate() error {
 		state = traits.Occupancy_UNOCCUPIED
 	}
 
+	if response.ZonePeople0 > 0 {
+		state = traits.Occupancy_OCCUPIED
+		peopleCount = response.ZonePeople0
+	}
+
 	a.occupancy.Set(&traits.Occupancy{
-		State: state,
+		State:       state,
+		PeopleCount: int32(peopleCount),
 	})
 
 	return nil

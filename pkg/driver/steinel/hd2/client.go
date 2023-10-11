@@ -93,6 +93,7 @@ type SensorResponse struct {
 	DewPoint                     float64 `json:"DewPoint"`
 	AerosolStaleAir              int     `json:"AerosolStaleAir"`
 	AerosolRiskOfInfection       int     `json:"AerosolRiskOfInfection"`
+	ZonePeople0                  int     `json:"ZonePeople0"`
 }
 
 func doGetRequest(conn *Client, target any, endpoint string) error {
