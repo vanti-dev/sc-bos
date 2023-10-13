@@ -46,6 +46,10 @@ type Driver struct {
 func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	announcer := node.AnnounceContext(ctx, d.announcer)
 
+	if cfg.Metadata != nil {
+		announcer.Announce(cfg.Name, node.HasMetadata(cfg.Metadata))
+	}
+
 	d.client = NewInsecureClient(cfg.IpAddress, cfg.Password)
 
 	d.airQualitySensor = NewAirQualitySensor(d.client, d.logger.Named("AirQuality"), 0)
