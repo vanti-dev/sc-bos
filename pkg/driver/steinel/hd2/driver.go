@@ -53,13 +53,13 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	d.client = NewInsecureClient(cfg.IpAddress, cfg.Password)
 
 	d.airQualitySensor = NewAirQualitySensor(d.client, d.logger.Named("AirQuality"), 0)
-	announcer.Announce(cfg.Name+"/airQuality", node.HasTrait(trait.AirQualitySensor, node.WithClients(airqualitysensor.WrapApi(&d.airQualitySensor))))
+	announcer.Announce(cfg.Name, node.HasTrait(trait.AirQualitySensor, node.WithClients(airqualitysensor.WrapApi(&d.airQualitySensor))))
 
 	d.occupancy = NewOccupancySensor(d.client, d.logger.Named("Occupancy"), 0)
-	announcer.Announce(cfg.Name+"/occupancy", node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensor.WrapApi(&d.occupancy))))
+	announcer.Announce(cfg.Name, node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensor.WrapApi(&d.occupancy))))
 
 	d.temperature = NewTemperatureSensor(d.client, d.logger.Named("Temperature"), 0)
-	announcer.Announce(cfg.Name+"/temperature", node.HasTrait(trait.AirTemperature, node.WithClients(airtemperature.WrapApi(&d.temperature))))
+	announcer.Announce(cfg.Name, node.HasTrait(trait.AirTemperature, node.WithClients(airtemperature.WrapApi(&d.temperature))))
 
 	return nil
 }

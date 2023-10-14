@@ -12,5 +12,5 @@ type Root struct {
 	Metadata *traits.Metadata `json:"metadata,omitempty"`
 
 	IpAddress string `json:"ipAddress"`
-	Password  string `json:"password, omitempty"`
+	Password  string `json:"password,omitempty"`
 }
