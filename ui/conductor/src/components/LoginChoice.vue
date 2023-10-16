@@ -1,9 +1,9 @@
 <template>
   <div>
-    <v-card-text :class="[{'mb-5': appConfig.config?.keycloak }, 'text-center']">
+    <v-card-text :class="[{'mb-8': appConfig.config?.keycloak }, 'text-center mx-auto']" style="max-width: 320px;">
       {{ keycloakMessage.top }}
     </v-card-text>
-    <v-card-actions>
+    <v-card-actions class="d-flex flex-column align-center justify-center">
       <v-btn
           v-if="appConfig.config?.keycloak"
           @click="doLogin()"
@@ -11,22 +11,21 @@
           block
           large
           class="text-body-1 font-weight-bold">
-        Sign in with Keycloak
+        Sign in
       </v-btn>
     </v-card-actions>
-    <v-card-actions>
-      <v-btn
-          color="warning"
-          block
-          large
-          class="text-body-1 font-weight-bold"
-          @click="store.toggleLoginForm()">
-        Use a local Account
-      </v-btn>
-    </v-card-actions>
-    <v-card-text class="text-center mt-4">
+    <v-card-text class="text-body-2 text-center mt-10 mx-auto" style="max-width: 350px;">
       {{ keycloakMessage.bottom }}
     </v-card-text>
+    <v-card-actions class="d-flex flex-column align-center justify-center mt-n2">
+      <v-btn
+          block
+          class="text-body-2 ma-0"
+          text
+          @click="store.toggleLoginForm()">
+        Sign in with local Account
+      </v-btn>
+    </v-card-actions>
   </div>
 </template>
 
@@ -44,12 +43,13 @@ const doLogin = () => store.login(['profile', 'roles'])
 const keycloakMessage = computed(() => {
   if (appConfig.config?.keycloak) {
     return {
-      top: 'You can sign in using Keycloak or sign in locally.',
-      bottom: 'Local accounts are used to setup Smart Core, prefer signing in with Keycloak.'
+      top: 'Please sign in to the Smart Core Operator App to unlock all features.',
+      // eslint-disable-next-line max-len
+      bottom: 'If you are an administrator or need to setup your building, please sign in with a local account.'
     };
   } else {
     return {
-      top: 'You can sign in using a local account.',
+      top: 'Please sign in to the Smart Core Operator App with your local account to unlock all features.',
       bottom: 'Local accounts are used to setup Smart Core.'
     };
   }
