@@ -2,6 +2,7 @@ package hd2
 
 import (
 	"context"
+	"fmt"
 
 	"go.uber.org/zap"
 
@@ -53,6 +54,10 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	p, err := cfg.LoadPassword()
 	if err != nil {
 		return err
+	}
+
+	if cfg.IpAddress == "" {
+		return fmt.Errorf("ipAddress is required")
 	}
 	d.client = NewInsecureClient(cfg.IpAddress, p)
 
