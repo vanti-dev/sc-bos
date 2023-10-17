@@ -53,7 +53,7 @@ func (a *Occupancy) startPoll(ctx context.Context) error {
 		case <-ticker.C:
 			err := a.GetUpdate()
 			if err != nil {
-				a.logger.Error("error refreshing thermostat data", zap.Error(err))
+				a.logger.Error("error refreshing Occupancy data", zap.Error(err))
 			}
 		}
 	}
