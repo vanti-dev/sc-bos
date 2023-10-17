@@ -97,7 +97,7 @@ func (a *TemperatureSensor) GetUpdate() error {
 		return err
 	}
 
-	humidity := float32(response.Humidity)
+	humidity := float32(response.Humidity) / 100
 
 	a.temperature.Set(&traits.AirTemperature{
 		Mode:               0,
