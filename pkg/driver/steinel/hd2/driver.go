@@ -50,7 +50,11 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		announcer.Announce(cfg.Name, node.HasMetadata(cfg.Metadata))
 	}
 
-	d.client = NewInsecureClient(cfg.IpAddress, cfg.Password)
+	p, err := cfg.LoadPassword()
+	if err != nil {
+		return err
+	}
+	d.client = NewInsecureClient(cfg.IpAddress, p)
 
 	d.airQualitySensor = NewAirQualitySensor(d.client, d.logger.Named("AirQuality"), 0)
 	announcer.Announce(cfg.Name, node.HasTrait(trait.AirQualitySensor, node.WithClients(airqualitysensor.WrapApi(&d.airQualitySensor))))
