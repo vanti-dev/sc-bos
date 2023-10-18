@@ -13,6 +13,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/proxy/config"
@@ -67,9 +68,18 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 
 	// For each node we create a proxy instance which manages the discovery of children exposed by that node.
 	for _, n := range cfg.Nodes {
-		conn, err := grpc.DialContext(ctx, n.Host,
+		dialOpts := []grpc.DialOption{
 			grpc.WithTransportCredentials(credentials.NewTLS(proxyTLSConfig(d.clientTLSConfig, n))),
-		)
+		}
+		if n.OAuth2 != nil {
+			creds, err := newOAuth2Credentials(*n.OAuth2)
+			if err != nil {
+				allErrs = multierr.Append(allErrs, fmt.Errorf("oauth2 credentials for %s: %w", n.Host, err))
+				continue
+			}
+			dialOpts = append(dialOpts, grpc.WithPerRPCCredentials(creds))
+		}
+		conn, err := grpc.DialContext(ctx, n.Host, dialOpts...)
 		if err != nil {
 			// dial shouldn't fail, connections are lazy. If we do see an error here make sure we surface it!
 			allErrs = multierr.Append(allErrs, fmt.Errorf("dial %v %w", n.Host, err))
