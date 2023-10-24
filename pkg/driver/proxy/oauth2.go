@@ -30,6 +30,11 @@ func newOAuth2Credentials(cfg config.OAuth2, client *http.Client) (*oauth2Creden
 	}, nil
 }
 
+// oauth2Credentials is a credentials.PerRPCCredentials which fetches OAuth 2 access tokens from an HTTP endpoint
+// using the client credentials flow.
+//
+// Only one request to the endpoint may be in progress at a time - this is enforced using the reqLimit channel.
+// The access token will be automatically refreshed once expired.
 type oauth2Credentials struct {
 	client       *http.Client
 	url          string

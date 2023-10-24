@@ -50,7 +50,7 @@ type Trait struct {
 }
 
 type OAuth2 struct {
-	TokenEndpoint    string
-	ClientID         string
-	ClientSecretFile string
+	TokenEndpoint    string `json:"tokenEndpoint"`    // HTTP(S) URL of the OAuth 2 token endpoint
+	ClientID         string `json:"clientId"`         // OAuth 2 client ID to authenticate with
+	ClientSecretFile string `json:"clientSecretFile"` // Path to a file containing the OAuth 2 client secret
 }
