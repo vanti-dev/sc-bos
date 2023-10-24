@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"net/http"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -68,11 +69,17 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 
 	// For each node we create a proxy instance which manages the discovery of children exposed by that node.
 	for _, n := range cfg.Nodes {
+		tlsConfig := proxyTLSConfig(d.clientTLSConfig, n)
 		dialOpts := []grpc.DialOption{
-			grpc.WithTransportCredentials(credentials.NewTLS(proxyTLSConfig(d.clientTLSConfig, n))),
+			grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)),
 		}
 		if n.OAuth2 != nil {
-			creds, err := newOAuth2Credentials(*n.OAuth2)
+			httpClient := &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: tlsConfig,
+				},
+			}
+			creds, err := newOAuth2Credentials(*n.OAuth2, httpClient)
 			if err != nil {
 				allErrs = multierr.Append(allErrs, fmt.Errorf("oauth2 credentials for %s: %w", n.Host, err))
 				continue

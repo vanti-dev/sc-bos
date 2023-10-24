@@ -15,13 +15,14 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/proxy/config"
 )
 
-func newOAuth2Credentials(cfg config.OAuth2) (*oauth2Credentials, error) {
+func newOAuth2Credentials(cfg config.OAuth2, client *http.Client) (*oauth2Credentials, error) {
 	secret, err := os.ReadFile(cfg.ClientSecretFile)
 	if err != nil {
 		return nil, err
 	}
 
 	return &oauth2Credentials{
+		client:       client,
 		url:          cfg.TokenEndpoint,
 		clientId:     cfg.ClientID,
 		clientSecret: strings.TrimSpace(string(secret)),
@@ -30,6 +31,7 @@ func newOAuth2Credentials(cfg config.OAuth2) (*oauth2Credentials, error) {
 }
 
 type oauth2Credentials struct {
+	client       *http.Client
 	url          string
 	clientId     string
 	clientSecret string
@@ -63,7 +65,7 @@ func (o *oauth2Credentials) GetRequestMetadata(ctx context.Context, uri ...strin
 		return requestMetadata(token), nil
 	}
 
-	token, expires, err := fetchNewToken(ctx, o.url, o.clientId, o.clientSecret)
+	token, expires, err := fetchNewToken(ctx, o.client, o.url, o.clientId, o.clientSecret)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +92,7 @@ func requestMetadata(token string) map[string]string {
 	return map[string]string{"authorization": "Bearer " + token}
 }
 
-func fetchNewToken(ctx context.Context, endpoint, clientId, secret string) (token string, expires time.Time, err error) {
+func fetchNewToken(ctx context.Context, client *http.Client, endpoint, clientId, secret string) (token string, expires time.Time, err error) {
 	reqBody := url.Values{
 		"grant_type":    {"client_credentials"},
 		"client_id":     {clientId},
@@ -102,7 +104,7 @@ func fetchNewToken(ctx context.Context, endpoint, clientId, secret string) (toke
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
