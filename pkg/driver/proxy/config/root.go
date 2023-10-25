@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 )
 
@@ -33,6 +34,8 @@ type Node struct {
 	// Traits defines the exact named traits we proxy for this remote.
 	// If absent or empty the remote will be inspected using the Parent trait including all found traits.
 	// Traits []Trait `json:"traits,omitempty"` // todo: support manual traits
+
+	OAuth2 *OAuth2 `json:"oauth2,omitempty"`
 }
 
 type TLS struct {
@@ -44,4 +47,10 @@ type TLS struct {
 type Trait struct {
 	Name  string     `json:"name,omitempty"`
 	Trait trait.Name `json:"trait,omitempty"`
+}
+
+type OAuth2 struct {
+	TokenEndpoint    string `json:"tokenEndpoint"`    // HTTP(S) URL of the OAuth 2 token endpoint
+	ClientID         string `json:"clientId"`         // OAuth 2 client ID to authenticate with
+	ClientSecretFile string `json:"clientSecretFile"` // Path to a file containing the OAuth 2 client secret
 }
