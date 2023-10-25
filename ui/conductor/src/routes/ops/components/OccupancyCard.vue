@@ -1,12 +1,13 @@
 <template>
   <content-card class="mb-8 d-flex flex-column px-6 pt-6">
     <v-row class="px-6 mb-6 pt-1">
-      <h4 class="text-h4 pb-4 pb-lg-0 pt-0 pt-lg-4">Occupancy</h4>
+      <v-col cols="8" class="pa-0 ma-0">
+        <h4 class="text-h4 pb-4 pb-lg-0 pt-0 pt-lg-4">Occupancy</h4>
+      </v-col>
       <v-spacer/>
       <v-col
-          cols="4"
-          class="d-flex flex-row flex-nowrap mx-0 px-0 mr-n5 justify-space-between"
-          style="max-width: 225px;">
+          cols="auto"
+          class="d-flex flex-row flex-nowrap mx-0 px-0 mr-1 justify-space-between">
         <WithOccupancy
             v-slot="{ resource }"
             :name="props.name">
