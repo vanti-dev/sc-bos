@@ -59,6 +59,7 @@ const icon = ref({
   history: 'mdi-history',
   lightreport: 'mdi-file-chart-outline',
   lights: 'mdi-lightbulb',
+  resetenterleave: 'mdi-account-multiple-remove-outline',
   statusalerts: 'mdi-alert-circle-outline',
   statusemail: 'mdi-email-newsletter',
   udmi: 'mdi-transit-connection-variant'
@@ -66,7 +67,7 @@ const icon = ref({
 const defaultIcon = 'mdi-auto-mode';
 
 const acronyms = ['bms', 'udmi'];
-const suffixes = ['report', 'reports', 'alert', 'alerts', 'email', 'emails'];
+const suffixes = ['report', 'reports', 'alert', 'alerts', 'email', 'emails', 'reset', 'enter', 'leave'];
 
 /**
  * @param {string} name
@@ -75,11 +76,18 @@ const suffixes = ['report', 'reports', 'alert', 'alerts', 'email', 'emails'];
 const formatNaming = (name) => {
   // Split the name by "/" and format each part separately
   const parts = name.split('/').map(part => {
-    for (const word of suffixes) {
-      if (part.endsWith(word)) {
-        return part.substring(0, part.length - word.length) + ' ' + word;
+    // Function to dynamically split concatenated suffixes
+    const splitConcatenatedWords = (str) => {
+      for (const word of suffixes) {
+        const index = str.lastIndexOf(word);
+        if (index > 0 && index + word.length === str.length) {
+          return splitConcatenatedWords(str.substring(0, index)) + ' ' + word;
+        }
       }
-    }
+      return str;
+    };
+
+    part = splitConcatenatedWords(part);
 
     for (const acronym of acronyms) {
       if (part === acronym) {
@@ -93,6 +101,7 @@ const formatNaming = (name) => {
   // Join the formatted parts back together with "/"
   return parts.join('/');
 };
+
 
 /**
  * @param {string} name
