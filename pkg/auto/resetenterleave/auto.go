@@ -1,3 +1,5 @@
+// Package resetenterleave provides an auto that resets enter/leave totals based on a cron-like schedule.
+// With this automation you can schedule a call to EnterLeave.ResetEnterLeaveTotals at 4am every day, for example.
 package resetenterleave
 
 import (
