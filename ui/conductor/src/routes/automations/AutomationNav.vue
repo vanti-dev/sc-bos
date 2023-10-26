@@ -9,11 +9,13 @@
     <v-list-item
         v-for="automation of automationTypeList"
         :key="automation.type"
-        :to="'/automations/' + automation.type"
+        :to="'/automations/' + encodeURIComponent(automation.type)"
         class="my-2"
         :disabled="hasNoAccess('/automations/' + automation.type)">
       <v-list-item-icon>
-        <v-icon v-if="icon.hasOwnProperty(automation.type)">{{ icon[automation.type] ?? defaultIcon }}</v-icon>
+        <v-icon>
+          {{ icon[mapIconKey(automation.type)] ?? defaultIcon }}
+        </v-icon>
       </v-list-item-icon>
       <v-list-item-content class="text-capitalize text-truncate">
         {{ formatNaming(automation.type) }}
@@ -58,30 +60,52 @@ const icon = ref({
   lightreport: 'mdi-file-chart-outline',
   lights: 'mdi-lightbulb',
   statusalerts: 'mdi-alert-circle-outline',
+  statusemail: 'mdi-email-newsletter',
   udmi: 'mdi-transit-connection-variant'
 });
 const defaultIcon = 'mdi-auto-mode';
 
 const acronyms = ['bms', 'udmi'];
-const suffixes = ['report', 'reports', 'alert', 'alerts'];
+const suffixes = ['report', 'reports', 'alert', 'alerts', 'email', 'emails'];
 
 /**
  * @param {string} name
  * @return {string}
  */
 const formatNaming = (name) => {
-  for (const word of suffixes) {
-    if (name.endsWith(word)) {
-      return name.substring(0, name.length - word.length) + ' ' + word;
+  // Split the name by "/" and format each part separately
+  const parts = name.split('/').map(part => {
+    for (const word of suffixes) {
+      if (part.endsWith(word)) {
+        return part.substring(0, part.length - word.length) + ' ' + word;
+      }
     }
-  }
 
-  for (const acronym of acronyms) {
-    if (name === acronym) {
-      return name.toUpperCase();
+    for (const acronym of acronyms) {
+      if (part === acronym) {
+        return part.toUpperCase();
+      }
     }
-  }
 
+    return part;
+  });
+
+  // Join the formatted parts back together with "/"
+  return parts.join('/');
+};
+
+/**
+ * @param {string} name
+ * @return {string}
+ */
+const mapIconKey = (name) => {
+  // Check if the name includes certain keywords or phrases and map accordingly
+  if (name.includes('lightreport')) {
+    return 'lightreport';
+  }
+  // Add more checks and mappings as needed
+
+  // Default mapping (no changes)
   return name;
 };
 
