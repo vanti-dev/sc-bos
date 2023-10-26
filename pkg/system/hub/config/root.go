@@ -38,6 +38,7 @@ type StorageType string
 const (
 	StorageTypePostgres StorageType = "postgres"
 	StorageTypeProxy    StorageType = "proxy"
+	StorageTypeBolt     StorageType = "bolt"
 )
 
 type Storage struct {
