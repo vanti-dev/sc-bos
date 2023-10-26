@@ -131,6 +131,7 @@ watch(miniVariant, expanded => {
   width: 100%;
 }
 
+::v-deep .v-navigation-drawer,
 ::v-deep .v-navigation-drawer--mini-variant,
 ::v-deep .v-navigation-drawer__content {
   overflow: visible;
