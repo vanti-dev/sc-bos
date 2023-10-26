@@ -1,17 +1,18 @@
 <template>
   <Bar
-      :options="props.chartOptions"
+      :css-classes="props.cssClasses"
       :data="props.chartData"
       :dataset-id-key="props.datasetIdKey"
-      :css-classes="props.cssClasses"
+      :options="props.chartOptions"
       :styles="props.styles"/>
 </template>
 
 <script setup>
 import {Bar} from 'vue-chartjs';
 import {Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale} from 'chart.js';
+import annotationPlugin from 'chartjs-plugin-annotation';
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, annotationPlugin);
 
 const props = defineProps({
   datasetIdKey: {
