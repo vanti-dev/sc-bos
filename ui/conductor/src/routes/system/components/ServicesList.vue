@@ -59,7 +59,7 @@ import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
 import {serviceName} from '@/util/proxy';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
 import useAuthSetup from '@/composables/useAuthSetup';
 
 const {blockActions} = useAuthSetup();
@@ -84,6 +84,16 @@ const props = defineProps({
   }
 });
 
+// Watch for changes in pageStore.sidebarNode.name and update it if needed
+watchEffect(() => {
+  if (!pageStore.sidebarNode.name) {
+    const nodesListValues = Object.values(hubStore.nodesList);
+    if (nodesListValues.length > 0) {
+      pageStore.sidebarNode = nodesListValues[0];
+    }
+  }
+});
+
 const node = computed({
   get() {
     return pageStore.sidebarNode;
@@ -92,6 +102,7 @@ const node = computed({
     pageStore.sidebarNode = val;
   }
 });
+
 const search = ref('');
 
 const headers = computed(() => {
@@ -117,7 +128,9 @@ const serviceCollection = ref({});
 watch(() => props.name, async () => {
   if (serviceCollection.value.reset) serviceCollection.value.reset();
   serviceCollection.value =
-      serviceStore.getService(props.name, await node.value.commsAddress, await node.value.commsName).servicesCollection;
+      serviceStore.getService(
+          props.name, await node.value?.commsAddress, await node.value?.commsName
+      ).servicesCollection;
   // reinitialise in case this service collection has been previously reset;
   serviceCollection.value.init();
   serviceCollection.value.query(props.name);
@@ -125,7 +138,9 @@ watch(() => props.name, async () => {
 watch(node, async () => {
   if (serviceCollection.value.reset) serviceCollection.value.reset();
   serviceCollection.value =
-      serviceStore.getService(props.name, await node.value.commsAddress, await node.value.commsName).servicesCollection;
+      serviceStore.getService(
+          props.name, await node.value?.commsAddress, await node.value?.commsName
+      ).servicesCollection;
   serviceCollection.value.init();
   serviceCollection.value.query(props.name);
 }, {immediate: true});
