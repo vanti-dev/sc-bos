@@ -6,7 +6,7 @@
       <v-btn v-if="hasZoneChanges" color="primary" :disabled="blockActions" @click="emitZoneChanges">Save</v-btn>
     </v-subheader>
     <v-card-actions>
-      <AccountZoneChooser :zones.sync="chooserZones" class="mx-2 flex-grow-1"/>
+      <AccountZoneChooser :zones.sync="chooserZones" :max-result-size.sync="maxResultSize" class="mx-2 flex-grow-1"/>
     </v-card-actions>
     <v-card-text v-if="chooserZones.length === 0" class="pt-1 font-italic">
       {{ hasZoneChanges ? 'If there are no' : 'No' }}
@@ -31,6 +31,7 @@ const props = defineProps({
 const emit = defineEmits(['update:zone-list']);
 
 const zoneChanges = ref(null);
+const maxResultSize = ref(5);
 const chooserZones = computed({
   get() {
     if (zoneChanges.value !== null) {
