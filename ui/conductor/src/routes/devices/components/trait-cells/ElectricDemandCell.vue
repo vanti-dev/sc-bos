@@ -1,7 +1,14 @@
 <template>
   <span class="text-no-wrap ed-cell" v-if="powerUseStr">
-    <span>{{ powerUseStr }}</span>
-    <v-icon right size="20">mdi-meter-electric-outline</v-icon>
+    <v-tooltip bottom>
+      <template #activator="{ on, attrs }">
+        <span v-on="on" v-bind="attrs">
+          <span>{{ powerUseStr }}</span>
+          <v-icon right size="20">mdi-meter-electric-outline</v-icon>
+        </span>
+      </template>
+      Power Use
+    </v-tooltip>
   </span>
 </template>
 <script setup>
