@@ -5,7 +5,9 @@
         v-slot="{ resource }"
         :name="props.item.name"
         :paused="props.paused">
-      <EnterLeaveEventCell v-if="!resource.streamError" v-bind="resource"/>
+      <EnterLeaveEventCell
+          v-if="!resource.streamError && (resource?.value?.enterTotal || resource?.value?.leaveTotal)"
+          v-bind="resource"/>
       <StatusAlert v-else :resource="resource.streamError"/>
     </WithEnterLeave>
     <WithElectricDemand
