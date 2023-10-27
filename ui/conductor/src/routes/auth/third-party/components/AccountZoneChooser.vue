@@ -20,8 +20,7 @@
         auto-select-first
         return-object
         :disabled="blockActions">
-      <template #append-item v-if="findZonesTracker.response?.nextPageToken">
-        <v-divider class="my-2"/>
+      <template #prepend-item v-if="findZonesTracker.response?.nextPageToken">
         <v-subheader class="mx-2">
           <template v-if="findZonesTracker.response?.totalSize > 0">
             Showing {{ inputItems.length }} of {{ findZonesTracker.response.totalSize }}
@@ -32,12 +31,29 @@
             Showing up to {{ inputItems.length }} {{ zonesOnly ? 'zones' : 'devices' }}, search to refine your results.
           </template>
         </v-subheader>
+        <v-divider class="my-2"/>
       </template>
+
       <template #item="{ item }">
-        <v-list-item-content>
+        <div class="d-flex flex-row flex-wrap">
           <v-list-item-title>{{ item.title }}</v-list-item-title>
           <v-list-item-subtitle v-if="item.title !== item.name">{{ item.name }}</v-list-item-subtitle>
-        </v-list-item-content>
+        </div>
+      </template>
+
+      <template #append-item v-if="findZonesTracker.response?.nextPageToken">
+        <!-- New element to handle intersection -->
+        <v-divider class="my-2"/>
+        <v-btn
+            block
+            class="text-center mt-1 rounded-0"
+            color="transparent"
+            :disabled="findZonesLoading"
+            elevation="0"
+            :loading="findZonesLoading"
+            @click="loadMoreItems">
+          Load more
+        </v-btn>
       </template>
     </v-combobox>
     <v-menu bottom offset-y nudge-top="-8" v-if="!blockActions">
@@ -79,7 +95,7 @@ const props = defineProps({
     default: 5
   }
 });
-const emit = defineEmits(['update:zones']);
+const emit = defineEmits(['update:zones', 'update:maxResultSize']);
 
 const propZones = computed(() => deviceArrToItems(props.zones));
 const inputZones = ref([]);
@@ -161,6 +177,18 @@ const fetchZones = debounce((query) => {
 }, 500);
 // watch for changes in the query and fetch zones when it changes
 watch(findZonesQuery, (query) => fetchZones(query), {immediate: true});
+
+const loadMoreItems = async () => {
+  if (findZonesTracker.response?.nextPageToken) {
+    try {
+      const newSize = props.maxResultSize + 5;
+      emit('update:maxResultSize', newSize); // Emit the event to the parent
+      await fetchZones(findZonesQuery.value); // Fetch more items with the new maxResultSize
+    } catch (error) {
+      console.error('An error occurred while loading more items:', error);
+    }
+  }
+};
 
 const {blockActions} = useAuthSetup();
 </script>
