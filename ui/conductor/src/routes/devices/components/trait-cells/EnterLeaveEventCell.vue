@@ -1,5 +1,5 @@
 <template>
-  <span class="text-no-wrap el-cell" v-if="value">
+  <span v-if="value" class="text-no-wrap el-cell">
     <v-tooltip bottom>
       <template #activator="{ on, attrs }">
         <span v-on="on" v-bind="attrs">
