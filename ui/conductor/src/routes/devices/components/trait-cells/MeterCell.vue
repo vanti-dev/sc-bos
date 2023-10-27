@@ -7,7 +7,7 @@
           <v-icon right size="20">mdi-counter</v-icon>
         </span>
       </template>
-      <span>Meter Reading</span>
+      <span>Meter reading</span>
     </v-tooltip>
   </span>
 </template>

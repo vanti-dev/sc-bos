@@ -7,7 +7,7 @@
           <v-icon right size="20">mdi-meter-electric-outline</v-icon>
         </span>
       </template>
-      Power Use
+      Power use
     </v-tooltip>
   </span>
 </template>
