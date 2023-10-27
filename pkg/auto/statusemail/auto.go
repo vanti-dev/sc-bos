@@ -101,7 +101,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 					return
 				default:
 				}
-				for change := range a.Node.PullAllMetadata(ctx, resource.WithReadPaths(&traits.Metadata{}, "traits", "location", "membership")) {
+				for change := range a.Node.PullAllMetadata(ctx, resource.WithReadPaths(&traits.Metadata{}, "traits", "appearance", "location", "membership")) {
 					if s := ignore.Replace(change.Name); len(s) == 0 || s[0] == '!' {
 						continue // ignore
 					}
@@ -115,6 +115,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 					case !hadTrait && hasTrait: // add
 						source := config.Source{
 							Name:      change.Name,
+							Title:     change.NewValue.GetAppearance().GetTitle(),
 							Floor:     change.NewValue.GetLocation().GetFloor(),
 							Zone:      change.NewValue.GetLocation().GetZone(),
 							Subsystem: change.NewValue.GetMembership().GetSubsystem(),

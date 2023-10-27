@@ -8,6 +8,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/statusemail"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -31,7 +32,12 @@ func main() {
 		m.UpdateProblem(&gen.StatusLog_Problem{Name: "test", Level: gen.StatusLog_OFFLINE})
 		models = append(models, m)
 		client := node.WithClients(gen.WrapStatusApi(statuspb.NewModelServer(m)))
-		root.Announce(fmt.Sprintf("device-%d", i), node.HasTrait(statuspb.TraitName, client))
+		root.Announce(fmt.Sprintf("device-%d", i), node.HasTrait(statuspb.TraitName, client),
+			node.HasMetadata(&traits.Metadata{
+				Appearance: &traits.Metadata_Appearance{Title: fmt.Sprintf("Device %d", i)},
+				Location:   &traits.Metadata_Location{Floor: fmt.Sprintf("Floor %d", i%10), Zone: fmt.Sprintf("Room %d", i%5)},
+				Membership: &traits.Metadata_Membership{Subsystem: "bms"},
+			}))
 	}
 
 	serv := auto.Services{

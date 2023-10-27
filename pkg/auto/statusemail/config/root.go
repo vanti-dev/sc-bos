@@ -184,6 +184,7 @@ func (d Destination) ReadBodyTemplate() (*template.Template, error) {
 
 type Source struct {
 	Name      string `json:"name,omitempty"`
+	Title     string `json:"title,omitempty"`
 	Floor     string `json:"floor,omitempty"`
 	Zone      string `json:"zone,omitempty"`
 	Subsystem string `json:"subsystem,omitempty"`
@@ -231,7 +232,11 @@ const DefaultEmailBody = `<html lang="en">
     {{range .WorseLogs}}
     <tr>
       <td>{{.Read.Level}}</td>
+      {{if .Source.Title}}
+      <td title="{{.Source.Name}}">{{.Source.Floor}} {{.Source.Zone}} {{.Source.Subsystem}} {{.Source.Title}}</td>
+      {{else}}
       <td>{{.Source.Name}}</td>
+      {{end}}
       <td>{{.Read.Description}}</td>
       <td>{{printTime .Read.RecordTime}}</td>
       <td>{{.Sent.Level}}</td>
@@ -239,13 +244,17 @@ const DefaultEmailBody = `<html lang="en">
     {{end}}
     {{end}}
     {{if .BetterLogs}}
-    <tr>
+    <tr style="border-top: 1px solid currentColor">
       <td colspan="5">The following notifications have improved:</td>
     </tr>
     {{range .BetterLogs}}
     <tr>
       <td>{{.Read.Level}}</td>
+      {{if .Source.Title}}
+      <td title="{{.Source.Name}}">{{.Source.Floor}} {{.Source.Zone}} {{.Source.Subsystem}}  {{.Source.Title}}</td>
+      {{else}}
       <td>{{.Source.Name}}</td>
+      {{end}}
       <td>{{.Read.Description}}</td>
       <td>{{printTime .Read.RecordTime}}</td>
       <td>{{.Sent.Level}}</td>
