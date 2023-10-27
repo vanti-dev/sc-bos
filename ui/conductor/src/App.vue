@@ -27,6 +27,7 @@
         v-if="hasNav && isLoggedIn"
         v-model="drawer"
         app
+        class="siteNavigation"
         :class="[!miniVariant ? 'pt-0' : 'pt-3', 'pb-8 ml-2']"
         clipped
         color="transparent"
@@ -61,6 +62,7 @@
         </v-footer>
       </template>
     </v-navigation-drawer>
+
     <router-view v-if="isLoggedIn"/>
 
     <error-view/>
@@ -105,7 +107,7 @@ watch(miniVariant, expanded => {
 }, {immediate: true, deep: true, flush: 'sync'});
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .v-application {
   background: var(--v-neutral-darken1);
 }
@@ -131,9 +133,10 @@ watch(miniVariant, expanded => {
   width: 100%;
 }
 
-::v-deep .v-navigation-drawer,
-::v-deep .v-navigation-drawer--mini-variant,
-::v-deep .v-navigation-drawer__content {
+
+/** This helps displaying the notification counter badge, while keeping the right sidebar scrollable */
+.siteNavigation,
+.siteNavigation ::v-deep .v-navigation-drawer__content {
   overflow: visible;
 }
 </style>
