@@ -2,12 +2,15 @@ import {grpcWebEndpoint} from '@/api/config';
 import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource';
 import {getEnrollment} from '@/api/sc/traits/enrollment';
 import {listHubNodes, pullHubNodes} from '@/api/sc/traits/hub';
+import {listServices, ServiceNames} from '@/api/ui/services';
 import {useAppConfigStore} from '@/stores/app-config';
+import {useControllerStore} from '@/stores/controller';
 import {defineStore} from 'pinia';
 import {computed, reactive, ref, set, watch} from 'vue';
 
 export const useHubStore = defineStore('hub', () => {
   const appConfig = useAppConfigStore();
+  const controller = useControllerStore();
   const nodesListCollection = reactive(newResourceCollection());
   const hubNode = ref();
   let _hubResolve; let _hubReject;
@@ -23,12 +26,35 @@ export const useHubStore = defineStore('hub', () => {
       pullHubNodes(nodesListCollection);
       try {
         if (!nodesListCollection.value) set(nodesListCollection, 'value', {});
-        const hub = await getEnrollment(newActionTracker());
-        hubNode.value = {
-          name: hub.managerName,
-          address: hub.managerAddress
-        };
+        // if local proxy hub mode is enabled, the hub node will be the same as the proxy node
+        // get systems config so we can check if the proxy is in local mode
+        const systems = await listServices({name: ServiceNames.Systems}, newActionTracker());
+        let proxyHubLocalMode = false;
+        // search through systems to find the proxy
+        for (const system of systems.servicesList) {
+          if (system.id === 'proxy') {
+            const cfg = JSON.parse(system.configRaw);
+            // check hub mode
+            if (cfg.hubMode && cfg.hubMode === 'local') {
+              proxyHubLocalMode = true;
+              break;
+            }
+          }
+        }
+        if (proxyHubLocalMode) {
+          hubNode.value = {
+            name: controller.controllerName,
+            address: ''
+          };
+        } else {
+          const hub = await getEnrollment(newActionTracker());
+          hubNode.value = {
+            name: hub.managerName,
+            address: hub.managerAddress
+          };
+        }
         set(nodesListCollection.value, hubNode.value.name, hubNode);
+
         const nodes = await listHubNodes(newActionTracker());
         for (const node of nodes.nodesList) {
           set(nodesListCollection.value, node.name, node);
