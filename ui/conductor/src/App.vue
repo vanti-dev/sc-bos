@@ -68,23 +68,25 @@
 </template>
 
 <script setup>
-import {computed, watch} from 'vue';
-import {storeToRefs} from 'pinia';
-
 import AccountBtn from '@/components/AccountBtn.vue';
 import AppMenu from '@/components/AppMenu.vue';
 import {usePage} from '@/components/page.js';
 import ScLogo from '@/components/ScLogo.vue';
 import ErrorView from '@/components/ui-error/ErrorView.vue';
-import {useAccountStore} from '@/stores/account.js';
-import {usePageStore} from '@/stores/page';
 
 import useAuthSetup from '@/composables/useAuthSetup';
+import {useAccountStore} from '@/stores/account.js';
+import {useControllerStore} from '@/stores/controller';
+import {usePageStore} from '@/stores/page';
+import {storeToRefs} from 'pinia';
+import {computed, onMounted, watch} from 'vue';
+
 const {isLoggedIn} = useAuthSetup();
 
 const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
 
 const {drawer, miniVariant, drawerWidth, pinDrawer} = storeToRefs(usePageStore());
+const controller = useControllerStore();
 
 const store = useAccountStore();
 store.loadLocalStorage();
@@ -94,6 +96,10 @@ const appVersion = computed(() => {
     return GITVERSION.substring(3);
   }
   return GITVERSION;
+});
+
+onMounted(() => {
+  controller.sync();
 });
 
 watch(miniVariant, expanded => {
