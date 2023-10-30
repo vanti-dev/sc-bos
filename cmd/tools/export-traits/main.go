@@ -219,7 +219,16 @@ func (r *report) addPoint(name, key string, value any) {
 	if _, ok := r.rows[name]; !ok {
 		r.rows[name] = make([]string, len(r.headers))
 	}
-	r.rows[name][r.headers[key]] = fmt.Sprint(value)
+	var s string
+	switch v := value.(type) {
+	case float64:
+		s = fmt.Sprintf("%f", v)
+	case float32:
+		s = fmt.Sprintf("%f", v)
+	default:
+		s = fmt.Sprint(v)
+	}
+	r.rows[name][r.headers[key]] = s
 }
 
 func (r *report) printResults(out io.Writer) error {
