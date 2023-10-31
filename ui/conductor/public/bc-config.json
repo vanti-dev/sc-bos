@@ -12,11 +12,7 @@
       "emergency-lighting": true,
       "notifications": true
     },
-    "site": {
-      "zone": {
-        "*": true
-      }
-    },
+    "site": false,
     "automations": {
       "*": true
     },

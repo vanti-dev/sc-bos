@@ -13,11 +13,7 @@
       "notifications": true,
       "security": true
     },
-    "site": {
-      "zone": {
-        "*": true
-      }
-    },
+    "site": false,
     "automations": {
       "*": true
     },
