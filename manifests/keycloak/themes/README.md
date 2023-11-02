@@ -42,7 +42,16 @@ The `docker-compose.yml` file contains the following volumes:
     - ./manifests/keycloak/themes/smartcore:/opt/keycloak/themes/smartcore
 ```
 
-This means that the `smartcore` theme will be loaded into the KeyCloak server on startup.
+This means that the `smartcore` theme will be loaded (mounted) into the KeyCloak server (docker container) on startup.
+
+If there is no docker available, the theme can be loaded into the KeyCloak server by copying the `smartcore` directory into the `themes` directory of the KeyCloak server.
+The target `themes` directory is located in the `root/opt/keycloak/` directory of the KeyCloak server.
+
+The end result (path) should look like this: `//root/opt/keycloak/themes/smartcore`.
+
+The version of KeyCloak server know to be supporting the `smartcore` theme is `v21.0.1`. It hasn't been tested with any other version.
+
+## Notes
 
 The theme uses `Patternfly` for styling. The `Patternfly` files are located in the `common/resources/web_modules/react-core/dist/styles` directory.
 Most js modules are written with `React`, however it also includes `Angular`. I've removed from the theme the unnecessary `React` modules because those are present in the system.
