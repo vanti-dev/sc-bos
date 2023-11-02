@@ -3,7 +3,7 @@
     <v-row class="pa-4" v-if="configStore.config?.hub">
       <v-combobox
           v-model="node"
-          :items="Object.values(hubStore.nodesList)"
+          :items="nodesListValues"
           label="System Component"
           item-text="name"
           item-value="name"
@@ -49,28 +49,19 @@
 </template>
 
 <script setup>
-import {newActionTracker} from '@/api/resource';
-import {ServiceNames, startService, stopService} from '@/api/ui/services';
+import {ServiceNames} from '@/api/ui/services';
 import ContentCard from '@/components/ContentCard.vue';
-import {useErrorStore} from '@/components/ui-error/error';
 import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import {useHubStore} from '@/stores/hub';
-import {usePageStore} from '@/stores/page';
-import {useServicesStore} from '@/stores/services';
-import {serviceName} from '@/util/proxy';
-import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
+import {computed} from 'vue';
 import useAuthSetup from '@/composables/useAuthSetup';
+import useServices from '@/composables/useServices';
 
 const {blockActions} = useAuthSetup();
 
-const serviceStore = useServicesStore();
-const pageStore = usePageStore();
-const errors = useErrorStore();
 const configStore = useAppConfigStore();
 const hubStore = useHubStore();
-
-const startStopTracker = reactive(newActionTracker());
 
 const props = defineProps({
   name: {
@@ -84,26 +75,16 @@ const props = defineProps({
   }
 });
 
-// Watch for changes in pageStore.sidebarNode.name and update it if needed
-watchEffect(() => {
-  if (!pageStore.sidebarNode.name) {
-    const nodesListValues = Object.values(hubStore.nodesList);
-    if (nodesListValues.length > 0) {
-      pageStore.sidebarNode = nodesListValues[0];
-    }
-  }
-});
-
-const node = computed({
-  get() {
-    return pageStore.sidebarNode;
-  },
-  set(val) {
-    pageStore.sidebarNode = val;
-  }
-});
-
-const search = ref('');
+const {
+  serviceCollection,
+  search,
+  node,
+  serviceList,
+  nodesListValues,
+  showService,
+  _startService,
+  _stopService
+} = useServices(props);
 
 const headers = computed(() => {
   if (props.name === 'drivers') {
@@ -121,84 +102,6 @@ const headers = computed(() => {
     ];
   }
 });
-
-const serviceCollection = ref({});
-
-// query watchers
-watch(() => props.name, async () => {
-  if (serviceCollection.value.reset) serviceCollection.value.reset();
-  serviceCollection.value =
-      serviceStore.getService(
-          props.name, await node.value?.commsAddress, await node.value?.commsName
-      ).servicesCollection;
-  // reinitialise in case this service collection has been previously reset;
-  serviceCollection.value.init();
-  serviceCollection.value.query(props.name);
-}, {immediate: true});
-watch(node, async () => {
-  if (serviceCollection.value.reset) serviceCollection.value.reset();
-  serviceCollection.value =
-      serviceStore.getService(
-          props.name, await node.value?.commsAddress, await node.value?.commsName
-      ).servicesCollection;
-  serviceCollection.value.init();
-  serviceCollection.value.query(props.name);
-}, {immediate: true});
-
-
-watch(serviceCollection, () => {
-  // todo: this causes us to load all pages, connect with paging logic instead
-  serviceCollection.value.needsMorePages = true;
-});
-
-// UI error handling
-let unwatchErrors; let unwatchStartStopErrors;
-onMounted(() => {
-  unwatchErrors = errors.registerCollection(serviceCollection);
-  unwatchStartStopErrors = errors.registerTracker(startStopTracker);
-});
-onUnmounted(() => {
-  if (unwatchErrors) unwatchErrors();
-  if (unwatchStartStopErrors) unwatchStartStopErrors();
-  serviceCollection.value.reset();
-});
-
-const serviceList = computed(() => {
-  return Object.values(serviceCollection.value?.resources?.value ?? []).filter(service => {
-    return props.type === '' || props.type === 'all' || service.type === props.type;
-  });
-});
-
-/**
- *
- * @param {Service.AsObject} service
- * @param {*} row
- */
-function showService(service, row) {
-  pageStore.showSidebar = true;
-  pageStore.sidebarTitle = service.id;
-  pageStore.sidebarData = {...service, config: JSON.parse(service.configRaw)};
-}
-
-
-/**
- *
- * @param {Service.AsObject} service
- */
-async function _startService(service) {
-  console.debug('Starting:', serviceName(node.value.name, props.name), service.id);
-  await startService({name: serviceName(await node.value.commsName, props.name), id: service.id}, startStopTracker);
-}
-
-/**
- *
- * @param {Service.AsObject} service
- */
-async function _stopService(service) {
-  console.debug('Stopping:', serviceName(node.value.name, props.name), service.id);
-  await stopService({name: serviceName(await node.value.commsName, props.name), id: service.id}, startStopTracker);
-}
-
 </script>
 
 <style lang="scss" scoped>
