@@ -23,7 +23,6 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
-	"github.com/vanti-dev/gobacnet/types/objecttype"
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
@@ -35,19 +34,20 @@ var (
 	resultsFile     = flag.String("results-file", "results", "file name to save results to, timestamp will be appended")
 	devicesOnly     = flag.Bool("devices-only", false, "only check devices, not objects")
 	discoverObjects = flag.Bool("discover-objects", false, "discover objects for devices that don't have them configured, overrides similar setting in config")
-	timeout         = flag.Duration("timeout", time.Second*2, "timeout for requests")
+	timeout         = flag.Duration("timeout", time.Second*4, "timeout for requests")
 	localPort       = flag.Int("local-port", 0, "local port to use for bacnet requests, overrides any found in config")
 )
 
-const concurrency = 20
+const concurrency = 10
 
 var objectProperties = []property.ID{
 	property.ObjectName,
+	property.Description,
 	property.PresentValue,
-	property.NotificationClass,
-	property.EventEnable,
+	// property.NotificationClass,
+	// property.EventEnable,
 }
-var deviceProperties = objectProperties[:1] // must be a strict prefix for the CSV to work
+var deviceProperties = objectProperties[:2] // must be a strict prefix for the CSV to work
 
 func main() {
 	flag.Parse()
@@ -129,8 +129,10 @@ func run() error {
 			{
 				ctx, cancel := context.WithTimeout(ctx, *timeout)
 				dev, err = bacnet.FindDevice(ctx, client, device)
-				cancel()
 
+				if err != nil {
+					log.Printf("ERR: unable to find device %v : %v", device.ID, err)
+				}
 				if err == nil {
 					res.responding = true
 					readId := fmt.Sprintf("Device:%d", dev.ID.Instance)
@@ -138,8 +140,9 @@ func run() error {
 						log.Printf("configured device %v is really %v", res.objectId, readId)
 						res.objectId = readId
 					}
-					readObjectProps(ctx, client, dev, config.ObjectID{Type: objecttype.Device, Instance: device.ID}, res, deviceProperties...)
+					readObjectProps(ctx, client, dev, config.ObjectID(dev.ID), res, deviceProperties...)
 				}
+				cancel()
 			}
 			results[key] = append(results[key], res)
 			if !res.responding || *devicesOnly {
@@ -153,7 +156,7 @@ func run() error {
 				objects, err := client.Objects(ctx, dev)
 				cancel()
 				if err != nil {
-					log.Printf("Unable to discover objects %v : %v", device.ID, err)
+					log.Printf("ERR: object discovery error for %v : %v", device.ID, err)
 				}
 
 				uniqueObjIds := make(map[string]bool, len(cfgObjects))
@@ -163,6 +166,9 @@ func run() error {
 				for _, obj := range objects.Objects {
 					for _, object := range obj {
 						id := object.ID
+						if id == dev.ID {
+							continue // don't duplicate the device
+						}
 						if !uniqueObjIds[id.String()] {
 							uniqueObjIds[id.String()] = true
 							// log.Printf("discovered device object %v:%v (name=%v)", id.Type, id.Instance, object.Name)
@@ -216,6 +222,9 @@ func readAllObjectProps(ctx context.Context, client *gobacnet.Client, dev bactyp
 
 func readObjectProps(ctx context.Context, client *gobacnet.Client, dev bactypes.Device, objId config.ObjectID, res *result, props ...property.ID) {
 	values, err := readProps(ctx, client, dev, objId, objectProperties...)
+	if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
+		log.Printf("ERR: unable to read properties %v %v : %v", objId, props, err)
+	}
 	if err == nil {
 		res.responding = true
 		res.properties = make(map[property.ID]any, len(props))
