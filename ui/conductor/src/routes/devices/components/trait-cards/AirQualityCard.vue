@@ -42,7 +42,7 @@ const airQualityData = computed(() => {
             data['Air Pressure'] = value.toFixed(2)+' hPa';
             break;
           case 'infectionRisk':
-            data['Infection Risk'] = Math.round(value*100)+'%';
+            data['Infection Risk'] = Math.round(value)+'%';
             break;
           case 'comfort':
             switch (value) {
