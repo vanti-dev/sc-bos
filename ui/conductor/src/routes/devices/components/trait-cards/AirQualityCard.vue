@@ -17,7 +17,7 @@ import {computed} from 'vue';
 
 const props = defineProps({
   value: {
-    type: Object, // of AirTemperature.AsObject
+    type: Object, // of AirQuality.AsObject
     default: () => ({})
   },
   loading: {

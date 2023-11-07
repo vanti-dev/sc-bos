@@ -35,7 +35,6 @@ const airQualityResource = reactive(
 watch(
     [() => props.paused, () => props.name],
     ([newPaused, newName], [oldPaused, oldName]) => {
-      // only for LightSensor
       if (newPaused === oldPaused && newName === oldName) return;
 
       if (newPaused) {
@@ -63,15 +62,4 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss">
-.occupied {
-  color: var(--v-success-lighten1) !important;
-}
-
-.idle {
-  color: var(--v-info-base) !important;
-}
-
-.unoccupied {
-  color: var(--v-warning-base) !important;
-}
 </style>
