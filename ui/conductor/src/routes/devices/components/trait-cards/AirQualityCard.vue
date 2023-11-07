@@ -4,9 +4,16 @@
       <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Air Quality</v-subheader>
       <v-list-item v-for="(val, key) of airQualityData" :key="key" class="py-1">
         <v-list-item-title class="text-body-small">{{ key }}</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize font-weight-medium">{{ val }}</v-list-item-subtitle>
+        <v-list-item-subtitle class="font-weight-medium">{{ val }}</v-list-item-subtitle>
       </v-list-item>
     </v-list>
+    <v-progress-linear
+        v-if="hasScore"
+        :value="score"
+        height="34"
+        class="mx-4 my-2"
+        background-color="neutral lighten-1"
+        :color="scoreColor"/>
   </v-card>
 </template>
 
@@ -26,6 +33,29 @@ const props = defineProps({
   }
 });
 
+const score = computed(() => {
+  if (props && props.value && props.value.score) {
+    return props.value.score;
+  }
+  return 0;
+});
+
+const hasScore = computed(() => {
+  return props && props.value && props.value.score;
+});
+
+const scoreColor = computed(() => {
+  if (score.value < 10) {
+    return 'error lighten-1';
+  } else if (score.value < 50) {
+    return 'warning';
+  } else if (score.value < 75) {
+    return 'secondary';
+  } else {
+    return 'success lighten-1';
+  }
+});
+
 const airQualityData = computed(() => {
   if (props && props.value) {
     const data = {};
@@ -33,13 +63,13 @@ const airQualityData = computed(() => {
       if (value !== undefined) {
         switch (key) {
           case 'carbonDioxideLevel':
-            data['CO2'] = value.toFixed(2)+'ppm';
+            data['CO2'] = Math.round(value)+' ppm';
             break;
           case 'volatileOrganicCompounds':
-            data['VOC'] = value.toFixed(2)+'ppm';
+            data['VOC'] = value.toFixed(3)+' ppm';
             break;
           case 'airPressure':
-            data['Air Pressure'] = value.toFixed(2)+' hPa';
+            data['Air Pressure'] = Math.round(value)+' hPa';
             break;
           case 'infectionRisk':
             data['Infection Risk'] = Math.round(value)+'%';
@@ -55,6 +85,9 @@ const airQualityData = computed(() => {
               default:
                 // do nothing
             }
+            break;
+          case 'score':
+            data['Air Quality Score'] = Math.round(value)+'%';
             break;
           default: {
             data[camelToSentence(key)] = value;
@@ -77,4 +110,5 @@ const airQualityData = computed(() => {
 .v-progress-linear {
   width: auto;
 }
+
 </style>

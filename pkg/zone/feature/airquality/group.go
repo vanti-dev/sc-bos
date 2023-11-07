@@ -197,6 +197,15 @@ func mergeAirQuality(all []*traits.AirQuality) (*traits.AirQuality, error) {
 		}); ok {
 			out.Comfort = val
 		}
+		// IAQ Score
+		if val, ok := merge.Mean(all, func(e *traits.AirQuality) (float32, bool) {
+			if e == nil {
+				return 0, false
+			}
+			return *e.Score, true
+		}); ok {
+			out.Score = &val
+		}
 		return out, nil
 	}
 }
