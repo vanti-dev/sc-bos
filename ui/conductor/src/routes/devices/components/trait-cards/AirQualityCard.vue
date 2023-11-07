@@ -63,16 +63,24 @@ const airQualityData = computed(() => {
       if (value !== undefined) {
         switch (key) {
           case 'carbonDioxideLevel':
-            data['CO2'] = Math.round(value)+' ppm';
+            if (value > 0) {
+              data['CO2'] = Math.round(value) + ' ppm';
+            }
             break;
           case 'volatileOrganicCompounds':
-            data['VOC'] = value.toFixed(3)+' ppm';
+            if (value > 0) {
+              data['VOC'] = value.toFixed(3) + ' ppm';
+            }
             break;
           case 'airPressure':
-            data['Air Pressure'] = Math.round(value)+' hPa';
+            if (value > 0) {
+              data['Air Pressure'] = Math.round(value) + ' hPa';
+            }
             break;
           case 'infectionRisk':
-            data['Infection Risk'] = Math.round(value)+'%';
+            if (value > 0) {
+              data['Infection Risk'] = Math.round(value) + '%';
+            }
             break;
           case 'comfort':
             switch (value) {
@@ -87,7 +95,9 @@ const airQualityData = computed(() => {
             }
             break;
           case 'score':
-            data['Air Quality Score'] = Math.round(value)+'%';
+            if (value > 0) {
+              data['Air Quality Score'] = Math.round(value) + '%';
+            }
             break;
           default: {
             data[camelToSentence(key)] = value;
