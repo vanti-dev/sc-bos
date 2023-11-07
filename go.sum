@@ -1043,6 +1043,7 @@ github.com/sirupsen/logrus v1.8.1 h1:dJKuHgqk1NNQlqoA6BTlM1Wf9DOH3NBjQyu0h9+AZZE
 github.com/sirupsen/logrus v1.8.1/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
 github.com/smart-core-os/sc-api/go v1.0.0-beta.42 h1:IgX2k7nZkSnSXURNDDOYl8JANMg+GEC/klMN0xroavc=
 github.com/smart-core-os/sc-api/go v1.0.0-beta.42/go.mod h1:RZQt2ygyT7KjfxGkJdLYn6SqB/1LCgTWltUCPvQxO7Y=
+github.com/smart-core-os/sc-api/go v1.0.0-beta.43/go.mod h1:RZQt2ygyT7KjfxGkJdLYn6SqB/1LCgTWltUCPvQxO7Y=
 github.com/smart-core-os/sc-golang v0.0.0-20230804102107-ff30db2c5610 h1:oFVFh8MQ87HTDnXh+WoEcoQKW3yi1Kt87MyFW/ZsFx0=
 github.com/smart-core-os/sc-golang v0.0.0-20230804102107-ff30db2c5610/go.mod h1:YP5jlFfxNES3DC5/SbK2caH6qhmbRD/f90j7ZYOkAuQ=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d/go.mod h1:OnSkiWE9lh6wB0YB77sQom3nweQdgAjqCqsofrRNTgc=
