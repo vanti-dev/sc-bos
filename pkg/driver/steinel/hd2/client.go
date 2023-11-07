@@ -85,15 +85,16 @@ type SensorResponse struct {
 	Humidity                     float64 `json:"Humidity"`
 	VOC                          int     `json:"VOC"`
 	CO2                          int     `json:"CO2"`
-	AirPressure                  float64 `json:"AirPressure"`
-	Noise                        int     `json:"Noise"`
-	AerosolStaleAirStatus        int     `json:"AerosolStaleAirStatus"`
-	AerosolRiskOfInfectionStatus int     `json:"AerosolRiskOfInfectionStatus"`
-	ComfortZone                  bool    `json:"ComfortZone"`
-	DewPoint                     float64 `json:"DewPoint"`
-	AerosolStaleAir              int     `json:"AerosolStaleAir"`
-	AerosolRiskOfInfection       int     `json:"AerosolRiskOfInfection"`
-	ZonePeople0                  int     `json:"ZonePeople0"`
+	AirPressure                  float64 `json:"AirPressure,omitempty"`
+	Noise                        int     `json:"Noise,omitempty"`
+	AerosolStaleAirStatus        int     `json:"AerosolStaleAirStatus,omitempty"`
+	AerosolRiskOfInfectionStatus int     `json:"AerosolRiskOfInfectionStatus,omitempty"`
+	ComfortZone                  bool    `json:"ComfortZone,omitempty"`
+	DewPoint                     float64 `json:"DewPoint,omitempty"`
+	AerosolStaleAir              int     `json:"AerosolStaleAir,omitempty"`
+	AerosolRiskOfInfection       int     `json:"AerosolRiskOfInfection,omitempty"`
+	ZonePeople0                  int     `json:"ZonePeople0,omitempty"`
+	IAQ                          int     `json:"IAQ,omitempty"`
 }
 
 func doGetRequest(conn *Client, target any, endpoint string) error {

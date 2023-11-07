@@ -97,16 +97,37 @@ func (a *AirQualitySensor) GetUpdate() error {
 	}
 
 	co2 := float32(response.CO2)
-	voc := float32(response.VOC)
+	// voc is exposed as ppb, we need to convert to ppm
+	voc := float32(response.VOC) / 1000
 	airPressure := float32(response.AirPressure)
 	infectionRisk := float32(response.AerosolRiskOfInfection)
 
-	a.airQuality.Set(&traits.AirQuality{
+	q := &traits.AirQuality{
 		CarbonDioxideLevel:       &co2,
 		VolatileOrganicCompounds: &voc,
-		AirPressure:              &airPressure,
-		InfectionRisk:            &infectionRisk,
-	})
+	}
+
+	if airPressure > 0 {
+		q.AirPressure = &airPressure
+	}
+	if infectionRisk > 0 {
+		q.InfectionRisk = &infectionRisk
+	}
+
+	if response.IAQ > 0 {
+		// the HPD3 (and possibly other Steinels that have this prop) use a range of 0-2000, with lower numbers being
+		// better. Over 500 is considered unacceptable, so we're mapping 500-2000 onto 0-10%
+		score := 2000 - response.IAQ
+		if score < 1500 {
+			score = score / 150
+		} else {
+			score = 10 + score/500
+		}
+		fscore := float32(score)
+		q.Score = &fscore
+	}
+
+	a.airQuality.Set(q)
 
 	return nil
 }
