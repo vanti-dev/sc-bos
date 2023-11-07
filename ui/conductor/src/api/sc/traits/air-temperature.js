@@ -84,14 +84,15 @@ function stateFromObject(obj) {
   if (!obj) return undefined;
 
   const state = new AirTemperature();
-  setProperties(state, obj, 'ambient_humidity');
+  setProperties(state, obj, 'ambientHumidity', 'mode');
   state.setTemperatureSetPoint(temperatureFromObject(obj.temperatureSetPoint));
+  state.setMode(obj.mode);
   return state;
 }
 
 /**
  * @param {Temperature.AsObject} obj
- * @return {Temperature}
+ * @return {Temperature|undefined}
  */
 function temperatureFromObject(obj) {
   if (!obj) return undefined;
