@@ -12,6 +12,7 @@
 
 <script setup>
 import {camelToSentence} from '@/util/string';
+import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
 import {computed} from 'vue';
 
 const props = defineProps({
@@ -42,6 +43,18 @@ const airQualityData = computed(() => {
             break;
           case 'infectionRisk':
             data['Infection Risk'] = Math.round(value*100)+'%';
+            break;
+          case 'comfort':
+            switch (value) {
+              case AirQuality.Comfort.COMFORTABLE:
+                data['Comfort'] = 'Comfortable';
+                break;
+              case AirQuality.Comfort.UNCOMFORTABLE:
+                data['Comfort'] = 'Uncomfortable';
+                break;
+              default:
+                // do nothing
+            }
             break;
           default: {
             data[camelToSentence(key)] = value;
