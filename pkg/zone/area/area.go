@@ -13,6 +13,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task/serviceapi"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
 	"github.com/vanti-dev/sc-bos/pkg/zone/area/config"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/airquality"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/electric"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/hvac"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/lighting"
@@ -31,6 +32,7 @@ var DefaultFeatures = []zone.Factory{
 	mode.Feature,
 	occupancy.Feature,
 	status.Feature,
+	airquality.Feature,
 }
 
 // Factory builds a generic area using DefaultFeatures.
