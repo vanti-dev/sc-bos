@@ -152,12 +152,14 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 		voc := rand.Float32()
 		ap := rand.Float32() * 1200
 		ir := float32(rand.Int31n(100))
+		score := float32(rand.Int31n(100))
 		model := traits.AirQuality{
 			CarbonDioxideLevel:       &co2,
 			VolatileOrganicCompounds: &voc,
 			AirPressure:              &ap,
 			Comfort:                  0,
 			InfectionRisk:            &ir,
+			Score:                    &score,
 		}
 		return []any{airqualitysensor.WrapApi(airqualitysensor.NewModelServer(airqualitysensor.NewModel(&model)))}, nil
 	case trait.AirTemperature:
