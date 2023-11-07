@@ -121,7 +121,7 @@ func (a *AirQualitySensor) GetUpdate() error {
 		if score < 1500 {
 			score = score / 150
 		} else {
-			score = 10 + score/500
+			score = 10 + (1500-score)/5
 		}
 		fscore := float32(score)
 		q.Score = &fscore
