@@ -20,6 +20,8 @@ func IntoTrait(client *gobacnet.Client, devices known.Context, statuses *statusp
 		return newAirTemperature(client, devices, statuses, traitConfig, logger)
 	case trait.Electric:
 		return newElectric(client, devices, statuses, traitConfig, logger)
+	case trait.Emergency:
+		return newEmergency(client, devices, statuses, traitConfig, logger)
 	case trait.FanSpeed:
 		return newFanSpeed(client, devices, statuses, traitConfig, logger)
 	case meter.TraitName:
