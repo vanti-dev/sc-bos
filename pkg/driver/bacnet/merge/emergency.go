@@ -93,9 +93,6 @@ func (t *emergencyImpl) PullEmergency(request *traits.PullEmergencyRequest, serv
 
 // pollPeer fetches data from the peer device and saves the data locally.
 func (t *emergencyImpl) pollPeer(ctx context.Context) (*traits.Emergency, error) {
-	if t.config.Name == "enterprisewharf.co.uk/floors/1/fire/BCN-L01-001" {
-		t.logger.Info(">> pollPeer run")
-	}
 	data := &traits.Emergency{}
 	var resProcessors []func(response any) error
 	var readValues []config.ValueSource
@@ -144,8 +141,5 @@ func (t *emergencyImpl) pollPeer(ctx context.Context) (*traits.Emergency, error)
 		return nil, multierr.Combine(errs...)
 	}
 
-	if t.config.Name == "enterprisewharf.co.uk/floors/1/fire/BCN-L01-001" {
-		t.logger.Info(">> pollPeer success")
-	}
 	return t.model.UpdateEmergency(ctx, &traits.UpdateEmergencyRequest{Emergency: data})
 }
