@@ -17,8 +17,8 @@
         </v-list-item-content>
       </v-list-item>
       <v-list-item class="py-1" v-for="(value, key) in messagePayload" :key="key">
-        <v-list-item-title class="text-body-small text-capitalize">{{ key }}</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize text-end">
+        <v-list-item-title class="text-body-small text-capitalize flex-fill">{{ key }}</v-list-item-title>
+        <v-list-item-subtitle class="text-capitalize text-end flex-fill">
           {{ value['present_value'] ?? value }}
         </v-list-item-subtitle>
       </v-list-item>
