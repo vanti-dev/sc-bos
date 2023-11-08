@@ -78,6 +78,7 @@ func newElectric(client *gobacnet.Client, devices known.Context, statuses *statu
 		config:      cfg,
 	}
 	t.pollTask = task.NewIntermittent(t.startPoll)
+	initTraitStatus(statuses, cfg.Name, "Emergency")
 	return t, nil
 }
 

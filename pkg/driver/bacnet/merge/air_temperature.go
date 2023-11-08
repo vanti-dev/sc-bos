@@ -61,6 +61,7 @@ func newAirTemperature(client *gobacnet.Client, devices known.Context, statuses 
 		config:      cfg,
 	}
 	t.pollTask = task.NewIntermittent(t.startPoll)
+	initTraitStatus(statuses, cfg.Name, "AirTemperature")
 	return t, nil
 }
 

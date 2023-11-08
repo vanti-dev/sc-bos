@@ -9,6 +9,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 )
 
 func ptr[T any](v T, err error) (*T, error) {
@@ -30,3 +32,11 @@ func readPropertyFloat32(ctx context.Context, client *gobacnet.Client, known kno
 var (
 	ErrTraitNotSupported = errors.New("trait not supported")
 )
+
+func initTraitStatus(statuses *statuspb.Map, name, trait string) {
+	statuses.UpdateProblem(name, &gen.StatusLog_Problem{
+		Name:        name + ":" + trait,
+		Level:       gen.StatusLog_NOMINAL,
+		Description: "Waiting for first interaction",
+	})
+}
