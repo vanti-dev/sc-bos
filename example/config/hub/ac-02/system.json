@@ -1,0 +1,10 @@
+{
+  "name": "AC-02",
+  "listenGrpc": ":23302",
+  "listenHttps": ":8302",
+  "systems": {
+    "alerts": {
+      "storage": {"type": "hub"}
+    }
+  }
+}

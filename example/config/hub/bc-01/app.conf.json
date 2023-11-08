@@ -1,0 +1,19 @@
+{
+  "drivers": [
+    {
+      "disabled": false,
+      "type": "mock", "name": "Test Devices",
+      "devices": [
+        {
+          "name": "from-bc",
+          "traits": [
+            {"name": "smartcore.traits.Light"},
+            {"name": "smartcore.bos.LightingTest"}
+          ],
+          "membership": {"subsystem": "lighting"},
+          "location": {"title": "L03_013/Meeting Room 1"}
+        }
+      ]
+    }
+  ]
+}

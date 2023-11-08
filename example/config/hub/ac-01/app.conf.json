@@ -1,0 +1,153 @@
+{
+  "drivers": [
+    {
+      "disabled": false,
+      "type": "mock", "name": "Test Devices",
+      "devices": [
+        {
+          "name": "Floor1/lights/01",
+          "traits": [
+            {"name": "smartcore.traits.Light"},
+            {"name": "smartcore.bos.LightingTest"}
+          ],
+          "membership": {"subsystem": "lighting"},
+          "location": {"title": "L03_013/Meeting Room 1"}
+        },
+        {
+          "name": "Floor1/lights/02",
+          "traits": [{"name": "smartcore.traits.Light"}],
+          "membership": {"subsystem": "lighting"},
+          "location": {"title": "L03_014/Reception"}
+        },
+        {
+          "name": "Floor1/lights/03",
+          "traits": [{"name": "smartcore.traits.Light"}],
+          "membership": {"subsystem": "lighting"},
+          "location": {"title": "L03_015/Meeting Room 2"}
+        },
+        {
+          "name": "Floor1/pir/01",
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "membership": {"subsystem": "lighting"},
+          "location": {"title": "L03_013/Meeting Room 1"}
+        },
+        {
+          "name": "Floor1/pir/02",
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "membership": {"subsystem": "lighting"},
+          "location": {"title": "L03_013/Meeting Room 1"}
+        },
+        {
+          "name": "Floor1/pir/03",
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "membership": {"subsystem": "lighting"},
+          "location": {"title": "L03_013/Meeting Room 1"}
+        },
+        {
+          "name": "Floor1/FCU/01",
+          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "membership": {"subsystem": "hvac"},
+          "location": {
+            "title": "L03_013/Meeting Room 1",
+            "more": {
+              "floor": "L03"
+            }
+          }
+        },
+        {
+          "name": "Floor1/FCU/02",
+          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "membership": {"subsystem": "hvac"},
+          "location": {
+            "title": "L03_015/Meeting Room 2",
+            "more": {
+              "floor": "L03"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ac-01/proxy/ac-02", "type": "proxy",
+      "nodes": [{"host": ":23302", "skipChild": true}]
+    }
+  ],
+  "automation": [
+    {
+      "disabled": true,
+      "name": "udmi-test", "type": "udmi",
+      "sources": [
+        "smart-core/doors/reader/1"
+      ],
+      "broker": {
+        "host": "localhost:1883"
+      }
+    },
+    {
+      "disabled": true,
+      "name": "lights-01",
+      "type": "lights",
+      "occupancySensors": [
+        "Floor1/pir/01",
+        "Floor1/pir/02",
+        "Floor1/pir/03"
+      ],
+      "lights": ["Floor1/lights/01", "Floor1/lights/02"],
+      "unoccupiedOffDelay": "15s"
+    },
+    {
+      "disabled": true,
+      "name": "collect-occupancy", "type": "history",
+      "source": {"name": "Floor1/pir/01", "trait": "smartcore.traits.OccupancySensor"},
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": "./.data/secrets/postgres-password"
+      }
+    }
+  ],
+  "zones": [
+    {
+      "disabled": true,
+      "name": "Floor1/Room 1",
+      "type": "area",
+      "lights": ["Floor1/lights/01", "Floor1/lights/03"],
+      "lightGroups": {
+        "speaker": ["Floor1/lights/01"],
+        "audience": ["Floor1/lights/02", "Floor1/lights/03"]
+      },
+      "hvac": ["Floor1/FCU/01"],
+      "metadata": {
+        "membership": {"subsystem": "zones"}
+      }
+    },
+    {
+      "disabled": true,
+      "name": "Floor1/Room 2",
+      "type": "area",
+      "lights": ["Floor1/lights/01", "Floor1/lights/03"],
+      "lightGroups": {
+        "speaker": ["Floor1/lights/01"],
+        "audience": ["Floor1/lights/02", "Floor1/lights/03"]
+      },
+      "hvac": ["Floor1/FCU/01"],
+      "metadata": {
+        "membership": {"subsystem": "zones"}
+      }
+    },
+    {
+      "disabled": true,
+      "name": "Floor1/Office",
+      "type": "area",
+      "lights": ["Floor1/lights/01", "Floor1/lights/03"],
+      "lightGroups": {
+        "speaker": ["Floor1/lights/01"],
+        "audience": ["Floor1/lights/02", "Floor1/lights/03"]
+      },
+      "hvac": ["Floor1/FCU/01"],
+      "metadata": {
+        "membership": {"subsystem": "zones"}
+      }
+    }
+  ]
+}

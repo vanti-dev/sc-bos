@@ -1,0 +1,23 @@
+### Note: These don't currently work using the jetbrains HTTP client due to lack of
+### TLS configuration settings. All the relevant bit are present, the client just
+### doesn't know how to use them. Use grpcui --insecure localhost:23101 instead.
+
+### Enroll EG-01
+GRPC grpcs://localhost:23101/smartcore.bos.HubApi/EnrollHubNode
+
+{"node": {"address": "localhost:23201"}}
+
+### Enroll EG-02
+GRPC grpcs://localhost:23101/smartcore.bos.HubApi/EnrollHubNode
+
+{"node": {"address": "localhost:23202"}}
+
+### Enroll AC-01
+GRPC grpcs://localhost:23101/smartcore.bos.HubApi/EnrollHubNode
+
+{"node": {"address": "localhost:23301"}}
+
+### Enroll AC-02
+GRPC grpcs://localhost:23101/smartcore.bos.HubApi/EnrollHubNode
+
+{"node": {"address": "localhost:23302"}}
