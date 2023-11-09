@@ -10,7 +10,7 @@ details.
 As each BOS node exposes a gRPC and HTTPS API their ports would conflict so they have been configured with the following
 pattern:
 
-```
+```plaintext
 23203
 ^^^\\- Node number: 03
 ^^\--- Node type: 1 = BC, 2 = EG, 3 = AC
@@ -23,3 +23,11 @@ The building controller is configured to store enrollment data in the local bolt
 use the postgres storage option.
 
 An intellij 'Hub' run configuration (and group) have been setup to run all the nodes.
+
+In case you want to run the nodes individually, the following commands can be used:
+
+```shell
+go run ./cmd/bos --policy-mode=off --data-dir example/config/hub/eg-02
+```
+
+Each node has a `--data-dir` flag that points to the directory containing the node's configuration and data.
