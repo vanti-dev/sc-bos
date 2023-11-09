@@ -1,15 +1,16 @@
 import {clientOptions} from '@/api/grpcweb';
+import {setProperties} from '@/api/convpb';
 import {pullResource, setCollection, trackAction} from '@/api/resource';
 import {HubApiPromiseClient} from '@sc-bos/ui-gen/proto/hub_grpc_web_pb';
 import {
   EnrollHubNodeRequest,
   ForgetHubNodeRequest,
   HubNode,
+  InspectHubNodeRequest,
   ListHubNodesRequest,
   PullHubNodesRequest,
   TestHubNodeRequest
 } from '@sc-bos/ui-gen/proto/hub_pb';
-import {setProperties} from "@/api/convpb";
 
 /**
  *
@@ -45,8 +46,8 @@ export function pullHubNodes(resource) {
 /**
  *
  * @param {EnrollHubNodeRequest.AsObject} request
- * @param {ActionTracker<EnrollHubNodeResponse.AsObject>} [tracker]
- * @return {Promise<EnrollHubNodeResponse.AsObject>}
+ * @param {ActionTracker<HubNode.AsObject>} [tracker]
+ * @return {Promise<HubNode.AsObject>}
  */
 export function enrollHubNode(request, tracker) {
   return trackAction('Hub.enrollHubNode', tracker ?? {}, endpoint => {
@@ -58,7 +59,7 @@ export function enrollHubNode(request, tracker) {
 
 /**
  *
- * @param {HubNode.AsObject} request
+ * @param {ForgetHubNodeRequest.AsObject} request
  * @param {ActionTracker<ForgetHubNodeResponse.AsObject>} [tracker]
  * @return {Promise<ForgetHubNodeResponse.AsObject>}
  */
@@ -83,6 +84,18 @@ export function testHubNode(request, tracker) {
 }
 
 /**
+ * @param {InspectHubNodeRequest.AsObject} request
+ * @param {ActionTracker<HubNode.AsObject>} [tracker]
+ * @return {Promise<HubNode.AsObject>}
+ */
+export function inspectHubNode(request, tracker) {
+  return trackAction('Hub.inspectHubNode', tracker ?? {}, endpoint => {
+    const api = apiClient(endpoint);
+    return api.inspectHubNode(inspectHubNodeRequestFromObject(request));
+  });
+}
+
+/**
  * @param {string} endpoint
  * @return {HubApiPromiseClient}
  */
@@ -91,7 +104,7 @@ function apiClient(endpoint) {
 }
 
 // --------------------------- //
-// ----- Enroll Hub Node ----- //
+// ----- Test Hub Node ----- //
 /**
  *
  * @param {TestHubNodeRequest.AsObject} obj
@@ -104,6 +117,20 @@ function testHubNodeRequestFromObject(obj) {
   dst.setAddress(obj.address);
   return dst;
 }
+
+/**
+ *
+ * @param {InspectHubNodeRequest.AsObject} obj
+ * @return {InspectHubNodeRequest|undefined}
+ */
+function inspectHubNodeRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const dst = new InspectHubNodeRequest();
+  dst.setNode(hubNodeFromObject(obj.node));
+  return dst;
+}
+
 // --------------------------- //
 
 // --------------------------- //
@@ -116,7 +143,7 @@ function enrollHubNodeRequestFromObject(obj) {
   if (!obj) return undefined;
 
   const dst = new EnrollHubNodeRequest();
-  setProperties(dst, obj, 'node', 'publicCertsList');
+  setProperties(dst, obj, 'publicCertsList');
   dst.setNode(hubNodeFromObject(obj.node));
   return dst;
 }
@@ -134,6 +161,7 @@ function hubNodeFromObject(obj) {
 
   return dst;
 }
+
 // --------------------------- //
 
 
@@ -143,7 +171,7 @@ function hubNodeFromObject(obj) {
  * @param {HubNode.AsObject} obj
  * @return {ForgetHubNodeRequest|undefined}
  */
-function forgetHubNodRequestFromObject(obj) {
+function forgetHubNodeRequestFromObject(obj) {
   if (!obj) return undefined;
 
   const dst = new ForgetHubNodeRequest();
