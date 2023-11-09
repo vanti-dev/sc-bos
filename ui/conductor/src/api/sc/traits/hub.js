@@ -9,6 +9,7 @@ import {
   PullHubNodesRequest,
   TestHubNodeRequest
 } from '@sc-bos/ui-gen/proto/hub_pb';
+import {setProperties} from "@/api/convpb";
 
 /**
  *
@@ -43,43 +44,41 @@ export function pullHubNodes(resource) {
 
 /**
  *
- * @param {string} address
+ * @param {EnrollHubNodeRequest.AsObject} request
  * @param {ActionTracker<EnrollHubNodeResponse.AsObject>} [tracker]
  * @return {Promise<EnrollHubNodeResponse.AsObject>}
  */
-export function enrollHubNode(address, tracker) {
+export function enrollHubNode(request, tracker) {
   return trackAction('Hub.enrollHubNode', tracker ?? {}, endpoint => {
     const api = apiClient(endpoint);
-    const hubNode = setHubNodeFromObject(enrollHubNodeFromObject(address));
+    const hubNode = enrollHubNodeRequestFromObject(request);
     return api.enrollHubNode(hubNode);
   });
 }
 
 /**
  *
- * @param {string} address
+ * @param {HubNode.AsObject} request
  * @param {ActionTracker<ForgetHubNodeResponse.AsObject>} [tracker]
  * @return {Promise<ForgetHubNodeResponse.AsObject>}
  */
-export function forgetHubNode(address, tracker) {
+export function forgetHubNode(request, tracker) {
   return trackAction('Hub.forgetHubNode', tracker ?? {}, endpoint => {
     const api = apiClient(endpoint);
-    const request = new ForgetHubNodeRequest();
-    request.setAddress(address);
-    request.setAllowMissing(true);
-    return api.forgetHubNode(request);
+    const hubNode = forgetHubNodeRequestFromObject(request);
+    return api.forgetHubNode(hubNode);
   });
 }
 
 /**
- * @param {string} address
+ * @param {TestHubNodeRequest.AsObject} request
  * @param {ActionTracker<TestHubNodeResponse.AsObject>} [tracker]
  * @return {Promise<TestHubNodeResponse.AsObject>}
  */
-export function testHubNodes(address, tracker) {
+export function testHubNode(request, tracker) {
   return trackAction('Hub.testHubNode', tracker ?? {}, endpoint => {
     const api = apiClient(endpoint);
-    return api.testHubNode(testHubNodesFromObject({address}));
+    return api.testHubNode(testHubNodeRequestFromObject(request));
   });
 }
 
@@ -91,42 +90,65 @@ function apiClient(endpoint) {
   return new HubApiPromiseClient(endpoint, null, clientOptions());
 }
 
+// --------------------------- //
+// ----- Enroll Hub Node ----- //
 /**
  *
  * @param {TestHubNodeRequest.AsObject} obj
  * @return {TestHubNodeRequest|undefined}
  */
-function testHubNodesFromObject(obj) {
+function testHubNodeRequestFromObject(obj) {
   if (!obj) return undefined;
 
   const dst = new TestHubNodeRequest();
   dst.setAddress(obj.address);
   return dst;
 }
+// --------------------------- //
 
+// --------------------------- //
+// ----- Enroll Hub Node ----- //
 /**
- * @param {HubNode.AsObject} obj
- * @return {EnrollHubNodeRequest|undefined}
+ * @param {EnrollHubNodeRequest.AsObject} obj
+ * @return {HubNode.AsObject|undefined}
  */
-function setHubNodeFromObject(obj) {
+function enrollHubNodeRequestFromObject(obj) {
   if (!obj) return undefined;
 
   const dst = new EnrollHubNodeRequest();
-  dst.setNode(obj);
-
+  setProperties(dst, obj, 'node', 'publicCertsList');
+  dst.setNode(hubNodeFromObject(obj.node));
   return dst;
 }
 
 
 /**
- * @param {HubNode.AsObject} obj
- * @return {HubNode|undefined}
+ * @param {EnrollHubNodeRequest.AsObject} obj
+ * @return {HubNode.AsObject|undefined}
  */
-function enrollHubNodeFromObject(obj) {
+function hubNodeFromObject(obj) {
   if (!obj) return undefined;
 
   const dst = new HubNode();
-  dst.setAddress(obj);
+  setProperties(dst, obj, 'address', 'name', 'description');
 
   return dst;
 }
+// --------------------------- //
+
+
+// --------------------------- //
+// ----- Forget Hub Node ----- //
+/**
+ * @param {HubNode.AsObject} obj
+ * @return {ForgetHubNodeRequest|undefined}
+ */
+function forgetHubNodRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const dst = new ForgetHubNodeRequest();
+  setProperties(dst, obj, 'address', 'allowMissing');
+
+  return dst;
+}
+

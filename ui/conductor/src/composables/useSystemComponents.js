@@ -1,6 +1,6 @@
 import {computed, onUnmounted, reactive, set, watch} from 'vue';
 import {closeResource, newActionTracker} from '@/api/resource';
-import {enrollHubNode, forgetHubNode, testHubNodes} from '@/api/sc/traits/hub';
+import {enrollHubNode, forgetHubNode, testHubNode} from '@/api/sc/traits/hub';
 import {ServiceNames} from '@/api/ui/services';
 import {useEnrollmentStore} from '@/stores/enrollmentStore';
 import {useHubStore} from '@/stores/hub';
@@ -26,7 +26,11 @@ export default function() {
 
   watch(enrollmentValue, (newValue) => {
     if (newValue?.response?.targetAddress) {
-      testHubNodes(newValue?.response?.targetAddress, hubNodeValue);
+      const request = {
+        address: newValue.response.targetAddress
+      };
+
+      testHubNode(request, hubNodeValue);
     }
   }, {immediate: true, deep: true});
 
@@ -37,10 +41,19 @@ export default function() {
 
   /**
    * @param {string} address
-   * @return {Promise<void>}
+   * @return {Promise<void>|undefined}
    */
   function enrollHubNodeAction(address) {
-    return enrollHubNode(address, enrollHubNodeValue);
+    if (!address) return;
+
+    const request = {
+      node: {
+        address
+      },
+      publicCertsList: []
+    };
+
+    return enrollHubNode(request, enrollHubNodeValue);
   }
 
   // --------------------------- //

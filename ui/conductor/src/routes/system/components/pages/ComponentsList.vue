@@ -31,14 +31,14 @@
 
 <script setup>
 import StatusAlert from '@/components/StatusAlert.vue';
-import useHubNodes from '@/composables/useHubNodes';
+import useSystemComponents from '@/composables/useSystemComponents';
 
 const {
   nodeDetails,
   nodesList,
   isProxy,
   isHub
-} = useHubNodes();
+} = useSystemComponents();
 </script>
 
 <style scoped>
