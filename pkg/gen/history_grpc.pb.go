@@ -484,3 +484,90 @@ var OccupancySensorHistory_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "history.proto",
 }
+
+// AirQualitySensorHistoryClient is the client API for AirQualitySensorHistory service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type AirQualitySensorHistoryClient interface {
+	ListAirQualityHistory(ctx context.Context, in *ListAirQualityHistoryRequest, opts ...grpc.CallOption) (*ListAirQualityHistoryResponse, error)
+}
+
+type airQualitySensorHistoryClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAirQualitySensorHistoryClient(cc grpc.ClientConnInterface) AirQualitySensorHistoryClient {
+	return &airQualitySensorHistoryClient{cc}
+}
+
+func (c *airQualitySensorHistoryClient) ListAirQualityHistory(ctx context.Context, in *ListAirQualityHistoryRequest, opts ...grpc.CallOption) (*ListAirQualityHistoryResponse, error) {
+	out := new(ListAirQualityHistoryResponse)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.AirQualitySensorHistory/ListAirQualityHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AirQualitySensorHistoryServer is the server API for AirQualitySensorHistory service.
+// All implementations must embed UnimplementedAirQualitySensorHistoryServer
+// for forward compatibility
+type AirQualitySensorHistoryServer interface {
+	ListAirQualityHistory(context.Context, *ListAirQualityHistoryRequest) (*ListAirQualityHistoryResponse, error)
+	mustEmbedUnimplementedAirQualitySensorHistoryServer()
+}
+
+// UnimplementedAirQualitySensorHistoryServer must be embedded to have forward compatible implementations.
+type UnimplementedAirQualitySensorHistoryServer struct {
+}
+
+func (UnimplementedAirQualitySensorHistoryServer) ListAirQualityHistory(context.Context, *ListAirQualityHistoryRequest) (*ListAirQualityHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAirQualityHistory not implemented")
+}
+func (UnimplementedAirQualitySensorHistoryServer) mustEmbedUnimplementedAirQualitySensorHistoryServer() {
+}
+
+// UnsafeAirQualitySensorHistoryServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AirQualitySensorHistoryServer will
+// result in compilation errors.
+type UnsafeAirQualitySensorHistoryServer interface {
+	mustEmbedUnimplementedAirQualitySensorHistoryServer()
+}
+
+func RegisterAirQualitySensorHistoryServer(s grpc.ServiceRegistrar, srv AirQualitySensorHistoryServer) {
+	s.RegisterService(&AirQualitySensorHistory_ServiceDesc, srv)
+}
+
+func _AirQualitySensorHistory_ListAirQualityHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAirQualityHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AirQualitySensorHistoryServer).ListAirQualityHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/smartcore.bos.AirQualitySensorHistory/ListAirQualityHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AirQualitySensorHistoryServer).ListAirQualityHistory(ctx, req.(*ListAirQualityHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AirQualitySensorHistory_ServiceDesc is the grpc.ServiceDesc for AirQualitySensorHistory service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AirQualitySensorHistory_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "smartcore.bos.AirQualitySensorHistory",
+	HandlerType: (*AirQualitySensorHistoryServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListAirQualityHistory",
+			Handler:    _AirQualitySensorHistory_ListAirQualityHistory_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "history.proto",
+}
