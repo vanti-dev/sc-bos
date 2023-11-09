@@ -20,8 +20,8 @@
           </v-list-item>
         </v-list>
         <v-chip-group>
-          <v-chip v-if="isHub(node.name)" color="primary" small>hub</v-chip>
           <v-chip v-if="isProxy(node.name)" color="accent" small>gateway</v-chip>
+          <v-chip v-if="isHub(node.name) && !isProxy(node.name)" color="primary" small>hub</v-chip>
         </v-chip-group>
       </v-card-text>
     </v-card>
@@ -30,73 +30,15 @@
 </template>
 
 <script setup>
-import {ServiceNames} from '@/api/ui/services';
 import StatusAlert from '@/components/StatusAlert.vue';
-import {useHubStore} from '@/stores/hub';
-import {useServicesStore} from '@/stores/services';
-import {computed, onUnmounted, reactive, set} from 'vue';
+import useHubNodes from '@/composables/useHubNodes';
 
-const hubStore = useHubStore();
-const servicesStore = useServicesStore();
-
-const nodeDetails = reactive({});
-
-let unwatchTrackers = [];
-onUnmounted(() => {
-  unwatchTrackers = [];
-});
-
-const nodesList = computed(() => {
-  return Object.values(hubStore.nodesList).map(node => {
-    Promise.all([node.commsAddress, node.commsName])
-        .then(([address, name]) => {
-          console.debug('node', node);
-          set(nodeDetails, node.name, {
-            automations: servicesStore.getService(ServiceNames.Automations, address, name),
-            drivers: servicesStore.getService(ServiceNames.Drivers, address, name),
-            systems: servicesStore.getService(ServiceNames.Systems, address, name)
-          });
-          unwatchTrackers.push(nodeDetails[node.name].automations.metadataTracker);
-          unwatchTrackers.push(nodeDetails[node.name].drivers.metadataTracker);
-          unwatchTrackers.push(nodeDetails[node.name].systems.metadataTracker);
-          return Promise.all([
-            servicesStore.refreshMetadata(ServiceNames.Automations, address, name),
-            servicesStore.refreshMetadata(ServiceNames.Drivers, address, name),
-            servicesStore.refreshMetadata(ServiceNames.Systems, address, name)
-          ]);
-        })
-        .catch(e => {
-          console.error(e);
-        });
-    return {
-      ...node
-    };
-  });
-});
-
-/**
- * Check if the node has a proxy system service configured
- *
- * @param {string} nodeName
- * @return {boolean}
- */
-function isProxy(nodeName) {
-  return nodeDetails[nodeName]?.systems.metadataTracker?.response?.typeCountsMap?.some(
-      ([name, count]) => name === 'proxy' && count > 0
-  );
-}
-/**
- * Check if the node has a hub system service configured
- *
- * @param {string} nodeName
- * @return {boolean}
- */
-function isHub(nodeName) {
-  return nodeDetails[nodeName]?.systems.metadataTracker?.response?.typeCountsMap?.some(
-      ([name, count]) => name === 'hub' && count > 0
-  );
-}
-
+const {
+  nodeDetails,
+  nodesList,
+  isProxy,
+  isHub
+} = useHubNodes();
 </script>
 
 <style scoped>
