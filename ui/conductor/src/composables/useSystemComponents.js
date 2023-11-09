@@ -8,9 +8,17 @@ import {useServicesStore} from '@/stores/services';
 
 /**
  * @return {{
- * nodesList: Object,
- * isProxy: function(string): boolean,
- * isHub: function(string): boolean
+    *   hubNodeValue: ActionTracker<TestHubNodeResponse.AsObject>,
+    *   enrollHubNodeValue: ActionTracker<EnrollHubNodeResponse.AsObject>,
+    *   enrollHubNodeAction: (address: string) => Promise<void>,
+    *   nodeDetails: Record<string, {
+    *   automations: ServiceTracker,
+    *   drivers: ServiceTracker,
+    *   systems: ServiceTracker
+    *   }>,
+    *   nodesList: ComputedRef<HubNode.AsObject[]>,
+    *   isProxy: (nodeName: string) => boolean,
+    *   isHub: (nodeName: string) => boolean
  * }}
  */
 export default function() {
