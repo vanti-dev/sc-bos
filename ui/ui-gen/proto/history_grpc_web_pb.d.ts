@@ -80,6 +80,20 @@ export class OccupancySensorHistoryClient {
 
 }
 
+export class AirQualitySensorHistoryClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  listAirQualityHistory(
+    request: history_pb.ListAirQualityHistoryRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: history_pb.ListAirQualityHistoryResponse) => void
+  ): grpcWeb.ClientReadableStream<history_pb.ListAirQualityHistoryResponse>;
+
+}
+
 export class HistoryAdminApiPromiseClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
@@ -142,6 +156,18 @@ export class OccupancySensorHistoryPromiseClient {
     request: history_pb.ListOccupancyHistoryRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<history_pb.ListOccupancyHistoryResponse>;
+
+}
+
+export class AirQualitySensorHistoryPromiseClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  listAirQualityHistory(
+    request: history_pb.ListAirQualityHistoryRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<history_pb.ListAirQualityHistoryResponse>;
 
 }
 
