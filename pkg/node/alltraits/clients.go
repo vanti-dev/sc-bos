@@ -148,6 +148,8 @@ func HistoryClient(conn grpc.ClientConnInterface, t trait.Name) any {
 		return gen.NewElectricHistoryClient(conn)
 	case trait.OccupancySensor:
 		return gen.NewOccupancySensorHistoryClient(conn)
+	case trait.AirQualitySensor:
+		return gen.NewAirQualitySensorHistoryClient(conn)
 
 		// (not yet) Smart Core traits
 	case meter.TraitName:
