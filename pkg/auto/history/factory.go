@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
@@ -19,6 +20,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/history"
 	"github.com/vanti-dev/sc-bos/pkg/history/apistore"
+	"github.com/vanti-dev/sc-bos/pkg/history/boltstore"
 	"github.com/vanti-dev/sc-bos/pkg/history/memstore"
 	"github.com/vanti-dev/sc-bos/pkg/history/pgxstore"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -32,6 +34,8 @@ func NewAutomation(services auto.Services) service.Lifecycle {
 		clients:  services.Node,
 		announce: services.Node,
 		logger:   services.Logger.Named("history"),
+
+		db: services.Database,
 
 		cohortManagerName: "", // use the default
 		cohortManager:     services.CohortManager,
@@ -51,11 +55,14 @@ type automation struct {
 	announce node.Announcer
 	logger   *zap.Logger
 
+	db *bolthold.Store
+
 	cohortManagerName string
 	cohortManager     node.Remote
 }
 
 func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
+	a.logger.Info("applying config", zap.Any("storageType", cfg.Storage.Type), zap.Any("trait", cfg.Source.Trait))
 	// work out where we're storing the history
 	var store history.Store
 	switch cfg.Storage.Type {
@@ -87,6 +94,12 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 		client := gen.NewHistoryAdminApiClient(conn)
 		store = apistore.New(client, a.cohortManagerName, cfg.Source.SourceName())
+	case "bolt":
+		var err error
+		store, err = boltstore.NewFromDb(a.db, cfg.Source.SourceName())
+		if err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("unsupported storage type %s", cfg.Storage.Type)
 	}
