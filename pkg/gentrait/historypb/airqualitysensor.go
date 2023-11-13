@@ -14,7 +14,7 @@ import (
 
 type AirQualitySensorServer struct {
 	gen.UnimplementedAirQualitySensorHistoryServer
-	store history.Store // payloads of *traits.Occupancy
+	store history.Store // payloads of *traits.AirQuality
 }
 
 func NewAirQualitySensorServer(store history.Store) *AirQualitySensorServer {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/timshannon/bolthold"
 	bolt "go.etcd.io/bbolt"
+	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/history"
 )
@@ -15,13 +16,16 @@ import (
 type Store struct {
 	slice // sorted by id, which is createTime+dedupe index
 	now   func() time.Time
+
+	logger *zap.Logger
 }
 
-func NewFromDb(db *bolthold.Store, source string) (history.Store, error) {
-	var bucket *bolt.Bucket
+func NewFromDb(db *bolthold.Store, source string, logger *zap.Logger) (history.Store, error) {
+	b := []byte(source)
 	err := db.Bolt().Update(func(tx *bolt.Tx) error {
 		var err error
-		bucket, err = tx.CreateBucketIfNotExists([]byte(source))
+		logger.Debug("Creating bucket", zap.String("bucket", string(b)))
+		_, err = tx.CreateBucketIfNotExists(b)
 		if err != nil {
 			return err
 		}
@@ -33,8 +37,10 @@ func NewFromDb(db *bolthold.Store, source string) (history.Store, error) {
 	return &Store{
 		slice: slice{
 			db:     db,
-			bucket: bucket,
+			bucket: b,
 		},
+		now:    time.Now,
+		logger: logger,
 	}, nil
 }
 
@@ -46,10 +52,14 @@ func (s *Store) Append(ctx context.Context, payload []byte) (history.Record, err
 		Payload:    payload,
 	}
 
-	err := s.db.InsertIntoBucket(s.bucket, r.ID, r)
+	err := s.db.Bolt().Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(s.bucket)
+		return s.db.InsertIntoBucket(b, r.ID, r)
+	})
 	if err != nil {
 		return history.Record{}, err
 	}
+
 	return r, nil
 }
 
@@ -60,7 +70,7 @@ func createTimeToID(now time.Time) string {
 type slice struct {
 	db *bolthold.Store
 
-	bucket   *bolt.Bucket // distinguishes between this store and other stores that use the same table
+	bucket   []byte // distinguishes between this store and other stores that use the same db
 	from, to history.Record
 }
 
@@ -98,10 +108,18 @@ func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
 		}
 	}
 
-	err := s.db.FindInBucket(s.bucket, &into, query)
+	records := make([]history.Record, 0)
+
+	err := s.db.Bolt().Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(s.bucket)
+		return s.db.FindInBucket(b, &records, query)
+	})
 	if err != nil {
 		return 0, err
 	}
+
+	copy(into, records)
+
 	return len(into), nil
 }
 
