@@ -9,6 +9,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 type Root struct {
@@ -49,4 +50,8 @@ type Storage struct {
 	Type string `json:"type,omitempty"`
 	pgxutil.ConnectConfig
 	Name string `json:"name,omitempty"`
+	// Retention is the minimum time records should be stored for. Zero-value (not-specified) means "forever".
+	// Records can be deleted after this period, but may be kept longer depending on the cleanup cycle (e.g. if records
+	// are only pruned once a day, a record could be kept for retention + 1day). Not all storage types might support this.
+	Retention jsontypes.Duration `json:"retention,omitempty"`
 }

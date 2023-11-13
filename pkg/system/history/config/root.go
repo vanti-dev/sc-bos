@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/system"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 type Root struct {
@@ -20,4 +21,8 @@ const (
 type Storage struct {
 	Type StorageType `json:"type,omitempty"`
 	pgxutil.ConnectConfig
+	// Retention is the minimum time records should be stored for. Zero-value (not-specified) means "forever".
+	// Records can be deleted after this period, but may be kept longer depending on the cleanup cycle (e.g. if records
+	// are only pruned once a day, a record could be kept for retention + 1day). Not all storage types might support this.
+	Retention jsontypes.Duration `json:"retention,omitempty"`
 }

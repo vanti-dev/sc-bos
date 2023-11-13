@@ -96,7 +96,7 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 		store = apistore.New(client, a.cohortManagerName, cfg.Source.SourceName())
 	case "bolt":
 		var err error
-		store, err = boltstore.NewFromDb(a.db, cfg.Source.SourceName(), a.logger)
+		store, err = boltstore.NewFromDb(ctx, a.db, cfg.Source.SourceName(), a.logger, cfg.Storage.Retention.Duration)
 		if err != nil {
 			return err
 		}

@@ -91,7 +91,7 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 	case config.StorageTypeBolt:
 		store = func(source string) history.Store {
-			st, err := boltstore.NewFromDb(s.db, source, s.logger)
+			st, err := boltstore.NewFromDb(ctx, s.db, source, s.logger, cfg.Storage.Retention.Duration)
 			if err != nil {
 				s.logger.Error("failed to create bolt store", zap.Error(err))
 			}

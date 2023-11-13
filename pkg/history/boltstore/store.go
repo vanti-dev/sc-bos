@@ -14,13 +14,14 @@ import (
 )
 
 type Store struct {
-	slice // sorted by id, which is createTime+dedupe index
-	now   func() time.Time
+	slice     // sorted by id, which is createTime+dedupe index
+	now       func() time.Time
+	retention time.Duration
 
 	logger *zap.Logger
 }
 
-func NewFromDb(db *bolthold.Store, source string, logger *zap.Logger) (history.Store, error) {
+func NewFromDb(ctx context.Context, db *bolthold.Store, source string, logger *zap.Logger, retention time.Duration) (history.Store, error) {
 	b := []byte(source)
 	err := db.Bolt().Update(func(tx *bolt.Tx) error {
 		var err error
@@ -34,14 +35,36 @@ func NewFromDb(db *bolthold.Store, source string, logger *zap.Logger) (history.S
 	if err != nil {
 		return nil, err
 	}
-	return &Store{
+	s := &Store{
 		slice: slice{
 			db:     db,
 			bucket: b,
 		},
-		now:    time.Now,
-		logger: logger,
-	}, nil
+		now:       time.Now,
+		retention: retention,
+		logger:    logger,
+	}
+
+	// setup daily cleanup if retention is specified
+	if retention > 0 {
+		go func() {
+			ticker := time.NewTicker(24 * time.Hour)
+			defer ticker.Stop()
+			for {
+				err = s.removeOldRecords()
+				if err != nil {
+					logger.Error("Failed to remove old history records", zap.Error(err))
+				}
+				select {
+				case <-ctx.Done():
+					return
+				case <-ticker.C:
+				}
+			}
+		}()
+	}
+
+	return s, nil
 }
 
 func (s *Store) Append(ctx context.Context, payload []byte) (history.Record, error) {
@@ -65,6 +88,18 @@ func (s *Store) Append(ctx context.Context, payload []byte) (history.Record, err
 
 func createTimeToID(now time.Time) string {
 	return strconv.FormatInt(now.UnixNano(), 10)
+}
+
+// removeOldRecords removes records older than now minus the specified retention period
+func (s *Store) removeOldRecords() error {
+	if s.retention == 0 {
+		return nil
+	}
+	before := s.now().Add(-s.retention)
+	return s.db.Bolt().Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(s.bucket)
+		return s.db.DeleteMatchingFromBucket(b, &history.Record{}, bolthold.Where("CreateTime").Lt(before))
+	})
 }
 
 type slice struct {
