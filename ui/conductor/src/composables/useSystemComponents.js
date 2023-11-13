@@ -1,24 +1,28 @@
-import {computed, onUnmounted, reactive, set, watch} from 'vue';
+import {computed, onUnmounted, reactive, ref, set, watch, watchEffect} from 'vue';
 import {closeResource, newActionTracker} from '@/api/resource';
-import {enrollHubNode, forgetHubNode, testHubNode} from '@/api/sc/traits/hub';
+import {enrollHubNode, forgetHubNode, inspectHubNode, testHubNode} from '@/api/sc/traits/hub';
 import {ServiceNames} from '@/api/ui/services';
 import {useEnrollmentStore} from '@/stores/enrollmentStore';
 import {useHubStore} from '@/stores/hub';
 import {useServicesStore} from '@/stores/services';
+import {parseCertificate} from '@/util/certificates';
 
+// generate ServiceTracker type
 /**
+ * @typedef {import('@/api/ui/services').ServiceTracker} ServiceTracker
  * @return {{
-    *   hubNodeValue: ActionTracker<TestHubNodeResponse.AsObject>,
-    *   enrollHubNodeValue: ActionTracker<EnrollHubNodeResponse.AsObject>,
-    *   enrollHubNodeAction: (address: string) => Promise<void>,
-    *   nodeDetails: Record<string, {
-    *   automations: ServiceTracker,
-    *   drivers: ServiceTracker,
-    *   systems: ServiceTracker
-    *   }>,
-    *   nodesList: ComputedRef<HubNode.AsObject[]>,
-    *   isProxy: (nodeName: string) => boolean,
-    *   isHub: (nodeName: string) => boolean
+ *   hubNodeValue: ActionTracker<TestHubNodeResponse.AsObject>,
+ *   enrollHubNodeValue: ActionTracker<HubNode.AsObject>,
+ *   enrollHubNodeAction: (address: string) => Promise<void>,
+ *   forgetHubNodeAction: (address: string) => Promise<void>,
+ *   nodeDetails: Record<string, {
+ *   automations: ServiceTracker,
+ *   drivers: ServiceTracker,
+ *   systems: ServiceTracker
+ *   }>,
+ *   nodesList: import('vue').ComputedRef<HubNode.AsObject[]>,
+ *   isProxy: (nodeName: string) => boolean,
+ *   isHub: (nodeName: string) => boolean
  * }}
  */
 export default function() {
@@ -46,6 +50,8 @@ export default function() {
   // --------------------------- //
   // Manage Hub Nodes
   const enrollHubNodeValue = reactive(newActionTracker());
+  const forgetHubNodeValue = reactive(newActionTracker());
+  const inspectHubNodeValue = reactive(newActionTracker());
 
   /**
    * @param {string} address
@@ -58,11 +64,66 @@ export default function() {
       node: {
         address
       },
-      publicCertsList: []
+      publicCertsList: inspectHubNodeValue.response.publicCertsList
     };
 
     return enrollHubNode(request, enrollHubNodeValue);
   }
+
+  /**
+   *
+   * @param {string} address
+   * @return {Promise<void>|undefined}
+   */
+  function forgetHubNodeAction(address) {
+    if (!address) return;
+
+    const request = {
+      address,
+      allowMissing: true
+    };
+
+    return forgetHubNode(request, forgetHubNodeValue);
+  }
+
+  /**
+   *
+   * @param {string} address
+   * @return {Promise<void>|undefined}
+   */
+  function inspectHubNodeAction(address) {
+    if (!address) return;
+
+    const request = {
+      node: {
+        address
+      }
+    };
+
+    return inspectHubNode(request, inspectHubNodeValue);
+  }
+
+  const parsedCertificatesData = ref([]);
+
+  // Computed property to use in the template
+  const readCertificates = computed(() => parsedCertificatesData.value);
+
+  // Watcher to react to changes in inspectHubNodeValue
+  watchEffect(async () => {
+    if (!inspectHubNodeValue?.response?.publicCertsList) {
+      parsedCertificatesData.value = [];
+      return;
+    }
+
+    const parsedCertificatesPromises = inspectHubNodeValue.response.publicCertsList.map(cert => parseCertificate(cert));
+    parsedCertificatesData.value = await Promise.all(parsedCertificatesPromises);
+  });
+
+  // Removing previously read node details
+  const resetCertificates = () => {
+    parsedCertificatesData.value = [];
+    Object.assign(inspectHubNodeValue, newActionTracker());
+  };
 
   // --------------------------- //
   // List and Track Hub Nodes
@@ -74,7 +135,6 @@ export default function() {
     return Object.values(hubStore.nodesList).map(node => {
       Promise.all([node.commsAddress, node.commsName])
           .then(([address, name]) => {
-            console.debug('node', node);
             set(nodeDetails, node.name, {
               automations: servicesStore.getService(ServiceNames.Automations, address, name),
               drivers: servicesStore.getService(ServiceNames.Drivers, address, name),
@@ -109,6 +169,7 @@ export default function() {
         ([name, count]) => name === 'proxy' && count > 0
     );
   }
+
   /**
    * Check if the node has a hub system service configured
    *
@@ -130,7 +191,13 @@ export default function() {
   return {
     hubNodeValue,
     enrollHubNodeValue,
+    forgetHubNodeValue,
+    inspectHubNodeValue,
     enrollHubNodeAction,
+    forgetHubNodeAction,
+    inspectHubNodeAction,
+    readCertificates,
+    resetCertificates,
 
     nodeDetails,
     nodesList,
