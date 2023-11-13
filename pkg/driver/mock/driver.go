@@ -148,20 +148,8 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) ([]any, service.Lifecycle) {
 	switch traitName {
 	case trait.AirQualitySensor:
-		co2 := rand.Float32() * 1000
-		voc := rand.Float32()
-		ap := rand.Float32() * 1200
-		ir := float32(rand.Int31n(100))
-		score := float32(rand.Int31n(100))
-		model := traits.AirQuality{
-			CarbonDioxideLevel:       &co2,
-			VolatileOrganicCompounds: &voc,
-			AirPressure:              &ap,
-			Comfort:                  0,
-			InfectionRisk:            &ir,
-			Score:                    &score,
-		}
-		return []any{airqualitysensor.WrapApi(airqualitysensor.NewModelServer(airqualitysensor.NewModel(&model)))}, nil
+		model := airqualitysensor.NewModel(auto.GetAirQualityState())
+		return []any{airqualitysensor.WrapApi(airqualitysensor.NewModelServer(model))}, auto.AirQualitySensorAuto(model)
 	case trait.AirTemperature:
 		h := rand.Float32()
 		t := 15 + (rand.Float64() * 10)
