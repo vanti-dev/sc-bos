@@ -11,7 +11,7 @@
         </v-btn>
       </v-row>
       <component-input
-          v-if="!readCertificates.length"
+          v-if="!readCertificates.length && !props.certificateQuery.isQueried"
           :address.sync="address"
           :dialog-state.sync="dialogState"
           :list-items="props.listItems"
@@ -22,6 +22,7 @@
       <certificate-details
           v-if="readCertificates.length > 0"
           :address="address"
+          :certificate-query="props.certificateQuery"
           :read-certificates="readCertificates"
           @enrollHubNodeAction="enrollHubNodeAction"
           @resetCertificates="resetCertificates"/>
@@ -30,7 +31,7 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue';
+import {computed, ref, watch} from 'vue';
 import useSystemComponents from '@/composables/useSystemComponents';
 
 import ContentCard from '@/components/ContentCard.vue';
@@ -39,6 +40,10 @@ import CertificateDetails from '@/routes/system/components/modal-parts/Certifica
 
 const emits = defineEmits(['update:showModal']);
 const props = defineProps({
+  certificateQuery: {
+    type: Object,
+    default: () => ({})
+  },
   showModal: {
     type: Boolean,
     required: true
@@ -70,4 +75,12 @@ const dialogState = computed({
     emits('update:showModal', value);
   }
 });
+
+watch(() => props.certificateQuery, (newValue) => {
+  if (!newValue.address) {
+    return;
+  }
+
+  inspectHubNodeAction(newValue.address);
+}, {immediate: true, deep: true});
 </script>

@@ -29,18 +29,29 @@
           <v-chip-group>
             <v-chip v-if="isProxy(node.name)" color="accent" small>gateway</v-chip>
             <v-chip v-if="isHub(node.name) && !isProxy(node.name)" color="primary" small>hub</v-chip>
+            <v-tooltip top>
+              <template #activator="{ on }">
+                <v-btn class="ml-auto mr-1 mt-1" icon v-on="on" @click="onShowCertificates(node.address)">
+                  <v-icon class="pt-1" size="24">mdi-certificate-outline</v-icon>
+                </v-btn>
+              </template>
+              <span>Certificate Details</span>
+            </v-tooltip>
           </v-chip-group>
         </v-card-text>
       </v-card>
       <div/>
     </div>
 
-    <EnrollHubNodeModal :show-modal.sync="showModal" :list-items="nodesList"/>
+    <EnrollHubNodeModal
+        :show-modal.sync="showModal"
+        :certificate-query.sync="certificateQuery"
+        :list-items="nodesList"/>
   </div>
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {ref, watch} from 'vue';
 import StatusAlert from '@/components/StatusAlert.vue';
 import useSystemComponents from '@/composables/useSystemComponents';
 import EnrollHubNodeModal from '@/routes/system/components/EnrollHubNodeModal.vue';
@@ -52,6 +63,24 @@ const {
   isProxy,
   isHub
 } = useSystemComponents();
+
+const certificateQuery = ref({
+  address: null,
+  isQueried: false
+});
+
+const onShowCertificates = (address) => {
+  certificateQuery.value.address = address;
+  certificateQuery.value.isQueried = true;
+  showModal.value = true;
+};
+
+watch(showModal, (newModal) => {
+  if (newModal === false) {
+    certificateQuery.value.address = null;
+    certificateQuery.value.isQueried = false;
+  }
+}, {immediate: true, deep: true});
 </script>
 
 <style scoped>

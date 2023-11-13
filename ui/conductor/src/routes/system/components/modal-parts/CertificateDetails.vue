@@ -1,17 +1,17 @@
 <template>
   <div class="d-flex flex-column align-center px-4">
-    <v-expansion-panels class="ma-0 pa-0 mb-4" flat popout tile>
+    <v-expansion-panels class="ma-0 pa-0 mb-6" flat popout tile>
       <v-expansion-panel
           v-for="(item,i) in props.readCertificates"
           :key="i"
-          class="rounded-lg"
+          class="rounded-lg mb-2"
           style="border: 1px solid grey;">
         <v-expansion-panel-header>
           <div class="pr-4">
             <div class="d-flex flex-row flex-wrap justify-space-between">
               <div class="">
-                <span class="font-weight-bold mr-2">Issuer:</span>
-                <span>{{ item.issuer.commonName }}</span>
+                <span class="font-weight-bold mr-2">Subject:</span>
+                <span>{{ item.subject.commonName }}</span>
               </div>
               <div class="">
                 <span class="font-weight-bold mr-2">Serial:</span>
@@ -70,7 +70,7 @@
       </v-expansion-panel>
     </v-expansion-panels>
 
-    <v-card-actions class="d-flex flex-row justify-space-between mt-4">
+    <v-card-actions v-if="!props.certificateQuery.isQueried" class="d-flex flex-row justify-space-between mt-4">
       <v-btn
           class="pl-4 pr-6"
           color="neutral lighten-4"
@@ -98,6 +98,10 @@ const props = defineProps({
   address: {
     type: String,
     default: null
+  },
+  certificateQuery: {
+    type: Object,
+    default: () => ({})
   },
   readCertificates: {
     type: Array,
