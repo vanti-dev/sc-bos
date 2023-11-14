@@ -1,3 +1,4 @@
+import {toValue} from '@/util/vue';
 import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
 
 import {newActionTracker} from '@/api/resource';
@@ -12,8 +13,8 @@ import {serviceName} from '@/util/proxy';
 
 /**
  * @param {{
- * name: string,
- * type: string
+ * name: MaybeRefOrGetter<string>,
+ * type: MaybeRefOrGetter<string>
  * }} props
  * @return {{
  * serviceList: ComputedRef<Service.AsObject[]>,
@@ -33,7 +34,10 @@ export default function(props) {
   const errors = useErrorStore();
   const hubStore = useHubStore();
 
-  const startStopTracker = reactive(newActionTracker());
+  const startStopTracker = reactive(
+      /** @type {ActionTracker<Service.AsObject>} */
+      newActionTracker()
+  );
   const serviceCollection = ref({});
   const search = ref('');
 
@@ -50,7 +54,8 @@ export default function(props) {
   // Available services to select from
   const serviceList = computed(() => {
     return Object.values(serviceCollection.value?.resources?.value ?? []).filter(service => {
-      return props.type === '' || props.type === 'all' || service.type === props.type;
+      const type = toValue(props.type);
+      return type === '' || type === 'all' || service.type === type;
     });
   });
 
@@ -114,7 +119,10 @@ export default function(props) {
       pageStore.sidebarData = {...service, config: JSON.parse(service.configRaw)};
     }
 
-    await startService({name: serviceName(await node.value.commsName, props.name), id: service.id}, startStopTracker);
+    await startService({
+      name: serviceName(await node.value.commsName, toValue(props.name)),
+      id: service.id
+    }, startStopTracker);
   }
 
 
@@ -129,7 +137,10 @@ export default function(props) {
       pageStore.sidebarData = {...service, config: JSON.parse(service.configRaw)};
     }
 
-    await stopService({name: serviceName(await node.value.commsName, props.name), id: service.id}, startStopTracker);
+    await stopService({
+      name: serviceName(await node.value.commsName, toValue(props.name)),
+      id: service.id
+    }, startStopTracker);
   }
 
   // Watch for changes in the serviceList and update the sidebarData if needed
