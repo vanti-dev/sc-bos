@@ -58,9 +58,10 @@ func Register(supporter node.Supporter) {
 
 type System struct {
 	*service.Service[config.Root]
-	name      string
-	announcer node.Announcer
-	db        *bolthold.Store
+	name            string
+	announcer       node.Announcer
+	db              *bolthold.Store
+	storeCollection map[string]history.Store
 
 	logger *zap.Logger
 }
@@ -90,10 +91,17 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 			return pgxstore.NewStoreFromPool(source, pool)
 		}
 	case config.StorageTypeBolt:
+		s.storeCollection = make(map[string]history.Store)
 		store = func(source string) history.Store {
-			st, err := boltstore.NewFromDb(ctx, s.db, source, s.logger, cfg.Storage.Retention.Duration)
-			if err != nil {
-				s.logger.Error("failed to create bolt store", zap.Error(err))
+			st, ok := s.storeCollection[source]
+			if !ok {
+				var err error
+				st, err = boltstore.NewFromDb(ctx, s.db, source, s.logger, cfg.Storage.Retention.Duration)
+				if err != nil {
+					s.logger.Error("failed to create bolt store", zap.Error(err))
+				} else {
+					s.storeCollection[source] = st
+				}
 			}
 			return st
 		}
