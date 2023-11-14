@@ -51,7 +51,7 @@
             :disabled="findZonesLoading"
             elevation="0"
             :loading="findZonesLoading"
-            @click="loadMoreItems">
+            @click="fetchNextPage">
           Load more
         </v-btn>
       </template>
@@ -154,8 +154,12 @@ const findZonesTracker = reactive(
     /** @type {ActionTracker<ListDevicesResponse.AsObject>} */
     newActionTracker()
 );
-const findZonesLoading = computed(() => findZonesTracker.loading);
-const findZonesError = computed(() => findZonesTracker.error);
+const findZonesNextPageTracker = reactive(
+    /** @type {ActionTracker<ListDevicesResponse>} */
+    newActionTracker()
+);
+const findZonesLoading = computed(() => findZonesTracker.loading || findZonesNextPageTracker.loading);
+const findZonesError = computed(() => findZonesTracker.error ?? findZonesNextPageTracker.error);
 
 // the query we use to filter the zones returned by the server
 const findZonesQuery = computed(() => {
@@ -178,12 +182,15 @@ const fetchZones = debounce((query) => {
 // watch for changes in the query and fetch zones when it changes
 watch(findZonesQuery, (query) => fetchZones(query), {immediate: true});
 
-const loadMoreItems = async () => {
-  if (findZonesTracker.response?.nextPageToken) {
+const nextPageToken = computed(() => findZonesTracker.response?.nextPageToken);
+const fetchNextPage = async () => {
+  const pageToken = nextPageToken.value;
+  if (pageToken) {
+    const req = {query: findZonesQuery.value, pageSize: props.maxResultSize, pageToken};
     try {
-      const newSize = props.maxResultSize + 5;
-      emit('update:maxResultSize', newSize); // Emit the event to the parent
-      await fetchZones(findZonesQuery.value); // Fetch more items with the new maxResultSize
+      const res = await listDevices(req, findZonesNextPageTracker);
+      findZonesTracker.response.devicesList.push(...res.devicesList);
+      findZonesTracker.response.nextPageToken = res.nextPageToken;
     } catch (error) {
       console.error('An error occurred while loading more items:', error);
     }
