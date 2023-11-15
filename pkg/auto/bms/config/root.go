@@ -63,8 +63,8 @@ type Root struct {
 }
 
 type Range struct {
-	Start Schedule `json:"start,omitempty"`
-	End   Schedule `json:"end,omitempty"`
+	Start jsontypes.Schedule `json:"start,omitempty"`
+	End   jsontypes.Schedule `json:"end,omitempty"`
 }
 
 var (

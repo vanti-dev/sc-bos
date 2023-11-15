@@ -1,4 +1,4 @@
-package config
+package jsontypes
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-// Schedule represent a cron formatted schedule.
+// Schedule represent a cron formatted schedule suitable for including in json types.
 type Schedule struct {
 	cron.Schedule
 	Raw string

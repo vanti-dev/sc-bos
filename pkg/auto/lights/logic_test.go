@@ -761,8 +761,8 @@ func Test_processState(t *testing.T) {
 		readState.Config.Modes = []config.ModeOption{
 			{
 				Name:  "testMode",
-				Start: config.ScheduleMustParse("10 0 * * *"),
-				End:   config.ScheduleMustParse("18 0 * * *"),
+				Start: jsontypes.ScheduleMustParse("10 0 * * *"),
+				End:   jsontypes.ScheduleMustParse("18 0 * * *"),
 				Mode: config.Mode{
 					OnLevelPercent: &onLevel,
 				},
@@ -1030,33 +1030,33 @@ func Test_activeMode(t *testing.T) {
 	//  [-c--------------]
 	cfg.Config.Modes = append(cfg.Config.Modes, config.ModeOption{
 		Name:  "a",
-		Start: config.ScheduleMustParse("10, 0, 1, 1, ?"),
-		End:   config.ScheduleMustParse("20, 0, 1, 1, ?"),
+		Start: jsontypes.ScheduleMustParse("10, 0, 1, 1, ?"),
+		End:   jsontypes.ScheduleMustParse("20, 0, 1, 1, ?"),
 	})
 	cfg.Config.Modes = append(cfg.Config.Modes, config.ModeOption{
 		Name:  "b",
-		Start: config.ScheduleMustParse("12, 0, 1, 1, ?"),
-		End:   config.ScheduleMustParse("25, 0, 1, 1, ?"),
+		Start: jsontypes.ScheduleMustParse("12, 0, 1, 1, ?"),
+		End:   jsontypes.ScheduleMustParse("25, 0, 1, 1, ?"),
 	})
 	cfg.Config.Modes = append(cfg.Config.Modes, config.ModeOption{
 		Name:  "c",
-		Start: config.ScheduleMustParse("5, 0, 1, 1, ?"),
-		End:   config.ScheduleMustParse("28, 0, 1, 1, ?"),
+		Start: jsontypes.ScheduleMustParse("5, 0, 1, 1, ?"),
+		End:   jsontypes.ScheduleMustParse("28, 0, 1, 1, ?"),
 	})
 	cfg.Config.Modes = append(cfg.Config.Modes, config.ModeOption{
 		Name:  "d",
-		Start: config.ScheduleMustParse("22, 0, 1, 1, ?"),
-		End:   config.ScheduleMustParse("30, 0, 1, 1, ?"),
+		Start: jsontypes.ScheduleMustParse("22, 0, 1, 1, ?"),
+		End:   jsontypes.ScheduleMustParse("30, 0, 1, 1, ?"),
 	})
 	cfg.Config.Modes = append(cfg.Config.Modes, config.ModeOption{
 		Name:  "e",
-		Start: config.ScheduleMustParse("29, 0, 1, 1, ?"),
-		End:   config.ScheduleMustParse("35, 0, 1, 1, ?"),
+		Start: jsontypes.ScheduleMustParse("29, 0, 1, 1, ?"),
+		End:   jsontypes.ScheduleMustParse("35, 0, 1, 1, ?"),
 	})
 	cfg.Config.Modes = append(cfg.Config.Modes, config.ModeOption{
 		Name:  "f",
-		Start: config.ScheduleMustParse("40, 0, 1, 1, ?"),
-		End:   config.ScheduleMustParse("45, 0, 1, 1, ?"),
+		Start: jsontypes.ScheduleMustParse("40, 0, 1, 1, ?"),
+		End:   jsontypes.ScheduleMustParse("45, 0, 1, 1, ?"),
 	})
 
 	tests := []struct {
