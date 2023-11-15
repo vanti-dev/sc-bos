@@ -23,6 +23,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/smart-core-os/sc-golang/pkg/trait/openclose"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
@@ -30,6 +31,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/modepb"
@@ -146,7 +148,20 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) ([]any, service.Lifecycle) {
 	switch traitName {
 	case trait.AirQualitySensor:
-		return []any{airqualitysensor.WrapApi(airqualitysensor.NewModelServer(airqualitysensor.NewModel(&traits.AirQuality{})))}, nil
+		co2 := rand.Float32() * 1000
+		voc := rand.Float32()
+		ap := rand.Float32() * 1200
+		ir := float32(rand.Int31n(100))
+		score := float32(rand.Int31n(100))
+		model := traits.AirQuality{
+			CarbonDioxideLevel:       &co2,
+			VolatileOrganicCompounds: &voc,
+			AirPressure:              &ap,
+			Comfort:                  0,
+			InfectionRisk:            &ir,
+			Score:                    &score,
+		}
+		return []any{airqualitysensor.WrapApi(airqualitysensor.NewModelServer(airqualitysensor.NewModel(&model)))}, nil
 	case trait.AirTemperature:
 		h := rand.Float32()
 		t := 15 + (rand.Float64() * 10)
@@ -215,8 +230,8 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 	case trait.OnOff:
 		return []any{onoff.WrapApi(onoff.NewModelServer(onoff.NewModel(traits.OnOff_STATE_UNSPECIFIED)))}, nil
 	case trait.OpenClose:
-		// todo: return []any{openclose.WrapApi(openclose.NewModelServer(openclose.NewModel()))}, nil
-		return nil, nil
+		model := openclose.NewModel()
+		return []any{openclose.WrapApi(openclose.NewModelServer(model))}, auto.OpenClose(model)
 	case trait.Parent:
 		return []any{parent.WrapApi(parent.NewModelServer(parent.NewModel()))}, nil
 	case trait.Publication:
@@ -230,6 +245,9 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 	case trait.Vending:
 		return []any{vending.WrapApi(vending.NewModelServer(vending.NewModel()))}, nil
 
+	case accesspb.TraitName:
+		model := accesspb.NewModel()
+		return []any{gen.WrapAccessApi(accesspb.NewModelServer(model))}, auto.Access(model)
 	case button.TraitName:
 		return []any{gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED)))}, nil
 	case meter.TraitName:

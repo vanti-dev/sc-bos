@@ -5,6 +5,7 @@
         <p class="text-center">Sign in locally.</p>
       </v-card-text>
       <v-text-field
+          autofocus
           label="Username"
           placeholder="Username"
           :rules="[rules.required]"
@@ -31,7 +32,7 @@
           Sign In
         </v-btn>
       </v-card-actions>
-      <v-card-text class="d-flex justify-center">
+      <v-card-text v-if="displayLoginSwitch" class="d-flex justify-center">
         <a @click="store.toggleLoginForm()" class="text-center">
           Use a different sign in method
         </a>
@@ -52,9 +53,11 @@
 
 <script setup>
 import {useAccountStore} from '@/stores/account.js';
+import {useAppConfigStore} from '@/stores/app-config';
 import {storeToRefs} from 'pinia';
 import {computed, ref} from 'vue';
 
+const appConfig = useAppConfigStore();
 const store = useAccountStore();
 const password = ref('');
 const username = ref('');
@@ -77,6 +80,18 @@ const disableSignIn = computed(() => {
   const hasOne = !username.value && password.value || username.value && !password.value;
   if (hasNone || hasOne) return true;
   else return false;
+});
+
+// Show/Hide the login switch depending on whether KeyCloak is enabled or not
+const displayLoginSwitch = computed(() => {
+  // If KeyCloak config not available, we can only use local login, hide switcher
+  if (!appConfig.config?.keycloak) {
+    return false;
+
+    // If KeyCloak config available, we can toggle between login variants
+  } else {
+    return true;
+  }
 });
 </script>
 

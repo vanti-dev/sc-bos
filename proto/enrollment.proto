@@ -26,6 +26,10 @@ service EnrollmentApi {
   rpc CreateEnrollment(CreateEnrollmentRequest) returns (Enrollment) {}
   rpc UpdateEnrollment(UpdateEnrollmentRequest) returns (Enrollment) {}
   rpc DeleteEnrollment(DeleteEnrollmentRequest) returns (Enrollment) {}
+  // TestEnrollment checks whether this node can communicate with the manager.
+  // If the node is not enrolled, returns a NotFound grpc error.
+  // A failed tests returns a successful grpc response with an error message.
+  rpc TestEnrollment(TestEnrollmentRequest) returns (TestEnrollmentResponse) {}
 }
 
 // Enrollment is metadata associated with the enrollment of a target node with a management node.
@@ -91,3 +95,13 @@ message UpdateEnrollmentRequest {
 }
 
 message DeleteEnrollmentRequest {}
+
+message TestEnrollmentRequest {}
+message TestEnrollmentResponse {
+  // Error, if empty means success.
+  // If not empty, describes the error that occurred.
+  string error = 1;
+  // If the underlying error has a code, this is it.
+  // Typically a grpc status code.
+  int32 code = 2;
+}

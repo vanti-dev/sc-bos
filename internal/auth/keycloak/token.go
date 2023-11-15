@@ -19,6 +19,7 @@ type accessTokenPayload struct {
 	jwt.Claims
 	Roles          []string                  `json:"roles"`
 	Scopes         auth.JWTScopes            `json:"scope"`
+	Zones          []string                  `json:"zones"` // The zones that this token is authorized for, for tenant tokens
 	ResourceAccess map[string]resourceAccess `json:"resource_access"`
 }
 
@@ -45,8 +46,9 @@ func NewTokenValidator(config *Config, keySet jwks.KeySet) token.Validator {
 	return &tokenValidator{
 		keySet: keySet,
 		expected: jwt.Expected{
-			Audience: jwt.Audience{config.ClientID},
-			Issuer:   config.Issuer(),
+			// todo: enable audience checking once we've figured out how to configure KeyCloak
+			// Audience: jwt.Audience{config.ClientID},
+			Issuer: config.Issuer(),
 		},
 	}
 }
@@ -118,5 +120,6 @@ func (v *tokenValidator) ValidateAccessToken(ctx context.Context, tokenStr strin
 		Roles:     payload.allRoles(),
 		Scopes:    payload.Scopes,
 		IsService: payload.isAppOnly(),
+		Zones:     payload.Zones,
 	}, nil
 }

@@ -12,21 +12,16 @@
           :loading="hubStore.nodesListCollection.loading ?? true"
           outlined/>
       <v-spacer/>
-      <v-btn-toggle mandatory dense v-model="viewType">
-        <v-btn value="map">Map View</v-btn>
-        <v-btn value="list">List View</v-btn>
-      </v-btn-toggle>
-      <v-btn class="ml-6" v-if="editMode" @click="save" color="accent">
+      <v-btn class="ml-6" v-if="editMode" @click="save" color="accent" :disabled="blockActions">
         <v-icon left>mdi-content-save</v-icon>
         Save
       </v-btn>
-      <v-btn class="ml-6" v-else @click="editMode=true">
+      <v-btn class="ml-6" v-else @click="editMode=true" :disabled="blockActions">
         <v-icon left>mdi-pencil</v-icon>
         Edit
       </v-btn>
     </v-toolbar>
     <div v-if="!zone"/>
-    <zone-map v-else-if="viewType === 'map'" :zone="zoneObj"/>
     <device-table
         v-else-if="viewType === 'list'"
         :zone="zoneObj"
@@ -43,13 +38,15 @@ import {newActionTracker} from '@/api/resource';
 import {ServiceNames} from '@/api/ui/services';
 import DeviceTable from '@/routes/devices/components/DeviceTable.vue';
 import {Zone} from '@/routes/site/zone/zone';
-import ZoneMap from '@/routes/site/zone/ZoneMap.vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
 import {Service} from '@sc-bos/ui-gen/proto/services_pb';
 import {computed, ref, watch} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+const {blockActions} = useAuthSetup();
 
 const servicesStore = useServicesStore();
 const pageStore = usePageStore();

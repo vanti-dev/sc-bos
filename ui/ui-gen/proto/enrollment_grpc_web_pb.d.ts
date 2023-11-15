@@ -36,6 +36,13 @@ export class EnrollmentApiClient {
                response: enrollment_pb.Enrollment) => void
   ): grpcWeb.ClientReadableStream<enrollment_pb.Enrollment>;
 
+  testEnrollment(
+    request: enrollment_pb.TestEnrollmentRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: enrollment_pb.TestEnrollmentResponse) => void
+  ): grpcWeb.ClientReadableStream<enrollment_pb.TestEnrollmentResponse>;
+
 }
 
 export class EnrollmentApiPromiseClient {
@@ -62,6 +69,11 @@ export class EnrollmentApiPromiseClient {
     request: enrollment_pb.DeleteEnrollmentRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<enrollment_pb.Enrollment>;
+
+  testEnrollment(
+    request: enrollment_pb.TestEnrollmentRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<enrollment_pb.TestEnrollmentResponse>;
 
 }
 

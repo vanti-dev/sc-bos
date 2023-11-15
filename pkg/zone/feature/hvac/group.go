@@ -17,6 +17,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/merge"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
 )
 
 type Group struct {
@@ -29,25 +30,24 @@ type Group struct {
 }
 
 func (g *Group) GetAirTemperature(ctx context.Context, request *traits.GetAirTemperatureRequest) (*traits.AirTemperature, error) {
-	var allErrs []error
-	var allRes []*traits.AirTemperature
-	for _, name := range g.names {
+	fns := make([]func() (*traits.AirTemperature, error), len(g.names))
+	for i, name := range g.names {
+		request := proto.Clone(request).(*traits.GetAirTemperatureRequest)
 		request.Name = name
-		res, err := g.client.GetAirTemperature(ctx, request)
-		if err != nil {
-			allErrs = append(allErrs, err)
-			continue
+		fns[i] = func() (*traits.AirTemperature, error) {
+			return g.client.GetAirTemperature(ctx, request)
 		}
-		allRes = append(allRes, res)
+	}
+	allRes, allErrs := run.Collect(ctx, run.DefaultConcurrency, fns...)
+
+	err := multierr.Combine(allErrs...)
+	if len(multierr.Errors(err)) == len(g.names) {
+		return nil, err
 	}
 
-	if len(allErrs) == len(g.names) {
-		return nil, multierr.Combine(allErrs...)
-	}
-
-	if allErrs != nil {
+	if err != nil {
 		if g.logger != nil {
-			g.logger.Warn("some hvacs failed", zap.Errors("errors", allErrs))
+			g.logger.Warn("some hvacs failed to get", zap.Errors("errors", multierr.Errors(err)))
 		}
 	}
 	return mergeAirTemperature(allRes)
@@ -57,25 +57,24 @@ func (g *Group) UpdateAirTemperature(ctx context.Context, request *traits.Update
 	if g.readOnly {
 		return nil, status.Errorf(codes.FailedPrecondition, "read-only")
 	}
-	var allErrs []error
-	var allRes []*traits.AirTemperature
-	for _, name := range g.names {
+	fns := make([]func() (*traits.AirTemperature, error), len(g.names))
+	for i, name := range g.names {
+		request := proto.Clone(request).(*traits.UpdateAirTemperatureRequest)
 		request.Name = name
-		res, err := g.client.UpdateAirTemperature(ctx, request)
-		if err != nil {
-			allErrs = append(allErrs, err)
-			continue
+		fns[i] = func() (*traits.AirTemperature, error) {
+			return g.client.UpdateAirTemperature(ctx, request)
 		}
-		allRes = append(allRes, res)
+	}
+	allRes, allErrs := run.Collect(ctx, run.DefaultConcurrency, fns...)
+
+	err := multierr.Combine(allErrs...)
+	if len(multierr.Errors(err)) == len(g.names) {
+		return nil, err
 	}
 
-	if len(allErrs) == len(g.names) {
-		return nil, multierr.Combine(allErrs...)
-	}
-
-	if allErrs != nil {
+	if err != nil {
 		if g.logger != nil {
-			g.logger.Warn("some hvacs failed", zap.Errors("errors", allErrs))
+			g.logger.Warn("some hvacs failed to get", zap.Errors("errors", multierr.Errors(err)))
 		}
 	}
 	return mergeAirTemperature(allRes)

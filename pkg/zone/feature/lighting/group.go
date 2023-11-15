@@ -15,6 +15,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/sc-bos/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
 )
 
 // Group implements traits.LightApiServer backed by a group of lights.
@@ -31,50 +32,48 @@ func (g *Group) UpdateBrightness(ctx context.Context, request *traits.UpdateBrig
 	if g.readOnly {
 		return nil, status.Error(codes.FailedPrecondition, "read-only")
 	}
-	var allErrs error
-	var allRes []*traits.Brightness
-	for _, name := range g.names {
+	fns := make([]func() (*traits.Brightness, error), len(g.names))
+	for i, name := range g.names {
+		request := proto.Clone(request).(*traits.UpdateBrightnessRequest)
 		request.Name = name
-		res, err := g.client.UpdateBrightness(ctx, request)
-		if err != nil {
-			allErrs = multierr.Append(allErrs, err)
-			continue
+		fns[i] = func() (*traits.Brightness, error) {
+			return g.client.UpdateBrightness(ctx, request)
 		}
-		allRes = append(allRes, res)
+	}
+	allRes, allErrs := run.Collect(ctx, run.DefaultConcurrency, fns...)
+
+	err := multierr.Combine(allErrs...)
+	if len(multierr.Errors(err)) == len(g.names) {
+		return nil, err
 	}
 
-	if len(multierr.Errors(allErrs)) == len(g.names) {
-		return nil, allErrs
-	}
-
-	if allErrs != nil {
+	if err != nil {
 		if g.logger != nil {
-			g.logger.Warn("some lights failed", zap.Errors("errors", multierr.Errors(allErrs)))
+			g.logger.Warn("some lights failed", zap.Errors("errors", multierr.Errors(err)))
 		}
 	}
 	return mergeBrightness(allRes)
 }
 
 func (g *Group) GetBrightness(ctx context.Context, request *traits.GetBrightnessRequest) (*traits.Brightness, error) {
-	var allErrs error
-	var allRes []*traits.Brightness
-	for _, name := range g.names {
+	fns := make([]func() (*traits.Brightness, error), len(g.names))
+	for i, name := range g.names {
+		request := proto.Clone(request).(*traits.GetBrightnessRequest)
 		request.Name = name
-		res, err := g.client.GetBrightness(ctx, request)
-		if err != nil {
-			allErrs = multierr.Append(allErrs, err)
-			continue
+		fns[i] = func() (*traits.Brightness, error) {
+			return g.client.GetBrightness(ctx, request)
 		}
-		allRes = append(allRes, res)
+	}
+	allRes, allErrs := run.Collect(ctx, run.DefaultConcurrency, fns...)
+
+	err := multierr.Combine(allErrs...)
+	if len(multierr.Errors(err)) == len(g.names) {
+		return nil, err
 	}
 
-	if len(multierr.Errors(allErrs)) == len(g.names) {
-		return nil, allErrs
-	}
-
-	if allErrs != nil {
+	if err != nil {
 		if g.logger != nil {
-			g.logger.Warn("some lights failed", zap.Errors("errors", multierr.Errors(allErrs)))
+			g.logger.Warn("some lights failed", zap.Errors("errors", multierr.Errors(err)))
 		}
 	}
 	return mergeBrightness(allRes)
@@ -193,6 +192,6 @@ func mergeBrightness(allRes []*traits.Brightness) (*traits.Brightness, error) {
 			}
 		}
 		out.LevelPercent = averageBrightness
-		return allRes[0], nil
+		return out, nil
 	}
 }

@@ -21,7 +21,7 @@
       </v-list-item>
       <v-list-item>
         <v-list-item-action>
-          <v-btn color="green" small>Test Now</v-btn>
+          <v-btn color="green" :disabled="blockActions" small>Test Now</v-btn>
         </v-list-item-action>
       </v-list-item>
     </v-list>
@@ -32,6 +32,9 @@
 
 import {computed, onUnmounted, reactive, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+const {blockActions} = useAuthSetup();
 
 const props = defineProps({
   name: {

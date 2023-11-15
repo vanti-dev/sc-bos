@@ -331,8 +331,10 @@ func (v *MemoryVerifier) ensureInitialised() {
 }
 
 type SecretData struct {
+	Title    string
 	TenantID string
 	Zones    []string
+	Roles    []string
 }
 
 func genId() string {

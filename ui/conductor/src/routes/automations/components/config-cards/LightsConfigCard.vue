@@ -7,9 +7,11 @@
         <v-text-field
             v-model="delayTimeout"
             hide-details
+            :disabled="blockActions"
             dense
             outlined
             :rules="[delayRule]"
+            readonly
             style="width: 100px;"/>
         <!-- todo: display error message -->
       </v-list-item>
@@ -21,6 +23,9 @@
 import {computed} from 'vue';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+const {blockActions} = useAuthSetup();
 
 const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);

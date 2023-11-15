@@ -12,11 +12,7 @@
       "emergency-lighting": true,
       "notifications": true
     },
-    "site": {
-      "zone": {
-        "*": true
-      }
-    },
+    "site": false,
     "automations": {
       "*": true
     },
@@ -32,6 +28,11 @@
     "home": "/ops",
     "ops": {
       "buildingZone": "building"
+    },
+    "keycloak": {
+      "realm": "Smartcore",
+      "url": "https://keycloak.ocw.paradisebuild.uk:8443/",
+      "clientId": "scos-opsui"
     }
   }
 }

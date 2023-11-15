@@ -7,8 +7,7 @@
 <script setup>
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullCurrentStatus} from '@/api/sc/traits/status';
-import {useErrorStore} from '@/components/ui-error/error';
-import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
+import {computed, onUnmounted, reactive, watch} from 'vue';
 import {deepEqual} from 'vuetify/src/util/helpers';
 
 const props = defineProps({
@@ -55,17 +54,8 @@ watch(
     {immediate: true, deep: true, flush: 'sync'}
 );
 
-// UI error handling
-const errorStore = useErrorStore();
-const unwatchErrors = [];
-onMounted(() => {
-  unwatchErrors.push(
-      errorStore.registerValue(statusLogValue)
-  );
-});
 onUnmounted(() => {
   closeResource(statusLogValue);
-  unwatchErrors.forEach(unwatch => unwatch());
 });
 
 </script>

@@ -1,6 +1,6 @@
 <template>
   <v-list class="pa-0" dense nav>
-    <v-list-item to="/automations/all">
+    <v-list-item :disabled="hasNoAccess('/automations/all')" to="/automations/all">
       <v-list-item-icon>
         <v-icon>mdi-view-list</v-icon>
       </v-list-item-icon>
@@ -9,12 +9,17 @@
     <v-list-item
         v-for="automation of automationTypeList"
         :key="automation.type"
-        :to="'/automations/'+automation.type"
-        class="my-2">
+        :to="'/automations/' + encodeURIComponent(automation.type)"
+        class="my-2"
+        :disabled="hasNoAccess('/automations/' + automation.type)">
       <v-list-item-icon>
-        <v-icon v-if="icon.hasOwnProperty(automation.type)">{{ icon[automation.type] }}</v-icon>
+        <v-icon>
+          {{ icon[mapIconKey(automation.type)] ?? defaultIcon }}
+        </v-icon>
       </v-list-item-icon>
-      <v-list-item-content class="text-capitalize text-truncate">{{ automation.type }}</v-list-item-content>
+      <v-list-item-content class="text-capitalize text-truncate">
+        {{ formatNaming(automation.type) }}
+      </v-list-item-content>
     </v-list-item>
   </v-list>
 </template>
@@ -25,6 +30,9 @@ import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
 import {storeToRefs} from 'pinia';
 import {computed, ref, watch} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+const {hasNoAccess} = useAuthSetup();
 
 const serviceStore = useServicesStore();
 const pageStore = usePageStore();
@@ -41,28 +49,91 @@ const automationTypeList = computed(() => {
       list.push({type, number});
     }
   });
+  list.sort();
   return list;
 });
 
 // map of icons to use for different automation sections
 const icon = ref({
+  bms: 'mdi-office-building-cog-outline',
+  history: 'mdi-history',
+  lightreport: 'mdi-file-chart-outline',
   lights: 'mdi-lightbulb',
-  history: 'mdi-history'
+  resetenterleave: 'mdi-account-multiple-remove-outline',
+  statusalerts: 'mdi-alert-circle-outline',
+  statusemail: 'mdi-email-newsletter',
+  udmi: 'mdi-transit-connection-variant'
 });
+const defaultIcon = 'mdi-auto-mode';
 
-watch(sidebarNode, async () => {
-  console.log('sidebarNode', sidebarNode);
-  metadataTracker.value = serviceStore.getService(
-      ServiceNames.Automations,
-      await sidebarNode.value.commsAddress,
-      await sidebarNode.value.commsName).metadataTracker;
-  await serviceStore.refreshMetadata(
-      ServiceNames.Automations,
-      await sidebarNode.value.commsAddress,
-      await sidebarNode.value.commsName);
-},
-{immediate: true});
+const acronyms = ['bms', 'udmi'];
+const suffixes = ['report', 'reports', 'alert', 'alerts', 'email', 'emails', 'reset', 'enter', 'leave'];
 
+/**
+ * @param {string} name
+ * @return {string}
+ */
+const formatNaming = (name) => {
+  // Split the name by "/" and format each part separately
+  const parts = name.split('/').map(part => {
+    // Function to dynamically split concatenated suffixes
+    const splitConcatenatedWords = (str) => {
+      for (const word of suffixes) {
+        const index = str.lastIndexOf(word);
+        if (index > 0 && index + word.length === str.length) {
+          return splitConcatenatedWords(str.substring(0, index)) + ' ' + word;
+        }
+      }
+      return str;
+    };
+
+    part = splitConcatenatedWords(part);
+
+    for (const acronym of acronyms) {
+      if (part === acronym) {
+        return part.toUpperCase();
+      }
+    }
+
+    return part;
+  });
+
+  // Join the formatted parts back together with "/"
+  return parts.join('/');
+};
+
+
+/**
+ * @param {string} name
+ * @return {string}
+ */
+const mapIconKey = (name) => {
+  // Check if the name includes certain keywords or phrases and map accordingly
+  if (name.includes('lightreport')) {
+    return 'lightreport';
+  }
+  // Add more checks and mappings as needed
+
+  // Default mapping (no changes)
+  return name;
+};
+
+watch(
+    sidebarNode,
+    async () => {
+      metadataTracker.value = serviceStore.getService(
+          ServiceNames.Automations,
+          await sidebarNode.value.commsAddress,
+          await sidebarNode.value.commsName
+      ).metadataTracker;
+      await serviceStore.refreshMetadata(
+          ServiceNames.Automations,
+          await sidebarNode.value.commsAddress,
+          await sidebarNode.value.commsName
+      );
+    },
+    {immediate: true}
+);
 </script>
 
 <style scoped>

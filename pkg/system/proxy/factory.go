@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/lighttest"
+
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -25,8 +27,19 @@ import (
 
 const Name = "proxy"
 
-var Factory = system.FactoryFunc(func(services system.Services) service.Lifecycle {
+func Factory(holder *lighttest.Holder) system.Factory {
+	return &factory{
+		server: holder,
+	}
+}
+
+type factory struct {
+	server *lighttest.Holder
+}
+
+func (f *factory) New(services system.Services) service.Lifecycle {
 	s := &System{
+		holder:    f.server,
 		self:      services.Node,
 		hub:       services.CohortManager,
 		ignore:    []string{services.GRPCEndpoint}, // avoid infinite recursion
@@ -35,7 +48,7 @@ var Factory = system.FactoryFunc(func(services system.Services) service.Lifecycl
 		logger:    services.Logger.Named("proxy"),
 	}
 	return service.New(service.MonoApply(s.applyConfig))
-})
+}
 
 type System struct {
 	self      *node.Node
@@ -44,6 +57,7 @@ type System struct {
 	tlsConfig *tls.Config
 	announcer node.Announcer
 	logger    *zap.Logger
+	holder    *lighttest.Holder
 }
 
 // applyConfig runs this system based on the given config.
@@ -51,22 +65,44 @@ type System struct {
 // for each node (not ignored) it will query for all children,
 // announcing each trait for each child.
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
-	hubConn, err := s.hub.Connect(ctx)
-	if err != nil {
-		return err
-	}
-
+	s.logger.Debug("applying config", zap.Any("config", cfg))
 	ignore := append([]string{}, s.ignore...)
 	ignore = append(ignore, cfg.Ignore...)
 
-	go s.retry(ctx, "announceHub", func(ctx context.Context) (task.Next, error) {
-		return s.announceHub(ctx, hubConn)
-	})
+	if cfg.HubMode == "" {
+		cfg.HubMode = config.HubModeRemote
+	}
+	switch cfg.HubMode {
+	case config.HubModeRemote:
+		hubConn, err := s.hub.Connect(ctx)
+		if err != nil {
+			return err
+		}
 
-	go s.retry(ctx, "announceNodes", func(ctx context.Context) (task.Next, error) {
-		return s.announceNodes(ctx, hubConn, ignore...)
-	})
+		go s.retry(ctx, "announceHub", func(ctx context.Context) (task.Next, error) {
+			return s.announceHub(ctx, hubConn)
+		})
+
+		go s.retry(ctx, "announceNodes", func(ctx context.Context) (task.Next, error) {
+			return s.announceNodes(ctx, hubConn, ignore...)
+		})
+
+		s.holder.Fill(gen.NewLightingTestApiClient(hubConn))
+	case config.HubModeLocal:
+		go s.retry(ctx, "announceNodes", func(ctx context.Context) (task.Next, error) {
+			return s.announceLocalNodes(ctx, ignore...)
+		})
+
+		var lightTest gen.LightingTestApiClient
+		if err := s.self.Client(&lightTest); err != nil {
+			s.logger.Warn("no LightingTestApiClient available", zap.Error(err))
+		} else {
+			s.holder.Fill(lightTest)
+		}
+	}
+
 	return nil
+
 }
 
 // announceHub adds any routed apis to this node that should be forwarded on to the hub.
@@ -137,11 +173,23 @@ func (s *System) announceHub(ctx context.Context, hubConn *grpc.ClientConn) (tas
 // announceNodes fetches all the hubs enrolled nodes and sets up routed apis on this node that proxy those node apis.
 func (s *System) announceNodes(ctx context.Context, hubConn *grpc.ClientConn, ignore ...string) (task.Next, error) {
 	hubClient := gen.NewHubApiClient(hubConn)
+	return s.announceHubNodes(ctx, hubClient, ignore...)
+}
+
+func (s *System) announceLocalNodes(ctx context.Context, ignore ...string) (task.Next, error) {
+	var hubClient gen.HubApiClient
+	if err := s.self.Client(&hubClient); err != nil {
+		s.logger.Error("no HubClient available", zap.Error(err))
+		return task.Normal, err
+	}
+	return s.announceHubNodes(ctx, hubClient, ignore...)
+}
+
+func (s *System) announceHubNodes(ctx context.Context, hubClient gen.HubApiClient, ignore ...string) (task.Next, error) {
 	stream, err := hubClient.PullHubNodes(ctx, &gen.PullHubNodesRequest{})
 	if err != nil {
 		return task.Normal, err
 	}
-
 	knownNodes := make(map[string]context.CancelFunc)
 	success := false
 	for {

@@ -28,8 +28,9 @@ export class Collection {
 
     this.queryRaw = q;
     this._queryVersion = Math.random();
-    this.fetchPages()
-        .catch(err => this._errors.addError(this._resources, {name: `Collection.query`, error: err}));
+    this.fetchPages().catch((err) => {
+      this._errors.addError(this._resources, {name: `Collection.query`, error: err});
+    });
   }
 
   pullIfNeeded() {
@@ -59,8 +60,7 @@ export class Collection {
     if (b === this._needsMorePages) return;
 
     this._needsMorePages = b;
-    this.fetchPages()
-        .catch(err => this._errors.addError(this._resources, {name: `Collection.query`, error: err}));
+    this.fetchPages().catch((err) => this._errors.addError(this._resources, {name: `Collection.query`, error: err}));
   }
 
   get needsMorePages() {

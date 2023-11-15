@@ -3,7 +3,12 @@
     <v-card-title>
       <h4 class="text-h4">Emergency Lighting</h4>
       <v-spacer/>
-      <v-btn color="primary" @click="downloadCSV">Download CSV <v-icon right>mdi-download</v-icon></v-btn>
+      <v-btn
+          color="primary"
+          :disabled="blockActions"
+          @click="downloadCSV">
+        Download CSV <v-icon right>mdi-download</v-icon>
+      </v-btn>
     </v-card-title>
     <v-data-table
         :headers="headers"
@@ -14,18 +19,28 @@
         item-key="name">
       <template #top>
         <span v-if="selectedLights.length > 0">
-          <v-btn color="accent darken-1" class="ml-4" @click="functionTest">Function Test</v-btn>
-          <v-btn color="accent darken-1" class="ml-4" @click="durationTest">Duration Test</v-btn>
-          <span class="pl-4">{{ selectedLights.length }} light{{ selectedLights.length === 1 ? '':'s' }} selected</span>
+          <v-btn
+              color="accent darken-1"
+              class="ml-4"
+              :disabled="blockActions"
+              @click="functionTest">Function Test</v-btn>
+          <v-btn
+              color="accent darken-1"
+              class="ml-4"
+              :disabled="blockActions"
+              @click="durationTest">Duration Test</v-btn>
+          <span class="pl-4">
+            {{ selectedLights.length }} light{{ selectedLights.length === 1 ? '' : 's' }} selected
+          </span>
         </span>
       </template>
-      <template #item.faultsList="{value}">
+      <template #item.faultsList="{ value }">
         <span class="text-title-bold success--text text--lighten-3" v-if="value.length === 0">OK</span>
         <span class="text-title-bold error--text text--lighten-1" v-else>
-          {{ value.map(v => faultToString(v)).join(", ") }}
+          {{ value.map((v) => faultToString(v)).join(', ') }}
         </span>
       </template>
-      <template #item.updateTime="{value}">{{ parseDate(value.seconds) }}</template>
+      <template #item.updateTime="{ value }">{{ parseDate(value.seconds) }}</template>
     </v-data-table>
   </content-card>
 </template>
@@ -37,6 +52,9 @@ import {newActionTracker} from '@/api/resource';
 import ContentCard from '@/components/ContentCard.vue';
 import {EmergencyStatus} from '@sc-bos/ui-gen/proto/dali_pb';
 import {useErrorStore} from '@/components/ui-error/error';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+const {blockActions} = useAuthSetup();
 
 const headers = [
   {text: 'Name', value: 'name'},
@@ -46,22 +64,21 @@ const headers = [
 
 const selectedLights = ref([]);
 
-const csvTracker = reactive(
-    /** @type {ActionTracker<ReportCSV.AsObject>} */ newActionTracker()
-);
-const lightHealthTracker = reactive(
-    /** @type {ActionTracker<ListLightHealthResponse.AsObject>}*/ newActionTracker()
-);
+const csvTracker = reactive(/** @type {ActionTracker<ReportCSV.AsObject>} */ newActionTracker());
+const lightHealthTracker = reactive(/** @type {ActionTracker<ListLightHealthResponse.AsObject>}*/ newActionTracker());
+const allLightsHealth = ref([]);
 
 const lightHealth = computed(() => {
-  return lightHealthTracker.response?.emergencyLightsList ?? [];
+  return allLightsHealth.value;
 });
 
-onMounted(() => refreshLightHealth());
+onMounted(() => refreshLightHealth().catch((err) => console.error('Error fetching light health: ', err)));
+onUnmounted(() => (allLightsHealth.value = []));
 
 // Ui Error handling
 const errorStore = useErrorStore();
-let unwatchCsvErrors; let unwatchLightHealthErrors;
+let unwatchCsvErrors;
+let unwatchLightHealthErrors;
 onMounted(() => {
   unwatchCsvErrors = errorStore.registerTracker(csvTracker);
   unwatchLightHealthErrors = errorStore.registerTracker(lightHealthTracker);
@@ -74,8 +91,14 @@ onUnmounted(() => {
 /**
  *
  */
-function refreshLightHealth() {
-  listLightHealth(lightHealthTracker);
+async function refreshLightHealth() {
+  const req = {pageSize: 100};
+  while (true) {
+    const resp = await listLightHealth(req, lightHealthTracker);
+    allLightsHealth.value.push(...resp.emergencyLightsList);
+    if (!resp.nextPageToken) break;
+    req.pageToken = resp.nextPageToken;
+  }
 }
 
 /**
@@ -84,8 +107,8 @@ function refreshLightHealth() {
  * @return {string}
  */
 function parseDate(seconds) {
-  const d = new Date(seconds*1000);
-  return d.toLocaleDateString()+' '+d.toLocaleTimeString();
+  const d = new Date(seconds * 1000);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
 }
 
 /**
@@ -122,19 +145,16 @@ function functionTest() {
  * @param {EmergencyStatus.Test} type
  */
 async function doTest(type) {
-  const lightingTests = selectedLights.value.map(light => {
+  const lightingTests = selectedLights.value.map((light) => {
     const req = {
       name: light.name,
       test: type
     };
     return runTest(req);
   });
-  await Promise.all(lightingTests).catch(err => console.error('Error running test: ', err));
+  await Promise.all(lightingTests).catch((err) => console.error('Error running test: ', err));
   selectedLights.value = [];
 }
-
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

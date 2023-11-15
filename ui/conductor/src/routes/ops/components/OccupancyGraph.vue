@@ -81,7 +81,7 @@ const data = (records) => {
   for (let i = 0; i < 48; i++) {
     const dataPoint = {
       x: new Date(currentDate.getTime() - (i * 30 * 60 * 1000)),
-      y: 0
+      y: null
     };
 
     intervalsMap.unshift(dataPoint); // Update the array of objects depending on the currentDate
@@ -98,11 +98,51 @@ const data = (records) => {
     const existingInterval = intervalsMap.find(
         intrvl => intrvl.x.getTime() === intervalStart.getTime()
     );
-    // Updating the interval record if higher peopleCount comes in
-    if (existingInterval && record.occupancy.peopleCount > existingInterval.y) {
+
+    // Updating the interval record if a matching record is found
+    if (existingInterval) {
       existingInterval.y = record.occupancy.peopleCount;
     }
   }
+
+
+  // Initialize a variable to store the first non-null value.
+  let firstNonNullValue = null;
+
+  // Iterate over each element to find the first non-null value in the array.
+  for (let i = 0; i < intervalsMap.length; i++) {
+  // If a non-null value is found, store it in firstNonNullValue and exit the loop.
+    if (intervalsMap[i].y !== null) {
+      firstNonNullValue = intervalsMap[i].y;
+      break;
+    }
+  }
+
+  // Perform an initial backfill of the array with the first non-null value found.
+  for (let i = 0; i < intervalsMap.length; i++) {
+  // If a null value is found, replace it with firstNonNullValue.
+    if (intervalsMap[i].y === null) {
+      intervalsMap[i].y = firstNonNullValue;
+    } else {
+    // Stop the backfill process once the first non-null value is encountered.
+      break;
+    }
+  }
+
+  // Initialize a variable to keep track of the last known non-null value.
+  let lastKnownValue = null;
+
+  // Forward fill the rest of the array using the last known non-null value.
+  for (let i = 0; i < intervalsMap.length; i++) {
+  // Update lastKnownValue when a non-null value is encountered.
+    if (intervalsMap[i].y !== null) {
+      lastKnownValue = intervalsMap[i].y;
+    } else if (lastKnownValue !== null) {
+    // If a null value is found, replace it with the last known non-null value.
+      intervalsMap[i].y = lastKnownValue;
+    }
+  }
+
 
   return intervalsMap;
 };

@@ -17,7 +17,6 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 var (
@@ -86,27 +85,26 @@ func main() {
 		os.Exit(1)
 	}
 
+	name := "light-1"
 	conn, err := grpc.Dial(flagGRPCAddr, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "ERROR: can't connect: %s\n", err.Error())
 		os.Exit(1)
 	}
-	client := gen.NewTestApiClient(conn)
+	client := traits.NewLightApiClient(conn)
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "authorization", "Bearer "+parsed.AccessToken)
 
-	res, err := client.GetTest(ctx, &gen.GetTestRequest{})
+	res, err := client.GetBrightness(ctx, &traits.GetBrightnessRequest{Name: name})
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "ERROR: call GetTest error: %s\n", err.Error())
+		_, _ = fmt.Fprintf(os.Stderr, "ERROR: call GetBrightness error: %s\n", err.Error())
 	} else {
-		fmt.Printf("test data: %s\n", res.Data)
+		fmt.Printf("Get response: %v\n", res)
 	}
 
-	name := "foo"
-	onOffClient := traits.NewOnOffApiClient(conn)
-	onOff, err := onOffClient.GetOnOff(ctx, &traits.GetOnOffRequest{Name: name})
+	res, err = client.UpdateBrightness(ctx, &traits.UpdateBrightnessRequest{Name: name, Brightness: &traits.Brightness{LevelPercent: 75}})
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "ERROR: call GetOnOff error: %s\n", err.Error())
+		_, _ = fmt.Fprintf(os.Stderr, "ERROR: call UpdateBrightness error: %s\n", err.Error())
 	} else {
-		fmt.Printf("OnOff state of %q: %v\n", name, onOff.State)
+		fmt.Printf("Update response: %v\n", res)
 	}
 }

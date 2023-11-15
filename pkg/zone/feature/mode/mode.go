@@ -15,6 +15,7 @@ import (
 )
 
 var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
+	services.Logger = services.Logger.Named("mode")
 	f := &feature{
 		announce: services.Node,
 		devices:  services.Devices,
@@ -38,7 +39,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		return nil
 	}
 	announce := node.AnnounceContext(ctx, f.announce)
-	logger := f.logger.With(zap.String("zone", cfg.Name))
+	logger := f.logger
 
 	var api traits.ModeApiClient
 	if err := f.clients.Client(&api); err != nil {

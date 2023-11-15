@@ -47,9 +47,9 @@ func SummariseRequestErrors(name string, requests []string, errs []error) (gen.S
 	case cancelled > 0:
 		return gen.StatusLog_LEVEL_UNDEFINED, fmt.Sprintf("%s request cancelled", name)
 	case notFoundCount == len(requests):
-		return gen.StatusLog_NOTICE, fmt.Sprintf("%s not found on device", name)
+		return gen.StatusLog_NOTICE, fmt.Sprintf("%s points not found on device", name)
 	case timeoutCount == len(requests):
-		return gen.StatusLog_REDUCED_FUNCTION, fmt.Sprintf("%s points %s timed out", name, strings.Join(requests, ", "))
+		return gen.StatusLog_REDUCED_FUNCTION, fmt.Sprintf("%s points timed out", name)
 	default:
 		failedPropNames := failedPropReads(errs...)
 		var desc strings.Builder

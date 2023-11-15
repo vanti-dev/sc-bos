@@ -70,6 +70,12 @@ message Service {
   // The time the service last accepted configuration
   // Output only.
   google.protobuf.Timestamp last_config_time = 12;
+
+  // A count of how many times the service has failed to start.
+  // Reset on stop or config update.
+  int32 failed_attempts = 13;
+  // If the service is failing and retries are enabled, contains the time the next attempt will be made.
+  google.protobuf.Timestamp next_attempt_time = 14;
 }
 
 message ServiceMetadata {

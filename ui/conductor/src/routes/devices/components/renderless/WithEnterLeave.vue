@@ -7,8 +7,7 @@
 <script setup>
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullEnterLeaveEvents} from '@/api/sc/traits/enter-leave';
-import {useErrorStore} from '@/components/ui-error/error';
-import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
+import {computed, onUnmounted, reactive, watch} from 'vue';
 import {deepEqual} from 'vuetify/src/util/helpers';
 
 const props = defineProps({
@@ -56,16 +55,7 @@ watch(
     {immediate: true, deep: true, flush: 'sync'}
 );
 
-// UI error handling
-const errorStore = useErrorStore();
-const unwatchErrors = [];
-onMounted(() => {
-  unwatchErrors.push(
-      errorStore.registerValue(enterLeaveEventValue)
-  );
-});
 onUnmounted(() => {
   closeResource(enterLeaveEventValue);
-  unwatchErrors.forEach(unwatch => unwatch());
 });
 </script>

@@ -6,8 +6,6 @@
 
 <script setup>
 import SideBar from '@/components/SideBar.vue';
-
-
 import DeviceSideBarContent from '@/routes/devices/components/DeviceSideBarContent.vue';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';

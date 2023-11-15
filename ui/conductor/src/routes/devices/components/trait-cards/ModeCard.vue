@@ -11,7 +11,7 @@
                   :items="mode.values"
                   :value="mode.value"
                   @input="updateMode(mode.key, $event, true)"
-                  :disabled="loading"
+                  :disabled="blockActions || loading"
                   outlined
                   dense
                   hide-details/>
@@ -21,7 +21,7 @@
                   :label="mode.title"
                   :value="mode.value"
                   @input="updateMode(mode.key, $event)"
-                  :disabled="loading"
+                  :disabled="blockActions || loading"
                   outlined
                   dense
                   hide-details/>
@@ -31,7 +31,13 @@
       </v-list>
       <v-card-actions class="px-4">
         <v-spacer/>
-        <v-btn text type="submit" @click="saveModeValues" :disabled="updateValue.loading || !dirty">Save</v-btn>
+        <v-btn
+            text
+            type="submit"
+            @click="saveModeValues"
+            :disabled="updateValue.loading || !dirty || blockActions">
+          Save
+        </v-btn>
       </v-card-actions>
       <v-progress-linear color="primary" indeterminate :active="updateValue.loading"/>
     </v-card>
@@ -39,11 +45,13 @@
 </template>
 
 <script setup>
-
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
 import {describeModes, pullModeValues, updateModeValues} from '@/api/sc/traits/mode';
 import {useErrorStore} from '@/components/ui-error/error';
 import {computed, onMounted, onUnmounted, reactive, set, watch} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
+
+const {blockActions} = useAuthSetup();
 
 const props = defineProps({
   // unique name of the device
@@ -90,16 +98,20 @@ onUnmounted(() => {
 });
 
 // if device name changes
-watch(() => props.name, async (name) => {
-  // close existing stream if present
-  closeResource(modeValue);
-  // create new stream
-  if (name && name !== '') {
-    // noinspection ES6MissingAwait - handled by tracker
-    describeModes({name}, modeInfo);
-    pullModeValues({name}, modeValue);
-  }
-}, {immediate: true});
+watch(
+    () => props.name,
+    async (name) => {
+    // close existing stream if present
+      closeResource(modeValue);
+      // create new stream
+      if (name && name !== '') {
+      // noinspection ES6MissingAwait - handled by tracker
+        describeModes({name}, modeInfo);
+        pullModeValues({name}, modeValue);
+      }
+    },
+    {immediate: true}
+);
 
 onUnmounted(() => {
   closeResource(modeValue);
@@ -111,17 +123,22 @@ const modes = computed(() => {
   }
   return [];
 });
-const modesDisplay = computed(() => modes.value.map(m => modeDisplay(m)));
+const modesDisplay = computed(() => modes.value.map((m) => modeDisplay(m)));
 
 // like {"myMode": ["opt1", "opt2"]}
 const modeInfoMap = computed(() => {
   const modesList = modeInfo.response?.availableModes?.modesList || [];
   const res = {};
   for (const mode of modesList) {
-    res[mode.name] = mode.valuesList.map(v => v.name);
+    res[mode.name] = mode.valuesList.map((v) => v.name);
   }
   return res;
 });
+
+// used for case replacement
+const acronyms = {
+  hvac: 'HVAC'
+};
 
 /**
  * @param {string[]} mode
@@ -132,21 +149,18 @@ function modeDisplay([k, v]) {
   if (modeInfoMap.value[k]) {
     items = modeInfoMap.value[k];
   }
-  if (k === 'lighting.mode') {
-    return {
-      key: k,
-      value: v,
-      title: 'Lighting Mode',
-      values: items || ['auto', 'normal', 'extended', 'night', 'maintenance', 'test']
-    };
-  } else {
-    return {
-      key: k,
-      value: v,
-      title: k,
-      values: items || undefined
-    };
-  }
+  const parts = k.split('.').map((s) => {
+    if (acronyms[s]) {
+      return acronyms[s];
+    }
+    return s[0].toUpperCase() + s.slice(1);
+  });
+  return {
+    key: k,
+    value: v,
+    title: parts.join(' '),
+    values: items || undefined
+  };
 }
 
 /**
@@ -173,15 +187,14 @@ function saveModeValues() {
   };
   updateModeValues(req, updateValue);
 }
-
 </script>
 
 <style scoped>
 .v-list-item {
-    min-height: auto;
+  min-height: auto;
 }
 
 .v-progress-linear {
-    width: auto;
+  width: auto;
 }
 </style>

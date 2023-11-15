@@ -3,7 +3,7 @@
     <v-row class="pa-4" v-if="configStore.config?.hub">
       <v-combobox
           v-model="node"
-          :items="Object.values(hubStore.nodesList)"
+          :items="nodesListValues"
           label="System Component"
           item-text="name"
           item-value="name"
@@ -19,29 +19,16 @@
         :search="search"
         :loading="serviceCollection.loading"
         @click:row="showService">
-      <template #item.active="{item, value}">
-        <span v-if="value" class="success--text text--lighten-2">Running</span>
-        <span v-else class="error--text text--lighten-2">
-          Stopped
-          <v-menu v-if="item.error" offset-y :close-on-content-click="false">
-            <template #activator="{ on, attrs }">
-              <v-icon v-on="on" v-bind="attrs" class="error--text text--lighten-2" right>
-                mdi-alert-circle-outline
-              </v-icon>
-            </template>
-            <v-card>
-              <v-card-title class="text-h5">Error</v-card-title>
-              <v-card-text>{{ item.error }}</v-card-text>
-            </v-card>
-          </v-menu>
-        </span>
+      <template #item.active="{item}">
+        <service-status :service="item"/>
       </template>
       <template #item.actions="{item}">
         <v-btn
             v-if="item.active"
             outlined
             class="automation-device__btn--red"
-            color="red"
+            color="error"
+            :disabled="blockActions"
             width="100%"
             @click.stop="_stopService(item)">
           Stop
@@ -50,7 +37,8 @@
             v-else
             outlined
             class="automation-device__btn--green"
-            color="green"
+            color="success"
+            :disabled="blockActions"
             width="100%"
             @click.stop="_startService(item)">
           Start
@@ -61,24 +49,19 @@
 </template>
 
 <script setup>
-import {newActionTracker} from '@/api/resource';
-import {ServiceNames, startService, stopService} from '@/api/ui/services';
+import {ServiceNames} from '@/api/ui/services';
 import ContentCard from '@/components/ContentCard.vue';
-import {useErrorStore} from '@/components/ui-error/error';
+import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import {useHubStore} from '@/stores/hub';
-import {usePageStore} from '@/stores/page';
-import {useServicesStore} from '@/stores/services';
-import {serviceName} from '@/util/proxy';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import {computed} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
+import useServices from '@/composables/useServices';
 
-const serviceStore = useServicesStore();
-const pageStore = usePageStore();
-const errors = useErrorStore();
+const {blockActions} = useAuthSetup();
+
 const configStore = useAppConfigStore();
 const hubStore = useHubStore();
-
-const startStopTracker = reactive(newActionTracker());
 
 const props = defineProps({
   name: {
@@ -92,106 +75,33 @@ const props = defineProps({
   }
 });
 
-const node = computed({
-  get() {
-    return pageStore.sidebarNode;
-  },
-  set(val) {
-    pageStore.sidebarNode = val;
-  }
-});
-const search = ref('');
+const {
+  serviceCollection,
+  search,
+  node,
+  serviceList,
+  nodesListValues,
+  showService,
+  _startService,
+  _stopService
+} = useServices(props);
 
 const headers = computed(() => {
   if (props.name === 'drivers') {
     return [
       {text: 'ID', value: 'id'},
       {text: 'Type', value: 'type'},
-      {text: 'Status', value: 'active'},
+      {text: 'Status', value: 'active', width: '20em'},
       {text: '', value: 'actions', align: 'end', width: '100'}
     ];
   } else {
     return [
       {text: 'ID', value: 'id'},
-      {text: 'Status', value: 'active'},
+      {text: 'Status', value: 'active', width: '20em'},
       {text: '', value: 'actions', align: 'end', width: '100'}
     ];
   }
 });
-
-const serviceCollection = ref({});
-
-// query watchers
-watch(() => props.name, async () => {
-  if (serviceCollection.value.reset) serviceCollection.value.reset();
-  serviceCollection.value =
-      serviceStore.getService(props.name, await node.value.commsAddress, await node.value.commsName).servicesCollection;
-  // reinitialise in case this service collection has been previously reset;
-  serviceCollection.value.init();
-  serviceCollection.value.query(props.name);
-}, {immediate: true});
-watch(node, async () => {
-  if (serviceCollection.value.reset) serviceCollection.value.reset();
-  serviceCollection.value =
-      serviceStore.getService(props.name, await node.value.commsAddress, await node.value.commsName).servicesCollection;
-  serviceCollection.value.init();
-  serviceCollection.value.query(props.name);
-}, {immediate: true});
-
-
-watch(serviceCollection, () => {
-  // todo: this causes us to load all pages, connect with paging logic instead
-  serviceCollection.value.needsMorePages = true;
-});
-
-// UI error handling
-let unwatchErrors; let unwatchStartStopErrors;
-onMounted(() => {
-  unwatchErrors = errors.registerCollection(serviceCollection);
-  unwatchStartStopErrors = errors.registerTracker(startStopTracker);
-});
-onUnmounted(() => {
-  if (unwatchErrors) unwatchErrors();
-  if (unwatchStartStopErrors) unwatchStartStopErrors();
-  serviceCollection.value.reset();
-});
-
-const serviceList = computed(() => {
-  return Object.values(serviceCollection.value?.resources?.value ?? []).filter(service => {
-    return props.type === '' || props.type === 'all' || service.type === props.type;
-  });
-});
-
-/**
- *
- * @param {Service.AsObject} service
- * @param {*} row
- */
-function showService(service, row) {
-  pageStore.showSidebar = true;
-  pageStore.sidebarTitle = service.id;
-  pageStore.sidebarData = {...service, config: JSON.parse(service.configRaw)};
-}
-
-
-/**
- *
- * @param {Service.AsObject} service
- */
-async function _startService(service) {
-  console.debug('Starting:', serviceName(node.value.name, props.name), service.id);
-  await startService({name: serviceName(await node.value.commsName, props.name), id: service.id}, startStopTracker);
-}
-
-/**
- *
- * @param {Service.AsObject} service
- */
-async function _stopService(service) {
-  console.debug('Stopping:', serviceName(node.value.name, props.name), service.id);
-  await stopService({name: serviceName(await node.value.commsName, props.name), id: service.id}, startStopTracker);
-}
-
 </script>
 
 <style lang="scss" scoped>
@@ -214,15 +124,21 @@ async function _stopService(service) {
 .v-data-table :deep(tr:hover) {
   .automation-device__btn {
     &--red {
-      background-color: red;
+      background-color: var(--v-error-base);
       .v-btn__content {
         color: white;
       }
+      &.v-btn--disabled {
+        filter: grayscale(100%);
+      }
     }
     &--green {
-      background-color: green;
+      background-color: var(--v-success-base);
       .v-btn__content {
         color: white;
+      }
+      &.v-btn--disabled {
+        filter: grayscale(100%);
       }
     }
   }

@@ -9,12 +9,13 @@ import (
 	"github.com/go-jose/go-jose/v3"
 	"github.com/go-jose/go-jose/v3/jwt"
 
-	"github.com/vanti-dev/sc-bos/pkg/auth/role"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 )
 
 type tokenClaims struct {
+	Name  string   `json:"name,omitempty"`
 	Zones []string `json:"zones,omitempty"`
+	Roles []string `json:"roles,omitempty"`
 }
 
 type TokenSource struct {
@@ -46,7 +47,7 @@ func (ts *TokenSource) GenerateAccessToken(data SecretData, validity time.Durati
 		NotBefore: jwt.NewNumericDate(now),
 		IssuedAt:  jwt.NewNumericDate(now),
 	}
-	customClaims := tokenClaims{Zones: data.Zones}
+	customClaims := tokenClaims{Name: data.Title, Zones: data.Zones, Roles: data.Roles}
 	return jwt.Signed(signer).
 		Claims(jwtClaims).
 		Claims(customClaims).
@@ -72,7 +73,7 @@ func (ts *TokenSource) ValidateAccessToken(_ context.Context, tokenStr string) (
 		return nil, err
 	}
 	return &token.Claims{
-		Roles:     []string{role.Tenant},
+		Roles:     customClaims.Roles,
 		Zones:     customClaims.Zones,
 		IsService: true,
 	}, nil

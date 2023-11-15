@@ -16,6 +16,7 @@ import (
 )
 
 var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
+	services.Logger = services.Logger.Named("hvac")
 	f := &feature{
 		announce: services.Node,
 		devices:  services.Devices,
@@ -36,7 +37,7 @@ type feature struct {
 
 func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := node.AnnounceContext(ctx, f.announce)
-	logger := f.logger.With(zap.String("zone", cfg.Name))
+	logger := f.logger
 	publish := func(name string, t config.Thermostat) error {
 		var client traits.AirTemperatureApiClient
 		if err := f.clients.Client(&client); err != nil {

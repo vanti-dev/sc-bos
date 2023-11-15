@@ -1,10 +1,14 @@
 import {apiToken} from '@/api/auth.js';
+import {useAccountStore} from '@/stores/account';
+import {StatusCode} from 'grpc-web';
 
 /**
  * @param {import('grpc-web').GrpcWebClientBaseOptions} [options]
  * @return {import('grpc-web').GrpcWebClientBaseOptions}
  */
 export function clientOptions(options = {}) {
+  const account = useAccountStore();
+
   return {
     ...options,
     unaryInterceptors: [
@@ -16,6 +20,15 @@ export function clientOptions(options = {}) {
               request.getMetadata()['Authorization'] = `Bearer ${token}`;
             }
             return invoker(request);
+          }).catch(e => {
+            // Log the user out if we get a permission denied error
+            // and clear the local storage
+            if (e.code === StatusCode.PERMISSION_DENIED || e.code === StatusCode.UNAUTHENTICATED) {
+              account.logout();
+              localStorage.clear();
+            }
+
+            throw e;
           });
         }
       }],
@@ -23,12 +36,19 @@ export function clientOptions(options = {}) {
       ...(options.streamInterceptors || []),
       {
         intercept(request, invoker) {
-          return new DelayedClientReadableStream(apiToken().then(token => {
+          const s = new DelayedClientReadableStream(apiToken().then(token => {
             if (token) {
               request.getMetadata()['Authorization'] = `Bearer ${token}`;
             }
             return invoker(request);
           }));
+          s.on('error', (err) => {
+            if (err.code === StatusCode.PERMISSION_DENIED || err.code === StatusCode.UNAUTHENTICATED) {
+              account.logout();
+              localStorage.clear();
+            }
+          });
+          return s;
         }
       }]
   };

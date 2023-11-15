@@ -20,10 +20,10 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/cors v1.8.3
 	github.com/sirupsen/logrus v1.8.1
-	github.com/smart-core-os/sc-api/go v1.0.0-beta.42
-	github.com/smart-core-os/sc-golang v0.0.0-20230703180942-99a2c050301a
+	github.com/smart-core-os/sc-api/go v1.0.0-beta.43
+	github.com/smart-core-os/sc-golang v0.0.0-20230804102107-ff30db2c5610
 	github.com/timshannon/bolthold v0.0.0-20210913165410-232392fc8a6a
-	github.com/vanti-dev/gobacnet v0.0.0-20230718111951-6b4a4445d74c
+	github.com/vanti-dev/gobacnet v0.0.0-20231102122752-32b0b38bcc53
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
 	go.uber.org/zap v1.19.1
@@ -31,6 +31,7 @@ require (
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 	golang.org/x/term v0.6.0
+	golang.org/x/time v0.3.0
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
 )

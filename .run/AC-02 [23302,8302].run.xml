@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="AC-02 [23302,8302]" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="Hub">
+    <module name="sc-bos" />
+    <working_directory value="$PROJECT_DIR$" />
+    <parameters value="--policy-mode=off --data-dir example/config/hub/ac-02" />
+    <kind value="PACKAGE" />
+    <package value="github.com/vanti-dev/sc-bos/cmd/bos" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <method v="2" />
+  </configuration>
+</component>

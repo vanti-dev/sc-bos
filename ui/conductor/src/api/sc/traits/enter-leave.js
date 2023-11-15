@@ -4,7 +4,8 @@ import {pullResource, setValue, trackAction} from '@/api/resource';
 import {EnterLeaveSensorApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/enter_leave_sensor_grpc_web_pb';
 import {
   GetEnterLeaveEventRequest,
-  PullEnterLeaveEventsRequest, ResetEnterLeaveTotalsRequest
+  PullEnterLeaveEventsRequest,
+  ResetEnterLeaveTotalsRequest
 } from '@smart-core-os/sc-api-grpc-web/traits/enter_leave_sensor_pb';
 
 /**
@@ -12,13 +13,13 @@ import {
  * @param {ResourceValue<EnterLeaveEvent.AsObject, PullEnterLeaveEventsResponse>} resource
  */
 export function pullEnterLeaveEvents(request, resource) {
-  pullResource('EnterLeave.pullEnterLeaveEvents', resource, endpoint => {
+  pullResource('EnterLeave.pullEnterLeaveEvents', resource, (endpoint) => {
     const api = apiClient(endpoint);
     const stream = api.pullEnterLeaveEvents(pullEnterLeaveEventsRequestFromObject(request));
-    stream.on('data', msg => {
+    stream.on('data', (msg) => {
       const changes = msg.getChangesList();
       for (const change of changes) {
-        setValue(resource, change.getEnterLeaveEvent().toObject());
+        setValue(resource, enterLeaveEventToObject(change.getEnterLeaveEvent()));
       }
     });
     return stream;
@@ -31,7 +32,7 @@ export function pullEnterLeaveEvents(request, resource) {
  * @return {Promise<EnterLeaveEvent.AsObject>}
  */
 export function getEnterLeaveEvent(request, tracker) {
-  return trackAction('EnterLeaveSensor.getEnterLeaveEvent', tracker ?? {}, endpoint => {
+  return trackAction('EnterLeaveSensor.getEnterLeaveEvent', tracker ?? {}, (endpoint) => {
     const api = apiClient(endpoint);
     return api.getEnterLeaveEvent(getEnterLeaveEventRequestFromObject(request));
   });
@@ -43,7 +44,7 @@ export function getEnterLeaveEvent(request, tracker) {
  * @return {Promise<ResetEnterLeaveTotalsResponse.AsObject>}
  */
 export function resetEnterLeaveTotals(request, tracker) {
-  return trackAction('EnterLeaveSensor.resetEnterLeaveTotals', tracker ?? {}, endpoint => {
+  return trackAction('EnterLeaveSensor.resetEnterLeaveTotals', tracker ?? {}, (endpoint) => {
     const api = apiClient(endpoint);
     return api.resetEnterLeaveTotals(resetEnterLeaveTotalsRequestFromObject(request));
   });
@@ -92,5 +93,25 @@ function resetEnterLeaveTotalsRequestFromObject(obj) {
 
   const dst = new ResetEnterLeaveTotalsRequest();
   setProperties(dst, obj, 'name');
+  return dst;
+}
+
+/**
+ *
+ * @param {EnterLeaveEvent} obj
+ * @return {EnterLeaveEvent.AsObject}
+ */
+function enterLeaveEventToObject(obj) {
+  if (!obj) return undefined;
+
+  const dst = obj.toObject();
+
+  if (!obj.hasEnterTotal()) {
+    dst.enterTotal = undefined;
+  }
+  if (!obj.hasLeaveTotal()) {
+    dst.leaveTotal = undefined;
+  }
+
   return dst;
 }

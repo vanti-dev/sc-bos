@@ -57,8 +57,8 @@ type Config struct {
 
 	Systems map[string]system.RawConfig `json:"systems,omitempty"`
 
-	Policy        policy.Policy `json:"-"` // Override the policy used for RPC calls. Defaults to policy.Default
-	DisablePolicy bool          `json:"-"` // Unsafe, disables any policy checking for the server. Can't be set by json config.
+	Policy     policy.Policy `json:"-"` // Override the policy used for RPC calls. Defaults to policy.Default
+	PolicyMode PolicyMode    `json:"-"` // How to apply the policy. Unsafe and can disable security checks. Defaults to PolicyOn.
 
 	DriverFactories map[string]driver.Factory `json:"-"` // keyed by driver name
 	AutoFactories   map[string]auto.Factory   `json:"-"` // keyed by automation type
@@ -76,6 +76,14 @@ type Certs struct {
 	HTTPKeyFile  string `json:"httpKeyFile,omitempty"`
 	HTTPCertFile string `json:"httpCertFile,omitempty"`
 }
+
+type PolicyMode string
+
+const (
+	PolicyOn    PolicyMode = "on"    // Always check requests against the policy.
+	PolicyOff   PolicyMode = "off"   // Never check requests against the policy, allow all requests.
+	PolicyCheck PolicyMode = "check" // Check requests against the policy if the request has a token or client cert.
+)
 
 func Default() Config {
 	logConf := zap.NewDevelopmentConfig()
@@ -104,8 +112,8 @@ func Default() Config {
 			HTTPKeyFile:  "", // while these have defaults, we can't specify them and still have the "turn on if specified" feature
 			HTTPCertFile: "",
 		},
-		Policy:        nil,
-		DisablePolicy: false,
+		Policy:     nil,
+		PolicyMode: PolicyOn,
 	}
 	config.Logger.DisableStacktrace = true // because it's annoying
 

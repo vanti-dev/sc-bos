@@ -49,3 +49,14 @@ func WithOnStop[T any](onStop func()) Option[T] {
 		l.onStop = onStop
 	})
 }
+
+// WithRetry configures a service to retry ApplyFunc when it returns an error.
+func WithRetry[T any](opts ...RetryOption) Option[T] {
+	return OptionFunc[T](func(l *Service[T]) {
+		retry := defaultRetryOptions
+		for _, opt := range opts {
+			opt(&retry)
+		}
+		l.retry = &retry
+	})
+}

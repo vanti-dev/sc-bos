@@ -15,6 +15,7 @@ import (
 )
 
 var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
+	services.Logger = services.Logger.Named("meter")
 	f := &feature{
 		announce: services.Node,
 		devices:  services.Devices,
@@ -35,7 +36,7 @@ type feature struct {
 
 func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := node.AnnounceContext(ctx, f.announce)
-	logger := f.logger.With(zap.String("zone", cfg.Name))
+	logger := f.logger
 
 	var apiClient gen.MeterApiClient
 	var infoClient gen.MeterInfoClient

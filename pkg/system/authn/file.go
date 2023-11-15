@@ -23,7 +23,7 @@ func loadFileVerifier(idConfig *config.Identities, dataDir, defaultFilename stri
 	verifier := &tenant.MemoryVerifier{}
 	var allErrs error
 	for _, t := range ids {
-		err := verifier.AddRecord(tenant.SecretData{TenantID: t.ID, Zones: t.Zones})
+		err := verifier.AddRecord(tenant.SecretData{Title: t.Title, TenantID: t.ID, Zones: t.Zones, Roles: t.Roles})
 		if err != nil {
 			allErrs = multierr.Append(allErrs, err)
 			continue

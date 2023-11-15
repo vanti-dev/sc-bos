@@ -304,6 +304,9 @@ export namespace DeleteTenantResponse {
 }
 
 export class PullTenantRequest extends jspb.Message {
+  getId(): string;
+  setId(value: string): PullTenantRequest;
+
   getUpdatesOnly(): boolean;
   setUpdatesOnly(value: boolean): PullTenantRequest;
 
@@ -317,6 +320,7 @@ export class PullTenantRequest extends jspb.Message {
 
 export namespace PullTenantRequest {
   export type AsObject = {
+    id: string,
     updatesOnly: boolean,
   }
 }

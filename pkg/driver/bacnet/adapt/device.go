@@ -227,6 +227,8 @@ func PropertyValueToProto(p bactypes.Property) (*rpc.PropertyValue, error) {
 		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Date{Date: DateToProto(v)}}, nil
 	case bactypes.Time:
 		return &rpc.PropertyValue{Value: &rpc.PropertyValue_Time{Time: TimeToProto(v)}}, nil
+	case bactypes.BitString:
+		return &rpc.PropertyValue{Value: &rpc.PropertyValue_BitString{BitString: BitStringToProto(v)}}, nil
 	case bactypes.ObjectID:
 		return &rpc.PropertyValue{Value: &rpc.PropertyValue_ObjectIdentifier{ObjectIdentifier: ObjectIDToProto(v)}}, nil
 	}
@@ -257,7 +259,7 @@ func (d *DeviceBacnetService) propertyValueFromProto(p *rpc.PropertyValue) (any,
 	case *rpc.PropertyValue_CharacterString:
 		return v.CharacterString, nil
 	case *rpc.PropertyValue_BitString:
-		// not supported
+		return d.bitStringFromProto(v.BitString), nil
 	case *rpc.PropertyValue_Enumerated:
 		return bactypes.Enumerated(v.Enumerated), nil
 	case *rpc.PropertyValue_Date:
@@ -322,6 +324,20 @@ func (d *DeviceBacnetService) timeFromProto(time *rpc.PropertyValue_TimeValue) b
 		t.Millisecond *= 10
 	}
 	return t
+}
+
+func BitStringToProto(bs bactypes.BitString) *rpc.PropertyValue_BitStringValue {
+	return &rpc.PropertyValue_BitStringValue{
+		IgnoreTrailingBits: uint32(bs.IgnoreTrailingBits),
+		Value:              bs.Bytes,
+	}
+}
+
+func (d *DeviceBacnetService) bitStringFromProto(bs *rpc.PropertyValue_BitStringValue) bactypes.BitString {
+	return bactypes.BitString{
+		IgnoreTrailingBits: uint8(bs.IgnoreTrailingBits),
+		Bytes:              bs.Value,
+	}
 }
 
 func PropertyToProtoReadResult(p bactypes.Property) (*rpc.PropertyReadResult, error) {

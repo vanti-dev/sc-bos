@@ -5,6 +5,9 @@ import (
 )
 
 func shouldDiscoverObjects(cfg config.Root, device config.Device) bool {
+	if *discoverObjects {
+		return true
+	}
 	if device.DiscoverObjects != nil {
 		return *device.DiscoverObjects
 	}

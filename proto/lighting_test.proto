@@ -85,7 +85,16 @@ message ListLightEventsRequest {
 }
 message ListLightEventsResponse {
   repeated LightingEvent events = 1;
+  // Contains a page token which can be supplied as page_token in ListLightEventsRequest to fetch the next page of
+  // results.
+  // Only present when more results are immediately available.
   string next_page_token = 2;
+
+  // Contains a page token which can be supplied as page_token in ListLightEventsRequest to fetch only new data
+  // in the future.
+  // Unlike next_page_token, this is present even when no more pages are immediately available. The client can check
+  // again in the future
+  string future_page_token = 3;
 }
 
 message GetReportCSVRequest {

@@ -57,6 +57,11 @@ message PropertyValue {
     optional uint32 hundredths_of_second = 4;
   }
 
+  message BitStringValue {
+    bytes value = 1;
+    uint32 ignore_trailing_bits = 2;
+  }
+
 
   oneof value {
     bool null = 1;
@@ -69,7 +74,7 @@ message PropertyValue {
     double double = 8;
     bytes octet_string = 9;
     string character_string = 10;
-    bytes bit_string = 11;
+    BitStringValue bit_string = 11;
     uint64 enumerated = 12;
     DateValue date = 13;
     TimeValue time = 14;

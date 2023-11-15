@@ -99,12 +99,8 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 
 	if creds == nil {
 		tkn, err := grpc_auth.AuthFromMD(ctx, "Bearer")
-		if err != nil {
-			log.Printf("no request bearer token: %s", err.Error())
-		}
-
 		var tokenClaims *token.Claims
-		if tkn != "" && i.verifier != nil {
+		if err == nil && tkn != "" && i.verifier != nil {
 			tokenClaims, err = i.verifier.ValidateAccessToken(ctx, tkn)
 			if err != nil {
 				tokenClaims = nil
@@ -112,24 +108,27 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 			}
 		}
 
-		cert := rpcutil.VerifiedCertFromServerContext(ctx)
+		cert, valid := rpcutil.CertFromServerContext(ctx)
 
 		creds = &verifiedCreds{
 			cert:        cert,
+			certValid:   valid,
 			token:       tkn,
 			tokenClaims: tokenClaims,
 		}
 	}
 
 	input := Attributes{
-		Service:          service,
-		Method:           method,
-		Stream:           stream,
-		Request:          req,
-		CertificateValid: creds.cert != nil,
-		Certificate:      creds.cert,
-		TokenValid:       creds.tokenClaims != nil,
-		TokenClaims:      creds.tokenClaims,
+		Service:            service,
+		Method:             method,
+		Stream:             stream,
+		Request:            req,
+		CertificatePresent: creds.cert != nil,
+		CertificateValid:   creds.certValid,
+		Certificate:        creds.cert,
+		TokenPresent:       creds.token != "",
+		TokenValid:         creds.tokenClaims != nil,
+		TokenClaims:        creds.tokenClaims,
 	}
 
 	queries, err := Validate(ctx, i.policy, input)
@@ -138,13 +137,7 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 		addr = p.Addr.String()
 	}
 	if err != nil {
-		i.logger.Warn("request blocked by policy",
-			zap.Any("attributes", input),
-			zap.String("addr", addr),
-			zap.Strings("queries", queries),
-		)
-	} else {
-		i.logger.Debug("request permitted by policy",
+		i.logger.Debug("request blocked by policy",
 			zap.Any("attributes", input),
 			zap.String("addr", addr),
 			zap.Strings("queries", queries),
@@ -169,6 +162,7 @@ func WithTokenVerifier(tv token.Validator) InterceptorOption {
 
 type verifiedCreds struct {
 	cert        *x509.Certificate
+	certValid   bool
 	token       string
 	tokenClaims *token.Claims
 }

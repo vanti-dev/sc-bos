@@ -1,9 +1,13 @@
 import {events, keycloak} from '@/api/keycloak.js';
 import localLogin from '@/api/localLogin.js';
+import jwtDecode from 'jwt-decode';
 import {defineStore} from 'pinia';
-import {computed, ref} from 'vue';
+import {computed, ref, watch} from 'vue';
+import {useAppConfigStore} from '@/stores/app-config';
 
 export const useAccountStore = defineStore('accountStore', () => {
+  const appConfig = useAppConfigStore();
+
   const kcp = keycloak();
   const kcEvents = events;
 
@@ -45,7 +49,8 @@ export const useAccountStore = defineStore('accountStore', () => {
         token.value = payload.access_token;
         loggedIn.value = true;
         claims.value = {
-          email: username
+          email: username,
+          ...jwtDecode(payload.access_token)
         };
         toggleLoginDialog();
         saveLocalStorage();
@@ -73,7 +78,7 @@ export const useAccountStore = defineStore('accountStore', () => {
 
   const logout = async () => {
     localStorage.getItem('keyclock') === 'true' &&
-      kcp.then((kc) => kc.logout());
+    kcp.then((kc) => kc.logout());
     loggedIn.value = false;
     token.value = '';
     claims.value = {};
@@ -81,6 +86,19 @@ export const useAccountStore = defineStore('accountStore', () => {
   };
 
   kcEvents.addEventListener('authSuccess', updateRefs);
+
+  // Keep login modal permanently on screen if user is not logged in and we require authentication
+  watch(
+      [loggedIn, token, () => appConfig.config?.disableAuthentication],
+      () => {
+        if (!appConfig.config?.disableAuthentication) {
+          if (!loggedIn.value || !token.value) loginDialog.value = true;
+        } else {
+          loginDialog.value = false;
+        }
+      },
+      {immediate: true, deep: true}
+  );
 
   return {
     loggedIn,
@@ -95,8 +113,10 @@ export const useAccountStore = defineStore('accountStore', () => {
     loadLocalStorage,
     snackbar,
 
+    isLoggedIn: computed(() => loggedIn.value),
     fullName: computed(() => claims.value?.name || ''),
     email: computed(() => claims.value?.email || ''),
+    roles: computed(() => claims.value?.roles || []),
 
     login: (scopes) => {
       return kcp.then((kc) => kc.login({scope: scopes.join(' ')}));

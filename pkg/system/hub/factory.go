@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
@@ -21,6 +22,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
+	"github.com/vanti-dev/sc-bos/pkg/system/hub/bolthub"
 	"github.com/vanti-dev/sc-bos/pkg/system/hub/config"
 	"github.com/vanti-dev/sc-bos/pkg/system/hub/hold"
 	"github.com/vanti-dev/sc-bos/pkg/system/hub/pgxhub"
@@ -49,10 +51,17 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 		clientTLSConfig: services.ClientTLSConfig,
 		certs:           services.GRPCCerts,
 		logger:          services.Logger.Named("hub"),
+		boltDb:          services.Database,
 	}
-	s.Service = service.New(service.MonoApply(s.applyConfig), service.WithOnStop[config.Root](func() {
-		s.Clear()
-	}))
+	s.Service = service.New(
+		service.MonoApply(s.applyConfig),
+		service.WithOnStop[config.Root](func() {
+			s.Clear()
+		}),
+		service.WithRetry[config.Root](service.RetryWithLogger(func(logContext service.RetryContext) {
+			logContext.LogTo("applyConfig", s.logger)
+		})),
+	)
 	return s
 }
 
@@ -72,6 +81,7 @@ type System struct {
 	sharedKey       pki.PrivateKey
 	clientTLSConfig *tls.Config
 	logger          *zap.Logger
+	boltDb          *bolthold.Store
 
 	certs   *pki.SourceSet
 	sources []pki.Source
@@ -105,6 +115,35 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 		if err != nil {
 			return fmt.Errorf("init: %w", err)
 		}
+
+		// caSource sources the certs used to sign enrollment requests
+		caSource := s.newCA(cfg)
+		// grpcSource generates certs signed by caSource and is trusted by the cohort this controller manages
+		grpcSource := s.newGRPC(cfg, caSource)
+
+		server.Authority = caSource
+		server.TestTLSConfig = s.clientTLSConfig
+		server.ManagerName = cfg.Name
+		if server.ManagerName == "" {
+			server.ManagerName = s.name
+		}
+		server.ManagerAddr = cfg.Address
+		if server.ManagerAddr == "" {
+			server.ManagerAddr = s.endpoint
+		}
+		if server.ManagerAddr == "" {
+			ipAddr, err := netutil.OutboundAddr()
+			if err != nil {
+				return err
+			}
+			server.ManagerAddr = ipAddr.String() + ":23557" // guess at the default port
+		}
+
+		s.sources = append(s.sources, grpcSource)
+		s.certs.Append(grpcSource)
+		s.holder.Fill(gen.WrapHubApi(server))
+	case config.StorageTypeBolt:
+		server := bolthub.NewServerFromBolthold(s.boltDb, s.logger)
 
 		// caSource sources the certs used to sign enrollment requests
 		caSource := s.newCA(cfg)
@@ -167,6 +206,10 @@ func (s *System) newCA(cfg config.Root) pki.Source {
 	}
 
 	selfSignedCA := pki.LazySource(func() (pki.Source, error) {
+		name := s.name
+		if name == "" {
+			name = "hub-ca"
+		}
 		key, _, err := pki.LoadOrGeneratePrivateKey(filepath.Join(s.dataDir, "hub-self-signed-ca.key.pem"), s.logger)
 		if err != nil {
 			return nil, err
@@ -174,11 +217,12 @@ func (s *System) newCA(cfg config.Root) pki.Source {
 		return pki.CacheSource(
 			pki.SelfSignedSourceT(key,
 				&x509.Certificate{
-					Subject:               pkix.Name{CommonName: "hub-ca"},
+					Subject:               pkix.Name{CommonName: name},
 					KeyUsage:              x509.KeyUsageCertSign,
 					IsCA:                  true,
 					BasicConstraintsValid: true,
 				},
+				pki.WithExpireAfter(10*365*24*time.Hour),
 			),
 			expire.AfterProgress(0.5),
 			pki.WithFSCache(

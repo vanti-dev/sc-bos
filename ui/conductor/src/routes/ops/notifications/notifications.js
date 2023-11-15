@@ -3,7 +3,6 @@ import {useAccountStore} from '@/stores/account';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
 import {acceptHMRUpdate, defineStore} from 'pinia';
 
-
 const SeverityStrings = {
   [Alert.Severity.INFO]: 'INFO',
   [Alert.Severity.WARNING]: 'WARN',
@@ -30,10 +29,10 @@ export const useNotifications = defineStore('notifications', () => {
         if (i < severity) {
           str += '+' + (severity - i);
         }
-        return {text: str, color: `${SeverityColor[i]}--text`};
+        return {text: str, color: `${SeverityColor[i]}--text`, background: `${SeverityColor[i]}`};
       }
     }
-    return {text: 'unspecified', color: 'gray--text'};
+    return {text: 'unspecified', color: 'gray--text', background: 'gray'};
   }
 
   const account = useAccountStore();
@@ -54,12 +53,16 @@ export const useNotifications = defineStore('notifications', () => {
         };
       }
       acknowledgeAlert({
-        name, id: alert.id, allowAcknowledged: false, allowMissing: false, author
-      })
-          .catch(err => console.error(err));
+        name,
+        id: alert.id,
+        allowAcknowledged: false,
+        allowMissing: false,
+        author
+      }).catch((err) => console.error(err));
     } else {
-      unacknowledgeAlert({name, id: alert.id, allowAcknowledged: false, allowMissing: false})
-          .catch(err => console.error(err));
+      unacknowledgeAlert({name, id: alert.id, allowAcknowledged: false, allowMissing: false}).catch((err) =>
+        console.error(err)
+      );
     }
   }
 

@@ -1126,10 +1126,15 @@
     estree-walker "^2.0.1"
     picomatch "^2.2.2"
 
-"@sc-bos/ui-gen@1.0.0-beta.10":
-  version "1.0.0-beta.10"
-  resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/ui-gen/-/ui-gen-1.0.0-beta.10.tgz#61d799a9b5432d7500baf1f353ff6e7c1b2382fa"
-  integrity sha512-DjLtfx0+u/KhMtJSpQjdI9+TbVO05t77Scd+RbmsUHA8ArdlCqTkpSj2nMUpCOktDYrj9Tun1mroRBJKjazKWA==
+"@sc-bos/panzoom-package@1.0.1-vanti.0":
+  version "1.0.1-vanti.0"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/panzoom-package/-/panzoom-package-1.0.1-vanti.0.tgz#5e7c8dd241b0154349a16b516b7951cec7cad8ed"
+  integrity sha512-3ARMG2OYyrfhrh4KR+lwpYcimPJUPjzQ2haXl6U3sglVJW4fWbruy7TE+NgWrQ0g1P3TZXPKcp2lWZdEeTKzwQ==
+
+"@sc-bos/ui-gen@1.0.0-beta.13":
+  version "1.0.0-beta.13"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/ui-gen/-/ui-gen-1.0.0-beta.13.tgz#27bc02cf46da7e1ec3ebbfbe62f8d971bde3c9c8"
+  integrity sha512-Ngg8VPeKPrvupCMSgSwZEB1iWtFtiYW8ILNjkWEEuNyAXz1sYfYg2+ZYsU7569xre3/G1j33M/3spyJK4TvWFg==
   dependencies:
     "@smart-core-os/sc-api-grpc-web" "^1.0.0-beta.42"
     google-protobuf "^3.21.2"
@@ -1156,6 +1161,14 @@
   version "1.0.0-beta.42"
   resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.42.tgz#77b3bf36bdd95980f51eb84a6967c4b5f8ef7ed4"
   integrity sha512-JxgKw7XjAbSDMcasSAgRrZLoGcmVLNialO9gLoSFeI74DLXp+gSKT3rwiGesDMLe3sZ08jyPFyssJWW8xr5HNw==
+  dependencies:
+    google-protobuf "^3.21.2"
+    grpc-web "^1.4.2"
+
+"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.43":
+  version "1.0.0-beta.43"
+  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.43.tgz#e966ac301c27f7c48909b4634afa0721f82cc182"
+  integrity sha512-SFUaDSicmcYtWuKxL9ezBoYj8wWrDT6kXQd2JJir2lzQDkuNHnzEnGlg8+3Yc+pK5zbqMFIEGRFQbs/SOK41NA==
   dependencies:
     google-protobuf "^3.21.2"
     grpc-web "^1.4.2"
@@ -1899,6 +1912,11 @@ dayjs@^1.11.7:
   version "1.11.7"
   resolved "https://nexus.vanti.co.uk/repository/npm-public/dayjs/-/dayjs-1.11.7.tgz#4b296922642f70999544d1144a2c25730fce63e2"
   integrity sha512-+Yw9U6YO5TQohxLcIkrXBeY73WP3ejHWVvx8XCk3gxvQDCTEmS48ZrSZCKciI7Bhl/uCMyxYtE9UqRILmFphkQ==
+
+debounce@^1.2.1:
+  version "1.2.1"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/debounce/-/debounce-1.2.1.tgz#38881d8f4166a5c5848020c11827b834bcb3e0a5"
+  integrity sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==
 
 debug@^4.1.0, debug@^4.1.1, debug@^4.3.2, debug@^4.3.4:
   version "4.3.4"
@@ -2781,6 +2799,11 @@ json5@^2.1.2, json5@^2.2.1:
   version "2.2.2"
   resolved "https://nexus.vanti.co.uk/repository/npm-public/json5/-/json5-2.2.2.tgz#64471c5bdcc564c18f7c1d4df2e2297f2457c5ab"
   integrity sha512-46Tk9JiOL2z7ytNQWFLpj99RZkVgeHf87yGQKsIkaPz1qSH9UczKH1rO7K3wgRselo0tYMUNfecYpm/p1vC7tQ==
+
+jwt-decode@^3.1.2:
+  version "3.1.2"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/jwt-decode/-/jwt-decode-3.1.2.tgz#3fb319f3675a2df0c2895c8f5e9fa4b67b04ed59"
+  integrity sha512-UfpWE/VZn0iP50d8cz9NrZLM9lSWhcJ+0Gt/nm4by88UL+J1SiKN8/5dkjMmbEzwL2CAe+67GsegCbIKtbp75A==
 
 keycloak-js@^19.0.1:
   version "19.0.1"

@@ -6,6 +6,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
    * @private
    */
   const _config = ref({});
+  const _loaded = ref(false);
   let _configResolve;
   const configPromise = new Promise((resolve) => _configResolve = resolve);
 
@@ -16,8 +17,6 @@ export const useAppConfigStore = defineStore('appConfig', () => {
    * @private
    */
   const _defaultConfig = {
-    hub: false, // specifies if we're talking to a hub or an area controller
-    proxy: false, // specifies if we're using querying via an proxy (e.g. EdgeGateway) or not
     features: {
       'auth': {
         'users': true,
@@ -47,7 +46,8 @@ export const useAppConfigStore = defineStore('appConfig', () => {
     config: {
       home: '/devices',
       hub: false, // specifies if we're talking to a hub or an area controller
-      proxy: false // specifies if we're using querying via an proxy (e.g. EdgeGateway) or not
+      proxy: false, // specifies if we're using querying via an proxy (e.g. EdgeGateway) or not
+      disableAuthentication: false // specifies if we're using authentication or not
     }
   };
 
@@ -56,6 +56,9 @@ export const useAppConfigStore = defineStore('appConfig', () => {
    * Loads the config from the server
    */
   async function loadConfig() {
+    if (_loaded.value) {
+      return;
+    }
     const url = import.meta.env.VITE_UI_CONFIG_URL || '/__/scos/ui-config.json';
     try {
       const res = await fetch(url);
@@ -65,6 +68,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
       _config.value = _defaultConfig;
     }
     _configResolve(config.value);
+    _loaded.value = true;
   }
 
   /**

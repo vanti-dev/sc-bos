@@ -26,10 +26,12 @@ type Attributes struct {
 	// message once Stream.Open is true.
 	Request any `json:"request"`
 
-	CertificateValid bool              `json:"certificate_valid"` // A cert is present and validated against the CA
-	Certificate      *x509.Certificate `json:"certificate"`       // Claims in the validated certificate
-	TokenValid       bool              `json:"token_valid"`       // A token is present and signature validated
-	TokenClaims      any               `json:"token_claims"`      // Claims in the validated token
+	CertificatePresent bool              `json:"certificate_present"` // A client cert was provided
+	CertificateValid   bool              `json:"certificate_valid"`   // A cert is present and validated against the CA
+	Certificate        *x509.Certificate `json:"certificate"`         // Claims in the validated certificate
+	TokenPresent       bool              `json:"token_present"`       // A token is present
+	TokenValid         bool              `json:"token_valid"`         // A token is present and signature validated
+	TokenClaims        any               `json:"token_claims"`        // Claims in the validated token
 }
 
 type StreamAttributes struct {
@@ -44,6 +46,13 @@ type StreamAttributes struct {
 
 type Policy interface {
 	EvalPolicy(ctx context.Context, query string, input Attributes) (rego.ResultSet, error)
+}
+
+// Func implements Policy by calling a function.
+type Func func(ctx context.Context, query string, input Attributes) (rego.ResultSet, error)
+
+func (f Func) EvalPolicy(ctx context.Context, query string, input Attributes) (rego.ResultSet, error) {
+	return f(ctx, query, input)
 }
 
 // Validate will validate a set of decision attributes against a policy.

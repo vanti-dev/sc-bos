@@ -31,8 +31,14 @@ func (_ factory) New(services auto.Services) service.Lifecycle {
 }
 
 func NewUDMI(services auto.Services) service.Lifecycle {
+	logger := services.Logger.Named(AutoType)
 	e := &udmiAuto{services: services}
-	e.Service = service.New(service.MonoApply(e.applyConfig))
+	e.Service = service.New(
+		service.MonoApply(e.applyConfig),
+		service.WithRetry[config.Root](service.RetryWithLogger(func(logContext service.RetryContext) {
+			logContext.LogTo("applyConfig", logger)
+		})),
+	)
 	e.services.Logger = services.Logger.Named(AutoType)
 	return e
 }

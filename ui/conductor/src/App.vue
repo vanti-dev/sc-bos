@@ -7,9 +7,9 @@
         :clipped-right="hasSidebar"
         elevation="0"
         class="pr-7">
-      <app-menu/>
+      <app-menu v-if="isLoggedIn"/>
       <sc-logo outline="white" style="height: 35px; margin-left: 16px"/>
-      <span class="heading">Smart Core | {{ pageTitle }}</span>
+      <span class="heading">Smart Core {{ isLoggedIn ? ' | ' + pageTitle : '' }}</span>
 
       <v-divider
           vertical
@@ -24,9 +24,10 @@
     </v-app-bar>
 
     <v-navigation-drawer
-        v-if="hasNav"
+        v-if="hasNav && isLoggedIn"
         v-model="drawer"
         app
+        class="siteNavigation"
         :class="[!miniVariant ? 'pt-0' : 'pt-3', 'pb-8 ml-2']"
         clipped
         color="transparent"
@@ -62,30 +63,34 @@
       </template>
     </v-navigation-drawer>
 
-    <router-view/>
+    <router-view v-if="isLoggedIn"/>
 
     <error-view/>
   </v-app>
 </template>
 
 <script setup>
-import {computed, watch} from 'vue';
-import {storeToRefs} from 'pinia';
-
 import AccountBtn from '@/components/AccountBtn.vue';
 import AppMenu from '@/components/AppMenu.vue';
 import {usePage} from '@/components/page.js';
 import ScLogo from '@/components/ScLogo.vue';
 import ErrorView from '@/components/ui-error/ErrorView.vue';
+
+import useAuthSetup from '@/composables/useAuthSetup';
 import {useAccountStore} from '@/stores/account.js';
+import {useControllerStore} from '@/stores/controller';
 import {usePageStore} from '@/stores/page';
+import {storeToRefs} from 'pinia';
+import {computed, onMounted, watch} from 'vue';
+
+const {isLoggedIn} = useAuthSetup();
 
 const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
 
 const {drawer, miniVariant, drawerWidth, pinDrawer} = storeToRefs(usePageStore());
+const controller = useControllerStore();
 
 const store = useAccountStore();
-
 store.loadLocalStorage();
 
 const appVersion = computed(() => {
@@ -93,6 +98,10 @@ const appVersion = computed(() => {
     return GITVERSION.substring(3);
   }
   return GITVERSION;
+});
+
+onMounted(() => {
+  controller.sync();
 });
 
 watch(miniVariant, expanded => {
@@ -104,7 +113,7 @@ watch(miniVariant, expanded => {
 }, {immediate: true, deep: true, flush: 'sync'});
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .v-application {
   background: var(--v-neutral-darken1);
 }
@@ -128,5 +137,12 @@ watch(miniVariant, expanded => {
 
 .pin-sidebar-btn {
   width: 100%;
+}
+
+
+/** This helps displaying the notification counter badge, while keeping the right sidebar scrollable */
+.siteNavigation,
+.siteNavigation ::v-deep .v-navigation-drawer__content {
+  overflow: visible;
 }
 </style>

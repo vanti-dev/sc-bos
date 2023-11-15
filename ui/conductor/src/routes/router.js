@@ -8,7 +8,9 @@ import {route, routeTitle} from '@/util/router.js';
 import Vue, {nextTick} from 'vue';
 import VueRouter from 'vue-router';
 import {useAppConfigStore} from '@/stores/app-config';
+import useAuthSetup from '@/composables/useAuthSetup';
 import {usePageStore} from '@/stores/page';
+import {storeToRefs} from 'pinia';
 
 Vue.use(VueRouter);
 
@@ -33,20 +35,25 @@ if (window) {
     }
 
     const title = nt ? `${nt} - Smart Core` : `Smart Core`;
-    nextTick(() => (window.document.title = title));
+    nextTick(() => window.document.title = title);
   });
   router.beforeEach(async (to, from, next) => {
     const appConfig = useAppConfigStore();
-    const pageStore = usePageStore();
     await appConfig.loadConfig();
 
-    if (to.path === '/') {
-      next(appConfig.homePath);
-    } else {
-      next(appConfig.pathEnabled(to.path));
-    }
+    const authSetup = useAuthSetup();
+    authSetup.navigate(to.path, next);
 
-    pageStore.closeSidebar(); // any sidebar data leftover to be cleared
+    // Clear the sidebar when navigating to a different main path
+    const {showSidebar, sidebarTitle, sidebarData} = storeToRefs(usePageStore());
+    const mainPathFrom = from.path.split('/')[1];
+    const mainPathTo = to.path.split('/')[1];
+
+    if (mainPathFrom !== mainPathTo) {
+      showSidebar.value = false;
+      sidebarTitle.value = '';
+      sidebarData.value = {};
+    }
   });
 }
 

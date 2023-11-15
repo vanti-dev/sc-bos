@@ -1,6 +1,8 @@
 package auto
 
 import (
+	"crypto/tls"
+
 	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -10,11 +12,12 @@ import (
 )
 
 type Services struct {
-	Logger        *zap.Logger
-	Node          *node.Node // for advertising devices
-	Database      *bolthold.Store
-	GRPCServices  grpc.ServiceRegistrar // for registering non-routed services
-	CohortManager node.Remote
+	Logger          *zap.Logger
+	Node            *node.Node // for advertising devices
+	Database        *bolthold.Store
+	GRPCServices    grpc.ServiceRegistrar // for registering non-routed services
+	CohortManager   node.Remote
+	ClientTLSConfig *tls.Config
 }
 
 // Factory constructs new automation instances.

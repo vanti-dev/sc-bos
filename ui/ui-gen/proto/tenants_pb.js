@@ -3076,7 +3076,8 @@ proto.smartcore.bos.tenants.PullTenantRequest.prototype.toObject = function(opt_
  */
 proto.smartcore.bos.tenants.PullTenantRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 1, false)
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 2, false)
   };
 
   if (includeInstance) {
@@ -3114,6 +3115,10 @@ proto.smartcore.bos.tenants.PullTenantRequest.deserializeBinaryFromReader = func
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setUpdatesOnly(value);
       break;
@@ -3146,10 +3151,17 @@ proto.smartcore.bos.tenants.PullTenantRequest.prototype.serializeBinary = functi
  */
 proto.smartcore.bos.tenants.PullTenantRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
   f = message.getUpdatesOnly();
   if (f) {
     writer.writeBool(
-      1,
+      2,
       f
     );
   }
@@ -3157,11 +3169,29 @@ proto.smartcore.bos.tenants.PullTenantRequest.serializeBinaryToWriter = function
 
 
 /**
- * optional bool updates_only = 1;
+ * optional string id = 1;
+ * @return {string}
+ */
+proto.smartcore.bos.tenants.PullTenantRequest.prototype.getId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.tenants.PullTenantRequest} returns this
+ */
+proto.smartcore.bos.tenants.PullTenantRequest.prototype.setId = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional bool updates_only = 2;
  * @return {boolean}
  */
 proto.smartcore.bos.tenants.PullTenantRequest.prototype.getUpdatesOnly = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 1, false));
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 2, false));
 };
 
 
@@ -3170,7 +3200,7 @@ proto.smartcore.bos.tenants.PullTenantRequest.prototype.getUpdatesOnly = functio
  * @return {!proto.smartcore.bos.tenants.PullTenantRequest} returns this
  */
 proto.smartcore.bos.tenants.PullTenantRequest.prototype.setUpdatesOnly = function(value) {
-  return jspb.Message.setProto3BooleanField(this, 1, value);
+  return jspb.Message.setProto3BooleanField(this, 2, value);
 };
 
 

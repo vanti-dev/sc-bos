@@ -1,6 +1,6 @@
 {
   "name": "@sc-bos/ui-gen",
-  "version": "1.0.0-beta.10",
+  "version": "1.0.0-beta.13",
   "type": "commonjs",
   "scripts": {
     "gen": "node gen.mjs",

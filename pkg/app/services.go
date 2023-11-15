@@ -55,11 +55,12 @@ func (c *Controller) startDrivers() (*service.Map, error) {
 
 func (c *Controller) startAutomations() (*service.Map, error) {
 	ctxServices := auto.Services{
-		Logger:        c.Logger.Named("auto"),
-		Node:          c.Node,
-		Database:      c.Database,
-		GRPCServices:  c.GRPC,
-		CohortManager: c.ManagerConn,
+		Logger:          c.Logger.Named("auto"),
+		Node:            c.Node,
+		Database:        c.Database,
+		GRPCServices:    c.GRPC,
+		CohortManager:   c.ManagerConn,
+		ClientTLSConfig: c.ClientTLSConfig,
 	}
 
 	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
@@ -114,8 +115,11 @@ func (c *Controller) startSystems() (*service.Map, error) {
 
 func (c *Controller) startZones() (*service.Map, error) {
 	ctxServices := zone.Services{
-		Logger: c.Logger.Named("auto"),
-		Node:   c.Node,
+		Logger:          c.Logger.Named("zone"),
+		Node:            c.Node,
+		ClientTLSConfig: c.ClientTLSConfig,
+		HTTPMux:         c.Mux,
+		DriverFactories: c.SystemConfig.DriverFactories,
 	}
 
 	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
@@ -157,10 +161,12 @@ func logServiceRecordChange(logger *zap.Logger, oldVal, newVal *service.StateRec
 		logger.Debug("Removed")
 	case oldVal == nil: // created
 		logger.Debug("Created", zap.Bool("active", newVal.State.Active), zap.Bool("loading", newVal.State.Loading), zap.Error(newVal.State.Err))
-	case newVal.State.Err != nil && oldVal.State.Err == nil: // error
+	case !newVal.State.Active && newVal.State.Err != nil && oldVal.State.Err == nil: // error
 		logger.Warn("Failed to load", zap.Error(newVal.State.Err))
 	case oldVal.State.Active && !newVal.State.Active: // stopped
 		logger.Debug("Stopped", zap.Error(newVal.State.Err))
+	case newVal.State.Active && newVal.State.Loading && !newVal.State.NextAttemptTime.IsZero(): // retrying
+		// rely on the service itself to log any issues that caused the retry
 	case newVal.State.Active && newVal.State.Loading: // loading
 		logger.Debug("Loading")
 	case !oldVal.State.Active && newVal.State.Active || oldVal.State.Loading && !newVal.State.Loading: // started

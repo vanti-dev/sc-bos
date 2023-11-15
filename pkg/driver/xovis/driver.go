@@ -95,6 +95,7 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 					client:      d.client,
 					multiSensor: conf.MultiSensor,
 					logicID:     dev.Occupancy.ID,
+					bus:         d.pushDataBus,
 				})),
 			))
 		}

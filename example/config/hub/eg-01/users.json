@@ -1,0 +1,10 @@
+[
+  {
+    "id": "admin",
+    "title": "Local Admin",
+    "roles": ["viewer"],
+    "secrets": [
+      {"hash": "$2a$10$qglXWJqe43TYbx0PLgJK3.eEfNpWXdzwH1Ok/E/hB2WAY/SW6HKfq", "plain": "admin"}
+    ]
+  }
+]

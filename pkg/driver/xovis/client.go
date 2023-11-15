@@ -68,6 +68,11 @@ func handleResponse(res *http.Response, destPtr any) error {
 	if err != nil {
 		return err
 	}
+	if len(rawJSON) == 0 {
+		// an empty response is not a valid json payload,
+		// so we ignore it to avoid incorrect errors being reported
+		return nil
+	}
 	return json.Unmarshal(rawJSON, destPtr)
 }
 

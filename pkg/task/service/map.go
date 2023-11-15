@@ -260,7 +260,6 @@ func (m *Map) GetAndListenState(ctx context.Context) ([]*StateRecord, <-chan *St
 	out := make(chan *StateChange)
 	var wg sync.WaitGroup // tracks go routines that can send to out, we only close out when there are no more
 	listen := func(record *Record, stateRecord *StateRecord, changes <-chan State) {
-		wg.Add(1)
 		defer wg.Done()
 		m.listenRecordStates(ctx, record, stateRecord, changes, out)
 	}
@@ -279,6 +278,7 @@ func (m *Map) GetAndListenState(ctx context.Context) ([]*StateRecord, <-chan *St
 			State:  state,
 		}
 		states = append(states, stateRecord)
+		wg.Add(1)
 		go listen(record, stateRecord, stateChanges)
 	}
 
@@ -313,6 +313,7 @@ func (m *Map) GetAndListenState(ctx context.Context) ([]*StateRecord, <-chan *St
 				if err := chans.SendContext(ctx, out, stateChange); err != nil {
 					return
 				}
+				wg.Add(1)
 				go listen(record, stateRecord, stateChanges)
 			case change.NewValue == nil: // remove
 				if stop, ok := stopByID[change.OldValue.Id]; ok {

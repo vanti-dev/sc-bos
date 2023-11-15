@@ -29,3 +29,28 @@ to another node as that node will not trust our self signed certificates.
 You may configure the driver to not send a client cert - disabling mTLS - by setting the
 `nodes.tls.insecureNoClientCert` property to `true`. Disabling the verification of server certificates is accomplished
 by setting `nodes.tls.insecureSkipVerify` to `true`. These properties should not be used in production environments!
+
+## OAuth 2 support (tenant proxying)
+
+The proxy driver supports using access tokens to authenticate to the remote node.
+Each node can be configured using an `oauth2` section to set the token endpoint
+and credentials.
+This is designed to be used with Smart Core's built-in OAuth 2 server, using the
+tenant token system. The client credentials grant type is used.
+When enabled, access tokens will automatically be fetched where necessary and refreshed
+when expired.
+The same TLS client configuration is used for connecting to the token server specified
+in `tokenEndpoint` as the proxied gRPC server specified in `host`.
+
+### Example Node Configuration
+
+```json
+{
+  "host": "1.2.3.4:23557",
+  "oauth2": {
+    "tokenEndpoint": "https://1.2.3.4:8443/oauth2/token",
+    "clientId": "foobarclientid",
+    "clientSecretFile": "/run/secrets/client-secret"
+  }
+}
+```

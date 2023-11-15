@@ -1,6 +1,7 @@
 package allsystems
 
 import (
+	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts"
 	"github.com/vanti-dev/sc-bos/pkg/system/authn"
@@ -18,7 +19,7 @@ func Factories() map[string]system.Factory {
 		"authn":        authn.Factory(),
 		"history":      history.Factory,
 		"hub":          hub.Factory(),
-		proxy.Name:     proxy.Factory,
+		proxy.Name:     proxy.Factory(alltraits.LightingTestHolder),
 		"publications": publications.Factory,
 		"tenants":      tenants.Factory,
 	}

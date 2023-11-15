@@ -35,17 +35,17 @@ const rows = computed(() => {
   return [
     {
       label: 'Real Power',
-      value: realPower.value?.toFixed(3),
+      value: (realPower.value ? realPower.value / 1000 : 0).toFixed(3),
       unit: 'kW'
     },
     {
       label: 'Apparent Power',
-      value: apparentPower.value?.toFixed(3),
+      value: (apparentPower.value ? apparentPower.value / 1000 : 0).toFixed(3),
       unit: 'kVA'
     },
     {
       label: 'Reactive Power',
-      value: reactivePower.value?.toFixed(3),
+      value: (reactivePower.value ? reactivePower.value / 1000 : 0).toFixed(3),
       unit: 'kVAr'
     },
     {

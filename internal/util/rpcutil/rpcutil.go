@@ -79,23 +79,21 @@ func ServiceMethod(ctx context.Context) (service, method string, ok bool) {
 	return SplitMethodPath(full)
 }
 
-// VerifiedCertFromServerContext finds the certificate of the connection peer that was verified when the
-// connection was established.
-// Returns nil if no certificate was verified.
-func VerifiedCertFromServerContext(ctx context.Context) *x509.Certificate {
+// CertFromServerContext returns the peer provided certificate any whether it id valid or not.
+func CertFromServerContext(ctx context.Context) (cert *x509.Certificate, valid bool) {
 	peerInfo, ok := peer.FromContext(ctx)
 	if !ok {
-		return nil
+		return nil, false
 	}
 
 	tlsInfo, ok := peerInfo.AuthInfo.(credentials.TLSInfo)
 	if !ok {
-		return nil
+		return nil, false
 	}
 
-	verifiedChains := tlsInfo.State.VerifiedChains
-	if len(verifiedChains) == 0 {
-		return nil
+	peerCerts := tlsInfo.State.PeerCertificates
+	if len(peerCerts) == 0 {
+		return nil, false
 	}
-	return verifiedChains[0][0]
+	return peerCerts[0], len(tlsInfo.State.VerifiedChains) > 0
 }

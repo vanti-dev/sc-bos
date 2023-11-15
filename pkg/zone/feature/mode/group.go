@@ -15,7 +15,10 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
+	"github.com/vanti-dev/sc-bos/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/util/chans"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/mode/config"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
 )
 
 // MixedValue is used as ModeValues.Value when underlying devices disagree on the actual value for a mode.
@@ -53,50 +56,33 @@ func (g *Group) GetModeValues(ctx context.Context, request *traits.GetModeValues
 	if len(names) == 0 {
 		return nil, status.Error(codes.FailedPrecondition, "zone has no mode names")
 	}
-	type result struct {
-		val *traits.ModeValues
-		err error
-	}
-	results := make([]result, len(names))
-
-	var wg sync.WaitGroup
-	wg.Add(len(names))
+	fns := make([]func() (*traits.ModeValues, error), len(names))
 	for i, name := range names {
-		i := i
 		name := name
-		go func() {
-			defer wg.Done()
-			values, err := g.client.GetModeValues(ctx, &traits.GetModeValuesRequest{Name: name})
-			results[i] = result{val: values, err: err}
-		}()
+		fns[i] = func() (*traits.ModeValues, error) {
+			return g.client.GetModeValues(ctx, &traits.GetModeValuesRequest{Name: name})
+		}
 	}
 
-	wgDone := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(wgDone)
-	}()
+	allRes, allErrs := run.Collect(ctx, run.DefaultConcurrency, fns...)
 
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case <-wgDone:
+	err := multierr.Combine(allErrs...)
+	if len(multierr.Errors(err)) == len(names) {
+		return nil, err
 	}
 
-	var allErrs []error
+	if err != nil {
+		if g.logger != nil {
+			g.logger.Warn("some modes failed to get", zap.Errors("errors", multierr.Errors(err)))
+		}
+	}
+
 	all := make(map[string]*traits.ModeValues)
-	for i, r := range results {
-		if r.err != nil {
-			allErrs = append(allErrs, r.err)
+	for i, res := range allRes {
+		if res == nil {
 			continue
 		}
-		all[names[i]] = r.val
-	}
-	if len(allErrs) == len(names) {
-		return nil, multierr.Combine(allErrs...)
-	}
-	if len(allErrs) > 0 {
-		g.logger.Warn("some devices failed to get mode values", zap.Errors("errors", allErrs))
+		all[names[i]] = res
 	}
 
 	return g.mergeModeValues(all), nil
@@ -168,7 +154,11 @@ func (g *Group) UpdateModeValues(ctx context.Context, request *traits.UpdateMode
 		return nil, multierr.Combine(allErrs...)
 	}
 	if len(allErrs) > 0 {
-		g.logger.Warn("some devices failed to update mode values", zap.Errors("errors", allErrs))
+		if g.logger != nil {
+			g.logger.Warn("some modes failed to update",
+				zap.Int("success", len(results)-len(allErrs)), zap.Int("failed", len(allErrs)),
+				zap.Errors("errors", allErrs))
+		}
 	}
 	return g.mergeModeValues(all), nil
 }
@@ -190,23 +180,33 @@ func (g *Group) PullModeValues(request *traits.PullModeValuesRequest, server tra
 	for _, name := range names {
 		name := name
 		group.Go(func() error {
-			stream, err := g.client.PullModeValues(ctx, &traits.PullModeValuesRequest{Name: name})
-			if err != nil {
-				return err
-			}
-			for {
-				val, err := stream.Recv()
-				if err != nil {
-					return err
-				}
-				for _, change := range val.Changes {
-					select {
-					case <-ctx.Done():
-						return ctx.Err()
-					case changes <- c{name: name, val: change.ModeValues}:
+			return pull.Changes(ctx, pull.NewFetcher(
+				func(ctx context.Context, changes chan<- c) error {
+					stream, err := g.client.PullModeValues(ctx, &traits.PullModeValuesRequest{Name: name})
+					if err != nil {
+						return err
 					}
-				}
-			}
+					for {
+						res, err := stream.Recv()
+						if err != nil {
+							return err
+						}
+						for _, change := range res.Changes {
+							err := chans.SendContext(ctx, changes, c{name: name, val: change.ModeValues})
+							if err != nil {
+								return err
+							}
+						}
+					}
+				},
+				func(ctx context.Context, changes chan<- c) error {
+					res, err := g.client.GetModeValues(ctx, &traits.GetModeValuesRequest{Name: name})
+					if err != nil {
+						return err
+					}
+					return chans.SendContext(ctx, changes, c{name: name, val: res})
+				},
+			), changes)
 		})
 	}
 
