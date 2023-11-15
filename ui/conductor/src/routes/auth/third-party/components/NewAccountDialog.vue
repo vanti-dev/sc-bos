@@ -7,13 +7,13 @@
       <v-card-title>Add Tenant</v-card-title>
       <v-list>
         <v-list-item>
-          <v-text-field label="Name" v-model="name" filled hide-details/>
+          <v-text-field label="Name" v-model="name" filled hide-details @keydown.enter="addTenant"/>
         </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer/>
         <v-btn color="error" @click="cancel">Cancel</v-btn>
-        <v-btn color="primary" @click="addTenant">Add</v-btn>
+        <v-btn color="primary" :disabled="!name" @click="addTenant">Add</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -62,6 +62,10 @@ function cancel() {
  *
  */
 async function addTenant() {
+  if (name.value === '') {
+    return;
+  }
+
   const req = {
     tenant: {
       title: name.value
