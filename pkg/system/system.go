@@ -15,6 +15,7 @@ import (
 )
 
 type Services struct {
+	ConfigDir       string
 	DataDir         string
 	Logger          *zap.Logger
 	GRPCEndpoint    string     // host:port of this controllers grpc api

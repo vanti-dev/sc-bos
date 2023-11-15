@@ -54,8 +54,8 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	// load the local config file if possible
 	// TODO: pull config from manager publication
-	localConfigPath := filepath.Join(config.DataDir, config.AppConfigFile)
-	localConfig, err := appconf.LoadLocalConfig(config.DataDir, config.AppConfigFile)
+	localConfigPath := filepath.Join(config.ConfigDir, config.AppConfigFile)
+	localConfig, err := appconf.LoadLocalConfig(config.ConfigDir, config.AppConfigFile)
 	if localConfig == nil && err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			logger.Debug("local config file not found", zap.String("path", localConfigPath))

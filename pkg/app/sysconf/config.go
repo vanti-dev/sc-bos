@@ -23,7 +23,7 @@ func Load(dst *Config) error {
 	if _, err := LoadFromArgs(dst, os.Args[1:]...); err != nil {
 		return err
 	}
-	if err := LoadFromDataDirJSON(dst); err != nil {
+	if err := LoadFromConfigDirJSON(dst); err != nil {
 		return err
 	}
 
@@ -35,7 +35,7 @@ func Load(dst *Config) error {
 
 // Config configures how the controller should run.
 type Config struct {
-	ConfigDirs  []string `json:"-"` // Dirs we look in for system config files. Config in DataDir is always loaded and will have higher priority.
+	ConfigDirs  []string `json:"-"` // Dirs we look in for system config files. Config in ConfigDir is always loaded and will have higher priority.
 	ConfigFiles []string `json:"-"` // Filenames we load in ConfigDirs for system config
 
 	// The smart core name of the controller.
@@ -50,7 +50,8 @@ type Config struct {
 	GRPCAddr string `json:"grpcAddr,omitempty"`
 	HTTPAddr string `json:"httpAddr,omitempty"`
 
-	DataDir       string                     `json:"dataDir,omitempty"` // defaults to .data/controller
+	ConfigDir     string                     `json:"configDir,omitempty"` // defaults to .data/controller
+	DataDir       string                     `json:"dataDir,omitempty"`   // defaults to .data/controller
 	StaticHosting []http.StaticHostingConfig `json:"staticHosting"`
 	AppConfigFile string                     `json:"appConfigFile,omitempty"` // defaults to app.conf.json
 	CertConfig    *Certs                     `json:"certs,omitempty"`
@@ -102,6 +103,7 @@ func Default() Config {
 			CorsOrigins: []string{"*"},
 		},
 		StaticHosting: []http.StaticHostingConfig{},
+		ConfigDir:     ".conf/controller",
 		DataDir:       ".data/controller",
 		AppConfigFile: "app.conf.json",
 

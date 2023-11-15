@@ -12,6 +12,7 @@ func LoadFromArgs(dst *Config, args ...string) ([]string, error) {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
 	fs.StringVar(&dst.ListenGRPC, "listen-grpc", dst.ListenGRPC, "address (host:port) to host a Smart Core gRPC server on")
 	fs.StringVar(&dst.ListenHTTPS, "listen-https", dst.ListenHTTPS, "address (host:port) to host a HTTPS server on")
+	fs.StringVar(&dst.ConfigDir, "config-dir", dst.ConfigDir, "path to local config storage directory")
 	fs.StringVar(&dst.DataDir, "data-dir", dst.DataDir, "path to local data storage directory")
 	fs.Var(disablePolicy{dst}, "insecure-disable-policy", "Deprecated. Equivalent to --policy-mode=off")
 	fs.Var(&dst.PolicyMode, "policy-mode", `Configure how requests are compared against the authorization policy.
