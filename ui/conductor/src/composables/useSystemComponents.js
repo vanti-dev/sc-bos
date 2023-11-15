@@ -15,10 +15,38 @@ import {parseCertificate} from '@/util/certificates';
  *   enrollHubNodeValue: ActionTracker<HubNode.AsObject>,
  *   enrollHubNodeAction: (address: string) => Promise<void>,
  *   forgetHubNodeAction: (address: string) => Promise<void>,
+ *   forgetHubNodeValue: ActionTracker<HubNode.AsObject>,
+ *   inspectHubNodeValue: ActionTracker<InspectHubNodeResponse.AsObject>,
+ *   inspectHubNodeAction: (address: string) => Promise<void>,
+ *   readCertificates: import('vue').ComputedRef<{
+ *     validityPeriod: string,
+ *     extensions: {
+ *       keyUsage: string,
+ *       basicConstraints: string,
+ *       subjectKeyIdentifier: string
+ *     },
+ *     keyLength: number,
+ *     serial: string,
+ *     subject: {
+ *       commonName: string,
+ *       organization: string
+ *     },
+ *     sha1Fingerprint: string,
+ *     sha256Fingerprint: string,
+ *     primaryDomain: string,
+ *     subjectAltDomains: string,
+ *     version: number,
+ *     signatureAlgorithm: string,
+ *     issuer: {
+ *       commonName: string
+ *     }
+ *   }[]>,
+ *   resetCertificates: () => void,
+ *   readMetadata: import('vue').ComputedRef<MetadataResponse.AsObject>,
  *   nodeDetails: Record<string, {
- *   automations: ServiceTracker,
- *   drivers: ServiceTracker,
- *   systems: ServiceTracker
+ *     automations: ServiceTracker,
+ *     drivers: ServiceTracker,
+ *     systems: ServiceTracker
  *   }>,
  *   nodesList: import('vue').ComputedRef<HubNode.AsObject[]>,
  *   isProxy: (nodeName: string) => boolean,
@@ -125,8 +153,16 @@ export default function() {
     Object.assign(inspectHubNodeValue, newActionTracker());
   };
 
-  // --------------------------- //
-  // List and Track Hub Nodes
+
+  const readMetadata = computed(() => {
+    if (!inspectHubNodeValue?.response?.metadata) {
+      return null;
+    }
+
+    return inspectHubNodeValue.response.metadata;
+  });
+    // --------------------------- //
+    // List and Track Hub Nodes
   const nodeDetails = reactive({});
 
   let unwatchTrackers = [];
@@ -198,6 +234,7 @@ export default function() {
     inspectHubNodeAction,
     readCertificates,
     resetCertificates,
+    readMetadata,
 
     nodeDetails,
     nodesList,

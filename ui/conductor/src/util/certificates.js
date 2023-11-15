@@ -128,7 +128,10 @@ export async function parseCertificate(pem) {
   const certificateInformation = {
     primaryDomain: '',
     subjectAltDomains: '',
-    validityPeriod: '',
+    validityPeriod: {
+      from: '',
+      to: ''
+    },
     signatureAlgorithm: '',
     keyLength: 0,
     serial: '',
@@ -168,18 +171,25 @@ export async function parseCertificate(pem) {
   }
 
   // Validity period
-  const dateOptions = {year: 'numeric', month: 'short', day: 'numeric'};
+  const dateTimeOptions = {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  };
 
   if (cert.notBefore && cert.notBefore.value) {
     const notBeforeDate = new Date(cert.notBefore.value);
-    certificateInformation.validityPeriod += notBeforeDate.toLocaleDateString(undefined, dateOptions);
+    certificateInformation.validityPeriod.from = notBeforeDate.toLocaleString(undefined, dateTimeOptions);
   }
+
   if (cert.notAfter && cert.notAfter.value) {
-    if (certificateInformation.validityPeriod.length > 0) {
-      certificateInformation.validityPeriod += ' to ';
-    }
     const notAfterDate = new Date(cert.notAfter.value);
-    certificateInformation.validityPeriod += notAfterDate.toLocaleDateString(undefined, dateOptions);
+    certificateInformation.validityPeriod.to = notAfterDate.toLocaleString(undefined, dateTimeOptions);
   }
 
   // Signature algorithm
@@ -188,18 +198,18 @@ export async function parseCertificate(pem) {
   }
 
   // Key length
-  if (cert.subjectPublicKeyInfo && cert.subjectPublicKeyInfo.parsedKey) {
-    const publicKey = cert.subjectPublicKeyInfo.parsedKey;
-    if (publicKey.modulus) { // For RSA keys
-      const modulusHex = publicKey.modulus.valueBlock.valueHex;
-      certificateInformation.keyLength = modulusHex.byteLength * 8;
-    }
-  }
+  // if (cert.subjectPublicKeyInfo && cert.subjectPublicKeyInfo.parsedKey) {
+  //   const publicKey = cert.subjectPublicKeyInfo.parsedKey;
+  //   if (publicKey.modulus) { // For RSA keys
+  //     const modulusHex = publicKey.modulus.valueBlock.valueHex;
+  //     certificateInformation.keyLength = modulusHex.byteLength * 8;
+  //   }
+  // }
 
   // Serial number
-  if (cert.serialNumber) {
-    certificateInformation.serial = arrayBufferToHex(cert.serialNumber.valueBlock.valueHex);
-  }
+  // if (cert.serialNumber) {
+  //   certificateInformation.serial = arrayBufferToHex(cert.serialNumber.valueBlock.valueHex);
+  // }
 
   // Version
   if (cert.version) {

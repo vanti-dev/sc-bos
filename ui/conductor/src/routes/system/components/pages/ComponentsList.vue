@@ -35,7 +35,7 @@
                   <v-icon class="pt-1" size="24">mdi-certificate-outline</v-icon>
                 </v-btn>
               </template>
-              <span>Certificate Details</span>
+              <span>Component Details</span>
             </v-tooltip>
           </v-chip-group>
         </v-card-text>
@@ -80,7 +80,7 @@ watch(showModal, (newModal) => {
     certificateQuery.value.address = null;
     certificateQuery.value.isQueried = false;
   }
-}, {immediate: true, deep: true});
+}, {immediate: true, deep: true, flush: 'sync'});
 </script>
 
 <style scoped>
