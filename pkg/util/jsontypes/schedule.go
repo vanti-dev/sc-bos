@@ -12,7 +12,8 @@ type Schedule struct {
 	Raw string
 }
 
-func ScheduleMustParse(raw string) *Schedule {
+// MustParseSchedule parses a cron formatted schedule and panics if it fails.
+func MustParseSchedule(raw string) *Schedule {
 	schedule, err := cron.ParseStandard(raw)
 	if err != nil {
 		panic(err)

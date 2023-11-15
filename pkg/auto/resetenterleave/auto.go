@@ -52,7 +52,7 @@ func (a *Auto) applyConfig(ctx context.Context, cfg config.Root) error {
 
 	sched := cfg.Schedule
 	if sched == nil {
-		sched = jsontypes.ScheduleMustParse("0 0 * * *")
+		sched = jsontypes.MustParseSchedule("0 0 * * *")
 	}
 	go func() {
 		t := time.Now()
