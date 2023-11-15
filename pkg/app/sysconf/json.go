@@ -24,12 +24,12 @@ func LoadAllFromJSON(dst *Config) error {
 	return allErrs
 }
 
-// LoadFromDataDirJSON populates dst with json formatted config files in dst.DataDir/dst.ConfigFiles.
+// LoadFromConfigDirJSON populates dst with json formatted config files in dst.ConfigDir/dst.ConfigFiles.
 // Absent file path combinations are skipped.
-func LoadFromDataDirJSON(dst *Config) error {
+func LoadFromConfigDirJSON(dst *Config) error {
 	var allErrs error
 	for _, file := range dst.ConfigFiles {
-		err := LoadFromJSONFile(dst, filepath.Join(dst.DataDir, file))
+		err := LoadFromJSONFile(dst, filepath.Join(dst.ConfigDir, file))
 		if !errors.Is(err, os.ErrNotExist) {
 			allErrs = multierr.Append(allErrs, err)
 		}

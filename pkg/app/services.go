@@ -85,6 +85,7 @@ func (c *Controller) startSystems() (*service.Map, error) {
 		return nil, err
 	}
 	ctxServices := system.Services{
+		ConfigDir:       c.SystemConfig.ConfigDir,
 		DataDir:         c.SystemConfig.DataDir,
 		Logger:          c.Logger.Named("system"),
 		Node:            c.Node,

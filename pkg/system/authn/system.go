@@ -17,7 +17,7 @@ func (s *System) systemTenantVerifier(cfg config.Root) (tenant.Verifier, error) 
 	// Only access tokens that were produced by this verification will be validated.
 
 	// verify system accounts using file provided identities
-	fileVerifier, err := loadFileVerifier(cfg.System.FileAccounts, s.dataDir, "tenants.json")
+	fileVerifier, err := loadFileVerifier(cfg.System.FileAccounts, s.configDir, "tenants.json")
 	if err != nil {
 		// note, NotFound errors are already handled by loadFileVerifier
 		return nil, fmt.Errorf("system %w", err)

@@ -37,7 +37,7 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 	})
 	s := &System{
 		server:     f.server,
-		dataDir:    services.DataDir,
+		configDir:  services.ConfigDir,
 		clienter:   services.Node,
 		logger:     services.Logger.Named("authn"),
 		validators: services.TokenValidators,
@@ -55,7 +55,7 @@ type System struct {
 	*service.Service[config.Root]
 	server *nextOrNotFound
 
-	dataDir       string
+	configDir     string
 	clienter      node.Clienter
 	cohortManager node.Remote
 	logger        *zap.Logger
@@ -89,7 +89,7 @@ func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
 		// Verify user credentials via the OAuth2 Password Flow using a local file containing accounts.
 		// Validate access tokens that were generated via this flow.
 		if cfg.User.FileAccounts != nil {
-			fileVerifier, err := loadFileVerifier(cfg.User.FileAccounts, s.dataDir, "users.json")
+			fileVerifier, err := loadFileVerifier(cfg.User.FileAccounts, s.configDir, "users.json")
 			if err != nil {
 				return fmt.Errorf("user %w", err)
 			}
