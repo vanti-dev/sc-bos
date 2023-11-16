@@ -1131,10 +1131,10 @@
   resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/panzoom-package/-/panzoom-package-1.0.1-vanti.0.tgz#5e7c8dd241b0154349a16b516b7951cec7cad8ed"
   integrity sha512-3ARMG2OYyrfhrh4KR+lwpYcimPJUPjzQ2haXl6U3sglVJW4fWbruy7TE+NgWrQ0g1P3TZXPKcp2lWZdEeTKzwQ==
 
-"@sc-bos/ui-gen@1.0.0-beta.13":
-  version "1.0.0-beta.13"
-  resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/ui-gen/-/ui-gen-1.0.0-beta.13.tgz#27bc02cf46da7e1ec3ebbfbe62f8d971bde3c9c8"
-  integrity sha512-Ngg8VPeKPrvupCMSgSwZEB1iWtFtiYW8ILNjkWEEuNyAXz1sYfYg2+ZYsU7569xre3/G1j33M/3spyJK4TvWFg==
+"@sc-bos/ui-gen@1.0.0-beta.14":
+  version "1.0.0-beta.14"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/ui-gen/-/ui-gen-1.0.0-beta.14.tgz#3fa28d1c66b24c9606f44900e0bd1e95aae034b0"
+  integrity sha512-6aepcraY4w4DVxPB735lhAlWR86MRFYZzovzkVOB10ar1u6l/K7oRCsomOljw0C0hGkaiI7RvCyB+tSddf/uOA==
   dependencies:
     "@smart-core-os/sc-api-grpc-web" "^1.0.0-beta.42"
     google-protobuf "^3.21.2"
