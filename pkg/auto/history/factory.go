@@ -64,13 +64,36 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 		if err != nil {
 			return err
 		}
-		store, err = pgxstore.SetupStoreFromPool(ctx, cfg.Source.SourceName(), pool)
+		opts := []pgxstore.Option{
+			pgxstore.WithLogger(a.logger),
+		}
+		if ttl := cfg.Storage.TTL; ttl != nil {
+			if ttl.MaxAge.Duration > 0 {
+				opts = append(opts, pgxstore.WithMaxAge(ttl.MaxAge.Duration))
+			}
+			if ttl.MaxCount > 0 {
+				opts = append(opts, pgxstore.WithMaxCount(ttl.MaxCount))
+			}
+		}
+		store, err = pgxstore.SetupStoreFromPool(ctx, cfg.Source.SourceName(), pool, opts...)
 		if err != nil {
 			return err
 		}
 	case "memory":
-		store = memstore.New()
+		var opts []memstore.Option
+		if ttl := cfg.Storage.TTL; ttl != nil {
+			if ttl.MaxAge.Duration > 0 {
+				opts = append(opts, memstore.WithMaxAge(ttl.MaxAge.Duration))
+			}
+			if ttl.MaxCount > 0 {
+				opts = append(opts, memstore.WithMaxCount(ttl.MaxCount))
+			}
+		}
+		store = memstore.New(opts...)
 	case "api":
+		if cfg.Storage.TTL != nil {
+			a.logger.Warn("storage.ttl ignored when storage.type is \"api\"")
+		}
 		name := cfg.Storage.Name
 		if name == "" {
 			return errors.New("storage.name missing, must exist when storage.type is \"api\"")
@@ -81,6 +104,9 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 		store = apistore.New(client, name, cfg.Source.SourceName())
 	case "hub":
+		if cfg.Storage.TTL != nil {
+			a.logger.Warn("storage.ttl ignored when storage.type is \"hub\"")
+		}
 		conn, err := a.cohortManager.Connect(ctx)
 		if err != nil {
 			return err
