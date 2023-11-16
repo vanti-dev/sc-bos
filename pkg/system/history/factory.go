@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/history"
@@ -34,6 +36,7 @@ func NewSystem(services system.Services) *System {
 	s := &System{
 		name:      services.Node.Name(),
 		announcer: services.Node,
+		logger:    logger,
 	}
 	s.Service = service.New(
 		service.MonoApply(s.applyConfig),
@@ -54,6 +57,7 @@ type System struct {
 	*service.Service[config.Root]
 	name      string
 	announcer node.Announcer
+	logger    *zap.Logger
 }
 
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
@@ -77,8 +81,19 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 			return fmt.Errorf("setup: %w", err)
 		}
 
+		opts := []pgxstore.Option{
+			pgxstore.WithLogger(s.logger),
+		}
+		if ttl := cfg.Storage.TTL; ttl != nil {
+			if ttl.MaxAge.Duration > 0 {
+				opts = append(opts, pgxstore.WithMaxAge(ttl.MaxAge.Duration))
+			}
+			if ttl.MaxCount > 0 {
+				opts = append(opts, pgxstore.WithMaxCount(ttl.MaxCount))
+			}
+		}
 		store = func(source string) history.Store {
-			return pgxstore.NewStoreFromPool(source, pool)
+			return pgxstore.NewStoreFromPool(source, pool, opts...)
 		}
 
 	default:
