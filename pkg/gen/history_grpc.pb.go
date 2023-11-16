@@ -140,6 +140,92 @@ var HistoryAdminApi_ServiceDesc = grpc.ServiceDesc{
 	Metadata: "history.proto",
 }
 
+// AirTemperatureHistoryClient is the client API for AirTemperatureHistory service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type AirTemperatureHistoryClient interface {
+	ListAirTemperatureHistory(ctx context.Context, in *ListAirTemperatureHistoryRequest, opts ...grpc.CallOption) (*ListAirTemperatureHistoryResponse, error)
+}
+
+type airTemperatureHistoryClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAirTemperatureHistoryClient(cc grpc.ClientConnInterface) AirTemperatureHistoryClient {
+	return &airTemperatureHistoryClient{cc}
+}
+
+func (c *airTemperatureHistoryClient) ListAirTemperatureHistory(ctx context.Context, in *ListAirTemperatureHistoryRequest, opts ...grpc.CallOption) (*ListAirTemperatureHistoryResponse, error) {
+	out := new(ListAirTemperatureHistoryResponse)
+	err := c.cc.Invoke(ctx, "/smartcore.bos.AirTemperatureHistory/ListAirTemperatureHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AirTemperatureHistoryServer is the server API for AirTemperatureHistory service.
+// All implementations must embed UnimplementedAirTemperatureHistoryServer
+// for forward compatibility
+type AirTemperatureHistoryServer interface {
+	ListAirTemperatureHistory(context.Context, *ListAirTemperatureHistoryRequest) (*ListAirTemperatureHistoryResponse, error)
+	mustEmbedUnimplementedAirTemperatureHistoryServer()
+}
+
+// UnimplementedAirTemperatureHistoryServer must be embedded to have forward compatible implementations.
+type UnimplementedAirTemperatureHistoryServer struct {
+}
+
+func (UnimplementedAirTemperatureHistoryServer) ListAirTemperatureHistory(context.Context, *ListAirTemperatureHistoryRequest) (*ListAirTemperatureHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAirTemperatureHistory not implemented")
+}
+func (UnimplementedAirTemperatureHistoryServer) mustEmbedUnimplementedAirTemperatureHistoryServer() {}
+
+// UnsafeAirTemperatureHistoryServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AirTemperatureHistoryServer will
+// result in compilation errors.
+type UnsafeAirTemperatureHistoryServer interface {
+	mustEmbedUnimplementedAirTemperatureHistoryServer()
+}
+
+func RegisterAirTemperatureHistoryServer(s grpc.ServiceRegistrar, srv AirTemperatureHistoryServer) {
+	s.RegisterService(&AirTemperatureHistory_ServiceDesc, srv)
+}
+
+func _AirTemperatureHistory_ListAirTemperatureHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAirTemperatureHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AirTemperatureHistoryServer).ListAirTemperatureHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/smartcore.bos.AirTemperatureHistory/ListAirTemperatureHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AirTemperatureHistoryServer).ListAirTemperatureHistory(ctx, req.(*ListAirTemperatureHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AirTemperatureHistory_ServiceDesc is the grpc.ServiceDesc for AirTemperatureHistory service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AirTemperatureHistory_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "smartcore.bos.AirTemperatureHistory",
+	HandlerType: (*AirTemperatureHistoryServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListAirTemperatureHistory",
+			Handler:    _AirTemperatureHistory_ListAirTemperatureHistory_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "history.proto",
+}
+
 // MeterHistoryClient is the client API for MeterHistory service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
