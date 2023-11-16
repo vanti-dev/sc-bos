@@ -8,11 +8,7 @@
       <v-col
           cols="auto"
           class="d-flex flex-row flex-nowrap mx-0 px-0 mr-1 justify-space-between">
-        <WithOccupancy
-            v-slot="{ resource }"
-            :name="props.name">
-          <OccupancyPeopleCount :people-count="resource?.value?.peopleCount"/>
-        </WithOccupancy>
+        <OccupancyPeopleCount :people-count="occupancyValue?.value?.peopleCount"/>
       </v-col>
     </v-row>
     <OccupancyGraph class="pr-2" :name="props.name"/>
@@ -21,9 +17,10 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
 import OccupancyGraph from '@/routes/ops/components/OccupancyGraph.vue';
 import OccupancyPeopleCount from './OccupancyPeopleCount.vue';
+
+import useOccupancyTrait from '@/composables/Traits/useOccupancyTrait';
 
 const props = defineProps({
   name: {
@@ -31,4 +28,6 @@ const props = defineProps({
     default: 'building'
   }
 });
+
+const {occupancyValue} = useOccupancyTrait(props);
 </script>
