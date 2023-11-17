@@ -15,6 +15,7 @@ export default {
     {path: 'overview', component: () => import('./OpsHome.vue')},
     {path: 'emergency-lighting', component: () => import('./emergency-lighting/EmergencyLighting.vue')},
     {path: 'security', component: () => import('./security/SecurityHome.vue')},
+    {path: 'air-quality', component: () => import('./air-quality/AirQuality.vue')},
     ...route(notifications)
   ],
   meta: {

@@ -60,6 +60,11 @@ const menuItems = [
     count: 'unacknowledgedAlertCount'
   },
   {
+    title: 'Air Quality',
+    icon: 'mdi-air-filter',
+    link: {path: '/ops/air-quality'}
+  },
+  {
     title: 'Emergency Lighting',
     icon: 'mdi-alarm-light-outline',
     link: {path: '/ops/emergency-lighting'}
