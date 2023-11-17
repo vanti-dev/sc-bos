@@ -16,9 +16,10 @@
           :items="deviceOptions"
           item-text="label"
           item-value="value"
-          label="Sensor"
+          label="Data source"
+          :loading="isFetching"
           outlined/>
-      <div id="air-quality-graph" :style="{width: props.width, height: props.height}">
+      <div class="pt-4" id="air-quality-graph" :style="{width: props.width, height: props.height}">
         <div
             class="pr-5"
             :chart-options="chartOptions"
@@ -28,19 +29,19 @@
         </div>
       </div>
 
-      <v-row class="d-flex flex-row justify-center my-3 ml-12">
+      <v-row class="d-flex flex-row justify-space-between mt-5 mb-4 ml-15 mr-4">
         <v-col
             v-for="(recentValue, key) of mostRecentValues"
             cols="auto"
-            class="text-h1 align-self-center mr-8"
+            class="text-h1 align-self-auto"
             :key="key"
-            style="line-height: 0.3em;">
-          {{ recentValue.toFixed(2) }}
-          <span style="font-size: 0.5em;"/><br>
+            style="line-height: 0.35em;">
+          {{ key === 'comfort' ? readComfortValue(recentValue) : recentValue.toFixed(2) }}
+          <span style="font-size: 0.5em;">{{ acronyms[key].unit }}</span><br>
           <span
-              class="pl-1 text-h6"
+              class="text-h6"
               :style="{lineHeight: '0.4em', color: getColorForKey(key)}">
-            {{ acronyms[key] }}
+            {{ acronyms[key].label }}
           </span>
         </v-col>
       </v-row>
@@ -49,13 +50,13 @@
 </template>
 
 <script setup>
-import {computed, ref, watch} from 'vue';
+import {computed} from 'vue';
 import useAirQualityTrait from '@/composables/traits/useAirQualityTrait.js';
 
 import LineChart from '@/components/charts/LineChart.vue';
 import ContentCard from '@/components/ContentCard.vue';
 import {camelToSentence} from '@/util/string';
-import {DAY, HOUR, MINUTE} from '@/components/now';
+import {HOUR, MINUTE} from '@/components/now';
 
 const props = defineProps({
   width: {
@@ -67,22 +68,26 @@ const props = defineProps({
     default: '350px'
   }
 });
-const airDevice = ref('');
+
 const airQualityProps = {
-  filter: () => true,
-  subsystem: 'sensors',
+  filter: () => true, // Filter function to filter out data in deviceData
+  name: 'Floor2/Meeting Room 1', // Zone or device name - if `subsystem` is not set, the name must be set
   pollDelay: 15 * MINUTE, // 15 Minutes
   span: 24 * HOUR, // 24 Hours
-  timeFrame: 30 * DAY // 30 Days
+  subsystem: 'sensors', // If `name` is not set, the subsystem must be set
+  timeFrame: 24 * HOUR // 24 Hours
 };
 
-// Define the air quality sensor options
-const {airQualitySensorHistoryValues, deviceOptions, downloadCSV} = useAirQualityTrait(airQualityProps);
-
-// Set the default air device to the first device in the list
-watch(deviceOptions, (newVal) => {
-  airDevice.value = newVal[0].value;
-});
+// Define the air quality trait options
+const {
+  acronyms,
+  airQualitySensorHistoryValues,
+  airDevice,
+  deviceOptions,
+  downloadCSV,
+  isFetching,
+  readComfortValue
+} = useAirQualityTrait(airQualityProps);
 
 // Define a color mapping for each key
 const colorMapping = {
@@ -90,15 +95,8 @@ const colorMapping = {
   volatileOrganicCompounds: 'rgba(255, 223, 186, 0.9)', // Light Orange
   airPressure: 'rgba(255, 255, 186, 0.9)', // Light Yellow
   comfort: 'rgba(150, 255, 201, 0.9)', // Light Green
-  infectionRisk: 'rgba(100, 225, 255, 1)' // Light Blue
-};
-
-const acronyms = {
-  carbonDioxideLevel: 'CO₂',
-  volatileOrganicCompounds: 'VOC',
-  airPressure: 'Pressure',
-  comfort: 'Comfort',
-  infectionRisk: 'Infection Risk'
+  infectionRisk: 'rgba(100, 225, 255, 1)', // Light Blue,
+  score: 'rgba(100, 100, 255, 1)' // Purple-ish
 };
 
 // Function to get color based on the key
@@ -108,19 +106,17 @@ const getColorForKey = (key) => {
 
 const mostRecentValues = computed(() => {
   const airDeviceData = airQualitySensorHistoryValues[airDevice.value]?.data;
-  if (!airDeviceData) {
-    console.warn('No data for selected device:', airDevice.value);
-    return {};
-  }
-
-  const mostRecent = airDeviceData[airDeviceData.length - 1];
   const mostRecentValues = {};
-  if (!mostRecent) {
-    return {};
-  }
 
-  for (const [key, value] of Object.entries(mostRecent?.y)) {
-    mostRecentValues[key] = value;
+  if (airDeviceData) {
+    const mostRecent = airDeviceData[airDeviceData.length - 1];
+    if (!mostRecent) {
+      return {};
+    }
+
+    for (const [key, value] of Object.entries(mostRecent?.y)) {
+      mostRecentValues[key] = value;
+    }
   }
 
   return mostRecentValues;
@@ -132,54 +128,57 @@ const chartData = computed(() => {
   const labelDataMap = {};
 
   const airDeviceData = airQualitySensorHistoryValues[airDevice.value]?.data;
-  if (!airDeviceData) {
-    console.warn('No data for selected device:', airDevice.value);
-    return {datasets: []};
-  }
 
-  // Transform the data to be compatible with the chart
-  const remapData = (data) => {
-    const transformed = [];
-    for (const [key, value] of Object.entries(data.y)) {
-      transformed.push({
-        // Capitalize the first letter of the label
-        label: key,
-        y: value,
-        x: data.x
+  if (airDeviceData) {
+    // Transform the data to be compatible with the chart
+    const remapData = (data) => {
+      const transformed = [];
+      for (const [key, value] of Object.entries(data.y)) {
+        transformed.push({
+          // Capitalize the first letter of the label
+          label: key,
+          y: value,
+          x: data.x
+        });
+      }
+      return transformed;
+    };
+
+
+    // Aggregate data for each label across all devices
+    for (const deviceData of Object.values(airQualitySensorHistoryValues)) {
+      deviceData.data.forEach(dataEntry => {
+        const transformedData = remapData(dataEntry);
+        transformedData.forEach(({label, y, x}) => {
+          if (!labelDataMap[label]) {
+            labelDataMap[label] = [];
+          }
+          labelDataMap[label].push({y, x});
+        });
       });
     }
-    return transformed;
-  };
 
+    // Create datasets for each label
+    for (const [labelKey, data] of Object.entries(labelDataMap)) {
+      const color = getColorForKey(labelKey); // Use the color from the mapping
 
-  // Aggregate data for each label across all devices
-  for (const deviceData of Object.values(airQualitySensorHistoryValues)) {
-    deviceData.data.forEach(dataEntry => {
-      const transformedData = remapData(dataEntry);
-      transformedData.forEach(({label, y, x}) => {
-        if (!labelDataMap[label]) {
-          labelDataMap[label] = [];
-        }
-        labelDataMap[label].push({y, x});
+      // Check if the labelKey has a corresponding label in acronyms; otherwise, use camelToSentence
+      const label = acronyms[labelKey]?.label || camelToSentence(labelKey);
+      const formattedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+
+      datasets.push({
+        borderColor: color,
+        data: data,
+        fill: false,
+        label: formattedLabel,
+        pointBackgroundColor: 'rgba(0, 0, 0, 0)',
+        pointBorderColor: 'rgba(0, 0, 0, 0)',
+        pointHoverBackgroundColor: 'rgb(255, 255, 255)',
+        pointHoverBorderColor: color,
+        pointStyle: 'circle',
+        tension: 0.35
       });
-    });
-  }
-
-  // Create datasets for each label
-  for (const [label, data] of Object.entries(labelDataMap)) {
-    const color = getColorForKey(label); // Use the color from the mapping
-    datasets.push({
-      borderColor: color,
-      data: data,
-      fill: false,
-      label: camelToSentence(label).at(0).toUpperCase() + camelToSentence(label).slice(1),
-      pointBackgroundColor: 'rgba(0, 0, 0, 0)',
-      pointBorderColor: 'rgba(0, 0, 0, 0)',
-      pointHoverBackgroundColor: 'rgb(255, 255, 255)',
-      pointHoverBorderColor: color,
-      pointStyle: 'circle',
-      tension: 0.35
-    });
+    }
   }
 
   return {
