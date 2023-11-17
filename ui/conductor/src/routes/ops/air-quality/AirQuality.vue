@@ -27,6 +27,23 @@
           <LineChart :chart-data="chartData" :chart-options="chartOptions"/>
         </div>
       </div>
+
+      <v-row class="d-flex flex-row justify-center my-3 ml-12">
+        <v-col
+            v-for="(recentValue, key) of mostRecentValues"
+            cols="auto"
+            class="text-h1 align-self-center mr-8"
+            :key="key"
+            style="line-height: 0.3em;">
+          {{ recentValue.toFixed(2) }}
+          <span style="font-size: 0.5em;"/><br>
+          <span
+              class="pl-1 text-h6"
+              :style="{lineHeight: '0.4em', color: getColorForKey(key)}">
+            {{ acronyms[key] }}
+          </span>
+        </v-col>
+      </v-row>
     </content-card>
   </div>
 </template>
@@ -67,6 +84,48 @@ watch(deviceOptions, (newVal) => {
   airDevice.value = newVal[0].value;
 });
 
+// Define a color mapping for each key
+const colorMapping = {
+  carbonDioxideLevel: 'rgba(255, 179, 186, 0.9)', // Light Red
+  volatileOrganicCompounds: 'rgba(255, 223, 186, 0.9)', // Light Orange
+  airPressure: 'rgba(255, 255, 186, 0.9)', // Light Yellow
+  comfort: 'rgba(150, 255, 201, 0.9)', // Light Green
+  infectionRisk: 'rgba(100, 225, 255, 1)' // Light Blue
+};
+
+const acronyms = {
+  carbonDioxideLevel: 'CO₂',
+  volatileOrganicCompounds: 'VOC',
+  airPressure: 'Pressure',
+  comfort: 'Comfort',
+  infectionRisk: 'Infection Risk'
+};
+
+// Function to get color based on the key
+const getColorForKey = (key) => {
+  return colorMapping[key] || 'rgba(0, 0, 0, 0.5)'; // Default color
+};
+
+const mostRecentValues = computed(() => {
+  const airDeviceData = airQualitySensorHistoryValues[airDevice.value]?.data;
+  if (!airDeviceData) {
+    console.warn('No data for selected device:', airDevice.value);
+    return {};
+  }
+
+  const mostRecent = airDeviceData[airDeviceData.length - 1];
+  const mostRecentValues = {};
+  if (!mostRecent) {
+    return {};
+  }
+
+  for (const [key, value] of Object.entries(mostRecent?.y)) {
+    mostRecentValues[key] = value;
+  }
+
+  return mostRecentValues;
+});
+
 // Generate the chart data
 const chartData = computed(() => {
   const datasets = [];
@@ -84,28 +143,12 @@ const chartData = computed(() => {
     for (const [key, value] of Object.entries(data.y)) {
       transformed.push({
         // Capitalize the first letter of the label
-        label: camelToSentence(key).at(0).toUpperCase() + camelToSentence(key).slice(1),
+        label: key,
         y: value,
         x: data.x
       });
     }
     return transformed;
-  };
-
-  // Generate a random color for each label
-  let colorIndex = 0;
-  const lightColors = [
-    'rgba(255, 179, 186, 0.9)', // Light Red
-    'rgba(255, 223, 186, 0.9)', // Light Orange
-    'rgba(255, 255, 186, 0.9)', // Light Yellow
-    'rgba(150, 255, 201, 0.9)', // Light Green
-    'rgba(100, 225, 255, 1)' // Light Blue
-  ];
-
-  const randomRGBA = () => {
-    const color = lightColors[colorIndex];
-    colorIndex = (colorIndex + 1) % lightColors.length;
-    return color;
   };
 
 
@@ -124,12 +167,12 @@ const chartData = computed(() => {
 
   // Create datasets for each label
   for (const [label, data] of Object.entries(labelDataMap)) {
-    const color = randomRGBA(); // Your existing randomRGBA function
+    const color = getColorForKey(label); // Use the color from the mapping
     datasets.push({
       borderColor: color,
       data: data,
       fill: false,
-      label: label,
+      label: camelToSentence(label).at(0).toUpperCase() + camelToSentence(label).slice(1),
       pointBackgroundColor: 'rgba(0, 0, 0, 0)',
       pointBorderColor: 'rgba(0, 0, 0, 0)',
       pointHoverBackgroundColor: 'rgb(255, 255, 255)',
