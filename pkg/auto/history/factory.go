@@ -121,6 +121,9 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	var serverClient any
 	payloads := make(chan []byte)
 	switch cfg.Source.Trait {
+	case trait.AirTemperature:
+		serverClient = gen.WrapAirTemperatureHistory(historypb.NewAirTemperatureServer(store))
+		go a.collectAirTemperatureChanges(ctx, *cfg.Source, payloads)
 	case trait.Electric:
 		serverClient = gen.WrapElectricHistory(historypb.NewElectricServer(store))
 		go a.collectElectricDemandChanges(ctx, *cfg.Source, payloads)

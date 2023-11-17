@@ -26,6 +26,8 @@ var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/time
 
 var types_time_period_pb = require('@smart-core-os/sc-api-grpc-web/types/time/period_pb.js')
 
+var traits_air_temperature_pb = require('@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb.js')
+
 var traits_electric_pb = require('@smart-core-os/sc-api-grpc-web/traits/electric_pb.js')
 
 var traits_occupancy_sensor_pb = require('@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb.js')
@@ -206,6 +208,119 @@ proto.smartcore.bos.HistoryAdminApiPromiseClient.prototype.listHistoryRecords =
       request,
       metadata || {},
       methodDescriptor_HistoryAdminApi_ListHistoryRecords);
+};
+
+
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?grpc.web.ClientOptions} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.smartcore.bos.AirTemperatureHistoryClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
+};
+
+
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?grpc.web.ClientOptions} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.smartcore.bos.AirTemperatureHistoryPromiseClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.ListAirTemperatureHistoryRequest,
+ *   !proto.smartcore.bos.ListAirTemperatureHistoryResponse>}
+ */
+const methodDescriptor_AirTemperatureHistory_ListAirTemperatureHistory = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AirTemperatureHistory/ListAirTemperatureHistory',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.ListAirTemperatureHistoryRequest,
+  proto.smartcore.bos.ListAirTemperatureHistoryResponse,
+  /**
+   * @param {!proto.smartcore.bos.ListAirTemperatureHistoryRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ListAirTemperatureHistoryResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.ListAirTemperatureHistoryRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ListAirTemperatureHistoryResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListAirTemperatureHistoryResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AirTemperatureHistoryClient.prototype.listAirTemperatureHistory =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AirTemperatureHistory/ListAirTemperatureHistory',
+      request,
+      metadata || {},
+      methodDescriptor_AirTemperatureHistory_ListAirTemperatureHistory,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.ListAirTemperatureHistoryRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.ListAirTemperatureHistoryResponse>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.AirTemperatureHistoryPromiseClient.prototype.listAirTemperatureHistory =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AirTemperatureHistory/ListAirTemperatureHistory',
+      request,
+      metadata || {},
+      methodDescriptor_AirTemperatureHistory_ListAirTemperatureHistory);
 };
 
 
