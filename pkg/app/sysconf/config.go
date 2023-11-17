@@ -15,16 +15,43 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/zone"
 )
 
-// Load loads into dst any user supplied config from json files and CLI arguments.
+// Load loads into dst any user supplied config from json files and CLI arguments. CLI arguments take precedence.
 func Load(dst *Config) error {
-	if err := LoadAllFromJSON(dst); err != nil {
+	// load command line args into a new config so we can use it later
+	args := &Config{}
+	if _, err := LoadFromArgs(args, os.Args[1:]...); err != nil {
 		return err
 	}
-	if _, err := LoadFromArgs(dst, os.Args[1:]...); err != nil {
+
+	// set the config file paths if they were specified
+	if len(args.ConfigFiles) > 0 {
+		dst.ConfigFiles = args.ConfigFiles
+		dst.ConfigDirs = args.ConfigDirs
+	}
+
+	// load the config
+	if err := LoadAllFromJSON(dst); err != nil {
 		return err
 	}
 	if err := LoadFromConfigDirJSON(dst); err != nil {
 		return err
+	}
+
+	// allow command line args to override config file
+	if len(args.AppConfig) > 0 {
+		dst.AppConfig = args.AppConfig
+	}
+	if args.DataDir != "" {
+		dst.DataDir = args.DataDir
+	}
+	if args.ListenGRPC != "" {
+		dst.ListenGRPC = args.ListenGRPC
+	}
+	if args.ListenHTTPS != "" {
+		dst.ListenHTTPS = args.ListenHTTPS
+	}
+	if args.PolicyMode != "" {
+		dst.PolicyMode = args.PolicyMode
 	}
 
 	// do any post processing
@@ -35,7 +62,7 @@ func Load(dst *Config) error {
 
 // Config configures how the controller should run.
 type Config struct {
-	ConfigDirs  []string `json:"-"` // Dirs we look in for system config files. Config in ConfigDir is always loaded and will have higher priority.
+	ConfigDirs  []string `json:"-"` // Dir we look in for system config files. Config in ConfigDir is always loaded and will have higher priority.
 	ConfigFiles []string `json:"-"` // Filenames we load in ConfigDirs for system config
 
 	// The smart core name of the controller.
@@ -50,10 +77,10 @@ type Config struct {
 	GRPCAddr string `json:"grpcAddr,omitempty"`
 	HTTPAddr string `json:"httpAddr,omitempty"`
 
-	ConfigDir     string                     `json:"configDir,omitempty"` // defaults to .data/controller
-	DataDir       string                     `json:"dataDir,omitempty"`   // defaults to .data/controller
+	AppConfig []string `json:"appConfig,omitempty"` // defaults to [".conf/app.conf.json"]
+	DataDir   string   `json:"dataDir,omitempty"`   // defaults to .data/
+
 	StaticHosting []http.StaticHostingConfig `json:"staticHosting"`
-	AppConfigFile string                     `json:"appConfigFile,omitempty"` // defaults to app.conf.json
 	CertConfig    *Certs                     `json:"certs,omitempty"`
 	Cors          http.CorsConfig            `json:"cors,omitempty"`
 
@@ -90,12 +117,15 @@ const (
 func Default() Config {
 	logConf := zap.NewDevelopmentConfig()
 	config := Config{
-		ConfigDirs:  []string{},
+		ConfigDirs:  []string{".conf"},
 		ConfigFiles: []string{"system.conf.json", "system.json"},
 
 		Logger:      &logConf,
 		ListenGRPC:  ":23557",
 		ListenHTTPS: ":443",
+
+		AppConfig: []string{".conf/app.conf.json"},
+		DataDir:   ".data",
 
 		Cors: http.CorsConfig{
 			DebugMode: false,
@@ -103,9 +133,6 @@ func Default() Config {
 			CorsOrigins: []string{"*"},
 		},
 		StaticHosting: []http.StaticHostingConfig{},
-		ConfigDir:     ".conf/controller",
-		DataDir:       ".data/controller",
-		AppConfigFile: "app.conf.json",
 
 		CertConfig: &Certs{
 			KeyFile:      "grpc.key.pem",

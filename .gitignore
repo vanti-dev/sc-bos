@@ -1,6 +1,7 @@
 *.iml
 /.idea/
 .data/
+.conf/
 .DS_Store
 results_*.csv
 .secrets/
