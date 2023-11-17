@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"path"
 	"path/filepath"
 
 	"go.uber.org/multierr"
@@ -29,17 +30,12 @@ func LoadAllFromJSON(dst *Config) error {
 func LoadFromConfigDirJSON(dst *Config) error {
 	var allErrs error
 	for _, file := range dst.ConfigFiles {
-		err := LoadFromJSONFile(dst, filepath.Join(dst.ConfigDir, file))
+		err := LoadFromJSONFile(dst, filepath.Join(path.Base(""), file))
 		if !errors.Is(err, os.ErrNotExist) {
 			allErrs = multierr.Append(allErrs, err)
 		}
 	}
 	return allErrs
-}
-
-// LoadFromJSON populates dst with the given json formatted bytes.
-func LoadFromJSON(dst *Config, jsonData []byte) error {
-	return json.Unmarshal(jsonData, dst)
 }
 
 // LoadFromJSONFile reads filePath and calls LoadFromJSON.
@@ -49,4 +45,9 @@ func LoadFromJSONFile(dst *Config, filePath string) error {
 		return err
 	}
 	return LoadFromJSON(dst, jsonData)
+}
+
+// LoadFromJSON populates dst with the given json formatted bytes.
+func LoadFromJSON(dst *Config, jsonData []byte) error {
+	return json.Unmarshal(jsonData, dst)
 }
