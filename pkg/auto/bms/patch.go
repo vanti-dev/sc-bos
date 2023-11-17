@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -11,6 +12,8 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auto/bms/config"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 // Patcher represents a single patch that adjusts ReadState.
@@ -34,6 +37,11 @@ func (a *Auto) setupPatchers(ctx context.Context, configChanged <-chan config.Ro
 	var airTemperatureClient traits.AirTemperatureApiClient
 	if err := a.clients.Client(&airTemperatureClient); err != nil {
 		return fmt.Errorf("%w traits.AirTemperatureApiClient", err)
+	}
+	var airTemperatureHistoryClient gen.AirTemperatureHistoryClient
+	if err := a.clients.Client(&airTemperatureHistoryClient); err != nil {
+		// allow nil history clients
+		airTemperatureHistoryClient = nil
 	}
 	var modeClient traits.ModeApiClient
 	if err := a.clients.Client(&modeClient); err != nil {
@@ -78,6 +86,23 @@ func (a *Auto) setupPatchers(ctx context.Context, configChanged <-chan config.Ro
 					name:   name,
 					client: occupancySensorClient,
 					logger: logger.Named("occupancy"),
+				}
+			},
+		},
+		{
+			names: func(cfg config.Root) []string {
+				var names []string
+				if cfg.AutoModeOATemp != "" {
+					names = append(names, cfg.AutoModeOATemp)
+				}
+				return names
+			},
+			new: func(name string, logger *zap.Logger) subscriber {
+				return &MeanOATempPatches{
+					name:          name,
+					apiClient:     airTemperatureClient,
+					historyClient: airTemperatureHistoryClient,
+					logger:        logger.Named("meanOATemp"),
 				}
 			},
 		},
@@ -176,4 +201,14 @@ func shallowCopyMap[K comparable, V any](m map[K]V) map[K]V {
 		n[k] = v
 	}
 	return n
+}
+
+func retryForeverT[T any](ctx context.Context, fn func(context.Context) (T, error)) (T, error) {
+	var t T
+	err := task.Run(ctx, func(ctx context.Context) (task.Next, error) {
+		var err error
+		t, err = fn(ctx)
+		return 0, err
+	}, task.WithBackoff(time.Second, time.Minute), task.WithRetry(task.RetryUnlimited))
+	return t, err
 }
