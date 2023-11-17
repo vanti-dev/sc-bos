@@ -27,6 +27,15 @@
     "hub": true,
     "proxy": true,
     "home": "/ops",
+    "theme": {
+      "appBranding": {
+        "brandName": "Smart Core",
+        "brandLogo": {
+          "altText": "Smart Core logo - representing nodes and connections",
+          "src": ""
+        }
+      }
+    },
     "ops": {
       "buildingZone": "building"
     },
