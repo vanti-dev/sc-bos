@@ -52,7 +52,7 @@
           <v-col cols="auto" class="text-h1 align-self-center" style="line-height: 0.3em;">
             {{
               energyIntensity
-            }}<span style="font-size: 0.5em;"/><br>
+            }}<span style="font-size: 0.5em;">kW/person</span><br>
             <span class="text-title orange--text" style="line-height: 0.35em;">Energy Intensity</span>
           </v-col>
         </v-row>
@@ -88,6 +88,10 @@ const energy = reactive({
 const {occupancyValue} = useOccupancyTrait({name: props.metered});
 
 const energyIntensity = computed(() => {
+  if (!occupancyValue?.value?.peopleCount) {
+    return Math.abs(energy.total).toFixed(2);
+  }
+
   return Math.abs(energy.total / occupancyValue?.value?.peopleCount).toFixed(2);
 });
 
