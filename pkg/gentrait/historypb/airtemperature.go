@@ -14,7 +14,7 @@ import (
 
 type AirTemperatureServer struct {
 	gen.UnimplementedAirTemperatureHistoryServer
-	store history.Store // payloads of *gen.AirTemperatureReading
+	store history.Store // payloads of *traits.AirTemperature
 }
 
 func NewAirTemperatureServer(store history.Store) *AirTemperatureServer {
