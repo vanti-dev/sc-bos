@@ -8,6 +8,7 @@ import (
 	"golang.org/x/exp/maps"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/vanti-dev/sc-bos/pkg/auto/bms/config"
 )
 
@@ -38,6 +39,8 @@ type ReadState struct {
 	AirTemperature map[DeviceName]Value[*traits.AirTemperature]
 	Modes          map[DeviceName]map[string]Value[string]
 	Occupancy      map[DeviceName]Value[*traits.Occupancy]
+
+	MeanOATemp *types.Temperature // mean outdoor air temperature
 }
 
 func (s *ReadState) Clone() *ReadState {

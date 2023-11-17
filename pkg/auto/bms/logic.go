@@ -162,9 +162,12 @@ func analyseSetPoint(now time.Time, state *ReadState) (auto bool, setPoint float
 		return false, 0, 0, fmt.Sprintf("no %s", src.Key)
 	}
 
-	// todo: set point based on time of year, 23 in winter, 21 in summer.
-	// todo: set point based on measured temperature, i.e. outside temp, or weather
 	autoSetPoint := config.PtrOr(state.Config.AutoModeSetPoint, config.DefaultAutoModeSetPoint)
+	if state.MeanOATemp != nil {
+		// this is the [CEN Standard BS En 15251] algorithm as outlined in [CIBSE TM52 2013 4.1.4].
+		comfortTemp := 0.33*state.MeanOATemp.ValueCelsius + 18.8
+		autoSetPoint = float32(comfortTemp)
+	}
 
 	switch {
 	case val.V == src.On:
