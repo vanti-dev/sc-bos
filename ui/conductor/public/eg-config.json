@@ -9,8 +9,9 @@
     },
     "ops": {
       "overview": true,
-      "emergency-lighting": true,
       "notifications": true,
+      "air-quality": true,
+      "emergency-lighting": true,
       "security": true
     },
     "site": false,
