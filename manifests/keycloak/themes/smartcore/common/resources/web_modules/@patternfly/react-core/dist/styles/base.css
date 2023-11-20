@@ -165,7 +165,7 @@
   --pf-global--info-color--200: #002952;
   --pf-global--warning-color--100: #f0ab00;
   --pf-global--warning-color--200: #795600;
-  --pf-global--danger-color--100: #c9190b;
+  --pf-global--danger-color--100: #D0043C;
   --pf-global--danger-color--200: #a30000;
   --pf-global--danger-color--300: #470000;
   --pf-global--BoxShadow--sm: 0 0.0625rem 0.125rem 0 rgba(3, 3, 3, 0.12), 0 0 0.125rem 0 rgba(3, 3, 3, 0.06);
@@ -336,7 +336,7 @@
   --pf-global--success-color--100: #5ba352;
   --pf-global--warning-color--100: #f0ab00;
   --pf-global--warning-color--200: #f4c145;
-  --pf-global--danger-color--100: #fe5142;
+  --pf-global--danger-color--100: #D0043C;
   --pf-global--danger-color--200: #fe6a5d;
   --pf-global--link--Color: #1fa7f8;
   --pf-global--link--Color--hover: #73bcf7;
