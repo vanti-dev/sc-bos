@@ -50,7 +50,7 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
+import {computed, reactive} from 'vue';
 import useAirQualityTrait from '@/composables/traits/useAirQualityTrait.js';
 
 import LineChart from '@/components/charts/LineChart.vue';
@@ -68,15 +68,14 @@ const props = defineProps({
     default: '350px'
   }
 });
-
-const airQualityProps = {
+const airQualityProps = reactive({
   filter: () => true, // Filter function to filter out data in deviceData
-  name: 'Floor2/Meeting Room 1', // Zone or device name - if `subsystem` is not set, the name must be set
+  name: '', // Zone or device name - if `subsystem` is not set, the name must be set
   pollDelay: 15 * MINUTE, // 15 Minutes
-  span: 24 * HOUR, // 24 Hours
+  span: 15 * MINUTE, // 24 Hours
   subsystem: 'sensors', // If `name` is not set, the subsystem must be set
   timeFrame: 24 * HOUR // 24 Hours
-};
+});
 
 // Define the air quality trait options
 const {
@@ -253,6 +252,27 @@ const chartOptions = computed(() => {
               borderWidth: 2,
               borderDash: [2, 2]
             };
+          },
+          // Format the label - if it is comfort, format the value; otherwise, format the label and value
+          label: (context) => {
+            const label = context.dataset.label;
+            const value = context.parsed.y;
+
+            // Find the matching acronym.label
+            const acronymLabel = Object.entries(acronyms).find(([key, value]) => {
+              return value.label === label;
+            })?.[1]?.label;
+
+            const acronymUnit = Object.entries(acronyms).find(([key, value]) => {
+              return value.label === label;
+            })?.[1]?.unit;
+
+            // If the label is comfort, format the value
+            if (label === 'Comfort') {
+              return `${acronymLabel}: ${readComfortValue(value)}`;
+            } else {
+              return `${acronymLabel}: ${value.toFixed(2)} ${acronymUnit}`;
+            }
           }
         },
         borderWidth: 2,

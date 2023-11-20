@@ -1,13 +1,13 @@
-import {camelToSentence} from '@/util/string';
-import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
 import Vue from 'vue';
 import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
-import useDevices from '@/composables/useDevices';
-import useTimePeriod from '@/routes/ops/components/useTimePeriod';
-import {useNow} from '@/components/now';
+import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
 import {listAirQualitySensorHistory} from '@/api/sc/traits/air-quality-sensor';
+import useTimePeriod from '@/routes/ops/components/useTimePeriod';
+import useZones from '@/composables/useZones.js';
+import useDevices from '@/composables/useDevices';
 import {timestampToDate} from '@/api/convpb';
-import {DAY} from '@/components/now';
+import {camelToSentence} from '@/util/string';
+import {useNow, DAY} from '@/components/now';
 
 /**
  *
@@ -31,15 +31,37 @@ import {DAY} from '@/components/now';
  * }}
  */
 export default function(props) {
-  // Computed properties for handling the 'search' for devices
+  // Pull in zones to check if any available
+  const {zoneListWithDetails} = useZones();
+
+  // Filter zones to only those with air quality sensors
+  const zonesWithAirQualitySensors = computed(() => {
+    return zoneListWithDetails.value.filter(zone => {
+      if (zone?.config?.airQualitySensors?.length > 0) {
+        return zone;
+      }
+    });
+  });
+
+  // Pull in devices to check if any available
   const {devicesData} = useDevices(props);
   // Mapping the device or zone names to an array
   const mappedDeviceNames = computed(() => {
-    if (typeof props.name === 'string') {
-      return [props.name];
-    } else if (Array.isArray(props.name)) {
-      return props.name;
+    // Check if zoneList is available
+    if (zonesWithAirQualitySensors.value) {
+      // Return only the zone.id in alphabetical order
+      return zonesWithAirQualitySensors.value.map(zone => zone.id).sort();
+
+      // Check if props data has been passed in
+    } else if (props.name.length) {
+      if (typeof props.name === 'string') {
+        return [props.name];
+      } else if (Array.isArray(props.name)) {
+        return props.name;
+      }
     }
+
+    // If all else fails, return the device names
     return devicesData.value.map(device => device.name);
   });
   // const mappedDeviceNames = computed(() => [props.name]);
@@ -151,7 +173,7 @@ export default function(props) {
   // loop through each device and fetch data
   watchEffect(async () => {
     // Check if there are any device names available
-    if (mappedDeviceNames.value.length > 0) {
+    if (mappedDeviceNames.value) {
       // If airDevice is not set, set it to the first device
       if (!airDevice.value) {
         airDevice.value = mappedDeviceNames.value[0];
@@ -190,14 +212,8 @@ export default function(props) {
   });
 
   onUnmounted(() => {
-    // Clear pollHandler
-    mappedDeviceNames.value.forEach(device => {
-      const deviceData = airQualitySensorHistoryValues[device];
-      if (deviceData.pollHandler) {
-        clearInterval(deviceData.pollHandler);
-      }
-      Vue.delete(airQualitySensorHistoryValues, device);
-    });
+    // Clear the pollHandler
+    clearPollHandler();
     isMounted.value = false;
   });
 
@@ -212,6 +228,8 @@ export default function(props) {
    * @return {Promise<AirQualityRecord.AsObject[]>}
    */
   async function listAllPages(request, existingRecords = [], type = '') {
+    if (!request) return [];
+
     const allRecords = [...existingRecords];
     let pageToken = '';
 
@@ -246,10 +264,12 @@ export default function(props) {
     // Remove duplicates and set data for graph
     const uniqueRecords = removeDuplicates(filteredRecords);
 
-    if (type) return uniqueRecords;
 
-    Vue.set(airQualitySensorHistoryValues[request.name], 'records', uniqueRecords);
-    Vue.set(airQualitySensorHistoryValues[request.name], 'data', processRecordsForGraph(uniqueRecords));
+    // Set the records and data for the graph
+    if (!type) {
+      Vue.set(airQualitySensorHistoryValues[request.name], 'records', uniqueRecords);
+      Vue.set(airQualitySensorHistoryValues[request.name], 'data', processRecordsForGraph(uniqueRecords));
+    }
 
     return uniqueRecords;
   }
@@ -371,6 +391,13 @@ export default function(props) {
 
 
   // ---- Cleanup ---- //
+  // Function to clear the pollHandler
+  const clearPollHandler = () => {
+    if (!airDevice.value) return;
+
+    clearInterval(airQualitySensorHistoryValues[airDevice.value].pollHandler);
+    Vue.delete(airQualitySensorHistoryValues, airDevice.value);
+  };
 
   // Function to remove records outside the time frame
   const filterRecordsByTimeFrame = (records) => {
@@ -396,6 +423,7 @@ export default function(props) {
     queryEnd,
     queryStart,
     setUpRequest,
-    readComfortValue
+    readComfortValue,
+    clearPollHandler
   };
 }
