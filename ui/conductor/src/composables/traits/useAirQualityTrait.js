@@ -316,6 +316,7 @@ export default function(props) {
       return {
         deviceName,
         ...record.airQuality,
+        comfort: readComfortValue(record.airQuality.comfort),
         recordTime: `${recordDate.toLocaleDateString()} ${recordDate.toLocaleTimeString()}`
       };
     });
