@@ -194,18 +194,31 @@ const DefaultEmailBody = `<html lang="en">
   <title>Smart Core Occupancy</title>
 </head>
 <body>
-<dl>
-  <dt>Max occupancy for the last 7 days</dt>
 {{range .Stats}}
-  <dd>
-    {{if .Source.Title}}
-      <span title="{{.Source.Name}}">{{.Source.Title}}:</span>
-    {{else}}
-      {{.Source.Name}}
-    {{end}}
-    {{.Last7Days.MaxPeopleCount}}</dd>
+<section>
+<h4>Maximum occupancy for
+  {{if .Source.Title}}
+    <span title="{{.Source.Name}}">{{.Source.Title}}</span>
+  {{else}}
+    {{.Source.Name}}
+  {{end}}
+</h4>
+<table>
+<tbody>
+<tr>
+  <td>Last 7 days:</td>
+  <td>{{.Last7Days.MaxPeopleCount}}</td>
+</tr>
+{{range .Days}}
+<tr>
+  <td>- {{.Date.Format "Monday"}}:</dt>
+  <td>{{.MaxPeopleCount}}</dd>
+</tr>
 {{end}}
-</dl>
+</tbody>
+</table>
+</section>
+{{end}}
 </body>
 </html>
 `

@@ -73,11 +73,13 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 				Stats: []Stats{{Source: cfg.Source}},
 			}
 			stats := &attrs.Stats[0]
+			days := make(map[time.Time]OccupancyStats) // the time.Time key should be at 00:00 for the day
 
+			rangeStart := t.Add(-7 * 24 * time.Hour)
 			ohReq := &gen.ListOccupancyHistoryRequest{
 				Name: cfg.Source.Name,
 				Period: &timepb.Period{
-					StartTime: timestamppb.New(t.Add(-7 * 24 * time.Hour)),
+					StartTime: timestamppb.New(rangeStart),
 					EndTime:   timestamppb.New(t),
 				},
 			}
@@ -93,11 +95,25 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 					if pc := r.GetOccupancy().GetPeopleCount(); pc > stats.Last7Days.MaxPeopleCount {
 						stats.Last7Days.MaxPeopleCount = pc
 					}
+					day := startOfDay(r.GetRecordTime().AsTime())
+					if pc := r.GetOccupancy().GetPeopleCount(); pc > days[day].MaxPeopleCount {
+						s := days[day]
+						s.MaxPeopleCount = pc
+						days[day] = s
+					}
 				}
 				ohReq.PageToken = ohResp.GetNextPageToken()
 				if ohReq.PageToken == "" {
 					break
 				}
+			}
+
+			// process days into stats
+			for dt := startOfDay(rangeStart); dt.Before(t); dt = startOfDay(dt.Add(30 * time.Hour)) {
+				stats.Days = append(stats.Days, DayStats{
+					Date:           dt,
+					OccupancyStats: days[dt],
+				})
 			}
 
 			err := retry(ctx, func(ctx context.Context) error {
@@ -128,4 +144,8 @@ func retryT[T any](ctx context.Context, f func(context.Context) (T, error)) (T, 
 		return err
 	})
 	return t, err
+}
+
+func startOfDay(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 }

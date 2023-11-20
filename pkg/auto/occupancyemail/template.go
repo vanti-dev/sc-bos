@@ -14,6 +14,12 @@ type Attrs struct {
 type Stats struct {
 	Source    config.Source
 	Last7Days OccupancyStats
+	Days      []DayStats
+}
+
+type DayStats struct {
+	Date time.Time
+	OccupancyStats
 }
 
 type OccupancyStats struct {
