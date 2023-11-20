@@ -3,8 +3,8 @@
 
   <img
       v-else
-      :alt="props.theme?.appBranding?.brandLogo?.altText"
-      :src="props.theme?.appBranding?.brandLogo?.src">
+      :alt="props.theme.appBranding.brandLogo.altText"
+      :src="props.theme.appBranding.brandLogo.src">
 </template>
 
 <script setup>
@@ -22,6 +22,6 @@ const props = defineProps({
 // Check if the default key and it's value exist and is true
 //
 const isDefault = computed(() => {
-  return !props.theme?.appBranding?.brandLogo?.src;
+  return !props.theme.appBranding?.brandLogo?.src;
 });
 </script>
