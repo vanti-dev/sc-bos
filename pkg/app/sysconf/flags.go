@@ -13,8 +13,8 @@ import (
 func LoadFromArgs(dst *Config, args ...string) ([]string, error) {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
 
-	fs.Var(&sysConfArg{dst}, "sysconf", "path to system config file")
-	fs.Var(appConfArg{dst}, "appconf", "path to application config file")
+	fs.Var(sysConfArg{dst}, "sysconf", "path to system config file(s)")
+	fs.Var(appConfArg{dst}, "appconf", "path to application config file(s)")
 	fs.StringVar(&dst.DataDir, "data-dir", dst.DataDir, "path to local data storage directory")
 	fs.StringVar(&dst.ListenGRPC, "listen-grpc", dst.ListenGRPC, "address (host:port) to host a Smart Core gRPC server on")
 	fs.StringVar(&dst.ListenHTTPS, "listen-https", dst.ListenHTTPS, "address (host:port) to host a HTTPS server on")
@@ -42,9 +42,11 @@ func (a sysConfArg) String() string {
 
 func (a sysConfArg) Set(s string) error {
 	str := strings.Split(s, ",")
-	a.dst.ConfigDirs = []string{path.Base("")} // make config relative to current location
+	a.dst.ConfigDirs = []string{}
+	a.dst.ConfigFiles = []string{}
 	for _, f := range str {
-		a.dst.ConfigFiles = append(a.dst.ConfigFiles, f)
+		a.dst.ConfigDirs = append(a.dst.ConfigDirs, path.Dir(f))
+		a.dst.ConfigFiles = append(a.dst.ConfigFiles, path.Base(f))
 	}
 	return nil
 }
