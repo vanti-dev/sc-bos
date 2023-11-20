@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="EG-01 [23201,8201]" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="Hub">
+  <configuration default="false" name="EG-01 [23201,8201]" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="example/hub">
     <module name="sc-bos" />
     <working_directory value="$PROJECT_DIR$" />
-    <parameters value="--policy-mode=off --data-dir example/config/hub/eg-01" />
+    <parameters value="--policy-mode=off --sysconf example/config/hub/eg-01/system.json --appconf example/config/hub/eg-01/app.conf.json --data-dir .data/hub/eg-01" />
     <kind value="PACKAGE" />
     <package value="github.com/vanti-dev/sc-bos/cmd/bos" />
     <directory value="$PROJECT_DIR$" />
