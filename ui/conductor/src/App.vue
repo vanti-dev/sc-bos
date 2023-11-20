@@ -8,8 +8,8 @@
         elevation="0"
         class="pr-7">
       <app-menu v-if="isLoggedIn"/>
-      <brand-logo :theme="config?.theme" outline="white" style="height: 35px; margin-left: 16px"/>
-      <span class="heading">{{ config?.theme?.appBranding?.brandName }} {{ isLoggedIn ? ' | ' + pageTitle : '' }}</span>
+      <brand-logo :theme="config.theme" outline="white" style="height: 35px; margin-left: 16px"/>
+      <span class="heading">{{ config.theme?.appBranding?.brandName }} {{ isLoggedIn ? ' | ' + pageTitle : '' }}</span>
 
       <v-divider
           vertical
