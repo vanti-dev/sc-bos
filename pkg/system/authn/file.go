@@ -3,6 +3,9 @@ package authn
 import (
 	"errors"
 	"fmt"
+	"log"
+	"os"
+	"path"
 
 	"go.uber.org/multierr"
 
@@ -11,12 +14,25 @@ import (
 )
 
 // loadFileVerifier returns a tenant.Verifier that checks credentials against those found in a json file.
-func loadFileVerifier(idConfig *config.Identities, dataDir, defaultFilename string) (tenant.Verifier, error) {
-	ids, err := idConfig.Load(dataDir, defaultFilename)
-	if err != nil {
-		return nil, fmt.Errorf("local accounts: %w", err)
+func loadFileVerifier(idConfig *config.Identities, dataDirs []string, defaultFilename string) (tenant.Verifier, error) {
+	ids := make([]config.Identity, 0)
+	for _, dataDir := range dataDirs {
+		_, err := os.Stat(path.Join(dataDir, defaultFilename))
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			} else {
+				return nil, fmt.Errorf("local accounts: %w", err)
+			}
+		}
+		i, err := idConfig.Load(dataDir, defaultFilename)
+		if err != nil {
+			return nil, fmt.Errorf("local accounts: %w", err)
+		}
+		ids = append(ids, i...)
 	}
 	if len(ids) == 0 {
+		log.Printf("no local accounts found in %v", dataDirs)
 		return tenant.NeverVerify(errors.New("no local accounts")), nil
 	}
 
@@ -33,6 +49,7 @@ func loadFileVerifier(idConfig *config.Identities, dataDir, defaultFilename stri
 			allErrs = multierr.Append(allErrs, err)
 		}
 	}
+
 	if allErrs != nil {
 		return nil, fmt.Errorf("local accounts: %w", allErrs)
 	}
