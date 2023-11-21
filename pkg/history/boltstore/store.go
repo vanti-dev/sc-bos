@@ -24,11 +24,20 @@ type Store struct {
 	logger *zap.Logger
 }
 
-func NewFromDb(ctx context.Context, db *bolthold.Store, source string, logger *zap.Logger, retention time.Duration, maxCount int64) (history.Store, error) {
+func NewFromDb(ctx context.Context, db *bolthold.Store, source string, opts ...Option) (history.Store, error) {
 	b := []byte(source)
+
+	s := &Store{
+		now:    time.Now,
+		logger: zap.NewNop(),
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+
 	err := db.Bolt().Update(func(tx *bolt.Tx) error {
 		var err error
-		logger.Debug("Creating bucket", zap.String("bucket", string(b)))
+		s.logger.Debug("Creating bucket", zap.String("bucket", string(b)))
 		_, err = tx.CreateBucketIfNotExists(b)
 		if err != nil {
 			return err
@@ -38,15 +47,9 @@ func NewFromDb(ctx context.Context, db *bolthold.Store, source string, logger *z
 	if err != nil {
 		return nil, err
 	}
-	s := &Store{
-		slice: slice{
-			db:     db,
-			bucket: b,
-		},
-		now:      time.Now,
-		maxAge:   retention,
-		maxCount: maxCount,
-		logger:   logger,
+	s.slice = slice{
+		db:     db,
+		bucket: b,
 	}
 
 	// clean out old entries on startup

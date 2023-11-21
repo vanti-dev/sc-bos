@@ -122,7 +122,18 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 		store = apistore.New(client, a.cohortManagerName, cfg.Source.SourceName())
 	case "bolt":
 		var err error
-		store, err = boltstore.NewFromDb(ctx, a.db, cfg.Source.SourceName(), a.logger, cfg.Storage.TTL.MaxAge.Duration, cfg.Storage.TTL.MaxCount)
+		opts := []boltstore.Option{
+			boltstore.WithLogger(a.logger),
+		}
+		if ttl := cfg.Storage.TTL; ttl != nil {
+			if ttl.MaxAge.Duration > 0 {
+				opts = append(opts, boltstore.WithMaxAge(ttl.MaxAge.Duration))
+			}
+			if ttl.MaxCount > 0 {
+				opts = append(opts, boltstore.WithMaxCount(ttl.MaxCount))
+			}
+		}
+		store, err = boltstore.NewFromDb(ctx, a.db, cfg.Source.SourceName(), opts...)
 		if err != nil {
 			return err
 		}

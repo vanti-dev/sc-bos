@@ -103,11 +103,24 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 	case config.StorageTypeBolt:
 		s.storeCollection = make(map[string]history.Store)
+
+		opts := []boltstore.Option{
+			boltstore.WithLogger(s.logger),
+		}
+		if ttl := cfg.Storage.TTL; ttl != nil {
+			if ttl.MaxAge.Duration > 0 {
+				opts = append(opts, boltstore.WithMaxAge(ttl.MaxAge.Duration))
+			}
+			if ttl.MaxCount > 0 {
+				opts = append(opts, boltstore.WithMaxCount(ttl.MaxCount))
+			}
+		}
+
 		store = func(source string) history.Store {
 			st, ok := s.storeCollection[source]
 			if !ok {
 				var err error
-				st, err = boltstore.NewFromDb(ctx, s.db, source, s.logger, cfg.Storage.TTL.MaxAge.Duration, cfg.Storage.TTL.MaxCount)
+				st, err = boltstore.NewFromDb(ctx, s.db, source, opts...)
 				if err != nil {
 					s.logger.Error("failed to create bolt store", zap.Error(err))
 				} else {
