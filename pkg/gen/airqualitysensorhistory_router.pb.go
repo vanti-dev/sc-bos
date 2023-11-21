@@ -3,12 +3,10 @@
 package gen
 
 import (
-	"context"
-	"fmt"
-
-	"google.golang.org/grpc"
-
-	"github.com/smart-core-os/sc-golang/pkg/router"
+	context "context"
+	fmt "fmt"
+	router "github.com/smart-core-os/sc-golang/pkg/router"
+	grpc "google.golang.org/grpc"
 )
 
 // AirQualitySensorHistoryRouter is a AirQualitySensorHistoryServer that allows routing named requests to specific AirQualitySensorHistoryClient

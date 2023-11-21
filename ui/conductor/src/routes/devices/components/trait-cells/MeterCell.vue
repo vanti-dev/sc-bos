@@ -1,7 +1,14 @@
 <template>
   <span class="text-no-wrap ed-cell" v-if="meterReading">
-    <span>{{ meterReading }}</span>
-    <v-icon right size="20">mdi-counter</v-icon>
+    <v-tooltip bottom>
+      <template #activator="{ on, attrs }">
+        <span v-on="on" v-bind="attrs">
+          <span>{{ meterReading }}</span>
+          <v-icon right size="20">mdi-counter</v-icon>
+        </span>
+      </template>
+      <span>Meter reading</span>
+    </v-tooltip>
   </span>
 </template>
 <script setup>

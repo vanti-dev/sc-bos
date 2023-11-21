@@ -1,9 +1,16 @@
 <template>
   <span class="d-flex flex-row flex-nowrap">
-    <span class="text-caption" style="min-width: 4ex">{{ brightnessStr }}</span>
-    <v-icon right :color="brightness > 0 ? 'yellow' : 'white' " size="20">
-      {{ lightingIcon }}
-    </v-icon>
+    <v-tooltip bottom>
+      <template #activator="{ on, attrs }">
+        <span v-on="on" v-bind="attrs" class="d-flex flex-row">
+          <span class="text-caption" style="min-width: 4ex">{{ brightnessStr }}</span>
+          <v-icon right :color="brightness > 0 ? 'yellow' : 'white' " size="20">
+            {{ lightingIcon }}
+          </v-icon>
+        </span>
+      </template>
+      <span>Lighting</span>
+    </v-tooltip>
   </span>
 </template>
 

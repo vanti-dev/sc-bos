@@ -2,6 +2,7 @@ package auto
 
 import (
 	"crypto/tls"
+	"time"
 
 	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
@@ -18,6 +19,7 @@ type Services struct {
 	GRPCServices    grpc.ServiceRegistrar // for registering non-routed services
 	CohortManager   node.Remote
 	ClientTLSConfig *tls.Config
+	Now             func() time.Time
 }
 
 // Factory constructs new automation instances.

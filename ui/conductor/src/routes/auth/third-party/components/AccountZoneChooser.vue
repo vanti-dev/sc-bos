@@ -20,8 +20,7 @@
         auto-select-first
         return-object
         :disabled="blockActions">
-      <template #append-item v-if="findZonesTracker.response?.nextPageToken">
-        <v-divider class="my-2"/>
+      <template #prepend-item v-if="findZonesTracker.response?.nextPageToken">
         <v-subheader class="mx-2">
           <template v-if="findZonesTracker.response?.totalSize > 0">
             Showing {{ inputItems.length }} of {{ findZonesTracker.response.totalSize }}
@@ -32,12 +31,29 @@
             Showing up to {{ inputItems.length }} {{ zonesOnly ? 'zones' : 'devices' }}, search to refine your results.
           </template>
         </v-subheader>
+        <v-divider class="my-2"/>
       </template>
+
       <template #item="{ item }">
-        <v-list-item-content>
+        <div class="d-flex flex-row flex-wrap">
           <v-list-item-title>{{ item.title }}</v-list-item-title>
           <v-list-item-subtitle v-if="item.title !== item.name">{{ item.name }}</v-list-item-subtitle>
-        </v-list-item-content>
+        </div>
+      </template>
+
+      <template #append-item v-if="findZonesTracker.response?.nextPageToken">
+        <!-- New element to handle intersection -->
+        <v-divider class="my-2"/>
+        <v-btn
+            block
+            class="text-center mt-1 rounded-0"
+            color="transparent"
+            :disabled="findZonesLoading"
+            elevation="0"
+            :loading="findZonesLoading"
+            @click="fetchNextPage">
+          Load more
+        </v-btn>
       </template>
     </v-combobox>
     <v-menu bottom offset-y nudge-top="-8" v-if="!blockActions">
@@ -79,7 +95,7 @@ const props = defineProps({
     default: 5
   }
 });
-const emit = defineEmits(['update:zones']);
+const emit = defineEmits(['update:zones', 'update:maxResultSize']);
 
 const propZones = computed(() => deviceArrToItems(props.zones));
 const inputZones = ref([]);
@@ -138,8 +154,12 @@ const findZonesTracker = reactive(
     /** @type {ActionTracker<ListDevicesResponse.AsObject>} */
     newActionTracker()
 );
-const findZonesLoading = computed(() => findZonesTracker.loading);
-const findZonesError = computed(() => findZonesTracker.error);
+const findZonesNextPageTracker = reactive(
+    /** @type {ActionTracker<ListDevicesResponse>} */
+    newActionTracker()
+);
+const findZonesLoading = computed(() => findZonesTracker.loading || findZonesNextPageTracker.loading);
+const findZonesError = computed(() => findZonesTracker.error ?? findZonesNextPageTracker.error);
 
 // the query we use to filter the zones returned by the server
 const findZonesQuery = computed(() => {
@@ -161,6 +181,21 @@ const fetchZones = debounce((query) => {
 }, 500);
 // watch for changes in the query and fetch zones when it changes
 watch(findZonesQuery, (query) => fetchZones(query), {immediate: true});
+
+const nextPageToken = computed(() => findZonesTracker.response?.nextPageToken);
+const fetchNextPage = async () => {
+  const pageToken = nextPageToken.value;
+  if (pageToken) {
+    const req = {query: findZonesQuery.value, pageSize: props.maxResultSize, pageToken};
+    try {
+      const res = await listDevices(req, findZonesNextPageTracker);
+      findZonesTracker.response.devicesList.push(...res.devicesList);
+      findZonesTracker.response.nextPageToken = res.nextPageToken;
+    } catch (error) {
+      console.error('An error occurred while loading more items:', error);
+    }
+  }
+};
 
 const {blockActions} = useAuthSetup();
 </script>

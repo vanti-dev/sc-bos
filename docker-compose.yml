@@ -36,6 +36,7 @@ services:
       KC_DB_PASSWORD: postgres
     volumes:
       - ./manifests/keycloak/realm-smart-core.json:/opt/keycloak/data/import/realm-smart-core.json
+      - ./manifests/keycloak/themes/smartcore:/opt/keycloak/themes/smartcore
     command: "start-dev --import-realm"
 
 # Podman doesn't support profiles as of Oct 2023 - when they do we can uncomment this

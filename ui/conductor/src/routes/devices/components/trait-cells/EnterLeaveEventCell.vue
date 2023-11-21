@@ -1,10 +1,24 @@
 <template>
-  <span class="text-no-wrap el-cell" v-if="value">
-    <v-icon :left="hasTotals" :class="{justEntered}" size="20">mdi-location-enter</v-icon>
-    <span :class="{justEntered}" v-if="hasTotals">{{ enterTotal }}</span>
+  <span v-if="value" class="text-no-wrap el-cell">
+    <v-tooltip bottom>
+      <template #activator="{ on, attrs }">
+        <span v-on="on" v-bind="attrs">
+          <v-icon :left="hasTotals" :class="{justEntered}" size="20">mdi-location-enter</v-icon>
+          <span :class="{justEntered}" v-if="hasTotals">{{ enterTotal }}</span>
+        </span>
+      </template>
+      Entered
+    </v-tooltip>
     <v-divider vertical class="mx-2"/>
-    <span :class="{justLeft}" v-if="hasTotals">{{ leaveTotal }}</span>
-    <v-icon :right="hasTotals" :class="{justLeft}" size="20">mdi-location-exit</v-icon>
+    <v-tooltip bottom>
+      <template #activator="{ on, attrs }">
+        <span v-on="on" v-bind="attrs">
+          <span :class="{justLeft}" v-if="hasTotals">{{ leaveTotal }}</span>
+          <v-icon :right="hasTotals" :class="{justLeft}" size="20">mdi-location-exit</v-icon>
+        </span>
+      </template>
+      Left
+    </v-tooltip>
   </span>
 </template>
 <script setup>

@@ -69,6 +69,7 @@ func newUdmiMerge(client *gobacnet.Client, devices known.Context, statuses *stat
 		logger:   logger,
 	}
 	f.pollTask = task.NewIntermittent(f.startPoll)
+	initTraitStatus(statuses, cfg.Name, "UDMI")
 	return f, nil
 }
 

@@ -2,7 +2,7 @@
   <v-card flat tile>
     <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Config</v-subheader>
     <v-card-text class="px-4 pt-0 json-form">
-      <div class="text-caption pb-1 neutral--text text--lighten-6">Import/Export</div>
+      <div class="text-caption pb-1 neutral--text text--lighten-6">Export</div>
       <v-textarea
           v-model="config"
           auto-grow

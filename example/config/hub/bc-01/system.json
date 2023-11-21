@@ -1,0 +1,9 @@
+{
+  "name": "BC-01",
+  "grpcAddr": "localhost",
+  "listenGrpc": ":23101",
+  "listenHttps": ":8101",
+  "systems": {
+    "hub": {"storage": {"type": "bolt"}}
+  }
+}

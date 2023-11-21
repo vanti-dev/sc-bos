@@ -114,6 +114,7 @@ func newStatus(client *gobacnet.Client, devices known.Context, statuses *statusp
 		monitor:  monitor,
 	}
 	impl.pollTask = task.NewIntermittent(impl.startPoll)
+	initTraitStatus(statuses, cfg.Name, "Status")
 	return impl, nil
 }
 

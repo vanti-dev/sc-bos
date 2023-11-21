@@ -3,19 +3,21 @@
     <template #activator="actBindings">
       <slot name="activator" v-bind="actBindings"/>
     </template>
-    <v-card class="px-2 pb-4 pt-1">
-      <v-card-title>Add Tenant</v-card-title>
-      <v-list>
-        <v-list-item>
-          <v-text-field label="Name" v-model="name" filled hide-details/>
-        </v-list-item>
-      </v-list>
-      <v-card-actions>
-        <v-spacer/>
-        <v-btn color="error" @click="cancel">Cancel</v-btn>
-        <v-btn color="primary" @click="addTenant">Add</v-btn>
-      </v-card-actions>
-    </v-card>
+    <v-form @submit.prevent="addTenant">
+      <v-card class="px-2 pb-4 pt-1">
+        <v-card-title>Add Tenant</v-card-title>
+        <v-list>
+          <v-list-item>
+            <v-text-field label="Name" v-model="name" filled hide-details/>
+          </v-list-item>
+        </v-list>
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn color="error" @click="cancel">Cancel</v-btn>
+          <v-btn color="primary" :disabled="!name" type="submit">Add</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-form>
   </v-dialog>
 </template>
 <script setup>
@@ -62,6 +64,10 @@ function cancel() {
  *
  */
 async function addTenant() {
+  if (name.value === '') {
+    return;
+  }
+
   const req = {
     tenant: {
       title: name.value

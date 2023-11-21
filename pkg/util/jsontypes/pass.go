@@ -1,6 +1,7 @@
 package jsontypes
 
 import (
+	"fmt"
 	"os"
 	"strings"
 )
@@ -17,5 +18,8 @@ func (c Password) Read() (string, error) {
 		return c.Password, nil
 	}
 	bs, err := os.ReadFile(c.PasswordFile)
-	return strings.TrimSpace(string(bs)), err
+	if err != nil {
+		return "", fmt.Errorf("%w: %q", err, c.PasswordFile)
+	}
+	return strings.TrimSpace(string(bs)), nil
 }

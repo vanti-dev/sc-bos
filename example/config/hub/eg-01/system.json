@@ -1,0 +1,14 @@
+{
+  "name": "EG-01",
+  "listenGrpc": ":23201",
+  "listenHttps": ":8201",
+  "systems": {
+    "authn": {
+      "user": {"fileAccounts": true},
+      "system": {"cohortAccounts": true}
+    },
+    "hub": {"storage": {"type": "proxy"}},
+    "proxy": {},
+    "tenants": {"storage": {"type": "proxy"}}
+  }
+}

@@ -1131,12 +1131,12 @@
   resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/panzoom-package/-/panzoom-package-1.0.1-vanti.0.tgz#5e7c8dd241b0154349a16b516b7951cec7cad8ed"
   integrity sha512-3ARMG2OYyrfhrh4KR+lwpYcimPJUPjzQ2haXl6U3sglVJW4fWbruy7TE+NgWrQ0g1P3TZXPKcp2lWZdEeTKzwQ==
 
-"@sc-bos/ui-gen@1.0.0-beta.13":
-  version "1.0.0-beta.13"
-  resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/ui-gen/-/ui-gen-1.0.0-beta.13.tgz#27bc02cf46da7e1ec3ebbfbe62f8d971bde3c9c8"
-  integrity sha512-Ngg8VPeKPrvupCMSgSwZEB1iWtFtiYW8ILNjkWEEuNyAXz1sYfYg2+ZYsU7569xre3/G1j33M/3spyJK4TvWFg==
+"@sc-bos/ui-gen@1.0.0-beta.16":
+  version "1.0.0-beta.16"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/ui-gen/-/ui-gen-1.0.0-beta.16.tgz#29b82159735099786da8a2b7200566a7c025466e"
+  integrity sha512-YVlAy3AKcJcpIEdAtkSQ6sLY51ZoVctnSTArZ5/GL0/ngynG43P1xXEtA4dD8GsLLaFiReHAeH3t89rco75feA==
   dependencies:
-    "@smart-core-os/sc-api-grpc-web" "^1.0.0-beta.42"
+    "@smart-core-os/sc-api-grpc-web" "^1.0.0-beta.43"
     google-protobuf "^3.21.2"
     grpc-web "^1.4.2"
 
@@ -1156,14 +1156,6 @@
   version "2.0.0"
   resolved "https://nexus.vanti.co.uk/repository/npm-public/@sideway/pinpoint/-/pinpoint-2.0.0.tgz#cff8ffadc372ad29fd3f78277aeb29e632cc70df"
   integrity sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==
-
-"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.42":
-  version "1.0.0-beta.42"
-  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.42.tgz#77b3bf36bdd95980f51eb84a6967c4b5f8ef7ed4"
-  integrity sha512-JxgKw7XjAbSDMcasSAgRrZLoGcmVLNialO9gLoSFeI74DLXp+gSKT3rwiGesDMLe3sZ08jyPFyssJWW8xr5HNw==
-  dependencies:
-    google-protobuf "^3.21.2"
-    grpc-web "^1.4.2"
 
 "@smart-core-os/sc-api-grpc-web@^1.0.0-beta.43":
   version "1.0.0-beta.43"

@@ -87,8 +87,19 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 			return fmt.Errorf("setup: %w", err)
 		}
 
+		opts := []pgxstore.Option{
+			pgxstore.WithLogger(s.logger),
+		}
+		if ttl := cfg.Storage.TTL; ttl != nil {
+			if ttl.MaxAge.Duration > 0 {
+				opts = append(opts, pgxstore.WithMaxAge(ttl.MaxAge.Duration))
+			}
+			if ttl.MaxCount > 0 {
+				opts = append(opts, pgxstore.WithMaxCount(ttl.MaxCount))
+			}
+		}
 		store = func(source string) history.Store {
-			return pgxstore.NewStoreFromPool(source, pool)
+			return pgxstore.NewStoreFromPool(source, pool, opts...)
 		}
 	case config.StorageTypeBolt:
 		s.storeCollection = make(map[string]history.Store)

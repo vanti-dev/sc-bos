@@ -63,6 +63,7 @@ func newMeter(client *gobacnet.Client, devices known.Context, statuses *statuspb
 		config:      cfg,
 	}
 	t.pollTask = task.NewIntermittent(t.startPoll)
+	initTraitStatus(statuses, cfg.Name, "Meter")
 	return t, nil
 }
 

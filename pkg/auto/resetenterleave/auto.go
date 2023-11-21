@@ -16,6 +16,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto/resetenterleave/config"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 const AutoName = "resetenterleave"
@@ -51,7 +52,7 @@ func (a *Auto) applyConfig(ctx context.Context, cfg config.Root) error {
 
 	sched := cfg.Schedule
 	if sched == nil {
-		sched = config.ScheduleMustParse("0 0 * * *")
+		sched = jsontypes.MustParseSchedule("0 0 * * *")
 	}
 	go func() {
 		t := time.Now()

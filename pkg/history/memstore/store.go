@@ -14,10 +14,17 @@ import (
 type Store struct {
 	slice // sorted by id, which is createTime+dedupe index
 	now   func() time.Time
+
+	maxAge   time.Duration
+	maxCount int64
 }
 
-func New() *Store {
-	return &Store{now: time.Now}
+func New(opts ...Option) *Store {
+	s := &Store{now: time.Now}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
 }
 
 func SetNow(s *Store, now func() time.Time) func() {
@@ -42,7 +49,26 @@ func (s *Store) Append(_ context.Context, payload []byte) (history.Record, error
 		r.ID = s.slice[l-1].ID + "0"
 	}
 	s.slice = append(s.slice, r)
+	s.gc(now)
 	return r, nil
+}
+
+func (s *Store) gc(now time.Time) {
+	if s.maxAge == 0 && s.maxCount == 0 {
+		return
+	}
+
+	if s.maxAge > 0 {
+		// find the first record that is "not older" than maxAge and drop everything before it
+		if i, ok := s.indexOf(history.Record{CreateTime: now.Add(-s.maxAge)}); ok {
+			s.slice = s.slice[i:]
+		}
+	}
+	if s.maxCount > 0 {
+		if l := int64(len(s.slice)); l > s.maxCount {
+			s.slice = s.slice[l-s.maxCount:]
+		}
+	}
 }
 
 type slice []history.Record // sorted by id, which is createTime+dedupe

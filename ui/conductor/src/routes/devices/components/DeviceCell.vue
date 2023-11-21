@@ -5,7 +5,9 @@
         v-slot="{ resource }"
         :name="props.item.name"
         :paused="props.paused">
-      <EnterLeaveEventCell v-if="!resource.streamError" v-bind="resource"/>
+      <EnterLeaveEventCell
+          v-if="!resource.streamError && (resource?.value?.enterTotal || resource?.value?.leaveTotal)"
+          v-bind="resource"/>
       <StatusAlert v-else :resource="resource.streamError"/>
     </WithEnterLeave>
     <WithElectricDemand
@@ -80,6 +82,11 @@
     </WithAccess>
     <!-- End -->
 
+    <WithEmergency v-if="hasCell('Emergency')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
+      <EmergencyCell v-if="!resource.streamError" v-bind="resource"/>
+      <StatusAlert v-else icon="mdi-smoke-detector-outline" :resource="resource.streamError"/>
+    </WithEmergency>
+
     <WithStatus v-if="hasCell('StatusLog')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
       <StatusLogCell v-if="!resource.streamError" v-bind="resource"/>
       <StatusAlert v-else icon="mdi-connection" :resource="resource.streamError"/>
@@ -92,6 +99,7 @@ import StatusAlert from '@/components/StatusAlert.vue';
 import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
 import WithAirTemperature from '@/routes/devices/components/renderless/WithAirTemperature.vue';
 import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
+import WithEmergency from '@/routes/devices/components/renderless/WithEmergency.vue';
 import WithEnterLeave from '@/routes/devices/components/renderless/WithEnterLeave.vue';
 import WithLighting from '@/routes/devices/components/renderless/WithLighting.vue';
 import WithMeter from '@/routes/devices/components/renderless/WithMeter.vue';
@@ -101,6 +109,7 @@ import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
 import AccessAttemptCell from '@/routes/devices/components/trait-cells/AccessAttemptCell.vue';
 import AirTemperatureCell from '@/routes/devices/components/trait-cells/AirTemperatureCell.vue';
 import ElectricDemandCell from '@/routes/devices/components/trait-cells/ElectricDemandCell.vue';
+import EmergencyCell from '@/routes/devices/components/trait-cells/EmergencyCell.vue';
 import EnterLeaveEventCell from '@/routes/devices/components/trait-cells/EnterLeaveEventCell.vue';
 import LightCell from '@/routes/devices/components/trait-cells/LightCell.vue';
 import MeterCell from '@/routes/devices/components/trait-cells/MeterCell.vue';
@@ -137,6 +146,9 @@ const visibleCells = computed(() => {
   }
   if (hasTrait(props.item, 'smartcore.traits.EnterLeaveSensor')) {
     cells['EnterLeaveEvent'] = true;
+  }
+  if (hasTrait(props.item, 'smartcore.traits.Emergency')) {
+    cells['Emergency'] = true;
   }
   if (hasTrait(props.item, 'smartcore.traits.OpenClose')) {
     cells['OpenClose'] = true;

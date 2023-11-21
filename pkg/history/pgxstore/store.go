@@ -12,6 +12,7 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/history"
 )
@@ -26,35 +27,49 @@ func SetupDB(ctx context.Context, pool *pgxpool.Pool) error {
 	})
 }
 
-func New(ctx context.Context, source, connStr string) (history.Store, error) {
+func New(ctx context.Context, source, connStr string, opts ...Option) (history.Store, error) {
 	pool, err := pgxpool.Connect(ctx, connStr)
 	if err != nil {
 		return nil, fmt.Errorf("connect %w", err)
 	}
 
-	return SetupStoreFromPool(ctx, source, pool)
+	return SetupStoreFromPool(ctx, source, pool, opts...)
 }
 
-func SetupStoreFromPool(ctx context.Context, source string, pool *pgxpool.Pool) (history.Store, error) {
+func SetupStoreFromPool(ctx context.Context, source string, pool *pgxpool.Pool, opts ...Option) (history.Store, error) {
 	err := SetupDB(ctx, pool)
 	if err != nil {
 		return nil, fmt.Errorf("setup %w", err)
 	}
 
-	return NewStoreFromPool(source, pool), nil
+	return NewStoreFromPool(source, pool, opts...), nil
 }
 
-func NewStoreFromPool(source string, pool *pgxpool.Pool) history.Store {
-	return &Store{
-		slice: slice{pool: pool, source: source},
-		now:   time.Now,
+const LargeMaxCount = 1e7
+
+func NewStoreFromPool(source string, pool *pgxpool.Pool, opts ...Option) history.Store {
+	s := &Store{
+		slice:  slice{pool: pool, source: source},
+		now:    time.Now,
+		logger: zap.NewNop(),
 	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	if count := s.maxCount; count > LargeMaxCount {
+		s.logger.Warn("maxCount is high, this may cause performance issues", zap.Int64("maxCount", count))
+	}
+	return s
 }
 
 type Store struct {
 	slice
 
-	now func() time.Time
+	now    func() time.Time
+	logger *zap.Logger
+
+	maxAge   time.Duration
+	maxCount int64
 }
 
 func (s *Store) Append(ctx context.Context, payload []byte) (history.Record, error) {
@@ -74,7 +89,37 @@ func (s *Store) Append(ctx context.Context, payload []byte) (history.Record, err
 	}
 
 	r.ID = strconv.FormatInt(id, 10)
+
+	if err := s.gc(now); err != nil {
+		// gc failure is not critical to the Append call, so just log it.
+		// The next Append will have another chance to gc.
+		s.logger.Warn("gc failed", zap.Error(err))
+	}
 	return r, nil
+}
+
+func (s *Store) gc(now time.Time) error {
+	if s.maxAge == 0 && s.maxCount == 0 {
+		return nil
+	}
+
+	if s.maxAge > 0 {
+		t := now.Add(-s.maxAge)
+		_, err := s.pool.Exec(context.Background(), "DELETE FROM history WHERE source = $1 AND create_time < $2", s.source, t)
+		if err != nil {
+			return err
+		}
+	}
+	if s.maxCount > 0 {
+		// We use create_time here as a substitute for a strict incremental id.
+		// At most we leak records equal to the collisions of create_time, which should be minimal.
+		sql := fmt.Sprintf(`DELETE FROM history WHERE source = $1 AND create_time < (SELECT create_time FROM history WHERE source = $1 ORDER BY create_time DESC LIMIT 1 OFFSET %d)`, s.maxCount)
+		_, err := s.pool.Exec(context.Background(), sql, s.source)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type slice struct {

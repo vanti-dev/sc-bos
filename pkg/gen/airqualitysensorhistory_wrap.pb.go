@@ -3,9 +3,8 @@
 package gen
 
 import (
-	"context"
-
-	"google.golang.org/grpc"
+	context "context"
+	grpc "google.golang.org/grpc"
 )
 
 // WrapAirQualitySensorHistory	adapts a AirQualitySensorHistoryServer	and presents it as a AirQualitySensorHistoryClient
