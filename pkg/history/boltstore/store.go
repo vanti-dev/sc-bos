@@ -18,8 +18,8 @@ type Store struct {
 	slice // sorted by id, which is createTime+dedupe index
 	now   func() time.Time
 
-	retention time.Duration
-	maxCount  int64
+	maxAge   time.Duration
+	maxCount int64
 
 	logger *zap.Logger
 }
@@ -43,10 +43,10 @@ func NewFromDb(ctx context.Context, db *bolthold.Store, source string, logger *z
 			db:     db,
 			bucket: b,
 		},
-		now:       time.Now,
-		retention: retention,
-		maxCount:  maxCount,
-		logger:    logger,
+		now:      time.Now,
+		maxAge:   retention,
+		maxCount: maxCount,
+		logger:   logger,
 	}
 
 	// clean out old entries on startup
@@ -84,15 +84,15 @@ func createTimeToID(now time.Time) string {
 	return strconv.FormatInt(now.UnixNano(), 10)
 }
 
-// removeOldRecords removes records older than now minus the specified retention period
+// removeOldRecords removes records older than now minus the specified maxAge period
 func (s *Store) gc(now time.Time) error {
-	if s.retention == 0 && s.maxCount == 0 {
+	if s.maxAge == 0 && s.maxCount == 0 {
 		return nil
 	}
 	var ageErr, countErr error
-	if s.retention > 0 {
-		before := now.Add(-s.retention)
-		// remove records older than `retention`
+	if s.maxAge > 0 {
+		before := now.Add(-s.maxAge)
+		// remove records older than `maxAge`
 		ageErr = s.db.Bolt().Update(func(tx *bolt.Tx) error {
 			b := tx.Bucket(s.bucket)
 			return s.db.DeleteMatchingFromBucket(b, &history.Record{}, bolthold.Where("CreateTime").Lt(before))
