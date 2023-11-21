@@ -62,7 +62,7 @@ type automation struct {
 }
 
 func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
-	a.logger.Info("applying config", zap.Any("storageType", cfg.Storage.Type), zap.Any("trait", cfg.Source.Trait))
+	a.logger.Debug("applying config", zap.Any("storageType", cfg.Storage.Type), zap.Any("trait", cfg.Source.Trait))
 	// work out where we're storing the history
 	var store history.Store
 	switch cfg.Storage.Type {
