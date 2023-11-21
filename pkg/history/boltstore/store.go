@@ -49,24 +49,8 @@ func NewFromDb(ctx context.Context, db *bolthold.Store, source string, logger *z
 		logger:    logger,
 	}
 
-	// setup daily cleanup if retention is specified
-	if retention > 0 {
-		go func() {
-			ticker := time.NewTicker(24 * time.Hour)
-			defer ticker.Stop()
-			for {
-				err = s.gc(time.Now())
-				if err != nil {
-					logger.Error("Failed to remove old history records", zap.Error(err))
-				}
-				select {
-				case <-ctx.Done():
-					return
-				case <-ticker.C:
-				}
-			}
-		}()
-	}
+	// clean out old entries on startup
+	s.gc(time.Now())
 
 	return s, nil
 }
