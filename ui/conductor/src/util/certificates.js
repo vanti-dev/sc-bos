@@ -126,6 +126,22 @@ export async function parseCertificate(pem) {
   const cert = new pkijs.Certificate({schema: asn1.result});
 
   const certificateInformation = {
+    subject: {
+      commonName: '',
+      organizationalUnit: '',
+      organization: '',
+      locality: '',
+      stateOrProvinceName: '',
+      countryName: ''
+    },
+    issuer: {
+      commonName: '',
+      organizationalUnit: '',
+      organization: '',
+      locality: '',
+      stateOrProvinceName: '',
+      countryName: ''
+    },
     primaryDomain: '',
     subjectAltDomains: '',
     validityPeriod: {
@@ -138,13 +154,6 @@ export async function parseCertificate(pem) {
     sha1Fingerprint: '',
     sha256Fingerprint: '',
     version: 0,
-    subject: {
-      organization: '',
-      commonName: ''
-    },
-    issuer: {
-      commonName: ''
-    },
     extensions: {
       keyUsage: '',
       basicConstraints: '',

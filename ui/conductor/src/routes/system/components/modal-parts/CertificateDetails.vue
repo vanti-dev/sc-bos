@@ -207,7 +207,11 @@ const resetActiveCertificate = () => {
 
 // watch the effect of rootCertificate and set it if no active certificate is set
 watchEffect(() => {
-  if (rootCertificate.value && activeCertificate.value === null) {
+  if (intermediateCertificates.value && activeCertificate.value === null) {
+    setActiveCertificate(intermediateCertificates.value[0],
+        intermediateCertificates.value[0].subject.commonName
+    );
+  } else if (rootCertificate.value && activeCertificate.value === null) {
     setActiveCertificate(rootCertificate.value, 'root');
   }
 });

@@ -159,10 +159,13 @@ export default function() {
       return null;
     }
 
-    return inspectHubNodeValue.response.metadata;
+    // exclude traitsList from the metadata return
+    const {traitsList, ...metadata} = inspectHubNodeValue.response.metadata;
+
+    return metadata;
   });
-    // --------------------------- //
-    // List and Track Hub Nodes
+  // --------------------------- //
+  // List and Track Hub Nodes
   const nodeDetails = reactive({});
 
   let unwatchTrackers = [];
