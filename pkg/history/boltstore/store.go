@@ -3,6 +3,7 @@ package boltstore
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"time"
 
@@ -14,14 +15,16 @@ import (
 )
 
 type Store struct {
-	slice     // sorted by id, which is createTime+dedupe index
-	now       func() time.Time
+	slice // sorted by id, which is createTime+dedupe index
+	now   func() time.Time
+
 	retention time.Duration
+	maxCount  int64
 
 	logger *zap.Logger
 }
 
-func NewFromDb(ctx context.Context, db *bolthold.Store, source string, logger *zap.Logger, retention time.Duration) (history.Store, error) {
+func NewFromDb(ctx context.Context, db *bolthold.Store, source string, logger *zap.Logger, retention time.Duration, maxCount int64) (history.Store, error) {
 	b := []byte(source)
 	err := db.Bolt().Update(func(tx *bolt.Tx) error {
 		var err error
@@ -42,6 +45,7 @@ func NewFromDb(ctx context.Context, db *bolthold.Store, source string, logger *z
 		},
 		now:       time.Now,
 		retention: retention,
+		maxCount:  maxCount,
 		logger:    logger,
 	}
 
@@ -51,7 +55,7 @@ func NewFromDb(ctx context.Context, db *bolthold.Store, source string, logger *z
 			ticker := time.NewTicker(24 * time.Hour)
 			defer ticker.Stop()
 			for {
-				err = s.removeOldRecords()
+				err = s.gc(time.Now())
 				if err != nil {
 					logger.Error("Failed to remove old history records", zap.Error(err))
 				}
@@ -83,6 +87,12 @@ func (s *Store) Append(ctx context.Context, payload []byte) (history.Record, err
 		return history.Record{}, err
 	}
 
+	if err := s.gc(now); err != nil {
+		// gc failure is not critical to the Append call, so just log it.
+		// The next Append will have another chance to gc.
+		s.logger.Warn("gc failed", zap.Error(err))
+	}
+
 	return r, nil
 }
 
@@ -91,15 +101,37 @@ func createTimeToID(now time.Time) string {
 }
 
 // removeOldRecords removes records older than now minus the specified retention period
-func (s *Store) removeOldRecords() error {
-	if s.retention == 0 {
+func (s *Store) gc(now time.Time) error {
+	if s.retention == 0 && s.maxCount == 0 {
 		return nil
 	}
-	before := s.now().Add(-s.retention)
-	return s.db.Bolt().Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(s.bucket)
-		return s.db.DeleteMatchingFromBucket(b, &history.Record{}, bolthold.Where("CreateTime").Lt(before))
-	})
+	var ageErr, countErr error
+	if s.retention > 0 {
+		before := now.Add(-s.retention)
+		// remove records older than `retention`
+		ageErr = s.db.Bolt().Update(func(tx *bolt.Tx) error {
+			b := tx.Bucket(s.bucket)
+			return s.db.DeleteMatchingFromBucket(b, &history.Record{}, bolthold.Where("CreateTime").Lt(before))
+		})
+	}
+	if s.maxCount > 0 {
+		// remove records over maxCount
+		countErr = s.db.Bolt().Update(func(tx *bolt.Tx) error {
+			b := tx.Bucket(s.bucket)
+			q := bolthold.Query{}
+			var r []history.Record
+			err := s.db.FindInBucket(b, &r, q.SortBy("CreateTime").Reverse().Limit(1).Skip(int(s.maxCount)))
+			if err != nil {
+				return err
+			}
+			if len(r) == 0 {
+				return nil
+			}
+			return s.db.DeleteMatchingFromBucket(b, &history.Record{}, bolthold.Where("CreateTime").Le(r[0].CreateTime))
+		})
+	}
+
+	return errors.Join(ageErr, countErr)
 }
 
 type slice struct {

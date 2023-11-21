@@ -107,7 +107,7 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 			st, ok := s.storeCollection[source]
 			if !ok {
 				var err error
-				st, err = boltstore.NewFromDb(ctx, s.db, source, s.logger, cfg.Storage.Retention.Duration)
+				st, err = boltstore.NewFromDb(ctx, s.db, source, s.logger, cfg.Storage.TTL.MaxAge.Duration, cfg.Storage.TTL.MaxCount)
 				if err != nil {
 					s.logger.Error("failed to create bolt store", zap.Error(err))
 				} else {
