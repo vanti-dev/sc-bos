@@ -157,7 +157,7 @@ func (m *MeanOATempPatches) pullDeviceChanges(ctx context.Context, out chan<- *t
 // Returns either when ctx is done, or in is closed.
 func (m *MeanOATempPatches) sendMeanChanges(ctx context.Context, in <-chan *traits.AirTemperature, out chan<- Patcher, runningMean *exponentialMean, hourlyTemps dailyTemp) error {
 	setMean := func() error {
-		err := chans.SendContext(ctx, out, PatchFunc(func(s *ReadState) {
+		err := chans.SendContext[Patcher](ctx, out, PatchFunc(func(s *ReadState) {
 			s.MeanOATemp = &types.Temperature{
 				ValueCelsius: runningMean.mean,
 			}
