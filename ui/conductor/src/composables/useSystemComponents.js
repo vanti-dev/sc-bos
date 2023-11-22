@@ -221,6 +221,10 @@ export default function() {
     );
   }
 
+  const allowForget = (name) => {
+    return !!hubStore.listedHubNodes.find(node => node === name);
+  };
+
   // Clean up on unmount
   onUnmounted(() => {
     unwatchTrackers = [];
@@ -242,7 +246,8 @@ export default function() {
     nodeDetails,
     nodesList,
     isProxy,
-    isHub
+    isHub,
+    allowForget
 
   };
 }

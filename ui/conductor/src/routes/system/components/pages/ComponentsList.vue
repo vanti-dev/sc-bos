@@ -60,7 +60,7 @@
                     View Certificate
                   </v-list-item-title>
                 </v-list-item>
-                <v-list-item link>
+                <v-list-item v-if="allowForget(node.name)" link>
                   <v-list-item-title class="error--text" @click="onForgetNode(node.address)">
                     Forget Node
                   </v-list-item-title>
@@ -91,7 +91,8 @@ const {
   nodeDetails,
   nodesList,
   isProxy,
-  isHub
+  isHub,
+  allowForget
 } = useSystemComponents();
 
 const nodeQuery = ref({

@@ -13,7 +13,9 @@ export const useHubStore = defineStore('hub', () => {
   const controller = useControllerStore();
   const nodesListCollection = reactive(newResourceCollection());
   const hubNode = ref();
-  let _hubResolve; let _hubReject;
+  const listedHubNodes = ref([]);
+  let _hubResolve;
+  let _hubReject;
   const hubPromise = new Promise((resolve, reject) => {
     _hubResolve = resolve;
     _hubReject = reject;
@@ -55,8 +57,10 @@ export const useHubStore = defineStore('hub', () => {
         }
         set(nodesListCollection.value, hubNode.value.name, hubNode);
 
+        listedHubNodes.value = [];
         const nodes = await listHubNodes(newActionTracker());
         for (const node of nodes.nodesList) {
+          listedHubNodes.value.push(node.name);
           set(nodesListCollection.value, node.name, node);
         }
         console.debug('resolving hubPromise with', hubNode.value);
@@ -122,6 +126,7 @@ export const useHubStore = defineStore('hub', () => {
   }
 
   return {
+    listedHubNodes,
     nodesList,
     hubNode,
     hubPromise,
