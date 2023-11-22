@@ -33,7 +33,8 @@ One of:
 }
 
 type sysConfArg struct {
-	dst *Config
+	dst   *Config
+	isSet bool
 }
 
 func (a sysConfArg) String() string {
@@ -42,8 +43,11 @@ func (a sysConfArg) String() string {
 
 func (a sysConfArg) Set(s string) error {
 	str := strings.Split(s, ",")
-	a.dst.ConfigDirs = []string{}
-	a.dst.ConfigFiles = []string{}
+	if !a.isSet {
+		a.dst.ConfigDirs = []string{}
+		a.dst.ConfigFiles = []string{}
+		a.isSet = true
+	}
 	for _, f := range str {
 		a.dst.ConfigDirs = append(a.dst.ConfigDirs, path.Dir(f))
 		a.dst.ConfigFiles = append(a.dst.ConfigFiles, path.Base(f))
