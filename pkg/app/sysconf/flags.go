@@ -66,7 +66,7 @@ func (a appConfArg) String() string {
 func (a appConfArg) Set(s string) error {
 	str := strings.Split(s, ",")
 	for _, f := range str {
-		a.dst.AppConfig = append(a.dst.AppConfig, path.Join(path.Base(""), f))
+		a.dst.AppConfig = append(a.dst.AppConfig, path.Join(".", f))
 	}
 	return nil
 }
