@@ -3,7 +3,21 @@
     <v-row class="ml-0 pl-0 my-0">
       <h3 class="text-h3 pt-2 pb-6">Components</h3>
       <v-spacer/>
-      <v-btn color="neutral" @click="showModal = true">Manage Component</v-btn>
+      <v-tooltip left>
+        <template #activator="{ on, attrs }">
+          <v-btn
+              class="mr-4"
+              color="primary"
+              fab
+              small
+              v-bind="attrs"
+              v-on="on"
+              @click="showModal = true">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </template>
+        Enroll Node
+      </v-tooltip>
     </v-row>
 
     <div class="d-flex flex-wrap ml-n2">
@@ -29,23 +43,39 @@
           <v-chip-group>
             <v-chip v-if="isProxy(node.name)" color="accent" small>gateway</v-chip>
             <v-chip v-if="isHub(node.name) && !isProxy(node.name)" color="primary" small>hub</v-chip>
-            <v-tooltip top>
-              <template #activator="{ on }">
-                <v-btn class="ml-auto mr-1 mt-1" icon v-on="on" @click="onShowCertificates(node.address)">
-                  <v-icon class="pt-1" size="24">mdi-certificate-outline</v-icon>
+
+            <v-menu offset-y>
+              <template #activator="{ on, attrs }">
+                <v-btn
+                    class="ml-auto mr-1 mt-n1"
+                    icon
+                    v-bind="attrs"
+                    v-on="on">
+                  <v-icon size="24">mdi-dots-vertical</v-icon>
                 </v-btn>
               </template>
-              <span>Component Details</span>
-            </v-tooltip>
+              <v-list class="py-0">
+                <v-list-item link>
+                  <v-list-item-title @click="onShowCertificates(node.address)">
+                    View Certificate
+                  </v-list-item-title>
+                </v-list-item>
+                <v-list-item link>
+                  <v-list-item-title class="error--text" @click="onForgetNode(node.address)">
+                    Forget Node
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
           </v-chip-group>
         </v-card-text>
       </v-card>
-      <div/>
     </div>
 
+    <!-- Modal -->
     <EnrollHubNodeModal
         :show-modal.sync="showModal"
-        :certificate-query.sync="certificateQuery"
+        :node-query.sync="nodeQuery"
         :list-items="nodesList"/>
   </div>
 </template>
@@ -64,21 +94,31 @@ const {
   isHub
 } = useSystemComponents();
 
-const certificateQuery = ref({
+const nodeQuery = ref({
   address: null,
-  isQueried: false
+  isQueried: false,
+  isToForget: false
 });
 
 const onShowCertificates = (address) => {
-  certificateQuery.value.address = address;
-  certificateQuery.value.isQueried = true;
+  nodeQuery.value.address = address;
+  nodeQuery.value.isQueried = true;
+  nodeQuery.value.isToForget = false;
+  showModal.value = true;
+};
+
+const onForgetNode = (address) => {
+  nodeQuery.value.address = address;
+  nodeQuery.value.isQueried = false;
+  nodeQuery.value.isToForget = true;
   showModal.value = true;
 };
 
 watch(showModal, (newModal) => {
   if (newModal === false) {
-    certificateQuery.value.address = null;
-    certificateQuery.value.isQueried = false;
+    nodeQuery.value.address = null;
+    nodeQuery.value.isQueried = false;
+    nodeQuery.value.isToForget = false;
   }
 }, {immediate: true, deep: true, flush: 'sync'});
 </script>

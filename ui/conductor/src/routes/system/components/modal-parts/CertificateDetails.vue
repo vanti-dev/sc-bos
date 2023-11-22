@@ -105,9 +105,17 @@
         </template>
       </div>
     </div>
-    <v-card-actions v-if="!props.certificateQuery.isQueried" class="d-flex flex-row justify-space-between mt-4">
+
+    <v-row class="mt-4">
+      <v-card-text>
+        Please check the information provided by the node is as you expect before clicking Enroll.
+      </v-card-text>
+    </v-row>
+    <v-card-actions
+        v-if="!props.nodeQuery.isQueried && !props.nodeQuery.isToForget"
+        class="d-flex flex-row justify-space-between mt-4">
       <v-btn
-          class="pl-4 pr-6"
+          class="ml-n8 pl-4 pr-6"
           color="neutral lighten-4"
           text
           @click="emits('resetCertificates')">
@@ -119,7 +127,7 @@
           color="primary"
           text
           @click="confirmEnroll">
-        Confirm
+        Enroll
       </v-btn>
     </v-card-actions>
   </div>
@@ -129,13 +137,13 @@
 import {camelToSentence} from '@/util/string';
 import {computed, ref, watchEffect} from 'vue';
 
-const emits = defineEmits(['resetCertificates', 'enrollHubNodeAction']);
+const emits = defineEmits(['resetCertificates', 'enrollHubNodeAction', 'update:address']);
 const props = defineProps({
   address: {
     type: String,
     default: null
   },
-  certificateQuery: {
+  nodeQuery: {
     type: Object,
     default: () => ({})
   },
@@ -220,5 +228,6 @@ const confirmEnroll = () => {
   emits('enrollHubNodeAction', props.address);
   emits('resetCertificates');
   resetActiveCertificate();
+  emits('update:address', null);
 };
 </script>

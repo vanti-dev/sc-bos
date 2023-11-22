@@ -1,16 +1,25 @@
 <template>
   <div v-if="!confirmForget">
-    <v-combobox
-        class="mx-8"
-        :clearable="address !== null"
+    <v-form @submit.prevent="onEnroll">
+      <v-text-field
+          v-model="addressInput"
+          class="mx-8"
+          :clearable="address !== null"
+          dense
+          hide-details
+          label="Component Address"
+          outlined/>
+    </v-form>
+    <!-- Error label if the address is already enrolled -->
+    <v-alert
+        v-if="isEnrolled"
+        class="mx-8 mt-2"
+        color="error"
         dense
-        hide-details
-        :items="props.listItems"
-        item-text="address"
-        item-value="address"
-        label="Component Address"
         outlined
-        :search-input.sync="addressInput"/>
+        type="error">
+      This component is already enrolled.
+    </v-alert>
 
     <v-card-actions class="d-flex flex-row justify-space-around mt-10">
       <v-btn
@@ -18,25 +27,19 @@
           color="primary"
           :disabled="!address || isEnrolled"
           text
-          @click="emits('inspectHubNodeAction', props.address)">
-        Enroll
-      </v-btn>
-      <v-btn
-          class="px-4"
-          color="error"
-          :disabled="!address || !isEnrolled"
-          text
-          @click="confirmForget = true">
-        Forget
+          type="submit"
+          @click="onEnroll">
+        Enroll Node
       </v-btn>
     </v-card-actions>
   </div>
-  <div v-else>
-    <v-card-title class="text-center text-h5 font-weight-bold">
-      Are you sure you want to forget this component?
-    </v-card-title>
-    <v-card-text class="text-center text-body-1">
-      You have to re-enroll the component to use it again.
+  <div v-else style="max-width: 600px">
+    <v-card-text class="px-11 text-left text-subtitle-1">
+      Forgetting a node means <span class="warning--text">it can no longer interact with other Smart Core nodes,
+        and those nodes cannot interact with it.</span>
+      <br><br>Any automations that rely on inter-node communication with or from this node
+      <span class="error--text">will stop working!</span>
+      This includes managing the node centrally via this app. You can re-enrol this node at any time.
     </v-card-text>
     <v-card-actions class="d-flex flex-row justify-space-around mt-10">
       <v-btn
@@ -51,7 +54,7 @@
           color="error"
           text
           @click="forgetHubNode">
-        Confirm
+        Forget Node
       </v-btn>
     </v-card-actions>
   </div>
@@ -78,6 +81,10 @@ const props = defineProps({
   listItems: {
     type: Array,
     default: () => []
+  },
+  nodeQuery: {
+    type: Object,
+    default: () => ({})
   }
 });
 
@@ -92,11 +99,31 @@ const addressInput = computed({
   }
 });
 
+// Enroll the hub node
+const onEnroll = () => {
+  if (!addressInput.value) {
+    return;
+  }
+
+  emits('inspectHubNodeAction', addressInput.value);
+};
+
 const forgetHubNode = () => {
-  emits('forgetHubNodeAction', addressInput.value);
+  if (!props.nodeQuery.address) {
+    return;
+  }
+
+  emits('forgetHubNodeAction', props.nodeQuery.address);
   emits('update:dialogState', false);
   confirmForget.value = false;
 };
+
+// Display the correct dialog content depending on the confirmForget value
+// If confirmForget is true, display the forget dialog
+// If confirmForget is false, display the enroll/forget dialog
+watch(() => props.nodeQuery, (newQuery) => {
+  confirmForget.value = newQuery.isToForget;
+}, {immediate: true, deep: true});
 
 // Depending on input, check if the address is enrolled
 // and update the isEnrolled value to enable the correct button
