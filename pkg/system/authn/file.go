@@ -13,7 +13,10 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system/authn/config"
 )
 
-// loadFileVerifier returns a tenant.Verifier that checks credentials against those found in a json file.
+// loadFileVerifier returns a tenant.Verifier that checks credentials against those found. Creds are loaded from the
+// JSON files that match `defaultFilename` in the `dataDirs` directory list and combined. No checks are made for
+// duplicate IDs either within the same file or across multiple files. If no files are found then a tenant.NeverVerify
+// verifier is returned.
 func loadFileVerifier(idConfig *config.Identities, dataDirs []string, defaultFilename string) (tenant.Verifier, error) {
 	ids := make([]config.Identity, 0)
 	for _, dataDir := range dataDirs {
