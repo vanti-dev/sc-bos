@@ -61,8 +61,8 @@ func Load(dst *Config) error {
 
 // Config configures how the controller should run.
 type Config struct {
-	ConfigDirs  []string `json:"-"` // Dir we look in for system config files. Config in ConfigDir is always loaded and will have higher priority.
-	ConfigFiles []string `json:"-"` // Filenames we load in ConfigDirs for system config
+	ConfigDirs  []string `json:"-"` // Dirs to look in for system config files. Defaults to [".conf"]
+	ConfigFiles []string `json:"-"` // Filenames we load in ConfigDirs for system config. Defaults to ["system.conf.json", "system.json"]
 
 	// The smart core name of the controller.
 	// Can be overridden by app config.
