@@ -119,7 +119,8 @@ func LoadLocalConfig(dir, file string) (*Config, error) {
 	return conf, err // return the config we have, and any errors
 }
 
-// LoadIncludes will go through each include, load the configs, merge the configs, then load any further includes
+// LoadIncludes will go through each include, load the configs, merge the configs, then load any further includes.
+// Returns a list of all files that were loaded.
 func LoadIncludes(dir string, dst *Config, includes []string) ([]string, error) {
 	return loadIncludes(dir, dst, includes, nil)
 }

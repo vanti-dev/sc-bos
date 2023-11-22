@@ -54,7 +54,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	// load the local config file if possible
 	// TODO: pull config from manager publication
 	localConfig := &appconf.Config{}
-	_, err = appconf.LoadIncludes("", localConfig, config.AppConfig)
+	filesLoaded, err := appconf.LoadIncludes("", localConfig, config.AppConfig)
 	if localConfig == nil && err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			logger.Debug("local config files not found", zap.Strings("paths", config.AppConfig))
@@ -65,10 +65,10 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		}
 	} else if err != nil {
 		// we loaded some config, but had some errors
-		logger.Warn("failed to load some config", zap.Strings("paths", config.AppConfig), zap.Error(err))
+		logger.Warn("failed to load some config", zap.Strings("paths", config.AppConfig), zap.Error(err), zap.Strings("filesLoaded", filesLoaded))
 	} else {
 		// successfully loaded the config
-		logger.Debug("loaded local config", zap.Strings("paths", config.AppConfig), zap.Strings("includes", localConfig.Includes))
+		logger.Debug("loaded local config", zap.Strings("paths", config.AppConfig), zap.Strings("includes", localConfig.Includes), zap.Strings("filesLoaded", filesLoaded))
 	}
 
 	// rootNode grants both local (in process) and networked (via grpc.Server) access to controller apis.
