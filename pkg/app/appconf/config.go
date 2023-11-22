@@ -115,12 +115,17 @@ func LoadLocalConfig(dir, file string) (*Config, error) {
 	// if we successfully loaded config, also load included files
 	includes := conf.Includes
 	conf.Includes = nil // includes are added back into the config during merge. This gets rid of globs and files we couldn't find
-	_, err = LoadIncludes(dir, conf, includes, nil)
+	_, err = loadIncludes(dir, conf, includes, nil)
 	return conf, err // return the config we have, and any errors
 }
 
 // LoadIncludes will go through each include, load the configs, merge the configs, then load any further includes
-func LoadIncludes(dir string, dst *Config, includes, seen []string) ([]string, error) {
+func LoadIncludes(dir string, dst *Config, includes []string) ([]string, error) {
+	return loadIncludes(dir, dst, includes, nil)
+}
+
+// loadIncludes recursively loads includes from config files and merges them
+func loadIncludes(dir string, dst *Config, includes, seen []string) ([]string, error) {
 	var errs error
 	var configs []*Config
 	// load first layer of includes
@@ -146,7 +151,7 @@ func LoadIncludes(dir string, dst *Config, includes, seen []string) ([]string, e
 	}
 	// load all deeper includes
 	for _, config := range configs {
-		alsoSeen, err := LoadIncludes(filepath.Dir(config.FilePath), dst, config.Includes, seen)
+		alsoSeen, err := loadIncludes(filepath.Dir(config.FilePath), dst, config.Includes, seen)
 		if err != nil {
 			seen = alsoSeen
 		}
