@@ -37,7 +37,6 @@ func NewFromDb(ctx context.Context, db *bolthold.Store, source string, opts ...O
 
 	err := db.Bolt().Update(func(tx *bolt.Tx) error {
 		var err error
-		s.logger.Debug("Creating bucket", zap.String("bucket", string(b)))
 		_, err = tx.CreateBucketIfNotExists(b)
 		if err != nil {
 			return err
