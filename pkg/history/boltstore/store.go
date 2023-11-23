@@ -4,6 +4,7 @@ package boltstore
 import (
 	"context"
 	"errors"
+	"math"
 	"strconv"
 	"time"
 
@@ -181,7 +182,8 @@ func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
 
 	copy(into, records)
 
-	return len(into), nil
+	// todo: this should be upgraded to use the new min() function in Go 1.21 when the project is updated
+	return int(math.Min(float64(len(into)), float64(len(records)))), nil
 }
 
 func (s slice) Len(ctx context.Context) (int, error) {
