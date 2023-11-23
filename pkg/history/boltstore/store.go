@@ -89,7 +89,7 @@ func createTimeToID(now time.Time) string {
 	return strconv.FormatInt(now.UnixNano(), 10)
 }
 
-// removeOldRecords removes records older than now minus the specified maxAge period
+// gc removes records older than now minus the specified maxAge period, or records over maxCount.
 func (s *Store) gc(now time.Time) error {
 	if s.maxAge == 0 && s.maxCount == 0 {
 		return nil
