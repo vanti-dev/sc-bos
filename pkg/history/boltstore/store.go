@@ -166,7 +166,7 @@ func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
 
 	var records []history.Record
 
-	err := s.db.Bolt().Update(func(tx *bolt.Tx) error {
+	err := s.db.Bolt().View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.bucket)
 		return s.db.FindInBucket(b, &records, query)
 	})
