@@ -28,6 +28,8 @@ export default {
         next('/ops/overview');
       } else if (appConfig.pathEnabled('/ops/notifications')) {
         next('/ops/notifications');
+      } else if (appConfig.pathEnabled('/ops/air-quality')) {
+        next('/ops/air-quality');
       } else if (appConfig.pathEnabled('/ops/emergency-lighting')) {
         next('/ops/emergency-lighting');
       } else if (appConfig.pathEnabled('/ops/security')) {
