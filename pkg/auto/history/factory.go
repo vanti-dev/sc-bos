@@ -145,6 +145,9 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	var serverClient any
 	payloads := make(chan []byte)
 	switch cfg.Source.Trait {
+	case trait.AirQualitySensor:
+		serverClient = gen.WrapAirQualitySensorHistory(historypb.NewAirQualitySensorServer(store))
+		go a.collectAirQualityChanges(ctx, *cfg.Source, payloads)
 	case trait.AirTemperature:
 		serverClient = gen.WrapAirTemperatureHistory(historypb.NewAirTemperatureServer(store))
 		go a.collectAirTemperatureChanges(ctx, *cfg.Source, payloads)
@@ -157,9 +160,6 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	case trait.OccupancySensor:
 		serverClient = gen.WrapOccupancySensorHistory(historypb.NewOccupancySensorServer(store))
 		go a.collectOccupancyChanges(ctx, *cfg.Source, payloads)
-	case trait.AirQualitySensor:
-		serverClient = gen.WrapAirQualitySensorHistory(historypb.NewAirQualitySensorServer(store))
-		go a.collectAirQualityChanges(ctx, *cfg.Source, payloads)
 	case statuspb.TraitName:
 		serverClient = gen.WrapStatusHistory(historypb.NewStatusServer(store))
 		go a.collectCurrentStatusChanges(ctx, *cfg.Source, payloads)
