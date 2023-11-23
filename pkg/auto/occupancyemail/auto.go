@@ -95,7 +95,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 					if pc := r.GetOccupancy().GetPeopleCount(); pc > stats.Last7Days.MaxPeopleCount {
 						stats.Last7Days.MaxPeopleCount = pc
 					}
-					day := startOfDay(r.GetRecordTime().AsTime())
+					day := startOfDay(r.GetRecordTime().AsTime().In(t.Location()))
 					if pc := r.GetOccupancy().GetPeopleCount(); pc > days[day].MaxPeopleCount {
 						s := days[day]
 						s.MaxPeopleCount = pc
