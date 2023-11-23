@@ -85,7 +85,7 @@ export default function() {
    * @param {string} address
    * @return {Promise<void>|undefined}
    */
-  function enrollHubNodeAction(address) {
+  async function enrollHubNodeAction(address) {
     if (!address) return;
 
     const request = {
@@ -95,7 +95,11 @@ export default function() {
       publicCertsList: inspectHubNodeValue.response.publicCertsList
     };
 
-    return enrollHubNode(request, enrollHubNodeValue);
+    // Enroll the node
+    await enrollHubNode(request, enrollHubNodeValue);
+
+    // Refresh the list of nodes
+    await hubStore.listHubNodesAction();
   }
 
   /**
@@ -103,7 +107,7 @@ export default function() {
    * @param {string} address
    * @return {Promise<void>|undefined}
    */
-  function forgetHubNodeAction(address) {
+  async function forgetHubNodeAction(address) {
     if (!address) return;
 
     const request = {
@@ -111,7 +115,9 @@ export default function() {
       allowMissing: true
     };
 
-    return forgetHubNode(request, forgetHubNodeValue);
+    await forgetHubNode(request, forgetHubNodeValue);
+
+    await hubStore.listHubNodesAction();
   }
 
   /**

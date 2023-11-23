@@ -57,12 +57,13 @@ export const useHubStore = defineStore('hub', () => {
         }
         set(nodesListCollection.value, hubNode.value.name, hubNode);
 
-        listedHubNodes.value = [];
-        const nodes = await listHubNodes(newActionTracker());
-        for (const node of nodes.nodesList) {
-          listedHubNodes.value.push(node.name);
-          set(nodesListCollection.value, node.name, node);
-        }
+        // listedHubNodes.value = [];
+        // const nodes = await listHubNodes(newActionTracker());
+        // for (const node of nodes.nodesList) {
+        //   listedHubNodes.value.push(node.name);
+        //   set(nodesListCollection.value, node.name, node);
+        // }
+        await listHubNodesAction();
         console.debug('resolving hubPromise with', hubNode.value);
         _hubResolve(hubNode.value);
       } catch (e) {
@@ -71,6 +72,15 @@ export const useHubStore = defineStore('hub', () => {
       }
     }
   }, {immediate: true});
+
+  const listHubNodesAction = async () => {
+    listedHubNodes.value = [];
+    const nodes = await listHubNodes(newActionTracker());
+    for (const node of nodes.nodesList) {
+      listedHubNodes.value.push(node.name);
+      set(nodesListCollection.value, node.name, node);
+    }
+  };
 
   /**
    * @typedef {Object} Node
@@ -130,6 +140,7 @@ export const useHubStore = defineStore('hub', () => {
     nodesList,
     hubNode,
     hubPromise,
-    nodesListCollection
+    nodesListCollection,
+    listHubNodesAction
   };
 });
