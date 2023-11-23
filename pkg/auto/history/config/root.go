@@ -50,7 +50,8 @@ type Storage struct {
 	Type string `json:"type,omitempty"`
 	pgxutil.ConnectConfig
 	Name string `json:"name,omitempty"`
-	TTL  *TTL   `json:"ttl,omitempty"`
+	// TTL is the time-to-live for records. Zero-value (not-specified) means "forever".
+	TTL *TTL `json:"ttl,omitempty"`
 }
 
 type TTL struct {

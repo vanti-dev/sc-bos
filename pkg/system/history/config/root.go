@@ -15,11 +15,13 @@ type StorageType string
 
 const (
 	StorageTypePostgres StorageType = "postgres"
+	StorageTypeBolt     StorageType = "bolt"
 )
 
 type Storage struct {
 	Type StorageType `json:"type,omitempty"`
 	pgxutil.ConnectConfig
+	// TTL is the time-to-live for records. Zero-value (not-specified) means "forever".
 	TTL *TTL `json:"ttl,omitempty"`
 }
 
