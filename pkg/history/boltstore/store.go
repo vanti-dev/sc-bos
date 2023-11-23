@@ -139,7 +139,7 @@ func (s slice) Slice(from, to history.Record) history.Slice {
 	}
 }
 
-func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
+func (s slice) getQuery() *bolthold.Query {
 	var query *bolthold.Query
 	if !s.from.IsZero() {
 		if s.from.ID != "" {
@@ -163,6 +163,11 @@ func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
 			}
 		}
 	}
+	return query
+}
+
+func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
+	query := s.getQuery()
 
 	var records []history.Record
 
@@ -180,6 +185,17 @@ func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
 }
 
 func (s slice) Len(ctx context.Context) (int, error) {
-	tmp := make([]history.Record, 0)
-	return s.Read(ctx, tmp)
+	query := s.getQuery()
+	var count int
+	err := s.db.Bolt().View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(s.bucket)
+		var err error
+		count, err = s.db.CountInBucket(b, &history.Record{}, query)
+		return err
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
