@@ -164,7 +164,7 @@ func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
 		}
 	}
 
-	records := make([]history.Record, 0)
+	var records []history.Record
 
 	err := s.db.Bolt().Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.bucket)
