@@ -106,7 +106,7 @@
       </div>
     </div>
 
-    <v-row class="mt-4">
+    <v-row class="mt-4" v-if="!props.nodeQuery.isQueried && !props.nodeQuery.isToForget">
       <v-card-text>
         Please check the information provided by the node is as you expect before clicking Enroll.
       </v-card-text>
