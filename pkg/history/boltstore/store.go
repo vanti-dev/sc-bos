@@ -141,7 +141,7 @@ func (s slice) Slice(from, to history.Record) history.Slice {
 }
 
 func (s slice) getQuery() *bolthold.Query {
-	var query *bolthold.Query
+	query := &bolthold.Query{}
 	if !s.from.IsZero() {
 		if s.from.ID != "" {
 			query = bolthold.Where("ID").Ge(s.from.ID)
@@ -164,11 +164,14 @@ func (s slice) getQuery() *bolthold.Query {
 			}
 		}
 	}
-	return query
+	return query.SortBy("CreateTime")
 }
 
+// Read returns up to len(into) records, starting from the oldest record that is newer than from.
 func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
 	query := s.getQuery()
+	maxLen := len(into)
+	query = query.Limit(maxLen)
 
 	var records []history.Record
 
@@ -183,7 +186,7 @@ func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
 	copy(into, records)
 
 	// todo: this should be upgraded to use the new min() function in Go 1.21 when the project is updated
-	return int(math.Min(float64(len(into)), float64(len(records)))), nil
+	return int(math.Min(float64(maxLen), float64(len(records)))), nil
 }
 
 func (s slice) Len(ctx context.Context) (int, error) {
