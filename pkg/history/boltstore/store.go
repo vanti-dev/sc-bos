@@ -52,7 +52,10 @@ func NewFromDb(ctx context.Context, db *bolthold.Store, source string, opts ...O
 	}
 
 	// clean out old entries on startup
-	s.gc(time.Now())
+	err = s.gc(s.now())
+	if err != nil {
+		s.logger.Warn("gc failed", zap.Error(err))
+	}
 
 	return s, nil
 }
