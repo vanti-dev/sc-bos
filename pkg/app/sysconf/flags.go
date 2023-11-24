@@ -13,7 +13,7 @@ import (
 func LoadFromArgs(dst *Config, args ...string) ([]string, error) {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
 
-	fs.Var(sysConfArg{dst}, "sysconf", "path to system config file(s)")
+	fs.Var(&sysConfArg{dst: dst}, "sysconf", "path to system config file(s)")
 	fs.Var(appConfArg{dst}, "appconf", "path to application config file(s)")
 	fs.StringVar(&dst.DataDir, "data-dir", dst.DataDir, "path to local data storage directory")
 	fs.StringVar(&dst.ListenGRPC, "listen-grpc", dst.ListenGRPC, "address (host:port) to host a Smart Core gRPC server on")
@@ -29,6 +29,11 @@ One of:
 	// todo: add support for staticHosting config via flag
 
 	err := fs.Parse(args)
+	if err == nil {
+		removeDuplicates(&dst.ConfigDirs)
+		removeDuplicates(&dst.ConfigFiles)
+		removeDuplicates(&dst.AppConfig)
+	}
 	return fs.Args(), err
 }
 
@@ -37,11 +42,11 @@ type sysConfArg struct {
 	isSet bool
 }
 
-func (a sysConfArg) String() string {
+func (a *sysConfArg) String() string {
 	return strings.Join(a.dst.ConfigFiles, ",")
 }
 
-func (a sysConfArg) Set(s string) error {
+func (a *sysConfArg) Set(s string) error {
 	str := strings.Split(s, ",")
 	if !a.isSet {
 		a.dst.ConfigDirs = []string{}
@@ -53,6 +58,18 @@ func (a sysConfArg) Set(s string) error {
 		a.dst.ConfigFiles = append(a.dst.ConfigFiles, path.Base(f))
 	}
 	return nil
+}
+
+func removeDuplicates(dst *[]string) {
+	allKeys := make(map[string]bool)
+	list := make([]string, 0, len(*dst))
+	for _, v := range *dst {
+		if _, value := allKeys[v]; !value {
+			allKeys[v] = true
+			list = append(list, v)
+		}
+	}
+	*dst = list
 }
 
 type appConfArg struct {
