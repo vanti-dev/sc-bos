@@ -4,21 +4,33 @@
       <v-text-field
           v-model="addressInput"
           class="mx-8"
-          :clearable="address !== null"
+          :clearable="addressInput !== null"
           dense
           hide-details
           label="Component Address"
-          outlined/>
+          outlined
+          @click:clear="addressInput = null"/>
     </v-form>
     <!-- Error label if the address is already enrolled -->
     <v-alert
-        v-if="isEnrolled"
-        class="mx-8 mt-2"
+        v-if="errorText"
+        class="
+        mx-8
+        mt-2"
         color="error"
         dense
+        max-width="400px"
         outlined
         type="error">
-      This component is already enrolled.
+      <v-row class="pa-2 d-flex flex-row flex-nowrap">
+        <span class="text-capitalize">{{ errorText.message }}</span>
+        <v-spacer/>
+        <status-alert
+            v-if="errorText?.error"
+            :resource="errorText.error"
+            icon="mdi-alert-circle-outline"
+            class="ml-2"/>
+      </v-row>
     </v-alert>
 
     <v-card-actions class="d-flex flex-row justify-space-around mt-10">
@@ -61,12 +73,15 @@
 </template>
 
 <script setup>
+import StatusAlert from '@/components/StatusAlert.vue';
 import {computed, ref, watch} from 'vue';
+import {formatErrorMessage} from '@/util/error';
 
 const emits = defineEmits([
   'update:dialogState',
   'update:address',
   'inspectHubNodeAction',
+  'resetInspectHubNodeValue',
   'forgetHubNodeAction'
 ]);
 const props = defineProps({
@@ -77,6 +92,10 @@ const props = defineProps({
   dialogState: {
     type: Boolean,
     default: false
+  },
+  inspectHubNodeValue: {
+    type: Object,
+    default: () => ({})
   },
   listItems: {
     type: Array,
@@ -131,7 +150,11 @@ watch(() => props.nodeQuery, (newQuery) => {
 
 // Depending on input, check if the address is enrolled
 // and update the isEnrolled value to enable the correct button
-watch(addressInput, (newAddress) => {
+watch(addressInput, (newAddress, oldAddress) => {
+  if (newAddress !== oldAddress) {
+    emits('resetInspectHubNodeValue');
+  }
+
   // If the address is empty, reset the isEnrolled value to disable all buttons
   if (!newAddress) {
     isEnrolled.value = null;
@@ -161,5 +184,21 @@ watch(() => props.dialogState, (newState) => {
     addressInput.value = null;
   }
 }, {immediate: true, deep: true});
+
+const errorText = computed(() => {
+  if (props.inspectHubNodeValue.error) {
+    return {
+      message: formatErrorMessage(props.inspectHubNodeValue.error.error.message),
+      error: props.inspectHubNodeValue.error
+    };
+  } else if (!props.inspectHubNodeValue.error && isEnrolled.value) {
+    return {
+      message: 'This node is already enrolled',
+      error: null
+    };
+  }
+
+  return null;
+});
 </script>
 

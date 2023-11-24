@@ -15,9 +15,11 @@
             v-if="showInput"
             :address.sync="address"
             :dialog-state.sync="dialogState"
+            :inspect-hub-node-value="inspectHubNodeValue"
             :list-items="props.listItems"
             :node-query="props.nodeQuery"
             @inspectHubNodeAction="inspectHubNodeAction"
+            @resetInspectHubNodeValue="resetInspectHubNodeValue"
             @forgetHubNodeAction="forgetHubNodeAction"
             style="min-width: 450px;"/>
 
@@ -66,6 +68,8 @@ const {
   enrollHubNodeAction,
   forgetHubNodeAction,
   inspectHubNodeAction,
+  inspectHubNodeValue,
+  resetInspectHubNodeValue,
   readCertificates,
   resetCertificates,
   readMetadata

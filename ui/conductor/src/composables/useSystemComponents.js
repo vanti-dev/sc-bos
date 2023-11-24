@@ -137,6 +137,10 @@ export default function() {
     return inspectHubNode(request, inspectHubNodeValue);
   }
 
+  const resetInspectHubNodeValue = () => {
+    Object.assign(inspectHubNodeValue, newActionTracker());
+  };
+
   const parsedCertificatesData = ref([]);
 
   // Computed property to use in the template
@@ -158,7 +162,6 @@ export default function() {
     parsedCertificatesData.value = [];
     Object.assign(inspectHubNodeValue, newActionTracker());
   };
-
 
   const readMetadata = computed(() => {
     if (!inspectHubNodeValue?.response?.metadata) {
@@ -245,6 +248,7 @@ export default function() {
     enrollHubNodeAction,
     forgetHubNodeAction,
     inspectHubNodeAction,
+    resetInspectHubNodeValue,
     readCertificates,
     resetCertificates,
     readMetadata,
