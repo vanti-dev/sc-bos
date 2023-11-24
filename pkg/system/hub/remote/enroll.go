@@ -52,6 +52,7 @@ func Enroll(ctx context.Context, enrollment *gen.Enrollment, authority pki.Sourc
 	conn, err := grpc.DialContext(ctx, enrollment.TargetAddress,
 		grpc.WithTransportCredentials(creds),
 		grpc.WithBlock(),
+		grpc.FailOnNonTempDialError(true),
 		grpc.WithReturnConnectionError(),
 	)
 	if err != nil {
@@ -189,6 +190,7 @@ func Renew(ctx context.Context, enrollment *gen.Enrollment, authority pki.Source
 	conn, err := grpc.DialContext(ctx, enrollment.TargetAddress,
 		grpc.WithTransportCredentials(creds),
 		grpc.WithBlock(),
+		grpc.FailOnNonTempDialError(true),
 		grpc.WithReturnConnectionError(),
 	)
 	if err != nil {

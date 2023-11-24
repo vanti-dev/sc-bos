@@ -26,6 +26,7 @@ func Inspect(ctx context.Context, address string) (*gen.HubNodeInspection, error
 		grpc.WithTransportCredentials(creds),
 		// block so we know if we've got the cert or not
 		grpc.WithBlock(),
+		grpc.FailOnNonTempDialError(true),
 		grpc.WithReturnConnectionError(),
 	)
 	if err != nil {
