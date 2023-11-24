@@ -22,8 +22,36 @@
 
     <div class="d-flex flex-wrap ml-n2">
       <v-card v-for="node in nodesList" :key="node.name" width="300px" class="ma-2">
-        <v-card-title class="text-body-large font-weight-bold">{{ node.name }}</v-card-title>
-        <v-card-subtitle v-if="node.description !== ''">{{ node.description }}</v-card-subtitle>
+        <div class="d-flex flex-row align-center pt-2 mb-n4">
+          <v-card-title class="text-body-large font-weight-bold">{{ node.name }}</v-card-title>
+          <v-card-subtitle v-if="node.description !== ''">{{ node.description }}</v-card-subtitle>
+          <v-menu min-width="175px" nudge-bottom="10" nudge-right="10" offset-y>
+            <template #activator="{ on, attrs }">
+              <v-btn
+                  class="ml-auto mr-3"
+                  icon
+                  v-bind="attrs"
+                  v-on="on">
+                <v-icon size="24">mdi-dots-vertical</v-icon>
+              </v-btn>
+            </template>
+            <v-list class="py-0">
+              <v-list-item link>
+                <v-list-item-title @click="onShowCertificates(node.address)">
+                  View Certificate
+                </v-list-item-title>
+              </v-list-item>
+              <v-list-item v-if="allowForget(node.name)" link>
+                <v-list-item-title class="error--text" @click="onForgetNode(node.address)">
+                  Forget Node
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </div>
+
+        <!--        <v-card-title class="text-body-large font-weight-bold">{{ node.name }}</v-card-title>-->
+
         <v-card-text>
           <v-list dense>
             <v-list-item
@@ -43,30 +71,6 @@
           <v-chip-group>
             <v-chip v-if="isProxy(node.name)" color="accent" small>gateway</v-chip>
             <v-chip v-if="isHub(node.name) && !isProxy(node.name)" color="primary" small>hub</v-chip>
-
-            <v-menu offset-y>
-              <template #activator="{ on, attrs }">
-                <v-btn
-                    class="ml-auto mr-1 mt-n1"
-                    icon
-                    v-bind="attrs"
-                    v-on="on">
-                  <v-icon size="24">mdi-dots-vertical</v-icon>
-                </v-btn>
-              </template>
-              <v-list class="py-0">
-                <v-list-item link>
-                  <v-list-item-title @click="onShowCertificates(node.address)">
-                    View Certificate
-                  </v-list-item-title>
-                </v-list-item>
-                <v-list-item v-if="allowForget(node.name)" link>
-                  <v-list-item-title class="error--text" @click="onForgetNode(node.address)">
-                    Forget Node
-                  </v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
           </v-chip-group>
         </v-card-text>
       </v-card>

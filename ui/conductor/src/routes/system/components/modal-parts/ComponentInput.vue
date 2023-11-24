@@ -34,19 +34,19 @@
     </v-card-actions>
   </div>
   <div v-else style="max-width: 600px">
-    <v-card-text class="px-11 text-left text-subtitle-1">
-      Forgetting a node means <span class="warning--text">it can no longer interact with other Smart Core nodes,
+    <v-card-text class="px-7 text-left text-subtitle-1 font-weight-regular">
+      Forgetting a node means
+      <span class="font-weight-bold warning--text">it can no longer interact with other Smart Core nodes,
         and those nodes cannot interact with it.</span>
       <br><br>Any automations that rely on inter-node communication with or from this node
-      <span class="error--text">will stop working!</span>
+      <span class="font-weight-bold error--text">will stop working!</span>
       This includes managing the node centrally via this app. You can re-enrol this node at any time.
     </v-card-text>
     <v-card-actions class="d-flex flex-row justify-space-around mt-10">
       <v-btn
           class="mr-4 px-4"
-          color="primary"
           text
-          @click="confirmForget = false">
+          @click="cancelAction">
         Cancel
       </v-btn>
       <v-btn
@@ -116,6 +116,10 @@ const forgetHubNode = () => {
   emits('forgetHubNodeAction', props.nodeQuery.address);
   emits('update:dialogState', false);
   confirmForget.value = false;
+};
+
+const cancelAction = () => {
+  return props.nodeQuery.isToForget ? emits('update:dialogState', false) : confirmForget.value = false;
 };
 
 // Display the correct dialog content depending on the confirmForget value

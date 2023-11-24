@@ -90,7 +90,7 @@ const dialogState = computed({
 const modalTitle = computed(() => {
   return props.nodeQuery.isQueried ?
       'View Details' : props.nodeQuery.isToForget ?
-          'Are you sure?' : 'Enroll a new node';
+          'Forget node' : 'Enroll a new node';
 });
 
 const showInput = computed(() => {
