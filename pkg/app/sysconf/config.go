@@ -16,41 +16,20 @@ import (
 
 // Load loads into dst any user supplied config from json files and CLI arguments. CLI arguments take precedence.
 func Load(dst *Config) error {
-	// load command line args into a new config so we can use it later
-	args := &Config{}
-	if _, err := LoadFromArgs(args, os.Args[1:]...); err != nil {
+	// We call LoadFromArgs twice because args can be used to specify config file paths,
+	// but also args should override config values specified in json files.
+
+	if _, err := LoadFromArgs(dst, os.Args[1:]...); err != nil {
 		return err
 	}
-
-	// set the config file paths if they were specified
-	if len(args.ConfigFiles) > 0 {
-		dst.ConfigFiles = args.ConfigFiles
-		dst.ConfigDirs = args.ConfigDirs
-	}
-
-	// load the config
 	if err := LoadAllFromJSON(dst); err != nil {
 		return err
 	}
 	if err := LoadFromConfigDirJSON(dst); err != nil {
 		return err
 	}
-
-	// allow command line args to override config file
-	if len(args.AppConfig) > 0 {
-		dst.AppConfig = args.AppConfig
-	}
-	if args.DataDir != "" {
-		dst.DataDir = args.DataDir
-	}
-	if args.ListenGRPC != "" {
-		dst.ListenGRPC = args.ListenGRPC
-	}
-	if args.ListenHTTPS != "" {
-		dst.ListenHTTPS = args.ListenHTTPS
-	}
-	if args.PolicyMode != "" {
-		dst.PolicyMode = args.PolicyMode
+	if _, err := LoadFromArgs(dst, os.Args[1:]...); err != nil {
+		return err
 	}
 
 	// do any post processing
