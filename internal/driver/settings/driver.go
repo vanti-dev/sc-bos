@@ -9,11 +9,10 @@ import (
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
+	"github.com/vanti-dev/inf-sc-bos/internal/driver/settings/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
-
-	"github.com/vanti-dev/inf-5hp/internal/driver/settings/config"
 )
 
 const DriverName = "settings"
