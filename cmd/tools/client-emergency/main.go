@@ -1,3 +1,4 @@
+// Command client-emergency provides a CLI tool for interacting with the [traits.EmergencyApiClient].
 package main
 
 import (

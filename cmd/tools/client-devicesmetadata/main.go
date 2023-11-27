@@ -1,3 +1,4 @@
+// Command client-devicesmetadata provides a CLI tool for interacting with the [gen.DevicesApiClient].
 package main
 
 import (

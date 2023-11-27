@@ -1,3 +1,4 @@
+// Command pull-enter-leave provides a CLI tool that pulls from a [traits.EnterLeaveSensorApiClient].
 package main
 
 import (

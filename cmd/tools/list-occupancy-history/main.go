@@ -1,3 +1,4 @@
+// Command list-occupancy-history reads records from [gen.OccupancySensorHistoryClient] and writes them to a CSV file.
 package main
 
 import (

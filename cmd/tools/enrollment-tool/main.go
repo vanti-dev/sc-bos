@@ -1,3 +1,4 @@
+// Command enrollment-tool provides a CLI tool for enrolling a node with a hub.
 package main
 
 import (

@@ -1,3 +1,4 @@
+// Command bacnet-comm-test performs a simple comm check against a BACnet device.
 package main
 
 import (

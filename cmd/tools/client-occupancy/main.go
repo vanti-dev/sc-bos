@@ -1,3 +1,4 @@
+// Command client-occupancy provides a CLI tool for interacting with the [traits.OccupancySensorApiClient].
 package main
 
 import (

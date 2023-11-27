@@ -1,3 +1,4 @@
+// Command test-occupancyemail tests the [occupancyemail] package, sending to a real email address.
 package main
 
 import (

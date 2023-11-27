@@ -1,3 +1,4 @@
+// Command sample-tenant provides an example tenant application, including auth.
 package main
 
 import (

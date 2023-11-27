@@ -1,4 +1,4 @@
-// The pash package provides a CLI tool for generating password hashes.
+// Command pash provides a CLI tool for generating password hashes.
 // The command reads one password per line on stdin and outputs a hash of that password suitable for use in storage.
 // When passwords are entered into a terminal echo is disabled.
 package main

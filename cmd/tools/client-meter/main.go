@@ -1,3 +1,4 @@
+// Command client-meter provides a CLI tool for interacting with the [gen.MeterApiClient].
 package main
 
 import (

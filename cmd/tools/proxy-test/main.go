@@ -1,3 +1,4 @@
+// Command proxy-test is an experiment using grpc-proxy to see how applicable it would be for gateways.
 package main
 
 import (

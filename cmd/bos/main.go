@@ -1,3 +1,4 @@
+// Command bos provides the canonical Smart Core BOS executable.
 package main
 
 import (
