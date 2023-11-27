@@ -9,7 +9,7 @@
         class="pr-7">
       <app-menu v-if="isLoggedIn"/>
       <brand-logo :theme="config.theme" outline="white" style="height: 35px; margin-left: 16px"/>
-      <span class="heading">{{ config.theme?.appBranding?.brandName }} {{ isLoggedIn ? ' | ' + pageTitle : '' }}</span>
+      <span class="heading">{{ appBarHeadingWithBrand }}</span>
 
       <v-divider
           vertical
@@ -102,6 +102,12 @@ const appVersion = computed(() => {
     return GITVERSION.substring(3);
   }
   return GITVERSION;
+});
+
+const appBarHeadingWithBrand = computed(() => {
+  const brandName = config.value.theme?.appBranding?.brandName;
+
+  return brandName + (isLoggedIn.value ? ' | ' + pageTitle.value : '');
 });
 
 onMounted(() => {
