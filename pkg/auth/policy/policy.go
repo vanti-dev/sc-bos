@@ -1,3 +1,4 @@
+// Package policy provides a policy-based authorization system for gRPC services.
 package policy
 
 import (

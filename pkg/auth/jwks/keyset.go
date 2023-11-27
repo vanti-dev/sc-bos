@@ -1,3 +1,4 @@
+// Package jwks provides both local and remote JWT Key Set access token verifiers.
 package jwks
 
 import (
