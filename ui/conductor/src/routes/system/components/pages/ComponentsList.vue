@@ -36,13 +36,13 @@
               </v-btn>
             </template>
             <v-list class="py-0">
-              <v-list-item link>
-                <v-list-item-title @click="onShowCertificates(node.address)">
+              <v-list-item link @click="onShowCertificates(node.address)">
+                <v-list-item-title>
                   View Certificate
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-if="allowForget(node.name)" link>
-                <v-list-item-title class="error--text" @click="onForgetNode(node.address)">
+              <v-list-item v-if="allowForget(node.name)" link @click="onForgetNode(node.address)">
+                <v-list-item-title class="error--text">
                   Forget Node
                 </v-list-item-title>
               </v-list-item>
