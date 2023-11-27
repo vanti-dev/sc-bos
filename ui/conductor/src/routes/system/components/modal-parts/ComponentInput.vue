@@ -10,49 +10,53 @@
           label="Component Address"
           outlined
           @click:clear="addressInput = null"/>
-    </v-form>
-    <!-- Error label if the address is already enrolled -->
-    <v-alert
-        v-if="errorText"
-        class="
+      <!-- Error label if the address is already enrolled -->
+      <v-alert
+          v-if="errorText"
+          class="
         mx-8
         mt-2"
-        color="error"
-        dense
-        max-width="400px"
-        outlined
-        type="error">
-      <v-row class="pa-2 d-flex flex-row flex-nowrap">
-        <span class="text-capitalize">{{ errorText.message }}</span>
-        <v-spacer/>
-        <status-alert
-            v-if="errorText?.error"
-            :resource="errorText.error"
-            icon="mdi-alert-circle-outline"
-            class="ml-2"/>
-      </v-row>
-    </v-alert>
+          color="error"
+          dense
+          max-width="400px"
+          outlined
+          type="error">
+        <v-row class="pa-2 d-flex flex-row flex-nowrap">
+          <span class="text-capitalize">{{ errorText.message }}</span>
+          <v-spacer/>
+          <status-alert
+              v-if="errorText?.error"
+              :resource="errorText.error"
+              icon="mdi-alert-circle-outline"
+              class="ml-2"/>
+        </v-row>
+      </v-alert>
 
-    <v-card-actions class="d-flex flex-row justify-space-around mt-10">
-      <v-btn
-          class="mr-4 px-4"
-          color="primary"
-          :disabled="!address || isEnrolled"
-          text
-          type="submit"
-          @click="onEnroll">
-        Enroll Node
-      </v-btn>
-    </v-card-actions>
+      <v-card-actions class="d-flex flex-row justify-space-around mt-10">
+        <v-btn
+            class="mr-4 px-4"
+            color="primary"
+            :disabled="!address || isEnrolled"
+            text
+            type="submit"
+            @click="onEnroll">
+          Enroll Node
+        </v-btn>
+      </v-card-actions>
+    </v-form>
   </div>
   <div v-else style="max-width: 600px">
     <v-card-text class="px-7 text-left text-subtitle-1 font-weight-regular">
-      Forgetting a node means
-      <span class="font-weight-bold warning--text">it can no longer interact with other Smart Core nodes,
-        and those nodes cannot interact with it.</span>
-      <br><br>Any automations that rely on inter-node communication with or from this node
-      <span class="font-weight-bold error--text">will stop working!</span>
-      This includes managing the node centrally via this app. You can re-enrol this node at any time.
+      <p>
+        Forgetting a node means
+        <span class="font-weight-bold warning--text">it can no longer interact with other Smart Core nodes,
+          and those nodes cannot interact with it.</span>
+      </p>
+      <p>
+        Any automations that rely on inter-node communication with or from this node
+        <span class="font-weight-bold error--text">will stop working!</span>
+        This includes managing the node centrally via this app. You can re-enrol this node at any time.
+      </p>
     </v-card-text>
     <v-card-actions class="d-flex flex-row justify-space-around mt-10">
       <v-btn

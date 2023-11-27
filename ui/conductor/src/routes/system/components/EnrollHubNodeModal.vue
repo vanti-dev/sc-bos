@@ -92,10 +92,15 @@ const dialogState = computed({
 });
 
 const modalTitle = computed(() => {
-  return props.nodeQuery.isQueried ?
-      'View Details' : props.nodeQuery.isToForget ?
-          'Forget node' : 'Enroll a new node';
+  if (props.nodeQuery.isQueried) {
+    return 'View Details';
+  } else if (props.nodeQuery.isToForget) {
+    return 'Forget node';
+  } else {
+    return 'Enroll a new node';
+  }
 });
+
 
 const showInput = computed(() => {
   return readCertificates.value.length === 0 && !props.nodeQuery.isQueried;
