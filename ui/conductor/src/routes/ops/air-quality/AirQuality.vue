@@ -73,7 +73,7 @@ const airQualityProps = reactive({
   name: '', // Zone or device name - if `subsystem` is not set, the name must be set
   pollDelay: 15 * MINUTE, // 15 Minutes
   span: 15 * MINUTE, // 24 Hours
-  subsystem: 'sensors', // If `name` is not set, the subsystem must be set
+  subsystem: 'zones', // If `name` is not set, the subsystem must be set
   timeFrame: 24 * HOUR // 24 Hours
 });
 
