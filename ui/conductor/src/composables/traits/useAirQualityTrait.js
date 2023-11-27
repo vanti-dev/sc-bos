@@ -3,11 +3,11 @@ import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} fro
 import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
 import {listAirQualitySensorHistory} from '@/api/sc/traits/air-quality-sensor';
 import useTimePeriod from '@/routes/ops/components/useTimePeriod';
-import useZones from '@/composables/useZones.js';
 import useDevices from '@/composables/useDevices';
 import {timestampToDate} from '@/api/convpb';
 import {camelToSentence} from '@/util/string';
 import {useNow, DAY} from '@/components/now';
+import {hasTrait} from '@/util/devices';
 
 /**
  *
@@ -31,26 +31,23 @@ import {useNow, DAY} from '@/components/now';
  * }}
  */
 export default function(props) {
-  // Pull in zones to check if any available
-  const {zoneListWithDetails} = useZones();
+  // Pull in devices to check if any available
+  const {devicesData} = useDevices(props);
 
   // Filter zones to only those with air quality sensors
   const zonesWithAirQualitySensors = computed(() => {
-    return zoneListWithDetails.value.filter(zone => {
-      if (zone?.config?.airQualitySensors?.length > 0) {
-        return zone;
+    return devicesData.value.map(zone => {
+      if (hasTrait(zone, 'smartcore.traits.AirQualitySensor')) {
+        return zone.name;
       }
     });
   });
-
-  // Pull in devices to check if any available
-  const {devicesData} = useDevices(props);
-  // Mapping the device or zone names to an array
+    // Mapping the device or zone names to an array
   const mappedDeviceNames = computed(() => {
     // Check if zoneList is available
     if (zonesWithAirQualitySensors.value) {
       // Return only the zone.id in alphabetical order
-      return zonesWithAirQualitySensors.value.map(zone => zone.id).sort();
+      return zonesWithAirQualitySensors.value.map(zone => zone).sort();
 
       // Check if props data has been passed in
     } else if (props.name.length) {
@@ -64,7 +61,7 @@ export default function(props) {
     // If all else fails, return the device names
     return devicesData.value.map(device => device.name);
   });
-  // const mappedDeviceNames = computed(() => [props.name]);
+    // const mappedDeviceNames = computed(() => [props.name]);
   const deviceOptions = computed(() => mappedDeviceNames.value.map(device => {
     return {
       label: device,
@@ -195,7 +192,7 @@ export default function(props) {
 
         // Fetch data for the current device if it hasn't been fetched yet
         if (airQualitySensorHistoryValues[currentDevice]?.request &&
-            !airQualitySensorHistoryValues[currentDevice].lastFetchTime) {
+                    !airQualitySensorHistoryValues[currentDevice].lastFetchTime) {
           await fetchData(currentDevice);
         }
 
