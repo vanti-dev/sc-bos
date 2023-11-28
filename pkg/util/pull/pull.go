@@ -13,13 +13,15 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Changes calls Pull on poller unless it's not supported, in which case it polls.
-// It will retry on error, backing off exponentially up to a maximum delay.
-// It will return if the context is cancelled or a non-recoverable error occurs.
-func Changes[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, opts ...Option) error {
+type Getter = func(context.Context) error
+
+// OrPoll will attempt to call pull, falling back to poll if it's not supported.
+// pull subscribe to changes, blocking until the subscription fails, if possible failures will be retried.
+// poll should query for the current state, this function manages delays between calls.
+func OrPoll(ctx context.Context, pull, poll Getter, opts ...Option) error {
 	conf := calcOpts(opts...)
 
-	poll := false
+	shouldPoll := false
 
 	var mu sync.Mutex
 	var delay time.Duration
@@ -71,15 +73,15 @@ func Changes[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, op
 		default:
 		}
 
-		if poll {
-			return runPoll(ctx, poller, changes, conf)
+		if shouldPoll {
+			return runPoll(ctx, poll, conf)
 		} else {
 			if errCount > 0 {
 				pullSuccessTimer.Reset(pullDuration * successfulPullMultiplier)
 			}
 
 			t0 := time.Now()
-			err := poller.Pull(ctx, changes)
+			err := pull(ctx)
 			pullDuration = time.Since(t0)
 
 			if err != nil {
@@ -89,7 +91,7 @@ func Changes[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, op
 				}
 				if fallBackToPolling(err) {
 					conf.logger.Debug("pull not supported, polling instead")
-					poll = true
+					shouldPoll = true
 					resetErr()
 					continue // skip the wait
 				}
@@ -115,13 +117,27 @@ func Changes[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, op
 	}
 }
 
-func runPoll[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, conf changeOpts) error {
+// Changes calls Pull on poller unless it's not supported, in which case it polls.
+// It will retry on error, backing off exponentially up to a maximum delay.
+// It will return if the context is cancelled or a non-recoverable error occurs.
+func Changes[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, opts ...Option) error {
+	return OrPoll(ctx,
+		func(ctx context.Context) error {
+			return poller.Pull(ctx, changes)
+		},
+		func(ctx context.Context) error {
+			return poller.Poll(ctx, changes)
+		},
+		opts...)
+}
+
+func runPoll(ctx context.Context, get Getter, conf changeOpts) error {
 	pollDelay := conf.pollDelay
 	errCount := 0
 	ticker := time.NewTicker(conf.pollDelay)
 	defer ticker.Stop()
 	for {
-		err := poller.Poll(ctx, changes)
+		err := get(ctx)
 		if err != nil {
 			if status.Code(err) == codes.Unimplemented {
 				return err
