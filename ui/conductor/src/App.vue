@@ -105,7 +105,7 @@ const appVersion = computed(() => {
 });
 
 const appBarHeadingWithBrand = computed(() => {
-  const brandName = config.value.theme?.appBranding?.brandName;
+  const brandName = config.value.theme?.appBranding.brandName ?? 'Smart Core';
 
   return brandName + (isLoggedIn.value ? ' | ' + pageTitle.value : '');
 });
