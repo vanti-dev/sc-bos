@@ -14,10 +14,10 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
+	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 )
 
 func NewSmartCore(services Services) task.Starter {

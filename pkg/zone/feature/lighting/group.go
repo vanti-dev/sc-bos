@@ -14,7 +14,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
-	"github.com/vanti-dev/sc-bos/internal/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
 )
 

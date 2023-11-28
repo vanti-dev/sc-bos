@@ -4,8 +4,13 @@ import (
 	"context"
 )
 
+// Fetcher can pull and poll for changes.
 type Fetcher[C any] interface {
+	// Pull blocks subscribing to changes and sends them on the given channel.
+	// Retries and reconnects are managed by the caller.
 	Pull(ctx context.Context, changes chan<- C) error
+	// Poll queries for the current value sending it on the given channel.
+	// Delays between polls are managed by the caller.
 	Poll(ctx context.Context, changes chan<- C) error
 }
 

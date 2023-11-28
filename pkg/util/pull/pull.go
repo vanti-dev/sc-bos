@@ -1,3 +1,4 @@
+// Package pull provides a reliable way to subscribe to changes from a device.
 package pull
 
 import (
@@ -13,6 +14,8 @@ import (
 )
 
 // Changes calls Pull on poller unless it's not supported, in which case it polls.
+// It will retry on error, backing off exponentially up to a maximum delay.
+// It will return if the context is cancelled or a non-recoverable error occurs.
 func Changes[C any](ctx context.Context, poller Fetcher[C], changes chan<- C, opts ...Option) error {
 	conf := calcOpts(opts...)
 

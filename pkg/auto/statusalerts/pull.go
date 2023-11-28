@@ -3,9 +3,9 @@ package statusalerts
 import (
 	"context"
 
-	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/util/chans"
+	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 )
 
 func pullFrom(ctx context.Context, name string, client gen.StatusApiClient, c chan<- *gen.StatusLog) error {
