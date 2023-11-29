@@ -29,19 +29,20 @@
         </div>
       </div>
 
+      <!-- Most recent values -->
       <v-row class="d-flex flex-row justify-space-between mt-5 mb-4 ml-15 mr-4">
         <v-col
-            v-for="(recentValue, key) of mostRecentValues"
+            v-for="(recentValue, key) in filteredValues"
+            :key="key"
             cols="auto"
             class="text-h1 align-self-auto"
-            :key="key"
             style="line-height: 0.35em;">
-          {{ key === 'comfort' ? readComfortValue(recentValue) : recentValue.toFixed(2) }}
-          <span style="font-size: 0.5em;">{{ acronyms[key].unit }}</span><br>
+          {{ recentValue.value }}
+          <span style="font-size: 0.5em;">{{ recentValue.unit }}</span><br>
           <span
               class="text-h6"
               :style="{lineHeight: '0.4em', color: getColorForKey(key)}">
-            {{ acronyms[key].label }}
+            {{ recentValue.label }}
           </span>
         </v-col>
       </v-row>
@@ -103,6 +104,7 @@ const getColorForKey = (key) => {
   return colorMapping[key] || 'rgba(0, 0, 0, 0.5)'; // Default color
 };
 
+// Returns the most recent (last) values for each key
 const mostRecentValues = computed(() => {
   const airDeviceData = airQualitySensorHistoryValues[airDevice.value]?.data;
   const mostRecentValues = {};
@@ -120,6 +122,39 @@ const mostRecentValues = computed(() => {
 
   return mostRecentValues;
 });
+
+// Filtering out values that are null
+const filteredValues = computed(() => {
+  return Object.entries(mostRecentValues.value).reduce((acc, [key, value]) => {
+    const showValue = showHideValue(value, key);
+    if (showValue.value) {
+      acc[key] = showValue;
+    }
+    return acc;
+  }, {});
+});
+
+// Function to show/hide values based on the key
+const showHideValue = (value, key) => {
+  const unit = acronyms[key].unit;
+  const label = acronyms[key].label;
+
+  if (key === 'comfort') {
+    return {
+      label,
+      unit,
+      value: readComfortValue(value) !== 'Unspecified' ? readComfortValue(value) : null
+    };
+  } else {
+    // For other keys, check if the value is greater than 0
+    return {
+      label,
+      unit,
+      value: value > 0 ? value.toFixed(2) : null
+    };
+  }
+};
+
 
 // Generate the chart data
 const chartData = computed(() => {

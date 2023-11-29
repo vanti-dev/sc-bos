@@ -42,7 +42,7 @@ export default function(props) {
       }
     });
   });
-    // Mapping the device or zone names to an array
+  // Mapping the device or zone names to an array
   const mappedDeviceNames = computed(() => {
     // Check if zoneList is available
     if (zonesWithAirQualitySensors.value) {
@@ -61,7 +61,7 @@ export default function(props) {
     // If all else fails, return the device names
     return devicesData.value.map(device => device.name);
   });
-    // const mappedDeviceNames = computed(() => [props.name]);
+  // Mapping the device names to an array of objects for the dropdown
   const deviceOptions = computed(() => mappedDeviceNames.value.map(device => {
     return {
       label: device,
@@ -192,7 +192,7 @@ export default function(props) {
 
         // Fetch data for the current device if it hasn't been fetched yet
         if (airQualitySensorHistoryValues[currentDevice]?.request &&
-                    !airQualitySensorHistoryValues[currentDevice].lastFetchTime) {
+            !airQualitySensorHistoryValues[currentDevice].lastFetchTime) {
           await fetchData(currentDevice);
         }
 
@@ -273,14 +273,18 @@ export default function(props) {
 
   // Function to read the comfort value
   const readComfortValue = (level) => {
-    if (AirQuality.Comfort.COMFORTABLE) {
-      return 'Comfortable';
-    } else if (AirQuality.Comfort.UNCOMFORTABLE) {
-      return 'Uncomfortable';
-    } else {
-      return 'Unknown';
+    switch (level) {
+      case AirQuality.Comfort.COMFORT_UNSPECIFIED:
+        return 'Unspecified';
+      case AirQuality.Comfort.COMFORTABLE:
+        return 'Comfortable';
+      case AirQuality.Comfort.UNCOMFORTABLE:
+        return 'Uncomfortable';
+      default:
+        return;
     }
   };
+
 
   // ---- Acronyms ---- //
   const acronyms = {
