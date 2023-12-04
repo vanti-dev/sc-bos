@@ -56,6 +56,7 @@ func TestGroup_GetBrightness(t *testing.T) {
 	}()
 
 	chanWait := 10 * time.Millisecond
+	time.Sleep(500 * time.Millisecond) // wait for the pull calls to start
 
 	// test initial updates, should all be 0, but we should only get one as we omit duplicates
 	res, err := chans.RecvWithin(responses, chanWait)
