@@ -328,6 +328,7 @@ const nodeOverallStatus = computed(() => {
   };
 });
 
+// Returns the chips and alerts to be displayed in the status popup
 const statusPopupSetup = computed(() => {
   const uiStatusObj = {
     id: 'uiStatus',

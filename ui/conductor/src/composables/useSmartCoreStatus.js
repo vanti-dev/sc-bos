@@ -220,11 +220,12 @@ export default function() {
 
   // Returns a type for the chip representing the server/hub/gateway depending on the successful checks
   const serverChipType = computed(() => {
-    if (enrollmentStatus.value.enrollment && listHubNodesValue.response) return 'gateway';
+    if (enrollmentStatus.value.enrollment && listHubNodesValue.response?.nodesList) return 'gateway';
     if (listHubNodesValue.response) return 'hub';
     return 'server';
   });
 
+  // Returns an array of chips to be displayed
   const displayedChips = computed(() => {
     const es = enrollmentStatus.value;
 
@@ -249,6 +250,7 @@ export default function() {
   // Can be used to manually trigger the action
   const triggerListHubNodesAction = async () => {
     updatingNodeStatus.value = true;
+    listHubNodesValue.response = null;
     await listHubNodesAction(listHubNodesValue);
     updatingNodeStatus.value = false;
   };
@@ -280,7 +282,9 @@ export default function() {
   // Closing enrollment on unmount
   onUnmounted(() => {
     closeResource(enrollmentValue);
+    closeResource(listHubNodesValue);
     closeResource(testEnrollmentValue);
+    closeResource(testHubNodeValue);
     clearInterval(checkInterval);
   });
 
