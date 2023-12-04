@@ -5,17 +5,27 @@
       bottom
       :color="props.color">
     <template #activator="{ on, attrs }">
-      <v-icon
-          class="mx-auto"
-          :color="props.color"
-          size="20"
+      <v-btn
           v-bind="attrs"
-          v-on="on">
-        {{ props.icon }}
-      </v-icon>
+          v-on="on"
+          class="mb-n1"
+          icon
+          :loading="props.loading"
+          :ripple="props.isClickable"
+          x-small
+          @click="props.clickAction">
+        <v-icon
+            :color="props.color"
+            size="22">
+          {{ props.icon }}
+        </v-icon>
+      </v-btn>
     </template>
     <span class="error-name">{{ statusDetails.statusName }}</span>
-    <span class="error-details">{{ statusDetails.statusCode }}: {{ statusDetails.statusMessage }}</span>
+    <span class="error-details">
+      {{ statusDetails.statusCode }}
+      {{ statusDetails.statusMessage }}
+    </span>
   </v-tooltip>
 </template>
 
@@ -24,6 +34,10 @@ import {computed, ref} from 'vue';
 import {statusCodeToString} from '@/components/ui-error/util';
 
 const props = defineProps({
+  clickAction: {
+    type: Function,
+    default: () => null
+  },
   color: {
     type: String,
     default: 'error'
@@ -31,6 +45,14 @@ const props = defineProps({
   icon: {
     type: String,
     default: 'mdi-alert-circle-outline'
+  },
+  isClickable: {
+    type: Boolean,
+    default: false
+  },
+  loading: {
+    type: Boolean,
+    default: false
   },
   resource: {
     type: Object,
@@ -45,16 +67,16 @@ const props = defineProps({
 const show = ref(false);
 
 const statusDetails = computed(() => {
-  if (props.type === 'error') {
+  if (['error', 'warning'].includes(props.type)) {
     return {
       statusCode: statusCodeToString(props.resource?.error?.code),
-      statusMessage: props.resource?.error?.message,
+      statusMessage: ': ' + props.resource?.error?.message,
       statusName: props.resource?.name
     };
   } else if (props.type === 'success') {
     return {
-      statusCode: props.resource?.status?.code,
-      statusMessage: props.resource?.status?.message,
+      statusCode: statusCodeToString(props.resource?.status?.code),
+      statusMessage: ': ' + props.resource?.status?.message,
       statusName: props.resource?.name
     };
   }
