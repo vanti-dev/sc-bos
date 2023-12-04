@@ -1,6 +1,6 @@
 import {computed, onUnmounted, reactive, ref, set, watchEffect} from 'vue';
-import {newActionTracker} from '@/api/resource';
-import {enrollHubNode, forgetHubNode, inspectHubNode} from '@/api/sc/traits/hub';
+import {newActionTracker, closeResource} from '@/api/resource';
+import {enrollHubNode, forgetHubNode, inspectHubNode, testHubNode} from '@/api/sc/traits/hub';
 import {ServiceNames} from '@/api/ui/services';
 import {useHubStore} from '@/stores/hub';
 import {useServicesStore} from '@/stores/services';
@@ -57,9 +57,33 @@ export default function() {
 
   // --------------------------- //
   // Manage Hub Nodes
-  const enrollHubNodeValue = reactive(newActionTracker());
-  const forgetHubNodeValue = reactive(newActionTracker());
-  const inspectHubNodeValue = reactive(newActionTracker());
+  const testHubNodeValue = reactive(
+      /** @type {ActionTracker<TestHubNodeResponse.AsObject>} */ newActionTracker()
+  );
+  const enrollHubNodeValue = reactive(
+      /** @type {ActionTracker<HubNode.AsObject>} */ newActionTracker()
+  );
+  const forgetHubNodeValue = reactive(
+      /** @type {ActionTracker<ForgetHubNodeResponse.AsObject>} */ newActionTracker()
+  );
+  const inspectHubNodeValue = reactive(
+      /** @type {ActionTracker<HubNode.AsObject>} */ newActionTracker()
+  );
+
+  /**
+   *
+   * @param {string} address
+   * @return {Promise<void>|undefined}
+   */
+  async function testHubNodeAction(address) {
+    if (!address) return;
+
+    const request = {
+      address
+    };
+
+    await testHubNode(request, testHubNodeValue);
+  }
 
   /**
    * @param {string} address
@@ -153,37 +177,50 @@ export default function() {
 
     return metadata;
   });
-  // --------------------------- //
-  // List and Track Hub Nodes
+    // --------------------------- //
+    // List and Track Hub Nodes
   const nodeDetails = reactive({});
-
+  const nodesList = ref([]);
   let unwatchTrackers = [];
 
-  const nodesList = computed(() => {
-    return Object.values(hubStore.nodesList).map(node => {
-      Promise.all([node.commsAddress, node.commsName])
-          .then(([address, name]) => {
-            set(nodeDetails, node.name, {
-              automations: servicesStore.getService(ServiceNames.Automations, address, name),
-              drivers: servicesStore.getService(ServiceNames.Drivers, address, name),
-              systems: servicesStore.getService(ServiceNames.Systems, address, name)
-            });
-            unwatchTrackers.push(nodeDetails[node.name].automations.metadataTracker);
-            unwatchTrackers.push(nodeDetails[node.name].drivers.metadataTracker);
-            unwatchTrackers.push(nodeDetails[node.name].systems.metadataTracker);
-            return Promise.all([
-              servicesStore.refreshMetadata(ServiceNames.Automations, address, name),
-              servicesStore.refreshMetadata(ServiceNames.Drivers, address, name),
-              servicesStore.refreshMetadata(ServiceNames.Systems, address, name)
-            ]);
-          })
-          .catch(e => {
-            console.error(e);
+  const processNodes = () => {
+    const nodes = Object.values(hubStore.nodesList);
+    nodesList.value = [];
+
+    nodesList.value = nodes.map(node => {
+      // Using an immediately-invoked async function to handle asynchronous operations
+      (async () => {
+        try {
+          const [address, name] = await Promise.all([node.commsAddress, node.commsName]);
+
+          set(nodeDetails, node.name, {
+            automations: servicesStore.getService(ServiceNames.Automations, address, name),
+            drivers: servicesStore.getService(ServiceNames.Drivers, address, name),
+            systems: servicesStore.getService(ServiceNames.Systems, address, name)
           });
+
+          unwatchTrackers.push(nodeDetails[node.name].automations.metadataTracker);
+          unwatchTrackers.push(nodeDetails[node.name].drivers.metadataTracker);
+          unwatchTrackers.push(nodeDetails[node.name].systems.metadataTracker);
+
+          await Promise.all([
+            servicesStore.refreshMetadata(ServiceNames.Automations, address, name),
+            servicesStore.refreshMetadata(ServiceNames.Drivers, address, name),
+            servicesStore.refreshMetadata(ServiceNames.Systems, address, name)
+          ]);
+        } catch (e) {
+          console.error('Error processing node:', e);
+        }
+      })();
+
       return {
         ...node
       };
     });
+  };
+
+  watchEffect(() => {
+    processNodes();
   });
 
   /**
@@ -217,12 +254,18 @@ export default function() {
   // Clean up on unmount
   onUnmounted(() => {
     unwatchTrackers = [];
+    closeResource(enrollHubNodeValue);
+    closeResource(forgetHubNodeValue);
+    closeResource(inspectHubNodeValue);
+    closeResource(testHubNodeValue);
   });
 
   return {
+    testHubNodeValue,
     enrollHubNodeValue,
     forgetHubNodeValue,
     inspectHubNodeValue,
+    testHubNodeAction,
     enrollHubNodeAction,
     forgetHubNodeAction,
     inspectHubNodeAction,
@@ -233,6 +276,7 @@ export default function() {
 
     nodeDetails,
     nodesList,
+    processNodes,
     isProxy,
     isHub,
     allowForget
