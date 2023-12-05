@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@sc-bos/panzoom-package": "1.0.1-vanti.0",
-    "@sc-bos/ui-gen": "1.0.0-beta.16",
-    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.43",
+    "@sc-bos/ui-gen": "1.0.0-beta.17",
+    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.44",
     "chart.js": "^4.3.0",
     "chartjs-adapter-date-fns": "^3.0.0",
     "date-fns": "^2.29.2",

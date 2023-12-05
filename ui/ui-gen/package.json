@@ -1,6 +1,6 @@
 {
   "name": "@sc-bos/ui-gen",
-  "version": "1.0.0-beta.16",
+  "version": "1.0.0-beta.17",
   "type": "commonjs",
   "scripts": {
     "gen": "node gen.mjs",
@@ -10,7 +10,7 @@
     "registry": "https://nexus.vanti.co.uk/repository/npm-releases/"
   },
   "dependencies": {
-    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.43",
+    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.44",
     "google-protobuf": "^3.21.2",
     "grpc-web": "^1.4.2"
   },
