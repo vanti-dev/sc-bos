@@ -46,7 +46,7 @@
                   :type="chip.type"/>
               <div v-if="!chip.id.includes('Status')" class="d-flex flex-row">
                 <v-divider class="my-auto mx-2" style="min-width: 10px"/>
-                <v-chip :class="chip.color" small>
+                <v-chip :class="chip.color" small :to="navigateToNodes(chip.to)">
                   {{ chip.label }}
                 </v-chip>
                 <v-divider
@@ -65,6 +65,7 @@
 <script setup>
 import {computed, ref} from 'vue';
 import useSmartCoreStatus from '@/composables/useSmartCoreStatus';
+import useAuthSetup from '@/composables/useAuthSetup';
 
 import StatusAlert from '@/components/StatusAlert.vue';
 import ContentCard from '@/components/ContentCard.vue';
@@ -72,6 +73,7 @@ import ContentCard from '@/components/ContentCard.vue';
 const showStatus = ref(false);
 const isRefreshing = ref(false);
 
+const {hasNoAccess, isLoggedIn} = useAuthSetup();
 const {
   listHubNodesValue,
   enrollmentStatus,
@@ -88,6 +90,14 @@ const triggerRefresh = async () => {
   setTimeout(() => {
     isRefreshing.value = false;
   }, 1000);
+};
+
+const navigateToNodes = (to) => {
+  if (to && isLoggedIn && !hasNoAccess(to)) {
+    return to;
+  }
+
+  return null;
 };
 
 const statusText = computed(() => {
@@ -368,7 +378,8 @@ const statusPopupSetup = computed(() => {
   const nodes = {
     color: 'neutral lighten-2',
     id: 'nodes',
-    label: 'Nodes'
+    label: 'Nodes',
+    to: '/system/components'
   };
 
 
