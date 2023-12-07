@@ -10,9 +10,16 @@
       offset-y
       tile>
     <template #activator="{on, attrs}">
-      <v-btn class="py-1" style="text-align: center" text v-bind="attrs" v-on="on">
+      <v-btn
+          class="py-1 px-3"
+          style="text-align: center"
+          text
+          v-bind="attrs"
+          v-on="on">
         <span class="text-title mr-1">Smart Core OS:</span>
-        <span :class="`text-title-bold text-uppercase ${generalStatus}--text`">{{ statusText }}</span>
+        <span :class="`text-title-bold text-uppercase ${generalStatus}`">
+          {{ statusText }}
+        </span>
       </v-btn>
     </template>
 
@@ -23,7 +30,7 @@
           <span
               class="ml-2 font-weight-light"
               style="font-size: 10px; margin-bottom: -1px">{{
-                isLoading ? '- Checking...' : 'Last update: ' + timeAgo
+                isLoading ? '- Checking...' : 'Updated ' + timeAgo
               }}</span>
         </v-card-title>
         <v-spacer/>
@@ -61,7 +68,11 @@
                 :single="chip.single"/>
             <div v-if="!chip.id.includes('Status')" class="d-flex flex-row align-center">
               <v-divider class="mx-2" style="min-width: 10px"/>
-              <v-chip :class="chip.color" :disabled="defaultConnection" small :to="navigateToNodes(chip.to)">
+              <v-chip
+                  :class="chip.color"
+                  :disabled="defaultConnection || generalStatus === 'error'"
+                  small
+                  :to="navigateToNodes(chip.to)">
                 {{ chip.label }}
               </v-chip>
               <v-divider
@@ -83,6 +94,9 @@ import useAuthSetup from '@/composables/useAuthSetup';
 import StatusAlert from '@/components/StatusAlert.vue';
 import {useNow, SECOND, MINUTE, HOUR, DAY} from '@/components/now';
 
+import {formatTimeAgo} from '@/util/date';
+import {formatErrorMessage} from '@/util/error';
+
 const isRefreshing = ref(false);
 const {hasNoAccess, isLoggedIn} = useAuthSetup();
 const {
@@ -94,39 +108,67 @@ const {
   displayedChips
 } = useSmartCoreStatus();
 
-const triggerRefresh = async () => {
-  isRefreshing.value = true;
-  await getEnrollmentAndListHubNodes();
-  setTimeout(() => {
-    isRefreshing.value = false;
-  }, 1000);
-};
+// ------ Computed Properties ------ //
+/**
+ * Returns the general status of the UI, nodes, and enrollment
+ *
+ * @type {import ('vue').ComputedRef<string>} generalStatus
+ */
+const generalStatus = computed(() => {
+  const ui = uiStatus.value;
+  const isUIError = ui.color === 'error';
+  let hasError = false;
+  let allError = true;
 
-const navigateToNodes = (to) => {
-  if (to && isLoggedIn && !hasNoAccess(to)) {
-    return to;
+  for (const status of Object.values(nodeStatus.value)) {
+    if (status.color === 'error') hasError = true;
+    else allError = false;
   }
 
-  return null;
-};
+  return allError ?
+      'error--text' : (isUIError || hasError) ?
+          'warning--text' : 'success--text text--lighten-4';
+});
 
+/**
+ * Returns the text to be displayed in the status popup button
+ *
+ * @type {import ('vue').ComputedRef<string>} statusText
+ */
 const statusText = computed(() => {
-  if (generalStatus.value === 'error') {
-    return 'offline';
-  } else if (generalStatus.value === 'warning') {
+  if (generalStatus.value.includes('error')) {
+    if (defaultConnection.value) {
+      return 'offline';
+    } else {
+      return 'online';
+    }
+  } else if (generalStatus.value.includes('warning')) {
     return 'online';
-  } else if (generalStatus.value === 'success') {
+  } else if (generalStatus.value.includes('success')) {
     return 'online';
   } else {
     return 'offline';
   }
 });
 
-// Returns the actual UI status from the enrollment status
+/**
+ * Returns the actual UI status from the enrollment status
+ *
+ * @type {import ('vue').ComputedRef<{
+ *   color: string,
+ *   icon: string,
+ *   resource: {
+ *     error: {
+ *       code: number,
+ *       message: string
+ *     }
+ *   }
+ * }>} uiStatus
+ */
 const uiStatus = computed(() => {
-  const es = enrollmentStatus.value;
+  const {isTested, testLoading, enrollment, loading, error} = enrollmentStatus.value;
 
-  if (!es.enrollment && !es.error && !es.loading) {
+  if (!enrollment && !error && !loading) {
     // Unavailable state
     return createStatusObject(
         'error',
@@ -134,13 +176,13 @@ const uiStatus = computed(() => {
         {
           error: {
             code: 14,
-            message: 'Service is unavailable'
+            message: 'Unable to retrieve enrollment status'
           }
         }
     );
   }
 
-  if (es.loading || es.testLoading) {
+  if (loading || testLoading) {
     // Loading state
     return createStatusObject(
         'success',
@@ -154,18 +196,19 @@ const uiStatus = computed(() => {
     );
   }
 
-  if (es.error) {
+  if (error) {
     // Error state
     return createStatusObject(
         'error',
         'mdi-close',
         {
-          error: es.error.error
+          error: error.error,
+          name: error.name
         }
     );
   }
 
-  if (!es.isTested && !es.testLoading) {
+  if (!isTested && !testLoading) {
     // Enrolled but not tested state
     return createStatusObject(
         'warning',
@@ -179,7 +222,7 @@ const uiStatus = computed(() => {
     );
   }
 
-  if (!es.isTested && es.testLoading) {
+  if (!isTested && testLoading) {
     // Testing state
     return createStatusObject(
         'warning',
@@ -193,18 +236,6 @@ const uiStatus = computed(() => {
     );
   }
 
-  // Check if there's an error in the test
-  if (es.isTested.error && es.isTested.error !== '') {
-    // Enrolled and test failed state
-    return createStatusObject(
-        'error',
-        'mdi-alert',
-        {
-          error: es.isTested
-        }
-    );
-  }
-
   // Enrolled with pass state
   return createStatusObject(
       'success',
@@ -212,280 +243,185 @@ const uiStatus = computed(() => {
       {
         error: {
           code: 0,
-          message: 'Connection established'
+          message: 'Connection active'
         }
       }
   );
 });
-// Returns the general status of the UI - Online, Offline, or Error
-const generalStatus = computed(() => {
-  const ui = uiStatus.value;
 
-  // Check if UI is in error
-  const isUIError = ui.color === 'error';
-
-  // Initialize flags
-  let hasError = false;
-  let allError = true;
-
-  // Check the status of each node
-  for (const status of Object.values(nodeStatus.value)) {
-    if (status.color === 'error') {
-      hasError = true;
-    } else {
-      allError = false;
-    }
-  }
-
-  // Determine the general status
-  if (isUIError && allError) {
-    // Return 'error' only if both UI and all nodes are in error state
-    return 'error';
-  } else if (isUIError || hasError) {
-    // Return 'warning' if UI is in error or some nodes are in error state
-    return 'warning';
-  } else {
-    // Return 'success' if no errors are found
-    return 'success';
-  }
-});
-
-// Returns server/gateway to hub status
+/**
+ * Returns the status of the server/gateway to hub connection
+ *
+ * @type {import ('vue').ComputedRef<{
+ *  color: string,
+ *  icon: string,
+ *  resource: {
+ *    error: {
+ *      code: number,
+ *      message: string
+ *    }
+ *  }
+ * }>} serverToHubStatus
+ */
 const serverToHubStatus = computed(() => {
-  const isTested = enrollmentStatus.value.isTested;
+  const {isTested, testLoading} = enrollmentStatus.value;
 
   if (!isTested) {
-    return createStatusObject(
-        'warning',
-        'mdi-alert',
-        {
-          error: {
-            code: 2,
-            message: 'Not tested'
-          }
-        }
-    );
+    return testLoading ?
+        createStatusObject('success', 'mdi-check', {error: {code: 2, message: 'Testing in progress'}}) :
+        createStatusObject('error', 'mdi-close', {error: {code: 14, message: 'Unable to test connection'}});
   }
 
-  if (isTested.error !== '') {
-    return createStatusObject(
-        'error',
-        'mdi-alert',
-        {
-          error: isTested.error
-        }
-    );
-  }
-
-  if (isTested.error === '') {
-    return createStatusObject(
-        'success',
-        'mdi-check',
-        {
-          error: {
-            code: 0,
-            message: 'Connection successful'
-          }
-        }
-    );
-  }
-
-  return createStatusObject(
-      'warning',
-      'mdi-alert',
-      {
+  return isTested.error !== '' ?
+      createStatusObject('warning', 'mdi-alert', {
         error: {
-          code: 2,
-          message: 'Not tested'
+          code: isTested.code,
+          message: formatErrorMessage(isTested.error)
         }
-      }
-  );
+      }) :
+      createStatusObject('success', 'mdi-check', {error: {code: 0, message: 'Connection test successful'}});
 });
 
-// Returns the overall status of the Node Status alert
+
+/**
+ * Returns the overall node status
+ *
+ * @type {import ('vue').ComputedRef<{
+ *  color: string,
+ *  icon: string,
+ *  resource: {
+ *    error: {
+ *      code: number,
+ *      message: string
+ *    }
+ *  }
+ * }>} nodeOverallStatus
+ */
 const nodeOverallStatus = computed(() => {
   const nodes = nodeStatus.value;
-  const isAvailable = listHubNodesValue.response?.nodesList?.length > 0 && nodeStatus.value !== {};
+  const nodesList = listHubNodesValue.response?.nodesList?.length > 0;
+  const nodesStatuses = Object.values(nodes);
 
-  // Check if nodes are not available
-  if (!isAvailable) {
-    return createStatusObject(
-        'success',
-        null,
-        {
-          error: {
-            code: 14,
-            message: 'No nodes available'
-          }
-        }
-    );
+  if (!nodesList || !nodesStatuses.length) {
+    return createStatusObject('success', null, {error: {code: 14, message: 'No nodes available'}});
   }
 
   let hasError = false;
-  let allError = true;
-  let allSuccess = true;
+  let hasSuccess = false;
 
-  for (const status of Object.values(nodes)) {
+  for (const status of nodesStatuses) {
     if (status.color === 'error') {
       hasError = true;
-    } else {
-      allError = false;
     }
-    if (status.color !== 'success') {
-      allSuccess = false;
+    if (status.color === 'success') {
+      hasSuccess = true;
     }
   }
 
-  if (allError) {
-    return createStatusObject(
-        'error',
-        null,
-        {
-          error: {
-            code: 14,
-            message: 'All nodes are in error state'
-          }
-        }
-    );
+  if (hasError && !hasSuccess) {
+    return createStatusObject('error', null, {error: {code: 14, message: 'All nodes are in error state'}});
   } else if (hasError) {
-    const erroredNodes = Object.values(nodes).filter((node) => {
-      if (node.color === 'error') {
-        return {
-          name: node.name,
-          error: node.resource.error
-        };
-      }
-    });
-
-    return createStatusObject(
-        'warning',
-        null,
-        {
-          errors: erroredNodes
-        },
-        false
-    );
-  } else if (allSuccess) {
-    return createStatusObject(
-        'success',
-        null,
-        {
-          error: {
-            code: 0,
-            message: 'All nodes are operating normally'
-          }
-        }
-    );
+    const erroredNodes = nodesStatuses.filter(node => node.color === 'error');
+    return createStatusObject('warning', null, {errors: erroredNodes}, false);
+  } else {
+    return createStatusObject('success', null, {error: {code: 0, message: 'All nodes are operating normally'}});
   }
-
-  return createStatusObject(
-      'warning',
-      null,
-      {
-        error: {
-          code: 2,
-          message: 'Node status is mixed or unknown'
-        }
-      }
-  );
 });
 
-const defaultConnection = computed(() => {
-  return displayedChips.value.length === 2; // Default to UI / Server
-});
 
-// Returns the chips and alerts to be displayed in the status popup
+/**
+ * Returns - whether or not - the default connection is being used
+ *
+ * @type {import ('vue').ComputedRef<boolean>} defaultConnection
+ */
+const defaultConnection = computed(() => displayedChips.value.length === 2);
+
+/**
+ * Returns the chips and alerts to be displayed in the status popup
+ *
+ * @type {import ('vue').ComputedRef<{
+ *  color: string,
+ *  icon: string,
+ *  resource: {
+ *    error: {
+ *      code: number,
+ *      message: string
+ *    }
+ *  }
+ * }[]>} statusPopupSetup
+ */
 const statusPopupSetup = computed(() => {
-  const uiStatusObj = {
-    id: 'uiStatus',
-    ...uiStatus.value
-  };
+  // Create an array of chips to be displayed in the status popup
+  // Set a default chip for the UI status
+  const chips = [
+    {id: 'uiStatus', ...uiStatus.value}
+  ];
 
-  const serverHubStatusObj = {
-    id: 'serverHubStatus',
-    ...serverToHubStatus.value
-  };
-
-  const nodeStatusObj = {
-    id: 'nodeStatus',
-    ...nodeOverallStatus.value
-  };
-
-  const server = {
-    color: 'neutral lighten-4',
-    id: 'server',
-    label: 'Server'
-  };
-
-  const gateway = {
-    color: 'accent',
-    id: 'gateway',
-    label: 'Gateway'
-  };
-  const hub = {
-    color: 'primary',
-    id: 'hub',
-    label: 'Hub'
-  };
-
-  const nodeStatusColor = nodeOverallStatus.value.color;
-  const nodes = {
-    color: nodeStatusColor === 'error' ? 'error' : nodeStatusColor === 'warning' ? 'warning' : 'neutral lighten-2',
-    id: 'nodes',
-    label: 'Nodes',
-    to: '/system/components'
-  };
-
-
-  const chips = [uiStatusObj];
+  // Create a chip for the server/gateway to hub status
+  const serverHubStatusObj = {id: 'serverHubStatus', ...serverToHubStatus.value};
+  // Check if the enrollment status is enrolled and tested
   const isEnrolledTested = enrollmentStatus.value.enrollment && enrollmentStatus.value.isTested;
 
-  if (displayedChips.value.includes('server')) {
-    chips.push(server);
-    if (isEnrolledTested) chips.push(serverHubStatusObj);
-  }
+  // Function to add a chip to the chips array
+  const addChip = (chipId, chipData, includeStatusObj = false) => {
+    if (displayedChips.value.includes(chipId)) { // Check if the chip should be displayed
+      chips.push(chipData); // Add the chip to the chips array
+      if (isEnrolledTested && includeStatusObj) { // Check if the enrollment status is enrolled and tested
+        chips.push(serverHubStatusObj); // Add the server/gateway to hub status chip to the chips array
+      }
+    }
+  };
 
-  if (displayedChips.value.includes('gateway')) {
-    chips.push(gateway);
-    if (isEnrolledTested) chips.push(serverHubStatusObj);
-  }
+  // Populate the chips array with the appropriate chips
+  addChip('server', {color: 'neutral lighten-4', id: 'server', label: 'Server'}, true);
+  addChip('gateway', {color: 'accent', id: 'gateway', label: 'Gateway'}, true);
+  addChip('hub', {color: 'primary', id: 'hub', label: 'Hub'});
 
-  if (displayedChips.value.includes('hub')) {
-    chips.push(hub);
-  }
-
+  // Check if the nodes chip should be displayed
   if (displayedChips.value.includes('nodes')) {
-    chips.push(nodeStatusObj);
-    chips.push(nodes);
+    const nodeStatusColor = nodeOverallStatus.value.color;
+    const nodeError = nodeStatusColor === 'error';
+    const nodeWarning = nodeStatusColor === 'warning';
+
+    // Add the node status chip to the chips array first so it is displayed between the Hub and Nodes chips
+    chips.push({id: 'nodeStatus', ...nodeOverallStatus.value});
+    // Then add the nodes chip to the chips array
+    chips.push({
+      color: nodeError ? 'error' : nodeWarning ? 'red darken-2' : 'neutral lighten-2',
+      id: 'nodes',
+      label: 'Nodes',
+      to: '/system/components'
+    });
   }
 
   return chips;
 });
 
 
-// ------ Helpers ------ //
-const createStatusObject = (color, icon, resource, single = true) => {
-  let setIcon;
+// ------ Methods ------ //
 
-  if (!icon) {
-    if (color === 'error') {
-      setIcon = 'mdi-close';
-    } else if (color === 'warning') {
-      setIcon = 'mdi-alert';
-    } else {
-      setIcon = 'mdi-check';
-    }
-  } else {
-    setIcon = icon;
-  }
+// Trigger a refresh of the enrollment and node status
+const triggerRefresh = async () => {
+  isRefreshing.value = true;
+  await getEnrollmentAndListHubNodes();
 
-  return {
-    color,
-    icon: setIcon,
-    resource,
-    single
-  };
+  setTimeout(() => {
+    isRefreshing.value = false;
+  }, 1000); // Wait 1 second before setting isRefreshing to false, this allows the icon to spin
 };
+
+// Navigate to the nodes page if the user has access
+const navigateToNodes = (to) => (to && isLoggedIn && !hasNoAccess(to)) ? to : null;
+
+
+// ------ Helpers ------ //
+const createStatusObject = (color, icon, resource, single = true) => ({
+  color,
+  icon: icon || (color === 'error' ? 'mdi-close' : color === 'warning' ? 'mdi-alert' : 'mdi-check'),
+  resource,
+  single
+});
+
 
 // Create a lastChecked timestamp (for second to be used in the status popup
 const {now} = useNow(SECOND);
@@ -501,22 +437,9 @@ watch(isLoading, (isLoading) => {
 // Create a timeAgo computed property to display time in words
 const timeAgo = computed(() => {
   if (!lastChecked.value) return 'Never';
-  return formatTimeAgo(lastChecked.value, now.value);
+  return formatTimeAgo(lastChecked.value, now.value, MINUTE, HOUR, DAY);
 });
 
-// Format time ago using Intl.RelativeTimeFormat API to display time in words
-const formatTimeAgo = (date, now) => {
-  const diffInSeconds = (now - date) / 1000;
-  const rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'});
-
-  if (Math.abs(diffInSeconds) < MINUTE) {
-    return rtf.format(-Math.floor(diffInSeconds), 'second');
-  } else if (Math.abs(diffInSeconds) < HOUR) {
-    return rtf.format(-Math.floor(diffInSeconds / MINUTE), 'minute');
-  } else if (Math.abs(diffInSeconds) < DAY) {
-    return rtf.format(-Math.floor(diffInSeconds / HOUR), 'hour');
-  }
-};
 </script>
 
 <style lang="scss" scoped>
