@@ -12,6 +12,8 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/util/chans"
 	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 )
@@ -56,6 +58,10 @@ func (a *Auto) pullTraits(ctx context.Context, dst chan<- proto.Message, device 
 		case trait.AirTemperature:
 			grp.Go(func() error {
 				return handleErr(tn, a.pullAirTemperature(ctx, dst, device))
+			})
+		case meter.TraitName:
+			grp.Go(func() error {
+				return handleErr(tn, a.pullMeterReadings(ctx, dst, device))
 			})
 		default:
 			if device.IgnoreUnknownTraits {
@@ -132,6 +138,41 @@ func (a *Auto) pullAirTemperature(ctx context.Context, dst chan<- proto.Message,
 	}
 	reduce := func(cs []*traits.PullAirTemperatureResponse_Change) proto.Message {
 		return &traits.PullAirTemperatureResponse{Changes: cs}
+	}
+	delay := device.PollInterval.Or(DefaultPollInterval)
+
+	return doPull(ctx, dst, pullFunc, pollFunc, reduce, delay)
+}
+
+// pullMeterReadings publishes device's meter readings changes (as *gen.PullMeterReadingsResponse) to dst,
+// returning when ctx is done or a non-recoverable error occurs.
+func (a *Auto) pullMeterReadings(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
+	var client gen.MeterApiClient
+	err := a.services.Node.Client(&client)
+	if err != nil {
+		return err
+	}
+
+	pullFunc := func(ctx context.Context, stream chan<- *gen.PullMeterReadingsResponse_Change) error {
+		ss, err := client.PullMeterReadings(ctx, &gen.PullMeterReadingsRequest{Name: device.Name})
+		if err != nil {
+			return err
+		}
+		return pullStreamChanges[*gen.PullMeterReadingsResponse](ctx, stream, ss)
+	}
+	pollFunc := func(ctx context.Context, stream chan<- *gen.PullMeterReadingsResponse_Change) error {
+		msg, err := client.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: device.Name})
+		if err != nil {
+			return err
+		}
+		return chans.SendContext(ctx, stream, &gen.PullMeterReadingsResponse_Change{
+			Name:         device.Name,
+			ChangeTime:   timestamppb.Now(),
+			MeterReading: msg,
+		})
+	}
+	reduce := func(cs []*gen.PullMeterReadingsResponse_Change) proto.Message {
+		return &gen.PullMeterReadingsResponse{Changes: cs}
 	}
 	delay := device.PollInterval.Or(DefaultPollInterval)
 
