@@ -59,6 +59,10 @@ func (a *Auto) pullTraits(ctx context.Context, dst chan<- proto.Message, device 
 			grp.Go(func() error {
 				return handleErr(tn, a.pullAirTemperature(ctx, dst, device))
 			})
+		case trait.BrightnessSensor:
+			grp.Go(func() error {
+				return handleErr(tn, a.pullAmbientBrightness(ctx, dst, device))
+			})
 		case meter.TraitName:
 			grp.Go(func() error {
 				return handleErr(tn, a.pullMeterReadings(ctx, dst, device))
@@ -142,6 +146,41 @@ func (a *Auto) pullAirTemperature(ctx context.Context, dst chan<- proto.Message,
 	}
 	reduce := func(cs []*traits.PullAirTemperatureResponse_Change) proto.Message {
 		return &traits.PullAirTemperatureResponse{Changes: cs}
+	}
+	delay := device.PollInterval.Or(DefaultPollInterval)
+
+	return doPull(ctx, dst, pullFunc, pollFunc, reduce, delay)
+}
+
+// pullAmbientBrightness publishes device's ambient brightness changes (as *traits.PullAmbientBrightnessResponse) to dst,
+// returning when ctx is done or a non-recoverable error occurs.
+func (a *Auto) pullAmbientBrightness(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
+	var client traits.BrightnessSensorApiClient
+	err := a.services.Node.Client(&client)
+	if err != nil {
+		return err
+	}
+
+	pullFunc := func(ctx context.Context, stream chan<- *traits.PullAmbientBrightnessResponse_Change) error {
+		ss, err := client.PullAmbientBrightness(ctx, &traits.PullAmbientBrightnessRequest{Name: device.Name})
+		if err != nil {
+			return err
+		}
+		return pullStreamChanges[*traits.PullAmbientBrightnessResponse](ctx, stream, ss)
+	}
+	pollFunc := func(ctx context.Context, stream chan<- *traits.PullAmbientBrightnessResponse_Change) error {
+		msg, err := client.GetAmbientBrightness(ctx, &traits.GetAmbientBrightnessRequest{Name: device.Name})
+		if err != nil {
+			return err
+		}
+		return chans.SendContext(ctx, stream, &traits.PullAmbientBrightnessResponse_Change{
+			Name:              device.Name,
+			ChangeTime:        timestamppb.Now(),
+			AmbientBrightness: msg,
+		})
+	}
+	reduce := func(cs []*traits.PullAmbientBrightnessResponse_Change) proto.Message {
+		return &traits.PullAmbientBrightnessResponse{Changes: cs}
 	}
 	delay := device.PollInterval.Or(DefaultPollInterval)
 
