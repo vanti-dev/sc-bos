@@ -95,25 +95,28 @@ func (a *Auto) applyConfig(ctx context.Context, cfg Config) error {
 	return nil
 }
 
+// sendOutputMessages sends messages from stream to IoT Hub.
+// It blocks until stream is closed.
 func (a *Auto) sendOutputMessages(ctx context.Context, dialler dialler, stream <-chan proto.Message) {
 	var conn iothub.Conn
-	buf := list.New()
+	backlog := list.New()
+	// notSent records that a message couldn't be sent, it will be sent later (if possible)
 	notSent := func(m any) {
-		for buf.Len() > DefaultBacklogSize {
-			drop := buf.Front()
-			buf.Remove(drop)
+		for backlog.Len() > DefaultBacklogSize {
+			drop := backlog.Front()
+			backlog.Remove(drop)
 			a.services.Logger.Warn("dropping message due to full buffer", zap.Any("message", drop.Value))
 		}
-		a.services.Logger.Debug("buffering message", zap.Any("message", m))
-		buf.PushBack(m)
+		backlog.PushBack(m)
 	}
-	sendBacklog := func(m any) error {
-		for m := buf.Front(); m != nil; m = m.Next() {
+	// sendBacklog sends all messages that couldn't be sent the first time
+	sendBacklog := func() error {
+		for m := backlog.Front(); m != nil; m = m.Next() {
 			err := conn.SendOutputMessage(ctx, m.Value)
 			if err != nil {
 				return err
 			}
-			buf.Remove(m)
+			backlog.Remove(m)
 		}
 		return nil
 	}
@@ -127,7 +130,7 @@ func (a *Auto) sendOutputMessages(ctx context.Context, dialler dialler, stream <
 				continue
 			}
 		}
-		err := sendBacklog(msg)
+		err := sendBacklog()
 		if err != nil {
 			a.services.Logger.Warn("failed to send backlog message to IoT Hub", zap.Error(err))
 			notSent(msg)
