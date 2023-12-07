@@ -273,7 +273,7 @@ export default function() {
   }, {deep: true});
 
   // Returns a now timestamp for the last successful check
-  const lastFetch = ref(Date.now());
+  const lastFetch = ref(null);
 
   // Execute both GetEnrollment and ListHubNodes (or pull) against the server
   // Can be used to manually trigger the action

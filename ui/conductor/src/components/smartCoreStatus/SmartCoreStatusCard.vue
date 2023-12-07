@@ -5,7 +5,8 @@
       content-class="elevation-0"
       left
       max-height="600px"
-      max-width="800px"
+      max-width="550px"
+      min-width="400px"
       offset-y
       tile>
     <template #activator="{on, attrs}">
@@ -22,7 +23,7 @@
           <span
               class="ml-2 font-weight-light"
               style="font-size: 10px; margin-bottom: -1px">{{
-                isLoading ? '- Checking...' : 'Last update: ' + lastChecked.toLocaleString()
+                isLoading ? '- Checking...' : 'Last update: ' + timeAgo
               }}</span>
         </v-card-title>
         <v-spacer/>
@@ -45,7 +46,6 @@
         </v-tooltip>
       </div>
       <v-row class="d-flex flex-row justify-center mx-4 my-3">
-        <!-- Test Hub to Nodes connection -->
         <div class="d-flex flex-row align-center">
           <v-chip class="neutral lighten-1" small>UI</v-chip>
           <v-divider class="mx-2" style="min-width: 10px"/>
@@ -81,6 +81,7 @@ import {computed, ref, watch} from 'vue';
 import useSmartCoreStatus from '@/composables/useSmartCoreStatus';
 import useAuthSetup from '@/composables/useAuthSetup';
 import StatusAlert from '@/components/StatusAlert.vue';
+import {useNow, SECOND, MINUTE, HOUR, DAY} from '@/components/now';
 
 const isRefreshing = ref(false);
 const {hasNoAccess, isLoggedIn} = useAuthSetup();
@@ -427,8 +428,9 @@ const statusPopupSetup = computed(() => {
     label: 'Hub'
   };
 
+  const nodeStatusColor = nodeOverallStatus.value.color;
   const nodes = {
-    color: 'neutral lighten-2',
+    color: nodeStatusColor === 'error' ? 'error' : nodeStatusColor === 'warning' ? 'warning' : 'neutral lighten-2',
     id: 'nodes',
     label: 'Nodes',
     to: '/system/components'
@@ -485,13 +487,36 @@ const createStatusObject = (color, icon, resource, single = true) => {
   };
 };
 
-// Create a lastChecked timestamp to be used in the status popup
+// Create a lastChecked timestamp (for second to be used in the status popup
+const {now} = useNow(SECOND);
 const lastChecked = ref(null);
+
+// Update lastChecked timestamp when isLoading changes
 watch(isLoading, (isLoading) => {
   if (!isLoading) {
     lastChecked.value = new Date();
   }
 }, {immediate: true});
+
+// Create a timeAgo computed property to display time in words
+const timeAgo = computed(() => {
+  if (!lastChecked.value) return 'Never';
+  return formatTimeAgo(lastChecked.value, now.value);
+});
+
+// Format time ago using Intl.RelativeTimeFormat API to display time in words
+const formatTimeAgo = (date, now) => {
+  const diffInSeconds = (now - date) / 1000;
+  const rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'});
+
+  if (Math.abs(diffInSeconds) < MINUTE) {
+    return rtf.format(-Math.floor(diffInSeconds), 'second');
+  } else if (Math.abs(diffInSeconds) < HOUR) {
+    return rtf.format(-Math.floor(diffInSeconds / MINUTE), 'minute');
+  } else if (Math.abs(diffInSeconds) < DAY) {
+    return rtf.format(-Math.floor(diffInSeconds / HOUR), 'hour');
+  }
+};
 </script>
 
 <style lang="scss" scoped>
