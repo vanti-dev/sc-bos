@@ -168,6 +168,11 @@ export default function() {
     // Collect all unique node names from both results and errors
     const allNodes = await new Set([...Object.keys(nodeResults), ...Object.keys(nodeErrors)]);
 
+    if (allNodes.size === 0) {
+      updatingNodeStatus.value = false;
+      return;
+    }
+
     allNodes.forEach(node => {
       const results = nodeResults[node] || [];
       const errors = nodeErrors[node] || [];
@@ -187,19 +192,26 @@ export default function() {
           color: 'success',
           icon: 'mdi-check',
           loading: false,
+          name: node,
           resource: {status: 'Success', message: `Node ${node} operating normally`},
           type: 'success'
         };
         // If the last result is newer than the last error, and the last result is not successful, return 'error'
       } else if (lastError) {
         status[node] = {
-          color: 'error', icon: 'mdi-cross', loading: false, resource: {error: lastError.error}, type: 'error'
+          color: 'error',
+          icon: 'mdi-cross',
+          loading: false,
+          name: node,
+          resource: {error: lastError.error},
+          type: 'error'
         };
       } else {
         status[node] = {
           color: 'warning',
           icon: 'mdi-alert',
           loading: false,
+          name: node,
           resource: {error: {message: `Node ${node} status unknown`}},
           type: 'warning'
         };
@@ -217,16 +229,27 @@ export default function() {
     await updateNodeStatus(newNodeResults, newNodeErrors);
   });
 
+  // Returns an array of errored nodes
+  const erroredNodes = computed(() => {
+    const nodeStatuses = Object.values(nodeStatus.value);
+    return nodeStatuses.filter(node => node.type === 'error');
+  });
+
 
   // Returns a type for the chip representing the server/hub/gateway depending on the successful checks
   const serverChipType = computed(() => {
-    if (enrollmentStatus.value.enrollment && listHubNodesValue.response?.nodesList) return 'gateway';
-    if (listHubNodesValue.response) return 'hub';
+    const listHubNodesResponse = listHubNodesValue.response;
+    const nodesList = listHubNodesResponse && listHubNodesResponse?.nodesList;
+
+    if (enrollmentStatus.value.enrollment && nodesList) return 'gateway';
+    if (listHubNodesResponse) return 'hub';
     return 'server';
   });
 
   // Returns an array of chips to be displayed
-  const displayedChips = computed(() => {
+  const displayedChips = ref(['ui', serverChipType.value]);
+  // Structuring the array of chips to be displayed
+  const setDisplayedChips = () => {
     const es = enrollmentStatus.value;
 
     // default chips
@@ -241,7 +264,13 @@ export default function() {
     if (hubNodeResponse) chips.push('nodes');
 
     return chips;
-  });
+  };
+
+  watch(() => listHubNodesValue.response, async (newResponse, oldResponse) => {
+    const newNodeList = newResponse?.nodesList;
+    const oldNodeList = oldResponse?.nodesList;
+    if (newResponse && newNodeList !== oldNodeList) displayedChips.value = setDisplayedChips();
+  }, {deep: true});
 
   // Returns a now timestamp for the last successful check
   const lastFetch = ref(Date.now());
@@ -250,7 +279,6 @@ export default function() {
   // Can be used to manually trigger the action
   const triggerListHubNodesAction = async () => {
     updatingNodeStatus.value = true;
-    listHubNodesValue.response = null;
     await listHubNodesAction(listHubNodesValue);
     updatingNodeStatus.value = false;
   };
@@ -299,6 +327,7 @@ export default function() {
     getEnrollmentAndListHubNodes,
     nodeStatus,
     updatingNodeStatus,
+    erroredNodes,
     serverChipType,
     displayedChips
   };

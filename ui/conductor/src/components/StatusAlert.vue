@@ -5,39 +5,34 @@
       bottom
       :color="props.color">
     <template #activator="{ on, attrs }">
-      <v-btn
+      <v-icon
           v-bind="attrs"
           v-on="on"
-          class="mb-n1"
-          icon
-          :loading="props.loading"
-          :ripple="props.isClickable"
-          x-small
-          @click="props.clickAction">
-        <v-icon
-            :color="props.color"
-            size="22">
-          {{ props.icon }}
-        </v-icon>
-      </v-btn>
+          :color="props.color"
+          size="22"
+          style="padding-top: 1px;">
+        {{ props.icon }}
+      </v-icon>
     </template>
-    <span class="error-name">{{ statusDetails.statusName }}</span>
-    <span class="error-details">
-      {{ statusDetails.statusCode }}
-      {{ statusDetails.statusMessage }}
-    </span>
+    <div v-for="(status, index) in statusDetails" :key="status.statusName + index">
+      <span class="error-name">{{ status.statusName }}</span>
+      <span class="error-details">
+        {{ status.statusCode }}
+        {{ status.statusMessage }}
+      </span>
+      <v-divider
+          v-if="!props.single && index !== statusDetails.length - 1"
+          class="neutral lighten--4 my-1 mx-auto"
+          style="width:4em"/>
+    </div>
   </v-tooltip>
 </template>
 
 <script setup>
-import {computed, ref} from 'vue';
+import {ref, watch} from 'vue';
 import {statusCodeToString} from '@/components/ui-error/util';
 
 const props = defineProps({
-  clickAction: {
-    type: Function,
-    default: () => null
-  },
   color: {
     type: String,
     default: 'error'
@@ -58,35 +53,35 @@ const props = defineProps({
     type: Object,
     default: () => null
   },
-  type: {
-    type: String,
-    default: 'error'
+  single: {
+    type: Boolean,
+    default: true
   }
 });
 
 const show = ref(false);
 
-const statusDetails = computed(() => {
-  if (['error', 'warning'].includes(props.type)) {
-    return {
+const statusDetails = ref([]);
+
+watch(() => props.single, (isSingle) => {
+  if (!isSingle) {
+    const errors = props.resource.errors;
+
+    statusDetails.value = errors.map((status) => {
+      return {
+        statusCode: statusCodeToString(status?.resource?.error?.code),
+        statusMessage: ': ' + status?.resource?.error?.message,
+        statusName: status.name
+      };
+    });
+  } else {
+    statusDetails.value = [{
       statusCode: statusCodeToString(props.resource?.error?.code),
       statusMessage: ': ' + props.resource?.error?.message,
       statusName: props.resource?.name
-    };
-  } else if (props.type === 'success') {
-    return {
-      statusCode: statusCodeToString(props.resource?.status?.code),
-      statusMessage: ': ' + props.resource?.status?.message,
-      statusName: props.resource?.name
-    };
+    }];
   }
-
-  return {
-    statusCode: 'Unknown',
-    statusMessage: '',
-    statusName: ''
-  };
-});
+}, {immediate: true});
 </script>
 
 <style lang="scss" scoped>
