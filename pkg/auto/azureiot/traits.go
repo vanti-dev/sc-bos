@@ -63,6 +63,10 @@ func (a *Auto) pullTraits(ctx context.Context, dst chan<- proto.Message, device 
 			grp.Go(func() error {
 				return handleErr(tn, a.pullMeterReadings(ctx, dst, device))
 			})
+		case trait.OccupancySensor:
+			grp.Go(func() error {
+				return handleErr(tn, a.pullOccupancy(ctx, dst, device))
+			})
 		default:
 			if device.IgnoreUnknownTraits {
 				logger.Warn("ignoring unsupported trait", zap.Stringer("trait", tn))
@@ -173,6 +177,41 @@ func (a *Auto) pullMeterReadings(ctx context.Context, dst chan<- proto.Message, 
 	}
 	reduce := func(cs []*gen.PullMeterReadingsResponse_Change) proto.Message {
 		return &gen.PullMeterReadingsResponse{Changes: cs}
+	}
+	delay := device.PollInterval.Or(DefaultPollInterval)
+
+	return doPull(ctx, dst, pullFunc, pollFunc, reduce, delay)
+}
+
+// pullOccupancy publishes device's occupancy changes (as *traits.PullOccupancyResponse) to dst,
+// returning when ctx is done or a non-recoverable error occurs.
+func (a *Auto) pullOccupancy(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
+	var client traits.OccupancySensorApiClient
+	err := a.services.Node.Client(&client)
+	if err != nil {
+		return err
+	}
+
+	pullFunc := func(ctx context.Context, stream chan<- *traits.PullOccupancyResponse_Change) error {
+		ss, err := client.PullOccupancy(ctx, &traits.PullOccupancyRequest{Name: device.Name})
+		if err != nil {
+			return err
+		}
+		return pullStreamChanges[*traits.PullOccupancyResponse](ctx, stream, ss)
+	}
+	pollFunc := func(ctx context.Context, stream chan<- *traits.PullOccupancyResponse_Change) error {
+		msg, err := client.GetOccupancy(ctx, &traits.GetOccupancyRequest{Name: device.Name})
+		if err != nil {
+			return err
+		}
+		return chans.SendContext(ctx, stream, &traits.PullOccupancyResponse_Change{
+			Name:       device.Name,
+			ChangeTime: timestamppb.Now(),
+			Occupancy:  msg,
+		})
+	}
+	reduce := func(cs []*traits.PullOccupancyResponse_Change) proto.Message {
+		return &traits.PullOccupancyResponse{Changes: cs}
 	}
 	delay := device.PollInterval.Or(DefaultPollInterval)
 
