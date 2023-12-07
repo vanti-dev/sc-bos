@@ -29,7 +29,7 @@
 </template>
 
 <script setup>
-import {ref, watch} from 'vue';
+import {computed, ref} from 'vue';
 import {statusCodeToString} from '@/components/ui-error/util';
 
 const props = defineProps({
@@ -61,13 +61,11 @@ const props = defineProps({
 
 const show = ref(false);
 
-const statusDetails = ref([]);
+const statusDetails = computed(() => {
+  if (!props.single) {
+    const errors = props.resource.errors || [];
 
-watch(() => props.single, (isSingle) => {
-  if (!isSingle) {
-    const errors = props.resource.errors;
-
-    statusDetails.value = errors.map((status) => {
+    return errors.map((status) => {
       return {
         statusCode: statusCodeToString(status?.resource?.error?.code),
         statusMessage: ': ' + status?.resource?.error?.message,
@@ -75,13 +73,13 @@ watch(() => props.single, (isSingle) => {
       };
     });
   } else {
-    statusDetails.value = [{
+    return [{
       statusCode: statusCodeToString(props.resource?.error?.code),
       statusMessage: ': ' + props.resource?.error?.message,
       statusName: props.resource?.name
     }];
   }
-}, {immediate: true});
+});
 </script>
 
 <style lang="scss" scoped>
