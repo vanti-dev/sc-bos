@@ -87,11 +87,9 @@ export const useHubStore = defineStore('hub', () => {
         listedHubNodes.value.push(node.name);
         set(nodesListCollection.value, node.name, node);
       }
-
-      return;
     } catch (error) {
       console.error('Error in listHubNodesAction:', error);
-      return error;
+      throw error;
     }
   };
 
@@ -108,7 +106,7 @@ export const useHubStore = defineStore('hub', () => {
   const nodesList = computed(() => {
     /** @type {Record<string, Node>} */
     const nodes = {};
-    Object.values(nodesListCollection?.value || {}).forEach((node, name) => {
+    Object.values(nodesListCollection?.value || {}).forEach((node) => {
       nodes[node.name] = {
         ...node,
         commsAddress: proxiedAddress(node.address),
