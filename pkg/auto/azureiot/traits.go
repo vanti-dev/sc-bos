@@ -63,6 +63,10 @@ func (a *Auto) pullTraits(ctx context.Context, dst chan<- proto.Message, device 
 			grp.Go(func() error {
 				return handleErr(tn, a.pullAmbientBrightness(ctx, dst, device))
 			})
+		case trait.Light:
+			grp.Go(func() error {
+				return handleErr(tn, a.pullBrightness(ctx, dst, device))
+			})
 		case meter.TraitName:
 			grp.Go(func() error {
 				return handleErr(tn, a.pullMeterReadings(ctx, dst, device))
@@ -181,6 +185,41 @@ func (a *Auto) pullAmbientBrightness(ctx context.Context, dst chan<- proto.Messa
 	}
 	reduce := func(cs []*traits.PullAmbientBrightnessResponse_Change) proto.Message {
 		return &traits.PullAmbientBrightnessResponse{Changes: cs}
+	}
+	delay := device.PollInterval.Or(DefaultPollInterval)
+
+	return doPull(ctx, dst, pullFunc, pollFunc, reduce, delay)
+}
+
+// pullBrightness publishes device's brightness changes (as *traits.PullBrightnessResponse) to dst,
+// returning when ctx is done or a non-recoverable error occurs.
+func (a *Auto) pullBrightness(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
+	var client traits.LightApiClient
+	err := a.services.Node.Client(&client)
+	if err != nil {
+		return err
+	}
+
+	pullFunc := func(ctx context.Context, stream chan<- *traits.PullBrightnessResponse_Change) error {
+		ss, err := client.PullBrightness(ctx, &traits.PullBrightnessRequest{Name: device.Name})
+		if err != nil {
+			return err
+		}
+		return pullStreamChanges[*traits.PullBrightnessResponse](ctx, stream, ss)
+	}
+	pollFunc := func(ctx context.Context, stream chan<- *traits.PullBrightnessResponse_Change) error {
+		msg, err := client.GetBrightness(ctx, &traits.GetBrightnessRequest{Name: device.Name})
+		if err != nil {
+			return err
+		}
+		return chans.SendContext(ctx, stream, &traits.PullBrightnessResponse_Change{
+			Name:       device.Name,
+			ChangeTime: timestamppb.Now(),
+			Brightness: msg,
+		})
+	}
+	reduce := func(cs []*traits.PullBrightnessResponse_Change) proto.Message {
+		return &traits.PullBrightnessResponse{Changes: cs}
 	}
 	delay := device.PollInterval.Or(DefaultPollInterval)
 
