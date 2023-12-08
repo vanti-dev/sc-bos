@@ -19,11 +19,7 @@ export default function() {
   const zoneCollection = ref({});
 
   const zoneListWithDetails = computed(() => {
-    return Object.values(zoneCollection.value?.resources?.value ?? [])
-        .map((zone) => {
-          return zone;
-        })
-        .sort();
+    return Object.values(zoneCollection.value?.resources?.value ?? []);
   });
 
   const zoneList = computed(() => {

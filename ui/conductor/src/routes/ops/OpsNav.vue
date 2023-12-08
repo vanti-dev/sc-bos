@@ -60,6 +60,11 @@ const menuItems = [
     count: 'unacknowledgedAlertCount'
   },
   {
+    title: 'Air Quality',
+    icon: 'mdi-air-filter',
+    link: {path: '/ops/air-quality'}
+  },
+  {
     title: 'Emergency Lighting',
     icon: 'mdi-alarm-light-outline',
     link: {path: '/ops/emergency-lighting'}
@@ -75,9 +80,10 @@ const enabledMenuItems = computed(() => {
   return menuItems.filter((item) => appConfig.pathEnabled(item.link.path));
 });
 const overviewEnabled = computed(() => appConfig.pathEnabled('/ops/overview'));
+const notificationEnabled = computed(() => appConfig.pathEnabled('/ops/notifications'));
 
 onMounted(() => {
-  alertMetadata.init();
+  if (notificationEnabled.value) alertMetadata.init();
 });
 </script>
 
