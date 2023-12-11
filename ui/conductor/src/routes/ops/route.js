@@ -1,4 +1,5 @@
 import SidebarPage from '@/components/page-layout/SidebarPage.vue';
+import overview from '@/routes/ops/overview/route.js';
 import notifications from '@/routes/ops/notifications/route.js';
 import {useAppConfigStore} from '@/stores/app-config';
 
@@ -12,7 +13,7 @@ export default {
     nav: () => import('./OpsNav.vue')
   },
   children: [
-    {path: 'overview', component: () => import('./OpsHome.vue')},
+    ...route(overview),
     {path: 'emergency-lighting', component: () => import('./emergency-lighting/EmergencyLighting.vue')},
     {path: 'security', component: () => import('./security/SecurityHome.vue')},
     {path: 'air-quality', component: () => import('./air-quality/AirQuality.vue')},
@@ -25,7 +26,7 @@ export default {
     const appConfig = useAppConfigStore();
     if (to.path === '/ops') {
       if (appConfig.pathEnabled('/ops/overview')) {
-        next('/ops/overview');
+        next('/ops/overview/building');
       } else if (appConfig.pathEnabled('/ops/notifications')) {
         next('/ops/notifications');
       } else if (appConfig.pathEnabled('/ops/air-quality')) {
