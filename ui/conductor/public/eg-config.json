@@ -8,7 +8,9 @@
       "*": true
     },
     "ops": {
-      "overview": true,
+      "overview": {
+        "*": true
+      },
       "notifications": true,
       "air-quality": true,
       "emergency-lighting": true,
@@ -53,6 +55,23 @@
       {"name": "Floor 9", "svgPath": "/floorPlans/L09.svg"},
       {"name": "Floor 10", "svgPath": "/floorPlans/L10.svg"}
     ],
+    "building": {
+      "children": [
+        {"title": "Areas", "icon": "mdi-texture-box",
+          "children": [
+            {"title": "Office", "shortTitle": "Of."},
+            {"title": "Room 1", "shortTitle": "R1"},
+            {"title": "Room 2", "shortTitle": "R2"},
+            {"title": "Level 3 Office", "floor": "L03", "shortTitle": "L3-Of."}
+          ]
+        },
+        {"title": "Floors", "icon": "mdi-layers-triple",
+          "children": [
+            {"title": "Floor 3", "floor": "L03", "shortTitle": "F3"}
+          ]
+        }
+      ]
+    },
     "disableAuthentication": true
   }
 }
