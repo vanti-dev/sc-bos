@@ -10,6 +10,7 @@ import VueRouter from 'vue-router';
 import {useAppConfigStore} from '@/stores/app-config';
 import useAuthSetup from '@/composables/useAuthSetup';
 import {usePageStore} from '@/stores/page';
+import {useOverviewStore} from '@/routes/ops/overview/overviewStore.js';
 import {storeToRefs} from 'pinia';
 
 Vue.use(VueRouter);
@@ -53,6 +54,14 @@ if (window) {
       showSidebar.value = false;
       sidebarTitle.value = '';
       sidebarData.value = {};
+    }
+
+    // Clear the activeOverview when navigating to a different page - other than overview
+    const {activeOverview} = storeToRefs(useOverviewStore());
+    // Check if the path is not '/ops/building' or doesn't start with '/ops/building'
+    if (!to.path.startsWith('/ops/overview/building')) {
+      // Clear the activeOverview
+      activeOverview.value = null;
     }
   });
 }

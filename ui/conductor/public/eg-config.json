@@ -57,18 +57,116 @@
     ],
     "building": {
       "children": [
-        {"title": "Areas", "icon": "mdi-texture-box",
+        {
+          "disabled": false,
+          "icon": "mdi-layers-triple-outline",
+          "shortTitle": "F3",
+          "title": "Floor 3",
+          "traits": {
+            "showAirQuality": false,
+            "showEmergencyLighting": false,
+            "showEnergyConsumption": false,
+            "showEnvironment": false,
+            "showNotifications": false,
+            "showOccupancy": "Floor 3",
+            "showPower": false
+          },
           "children": [
-            {"title": "Office", "shortTitle": "Of."},
-            {"title": "Room 1", "shortTitle": "R1"},
-            {"title": "Room 2", "shortTitle": "R2"},
-            {"title": "Level 3 Office", "floor": "L03", "shortTitle": "L3-Of."}
+            {
+              "disabled": false,
+              "icon": "mdi-select-all",
+              "shortTitle": "LWF3",
+              "title": "Left Wing",
+              "traits": {
+                "showAirQuality": false,
+                "showEmergencyLighting": false,
+                "showEnergyConsumption": false,
+                "showEnvironment": false,
+                "showNotifications": false,
+                "showOccupancy": "Left Wing Floor 3",
+                "showPower": false
+              },
+              "children": [
+                {
+                  "disabled": false,
+                  "icon": "mdi-select-all",
+                  "shortTitle": "Of.",
+                  "title": "Office",
+                  "traits": {
+                    "showAirQuality": false,
+                    "showEmergencyLighting": false,
+                    "showEnergyConsumption": false,
+                    "showEnvironment": false,
+                    "showNotifications": false,
+                    "showOccupancy": "Office",
+                    "showPower": false
+                  }
+                }
+              ]
+            }
           ]
         },
-        {"title": "Floors", "icon": "mdi-layers-triple",
+        {
+          "disabled": false,
+          "icon": "mdi-layers-triple-outline",
+          "shortTitle": "F4",
+          "title": "Floor 4",
+          "traits": {
+            "showAirQuality": false,
+            "showEmergencyLighting": false,
+            "showEnergyConsumption": false,
+            "showEnvironment": false,
+            "showNotifications": false,
+            "showOccupancy": "Floor 4",
+            "showPower": false
+          }
+        },
+        {
+          "disabled": false,
+          "icon": "mdi-layers-triple-outline",
+          "shortTitle": "F5",
+          "title": "Floor 5",
+          "traits": {
+            "showAirQuality": false,
+            "showEmergencyLighting": false,
+            "showEnergyConsumption": false,
+            "showEnvironment": false,
+            "showNotifications": false,
+            "showOccupancy": "Floor 5",
+            "showPower": false
+          },
           "children": [
-            {"title": "Floor 3", "floor": "L03", "shortTitle": "F3"}
+            {
+              "disabled": false,
+              "icon": "mdi-select-all",
+              "shortTitle": "Of.",
+              "title": "Office",
+              "traits": {
+                "showAirQuality": false,
+                "showEmergencyLighting": false,
+                "showEnergyConsumption": false,
+                "showEnvironment": false,
+                "showNotifications": false,
+                "showOccupancy": "Office",
+                "showPower": false
+              }
+            }
           ]
+        },
+        {
+          "disabled": false,
+          "icon": "mdi-layers-triple-outline",
+          "shortTitle": "F6",
+          "title": "Floor 6",
+          "traits": {
+            "showAirQuality": false,
+            "showEmergencyLighting": false,
+            "showEnergyConsumption": false,
+            "showEnvironment": false,
+            "showNotifications": false,
+            "showOccupancy": "Floor 6",
+            "showPower": false
+          }
         }
       ]
     },

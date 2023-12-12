@@ -2,6 +2,7 @@ export default [
   {
     path: 'overview',
     component: () => import('@/routes/ops/OpsHome.vue'),
+    redirect: 'overview/building',
     children: [
       {
         name: 'building-overview',
@@ -9,22 +10,10 @@ export default [
         component: () => import('@/routes/ops/overview/BuildingOverview.vue')
       },
       {
-        name: 'areas-overview',
-        path: 'building/areas/:area', // Update the path to include the building segment
-        component: () => import('@/routes/ops/overview/AreaOverview.vue'),
-        props: true
-      },
-      {
-        name: 'floors-overview',
-        path: 'building/floors/:floor', // Update the path to include the building floor segment
-        component: () => import('@/routes/ops/overview/FloorOverview.vue'),
-        props: true
-      },
-      {
-        name: 'floors-zone-overview',
-        path: 'building/floors/:floor/zones/:zone', // Update the path to include the building floor zone segment
-        component: () => import('@/routes/ops/overview/FloorZoneOverview.vue'),
-        props: true
+        name: 'dynamic-areas-overview',
+        path: 'building/:pathMatch(.*)*', // Captures all segments after /building/
+        component: () => import('@/routes/ops/overview/DynamicAreasOverview.vue'),
+        props: route => ({pathSegments: route.params.pathMatch.split('/')}) // Splits segments into an array
       }
     ]
   }
