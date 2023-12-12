@@ -24,7 +24,7 @@ func (s String) Open() (io.ReadCloser, error) {
 	if s.IsPath() {
 		return os.Open(string(s))
 	}
-	return stringReadCloser{strings.NewReader(string(s))}, nil
+	return io.NopCloser(strings.NewReader(string(s))), nil
 }
 
 // Read reads the contents of s, the file or string.
@@ -34,12 +34,4 @@ func (s String) Read() (string, error) {
 	}
 	f, err := os.ReadFile(string(s))
 	return string(f), err
-}
-
-type stringReadCloser struct {
-	io.Reader
-}
-
-func (s stringReadCloser) Close() error {
-	return nil
 }
