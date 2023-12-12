@@ -11,11 +11,11 @@ const NO_FLOOR = '< no floor >';
  *
  * @param {Object} props
  * @return {{
- * floorList: ComputedRef<Array>,
- * filterFloor: Ref<string>,
- * search: Ref<string>,
- * query: ComputedRef<Object>,
- * devicesData: ComputedRef<Array>
+ * floorList: import('vue').ComputedRef<Array>,
+ * filterFloor: import('vue').Ref<string>,
+ * search: import('vue').Ref<string>,
+ * query: import('vue').ComputedRef<Object>,
+ * devicesData: import('vue').ComputedRef<Array>
  * }}
  */
 export default function(props) {
@@ -28,9 +28,7 @@ export default function(props) {
 
   // Computed property for the floor list
   const floorList = computed(() => {
-    const floors = listOfFloors.value;
-    floors.unshift('All');
-    return floors;
+    return ['All', ...listOfFloors.value];
   });
 
   // Create reactive collection
