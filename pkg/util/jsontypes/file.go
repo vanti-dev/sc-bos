@@ -27,6 +27,19 @@ func (s String) Open() (io.ReadCloser, error) {
 	return io.NopCloser(strings.NewReader(string(s))), nil
 }
 
+// OpenBase returns a reader for the contents of s, the file or string.
+// Paths are resolved relative to base.
+func (s String) OpenBase(base string) (io.ReadCloser, error) {
+	if s.IsPath() {
+		var p = string(s)
+		if !filepath.IsAbs(p) {
+			p = filepath.Join(base, p)
+		}
+		return os.Open(p)
+	}
+	return io.NopCloser(strings.NewReader(string(s))), nil
+}
+
 // Read reads the contents of s, the file or string.
 func (s String) Read() (string, error) {
 	if !s.IsPath() {
