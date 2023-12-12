@@ -14,10 +14,18 @@
       left
       max-width="500px"
       min-width="500px">
-    <template #activator="{ on }">
-      <v-tooltip v-on="on" left>
-        <template #activator="{ on:tooltipOn, attrs }">
-          <v-icon v-on="tooltipOn" v-bind="attrs" :color="iconColor" size="20">{{ iconStr }}</v-icon>
+    <template #activator="menuActivator">
+      <v-tooltip left>
+        <template #activator="tooltipActivator">
+          <v-icon
+              v-on="{...tooltipActivator.on, ...menuActivator.on}"
+              v-bind="tooltipActivator.attrs"
+              :color="iconColor"
+              size="20">
+            {{
+              iconStr
+            }}
+          </v-icon>
         </template>
         Status
       </v-tooltip>
