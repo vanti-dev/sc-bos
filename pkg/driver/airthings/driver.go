@@ -1,7 +1,13 @@
 // Package airthings integrates AirThings devices into Smart Core.
-// The primary api used by this driver is the location latest samples api.
+// AirThings manufacture sensors, typically air quality sensors, that connect directly to their cloud.
+// The cloud API provides access to various information about the devices and sites.
+// The primary api used by this driver is the "location latest samples" api.
+// See https://developer.airthings.com/api-docs#tag/Locations/paths/~1v1~1locations~1%7BlocationId%7D~1latest-samples/get
 //
 // The driver pulls all data into a local model, then translates that local model into Smart Core traits.
+// Package [local] defines the local model.
+// The code that pulls the data from the AirThings cloud API into local is in [client.go].
+// The supported traits are defined in [traits.go].
 package airthings
 
 import (
