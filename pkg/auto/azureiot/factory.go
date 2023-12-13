@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"time"
 
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -19,8 +18,6 @@ import (
 )
 
 const DriverType = "azureiot"
-
-const minPollInterval = 5 * time.Second
 
 var Factory auto.Factory = factory{}
 

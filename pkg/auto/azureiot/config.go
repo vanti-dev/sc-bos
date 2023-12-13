@@ -23,7 +23,7 @@ type Config struct {
 	Devices []DeviceConfig `json:"devices"`
 
 	// When a device doesn't support pullTraits, use this poll interval.
-	// Defaults to DefaultPollInterval.
+	// Defaults to DefaultPollInterval, can't be less than minPollInterval.
 	PollInterval *jsontypes.Duration `json:"pollInterval"`
 }
 
@@ -48,6 +48,8 @@ type SCDeviceConfig struct {
 
 	PollInterval *jsontypes.Duration `json:"pollInterval"` // Defaults to Config.PollInterval
 }
+
+const minPollInterval = 5 * time.Second // minimum rate of sending data to IoT Hub
 
 func ParseConfig(jsonBytes []byte) (Config, error) {
 	cfg := DefaultConfig()
