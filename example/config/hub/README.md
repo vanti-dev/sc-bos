@@ -27,7 +27,8 @@ An intellij 'Hub' run configuration (and group) have been setup to run all the n
 In case you want to run the nodes individually, the following commands can be used:
 
 ```shell
-go run ./cmd/bos --policy-mode=off --data-dir example/config/hub/eg-02
+go run ./cmd/bos --policy-mode=off --sysconf example/config/hub/ac-01/system.json --appconf example/config/hub/ac-01/app.conf.json --data .data/hub/ac-01
 ```
 
-Each node has a `--data-dir` flag that points to the directory containing the node's configuration and data.
+Each node has `--sysconf` and `--apconf` flags that point to the files containing the node's configuration, and a 
+`--data` flag that points to the local data storage location.
