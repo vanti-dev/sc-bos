@@ -63,7 +63,7 @@
 
 <script setup>
 import {computed, reactive} from 'vue';
-import useOccupancyTrait from '@/composables/Traits/useOccupancyTrait';
+import useOccupancyTrait from '@/composables/traits/useOccupancyTrait';
 
 import ContentCard from '@/components/ContentCard.vue';
 import EnergyGraph from '@/routes/ops/components/EnergyGraph.vue';

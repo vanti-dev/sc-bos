@@ -20,7 +20,7 @@ import ContentCard from '@/components/ContentCard.vue';
 import OccupancyGraph from '@/routes/ops/components/OccupancyGraph.vue';
 import OccupancyPeopleCount from './OccupancyPeopleCount.vue';
 
-import useOccupancyTrait from '@/composables/Traits/useOccupancyTrait';
+import useOccupancyTrait from '@/composables/traits/useOccupancyTrait';
 
 const props = defineProps({
   name: {
