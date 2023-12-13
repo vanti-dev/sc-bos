@@ -8,8 +8,8 @@
         elevation="0"
         class="pr-7">
       <app-menu v-if="isLoggedIn"/>
-      <sc-logo outline="white" style="height: 35px; margin-left: 16px"/>
-      <span class="heading">Smart Core {{ isLoggedIn ? ' | ' + pageTitle : '' }}</span>
+      <brand-logo :theme="config.theme" outline="white" style="height: 35px; margin-left: 16px"/>
+      <span class="heading">{{ appBarHeadingWithBrand }}</span>
 
       <v-divider
           vertical
@@ -73,16 +73,20 @@
 import AccountBtn from '@/components/AccountBtn.vue';
 import AppMenu from '@/components/AppMenu.vue';
 import {usePage} from '@/components/page.js';
-import ScLogo from '@/components/ScLogo.vue';
+import BrandLogo from '@/components/BrandLogo.vue';
 import ErrorView from '@/components/ui-error/ErrorView.vue';
 
 import useAuthSetup from '@/composables/useAuthSetup';
 import {useAccountStore} from '@/stores/account.js';
+import {useAppConfigStore} from '@/stores/app-config';
 import {useControllerStore} from '@/stores/controller';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
 import {computed, onMounted, watch} from 'vue';
 
+
+const appConfigStore = useAppConfigStore();
+const {config} = storeToRefs(appConfigStore);
 const {isLoggedIn} = useAuthSetup();
 
 const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
@@ -98,6 +102,12 @@ const appVersion = computed(() => {
     return GITVERSION.substring(3);
   }
   return GITVERSION;
+});
+
+const appBarHeadingWithBrand = computed(() => {
+  const brandName = config.value.theme?.appBranding.brandName ?? 'Smart Core';
+
+  return brandName + (isLoggedIn.value ? ' | ' + pageTitle.value : '');
 });
 
 onMounted(() => {

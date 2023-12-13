@@ -44,10 +44,19 @@ export const useAppConfigStore = defineStore('appConfig', () => {
       }
     },
     config: {
-      home: '/devices',
-      hub: false, // specifies if we're talking to a hub or an area controller
-      proxy: false, // specifies if we're using querying via an proxy (e.g. EdgeGateway) or not
-      disableAuthentication: false // specifies if we're using authentication or not
+      'home': '/devices',
+      'theme': {
+        'appBranding': {
+          'brandName': 'Smart Core', // The name of the brand
+          'brandLogo': {
+            'altText': 'Smart Core logo - representing nodes and connections', // Alt text for the logo
+            'src': '' // Empty string will use the default logo
+          }
+        }
+      },
+      'hub': false, // Specifies if we're talking to a hub or an area controller
+      'proxy': false, // Specifies if we're using querying via a proxy (e.g. EdgeGateway) or not
+      'disableAuthentication': false // Specifies if we're using authentication or not
     }
   };
 

@@ -1,3 +1,4 @@
+// Command export-traits reads various trait information and writes it to a CSV file.
 package main
 
 import (

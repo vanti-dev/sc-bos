@@ -3,8 +3,10 @@ import * as jspb from 'google-protobuf'
 import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb';
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
 import * as types_time_period_pb from '@smart-core-os/sc-api-grpc-web/types/time/period_pb';
+import * as traits_air_temperature_pb from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb';
 import * as traits_electric_pb from '@smart-core-os/sc-api-grpc-web/traits/electric_pb';
 import * as traits_occupancy_sensor_pb from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
+import * as traits_air_quality_sensor_pb from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
 import * as meter_pb from './meter_pb';
 
 
@@ -159,6 +161,98 @@ export class ListHistoryRecordsResponse extends jspb.Message {
 export namespace ListHistoryRecordsResponse {
   export type AsObject = {
     recordsList: Array<HistoryRecord.AsObject>,
+    nextPageToken: string,
+    totalSize: number,
+  }
+}
+
+export class AirTemperatureRecord extends jspb.Message {
+  getAirTemperature(): traits_air_temperature_pb.AirTemperature | undefined;
+  setAirTemperature(value?: traits_air_temperature_pb.AirTemperature): AirTemperatureRecord;
+  hasAirTemperature(): boolean;
+  clearAirTemperature(): AirTemperatureRecord;
+
+  getRecordTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setRecordTime(value?: google_protobuf_timestamp_pb.Timestamp): AirTemperatureRecord;
+  hasRecordTime(): boolean;
+  clearRecordTime(): AirTemperatureRecord;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AirTemperatureRecord.AsObject;
+  static toObject(includeInstance: boolean, msg: AirTemperatureRecord): AirTemperatureRecord.AsObject;
+  static serializeBinaryToWriter(message: AirTemperatureRecord, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AirTemperatureRecord;
+  static deserializeBinaryFromReader(message: AirTemperatureRecord, reader: jspb.BinaryReader): AirTemperatureRecord;
+}
+
+export namespace AirTemperatureRecord {
+  export type AsObject = {
+    airTemperature?: traits_air_temperature_pb.AirTemperature.AsObject,
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+  }
+}
+
+export class ListAirTemperatureHistoryRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): ListAirTemperatureHistoryRequest;
+
+  getPeriod(): types_time_period_pb.Period | undefined;
+  setPeriod(value?: types_time_period_pb.Period): ListAirTemperatureHistoryRequest;
+  hasPeriod(): boolean;
+  clearPeriod(): ListAirTemperatureHistoryRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): ListAirTemperatureHistoryRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): ListAirTemperatureHistoryRequest;
+
+  getPageSize(): number;
+  setPageSize(value: number): ListAirTemperatureHistoryRequest;
+
+  getPageToken(): string;
+  setPageToken(value: string): ListAirTemperatureHistoryRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListAirTemperatureHistoryRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListAirTemperatureHistoryRequest): ListAirTemperatureHistoryRequest.AsObject;
+  static serializeBinaryToWriter(message: ListAirTemperatureHistoryRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListAirTemperatureHistoryRequest;
+  static deserializeBinaryFromReader(message: ListAirTemperatureHistoryRequest, reader: jspb.BinaryReader): ListAirTemperatureHistoryRequest;
+}
+
+export namespace ListAirTemperatureHistoryRequest {
+  export type AsObject = {
+    name: string,
+    period?: types_time_period_pb.Period.AsObject,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    pageSize: number,
+    pageToken: string,
+  }
+}
+
+export class ListAirTemperatureHistoryResponse extends jspb.Message {
+  getAirTemperatureRecordsList(): Array<AirTemperatureRecord>;
+  setAirTemperatureRecordsList(value: Array<AirTemperatureRecord>): ListAirTemperatureHistoryResponse;
+  clearAirTemperatureRecordsList(): ListAirTemperatureHistoryResponse;
+  addAirTemperatureRecords(value?: AirTemperatureRecord, index?: number): AirTemperatureRecord;
+
+  getNextPageToken(): string;
+  setNextPageToken(value: string): ListAirTemperatureHistoryResponse;
+
+  getTotalSize(): number;
+  setTotalSize(value: number): ListAirTemperatureHistoryResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListAirTemperatureHistoryResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListAirTemperatureHistoryResponse): ListAirTemperatureHistoryResponse.AsObject;
+  static serializeBinaryToWriter(message: ListAirTemperatureHistoryResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListAirTemperatureHistoryResponse;
+  static deserializeBinaryFromReader(message: ListAirTemperatureHistoryResponse, reader: jspb.BinaryReader): ListAirTemperatureHistoryResponse;
+}
+
+export namespace ListAirTemperatureHistoryResponse {
+  export type AsObject = {
+    airTemperatureRecordsList: Array<AirTemperatureRecord.AsObject>,
     nextPageToken: string,
     totalSize: number,
   }
@@ -435,6 +529,98 @@ export class ListOccupancyHistoryResponse extends jspb.Message {
 export namespace ListOccupancyHistoryResponse {
   export type AsObject = {
     occupancyRecordsList: Array<OccupancyRecord.AsObject>,
+    nextPageToken: string,
+    totalSize: number,
+  }
+}
+
+export class AirQualityRecord extends jspb.Message {
+  getAirQuality(): traits_air_quality_sensor_pb.AirQuality | undefined;
+  setAirQuality(value?: traits_air_quality_sensor_pb.AirQuality): AirQualityRecord;
+  hasAirQuality(): boolean;
+  clearAirQuality(): AirQualityRecord;
+
+  getRecordTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setRecordTime(value?: google_protobuf_timestamp_pb.Timestamp): AirQualityRecord;
+  hasRecordTime(): boolean;
+  clearRecordTime(): AirQualityRecord;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AirQualityRecord.AsObject;
+  static toObject(includeInstance: boolean, msg: AirQualityRecord): AirQualityRecord.AsObject;
+  static serializeBinaryToWriter(message: AirQualityRecord, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AirQualityRecord;
+  static deserializeBinaryFromReader(message: AirQualityRecord, reader: jspb.BinaryReader): AirQualityRecord;
+}
+
+export namespace AirQualityRecord {
+  export type AsObject = {
+    airQuality?: traits_air_quality_sensor_pb.AirQuality.AsObject,
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+  }
+}
+
+export class ListAirQualityHistoryRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): ListAirQualityHistoryRequest;
+
+  getPeriod(): types_time_period_pb.Period | undefined;
+  setPeriod(value?: types_time_period_pb.Period): ListAirQualityHistoryRequest;
+  hasPeriod(): boolean;
+  clearPeriod(): ListAirQualityHistoryRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): ListAirQualityHistoryRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): ListAirQualityHistoryRequest;
+
+  getPageSize(): number;
+  setPageSize(value: number): ListAirQualityHistoryRequest;
+
+  getPageToken(): string;
+  setPageToken(value: string): ListAirQualityHistoryRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListAirQualityHistoryRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListAirQualityHistoryRequest): ListAirQualityHistoryRequest.AsObject;
+  static serializeBinaryToWriter(message: ListAirQualityHistoryRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListAirQualityHistoryRequest;
+  static deserializeBinaryFromReader(message: ListAirQualityHistoryRequest, reader: jspb.BinaryReader): ListAirQualityHistoryRequest;
+}
+
+export namespace ListAirQualityHistoryRequest {
+  export type AsObject = {
+    name: string,
+    period?: types_time_period_pb.Period.AsObject,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    pageSize: number,
+    pageToken: string,
+  }
+}
+
+export class ListAirQualityHistoryResponse extends jspb.Message {
+  getAirQualityRecordsList(): Array<AirQualityRecord>;
+  setAirQualityRecordsList(value: Array<AirQualityRecord>): ListAirQualityHistoryResponse;
+  clearAirQualityRecordsList(): ListAirQualityHistoryResponse;
+  addAirQualityRecords(value?: AirQualityRecord, index?: number): AirQualityRecord;
+
+  getNextPageToken(): string;
+  setNextPageToken(value: string): ListAirQualityHistoryResponse;
+
+  getTotalSize(): number;
+  setTotalSize(value: number): ListAirQualityHistoryResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListAirQualityHistoryResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListAirQualityHistoryResponse): ListAirQualityHistoryResponse.AsObject;
+  static serializeBinaryToWriter(message: ListAirQualityHistoryResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListAirQualityHistoryResponse;
+  static deserializeBinaryFromReader(message: ListAirQualityHistoryResponse, reader: jspb.BinaryReader): ListAirQualityHistoryResponse;
+}
+
+export namespace ListAirQualityHistoryResponse {
+  export type AsObject = {
+    airQualityRecordsList: Array<AirQualityRecord.AsObject>,
     nextPageToken: string,
     totalSize: number,
   }

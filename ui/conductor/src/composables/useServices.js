@@ -80,7 +80,7 @@ export default function(props) {
 
         serviceCollection.value =
           serviceStore.getService(
-              newName, await newNode.value?.commsAddress, await newNode.value?.commsName
+              newName, await newNode?.commsAddress, await newNode?.commsName
           ).servicesCollection;
 
         // reinitialize in case this service collection has been previously reset;

@@ -82,6 +82,26 @@ const airQualityData = computed(() => {
               data['Infection Risk'] = Math.round(value) + '%';
             }
             break;
+          case 'particulateMatter1':
+            if (value > 0) {
+              data['PM1'] = value.toFixed(1) + ' µg/m³';
+            }
+            break;
+          case 'particulateMatter25':
+            if (value > 0) {
+              data['PM2.5'] = value.toFixed(1) + ' µg/m³';
+            }
+            break;
+          case 'particulateMatter10':
+            if (value > 0) {
+              data['PM10'] = value.toFixed(1) + ' µg/m³';
+            }
+            break;
+          case 'airChangePerHour':
+            if (value > 0) {
+              data['Air Exchange Rate'] = value.toFixed(1) + ' /h';
+            }
+            break;
           case 'comfort':
             switch (value) {
               case AirQuality.Comfort.COMFORTABLE:

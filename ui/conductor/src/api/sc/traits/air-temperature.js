@@ -1,13 +1,16 @@
+import {fieldMaskFromObject, setProperties} from '@/api/convpb';
 import {clientOptions} from '@/api/grpcweb.js';
+import {trackAction} from '@/api/resource';
 import {pullResource, setValue} from '@/api/resource.js';
+import {periodFromObject} from '@/api/sc/types/period';
+import {AirTemperatureHistoryPromiseClient} from '@sc-bos/ui-gen/proto/history_grpc_web_pb';
+import {ListAirTemperatureHistoryRequest} from '@sc-bos/ui-gen/proto/history_pb';
 import {AirTemperatureApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_grpc_web_pb';
 import {
   AirTemperature,
   PullAirTemperatureRequest,
   UpdateAirTemperatureRequest
 } from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb';
-import {trackAction} from '@/api/resource';
-import {fieldMaskFromObject, setProperties} from '@/api/convpb';
 import {Temperature} from '@smart-core-os/sc-api-grpc-web/types/unit_pb';
 
 /**
@@ -42,11 +45,33 @@ export function updateAirTemperature(request, tracker) {
 }
 
 /**
+ *
+ * @param {ListAirTemperatureHistoryRequest.AsObject} request
+ * @param {ActionTracker<ListAirTemperatureHistoryResponse.AsObject>} [tracker]
+ * @return {Promise<ListAirTemperatureHistoryResponse.AsObject>}
+ */
+export function listAirTemperatureHistory(request, tracker) {
+  return trackAction('AirTemperatureHistory.listAirTemperatureHistory', tracker, endpoint => {
+    const api = historyClient(endpoint);
+    return api.listAirTemperatureHistory(listAirTemperatureHistoryRequestFromObject(request));
+  });
+}
+
+/**
  * @param {string} endpoint
  * @return {AirTemperatureApiPromiseClient}
  */
 function apiClient(endpoint) {
   return new AirTemperatureApiPromiseClient(endpoint, null, clientOptions());
+}
+
+/**
+ *
+ * @param {string} endpoint
+ * @return {AirTemperatureHistoryPromiseClient}
+ */
+function historyClient(endpoint) {
+  return new AirTemperatureHistoryPromiseClient(endpoint, null, clientOptions());
 }
 
 /**
@@ -108,18 +133,30 @@ function temperatureFromObject(obj) {
  */
 export function airTemperatureModeToString(mode) {
   switch (mode) {
-    case AirTemperature.Mode.MODE_UNSPECIFIED: return 'Unknown';
-    case AirTemperature.Mode.ON: return 'On';
-    case AirTemperature.Mode.OFF: return 'Off';
-    case AirTemperature.Mode.HEAT: return 'Heat';
-    case AirTemperature.Mode.COOL: return 'Cool';
-    case AirTemperature.Mode.HEAT_COOL: return 'Heat/Cool';
-    case AirTemperature.Mode.AUTO: return 'Auto';
-    case AirTemperature.Mode.FAN_ONLY: return 'Fan Only';
-    case AirTemperature.Mode.ECO: return 'Eco';
-    case AirTemperature.Mode.PURIFIER: return 'Purifier';
-    case AirTemperature.Mode.DRY: return 'Dry';
-    case AirTemperature.Mode.LOCKED: return 'Locked';
+    case AirTemperature.Mode.MODE_UNSPECIFIED:
+      return 'Unknown';
+    case AirTemperature.Mode.ON:
+      return 'On';
+    case AirTemperature.Mode.OFF:
+      return 'Off';
+    case AirTemperature.Mode.HEAT:
+      return 'Heat';
+    case AirTemperature.Mode.COOL:
+      return 'Cool';
+    case AirTemperature.Mode.HEAT_COOL:
+      return 'Heat/Cool';
+    case AirTemperature.Mode.AUTO:
+      return 'Auto';
+    case AirTemperature.Mode.FAN_ONLY:
+      return 'Fan Only';
+    case AirTemperature.Mode.ECO:
+      return 'Eco';
+    case AirTemperature.Mode.PURIFIER:
+      return 'Purifier';
+    case AirTemperature.Mode.DRY:
+      return 'Dry';
+    case AirTemperature.Mode.LOCKED:
+      return 'Locked';
   }
 }
 
@@ -133,4 +170,17 @@ export function temperatureToString(value) {
     return value.valueCelsius.toFixed(1) + '°C';
   }
   return '-';
+}
+
+/**
+ * @param {ListAirTemperatureHistoryRequest.AsObject} obj
+ * @return {ListAirTemperatureHistoryRequest|undefined}
+ */
+function listAirTemperatureHistoryRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new ListAirTemperatureHistoryRequest();
+  setProperties(dst, obj, 'name', 'pageToken', 'pageSize');
+  dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  dst.setPeriod(periodFromObject(obj.period));
+  return dst;
 }

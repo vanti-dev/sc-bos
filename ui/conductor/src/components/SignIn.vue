@@ -2,11 +2,11 @@
   <v-card class="pa-4">
     <div v-if="config.disableAuthentication" class="d-flex justify-end">
       <v-btn @click="store.toggleLoginDialog()" text dense>
-        <v-icon> mdi-close </v-icon>
+        <v-icon> mdi-close</v-icon>
       </v-btn>
     </div>
     <v-card-title class="justify-center text-h1 font-weight-semibold">
-      <sc-logo outline="white" style="height: 65px;"/>
+      <brand-logo outline="white" style="height: 65px;"/>
       Smart Core
     </v-card-title>
 
@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import ScLogo from '@/components/ScLogo.vue';
+import BrandLogo from '@/components/BrandLogo.vue';
 import {computed} from 'vue';
 import {useAccountStore} from '@/stores/account.js';
 import {useAppConfigStore} from '@/stores/app-config';

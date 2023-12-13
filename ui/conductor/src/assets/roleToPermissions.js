@@ -30,6 +30,7 @@ export const roleToPermissions = {
       '/ops',
       '/ops/overview',
       '/ops/emergency-lighting',
+      '/ops/air-quality',
       '/ops/notifications',
       '/ops/security',
       '/site',
@@ -43,10 +44,8 @@ export const roleToPermissions = {
       '/system/components',
       '/signage'
     ],
-    limitedAccess: [
-    ],
-    blockedAccess: [
-    ]
+    limitedAccess: [],
+    blockedAccess: []
   },
   commissioner: {
     fullAccess: [
@@ -55,6 +54,7 @@ export const roleToPermissions = {
       '/ops',
       '/ops/overview',
       '/ops/emergency-lighting',
+      '/ops/air-quality',
       '/ops/notifications',
       '/ops/security',
       '/site',
@@ -68,8 +68,7 @@ export const roleToPermissions = {
       '/system/components',
       '/signage'
     ],
-    limitedAccess: [
-    ],
+    limitedAccess: [],
     blockedAccess: [
       '/auth',
       '/auth/users',
@@ -85,6 +84,7 @@ export const roleToPermissions = {
       '/ops',
       '/ops/overview',
       '/ops/emergency-lighting',
+      '/ops/air-quality',
       '/ops/notifications',
       '/ops/security',
       '/signage'
@@ -108,8 +108,7 @@ export const roleToPermissions = {
     fullAccess: [
       '/signage'
     ],
-    limitedAccess: [
-    ],
+    limitedAccess: [],
     blockedAccess: [
       '/auth',
       '/auth/users',
@@ -119,6 +118,7 @@ export const roleToPermissions = {
       '/ops',
       '/ops/overview',
       '/ops/emergency-lighting',
+      '/ops/air-quality',
       '/ops/notifications',
       '/ops/security',
       '/site',
@@ -142,6 +142,7 @@ export const roleToPermissions = {
       '/ops',
       '/ops/overview',
       '/ops/emergency-lighting',
+      '/ops/air-quality',
       '/ops/notifications',
       '/ops/security',
       '/site',
@@ -155,10 +156,8 @@ export const roleToPermissions = {
       '/system/components',
       '/signage'
     ],
-    limitedAccess: [
-    ],
-    blockedAccess: [
-    ]
+    limitedAccess: [],
+    blockedAccess: []
   },
   viewer: {
     fullAccess: [
@@ -173,6 +172,7 @@ export const roleToPermissions = {
       '/ops',
       '/ops/overview',
       '/ops/emergency-lighting',
+      '/ops/air-quality',
       '/ops/notifications',
       '/ops/security',
       '/site',
@@ -185,7 +185,6 @@ export const roleToPermissions = {
       '/system/features',
       '/system/components'
     ],
-    blockedAccess: [
-    ]
+    blockedAccess: []
   }
 };

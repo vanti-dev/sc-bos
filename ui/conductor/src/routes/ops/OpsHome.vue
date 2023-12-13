@@ -7,7 +7,7 @@
       <v-row class="d-flex flex-row">
         <v-col cols="12">
           <energy-card :generated="supplyZone" :metered="energyZone"/>
-          <occupancy-card :name="occupancyZone"/>
+          <occupancy-card :name="occupancyZone" v-if="!appConfig.config?.ops?.hideOccupancyGraph"/>
         </v-col>
       </v-row>
     </v-col>

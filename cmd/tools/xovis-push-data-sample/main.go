@@ -1,3 +1,4 @@
+// Command xovis-push-data-sample is an example of how to receive Xovis push data.
 package main
 
 import (

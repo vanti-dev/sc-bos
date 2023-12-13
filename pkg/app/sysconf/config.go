@@ -1,3 +1,4 @@
+// Package sysconf provides system level configuration.
 package sysconf
 
 import (

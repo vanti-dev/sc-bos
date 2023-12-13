@@ -1,3 +1,4 @@
+// Package http provides http-specific configuration types and functionality.
 package http
 
 type StaticHostingConfig struct {

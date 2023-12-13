@@ -47,7 +47,6 @@ const props = defineProps({
     default: 'none'
   }
 });
-
 const noFill = computed(() => props.fill === 'none');
 const colorFill = computed(() => Boolean(!noFill.value && props.fill));
 </script>

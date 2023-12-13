@@ -1,3 +1,4 @@
+// Command bacnet-whois executes a BACnet WhoIs broadcast request and captures the replies in a CSV file.
 package main
 
 import (

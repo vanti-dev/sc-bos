@@ -15,6 +15,7 @@ export default {
     {path: 'overview', component: () => import('./OpsHome.vue')},
     {path: 'emergency-lighting', component: () => import('./emergency-lighting/EmergencyLighting.vue')},
     {path: 'security', component: () => import('./security/SecurityHome.vue')},
+    {path: 'air-quality', component: () => import('./air-quality/AirQuality.vue')},
     ...route(notifications)
   ],
   meta: {
@@ -27,6 +28,8 @@ export default {
         next('/ops/overview');
       } else if (appConfig.pathEnabled('/ops/notifications')) {
         next('/ops/notifications');
+      } else if (appConfig.pathEnabled('/ops/air-quality')) {
+        next('/ops/air-quality');
       } else if (appConfig.pathEnabled('/ops/emergency-lighting')) {
         next('/ops/emergency-lighting');
       } else if (appConfig.pathEnabled('/ops/security')) {

@@ -24,6 +24,20 @@ export class HistoryAdminApiClient {
 
 }
 
+export class AirTemperatureHistoryClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  listAirTemperatureHistory(
+    request: history_pb.ListAirTemperatureHistoryRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: history_pb.ListAirTemperatureHistoryResponse) => void
+  ): grpcWeb.ClientReadableStream<history_pb.ListAirTemperatureHistoryResponse>;
+
+}
+
 export class MeterHistoryClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
@@ -66,6 +80,20 @@ export class OccupancySensorHistoryClient {
 
 }
 
+export class AirQualitySensorHistoryClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  listAirQualityHistory(
+    request: history_pb.ListAirQualityHistoryRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: history_pb.ListAirQualityHistoryResponse) => void
+  ): grpcWeb.ClientReadableStream<history_pb.ListAirQualityHistoryResponse>;
+
+}
+
 export class HistoryAdminApiPromiseClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
@@ -80,6 +108,18 @@ export class HistoryAdminApiPromiseClient {
     request: history_pb.ListHistoryRecordsRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<history_pb.ListHistoryRecordsResponse>;
+
+}
+
+export class AirTemperatureHistoryPromiseClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  listAirTemperatureHistory(
+    request: history_pb.ListAirTemperatureHistoryRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<history_pb.ListAirTemperatureHistoryResponse>;
 
 }
 
@@ -116,6 +156,18 @@ export class OccupancySensorHistoryPromiseClient {
     request: history_pb.ListOccupancyHistoryRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<history_pb.ListOccupancyHistoryResponse>;
+
+}
+
+export class AirQualitySensorHistoryPromiseClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  listAirQualityHistory(
+    request: history_pb.ListAirQualityHistoryRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<history_pb.ListAirQualityHistoryResponse>;
 
 }
 

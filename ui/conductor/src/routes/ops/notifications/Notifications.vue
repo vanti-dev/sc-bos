@@ -70,7 +70,7 @@ import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
-import {computed, reactive, ref, watch} from 'vue';
+import {computed, reactive, ref, onUnmounted, watch} from 'vue';
 
 const notifications = useNotifications();
 const alertMetadata = useAlertMetadata();
@@ -285,6 +285,10 @@ async function showNotification(item) {
   pageStore.sidebarTitle = item.source;
   pageStore.sidebarData = {name, item};
 }
+
+onUnmounted(() => {
+  pageStore.closeSidebar();
+});
 </script>
 
 <style lang="scss" scoped>

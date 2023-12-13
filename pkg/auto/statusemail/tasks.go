@@ -8,11 +8,11 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/vanti-dev/sc-bos/internal/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/auto/statusemail/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/util/chans"
+	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 )
 
 func tasksForSource(source config.Source, statusClient gen.StatusApiClient, c chan<- change, logger *zap.Logger) []task.Task {

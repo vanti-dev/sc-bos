@@ -1131,12 +1131,12 @@
   resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/panzoom-package/-/panzoom-package-1.0.1-vanti.0.tgz#5e7c8dd241b0154349a16b516b7951cec7cad8ed"
   integrity sha512-3ARMG2OYyrfhrh4KR+lwpYcimPJUPjzQ2haXl6U3sglVJW4fWbruy7TE+NgWrQ0g1P3TZXPKcp2lWZdEeTKzwQ==
 
-"@sc-bos/ui-gen@1.0.0-beta.13":
-  version "1.0.0-beta.13"
-  resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/ui-gen/-/ui-gen-1.0.0-beta.13.tgz#27bc02cf46da7e1ec3ebbfbe62f8d971bde3c9c8"
-  integrity sha512-Ngg8VPeKPrvupCMSgSwZEB1iWtFtiYW8ILNjkWEEuNyAXz1sYfYg2+ZYsU7569xre3/G1j33M/3spyJK4TvWFg==
+"@sc-bos/ui-gen@1.0.0-beta.17":
+  version "1.0.0-beta.17"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/@sc-bos/ui-gen/-/ui-gen-1.0.0-beta.17.tgz#f6f89a0910d40267a5c3809114c23ae7d23349d7"
+  integrity sha512-/Dm6Bl6lHF/0kyDPAWoUZNJHdXHKA+k+CylEnIzMiyKzOSpx7sxDCxjma6JRiueaaQRAVZzjN6PT/8ULEA+WjQ==
   dependencies:
-    "@smart-core-os/sc-api-grpc-web" "^1.0.0-beta.42"
+    "@smart-core-os/sc-api-grpc-web" "^1.0.0-beta.44"
     google-protobuf "^3.21.2"
     grpc-web "^1.4.2"
 
@@ -1157,18 +1157,10 @@
   resolved "https://nexus.vanti.co.uk/repository/npm-public/@sideway/pinpoint/-/pinpoint-2.0.0.tgz#cff8ffadc372ad29fd3f78277aeb29e632cc70df"
   integrity sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==
 
-"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.42":
-  version "1.0.0-beta.42"
-  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.42.tgz#77b3bf36bdd95980f51eb84a6967c4b5f8ef7ed4"
-  integrity sha512-JxgKw7XjAbSDMcasSAgRrZLoGcmVLNialO9gLoSFeI74DLXp+gSKT3rwiGesDMLe3sZ08jyPFyssJWW8xr5HNw==
-  dependencies:
-    google-protobuf "^3.21.2"
-    grpc-web "^1.4.2"
-
-"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.43":
-  version "1.0.0-beta.43"
-  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.43.tgz#e966ac301c27f7c48909b4634afa0721f82cc182"
-  integrity sha512-SFUaDSicmcYtWuKxL9ezBoYj8wWrDT6kXQd2JJir2lzQDkuNHnzEnGlg8+3Yc+pK5zbqMFIEGRFQbs/SOK41NA==
+"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.44":
+  version "1.0.0-beta.44"
+  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.44.tgz#686ff9dd8df51beb1b657c2f06e64b17f5185e6c"
+  integrity sha512-CH7JipY3OZxhvU4EaRhFkUEIYjMUdUjv1a85BbGPHCsjc0o5y/+PJYB9VH44OtyvuazsFYT/SjQi6+S/lX2ncQ==
   dependencies:
     google-protobuf "^3.21.2"
     grpc-web "^1.4.2"
@@ -1598,6 +1590,15 @@ argparse@^2.0.1:
   resolved "https://nexus.vanti.co.uk/repository/npm-public/argparse/-/argparse-2.0.1.tgz#246f50f3ca78a3240f6c997e8a9bd1eac49e4b38"
   integrity sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==
 
+asn1js@^3.0.5:
+  version "3.0.5"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/asn1js/-/asn1js-3.0.5.tgz#5ea36820443dbefb51cc7f88a2ebb5b462114f38"
+  integrity sha512-FVnvrKJwpt9LP2lAMl8qZswRNm3T4q9CON+bxldk2iwk3FFpuwhx2FfinyitizWHsVYyaY+y5JzDR0rCMV5yTQ==
+  dependencies:
+    pvtsutils "^1.3.2"
+    pvutils "^1.1.3"
+    tslib "^2.4.0"
+
 babel-loader@^8.2.2:
   version "8.3.0"
   resolved "https://nexus.vanti.co.uk/repository/npm-public/babel-loader/-/babel-loader-8.3.0.tgz#124936e841ba4fe8176786d6ff28add1f134d6a8"
@@ -1717,6 +1718,11 @@ buffer@^5.5.0:
   dependencies:
     base64-js "^1.3.1"
     ieee754 "^1.1.13"
+
+bytestreamjs@^2.0.0:
+  version "2.0.1"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/bytestreamjs/-/bytestreamjs-2.0.1.tgz#a32947c7ce389a6fa11a09a9a563d0a45889535e"
+  integrity sha512-U1Z/ob71V/bXfVABvNr/Kumf5VyeQRBEm6Txb0PQ6S7V5GpBM3w4Cbqz/xPDicR5tN0uvDifng8C+5qECeGwyQ==
 
 call-bind@^1.0.2:
   version "1.0.2"
@@ -3201,6 +3207,17 @@ pkg-dir@^4.1.0:
   dependencies:
     find-up "^4.0.0"
 
+pkijs@^3.0.15:
+  version "3.0.15"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/pkijs/-/pkijs-3.0.15.tgz#d6a3f6e11ae8c8aa1ebd1daf4501e9ac49f61916"
+  integrity sha512-n7nAl9JpqdeQsjy+rPmswkmZ3oO/Fu5uN9me45PPQVdWjd0X7HKfL8+HYwfxihqoDSSPUIajkOcqFxEUxMqhwQ==
+  dependencies:
+    asn1js "^3.0.5"
+    bytestreamjs "^2.0.0"
+    pvtsutils "^1.3.2"
+    pvutils "^1.1.3"
+    tslib "^2.4.0"
+
 postcss-selector-parser@^6.0.9:
   version "6.0.11"
   resolved "https://nexus.vanti.co.uk/repository/npm-public/postcss-selector-parser/-/postcss-selector-parser-6.0.11.tgz#2e41dc39b7ad74046e1615185185cd0b17d0c8dc"
@@ -3235,6 +3252,18 @@ punycode@^2.1.0:
   version "2.1.1"
   resolved "https://nexus.vanti.co.uk/repository/npm-public/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
+
+pvtsutils@^1.3.2:
+  version "1.3.5"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/pvtsutils/-/pvtsutils-1.3.5.tgz#b8705b437b7b134cd7fd858f025a23456f1ce910"
+  integrity sha512-ARvb14YB9Nm2Xi6nBq1ZX6dAM0FsJnuk+31aUp4TrcZEdKUlSqOqsxJHUPJDNE3qiIp+iUPEIeR6Je/tgV7zsA==
+  dependencies:
+    tslib "^2.6.1"
+
+pvutils@^1.1.3:
+  version "1.1.3"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/pvutils/-/pvutils-1.1.3.tgz#f35fc1d27e7cd3dfbd39c0826d173e806a03f5a3"
+  integrity sha512-pMpnA0qRdFp32b1sJl1wOJNxZLQ2cbQx+k6tjNtZ8CpvVhNqEPRgivZ2WOUev2YMajecdH7ctUPDvEe87nariQ==
 
 queue-microtask@^1.2.2:
   version "1.2.3"
@@ -3637,6 +3666,11 @@ tr46@~0.0.3:
   version "0.0.3"
   resolved "https://nexus.vanti.co.uk/repository/npm-public/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
+
+tslib@^2.4.0, tslib@^2.6.1:
+  version "2.6.2"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/tslib/-/tslib-2.6.2.tgz#703ac29425e7b37cd6fd456e92404d46d1f3e4ae"
+  integrity sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==
 
 type-check@^0.4.0, type-check@~0.4.0:
   version "0.4.0"

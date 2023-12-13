@@ -55,6 +55,10 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 			r := airqualitysensor.NewInfoRouter()
 			s.Support(node.Routing(r), node.Clients(airqualitysensor.WrapInfo(r)))
 		}
+		{
+			r := gen.NewAirQualitySensorHistoryRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapAirQualitySensorHistory(r)))
+		}
 	},
 	trait.AirTemperature: func(s node.Supporter) {
 		{
@@ -64,6 +68,10 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 		{
 			r := airtemperature.NewInfoRouter()
 			s.Support(node.Routing(r), node.Clients(airtemperature.WrapInfo(r)))
+		}
+		{
+			r := gen.NewAirTemperatureHistoryRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapAirTemperatureHistory(r)))
 		}
 	},
 	trait.Booking: func(s node.Supporter) {

@@ -5,7 +5,7 @@ import {ServicesApiPromiseClient} from '@sc-bos/ui-gen/proto/services_grpc_web_p
 import {
   ConfigureServiceRequest,
   ListServicesRequest,
-  PullServiceRequest,
+  PullServiceRequest, PullServicesRequest,
   StartServiceRequest,
   StopServiceRequest
 } from '@sc-bos/ui-gen/proto/services_pb';
@@ -42,7 +42,7 @@ export function listServices(request, tracker) {
 
 /**
  *
- * @param {PullServiceRequest.AsObject} request
+ * @param {Partial<PullServicesRequest.AsObject>} request
  * @param {ResourceCollection<Service.AsObject, Service>} resource
  */
 export function pullServices(request, resource) {
@@ -130,12 +130,12 @@ function createListServicesRequestFromObject(obj) {
 }
 
 /**
- * @param {PullServiceRequest.AsObject} obj
- * @return {PullServiceRequest}
+ * @param {Partial<PullServicesRequest.AsObject>} obj
+ * @return {PullServicesRequest}
  */
 function pullServicesRequestFromObject(obj) {
   if (!obj) return undefined;
-  const req = new PullServiceRequest();
+  const req = new PullServicesRequest();
   setProperties(req, obj, 'name', 'updatesOnly');
   req.setReadMask(fieldMaskFromObject(obj.readMask));
   return req;

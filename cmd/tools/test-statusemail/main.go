@@ -1,3 +1,4 @@
+// Command test-statusemail tests the [statusemail] package, sending to a real email address.
 package main
 
 import (

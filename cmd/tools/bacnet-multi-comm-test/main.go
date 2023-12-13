@@ -1,3 +1,4 @@
+// Command bacnet-multi-comm-test checks the availability [bacnet] devices and objects read from [appconf] files.
 package main
 
 import (

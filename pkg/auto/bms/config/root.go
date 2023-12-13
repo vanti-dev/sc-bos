@@ -51,8 +51,13 @@ type Root struct {
 	// How long after ModeSource changes away from "auto" do we change it back to "auto".
 	// Defaults to 4h.
 	ResetModeSourceDelay *jsontypes.Duration `json:"resetModeSourceDelay,omitempty"`
-	AutoModeSetPoint     *float32            `json:"autoModeSetPoint,omitempty"` // Defaults to 21.0
+	AutoModeSetPoint     *float32            `json:"autoModeSetPoint,omitempty"` // Defaults to 21.0 unless AutoModeOATemp is specified.
 	AutoThermostats      []string            `json:"autoThermostats,omitempty"`  // Thermostats that we control in auto mode.
+	// AutoModeOATemp is the device that we read the outdoor air temperature from.
+	// If specified, AutoModeOATemp is read and used as a basis for auto mode set point values.
+	// Typically the indoor set point is proportional to the weighted average of recent outdoor temperatures.
+	// If this device supports AirTemperatureHistory then it will be used to seed the weighted average.
+	AutoModeOATemp string `json:"oaTemp,omitempty"`
 
 	OccupancySensors     []string            `json:"occupancySensors,omitempty"`     // Sensors whose occupancy is linked with OccupancyModeTargets On mode.
 	OccupancyModeTargets []SwitchMode        `json:"occupancyModeTargets,omitempty"` // Defaults: on=occupied, off=unoccupied
@@ -63,8 +68,8 @@ type Root struct {
 }
 
 type Range struct {
-	Start Schedule `json:"start,omitempty"`
-	End   Schedule `json:"end,omitempty"`
+	Start jsontypes.Schedule `json:"start,omitempty"`
+	End   jsontypes.Schedule `json:"end,omitempty"`
 }
 
 var (

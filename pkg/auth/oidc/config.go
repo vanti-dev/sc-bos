@@ -1,3 +1,4 @@
+// Package oidc provides access to remote OpenID Connect configuration.
 package oidc
 
 import (

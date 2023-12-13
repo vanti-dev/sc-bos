@@ -2,13 +2,17 @@ package xovis
 
 import (
 	"context"
+	"sync"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
+	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 type enterLeaveServer struct {
@@ -17,6 +21,10 @@ type enterLeaveServer struct {
 	logicID     int
 	multiSensor bool
 	bus         *minibus.Bus[PushData]
+
+	pollInit sync.Once
+	poll     *task.Intermittent
+	polls    *minibus.Bus[LiveLogicResponse]
 }
 
 func (e *enterLeaveServer) GetEnterLeaveEvent(ctx context.Context, request *traits.GetEnterLeaveEventRequest) (*traits.EnterLeaveEvent, error) {
@@ -57,21 +65,24 @@ func (e *enterLeaveServer) PullEnterLeaveEvents(request *traits.PullEnterLeaveEv
 			"Counts don't match expected structure; check that this is an InOut logic")
 	}
 
+	var lastSent *traits.EnterLeaveEvent
 	if !request.UpdatesOnly {
 		enterTotal, leaveTotal := int32(forwardCount), int32(backwardCount)
+		elEvent := &traits.EnterLeaveEvent{
+			EnterTotal: &enterTotal,
+			LeaveTotal: &leaveTotal,
+		}
 		err := server.Send(&traits.PullEnterLeaveEventsResponse{Changes: []*traits.PullEnterLeaveEventsResponse_Change{
 			{
-				Name:       request.Name,
-				ChangeTime: timestamppb.Now(),
-				EnterLeaveEvent: &traits.EnterLeaveEvent{
-					EnterTotal: &enterTotal,
-					LeaveTotal: &leaveTotal,
-				},
+				Name:            request.Name,
+				ChangeTime:      timestamppb.Now(),
+				EnterLeaveEvent: elEvent,
 			},
 		}})
 		if err != nil {
 			return err
 		}
+		lastSent = elEvent
 	}
 
 	// note: the accumulator continues to count totals even if the sensor is reset, for as long as the stream is active.
@@ -81,57 +92,136 @@ func (e *enterLeaveServer) PullEnterLeaveEvents(request *traits.PullEnterLeaveEv
 		forwardCountValue:  forwardCount,
 		backwardCountValue: backwardCount,
 	}
+	ctx := server.Context()
+	e.doPollInit()
+	polls := e.polls.Listen(ctx)
+	webhooks := e.bus.Listen(ctx)
 
-	ctx, cancel := context.WithCancel(server.Context())
-	defer cancel()
-	for pushData := range e.bus.Listen(ctx) {
-		if pushData.LogicsData == nil {
-			continue
-		}
-		records, ok := findLogicRecords(pushData.LogicsData, e.logicID)
-		if !ok {
-			continue
-		}
+	// tell the polling logic we're interested
+	_ = e.poll.Attach(ctx) // can't error
 
-		// note: accumulator totals are updated during consumeRecords. We want the values before this happens
-		enterTotal, leaveTotal := int32(accumulator.forwardCountValue), int32(accumulator.backwardCountValue)
-		events, err := accumulator.consumeRecords(records)
-		if err != nil {
-			return err
-		}
-
-		if len(events) == 0 {
-			continue
-		}
-
-		var enterLeaveChanges []*traits.PullEnterLeaveEventsResponse_Change
-		for _, event := range events {
-			switch event.direction {
-			case traits.EnterLeaveEvent_ENTER:
-				enterTotal++
-			case traits.EnterLeaveEvent_LEAVE:
-				leaveTotal++
+	eq := cmp.Equal()
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case data, ok := <-webhooks:
+			if !ok {
+				return nil
 			}
-			enterLeaveChanges = append(enterLeaveChanges, &traits.PullEnterLeaveEventsResponse_Change{
-				Name:       request.Name,
-				ChangeTime: timestamppb.New(event.time),
-				EnterLeaveEvent: &traits.EnterLeaveEvent{
-					Direction:  event.direction,
-					EnterTotal: &enterTotal,
-					LeaveTotal: &leaveTotal,
+			if data.LogicsData == nil {
+				continue
+			}
+			records, ok := findLogicRecords(data.LogicsData, e.logicID)
+			if !ok {
+				continue
+			}
+
+			// note: accumulator totals are updated during consumeRecords. We want the values before this happens
+			enterTotal, leaveTotal := int32(accumulator.forwardCountValue), int32(accumulator.backwardCountValue)
+			events, err := accumulator.consumeRecords(records...)
+			if err != nil {
+				return err
+			}
+
+			if len(events) == 0 {
+				continue
+			}
+
+			var enterLeaveChanges []*traits.PullEnterLeaveEventsResponse_Change
+			for _, event := range events {
+				switch event.direction {
+				case traits.EnterLeaveEvent_ENTER:
+					enterTotal++
+				case traits.EnterLeaveEvent_LEAVE:
+					leaveTotal++
+				}
+				enterLeaveChanges = append(enterLeaveChanges, &traits.PullEnterLeaveEventsResponse_Change{
+					Name:       request.Name,
+					ChangeTime: timestamppb.New(event.time),
+					EnterLeaveEvent: &traits.EnterLeaveEvent{
+						Direction:  event.direction,
+						EnterTotal: &enterTotal,
+						LeaveTotal: &leaveTotal,
+					},
+				})
+			}
+
+			err = server.Send(&traits.PullEnterLeaveEventsResponse{
+				Changes: enterLeaveChanges,
+			})
+			if err != nil {
+				return err
+			}
+			lastSent = enterLeaveChanges[len(enterLeaveChanges)-1].EnterLeaveEvent
+		case data, ok := <-polls:
+			if !ok {
+				return nil
+			}
+			direction := lastSent.GetDirection()
+			enterTotal, leaveTotal := accumulator.forwardCountValue, accumulator.backwardCountValue
+			var reset bool
+			if c, ok := findCountValueByID(data.Logic.Counts, fwID); ok {
+				if c > accumulator.forwardCountValue {
+					direction = traits.EnterLeaveEvent_ENTER
+				}
+				if c < accumulator.forwardCountValue {
+					reset = true
+				}
+				enterTotal = c
+				accumulator.forwardCountValue = c
+			}
+			if c, ok := findCountValueByID(data.Logic.Counts, bwID); ok {
+				if c > accumulator.backwardCountValue {
+					direction = traits.EnterLeaveEvent_LEAVE
+				}
+				if c < accumulator.forwardCountValue {
+					reset = true
+				}
+				leaveTotal = c
+				accumulator.backwardCountValue = c
+			}
+			if reset {
+				// if any count decreased, we make no assumptions about direction
+				direction = traits.EnterLeaveEvent_DIRECTION_UNSPECIFIED
+			}
+			el := &traits.EnterLeaveEvent{
+				Direction:  direction,
+				EnterTotal: ptr(int32(enterTotal)),
+				LeaveTotal: ptr(int32(leaveTotal)),
+			}
+			if eq(lastSent, el) {
+				continue
+			}
+			err = server.Send(&traits.PullEnterLeaveEventsResponse{
+				Changes: []*traits.PullEnterLeaveEventsResponse_Change{
+					{
+						Name:            request.Name,
+						ChangeTime:      timestamppb.New(data.Time),
+						EnterLeaveEvent: el,
+					},
 				},
 			})
-		}
-
-		err = server.Send(&traits.PullEnterLeaveEventsResponse{
-			Changes: enterLeaveChanges,
-		})
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
+			lastSent = el
 		}
 	}
+}
 
-	return nil
+func (e *enterLeaveServer) doPollInit() {
+	e.pollInit.Do(func() {
+		e.polls = &minibus.Bus[LiveLogicResponse]{}
+		e.poll = task.Poll(func(ctx context.Context) {
+			res, err := GetLiveLogic(e.client, e.multiSensor, e.logicID)
+			if err != nil {
+				// todo: log error
+				return
+			}
+			e.polls.Send(ctx, res)
+		}, 30*time.Second)
+	})
 }
 
 func findLogicRecords(data *LogicsPushData, logicID int) (records []LogicRecord, ok bool) {
@@ -143,4 +233,8 @@ func findLogicRecords(data *LogicsPushData, logicID int) (records []LogicRecord,
 		}
 	}
 	return
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }

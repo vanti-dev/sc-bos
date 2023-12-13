@@ -1,3 +1,4 @@
+// Package appconf provides runtime configuration.
 package appconf
 
 import (

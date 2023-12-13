@@ -103,7 +103,7 @@ const airTempData = computed(() => {
           }
           case 'ambientHumidity':
             if (value !== 0) {
-              data['humidity'] = (value * 100).toFixed(1) + '%';
+              data['humidity'] = value.toFixed(1) + '%';
             }
             break;
           case 'dewPoint': {

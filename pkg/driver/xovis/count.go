@@ -20,7 +20,7 @@ type countEvent struct {
 	direction traits.EnterLeaveEvent_Direction
 }
 
-func (c *countAccumulator) consumeRecords(records []LogicRecord) ([]countEvent, error) {
+func (c *countAccumulator) consumeRecords(records ...LogicRecord) ([]countEvent, error) {
 	var events []countEvent
 	for _, record := range records {
 		fwDelta, ok := findCountValueByID(record.Counts, c.forwardCountID)

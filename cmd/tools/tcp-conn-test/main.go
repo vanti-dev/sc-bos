@@ -1,3 +1,4 @@
+// Command tcp-conn-test provides an interactive CLI terminal for testing TCP connections.
 package main
 
 import (

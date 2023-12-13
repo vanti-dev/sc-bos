@@ -1,3 +1,4 @@
+// Command export-alerts reads alerts from [gen.AlertApiClient] and writes them to a CSV file.
 package main
 
 import (

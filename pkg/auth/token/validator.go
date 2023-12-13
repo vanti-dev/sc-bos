@@ -1,3 +1,4 @@
+// Package token provides mechanisms for validating access tokens and extracting claims.
 package token
 
 import (

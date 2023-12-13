@@ -7,9 +7,13 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/timshannon/bolthold"
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/history"
+	"github.com/vanti-dev/sc-bos/pkg/history/boltstore"
 	"github.com/vanti-dev/sc-bos/pkg/history/pgxstore"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
@@ -34,6 +38,8 @@ func NewSystem(services system.Services) *System {
 	s := &System{
 		name:      services.Node.Name(),
 		announcer: services.Node,
+		db:        services.Database,
+		logger:    logger,
 	}
 	s.Service = service.New(
 		service.MonoApply(s.applyConfig),
@@ -54,6 +60,9 @@ type System struct {
 	*service.Service[config.Root]
 	name      string
 	announcer node.Announcer
+	db        *bolthold.Store
+
+	logger *zap.Logger
 }
 
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
@@ -77,10 +86,48 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 			return fmt.Errorf("setup: %w", err)
 		}
 
+		opts := []pgxstore.Option{
+			pgxstore.WithLogger(s.logger),
+		}
+		if ttl := cfg.Storage.TTL; ttl != nil {
+			if ttl.MaxAge.Duration > 0 {
+				opts = append(opts, pgxstore.WithMaxAge(ttl.MaxAge.Duration))
+			}
+			if ttl.MaxCount > 0 {
+				opts = append(opts, pgxstore.WithMaxCount(ttl.MaxCount))
+			}
+		}
 		store = func(source string) history.Store {
-			return pgxstore.NewStoreFromPool(source, pool)
+			return pgxstore.NewStoreFromPool(source, pool, opts...)
+		}
+	case config.StorageTypeBolt:
+		storeCollection := make(map[string]history.Store)
+
+		opts := []boltstore.Option{
+			boltstore.WithLogger(s.logger),
+		}
+		if ttl := cfg.Storage.TTL; ttl != nil {
+			if ttl.MaxAge.Duration > 0 {
+				opts = append(opts, boltstore.WithMaxAge(ttl.MaxAge.Duration))
+			}
+			if ttl.MaxCount > 0 {
+				opts = append(opts, boltstore.WithMaxCount(ttl.MaxCount))
+			}
 		}
 
+		store = func(source string) history.Store {
+			st, ok := storeCollection[source]
+			if !ok {
+				var err error
+				st, err = boltstore.NewFromDb(ctx, s.db, source, opts...)
+				if err != nil {
+					s.logger.Error("failed to create bolt store", zap.Error(err))
+				} else {
+					storeCollection[source] = st
+				}
+			}
+			return st
+		}
 	default:
 		return fmt.Errorf("unsuported storage type %s", cfg.Storage.Type)
 	}

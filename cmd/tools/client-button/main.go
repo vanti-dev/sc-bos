@@ -1,3 +1,4 @@
+// Command client-button provides a CLI tool for interacting with a [gen.ButtonApiClient].
 package main
 
 import (

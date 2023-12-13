@@ -9,6 +9,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 type Root struct {
@@ -49,4 +50,11 @@ type Storage struct {
 	Type string `json:"type,omitempty"`
 	pgxutil.ConnectConfig
 	Name string `json:"name,omitempty"`
+	// TTL is the time-to-live for records. Zero-value (not-specified) means "forever".
+	TTL *TTL `json:"ttl,omitempty"`
+}
+
+type TTL struct {
+	MaxAge   jsontypes.Duration `json:"maxAge,omitempty"`
+	MaxCount int64              `json:"maxCount,omitempty"`
 }

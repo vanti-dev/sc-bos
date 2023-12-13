@@ -13,7 +13,9 @@ export const useHubStore = defineStore('hub', () => {
   const controller = useControllerStore();
   const nodesListCollection = reactive(newResourceCollection());
   const hubNode = ref();
-  let _hubResolve; let _hubReject;
+  const listedHubNodes = ref([]);
+  let _hubResolve;
+  let _hubReject;
   const hubPromise = new Promise((resolve, reject) => {
     _hubResolve = resolve;
     _hubReject = reject;
@@ -55,10 +57,8 @@ export const useHubStore = defineStore('hub', () => {
         }
         set(nodesListCollection.value, hubNode.value.name, hubNode);
 
-        const nodes = await listHubNodes(newActionTracker());
-        for (const node of nodes.nodesList) {
-          set(nodesListCollection.value, node.name, node);
-        }
+
+        await listHubNodesAction();
         console.debug('resolving hubPromise with', hubNode.value);
         _hubResolve(hubNode.value);
       } catch (e) {
@@ -67,6 +67,15 @@ export const useHubStore = defineStore('hub', () => {
       }
     }
   }, {immediate: true});
+
+  const listHubNodesAction = async () => {
+    listedHubNodes.value = [];
+    const nodes = await listHubNodes(newActionTracker());
+    for (const node of nodes.nodesList) {
+      listedHubNodes.value.push(node.name);
+      set(nodesListCollection.value, node.name, node);
+    }
+  };
 
   /**
    * @typedef {Object} Node
@@ -122,9 +131,11 @@ export const useHubStore = defineStore('hub', () => {
   }
 
   return {
+    listedHubNodes,
     nodesList,
     hubNode,
     hubPromise,
-    nodesListCollection
+    nodesListCollection,
+    listHubNodesAction
   };
 });

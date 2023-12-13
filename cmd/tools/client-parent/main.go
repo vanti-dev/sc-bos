@@ -1,3 +1,4 @@
+// Command client-parent provides a CLI tool for interacting with the [traits.ParentApiClient].
 package main
 
 import (
