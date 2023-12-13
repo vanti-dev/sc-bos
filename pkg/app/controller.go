@@ -55,17 +55,13 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	// TODO: pull config from manager publication
 	localConfig := &appconf.Config{}
 	filesLoaded, err := appconf.LoadIncludes("", localConfig, config.AppConfig)
-	if localConfig == nil && err != nil {
+	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			logger.Debug("local config files not found", zap.Strings("paths", config.AppConfig))
-			// continue with default config
-			localConfig = &appconf.Config{}
+			// warn that file(s) couldn't be found, but continue with default config
+			logger.Warn("failed to load some config", zap.Strings("paths", config.AppConfig), zap.Error(err), zap.Strings("filesLoaded", filesLoaded))
 		} else {
 			return nil, err
 		}
-	} else if err != nil {
-		// we loaded some config, but had some errors
-		logger.Warn("failed to load some config", zap.Strings("paths", config.AppConfig), zap.Error(err), zap.Strings("filesLoaded", filesLoaded))
 	} else {
 		// successfully loaded the config
 		logger.Debug("loaded local config", zap.Strings("paths", config.AppConfig), zap.Strings("includes", localConfig.Includes), zap.Strings("filesLoaded", filesLoaded))
