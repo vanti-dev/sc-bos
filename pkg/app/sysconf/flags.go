@@ -3,6 +3,7 @@ package sysconf
 import (
 	"flag"
 	"fmt"
+	"log"
 	"path"
 	"strings"
 )
@@ -15,7 +16,9 @@ func LoadFromArgs(dst *Config, args ...string) ([]string, error) {
 
 	fs.Var(&sysConfArg{dst: dst}, "sysconf", "path to system config file(s)")
 	fs.Var(appConfArg{dst}, "appconf", "path to application config file(s)")
-	fs.StringVar(&dst.DataDir, "data-dir", dst.DataDir, "path to local data storage directory")
+	fs.StringVar(&dst.DataDir, "data", dst.DataDir, "path to local data storage directory")
+	// Deprecated: use --data, --sysconf, and --appconf instead
+	fs.Var(&dataDirArg{dst}, "data-dir", "Deprecated: path to local data storage directory, also used for app & system config")
 	fs.StringVar(&dst.ListenGRPC, "listen-grpc", dst.ListenGRPC, "address (host:port) to host a Smart Core gRPC server on")
 	fs.StringVar(&dst.ListenHTTPS, "listen-https", dst.ListenHTTPS, "address (host:port) to host a HTTPS server on")
 	fs.Var(disablePolicy{dst}, "insecure-disable-policy", "Deprecated. Equivalent to --policy-mode=off")
@@ -85,6 +88,22 @@ func (a appConfArg) Set(s string) error {
 	for _, f := range str {
 		a.dst.AppConfig = append(a.dst.AppConfig, path.Join(".", f))
 	}
+	return nil
+}
+
+type dataDirArg struct {
+	dst *Config
+}
+
+func (a dataDirArg) String() string {
+	return a.dst.DataDir
+}
+
+func (a dataDirArg) Set(s string) error {
+	log.Printf("WARNING: --data-dir is deprecated, use --data, --sysconf, and --appconf instead")
+	a.dst.DataDir = s
+	a.dst.AppConfig = []string{path.Join(s, "app.conf.json")}
+	a.dst.ConfigDirs = []string{s}
 	return nil
 }
 
