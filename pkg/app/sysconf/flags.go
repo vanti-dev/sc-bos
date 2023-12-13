@@ -15,7 +15,7 @@ func LoadFromArgs(dst *Config, args ...string) ([]string, error) {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
 
 	fs.Var(&sysConfArg{dst: dst}, "sysconf", "path to system config file(s)")
-	fs.Var(appConfArg{dst}, "appconf", "path to application config file(s)")
+	fs.Var(&appConfArg{dst: dst}, "appconf", "path to application config file(s)")
 	fs.StringVar(&dst.DataDir, "data", dst.DataDir, "path to local data storage directory")
 	// Deprecated: use --data, --sysconf, and --appconf instead
 	fs.Var(&dataDirArg{dst}, "data-dir", "Deprecated: path to local data storage directory, also used for app & system config")
@@ -38,6 +38,18 @@ One of:
 		removeDuplicates(&dst.AppConfig)
 	}
 	return fs.Args(), err
+}
+
+func removeDuplicates(dst *[]string) {
+	allKeys := make(map[string]bool)
+	list := make([]string, 0, len(*dst))
+	for _, v := range *dst {
+		if _, value := allKeys[v]; !value {
+			allKeys[v] = true
+			list = append(list, v)
+		}
+	}
+	*dst = list
 }
 
 type sysConfArg struct {
@@ -63,20 +75,9 @@ func (a *sysConfArg) Set(s string) error {
 	return nil
 }
 
-func removeDuplicates(dst *[]string) {
-	allKeys := make(map[string]bool)
-	list := make([]string, 0, len(*dst))
-	for _, v := range *dst {
-		if _, value := allKeys[v]; !value {
-			allKeys[v] = true
-			list = append(list, v)
-		}
-	}
-	*dst = list
-}
-
 type appConfArg struct {
-	dst *Config
+	dst   *Config
+	isSet bool
 }
 
 func (a appConfArg) String() string {
@@ -85,6 +86,10 @@ func (a appConfArg) String() string {
 
 func (a appConfArg) Set(s string) error {
 	str := strings.Split(s, ",")
+	if !a.isSet {
+		a.dst.AppConfig = []string{}
+		a.isSet = true
+	}
 	for _, f := range str {
 		a.dst.AppConfig = append(a.dst.AppConfig, path.Join(".", f))
 	}
