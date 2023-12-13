@@ -7,6 +7,8 @@ import (
 
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -90,7 +92,7 @@ func (a *Auto) pullTraits(ctx context.Context, dst chan<- proto.Message, device 
 // returning when ctx is done or a non-recoverable error occurs.
 func (a *Auto) pullAirQuality(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
 	var client traits.AirQualitySensorApiClient
-	err := a.services.Node.Client(&client)
+	err := grpcClient(a, &client, traits.NewAirQualitySensorApiClient, device)
 	if err != nil {
 		return err
 	}
@@ -125,7 +127,7 @@ func (a *Auto) pullAirQuality(ctx context.Context, dst chan<- proto.Message, dev
 // returning when ctx is done or a non-recoverable error occurs.
 func (a *Auto) pullAirTemperature(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
 	var client traits.AirTemperatureApiClient
-	err := a.services.Node.Client(&client)
+	err := grpcClient(a, &client, traits.NewAirTemperatureApiClient, device)
 	if err != nil {
 		return err
 	}
@@ -160,7 +162,7 @@ func (a *Auto) pullAirTemperature(ctx context.Context, dst chan<- proto.Message,
 // returning when ctx is done or a non-recoverable error occurs.
 func (a *Auto) pullAmbientBrightness(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
 	var client traits.BrightnessSensorApiClient
-	err := a.services.Node.Client(&client)
+	err := grpcClient(a, &client, traits.NewBrightnessSensorApiClient, device)
 	if err != nil {
 		return err
 	}
@@ -195,7 +197,7 @@ func (a *Auto) pullAmbientBrightness(ctx context.Context, dst chan<- proto.Messa
 // returning when ctx is done or a non-recoverable error occurs.
 func (a *Auto) pullBrightness(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
 	var client traits.LightApiClient
-	err := a.services.Node.Client(&client)
+	err := grpcClient(a, &client, traits.NewLightApiClient, device)
 	if err != nil {
 		return err
 	}
@@ -230,7 +232,7 @@ func (a *Auto) pullBrightness(ctx context.Context, dst chan<- proto.Message, dev
 // returning when ctx is done or a non-recoverable error occurs.
 func (a *Auto) pullMeterReadings(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
 	var client gen.MeterApiClient
-	err := a.services.Node.Client(&client)
+	err := grpcClient(a, &client, gen.NewMeterApiClient, device)
 	if err != nil {
 		return err
 	}
@@ -265,7 +267,7 @@ func (a *Auto) pullMeterReadings(ctx context.Context, dst chan<- proto.Message, 
 // returning when ctx is done or a non-recoverable error occurs.
 func (a *Auto) pullOccupancy(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
 	var client traits.OccupancySensorApiClient
-	err := a.services.Node.Client(&client)
+	err := grpcClient(a, &client, traits.NewOccupancySensorApiClient, device)
 	if err != nil {
 		return err
 	}
@@ -294,6 +296,47 @@ func (a *Auto) pullOccupancy(ctx context.Context, dst chan<- proto.Message, devi
 	delay := device.PollInterval.Or(DefaultPollInterval)
 
 	return doPull(ctx, dst, pullFunc, pollFunc, reduce, delay)
+}
+
+// grpcClient assigns to c a new client of type T.
+// The client used comes from
+//  1. a local device if dev.RemoteNode is nil
+//  2. a cached connection if available keyed by dev.RemoteDevice.Host
+//  3. a new connection to dev.RemoteDevice.Host
+//
+// grpcClient is safe to call from multiple goroutines.
+func grpcClient[T any](a *Auto, c *T, f func(connInterface grpc.ClientConnInterface) T, dev SCDeviceConfig) error {
+	// use local client config
+	rn := dev.RemoteNode
+	if rn == nil {
+		err := a.services.Node.Client(c)
+		if err != nil {
+			return err
+		}
+	}
+
+	a.connsMu.Lock()
+	defer a.connsMu.Unlock()
+	if conn, ok := a.conns[rn.Host]; ok {
+		*c = f(conn)
+		return nil
+	}
+
+	tlsConfig, err := rn.TLSConfig.Read("", a.services.ClientTLSConfig)
+	if err != nil {
+		return err
+	}
+	var opts []grpc.DialOption
+	if tlsConfig != nil {
+		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	}
+	conn, err := grpc.Dial(rn.Host, opts...)
+	if err != nil {
+		return err
+	}
+	a.conns[rn.Host] = conn
+	*c = f(conn)
+	return nil
 }
 
 // doPull pulls changes from pullFunc or pollFunc, collates them via reduce, and publishes them to dst.
