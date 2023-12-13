@@ -111,7 +111,7 @@ const data = (records) => {
 
   // Iterate over each element to find the first non-null value in the array.
   for (let i = 0; i < intervalsMap.length; i++) {
-  // If a non-null value is found, store it in firstNonNullValue and exit the loop.
+    // If a non-null value is found, store it in firstNonNullValue and exit the loop.
     if (intervalsMap[i].y !== null) {
       firstNonNullValue = intervalsMap[i].y;
       break;
@@ -120,11 +120,11 @@ const data = (records) => {
 
   // Perform an initial backfill of the array with the first non-null value found.
   for (let i = 0; i < intervalsMap.length; i++) {
-  // If a null value is found, replace it with firstNonNullValue.
+    // If a null value is found, replace it with firstNonNullValue.
     if (intervalsMap[i].y === null) {
       intervalsMap[i].y = firstNonNullValue;
     } else {
-    // Stop the backfill process once the first non-null value is encountered.
+      // Stop the backfill process once the first non-null value is encountered.
       break;
     }
   }
@@ -134,11 +134,11 @@ const data = (records) => {
 
   // Forward fill the rest of the array using the last known non-null value.
   for (let i = 0; i < intervalsMap.length; i++) {
-  // Update lastKnownValue when a non-null value is encountered.
+    // Update lastKnownValue when a non-null value is encountered.
     if (intervalsMap[i].y !== null) {
       lastKnownValue = intervalsMap[i].y;
     } else if (lastKnownValue !== null) {
-    // If a null value is found, replace it with the last known non-null value.
+      // If a null value is found, replace it with the last known non-null value.
       intervalsMap[i].y = lastKnownValue;
     }
   }
@@ -246,7 +246,8 @@ const chartOptions = {
         display: true,
         font: {
           size: 12// Specify the desired font size
-        }
+        },
+        precision: 0
       },
       title: {
         display: false,
