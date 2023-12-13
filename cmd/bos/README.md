@@ -11,22 +11,26 @@ should https be served on" vs "configure a BACnet device on 1.2.3.4:47808".
 See [pkg/app/sysconf](../../pkg/app/sysconf) for system config, and [pkg/app/appconf](../../pkg/app/appconf) for runtime
 config.
 
-The area controller stores local data in the data directory, which includes local caches of config and data along with
-generated certificates. The data directory will be created on first run.
+The area controller looks for config files in the config dir (e.g. `.conf`), and stores local data in the data directory 
+(usually `.data`), which includes local caches of data and any generated certificates. The data directory will be 
+created on first run.
 
-## Data Directory
-
-### Config files
+## Config Directory
 
 - `system.json`, `system.conf.json` - System config for the controller, ports, features, db connections, etc
-- `foo-pass` and other secrets - Files containing passwords and other secrets used by the controller. For
-  example `postgres-pass`, these files contain a single secret and should be provided by the environment the controller
-  runs in - e.g. Docker Secrets.
-- `controller.json` - App config including drivers, automations, zones, etc.
+- `app.conf.json` - App config including drivers, automations, zones, etc.
 - `tenants.json` - a json list of tenants and their hashed client secrets. Used by
   the [authn system](../../pkg/system/authn) as one option for how to validate credentials (client_id, client_secret)
 - `users.json` - a json list of users and their hashed passwords. Used by the [authn system](../../pkg/system/authn) as
   one option for how to validate users credentials (username, password)
+
+## Data Directory
+
+### Secret files
+
+- `foo-pass` and other secrets - Files containing passwords and other secrets used by the controller. For
+  example `postgres-pass`, these files contain a single secret and should be provided by the environment the controller
+  runs in - e.g. Docker Secrets.
 
 ### Certificates and TLS
 
