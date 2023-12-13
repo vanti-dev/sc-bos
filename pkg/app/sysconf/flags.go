@@ -6,7 +6,10 @@ import (
 	"log"
 	"path"
 	"strings"
+	"sync"
 )
+
+var logDataDirDeprecatedOnce sync.Once
 
 // LoadFromArgs populates fields in dst from the given command line arguments.
 // Args should not include the program name, just like flag.FlagSet.Parse.
@@ -105,7 +108,9 @@ func (a dataDirArg) String() string {
 }
 
 func (a dataDirArg) Set(s string) error {
-	log.Printf("WARNING: --data-dir is deprecated, use --data, --sysconf, and --appconf instead")
+	logDataDirDeprecatedOnce.Do(func() {
+		log.Printf("WARNING: --data-dir is deprecated, use --data, --sysconf, and --appconf instead")
+	})
 	a.dst.DataDir = s
 	a.dst.AppConfig = []string{path.Join(s, "app.conf.json")}
 	a.dst.ConfigDirs = []string{s}
