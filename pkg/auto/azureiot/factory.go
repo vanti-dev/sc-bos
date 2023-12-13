@@ -6,9 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/vanti-dev/sc-bos/internal/iothub"
@@ -33,9 +35,19 @@ func (f factory) New(services auto.Services) service.Lifecycle {
 type Auto struct {
 	*service.Service[Config]
 	services auto.Services
+
+	connsMu sync.Mutex
+	conns   map[string]*grpc.ClientConn
 }
 
 func (a *Auto) applyConfig(ctx context.Context, cfg Config) error {
+	a.connsMu.Lock()
+	for _, conn := range a.conns {
+		conn.Close()
+	}
+	a.conns = make(map[string]*grpc.ClientConn)
+	a.connsMu.Unlock()
+
 	if len(cfg.Devices) == 0 {
 		a.services.Logger.Warn("no devices configured; no polling will happen")
 		return nil

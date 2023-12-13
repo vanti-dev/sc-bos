@@ -3,6 +3,7 @@ package azureiot
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
@@ -25,6 +26,8 @@ type Config struct {
 	// When a device doesn't support pullTraits, use this poll interval.
 	// Defaults to DefaultPollInterval, can't be less than minPollInterval.
 	PollInterval *jsontypes.Duration `json:"pollInterval"`
+	// When present, provides defaults for connecting to all smart core devices.
+	RemoteNode *RemoteNodeConfig `json:"remoteNode,omitempty"`
 }
 
 // DeviceConfig represents an Azure IoT Hub device.
@@ -46,7 +49,13 @@ type SCDeviceConfig struct {
 	IgnoreUnknownTraits bool         `json:"ignoreUnknownTraits"` // Ignore unknown traits instead of erroring.
 	// todo: empty traits list means the intersection of device and auto supported traits
 
-	PollInterval *jsontypes.Duration `json:"pollInterval"` // Defaults to Config.PollInterval
+	PollInterval *jsontypes.Duration `json:"pollInterval"`         // Defaults to Config.PollInterval
+	RemoteNode   *RemoteNodeConfig   `json:"remoteNode,omitempty"` // Defaults to Config.RemoteNode, if absent (or Host=="") uses local device resolution.
+}
+
+type RemoteNodeConfig struct {
+	Host                 string `json:"host,omitempty"` // "host[:port]" of the Smart Core node, port defaults to 23557
+	*jsontypes.TLSConfig        // How to connect to the remote host, defaults to hub TLS config if enrolled.
 }
 
 const minPollInterval = 5 * time.Second // minimum rate of sending data to IoT Hub
@@ -58,6 +67,28 @@ func ParseConfig(jsonBytes []byte) (Config, error) {
 	if i := cfg.PollInterval.Or(DefaultPollInterval); i < minPollInterval {
 		return cfg, fmt.Errorf("pollInterval %v must be at least %v", i, minPollInterval)
 	}
+	if rn := cfg.RemoteNode; rn != nil {
+		if rn.Host != "" {
+			rn.Host = hostWithDefaultPort(rn.Host, 23557)
+		}
+	}
+
+	setSCDefaults := func(deviceCfg *SCDeviceConfig) {
+		if deviceCfg.Name == "" {
+			return
+		}
+		if deviceCfg.PollInterval == nil {
+			deviceCfg.PollInterval = cfg.PollInterval
+		}
+		switch {
+		case deviceCfg.RemoteNode == nil:
+			deviceCfg.RemoteNode = cfg.RemoteNode
+		case deviceCfg.RemoteNode.Host != "":
+			deviceCfg.RemoteNode.Host = hostWithDefaultPort(deviceCfg.RemoteNode.Host, 23557)
+		default:
+			deviceCfg.RemoteNode = nil // override using Config.RemoteNode
+		}
+	}
 
 	for i, deviceCfg := range cfg.Devices {
 		if deviceCfg.ConnectionString == "" {
@@ -68,13 +99,10 @@ func ParseConfig(jsonBytes []byte) (Config, error) {
 				return cfg, fmt.Errorf("id scope is required when using group keys")
 			}
 		}
-		if deviceCfg.PollInterval == nil {
-			deviceCfg.PollInterval = cfg.PollInterval
-		}
+
+		setSCDefaults(&deviceCfg.SCDeviceConfig)
 		for i, child := range deviceCfg.Children {
-			if child.PollInterval == nil {
-				child.PollInterval = deviceCfg.PollInterval
-			}
+			setSCDefaults(&child)
 			deviceCfg.Children[i] = child
 		}
 
@@ -88,4 +116,14 @@ func DefaultConfig() Config {
 	return Config{
 		PollInterval: &jsontypes.Duration{Duration: DefaultPollInterval},
 	}
+}
+
+func hostWithDefaultPort(s string, p int) string {
+	if s == "" {
+		return ""
+	}
+	if _, _, err := net.SplitHostPort(s); err != nil {
+		return net.JoinHostPort(s, fmt.Sprintf("%d", p))
+	}
+	return s
 }
