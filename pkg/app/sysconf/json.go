@@ -24,9 +24,8 @@ func LoadAllFromJSON(dst *Config) error {
 	return allErrs
 }
 
-// LoadFromConfigDirJSON populates dst with json formatted config files in dst.ConfigDir/dst.ConfigFiles.
-// Absent file path combinations are skipped.
-func LoadFromConfigDirJSON(dst *Config) error {
+// LoadFromConfigFilesJSON populates dst with json formatted config from all dst.ConfigFiles (based on current working directory).
+func LoadFromConfigFilesJSON(dst *Config) error {
 	var allErrs error
 	for _, file := range dst.ConfigFiles {
 		err := LoadFromJSONFile(dst, filepath.Join(".", file))

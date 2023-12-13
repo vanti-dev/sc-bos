@@ -26,7 +26,7 @@ func Load(dst *Config) error {
 	if err := LoadAllFromJSON(dst); err != nil {
 		return err
 	}
-	if err := LoadFromConfigDirJSON(dst); err != nil {
+	if err := LoadFromConfigFilesJSON(dst); err != nil {
 		return err
 	}
 	if _, err := LoadFromArgs(dst, os.Args[1:]...); err != nil {
