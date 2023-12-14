@@ -17,14 +17,14 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
-const DriverType = "azureiot"
+const FactoryName = "azureiot"
 
 var Factory auto.Factory = factory{}
 
 type factory struct{}
 
 func (f factory) New(services auto.Services) service.Lifecycle {
-	services.Logger = services.Logger.Named(DriverType)
+	services.Logger = services.Logger.Named(FactoryName)
 	a := &Auto{services: services}
 	a.Service = service.New(service.MonoApply(a.applyConfig), service.WithParser(ParseConfig))
 	return a
