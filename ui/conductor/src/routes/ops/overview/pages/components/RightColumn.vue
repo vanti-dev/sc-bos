@@ -18,8 +18,8 @@
       <v-card-title class="text-h4 pl-4">Energy Consumption</v-card-title>
       <EnergyGraph
           classes="mt-n2 ml-n2 mr-1"
-          color="#ff9929"
-          color-middle="rgba(255, 153, 41, 0.35)"
+          color="#ffc432"
+          color-middle="rgba(255, 196, 50, 0.35)"
           :hide-legends="true"
           :metered="props.item.traits.showEnergyConsumption"/>
     </content-card>

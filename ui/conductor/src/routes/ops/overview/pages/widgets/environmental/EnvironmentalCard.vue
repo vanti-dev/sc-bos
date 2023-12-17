@@ -1,9 +1,10 @@
 <template>
-  <content-card class="mb-5 d-flex flex-column pt-6 pb-0">
-    <h4 class="text-h4 pl-6 pb-8 pt-0">Environmental</h4>
+  <content-card class="mb-5 d-flex flex-column pt-7 pb-0">
+    <h4 class="text-h4 pl-4 pb-8 pt-0">Environmental</h4>
     <div class="d-flex flex-row flex-nowrap">
       <circular-gauge
           :value="temperature"
+          color="#ffc432"
           :min="temperatureRange.low"
           :max="temperatureRange.high"
           segments="30"
@@ -34,6 +35,7 @@
       <circular-gauge
           v-if="humidity > 0"
           :value="humidity"
+          color="#ffc432"
           segments="30"
           style="max-width: 140px;"
           class="mt-2">

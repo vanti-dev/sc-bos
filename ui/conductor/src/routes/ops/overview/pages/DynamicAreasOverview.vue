@@ -2,10 +2,7 @@
   <v-container fluid class="d-flex flex-column pt-0 pr-0">
     <div class="d-flex flex-row flex-nowrap mb-2">
       <h3 class="text-h3 pt-2 pb-6">
-        <span v-for="(value, __, index) of segments" :key="index">
-          {{ value }}<span v-if="index < Object.keys(segments).length - 1"> /</span>
-        </span>
-        Status Overview
+        {{ overViewStore.getActiveOverview.title }} Status Overview
       </h3>
     </div>
     <v-row class="ml-0">
@@ -33,6 +30,7 @@ const props = defineProps({
   }
 });
 const overViewStore = useOverviewStore();
+const activeOverview = computed(() => overViewStore.getActiveOverview);
 const pageStore = usePageStore();
 const graphWidth = computed(() => `min-width: calc(100% - 500px - ${pageStore.drawerWidth}px)`);
 
@@ -56,11 +54,10 @@ const segments = computed(() => {
  * @type {import('vue').ComputedRef<boolean>} displayLeftColumn
  */
 const displayLeftColumn = computed(() => {
-  const {getActiveOverview} = overViewStore;
-  const emergencyLighting = getActiveOverview?.traits?.showEmergencyLighting;
-  const notifications = getActiveOverview?.traits?.showNotifications;
-  const lighting = getActiveOverview?.traits?.showLighting;
-  const power = getActiveOverview?.traits?.showPower;
+  const emergencyLighting = activeOverview.value?.traits?.showEmergencyLighting;
+  const notifications = activeOverview.value?.traits?.showNotifications;
+  const lighting = activeOverview.value?.traits?.showLighting;
+  const power = activeOverview.value?.traits?.showPower;
 
   return emergencyLighting || notifications || lighting || power;
 });
@@ -71,11 +68,10 @@ const displayLeftColumn = computed(() => {
  * @type {import('vue').ComputedRef<boolean>} displayRightColumn
  */
 const displayRightColumn = computed(() => {
-  const {getActiveOverview} = overViewStore;
-  const airQuality = getActiveOverview?.traits?.showAirQuality;
-  const occupancy = getActiveOverview?.traits?.showOccupancy;
-  const energyConsumption = getActiveOverview?.traits?.showEnergyConsumption;
-  const environment = getActiveOverview?.traits?.showEnvironment;
+  const airQuality = activeOverview.value?.traits?.showAirQuality;
+  const occupancy = activeOverview.value?.traits?.showOccupancy;
+  const energyConsumption = activeOverview.value?.traits?.showEnergyConsumption;
+  const environment = activeOverview.value?.traits?.showEnvironment;
 
   return airQuality || occupancy || energyConsumption || environment;
 });
