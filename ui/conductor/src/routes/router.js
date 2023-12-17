@@ -56,9 +56,41 @@ if (window) {
       sidebarData.value = {};
     }
 
-    // Clear the activeOverview when navigating to a different page - other than overview
     const {activeOverview} = storeToRefs(useOverviewStore());
-    // Check if the path is not '/ops/building' or doesn't start with '/ops/building'
+
+    /**
+     * Select the relevant child item when navigating to a building overview page with a child item
+     * For example, when navigating to '/ops/overview/building/Floor%203/Left%20Wing'
+     * This helps when the user refreshes the page or navigates directly to the page (shared link)
+     */
+    const buildingChildren = appConfig.config?.building?.children;
+    const currentPathSegments = to.path.split('/').filter(segment => segment);
+    const lastSegment = currentPathSegments[currentPathSegments.length - 1];
+    const findItemByTitle = (items, title) => {
+      for (const item of items) {
+        if (encodeURIComponent(item.title) === title) {
+          return item;
+        }
+        if (item.children) {
+          const found = findItemByTitle(item.children, title);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    // Find the active item in the building children
+    const activeItem = findItemByTitle(buildingChildren, lastSegment);
+
+    if (activeItem) {
+      // eslint-disable-next-line no-unused-vars
+      const {children, ...item} = activeItem;
+
+      activeOverview.value = item;
+    }
+
+    // Clear the activeOverview when navigating to a different page - other than overview
+    // Check if the path is not '/ops/overview/building' or doesn't start with '/ops/overview/building'
     if (!to.path.startsWith('/ops/overview/building')) {
       // Clear the activeOverview
       activeOverview.value = null;

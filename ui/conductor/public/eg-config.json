@@ -61,14 +61,17 @@
           "disabled": false,
           "icon": "mdi-layers-triple-outline",
           "shortTitle": "F3",
-          "title": "Floor 3",
+          "title": "Floor 03",
           "traits": {
             "showAirQuality": false,
             "showEmergencyLighting": false,
-            "showEnergyConsumption": false,
-            "showEnvironment": false,
-            "showNotifications": false,
-            "showOccupancy": "Floor 3",
+            "showEnergyConsumption": "METER-01",
+            "showEnvironment": {
+              "indoor": "FCU-01",
+              "outdoor": "WEATHER-01"
+            },
+            "showNotifications": "Floor 3",
+            "showOccupancy": "Floor 03",
             "showPower": false
           },
           "children": [
@@ -83,7 +86,7 @@
                 "showEnergyConsumption": false,
                 "showEnvironment": false,
                 "showNotifications": false,
-                "showOccupancy": "Left Wing Floor 3",
+                "showOccupancy": false,
                 "showPower": false
               },
               "children": [
@@ -109,30 +112,33 @@
         {
           "disabled": false,
           "icon": "mdi-layers-triple-outline",
-          "shortTitle": "F4",
-          "title": "Floor 4",
+          "shortTitle": "R1",
+          "title": "Room 1",
           "traits": {
             "showAirQuality": false,
             "showEmergencyLighting": false,
             "showEnergyConsumption": false,
-            "showEnvironment": false,
+            "showEnvironment": {
+              "indoor": "Floor 3",
+              "outdoor": "WEATHER-01"
+            },
             "showNotifications": false,
-            "showOccupancy": "Floor 4",
+            "showOccupancy": false,
             "showPower": false
           }
         },
         {
           "disabled": false,
           "icon": "mdi-layers-triple-outline",
-          "shortTitle": "F5",
-          "title": "Floor 5",
+          "shortTitle": "Out.",
+          "title": "Outside",
           "traits": {
             "showAirQuality": false,
             "showEmergencyLighting": false,
             "showEnergyConsumption": false,
-            "showEnvironment": false,
+            "showEnvironment": "outside",
             "showNotifications": false,
-            "showOccupancy": "Floor 5",
+            "showOccupancy": false,
             "showPower": false
           },
           "children": [
@@ -157,14 +163,14 @@
           "disabled": false,
           "icon": "mdi-layers-triple-outline",
           "shortTitle": "F6",
-          "title": "Floor 6",
+          "title": "Floor 06",
           "traits": {
             "showAirQuality": false,
             "showEmergencyLighting": false,
             "showEnergyConsumption": false,
             "showEnvironment": false,
             "showNotifications": false,
-            "showOccupancy": "Floor 6",
+            "showOccupancy": false,
             "showPower": false
           }
         }

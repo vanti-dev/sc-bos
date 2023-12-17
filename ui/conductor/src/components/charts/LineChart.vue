@@ -1,7 +1,7 @@
 <template>
   <div style="height: 100%; max-height: 275px;">
     <div class="d-flex flex-row flex-nowrap justify-end align-center mb-6">
-      <div id="legend-container" class="mr-2"/>
+      <div v-if="!props.hideLegends" id="legend-container" class="mr-2"/>
       <template v-if="$slots.options">
         <v-divider vertical class="mr-6" style="height: auto"/>
         <span>
@@ -46,6 +46,10 @@ const props = defineProps({
     type: String,
     default: 'position-relative'
   },
+  hideLegends: {
+    type: Boolean,
+    default: false
+  },
   styles: {
     type: Object,
     default: () => {
@@ -89,6 +93,8 @@ const getOrCreateLegendList = (id) => {
 const htmlLegendPlugin = {
   id: 'htmlLegend',
   afterUpdate(chart, args, options) {
+    if (props.hideLegends) return;
+
     const ul = getOrCreateLegendList('legend-container');
 
     // Remove old legend items

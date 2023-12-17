@@ -1,11 +1,12 @@
 <template>
   <div id="energy-graph" :style="{width, height}">
     <LineChart
+        :class="props.classes"
         :chart-options="chartOptions"
         :chart-data="chartData"
         dataset-id-key="label"
-        class="mt-n10">
-      <template #options>
+        :hide-legends="props.hideLegends">
+      <template v-if="!props.hideLegends" #options>
         <v-switch
             v-model="showConversion"
             color="primary"
@@ -28,12 +29,28 @@
 <script setup>
 import LineChart from '@/components/charts/LineChart.vue';
 import {HOUR, MINUTE, useNow} from '@/components/now';
-import useMeterHistory from '@/routes/ops/components/useMeterHistory';
-import useTimePeriod from '@/routes/ops/components/useTimePeriod';
+import useMeterHistory from '@/routes/ops/overview/pages/widgets/energyAndDemand/useMeterHistory';
+import useTimePeriod from '@/routes/ops/overview/pages/widgets/energyAndDemand/useTimePeriod';
 import {useCarbonIntensity} from '@/stores/carbonIntensity';
 import {computed, ref} from 'vue';
 
 const props = defineProps({
+  classes: {
+    type: String,
+    default: 'mt-n10'
+  },
+  color: {
+    type: String,
+    default: '#00bed6' // primary
+  },
+  colorMiddle: {
+    type: String,
+    default: 'rgba(51, 142, 161, 0.75)' // primary 75% opacity
+  },
+  hideLegends: {
+    type: Boolean,
+    default: false
+  },
   metered: {
     type: String,
     default: 'building'
@@ -91,7 +108,7 @@ const yAxisUnit = computed(() => {
 const metered = useMeterHistory(() => props.metered, periodStart, periodEnd, () => props.span);
 const generated = useMeterHistory(() => props.generated, periodStart, periodEnd, () => props.span);
 const co2Metered = computed(() => {
-  return metered.seriesData.value.map((value, index) => {
+  return metered.seriesData.value.map((value) => {
     return {
       ...value,
       y: value.y * kwhToGramsOfCO2(value.x)
@@ -99,7 +116,7 @@ const co2Metered = computed(() => {
   });
 });
 const co2Generated = computed(() => {
-  return generated.seriesData.value.map((value, index) => {
+  return generated.seriesData.value.map((value) => {
     return {
       ...value,
       y: value.y * kwhToGramsOfCO2(value.x)
@@ -135,13 +152,13 @@ const chartData = computed(() => {
           const canvas = ctx.chart.ctx;
           const gradient = canvas.createLinearGradient(0, 0, 0, 425);
 
-          gradient.addColorStop(0, '#00bed6'); // color
-          gradient.addColorStop(0.5, 'rgba(51, 142, 161, 0.75)'); // darker shade of the color
+          gradient.addColorStop(0, props.color); // color
+          gradient.addColorStop(0.5, props.colorMiddle); // darker shade of the color
           gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // almost transparent
 
           return gradient;
         },
-        borderColor: '#00bed6', // line color
+        borderColor: props.color, // line color
         data: co2Metered.value, // data for the line
         fill: true, // fill the area under the line
         label: 'Metered', // tooltip label
@@ -182,13 +199,13 @@ const chartData = computed(() => {
           const canvas = ctx.chart.ctx;
           const gradient = canvas.createLinearGradient(0, 0, 0, 425);
 
-          gradient.addColorStop(0, '#00bed6'); // color
-          gradient.addColorStop(0.5, 'rgba(51, 142, 161, 0.75)'); // darker shade of the color
+          gradient.addColorStop(0, props.color); // color
+          gradient.addColorStop(0.5, props.colorMiddle); // darker shade of the color
           gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // almost transparent
 
           return gradient;
         },
-        borderColor: '#00bed6', // line color
+        borderColor: props.color, // line color
         data: metered.seriesData.value, // data for the line
         fill: true, // fill area under the line graph
         label: 'Metered', // tooltip label
@@ -196,7 +213,7 @@ const chartData = computed(() => {
         pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
         pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
         pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
-        pointHoverBorderColor: '#00bed6', // point border color on hover
+        pointHoverBorderColor: props.color, // point border color on hover
         // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
         pointStyle: 'circle',
         tension: 0.35 // curve the line

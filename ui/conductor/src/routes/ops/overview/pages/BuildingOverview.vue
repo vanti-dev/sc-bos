@@ -24,8 +24,9 @@ import {useAppConfigStore} from '@/stores/app-config';
 import {usePageStore} from '@/stores/page';
 import ScStatusCard from '@/routes/ops/components/ScStatusCard.vue';
 import EnvironmentalCard from '@/routes/ops/components/EnvironmentalCard.vue';
-import EnergyCard from '@/routes/ops/components/EnergyCard.vue';
+import EnergyCard from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyCard.vue';
 import OccupancyCard from '@/routes/ops/components/OccupancyCard.vue';
+
 const appConfig = useAppConfigStore();
 const pageStore = usePageStore();
 const graphWidth = computed(() => `min-width: calc(100% - 260px - ${pageStore.drawerWidth}px)`);

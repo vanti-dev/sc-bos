@@ -2,7 +2,7 @@ import Vue from 'vue';
 import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
 import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
 import {listAirQualitySensorHistory} from '@/api/sc/traits/air-quality-sensor';
-import useTimePeriod from '@/routes/ops/components/useTimePeriod';
+import useTimePeriod from '@/routes/ops/overview/pages/widgets/energyAndDemand/useTimePeriod';
 import useDevices from '@/composables/useDevices';
 import {timestampToDate} from '@/api/convpb';
 import {camelToSentence} from '@/util/string';
