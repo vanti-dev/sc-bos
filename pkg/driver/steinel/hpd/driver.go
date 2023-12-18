@@ -1,4 +1,4 @@
-package hd2
+package hpd
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"github.com/vanti-dev/sc-bos-drivers/pkg/driver/steinel/hd2/config"
 )
 
-const DriverName = "steinel-hd2"
+const DriverName = "steinel-hpd"
 
 var Factory driver.Factory = factory{}
 

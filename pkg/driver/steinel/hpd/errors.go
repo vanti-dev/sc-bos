@@ -1,4 +1,4 @@
-package hd2
+package hpd
 
 import (
 	"encoding/json"
