@@ -8,8 +8,8 @@ import (
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
-	"github.com/vanti-dev/sc-bos-drivers/pkg/driver/pestsense/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
+	"github.com/vanti-dev/sc-bos/pkg/driver/pestsense/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )

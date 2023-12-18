@@ -12,8 +12,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos-drivers/pkg/concurrent"
-	"github.com/vanti-dev/sc-bos-drivers/pkg/driver/shelly/trv/config"
+	"github.com/vanti-dev/sc-bos/pkg/driver/shelly/trv/config"
+	"github.com/vanti-dev/sc-bos/pkg/util/concurrent"
 )
 
 const DefaultPollInterval = 30 * time.Second

@@ -1,7 +1,7 @@
 package concurrent
 
 import (
-	"github.com/vanti-dev/sc-bos-drivers/pkg/bounded"
+	"github.com/vanti-dev/sc-bos/pkg/util/bounded"
 )
 
 // BreakBackpressure will wrap a channel to break backpressure between its input and output.
