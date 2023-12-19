@@ -13,7 +13,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
-const DriverName = "vanti/shelly/trv"
+const DriverName = "shelly-trv"
 
 var Factory driver.Factory = factory{}
 
