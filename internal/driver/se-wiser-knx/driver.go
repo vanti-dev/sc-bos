@@ -9,8 +9,10 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	scLight "github.com/smart-core-os/sc-golang/pkg/trait/light"
+	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
 	"github.com/vanti-dev/inf-sc-bos/internal/trait/light"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -33,8 +35,8 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 		service.WithParser(ParseConfig),
 	)
 	d.logger = services.Logger.Named(DriverName)
-	d.devicesByName = make(map[string]*light.Model)
-	d.devicesByAddress = make(map[string]*light.Model)
+	d.lightsByAddress = make(map[string]*light.Model)
+	d.modesByAddress = make(map[string]*mode.Model)
 	return d
 }
 
@@ -43,10 +45,10 @@ type Driver struct {
 	driver.Services
 	logger *zap.Logger
 
-	cfg              Config
-	client           *Client
-	devicesByName    map[string]*light.Model
-	devicesByAddress map[string]*light.Model
+	cfg             Config
+	client          *Client
+	lightsByAddress map[string]*light.Model
+	modesByAddress  map[string]*mode.Model
 }
 
 func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
@@ -65,12 +67,62 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 			announcer.Announce(dev.Name, node.HasMetadata(dev.Metadata))
 		}
 
-		l := light.NewModel(&traits.Brightness{})
-		c := scLight.WrapApi(lightServer{LightApiServer: light.NewModelServer(l), client: d.client, device: &dev, logger: d.logger.Named(dev.Name)})
-		announcer.Announce(dev.Name, node.HasTrait(trait.Light, node.WithClients(c)))
+		if dev.Address == "" && len(dev.Addresses) == 0 {
+			return fmt.Errorf("address or addresses is required")
+		} else if dev.Address != "" && len(dev.Addresses) > 0 {
+			return fmt.Errorf("address and addresses cannot both be specified")
+		}
 
-		d.devicesByName[dev.Name] = l
-		d.devicesByAddress[dev.Address] = l
+		if dev.Address != "" {
+			dev.Addresses = map[string]string{"light": dev.Address}
+		}
+
+		for t := range dev.Addresses {
+			switch t {
+			case "light":
+				l := light.NewModel(&traits.Brightness{})
+				c := scLight.WrapApi(lightServer{
+					LightApiServer: light.NewModelServer(l),
+					client:         d.client,
+					device:         &dev,
+					logger:         d.logger.Named(dev.Name),
+				})
+				announcer.Announce(dev.Name, node.HasTrait(trait.Light, node.WithClients(c)))
+
+				d.lightsByAddress[dev.Address] = l
+			case "override":
+				modes := &traits.Modes{
+					Modes: []*traits.Modes_Mode{
+						&traits.Modes_Mode{
+							Name:   "mode",
+							Values: []*traits.Modes_Value{{Name: "auto"}, {Name: "manual"}},
+						},
+					},
+				}
+
+				modeModel := mode.NewModelModes(modes)
+				s := &modeInfoServer{
+					Modes: &traits.ModesSupport{
+						ModeValuesSupport: &types.ResourceSupport{
+							Readable: true, Writable: true, Observable: true,
+						},
+						AvailableModes: modes,
+					},
+				}
+
+				announcer.Announce(dev.Name, node.HasTrait(trait.Mode, node.WithClients(
+					mode.WrapApi(&modeServer{
+						ModeApiServer: mode.NewModelServer(modeModel),
+						client:        d.client,
+						device:        &dev,
+						logger:        d.logger.Named(dev.Name),
+					}),
+					mode.WrapInfo(s),
+				)))
+
+				d.modesByAddress[dev.Address] = modeModel
+			}
+		}
 	}
 
 	go d.poll(ctx)
@@ -95,7 +147,7 @@ func (d *Driver) poll(ctx context.Context) {
 			// loop through response objects
 			for _, obj := range objects {
 				// if matching device address
-				if dev, ok := d.devicesByAddress[obj.Address]; ok {
+				if dev, ok := d.lightsByAddress[obj.Address]; ok {
 					// update model brightness value for that device
 					lvl, err := strconv.ParseFloat(obj.Data, 32)
 					if err != nil {
@@ -107,6 +159,20 @@ func (d *Driver) poll(ctx context.Context) {
 					_, err = dev.UpdateBrightness(b)
 					if err != nil {
 						d.logger.Error("Error updating brightness", zap.Error(err))
+					}
+				} else if dev, ok := d.modesByAddress[obj.Address]; ok {
+					var modeStr string
+					if obj.Data == "0" {
+						modeStr = "auto"
+					} else {
+						modeStr = "manual"
+					}
+					m := &traits.ModeValues{
+						Values: map[string]string{"mode": modeStr},
+					}
+					_, err = dev.UpdateModeValues(m)
+					if err != nil {
+						d.logger.Error("Error updating mode", zap.Error(err))
 					}
 				}
 			}
@@ -132,4 +198,37 @@ func (l lightServer) UpdateBrightness(ctx context.Context, req *traits.UpdateBri
 		return nil, err
 	}
 	return brightness, nil
+}
+
+type modeInfoServer struct {
+	traits.UnimplementedModeInfoServer
+	Modes *traits.ModesSupport
+}
+
+func (i *modeInfoServer) DescribeModes(context.Context, *traits.DescribeModesRequest) (*traits.ModesSupport, error) {
+	return i.Modes, nil
+}
+
+type modeServer struct {
+	traits.ModeApiServer
+	client *Client
+	device *Device
+	logger *zap.Logger
+}
+
+func (m *modeServer) UpdateModeValues(ctx context.Context, req *traits.UpdateModeValuesRequest) (*traits.ModeValues, error) {
+	m.logger.Debug("UpdateModeValues", zap.Any("req", req))
+	var val string
+	switch req.ModeValues.Values["mode"] {
+	case "auto":
+		val = "0"
+	case "manual":
+		val = "1"
+	}
+	err := SetValue(m.client, m.device.Addresses["override"], val)
+	if err != nil {
+		return nil, err
+	}
+
+	return m.ModeApiServer.UpdateModeValues(ctx, req)
 }

@@ -55,11 +55,15 @@ func (c Config) LoadPassword() (string, error) {
 	return strings.TrimSpace(string(p)), err
 }
 
+// Device config for an object on the Wiser for KNX controller.
+// Note: only 1 of Address or Addresses should be specified.
 type Device struct {
 	// The device name (e.g. "inf/sc-01/lights/flex-room-01")
-	Name string
+	Name string `json:"name"`
 	// The address of the object on the Wiser for KNX controller (e.g. "1/1/1")
-	Address string
+	Address string `json:"address,omitempty"`
+	// Map of device component (light, override) to address (e.g. {"light": "1/1/1"})
+	Addresses map[string]string `json:"addresses,omitempty"`
 	// The metadata associated with the device.
 	Metadata *traits.Metadata `json:"metadata,omitempty"`
 }
