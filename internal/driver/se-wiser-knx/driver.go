@@ -162,7 +162,6 @@ func (d *Driver) doPoll() {
 			b := &traits.Brightness{
 				LevelPercent: float32(lvl),
 			}
-			d.logger.Info("Updating brightness", zap.Any("brightness", b))
 			_, err = dev.UpdateBrightness(b)
 			if err != nil {
 				d.logger.Error("Error updating brightness", zap.Error(err))
@@ -178,7 +177,6 @@ func (d *Driver) doPoll() {
 			m := &traits.ModeValues{
 				Values: map[string]string{"mode": modeStr},
 			}
-			d.logger.Info("Updating mode", zap.Any("mode", m))
 			_, err = dev.UpdateModeValues(m)
 			if err != nil {
 				d.logger.Error("Error updating mode", zap.Error(err))
@@ -224,8 +222,6 @@ type modeServer struct {
 }
 
 func (m *modeServer) UpdateModeValues(ctx context.Context, req *traits.UpdateModeValuesRequest) (*traits.ModeValues, error) {
-	m.logger.Debug("UpdateModeValues", zap.Any("req", req))
-
 	val := req.ModeValues.Values["mode"] == "manual"
 
 	err := SetValue(m.client, m.device.Addresses["override"], val)

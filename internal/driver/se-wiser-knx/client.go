@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 
@@ -76,7 +75,6 @@ func handleResponse(res *http.Response, destPtr any) error {
 
 func doPost(client *Client, query url.Values, target any) error {
 	req := client.newRequest(http.MethodPost, query)
-	log.Printf("POST %s", req.URL.String())
 	res, err := client.Client.Do(req)
 	if err != nil {
 		return err
