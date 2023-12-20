@@ -3,7 +3,6 @@ package se_wiser_knx
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"go.uber.org/zap"
@@ -77,7 +76,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 			dev.Addresses = map[string]string{"light": dev.Address}
 		}
 
-		for t := range dev.Addresses {
+		for t, addr := range dev.Addresses {
 			switch t {
 			case "light":
 				l := light.NewModel(&traits.Brightness{})
@@ -89,7 +88,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 				})
 				announcer.Announce(dev.Name, node.HasTrait(trait.Light, node.WithClients(c)))
 
-				d.lightsByAddress[dev.Address] = l
+				d.lightsByAddress[addr] = l
 			case "override":
 				modes := &traits.Modes{
 					Modes: []*traits.Modes_Mode{
@@ -120,7 +119,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 					mode.WrapInfo(s),
 				)))
 
-				d.modesByAddress[dev.Address] = modeModel
+				d.modesByAddress[addr] = modeModel
 			}
 		}
 	}
@@ -134,51 +133,54 @@ func (d *Driver) poll(ctx context.Context) {
 	ticker := time.NewTicker(d.cfg.Poll)
 	defer ticker.Stop()
 
+	// update on initial load
+	d.doPoll()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			// query all objects
-			objects, err := QueryObjects(d.client)
-			if err != nil {
-				d.logger.Error("Error querying objects", zap.Error(err))
+			d.doPoll()
+		}
+	}
+}
+
+func (d *Driver) doPoll() {
+	// query all objects
+	objects, err := QueryObjects(d.client)
+	if err != nil {
+		d.logger.Error("Error querying objects", zap.Error(err))
+	}
+	// loop through response objects
+	for _, obj := range objects {
+		// if matching device address
+		if dev, ok := d.lightsByAddress[obj.Address]; ok {
+			// update model brightness value for that device
+			lvl := obj.Data.(float64)
+			b := &traits.Brightness{
+				LevelPercent: float32(lvl),
 			}
-			// loop through response objects
-			for _, obj := range objects {
-				// if matching device address
-				if dev, ok := d.lightsByAddress[obj.Address]; ok {
-					// update model brightness value for that device
-					lvl, err := strconv.ParseFloat(obj.Data, 32)
-					if err != nil {
-						d.logger.Error("Error parsing brightness", zap.Error(err))
-					}
-					b := &traits.Brightness{
-						LevelPercent: float32(lvl),
-					}
-					_, err = dev.UpdateBrightness(b)
-					if err != nil {
-						d.logger.Error("Error updating brightness", zap.Error(err))
-					}
-				} else if dev, ok := d.modesByAddress[obj.Address]; ok {
-					var modeStr string
-					b, err := strconv.ParseBool(obj.Data)
-					if err != nil {
-						d.logger.Error("Error parsing mode", zap.Error(err), zap.String("data", obj.Data))
-					}
-					if b {
-						modeStr = "manual"
-					} else {
-						modeStr = "auto"
-					}
-					m := &traits.ModeValues{
-						Values: map[string]string{"mode": modeStr},
-					}
-					_, err = dev.UpdateModeValues(m)
-					if err != nil {
-						d.logger.Error("Error updating mode", zap.Error(err))
-					}
-				}
+			d.logger.Info("Updating brightness", zap.Any("brightness", b))
+			_, err = dev.UpdateBrightness(b)
+			if err != nil {
+				d.logger.Error("Error updating brightness", zap.Error(err))
+			}
+		} else if dev, ok := d.modesByAddress[obj.Address]; ok {
+			var modeStr string
+			b := obj.Data.(bool)
+			if b {
+				modeStr = "manual"
+			} else {
+				modeStr = "auto"
+			}
+			m := &traits.ModeValues{
+				Values: map[string]string{"mode": modeStr},
+			}
+			d.logger.Info("Updating mode", zap.Any("mode", m))
+			_, err = dev.UpdateModeValues(m)
+			if err != nil {
+				d.logger.Error("Error updating mode", zap.Error(err))
 			}
 		}
 	}
@@ -192,7 +194,7 @@ type lightServer struct {
 }
 
 func (l lightServer) UpdateBrightness(ctx context.Context, req *traits.UpdateBrightnessRequest) (*traits.Brightness, error) {
-	err := SetValue(l.client, l.device.Address, fmt.Sprintf("%f", req.Brightness.LevelPercent))
+	err := SetValue(l.client, l.device.Addresses["light"], fmt.Sprintf("%f", req.Brightness.LevelPercent))
 	if err != nil {
 		return nil, err
 	}

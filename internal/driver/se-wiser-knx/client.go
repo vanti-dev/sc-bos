@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -84,13 +83,14 @@ func doPost(client *Client, query url.Values, target any) error {
 }
 
 type Object struct {
-	Address  string    `json:"address"`
-	Name     string    `json:"name"`
-	Data     string    `json:"data"`
-	DataType string    `json:"dataType"`
-	Time     time.Time `json:"time"`
-	Date     string    `json:"date"`
-	Comment  string    `json:"comment"`
+	Id       int32       `json:"id"`
+	Address  string      `json:"address"`
+	Name     string      `json:"name"`
+	Data     interface{} `json:"data"`
+	DataType string      `json:"dataType"`
+	Time     int32       `json:"time"`
+	Date     string      `json:"date"`
+	Comment  string      `json:"comment"`
 }
 
 func QueryObjects(client *Client) ([]Object, error) {
