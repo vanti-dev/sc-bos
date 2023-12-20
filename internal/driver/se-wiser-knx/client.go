@@ -122,7 +122,7 @@ func SetValue(client *Client, address string, value any) error {
 	query.Add("r", "grp")
 	query.Add("fn", "write")
 	query.Add("alias", address)
-	query.Add("value", fmt.Sprintf("%s", value))
+	query.Add("value", fmt.Sprintf("%v", value))
 	var t bool
 	err := doPost(client, query, &t)
 	if err != nil {
