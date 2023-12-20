@@ -94,7 +94,10 @@ func (a appConfArg) Set(s string) error {
 		a.isSet = true
 	}
 	for _, f := range str {
-		a.dst.AppConfig = append(a.dst.AppConfig, path.Join(".", f))
+		if !strings.HasPrefix(f, "/") {
+			f = path.Join(".", f)
+		}
+		a.dst.AppConfig = append(a.dst.AppConfig, f)
 	}
 	return nil
 }
