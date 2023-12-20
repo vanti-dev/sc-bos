@@ -3,6 +3,7 @@ package se_wiser_knx
 import (
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -114,12 +115,12 @@ func GetValue(client *Client, address string) (string, error) {
 	return value, nil
 }
 
-func SetValue(client *Client, address string, value string) error {
+func SetValue(client *Client, address string, value any) error {
 	query := url.Values{}
 	query.Add("r", "grp")
 	query.Add("fn", "write")
 	query.Add("alias", address)
-	query.Add("value", value)
+	query.Add("value", fmt.Sprintf("%s", value))
 	var t bool
 	err := doPost(client, query, t)
 	if err != nil {

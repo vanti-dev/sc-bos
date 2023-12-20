@@ -162,10 +162,14 @@ func (d *Driver) poll(ctx context.Context) {
 					}
 				} else if dev, ok := d.modesByAddress[obj.Address]; ok {
 					var modeStr string
-					if obj.Data == "0" {
-						modeStr = "auto"
-					} else {
+					b, err := strconv.ParseBool(obj.Data)
+					if err != nil {
+						d.logger.Error("Error parsing mode", zap.Error(err), zap.String("data", obj.Data))
+					}
+					if b {
 						modeStr = "manual"
+					} else {
+						modeStr = "auto"
 					}
 					m := &traits.ModeValues{
 						Values: map[string]string{"mode": modeStr},
@@ -218,13 +222,9 @@ type modeServer struct {
 
 func (m *modeServer) UpdateModeValues(ctx context.Context, req *traits.UpdateModeValuesRequest) (*traits.ModeValues, error) {
 	m.logger.Debug("UpdateModeValues", zap.Any("req", req))
-	var val string
-	switch req.ModeValues.Values["mode"] {
-	case "auto":
-		val = "0"
-	case "manual":
-		val = "1"
-	}
+
+	val := req.ModeValues.Values["mode"] == "manual"
+
 	err := SetValue(m.client, m.device.Addresses["override"], val)
 	if err != nil {
 		return nil, err
