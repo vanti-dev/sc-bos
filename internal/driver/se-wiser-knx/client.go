@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 
@@ -75,6 +76,7 @@ func handleResponse(res *http.Response, destPtr any) error {
 
 func doPost(client *Client, query url.Values, target any) error {
 	req := client.newRequest(http.MethodPost, query)
+	log.Printf("POST %s", req.URL.String())
 	res, err := client.Client.Do(req)
 	if err != nil {
 		return err
@@ -122,7 +124,7 @@ func SetValue(client *Client, address string, value any) error {
 	query.Add("alias", address)
 	query.Add("value", fmt.Sprintf("%s", value))
 	var t bool
-	err := doPost(client, query, t)
+	err := doPost(client, query, &t)
 	if err != nil {
 		return err
 	} else if !t {
