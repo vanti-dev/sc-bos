@@ -77,13 +77,14 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 		}
 
 		for t, addr := range dev.Addresses {
+			_dev := dev
 			switch t {
 			case "light":
 				l := light.NewModel(&traits.Brightness{})
 				c := scLight.WrapApi(lightServer{
 					LightApiServer: light.NewModelServer(l),
 					client:         d.client,
-					device:         &dev,
+					device:         &_dev,
 					logger:         d.logger.Named(dev.Name),
 				})
 				announcer.Announce(dev.Name, node.HasTrait(trait.Light, node.WithClients(c)))
@@ -113,7 +114,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 					mode.WrapApi(&modeServer{
 						ModeApiServer: mode.NewModelServer(modeModel),
 						client:        d.client,
-						device:        &dev,
+						device:        &_dev,
 						logger:        d.logger.Named(dev.Name),
 					}),
 					mode.WrapInfo(s),
