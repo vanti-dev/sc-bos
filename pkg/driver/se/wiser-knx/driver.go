@@ -10,9 +10,8 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	scLight "github.com/smart-core-os/sc-golang/pkg/trait/light"
+	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
-	"github.com/vanti-dev/inf-sc-bos/internal/trait/light"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -81,7 +80,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 			switch t {
 			case "light":
 				l := light.NewModel(&traits.Brightness{})
-				c := scLight.WrapApi(lightServer{
+				c := light.WrapApi(lightServer{
 					LightApiServer: light.NewModelServer(l),
 					client:         d.client,
 					device:         &_dev,
