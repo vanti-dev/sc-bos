@@ -4,4 +4,5 @@
 .conf/
 .DS_Store
 results_*.csv
+.secret/
 .secrets/
