@@ -94,7 +94,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 				modes := &traits.Modes{
 					Modes: []*traits.Modes_Mode{
 						&traits.Modes_Mode{
-							Name:   "mode",
+							Name:   "lighting.mode",
 							Values: []*traits.Modes_Value{{Name: "auto"}, {Name: "manual"}},
 						},
 					},
@@ -175,7 +175,7 @@ func (d *Driver) doPoll() {
 				modeStr = "auto"
 			}
 			m := &traits.ModeValues{
-				Values: map[string]string{"mode": modeStr},
+				Values: map[string]string{"lighting.mode": modeStr},
 			}
 			_, err = dev.UpdateModeValues(m)
 			if err != nil {
@@ -222,7 +222,7 @@ type modeServer struct {
 }
 
 func (m *modeServer) UpdateModeValues(ctx context.Context, req *traits.UpdateModeValuesRequest) (*traits.ModeValues, error) {
-	val := req.ModeValues.Values["mode"] == "manual"
+	val := req.ModeValues.Values["lighting.mode"] == "manual"
 
 	err := SetValue(m.client, m.device.Addresses["override"], val)
 	if err != nil {
