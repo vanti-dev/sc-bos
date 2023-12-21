@@ -1,7 +1,8 @@
-// Package se_wiser_knx contains a driver for Schneider Electric Wiser for KNX.
+// Package wiser_knx contains a driver for Schneider Electric Wiser for KNX lighting controller
 // This driver is intended to work with the Wiser for KNX system running firmware version 2.8.0.
 //
-// The Wiser for KNX system can be controlled using Remote Services (REST API) to control exported objects.
+// The Wiser for KNX system can be controlled using Remote Services (REST API) to control exported objects - this needs
+// to be enabled in the Wiser for KNX system settings by the lighting commissioning engineer.
 //
 // More information about the Wiser for KNX system can be found here:
 // https://www.se.com/uk/en/product/LSS100100/wiser-for-knx-logic-controller/

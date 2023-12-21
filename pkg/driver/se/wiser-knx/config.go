@@ -62,7 +62,9 @@ type Device struct {
 	Name string `json:"name"`
 	// The address of the object on the Wiser for KNX controller (e.g. "1/1/1")
 	Address string `json:"address,omitempty"`
-	// Map of device component (light, override) to address (e.g. {"light": "1/1/1"})
+	// Map of device component to address (e.g. {"light": "1/1/1"}). Possible components:
+	// - "light": the light object
+	// - "override": an optional bool object that disables the Wiser's automation when true - exposed using the Mode trait.
 	Addresses map[string]string `json:"addresses,omitempty"`
 	// The metadata associated with the device.
 	Metadata *traits.Metadata `json:"metadata,omitempty"`
