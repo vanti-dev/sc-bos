@@ -6,4 +6,4 @@
 // More information about the Wiser for KNX system can be found here:
 // https://www.se.com/uk/en/product/LSS100100/wiser-for-knx-logic-controller/
 // User Guide (see "10.4 Remote services") https://download.schneider-electric.com/files?p_Doc_Ref=AR1740_EdQ_EO&p_enDocType=User+guide&p_File_Name=Wiser+for+KNX+%28LSS100100%29+for+Firmware+2.8.0+-+User+Guide+%28Version+Q%29.pdf
-package se_wiser_knx
+package wiser_knx

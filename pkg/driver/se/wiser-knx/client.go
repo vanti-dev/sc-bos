@@ -1,4 +1,4 @@
-package se_wiser_knx
+package wiser_knx
 
 import (
 	"crypto/tls"

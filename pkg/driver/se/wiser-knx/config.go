@@ -1,4 +1,4 @@
-package se_wiser_knx
+package wiser_knx
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ func DefaultConfig() Config {
 	return Config{
 		Poll:         10 * time.Second,
 		Username:     "remote",
-		PasswordFile: "/run/secrets/se-wiser-knx-password",
+		PasswordFile: "/run/secrets/wiser-knx-password",
 	}
 }
 
