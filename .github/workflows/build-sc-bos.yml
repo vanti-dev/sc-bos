@@ -1,0 +1,138 @@
+name: Build and release app
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  build-sc-bos:
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: github.com/smart-core-os/*,github.com/vanti-dev/*
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          cache: true
+          go-version: '1.21.x'
+
+      - name: Private repo auth
+        run: |
+          git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/smart-core-os".insteadOf "https://github.com/smart-core-os"
+          git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/vanti-dev".insteadOf "https://github.com/vanti-dev"
+
+      - name: Install Dependencies
+        run: go mod download
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Build for Linux (use with Docker)
+        run: go build -o .build/linux-amd64/sc-bos github.com/vanti-dev/sc-bos/cmd/bos
+        env:
+          GOOS: linux
+          GOARCH: amd64
+          CGO_ENABLED: 0
+
+      - name: Build for Beckhoff
+        run: go build -o .build/freebsd-amd64/sc-bos github.com/vanti-dev/sc-bos/cmd/bos
+        env:
+          GOOS: freebsd
+          GOARCH: amd64
+          CGO_ENABLED: 0
+
+      - name: Build for Windows
+        run: go build -o .build/win-amd64/sc-bos github.com/vanti-dev/sc-bos/cmd/bos
+        env:
+          GOOS: windows
+          GOARCH: amd64
+          CGO_ENABLED: 0
+
+      - name: Tar & gzip result
+        run: |
+          mkdir -p .out
+          tar -czf .out/sc-bos_${{ github.ref_name }}_linux-amd64.tar.gz -C .build/linux-amd64 .
+          tar -czf .out/sc-bos_${{ github.ref_name }}_freebsd-amd64.tar.gz -C .build/freebsd-amd64 .
+          tar -czf .out/sc-bos_${{ github.ref_name }}_win-amd64.tar.gz -C .build/win-amd64 .
+
+      - name: Save artifacts to share with later jobs
+        uses: actions/upload-artifact@v3
+        with:
+          name: sc-bos
+          path: .out/*
+
+  build-ops-ui:
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: github.com/smart-core-os/*,github.com/vanti-dev/*
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Restore cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Authenticate with private NPM registry (Nexus)
+        run: |
+          echo "always-auth=true" > ~/.npmrc
+          echo "registry=https://nexus.vanti.co.uk/repository/npm-public/" >> ~/.npmrc
+          echo "//nexus.vanti.co.uk/repository/npm-public/:_authToken=${{ secrets.NEXUS_NPM_TOKEN }}" >> ~/.npmrc
+          echo "//nexus.vanti.co.uk/repository/npm-releases/:_authToken=${{ secrets.NEXUS_NPM_TOKEN }}" >> ~/.npmrc
+          echo "@vanti:registry=https://nexus.vanti.co.uk/repository/npm-releases/" >> ~/.npmrc
+          echo "@smart-core-os:registry=https://nexus.vanti.co.uk/repository/npm-releases/" >> ~/.npmrc
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --check-files
+        working-directory: ./ui/conductor
+
+      - name: Build
+        run: yarn run build
+        working-directory: ./ui/conductor
+
+      - name: Tar & gzip result
+        run: tar -czf ./ops-ui_${{ github.ref_name }}.tar.gz -C ./ui/conductor/dist .
+
+      - name: Save artifacts to share with later jobs
+        uses: actions/upload-artifact@v3
+        with:
+          name: ops-ui
+          path: ./ops-ui_${{ github.ref_name }}.tar.gz
+
+  release:
+    needs: [ build-sc-bos, build-ops-ui ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Perform Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            sc-bos/*
+            ops-ui/*
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+          # use our PAT to auth with GitHub so that other workflows can be triggered by the release
+          token: ${{ secrets.GO_MOD_TOKEN }}
