@@ -66,7 +66,7 @@ import {computed, reactive} from 'vue';
 import useOccupancyTrait from '@/composables/traits/useOccupancyTrait';
 
 import ContentCard from '@/components/ContentCard.vue';
-import EnergyGraph from '@/routes/ops/components/EnergyGraph.vue';
+import EnergyGraph from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraph.vue';
 import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
 
 const props = defineProps({

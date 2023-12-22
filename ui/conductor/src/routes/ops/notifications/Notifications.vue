@@ -14,6 +14,7 @@
         @click:row="showNotification">
       <template #top>
         <filters
+            v-if="!props.overviewPage"
             :floor.sync="query.floor"
             :floor-items="floors"
             :zone.sync="query.zone"
@@ -72,6 +73,17 @@ import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
 import {computed, reactive, ref, onUnmounted, watch} from 'vue';
 
+const props = defineProps({
+  overviewPage: {
+    type: Boolean,
+    default: false
+  },
+  zone: {
+    type: String,
+    default: undefined
+  }
+});
+
 const notifications = useNotifications();
 const alertMetadata = useAlertMetadata();
 const hubStore = useHubStore();
@@ -83,7 +95,7 @@ const query = reactive({
   severityNotAbove: undefined,
   severityNotBelow: undefined,
   floor: undefined,
-  zone: undefined,
+  zone: computed(() => props.zone),
   subsystem: undefined,
   source: undefined,
   acknowledged: undefined,

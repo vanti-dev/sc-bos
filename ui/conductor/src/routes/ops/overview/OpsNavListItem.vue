@@ -1,11 +1,13 @@
 <template>
   <div>
-    <div class="d-flex flex-row align-center" :style="setLeftMargin">
+    <div class="d-flex flex-row align-center pb-2" :style="setLeftMargin">
       <v-list-item
           :active-class="!isDeepestActiveItem ? 'primary--text black' : ''"
           :class="[
             'd-flex flex-row align-center my-0 mr-2',
-            {'mb-2': !isOpen && !isDeepestActiveItem, 'mr-9': !hasChildren && !props.miniVariant}
+            {
+              'mr-9': !hasChildren && !props.miniVariant
+            }
           ]"
           :to="toAreaLink"
           @click="setActiveOverview(item)">
@@ -29,7 +31,7 @@
     <v-slide-y-transition hide-on-leave>
       <OpsNavList
           v-if="isOpen && hasChildren"
-          :class="isOpen ? 'mb-n1' : ''"
+          :class="isOpen ? 'mt-n2 mb-n1' : ''"
           :items="props.item.children"
           :depth="props.depth + 0.5"
           :mini-variant="props.miniVariant"
@@ -49,6 +51,10 @@ import OpsNavList from '@/routes/ops/overview/OpsNavList.vue';
 const props = defineProps({
   item: {
     type: Object,
+    required: true
+  },
+  items: {
+    type: Array,
     required: true
   },
   depth: {
