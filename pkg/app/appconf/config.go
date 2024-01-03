@@ -51,6 +51,10 @@ func (c *Config) mergeWith(other *Config) {
 		proto.Merge(c.Metadata, other.Metadata)
 	}
 
+	if c.Name == "" {
+		c.Name = other.Name
+	}
+
 	// if any driver/auto/zone has a duplicate name it is ignored in favour of the one already present
 
 	driverNames := c.driverNamesMap()
