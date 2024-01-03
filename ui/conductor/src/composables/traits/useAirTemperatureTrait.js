@@ -1,7 +1,7 @@
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
 import {pullAirTemperature, updateAirTemperature} from '@/api/sc/traits/air-temperature';
 import {useErrorStore} from '@/components/ui-error/error';
-import {onMounted, onUnmounted, reactive, watch} from 'vue';
+import {reactive, watch} from 'vue';
 
 /**
  *
@@ -13,7 +13,9 @@ import {onMounted, onUnmounted, reactive, watch} from 'vue';
  *  updateTracker: ActionTracker<AirTemperature.AsObject>,
  *  doUpdateAirTemperature: (
  *    function(number|Partial<AirTemperature.AsObject>|Partial<UpdateAirTemperatureRequest.AsObject>)
- *  )
+ *  ),
+ *  collectErrors: function(),
+ *  clearResourceError: function()
  * }}
  */
 export default function(props) {
@@ -74,19 +76,23 @@ export default function(props) {
   //
   // UI error handling
   const errorHandlers = [];
-  onMounted(() => {
+
+  const collectErrors = () => {
     errorHandlers.push(
         errorStore.registerTracker(updateTracker)
     );
-  });
-  onUnmounted(() => {
+  };
+
+  const clearResourceError = () => {
     closeResource(airTemperatureResource);
     errorHandlers.forEach(unwatch => unwatch());
-  });
+  };
 
   return {
     airTemperatureResource,
     updateTracker,
-    doUpdateAirTemperature
+    doUpdateAirTemperature,
+    collectErrors,
+    clearResourceError
   };
 }

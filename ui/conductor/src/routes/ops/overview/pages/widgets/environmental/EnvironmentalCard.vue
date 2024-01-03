@@ -1,10 +1,10 @@
 <template>
   <content-card class="mb-5 d-flex flex-column pt-7 pb-0">
     <h4 class="text-h4 pl-4 pb-8 pt-0">Environmental</h4>
-    <div class="d-flex flex-row flex-nowrap">
+    <div :class="['d-flex flex-row justify-center', {'flex-wrap mb-4': props.shouldWrap}]">
       <circular-gauge
           :value="temperature"
-          color="#ffc432"
+          :color="props.gaugeColor"
           :min="temperatureRange.low"
           :max="temperatureRange.high"
           segments="30"
@@ -35,7 +35,7 @@
       <circular-gauge
           v-if="humidity > 0"
           :value="humidity"
-          color="#ffc432"
+          :color="props.gaugeColor"
           segments="30"
           style="max-width: 140px;"
           class="mt-2">
@@ -68,6 +68,14 @@ const props = defineProps({
   externalName: {
     type: String,
     default: ''
+  },
+  gaugeColor: {
+    type: String,
+    default: ''
+  },
+  shouldWrap: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -87,92 +95,53 @@ const unwatchErrorFunctions = {};
 
 // Watch for changes to the name prop and update the indoorValues object
 watch(() => props.name, (newName, oldName) => {
-  const oldNames = Array.isArray(oldName) ? oldName : [oldName];
-  const newNames = Array.isArray(newName) ? newName : [newName];
+  // Remove old name
+  useAirTemperatureTrait({name: oldName, paused: true}).clearResourceError();
+  unwatchErrorFunctions[oldName]?.(); // unwatch the error function
+  delete unwatchErrorFunctions[oldName]; // delete the error function
+  delete indoorValues[oldName]; // delete the value
 
-  // Remove old names
-  oldNames.forEach((name) => {
-    if (!newNames.includes(name)) {
-      unwatchErrorFunctions[name]?.(); // unwatch the error function
-      delete unwatchErrorFunctions[name]; // delete the error function
-      delete indoorValues[name]; // delete the value
-    }
-  });
-
-  // Add new names
-  newNames.forEach((name) => {
-    if (!oldNames.includes(name) && name) {
-      indoorValues[name] = useAirTemperatureTrait({name, paused: false});
-      // watch the error function
-      unwatchErrorFunctions[name] = errorStore.registerValue(indoorValues[name].airTemperatureResource);
-    }
-  });
+  if (newName) {
+    // Add new names
+    indoorValues[newName] = useAirTemperatureTrait({name: newName, paused: false});
+    // watch the error function
+    unwatchErrorFunctions[newName] = errorStore.registerValue(indoorValues[newName].airTemperatureResource);
+  }
 }, {immediate: true, deep: true});
 
 
 // Watch for changes to the externalName prop and update the outdoorValues object
 watch(() => props.externalName, (newName, oldName) => {
-  const oldNames = Array.isArray(oldName) ? oldName : [oldName];
-  const newNames = Array.isArray(newName) ? newName : [newName];
+  // Remove old name
+  useAirTemperatureTrait({name: oldName, paused: true}).clearResourceError();
+  unwatchErrorFunctions[oldName]?.(); // unwatch the error function
+  delete unwatchErrorFunctions[oldName]; // delete the error function
+  delete outdoorValues[oldName]; // delete the value
 
-  // Remove old names
-  oldNames.forEach((name) => {
-    if (!newNames.includes(name)) {
-      unwatchErrorFunctions[name]?.(); // unwatch the error function
-      delete unwatchErrorFunctions[name]; // delete the error function
-      delete outdoorValues[name]; // delete the value
-    }
-  });
 
-  // Add new names
-  newNames.forEach((name) => {
-    if (!oldNames.includes(name) && name) {
-      outdoorValues[name] = useAirTemperatureTrait({name, paused: false});
-      // watch the error function
-      unwatchErrorFunctions[name] = errorStore.registerValue(outdoorValues[name].airTemperatureResource);
-    }
-  });
+  if (newName) {
+    // Add new name
+    outdoorValues[newName] = useAirTemperatureTrait({name: newName, paused: false});
+    // watch the error function
+    unwatchErrorFunctions[newName] = errorStore.registerValue(outdoorValues[newName].airTemperatureResource);
+  }
 }, {immediate: true, deep: true});
 
 
 // ------------------------------------ //
-// Calculate the average indoor temperature (if multiple devices are specified)
-// or return the temperature of the single device specified
+// Return the temperature of the single device specified
 const averageIndoorTempValue = computed(() => {
-  if (Array.isArray(props.name)) {
-    const values = props.name.map(
-        (name) => indoorValues[name].airTemperatureResource?.value?.ambientTemperature?.valueCelsius ?? 0);
-    const sum = values.reduce((a, b) => a + b, 0);
-    return sum / values.length;
-  } else {
-    return indoorValues[props.name]?.airTemperatureResource?.value?.ambientTemperature?.valueCelsius ?? 0;
-  }
+  return indoorValues[props.name]?.airTemperatureResource?.value?.ambientTemperature?.valueCelsius ?? 0;
 });
 
-// Calculate the average indoor humidity (if multiple devices are specified)
-// or return the humidity of the single device specified
+// Return the humidity of the single device specified
 const averageIndoorHumidityValue = computed(() => {
-  if (Array.isArray(props.name)) {
-    const values = props.name.map(
-        (name) => indoorValues[name].airTemperatureResource?.value?.ambientHumidity ?? 0);
-    const sum = values.reduce((a, b) => a + b, 0);
-    return sum / values.length;
-  } else {
-    return indoorValues[props.name]?.airTemperatureResource?.value?.ambientHumidity ?? 0;
-  }
+  return indoorValues[props.name]?.airTemperatureResource?.value?.ambientHumidity ?? 0;
 });
 
-// Calculate the average external temperature (if multiple external devices are specified)
-// or return the external temperature of the single device specified
+// Return the external temperature of the single device specified
 const averageOutdoorTempValue = computed(() => {
-  if (Array.isArray(props.externalName)) {
-    const values = props.externalName.map(
-        (name) => outdoorValues[name].airTemperatureResource?.value?.ambientTemperature?.valueCelsius ?? 0);
-    const sum = values.reduce((a, b) => a + b, 0);
-    return sum / values.length;
-  } else {
-    return outdoorValues[props.externalName]?.airTemperatureResource?.value?.ambientTemperature?.valueCelsius ?? 0;
-  }
+  return outdoorValues[props.externalName]?.airTemperatureResource?.value?.ambientTemperature?.valueCelsius ?? 0;
 });
 
 const temperature = computed(() => {
