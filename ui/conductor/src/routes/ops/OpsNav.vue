@@ -1,7 +1,7 @@
 <template>
   <v-list class="pa-0" dense nav>
     <v-list-item-group class="mt-2 mb-n1">
-      <span class="d-flex flex-row align-center ma-0">
+      <span v-if="appConfig.pathEnabled('/ops/overview')" class="d-flex flex-row align-center ma-0">
         <v-list-item class="mb-0" :disabled="hasNoAccess('/ops/overview')" to="/ops/overview/building">
           <v-list-item-icon>
             <v-icon>mdi-domain</v-icon>
@@ -119,7 +119,7 @@ const counts = reactive({
  * This is the main list of items
  *
  * @type {
- *  import('vue').ComputedRef<{title: string, icon: string, link: {path: string}, countType: string}[]>
+ *  import('vue').ComputedRef<{title: string, icon: string, link: {path: string}, countType?: string}[]>
  * } menuItems
  */
 const menuItems = computed(() => [
