@@ -8,6 +8,7 @@
     <environmental-card
         v-if="props.item.traits.showEnvironment"
         class="mt-3"
+        gauge-color="#ffc432"
         :name="props.item.traits.showEnvironment.indoor"
         :external-name="props.item.traits.showEnvironment.outdoor"/>
 
