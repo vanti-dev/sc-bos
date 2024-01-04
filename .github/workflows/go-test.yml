@@ -1,0 +1,25 @@
+name: Go Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-all:
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: github.com/smart-core-os/*,github.com/vanti-dev/*
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          cache: true
+          go-version: '^1.19.5'
+      - name: Private repo auth
+        run: |
+          git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/smart-core-os".insteadOf "https://github.com/smart-core-os"
+          git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/vanti-dev".insteadOf "https://github.com/vanti-dev"
+      - name: Test
+        run: go test --tags=notc3dali ./...
