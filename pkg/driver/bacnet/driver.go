@@ -224,7 +224,7 @@ func (d *Driver) configureDevice(ctx context.Context, rootAnnouncer node.Announc
 		return fmt.Errorf("device comm handshake: %w", ctxerr.Cause(ctx, err))
 	}
 
-	d.storeDevice(deviceName, bacDevice)
+	d.storeDevice(deviceName, bacDevice, device.DefaultWritePriority)
 
 	if device.Metadata != nil {
 		rootAnnouncer = node.AnnounceFeatures(rootAnnouncer, node.HasMetadata(device.Metadata))
@@ -295,10 +295,10 @@ func (d *Driver) storeObject(bacDevice bactypes.Device, co config.Object, bo *ba
 	return d.devices.StoreObject(bacDevice, adapt.ObjectName(co), *bo)
 }
 
-func (d *Driver) storeDevice(deviceName string, bacDevice bactypes.Device) {
+func (d *Driver) storeDevice(deviceName string, bacDevice bactypes.Device, defaultWritePriority uint) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	d.devices.StoreDevice(deviceName, bacDevice)
+	d.devices.StoreDevice(deviceName, bacDevice, defaultWritePriority)
 }
 
 func (d *Driver) Clear() {
