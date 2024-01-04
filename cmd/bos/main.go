@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/vanti-dev/sc-bos/internal/driver/settings"
 	"github.com/vanti-dev/sc-bos/pkg/app"
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/auto/allautos"
@@ -42,6 +43,7 @@ func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig := sysconf.Default()
 
 	systemConfig.DriverFactories = alldrivers.Factories()
+	systemConfig.DriverFactories[settings.DriverName] = settings.Factory
 	systemConfig.AutoFactories = allautos.Factories()
 	systemConfig.SystemFactories = allsystems.Factories()
 	systemConfig.ZoneFactories = allzones.Factories()
