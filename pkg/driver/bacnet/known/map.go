@@ -23,7 +23,7 @@ func NewMap() *Map {
 	return &Map{}
 }
 
-func (m *Map) StoreDevice(name string, d bactypes.Device) {
+func (m *Map) StoreDevice(name string, d bactypes.Device, defaultWritePriority uint) {
 	if m.devicesByID == nil {
 		m.devicesByID = make(map[bactypes.ObjectInstance]*device)
 		m.devicesByName = make(map[string]*device)
@@ -34,9 +34,10 @@ func (m *Map) StoreDevice(name string, d bactypes.Device) {
 		item = e
 	} else {
 		item = &device{
-			bacDevice:     d,
-			objectsByID:   make(map[bactypes.ObjectID]*object),
-			objectsByName: make(map[string]*object),
+			bacDevice:            d,
+			objectsByID:          make(map[bactypes.ObjectID]*object),
+			objectsByName:        make(map[string]*object),
+			defaultWritePriority: defaultWritePriority,
 		}
 		m.devicesByID[d.ID.Instance] = item
 	}
@@ -181,12 +182,21 @@ func (m *Map) LookupObjectByName(device bactypes.Device, name string) (bactypes.
 	return o.bacObject, nil
 }
 
+func (m *Map) GetDeviceDefaultWritePriority(id bactypes.ObjectInstance) uint {
+	d, ok := m.devicesByID[id]
+	if !ok {
+		return 0
+	}
+	return d.defaultWritePriority
+}
+
 type device struct {
 	bacDevice bactypes.Device
 	names     []string
 
-	objectsByID   map[bactypes.ObjectID]*object
-	objectsByName map[string]*object
+	objectsByID          map[bactypes.ObjectID]*object
+	objectsByName        map[string]*object
+	defaultWritePriority uint
 }
 
 type object struct {
