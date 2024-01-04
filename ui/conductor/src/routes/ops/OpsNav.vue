@@ -2,7 +2,7 @@
   <v-list class="pa-0" dense nav>
     <v-list-item-group class="mt-2 mb-n1">
       <span v-if="appConfig.pathEnabled('/ops/overview')" class="d-flex flex-row align-center ma-0">
-        <v-list-item class="mb-0" :disabled="hasNoAccess('/ops/overview')" to="/ops/overview/building">
+        <v-list-item class="mb-0" :disabled="hasNoAccess('/ops/overview/building')" to="/ops/overview/building">
           <v-list-item-icon>
             <v-icon>mdi-domain</v-icon>
           </v-list-item-icon>
