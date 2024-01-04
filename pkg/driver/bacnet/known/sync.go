@@ -46,3 +46,9 @@ func (s *syncMap) LookupObjectByName(device bactypes.Device, name string) (bacty
 	defer s.mu.Unlock()
 	return s.impl.LookupObjectByName(device, name)
 }
+
+func (s *syncMap) GetDeviceDefaultWritePriority(id bactypes.ObjectInstance) uint {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.impl.GetDeviceDefaultWritePriority(id)
+}

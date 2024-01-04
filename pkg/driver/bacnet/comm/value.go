@@ -309,7 +309,12 @@ func WriteProperty(ctx context.Context, client *gobacnet.Client, known known.Con
 			},
 		},
 	}
-	err = client.WriteProperty(ctx, device, req, priority)
+	writePriority := known.GetDeviceDefaultWritePriority(device.ID.Instance)
+
+	if priority > 0 {
+		writePriority = priority // allow overriding the device default priority with one given if non-zero
+	}
+	err = client.WriteProperty(ctx, device, req, writePriority)
 	return ctxerr.Cause(ctx, err)
 }
 
