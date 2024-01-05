@@ -33,6 +33,7 @@ jobs:
 
       # Download the release assets so we can use them in our Docker image
       - name: Download release assets
+        if: ${{ !env.ACT }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
@@ -89,6 +90,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
+          # only push if not running locally using act
+          push: ${{ !env.ACT }}
           tags: ghcr.io/vanti-dev/sc-bos:${{ env.TAG_NAME }}
           labels: ${{ steps.meta.outputs.labels }}
