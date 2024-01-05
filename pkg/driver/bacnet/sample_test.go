@@ -100,7 +100,7 @@ func TestSiteFaults(t *testing.T) {
 			log.Printf("ERR: FindDevice %v %v", device.Name, err)
 			continue
 		}
-		knownMap.StoreDevice(adapt.DeviceName(device), bacDevice)
+		knownMap.StoreDevice(adapt.DeviceName(device), bacDevice, 0)
 		for _, co := range device.Objects {
 			bo := bactypes.Object{
 				ID: bactypes.ObjectID(co.ID),
