@@ -4,7 +4,7 @@
     <div :class="['d-flex flex-row justify-center ml-n3', {'flex-wrap mb-4': props.shouldWrap}]">
       <v-col cols="auto" class="ma-0 pa-0">
         <circular-gauge
-            v-if="indoorTrait.temperatureValue > 0 || props.shouldWrap"
+            v-if="indoorTrait && indoorTrait.temperatureValue > 0 || props.shouldWrap"
             :value="indoorTrait.temperatureValue"
             :color="props.gaugeColor"
             :min="temperatureRange.low"
@@ -22,8 +22,8 @@
       </v-col>
       <v-col cols="auto" class="mt-auto mb-0 pb-2 px-0">
         <div
-            v-if="outdoorTrait.temperatureValue > 0 || props.shouldWrap"
-            :class="[indoorTrait.humidityValue > 0 ? 'mb-7' : 'mb-2',
+            v-if="outdoorTrait && outdoorTrait.temperatureValue > 0 || props.shouldWrap"
+            :class="[indoorTrait && indoorTrait.humidityValue > 0 ? 'mb-7' : 'mb-2',
                      'd-flex flex-column justify-end align-center']"
             style="width: 150px;">
           <span
@@ -39,7 +39,7 @@
       </v-col>
       <v-col cols="auto" class="pa-0">
         <circular-gauge
-            v-if="indoorTrait.humidityValue > 0"
+            v-if="indoorTrait && indoorTrait.humidityValue > 0"
             :value="indoorTrait.humidityValue"
             :color="props.gaugeColor"
             segments="30"
@@ -63,7 +63,7 @@ import ContentCard from '@/components/ContentCard.vue';
 
 import {useErrorStore} from '@/components/ui-error/error';
 import useAirTemperatureTrait from '@/composables/traits/useAirTemperatureTrait';
-import {onUnmounted, ref, watch} from 'vue';
+import {onBeforeUnmount, ref, watch} from 'vue';
 
 const props = defineProps({
   // name of the device/zone to query for internal temperature data
@@ -113,17 +113,16 @@ const updateTraits = () => {
 
   if (props.name) {
     indoorTrait.value = useAirTemperatureTrait({name: props.name, paused: false});
-  } else {
-    indoorTrait.value = useAirTemperatureTrait({name: props.name, paused: true});
   }
 
   if (props.externalName) {
     outdoorTrait.value = useAirTemperatureTrait({name: props.externalName, paused: false});
-  } else {
-    outdoorTrait.value = useAirTemperatureTrait({name: props.externalName, paused: true});
   }
 
   // Register or update error watchers
+  if (!indoorTrait.value || !outdoorTrait.value) {
+    return;
+  }
   unwatchErrorFunctions.forEach(unwatch => unwatch());
   unwatchErrorFunctions.push(errorStore.registerValue(indoorTrait.value.airTemperatureResource));
   unwatchErrorFunctions.push(errorStore.registerValue(outdoorTrait.value.airTemperatureResource));
@@ -136,9 +135,13 @@ watch(() => props.externalName, updateTraits, {immediate: true});
 // ------------------------------------ //
 // Clean up UI Error handling
 // Clean up error watchers when the component is unmounted
-onUnmounted(() => {
-  indoorTrait.value.clearResourceError();
-  outdoorTrait.value.clearResourceError();
+const cleanup = () => {
+  if (indoorTrait.value) indoorTrait.value.clearResourceError();
+  if (outdoorTrait.value) outdoorTrait.value.clearResourceError();
   unwatchErrorFunctions.forEach(unwatch => unwatch());
+};
+
+onBeforeUnmount(() => {
+  cleanup();
 });
 </script>
