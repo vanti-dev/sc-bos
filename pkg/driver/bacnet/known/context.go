@@ -9,4 +9,5 @@ type Context interface {
 	LookupDeviceByName(name string) (bactypes.Device, error)
 	LookupObjectByID(device bactypes.Device, id bactypes.ObjectID) (bactypes.Object, error)
 	LookupObjectByName(device bactypes.Device, name string) (bactypes.Object, error)
+	GetDeviceDefaultWritePriority(id bactypes.ObjectInstance) uint
 }

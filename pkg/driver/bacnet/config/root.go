@@ -91,8 +91,9 @@ type Device struct {
 	// Metadata applied to any traits sharing this devices name.
 	Metadata *traits.Metadata `json:"metadata,omitempty"`
 
-	DiscoverObjects *bool    `json:"discoverObjects,omitempty"`
-	Objects         []Object `json:"objects,omitempty"`
+	DiscoverObjects      *bool    `json:"discoverObjects,omitempty"`
+	Objects              []Object `json:"objects,omitempty"`
+	DefaultWritePriority uint     `json:"defaultWritePriority,omitempty"`
 }
 
 type Comm struct {

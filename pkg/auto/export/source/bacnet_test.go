@@ -35,7 +35,7 @@ func TestBacnet_PublishAll(t *testing.T) {
 		Map: known.NewMap(),
 	}
 	device := bactypes.Device{ID: bactypes.ObjectID{Type: objecttype.Device, Instance: 12}}
-	server.StoreDevice("dev01", device)
+	server.StoreDevice("dev01", device, 0)
 	server.StoreObject(device, "obj01", bactypes.Object{
 		ID: bactypes.ObjectID{Type: objecttype.AnalogValue, Instance: 1},
 		Properties: []bactypes.Property{
