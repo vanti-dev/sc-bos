@@ -136,7 +136,10 @@
             "showAirQuality": false,
             "showEmergencyLighting": false,
             "showEnergyConsumption": false,
-            "showEnvironment": "outside",
+            "showEnvironment": {
+              "indoor": false,
+              "outdoor": "outside"
+            },
             "showNotifications": false,
             "showOccupancy": false,
             "showPower": false

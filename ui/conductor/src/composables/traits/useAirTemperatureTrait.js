@@ -1,7 +1,7 @@
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
 import {pullAirTemperature, updateAirTemperature} from '@/api/sc/traits/air-temperature';
 import {useErrorStore} from '@/components/ui-error/error';
-import {reactive, watch} from 'vue';
+import {computed, reactive, watch} from 'vue';
 
 /**
  *
@@ -14,6 +14,8 @@ import {reactive, watch} from 'vue';
  *  doUpdateAirTemperature: (
  *    function(number|Partial<AirTemperature.AsObject>|Partial<UpdateAirTemperatureRequest.AsObject>)
  *  ),
+ *  temperatureValue: import('vue').ComputedRef<number>,
+ *  humidityValue: import('vue').ComputedRef<number>,
  *  collectErrors: function(),
  *  clearResourceError: function()
  * }}
@@ -57,7 +59,6 @@ export default function(props) {
   watch(
       [() => props.paused, () => props.name],
       ([newPaused, newName], [oldPaused, oldName]) => {
-        // only for LightSensor
         if (newPaused === oldPaused && newName === oldName) return;
 
         if (newPaused) {
@@ -70,6 +71,18 @@ export default function(props) {
         }
       },
       {immediate: true, deep: true, flush: 'sync'}
+  );
+
+  //
+  //
+  // Return the temperature of the single device specified
+  const temperatureValue = computed(() =>
+    airTemperatureResource.value?.ambientTemperature?.valueCelsius ?? 0
+  );
+
+  // Return the humidity of the single device specified
+  const humidityValue = computed(() =>
+    airTemperatureResource.value?.ambientHumidity ?? 0
   );
 
   //
@@ -92,6 +105,8 @@ export default function(props) {
     airTemperatureResource,
     updateTracker,
     doUpdateAirTemperature,
+    temperatureValue,
+    humidityValue,
     collectErrors,
     clearResourceError
   };
