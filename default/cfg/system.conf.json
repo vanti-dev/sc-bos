@@ -1,0 +1,18 @@
+{
+  "staticHosting": [
+    {"path": "/", "filePath": "/usr/local/inf-sc-bos/static/ops"},
+    {"path": "/__/scos/", "filePath": "/usr/local/inf-sc-bos/static/ui-config"}
+  ],
+  "certs": {
+  },
+  "logger": {
+    "level": "DEBUG"
+  },
+  "systems": {
+    "authn": {
+      "user": {
+        "fileAccounts": true
+      }
+    }
+  }
+}

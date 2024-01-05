@@ -1,0 +1,20 @@
+{
+  "features": {
+    "auth": false,
+    "devices": {
+      "*": true
+    },
+    "ops": false,
+    "site": false,
+    "automations": {
+      "*": true
+    },
+    "system": {
+      "drivers": true,
+      "features": true
+    }
+  },
+  "config": {
+    "home": "/devices"
+  }
+}

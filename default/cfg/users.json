@@ -1,0 +1,18 @@
+[
+  {
+    "id": "vanti",
+    "roles": ["superAdmin", "admin"],
+    "title": "Vanti",
+    "secrets": [
+      {"hash": "$2a$10$QoPm3YXsJ0hZ5V0EQtcV0exnnEEPNWnYnCEugtuMgFcIe5lFNItBO"}
+    ]
+  },
+  {
+    "id": "admin",
+    "roles": ["admin"],
+    "title": "Local admin",
+    "secrets": [
+      {"hash": "$2a$10$ktJ6171YBpltjLj669LOCurfYDe2F6VtPZ380qdQQ3bKyYDTOy5Ge"}
+    ]
+  }
+]

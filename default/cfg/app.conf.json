@@ -1,0 +1,12 @@
+{
+  "name": "default/sc-01",
+  "metadata": {
+    "membership": {
+      "subsystem": "smart"
+    },
+    "product": {
+      "manufacturer": "Vanti",
+      "model": "Smart Core BOS"
+    }
+  }
+}
