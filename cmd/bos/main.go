@@ -10,10 +10,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/auto/allautos"
 	"github.com/vanti-dev/sc-bos/pkg/driver/alldrivers"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system/allsystems"
-	"github.com/vanti-dev/sc-bos/pkg/testapi"
 	"github.com/vanti-dev/sc-bos/pkg/zone/allzones"
 )
 
@@ -33,8 +31,6 @@ func run(ctx context.Context) error {
 	}
 
 	alltraits.AddSupport(controller.Node)
-
-	gen.RegisterTestApiServer(controller.GRPC, testapi.NewAPI())
 
 	return controller.Run(ctx)
 }
