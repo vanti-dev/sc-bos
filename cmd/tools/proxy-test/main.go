@@ -10,7 +10,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 )
 
 func main() {
@@ -19,7 +20,9 @@ func main() {
 		log.Fatalln(err)
 	}
 	realServer := grpc.NewServer()
-	gen.RegisterTestApiServer(realServer, &testApi{t: &gen.Test{Data: "initial"}})
+	model := onoff.NewModel(onoff.WithInitialOnOff(&traits.OnOff{State: traits.OnOff_ON}))
+	apiImpl := onoff.NewModelServer(model)
+	traits.RegisterOnOffApiServer(realServer, apiImpl)
 	go realServer.Serve(realLis)
 	defer realServer.Stop()
 
@@ -46,8 +49,8 @@ func main() {
 
 	log.Printf("Proxy server hosted on %v", proxyLis.Addr())
 	proxyConn, err := grpc.Dial(proxyLis.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	client := gen.NewTestApiClient(proxyConn)
-	test, err := client.GetTest(context.Background(), &gen.GetTestRequest{})
+	client := traits.NewOnOffApiClient(proxyConn)
+	test, err := client.GetOnOff(context.Background(), &traits.GetOnOffRequest{})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -76,25 +79,4 @@ func (ss *loggingServerStream) RecvMsg(m interface{}) error {
 	err := ss.ServerStream.RecvMsg(m)
 	log.Printf("intercept.RecvMsg((%T) {%v}) %v", m, m, err)
 	return err
-}
-
-type testApi struct {
-	gen.UnimplementedTestApiServer
-	t *gen.Test
-}
-
-func (t *testApi) GetTest(ctx context.Context, request *gen.GetTestRequest) (*gen.Test, error) {
-	log.Printf("GetTest(%v, %v)", ctx, request)
-	return t.t, nil
-}
-
-func (t *testApi) UpdateTest(ctx context.Context, request *gen.UpdateTestRequest) (*gen.Test, error) {
-	log.Printf("UpdateTest(%v, %v)", ctx, request)
-	t.t = request.Test
-	return t.t, nil
-}
-
-func (t *testApi) mustEmbedUnimplementedTestApiServer() {
-	// TODO implement me
-	panic("implement me")
 }
