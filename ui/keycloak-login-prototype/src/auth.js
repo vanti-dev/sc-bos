@@ -10,6 +10,6 @@ export const keycloak = new Keycloak({
 
 export const allScopes = [
   'profile',
-  'Test.Read',
-  'Test.Write'
+  'Read',
+  'Write'
 ]

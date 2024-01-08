@@ -1,6 +1,6 @@
 <script setup>
-import {TestApiPromiseClient} from '@sc-bos/ui-gen/src/test_grpc_web_pb';
-import {Test, UpdateTestRequest} from '@sc-bos/ui-gen/src/test_pb';
+import {OnOffApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/on_off_grpc_web_pb';
+import {OnOff, UpdateOnOffRequest} from '@smart-core-os/sc-api-grpc-web/traits/on_off_pb';
 import {ref} from 'vue';
 
 const props = defineProps(['token'])
@@ -8,21 +8,21 @@ const props = defineProps(['token'])
 const data = ref('')
 const error = ref(null)
 
-const client = new TestApiPromiseClient('http://localhost:8000', null, null)
+const client = new OnOffApiPromiseClient('http://localhost:8000', null, null)
 
 async function updateTest() {
   const token = props.token
   if (token === undefined || token === null) {
-    window.alert("get token first")
+    window.alert('get token first')
     return
   }
 
-  const request = new UpdateTestRequest()
-      .setTest(new Test().setData(data.value))
+  const request = new UpdateOnOffRequest()
+      .setOnOff(new OnOff().setState(OnOff.State.ON))
 
   try {
-    await client.updateTest(request, {
-      "Authorization": "Bearer " + token,
+    await client.updateOnOff(request, {
+      'Authorization': 'Bearer ' + token,
     })
     error.value = null
   } catch (e) {
@@ -35,9 +35,12 @@ async function updateTest() {
 <template>
   <h2>Update Test</h2>
   <h3>Value to Write</h3>
-  <textarea v-model="data"></textarea>
+  <label>
+    Turn On
+    <input v-model="data" type="checkbox" value="false">
+  </label>
   <div>
-    <button @click="updateTest">TestApi.UpdateTest</button>
+    <button @click="updateTest">OnOffApi.UpdateOnOff</button>
   </div>
   <div v-if="error !== null">
     <h3>Error</h3>

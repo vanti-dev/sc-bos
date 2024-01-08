@@ -1,10 +1,10 @@
 <script setup>
-import {TestApiPromiseClient} from '@sc-bos/ui-gen/src/test_grpc_web_pb'
-import {GetTestRequest} from '@sc-bos/ui-gen/src/test_pb';
+import {OnOffApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/on_off_grpc_web_pb';
+import {GetOnOffRequest} from '@smart-core-os/sc-api-grpc-web/traits/on_off_pb';
 import {reactive} from 'vue'
 
 const props = defineProps(['token'])
-const client = new TestApiPromiseClient('http://localhost:8000', null, null)
+const client = new OnOffApiPromiseClient('http://localhost:8000', null, null)
 
 const result = reactive({
   data: null,
@@ -21,7 +21,7 @@ async function getTest() {
   result.data = null
 
   try {
-    result.data = await client.getTest(new GetTestRequest(),{
+    result.data = await client.getOnOff(new GetOnOffRequest(),{
       "Authorization": "Bearer " + props.token
     })
     result.error = null
@@ -33,7 +33,7 @@ async function getTest() {
 
 <template>
   <h2>Get Test</h2>
-  <button @click="getTest">TestApi.GetTest</button>
+  <button @click="getTest">OnOffApi.GetOnOff</button>
   <div v-if="result.data !== null">
     <h3>Response</h3>
     <pre>{{ result.data }}</pre>
