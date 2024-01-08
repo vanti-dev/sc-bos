@@ -7,14 +7,14 @@
     "preview": "vite preview --port 5050"
   },
   "dependencies": {
-    "@sc-bos/ui-gen" : "../ui-gen",
-    "google-protobuf" : "^3.20.1",
-    "grpc-web" : "^1.3.1",
-    "keycloak-js" : "^18.0.0",
-    "vue" : "^3.2.33"
+    "@smart-core-os/sc-api-grpc-web" : "^1.0.0-beta.44",
+    "google-protobuf" : "^3.21.2",
+    "grpc-web" : "^1.5.0",
+    "keycloak-js" : "^23.0.3",
+    "vue" : "^3.4.5"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^2.3.1",
-    "vite": "^2.9.5"
+    "@vitejs/plugin-vue": "^5.0.2",
+    "vite": "^5.0.11"
   }
 }
