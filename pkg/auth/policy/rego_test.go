@@ -4,26 +4,24 @@ import (
 	"context"
 	"testing"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 func BenchmarkPolicy(b *testing.B) {
 	attrs := Attributes{
-		Service: "vanti.bsp.ew.TestApi",
-		Method:  "UpdateTest",
-		Request: &gen.UpdateTestRequest{
-			Test: &gen.Test{Data: "please foobar"},
-		},
+		Service:    "smartcore.traits.OnOff",
+		Method:     "UpdateOnOff",
+		Request:    &traits.UpdateOnOffRequest{Name: "test", OnOff: &traits.OnOff{State: traits.OnOff_ON}},
 		TokenValid: true,
 		TokenClaims: token.Claims{
-			Roles:  []string{"Test.User"},
-			Scopes: []string{"Test.Read", "Test.Write"},
+			Roles:  []string{"admin"},
+			Scopes: []string{"Read", "Write"},
 		},
 	}
 	run := func(b *testing.B, policy Policy) {
 		for i := 0; i < b.N; i++ {
-			result, err := policy.EvalPolicy(context.Background(), "data.vanti.bsp.ew.TestApi.allow", attrs)
+			result, err := policy.EvalPolicy(context.Background(), "data.smartcore.allow", attrs)
 			if err != nil {
 				b.Error(err)
 			}
