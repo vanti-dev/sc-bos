@@ -9,6 +9,8 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
+	"github.com/smart-core-os/sc-golang/pkg/cmp"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
 	"github.com/vanti-dev/gobacnet"
@@ -50,7 +52,9 @@ func newAirTemperature(client *gobacnet.Client, devices known.Context, statuses 
 	if err != nil {
 		return nil, err
 	}
-	model := airtemperature.NewModel()
+	model := airtemperature.NewModel(resource.WithMessageEquivalence(cmp.Equal(
+		cmp.FloatValueApprox(0, 0.1), // report temperature changes of 0.1C or more
+	)))
 	t := &airTemperature{
 		client:      client,
 		known:       devices,
