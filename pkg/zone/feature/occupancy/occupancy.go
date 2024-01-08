@@ -5,7 +5,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -49,7 +48,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 		if len(cfg.EnterLeaveOccupancySensors) > 0 {
 			elServer := &enterLeave{
-				model: occupancysensor.NewModel(&traits.Occupancy{}),
+				model: occupancysensor.NewModel(),
 				names: cfg.EnterLeaveOccupancySensors,
 			}
 			if err := f.clients.Client(&elServer.client); err != nil {

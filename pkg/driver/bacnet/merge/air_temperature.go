@@ -50,7 +50,7 @@ func newAirTemperature(client *gobacnet.Client, devices known.Context, statuses 
 	if err != nil {
 		return nil, err
 	}
-	model := airtemperature.NewModel(&traits.AirTemperature{})
+	model := airtemperature.NewModel()
 	t := &airTemperature{
 		client:      client,
 		known:       devices,

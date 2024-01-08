@@ -18,7 +18,7 @@ import (
 )
 
 func Test_automation_collectOccupancyChanges(t *testing.T) {
-	model := occupancysensor.NewModel(&traits.Occupancy{})
+	model := occupancysensor.NewModel()
 	// n is used as the clienter and announcer in the automation
 	n := node.New("test")
 	n.Support(node.Clients(occupancysensor.WrapApi(occupancysensor.NewModelServer(model))))

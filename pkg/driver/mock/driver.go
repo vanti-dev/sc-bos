@@ -8,7 +8,6 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
-	"github.com/smart-core-os/sc-golang/pkg/time/clock"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
@@ -148,12 +147,12 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) ([]any, service.Lifecycle) {
 	switch traitName {
 	case trait.AirQualitySensor:
-		model := airqualitysensor.NewModel(auto.GetAirQualityState())
+		model := airqualitysensor.NewModel(airqualitysensor.WithInitialAirQuality(auto.GetAirQualityState()))
 		return []any{airqualitysensor.WrapApi(airqualitysensor.NewModelServer(model))}, auto.AirQualitySensorAuto(model)
 	case trait.AirTemperature:
 		h := rand.Float32()
 		t := 15 + (rand.Float64() * 10)
-		model := traits.AirTemperature{
+		initial := traits.AirTemperature{
 			Mode:               traits.AirTemperature_AUTO,
 			AmbientTemperature: &types.Temperature{ValueCelsius: t},
 			AmbientHumidity:    &h,
@@ -161,7 +160,8 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 				TemperatureSetPoint: &types.Temperature{ValueCelsius: t},
 			},
 		}
-		return []any{airtemperature.WrapApi(airtemperature.NewModelServer(airtemperature.NewModel(&model)))}, nil
+		model := airtemperature.NewModel(airtemperature.WithInitialAirTemperature(&initial))
+		return []any{airtemperature.WrapApi(airtemperature.NewModelServer(model))}, nil
 	case trait.Booking:
 		return []any{booking.WrapApi(booking.NewModelServer(booking.NewModel()))}, nil
 	case trait.BrightnessSensor:
@@ -174,7 +174,7 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 		// todo: return []any{count.WrapApi(count.NewModelServer(count.NewModel())), nil
 		return nil, nil
 	case trait.Electric:
-		model := electric.NewModel(clock.Real())
+		model := electric.NewModel()
 		return []any{electric.WrapApi(electric.NewModelServer(model))}, auto.Electric(model)
 	case trait.Emergency:
 		// todo: return []any{emergency.WrapApi(emergency.NewModelServer(emergency.NewModel()))}, nil
@@ -213,10 +213,10 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 		// todo: return []any{motionsensor.WrapApi(motionsensor.NewModelServer(motionsensor.NewModel()))}, nil
 		return nil, nil
 	case trait.OccupancySensor:
-		model := occupancysensor.NewModel(&traits.Occupancy{})
+		model := occupancysensor.NewModel()
 		return []any{occupancysensor.WrapApi(occupancysensor.NewModelServer(model))}, auto.OccupancySensorAuto(model)
 	case trait.OnOff:
-		return []any{onoff.WrapApi(onoff.NewModelServer(onoff.NewModel(traits.OnOff_STATE_UNSPECIFIED)))}, nil
+		return []any{onoff.WrapApi(onoff.NewModelServer(onoff.NewModel()))}, nil
 	case trait.OpenClose:
 		model := openclose.NewModel()
 		return []any{openclose.WrapApi(openclose.NewModelServer(model))}, auto.OpenClose(model)

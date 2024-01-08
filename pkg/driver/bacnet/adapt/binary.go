@@ -23,7 +23,7 @@ func BinaryObject(prefix string, client *gobacnet.Client, device bactypes.Device
 	case "":
 		return nil, ErrNoDefault
 	case trait.OnOff:
-		model := onoff.NewModel(traits.OnOff_STATE_UNSPECIFIED)
+		model := onoff.NewModel()
 		return &binaryOnOff{
 			prefix:   prefix,
 			client:   client,

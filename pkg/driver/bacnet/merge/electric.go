@@ -10,7 +10,6 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/time/clock"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/electric"
 	"github.com/vanti-dev/gobacnet"
@@ -66,7 +65,7 @@ func newElectric(client *gobacnet.Client, devices known.Context, statuses *statu
 	if err != nil {
 		return nil, err
 	}
-	model := electric.NewModel(clock.Real())
+	model := electric.NewModel()
 	_, _ = model.UpdateDemand(&traits.ElectricDemand{}) // reset defaults
 	t := &electricTrait{
 		client:      client,

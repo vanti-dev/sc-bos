@@ -55,7 +55,7 @@ func TestFindClient(t *testing.T) {
 func TestNode_Client(t *testing.T) {
 	t.Run("get client", func(t *testing.T) {
 		n := New("Test")
-		n.Support(Clients(onoff.WrapApi(onoff.NewModelServer(onoff.NewModel(traits.OnOff_ON)))))
+		n.Support(Clients(onoff.WrapApi(onoff.NewModelServer(onoff.NewModel(onoff.WithInitialOnOff(&traits.OnOff{State: traits.OnOff_ON}))))))
 
 		var client traits.OnOffApiClient
 		err := n.Client(&client)

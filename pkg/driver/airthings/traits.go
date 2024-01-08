@@ -26,12 +26,12 @@ func (d *Driver) announceDevice(ctx context.Context, a node.Announcer, dev Devic
 		// todo: read the RSSI prop and link it with status
 		switch trait.Name(tn) {
 		case trait.AirQualitySensor:
-			model := airqualitysensor.NewModel(&traits.AirQuality{})
+			model := airqualitysensor.NewModel()
 			client := airqualitysensor.WrapApi(airqualitysensor.NewModelServer(model))
 			a.Announce(dev.Name, node.HasTrait(trait.AirQualitySensor, node.WithClients(client)))
 			go d.pullSampleAirQuality(ctx, dev, loc, model)
 		case trait.AirTemperature:
-			model := airtemperature.NewModel(&traits.AirTemperature{})
+			model := airtemperature.NewModel()
 			client := airtemperature.WrapApi(roAirTemperatureServer{airtemperature.NewModelServer(model)})
 			a.Announce(dev.Name, node.HasTrait(trait.AirTemperature, node.WithClients(client)))
 			go d.pullSampleAirTemperature(ctx, dev, loc, model)

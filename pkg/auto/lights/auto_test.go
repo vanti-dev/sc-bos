@@ -23,8 +23,8 @@ import (
 
 func TestPirsTurnLightsOn(t *testing.T) {
 	// we update this to send messages to the automation
-	pir01 := occupancysensor.NewModel(&traits.Occupancy{})
-	pir02 := occupancysensor.NewModel(&traits.Occupancy{})
+	pir01 := occupancysensor.NewModel()
+	pir02 := occupancysensor.NewModel()
 
 	clients := node.ClientFunc(func(p any) error {
 		switch v := p.(type) {

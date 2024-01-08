@@ -23,7 +23,7 @@ func main() {
 	root := node.New("example-azureiot")
 	alltraits.AddSupport(root)
 
-	model := airqualitysensor.NewModel(iaq())
+	model := airqualitysensor.NewModel(airqualitysensor.WithInitialAirQuality(iaq()))
 	root.Announce("IAQ-001", node.HasTrait(trait.AirQualitySensor, node.WithClients(
 		airqualitysensor.WrapApi(airqualitysensor.NewModelServer(model)))))
 
