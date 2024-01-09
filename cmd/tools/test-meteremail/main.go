@@ -39,15 +39,11 @@ func main() {
 	defer lifecycle.Stop()
 	cfg := `{
   "name": "emails", "type": "meteremail",
-  "source": {
-    "name": "test",
-    "title": "One Centenary Way"
-  },
   "destination": {
     "host": "smtp.gmail.com",
-    "from": "OCW Paradise Build <deanredfern26@gmail.com>",
+    "from": "OCW Paradise Build <no-reply@enterprisewharf.co.uk>",
     "to": ["Dean Redfern <dean.redfern@vanti.co.uk>"],
-	"passwordFile" : ".localpassword",	
+	"passwordFile" : ".localpassword",
     "sendTime": "0 0 * * MON-FRI"
   },
 	"serverAddr" : "172.16.100.10:23557",
