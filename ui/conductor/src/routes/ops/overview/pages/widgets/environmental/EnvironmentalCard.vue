@@ -4,8 +4,8 @@
     <div :class="['d-flex flex-row justify-center ml-n3', {'flex-wrap mb-4': props.shouldWrap}]">
       <v-col cols="auto" class="ma-0 pa-0">
         <circular-gauge
-            v-if="hasTrait(indoorTrait) && getTraitValue(indoorTrait, 'temperatureValue') > 0 || props.shouldWrap"
-            :value="getTraitValue(indoorTrait, 'temperatureValue')"
+            v-if="indoorTemperature > 0 || props.shouldWrap"
+            :value="indoorTemperature"
             :color="props.gaugeColor"
             :min="temperatureRange.low"
             :max="temperatureRange.high"
@@ -13,7 +13,7 @@
             style="max-width: 140px;"
             class="mt-2 mb-5 ml-3 mr-2">
           <span class="mt-n4 ml-1 text-h1">
-            {{ getTraitValue(indoorTrait, 'temperatureValue').toFixed(1) }}&deg;
+            {{ indoorTemperature.toFixed(1) }}&deg;
           </span>
           <template #title>
             <span class="ml-n1 mb-2">Avg. Indoor Temperature</span>
@@ -22,13 +22,15 @@
       </v-col>
       <v-col cols="auto" class="mt-auto mb-0 pb-2 px-0">
         <div
-            v-if="hasTrait(outdoorTrait) && getTraitValue(outdoorTrait, 'temperatureValue') > 0 || props.shouldWrap"
-            :class="[hasTrait(indoorTrait) && getTraitValue(indoorTrait, 'humidityValue') > 0 ? 'mb-7' : 'mb-2',
+            v-if="outdoorTemperature > 0 ||
+              props.shouldWrap
+            "
+            :class="[indoorHumidity > 0 ? 'mb-7' : 'mb-2',
                      'd-flex flex-column justify-end align-center']"
             style="width: 150px;">
           <span
               class="text-h1 align-left mb-3"
-              style="display: inline-block;">{{ getTraitValue(outdoorTrait, 'temperatureValue').toFixed(1) }}&deg;
+              style="display: inline-block;">{{ outdoorTemperature.toFixed(1) }}&deg;
           </span>
           <span
               class="text-title text-center"
@@ -39,14 +41,14 @@
       </v-col>
       <v-col cols="auto" class="pa-0">
         <circular-gauge
-            v-if="hasTrait(indoorTrait) && getTraitValue(indoorTrait, 'humidityValue') > 0"
-            :value="getTraitValue(indoorTrait, 'humidityValue')"
+            v-if="indoorHumidity > 0"
+            :value="indoorHumidity"
             :color="props.gaugeColor"
             segments="30"
             style="max-width: 140px;"
             class="mt-2">
           <span class="align-baseline text-h1 mt-n2">
-            {{ (getTraitValue(indoorTrait, 'humidityValue') * 100).toFixed(1) }}<span style="font-size: 0.7em;">%</span>
+            {{ (indoorHumidity * 100).toFixed(1) }}<span style="font-size: 0.7em;">%</span>
           </span>
           <template #title>
             <span class="mb-2">Avg. Humidity</span>
@@ -61,17 +63,14 @@
 import CircularGauge from '@/components/CircularGauge.vue';
 import ContentCard from '@/components/ContentCard.vue';
 
-import {useErrorStore} from '@/components/ui-error/error';
 import useAirTemperatureTrait from '@/composables/traits/useAirTemperatureTrait';
-import {onBeforeUnmount, ref, watch} from 'vue';
+import {computed, ref} from 'vue';
 
 const props = defineProps({
-  // name of the device/zone to query for internal temperature data
   name: {
     type: String,
     default: ''
   },
-  // name of the device/zone to query for external temperature data
   externalName: {
     type: String,
     default: ''
@@ -86,58 +85,27 @@ const props = defineProps({
   }
 });
 
-// todo: do we need to get this from somewhere?
 const temperatureRange = ref({
   low: 18.0,
   high: 24.0
 });
 
+const indoor = computed(() => useAirTemperatureTrait({name: props.name, paused: false}));
+const outdoor = computed(() => useAirTemperatureTrait({name: props.externalName, paused: false}));
 
-// Error handling
-const errorStore = useErrorStore();
-const unwatchErrorFunctions = [];
+const indoorTemperature = computed(() => {
+  return indoor.value.temperatureValue.value;
+});
 
-// Reactive indoor and outdoor traits
-const indoorTrait = ref(null);
-const outdoorTrait = ref(null);
+const outdoorTemperature = computed(() => {
+  return outdoor.value.temperatureValue.value;
+});
 
+const indoorHumidity = computed(() => {
+  return indoor.value.humidityValue.value;
+});
 
-const getTrait = (name) => {
-  if (props[name]) {
-    const trait = useAirTemperatureTrait({name: props[name], paused: false});
-    unwatchErrorFunctions.push(errorStore.registerValue(trait.airTemperatureResource));
-    return trait;
-  }
-  return null;
-};
-
-const hasTrait = (trait) => trait !== null;
-
-const getTraitValue = (trait, key) => hasTrait(trait) ? trait[key] : 0;
-
-const updateTraits = () => {
-  if (indoorTrait.value) indoorTrait.value.clearResourceError();
-  if (outdoorTrait.value) outdoorTrait.value.clearResourceError();
-
-  unwatchErrorFunctions.forEach(unwatch => unwatch());
-  indoorTrait.value = getTrait('name');
-  outdoorTrait.value = getTrait('externalName');
-};
-
-// Watchers to update traits when props change
-watch(() => props.name, updateTraits, {immediate: true});
-watch(() => props.externalName, updateTraits, {immediate: true});
-
-// ------------------------------------ //
-// Clean up UI Error handling
-// Clean up error watchers when the component is unmounted
-const cleanup = () => {
-  if (indoorTrait.value) indoorTrait.value.clearResourceError();
-  if (outdoorTrait.value) outdoorTrait.value.clearResourceError();
-  unwatchErrorFunctions.forEach(unwatch => unwatch());
-};
-
-onBeforeUnmount(() => {
-  cleanup();
+const outdoorHumidity = computed(() => {
+  return outdoor.value.humidityValue.value;
 });
 </script>

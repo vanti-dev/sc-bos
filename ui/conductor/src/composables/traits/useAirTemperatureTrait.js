@@ -1,6 +1,5 @@
-import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
+import {newActionTracker, newResourceValue} from '@/api/resource';
 import {pullAirTemperature, updateAirTemperature} from '@/api/sc/traits/air-temperature';
-import {useErrorStore} from '@/components/ui-error/error';
 import {watchResource} from '@/util/traits';
 import {computed, reactive} from 'vue';
 
@@ -21,8 +20,6 @@ import {computed, reactive} from 'vue';
  * @return {AirTemperatureTrait}
  */
 export default function(props) {
-  const errorStore = useErrorStore();
-
   const airTemperatureResource = reactive(
       /** @type {ResourceValue<AirTemperature.AsObject, PullAirTemperatureResponse>} */
       newResourceValue());
@@ -57,48 +54,32 @@ export default function(props) {
   // Watch
   // Depending on paused state/device name, we close/open data stream(s)
   watchResource(
-      [() => props.paused, () => props.name],
-      airTemperatureResource,
-      (params, resource) => {
-        pullAirTemperature(params, resource);
-      }
+      props.name,
+      props.paused,
+      [(name) => {
+        pullAirTemperature({name}, airTemperatureResource);
+
+        return airTemperatureResource;
+      }]
   );
 
   //
   //
   // Return the temperature of the single device specified
   const temperatureValue = computed(() =>
-    airTemperatureResource.value?.ambientTemperature?.valueCelsius ?? 0
+    Number(airTemperatureResource?.value?.ambientTemperature?.valueCelsius ?? 0)
   );
 
   // Return the humidity of the single device specified
   const humidityValue = computed(() =>
-    airTemperatureResource.value?.ambientHumidity ?? 0
+    Number(airTemperatureResource?.value?.ambientHumidity ?? 0)
   );
-
-  //
-  //
-  // UI error handling
-  const errorHandlers = [];
-
-  const collectErrors = () => {
-    errorHandlers.push(
-        errorStore.registerTracker(updateTracker)
-    );
-  };
-
-  const clearResourceError = () => {
-    closeResource(airTemperatureResource);
-    errorHandlers.forEach(unwatch => unwatch());
-  };
 
   return {
     airTemperatureResource,
     updateTracker,
     doUpdateAirTemperature,
     temperatureValue,
-    humidityValue,
-    collectErrors,
-    clearResourceError
+    humidityValue
   };
 }
