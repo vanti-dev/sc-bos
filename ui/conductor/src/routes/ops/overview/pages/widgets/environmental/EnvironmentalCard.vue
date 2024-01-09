@@ -4,8 +4,8 @@
     <div :class="['d-flex flex-row justify-center ml-n3', {'flex-wrap mb-4': props.shouldWrap}]">
       <v-col cols="auto" class="ma-0 pa-0">
         <circular-gauge
-            v-if="indoorTrait && indoorTrait.temperatureValue > 0 || props.shouldWrap"
-            :value="indoorTrait.temperatureValue"
+            v-if="hasTrait(indoorTrait) && getTraitValue(indoorTrait, 'temperatureValue') > 0 || props.shouldWrap"
+            :value="getTraitValue(indoorTrait, 'temperatureValue')"
             :color="props.gaugeColor"
             :min="temperatureRange.low"
             :max="temperatureRange.high"
@@ -13,7 +13,7 @@
             style="max-width: 140px;"
             class="mt-2 mb-5 ml-3 mr-2">
           <span class="mt-n4 ml-1 text-h1">
-            {{ indoorTrait.temperatureValue.toFixed(1) }}&deg;
+            {{ getTraitValue(indoorTrait, 'temperatureValue').toFixed(1) }}&deg;
           </span>
           <template #title>
             <span class="ml-n1 mb-2">Avg. Indoor Temperature</span>
@@ -22,13 +22,13 @@
       </v-col>
       <v-col cols="auto" class="mt-auto mb-0 pb-2 px-0">
         <div
-            v-if="outdoorTrait && outdoorTrait.temperatureValue > 0 || props.shouldWrap"
-            :class="[indoorTrait && indoorTrait.humidityValue > 0 ? 'mb-7' : 'mb-2',
+            v-if="hasTrait(outdoorTrait) && getTraitValue(outdoorTrait, 'temperatureValue') > 0 || props.shouldWrap"
+            :class="[hasTrait(indoorTrait) && getTraitValue(indoorTrait, 'humidityValue') > 0 ? 'mb-7' : 'mb-2',
                      'd-flex flex-column justify-end align-center']"
             style="width: 150px;">
           <span
               class="text-h1 align-left mb-3"
-              style="display: inline-block;">{{ outdoorTrait.temperatureValue.toFixed(1) }}&deg;
+              style="display: inline-block;">{{ getTraitValue(outdoorTrait, 'temperatureValue').toFixed(1) }}&deg;
           </span>
           <span
               class="text-title text-center"
@@ -39,14 +39,14 @@
       </v-col>
       <v-col cols="auto" class="pa-0">
         <circular-gauge
-            v-if="indoorTrait && indoorTrait.humidityValue > 0"
-            :value="indoorTrait.humidityValue"
+            v-if="hasTrait(indoorTrait) && getTraitValue(indoorTrait, 'humidityValue') > 0"
+            :value="getTraitValue(indoorTrait, 'humidityValue')"
             :color="props.gaugeColor"
             segments="30"
             style="max-width: 140px;"
             class="mt-2">
           <span class="align-baseline text-h1 mt-n2">
-            {{ (indoorTrait.humidityValue * 100).toFixed(1) }}<span style="font-size: 0.7em;">%</span>
+            {{ (getTraitValue(indoorTrait, 'humidityValue') * 100).toFixed(1) }}<span style="font-size: 0.7em;">%</span>
           </span>
           <template #title>
             <span class="mb-2">Avg. Humidity</span>
@@ -101,31 +101,27 @@ const unwatchErrorFunctions = [];
 const indoorTrait = ref(null);
 const outdoorTrait = ref(null);
 
-// Function to update traits on prop change
-// This being used in the watcher below
+
+const getTrait = (name) => {
+  if (props[name]) {
+    const trait = useAirTemperatureTrait({name: props[name], paused: false});
+    unwatchErrorFunctions.push(errorStore.registerValue(trait.airTemperatureResource));
+    return trait;
+  }
+  return null;
+};
+
+const hasTrait = (trait) => trait !== null;
+
+const getTraitValue = (trait, key) => hasTrait(trait) ? trait[key] : 0;
+
 const updateTraits = () => {
-  if (indoorTrait.value) {
-    indoorTrait.value.clearResourceError();
-  }
-  if (outdoorTrait.value) {
-    outdoorTrait.value.clearResourceError();
-  }
+  if (indoorTrait.value) indoorTrait.value.clearResourceError();
+  if (outdoorTrait.value) outdoorTrait.value.clearResourceError();
 
-  if (props.name) {
-    indoorTrait.value = useAirTemperatureTrait({name: props.name, paused: false});
-  }
-
-  if (props.externalName) {
-    outdoorTrait.value = useAirTemperatureTrait({name: props.externalName, paused: false});
-  }
-
-  // Register or update error watchers
-  if (!indoorTrait.value || !outdoorTrait.value) {
-    return;
-  }
   unwatchErrorFunctions.forEach(unwatch => unwatch());
-  unwatchErrorFunctions.push(errorStore.registerValue(indoorTrait.value.airTemperatureResource));
-  unwatchErrorFunctions.push(errorStore.registerValue(outdoorTrait.value.airTemperatureResource));
+  indoorTrait.value = getTrait('name');
+  outdoorTrait.value = getTrait('externalName');
 };
 
 // Watchers to update traits when props change
