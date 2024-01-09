@@ -59,7 +59,9 @@ type Root struct {
 
 	ServerAddr string `json:"serverAddr,omitempty"`
 
-	MeterNames []string `json:"meterNames,omitempty"`
+	ElectricMeters []string `json:"electricMeters,omitempty"`
+
+	WaterMeters []string `json:"waterMeters,omitempty"`
 }
 
 var (
@@ -193,12 +195,55 @@ func (d Destination) ReadBodyTemplate() (*template.Template, error) {
 const DefaultEmailSubject = `Smart Core Meter Readings {{.Now.Format "Jan 02, 2006"}}`
 const DefaultEmailBody = `<html lang="en">
 <head>
-  <title>Smart Core Meter Readings</title>
+  <title>Once Centenary Way - Smart Core Meter Readings</title>
 </head>
 <body>
 <section>
-<h4>Meter Readings
+<h4>Electric Meter Readings
 </h4>
+<table>
+<tbody>
+<tr>	
+	<th>Name</th>
+	<th>Floor</th>
+	<th>Zone</th>
+	<th>Reading (kWh)</th>
+</tr>
+{{range .Stats}}
+{{if eq .MeterReading.MeterType 2}}
+<tr>	
+	<td>{{.Source.Name}}</td>
+	<td>{{.Source.Floor}}</td>
+	<td>{{.Source.Zone}}</td>
+	<td>{{.MeterReading.Reading}}</td>
+</tr>
+{{end}}
+{{end}}
+</tbody>
+</table>
+</section>
+<section>
+<h4>Water Meter Readings</h4>
+<table>
+<tbody>
+<tr>	
+	<th>Name</th>
+	<th>Floor</th>
+	<th>Zone</th>
+	<th>Reading (m³)</th>
+</tr>
+{{range .Stats}}
+{{if eq .MeterReading.MeterType 1}}
+<tr>	
+	<td>{{.Source.Name}}</td>
+	<td>{{.Source.Floor}}</td>
+	<td>{{.Source.Zone}}</td>
+	<td>{{.MeterReading.Reading}}</td>
+</tr>
+{{end}}
+{{end}}
+</tbody>
+</table>
 </section>
 </body>
 </html>
