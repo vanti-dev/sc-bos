@@ -8,6 +8,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/meteremail/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -38,6 +39,43 @@ func (f factory) New(services auto.Services) service.Lifecycle {
 	return a
 }
 
+func (a *autoImpl) getMeterReadingAndSource(ctx context.Context, conn *grpc.ClientConn, meterName string, meterType MeterType) (*config.Source, *MeterReading, error) {
+	meterClient := gen.NewMeterApiClient(conn)
+	metaDataClient := traits.NewMetadataApiClient(conn)
+
+	meterReq := &gen.GetMeterReadingRequest{
+		Name: meterName,
+	}
+
+	meterRes, err := retryT(ctx, func(ctx context.Context) (*gen.MeterReading, error) {
+		return meterClient.GetMeterReading(ctx, meterReq)
+	})
+	if err != nil {
+		a.Logger.Warn("failed to fetch meter readings", zap.Error(err))
+		return nil, nil, err
+	}
+
+	metaDataReq := &traits.GetMetadataRequest{
+		Name: meterName,
+	}
+
+	metaDataRes, err := metaDataClient.GetMetadata(ctx, metaDataReq)
+	if err != nil {
+		// not a major problem if we can't get metadata as we still have the name to ID the meter
+		a.Logger.Warn("failed to fetch meta data", zap.Error(err))
+	}
+
+	meterReading := &MeterReading{MeterType: meterType, Date: time.Now(), Reading: meterRes.Usage}
+	source := &config.Source{Name: meterName}
+
+	if metaDataRes.Location != nil {
+		source.Floor = metaDataRes.Location.Floor
+		source.Zone = metaDataRes.Location.Zone
+	}
+
+	return source, meterReading, nil
+}
+
 func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	logger := a.Logger
 	logger = logger.With(zap.String("snmp.host", cfg.Destination.Host), zap.Int("snmp.port", cfg.Destination.Port))
@@ -49,7 +87,6 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 		_, _ = fmt.Fprintf(os.Stderr, "ERROR: can't connect: %s\n", err.Error())
 		os.Exit(1)
 	}
-	meterClient := gen.NewMeterApiClient(conn)
 
 	sendTime := cfg.Destination.SendTime
 	now := cfg.Now
@@ -74,23 +111,21 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 
 			attrs := Attrs{
 				Now:   t,
-				Stats: []Stats{{Source: cfg.Source}},
+				Stats: []Stats{},
 			}
 
-			for _, meterName := range cfg.MeterNames {
-				meterReq := &gen.GetMeterReadingRequest{
-					Name: meterName,
+			for _, meterName := range cfg.ElectricMeters {
+				source, reading, err := a.getMeterReadingAndSource(ctx, conn, meterName, MeterTypeElectric)
+				if err == nil {
+					attrs.Stats = append(attrs.Stats, Stats{Source: *source, MeterReading: *reading})
 				}
+			}
 
-				meterRes, err := retryT(ctx, func(ctx context.Context) (*gen.MeterReading, error) {
-					return meterClient.GetMeterReading(ctx, meterReq)
-				})
-				if err != nil {
-					logger.Warn("failed to fetch meter readings", zap.Error(err))
-					continue
+			for _, meterName := range cfg.WaterMeters {
+				source, reading, err := a.getMeterReadingAndSource(ctx, conn, meterName, MeterTypeWater)
+				if err == nil {
+					attrs.Stats = append(attrs.Stats, Stats{Source: *source, MeterReading: *reading})
 				}
-
-				attrs.Stats = append(attrs.Stats, Stats{MeterReadings: MeterReadings{Date: t, Reading: Reading{Reading: meterRes.Usage}}})
 			}
 
 			err = retry(ctx, func(ctx context.Context) error {
