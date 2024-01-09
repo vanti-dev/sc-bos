@@ -51,12 +51,13 @@ func main() {
     "sendTime": "0 0 * * MON-FRI"
   },
 	"serverAddr" : "172.16.100.10:23557",
-	"meterNames" : ["uk-ocw/floors/01/devices/CE1-electric-meter/WestDBA/T1LightingTotalEnergy",
+	"electricMeters" : ["uk-ocw/floors/01/devices/CE1-electric-meter/WestDBA/T1LightingTotalEnergy",
 					"uk-ocw/floors/01/devices/CE1-electric-meter/WestDBA/T1TotalLoadTotalEnergy"
-					]
+					],
+	"waterMeters" : [ "uk-ocw/floors/01/devices/CE1-water-meter/FirstFloorWestBCWSMeter",
+						"uk-ocw/floors/01/devices/CE2-water-meter/1stFloorEastBCWSMeter"]
 }`
-	// vantiocwdev@gmail.com
-	// __Vanti0cwdeV!__
+
 	_, err = lifecycle.Configure([]byte(cfg))
 	if err != nil {
 		panic(err)
