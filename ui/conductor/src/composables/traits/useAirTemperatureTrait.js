@@ -1,24 +1,24 @@
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
 import {pullAirTemperature, updateAirTemperature} from '@/api/sc/traits/air-temperature';
 import {useErrorStore} from '@/components/ui-error/error';
-import {computed, reactive, watch} from 'vue';
+import {watchResource} from '@/util/traits';
+import {computed, reactive} from 'vue';
 
 /**
- *
+ * @typedef {Object} AirTemperatureTrait
+ * @property {ResourceValue<AirTemperature.AsObject, PullAirTemperatureResponse>} airTemperatureResource
+ * @property {ActionTracker<AirTemperature.AsObject>} updateTracker
+ * @property {
+ *  (number|Partial<AirTemperature.AsObject>|Partial<UpdateAirTemperatureRequest.AsObject>)
+ * } doUpdateAirTemperature
+ * @property {import('vue').ComputedRef<number>} temperatureValue
+ * @property {import('vue').ComputedRef<number>} humidityValue
+ * @property {function} collectErrors
+ * @property {function} clearResourceError
  * @param {Object} props
  * @param {string} props.name
  * @param {boolean} [props.paused]
- * @return {{
- *  airTemperatureResource: ResourceValue<AirTemperature.AsObject, PullAirTemperatureResponse>,
- *  updateTracker: ActionTracker<AirTemperature.AsObject>,
- *  doUpdateAirTemperature: (
- *    function(number|Partial<AirTemperature.AsObject>|Partial<UpdateAirTemperatureRequest.AsObject>)
- *  ),
- *  temperatureValue: import('vue').ComputedRef<number>,
- *  humidityValue: import('vue').ComputedRef<number>,
- *  collectErrors: function(),
- *  clearResourceError: function()
- * }}
+ * @return {AirTemperatureTrait}
  */
 export default function(props) {
   const errorStore = useErrorStore();
@@ -56,21 +56,12 @@ export default function(props) {
   //
   // Watch
   // Depending on paused state/device name, we close/open data stream(s)
-  watch(
+  watchResource(
       [() => props.paused, () => props.name],
-      ([newPaused, newName], [oldPaused, oldName]) => {
-        if (newPaused === oldPaused && newName === oldName) return;
-
-        if (newPaused) {
-          closeResource(airTemperatureResource);
-        }
-
-        if (!newPaused && (oldPaused || newName !== oldName)) {
-          closeResource(airTemperatureResource);
-          pullAirTemperature({name: newName}, airTemperatureResource);
-        }
-      },
-      {immediate: true, deep: true, flush: 'sync'}
+      airTemperatureResource,
+      (params, resource) => {
+        pullAirTemperature(params, resource);
+      }
   );
 
   //
