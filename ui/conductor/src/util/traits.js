@@ -5,37 +5,39 @@ import {deepEqual} from 'vuetify/src/util/helpers';
 /**
  * Watches specified props and performs resource-related actions based on changes.
  *
- * @param {Function[]} watchedProps - array of functions representing the watched props.
- * @param {any} resource - The resource to be closed and pulled.
- * @param {(params: object, resource: any) => void} apiCalls - The function to pull a single
+ * @template T
+ * @param {(() => T) | (() => T)[]} watchedProps - function/array of fns representing the watched props.
+ * @param {RemoteResource<T> | RemoteResource<T>[]} resourceValue - resource(s) to be closed and pulled.
+ * @param {(name: object, resource: T) => void} apiCalls - The function to pull a single
  * or multiple resource data.
- * //
  * @example
  * watchResource(
  *   [() => props.paused, () => props.name],
- *   meterReadings,
- *   (params) => {
- *     pullMeterReading(params, meterReadings);
- *     describeMeterReading(params, meterReadingInfo);
+ *   airTemperatureResource,
+ *   (name, resource) => {
+ *     pullAirTemperature(name, resource);
  *   }
  * );
  */
-export const watchResource = (watchedProps, resource, apiCalls) => {
+export const watchResource = (watchedProps, resourceValue, apiCalls) => {
   watch(
       watchedProps,
-      ([newPaused, newName], [oldPaused, oldName]) => {
-        // Check if request is the same
-        const requestEqual = deepEqual(newName, oldName);
-        // If name is a string, wrap it in an object
-        const nameParam = typeof newName === 'string' ? {name: newName} : newName;
+      (newProps, oldProps) => {
+        // If resourceValue is not an array, make it an array
+        const resources = Array.isArray(resourceValue) ? resourceValue : [resourceValue];
+        // Check if the props have changed
+        const oldNewEqual = deepEqual(newProps, oldProps);
 
-        // If it's paused and the request hasn't changed, do nothing
-        if (newPaused === oldPaused && requestEqual) return;
+        // If the props haven't changed, do nothing
+        if (oldNewEqual) return;
 
-        closeResource(resource); // Close existing resource first
+        // If the props have changed (either the name or the paused state or both), close the old resources
+        // If the resources is an array, loop through and close all resources
+        resources.forEach((resource) => closeResource(resource));
 
-        if (!newPaused) { // If not paused, pull new resource
-          apiCalls(nameParam, resource); // Pull resource
+        if (!newProps?.paused) { // If not paused, pull new resource
+          // Pull new resource
+          resources.forEach((resource) => apiCalls({name: newProps?.name}, resource));
         }
       },
       {immediate: true, deep: true, flush: 'sync'}
