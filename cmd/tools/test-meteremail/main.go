@@ -65,7 +65,8 @@ func main() {
 					"uk-ocw/floors/01/devices/CE1-water-meter/FirstFloorWestBCWSMeter",
 					"uk-ocw/floors/01/devices/CE2-water-meter/1stFloorEastBCWSMeter",
 					"uk-ocw/floors/06/devices/CE11-water-meter/SixthFloorWestBCWSMeter",
-					"uk-ocw/floors/06/devices/CE12-water-meter/6thFloorEastBCWSMeter"]
+					"uk-ocw/floors/06/devices/CE12-water-meter/6thFloorEastBCWSMeter"],
+	"insecureSkipVerify" : true
 }`
 
 	_, err = lifecycle.Configure([]byte(cfg))
