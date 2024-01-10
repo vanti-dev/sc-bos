@@ -64,16 +64,16 @@ import CircularGauge from '@/components/CircularGauge.vue';
 import ContentCard from '@/components/ContentCard.vue';
 
 import useAirTemperatureTrait from '@/composables/traits/useAirTemperatureTrait';
-import {computed, ref} from 'vue';
+import {computed, reactive, ref, watchEffect} from 'vue';
 
 const props = defineProps({
   name: {
     type: String,
-    default: ''
+    default: null
   },
   externalName: {
     type: String,
-    default: ''
+    default: null
   },
   gaugeColor: {
     type: String,
@@ -90,22 +90,36 @@ const temperatureRange = ref({
   high: 24.0
 });
 
-const indoor = computed(() => useAirTemperatureTrait({name: props.name, paused: false}));
-const outdoor = computed(() => useAirTemperatureTrait({name: props.externalName, paused: false}));
+const indoorProps = reactive({
+  name: props.name,
+  paused: false
+});
+const outdoorProps = reactive({
+  name: props.externalName,
+  paused: false
+});
+
+watchEffect(() => {
+  indoorProps.name = props.name;
+  outdoorProps.name = props.externalName;
+});
+
+const indoor = useAirTemperatureTrait(indoorProps);
+const outdoor = useAirTemperatureTrait(outdoorProps);
 
 const indoorTemperature = computed(() => {
-  return indoor.value.temperatureValue.value;
+  return indoor.temperatureValue.value;
 });
 
 const outdoorTemperature = computed(() => {
-  return outdoor.value.temperatureValue.value;
+  return outdoor.temperatureValue.value;
 });
 
 const indoorHumidity = computed(() => {
-  return indoor.value.humidityValue.value;
+  return indoor.humidityValue.value;
 });
 
 const outdoorHumidity = computed(() => {
-  return outdoor.value.humidityValue.value;
+  return outdoor.humidityValue.value;
 });
 </script>

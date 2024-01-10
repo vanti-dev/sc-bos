@@ -1,6 +1,7 @@
 import {newActionTracker, newResourceValue} from '@/api/resource';
 import {pullAirTemperature, updateAirTemperature} from '@/api/sc/traits/air-temperature';
 import {watchResource} from '@/util/traits';
+import {toValue} from '@/util/vue';
 import {computed, reactive} from 'vue';
 
 /**
@@ -52,15 +53,20 @@ export default function(props) {
   //
   //
   // Watch
-  // Depending on paused state/device name, we close/open data stream(s)
-  watchResource(
-      props.name,
-      props.paused,
-      [(name) => {
-        pullAirTemperature({name}, airTemperatureResource);
+  /**
+   * Depending on paused state/device name, we close/open data stream(s) and update the resource
+   *
+   * @type {Array<(string) => ResourceValue<any>>} apiCalls
+   */
+  const apiCalls = [(name) => {
+    pullAirTemperature({name}, airTemperatureResource);
+    return airTemperatureResource;
+  }];
 
-        return airTemperatureResource;
-      }]
+  watchResource(
+      () => toValue(props.name),
+      () => toValue(props.paused),
+      ...apiCalls
   );
 
   //

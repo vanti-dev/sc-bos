@@ -4,23 +4,24 @@ import {closeResource} from '@/api/resource';
 import {deepEqual} from 'vuetify/src/util/helpers';
 
 /**
- * Watches specified props and performs resource-related actions based on changes.
+ * Calls apiCalls each time name changes, tracking and managing resource cleanup for you.
  *
  * @template T
- * @param {MaybeGetterOrRef<string>} name - function/array of fns representing the watched props.
- * @param {MaybeGetterOrRef<boolean>} paused - function/array of fns representing the watched props.
- * @param {Array<(name: string) => ResourceValue>} apiCalls - The function to pull a single
- * or multiple resource data.
+ * @param {MaybeGetterOrRef<string>} name - string representing the name of the device
+ * @param {MaybeGetterOrRef<boolean>} paused - boolean representing whether the data stream is paused
+ * @param {...Array<(name: string) => ResourceValue<any>>} apiCalls - array of functions that return a resource
  * @example
  * watchResource(
- *   [() => props.paused, () => props.name],
- *   airTemperatureResource,
- *   (name, resource) => {
- *     pullAirTemperature(name, resource);
- *   }
+ *   () => props.name,
+ *   () => props.paused,
+ *   ...[(name) => {
+ *     pullAirTemperature({name}, resource);
+ *
+ *     return resource;
+ *   }]
  * );
  */
-export const watchResource = (name, paused, apiCalls) => {
+export const watchResource = (name, paused, ...apiCalls) => {
   let resources = [];
 
   watch(
@@ -36,7 +37,7 @@ export const watchResource = (name, paused, apiCalls) => {
         const paused = newProps[1];
 
         // If the props have changed (either the name or the paused state or both), close the old resources
-        // If the resources is an array, loop through and close all resources
+        // and empty the array
         resources.forEach((resource) => closeResource(resource));
         resources = [];
 
