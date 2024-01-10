@@ -53,20 +53,13 @@ export default function(props) {
   //
   //
   // Watch
-  /**
-   * Depending on paused state/device name, we close/open data stream(s) and update the resource
-   *
-   * @type {Array<(string) => ResourceValue<any>>} apiCalls
-   */
-  const apiCalls = [(name) => {
-    pullAirTemperature({name}, airTemperatureResource);
-    return airTemperatureResource;
-  }];
-
   watchResource(
       () => toValue(props.name),
       () => toValue(props.paused),
-      ...apiCalls
+      (name) => {
+        pullAirTemperature({name}, airTemperatureResource);
+        return airTemperatureResource;
+      }
   );
 
   //

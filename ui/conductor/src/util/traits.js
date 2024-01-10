@@ -9,16 +9,15 @@ import {deepEqual} from 'vuetify/src/util/helpers';
  * @template T
  * @param {MaybeRefOrGetter<string>} name - string representing the name of the device
  * @param {MaybeRefOrGetter<boolean>} paused - boolean representing whether the data stream is paused
- * @param {...Array<(name: string) => ResourceValue<any>>} apiCalls - array of functions that return a resource
+ * @param {(name: string) => ResourceValue<any, any>} apiCalls - array of functions that return a resource
  * @example
  * watchResource(
  *   () => props.name,
  *   () => props.paused,
- *   ...[(name) => {
+ *   (name) => {
  *     pullAirTemperature({name}, resource);
- *
  *     return resource;
- *   }]
+ *   }
  * );
  */
 export const watchResource = (name, paused, ...apiCalls) => {
