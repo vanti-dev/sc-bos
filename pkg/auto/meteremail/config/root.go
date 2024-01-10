@@ -8,6 +8,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"html/template"
 	"net/mail"
+	"os"
+	"path/filepath"
 	"sort"
 	"time"
 )
@@ -38,6 +40,8 @@ type Destination struct {
 	BodyTemplate    jsontypes.String `json:"bodyTemplate,omitempty"`
 
 	Parsed *ParsedDestination `json:"-"`
+
+	Attachments map[string][]byte
 }
 
 type Source struct {
@@ -190,6 +194,21 @@ func (d Destination) ReadBodyTemplate() (*template.Template, error) {
 			},
 		}).
 		Parse(s)
+}
+
+func (d *Destination) AttachFile(src string) error {
+	if d.Attachments == nil {
+		d.Attachments = make(map[string][]byte)
+	}
+
+	b, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+
+	_, fileName := filepath.Split(src)
+	d.Attachments[fileName] = b
+	return nil
 }
 
 const DefaultEmailSubject = `Smart Core Meter Readings {{.Now.Format "Jan 02, 2006"}}`
