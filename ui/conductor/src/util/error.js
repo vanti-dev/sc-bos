@@ -8,12 +8,19 @@ export function formatErrorMessage(message) {
   if (typeof message !== 'string') {
     // Handle non-string message appropriately
     // For example, return a default error message or convert message to a string if possible
-    return 'Invalid error message format.';
+    return `Invalid error message format: ${message}`;
   }
 
   // Finding the start of the description and extracting it
   const descStart = message.indexOf('desc = ');
   const description = message.substring(descStart).split('"')[1];
+
+  if (!description) {
+    // Handle missing description appropriately
+    // For example, return a default error message or return the original message
+    return message;
+  }
+
 
   // Breaking down the description into parts
   const descParts = description.split(': ');
