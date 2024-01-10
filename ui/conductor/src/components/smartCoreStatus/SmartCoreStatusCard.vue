@@ -152,6 +152,26 @@ const statusText = computed(() => {
 });
 
 /**
+ * Check if there is a network issue (focusing on Unknown status and network related errors)
+ *
+ * @type {import ('vue').ComputedRef<{error: {code: number, message: string}} | boolean>} networkIssue
+ */
+const networkIssue = computed(() => {
+  const {error} = enrollmentStatus.value;
+
+
+  if (error) {
+    const statusUnknown = error.error.code === 2;
+    const networkRelated = error.error.message.toLowerCase().includes('http');
+
+    if (statusUnknown && networkRelated) return error;
+    else return false;
+  }
+
+  return false;
+});
+
+/**
  * Returns the actual UI status from the enrollment status
  *
  * @type {import ('vue').ComputedRef<{
@@ -161,82 +181,25 @@ const statusText = computed(() => {
  *     error: {
  *       code: number,
  *       message: string
- *     }
+ *     },
+ *     name?: string
  *   }
  * }>} uiStatus
  */
 const uiStatus = computed(() => {
-  const {isTested, testLoading, enrollment, loading, error} = enrollmentStatus.value;
-
-  if (!enrollment && !error && !loading) {
-    // Unavailable state
-    return createStatusObject(
-        'error',
-        'mdi-close',
-        {
-          error: {
-            code: 14,
-            message: 'Unable to retrieve enrollment status'
-          }
-        }
-    );
-  }
-
-  if (loading || testLoading) {
-    // Loading state
-    return createStatusObject(
-        'success',
-        'mdi-check',
-        {
-          error: {
-            code: 2,
-            message: 'Loading'
-          }
-        }
-    );
-  }
-
-  if (error) {
+  if (networkIssue.value) {
     // Error state
     return createStatusObject(
         'error',
         'mdi-close',
         {
-          error: error.error,
-          name: error.name
+          error: networkIssue.value.error,
+          name: null
         }
     );
   }
 
-  if (!isTested && !testLoading) {
-    // Enrolled but not tested state
-    return createStatusObject(
-        'warning',
-        'mdi-alert',
-        {
-          error: {
-            code: 0,
-            message: 'Enrollment successful, but not yet tested'
-          }
-        }
-    );
-  }
-
-  if (!isTested && testLoading) {
-    // Testing state
-    return createStatusObject(
-        'warning',
-        'mdi-check',
-        {
-          error: {
-            code: 2,
-            message: 'Testing in progress'
-          }
-        }
-    );
-  }
-
-  // Enrolled with pass state
+  // Active connection state
   return createStatusObject(
       'success',
       'mdi-check',
@@ -383,7 +346,7 @@ const statusPopupSetup = computed(() => {
     const nodeError = nodeStatusColor === 'error';
     const nodeWarning = nodeStatusColor === 'warning';
 
-    // Add the node status chip to the chips array first so it is displayed between the Hub and Nodes chips
+    // Add the node status chip to the chips array first, so it is displayed between the Hub and Nodes chips
     chips.push({id: 'nodeStatus', ...nodeOverallStatus.value});
     // Then add the nodes chip to the chips array
     chips.push({
