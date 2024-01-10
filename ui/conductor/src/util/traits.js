@@ -6,7 +6,6 @@ import {deepEqual} from 'vuetify/src/util/helpers';
 /**
  * Calls apiCalls each time name changes, tracking and managing resource cleanup for you.
  *
- * @template T
  * @param {MaybeRefOrGetter<string>} name - string representing the name of the device
  * @param {MaybeRefOrGetter<boolean>} paused - boolean representing whether the data stream is paused
  * @param {(name: string) => ResourceValue<any, any>} apiCalls - array of functions that return a resource
