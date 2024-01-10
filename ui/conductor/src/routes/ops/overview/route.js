@@ -11,7 +11,7 @@ export default [
       },
       {
         name: 'dynamic-areas-overview',
-        path: 'building/:pathMatch(.*)*', // Captures all segments after /building/
+        path: 'building/:pathMatch(.+)*', // Captures all segments after /building/
         component: () => import('@/routes/ops/overview/pages/DynamicAreasOverview.vue'),
         props: route => ({pathSegments: route.params.pathMatch.split('/')}) // Splits segments into an array
       }

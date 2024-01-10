@@ -14,7 +14,7 @@ import {
 import {Temperature} from '@smart-core-os/sc-api-grpc-web/types/unit_pb';
 
 /**
- * @param {PullAirTemperatureRequest.AsObject} request
+ * @param {Partial<PullAirTemperatureRequest.AsObject>} request
  * @param {ResourceValue<AirTemperature.AsObject, PullAirTemperatureResponse>} resource
  */
 export function pullAirTemperature(request, resource) {
