@@ -184,12 +184,6 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 		tlsConfig.RootCAs = pool
 	}
 
-	conn, err := grpc.Dial(cfg.ServerAddr, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "ERROR: can't connect: %s\n", err.Error())
-		return err
-	}
-
 	sendTime := cfg.Destination.SendTime
 	now := cfg.Now
 	if now == nil {
@@ -209,6 +203,12 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 				// Use the time we were planning on running instead of the current time.
 				// We do this to make output more predictable
 				t = next
+			}
+
+			conn, err := grpc.Dial(cfg.ServerAddr, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+			if err != nil {
+				logger.Error("Error cannot connect to server", zap.Error(err))
+				continue
 			}
 
 			attrs := Attrs{
@@ -250,6 +250,8 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 			} else {
 				logger.Info("email sent")
 			}
+
+			conn.Close()
 		}
 	}()
 
