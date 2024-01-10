@@ -128,6 +128,12 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 				}
 			}
 
+			err := cfg.Destination.AttachFile(".testattach.csv")
+
+			if err != nil {
+				logger.Warn("failed to add attachment", zap.Error(err))
+			}
+
 			err = retry(ctx, func(ctx context.Context) error {
 				return sendEmail(cfg.Destination, attrs)
 			})
