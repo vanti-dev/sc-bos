@@ -66,6 +66,10 @@ type Root struct {
 	ElectricMeters []string `json:"electricMeters,omitempty"`
 
 	WaterMeters []string `json:"waterMeters,omitempty"`
+
+	InsecureSkipVerify bool `json:"insecureSkipVerify,omitempty"`
+
+	TlsCertificatePath string `json:"tlsCertificatePath,omitempty"`
 }
 
 var (
@@ -214,7 +218,7 @@ func (d *Destination) AttachFile(src string) error {
 const DefaultEmailSubject = `Smart Core Meter Readings {{.Now.Format "Jan 02, 2006"}}`
 const DefaultEmailBody = `<html lang="en">
 <head>
-  <title>Once Centenary Way - Smart Core Meter Readings</title>
+  <title>One Centenary Way - Smart Core Meter Readings</title>
 </head>
 <body>
 <section>

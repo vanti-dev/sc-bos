@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
@@ -167,14 +168,26 @@ func groupByFloorAndZone(attrs *Attrs) {
 
 func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	logger := a.Logger
-	logger = logger.With(zap.String("snmp.host", cfg.Destination.Host), zap.Int("snmp.port", cfg.Destination.Port))
+	logger = logger.With(zap.String("snmp.addr", cfg.Destination.Addr()))
 
 	tlsConfig := &tls.Config{}
-	tlsConfig.InsecureSkipVerify = true // TODO set from config
+	if cfg.InsecureSkipVerify {
+		tlsConfig.InsecureSkipVerify = true
+	} else if cfg.TlsCertificatePath != "" {
+		pem, err := os.ReadFile(cfg.TlsCertificatePath)
+		if err != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "ERROR: read %q: %s", cfg.TlsCertificatePath, err.Error())
+			os.Exit(1)
+		}
+		pool := x509.NewCertPool()
+		pool.AppendCertsFromPEM(pem)
+		tlsConfig.RootCAs = pool
+	}
+
 	conn, err := grpc.Dial(cfg.ServerAddr, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "ERROR: can't connect: %s\n", err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	sendTime := cfg.Destination.SendTime
