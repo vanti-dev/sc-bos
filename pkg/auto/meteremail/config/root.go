@@ -223,7 +223,6 @@ const DefaultEmailBody = `<html lang="en">
 <body>
 <section>
 <h4>Please find below the total meter readings per each half floor. Attached is a detailed report which breaks these totals down into individual meter readings</h4>  
-
 <h4>Electric Meter Readings
 </h4>
 <table>
