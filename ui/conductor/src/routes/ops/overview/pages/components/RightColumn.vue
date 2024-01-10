@@ -1,19 +1,19 @@
 <template>
   <div>
     <presence-card
-        v-if="props.item.traits.showOccupancy"
+        v-if="showTrait('showOccupancy')"
         class="mb-5"
-        :name="props.item.traits.showOccupancy"/>
+        :name="traits.showOccupancy"/>
 
     <environmental-card
-        v-if="environmentalValues"
+        v-if="showTrait('showEnvironment')"
         class="mt-3"
         gauge-color="#ffc432"
         :name="environmentalValues.indoor"
         :external-name="environmentalValues.outdoor"/>
 
     <content-card
-        v-if="props.item.traits.showEnergyConsumption"
+        v-if="showTrait('showEnergyConsumption')"
         class="pb-0"
         style="min-height:385px;">
       <v-card-title class="text-h4 pl-4">Energy Consumption</v-card-title>
@@ -22,7 +22,7 @@
           color="#ffc432"
           color-middle="rgba(255, 196, 50, 0.35)"
           :hide-legends="true"
-          :metered="props.item.traits.showEnergyConsumption"/>
+          :metered="traits.showEnergyConsumption"/>
     </content-card>
   </div>
 </template>
@@ -48,14 +48,14 @@ const traits = computed(() => {
 
 const environmentalValues = computed(() => {
   // Extracting indoor and outdoor values, defaulting to undefined if not present
-  const indoor = traits.value.showEnvironment?.indoor;
-  const outdoor = props.item.traits.showEnvironment?.outdoor;
+  const indoor = traits.value?.showEnvironment?.indoor;
+  const outdoor = traits.value?.showEnvironment?.outdoor;
 
   // Function to handle the value conversion
   const handleValue = (value) => {
-    // If value is false or undefined, return an empty string
+    // If value is false or undefined, do not return anything
     if (value === false || value === undefined) {
-      return '';
+      return;
     }
     // Otherwise, return the value as it is (which should be a string)
     return value;
@@ -72,4 +72,13 @@ const environmentalValues = computed(() => {
   };
 });
 
+/**
+ * Checks if a config has a trait enabled
+ *
+ * @param {string} trait
+ * @return {boolean}
+ */
+const showTrait = (trait) => {
+  return traits.value[trait] !== false && traits.value[trait] !== undefined;
+};
 </script>
