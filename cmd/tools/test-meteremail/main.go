@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-var sampleNow = time.Date(2024, 01, 9, 0, 0, 0, 0, time.Local)
+var sampleNow = time.Date(2024, 01, 10, 0, 0, 0, 0, time.Local)
 
 func main() {
 	logger, err := zap.NewDevelopment()
@@ -47,11 +47,15 @@ func main() {
     "sendTime": "0 0 * * MON-FRI"
   },
 	"serverAddr" : "172.16.100.10:23557",
-	"electricMeters" : ["uk-ocw/floors/01/devices/CE1-electric-meter/WestDBA/T1LightingTotalEnergy",
-					"uk-ocw/floors/01/devices/CE1-electric-meter/WestDBA/T1TotalLoadTotalEnergy"
+	"electricMeters" : ["uk-ocw/floors/06/devices/CE11-electric-meter/WestDBA/T6HVACTotalEnergy",
+					"uk-ocw/floors/06/devices/CE11-electric-meter/WestDBA/T6LightingTotalEnergy",
+					"uk-ocw/floors/06/devices/CE11-electric-meter/WestDBA/T6TotalLoadTotalEnergy",
+					"uk-ocw/floors/06/devices/CE12-electric-meter/EASTSideDBB/T6HVACTotalEnergy",
+					"uk-ocw/floors/06/devices/CE12-electric-meter/EASTSideDBB/T6LightingTotalEnergy",
+					"uk-ocw/floors/06/devices/CE12-electric-meter/EASTSideDBB/T6TotalLoadTotalEnergy"
 					],
-	"waterMeters" : [ "uk-ocw/floors/01/devices/CE1-water-meter/FirstFloorWestBCWSMeter",
-						"uk-ocw/floors/01/devices/CE2-water-meter/1stFloorEastBCWSMeter"]
+	"waterMeters" : [ "uk-ocw/floors/06/devices/CE11-water-meter/SixthFloorWestBCWSMeter",
+						"uk-ocw/floors/06/devices/CE12-water-meter/6thFloorEastBCWSMeter"]
 }`
 
 	_, err = lifecycle.Configure([]byte(cfg))
