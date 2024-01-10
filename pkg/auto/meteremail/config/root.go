@@ -218,25 +218,23 @@ const DefaultEmailBody = `<html lang="en">
 </head>
 <body>
 <section>
+<h4>Please find below the total meter readings per each half floor. Attached is a detailed report which breaks these totals down into individual meter readings</h4>  
+
 <h4>Electric Meter Readings
 </h4>
 <table>
 <tbody>
 <tr>	
-	<th>Name</th>
 	<th>Floor</th>
 	<th>Zone</th>
-	<th>Reading (kWh)</th>
+	<th>Total Reading (kWh)</th>
 </tr>
-{{range .Stats}}
-{{if eq .MeterReading.MeterType 2}}
+{{range .EnergySummaryReports}}
 <tr>	
-	<td>{{.Source.Name}}</td>
-	<td>{{.Source.Floor}}</td>
-	<td>{{.Source.Zone}}</td>
-	<td>{{.MeterReading.Reading}}</td>
+	<td>{{.Floor}}</td>	
+	<td>{{.Zone}}</td>
+	<td>{{.TotalReading}}</td>
 </tr>
-{{end}}
 {{end}}
 </tbody>
 </table>
@@ -246,20 +244,16 @@ const DefaultEmailBody = `<html lang="en">
 <table>
 <tbody>
 <tr>	
-	<th>Name</th>
 	<th>Floor</th>
 	<th>Zone</th>
 	<th>Reading (m³)</th>
 </tr>
-{{range .Stats}}
-{{if eq .MeterReading.MeterType 1}}
+{{range .WaterSummaryReports}}
 <tr>	
-	<td>{{.Source.Name}}</td>
-	<td>{{.Source.Floor}}</td>
-	<td>{{.Source.Zone}}</td>
-	<td>{{.MeterReading.Reading}}</td>
+	<td>{{.Floor}}</td>
+	<td>{{.Zone}}</td>
+	<td>{{.TotalReading}}</td>
 </tr>
-{{end}}
 {{end}}
 </tbody>
 </table>

@@ -47,15 +47,25 @@ func main() {
     "sendTime": "0 0 * * MON-FRI"
   },
 	"serverAddr" : "172.16.100.10:23557",
-	"electricMeters" : ["uk-ocw/floors/06/devices/CE11-electric-meter/WestDBA/T6HVACTotalEnergy",
+	"electricMeters" : [
+					"uk-ocw/floors/01/devices/CE1-electric-meter/WestDBA/T1HVACTotalEnergy",
+					"uk-ocw/floors/01/devices/CE1-electric-meter/WestDBA/T1LightingTotalEnergy",
+					"uk-ocw/floors/01/devices/CE1-electric-meter/WestDBA/T1TotalLoadTotalEnergy",
+					"uk-ocw/floors/01/devices/CE2-electric-meter/SouthSideDBB/T1LPHVACTotalEnergy",
+					"uk-ocw/floors/01/devices/CE2-electric-meter/SouthSideDBB/T1LPLightingTotalEnergy",
+					"uk-ocw/floors/01/devices/CE2-electric-meter/SouthSideDBB/T1LPTotalLoadTotalEnergy",
+					"uk-ocw/floors/06/devices/CE11-electric-meter/WestDBA/T6HVACTotalEnergy",
 					"uk-ocw/floors/06/devices/CE11-electric-meter/WestDBA/T6LightingTotalEnergy",
 					"uk-ocw/floors/06/devices/CE11-electric-meter/WestDBA/T6TotalLoadTotalEnergy",
 					"uk-ocw/floors/06/devices/CE12-electric-meter/EASTSideDBB/T6HVACTotalEnergy",
 					"uk-ocw/floors/06/devices/CE12-electric-meter/EASTSideDBB/T6LightingTotalEnergy",
 					"uk-ocw/floors/06/devices/CE12-electric-meter/EASTSideDBB/T6TotalLoadTotalEnergy"
 					],
-	"waterMeters" : [ "uk-ocw/floors/06/devices/CE11-water-meter/SixthFloorWestBCWSMeter",
-						"uk-ocw/floors/06/devices/CE12-water-meter/6thFloorEastBCWSMeter"]
+	"waterMeters" : [ 
+					"uk-ocw/floors/01/devices/CE1-water-meter/FirstFloorWestBCWSMeter",
+					"uk-ocw/floors/01/devices/CE2-water-meter/1stFloorEastBCWSMeter",
+					"uk-ocw/floors/06/devices/CE11-water-meter/SixthFloorWestBCWSMeter",
+					"uk-ocw/floors/06/devices/CE12-water-meter/6thFloorEastBCWSMeter"]
 }`
 
 	_, err = lifecycle.Configure([]byte(cfg))

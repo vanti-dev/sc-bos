@@ -1,10 +1,11 @@
 // Package meteremail provides an automation that collects the instantaneous meter readings for a set of given devices
 // The automation uses the Meter API to fetch meter readings on a configurable fixed date
-// formats an email using html/template, and sends it to some recipients using smtp.
+// formats a summary email using html/template, and sends it to some recipients using smtp with a CSV file for detailed readings
 // Test program for meter reading automation is in cmd/tools/test-meteremail/main.go
 package meteremail
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
@@ -18,6 +19,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -76,6 +78,93 @@ func (a *autoImpl) getMeterReadingAndSource(ctx context.Context, conn *grpc.Clie
 	return source, meterReading, nil
 }
 
+// createMeterReadingsFile Creates a CSV file with detailed meter readings, organised by floor then zone.
+// Also while wrangling the data it also sums up reads per half floor & adds to attrs
+func (a *autoImpl) createMeterReadingsFile(filepath string, attrs *Attrs) error {
+	buf := bytes.NewBuffer(nil)
+	buf.WriteString("Electric Meter Readings\n")
+
+	// grab the floors and sort them so we can iterate over consistently
+	floorKeys := make([]string, 0, len(attrs.ReadingsByFloorZone))
+	for k := range attrs.ReadingsByFloorZone {
+		floorKeys = append(floorKeys, k)
+	}
+	sort.Strings(floorKeys)
+
+	for _, floorName := range floorKeys {
+		zones, _ := attrs.ReadingsByFloorZone[floorName]
+		zoneKeys := make([]string, 0, len(zones))
+		for k := range zones {
+			zoneKeys = append(zoneKeys, k)
+		}
+		sort.Strings(zoneKeys)
+
+		for _, zoneName := range zoneKeys {
+			zoneTotalEnergy := float32(0.0)
+			buf.WriteString(fmt.Sprintf("%s - %s\n", floorName, zoneName))
+			buf.WriteString("Name                          ,Floor	,Zone	,Reading (kWh)	\n")
+			meters, _ := zones[zoneName]
+			for _, meter := range meters {
+				if meter.MeterReading.MeterType == MeterTypeElectric {
+					buf.WriteString(fmt.Sprintf("%s,%s,%s,%f\n", meter.Source.Name, floorName, zoneName, meter.MeterReading.Reading))
+					zoneTotalEnergy += meter.MeterReading.Reading
+				}
+			}
+			attrs.EnergySummaryReports = append(attrs.EnergySummaryReports, SummaryReport{Floor: floorName, Zone: zoneName, TotalReading: zoneTotalEnergy})
+		}
+	}
+
+	buf.WriteString("\n\nWater Meter Readings\n")
+
+	for _, floorName := range floorKeys {
+		zones, _ := attrs.ReadingsByFloorZone[floorName]
+		zoneKeys := make([]string, 0, len(zones))
+		for k := range zones {
+			zoneKeys = append(zoneKeys, k)
+		}
+		sort.Strings(zoneKeys)
+
+		for _, zoneName := range zoneKeys {
+			zoneTotalWater := float32(0.0)
+			buf.WriteString(fmt.Sprintf("%s - %s\n", floorName, zoneName))
+			buf.WriteString("Name                          ,Floor	,Zone	,Reading (m3)	\n")
+			meters, _ := zones[zoneName]
+			for _, meter := range meters {
+				if meter.MeterReading.MeterType == MeterTypeWater {
+					buf.WriteString(fmt.Sprintf("%s,%s,%s,%f\n", meter.Source.Name, floorName, zoneName, meter.MeterReading.Reading))
+					zoneTotalWater += meter.MeterReading.Reading
+				}
+			}
+			attrs.WaterSummaryReports = append(attrs.WaterSummaryReports, SummaryReport{Floor: floorName, Zone: zoneName, TotalReading: zoneTotalWater})
+		}
+	}
+
+	err := os.WriteFile(filepath, buf.Bytes(), 0666)
+	if err != nil {
+		a.Logger.Warn("Failed to write meter readings csv file")
+	}
+
+	return err
+}
+
+// groupByFloorAndZone Take the data from sources in attrs and group them into a map of floor -> zone -> readings
+// for easy summarising & aggregation
+func groupByFloorAndZone(attrs *Attrs) {
+
+	if attrs.ReadingsByFloorZone == nil {
+		attrs.ReadingsByFloorZone = make(map[string]map[string][]Stats)
+	}
+
+	for _, stat := range attrs.Stats {
+
+		if _, ok := attrs.ReadingsByFloorZone[stat.Source.Floor]; !ok {
+			attrs.ReadingsByFloorZone[stat.Source.Floor] = make(map[string][]Stats)
+		}
+
+		attrs.ReadingsByFloorZone[stat.Source.Floor][stat.Source.Zone] = append(attrs.ReadingsByFloorZone[stat.Source.Floor][stat.Source.Zone], stat)
+	}
+}
+
 func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	logger := a.Logger
 	logger = logger.With(zap.String("snmp.host", cfg.Destination.Host), zap.Int("snmp.port", cfg.Destination.Port))
@@ -128,10 +217,16 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 				}
 			}
 
-			err := cfg.Destination.AttachFile(".testattach.csv")
+			groupByFloorAndZone(&attrs)
 
-			if err != nil {
-				logger.Warn("failed to add attachment", zap.Error(err))
+			// temporary file for now, just create to attach and then delete
+			temporaryFileName := "temp.csv"
+			if a.createMeterReadingsFile(temporaryFileName, &attrs) == nil {
+				err := cfg.Destination.AttachFile(temporaryFileName)
+				if err != nil {
+					logger.Warn("failed to add attachment", zap.Error(err))
+				}
+				os.Remove(temporaryFileName)
 			}
 
 			err = retry(ctx, func(ctx context.Context) error {
