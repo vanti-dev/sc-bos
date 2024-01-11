@@ -118,14 +118,12 @@ const generalStatus = computed(() => {
   const ui = uiStatus.value;
   const isUIError = ui.color === 'error';
   let hasError = false;
-  let allError = true;
 
   for (const status of Object.values(nodeStatus.value)) {
     if (status.color === 'error') hasError = true;
-    else allError = false;
   }
 
-  return allError ?
+  return !!networkIssue.value.error ?
       'error--text' : (isUIError || hasError) ?
           'warning--text' : 'success--text text--lighten-4';
 });

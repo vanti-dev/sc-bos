@@ -8,7 +8,7 @@ import {useHubStore} from '@/stores/hub';
 /**
  * @typedef {Object} ComponentData
  * @property {import('vue').Ref<boolean>} isLoading - Indicates whether the component is currently loading data.
- * @property {ActionTracker<GetEnrollmentResponse.AsObject>} enrollmentValue - for enrollment requests.
+ * @property {ActionTracker<GetEnrollmentRequest.AsObject>} enrollmentValue - for enrollment requests.
  * @property {ActionTracker<ListHubNodesResponse.AsObject>} listHubNodesValue - for listing hub nodes.
  * @property {ActionTracker<TestEnrollmentResponse.AsObject>} testEnrollmentValue - for testing enrollment.
  * @property {import('vue').ComputedRef<{
@@ -132,7 +132,7 @@ export default function() {
   // ------------------- Enrollment ------------------- //
   // Initialize the enrollmentValue as a reactive reference
   const enrollmentValue = reactive(
-      /** @type {ActionTracker<GetEnrollmentResponse.AsObject>} */ newActionTracker()
+      /** @type {ActionTracker<GetEnrollmentRequest.AsObject>} */ newActionTracker()
   );
 
   // Function to get enrollment
@@ -226,8 +226,8 @@ export default function() {
   const listHubNodesValue = reactive(
       /** @type {ActionTracker<ListHubNodesResponse.AsObject>} */ newActionTracker()
   );
-    // Initialize the trackedHubNodeResults as a reactive reference
-    // Similar to the listHubNodesValue, this is the action tracker for the testHubNode action
+  // Initialize the trackedHubNodeResults as a reactive reference
+  // Similar to the listHubNodesValue, this is the action tracker for the testHubNode action
   const testHubNodeValue = reactive(
       /** @type {ActionTracker<TestHubNodeResponse.AsObject>} */ newActionTracker()
   );
