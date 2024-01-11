@@ -24,7 +24,6 @@ var Factory driver.Factory = factory{}
 type factory struct{}
 
 func (f factory) New(services driver.Services) service.Lifecycle {
-	services.Logger = services.Logger.Named(DriverName)
 	d := &Driver{
 		Services: services,
 	}
