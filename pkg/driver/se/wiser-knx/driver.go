@@ -54,7 +54,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 	d.cfg = cfg
 
 	// create a new client to communicate with the Wiser controller
-	pass, err := cfg.LoadPassword()
+	pass, err := cfg.Password.Read()
 	if err != nil {
 		return err
 	}

@@ -2,19 +2,20 @@ package wiser_knx
 
 import (
 	"encoding/json"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 func DefaultConfig() Config {
 	return Config{
-		Poll:         10 * time.Second,
-		Username:     "remote",
-		PasswordFile: "/run/secrets/wiser-knx-password",
+		Poll:     10 * time.Second,
+		Username: "remote",
+		Password: jsontypes.Password{
+			PasswordFile: "/run/secrets/wiser-knx-password",
+		},
 	}
 }
 
@@ -33,26 +34,13 @@ type Config struct {
 
 	// The username to use when connecting to the Wiser for KNX controller (default: "remote").
 	Username string `json:"username,omitempty"`
-
-	// The password to use when connecting to the Wiser for KNX controller.
-	Password string `json:"password,omitempty"`
-
-	// Path to a secret containing the password to use when connecting to the Wiser for KNX controller.
-	PasswordFile string `json:"passwordFile,omitempty"`
+	jsontypes.Password
 
 	// The poll interval to use when polling the Wiser for KNX controller (default: 10 seconds).
 	Poll time.Duration `json:"poll,omitempty"`
 
 	// The list of exported objects on the Wiser for KNX controller.
 	Devices []Device `json:"devices,omitempty"`
-}
-
-func (c Config) LoadPassword() (string, error) {
-	if c.Password != "" {
-		return c.Password, nil
-	}
-	p, err := os.ReadFile(c.PasswordFile)
-	return strings.TrimSpace(string(p)), err
 }
 
 // Device config for an object on the Wiser for KNX controller.
