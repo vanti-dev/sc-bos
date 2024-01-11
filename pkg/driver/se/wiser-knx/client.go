@@ -83,14 +83,14 @@ func doPost(client *Client, query url.Values, target any) error {
 }
 
 type Object struct {
-	Id       int32       `json:"id"`
-	Address  string      `json:"address"`
-	Name     string      `json:"name"`
-	Data     interface{} `json:"data"`
-	DataType string      `json:"dataType"`
-	Time     int32       `json:"time"`
-	Date     string      `json:"date"`
-	Comment  string      `json:"comment"`
+	Id       int32  `json:"id"`
+	Address  string `json:"address"`
+	Name     string `json:"name"`
+	Data     any    `json:"data"`
+	DataType string `json:"dataType"`
+	Time     int32  `json:"time"`
+	Date     string `json:"date"`
+	Comment  string `json:"comment"`
 }
 
 func QueryObjects(client *Client) ([]Object, error) {
