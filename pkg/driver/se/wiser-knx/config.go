@@ -11,7 +11,7 @@ import (
 
 func DefaultConfig() Config {
 	return Config{
-		Poll:     10 * time.Second,
+		Poll:     jsontypes.Duration{Duration: 10 * time.Second},
 		Username: "remote",
 		Password: jsontypes.Password{
 			PasswordFile: "/run/secrets/wiser-knx-password",
@@ -37,7 +37,7 @@ type Config struct {
 	jsontypes.Password
 
 	// The poll interval to use when polling the Wiser for KNX controller (default: 10 seconds).
-	Poll time.Duration `json:"poll,omitempty"`
+	Poll jsontypes.Duration `json:"poll,omitempty"`
 
 	// The list of exported objects on the Wiser for KNX controller.
 	Devices []Device `json:"devices,omitempty"`

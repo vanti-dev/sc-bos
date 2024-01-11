@@ -130,7 +130,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 }
 
 func (d *Driver) poll(ctx context.Context) {
-	ticker := time.NewTicker(d.cfg.Poll)
+	ticker := time.NewTicker(d.cfg.Poll.Duration)
 	defer ticker.Stop()
 
 	// update on initial load
