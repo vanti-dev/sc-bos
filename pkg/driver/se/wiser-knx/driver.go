@@ -78,7 +78,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 		for t, addr := range dev.Addresses {
 			switch t {
 			case "light":
-				l := light.NewModel(&traits.Brightness{})
+				l := light.NewModel()
 				c := light.WrapApi(lightServer{
 					LightApiServer: light.NewModelServer(l),
 					client:         d.client,
