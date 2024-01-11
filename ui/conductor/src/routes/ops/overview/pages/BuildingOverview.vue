@@ -12,7 +12,6 @@
       </v-row>
     </v-col>
     <v-col cols="2" class="mr-0 pr-0 pt-0" style="width: 260px; max-width: 260px;">
-      <smart-core-status-card/>
       <environmental-card class="ops-sidebar mt-5" :name="environmentalZone" :external-name="externalZone" should-wrap/>
     </v-col>
   </v-container>
@@ -22,7 +21,6 @@
 import {computed} from 'vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import {usePageStore} from '@/stores/page';
-import smartCoreStatusCard from '@/routes/ops/smartCoreStatusCard.vue';
 import EnvironmentalCard from '@/routes/ops/overview/pages/widgets/environmental/EnvironmentalCard.vue';
 import EnergyCard from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyCard.vue';
 import OccupancyCard from '@/routes/ops/overview/pages/widgets/occupancy/OccupancyCard.vue';
