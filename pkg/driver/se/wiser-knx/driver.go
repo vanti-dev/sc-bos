@@ -74,8 +74,8 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 			dev.Addresses = map[string]string{"light": dev.Address}
 		}
 
+		_dev := dev
 		for t, addr := range dev.Addresses {
-			_dev := dev
 			switch t {
 			case "light":
 				l := light.NewModel(&traits.Brightness{})
