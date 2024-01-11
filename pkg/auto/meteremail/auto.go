@@ -81,7 +81,7 @@ func (a *autoImpl) getMeterReadingAndSource(ctx context.Context, conn *grpc.Clie
 
 // createMeterReadingsFile Creates a CSV file with detailed meter readings, organised by floor then zone.
 // Also while wrangling the data it also sums up reads per half floor & adds to attrs
-func (a *autoImpl) createMeterReadingsFile(filepath string, attrs *Attrs) error {
+func (a *autoImpl) createMeterReadingsFile(filepath string, attrs *Attrs) []byte {
 	buf := bytes.NewBuffer(nil)
 	buf.WriteString("Electric Meter Readings\n")
 
@@ -139,13 +139,7 @@ func (a *autoImpl) createMeterReadingsFile(filepath string, attrs *Attrs) error 
 			attrs.WaterSummaryReports = append(attrs.WaterSummaryReports, SummaryReport{Floor: floorName, Zone: zoneName, TotalReading: zoneTotalWater})
 		}
 	}
-
-	err := os.WriteFile(filepath, buf.Bytes(), 0666)
-	if err != nil {
-		a.Logger.Warn("Failed to write meter readings csv file")
-	}
-
-	return err
+	return buf.Bytes()
 }
 
 // groupByFloorAndZone Take the data from sources in attrs and group them into a map of floor -> zone -> readings
@@ -234,13 +228,8 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 
 			// temporary file for now, just create to attach and then delete
 			temporaryFileName := "temp.csv"
-			if a.createMeterReadingsFile(temporaryFileName, &attrs) == nil {
-				err := cfg.Destination.AttachFile(temporaryFileName)
-				if err != nil {
-					logger.Warn("failed to add attachment", zap.Error(err))
-				}
-				os.Remove(temporaryFileName)
-			}
+			file := a.createMeterReadingsFile(temporaryFileName, &attrs)
+			cfg.Destination.AttachFile(temporaryFileName, file)
 
 			err = retry(ctx, func(ctx context.Context) error {
 				return sendEmail(cfg.Destination, attrs)
