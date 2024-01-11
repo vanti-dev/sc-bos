@@ -70,7 +70,7 @@
               <v-divider class="mx-2" style="min-width: 10px"/>
               <v-chip
                   :class="chip.color"
-                  :disabled="defaultConnection || generalStatus === 'error'"
+                  :disabled="chipDisabled"
                   small
                   :to="navigateToNodes(chip.to)">
                 {{ chip.label }}
@@ -137,7 +137,7 @@ const generalStatus = computed(() => {
  */
 const statusText = computed(() => {
   if (generalStatus.value.includes('error')) {
-    if (defaultConnection.value) {
+    if (networkIssue.value) {
       return 'offline';
     } else {
       return 'online';
@@ -169,6 +169,10 @@ const networkIssue = computed(() => {
   }
 
   return false;
+});
+
+const chipDisabled = computed(() => {
+  return !!networkIssue.value.error;
 });
 
 /**
@@ -290,14 +294,6 @@ const nodeOverallStatus = computed(() => {
     return createStatusObject('success', null, {error: {code: 0, message: 'All nodes are operating normally'}});
   }
 });
-
-
-/**
- * Returns - whether or not - the default connection is being used
- *
- * @type {import ('vue').ComputedRef<boolean>} defaultConnection
- */
-const defaultConnection = computed(() => displayedChips.value.length === 2);
 
 /**
  * Returns the chips and alerts to be displayed in the status popup
