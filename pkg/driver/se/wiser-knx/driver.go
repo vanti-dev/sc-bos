@@ -83,7 +83,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 					LightApiServer: light.NewModelServer(l),
 					client:         d.client,
 					device:         &_dev,
-					logger:         d.logger.Named(dev.Name),
+					logger:         d.logger.With(zap.String("name", dev.Name)),
 				})
 				announcer.Announce(dev.Name, node.HasTrait(trait.Light, node.WithClients(c)))
 
@@ -113,7 +113,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 						ModeApiServer: mode.NewModelServer(modeModel),
 						client:        d.client,
 						device:        &_dev,
-						logger:        d.logger.Named(dev.Name),
+						logger:        d.logger.With(zap.String("name", dev.Name)),
 					}),
 					mode.WrapInfo(s),
 				)))
