@@ -3,8 +3,8 @@ LABEL vendor="Vanti Ltd"
 
 COPY .build/sc-bos /app/
 COPY .build/ops-ui/ /app/ops-ui/
-COPY static/cfg/ /app/cfg/
-COPY static/ui-config/ /app/ui-config/
+COPY default/cfg/ /cfg/
+COPY default/ui-config/ /app/ui-config/
 
 EXPOSE 443
 EXPOSE 23557

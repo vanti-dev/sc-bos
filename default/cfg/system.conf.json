@@ -1,7 +1,7 @@
 {
   "staticHosting": [
-    {"path": "/", "filePath": "/usr/local/inf-sc-bos/static/ops"},
-    {"path": "/__/scos/", "filePath": "/usr/local/inf-sc-bos/static/ui-config"}
+    {"path": "/", "filePath": "/app/ops-ui"},
+    {"path": "/__/scos/", "filePath": "/app/ui-config"}
   ],
   "certs": {
   },
