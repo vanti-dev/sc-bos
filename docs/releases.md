@@ -12,15 +12,31 @@ Docker installed, the `act` binary, and a file containing the secrets required f
 `.secret/act.secrets`):
 
 ```
-GITHUB_TOKEN=<your github personal access token, should start `ghp_`>
-GO_MOD_TOKEN=<as above>
-NEXUS_NPM_TOKEN=<your nexus npm token - copy from ~/.npmrc, should start `NpmToken.`>
+GITHUB_TOKEN=<github personal access token, should start `ghp_`>
+GO_MOD_TOKEN=<copy of GITHUB_TOKEN>
+NEXUS_NPM_TOKEN=<nexus npm token - copy from ~/.npmrc, should start `NpmToken.`>
 ```
 
 You can then run the following commands to perform the build of the binaries, UIs, and Docker images:
 ```shell
-act --secret-file .secret/act.secrets --artifact-server-path ./.downloads/sc-bos --pull false -j build-sc-bos
-act --secret-file .secret/act.secrets --artifact-server-path ./.downloads/ops-ui --pull false -j build-ops-ui
-act --secret-file .secret/act.secrets --artifact-server-path ./.downloads --pull false -j build-docker
+act --secret-file .secret/act.secrets --artifact-server-path /tmp/artifacts --pull false -j build-sc-bos
+act --secret-file .secret/act.secrets --artifact-server-path /tmp/artifacts --pull false -j build-ops-ui
+act --secret-file .secret/act.secrets --artifact-server-path /tmp/artifacts --pull false -j build-docker
 ``` 
 
+_// todo: fix this issue!_\
+Note: there is some permissions issue with the `build-docker` job that means it doesn't work with `act` - it's not clear 
+why, but it's not a big deal as the Docker image is built by GitHub Actions anyway. However, it's useful to be able to 
+test the build locally, so the manual steps to build the Docker image are as follows:
+
+```shell
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o .build/sc-bos github.com/vanti-dev/sc-bos/cmd/bos
+cd ui/conductor
+yarn install && yarn run build
+cd ../..
+mv ui/conductor/dist .build/ops-ui
+docker build -t ghcr.io/vanti-dev/sc-bos:vTest .
+```
+
+#### Gotchas:
+- Using the manual compile method, if you have an `env.local` file for the ops-ui you'll need to comment out any overrides you have set
