@@ -8,8 +8,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"html/template"
 	"net/mail"
-	"os"
-	"path/filepath"
 	"sort"
 	"time"
 )
@@ -200,17 +198,11 @@ func (d Destination) ReadBodyTemplate() (*template.Template, error) {
 		Parse(s)
 }
 
-func (d *Destination) AttachFile(src string) error {
+func (d *Destination) AttachFile(fileName string, b []byte) error {
 	if d.Attachments == nil {
 		d.Attachments = make(map[string][]byte)
 	}
 
-	b, err := os.ReadFile(src)
-	if err != nil {
-		return err
-	}
-
-	_, fileName := filepath.Split(src)
 	d.Attachments[fileName] = b
 	return nil
 }
