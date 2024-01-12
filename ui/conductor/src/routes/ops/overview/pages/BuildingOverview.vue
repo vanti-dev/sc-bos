@@ -11,8 +11,8 @@
         </v-col>
       </v-row>
     </v-col>
-    <v-col cols="2" class="mr-0 pr-0 pt-0" style="width: 260px; max-width: 260px;">
-      <environmental-card class="ops-sidebar mt-5" :name="environmentalZone" :external-name="externalZone" should-wrap/>
+    <v-col cols="2" class="mr-0 pr-0" style="width: 260px; max-width: 260px;">
+      <environmental-card class="ops-sidebar" :name="environmentalZone" :external-name="externalZone" should-wrap/>
     </v-col>
   </v-container>
 </template>
@@ -35,3 +35,10 @@ const occupancyZone = buildingZone;
 const externalZone = computed(() => environmentalZone.value + '/outside');
 const supplyZone = computed(() => energyZone.value + '/supply');
 </script>
+
+<style scoped>
+.ops-sidebar {
+  position: relative;
+  top: 63px;
+}
+</style>
