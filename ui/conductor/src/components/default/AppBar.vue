@@ -18,7 +18,7 @@
 import AccountBtn from '@/components/AccountBtn.vue';
 import AppMenu from '@/components/AppMenu.vue';
 import BrandLogo from '@/components/BrandLogo.vue';
-import smartCoreStatusCard from '@/components/smartCoreStatus/smartCoreStatusCard.vue';
+import SmartCoreStatusCard from '@/components/smartCoreStatus/SmartCoreStatusCard.vue';
 
 import {computed} from 'vue';
 import {storeToRefs} from 'pinia';
