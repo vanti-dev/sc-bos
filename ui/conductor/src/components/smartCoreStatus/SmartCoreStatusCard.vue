@@ -123,9 +123,13 @@ const generalStatus = computed(() => {
     if (status.color === 'error') hasError = true;
   }
 
-  return !!networkIssue.value.error ?
-      'error--text' : (isUIError || hasError) ?
-          'warning--text' : 'success--text text--lighten-4';
+  if (!!networkIssue.value.error) {
+    return 'error--text';
+  } else if (isUIError || hasError) {
+    return 'warning--text';
+  } else {
+    return 'success--text text--lighten-4';
+  }
 });
 
 /**
@@ -372,12 +376,31 @@ const navigateToNodes = (to) => (to && isLoggedIn && !hasNoAccess(to)) ? to : nu
 
 
 // ------ Helpers ------ //
-const createStatusObject = (color, icon, resource, single = true) => ({
-  color,
-  icon: icon || (color === 'error' ? 'mdi-close' : color === 'warning' ? 'mdi-alert' : 'mdi-check'),
-  resource,
-  single
-});
+const createStatusObject = (color, icon, resource, single = true) => {
+  if (icon) {
+    return {
+      color,
+      icon,
+      resource,
+      single
+    };
+  } else {
+    let icn = 'mdi-check';
+
+    if (color === 'error') {
+      icn = 'mdi-close';
+    } else if (color === 'warning') {
+      icn = 'mdi-alert';
+    }
+
+    return {
+      color,
+      icon: icn,
+      resource,
+      single
+    };
+  }
+};
 
 
 // Create a lastChecked timestamp (for second to be used in the status popup
