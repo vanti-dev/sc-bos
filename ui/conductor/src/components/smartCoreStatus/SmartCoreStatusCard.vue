@@ -50,37 +50,30 @@
           </div>
         </v-tooltip>
       </v-card-title>
-      <v-row class="d-flex flex-row justify-center mx-4 my-3">
-        <div class="d-flex flex-row align-center">
-          <v-chip class="neutral lighten-1" small>UI</v-chip>
-          <v-divider class="mx-2" style="min-width: 10px"/>
-
-          <!-- Display chips and status alerts -->
-          <div v-for="(chip, index) in statusPopupSetup" class="d-flex flex-row" :key="chip.id">
-            <status-alert
-                v-if="chip.id.includes('Status')"
-                :is-clickable="chip.isClickable"
-                :color="chip.color"
-                :icon="chip.icon"
-                :resource="chip.resource"
-                :single="chip.single"/>
-            <div v-if="!chip.id.includes('Status')" class="d-flex flex-row align-center">
-              <v-divider class="mx-2" style="min-width: 10px"/>
-              <v-chip
-                  :class="chip.color"
-                  :disabled="chipDisabled"
-                  small
-                  :to="navigateToNodes(chip.to)">
-                {{ chip.label }}
-              </v-chip>
-              <v-divider
-                  v-if="index !== statusPopupSetup.length - 1"
-                  class="mx-2"
-                  style="min-width: 10px"/>
-            </div>
-          </div>
-        </div>
-      </v-row>
+      <v-card-text class="d-flex flex-row justify-center align-center mb-n1 mt-4">
+        <!-- Display chips and status alerts -->
+        <v-chip class="neutral lighten-1" small>UI</v-chip>
+        <template v-for="(chip, index) in statusPopupSetup">
+          <v-divider class="mx-2" style="width: 10px; max-width: 10px;" :key="index + '-divider'"/>
+          <status-alert
+              v-if="chip.id.includes('Status')"
+              :key="chip.id + '-status'"
+              :is-clickable="chip.isClickable"
+              :color="chip.color"
+              :icon="chip.icon"
+              :resource="chip.resource"
+              :single="chip.single"/>
+          <v-chip
+              v-else
+              :key="chip.id + '-chip'"
+              :class="chip.color"
+              :disabled="chipDisabled"
+              small
+              :to="navigateToNodes(chip.to)">
+            {{ chip.label }}
+          </v-chip>
+        </template>
+      </v-card-text>
     </v-card>
   </v-menu>
 </template>
