@@ -363,13 +363,16 @@ const statusPopupSetup = computed(() => {
 
 // Trigger a refresh of the enrollment and node status
 const triggerRefresh = async () => {
-  isRefreshing.value = true;
-  await getEnrollmentAndListHubNodes();
-
-  setTimeout(() => {
-    isRefreshing.value = false;
-  }, 1000); // Wait 1 second before setting isRefreshing to false, this allows the icon to spin
+  try {
+    isRefreshing.value = true;
+    await getEnrollmentAndListHubNodes();
+  } finally {
+    setTimeout(() => {
+      isRefreshing.value = false;
+    }, 1000); // Wait 1 second before setting isRefreshing to false, this allows the icon to spin
+  }
 };
+
 
 // Navigate to the nodes page if the user has access
 const navigateToNodes = (to) => (to && isLoggedIn && !hasNoAccess(to)) ? to : null;
