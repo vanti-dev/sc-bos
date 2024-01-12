@@ -139,7 +139,6 @@ export default function() {
   // This is called on mount and every 15 seconds as part of getEnrollmentAndListHubNodes
   const getEnrollmentValue = async () => {
     try {
-      console.debug('Getting enrollment...');
       await getEnrollment(enrollmentValue); // Get the enrollment
       enrollmentValue.error = null; // Reset the error
       await getTestEnrollmentValue(); // Test the enrollment
@@ -167,7 +166,6 @@ export default function() {
    */
   const getTestEnrollmentValue = async () => {
     try {
-      console.debug('Getting test enrollment...');
       await testEnrollment(testEnrollmentValue); // Test the enrollment
       testEnrollmentValue.error = null; // Reset the error
     } catch (e) {
@@ -260,7 +258,6 @@ export default function() {
       };
 
       try {
-        console.debug('Testing hub node...');
         const request = {address: node.address}; // Create a request object for the testHubNode action
         await testHubNode(request, testHubNodeValue); // Test the node
 
