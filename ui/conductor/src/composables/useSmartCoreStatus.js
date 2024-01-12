@@ -86,7 +86,10 @@ export default function() {
 
   // ----------------------------------------------------------- //
   // ------------------- API Calls & Loading ------------------- //
-  const isLoading = ref(false); // Returns a boolean for whether the page is loading
+  // const isLoading = ref(false); // Returns a boolean for whether the page is loading
+  const isLoading = computed(() => {
+    return enrollmentValue.loading || listHubNodesValue.loading;
+  });
   const lastFetch = ref(null); // Returns a now timestamp for the last successful check
 
   //
@@ -101,11 +104,11 @@ export default function() {
    * @return {Promise<void>}
    */
   const getEnrollmentAndListHubNodes = async () => {
-    isLoading.value = true;
-    await getEnrollmentValue();
-    await triggerListHubNodesAction();
+    await Promise.all([
+      getEnrollmentValue(),
+      triggerListHubNodesAction()
+    ]);
     lastFetch.value = Date.now(); // Update the last execution time
-    isLoading.value = false;
   };
 
   /**
