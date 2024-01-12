@@ -24,22 +24,20 @@
     </template>
 
     <v-card class="elevation-0 mt-4 pb-1" min-width="400px" style="border: 1px solid var(--v-neutral-lighten2)">
-      <div class="d-flex flex-row align-center">
-        <v-card-title class="text-subtitle-1 mb-0 pb-0 mt-n1 mb-2">
-          Smart Core Status
-          <span
-              class="ml-2 font-weight-light"
-              style="font-size: 10px; margin-bottom: -1px">{{
-                isLoading ? '- Checking...' : 'Updated ' + timeAgo
-              }}</span>
-        </v-card-title>
+      <v-card-title class="text-subtitle-1 mb-0 pb-0 mt-n1 mb-2">
+        Smart Core Status
+        <span
+            class="ml-2 font-weight-light"
+            style="font-size: 10px; margin-bottom: -1px">
+          {{ isLoading ? '- Checking...' : 'Updated ' + timeAgo }}
+        </span>
         <v-spacer/>
         <v-tooltip left>
           <template #activator="{ on, attrs }">
             <v-btn
                 v-bind="attrs"
                 v-on="on"
-                :class="['mr-2', {'rotate-icon': isRefreshing}]"
+                :class="['mb-0', {'rotate-icon': isRefreshing}]"
                 icon
                 small
                 style="padding-left: 1px;"
@@ -51,7 +49,7 @@
             <span>Check Now</span>
           </div>
         </v-tooltip>
-      </div>
+      </v-card-title>
       <v-row class="d-flex flex-row justify-center mx-4 my-3">
         <div class="d-flex flex-row align-center">
           <v-chip class="neutral lighten-1" small>UI</v-chip>
