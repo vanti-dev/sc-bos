@@ -6,7 +6,7 @@ import {listServices, ServiceNames} from '@/api/ui/services';
 import {useAppConfigStore} from '@/stores/app-config';
 import {useControllerStore} from '@/stores/controller';
 import {defineStore} from 'pinia';
-import {computed, reactive, ref, set, watch} from 'vue';
+import {computed, reactive, ref, watch} from 'vue';
 
 export const useHubStore = defineStore('hub', () => {
   const appConfig = useAppConfigStore();
@@ -26,56 +26,82 @@ export const useHubStore = defineStore('hub', () => {
 
     if (config?.hub) {
       pullHubNodes(nodesListCollection);
-      try {
-        if (!nodesListCollection.value) set(nodesListCollection, 'value', {});
-        // if local proxy hub mode is enabled, the hub node will be the same as the proxy node
-        // get systems config so we can check if the proxy is in local mode
-        const systems = await listServices({name: ServiceNames.Systems}, newActionTracker());
-        let proxyHubLocalMode = false;
-        // search through systems to find the proxy
-        for (const system of systems.servicesList) {
-          if (system.id === 'proxy') {
-            const cfg = JSON.parse(system.configRaw);
-            // check hub mode
-            if (cfg.hubMode && cfg.hubMode === 'local') {
-              proxyHubLocalMode = true;
-              break;
-            }
-          }
-        }
-        if (proxyHubLocalMode) {
-          hubNode.value = {
-            name: controller.controllerName,
-            address: ''
-          };
-        } else {
-          const hub = await getEnrollment(newActionTracker());
-          hubNode.value = {
-            name: hub.managerName,
-            address: hub.managerAddress
-          };
-        }
-        set(nodesListCollection.value, hubNode.value.name, hubNode);
-
-
-        await listHubNodesAction();
-        console.debug('resolving hubPromise with', hubNode.value);
-        _hubResolve(hubNode.value);
-      } catch (e) {
-        console.warn('Error fetching first page', e);
-        _hubReject(e);
-      }
+      await nodesListCollectionInit();
     }
   }, {immediate: true});
 
-  const listHubNodesAction = async () => {
-    listedHubNodes.value = [];
-    const nodes = await listHubNodes(newActionTracker());
-    for (const node of nodes.nodesList) {
-      listedHubNodes.value.push(node.name);
-      set(nodesListCollection.value, node.name, node);
+  const nodesListCollectionInit = async () => {
+    try {
+      // if local proxy hub mode is enabled, the hub node will be the same as the proxy node
+      // get systems config, so we can check if the proxy is in local mode
+      const systems = await listServices({name: ServiceNames.Systems}, newActionTracker());
+      let proxyHubLocalMode = false;
+
+      // search through systems to find the proxy
+      for (const system of systems.servicesList) {
+        if (system.id === 'proxy') {
+          const cfg = JSON.parse(system.configRaw);
+          // check hub mode
+          if (cfg.hubMode && cfg.hubMode === 'local') {
+            proxyHubLocalMode = true;
+            break;
+          }
+        }
+      }
+
+      if (proxyHubLocalMode) {
+        hubNode.value = {
+          name: controller.controllerName,
+          address: ''
+        };
+      } else {
+        const hub = await getEnrollment(newActionTracker());
+        hubNode.value = {
+          name: hub.managerName,
+          address: hub.managerAddress
+        };
+      }
+
+      // add the hub node to the list
+      nodesListCollection.value = {
+        ...nodesListCollection.value,
+        [hubNode.value.name]: hubNode.value
+      };
+
+
+      await listHubNodesAction(newActionTracker());
+      _hubResolve(hubNode.value);
+    } catch (e) {
+      console.warn('Error fetching first page', e);
+      _hubReject(e);
     }
   };
+
+
+  const listHubNodesAction = async (actionTracker) => {
+    try {
+      const nodes = await listHubNodes(actionTracker);
+
+      // reset the existing list
+      listedHubNodes.value = [];
+
+      // add the new nodes to the list
+      for (const node of nodes.nodesList) {
+        // collect the names of the nodes
+        listedHubNodes.value.push(node.name);
+
+        // updating the reactive object while keeping the reactivity
+        nodesListCollection.value = {
+          ...nodesListCollection.value,
+          [node.name]: node
+        };
+      }
+    } catch (error) {
+      console.error('Error in listHubNodesAction:', error);
+      throw error;
+    }
+  };
+
 
   /**
    * @typedef {Object} Node
@@ -89,7 +115,7 @@ export const useHubStore = defineStore('hub', () => {
   const nodesList = computed(() => {
     /** @type {Record<string, Node>} */
     const nodes = {};
-    Object.values(nodesListCollection?.value || {}).forEach((node, name) => {
+    Object.values(nodesListCollection?.value || {}).forEach((node) => {
       nodes[node.name] = {
         ...node,
         commsAddress: proxiedAddress(node.address),

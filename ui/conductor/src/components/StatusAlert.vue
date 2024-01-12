@@ -3,19 +3,28 @@
       v-if="props.resource"
       v-model="show"
       bottom
-      color="error">
+      :color="props.color">
     <template #activator="{ on, attrs }">
       <v-icon
-          class="mx-auto"
-          color="error"
-          size="20"
           v-bind="attrs"
-          v-on="on">
+          v-on="on"
+          :color="props.color"
+          size="22"
+          style="padding-top: 1px;">
         {{ props.icon }}
       </v-icon>
     </template>
-    <span class="error-name">{{ errorDetails.errorName }}</span>
-    <span class="error-details">{{ errorDetails.errorCode }}: {{ errorDetails.errorMessage }}</span>
+    <div v-for="(status, index) in statusDetails" :key="status.statusName + index">
+      <span class="error-name">{{ status.statusName }}</span>
+      <span class="error-details">
+        {{ status.statusCode }}
+        {{ status.statusMessage }}
+      </span>
+      <v-divider
+          v-if="!props.single && index !== statusDetails.length - 1"
+          class="neutral lighten--4 my-1 mx-auto"
+          style="width:4em"/>
+    </div>
   </v-tooltip>
 </template>
 
@@ -24,24 +33,52 @@ import {computed, ref} from 'vue';
 import {statusCodeToString} from '@/components/ui-error/util';
 
 const props = defineProps({
-  resource: {
-    type: Object,
-    default: () => null
+  color: {
+    type: String,
+    default: 'error'
   },
   icon: {
     type: String,
     default: 'mdi-alert-circle-outline'
+  },
+  isClickable: {
+    type: Boolean,
+    default: false
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  resource: {
+    type: Object,
+    default: () => null
+  },
+  single: {
+    type: Boolean,
+    default: true
   }
 });
 
 const show = ref(false);
 
-const errorDetails = computed(() => {
-  return {
-    errorCode: statusCodeToString(props.resource?.error?.code),
-    errorMessage: props.resource?.error?.message,
-    errorName: props.resource?.name
-  };
+const statusDetails = computed(() => {
+  if (!props.single) {
+    const errors = props.resource.errors || [];
+
+    return errors.map((status) => {
+      return {
+        statusCode: statusCodeToString(status?.resource?.error?.code),
+        statusMessage: ': ' + status?.resource?.error?.message,
+        statusName: status.name
+      };
+    });
+  } else {
+    return [{
+      statusCode: statusCodeToString(props.resource?.error?.code),
+      statusMessage: ': ' + props.resource?.error?.message,
+      statusName: props.resource?.name
+    }];
+  }
 });
 </script>
 
@@ -55,6 +92,7 @@ const errorDetails = computed(() => {
   display: block;
   font-size: .8em;
 }
+
 .error-details {
   display: block;
   font-size: .9em;

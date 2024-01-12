@@ -2,7 +2,7 @@
   <v-container fluid class="d-flex flex-column pt-0 pr-0">
     <div class="d-flex flex-row flex-nowrap mb-2">
       <h3 class="text-h3 pt-2 pb-6">
-        {{ overViewStore.getActiveOverview.title }} Status Overview
+        {{ overViewStore.getActiveOverview?.title }} Status Overview
       </h3>
     </div>
     <v-row class="ml-0">
@@ -33,20 +33,6 @@ const overViewStore = useOverviewStore();
 const activeOverview = computed(() => overViewStore.getActiveOverview);
 const pageStore = usePageStore();
 const graphWidth = computed(() => `min-width: calc(100% - 500px - ${pageStore.drawerWidth}px)`);
-
-/**
- * Compute the segments of the path
- *
- * @type {import('vue').ComputedRef<Record<string, string>>}
- */
-const segments = computed(() => {
-  return props.pathSegments
-      .filter(segment => segment !== '') // Exclude empty strings
-      .reduce((acc, segment, index) => {
-        acc[`prop${index}`] = segment;
-        return acc;
-      }, {});
-});
 
 /**
  * Compute whether to display the left column
