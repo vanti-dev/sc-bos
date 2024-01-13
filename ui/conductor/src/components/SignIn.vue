@@ -1,7 +1,7 @@
 <template>
   <v-card class="pa-4">
-    <div v-if="config.disableAuthentication" class="d-flex justify-end">
-      <v-btn @click="store.toggleLoginDialog()" text dense>
+    <div class="d-flex justify-end">
+      <v-btn @click="store.toggleLoginDialog()" text dense fab small>
         <v-icon> mdi-close</v-icon>
       </v-btn>
     </div>

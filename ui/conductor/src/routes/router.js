@@ -4,13 +4,14 @@ import ops from '@/routes/ops/route.js';
 import automations from '@/routes/automations/route.js';
 import site from '@/routes/site/route.js';
 import system from '@/routes/system/route.js';
+import {useAccountStore} from '@/stores/account';
 import {route, routeTitle} from '@/util/router.js';
-import Vue, {nextTick} from 'vue';
+import Vue, {computed, nextTick} from 'vue';
 import VueRouter from 'vue-router';
 import {useAppConfigStore} from '@/stores/app-config';
 import useAuthSetup from '@/composables/useAuthSetup';
 import {usePageStore} from '@/stores/page';
-import {useOverviewStore} from '@/routes/ops/overview/overviewStore.js';
+
 import {storeToRefs} from 'pinia';
 
 Vue.use(VueRouter);
@@ -40,10 +41,19 @@ if (window) {
   });
   router.beforeEach(async (to, from, next) => {
     const appConfig = useAppConfigStore();
+    const {loginDialog, isLoggedIn} = storeToRefs(useAccountStore());
     await appConfig.loadConfig();
 
-    const authSetup = useAuthSetup();
-    authSetup.navigate(to.path, next);
+    // Update the meta tag based on disableAuthentication
+    // This way we can use the meta tag in the router to determine if authentication is required on a page
+    if (appConfig.config) {
+      router.getRoutes().forEach(route => {
+        // Update the meta tag based on disableAuthentication
+        if (route.meta.requiresAuth !== undefined) {
+          route.meta.requiresAuth = !appConfig.config.disableAuthentication;
+        }
+      });
+    }
 
     // Clear the sidebar when navigating to a different main path
     const {showSidebar, sidebarTitle, sidebarData} = storeToRefs(usePageStore());
@@ -56,44 +66,35 @@ if (window) {
       sidebarData.value = {};
     }
 
-    const {activeOverview} = storeToRefs(useOverviewStore());
+    const {hasNoAccess} = useAuthSetup();
+    const userLoggedIn = computed(() => appConfig.config.disableAuthentication || isLoggedIn.value);
+    const isPathEnabled = computed(() => appConfig.pathEnabled(to.path));
+    const authenticationRequired = to.meta?.requiresAuth;
+    // Display login modal instantly on screen if user is not logged in,
+    // but we require authentication on the page we visit
+    loginDialog.value = authenticationRequired;
+
 
     /**
-     * Select the relevant child item when navigating to a building overview page with a child item
-     * For example, when navigating to '/ops/overview/building/Floor%203/Left%20Wing'
-     * This helps when the user refreshes the page or navigates directly to the page (shared link)
+     * Handles route navigation based on several conditions:
+     *
+     * 1. If the path is enabled, we can try navigating to it
+     *   - If the path requires authentication and the user is not logged in, we display the login dialog
+     *   - If the path is not accessible, we navigate to the home path
+     *   - Otherwise, we navigate to the path
+     * 2. If the path is disabled, we navigate to the home path
      */
-    const buildingChildren = appConfig.config?.building?.children;
-    const currentPathSegments = to.path.split('/').filter(segment => segment);
-    const lastSegment = currentPathSegments[currentPathSegments.length - 1];
-    const findItemByTitle = (items, title) => {
-      for (const item of items) {
-        if (encodeURIComponent(item.title) === title) {
-          return item;
-        }
-        if (item.children) {
-          const found = findItemByTitle(item.children, title);
-          if (found) return found;
-        }
+    if (isPathEnabled.value) {
+      if (authenticationRequired && !userLoggedIn.value) {
+        loginDialog.value = true;
+        next();
+      } else if (hasNoAccess(to.path)) {
+        next(appConfig.homePath);
+      } else {
+        next();
       }
-      return null;
-    };
-
-    // Find the active item in the building children
-    const activeItem = findItemByTitle(buildingChildren, lastSegment);
-
-    if (activeItem) {
-      // eslint-disable-next-line no-unused-vars
-      const {children, ...item} = activeItem;
-
-      activeOverview.value = item;
-    }
-
-    // Clear the activeOverview when navigating to a different page - other than overview
-    // Check if the path is not '/ops/overview/building' or doesn't start with '/ops/overview/building'
-    if (!to.path.startsWith('/ops/overview/building')) {
-      // Clear the activeOverview
-      activeOverview.value = null;
+    } else {
+      next(appConfig.homePath);
     }
   });
 }

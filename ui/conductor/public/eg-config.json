@@ -30,6 +30,11 @@
     "hub": true,
     "proxy": true,
     "home": "/ops",
+    "keycloak": {
+      "realm": "Smart_Core",
+      "url": "http://localhost:8888/",
+      "clientId": "scos-opsui"
+    },
     "theme": {
       "appBranding": {
         "brandName": "Smart Core",
