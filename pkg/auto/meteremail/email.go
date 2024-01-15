@@ -12,9 +12,9 @@ import (
 	"strings"
 )
 
-func sendEmail(dst config.Destination, attrs Attrs) error {
+func sendEmail(dst config.Destination, attachment config.AttachmentCfg, attrs Attrs) error {
 	buf := bytes.NewBuffer(nil)
-	withAttachments := len(dst.Attachment) > 0
+	withAttachments := len(attachment.Attachment) > 0
 	p := dst.Parsed
 
 	// Subject
@@ -69,8 +69,8 @@ func sendEmail(dst config.Destination, attrs Attrs) error {
 	_ = htmlWriter.Close()
 
 	if withAttachments {
-		v := dst.Attachment
-		k := dst.AttachmentName
+		v := attachment.Attachment
+		k := attachment.AttachmentName
 		header := make(textproto.MIMEHeader)
 		header.Set("Content-Type", http.DetectContentType(v))
 		header.Set("Content-Transfer-Encoding", "base64")

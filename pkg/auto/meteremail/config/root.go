@@ -38,9 +38,6 @@ type Destination struct {
 	BodyTemplate    jsontypes.String `json:"bodyTemplate,omitempty"`
 
 	Parsed *ParsedDestination `json:"-"`
-
-	AttachmentName string
-	Attachment     []byte
 }
 
 type Source struct {
@@ -69,6 +66,11 @@ type Root struct {
 	InsecureSkipVerify bool `json:"insecureSkipVerify,omitempty"`
 
 	TlsCertificatePath string `json:"tlsCertificatePath,omitempty"`
+}
+
+type AttachmentCfg struct {
+	AttachmentName string
+	Attachment     []byte
 }
 
 var (
@@ -199,11 +201,7 @@ func (d Destination) ReadBodyTemplate() (*template.Template, error) {
 		Parse(s)
 }
 
-func (d *Destination) AttachFile(name string, b []byte) {
-	if name == "" {
-		return
-	}
-
+func (d *AttachmentCfg) AttachFile(name string, b []byte) {
 	d.AttachmentName = name
 	d.Attachment = b
 }
