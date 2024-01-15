@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-var sampleNow = time.Date(2024, 01, 10, 0, 0, 0, 0, time.Local)
+var sampleNow = time.Date(2024, 01, 15, 0, 0, 0, 0, time.Local)
 
 func main() {
 	logger, err := zap.NewDevelopment()
@@ -41,7 +41,7 @@ func main() {
   "name": "emails", "type": "meteremail",
   "destination": {
     "host": "smtp.gmail.com",
-    "from": "OCW Paradise Build <no-reply@enterprisewharf.co.uk>",
+    "from": "OCW Paradise Build <vantiocwdev@gmail.com>",
     "to": ["Dean Redfern <dean.redfern@vanti.co.uk>"],
 	"passwordFile" : ".localpassword",
     "sendTime": "0 0 * * MON-FRI"
