@@ -171,7 +171,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 		pem, err := os.ReadFile(cfg.TlsCertificatePath)
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "ERROR: read %q: %s", cfg.TlsCertificatePath, err.Error())
-			os.Exit(1)
+			return err
 		}
 		pool := x509.NewCertPool()
 		pool.AppendCertsFromPEM(pem)
@@ -226,13 +226,15 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 
 			groupByFloorAndZone(&attrs)
 
-			// temporary file for now, just create to attach and then delete
-			temporaryFileName := "temp.csv"
-			file := a.createMeterReadingsFile(temporaryFileName, &attrs)
-			cfg.Destination.AttachFile(temporaryFileName, file)
+			attachmentName := "meter-readings-" + time.Now().Format("2006-01-02") + ".csv"
+			file := a.createMeterReadingsFile(attachmentName, &attrs)
+			attachmentCfg := config.AttachmentCfg{
+				AttachmentName: attachmentName,
+				Attachment:     file,
+			}
 
 			err = retry(ctx, func(ctx context.Context) error {
-				return sendEmail(cfg.Destination, attrs)
+				return sendEmail(cfg.Destination, attachmentCfg, attrs)
 			})
 			if err != nil {
 				logger.Warn("failed to send email", zap.Error(err))
