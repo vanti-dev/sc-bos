@@ -39,7 +39,8 @@ type Destination struct {
 
 	Parsed *ParsedDestination `json:"-"`
 
-	Attachments map[string][]byte
+	AttachmentName string
+	Attachment     []byte
 }
 
 type Source struct {
@@ -198,13 +199,13 @@ func (d Destination) ReadBodyTemplate() (*template.Template, error) {
 		Parse(s)
 }
 
-func (d *Destination) AttachFile(fileName string, b []byte) error {
-	if d.Attachments == nil {
-		d.Attachments = make(map[string][]byte)
+func (d *Destination) AttachFile(name string, b []byte) {
+	if name == "" {
+		return
 	}
 
-	d.Attachments[fileName] = b
-	return nil
+	d.AttachmentName = name
+	d.Attachment = b
 }
 
 const DefaultEmailSubject = `Smart Core Meter Readings {{.Now.Format "Jan 02, 2006"}}`
