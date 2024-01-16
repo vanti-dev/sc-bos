@@ -6,3 +6,4 @@
 results_*.csv
 .secret/
 .secrets/
+.build/

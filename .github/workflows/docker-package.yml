@@ -33,6 +33,7 @@ jobs:
 
       # Download the release assets so we can use them in our Docker image
       - name: Download release assets
+        if: ${{ !env.ACT }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
@@ -57,6 +58,18 @@ jobs:
             curl -L -o ".downloads/$asset_name" -H "Accept: application/octet-stream" -H "Authorization: token $GH_TOKEN" "$asset_url"
           done
 
+      # If running locally using act, download the assets from the local filesystem
+      - name: Get assets
+        if: ${{ env.ACT }}
+        uses: actions/download-artifact@v3
+        with:
+          path: .downloads
+
+      - run: |
+          mv .downloads/sc-bos/* .downloads/
+          mv .downloads/ops-ui/* .downloads/
+        if: ${{ env.ACT }}
+
       - name: Untar sc-bos
         run: |
           mkdir -p .build/sc-bos
@@ -69,6 +82,7 @@ jobs:
 
       # Uses the `docker/login-action` action to log in to the Container registry using the account and password that will publish the packages. Once published, the packages are scoped to the account defined here.
       - name: Log in to the Container registry
+        if: ${{ !env.ACT }}
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -89,6 +103,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
+          # only push if not running locally using act
+          push: ${{ !env.ACT }}
           tags: ghcr.io/vanti-dev/sc-bos:${{ env.TAG_NAME }}
           labels: ${{ steps.meta.outputs.labels }}
