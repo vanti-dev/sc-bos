@@ -17,10 +17,18 @@ export default {
       },
       props: {
         default: true
+      },
+      meta: {
+        authentication: {
+          rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+        }
       }
     }
   ],
   meta: {
+    authentication: {
+      rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+    },
     title: 'Automations'
   }
 };

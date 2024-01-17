@@ -18,10 +18,18 @@ export default [
         props: {
           default: false,
           sidebar: true
+        },
+        meta: {
+          authentication: {
+            rolesRequired: ['superAdmin', 'admin', 'operator', 'viewer']
+          }
         }
       }
     ],
     meta: {
+      authentication: {
+        rolesRequired: ['superAdmin', 'admin', 'operator', 'viewer']
+      },
       title: 'Auth'
     }
   }
