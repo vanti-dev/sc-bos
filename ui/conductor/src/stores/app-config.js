@@ -26,24 +26,23 @@ export const useAppConfigStore = defineStore('appConfig', () => {
         '*': true
       },
       'ops': {
-        'overview': false,
+        'overview': {
+          '*': true
+        },
         'emergency-lighting': false,
         'notifications': true
       },
       'automations': {
         '*': true
       },
-      'site': {
-        'zone': {
-          '*': true
-        }
-      },
+      'site': false,
       'system': {
         'drivers': true,
         'features': true
       }
     },
     config: {
+      'keycloak': false,
       'home': '/devices',
       'theme': {
         'appBranding': {
@@ -56,6 +55,9 @@ export const useAppConfigStore = defineStore('appConfig', () => {
       },
       'hub': false, // Specifies if we're talking to a hub or an area controller
       'proxy': false, // Specifies if we're using querying via a proxy (e.g. EdgeGateway) or not
+      'building': {
+        'children': []
+      },
       'disableAuthentication': false // Specifies if we're using authentication or not
     }
   };
@@ -84,7 +86,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
    * A list of regexp paths for all the enabled features.
    * These are provided as RegExp to handle wildcard paths (e.g. /devices/*)
    *
-   * @type {ComputedRef<RegExp[]>}
+   * @type {import('vue').ComputedRef<RegExp[]>}
    */
   const enabledPaths = computed(() => {
     let features = [];

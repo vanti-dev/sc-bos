@@ -1,29 +1,29 @@
 import auth from '@/routes/auth/route.js';
+import automations from '@/routes/automations/route.js';
 import devices from '@/routes/devices/route.js';
 import ops from '@/routes/ops/route.js';
-import automations from '@/routes/automations/route.js';
 import site from '@/routes/site/route.js';
 import system from '@/routes/system/route.js';
+import {useAccountStore} from '@/stores/account';
+import {useAppConfigStore} from '@/stores/app-config';
+import useKeyCloak from '@/composables/authentication/useKeyCloak';
+import {usePageStore} from '@/stores/page';
 import {route, routeTitle} from '@/util/router.js';
+
 import Vue, {nextTick} from 'vue';
 import VueRouter from 'vue-router';
-import {useAppConfigStore} from '@/stores/app-config';
-import useAuthSetup from '@/composables/useAuthSetup';
-import {usePageStore} from '@/stores/page';
-import {useOverviewStore} from '@/routes/ops/overview/overviewStore.js';
-import {storeToRefs} from 'pinia';
 
 Vue.use(VueRouter);
 
 const router = new VueRouter({
   mode: 'history',
   routes: [
-    // {
-    //   path: '/login',
-    //   name: 'login',
-    //   component: () => import('./login/LoginPage.vue'),
-    //   meta: {authentication: {rolesRequired: false}, title: 'Login'}
-    // },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('./login/LoginPage.vue'),
+      meta: {authentication: {rolesRequired: false}, title: 'Login'}
+    },
     ...route(auth),
     ...route(devices),
     ...route(ops),
@@ -34,6 +34,84 @@ const router = new VueRouter({
 });
 
 if (window) {
+  router.beforeEach(async (to, from, next) => {
+    const appConfig = useAppConfigStore();
+    await appConfig.loadConfig();
+    const accountStore = useAccountStore();
+    const keyCloak = useKeyCloak();
+    const authDisabled = appConfig.config.disableAuthentication;
+
+    // Initialize Keycloak instance, so we can check if the user is logged in and/or manage the login flow
+    if (appConfig.config.keycloak && !authDisabled) {
+      await keyCloak.initializeKeycloak();
+    }
+
+    // ------------------------ Data store logic ------------------------ //
+
+    const pageStore = usePageStore();
+    const mainPathFrom = from.path.split('/')[1];
+    const mainPathTo = to.path.split('/')[1];
+
+    // Reset the sidebar to defaults if the main path has changed
+    if (mainPathFrom !== mainPathTo) {
+      pageStore.resetSidebarToDefaults();
+    }
+
+    // ------------------------ NavigationGuard logic ------------------------ //
+    /**
+     * Navigation guard for handling route access based on authentication status and application configuration(s).
+     *
+     * Step 1. Check if the requested path is enabled in the config. If it's not enabled
+     *         and the user is trying to access a path other than '/login', redirect to the home path.
+     *
+     * Step 2. If authentication is not disabled (authDisabled is false):
+     *    a. If the user is not logged in:
+     *       i.   If the user is trying to access a non-login path, store the current path in session storage
+     *            for redirecting back after login, and then redirect the user to the '/login' page.
+     *    b. If the user is logged in:
+     *       i.   If the user is trying to access the '/login' path, redirect them to the home path.
+     *       ii.  If the user is navigating to a regular page (not the '/login' page), check for a saved
+     *            redirect path in session storage. If a saved redirect path exists, remove it from session
+     *            storage and redirect the user to that path.
+     *
+     * Finally, if none of the above conditions are met, proceed to the next route (allow the navigation).
+     */
+    const isPathEnabled = appConfig.pathEnabled(to.path);
+    const redirectToHome = () => next(appConfig.homePath);
+
+    if (!isPathEnabled && to.path !== '/login') {
+      redirectToHome();
+      return;
+    }
+
+    if (!authDisabled) {
+      if (!accountStore.isLoggedIn) {
+        if (to.path !== '/login') {
+          // Store the current path to redirect back after login
+          window.sessionStorage.setItem('redirect', to.fullPath);
+          next('/login');
+          return;
+        }
+      } else {
+        if (to.path === '/login') {
+          // Redirect logged-in users away from the login page to home
+          redirectToHome();
+          return;
+        } else {
+          // If navigating to a regular page, check for a saved redirect path
+          const savedRedirect = window.sessionStorage.getItem('redirect');
+          if (savedRedirect) {
+            window.sessionStorage.removeItem('redirect');
+            next(savedRedirect); // Redirect to the saved path
+            return;
+          }
+        }
+      }
+    }
+
+    next();
+  });
+
   router.afterEach((to, from) => {
     const nt = routeTitle(to);
     const ot = routeTitle(from);
@@ -43,64 +121,6 @@ if (window) {
 
     const title = nt ? `${nt} - Smart Core` : `Smart Core`;
     nextTick(() => window.document.title = title);
-  });
-  router.beforeEach(async (to, from, next) => {
-    const appConfig = useAppConfigStore();
-    await appConfig.loadConfig();
-
-    const authSetup = useAuthSetup();
-    authSetup.navigate(to.path, next);
-
-    // Clear the sidebar when navigating to a different main path
-    const {showSidebar, sidebarTitle, sidebarData} = storeToRefs(usePageStore());
-    const mainPathFrom = from.path.split('/')[1];
-    const mainPathTo = to.path.split('/')[1];
-
-    if (mainPathFrom !== mainPathTo) {
-      showSidebar.value = false;
-      sidebarTitle.value = '';
-      sidebarData.value = {};
-    }
-
-    const {activeOverview} = storeToRefs(useOverviewStore());
-
-    /**
-     * Select the relevant child item when navigating to a building overview page with a child item
-     * For example, when navigating to '/ops/overview/building/Floor%203/Left%20Wing'
-     * This helps when the user refreshes the page or navigates directly to the page (shared link)
-     */
-    const buildingChildren = appConfig.config?.building?.children;
-    const currentPathSegments = to.path.split('/').filter(segment => segment);
-    const lastSegment = currentPathSegments[currentPathSegments.length - 1];
-    const findItemByTitle = (items, title) => {
-      for (const item of items) {
-        if (encodeURIComponent(item.title) === title) {
-          return item;
-        }
-        if (item.children) {
-          const found = findItemByTitle(item.children, title);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
-
-    // Find the active item in the building children
-    const activeItem = findItemByTitle(buildingChildren, lastSegment);
-
-    if (activeItem) {
-      // eslint-disable-next-line no-unused-vars
-      const {children, ...item} = activeItem;
-
-      activeOverview.value = item;
-    }
-
-    // Clear the activeOverview when navigating to a different page - other than overview
-    // Check if the path is not '/ops/overview/building' or doesn't start with '/ops/overview/building'
-    if (!to.path.startsWith('/ops/overview/building')) {
-      // Clear the activeOverview
-      activeOverview.value = null;
-    }
   });
 }
 
