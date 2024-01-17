@@ -1,6 +1,6 @@
 <template>
   <v-app-bar app height="60" :clipped-left="hasNav" :clipped-right="hasSidebar" elevation="0" class="pr-7">
-    <app-menu v-if="isLoggedIn"/>
+    <app-menu v-if="accountStore.isLoggedIn"/>
     <brand-logo :theme="config.theme" outline="white" style="height: 35px; margin-left: 16px"/>
     <span class="heading">{{ appBarHeadingWithBrand }}</span>
 
@@ -10,8 +10,10 @@
 
     <router-view name="actions"/>
     <smart-core-status-card/>
-    <v-divider vertical class="mx-1" inset/>
-    <account-btn btn-class="mr-0"/>
+    <span v-if="!accountStore.isAuthenticationDisabled" class="d-flex flex-row">
+      <v-divider vertical class="mx-1 my-1" inset/>
+      <account-btn btn-class="mr-0"/>
+    </span>
   </v-app-bar>
 </template>
 <script setup>
@@ -24,23 +26,20 @@ import {computed} from 'vue';
 import {storeToRefs} from 'pinia';
 
 import {usePage} from '@/components/page';
-import useAuthSetup from '@/composables/useAuthSetup';
 import {useAccountStore} from '@/stores/account';
 import {useAppConfigStore} from '@/stores/app-config';
 
 const appConfigStore = useAppConfigStore();
 const {config} = storeToRefs(appConfigStore);
-const {isLoggedIn} = useAuthSetup();
+const accountStore = useAccountStore();
 
 const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
-
-const store = useAccountStore();
-store.loadLocalStorage();
 
 const appBarHeadingWithBrand = computed(() => {
   const brandName = config.value.theme?.appBranding.brandName ?? 'Smart Core';
 
-  return brandName + (isLoggedIn.value ? ' | ' + pageTitle.value : '');
+
+  return brandName + (accountStore.isLoggedIn ? ' | ' + pageTitle.value : '');
 });
 </script>
 
@@ -50,7 +49,7 @@ const appBarHeadingWithBrand = computed(() => {
 }
 
 .v-app-bar :deep(.v-toolbar__content) {
-  padding-right: 0px;
+  padding-right: 0;
 }
 
 .heading {
