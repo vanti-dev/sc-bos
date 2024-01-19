@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as dali_pb from './dali_pb';
+import * as dali_pb from './dali_pb'; // proto import: "dali.proto"
 
 
 export class DaliApiClient {

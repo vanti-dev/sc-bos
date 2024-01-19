@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as status_pb from './status_pb';
+import * as status_pb from './status_pb'; // proto import: "status.proto"
 
 
 export class StatusApiClient {

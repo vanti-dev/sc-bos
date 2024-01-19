@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as access_pb from './access_pb';
+import * as access_pb from './access_pb'; // proto import: "access.proto"
 
 
 export class AccessApiClient {

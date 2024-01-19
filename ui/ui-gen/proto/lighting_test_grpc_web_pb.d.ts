@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as lighting_test_pb from './lighting_test_pb';
+import * as lighting_test_pb from './lighting_test_pb'; // proto import: "lighting_test.proto"
 
 
 export class LightingTestApiClient {

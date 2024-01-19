@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as axiomxa_pb from './axiomxa_pb';
+import * as axiomxa_pb from './axiomxa_pb'; // proto import: "axiomxa.proto"
 
 
 export class AxiomXaDriverServiceClient {

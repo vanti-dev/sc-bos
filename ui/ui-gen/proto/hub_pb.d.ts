@@ -1,8 +1,8 @@
 import * as jspb from 'google-protobuf'
 
-import * as traits_metadata_pb from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb';
-import * as types_change_pb from '@smart-core-os/sc-api-grpc-web/types/change_pb';
-import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
+import * as traits_metadata_pb from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb'; // proto import: "traits/metadata.proto"
+import * as types_change_pb from '@smart-core-os/sc-api-grpc-web/types/change_pb'; // proto import: "types/change.proto"
+import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
 
 
 export class HubNode extends jspb.Message {

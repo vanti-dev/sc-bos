@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as tenants_pb from './tenants_pb';
+import * as tenants_pb from './tenants_pb'; // proto import: "tenants.proto"
 
 
 export class TenantApiClient {

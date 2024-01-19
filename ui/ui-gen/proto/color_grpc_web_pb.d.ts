@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as color_pb from './color_pb';
+import * as color_pb from './color_pb'; // proto import: "color.proto"
 
 
 export class ColorApiClient {

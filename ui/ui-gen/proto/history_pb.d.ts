@@ -1,13 +1,13 @@
 import * as jspb from 'google-protobuf'
 
-import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb';
-import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
-import * as types_time_period_pb from '@smart-core-os/sc-api-grpc-web/types/time/period_pb';
-import * as traits_air_temperature_pb from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb';
-import * as traits_electric_pb from '@smart-core-os/sc-api-grpc-web/traits/electric_pb';
-import * as traits_occupancy_sensor_pb from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
-import * as traits_air_quality_sensor_pb from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
-import * as meter_pb from './meter_pb';
+import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb'; // proto import: "google/protobuf/field_mask.proto"
+import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
+import * as types_time_period_pb from '@smart-core-os/sc-api-grpc-web/types/time/period_pb'; // proto import: "types/time/period.proto"
+import * as traits_air_temperature_pb from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb'; // proto import: "traits/air_temperature.proto"
+import * as traits_electric_pb from '@smart-core-os/sc-api-grpc-web/traits/electric_pb'; // proto import: "traits/electric.proto"
+import * as traits_occupancy_sensor_pb from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb'; // proto import: "traits/occupancy_sensor.proto"
+import * as traits_air_quality_sensor_pb from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb'; // proto import: "traits/air_quality_sensor.proto"
+import * as meter_pb from './meter_pb'; // proto import: "meter.proto"
 
 
 export class HistoryRecord extends jspb.Message {

@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as udmi_pb from './udmi_pb';
+import * as udmi_pb from './udmi_pb'; // proto import: "udmi.proto"
 
 
 export class UdmiServiceClient {
