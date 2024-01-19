@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-var sampleNow = time.Date(2024, 01, 15, 0, 0, 0, 0, time.Local)
+var sampleNow = time.Date(2024, 01, 19, 0, 0, 0, 0, time.Local)
 
 func main() {
 	logger, err := zap.NewDevelopment()
