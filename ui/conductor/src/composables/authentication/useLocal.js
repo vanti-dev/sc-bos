@@ -1,6 +1,8 @@
+import {ref} from 'vue';
 import {localLogin} from '@/api/localLogin.js';
 import jwtDecode from 'jwt-decode';
 import {useAccountStore} from '@/stores/account';
+import {saveToBrowserStorage, loadFromBrowserStorage} from '@/util/browserStorage';
 
 /**
  * Local authentication composable
@@ -17,6 +19,29 @@ export default function() {
   // ----------------- //
 
   /**
+   * Load the local authentication details from local storage
+   *
+   * @type {import('vue').Ref<import('@/stores/account').AuthenticationDetails|null>}
+   */
+  const existingLocalAuth = ref(null);
+
+  /**
+   * Initialize local authentication - set the existing local authentication details
+   * or the default store values
+   *
+   * @return {import('@/stores/account').AuthenticationDetails|null}
+   */
+  const initializeLocal = () => {
+    existingLocalAuth.value = loadFromBrowserStorage(
+        'local',
+        'authenticationDetails',
+        accountStore.authenticationDetails
+    )[0];
+
+    return existingLocalAuth.value;
+  };
+
+  /**
    * Login using local authentication provider
    *
    * @param {string} username
@@ -30,32 +55,48 @@ export default function() {
       if (res.status === 200) {
         const payload = await res.json();
 
-        if (payload.access_token) {
+        if (payload?.access_token) {
           accountStore.authenticationDetails.claims = {
             email: username,
             ...jwtDecode(payload.access_token)
           };
           accountStore.authenticationDetails.loggedIn = !!payload.access_token;
           accountStore.authenticationDetails.token = payload.access_token;
+
+          accountStore.snackbar = {
+            message: 'Failed to sign in, please try again.',
+            visible: false
+          };
         }
       } else {
-        accountStore.snackbar = true;
+        accountStore.snackbar = {
+          visible: true,
+          message: 'Failed to sign in, please try again.'
+        };
       }
+
+      saveToBrowserStorage('local', 'authenticationDetails', accountStore.authenticationDetails);
     } catch (err) {
-      accountStore.snackbar = true;
+      accountStore.snackbar = {
+        visible: true,
+        message: 'Failed to sign in, please try again.'
+      };
+      saveToBrowserStorage('local', 'authenticationDetails', accountStore.authenticationDetails);
     }
   };
 
   /**
-   * Logout using the store reset function
+   * Logout using the store reset function, then store the cleared store in local storage
    *
    * @return {void}
    */
-  const logoutLocal = () => {
-    accountStore.resetStoreToDefaults();
+  const logoutLocal = async () => {
+    await window.localStorage.removeItem('authenticationDetails');
   };
 
   return {
+    initializeLocal,
+    existingLocalAuth,
     login: loginLocal,
     logout: logoutLocal
   };

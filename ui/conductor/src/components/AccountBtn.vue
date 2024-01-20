@@ -33,7 +33,7 @@
           {{ accountStore.email }}
         </v-card-subtitle>
         <v-card-actions>
-          <v-btn elevation="0" @click="accountStore.logout" block>Sign out</v-btn>
+          <v-btn elevation="0" @click="logout" block>Sign out</v-btn>
         </v-card-actions>
       </v-card>
     </v-menu>
@@ -53,6 +53,10 @@ defineProps({
 
 const accountStore = useAccountStore();
 const loggedIn = computed(() => accountStore.isLoggedIn);
+
+const logout = async () => {
+  await accountStore.logout();
+};
 </script>
 
 

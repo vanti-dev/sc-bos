@@ -41,11 +41,11 @@
       </v-card-text>
     </v-form>
 
-    <v-snackbar v-model="snackbar">
-      Failed to sign in, please try again.
+    <v-snackbar v-model="snackbar.visible">
+      {{ snackbar.message }}
 
       <template #action="{ attrs }">
-        <v-btn color="pink" text v-bind="attrs" @click="snackbar = false">
+        <v-btn color="pink" text v-bind="attrs" @click="snackbar.visible = false">
           Close
         </v-btn>
       </template>
@@ -65,12 +65,13 @@ const {snackbar} = storeToRefs(accountStore);
 const rules = {
   required: (value) => !!value || 'Required.'
 };
-const login = () => {
+const login = async () => {
   // check if username and password are entered
   if (username.value && password.value) {
-    accountStore
-        .loginWithLocalAuth({username: username.value, password: password.value})
-        .catch((err) => console.error('unable to log in', err));
+    const values = {username: username.value, password: password.value};
+
+    // Forwards the login request to the account store with the values from the form
+    await accountStore.loginWithLocalAuth(values);
   } else {
     console.error('username and password are required');
   }

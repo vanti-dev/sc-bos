@@ -10,7 +10,9 @@
 
     <router-view name="actions"/>
     <smart-core-status-card/>
-    <span v-if="!accountStore.isAuthenticationDisabled" class="d-flex flex-row">
+    <span
+        v-if="!hideAccountBtn"
+        class="d-flex flex-row">
       <v-divider vertical class="mx-1 my-1" inset/>
       <account-btn btn-class="mr-0"/>
     </span>
@@ -20,18 +22,20 @@
 import AccountBtn from '@/components/AccountBtn.vue';
 import AppMenu from '@/components/AppMenu.vue';
 import BrandLogo from '@/components/BrandLogo.vue';
-import SmartCoreStatusCard from '@/components/smartCoreStatus/SmartCoreStatusCard.vue';
-
-import {computed} from 'vue';
-import {storeToRefs} from 'pinia';
 
 import {usePage} from '@/components/page';
+import SmartCoreStatusCard from '@/components/smartCoreStatus/SmartCoreStatusCard.vue';
 import {useAccountStore} from '@/stores/account';
 import {useAppConfigStore} from '@/stores/app-config';
+import {storeToRefs} from 'pinia';
+
+import {computed} from 'vue';
+import {useRoute} from 'vue-router/composables';
 
 const appConfigStore = useAppConfigStore();
 const {config} = storeToRefs(appConfigStore);
 const accountStore = useAccountStore();
+const route = useRoute();
 
 const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
 
@@ -41,6 +45,11 @@ const appBarHeadingWithBrand = computed(() => {
 
   return brandName + (accountStore.isLoggedIn ? ' | ' + pageTitle.value : '');
 });
+
+const isLoginPage = computed(() => route.path === '/login');
+const isAuthDisabled = computed(() => accountStore.isAuthenticationDisabled);
+
+const hideAccountBtn = computed(() => isLoginPage.value || isAuthDisabled.value);
 </script>
 
 <style lang="scss" scoped>

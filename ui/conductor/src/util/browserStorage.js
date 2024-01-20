@@ -47,7 +47,7 @@ export const saveToBrowserStorage = (sources, keys, values) => {
  *   ['user', 'theme'],
  *   [{ name: 'defaultUser' }, 'light']
  * );
- * This will load the 'user' and 'theme' from localStorage, or use the provided default values
+ * This will load the 'user' and 'theme' from localStorage, or will use the provided default values
  *
  * @param {string | string[]} sources - 'local', 'session', or array of both
  * @param {string | string[]} keys - Key or array of keys to retrieve from storage

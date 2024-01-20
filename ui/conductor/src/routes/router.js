@@ -6,7 +6,6 @@ import site from '@/routes/site/route.js';
 import system from '@/routes/system/route.js';
 import {useAccountStore} from '@/stores/account';
 import {useAppConfigStore} from '@/stores/app-config';
-import useKeyCloak from '@/composables/authentication/useKeyCloak';
 import {usePageStore} from '@/stores/page';
 import {route, routeTitle} from '@/util/router.js';
 
@@ -37,13 +36,14 @@ if (window) {
   router.beforeEach(async (to, from, next) => {
     const appConfig = useAppConfigStore();
     await appConfig.loadConfig();
-    const accountStore = useAccountStore();
-    const keyCloak = useKeyCloak();
     const authDisabled = appConfig.config.disableAuthentication;
-
-    // Initialize Keycloak instance, so we can check if the user is logged in and/or manage the login flow
-    if (appConfig.config.keycloak && !authDisabled) {
-      await keyCloak.initializeKeycloak();
+    const accountStore = useAccountStore();
+    // Initialize Local and Keycloak auth instances,
+    // so we can check if the user is logged in and/or manage the login flow
+    try {
+      await accountStore.initialise();
+    } catch (e) {
+      console.error('Failed to initialize the account store', e);
     }
 
     // ------------------------ Data store logic ------------------------ //
@@ -78,14 +78,16 @@ if (window) {
      */
     const isPathEnabled = appConfig.pathEnabled(to.path);
     const redirectToHome = () => next(appConfig.homePath);
+    const isLoginPath = to.path === '/login';
+    const isAuthenticated = accountStore.isLoggedIn;
 
-    if (!isPathEnabled && to.path !== '/login') {
+    if (!isPathEnabled && (!isLoginPath || authDisabled && isLoginPath && from.path !== appConfig.homePath)) {
       redirectToHome();
       return;
     }
 
     if (!authDisabled) {
-      if (!accountStore.isLoggedIn) {
+      if (!isAuthenticated) {
         if (to.path !== '/login') {
           // Store the current path to redirect back after login
           window.sessionStorage.setItem('redirect', to.fullPath);
