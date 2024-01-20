@@ -1,4 +1,3 @@
-import {apiToken} from '@/api/auth.js';
 import {useAccountStore} from '@/stores/account';
 import {StatusCode} from 'grpc-web';
 
@@ -9,25 +8,64 @@ import {StatusCode} from 'grpc-web';
 export function clientOptions(options = {}) {
   const account = useAccountStore();
 
+  /**
+   * Handle a logout event
+   */
+  const handleLogout = () => {
+    // Initiates the logout process without waiting for it to complete
+    account.logout().catch(e => console.error('Logout failed', e));
+  };
+
+  /**
+   * Handle an error from a gRPC call
+   *
+   * @param {Error} e
+   */
+  const handleError = (e) => {
+    // Log the user out if we get a permission denied error (this going to clear the pinia state too)
+    if (e.code === StatusCode.PERMISSION_DENIED || e.code === StatusCode.UNAUTHENTICATED) {
+      handleLogout();
+    }
+  };
+
+  /**
+   * Triggers a token refresh if necessary and returns the new token
+   *
+   * @return {Promise<string>}
+   */
+  const refreshToken = () => {
+    // Initiates the refresh token process without waiting for it to complete
+    return account.refreshToken().then(() => {
+      return account.authenticationDetails.token;
+    });
+  };
+
+
+  /**
+   * @template T
+   * @param {*} request
+   * @param {function(*): T} invoker
+   * @return {Promise<T>}
+   */
+  const addRequestHeader = (request, invoker) => {
+    return refreshToken().then(token => {
+      if (token) {
+        request.getMetadata()['Authorization'] = `Bearer ${token}`;
+      }
+      return request;
+    }).then(request => {
+      return invoker(request);
+    });
+  };
+
   return {
     ...options,
     unaryInterceptors: [
       ...(options.unaryInterceptors || []),
       {
         intercept(request, invoker) {
-          return apiToken().then(token => {
-            if (token) {
-              request.getMetadata()['Authorization'] = `Bearer ${token}`;
-            }
-            return invoker(request);
-          }).catch(e => {
-            // Log the user out if we get a permission denied error
-            // and clear the local storage
-            if (e.code === StatusCode.PERMISSION_DENIED || e.code === StatusCode.UNAUTHENTICATED) {
-              account.logout();
-              localStorage.clear();
-            }
-
+          return addRequestHeader(request, invoker).catch(e => {
+            handleError(e);
             throw e;
           });
         }
@@ -36,21 +74,17 @@ export function clientOptions(options = {}) {
       ...(options.streamInterceptors || []),
       {
         intercept(request, invoker) {
-          const s = new DelayedClientReadableStream(apiToken().then(token => {
-            if (token) {
-              request.getMetadata()['Authorization'] = `Bearer ${token}`;
-            }
-            return invoker(request);
-          }));
+          const s = new DelayedClientReadableStream(addRequestHeader(request, invoker));
+
           s.on('error', (err) => {
-            if (err.code === StatusCode.PERMISSION_DENIED || err.code === StatusCode.UNAUTHENTICATED) {
-              account.logout();
-              localStorage.clear();
-            }
+            handleError(err);
           });
+
           return s;
         }
-      }]
+      }
+    ]
+
   };
 }
 
@@ -77,7 +111,6 @@ class DelayedClientReadableStream {
 
   removeListener(eventType, callback) {
     this.other.then(o => o.removeListener(eventType, callback));
-    ;
   }
 
   cancel() {
