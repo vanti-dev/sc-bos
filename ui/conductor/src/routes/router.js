@@ -1,24 +1,29 @@
 import auth from '@/routes/auth/route.js';
+import automations from '@/routes/automations/route.js';
 import devices from '@/routes/devices/route.js';
 import ops from '@/routes/ops/route.js';
-import automations from '@/routes/automations/route.js';
 import site from '@/routes/site/route.js';
 import system from '@/routes/system/route.js';
 import {useAccountStore} from '@/stores/account';
-import {route, routeTitle} from '@/util/router.js';
-import Vue, {computed, nextTick} from 'vue';
-import VueRouter from 'vue-router';
 import {useAppConfigStore} from '@/stores/app-config';
-import useAuthSetup from '@/composables/useAuthSetup';
+import useKeyCloak from '@/composables/authentication/useKeyCloak';
 import {usePageStore} from '@/stores/page';
+import {route, routeTitle} from '@/util/router.js';
 
-import {storeToRefs} from 'pinia';
+import Vue, {nextTick} from 'vue';
+import VueRouter from 'vue-router';
 
 Vue.use(VueRouter);
 
 const router = new VueRouter({
   mode: 'history',
   routes: [
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('./login/LoginPage.vue'),
+      meta: {authentication: {rolesRequired: false}, title: 'Login'}
+    },
     ...route(auth),
     ...route(devices),
     ...route(ops),
@@ -29,6 +34,84 @@ const router = new VueRouter({
 });
 
 if (window) {
+  router.beforeEach(async (to, from, next) => {
+    const appConfig = useAppConfigStore();
+    await appConfig.loadConfig();
+    const accountStore = useAccountStore();
+    const keyCloak = useKeyCloak();
+    const authDisabled = appConfig.config.disableAuthentication;
+
+    // Initialize Keycloak instance, so we can check if the user is logged in and/or manage the login flow
+    if (appConfig.config.keycloak && !authDisabled) {
+      await keyCloak.initializeKeycloak();
+    }
+
+    // ------------------------ Data store logic ------------------------ //
+
+    const pageStore = usePageStore();
+    const mainPathFrom = from.path.split('/')[1];
+    const mainPathTo = to.path.split('/')[1];
+
+    // Reset the sidebar to defaults if the main path has changed
+    if (mainPathFrom !== mainPathTo) {
+      pageStore.resetSidebarToDefaults();
+    }
+
+    // ------------------------ NavigationGuard logic ------------------------ //
+    /**
+     * Navigation guard for handling route access based on authentication status and application configuration(s).
+     *
+     * Step 1. Check if the requested path is enabled in the config. If it's not enabled
+     *         and the user is trying to access a path other than '/login', redirect to the home path.
+     *
+     * Step 2. If authentication is not disabled (authDisabled is false):
+     *    a. If the user is not logged in:
+     *       i.   If the user is trying to access a non-login path, store the current path in session storage
+     *            for redirecting back after login, and then redirect the user to the '/login' page.
+     *    b. If the user is logged in:
+     *       i.   If the user is trying to access the '/login' path, redirect them to the home path.
+     *       ii.  If the user is navigating to a regular page (not the '/login' page), check for a saved
+     *            redirect path in session storage. If a saved redirect path exists, remove it from session
+     *            storage and redirect the user to that path.
+     *
+     * Finally, if none of the above conditions are met, proceed to the next route (allow the navigation).
+     */
+    const isPathEnabled = appConfig.pathEnabled(to.path);
+    const redirectToHome = () => next(appConfig.homePath);
+
+    if (!isPathEnabled && to.path !== '/login') {
+      redirectToHome();
+      return;
+    }
+
+    if (!authDisabled) {
+      if (!accountStore.isLoggedIn) {
+        if (to.path !== '/login') {
+          // Store the current path to redirect back after login
+          window.sessionStorage.setItem('redirect', to.fullPath);
+          next('/login');
+          return;
+        }
+      } else {
+        if (to.path === '/login') {
+          // Redirect logged-in users away from the login page to home
+          redirectToHome();
+          return;
+        } else {
+          // If navigating to a regular page, check for a saved redirect path
+          const savedRedirect = window.sessionStorage.getItem('redirect');
+          if (savedRedirect) {
+            window.sessionStorage.removeItem('redirect');
+            next(savedRedirect); // Redirect to the saved path
+            return;
+          }
+        }
+      }
+    }
+
+    next();
+  });
+
   router.afterEach((to, from) => {
     const nt = routeTitle(to);
     const ot = routeTitle(from);
@@ -38,64 +121,6 @@ if (window) {
 
     const title = nt ? `${nt} - Smart Core` : `Smart Core`;
     nextTick(() => window.document.title = title);
-  });
-  router.beforeEach(async (to, from, next) => {
-    const appConfig = useAppConfigStore();
-    const {loginDialog, isLoggedIn} = storeToRefs(useAccountStore());
-    await appConfig.loadConfig();
-
-    // Update the meta tag based on disableAuthentication
-    // This way we can use the meta tag in the router to determine if authentication is required on a page
-    if (appConfig.config) {
-      router.getRoutes().forEach(route => {
-        // Update the meta tag based on disableAuthentication
-        if (route.meta.requiresAuth !== undefined) {
-          route.meta.requiresAuth = !appConfig.config.disableAuthentication;
-        }
-      });
-    }
-
-    // Clear the sidebar when navigating to a different main path
-    const {showSidebar, sidebarTitle, sidebarData} = storeToRefs(usePageStore());
-    const mainPathFrom = from.path.split('/')[1];
-    const mainPathTo = to.path.split('/')[1];
-
-    if (mainPathFrom !== mainPathTo) {
-      showSidebar.value = false;
-      sidebarTitle.value = '';
-      sidebarData.value = {};
-    }
-
-    const {hasNoAccess} = useAuthSetup();
-    const userLoggedIn = computed(() => appConfig.config.disableAuthentication || isLoggedIn.value);
-    const isPathEnabled = computed(() => appConfig.pathEnabled(to.path));
-    const authenticationRequired = to.meta?.requiresAuth;
-    // Display login modal instantly on screen if user is not logged in,
-    // but we require authentication on the page we visit
-    loginDialog.value = authenticationRequired;
-
-
-    /**
-     * Handles route navigation based on several conditions:
-     *
-     * 1. If the path is enabled, we can try navigating to it
-     *   - If the path requires authentication and the user is not logged in, we display the login dialog
-     *   - If the path is not accessible, we navigate to the home path
-     *   - Otherwise, we navigate to the path
-     * 2. If the path is disabled, we navigate to the home path
-     */
-    if (isPathEnabled.value) {
-      if (authenticationRequired && !userLoggedIn.value) {
-        loginDialog.value = true;
-        next();
-      } else if (hasNoAccess(to.path)) {
-        next(appConfig.homePath);
-      } else {
-        next();
-      }
-    } else {
-      next(appConfig.homePath);
-    }
   });
 }
 

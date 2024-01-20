@@ -42,6 +42,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
       }
     },
     config: {
+      'keycloak': false,
       'home': '/devices',
       'theme': {
         'appBranding': {
