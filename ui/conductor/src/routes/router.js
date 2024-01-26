@@ -18,6 +18,12 @@ Vue.use(VueRouter);
 const router = new VueRouter({
   mode: 'history',
   routes: [
+    // {
+    //   path: '/login',
+    //   name: 'login',
+    //   component: () => import('./login/LoginPage.vue'),
+    //   meta: {authentication: {rolesRequired: false}, title: 'Login'}
+    // },
     ...route(auth),
     ...route(devices),
     ...route(ops),
