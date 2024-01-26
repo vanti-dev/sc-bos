@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as temperature_pb from './temperature_pb';
+import * as temperature_pb from './temperature_pb'; // proto import: "temperature.proto"
 
 
 export class TemperatureApiClient {

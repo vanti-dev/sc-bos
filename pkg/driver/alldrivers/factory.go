@@ -7,6 +7,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock"
 	"github.com/vanti-dev/sc-bos/pkg/driver/pestsense"
 	"github.com/vanti-dev/sc-bos/pkg/driver/proxy"
+	seWiserKnx "github.com/vanti-dev/sc-bos/pkg/driver/se/wiser-knx"
 	shellyTrv "github.com/vanti-dev/sc-bos/pkg/driver/shelly/trv"
 	steinelHpd "github.com/vanti-dev/sc-bos/pkg/driver/steinel/hpd"
 	"github.com/vanti-dev/sc-bos/pkg/driver/xovis"
@@ -20,6 +21,7 @@ func Factories() map[string]driver.Factory {
 		mock.DriverName:       mock.Factory,
 		pestsense.DriverName:  pestsense.Factory,
 		proxy.DriverName:      proxy.Factory,
+		seWiserKnx.DriverName: seWiserKnx.Factory,
 		shellyTrv.DriverName:  shellyTrv.Factory,
 		steinelHpd.DriverName: steinelHpd.Factory,
 		xovis.DriverName:      xovis.Factory,

@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as services_pb from './services_pb';
+import * as services_pb from './services_pb'; // proto import: "services.proto"
 
 
 export class ServicesApiClient {

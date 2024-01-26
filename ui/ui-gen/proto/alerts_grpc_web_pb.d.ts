@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as alerts_pb from './alerts_pb';
+import * as alerts_pb from './alerts_pb'; // proto import: "alerts.proto"
 
 
 export class AlertApiClient {

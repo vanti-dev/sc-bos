@@ -2,13 +2,13 @@
 # yarn lockfile v1
 
 
-"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.44":
-  version "1.0.0-beta.44"
-  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.44.tgz#686ff9dd8df51beb1b657c2f06e64b17f5185e6c"
-  integrity sha512-CH7JipY3OZxhvU4EaRhFkUEIYjMUdUjv1a85BbGPHCsjc0o5y/+PJYB9VH44OtyvuazsFYT/SjQi6+S/lX2ncQ==
+"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.45":
+  version "1.0.0-beta.45"
+  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.45.tgz#8e0bb327912e81fb17bffacef80329b4a35bd0b5"
+  integrity sha512-qpYtjPRCb0Zh2hp5NniQ5yelY+IvIZp3dIB6qJsCAhy7PAK0KgFs+YySaWEn9doSibdcSLmxuP7XU0p6JYn7Hg==
   dependencies:
     google-protobuf "^3.21.2"
-    grpc-web "^1.4.2"
+    grpc-web "^1.5.0"
 
 ansi-regex@^5.0.1:
   version "5.0.1"
@@ -110,6 +110,11 @@ grpc-web@^1.4.2:
   version "1.4.2"
   resolved "https://nexus.vanti.co.uk/repository/npm-public/grpc-web/-/grpc-web-1.4.2.tgz#86995f76471ce6b2119106ec26f909b7b69e7d43"
   integrity sha512-gUxWq42l5ldaRplcKb4Pw5O4XBONWZgz3vxIIXnfIeJj8Jc3wYiq2O4c9xzx/NGbbPEej4rhI62C9eTENwLGNw==
+
+grpc-web@^1.5.0:
+  version "1.5.0"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/grpc-web/-/grpc-web-1.5.0.tgz#154e4007ab59a94bf7726b87ef6c5bd8815ecf6e"
+  integrity sha512-y1tS3BBIoiVSzKTDF3Hm7E8hV2n7YY7pO0Uo7depfWJqKzWE+SKr0jvHNIJsJJYILQlpYShpi/DRJJMbosgDMQ==
 
 has-flag@^4.0.0:
   version "4.0.0"

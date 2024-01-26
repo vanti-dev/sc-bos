@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as devices_pb from './devices_pb';
+import * as devices_pb from './devices_pb'; // proto import: "devices.proto"
 
 
 export class DevicesApiClient {

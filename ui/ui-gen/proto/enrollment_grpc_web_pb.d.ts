@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as enrollment_pb from './enrollment_pb';
+import * as enrollment_pb from './enrollment_pb'; // proto import: "enrollment.proto"
 
 
 export class EnrollmentApiClient {

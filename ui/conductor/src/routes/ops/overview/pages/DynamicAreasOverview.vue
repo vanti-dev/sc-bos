@@ -17,9 +17,13 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
+import {computed, watch} from 'vue';
 import {usePageStore} from '@/stores/page';
 import {useOverviewStore} from '@/routes/ops/overview/overviewStore';
+import {useAppConfigStore} from '@/stores/app-config';
+import {storeToRefs} from 'pinia';
+import {findActiveItem} from '@/util/router';
+
 import LeftColumn from '@/routes/ops/overview/pages/components/LeftColumn.vue';
 import RightColumn from '@/routes/ops/overview/pages/components/RightColumn.vue';
 
@@ -30,7 +34,11 @@ const props = defineProps({
   }
 });
 const overViewStore = useOverviewStore();
-const activeOverview = computed(() => overViewStore.getActiveOverview);
+const {activeOverview} = storeToRefs(overViewStore);
+
+const appConfigStore = useAppConfigStore();
+const buildingChildren = computed(() => appConfigStore.config?.building?.children || []);
+
 const pageStore = usePageStore();
 const graphWidth = computed(() => `min-width: calc(100% - 500px - ${pageStore.drawerWidth}px)`);
 
@@ -61,4 +69,17 @@ const displayRightColumn = computed(() => {
 
   return airQuality || occupancy || energyConsumption || environment;
 });
+
+const findActiveOverview = computed(() => {
+  return findActiveItem(buildingChildren.value, props.pathSegments);
+});
+
+watch(() => props.pathSegments, () => {
+  // If no path segments are provided, we are on the root overview page
+  if (props.pathSegments.length === 0) {
+    activeOverview.value = null;
+  } else {
+    activeOverview.value = findActiveOverview.value;
+  }
+}, {immediate: true, deep: true});
 </script>

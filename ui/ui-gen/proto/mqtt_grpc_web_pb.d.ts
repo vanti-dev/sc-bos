@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as mqtt_pb from './mqtt_pb';
+import * as mqtt_pb from './mqtt_pb'; // proto import: "mqtt.proto"
 
 
 export class MqttServiceClient {

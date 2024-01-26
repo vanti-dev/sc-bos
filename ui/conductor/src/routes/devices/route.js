@@ -18,10 +18,18 @@ export default {
       props: {
         default: true,
         sidebar: false
+      },
+      meta: {
+        authentication: {
+          rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+        }
       }
     }
   ],
   meta: {
-    title: 'Devices'
+    title: 'Devices',
+    authentication: {
+      rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+    }
   }
 };

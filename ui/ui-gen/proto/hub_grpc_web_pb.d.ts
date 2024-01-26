@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as hub_pb from './hub_pb';
+import * as hub_pb from './hub_pb'; // proto import: "hub.proto"
 
 
 export class HubApiClient {

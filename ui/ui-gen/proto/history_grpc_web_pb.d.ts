@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as history_pb from './history_pb';
+import * as history_pb from './history_pb'; // proto import: "history.proto"
 
 
 export class HistoryAdminApiClient {

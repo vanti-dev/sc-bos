@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as button_pb from './button_pb';
+import * as button_pb from './button_pb'; // proto import: "button.proto"
 
 
 export class ButtonApiClient {

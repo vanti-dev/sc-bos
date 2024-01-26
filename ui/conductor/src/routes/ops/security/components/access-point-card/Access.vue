@@ -67,19 +67,23 @@ import {computed, onBeforeUnmount, reactive} from 'vue';
 const props = defineProps({
   accessAttempt: {
     type: Object,
-    default: () => {}
+    default: () => {
+    }
   },
   openClosed: {
     type: Object,
-    default: () => {}
+    default: () => {
+    }
   },
   statusLog: {
     type: Object,
-    default: () => {}
+    default: () => {
+    }
   },
   device: {
     type: Object,
-    default: () => {}
+    default: () => {
+    }
   },
   paused: {
     type: Boolean,
@@ -103,8 +107,8 @@ const statusColor = computed(() => {
   if (props.openClosed) {
     const percentage = props.openClosed.statesList[0].openPercent;
 
-    if (percentage === 0) return 'warning'; // closed
-    if (percentage > 0 && percentage <= 100) return 'success'; // moving and open
+    if (percentage === 0) return 'success'; // closed
+    if (percentage > 0 && percentage <= 100) return 'warning'; // moving and open
     else return 'grey'; // unknown
   } else return color.value;
 });

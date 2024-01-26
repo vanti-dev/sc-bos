@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 
-import * as meter_pb from './meter_pb';
+import * as meter_pb from './meter_pb'; // proto import: "meter.proto"
 
 
 export class MeterApiClient {

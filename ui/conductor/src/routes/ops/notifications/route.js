@@ -8,6 +8,11 @@ export default [
     props: {
       default: true,
       sidebar: false
+    },
+    meta: {
+      authentication: {
+        rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+      }
     }
   }
 ];

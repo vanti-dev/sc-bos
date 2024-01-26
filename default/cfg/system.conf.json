@@ -1,0 +1,18 @@
+{
+  "staticHosting": [
+    {"path": "/", "filePath": "/app/ops-ui"},
+    {"path": "/__/scos/", "filePath": "/app/ui-config"}
+  ],
+  "certs": {
+  },
+  "logger": {
+    "level": "DEBUG"
+  },
+  "systems": {
+    "authn": {
+      "user": {
+        "fileAccounts": true
+      }
+    }
+  }
+}
