@@ -14,6 +14,11 @@ export default {
       components: {
         default: () => import('./components/pages/DriversList.vue'),
         sidebar: () => import('./components/ServicesSideBar.vue')
+      },
+      meta: {
+        authentication: {
+          rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+        }
       }
     },
     {
@@ -21,16 +26,29 @@ export default {
       components: {
         default: () => import('./components/pages/FeaturesList.vue'),
         sidebar: () => import('./components/ServicesSideBar.vue')
+      },
+      meta: {
+        authentication: {
+          rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+        }
       }
     },
     {
       path: 'components',
       components: {
         default: () => import('./components/pages/ComponentsList.vue')
+      },
+      meta: {
+        authentication: {
+          rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+        }
       }
     }
   ],
   meta: {
+    authentication: {
+      rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+    },
     title: 'System'
   },
   beforeEnter: async (to, from, next) => {

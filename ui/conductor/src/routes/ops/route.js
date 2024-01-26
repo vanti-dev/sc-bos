@@ -14,12 +14,39 @@ export default {
   },
   children: [
     ...route(overview),
-    {path: 'emergency-lighting', component: () => import('./emergency-lighting/EmergencyLighting.vue')},
-    {path: 'security', component: () => import('./security/SecurityHome.vue')},
-    {path: 'air-quality', component: () => import('./air-quality/AirQuality.vue')},
+    {
+      path: 'emergency-lighting',
+      component: () => import('./emergency-lighting/EmergencyLighting.vue'),
+      meta: {
+        authentication: {
+          rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+        }
+      }
+    },
+    {
+      path: 'security',
+      component: () => import('./security/SecurityHome.vue'),
+      meta: {
+        authentication: {
+          rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+        }
+      }
+    },
+    {
+      path: 'air-quality',
+      component: () => import('./air-quality/AirQuality.vue'),
+      meta: {
+        authentication: {
+          rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+        }
+      }
+    },
     ...route(notifications)
   ],
   meta: {
+    authentication: {
+      rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+    },
     title: 'Operations'
   },
   beforeEnter: async (to, from, next) => {

@@ -12,9 +12,21 @@ export default [
       nav: () => import('./AuthNav.vue')
     },
     children: [
-      {path: 'users', component: () => import('./users/Users.vue')}
+      {
+        path: 'users',
+        component: () => import('./users/Users.vue'),
+        meta: {
+          authentication: {
+            rolesRequired: ['superAdmin', 'admin', 'viewer']
+          },
+          title: 'Users'
+        }
+      }
     ],
     meta: {
+      authentication: {
+        rolesRequired: ['superAdmin', 'admin', 'operator', 'viewer']
+      },
       title: 'Auth'
     },
     beforeEnter: async (to, from, next) => {
