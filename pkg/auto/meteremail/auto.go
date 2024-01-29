@@ -1,0 +1,293 @@
+// Package meteremail provides an automation that collects the instantaneous meter readings for a set of given devices.
+// The automation uses the Meter API to fetch meter readings on a configurable fixed date,
+// formats a summary email using html/template and sends it to some recipients using smtp with a CSV file for detailed readings.
+// Test program for meter reading automation is in 'cmd/tools/test-meteremail/main.go'.
+package meteremail
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"sort"
+	"time"
+
+	"go.uber.org/zap"
+
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/sc-bos/pkg/auto"
+	"github.com/vanti-dev/sc-bos/pkg/auto/meteremail/config"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/task"
+	"github.com/vanti-dev/sc-bos/pkg/task/service"
+)
+
+const AutoName = "meteremail"
+
+var Factory auto.Factory = factory{}
+
+type factory struct{}
+
+type autoImpl struct {
+	*service.Service[config.Root]
+	auto.Services
+}
+
+func (f factory) New(services auto.Services) service.Lifecycle {
+	a := &autoImpl{Services: services}
+	a.Service = service.New(service.MonoApply(a.applyConfig), service.WithParser(config.ReadBytes))
+	a.Logger = a.Logger.Named(AutoName)
+	return a
+}
+
+// getMeterReadingAndSource gets the meter reading for the given meter and also the location metadata for the meter
+func (a *autoImpl) getMeterReadingAndSource(ctx context.Context, meterName string, meterType MeterType,
+	meterClient gen.MeterApiClient, metadataClient traits.MetadataApiClient, timeout time.Duration) (*config.Source, *MeterReading, error) {
+
+	meterReq := &gen.GetMeterReadingRequest{
+		Name: meterName,
+	}
+
+	meterRes, err := retryT(ctx, func(ctx context.Context) (*gen.MeterReading, error) {
+		withTimeoutCtx, cancel := context.WithTimeout(ctx, timeout)
+		defer cancel()
+		return meterClient.GetMeterReading(withTimeoutCtx, meterReq)
+	})
+	if err != nil {
+		a.Logger.Warn("failed to fetch meter readings for meter ", zap.String("meter", meterName), zap.Error(err))
+		return nil, nil, err
+	}
+
+	meterReading := &MeterReading{MeterType: meterType, Date: time.Now(), Reading: meterRes.Usage}
+	source := &config.Source{Name: meterName}
+
+	metadataReq := &traits.GetMetadataRequest{
+		Name: meterName,
+	}
+
+	if err := a.Node.Client(&metadataClient); err == nil {
+		withTimeoutCtx, cancel := context.WithTimeout(ctx, timeout)
+		defer cancel()
+		metadataRes, err := metadataClient.GetMetadata(withTimeoutCtx, metadataReq)
+		if err != nil {
+			// not a major problem if we can't get metadata as we still have the name to ID the meter
+			a.Logger.Warn("failed to fetch meta data for meter", zap.String("meter", meterName), zap.Error(err))
+		}
+
+		if metadataRes.Location != nil {
+			source.Floor = metadataRes.Location.Floor
+			source.Zone = metadataRes.Location.Zone
+		}
+	}
+	return source, meterReading, nil
+}
+
+// generateSummaryReports calculates the total energy per zone and appends the totals to attrs.EnergySummaryReports & attrs.WaterSummaryReports
+func generateSummaryReports(attrs *Attrs) {
+
+	floorKeys := attrs.getFloorKeys()
+	for _, floorName := range floorKeys {
+		zones := attrs.ReadingsByFloorZone[floorName]
+		zoneKeys := make([]string, 0, len(zones))
+		for k := range zones {
+			zoneKeys = append(zoneKeys, k)
+		}
+		sort.Strings(zoneKeys)
+
+		for _, zoneName := range zoneKeys {
+			zoneTotalEnergy := float32(0.0)
+			zoneTotalWater := float32(0.0)
+			meters := zones[zoneName]
+			for _, meter := range meters {
+				if meter.MeterReading.MeterType == MeterTypeElectric {
+					zoneTotalEnergy += meter.MeterReading.Reading
+				}
+				if meter.MeterReading.MeterType == MeterTypeWater {
+					zoneTotalWater += meter.MeterReading.Reading
+				}
+			}
+			attrs.EnergySummaryReports = append(attrs.EnergySummaryReports, SummaryReport{Floor: floorName, Zone: zoneName, TotalReading: zoneTotalEnergy})
+			attrs.WaterSummaryReports = append(attrs.WaterSummaryReports, SummaryReport{Floor: floorName, Zone: zoneName, TotalReading: zoneTotalWater})
+		}
+	}
+}
+
+// createMeterReadingsFile creates a CSV file with detailed meter readings, organised by floor then zone.
+// Returns the raw bytes of the file
+//
+//goland:noinspection GoUnhandledErrorResult
+func (a *autoImpl) createMeterReadingsFile(attrs *Attrs) []byte {
+	buf := bytes.NewBuffer(nil)
+	fmt.Fprintf(buf, "Electric Meter Readings\n")
+
+	floorKeys := attrs.getFloorKeys()
+	for _, floorName := range floorKeys {
+		zones := attrs.ReadingsByFloorZone[floorName]
+		zoneKeys := make([]string, 0, len(zones))
+		for k := range zones {
+			zoneKeys = append(zoneKeys, k)
+		}
+		sort.Strings(zoneKeys)
+
+		for _, zoneName := range zoneKeys {
+			fmt.Fprintf(buf, "%s - %s\n", floorName, zoneName)
+			fmt.Fprintf(buf, "Name                          ,Floor	,Zone	,Reading (kWh)	\n")
+			meters := zones[zoneName]
+			for _, meter := range meters {
+				if meter.MeterReading.MeterType == MeterTypeElectric {
+					fmt.Fprintf(buf, "%s,%s,%s,%f\n", meter.Source.Name, floorName, zoneName, meter.MeterReading.Reading)
+				}
+			}
+		}
+	}
+
+	fmt.Fprintf(buf, "\n\nWater Meter Readings\n")
+
+	for _, floorName := range floorKeys {
+		zones := attrs.ReadingsByFloorZone[floorName]
+		zoneKeys := make([]string, 0, len(zones))
+		for k := range zones {
+			zoneKeys = append(zoneKeys, k)
+		}
+		sort.Strings(zoneKeys)
+
+		for _, zoneName := range zoneKeys {
+			fmt.Fprintf(buf, "%s - %s\n", floorName, zoneName)
+			fmt.Fprintf(buf, "Name                          ,Floor	,Zone	,Reading (m3)	\n")
+			meters := zones[zoneName]
+			for _, meter := range meters {
+				if meter.MeterReading.MeterType == MeterTypeWater {
+					fmt.Fprintf(buf, "%s,%s,%s,%f\n", meter.Source.Name, floorName, zoneName, meter.MeterReading.Reading)
+				}
+			}
+		}
+	}
+	return buf.Bytes()
+}
+
+// groupByFloorAndZone take the data from sources in attrs and group them into a map of floor -> zone -> readings
+// for easy summarising & aggregation
+func groupByFloorAndZone(attrs *Attrs) {
+
+	if attrs.ReadingsByFloorZone == nil {
+		attrs.ReadingsByFloorZone = make(map[string]map[string][]Stats)
+	}
+
+	for _, stat := range attrs.Stats {
+
+		if _, ok := attrs.ReadingsByFloorZone[stat.Source.Floor]; !ok {
+			attrs.ReadingsByFloorZone[stat.Source.Floor] = make(map[string][]Stats)
+		}
+
+		attrs.ReadingsByFloorZone[stat.Source.Floor][stat.Source.Zone] = append(attrs.ReadingsByFloorZone[stat.Source.Floor][stat.Source.Zone], stat)
+	}
+}
+
+func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
+	logger := a.Logger
+	logger = logger.With(zap.String("snmp.addr", cfg.Destination.Addr()))
+
+	var meterClient gen.MeterApiClient
+	if err := a.Node.Client(&meterClient); err != nil {
+		a.Logger.Warn("failed to create gen.MeterApiClient", zap.Error(err))
+		return err
+	}
+
+	var metadataClient traits.MetadataApiClient
+	if err := a.Node.Client(&metadataClient); err != nil {
+		a.Logger.Warn("failed to create traits.MetadataApiClient", zap.Error(err))
+		return err
+	}
+
+	sendTime := cfg.Destination.SendTime
+	now := cfg.Now
+	if now == nil {
+		now = a.Now
+	}
+	if now == nil {
+		now = time.Now
+	}
+	go func() {
+		t := now()
+		for {
+			next := sendTime.Next(t)
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(time.Until(next)):
+				// Use the time we were planning on running instead of the current time.
+				// We do this to make output more predictable
+				t = next
+			}
+
+			attrs := Attrs{
+				Now:   t,
+				Stats: []Stats{},
+			}
+
+			timeout := cfg.Timeout
+
+			if timeout == 0 {
+				timeout = 10 * time.Second
+			}
+
+			logger.Debug("Meter email is being generated...", zap.Duration("timeout", timeout))
+			for _, meterName := range cfg.ElectricMeters {
+				source, reading, err := a.getMeterReadingAndSource(ctx, meterName, MeterTypeElectric, meterClient, metadataClient, timeout)
+				if err == nil {
+					attrs.Stats = append(attrs.Stats, Stats{Source: *source, MeterReading: *reading})
+				} else {
+					logger.Error("Error getting info for electric meter ", zap.String("meterName", meterName), zap.Error(err))
+				}
+			}
+
+			for _, meterName := range cfg.WaterMeters {
+				source, reading, err := a.getMeterReadingAndSource(ctx, meterName, MeterTypeWater, meterClient, metadataClient, timeout)
+				if err == nil {
+					attrs.Stats = append(attrs.Stats, Stats{Source: *source, MeterReading: *reading})
+				} else {
+					logger.Error("Error getting info for water meter ", zap.String("meterName", meterName), zap.Error(err))
+				}
+			}
+
+			// create map of floors/zones in map attrs.ReadingsByFloorZone
+			groupByFloorAndZone(&attrs)
+
+			// generate the detailed meter readings CSV attachment file
+			attachmentName := "meter-readings-" + time.Now().Format("2006-01-02") + ".csv"
+			file := a.createMeterReadingsFile(&attrs)
+			attachmentCfg := config.AttachmentCfg{
+				AttachmentName: attachmentName,
+				Attachment:     file,
+			}
+
+			// generate the readings summary which is displayed in the email body
+			generateSummaryReports(&attrs)
+			err := retry(ctx, func(ctx context.Context) error {
+				return sendEmail(cfg.Destination, attachmentCfg, attrs, logger)
+			})
+			if err != nil {
+				logger.Warn("failed to send email", zap.Error(err))
+			} else {
+				logger.Info("email sent")
+			}
+		}
+	}()
+
+	return nil
+}
+
+func retry(ctx context.Context, f func(context.Context) error) error {
+	return task.Run(ctx, func(ctx context.Context) (task.Next, error) {
+		return 0, f(ctx)
+	}, task.WithBackoff(10*time.Second, 10*time.Minute), task.WithRetry(40))
+}
+
+func retryT[T any](ctx context.Context, f func(context.Context) (T, error)) (T, error) {
+	var t T
+	err := retry(ctx, func(ctx context.Context) error {
+		var err error
+		t, err = f(ctx)
+		return err
+	})
+	return t, err
+}
