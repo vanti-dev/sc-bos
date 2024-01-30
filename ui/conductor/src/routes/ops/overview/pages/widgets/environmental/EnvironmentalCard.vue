@@ -77,7 +77,7 @@ const props = defineProps({
   },
   gaugeColor: {
     type: String,
-    default: ''
+    default: 'primary'
   },
   shouldWrap: {
     type: Boolean,
