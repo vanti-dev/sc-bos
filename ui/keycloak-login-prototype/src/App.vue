@@ -5,9 +5,8 @@ import GetTest from './component/GetTest.vue'
 import UpdateTest from './component/UpdateTest.vue';
 
 const selectedScopes = ref(['profile'])
-const accessToken = ref(null)
-
-const keycloakClaims = ref(null)
+const accessToken = ref(/** @type {null|string} */ null)
+const keycloakClaims = ref(/** @type {null|KeycloakTokenParsed} */ null)
 
 keycloak.init({})
     .then(authenticated => {
@@ -57,6 +56,11 @@ async function logoutKeycloak() {
     <pre class="wrap">{{ accessToken }}</pre>
   </div>
 
+  <div v-if="keycloakClaims !== null">
+    <h2>Claims</h2>
+    <pre class="wrap">{{ keycloakClaims }}</pre>
+  </div>
+
   <div v-if="accessToken !== null">
     <button @click="logoutKeycloak">Log out</button>
     <GetTest :token="accessToken"/>
@@ -65,8 +69,8 @@ async function logoutKeycloak() {
 </template>
 
 <style>
-  pre.wrap {
-    white-space: pre-wrap;
-    word-break: break-all;
-  }
+pre.wrap {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
 </style>
