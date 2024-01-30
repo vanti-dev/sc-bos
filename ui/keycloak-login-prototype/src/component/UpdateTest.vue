@@ -5,10 +5,10 @@ import {ref} from 'vue';
 
 const props = defineProps(['token'])
 
-const data = ref('')
+const data = ref(OnOff.State.STATE_UNSPECIFIED)
 const error = ref(null)
 
-const client = new OnOffApiPromiseClient('http://localhost:8000', null, null)
+const client = new OnOffApiPromiseClient('https://localhost:8000', null, null)
 
 async function updateTest() {
   const token = props.token
@@ -18,7 +18,8 @@ async function updateTest() {
   }
 
   const request = new UpdateOnOffRequest()
-      .setOnOff(new OnOff().setState(OnOff.State.ON))
+      .setName('dev-1')
+      .setOnOff(new OnOff().setState(data.value))
 
   try {
     await client.updateOnOff(request, {
@@ -35,10 +36,18 @@ async function updateTest() {
 <template>
   <h2>Update Test</h2>
   <h3>Value to Write</h3>
-  <label>
-    Turn On
-    <input v-model="data" type="checkbox" value="false">
-  </label>
+  <pre>
+{
+<label>
+  "state": <select v-model="data">
+  <option :value="OnOff.State.STATE_UNSPECIFIED">UNSPECIFIED (0)</option>
+  <option :value="OnOff.State.ON">ON (1)</option>
+  <option :value="OnOff.State.OFF">OFF (2)</option>
+  </select>
+</label>
+}
+  </pre>
+
   <div>
     <button @click="updateTest">OnOffApi.UpdateOnOff</button>
   </div>

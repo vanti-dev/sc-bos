@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="[keycloak-login-prototype] BOS [23557,8000]" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="sc-bos" />
+    <working_directory value="$PROJECT_DIR$" />
+    <parameters value="--data .data/keycloak-login-prototype --sysconf ui/keycloak-login-prototype/bos-data/system.json --appconf ui/keycloak-login-prototype/bos-data/appconf.json" />
+    <kind value="PACKAGE" />
+    <package value="github.com/vanti-dev/sc-bos/cmd/bos" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <method v="2" />
+  </configuration>
+</component>

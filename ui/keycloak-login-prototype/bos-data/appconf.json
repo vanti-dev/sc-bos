@@ -1,0 +1,10 @@
+{
+  "drivers": [
+    {
+      "type": "mock", "name": "mock-driver",
+      "devices": [
+        {"name": "dev-1", "traits": [{"name": "smartcore.traits.OnOff"}]}
+      ]
+    }
+  ]
+}
