@@ -1,9 +1,9 @@
 import Keycloak from 'keycloak-js'
 
-export const keycloakClientId = 'sc-apps'
+export const keycloakClientId = 'scos-opsui'
 
 export const keycloak = new Keycloak({
-  realm: 'smart-core',
+  realm: 'Smart_Core',
   url: 'http://localhost:8888/',
   clientId: keycloakClientId
 })

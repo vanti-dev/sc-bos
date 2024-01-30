@@ -4,10 +4,10 @@ import {GetOnOffRequest} from '@smart-core-os/sc-api-grpc-web/traits/on_off_pb';
 import {reactive} from 'vue'
 
 const props = defineProps(['token'])
-const client = new OnOffApiPromiseClient('http://localhost:8000', null, null)
+const client = new OnOffApiPromiseClient('https://localhost:8000', null, null)
 
 const result = reactive({
-  data: null,
+  data: /** @type {OnOff.AsObject} */ null,
   error: null
 })
 
@@ -21,9 +21,10 @@ async function getTest() {
   result.data = null
 
   try {
-    result.data = await client.getOnOff(new GetOnOffRequest(),{
+    const res = await client.getOnOff(new GetOnOffRequest().setName('dev-1'),{
       "Authorization": "Bearer " + props.token
     })
+    result.data = res.toObject()
     result.error = null
   } catch (e) {
     result.error = e
