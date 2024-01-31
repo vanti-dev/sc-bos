@@ -17,6 +17,9 @@ type Root struct {
 	IpAddress    string `json:"ipAddress"`
 	Password     string `json:"password,omitempty"`
 	PasswordFile string `json:"passwordFile,omitempty"`
+
+	// to support UDMI/MQTT automation
+	UDMITopicPrefix string `json:"udmiTopicPrefix,omitempty"`
 }
 
 func (c *Root) LoadPassword() (string, error) {
