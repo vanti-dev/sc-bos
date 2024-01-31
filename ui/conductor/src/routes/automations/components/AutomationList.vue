@@ -1,5 +1,5 @@
 <template>
-  <services-list :name="ServiceNames.Automations" :type="type"/>
+  <services-list :name="ServiceNames.Automations" :type="props.type"/>
 </template>
 
 <script setup>
