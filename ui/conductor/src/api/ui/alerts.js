@@ -47,7 +47,6 @@ export function pullAlerts(request, resource) {
  * @return {Promise<AlertMetadata.AsObject>}
  */
 export function getAlertMetadata(request, tracker) {
-  console.debug('getAlertMetadata', request);
   return trackAction('Alerts.getAlertMetadata', tracker ?? {}, endpoint => {
     const api = apiClient(endpoint);
     return api.getAlertMetadata(getAlertMetadataRequestFromObject(request));
@@ -59,7 +58,6 @@ export function getAlertMetadata(request, tracker) {
  * @param {ResourceValue<AlertMetadata.AsObject, PullAlertMetadataResponse>} resource
  */
 export function pullAlertMetadata(request, resource) {
-  console.debug('pullAlertMetadata', request);
   pullResource('Alerts.pullAlertMetadata', resource, endpoint => {
     const api = apiClient(endpoint);
     const stream = api.pullAlertMetadata(pullAlertMetadataRequestFromObject(request));
