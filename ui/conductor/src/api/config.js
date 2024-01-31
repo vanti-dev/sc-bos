@@ -11,7 +11,6 @@ export async function serverConfig() {
   if (_serverConfig === null) {
     /** @type {string} */
     const url = import.meta.env.VITE_CONFIG_URL || '/__/scos/config.json';
-    console.debug('server config path:', url);
     _serverConfig = fetch(url)
         .then(res => /** @type {Promise<ServerConfig>} */ res.json())
         .catch(() => ({}));
