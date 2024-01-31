@@ -56,5 +56,7 @@ export function formatTimeAgo(date, now, MINUTE, HOUR, DAY) {
     return rtf.format(-Math.floor(diffInSeconds / MINUTE), 'minute');
   } else if (Math.abs(diffInSeconds) < DAY) {
     return rtf.format(-Math.floor(diffInSeconds / HOUR), 'hour');
+  } else {
+    return rtf.format(-Math.floor(diffInSeconds / DAY), 'day');
   }
 }
