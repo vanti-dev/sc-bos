@@ -64,6 +64,7 @@ export const useErrorStore = defineStore('error', () => {
         }
       });
     }
+    return () => {}; // shouldn't happen
   }
 
   /**
