@@ -1,0 +1,26 @@
+{
+  "listenHttps": ":8443",
+  "listenGrpc": ":23557",
+  "systems": {
+    "authn": {
+      "user": {
+        "fileAccounts": true,
+        "keycloakAccounts": {
+          "url": "http://localhost:8888",
+          "realm": "Smart_Core",
+          "clientId": "scos-opsui"
+        }
+      },
+      "system": {
+        "tenantAccounts": true
+      }
+    },
+    "tenants": {
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": ".data/secrets/postgres-password"
+      }
+    }
+  }
+}

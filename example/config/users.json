@@ -1,9 +1,23 @@
 [
   {
-    "id": "matt.nathan@vanti.co.uk",
-    "title": "Matt Nathan",
+    "id": "admin",
+    "title": "Admin User",
     "secrets": [
-      {"hash": "$2a$10$2ek49AIy1EOkvbQtuX7xEOmiHzy8ONXL9.3SgNqhXxFqC85PD.lsO"}
+      {"hash": "$2a$10$6c.HvXGgpxe5XuI0c.D1s.5klgEEmPl.XN6oiQQBoCI1kCxCYl2fa", "plaintext": "admin"}
+    ]
+  },
+  {
+    "id": "operator",
+    "title": "Operator User",
+    "secrets": [
+      {"hash": "$2a$10$83SmZaqeKQ387u7o44eMZO9.AJF6n4sNFym/tRp1gBYBzKTwEPQl2", "plaintext": "operator"}
+    ]
+  },
+  {
+    "id": "viewer",
+    "title": "Viewer User",
+    "secrets": [
+      {"hash": "$2a$10$AsBs0QFbN/HGSbBEaARyzOAx/v5GU1BXiPayajsPiCrN0HhiaMbE2", "plaintext": "viewer"}
     ]
   }
 ]
