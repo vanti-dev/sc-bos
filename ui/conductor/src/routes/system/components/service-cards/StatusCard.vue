@@ -37,7 +37,7 @@ import {camelToSentence} from '@/util/string';
 import {timestampToDate} from '@/api/convpb';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
-import {computed, ref} from 'vue';
+import {computed} from 'vue';
 
 const pageStore = usePageStore();
 const {sidebarData} = storeToRefs(pageStore);

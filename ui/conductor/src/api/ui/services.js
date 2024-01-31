@@ -5,7 +5,7 @@ import {ServicesApiPromiseClient} from '@sc-bos/ui-gen/proto/services_grpc_web_p
 import {
   ConfigureServiceRequest,
   ListServicesRequest,
-  PullServiceRequest, PullServicesRequest,
+  PullServicesRequest,
   StartServiceRequest,
   StopServiceRequest
 } from '@sc-bos/ui-gen/proto/services_pb';

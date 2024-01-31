@@ -7,8 +7,7 @@
 <script setup>
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullAirQualitySensor} from '@/api/sc/traits/air-quality-sensor';
-import {useErrorStore} from '@/components/ui-error/error';
-import {onMounted, onUnmounted, reactive, watch} from 'vue';
+import {onUnmounted, reactive, watch} from 'vue';
 
 const props = defineProps({
   // unique name of the device
@@ -21,8 +20,6 @@ const props = defineProps({
     default: false
   }
 });
-
-const errorStore = useErrorStore();
 
 const airQualityResource = reactive(
     /** @type {ResourceValue<AirQuality.AsObject, PullAirQualityResponse>} */
@@ -49,15 +46,8 @@ watch(
     {immediate: true, deep: true, flush: 'sync'}
 );
 
-//
-//
-// UI error handling
-const errorHandlers = [];
-onMounted(() => {
-});
 onUnmounted(() => {
   closeResource(airQualityResource);
-  errorHandlers.forEach(unwatch => unwatch());
 });
 </script>
 

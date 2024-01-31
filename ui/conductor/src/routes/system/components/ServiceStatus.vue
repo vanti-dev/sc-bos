@@ -30,7 +30,7 @@
 </template>
 <script setup>
 import {timestampToDate} from '@/api/convpb';
-import {MILLISECOND, SECOND, useNow} from '@/components/now';
+import {SECOND, useNow} from '@/components/now';
 import {computed, ref, watch} from 'vue';
 
 const props = defineProps({
