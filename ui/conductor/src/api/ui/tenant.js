@@ -186,6 +186,10 @@ function client(endpoint) {
   return new TenantApiPromiseClient(endpoint, null, clientOptions());
 }
 
+/**
+ * @param {Partial<PullTenantRequest.AsObject>} obj
+ * @return {undefined|PullTenantRequest}
+ */
 function pullTenantRequestFromObject(obj) {
   if (!obj) return undefined;
 
