@@ -1,5 +1,5 @@
 import {events, keycloak} from '@/api/keycloak.js';
-import localLogin from '@/api/localLogin.js';
+import {localLogin} from '@/api/localLogin.js';
 import jwtDecode from 'jwt-decode';
 import {defineStore} from 'pinia';
 import {computed, ref, watch} from 'vue';
