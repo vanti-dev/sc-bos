@@ -39,7 +39,7 @@ const store = useAccountStore();
 
 // Tweak the message depending on whether KeyCloak is enabled or not
 const keycloakMessage = computed(() => {
-  if (appConfig.config.keycloak) {
+  if (appConfig.config?.keycloak) {
     return {
       top: 'Please sign in to the Smart Core Operator App to unlock all features.',
       // eslint-disable-next-line max-len

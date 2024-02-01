@@ -12,17 +12,24 @@ export const usePageStore = defineStore('page', () => {
   const listedDevice = ref({});
 
   /**
-   *
+   * Open or close sidebar
    */
-  function toggleSidebar() {
+  const toggleSidebar = () => {
     showSidebar.value = !showSidebar.value;
-  }
+  };
 
   /**
-   *
+   * Close sidebar if visible and reset sidebar data
    */
-  function closeSidebar() {
+  const closeSidebar = () => {
     showSidebar.value = false;
+    resetSidebarToDefaults();
+  };
+
+  /**
+   * Reset the sidebar data to default values
+   */
+  const resetSidebarToDefaults = () => {
     sidebarData.value = {};
     listedDevice.value = {};
     sidebarTitle.value = '';
@@ -45,6 +52,7 @@ export const usePageStore = defineStore('page', () => {
     listedDevice,
     toggleSidebar,
     closeSidebar,
+    resetSidebarToDefaults,
 
     // LEFT NAVIGATION SIDEBAR
     drawer,

@@ -3,7 +3,7 @@
     <app-bar/>
     <navigation-drawer/>
 
-    <router-view v-if="isLoggedIn"/>
+    <router-view/>
     <error-view/>
   </v-app>
 </template>
@@ -13,21 +13,14 @@ import AppBar from '@/components/default/AppBar.vue';
 import NavigationDrawer from '@/components/default/NavigationDrawer.vue';
 import ErrorView from '@/components/ui-error/ErrorView.vue';
 
-import useAuthSetup from '@/composables/useAuthSetup';
-import {useAccountStore} from '@/stores/account.js';
-import {useControllerStore} from '@/stores/controller';
 import {onMounted} from 'vue';
+import {useControllerStore} from '@/stores/controller';
 
-
-const {isLoggedIn} = useAuthSetup();
 const controller = useControllerStore();
-const store = useAccountStore();
-
-store.loadLocalStorage();
-
 onMounted(() => {
   controller.sync();
 });
+
 </script>
 
 <style lang="scss" scoped>

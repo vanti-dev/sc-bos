@@ -5,13 +5,10 @@
         elevation="0"
         v-if="!loggedIn"
         :class="btnClass"
-        @click.stop="toggleLoginDialog">
+        to="/login">
       <v-icon left>mdi-account-circle-outline</v-icon>
       Sign in
     </v-btn>
-    <v-dialog width="500" v-if="!loggedIn" persistent v-model="loginDialog">
-      <SignIn/>
-    </v-dialog>
     <v-menu v-else bottom left offset-y max-width="100%" tile>
       <template #activator="{ on, attrs }">
         <v-btn icon elevation="0" :class="btnClass" v-bind="attrs" v-on="on">
@@ -44,8 +41,8 @@
 </template>
 
 <script setup>
-import {useAccountStore} from '@/stores/account.js';
 import {computed} from 'vue';
+import {useAccountStore} from '@/stores/account.js';
 
 defineProps({
   btnClass: {
@@ -55,22 +52,11 @@ defineProps({
 });
 
 const accountStore = useAccountStore();
-const loggedIn = computed(() => accountStore.loggedIn);
-const loginDialog = computed(() => accountStore.loginDialog);
+const loggedIn = computed(() => accountStore.isLoggedIn);
 
-/**
- *
- */
-function logout() {
-  accountStore.logout().catch((err) => console.error('error during logout', err));
-}
-
-/**
- *
- */
-function toggleLoginDialog() {
-  accountStore.toggleLoginDialog();
-}
+const logout = async () => {
+  await accountStore.logout();
+};
 </script>
 
 

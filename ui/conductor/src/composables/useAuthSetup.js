@@ -1,3 +1,4 @@
+import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 import {useAccountStore} from '@/stores/account';
 import {useAppConfigStore} from '@/stores/app-config';
@@ -7,29 +8,18 @@ import {roleToPermissions} from '@/assets/roleToPermissions';
  * Initializing the authentication setup
  *
  * @return {{
- * navigate: (function(*, *): void),
- * role: ComputedRef<null|string>,
+ * roles: import('vue').ComputedRef<string[]>,
  * accessLevel: (function(string): boolean),
- * isLoggedIn: ComputedRef<boolean>,
- * blockActions: ComputedRef<boolean>,
- * blockSystemEdit: ComputedRef<boolean>
+ * hasNoAccess: (function(string): boolean),
+ * isLoggedIn: import('vue').ComputedRef<boolean>,
+ * blockActions: import('vue').ComputedRef<boolean>,
+ * blockSystemEdit: import('vue').ComputedRef<boolean>,
  * }}
  */
 export default function() {
   const appConfig = useAppConfigStore();
   const accountStore = useAccountStore();
-
-  /**
-   * @param {string} toPath
-   * @param {NavigationGuardNext} next
-   */
-  const navigate = (toPath, next) => {
-    if (toPath === '/') {
-      next(appConfig.homePath);
-    } else {
-      next(appConfig.pathEnabled(toPath));
-    }
-  };
+  const {isLoggedIn} = storeToRefs(accountStore);
 
   // Logged in user's roles
   // replacing '-' in a role to be camelCase
@@ -63,14 +53,12 @@ export default function() {
       }
 
       // Match the main path (e.g. /site or /devices) with the role permissions
-      const access = rolePermissions.value.map((rp) => ({
+      return rolePermissions.value.map((rp) => ({
         role: rp.role,
         fullAccess: rp.permissions.fullAccess.includes(formattedName),
         limitedAccess: rp.permissions.limitedAccess.includes(formattedName),
         blockedAccess: rp.permissions.blockedAccess.includes(formattedName)
       }));
-
-      return access;
     } else {
       return {
         fullAccess: true,
@@ -121,19 +109,11 @@ export default function() {
     }
   });
 
-
   return {
-    navigate,
-
     roles,
     accessLevel,
     hasNoAccess,
-    isLoggedIn: computed(() => {
-      if (!appConfig.config?.disableAuthentication) {
-        return accountStore.isLoggedIn;
-      } else return true;
-    }),
-
+    isLoggedIn,
     blockActions,
     blockSystemEdit
   };

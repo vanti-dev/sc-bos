@@ -8,6 +8,20 @@ import {route} from '@/util/router.js';
 export default {
   name: 'ops',
   path: '/ops',
+  redirect: () => {
+    const appConfig = useAppConfigStore();
+    if (appConfig.pathEnabled('/ops/overview')) {
+      return '/ops/overview/building';
+    } else if (appConfig.pathEnabled('/ops/notifications')) {
+      return '/ops/notifications';
+    } else if (appConfig.pathEnabled('/ops/air-quality')) {
+      return '/ops/air-quality';
+    } else if (appConfig.pathEnabled('/ops/emergency-lighting')) {
+      return '/ops/emergency-lighting';
+    } else if (appConfig.pathEnabled('/ops/security')) {
+      return '/ops/security';
+    }
+  },
   components: {
     default: SidebarPage,
     nav: () => import('./OpsNav.vue')

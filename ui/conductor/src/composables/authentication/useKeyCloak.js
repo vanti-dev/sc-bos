@@ -26,7 +26,6 @@ export default function() {
    */
   const updateAuthStatus = async () => {
     const kcPromise = await kcp;
-    accountStore.authenticationDetails.authProvider = 'keyCloakAuth';
     accountStore.authenticationDetails.claims = kcPromise.idTokenParsed;
     accountStore.authenticationDetails.loggedIn = kcPromise.authenticated;
     accountStore.authenticationDetails.token = kcPromise.token;
@@ -37,13 +36,15 @@ export default function() {
   /**
    * Initialize the Keycloak instance and event listeners
    *
-   * @return {Promise<void>}
+   * @return {Promise<import('keycloak-js').KeycloakInstance>}
    */
   const initializeKeycloak = async () => {
     const kcPromise = await kcp;
     if (kcPromise.authenticated) {
       await updateAuthStatus();
     }
+
+    return kcPromise;
   };
 
   /**
@@ -65,7 +66,6 @@ export default function() {
   const logoutKeyCloak = async () => {
     const kcPromise = await kcp;
     kcPromise.logout();
-    accountStore.resetStoreToDefaults();
   };
 
   /**

@@ -1,126 +1,269 @@
-import {events, keycloak} from '@/api/keycloak.js';
-import {localLogin} from '@/api/localLogin.js';
-import jwtDecode from 'jwt-decode';
+import useKeyCloak from '@/composables/authentication/useKeyCloak';
+import useLocal from '@/composables/authentication/useLocal';
+import {useAppConfigStore} from '@/stores/app-config';
+import {loadFromBrowserStorage} from '@/util/browserStorage';
 import {defineStore} from 'pinia';
 import {computed, ref, watch} from 'vue';
-import {useAppConfigStore} from '@/stores/app-config';
+import {useRouter} from 'vue-router/composables';
+
 
 export const useAccountStore = defineStore('accountStore', () => {
   const appConfig = useAppConfigStore();
+  const keyCloak = useKeyCloak();
+  const localAuth = useLocal();
+  const router = useRouter();
 
-  const kcp = keycloak();
-  const kcEvents = events;
+  // Set up the storage for the login: authProvider, claims, login status and token
+  const authenticationDetails = ref({
+    authProvider: '',
+    claims: {},
+    loggedIn: false,
+    token: ''
+  });
+  const loginFormVisible = ref(false);
+  const snackbar = ref({
+    message: 'Failed to sign in, please try again',
+    visible: false
+  });
 
-  const loggedIn = ref(false);
-  const token = ref('');
-  const claims = ref({});
-  const loginForm = ref(false);
-  const loginDialog = ref(false);
-  const snackbar = ref(false);
 
-  const updateRefs = () => {
-    kcp.then((kc) => {
-      loggedIn.value = kc.authenticated;
-      token.value = kc.token;
-      claims.value = kc.idTokenParsed;
-      localStorage.setItem('keyclock', true);
-      saveLocalStorage();
-    });
+  /**
+   * Reset the store values to defaults
+   *
+   * @return {void}
+   */
+  const resetStoreToDefaults = () => {
+    authenticationDetails.value = {
+      authProvider: '',
+      claims: {},
+      loggedIn: false,
+      token: ''
+    };
   };
 
-  const toggleSnackbar = () => {
-    snackbar.value = !snackbar.value;
-  };
 
-  const toggleLoginForm = () => {
-    loginForm.value = !loginForm.value;
-  };
+  /**
+   * Initialize Keycloak and Local Auth instances, so we can check if the user is logged in and/or manage the login flow
+   *
+   * @return {Promise<void>}
+   */
+  const initialise = async () => {
+    if (!appConfig.config.disableAuthentication) {
+      try {
+        // Attempt to initialize Keycloak authentication
+        if (appConfig.config?.keycloak) {
+          const kcResponse = await keyCloak.initializeKeycloak();
+          if (kcResponse) {
+            availableAuthProviders.value = ['keyCloakAuth', 'localAuth'];
+          } else {
+            availableAuthProviders.value = ['localAuth'];
+            return;
+          }
 
-  const toggleLoginDialog = () => {
-    loginDialog.value = !loginDialog.value;
-    loginForm.value = false;
-  };
-
-  const loginLocal = async (username, password) => {
-    try {
-      const res = await localLogin(username, password);
-      if (res.status === 200) {
-        const payload = await res.json();
-        token.value = payload.access_token;
-        loggedIn.value = true;
-        claims.value = {
-          email: username,
-          ...jwtDecode(payload.access_token)
+          if (kcResponse?.authenticated) {
+            authenticationDetails.value.authProvider = 'keyCloakAuth';
+            return; // Exit if authenticated with Keycloak
+          }
+        }
+      } catch (error) {
+        console.error('Keycloak initialization failed', error);
+        snackbar.value = {
+          message: 'Keycloak initialization failed: ' + error.error,
+          visible: true
         };
-        toggleLoginDialog();
-        saveLocalStorage();
-        localStorage.setItem('keyclock', false);
-      } else {
-        snackbar.value = true;
+
+        // Proceed to displaying the local authentication form if Keycloak fails
+        loginFormVisible.value = true;
       }
-    } catch (err) {
-      snackbar.value = true;
+
+
+      // Initialize local authentication if Keycloak is not configured, fails, or is not authenticated
+      try {
+        authenticationDetails.value = await localAuth.initializeLocal();
+
+        if (authenticationDetails.value.loggedIn) {
+          return; // Exit if authenticated with local auth
+        }
+      } catch (error) {
+        console.error('Local authentication initialization failed', error);
+        snackbar.value = {
+          message: 'Local authentication initialization failed: ' + error.error,
+          visible: true
+        };
+        resetStoreToDefaults();
+      }
     }
   };
 
-  const saveLocalStorage = () => {
-    localStorage.setItem('loggedIn', loggedIn.value);
-    localStorage.setItem('token', token.value);
-    localStorage.setItem('loggedIn', loggedIn.value);
-    localStorage.setItem('claims', JSON.stringify(claims.value));
+  //
+  // ----------------------------------- //
+  //
+  /**
+   * Check if authentication is disabled
+   *
+   * @type {import('vue').ComputedRef<boolean>}
+   */
+  const isAuthenticationDisabled = computed(() => {
+    return appConfig.config?.disableAuthentication || false;
+  });
+
+  /**
+   * Collect the available authentication providers
+   *
+   * @type {import('vue').Ref<string[]>}
+   */
+  const availableAuthProviders = ref(['localAuth']);
+
+  /**
+   * Retrieve the authentication provider used for login
+   *
+   * @type {import('vue').ComputedRef<string|null>}
+   */
+  const activeAuthProvider = computed(() => {
+    return authenticationDetails.value.authProvider || null;
+  });
+
+  /**
+   * Set the authentication provider depending on the login form visibility
+   * If the login form is visible, use the local authentication provider, otherwise use KeyCloak
+   */
+  const watchSources = [availableAuthProviders, isAuthenticationDisabled];
+
+  watch(watchSources, ([availableProviders, authDisabled]) => {
+    if (!authDisabled) {
+      loginFormVisible.value = !availableProviders.includes('keyCloakAuth');
+    }
+  }, {immediate: true, deep: true});
+
+  /**
+   * Returns the login status depending on the authentication provider
+   *
+   * @type {import('vue').ComputedRef<boolean>}
+   */
+  const isLoggedIn = computed(() => {
+    const detailsAvailable = !!(
+      authenticationDetails.value.claims &&
+        authenticationDetails.value.loggedIn &&
+        authenticationDetails.value.token
+    );
+
+    return detailsAvailable || isAuthenticationDisabled.value;
+  });
+
+  /**
+   * Returns the full name of the logged in user
+   *
+   * @type {import('vue').ComputedRef<string>}
+   */
+  const fullName = computed(() => authenticationDetails.value.claims?.name || '');
+
+  /**
+   * Returns the email of the logged in user
+   *
+   * @type {import('vue').ComputedRef<string>}
+   */
+  const email = computed(() => authenticationDetails.value.claims?.email || '');
+
+  /**
+   * Returns the roles of the logged in user
+   *
+   * @type {import('vue').ComputedRef<string[]>}
+   */
+  const roles = computed(() => authenticationDetails.value.claims?.roles || []);
+  //
+  // ----------------------------------- //
+  //
+  // Dynamic controls - depending on the active authentication provider
+  //
+  /** @typedef {{ username: string, password: string }} LocalAuthLoginValues */
+
+  /**
+   * Log in with local authentication using the given username and password
+   *
+   * @param {LocalAuthLoginValues} values
+   * @return {Promise<void>}
+   */
+  const loginWithLocalAuth = async (values) => {
+    authenticationDetails.value.authProvider = 'localAuth';
+    await localAuth.login(values.username, values.password);
+
+    // If the login was successful
+    if (isLoggedIn.value) {
+      // If there is a redirect in the session storage, redirect to that page
+      const redirect = loadFromBrowserStorage('session', 'redirect', '')[0];
+      if (redirect !== '') {
+        window.sessionStorage.removeItem('redirect');
+        await router.push(redirect);
+
+        // Otherwise, redirect to the home page
+      } else {
+        await router.push(appConfig.homePath);
+      }
+    }
   };
 
-  const loadLocalStorage = () => {
-    token.value = localStorage.getItem('token');
-    loggedIn.value = JSON.parse(localStorage.getItem('loggedIn'));
-    claims.value = JSON.parse(localStorage.getItem('claims'));
+  /**
+   * Log in with KeyCloak using the given scopes
+   *
+   * @param {string[]} scopes
+   * @return {Promise<void>}
+   */
+  const loginWithKeyCloak = async (scopes) => {
+    await keyCloak.login(scopes);
   };
 
-  const logout = async () => {
-    localStorage.getItem('keyclock') === 'true' &&
-    kcp.then((kc) => kc.logout());
-    loggedIn.value = false;
-    token.value = '';
-    claims.value = {};
-    saveLocalStorage();
+  /**
+   * Logout of the active authentication provider, then reset the store to defaults.
+   * If a reason is provided, display a snackbar with the reason.
+   *
+   * @param {string} reason
+   * @return {Promise<void>}
+   */
+  const logout = async (reason) => {
+    if (activeAuthProvider.value === 'keyCloakAuth') {
+      await keyCloak.logout();
+    } else if (activeAuthProvider.value === 'localAuth') {
+      await localAuth.logout();
+    }
+
+    if (reason) {
+      snackbar.value = {
+        message: 'Logged out: ' + reason,
+        visible: true
+      };
+    }
+
+    resetStoreToDefaults();
+    window.localStorage.removeItem('authenticationDetails');
+
+    if (router.currentRoute.path !== '/login') {
+      await router.push('/login');
+    }
   };
 
-  kcEvents.addEventListener('authSuccess', updateRefs);
-
-  // Keep login modal permanently on screen if user is not logged in and we require authentication
-  watch(
-      [loggedIn, token, () => appConfig.config?.disableAuthentication],
-      () => {
-        if (!appConfig.config?.disableAuthentication) {
-          if (!loggedIn.value || !token.value) loginDialog.value = true;
-        } else {
-          loginDialog.value = false;
-        }
-      },
-      {immediate: true, deep: true}
-  );
+  const refreshToken = async () => {
+    if (activeAuthProvider.value === 'keyCloakAuth') {
+      await keyCloak.refreshToken();
+    }
+  };
 
   return {
-    loggedIn,
-    token,
-    claims,
-    loginForm,
-    loginDialog,
-    toggleSnackbar,
-    toggleLoginForm,
-    toggleLoginDialog,
-    loginLocal,
-    loadLocalStorage,
+    initialise,
+    authenticationDetails,
+    loginFormVisible,
     snackbar,
+    resetStoreToDefaults,
 
-    isLoggedIn: computed(() => loggedIn.value),
-    fullName: computed(() => claims.value?.name || ''),
-    email: computed(() => claims.value?.email || ''),
-    roles: computed(() => claims.value?.roles || []),
+    isAuthenticationDisabled,
+    availableAuthProviders,
+    isLoggedIn,
+    fullName,
+    email,
+    roles,
 
-    login: (scopes) => {
-      return kcp.then((kc) => kc.login({scope: scopes.join(' ')}));
-    },
-    logout
+    loginWithLocalAuth,
+    loginWithKeyCloak,
+    logout,
+    refreshToken
   };
 });
