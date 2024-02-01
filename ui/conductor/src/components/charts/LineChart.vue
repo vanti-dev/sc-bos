@@ -1,9 +1,10 @@
 <template>
   <div style="height: 100%; max-height: 275px;">
-    <div class="d-flex flex-row flex-nowrap justify-end align-center mb-6">
+    <div class="d-flex flex-row flex-nowrap justify-end align-center mt-3 mb-6">
+      <v-card-title class="text-h4 pa-0 mr-auto pl-4">{{ props.chartTitle }}</v-card-title>
       <div v-if="!props.hideLegends" id="legend-container" class="mr-2"/>
       <template v-if="$slots.options">
-        <v-divider vertical class="mr-6" style="height: auto"/>
+        <v-divider v-if="!props.hideLegends" vertical class="mr-2" style="height: auto"/>
         <span>
           <slot name="options"/>
         </span>
@@ -57,6 +58,10 @@ const props = defineProps({
         height: ''
       };
     }
+  },
+  chartTitle: {
+    type: String,
+    default: ''
   },
   chartData: {
     type: Object,
