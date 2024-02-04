@@ -136,8 +136,8 @@ const filteredValues = computed(() => {
 
 // Function to show/hide values based on the key
 const showHideValue = (value, key) => {
-  const unit = acronyms[key].unit;
-  const label = acronyms[key].label;
+  const unit = acronyms[key]?.unit;
+  const label = acronyms[key]?.label;
 
   if (key === 'comfort') {
     return {
@@ -274,7 +274,7 @@ const chartOptions = computed(() => {
               hour12: false
             });
           },
-          labelPointStyle: function(context) {
+          labelPointStyle: function() {
             return {
               pointStyle: 'line',
               rotation: 0
@@ -353,23 +353,20 @@ const chartOptions = computed(() => {
           autoSkip: true,
           callback: (value) => {
             // Format the xAxis label to either Month Date or 24 Hour:Minute
-            let label = '';
             const date = new Date(value);
 
             if (date.getHours() === 0) {
-              label = date.toLocaleString('en-GB', {
+              return date.toLocaleString('en-GB', {
                 day: 'numeric',
                 month: 'short'
               });
             } else {
-              label = date.toLocaleString('en-GB', {
+              return date.toLocaleString('en-GB', {
                 hour: 'numeric',
                 minute: 'numeric',
                 hour12: false
               });
             }
-
-            return label;
           },
           color: '#fff',
           display: true,

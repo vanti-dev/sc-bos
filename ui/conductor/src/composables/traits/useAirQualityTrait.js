@@ -1,13 +1,12 @@
-import Vue from 'vue';
-import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
-import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
-import {listAirQualitySensorHistory} from '@/api/sc/traits/air-quality-sensor';
-import useTimePeriod from '@/routes/ops/overview/pages/widgets/energyAndDemand/useTimePeriod';
-import useDevices from '@/composables/useDevices';
 import {timestampToDate} from '@/api/convpb';
-import {camelToSentence} from '@/util/string';
-import {useNow, DAY} from '@/components/now';
+import {listAirQualitySensorHistory} from '@/api/sc/traits/air-quality-sensor';
+import {DAY, useNow} from '@/components/now';
+import useDevices from '@/composables/useDevices';
+import useTimePeriod from '@/routes/ops/overview/pages/widgets/energyAndDemand/useTimePeriod';
 import {hasTrait} from '@/util/devices';
+import {processToDownload} from '@/util/downloadCSV';
+import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
+import Vue, {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
 
 /**
  *
@@ -307,12 +306,8 @@ export default function(props) {
   };
 
   // ---- CSV download ---- //
-  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
-
-  const processRecordsForCSV = (records, deviceName) => {
-    if (!records || !records.length) return '';
-
-    const flattenedRecords = records.map(record => {
+  const flatteningRecords = (records, deviceName) => {
+    return records.map(record => {
       const recordDate = timestampToDate(record.recordTime);
       return {
         deviceName,
@@ -321,60 +316,6 @@ export default function(props) {
         recordTime: `${recordDate.toLocaleDateString()} ${recordDate.toLocaleTimeString()}`
       };
     });
-
-    // Create a mapping for headers
-    const headerMap = {};
-    Object.keys(flattenedRecords[0]).forEach(key => {
-      const label = acronyms[key]?.label || camelToSentence(key); // Fallback to camelToSentence if label is not defined
-      const unit = acronyms[key]?.unit ? `(${acronyms[key].unit})` : '';
-      headerMap[key] = `${capitalize(label)} ${unit}`;
-    });
-
-    // Generate the header row
-    const header = Object.values(headerMap);
-
-    // Generate the data rows
-    const rows = flattenedRecords.map(record =>
-      Object.keys(headerMap).map(key => record[key]).join(',')
-    );
-
-    return [header.join(',')].concat(rows).join('\n');
-  };
-
-
-  const downloadCSV = async () => {
-    // Check if there's a selected device
-    if (!airDevice.value) {
-      console.warn('No device selected for downloading CSV');
-      return;
-    }
-
-    const device = airDevice.value;
-    const records = await fetchRecordsForCSV(device);
-
-    // Check if there are records to process
-    if (!records || records.length === 0) {
-      console.warn('No records found for device:', device);
-      return;
-    }
-
-    // Process records to CSV format
-    const csvString = processRecordsForCSV(records, device);
-
-    // Create a Blob from the CSV String
-    const blob = new Blob([csvString], {type: 'text/csv;charset=utf-8;'});
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-
-    // Trigger the download
-    const date = new Date();
-    const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-    link.href = url;
-    link.setAttribute('download', `AirQualityData - ${device} - ${dateString}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   const fetchRecordsForCSV = async (deviceName) => {
@@ -390,6 +331,15 @@ export default function(props) {
 
     return await listAllPages(request, [], 'csv');
   };
+
+  // Using a composable which handles the CSV download after setting up the correct parameters
+  const {downloadCSV} = processToDownload({
+    acronyms,
+    docType: 'Air Quality',
+    flattenRecords: (records) => flatteningRecords(records, airDevice.value),
+    records: async () => await fetchRecordsForCSV(airDevice.value),
+    source: airDevice
+  });
 
 
   // ---- Cleanup ---- //
