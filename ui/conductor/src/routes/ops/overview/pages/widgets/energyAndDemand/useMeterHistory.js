@@ -14,13 +14,18 @@ import {computed, ref, watch, watchEffect} from 'vue';
  *  missingPeriods: import('vue').ComputedRef<Array<{start: Date, end: Date, type: 'set' | 'unshift' | 'push'}>>,
  *  allSeriesData: import('vue').ComputedRef<{x: Date, y: number, incomplete: boolean}[]>,
  *  seriesData: import('vue').ComputedRef<{x: Date, y: number}[]>,
+ *  fetching: import('vue').Ref<boolean>,
+ *  lastFetchTime: import('vue').Ref<Date|null>,
+ *  fetchPeriod: import('vue').ComputedRef<number>,
+ *  now: import('vue').Ref<Date>,
+ *  shouldFetch: import('vue').ComputedRef<boolean>,
+ *  firstRecordTime: import('vue').ComputedRef<Date|null>,
+ *  lastRecordTime: import('vue').ComputedRef<Date|null>
  * }}
  */
 export default function(name, periodStart, periodEnd, spanSize) {
   // Contains all the raw (well AsObject) records we've fetched from the server
   const records = ref(/** @type {MeterReadingRecord.AsObject[]} */ []);
-  // these fields are used to reduce the number of requests we're performing
-
   // A boolean indicating whether the async fetch is in progress
   const fetching = ref(false);
   // A Date recording the last time we fetched data from the server.
@@ -31,7 +36,7 @@ export default function(name, periodStart, periodEnd, spanSize) {
   });
   // How often do we retry a fetch that didn't return all the data we're after.
   const fetchPeriod = computed(() => Math.max(toValue(spanSize) / 4, 10 * MINUTE));
-  // Track the current time so we know how long it's been since the last fetch.
+  // Track the current time, so we know how long it's been since the last fetch.
   const {now} = useNow(() => fetchPeriod.value);
   // A boolean indicating whether an attempted fetch should proceed.
   const shouldFetch = computed(() => {
@@ -138,8 +143,9 @@ export default function(name, periodStart, periodEnd, spanSize) {
     let recordIndex = 0; // the record we're currently looking at
 
     // account for records that are before the start of this span
-    for (let i = 0; i < records.value.length; i++) {
-      const record = records.value[i];
+    const availableRecords = records.value;
+    for (let i = 0; i < availableRecords.length; i++) {
+      const record = availableRecords[i];
       const recordTime = timestampToDate(record.recordTime).getTime();
       if (recordTime >= spanStart) {
         recordIndex = i;
@@ -151,8 +157,8 @@ export default function(name, periodStart, periodEnd, spanSize) {
 
     for (; spanEnd <= lastSpanEnd; spanStart += size, spanEnd += size) {
       let recordBeforeEnd = recordBeforeStart;
-      for (let i = recordIndex; i < records.value.length; i++) {
-        const record = records.value[i];
+      for (let i = recordIndex; i < availableRecords.length; i++) {
+        const record = availableRecords[i];
         const recordTime = timestampToDate(record.recordTime).getTime();
         if (recordTime >= spanEnd) {
           recordIndex = i;
@@ -196,7 +202,8 @@ export default function(name, periodStart, periodEnd, spanSize) {
         [];
     const start = toValue(periodStart).getTime(); // tracks the start of the current span
     let lastRecord = null;
-    for (const record of records.value) {
+    const availableRecords = records.value;
+    for (const record of availableRecords) {
       const recordDate = timestampToDate(record.recordTime);
       const recordTimestamp = recordDate.getTime();
       if (recordTimestamp < start) {
