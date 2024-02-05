@@ -6,6 +6,12 @@ import {defineStore} from 'pinia';
 import {computed, ref, watch} from 'vue';
 import {useRouter} from 'vue-router/composables';
 
+/**
+ * @typedef AuthenticationDetails
+ * @property {Object<string,*>} claims
+ * @property {boolean} loggedIn
+ * @property {string} token
+ */
 
 export const useAccountStore = defineStore('accountStore', () => {
   const appConfig = useAppConfigStore();
@@ -14,12 +20,14 @@ export const useAccountStore = defineStore('accountStore', () => {
   const router = useRouter();
 
   // Set up the storage for the login: authProvider, claims, login status and token
-  const authenticationDetails = ref({
-    authProvider: '',
-    claims: {},
-    loggedIn: false,
-    token: ''
-  });
+  const authenticationDetails = ref(
+      /** @type {AuthenticationDetails & {authProvider: string}} */
+      {
+        authProvider: '',
+        claims: {},
+        loggedIn: false,
+        token: ''
+      });
   const loginFormVisible = ref(false);
   const snackbar = ref({
     message: 'Failed to sign in, please try again',
