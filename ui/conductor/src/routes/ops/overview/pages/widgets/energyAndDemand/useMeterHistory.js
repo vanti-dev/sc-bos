@@ -26,6 +26,11 @@ import {computed, ref, watch, watchEffect} from 'vue';
 export default function(name, periodStart, periodEnd, spanSize) {
   // Contains all the raw (well AsObject) records we've fetched from the server
   const records = ref(/** @type {MeterReadingRecord.AsObject[]} */ []);
+  // Watch for changes to the span size, and reset the records if it changes.
+  watch(() => toValue(spanSize), () => {
+    records.value = []; // reset if the span size changes
+  });
+
   // A boolean indicating whether the async fetch is in progress
   const fetching = ref(false);
   // A Date recording the last time we fetched data from the server.
