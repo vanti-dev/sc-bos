@@ -1,8 +1,8 @@
-import {ref} from 'vue';
 import {localLogin} from '@/api/localLogin.js';
-import jwtDecode from 'jwt-decode';
 import {useAccountStore} from '@/stores/account';
-import {saveToBrowserStorage, loadFromBrowserStorage} from '@/util/browserStorage';
+import {loadFromBrowserStorage, saveToBrowserStorage} from '@/util/browserStorage';
+import jwtDecode from 'jwt-decode';
+import {ref} from 'vue';
 
 /**
  * Local authentication composable
