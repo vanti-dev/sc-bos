@@ -56,53 +56,48 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @return {Promise<void>}
    */
   const initialise = async () => {
-    if (!appConfig.config.disableAuthentication) {
-      try {
-        // Attempt to initialize Keycloak authentication
-        if (appConfig.config?.keycloak) {
-          const kcResponse = await keyCloak.init();
-          if (kcResponse) {
-            availableAuthProviders.value = ['keyCloakAuth', 'localAuth'];
-          } else {
-            availableAuthProviders.value = ['localAuth'];
-            return;
-          }
-
-          if (kcResponse?.authenticated) {
-            authenticationDetails.value.authProvider = 'keyCloakAuth';
-            return; // Exit if authenticated with Keycloak
-          }
+    if (appConfig.config.disableAuthentication) {
+      return;
+    }
+    try {
+      // Attempt to initialize Keycloak authentication
+      if (appConfig.config?.keycloak) {
+        const kcResponse = await keyCloak.init();
+        if (kcResponse) {
+          availableAuthProviders.value = ['keyCloakAuth', 'localAuth'];
+        } else {
+          availableAuthProviders.value = ['localAuth'];
+          return;
         }
-      } catch (error) {
-        console.error('Keycloak initialization failed', error);
-        snackbar.value = {
-          message: 'Keycloak initialization failed: ' + error.error,
-          visible: true
-        };
-
-        // Proceed to displaying the local authentication form if Keycloak fails
-        loginFormVisible.value = true;
-      }
-
-
-      // Initialize local authentication if Keycloak is not configured, fails, or is not authenticated
-      try {
-        authenticationDetails.value = await localAuth.init();
-
-        if (authenticationDetails.value.loggedIn) {
-          return; // Exit if authenticated with local auth
+        if (kcResponse?.authenticated) {
+          authenticationDetails.value.authProvider = 'keyCloakAuth';
+          return; // Exit if authenticated with Keycloak
         }
-      } catch (error) {
-        console.error('Local authentication initialization failed', error);
-        snackbar.value = {
-          message: 'Local authentication initialization failed: ' + error.error,
-          visible: true
-        };
-        resetStoreToDefaults();
       }
+    } catch (error) {
+      console.error('Keycloak initialization failed', error);
+      snackbar.value = {
+        message: 'Keycloak initialization failed: ' + error.error,
+        visible: true
+      };
+      // Proceed to displaying the local authentication form if Keycloak fails
+      loginFormVisible.value = true;
+    }
+    // Initialize local authentication if Keycloak is not configured, fails, or is not authenticated
+    try {
+      authenticationDetails.value = await localAuth.init();
+      if (authenticationDetails.value.loggedIn) {
+        return; // Exit if authenticated with local auth
+      }
+    } catch (error) {
+      console.error('Local authentication initialization failed', error);
+      snackbar.value = {
+        message: 'Local authentication initialization failed: ' + error.error,
+        visible: true
+      };
+      resetStoreToDefaults();
     }
   };
-
   //
   // ----------------------------------- //
   //
