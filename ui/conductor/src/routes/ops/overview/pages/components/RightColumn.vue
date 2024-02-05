@@ -16,9 +16,9 @@
         v-if="showTrait('showEnergyConsumption')"
         class="pb-0"
         style="min-height:385px;">
-      <v-card-title class="text-h4 pl-4">Energy Consumption</v-card-title>
       <EnergyGraph
-          classes="mt-n2 ml-n2 mr-1"
+          chart-title="Energy Consumption"
+          classes="pb-2 mr-1"
           color="#ffc432"
           color-middle="rgba(255, 196, 50, 0.35)"
           :hide-legends="true"
