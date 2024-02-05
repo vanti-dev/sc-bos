@@ -37,26 +37,36 @@ export const hexColor = (name, vuetifyInstance) => {
 
 
 /**
- * Get the rgb color from the name
+ * Get the rgb color from the hex
  *
- * @example rgbColor('amber lighten-2') returns rgb(255, 213, 79)
- * @param {string} name
+ * @example rgbColor('#FFD54F') returns rgb(255, 213, 79)
+ * @param {string} hex
  * @return {string}
  */
-export const rgbColor = (name) => {
-  return hexColor(name).replace('#', '').match(/.{2}/g).map(val => parseInt(val, 16)).join(', ');
+export const rgbColor = (hex) => {
+  if (!hex) {
+    return ''; // early escape if hex is not defined
+  }
+
+  // Split the hex color into its components and convert them to decimal
+  const rgb = hex.replace('#', '').match(/.{2}/g).map(val => parseInt(val, 16));
+  return `rgb(${rgb.join(', ')})`;
 };
 
 /**
- * Get the rgba color from the name
+ * Get the rgba color from the hex
  *
- * @example rgbaColor('amber lighten-2', 0.5) returns rgba(255, 213, 79, 0.5)
- * @param {string} name
- * @param {number} alpha
+ * @example rgbaColor('#FFD54F', 0.5) returns rgba(255, 213, 79, 0.5)
+ * @param {string} hex
+ * @param {number} alpha - set to 1 by default
  * @return {string}
  */
-export const rgbaColor = (name, alpha) => {
-  return `rgba(${rgbColor(name)}, ${alpha})`;
+export const rgbaColor = (hex, alpha = 1) => {
+  if (!hex) {
+    return ''; // early escape if hex is not defined
+  }
+
+  return `rgba(${rgbColor(hex)}, ${alpha})`;
 };
 
 /**
