@@ -25,10 +25,10 @@ export default function() {
    * @return {Promise<void>}
    */
   const updateAuthStatus = async () => {
-    const kcPromise = await kcp;
-    accountStore.authenticationDetails.claims = kcPromise.idTokenParsed;
-    accountStore.authenticationDetails.loggedIn = kcPromise.authenticated;
-    accountStore.authenticationDetails.token = kcPromise.token;
+    const kc = await kcp;
+    accountStore.authenticationDetails.claims = kc.idTokenParsed;
+    accountStore.authenticationDetails.loggedIn = kc.authenticated;
+    accountStore.authenticationDetails.token = kc.token;
   };
   //
   // ----------------------------------- //
@@ -39,12 +39,12 @@ export default function() {
    * @return {Promise<import('keycloak-js').KeycloakInstance>}
    */
   const initializeKeycloak = async () => {
-    const kcPromise = await kcp;
-    if (kcPromise.authenticated) {
+    const kc = await kcp;
+    if (kc.authenticated) {
       await updateAuthStatus();
     }
 
-    return kcPromise;
+    return kc;
   };
 
   /**
@@ -54,8 +54,8 @@ export default function() {
    * @return {Promise<void>}
    */
   const loginKeyCloak = async (scopes) => {
-    const kcPromise = await kcp;
-    kcPromise.login({scope: scopes.join(' ')});
+    const kc = await kcp;
+    kc.login({scope: scopes.join(' ')});
   };
 
   /**
@@ -64,8 +64,8 @@ export default function() {
    * @return {Promise<void>}
    */
   const logoutKeyCloak = async () => {
-    const kcPromise = await kcp;
-    kcPromise.logout();
+    const kc = await kcp;
+    kc.logout();
   };
 
   /**
@@ -74,8 +74,8 @@ export default function() {
    * @return {Promise<void>}
    */
   const refreshToken = async () => {
-    const kcPromise = await kcp;
-    await kcPromise.updateToken(15);
+    const kc = await kcp;
+    await kc.updateToken(15);
   };
   //
   // ----------------------------------- //
