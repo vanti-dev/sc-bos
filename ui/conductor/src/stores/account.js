@@ -12,6 +12,16 @@ import {useRouter} from 'vue-router/composables';
  * @property {boolean} loggedIn
  * @property {string} token
  */
+/**
+ * Describes the interface an authentication provider should implement.
+ * Providers should also provide a mechanism for beginning the authentication flow.
+ *
+ * @typedef AuthenticationProvider
+ * @property {function(): Promise<AuthenticationDetails|null>} init
+ *  Initialise the auth provider, returning null if not authenticated
+ * @property {function(): Promise<void>} logout
+ * @property {function(): Promise<AuthenticationDetails|null>} refreshToken
+ */
 
 export const useAccountStore = defineStore('accountStore', () => {
   const appConfig = useAppConfigStore();
@@ -72,19 +82,18 @@ export const useAccountStore = defineStore('accountStore', () => {
     try {
       // Attempt to initialize Keycloak authentication
       if (appConfig.config?.keycloak) {
-        const kcResponse = await keyCloak.init();
-        if (kcResponse) {
-          availableAuthProviders.value = ['keyCloakAuth', 'localAuth'];
-        } else {
-          availableAuthProviders.value = ['localAuth'];
+        const details = await keyCloak.init();
+        availableAuthProviders.value = ['keyCloakAuth', 'localAuth'];
+        if (details) {
+          authenticationDetails.value = {
+            ...details,
+            authProvider: 'keyCloakAuth'
+          };
           return;
-        }
-        if (kcResponse?.authenticated) {
-          authenticationDetails.value.authProvider = 'keyCloakAuth';
-          return; // Exit if authenticated with Keycloak
         }
       }
     } catch (error) {
+      availableAuthProviders.value = ['localAuth'];
       console.error('Keycloak initialization failed', error);
       snackbar.value = {
         message: 'Keycloak initialization failed: ' + error.error,
@@ -93,11 +102,15 @@ export const useAccountStore = defineStore('accountStore', () => {
       // Proceed to displaying the local authentication form if Keycloak fails
       loginFormVisible.value = true;
     }
+
     // Initialize local authentication if Keycloak is not configured, fails, or is not authenticated
     try {
-      authenticationDetails.value = await localAuth.init();
-      if (authenticationDetails.value.loggedIn) {
-        return; // Exit if authenticated with local auth
+      const details = await localAuth.init();
+      if (details) {
+        authenticationDetails.value = {
+          ...details,
+          authProvider: 'localAuth'
+        };
       }
     } catch (error) {
       console.error('Local authentication initialization failed', error);
@@ -105,7 +118,6 @@ export const useAccountStore = defineStore('accountStore', () => {
         message: 'Local authentication initialization failed: ' + error.error,
         visible: true
       };
-      resetStoreToDefaults();
     }
   };
 
@@ -168,11 +180,7 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @type {import('vue').ComputedRef<boolean>}
    */
   const isLoggedIn = computed(() => {
-    const detailsAvailable = !!(
-      authenticationDetails.value.claims &&
-        authenticationDetails.value.loggedIn &&
-        authenticationDetails.value.token
-    );
+    const detailsAvailable = !!(authenticationDetails.value.token);
 
     return detailsAvailable || isAuthenticationDisabled.value;
   });
@@ -205,29 +213,29 @@ export const useAccountStore = defineStore('accountStore', () => {
   /** @typedef {{ username: string, password: string }} LocalAuthLoginValues */
 
   /**
+   * Perform a login using the given fn and store details and redirect if needed.
+   *
+   * @param {string} authProvider
+   * @param {function(): Promise<AuthenticationDetails>} fn
+   * @return {Promise<void>}
+   */
+  const doLogin = async (authProvider, fn) => {
+    await initComplete;
+    const details = await fn();
+    if (details) {
+      authenticationDetails.value = {...details, authProvider};
+      await redirectToLastPage();
+    }
+  };
+
+  /**
    * Log in with local authentication using the given username and password
    *
    * @param {LocalAuthLoginValues} values
    * @return {Promise<void>}
    */
   const loginWithLocalAuth = async (values) => {
-    await initComplete;
-    authenticationDetails.value.authProvider = 'localAuth';
-    await localAuth.login(values.username, values.password);
-
-    // If the login was successful
-    if (isLoggedIn.value) {
-      // If there is a redirect in the session storage, redirect to that page
-      const redirect = loadFromBrowserStorage('session', 'redirect', '')[0];
-      if (redirect !== '') {
-        window.sessionStorage.removeItem('redirect');
-        await router.push(redirect);
-
-        // Otherwise, redirect to the home page
-      } else {
-        await router.push(appConfig.homePath);
-      }
-    }
+    return doLogin('localAuth', () => localAuth.login(values.username, values.password));
   };
 
   /**
@@ -237,8 +245,36 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @return {Promise<void>}
    */
   const loginWithKeyCloak = async (scopes) => {
-    await initComplete;
-    await keyCloak.login(scopes);
+    return doLogin('keyCloakAuth', () => keyCloak.login(scopes));
+  };
+
+  /**
+   * Redirect to the login page if the user is not already there.
+   *
+   * @return {Promise<void>}
+   */
+  const redirectToLogin = async () => {
+    if (router.currentRoute.path !== '/login') {
+      await router.push('/login');
+    }
+  };
+
+  /**
+   * Redirect to the last page the user was on, or the home page if not set.
+   *
+   * @return {Promise<void>}
+   */
+  const redirectToLastPage = async () => {
+    // If there is a redirect in the session storage, redirect to that page
+    const redirect = loadFromBrowserStorage('session', 'redirect', '')[0];
+    if (redirect !== '') {
+      window.sessionStorage.removeItem('redirect');
+      await router.push(redirect);
+
+      // Otherwise, redirect to the home page
+    } else {
+      await router.push(appConfig.homePath);
+    }
   };
 
   /**
@@ -264,17 +300,33 @@ export const useAccountStore = defineStore('accountStore', () => {
     }
 
     resetStoreToDefaults();
-    window.localStorage.removeItem('authenticationDetails');
+    await redirectToLogin();
+  };
 
-    if (router.currentRoute.path !== '/login') {
-      await router.push('/login');
+  /**
+   * @param {function(): Promise<AuthenticationDetails>} fn
+   * @return {Promise<void>}
+   */
+  const doRefreshToken = async (fn) => {
+    try {
+      const details = await fn();
+      authenticationDetails.value = {...details, authProvider: authenticationDetails.value.authProvider};
+    } catch (e) {
+      resetStoreToDefaults();
+      snackbar.value = {
+        message: 'Session expired, please log in again: ' + e,
+        visible: true
+      };
+      await redirectToLogin();
     }
   };
 
   const refreshToken = async () => {
     await initComplete;
     if (activeAuthProvider.value === 'keyCloakAuth') {
-      await keyCloak.refreshToken();
+      return doRefreshToken(keyCloak.refreshToken);
+    } else if (activeAuthProvider.value === 'localAuth') {
+      return doRefreshToken(localAuth.refreshToken);
     }
   };
 
