@@ -1,7 +1,7 @@
 <template>
   <content-card class="mb-8 d-flex flex-column pt-6 pl-6 pr-8">
-    <h4 class="text-h4 py-0 pt-lg-2 pb-4 pl-4">Power</h4>
     <energy-graph
+        class="mt-8 mb-6"
         :generated="props.generated"
         :metered="props.metered"/>
     <v-row class="d-flex flex-row justify-center mt-10 mb-1 ml-12">
