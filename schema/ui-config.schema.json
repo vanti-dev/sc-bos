@@ -134,6 +134,39 @@
               }
             }
           }
+        },
+        "auth": {
+          "description": "Configuration for user authentication",
+          "type": "object",
+          "properties": {
+            "deviceFlow": {
+              "oneOf": [
+                {
+                  "description": "A flag to enable the OAuth2 Device Flow. Settings are computed from the keycloak configuration",
+                  "type": "boolean"
+                },
+                {
+                  "description": "OAuth2 Device Flow configuration",
+                  "type": "object",
+                  "properties": {
+                    "clientId": {
+                      "description": "The client ID",
+                      "type": "string"
+                    },
+                    "tokenUrl": {
+                      "description": "The token URL",
+                      "type": "string"
+                    },
+                    "deviceCodeUrl": {
+                      "description": "The device code URL",
+                      "type": "string"
+                    }
+                  },
+                  "required": ["clientId", "tokenUrl", "deviceCodeUrl"]
+                }
+              ]
+            }
+          }
         }
       }
     }

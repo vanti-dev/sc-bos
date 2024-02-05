@@ -1,3 +1,4 @@
+import useDeviceFlow, {useUiConfig as deviceFlowUseUiConfig} from '@/composables/authentication/useDeviceFlow';
 import useKeyCloak from '@/composables/authentication/useKeyCloak';
 import useLocal from '@/composables/authentication/useLocal';
 import {useUiConfigStore} from '@/stores/ui-config';
@@ -27,6 +28,7 @@ export const useAccountStore = defineStore('accountStore', () => {
   const uiConfig = useUiConfigStore();
   const keyCloak = useKeyCloak();
   const localAuth = useLocal();
+  const deviceFlow = useDeviceFlow(deviceFlowUseUiConfig());
   const router = useRouter();
 
   // initComplete is resolved (or rejected) the first time initialise is called.
@@ -85,6 +87,11 @@ export const useAccountStore = defineStore('accountStore', () => {
         name: 'keyCloakAuth',
         init: keyCloak.init,
         enabled: () => Boolean(uiConfig.config?.keycloak)
+      },
+      {
+        name: 'deviceFlow',
+        init: deviceFlow.init,
+        enabled: () => Boolean(uiConfig.config?.auth?.deviceFlow)
       },
       {
         name: 'localAuth',
@@ -256,6 +263,25 @@ export const useAccountStore = defineStore('accountStore', () => {
   };
 
   /**
+   * Begin the OAuth Device Flow, returning context information to display to the user for them to complete the flow.
+   *
+   * @param {string[]} [scopes]
+   * @return {Promise<import('@/composables/authentication/useDeviceFlow').Context>}
+   */
+  const beginDeviceFlow = async (scopes) => {
+    await initComplete;
+    const ctx = await deviceFlow.begin(scopes);
+    ctx.complete = ctx.complete.then(async (details) => {
+      if (details) {
+        authenticationDetails.value = {...details, authProvider: 'deviceFlow'};
+        await redirectToLastPage();
+      }
+      return details;
+    });
+    return ctx;
+  };
+
+  /**
    * Redirect to the login page if the user is not already there.
    *
    * @return {Promise<void>}
@@ -297,6 +323,8 @@ export const useAccountStore = defineStore('accountStore', () => {
       await keyCloak.logout();
     } else if (activeAuthProvider.value === 'localAuth') {
       await localAuth.logout();
+    } else if (activeAuthProvider.value === 'deviceFlow') {
+      await deviceFlow.logout();
     }
 
     if (reason) {
@@ -324,7 +352,6 @@ export const useAccountStore = defineStore('accountStore', () => {
         message: 'Session expired, please log in again: ' + e,
         visible: true
       };
-      await redirectToLogin();
     }
   };
 
@@ -334,6 +361,8 @@ export const useAccountStore = defineStore('accountStore', () => {
       return doRefreshToken(keyCloak.refreshToken);
     } else if (activeAuthProvider.value === 'localAuth') {
       return doRefreshToken(localAuth.refreshToken);
+    } else if (activeAuthProvider.value === 'deviceFlow') {
+      return doRefreshToken(deviceFlow.refreshToken);
     }
   };
 
@@ -353,6 +382,7 @@ export const useAccountStore = defineStore('accountStore', () => {
 
     loginWithLocalAuth,
     loginWithKeyCloak,
+    beginDeviceFlow,
     logout,
     refreshToken
   };

@@ -1,41 +1,53 @@
 <template>
   <div>
-    <v-card-text :class="[{'mb-8': uiConfig.config.keycloak }, 'text-center mx-auto']" style="max-width: 320px;">
-      {{ keycloakMessage.top }}
-    </v-card-text>
-    <v-card-actions class="d-flex flex-column align-center justify-center">
-      <v-btn
-          v-if="uiConfig.config.keycloak"
-          @click="store.loginWithKeyCloak(['profile', 'roles'])"
-          color="primary"
-          block
-          large
-          class="text-body-1 font-weight-bold">
-        Sign in
-      </v-btn>
-    </v-card-actions>
-    <v-card-text class="text-body-2 text-center mt-10 mx-auto" style="max-width: 350px;">
-      {{ keycloakMessage.bottom }}
-    </v-card-text>
-    <v-card-actions class="d-flex flex-column align-center justify-center mt-n2">
-      <v-btn
-          block
-          class="text-body-2 ma-0"
-          text
-          @click="store.loginFormVisible = !store.loginFormVisible">
-        Sign in with local Account
-      </v-btn>
-    </v-card-actions>
+    <template v-if="usingDeviceFlow">
+      <device-flow-login :scopes="['profile', 'roles']"/>
+    </template>
+    <template v-else>
+      <v-card-text :class="[{'mb-8': uiConfig.config.keycloak }, 'text-center mx-auto']" style="max-width: 320px;">
+        {{ keycloakMessage.top }}
+      </v-card-text>
+      <v-card-actions class="d-flex flex-column align-center justify-center">
+        <v-btn
+            v-if="uiConfig.config.keycloak"
+            @click="store.loginWithKeyCloak(['profile', 'roles'])"
+            color="primary"
+            block
+            large
+            class="text-body-1 font-weight-bold">
+          Sign in
+        </v-btn>
+      </v-card-actions>
+      <v-card-text class="text-body-2 text-center mt-10 mx-auto" style="max-width: 350px;">
+        {{ keycloakMessage.bottom }}
+      </v-card-text>
+      <v-card-actions class="d-flex flex-column align-center justify-center mt-n2">
+        <v-btn
+            block
+            class="text-body-2 ma-0"
+            text
+            @click="store.loginFormVisible = !store.loginFormVisible">
+          Sign in with local Account
+        </v-btn>
+      </v-card-actions>
+    </template>
   </div>
 </template>
 
 <script setup>
+import DeviceFlowLogin from '@/routes/login/DeviceFlowLogin.vue';
 import {useAccountStore} from '@/stores/account.js';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {computed} from 'vue';
 
 const uiConfig = useUiConfigStore();
 const store = useAccountStore();
+
+// If device flow is configured, use it always.
+// Otherwise devices that have no input methods won't be able to pick it.
+const usingDeviceFlow = computed(() => {
+  return Boolean(uiConfig.config?.auth?.deviceFlow);
+});
 
 // Tweak the message depending on whether KeyCloak is enabled or not
 const keycloakMessage = computed(() => {
