@@ -66,7 +66,7 @@ export const rgbaColor = (hex, alpha = 1) => {
     return ''; // early escape if hex is not defined
   }
 
-  return `rgba(${rgbColor(hex)}, ${alpha})`;
+  return rgbColor(hex).replace('rgb', 'rgba').replace(')', `, ${alpha})`);
 };
 
 /**
