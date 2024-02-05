@@ -60,7 +60,7 @@ export const useAccountStore = defineStore('accountStore', () => {
       try {
         // Attempt to initialize Keycloak authentication
         if (appConfig.config?.keycloak) {
-          const kcResponse = await keyCloak.initializeKeycloak();
+          const kcResponse = await keyCloak.init();
           if (kcResponse) {
             availableAuthProviders.value = ['keyCloakAuth', 'localAuth'];
           } else {
@@ -87,7 +87,7 @@ export const useAccountStore = defineStore('accountStore', () => {
 
       // Initialize local authentication if Keycloak is not configured, fails, or is not authenticated
       try {
-        authenticationDetails.value = await localAuth.initializeLocal();
+        authenticationDetails.value = await localAuth.init();
 
         if (authenticationDetails.value.loggedIn) {
           return; // Exit if authenticated with local auth

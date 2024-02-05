@@ -95,8 +95,8 @@ export default function() {
   };
 
   return {
-    initializeLocal,
     existingLocalAuth,
+    init: initializeLocal,
     login: loginLocal,
     logout: logoutLocal
   };

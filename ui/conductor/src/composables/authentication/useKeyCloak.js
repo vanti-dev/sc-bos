@@ -95,8 +95,8 @@ export default function() {
   return {
     kcp,
     kcEvents,
-    initializeKeycloak,
 
+    init: initializeKeycloak,
     login: loginKeyCloak,
     logout: logoutKeyCloak,
     refreshToken
