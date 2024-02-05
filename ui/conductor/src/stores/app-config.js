@@ -50,6 +50,12 @@ export const useAppConfigStore = defineStore('appConfig', () => {
           'brandLogo': {
             'altText': 'Smart Core logo - representing nodes and connections', // Alt text for the logo
             'src': '' // Empty string will use the default logo
+          },
+          'brandColors': {
+            'primary': {
+              'base': '#00BED6',
+              'darken3': '#338fa1'
+            }
           }
         }
       },
@@ -138,6 +144,12 @@ export const useAppConfigStore = defineStore('appConfig', () => {
   }
 
   const config = computed(() => _config.value?.config ?? {});
+  const appBranding = computed(() => {
+    return {
+      ..._defaultConfig.config.theme.appBranding,
+      ..._config.value?.config?.theme?.appBranding
+    };
+  });
 
   return {
     loadConfig,
@@ -145,6 +157,7 @@ export const useAppConfigStore = defineStore('appConfig', () => {
     pathEnabled,
     config,
     configPromise,
-    homePath: computed(() => _config.value?.config?.home ?? _defaultConfig.config.home)
+    homePath: computed(() => _config.value?.config?.home ?? _defaultConfig.config.home),
+    appBranding
   };
 });
