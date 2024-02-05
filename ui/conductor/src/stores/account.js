@@ -19,6 +19,16 @@ export const useAccountStore = defineStore('accountStore', () => {
   const localAuth = useLocal();
   const router = useRouter();
 
+  // initComplete is resolved (or rejected) the first time initialise is called.
+  // Functions can `await initComplete` to make sure that any authenticationDetails -
+  // including authProvider - are set correctly.
+  let initResolved;
+  let initRejected;
+  const initComplete = new Promise((resolve, reject) => {
+    initResolved = resolve;
+    initRejected = reject;
+  });
+
   // Set up the storage for the login: authProvider, claims, login status and token
   const authenticationDetails = ref(
       /** @type {AuthenticationDetails & {authProvider: string}} */
@@ -51,11 +61,11 @@ export const useAccountStore = defineStore('accountStore', () => {
 
 
   /**
-   * Initialize Keycloak and Local Auth instances, so we can check if the user is logged in and/or manage the login flow
+   * Helper for initialise that contains all the logic so any 'finally' logic can be run for all cases.
    *
    * @return {Promise<void>}
    */
-  const initialise = async () => {
+  const _initialise = async () => {
     if (appConfig.config.disableAuthentication) {
       return;
     }
@@ -96,6 +106,20 @@ export const useAccountStore = defineStore('accountStore', () => {
         visible: true
       };
       resetStoreToDefaults();
+    }
+  };
+
+  /**
+   * Initialize Keycloak and Local Auth instances, so we can check if the user is logged in and/or manage the login flow
+   *
+   * @return {Promise<void>}
+   */
+  const initialise = async () => {
+    try {
+      await _initialise();
+      initResolved();
+    } catch (e) {
+      initRejected(e);
     }
   };
   //
@@ -187,6 +211,7 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @return {Promise<void>}
    */
   const loginWithLocalAuth = async (values) => {
+    await initComplete;
     authenticationDetails.value.authProvider = 'localAuth';
     await localAuth.login(values.username, values.password);
 
@@ -212,6 +237,7 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @return {Promise<void>}
    */
   const loginWithKeyCloak = async (scopes) => {
+    await initComplete;
     await keyCloak.login(scopes);
   };
 
@@ -223,6 +249,7 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @return {Promise<void>}
    */
   const logout = async (reason) => {
+    await initComplete;
     if (activeAuthProvider.value === 'keyCloakAuth') {
       await keyCloak.logout();
     } else if (activeAuthProvider.value === 'localAuth') {
@@ -245,6 +272,7 @@ export const useAccountStore = defineStore('accountStore', () => {
   };
 
   const refreshToken = async () => {
+    await initComplete;
     if (activeAuthProvider.value === 'keyCloakAuth') {
       await keyCloak.refreshToken();
     }
