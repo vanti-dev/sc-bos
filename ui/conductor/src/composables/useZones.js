@@ -1,9 +1,8 @@
-import {computed, onUnmounted, ref, watch} from 'vue';
-import {storeToRefs} from 'pinia';
-
 import {ServiceNames} from '@/api/ui/services';
 import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
+import {storeToRefs} from 'pinia';
+import {computed, onUnmounted, ref, watch} from 'vue';
 
 /**
  * @return {{

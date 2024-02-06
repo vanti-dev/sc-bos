@@ -1,10 +1,10 @@
-import {LightingTestApiPromiseClient} from '@sc-bos/ui-gen/proto/lighting_test_grpc_web_pb';
-import {GetReportCSVRequest, ListLightHealthRequest} from '@sc-bos/ui-gen/proto/lighting_test_pb';
+import {setProperties} from '@/api/convpb';
 import {clientOptions} from '@/api/grpcweb';
 import {trackAction} from '@/api/resource';
 import {DaliApiPromiseClient} from '@sc-bos/ui-gen/proto/dali_grpc_web_pb';
 import {StartTestRequest} from '@sc-bos/ui-gen/proto/dali_pb';
-import {setProperties} from '@/api/convpb';
+import {LightingTestApiPromiseClient} from '@sc-bos/ui-gen/proto/lighting_test_grpc_web_pb';
+import {GetReportCSVRequest, ListLightHealthRequest} from '@sc-bos/ui-gen/proto/lighting_test_pb';
 
 /**
  *
@@ -53,13 +53,20 @@ export function runTest(request, tracker) {
  */
 export function faultToString(faultId) {
   switch (faultId) {
-    case 1: return 'DURATION_TEST_FAILED';
-    case 2: return 'FUNCTION_TEST_FAILED';
-    case 3: return 'BATTERY_FAULT';
-    case 4: return 'LAMP_FAULT';
-    case 5: return 'COMMUNICATION_FAILURE';
-    case 6: return 'OTHER_FAULT';
-    default: return 'FAULT_UNSPECIFIED';
+    case 1:
+      return 'DURATION_TEST_FAILED';
+    case 2:
+      return 'FUNCTION_TEST_FAILED';
+    case 3:
+      return 'BATTERY_FAULT';
+    case 4:
+      return 'LAMP_FAULT';
+    case 5:
+      return 'COMMUNICATION_FAILURE';
+    case 6:
+      return 'OTHER_FAULT';
+    default:
+      return 'FAULT_UNSPECIFIED';
   }
 }
 

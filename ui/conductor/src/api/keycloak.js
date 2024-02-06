@@ -1,4 +1,4 @@
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 import Keycloak from 'keycloak-js';
 
 /**
@@ -49,10 +49,8 @@ async function newKeycloak() {
   };
   kc.onAuthLogout = () => events.dispatchEvent(new Event('authLogout'));
   kc.onAuthSuccess = () => events.dispatchEvent(new Event('authSuccess'));
-  kc.onAuthRefreshError = () =>
-    events.dispatchEvent(new Event('authRefreshError'));
-  kc.onAuthRefreshSuccess = () =>
-    events.dispatchEvent(new Event('authRefreshSuccess'));
+  kc.onAuthRefreshError = () => events.dispatchEvent(new Event('authRefreshError'));
+  kc.onAuthRefreshSuccess = () => events.dispatchEvent(new Event('authRefreshSuccess'));
   kc.onTokenExpired = () => events.dispatchEvent(new Event('tokenExpired'));
 
   await kc.init(await initConfig());
@@ -63,7 +61,7 @@ async function newKeycloak() {
  * @return {Promise<import('keycloak-js').KeycloakConfig | string>}
  */
 async function constructorConfig() {
-  const useAppConfig = useAppConfigStore();
+  const useAppConfig = useUiConfigStore();
   const config = await useAppConfig.configPromise;
   return config?.keycloak ?? {
     realm: import.meta.env.VITE_KEYCLOAK_REALM || 'smart-core',
@@ -80,7 +78,7 @@ async function initConfig() {
   return {
     onLoad: 'check-sso',
     silentCheckSsoRedirectUri:
-      window.location.origin + import.meta.env.BASE_URL + 'silent-check-sso-v2.html',
+        window.location.origin + import.meta.env.BASE_URL + 'silent-check-sso-v2.html',
     silentCheckSsoFallback: false
   };
 }

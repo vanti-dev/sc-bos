@@ -1,9 +1,7 @@
-import {reactive, ref, computed, onMounted, onUnmounted, watch} from 'vue';
-
 import {useErrorStore} from '@/components/ui-error/error';
-import {useDevicesStore} from '@/routes/devices/store';
-
 import useFloors from '@/composables/useFloors';
+import {useDevicesStore} from '@/routes/devices/store';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const NO_FLOOR = '< no floor >';
 

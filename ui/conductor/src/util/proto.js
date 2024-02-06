@@ -1,5 +1,3 @@
-
-
 /**
  * Converts a proto map, which is an array of [k,v] into a js object.
  *

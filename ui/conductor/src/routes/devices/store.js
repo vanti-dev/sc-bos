@@ -1,9 +1,8 @@
+import {newResourceCollection} from '@/api/resource';
+import {getDevicesMetadata, listDevices} from '@/api/ui/devices';
+import {Collection} from '@/util/query';
 import {defineStore} from 'pinia';
 import {reactive, ref} from 'vue';
-
-import {listDevices, getDevicesMetadata} from '@/api/ui/devices';
-import {newResourceCollection} from '@/api/resource';
-import {Collection} from '@/util/query';
 
 export const useDevicesStore = defineStore('devices', () => {
   // holds all the devices we can show

@@ -1,34 +1,32 @@
 import {events, keycloak} from '@/api/keycloak.js';
-import {useAccountStore} from '@/stores/account';
 
 /**
  * Keycloak composable
  * This composable is responsible for handling all Keycloak related functionality
  *
- * @return {{
+ * @return {AuthenticationProvider & {
  *  kcp: Promise<import('keycloak-js').KeycloakInstance>,
  *  kcEvents: import('keycloak-js').KeycloakEventEmitter,
- *  initializeKeycloak: (function(): Promise<void>),
- *  login: (function(*=): Promise<void>),
- *  logout: (function(): Promise<void>)
+ *  login: (function(string[]?): Promise<AuthenticationDetails>),
  * }}
  */
 export default function() {
-  const accountStore = useAccountStore();
   const kcp = keycloak();
   const kcEvents = events;
 
 
   /**
-   * Update the auth status and save to local storage
+   * Convert a keycloak instance to AuthenticationDetails.
    *
-   * @return {Promise<void>}
+   * @param {import('keycloak-js').Keycloak} kc
+   * @return {Promise<AuthenticationDetails>}
    */
-  const updateAuthStatus = async () => {
-    const kcPromise = await kcp;
-    accountStore.authenticationDetails.claims = kcPromise.idTokenParsed;
-    accountStore.authenticationDetails.loggedIn = kcPromise.authenticated;
-    accountStore.authenticationDetails.token = kcPromise.token;
+  const kcToAuthDetails = (kc) => {
+    return {
+      claims: kc.idTokenParsed,
+      loggedIn: kc.authenticated,
+      token: kc.token
+    };
   };
   //
   // ----------------------------------- //
@@ -36,26 +34,27 @@ export default function() {
   /**
    * Initialize the Keycloak instance and event listeners
    *
-   * @return {Promise<import('keycloak-js').KeycloakInstance>}
+   * @return {Promise<AuthenticationDetails|null>}
    */
   const initializeKeycloak = async () => {
-    const kcPromise = await kcp;
-    if (kcPromise.authenticated) {
-      await updateAuthStatus();
+    const kc = await kcp;
+    if (!kc.authenticated) {
+      return null;
     }
-
-    return kcPromise;
+    return kcToAuthDetails(kc);
   };
 
   /**
    * Login to Keycloak with the given scopes
    *
-   * @param {string[]} scopes
-   * @return {Promise<void>}
+   * @param {string[]} [scopes]
+   * @return {Promise<AuthenticationDetails>}
    */
   const loginKeyCloak = async (scopes) => {
-    const kcPromise = await kcp;
-    kcPromise.login({scope: scopes.join(' ')});
+    const kc = await kcp;
+    kc.login({scope: scopes.join(' ')});
+    // not needed as login will redirect the page, but helpful for js type checking
+    return kcToAuthDetails(kc);
   };
 
   /**
@@ -64,39 +63,26 @@ export default function() {
    * @return {Promise<void>}
    */
   const logoutKeyCloak = async () => {
-    const kcPromise = await kcp;
-    kcPromise.logout();
+    const kc = await kcp;
+    kc.logout();
   };
 
   /**
    * Update the token if it is close to expiring (15 seconds)
    *
-   * @return {Promise<void>}
+   * @return {Promise<AuthenticationDetails>}
    */
   const refreshToken = async () => {
-    const kcPromise = await kcp;
-    await kcPromise.updateToken(15);
+    const kc = await kcp;
+    await kc.updateToken(15);
+    return kcToAuthDetails(kc);
   };
-  //
-  // ----------------------------------- //
-  //
-  /**
-   * AuthSuccess event listener
-   * This event listener is responsible for updating the authenticationDetails on a successful login
-   */
-  kcEvents.addEventListener('authSuccess', async () => await updateAuthStatus());
-
-  /**
-   * AuthRefreshSuccess event listener
-   * This event listener is responsible for updating the authenticationDetails on a successful token refresh
-   */
-  kcEvents.addEventListener('onAuthRefreshSuccess', async () => await updateAuthStatus());
 
   return {
     kcp,
     kcEvents,
-    initializeKeycloak,
 
+    init: initializeKeycloak,
     login: loginKeyCloak,
     logout: logoutKeyCloak,
     refreshToken

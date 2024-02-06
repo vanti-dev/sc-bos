@@ -54,9 +54,9 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue';
 import {useAccountStore} from '@/stores/account.js';
 import {storeToRefs} from 'pinia';
+import {computed, ref} from 'vue';
 
 const accountStore = useAccountStore();
 const password = ref('');

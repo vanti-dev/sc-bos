@@ -88,20 +88,18 @@
 </template>
 
 <script setup>
-import {storeToRefs} from 'pinia';
-import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, set, watch} from 'vue';
-import {useAppConfigStore} from '@/stores/app-config';
-
-import AccessPointCard from './AccessPointCard.vue';
 import HotPoint from '@/components/HotPoint.vue';
 import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
+import WithOpenClosed from '@/routes/devices/components/renderless/WithOpenClosed.vue';
 import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
 import DoorColor from '@/routes/ops/security/components/DoorColor.vue';
 import Stack from '@/routes/ops/security/components/Stack.vue';
 import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
-
+import {useUiConfigStore} from '@/stores/ui-config';
 import {convertSVGToPercentage} from '@/util/svg';
-import WithOpenClosed from '@/routes/devices/components/renderless/WithOpenClosed.vue';
+import {storeToRefs} from 'pinia';
+import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, set, watch} from 'vue';
+import AccessPointCard from './AccessPointCard.vue';
 
 // -------------- Props -------------- //
 const props = defineProps({
@@ -116,7 +114,7 @@ const props = defineProps({
 });
 
 // -------------- Data & Reactive References -------------- //
-const {config} = storeToRefs(useAppConfigStore());
+const {config} = storeToRefs(useUiConfigStore());
 const showClose = ref(false);
 const activeFloorPlan = ref('');
 const floorPlanSVG = ref(null);
@@ -460,11 +458,13 @@ watch(
   stroke-width: 125px;
   transition: all 0.5s ease-in-out;
 }
+
 ::v-deep(svg .closed) {
   stroke: var(--v-success-base);
   stroke-width: 75px;
   transition: all 0.5s ease-in-out;
 }
+
 ::v-deep(svg .unknown) {
   stroke: #ffffff5e;
   stroke-width: 75px;
@@ -476,10 +476,12 @@ watch(
   fill: var(--v-warning-base);
   transition: all 0.5s ease-in-out;
 }
+
 ::v-deep(svg .closed-fill) {
   fill: var(--v-success-base);
   transition: all 0.5s ease-in-out;
 }
+
 ::v-deep(svg .unknown-fill) {
   fill: #ffffff85;
   transition: all 0.5s ease-in-out;

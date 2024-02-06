@@ -58,6 +58,7 @@
 import {newActionTracker} from '@/api/resource';
 import {deleteSecret, listSecrets, secretToObject} from '@/api/ui/tenant';
 import {useErrorStore} from '@/components/ui-error/error';
+import useAuthSetup from '@/composables/useAuthSetup';
 import DeleteConfirmationDialog from '@/routes/auth/third-party/components/DeleteConfirmationDialog.vue';
 import {compareDesc} from 'date-fns';
 import dayjs from 'dayjs';
@@ -65,7 +66,6 @@ import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
 import NewSecretForm from './NewSecretForm.vue';
-import useAuthSetup from '@/composables/useAuthSetup';
 
 dayjs.extend(duration);
 dayjs.extend(relativeTime);

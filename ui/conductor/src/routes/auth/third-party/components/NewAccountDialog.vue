@@ -22,10 +22,10 @@
 </template>
 <script setup>
 
-import {onMounted, onUnmounted, ref} from 'vue';
-import {createTenant} from '@/api/ui/tenant';
 import {newActionTracker} from '@/api/resource';
+import {createTenant} from '@/api/ui/tenant';
 import {useErrorStore} from '@/components/ui-error/error';
+import {onMounted, onUnmounted, ref} from 'vue';
 
 const dialog = ref(false);
 const addTenantTracker = ref(newActionTracker());

@@ -45,7 +45,7 @@ import ContentCard from '@/components/ContentCard.vue';
 import useDevices from '@/composables/useDevices';
 import ListView from '@/routes/ops/security/components/ListView.vue';
 import MapView from '@/routes/ops/security/components/MapView.vue';
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {storeToRefs} from 'pinia';
 import {computed, ref, watch} from 'vue';
 
@@ -60,7 +60,7 @@ const props = defineProps({
   }
 });
 
-const {config} = storeToRefs(useAppConfigStore());
+const {config} = storeToRefs(useUiConfigStore());
 
 const viewType = ref('list');
 const hiddenOnMap = ref(false);

@@ -8,6 +8,6 @@ export function serviceName(controllerName, serviceName) {
   if (!controllerName || controllerName === '') {
     return serviceName;
   } else {
-    return controllerName+ '/' + serviceName;
+    return controllerName + '/' + serviceName;
   }
 }

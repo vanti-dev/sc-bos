@@ -18,11 +18,11 @@
 </template>
 
 <script setup>
+import {newActionTracker} from '@/api/resource';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
+import useAuthSetup from '@/composables/useAuthSetup';
 import {computed, reactive} from 'vue';
 import {useDevicesStore} from './store';
-import {newActionTracker} from '@/api/resource';
-import useAuthSetup from '@/composables/useAuthSetup';
 
 const {hasNoAccess} = useAuthSetup();
 const deviceStore = useDevicesStore();

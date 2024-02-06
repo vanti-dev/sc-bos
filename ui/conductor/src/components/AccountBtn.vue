@@ -41,8 +41,8 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
 import {useAccountStore} from '@/stores/account.js';
+import {computed} from 'vue';
 
 defineProps({
   btnClass: {

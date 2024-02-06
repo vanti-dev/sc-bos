@@ -62,6 +62,6 @@ export const isBigInt = (value) => {
 // that it's neither null, an empty array, nor an empty object.
 export const isValueAvailable = (value) => {
   return value && !(Array.isArray(value) && value.length === 0) &&
-        !(value.constructor === Object && Object.keys(value).length === 0);
+      !(value.constructor === Object && Object.keys(value).length === 0);
 };
 

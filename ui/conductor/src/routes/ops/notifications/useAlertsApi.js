@@ -8,7 +8,7 @@ import {timestampToDate} from '@/api/convpb';
 import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource';
 import {listAlerts, pullAlerts} from '@/api/ui/alerts';
 import {toValue} from '@/util/vue';
-import {computed, onMounted, onBeforeUnmount, reactive, ref, watch} from 'vue';
+import {computed, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue';
 
 /**
  * @param {MaybeRefOrGetter<string>} name
@@ -64,7 +64,7 @@ export default function(name, query) {
   watch(
       [pageSize, pageIndex],
       () => {
-      // could optimise this to not require items that we've pulled into the tip.
+        // could optimise this to not require items that we've pulled into the tip.
         targetItemCount.value = pageSize.value * (pageIndex.value + 1);
       },
       {immediate: true}
@@ -193,8 +193,9 @@ export default function(name, query) {
       [shouldFetchMorePages, queryVersionCounter],
       ([_, v]) => {
         fetchMore(listQuery.value, v)
-        // errors are tracked by listPageTracker
-            .catch(() => {});
+            // errors are tracked by listPageTracker
+            .catch(() => {
+            });
       },
       {immediate: true}
   );

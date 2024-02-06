@@ -1,15 +1,12 @@
-import {toValue} from '@/util/vue';
-import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
-
 import {newActionTracker} from '@/api/resource';
 import {startService, stopService} from '@/api/ui/services';
-
+import {useErrorStore} from '@/components/ui-error/error';
 import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
-
-import {useErrorStore} from '@/components/ui-error/error';
 import {serviceName} from '@/util/proxy';
+import {toValue} from '@/util/vue';
+import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
 
 /**
  * @param {{
@@ -79,9 +76,9 @@ export default function(props) {
         if (serviceCollection.value.reset) serviceCollection.value.reset();
 
         serviceCollection.value =
-          serviceStore.getService(
-              newName, await newNode?.commsAddress, await newNode?.commsName
-          ).servicesCollection;
+            serviceStore.getService(
+                newName, await newNode?.commsAddress, await newNode?.commsName
+            ).servicesCollection;
 
         // reinitialize in case this service collection has been previously reset;
         serviceCollection.value.init();
@@ -156,13 +153,13 @@ export default function(props) {
         const updatedService = newServiceList.find(s => s.id === pageStore.sidebarData.id);
 
         if (updatedService) {
-        // Check if the service has been updated by comparing it with the old list
+          // Check if the service has been updated by comparing it with the old list
           const oldService = oldServiceList.find(s => s.id === updatedService.id);
 
           // Perform a deep comparison if necessary, for now, we just check if the old service exists
           if (!oldService || JSON.stringify(updatedService) !== JSON.stringify(oldService)) {
-          // Update the sidebarData with the new service data
-          // Ensuring to parse the config if it's in a raw JSON string format
+            // Update the sidebarData with the new service data
+            // Ensuring to parse the config if it's in a raw JSON string format
             pageStore.sidebarData = {
               ...updatedService,
               config: updatedService.configRaw ? JSON.parse(updatedService.configRaw) : {}
@@ -176,7 +173,8 @@ export default function(props) {
   //
   //
   // UI error handling
-  let unwatchErrors; let unwatchStartStopErrors;
+  let unwatchErrors;
+  let unwatchStartStopErrors;
   onMounted(() => {
     unwatchErrors = errors.registerCollection(serviceCollection);
     unwatchStartStopErrors = errors.registerTracker(startStopTracker);

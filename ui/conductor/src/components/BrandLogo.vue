@@ -8,9 +8,8 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
-
 import ScLogo from '@/components/ScLogo.vue';
+import {computed} from 'vue';
 
 const props = defineProps({
   theme: {

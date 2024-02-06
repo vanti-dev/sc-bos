@@ -16,9 +16,9 @@
         v-if="showTrait('showEnergyConsumption')"
         class="pb-0"
         style="min-height:385px;">
-      <v-card-title class="text-h4 pl-4">Energy Consumption</v-card-title>
       <EnergyGraph
-          classes="mt-n2 ml-n2 mr-1"
+          chart-title="Energy Consumption"
+          classes="pb-2 mr-1"
           color="#ffc432"
           color-middle="rgba(255, 196, 50, 0.35)"
           :hide-legends="true"
@@ -28,12 +28,11 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
 import ContentCard from '@/components/ContentCard.vue';
-
+import EnergyGraph from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraph.vue';
 import EnvironmentalCard from '@/routes/ops/overview/pages/widgets/environmental/EnvironmentalCard.vue';
 import PresenceCard from '@/routes/ops/overview/pages/widgets/occupancy/PresenceCard.vue';
-import EnergyGraph from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraph.vue';
+import {computed} from 'vue';
 
 const props = defineProps({
   item: {

@@ -7,9 +7,9 @@
 </template>
 
 <script setup>
-import StatusCard from '@/routes/system/components/service-cards/StatusCard.vue';
-import EditConfigCard from '@/routes/system/components/service-cards/EditConfigCard.vue';
 import SideBar from '@/components/SideBar.vue';
+import EditConfigCard from '@/routes/system/components/service-cards/EditConfigCard.vue';
+import StatusCard from '@/routes/system/components/service-cards/StatusCard.vue';
 </script>
 
 <style scoped>

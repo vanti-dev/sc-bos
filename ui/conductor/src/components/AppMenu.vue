@@ -27,9 +27,10 @@
 
 <script setup>
 import MenuIcon from '@/components/MenuIcon.vue';
-import {computed, ref} from 'vue';
-import {useAppConfigStore} from '@/stores/app-config';
 import useAuthSetup from '@/composables/useAuthSetup';
+import {useUiConfigStore} from '@/stores/ui-config';
+import {computed, ref} from 'vue';
+
 const {hasNoAccess} = useAuthSetup();
 
 const showMenu = ref(false);
@@ -44,8 +45,8 @@ const menuItems = [
   {
     title: 'Devices',
     subtitle:
-      'Add/update/delete devices from the system, view device\'s status and configuration, ' +
-      'and control device settings',
+        'Add/update/delete devices from the system, view device\'s status and configuration, ' +
+        'and control device settings',
     icon: 'mdi-devices',
     link: {name: 'devices'}
   },
@@ -75,10 +76,10 @@ const menuItems = [
   }
 ];
 
-const appConfig = useAppConfigStore();
+const uiConfig = useUiConfigStore();
 
 const enabledMenuItems = computed(() => {
-  return menuItems.filter((item) => appConfig.pathEnabled('/' + item.link.name));
+  return menuItems.filter((item) => uiConfig.pathEnabled('/' + item.link.name));
 });
 </script>
 

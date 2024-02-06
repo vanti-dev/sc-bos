@@ -5,10 +5,9 @@
 </template>
 
 <script setup>
-import {computed, watch} from 'vue';
-import {useIntersectedItemsStore} from '@/stores/intersectedItemsStore';
-
 import DeviceSideBarContent from '@/routes/devices/components/DeviceSideBarContent.vue';
+import {useIntersectedItemsStore} from '@/stores/intersectedItemsStore';
+import {computed, watch} from 'vue';
 
 const {intersectionHandler} = useIntersectedItemsStore();
 

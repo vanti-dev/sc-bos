@@ -51,16 +51,16 @@
 <script setup>
 import {ServiceNames} from '@/api/ui/services';
 import ContentCard from '@/components/ContentCard.vue';
-import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
-import {useAppConfigStore} from '@/stores/app-config';
-import {useHubStore} from '@/stores/hub';
-import {computed} from 'vue';
 import useAuthSetup from '@/composables/useAuthSetup';
 import useServices from '@/composables/useServices';
+import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
+import {useHubStore} from '@/stores/hub';
+import {useUiConfigStore} from '@/stores/ui-config';
+import {computed} from 'vue';
 
 const {blockActions} = useAuthSetup();
 
-const configStore = useAppConfigStore();
+const configStore = useUiConfigStore();
 const hubStore = useHubStore();
 
 const props = defineProps({
@@ -125,18 +125,23 @@ const headers = computed(() => {
   .automation-device__btn {
     &--red {
       background-color: var(--v-error-base);
+
       .v-btn__content {
         color: white;
       }
+
       &.v-btn--disabled {
         filter: grayscale(100%);
       }
     }
+
     &--green {
       background-color: var(--v-success-base);
+
       .v-btn__content {
         color: white;
       }
+
       &.v-btn--disabled {
         filter: grayscale(100%);
       }

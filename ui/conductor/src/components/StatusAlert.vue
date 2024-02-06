@@ -29,8 +29,8 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue';
 import {statusCodeToString} from '@/components/ui-error/util';
+import {computed, ref} from 'vue';
 
 const props = defineProps({
   color: {

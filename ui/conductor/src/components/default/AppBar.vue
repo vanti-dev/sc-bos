@@ -26,14 +26,14 @@ import BrandLogo from '@/components/BrandLogo.vue';
 import {usePage} from '@/components/page';
 import SmartCoreStatusCard from '@/components/smartCoreStatus/SmartCoreStatusCard.vue';
 import {useAccountStore} from '@/stores/account';
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {storeToRefs} from 'pinia';
 
 import {computed} from 'vue';
 import {useRoute} from 'vue-router/composables';
 
-const appConfigStore = useAppConfigStore();
-const {config} = storeToRefs(appConfigStore);
+const uiConfig = useUiConfigStore();
+const {config} = storeToRefs(uiConfig);
 const accountStore = useAccountStore();
 const route = useRoute();
 

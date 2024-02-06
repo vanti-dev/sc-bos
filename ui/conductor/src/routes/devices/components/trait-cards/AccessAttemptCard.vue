@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0" two-line>
-      <v-subheader class="text-title-caps-large neutral--text text--lighten-3"> Access Attempt </v-subheader>
+      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Access Attempt</v-subheader>
 
       <v-col v-for="(val, key) in accessAttemptInfo[0]" :key="key" class="pa-0" cols="align-self">
         <v-list-item class="py-1">
@@ -56,9 +56,9 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
 import {camelToSentence} from '@/util/string';
 import {AccessAttempt} from '@sc-bos/ui-gen/proto/access_pb';
+import {computed} from 'vue';
 
 const props = defineProps({
   value: {
@@ -140,16 +140,19 @@ const accessAttemptInfo = computed(() => {
 .granted {
   color: green;
 }
+
 .denied,
 .forced,
 .failed {
   color: red;
 }
+
 .pending,
 .aborted,
 .tailgate {
   color: orange;
 }
+
 .grant_unknown {
   color: grey;
 }

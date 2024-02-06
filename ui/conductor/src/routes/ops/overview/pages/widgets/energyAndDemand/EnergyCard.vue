@@ -62,12 +62,11 @@
 </template>
 
 <script setup>
-import {computed, reactive} from 'vue';
-import useOccupancyTrait from '@/composables/traits/useOccupancyTrait';
-
 import ContentCard from '@/components/ContentCard.vue';
-import EnergyGraph from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraph.vue';
+import useOccupancyTrait from '@/composables/traits/useOccupancyTrait';
 import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
+import EnergyGraph from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraph.vue';
+import {computed, reactive} from 'vue';
 
 const props = defineProps({
   generated: {

@@ -55,9 +55,9 @@
 import {closeResource} from '@/api/resource';
 import {grantNamesByID} from '@/api/sc/traits/access';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
-import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
+import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 
 import Status from '@/routes/ops/security/components/access-point-card/StatusBar.vue';
 import {useStatus} from '@/routes/ops/security/components/access-point-card/useStatus';

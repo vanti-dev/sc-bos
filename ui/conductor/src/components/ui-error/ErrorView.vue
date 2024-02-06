@@ -36,6 +36,7 @@ const errorStore = useErrorStore();
   left: 50%;
   background: transparent;
 }
+
 .error-name {
   display: block;
   font-size: 0.8em;

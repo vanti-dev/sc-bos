@@ -4,16 +4,17 @@
         :class="props.classes"
         :chart-options="chartOptions"
         :chart-data="chartData"
+        :chart-title="props.chartTitle"
         dataset-id-key="label"
         :hide-legends="props.hideLegends">
-      <template v-if="!props.hideLegends" #options>
+      <template #options>
         <v-switch
             v-model="showConversion"
             color="primary"
             dense
             hide-details
             inset
-            class="my-0">
+            class="my-0 ml-2 mr-3">
           <template #prepend>
             <span class="text-caption white--text">kW</span>
           </template>
@@ -35,6 +36,10 @@ import {useCarbonIntensity} from '@/stores/carbonIntensity';
 import {computed, ref} from 'vue';
 
 const props = defineProps({
+  chartTitle: {
+    type: String,
+    default: 'Power'
+  },
   classes: {
     type: String,
     default: 'mt-n10'
@@ -383,8 +388,4 @@ const chartOptions = computed(() => {
     type: 'line'
   };
 });
-/** -------------------------------------------- */
-/**
- * Lifecycle hooks
- */
 </script>

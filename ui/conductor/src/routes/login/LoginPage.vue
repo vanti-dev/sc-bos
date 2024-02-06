@@ -10,7 +10,7 @@
       <LoginChoice v-else/>
     </v-card>
     <v-btn
-        v-if="appConfigStore.config.disableAuthentication"
+        v-if="uiConfig.config.disableAuthentication"
         class="mt-4"
         color="neutral"
         elevation="0"
@@ -25,15 +25,15 @@ import BrandLogo from '@/components/BrandLogo.vue';
 import LocalLogin from '@/routes/login/LocalLogin.vue';
 import LoginChoice from '@/routes/login/LoginChoice.vue';
 import {useAccountStore} from '@/stores/account.js';
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {computed} from 'vue';
 
-const appConfigStore = useAppConfigStore();
+const uiConfig = useUiConfigStore();
 const accountStore = useAccountStore();
 
 const displayLoginForm = computed(() => {
   // If KeyCloak config available, we can toggle between login variants
-  if (appConfigStore.config?.keycloak) {
+  if (uiConfig.config?.keycloak) {
     return accountStore.loginFormVisible;
 
     // If KeyCloak config not available, we can only use local login

@@ -5,8 +5,8 @@ import ops from '@/routes/ops/route.js';
 import site from '@/routes/site/route.js';
 import system from '@/routes/system/route.js';
 import {useAccountStore} from '@/stores/account';
-import {useAppConfigStore} from '@/stores/app-config';
 import {usePageStore} from '@/stores/page';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {route, routeTitle} from '@/util/router.js';
 
 import Vue, {nextTick} from 'vue';
@@ -34,9 +34,9 @@ const router = new VueRouter({
 
 if (window) {
   router.beforeEach(async (to, from, next) => {
-    const appConfig = useAppConfigStore();
-    await appConfig.loadConfig();
-    const authDisabled = appConfig.config.disableAuthentication;
+    const uiConfig = useUiConfigStore();
+    await uiConfig.loadConfig();
+    const authDisabled = uiConfig.config.disableAuthentication;
     const accountStore = useAccountStore();
     // Initialize Local and Keycloak auth instances,
     // so we can check if the user is logged in and/or manage the login flow
@@ -76,12 +76,12 @@ if (window) {
      *
      * Finally, if none of the above conditions are met, proceed to the next route (allow the navigation).
      */
-    const isPathEnabled = appConfig.pathEnabled(to.path);
-    const redirectToHome = () => next(appConfig.homePath);
+    const isPathEnabled = uiConfig.pathEnabled(to.path);
+    const redirectToHome = () => next(uiConfig.homePath);
     const isLoginPath = to.path === '/login';
     const isAuthenticated = accountStore.isLoggedIn;
 
-    if (!isPathEnabled && (!isLoginPath || authDisabled && isLoginPath && from.path !== appConfig.homePath)) {
+    if (!isPathEnabled && (!isLoginPath || authDisabled && isLoginPath && from.path !== uiConfig.homePath)) {
       redirectToHome();
       return;
     }

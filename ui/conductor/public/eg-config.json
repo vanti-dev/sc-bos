@@ -41,6 +41,12 @@
         "brandLogo": {
           "altText": "Smart Core logo - representing nodes and connections",
           "src": ""
+        },
+        "brandColors": {
+          "primary": {
+            "base": "#ffcc00",
+            "darken3": "#9c7c00"
+          }
         }
       }
     },

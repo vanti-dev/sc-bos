@@ -41,12 +41,11 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue';
-import {storeToRefs} from 'pinia';
-import {useRoute} from 'vue-router/composables';
-import {useOverviewStore} from '@/routes/ops/overview/overviewStore';
-
 import OpsNavList from '@/routes/ops/overview/OpsNavList.vue';
+import {useOverviewStore} from '@/routes/ops/overview/overviewStore';
+import {storeToRefs} from 'pinia';
+import {computed, ref} from 'vue';
+import {useRoute} from 'vue-router/composables';
 
 const props = defineProps({
   item: {

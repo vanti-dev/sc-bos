@@ -41,11 +41,16 @@ export function useStatus(accessAttempt, statusLog) {
   const accessColor = computed(() => {
     const grant = accessGrantName.value?.toLowerCase();
     switch (grant) {
-      case 'granted': return 'success';
-      case 'tailgate': return 'warning';
-      case 'denied': return 'error';
-      case 'forced': return 'error';
-      case 'failed': return 'error';
+      case 'granted':
+        return 'success';
+      case 'tailgate':
+        return 'warning';
+      case 'denied':
+        return 'error';
+      case 'forced':
+        return 'error';
+      case 'failed':
+        return 'error';
     }
     return grant;
   });

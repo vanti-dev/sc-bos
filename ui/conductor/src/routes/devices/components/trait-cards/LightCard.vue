@@ -39,8 +39,8 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
 import useAuthSetup from '@/composables/useAuthSetup';
+import {computed} from 'vue';
 
 const {blockActions} = useAuthSetup();
 

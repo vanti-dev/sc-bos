@@ -3,13 +3,13 @@ import {closeResource, newActionTracker, newResourceCollection} from '@/api/reso
 import {getEnrollment} from '@/api/sc/traits/enrollment';
 import {listHubNodes, pullHubNodes} from '@/api/sc/traits/hub';
 import {listServices, ServiceNames} from '@/api/ui/services';
-import {useAppConfigStore} from '@/stores/app-config';
 import {useControllerStore} from '@/stores/controller';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {defineStore} from 'pinia';
 import {computed, reactive, ref, watch} from 'vue';
 
 export const useHubStore = defineStore('hub', () => {
-  const appConfig = useAppConfigStore();
+  const uiConfig = useUiConfigStore();
   const controller = useControllerStore();
   const nodesListCollection = reactive(newResourceCollection());
   const hubNode = ref();
@@ -21,7 +21,7 @@ export const useHubStore = defineStore('hub', () => {
     _hubReject = reject;
   });
 
-  watch(() => appConfig.config, async config => {
+  watch(() => uiConfig.config, async config => {
     closeResource(nodesListCollection);
 
     if (config?.hub) {
@@ -136,7 +136,7 @@ export const useHubStore = defineStore('hub', () => {
    */
   async function proxiedName(name, address) {
     // check if running in proxy mode, and that the node address is not the same as our endpoint address
-    if (appConfig.config?.proxy && (await grpcWebEndpoint()) !== address) {
+    if (uiConfig.config?.proxy && (await grpcWebEndpoint()) !== address) {
       return name;
     }
     return '';
@@ -150,7 +150,7 @@ export const useHubStore = defineStore('hub', () => {
    * @return {string}
    */
   async function proxiedAddress(address) {
-    if (appConfig.config?.proxy) {
+    if (uiConfig.config?.proxy) {
       return await grpcWebEndpoint();
     }
     return address;

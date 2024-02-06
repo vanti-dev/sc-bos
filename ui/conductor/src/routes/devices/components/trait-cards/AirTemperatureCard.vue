@@ -39,10 +39,10 @@
 <script setup>
 import {newActionTracker} from '@/api/resource';
 import {airTemperatureModeToString, temperatureToString} from '@/api/sc/traits/air-temperature';
+import useAuthSetup from '@/composables/useAuthSetup';
 import {camelToSentence} from '@/util/string';
 import {AirTemperature} from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb';
 import {computed, reactive, ref} from 'vue';
-import useAuthSetup from '@/composables/useAuthSetup';
 
 const {blockActions} = useAuthSetup();
 

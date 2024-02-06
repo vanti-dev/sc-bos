@@ -5,10 +5,10 @@
 </template>
 
 <script setup>
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
-import BarChart from '@/components/charts/BarChart.vue';
-import {listOccupancySensorHistory} from '@/api/sc/traits/occupancy';
 import {timestampToDate} from '@/api/convpb';
+import {listOccupancySensorHistory} from '@/api/sc/traits/occupancy';
+import BarChart from '@/components/charts/BarChart.vue';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
   name: {

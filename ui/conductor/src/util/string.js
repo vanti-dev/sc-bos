@@ -1,4 +1,3 @@
-
 /**
  * Inserts spaces into camelCased string
  *

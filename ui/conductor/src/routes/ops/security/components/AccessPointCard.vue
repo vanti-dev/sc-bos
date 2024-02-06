@@ -58,12 +58,11 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
-
 import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
 import WithOpenClosed from '@/routes/devices/components/renderless/WithOpenClosed.vue';
 import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
 import Access from '@/routes/ops/security/components/access-point-card/Access.vue';
+import {computed} from 'vue';
 
 const props = defineProps({
   value: {
