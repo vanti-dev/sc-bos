@@ -1,6 +1,6 @@
-import {reactive, computed, onMounted, onUnmounted} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullDevicesMetadata} from '@/api/ui/devices';
+import {computed, onMounted, onUnmounted, reactive} from 'vue';
 
 const NO_FLOOR = '< no floor >';
 

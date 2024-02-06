@@ -21,19 +21,19 @@
 </template>
 
 <script setup>
-import {Line as LineChartGenerator} from 'vue-chartjs';
 import {
-  Chart as ChartJS,
-  Title,
-  Tooltip,
-  Legend,
-  LineElement,
-  Filler,
-  LinearScale,
-  TimeScale,
   CategoryScale,
-  PointElement
+  Chart as ChartJS,
+  Filler,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
+  TimeScale,
+  Title,
+  Tooltip
 } from 'chart.js';
+import {Line as LineChartGenerator} from 'vue-chartjs';
 import 'chartjs-adapter-date-fns';
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, LinearScale, TimeScale, Filler, CategoryScale, PointElement);

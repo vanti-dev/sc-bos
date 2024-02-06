@@ -67,15 +67,13 @@
 
 
 <script setup>
-import {computed, onMounted, reactive, ref} from 'vue';
-import {storeToRefs} from 'pinia';
-
+import useAuthSetup from '@/composables/useAuthSetup';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
+import OpsNavList from '@/routes/ops/overview/OpsNavList.vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import {usePageStore} from '@/stores/page';
-import useAuthSetup from '@/composables/useAuthSetup';
-
-import OpsNavList from '@/routes/ops/overview/OpsNavList.vue';
+import {storeToRefs} from 'pinia';
+import {computed, onMounted, reactive, ref} from 'vue';
 
 const pageStore = usePageStore();
 const {miniVariant} = storeToRefs(pageStore);

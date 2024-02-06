@@ -85,6 +85,7 @@ export function startService(request, tracker) {
     return api.startService(createStartServiceRequestFromObject(request));
   });
 }
+
 /**
  * @param {StopServiceRequest.AsObject} request
  * @param {ActionTracker<Service.AsObject>} [tracker]

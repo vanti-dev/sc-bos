@@ -1,8 +1,8 @@
-import {storeToRefs} from 'pinia';
-import {computed} from 'vue';
+import {roleToPermissions} from '@/assets/roleToPermissions';
 import {useAccountStore} from '@/stores/account';
 import {useAppConfigStore} from '@/stores/app-config';
-import {roleToPermissions} from '@/assets/roleToPermissions';
+import {storeToRefs} from 'pinia';
+import {computed} from 'vue';
 
 /**
  * Initializing the authentication setup

@@ -16,13 +16,13 @@ import {newActionTracker} from '@/api/resource';
 import {configureService, ServiceNames as ServiceTypes} from '@/api/ui/services';
 import SideBar from '@/components/SideBar.vue';
 import {useErrorStore} from '@/components/ui-error/error';
+import useAuthSetup from '@/composables/useAuthSetup';
 import LightsConfigCard from '@/routes/automations/components/config-cards/LightsConfigCard.vue';
 import EditConfigCard from '@/routes/system/components/service-cards/EditConfigCard.vue';
 import {usePageStore} from '@/stores/page';
 import {serviceName} from '@/util/proxy';
 import {storeToRefs} from 'pinia';
 import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
-import useAuthSetup from '@/composables/useAuthSetup';
 
 const {blockActions} = useAuthSetup();
 

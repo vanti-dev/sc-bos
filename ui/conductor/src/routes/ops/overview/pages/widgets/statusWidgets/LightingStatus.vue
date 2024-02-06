@@ -10,11 +10,10 @@
 </template>
 
 <script setup>
-import {computed, onUnmounted, reactive, ref, watch} from 'vue';
+import ContentCard from '@/components/ContentCard.vue';
 import useLighting from '@/composables/traits/useLighting';
 import useTraits from '@/composables/useTraits';
-
-import ContentCard from '@/components/ContentCard.vue';
+import {computed, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
   floor: {

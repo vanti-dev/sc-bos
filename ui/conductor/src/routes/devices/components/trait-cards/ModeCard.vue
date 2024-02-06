@@ -48,8 +48,8 @@
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
 import {describeModes, pullModeValues, updateModeValues} from '@/api/sc/traits/mode';
 import {useErrorStore} from '@/components/ui-error/error';
-import {computed, onMounted, onUnmounted, reactive, set, watch} from 'vue';
 import useAuthSetup from '@/composables/useAuthSetup';
+import {computed, onMounted, onUnmounted, reactive, set, watch} from 'vue';
 
 const {blockActions} = useAuthSetup();
 
@@ -101,11 +101,11 @@ onUnmounted(() => {
 watch(
     () => props.name,
     async (name) => {
-    // close existing stream if present
+      // close existing stream if present
       closeResource(modeValue);
       // create new stream
       if (name && name !== '') {
-      // noinspection ES6MissingAwait - handled by tracker
+        // noinspection ES6MissingAwait - handled by tracker
         describeModes({name}, modeInfo);
         pullModeValues({name}, modeValue);
       }

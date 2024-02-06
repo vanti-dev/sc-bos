@@ -26,11 +26,11 @@
 
 <script setup>
 import {ServiceNames} from '@/api/ui/services';
+import useAuthSetup from '@/composables/useAuthSetup';
 import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
 import {storeToRefs} from 'pinia';
 import {computed, ref, watch} from 'vue';
-import useAuthSetup from '@/composables/useAuthSetup';
 
 const {hasNoAccess} = useAuthSetup();
 

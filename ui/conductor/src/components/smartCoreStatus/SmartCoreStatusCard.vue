@@ -79,14 +79,13 @@
 </template>
 
 <script setup>
-import {computed, ref, watch} from 'vue';
-import useSmartCoreStatus from '@/composables/useSmartCoreStatus';
-import useAuthSetup from '@/composables/useAuthSetup';
+import {DAY, HOUR, MINUTE, SECOND, useNow} from '@/components/now';
 import StatusAlert from '@/components/StatusAlert.vue';
-import {useNow, SECOND, MINUTE, HOUR, DAY} from '@/components/now';
-
+import useAuthSetup from '@/composables/useAuthSetup';
+import useSmartCoreStatus from '@/composables/useSmartCoreStatus';
 import {formatTimeAgo} from '@/util/date';
 import {formatErrorMessage} from '@/util/error';
+import {computed, ref, watch} from 'vue';
 
 const isRefreshing = ref(false);
 const {hasNoAccess, isLoggedIn} = useAuthSetup();

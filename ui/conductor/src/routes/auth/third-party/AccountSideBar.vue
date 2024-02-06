@@ -38,6 +38,7 @@
 import {newActionTracker} from '@/api/resource';
 import {deleteTenant, updateTenant} from '@/api/ui/tenant';
 import SideBar from '@/components/SideBar.vue';
+import useAuthSetup from '@/composables/useAuthSetup';
 import AccountSecretsCard from '@/routes/auth/third-party/components/AccountSecretsCard.vue';
 import AccountZoneListCard from '@/routes/auth/third-party/components/AccountZoneListCard.vue';
 import DeleteConfirmationDialog from '@/routes/auth/third-party/components/DeleteConfirmationDialog.vue';
@@ -45,8 +46,6 @@ import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
 import {reactive} from 'vue';
-
-import useAuthSetup from '@/composables/useAuthSetup';
 
 const pageStore = usePageStore();
 const {sidebarTitle, sidebarData} = storeToRefs(pageStore);

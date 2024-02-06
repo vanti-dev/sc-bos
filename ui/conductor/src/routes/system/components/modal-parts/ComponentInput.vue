@@ -78,8 +78,8 @@
 
 <script setup>
 import StatusAlert from '@/components/StatusAlert.vue';
-import {computed, ref, watch} from 'vue';
 import {formatErrorMessage} from '@/util/error';
+import {computed, ref, watch} from 'vue';
 
 const emits = defineEmits([
   'update:dialogState',

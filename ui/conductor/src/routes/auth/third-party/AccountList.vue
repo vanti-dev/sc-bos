@@ -34,7 +34,8 @@
                     v-bind="attrs"
                     v-on="on"
                     :disabled="blockActions">
-                  Add Account<v-icon right>mdi-plus</v-icon>
+                  Add Account
+                  <v-icon right>mdi-plus</v-icon>
                 </v-btn>
               </template>
             </new-account-dialog>
@@ -48,13 +49,13 @@
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
 import {useErrorStore} from '@/components/ui-error/error';
+import useAuthSetup from '@/composables/useAuthSetup';
 import NameChip from '@/routes/auth/third-party/components/NameChip.vue';
 import NewAccountDialog from '@/routes/auth/third-party/components/NewAccountDialog.vue';
 import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
 import {onMounted, onUnmounted, ref, watch} from 'vue';
-import useAuthSetup from '@/composables/useAuthSetup';
 
 const pageStore = usePageStore();
 const tenantStore = useTenantStore();

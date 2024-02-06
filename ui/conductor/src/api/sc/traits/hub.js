@@ -1,5 +1,5 @@
-import {clientOptions} from '@/api/grpcweb';
 import {setProperties} from '@/api/convpb';
+import {clientOptions} from '@/api/grpcweb';
 import {pullResource, setCollection, trackAction} from '@/api/resource';
 import {HubApiPromiseClient} from '@sc-bos/ui-gen/proto/hub_grpc_web_pb';
 import {

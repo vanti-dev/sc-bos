@@ -8,8 +8,8 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
 import {AccessAttempt} from '@sc-bos/ui-gen/proto/access_pb';
+import {computed} from 'vue';
 
 const props = defineProps({
   value: {

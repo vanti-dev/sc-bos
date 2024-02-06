@@ -71,7 +71,7 @@ import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
-import {computed, reactive, ref, onUnmounted, watch} from 'vue';
+import {computed, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
   overviewPage: {

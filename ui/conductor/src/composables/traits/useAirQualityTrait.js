@@ -1,13 +1,12 @@
-import Vue from 'vue';
-import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
-import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
-import {listAirQualitySensorHistory} from '@/api/sc/traits/air-quality-sensor';
-import useTimePeriod from '@/routes/ops/overview/pages/widgets/energyAndDemand/useTimePeriod';
-import useDevices from '@/composables/useDevices';
 import {timestampToDate} from '@/api/convpb';
-import {camelToSentence} from '@/util/string';
-import {useNow, DAY} from '@/components/now';
+import {listAirQualitySensorHistory} from '@/api/sc/traits/air-quality-sensor';
+import {DAY, useNow} from '@/components/now';
+import useDevices from '@/composables/useDevices';
+import useTimePeriod from '@/routes/ops/overview/pages/widgets/energyAndDemand/useTimePeriod';
 import {hasTrait} from '@/util/devices';
+import {camelToSentence} from '@/util/string';
+import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
+import Vue, {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
 
 /**
  *
@@ -62,12 +61,13 @@ export default function(props) {
     return devicesData.value.map(device => device.name);
   });
   // Mapping the device names to an array of objects for the dropdown
-  const deviceOptions = computed(() => mappedDeviceNames.value.map(device => {
-    return {
-      label: device,
-      value: device
-    };
-  }
+  const deviceOptions = computed(() => mappedDeviceNames.value.map(
+      device => {
+        return {
+          label: device,
+          value: device
+        };
+      }
   ));
   const airDevice = ref('');
   const previousAirDevice = ref(''); // Store the previous device name
@@ -334,8 +334,8 @@ export default function(props) {
     const header = Object.values(headerMap);
 
     // Generate the data rows
-    const rows = flattenedRecords.map(record =>
-      Object.keys(headerMap).map(key => record[key]).join(',')
+    const rows = flattenedRecords.map(
+        record => Object.keys(headerMap).map(key => record[key]).join(',')
     );
 
     return [header.join(',')].concat(rows).join('\n');

@@ -7,7 +7,8 @@
           color="primary"
           :disabled="blockActions"
           @click="downloadCSV">
-        Download CSV <v-icon right>mdi-download</v-icon>
+        Download CSV
+        <v-icon right>mdi-download</v-icon>
       </v-btn>
     </v-card-title>
     <v-data-table
@@ -46,13 +47,13 @@
 </template>
 
 <script setup>
-import {faultToString, getReportCSV, listLightHealth, runTest} from '@/api/sc/traits/lighting-test';
-import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 import {newActionTracker} from '@/api/resource';
+import {faultToString, getReportCSV, listLightHealth, runTest} from '@/api/sc/traits/lighting-test';
 import ContentCard from '@/components/ContentCard.vue';
-import {EmergencyStatus} from '@sc-bos/ui-gen/proto/dali_pb';
 import {useErrorStore} from '@/components/ui-error/error';
 import useAuthSetup from '@/composables/useAuthSetup';
+import {EmergencyStatus} from '@sc-bos/ui-gen/proto/dali_pb';
+import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 
 const {blockActions} = useAuthSetup();
 

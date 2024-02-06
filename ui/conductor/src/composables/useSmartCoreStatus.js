@@ -1,9 +1,8 @@
-import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
-
 import {closeResource, newActionTracker} from '@/api/resource';
 import {getEnrollment, testEnrollment} from '@/api/sc/traits/enrollment';
 import {testHubNode} from '@/api/sc/traits/hub';
 import {useHubStore} from '@/stores/hub';
+import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
 
 /**
  * @typedef {Object} ComponentData
@@ -111,7 +110,7 @@ export default function() {
     lastFetch.value = Date.now(); // Update the last execution time
   };
 
-  /**
+  /*
    * // ------------------- Enrollment & Test Enrollment ------------------- //
    *
    * This section manages the enrollment and testing of enrollment status in the application.
@@ -199,7 +198,7 @@ export default function() {
     updatingNodeStatus.value = false;
   };
 
-  /**
+  /*
    * // ------------------- Test Hub Nodes ------------------- //
    *
    * This section is focused on testing and managing the status of hub nodes in the network.
@@ -313,7 +312,7 @@ export default function() {
     await getTestHubNodeValue(nodesList); // Test the nodes
   }, {deep: true});
 
-  /**
+  /*
    * // ------------------- Node Status ------------------- //
    *
    * This section manages the status of nodes in the network. It includes reactive references for node status and

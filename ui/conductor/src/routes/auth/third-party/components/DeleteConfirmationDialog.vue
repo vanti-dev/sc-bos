@@ -3,7 +3,9 @@
     <v-card class="pa-2">
       <v-card-title class="text-h4 error--text text--lighten px-4">{{ title }}</v-card-title>
       <v-card-text class="px-4">
-        <div class="pb-4"><slot/></div>
+        <div class="pb-4">
+          <slot/>
+        </div>
         <v-alert type="error" class="mb-0">
           <slot name="alert-content"/>
         </v-alert>
@@ -11,7 +13,9 @@
       <v-progress-linear color="primary" indeterminate :active="progressBar"/>
       <v-card-actions class="justify-end pt-0 px-4">
         <v-btn @click="dialog = false" color="primary">Cancel</v-btn>
-        <v-btn @click="confirm" color="error"><slot name="confirmBtn"/></v-btn>
+        <v-btn @click="confirm" color="error">
+          <slot name="confirmBtn"/>
+        </v-btn>
       </v-card-actions>
     </v-card>
     <template #activator="attrs">

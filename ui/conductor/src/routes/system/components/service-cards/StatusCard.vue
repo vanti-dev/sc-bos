@@ -32,10 +32,10 @@
 </template>
 
 <script setup>
-import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
-import {camelToSentence} from '@/util/string';
 import {timestampToDate} from '@/api/convpb';
+import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
 import {usePageStore} from '@/stores/page';
+import {camelToSentence} from '@/util/string';
 import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 

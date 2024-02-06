@@ -1,8 +1,8 @@
-import {defineStore} from 'pinia';
-import {newActionTracker} from '@/api/resource';
-import {computed, reactive} from 'vue';
 import {timestampToDate} from '@/api/convpb';
+import {newActionTracker} from '@/api/resource';
 import {listTenants} from '@/api/ui/tenant';
+import {defineStore} from 'pinia';
+import {computed, reactive} from 'vue';
 
 export const useTenantStore = defineStore('tenantStore', () => {
   const tenantsTracker = reactive(

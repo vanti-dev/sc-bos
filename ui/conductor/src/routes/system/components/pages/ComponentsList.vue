@@ -85,10 +85,10 @@
 </template>
 
 <script setup>
-import {ref, watch} from 'vue';
 import StatusAlert from '@/components/StatusAlert.vue';
 import useSystemComponents from '@/composables/useSystemComponents';
 import EnrollHubNodeModal from '@/routes/system/components/EnrollHubNodeModal.vue';
+import {ref, watch} from 'vue';
 
 const showModal = ref(false);
 const {

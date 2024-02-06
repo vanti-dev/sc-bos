@@ -20,15 +20,13 @@
 </template>
 
 <script setup>
-import {reactive, watch} from 'vue';
-import {listDevices} from '@/api/ui/devices';
 import {newActionTracker} from '@/api/resource';
-import {usePageStore} from '@/stores/page';
-
-
+import {listDevices} from '@/api/ui/devices';
 import SideBar from '@/components/SideBar.vue';
 import DeviceInfoTab from '@/routes/ops/notifications/NotificationSideBarTabs/DeviceInfoTab.vue';
 import PastNotificationsTab from '@/routes/ops/notifications/NotificationSideBarTabs/PastNotificationsTab.vue';
+import {usePageStore} from '@/stores/page';
+import {reactive, watch} from 'vue';
 
 
 const pageStore = usePageStore();

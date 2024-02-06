@@ -30,9 +30,9 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
 import {useAccountStore} from '@/stores/account.js';
 import {useAppConfigStore} from '@/stores/app-config';
+import {computed} from 'vue';
 
 const appConfig = useAppConfigStore();
 const store = useAccountStore();

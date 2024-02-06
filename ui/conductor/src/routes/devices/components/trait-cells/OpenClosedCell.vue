@@ -25,10 +25,14 @@ const doorState = computed(() => {
   if (!props.value) return {icon: 'mdi-door', class: 'unknown', text: ''};
 
   return props.value?.statesList[0].openPercent === 0 ?
-    {icon: 'mdi-door-closed', class: 'closed', text: 'Closed'} :
-    props.value?.statesList[0].openPercent === 100 ?
-    {icon: 'mdi-door-open', class: 'open', text: 'Open'} :
-    {icon: 'mdi-door', class: 'moving', text: '' + props.openClosePercentage?.value.statesList[0].openPercent + '%'};
+      {icon: 'mdi-door-closed', class: 'closed', text: 'Closed'} :
+      props.value?.statesList[0].openPercent === 100 ?
+          {icon: 'mdi-door-open', class: 'open', text: 'Open'} :
+          {
+            icon: 'mdi-door',
+            class: 'moving',
+            text: '' + props.openClosePercentage?.value.statesList[0].openPercent + '%'
+          };
 });
 </script>
 

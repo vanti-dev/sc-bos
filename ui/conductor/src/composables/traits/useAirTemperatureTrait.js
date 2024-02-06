@@ -65,13 +65,13 @@ export default function(props) {
   //
   //
   // Return the temperature of the single device specified
-  const temperatureValue = computed(() =>
-    Number(airTemperatureResource?.value?.ambientTemperature?.valueCelsius ?? 0)
+  const temperatureValue = computed(
+      () => Number(airTemperatureResource?.value?.ambientTemperature?.valueCelsius ?? 0)
   );
 
   // Return the humidity of the single device specified
-  const humidityValue = computed(() =>
-    Number(airTemperatureResource?.value?.ambientHumidity ?? 0)
+  const humidityValue = computed(
+      () => Number(airTemperatureResource?.value?.ambientHumidity ?? 0)
   );
 
   return {

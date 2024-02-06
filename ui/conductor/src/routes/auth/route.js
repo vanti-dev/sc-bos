@@ -1,7 +1,7 @@
 import ChildOnlyPage from '@/components/page-layout/ChildOnlyPage.vue';
 import thirdParty from '@/routes/auth/third-party/route.js';
-import {route} from '@/util/router.js';
 import {useAppConfigStore} from '@/stores/app-config';
+import {route} from '@/util/router.js';
 
 export default [
   {
