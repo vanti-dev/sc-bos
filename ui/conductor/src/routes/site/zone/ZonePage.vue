@@ -39,10 +39,10 @@ import {ServiceNames} from '@/api/ui/services';
 import useAuthSetup from '@/composables/useAuthSetup';
 import DeviceTable from '@/routes/devices/components/DeviceTable.vue';
 import {Zone} from '@/routes/site/zone/zone';
-import {useAppConfigStore} from '@/stores/app-config';
 import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {Service} from '@sc-bos/ui-gen/proto/services_pb';
 import {computed, ref, watch} from 'vue';
 
@@ -50,7 +50,7 @@ const {blockActions} = useAuthSetup();
 
 const servicesStore = useServicesStore();
 const pageStore = usePageStore();
-const configStore = useAppConfigStore();
+const configStore = useUiConfigStore();
 const hubStore = useHubStore();
 const zoneCollection = ref();
 

@@ -1,6 +1,6 @@
 import useKeyCloak from '@/composables/authentication/useKeyCloak';
 import useLocal from '@/composables/authentication/useLocal';
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {loadFromBrowserStorage} from '@/util/browserStorage';
 import {defineStore} from 'pinia';
 import {computed, ref, watch} from 'vue';
@@ -24,7 +24,7 @@ import {useRouter} from 'vue-router/composables';
  */
 
 export const useAccountStore = defineStore('accountStore', () => {
-  const appConfig = useAppConfigStore();
+  const uiConfig = useUiConfigStore();
   const keyCloak = useKeyCloak();
   const localAuth = useLocal();
   const router = useRouter();
@@ -76,12 +76,12 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @return {Promise<void>}
    */
   const _initialise = async () => {
-    if (appConfig.config.disableAuthentication) {
+    if (uiConfig.config.disableAuthentication) {
       return;
     }
     try {
       // Attempt to initialize Keycloak authentication
-      if (appConfig.config?.keycloak) {
+      if (uiConfig.config?.keycloak) {
         const details = await keyCloak.init();
         availableAuthProviders.value = ['keyCloakAuth', 'localAuth'];
         if (details) {
@@ -143,7 +143,7 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @type {import('vue').ComputedRef<boolean>}
    */
   const isAuthenticationDisabled = computed(() => {
-    return appConfig.config?.disableAuthentication || false;
+    return uiConfig.config?.disableAuthentication || false;
   });
 
   /**
@@ -273,7 +273,7 @@ export const useAccountStore = defineStore('accountStore', () => {
 
       // Otherwise, redirect to the home page
     } else {
-      await router.push(appConfig.homePath);
+      await router.push(uiConfig.homePath);
     }
   };
 

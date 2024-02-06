@@ -20,8 +20,8 @@
 import {useOverviewStore} from '@/routes/ops/overview/overviewStore';
 import LeftColumn from '@/routes/ops/overview/pages/components/LeftColumn.vue';
 import RightColumn from '@/routes/ops/overview/pages/components/RightColumn.vue';
-import {useAppConfigStore} from '@/stores/app-config';
 import {usePageStore} from '@/stores/page';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {findActiveItem} from '@/util/router';
 import {storeToRefs} from 'pinia';
 import {computed, watch} from 'vue';
@@ -35,8 +35,8 @@ const props = defineProps({
 const overViewStore = useOverviewStore();
 const {activeOverview} = storeToRefs(overViewStore);
 
-const appConfigStore = useAppConfigStore();
-const buildingChildren = computed(() => appConfigStore.config?.building?.children || []);
+const uiConfig = useUiConfigStore();
+const buildingChildren = computed(() => uiConfig.config?.building?.children || []);
 
 const pageStore = usePageStore();
 const graphWidth = computed(() => `min-width: calc(100% - 500px - ${pageStore.drawerWidth}px)`);

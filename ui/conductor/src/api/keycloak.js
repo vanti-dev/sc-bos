@@ -1,4 +1,4 @@
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 import Keycloak from 'keycloak-js';
 
 /**
@@ -61,7 +61,7 @@ async function newKeycloak() {
  * @return {Promise<import('keycloak-js').KeycloakConfig | string>}
  */
 async function constructorConfig() {
-  const useAppConfig = useAppConfigStore();
+  const useAppConfig = useUiConfigStore();
   const config = await useAppConfig.configPromise;
   return config?.keycloak ?? {
     realm: import.meta.env.VITE_KEYCLOAK_REALM || 'smart-core',

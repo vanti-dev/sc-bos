@@ -1,7 +1,7 @@
 <template>
   <v-list class="pa-0" dense nav>
     <v-list-item-group class="mt-2 mb-n1">
-      <span v-if="appConfig.pathEnabled('/ops/overview')" class="d-flex flex-row align-center ma-0">
+      <span v-if="uiConfig.pathEnabled('/ops/overview')" class="d-flex flex-row align-center ma-0">
         <v-list-item class="mb-0" :disabled="hasNoAccess('/ops/overview/building')" to="/ops/overview/building">
           <v-list-item-icon>
             <v-icon>mdi-domain</v-icon>
@@ -70,8 +70,8 @@
 import useAuthSetup from '@/composables/useAuthSetup';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import OpsNavList from '@/routes/ops/overview/OpsNavList.vue';
-import {useAppConfigStore} from '@/stores/app-config';
 import {usePageStore} from '@/stores/page';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {storeToRefs} from 'pinia';
 import {computed, onMounted, reactive, ref} from 'vue';
 
@@ -80,8 +80,8 @@ const {miniVariant} = storeToRefs(pageStore);
 
 const {hasNoAccess} = useAuthSetup();
 const alertMetadata = useAlertMetadata();
-const appConfig = useAppConfigStore();
-const {config} = storeToRefs(appConfig);
+const uiConfig = useUiConfigStore();
+const {config} = storeToRefs(uiConfig);
 
 
 const displayList = ref(false);
@@ -151,14 +151,14 @@ const menuItems = computed(() => [
  *  import('vue').ComputedRef<{title: string, icon: string, link: {path: string}, countType: string}[]>
  * } enabledMenuItems
  */
-const enabledMenuItems = computed(() => menuItems.value.filter((item) => appConfig.pathEnabled(item.link.path)));
+const enabledMenuItems = computed(() => menuItems.value.filter((item) => uiConfig.pathEnabled(item.link.path)));
 
 /**
  * Check if the notification area is enabled
  *
  * @type {import('vue').ComputedRef<boolean>}
  */
-const notificationEnabled = computed(() => appConfig.pathEnabled('/ops/notifications'));
+const notificationEnabled = computed(() => uiConfig.pathEnabled('/ops/notifications'));
 
 onMounted(() => {
   if (notificationEnabled.value) alertMetadata.init();

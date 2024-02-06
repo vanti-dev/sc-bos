@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia';
 import {computed, ref} from 'vue';
 
-export const useAppConfigStore = defineStore('appConfig', () => {
+export const useUiConfigStore = defineStore('uiConfig', () => {
   /**
    * @private
    */

@@ -54,13 +54,13 @@ import ContentCard from '@/components/ContentCard.vue';
 import useAuthSetup from '@/composables/useAuthSetup';
 import useServices from '@/composables/useServices';
 import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
-import {useAppConfigStore} from '@/stores/app-config';
 import {useHubStore} from '@/stores/hub';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {computed} from 'vue';
 
 const {blockActions} = useAuthSetup();
 
-const configStore = useAppConfigStore();
+const configStore = useUiConfigStore();
 const hubStore = useHubStore();
 
 const props = defineProps({

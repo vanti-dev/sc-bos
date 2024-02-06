@@ -1,11 +1,11 @@
 <template>
   <div>
-    <v-card-text :class="[{'mb-8': appConfig.config.keycloak }, 'text-center mx-auto']" style="max-width: 320px;">
+    <v-card-text :class="[{'mb-8': uiConfig.config.keycloak }, 'text-center mx-auto']" style="max-width: 320px;">
       {{ keycloakMessage.top }}
     </v-card-text>
     <v-card-actions class="d-flex flex-column align-center justify-center">
       <v-btn
-          v-if="appConfig.config.keycloak"
+          v-if="uiConfig.config.keycloak"
           @click="store.loginWithKeyCloak(['profile', 'roles'])"
           color="primary"
           block
@@ -31,15 +31,15 @@
 
 <script setup>
 import {useAccountStore} from '@/stores/account.js';
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {computed} from 'vue';
 
-const appConfig = useAppConfigStore();
+const uiConfig = useUiConfigStore();
 const store = useAccountStore();
 
 // Tweak the message depending on whether KeyCloak is enabled or not
 const keycloakMessage = computed(() => {
-  if (appConfig.config?.keycloak) {
+  if (uiConfig.config?.keycloak) {
     return {
       top: 'Please sign in to the Smart Core Operator App to unlock all features.',
       // eslint-disable-next-line max-len

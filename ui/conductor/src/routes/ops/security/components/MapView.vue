@@ -95,7 +95,7 @@ import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
 import DoorColor from '@/routes/ops/security/components/DoorColor.vue';
 import Stack from '@/routes/ops/security/components/Stack.vue';
 import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {convertSVGToPercentage} from '@/util/svg';
 import {storeToRefs} from 'pinia';
 import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, set, watch} from 'vue';
@@ -114,7 +114,7 @@ const props = defineProps({
 });
 
 // -------------- Data & Reactive References -------------- //
-const {config} = storeToRefs(useAppConfigStore());
+const {config} = storeToRefs(useUiConfigStore());
 const showClose = ref(false);
 const activeFloorPlan = ref('');
 const floorPlanSVG = ref(null);

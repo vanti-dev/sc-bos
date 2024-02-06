@@ -1,6 +1,6 @@
 import {roleToPermissions} from '@/assets/roleToPermissions';
 import {useAccountStore} from '@/stores/account';
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 
@@ -17,7 +17,7 @@ import {computed} from 'vue';
  * }}
  */
 export default function() {
-  const appConfig = useAppConfigStore();
+  const uiConfig = useUiConfigStore();
   const accountStore = useAccountStore();
   const {isLoggedIn} = storeToRefs(accountStore);
 
@@ -39,7 +39,7 @@ export default function() {
   // Depending on the role and role permissions, we are going to check if the user has
   // permission (and access) to certain pages and functionalities
   const accessLevel = (name) => {
-    if (!appConfig.config?.disableAuthentication) {
+    if (!uiConfig.config?.disableAuthentication) {
       // Formatting the name to match the main path (e.g. /site or /devices)
       const formattedName = !name.includes('/') ? `/${name}` : name;
 
@@ -95,14 +95,14 @@ export default function() {
 
   // Blocking actions (e.g. edit, delete, light control etc.)
   const blockActions = computed(() => {
-    if (!appConfig.config?.disableAuthentication) {
+    if (!uiConfig.config?.disableAuthentication) {
       return !allowActions.value;
     } else return false;
   });
 
   // Blocking system edit (e.g. add, edit, delete, restart etc.)
   const blockSystemEdit = computed(() => {
-    if (!appConfig.config?.disableAuthentication) {
+    if (!uiConfig.config?.disableAuthentication) {
       return !allowEdits.value;
     } else {
       return false;

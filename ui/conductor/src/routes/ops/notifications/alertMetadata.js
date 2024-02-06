@@ -1,8 +1,8 @@
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullAlertMetadata} from '@/api/ui/alerts';
 import {useErrorStore} from '@/components/ui-error/error';
-import {useAppConfigStore} from '@/stores/app-config';
 import {useHubStore} from '@/stores/hub';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {convertProtoMap} from '@/util/proto';
 import {defineStore} from 'pinia';
 import {computed, onMounted, onUnmounted, reactive} from 'vue';
@@ -13,7 +13,7 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
   const alertMetadata = reactive(
       /** @type {ResourceValue<AlertMetadata.AsObject, AlertMetadata>} */ newResourceValue()
   );
-  const appConfig = useAppConfigStore();
+  const uiConfig = useUiConfigStore();
   const hubStore = useHubStore();
 
   /**
@@ -21,7 +21,7 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
    */
   function init() {
     // wait for config to load
-    return appConfig.configPromise.then((config) => {
+    return uiConfig.configPromise.then((config) => {
       if (config.proxy) {
         // wait for hub info to load
         hubStore.hubPromise

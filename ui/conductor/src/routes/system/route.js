@@ -1,5 +1,5 @@
 import SidebarPage from '@/components/page-layout/SidebarPage.vue';
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 
 export default {
   name: 'system',
@@ -52,11 +52,11 @@ export default {
     title: 'System'
   },
   beforeEnter: async (to, from, next) => {
-    const appConfig = useAppConfigStore();
+    const uiConfig = useUiConfigStore();
     if (to.path === '/system') {
-      if (appConfig.pathEnabled('/system/drivers')) {
+      if (uiConfig.pathEnabled('/system/drivers')) {
         next('/system/drivers');
-      } else if (appConfig.pathEnabled('/system/features')) {
+      } else if (uiConfig.pathEnabled('/system/features')) {
         next('/system/features');
       }
     } else {

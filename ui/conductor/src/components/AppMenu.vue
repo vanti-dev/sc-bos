@@ -28,7 +28,7 @@
 <script setup>
 import MenuIcon from '@/components/MenuIcon.vue';
 import useAuthSetup from '@/composables/useAuthSetup';
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {computed, ref} from 'vue';
 
 const {hasNoAccess} = useAuthSetup();
@@ -76,10 +76,10 @@ const menuItems = [
   }
 ];
 
-const appConfig = useAppConfigStore();
+const uiConfig = useUiConfigStore();
 
 const enabledMenuItems = computed(() => {
-  return menuItems.filter((item) => appConfig.pathEnabled('/' + item.link.name));
+  return menuItems.filter((item) => uiConfig.pathEnabled('/' + item.link.name));
 });
 </script>
 

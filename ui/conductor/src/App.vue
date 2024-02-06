@@ -13,18 +13,18 @@ import AppBar from '@/components/default/AppBar.vue';
 import NavigationDrawer from '@/components/default/NavigationDrawer.vue';
 import ErrorView from '@/components/ui-error/ErrorView.vue';
 import useVuetify from '@/composables/useVuetify';
-import {useAppConfigStore} from '@/stores/app-config';
 import {useControllerStore} from '@/stores/controller';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {storeToRefs} from 'pinia';
 import {onBeforeMount, onMounted} from 'vue';
 
 const controller = useControllerStore();
-const appConfig = useAppConfigStore();
-const {appBranding} = storeToRefs(appConfig);
+const uiConfig = useUiConfigStore();
+const {appBranding} = storeToRefs(uiConfig);
 const vuetifyInstance = useVuetify();
 
 onBeforeMount(async () => {
-  await appConfig.loadConfig();
+  await uiConfig.loadConfig();
 
   // Access the vuetify instance from the Vue app
   if (vuetifyInstance) {

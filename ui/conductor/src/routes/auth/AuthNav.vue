@@ -16,7 +16,7 @@
 
 <script setup>
 import useAuthSetup from '@/composables/useAuthSetup';
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {computed} from 'vue';
 
 const {hasNoAccess} = useAuthSetup();
@@ -34,10 +34,10 @@ const menuItems = [
   }
 ];
 
-const appConfig = useAppConfigStore();
+const uiConfig = useUiConfigStore();
 
 const enabledMenuItems = computed(() => {
-  return menuItems.filter((item) => appConfig.pathEnabled(item.link.path));
+  return menuItems.filter((item) => uiConfig.pathEnabled(item.link.path));
 });
 </script>
 

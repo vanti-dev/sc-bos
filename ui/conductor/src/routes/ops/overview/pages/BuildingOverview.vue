@@ -21,14 +21,14 @@
 import EnergyCard from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyCard.vue';
 import EnvironmentalCard from '@/routes/ops/overview/pages/widgets/environmental/EnvironmentalCard.vue';
 import OccupancyCard from '@/routes/ops/overview/pages/widgets/occupancy/OccupancyCard.vue';
-import {useAppConfigStore} from '@/stores/app-config';
 import {usePageStore} from '@/stores/page';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {computed} from 'vue';
 
-const appConfig = useAppConfigStore();
+const uiConfig = useUiConfigStore();
 const pageStore = usePageStore();
 const graphWidth = computed(() => `min-width: calc(100% - 260px - ${pageStore.drawerWidth}px)`);
-const buildingZone = computed(() => appConfig.config?.ops?.buildingZone ?? '');
+const buildingZone = computed(() => uiConfig.config?.ops?.buildingZone ?? '');
 const energyZone = buildingZone;
 const environmentalZone = buildingZone;
 const occupancyZone = buildingZone;

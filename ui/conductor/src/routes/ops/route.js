@@ -1,7 +1,7 @@
 import SidebarPage from '@/components/page-layout/SidebarPage.vue';
 import notifications from '@/routes/ops/notifications/route.js';
 import overview from '@/routes/ops/overview/route.js';
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 
 import {route} from '@/util/router.js';
 
@@ -9,16 +9,16 @@ export default {
   name: 'ops',
   path: '/ops',
   redirect: () => {
-    const appConfig = useAppConfigStore();
-    if (appConfig.pathEnabled('/ops/overview')) {
+    const uiConfig = useUiConfigStore();
+    if (uiConfig.pathEnabled('/ops/overview')) {
       return '/ops/overview/building';
-    } else if (appConfig.pathEnabled('/ops/notifications')) {
+    } else if (uiConfig.pathEnabled('/ops/notifications')) {
       return '/ops/notifications';
-    } else if (appConfig.pathEnabled('/ops/air-quality')) {
+    } else if (uiConfig.pathEnabled('/ops/air-quality')) {
       return '/ops/air-quality';
-    } else if (appConfig.pathEnabled('/ops/emergency-lighting')) {
+    } else if (uiConfig.pathEnabled('/ops/emergency-lighting')) {
       return '/ops/emergency-lighting';
-    } else if (appConfig.pathEnabled('/ops/security')) {
+    } else if (uiConfig.pathEnabled('/ops/security')) {
       return '/ops/security';
     }
   },
@@ -64,7 +64,7 @@ export default {
     title: 'Operations'
   },
   beforeEnter: async (to, from, next) => {
-    const appConfig = useAppConfigStore();
+    const appConfig = useUiConfigStore();
     if (to.path === '/ops') {
       if (appConfig.pathEnabled('/ops/overview')) {
         next('/ops/overview/building');

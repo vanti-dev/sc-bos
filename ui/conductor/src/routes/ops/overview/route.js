@@ -1,4 +1,4 @@
-import {useAppConfigStore} from '@/stores/app-config';
+import {useUiConfigStore} from '@/stores/ui-config';
 import {findActiveItem} from '@/util/router.js';
 
 export default [
@@ -36,8 +36,8 @@ export default [
       }
     ],
     beforeEnter: async (to, from, next) => {
-      const appConfig = useAppConfigStore();
-      await appConfig.loadConfig();
+      const uiConfig = useUiConfigStore();
+      await uiConfig.loadConfig();
 
       // Get the building children from the app config
       /**
@@ -64,7 +64,7 @@ export default [
        * @property {boolean} traits.showPower - Flag to show power.
        * @property {BuildingChild[]} [children] - Optional array of children, each following the same structure.
        */
-      const buildingChildren = appConfig.config?.building?.children || [];
+      const buildingChildren = uiConfig.config?.building?.children || [];
 
       // Split the modified path into segments and remove empty segments then return an array of the segments
       const currentPathSegments = modifiedPath(to.path).split('/').filter(segment => segment);
