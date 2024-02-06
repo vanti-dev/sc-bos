@@ -1,0 +1,240 @@
+{
+  "$id": "https://github.com/vanti-dev/sc-bos/schema/ui-config.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UI Config",
+  "type": "object",
+  "properties": {
+    "features": {
+      "$ref": "#/$defs/feature"
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "hub": {
+          "description": "A hint to the UI that it is hosted by a hub",
+          "type": "boolean"
+        },
+        "proxy": {
+          "description": "A hint to the UI that it is hosted by a proxy",
+          "type": "boolean"
+        },
+        "home": {
+          "description": "The router path of the home page",
+          "examples": ["/ops", "/devices/all"],
+          "type": "string"
+        },
+        "theme": {
+          "description": "Configuration of the theme for the UI",
+          "type": "object",
+          "properties": {
+            "appBranding": {
+              "type": "object",
+              "properties": {
+                "brandName": {
+                  "description": "The title displayed on the app toolbar",
+                  "type": "string"
+                },
+                "brandLogo": {
+                  "description": "The main logo displayed on the app toolbar",
+                  "type": "object",
+                  "properties": {
+                    "src": {
+                      "description": "The URL of the logo image",
+                      "type": "string"
+                    },
+                    "altText": {
+                      "description": "The alt text of the logo image",
+                      "type": "string"
+                    }
+                  }
+                },
+                "brandColors": {
+                  "description": "The colors used for the app branding",
+                  "type": "object",
+                  "patternProperties": {
+                    ".*": {
+                      "description": "A named theme color",
+                      "examples": ["primary", "secondary"],
+                      "type": "object",
+                      "patternProperties": {
+                        ".*": {
+                          "description": "HEX color code for this color variant",
+                          "examples": ["base", "darken3"],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "ops": {
+          "description": "Configuration of the operations page",
+          "type": "object",
+          "properties": {
+            "buildingZone": {
+              "description": "The device base name for the operations overview page",
+              "type": "string"
+            }
+          }
+        },
+        "siteFloorPlans": {
+          "description": "SVG image links representing each floor, shown on the security map page",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "A display name for the floor",
+                "type": "string"
+              },
+              "svgPath": {
+                "description": "The URL of the floor image",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "keycloak": {
+          "description": "Configuration of the Keycloak authentication",
+          "type": "object",
+          "properties": {
+            "realm": {
+              "description": "The realm name",
+              "examples": ["Smart_Core"],
+              "type": "string"
+            },
+            "url": {
+              "description": "The URL of the Keycloak server",
+              "examples": ["http://localhost:8888/", "https://keycloak.example.com/"],
+              "type": "string"
+            },
+            "clientId": {
+              "description": "The client ID",
+              "examples": ["scos-opsui"],
+              "type": "string"
+            }
+          }
+        },
+        "disableAuthentication": {
+          "description": "A flag to disable authentication",
+          "type": "boolean"
+        },
+        "building": {
+          "description": "Ops overview sub-page configuration",
+          "type": "object",
+          "properties": {
+            "children": {
+              "description": "Sub pages to display as children to the building overview page",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/opsSubPage"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "feature": {
+      "oneOf": [
+        {"type": "boolean"},
+        {
+          "type": "object",
+          "patternProperties": {
+            ".*": {
+              "$ref": "#/$defs/feature"
+            }
+          }
+        }
+      ]
+    },
+    "opsSubPage": {
+      "description": "A sub-page configuration for the operations overview",
+      "type": "object",
+      "properties": {
+        "disabled": {
+          "description": "A flag to disable the sub-page",
+          "type": "boolean"
+        },
+        "icon": {
+          "description": "The mdi icon of the sub-page",
+          "type": "string"
+        },
+        "shortTitle": {
+          "description": "The short title of the sub-page, shown when the nav bar is collapsed",
+          "type": "string"
+        },
+        "title": {
+          "description": "The title of the sub-page",
+          "type": "string"
+        },
+        "traits": {
+          "description": "The traits to show on the sub-page",
+          "type": "object",
+          "properties": {
+            "showAirQuality": {
+              "description": "A flag to show the air quality widget",
+              "allOf": [{"$ref": "#/$defs/nameOrFalse"}]
+            },
+            "showEmergencyLighting": {
+              "description": "A flag to show the emergency lighting widget",
+              "allOf": [{"$ref": "#/$defs/nameOrFalse"}]
+            },
+            "showEnergyConsumption": {
+              "description": "The name of a Meter device shown in the meter widget",
+              "allOf": [{"$ref": "#/$defs/nameOrFalse"}]
+            },
+            "showEnvironment": {
+              "description": "Device configuration for the environmental widget",
+              "oneOf": [
+                {"enum": [false]},
+                {
+                  "type": "object",
+                  "properties": {
+                    "indoor": {
+                      "description": "The name of the indoor AirQuality sensor",
+                      "allOf": [{"$ref": "#/$defs/nameOrFalse"}]
+                    },
+                    "outdoor": {
+                      "description": "The name of the outdoor AirQuality sensor",
+                      "allOf": [{"$ref": "#/$defs/nameOrFalse"}]
+                    }
+                  }
+                }
+              ]
+            },
+            "showNotifications": {
+              "description": "The name of a zone used to filter notifications for this sub-page",
+              "allOf": [{"$ref": "#/$defs/nameOrFalse"}]
+            },
+            "showOccupancy": {
+              "description": "The name of an OccupancySensor device used to show the occupancy widget",
+              "allOf": [{"$ref": "#/$defs/nameOrFalse"}]
+            },
+            "showPower": {
+              "description": "Show the power widget",
+              "allOf": [{"$ref": "#/$defs/nameOrFalse"}]
+            }
+          }
+        },
+        "children": {
+          "description": "Sub pages to display as children to this sub-page",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/opsSubPage"
+          }
+        }
+      }
+    },
+    "nameOrFalse": {
+      "oneOf": [
+        {"type": "string"},
+        {"enum": [false]}
+      ]
+    }
+  }
+}
