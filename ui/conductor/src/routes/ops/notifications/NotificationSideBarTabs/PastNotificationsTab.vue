@@ -34,13 +34,12 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
-import {storeToRefs} from 'pinia';
 import {timestampToDate} from '@/api/convpb';
-
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {usePageStore} from '@/stores/page';
+import {storeToRefs} from 'pinia';
+import {computed} from 'vue';
 
 
 const pageStore = usePageStore();

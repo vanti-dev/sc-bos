@@ -51,12 +51,12 @@
 <script setup>
 import {ServiceNames} from '@/api/ui/services';
 import ContentCard from '@/components/ContentCard.vue';
+import useAuthSetup from '@/composables/useAuthSetup';
+import useServices from '@/composables/useServices';
 import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import {useHubStore} from '@/stores/hub';
 import {computed} from 'vue';
-import useAuthSetup from '@/composables/useAuthSetup';
-import useServices from '@/composables/useServices';
 
 const {blockActions} = useAuthSetup();
 
@@ -125,18 +125,23 @@ const headers = computed(() => {
   .automation-device__btn {
     &--red {
       background-color: var(--v-error-base);
+
       .v-btn__content {
         color: white;
       }
+
       &.v-btn--disabled {
         filter: grayscale(100%);
       }
     }
+
     &--green {
       background-color: var(--v-success-base);
+
       .v-btn__content {
         color: white;
       }
+
       &.v-btn--disabled {
         filter: grayscale(100%);
       }

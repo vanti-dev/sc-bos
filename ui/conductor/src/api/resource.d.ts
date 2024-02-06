@@ -19,7 +19,9 @@ export function pullResource<M, V>(logPrefix: string, resource: RemoteResource<M
 export function trackAction<V, M>(logPrefix: string, tracker: ActionTracker<V>, action: Action<V, M>): Promise<V>
 
 export function newActionTracker<T>(): ActionTracker<T>;
+
 export function newResourceValue<T, M extends Msg<T>>(): ResourceValue<T, M>;
+
 export function newResourceCollection<T, M extends Msg<T>>(): ResourceCollection<T, M>;
 
 export interface ResourceError {

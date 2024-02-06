@@ -28,12 +28,11 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
 import ContentCard from '@/components/ContentCard.vue';
-
+import EnergyGraph from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraph.vue';
 import EnvironmentalCard from '@/routes/ops/overview/pages/widgets/environmental/EnvironmentalCard.vue';
 import PresenceCard from '@/routes/ops/overview/pages/widgets/occupancy/PresenceCard.vue';
-import EnergyGraph from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraph.vue';
+import {computed} from 'vue';
 
 const props = defineProps({
   item: {

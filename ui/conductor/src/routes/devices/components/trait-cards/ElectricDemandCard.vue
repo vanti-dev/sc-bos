@@ -64,6 +64,7 @@ const rows = computed(() => {
   grid-gap: 4px 0.3em;
   align-items: baseline;
 }
+
 .value {
   text-align: right;
 }

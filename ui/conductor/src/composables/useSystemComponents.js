@@ -1,10 +1,10 @@
-import {computed, onUnmounted, reactive, ref, set, watchEffect} from 'vue';
-import {newActionTracker, closeResource} from '@/api/resource';
+import {closeResource, newActionTracker} from '@/api/resource';
 import {enrollHubNode, forgetHubNode, inspectHubNode, testHubNode} from '@/api/sc/traits/hub';
 import {ServiceNames} from '@/api/ui/services';
 import {useHubStore} from '@/stores/hub';
 import {useServicesStore} from '@/stores/services';
 import {parseCertificate} from '@/util/certificates';
+import {computed, onUnmounted, reactive, ref, set, watchEffect} from 'vue';
 
 /**
  * @typedef {import('@/api/ui/services').ServiceTracker} ServiceTracker
@@ -177,8 +177,8 @@ export default function() {
 
     return metadata;
   });
-    // --------------------------- //
-    // List and Track Hub Nodes
+  // --------------------------- //
+  // List and Track Hub Nodes
   const nodeDetails = reactive({});
   const nodesList = ref([]);
   let unwatchTrackers = [];

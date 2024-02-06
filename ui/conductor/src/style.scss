@@ -14,39 +14,39 @@ to have a border all around instead of just at the bottom
 */
 
 .v-text-field--filled {
-    border-radius: $text-field-border-radius;
+  border-radius: $text-field-border-radius;
 }
 
 .v-text-field--filled:not(.v-text-field--outlined):before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    border-style: solid;
-    border-width: $text-field-outlined-fieldset-border-width;
-    opacity: 0.24;
-    // These are copied from VTextField fieldset styles, where the outline border styles come from
-    transition-duration: 0.15s;
-    transition-property: color, opacity;
-    transition-timing-function: map-get($transition, 'fast-in-fast-out');
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border-style: solid;
+  border-width: $text-field-outlined-fieldset-border-width;
+  opacity: 0.24;
+  // These are copied from VTextField fieldset styles, where the outline border styles come from
+  transition-duration: 0.15s;
+  transition-property: color, opacity;
+  transition-timing-function: map-get($transition, 'fast-in-fast-out');
 }
 
 .v-text-field--filled:hover:before {
-    opacity: 0.5;
+  opacity: 0.5;
 }
 
 .v-text-field--filled.v-input--is-focused:before {
-    opacity: 1;
-    border: $text-field-outlined-fieldset-border;
+  opacity: 1;
+  border: $text-field-outlined-fieldset-border;
 }
 
 .v-text-field--filled.v-input--is-dirty .v-label {
-    color: var(--v-neutral-lighten5)
+  color: var(--v-neutral-lighten5)
 }
 
 .v-text-field--filled .v-input__slot:before,
 .v-text-field--filled .v-input__slot:after {
-    display: none;
+  display: none;
 }
 
 /*
@@ -54,22 +54,22 @@ Make sure that chips don't appear squashed if they contain only narrow text.
 Also center the text when it's small
  */
 .v-chip {
-    justify-content: center;
+  justify-content: center;
 }
 
 .v-chip {
-    @each $name, $size in $icon-sizes {
-        &.v-size--#{$name} {
-            min-width: #{map-get($size, 'height')}px
-        }
+  @each $name, $size in $icon-sizes {
+    &.v-size--#{$name} {
+      min-width: #{map-get($size, 'height')}px
     }
+  }
 }
 
 // increase the contrast between dark card based menus and their background
 .v-menu__content.theme--dark {
-    > .v-card.theme--dark,
-    > .v-list.theme--dark {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-top-color: rgba(255, 255, 255, 0.25);
-    }
+  > .v-card.theme--dark,
+  > .v-list.theme--dark {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top-color: rgba(255, 255, 255, 0.25);
+  }
 }

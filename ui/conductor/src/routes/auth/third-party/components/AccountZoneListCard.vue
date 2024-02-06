@@ -16,10 +16,9 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue';
 import useAuthSetup from '@/composables/useAuthSetup';
-
 import AccountZoneChooser from '@/routes/auth/third-party/components/AccountZoneChooser.vue';
+import {computed, ref} from 'vue';
 
 const props = defineProps({
   zoneList: {

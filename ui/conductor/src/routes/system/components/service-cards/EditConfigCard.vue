@@ -29,10 +29,10 @@
 </template>
 
 <script setup>
+import useAuthSetup from '@/composables/useAuthSetup';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
 import {computed, ref} from 'vue';
-import useAuthSetup from '@/composables/useAuthSetup';
 
 const {blockSystemEdit} = useAuthSetup();
 
@@ -59,6 +59,7 @@ const config = computed({
 });
 
 const copyConfirm = ref(false);
+
 /**
  *
  */
@@ -72,6 +73,7 @@ function copyConfig() {
 .json-form {
   position: relative;
 }
+
 .copy-btn {
   position: absolute;
   top: 28px;

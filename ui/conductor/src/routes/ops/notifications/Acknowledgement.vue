@@ -31,10 +31,10 @@
       <v-card-subtitle>{{ ackTimeStr }}</v-card-subtitle>
       <v-card-text>
         <template v-if="hasAuthor">
-          <template v-if="hasAuthorName"> By: {{ authorName }}<br> </template>
-          <template v-if="hasAuthorEmail"> Mail: {{ authorEmail }}<br> </template>
+          <template v-if="hasAuthorName"> By: {{ authorName }}<br></template>
+          <template v-if="hasAuthorEmail"> Mail: {{ authorEmail }}<br></template>
         </template>
-        <template v-else> Anonymous acknowledgement </template>
+        <template v-else> Anonymous acknowledgement</template>
       </v-card-text>
       <v-card-actions>
         <v-btn @click="$emit('unacknowledge')" text block color="error" :disabled="blockActions">
@@ -48,8 +48,8 @@
 
 <script setup>
 import {timestampToDate} from '@/api/convpb';
-import {computed} from 'vue';
 import useAuthSetup from '@/composables/useAuthSetup';
+import {computed} from 'vue';
 
 const {blockActions} = useAuthSetup();
 

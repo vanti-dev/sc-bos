@@ -20,10 +20,10 @@
 </template>
 
 <script setup>
-import {ref, watchEffect} from 'vue';
-import {storeToRefs} from 'pinia';
 import {usePage} from '@/components/page';
 import {usePageStore} from '@/stores/page';
+import {storeToRefs} from 'pinia';
+import {ref, watchEffect} from 'vue';
 
 const {hasSidebar} = usePage();
 const sidebarDOMElement = ref(null);
@@ -123,6 +123,7 @@ watchEffect(() => {
   width: 4px;
   background-color: var(--v-primary-darken4);
   transition: all 0.2s ease-in-out;
+
   &:hover {
     width: 8px;
     cursor: ew-resize;

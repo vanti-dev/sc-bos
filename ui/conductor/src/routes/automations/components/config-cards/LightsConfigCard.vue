@@ -20,10 +20,10 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
+import useAuthSetup from '@/composables/useAuthSetup';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
-import useAuthSetup from '@/composables/useAuthSetup';
+import {computed} from 'vue';
 
 const {blockActions} = useAuthSetup();
 

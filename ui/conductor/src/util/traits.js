@@ -1,6 +1,6 @@
+import {closeResource} from '@/api/resource';
 import {toValue} from '@/util/vue';
 import {watch} from 'vue';
-import {closeResource} from '@/api/resource';
 import {deepEqual} from 'vuetify/src/util/helpers';
 
 /**

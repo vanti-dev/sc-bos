@@ -103,8 +103,8 @@ const deviceInfo = computed(() => {
                 // Add subValue and its value to subInfo[key]
                 subInfo[key][subValue] = value[subValue];
               }
-            };
-          };
+            }
+          }
         }
       }
     });

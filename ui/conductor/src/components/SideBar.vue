@@ -3,7 +3,8 @@
     <v-subheader class="text-body-large font-weight-bold sidebar-title pa-4 neutral lighten-1">
       <span class="sidebar-title-text my-auto">
         {{ sidebarTitle }}
-      </span><v-spacer/>
+      </span>
+      <v-spacer/>
       <v-btn icon small @click="pageStore.closeSidebar()" color="neutral lighten-4">
         <v-icon>mdi-close</v-icon>
       </v-btn>
@@ -26,6 +27,7 @@ const {sidebarTitle} = storeToRefs(pageStore);
   height: auto;
   align-items: start;
 }
+
 .sidebar-title-text {
   display: block;
   overflow-wrap: break-word;

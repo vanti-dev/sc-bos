@@ -12,12 +12,11 @@
 import AppBar from '@/components/default/AppBar.vue';
 import NavigationDrawer from '@/components/default/NavigationDrawer.vue';
 import ErrorView from '@/components/ui-error/ErrorView.vue';
-
-import {onMounted, onBeforeMount} from 'vue';
-import {storeToRefs} from 'pinia';
+import useVuetify from '@/composables/useVuetify';
 import {useAppConfigStore} from '@/stores/app-config';
 import {useControllerStore} from '@/stores/controller';
-import useVuetify from '@/composables/useVuetify';
+import {storeToRefs} from 'pinia';
+import {onBeforeMount, onMounted} from 'vue';
 
 const controller = useControllerStore();
 const appConfig = useAppConfigStore();

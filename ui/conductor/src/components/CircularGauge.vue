@@ -73,7 +73,7 @@ const segValue = computed(() => {
 // list of transforms per segment
 const transforms = computed(() => {
   const ts = [];
-  for (let i = 0; i<segmentsValue.value; i++) {
+  for (let i = 0; i < segmentsValue.value; i++) {
     const t = [];
     const pos = i / (segmentsValue.value - 1);
     const val = minValue.value + i * segValue.value;
@@ -109,7 +109,7 @@ const transforms = computed(() => {
 const fillColors = computed(() => {
   const cols = [];
 
-  for (let i = 0; i<segmentsValue.value; i++) {
+  for (let i = 0; i < segmentsValue.value; i++) {
     const val = minValue.value + i * segValue.value;
 
     if (val >= props.value) {
@@ -136,16 +136,18 @@ const fillColors = computed(() => {
 .gauge {
   position: relative;
 }
+
 .value {
   display: flex;
   position: absolute;
-  left:  15%;
-  top:   15%;
+  left: 15%;
+  top: 15%;
   right: 15%;
   bottom: 20%;
   justify-content: center;
   align-items: center;
 }
+
 .gauge-title {
   display: flex;
   position: absolute;

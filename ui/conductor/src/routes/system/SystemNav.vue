@@ -15,9 +15,9 @@
 </template>
 
 <script setup>
+import useAuthSetup from '@/composables/useAuthSetup';
 import {useAppConfigStore} from '@/stores/app-config';
 import {computed} from 'vue';
-import useAuthSetup from '@/composables/useAuthSetup';
 
 const {hasNoAccess} = useAuthSetup();
 

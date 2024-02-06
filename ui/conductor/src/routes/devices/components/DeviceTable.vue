@@ -70,15 +70,13 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue';
-
-import useDevices from '@/composables/useDevices';
-import {usePageStore} from '@/stores/page';
-import {Zone} from '@/routes/site/zone/zone';
-
-import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import ContentCard from '@/components/ContentCard.vue';
 import HotPoint from '@/components/HotPoint.vue';
+import SubsystemIcon from '@/components/SubsystemIcon.vue';
+import useDevices from '@/composables/useDevices';
+import {Zone} from '@/routes/site/zone/zone';
+import {usePageStore} from '@/stores/page';
+import {computed, ref} from 'vue';
 import DeviceCell from './DeviceCell.vue';
 
 const props = defineProps({

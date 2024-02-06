@@ -60,9 +60,8 @@ export const useNotifications = defineStore('notifications', () => {
         author
       }).catch((err) => console.error(err));
     } else {
-      unacknowledgeAlert({name, id: alert.id, allowAcknowledged: false, allowMissing: false}).catch((err) =>
-        console.error(err)
-      );
+      unacknowledgeAlert({name, id: alert.id, allowAcknowledged: false, allowMissing: false})
+          .catch((err) => console.error(err));
     }
   }
 

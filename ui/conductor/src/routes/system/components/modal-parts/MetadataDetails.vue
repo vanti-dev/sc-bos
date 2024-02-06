@@ -75,8 +75,8 @@
 
 
 <script setup>
-import {isArray, isObject, isValueAvailable} from '@/util/types';
 import {camelToSentence} from '@/util/string';
+import {isArray, isObject, isValueAvailable} from '@/util/types';
 
 const props = defineProps({
   metadata: {

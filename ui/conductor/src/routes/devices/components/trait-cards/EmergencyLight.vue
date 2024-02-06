@@ -30,9 +30,9 @@
 
 <script setup>
 
-import {computed, onUnmounted, reactive, watch} from 'vue';
 import {closeResource, newResourceValue} from '@/api/resource';
 import useAuthSetup from '@/composables/useAuthSetup';
+import {computed, onUnmounted, reactive, watch} from 'vue';
 
 const {blockActions} = useAuthSetup();
 
@@ -60,7 +60,7 @@ onUnmounted(() => {
 
 const battery = computed(() => {
   if (emergencyLightValue && emergencyLightValue.value) {
-    return (emergencyLightValue.value.levelPercent*100).toFixed(1);
+    return (emergencyLightValue.value.levelPercent * 100).toFixed(1);
   }
   return '-';
 });
@@ -81,6 +81,7 @@ const testHistory = computed(() => {
 .v-list-item {
   min-height: auto;
 }
+
 .v-progress-linear {
   width: auto;
 }

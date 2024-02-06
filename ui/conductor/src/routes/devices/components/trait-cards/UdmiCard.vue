@@ -6,7 +6,7 @@
         <v-list-item-content class="py-0">
           <v-list-item-title class="text-body-small text-capitalize">Last updated</v-list-item-title>
           <v-list-item-subtitle class="text-capitalize">
-            {{ Intl.DateTimeFormat('en-GB', {dateStyle:'short',timeStyle:'long'}).format(message.updateTime) }}
+            {{ Intl.DateTimeFormat('en-GB', {dateStyle: 'short', timeStyle: 'long'}).format(message.updateTime) }}
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
@@ -76,6 +76,6 @@ onUnmounted(() => {
 
 <style scoped>
 .v-list-item {
-    min-height: auto;
+  min-height: auto;
 }
 </style>

@@ -33,6 +33,6 @@ const occupancyPercentage = computed(() => {
 });
 
 const occupancyPercentageDisplay = computed(() =>
-  occupancyPercentage.value > 0 ? occupancyPercentage.value.toFixed(1) : occupancyPercentage.value.toFixed(0)
+    occupancyPercentage.value > 0 ? occupancyPercentage.value.toFixed(1) : occupancyPercentage.value.toFixed(0)
 );
 </script>

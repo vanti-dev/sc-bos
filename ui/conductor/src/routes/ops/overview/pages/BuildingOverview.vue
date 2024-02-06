@@ -18,12 +18,12 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
+import EnergyCard from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyCard.vue';
+import EnvironmentalCard from '@/routes/ops/overview/pages/widgets/environmental/EnvironmentalCard.vue';
+import OccupancyCard from '@/routes/ops/overview/pages/widgets/occupancy/OccupancyCard.vue';
 import {useAppConfigStore} from '@/stores/app-config';
 import {usePageStore} from '@/stores/page';
-import EnvironmentalCard from '@/routes/ops/overview/pages/widgets/environmental/EnvironmentalCard.vue';
-import EnergyCard from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyCard.vue';
-import OccupancyCard from '@/routes/ops/overview/pages/widgets/occupancy/OccupancyCard.vue';
+import {computed} from 'vue';
 
 const appConfig = useAppConfigStore();
 const pageStore = usePageStore();

@@ -40,13 +40,12 @@
 </template>
 
 <script setup>
-import {computed, ref, watch} from 'vue';
-import useSystemComponents from '@/composables/useSystemComponents';
-
 import ContentCard from '@/components/ContentCard.vue';
-import ComponentInput from '@/routes/system/components/modal-parts/ComponentInput.vue';
+import useSystemComponents from '@/composables/useSystemComponents';
 import CertificateDetails from '@/routes/system/components/modal-parts/CertificateDetails.vue';
+import ComponentInput from '@/routes/system/components/modal-parts/ComponentInput.vue';
 import MetadataDetails from '@/routes/system/components/modal-parts/MetadataDetails.vue';
+import {computed, ref, watch} from 'vue';
 
 const emits = defineEmits(['update:showModal']);
 const props = defineProps({

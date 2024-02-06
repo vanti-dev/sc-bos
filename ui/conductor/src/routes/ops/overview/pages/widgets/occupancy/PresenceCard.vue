@@ -20,15 +20,14 @@
 </template>
 
 <script setup>
+import {occupancyStateToString} from '@/api/sc/traits/occupancy';
+import ContentCard from '@/components/ContentCard.vue';
+import {DAY, HOUR, MINUTE, SECOND, useNow} from '@/components/now';
 import StatusAlert from '@/components/StatusAlert.vue';
-import {computed, ref, watch} from 'vue';
-import {useNow, SECOND, MINUTE, HOUR, DAY} from '@/components/now';
+import useOccupancyTrait from '@/composables/traits/useOccupancyTrait';
 import {formatTimeAgo} from '@/util/date';
 import {Occupancy} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
-import {occupancyStateToString} from '@/api/sc/traits/occupancy';
-import useOccupancyTrait from '@/composables/traits/useOccupancyTrait';
-
-import ContentCard from '@/components/ContentCard.vue';
+import {computed, ref, watch} from 'vue';
 
 const props = defineProps({
   name: {

@@ -36,6 +36,7 @@
 <script setup>
 import {newActionTracker} from '@/api/resource';
 import {ServiceNames} from '@/api/ui/services';
+import useAuthSetup from '@/composables/useAuthSetup';
 import DeviceTable from '@/routes/devices/components/DeviceTable.vue';
 import {Zone} from '@/routes/site/zone/zone';
 import {useAppConfigStore} from '@/stores/app-config';
@@ -44,7 +45,6 @@ import {usePageStore} from '@/stores/page';
 import {useServicesStore} from '@/stores/services';
 import {Service} from '@sc-bos/ui-gen/proto/services_pb';
 import {computed, ref, watch} from 'vue';
-import useAuthSetup from '@/composables/useAuthSetup';
 
 const {blockActions} = useAuthSetup();
 

@@ -41,12 +41,11 @@
 </template>
 
 <script setup>
-import {computed, watch} from 'vue';
-import {storeToRefs} from 'pinia';
-
-import useAuthSetup from '@/composables/useAuthSetup';
 import {usePage} from '@/components/page';
+import useAuthSetup from '@/composables/useAuthSetup';
 import {usePageStore} from '@/stores/page';
+import {storeToRefs} from 'pinia';
+import {computed, watch} from 'vue';
 
 const {isLoggedIn} = useAuthSetup();
 const {hasNav} = usePage();
