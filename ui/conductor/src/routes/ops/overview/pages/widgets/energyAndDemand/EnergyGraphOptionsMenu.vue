@@ -49,7 +49,7 @@
                 <v-btn
                     v-for="option in durationOptions"
                     class="transparent grey--text text--lighten-1"
-                    :key="option.text"
+                    :key="option.id"
                     small
                     :value="option.value">
                   <span class="hidden-sm-and-down">{{ option.text }}</span>
@@ -86,6 +86,7 @@ const durationOptions = [
   {
     text: '24H',
     value: {
+      id: '24H',
       span: 20 * MINUTE,
       timeFrame: 24 * HOUR
     }
@@ -93,14 +94,16 @@ const durationOptions = [
   {
     text: '1W',
     value: {
-      span: 1 * HOUR,
+      id: '1W',
+      span: 2 * HOUR,
       timeFrame: 7 * DAY
     }
   },
   {
     text: '30D',
     value: {
-      span: 1 * DAY,
+      id: '30D',
+      span: 6 * HOUR,
       timeFrame: 30 * DAY
     }
   }

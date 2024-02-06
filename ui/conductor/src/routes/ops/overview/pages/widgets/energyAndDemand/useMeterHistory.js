@@ -93,7 +93,7 @@ export default function(name, periodStart, periodEnd, spanSize) {
   // It will fetch the missing data from the server and store the results, along with any existing records,
   // in the records ref.
   watchEffect(() => {
-    if (!shouldFetch.value) {
+    if (!shouldFetch.value || !toValue(name)) {
       return;
     }
     lastFetchTime.value = toValue(now);
