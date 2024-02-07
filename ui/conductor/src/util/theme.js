@@ -29,7 +29,16 @@ export const hexColor = (name, vuetifyInstance) => {
   }
 
   // Attempt to get the color from the Vuetify theme first
-  const themeColor = vuetifyInstance?.theme?.themes[currentTheme][util.family]?.[util.modifier];
+  const themeColor = vuetifyInstance?.theme?.themes[currentTheme][util.family];
+
+  // Check if the color is defined as an object with modifiers or a simple string
+  if (typeof themeColor === 'object') {
+    // It's an object, attempt to get the modifier
+    return themeColor[util.modifier] || themeColor.base; // Fallback to 'base' if modifier not found
+  } else if (typeof themeColor === 'string') {
+    // It's a simple string color
+    return themeColor;
+  }
 
   // Fallback to Vuetify's default colors if not defined in the theme
   return themeColor || colors[util.family][util.modifier];
