@@ -4,7 +4,7 @@ import {DAY, useNow} from '@/components/now';
 import useDevices from '@/composables/useDevices';
 import useTimePeriod from '@/routes/ops/overview/pages/widgets/energyAndDemand/useTimePeriod';
 import {hasTrait} from '@/util/devices';
-import {processToDownload} from '@/util/downloadCSV';
+import {csvDownload} from '@/util/downloadCSV';
 import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
 import Vue, {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
 
@@ -332,14 +332,16 @@ export default function(props) {
     return await listAllPages(request, [], 'csv');
   };
 
-  // Using a composable which handles the CSV download after setting up the correct parameters
-  const {downloadCSV} = processToDownload({
-    acronyms,
-    docType: 'Air Quality',
-    flattenRecords: (records) => flatteningRecords(records, airDevice.value),
-    records: async () => await fetchRecordsForCSV(airDevice.value),
-    source: airDevice
-  });
+  // Using a utility which handles the CSV download after setting up the correct parameters
+  const downloadCSV = async () => {
+    csvDownload({
+      acronyms,
+      docType: 'Air Quality',
+      flattenRecords: (records) => flatteningRecords(records, airDevice.value),
+      records: async () => await fetchRecordsForCSV(airDevice.value),
+      deviceName: airDevice
+    });
+  };
 
 
   // ---- Cleanup ---- //

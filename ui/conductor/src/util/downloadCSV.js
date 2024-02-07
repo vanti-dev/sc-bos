@@ -10,19 +10,19 @@ import {toValue} from '@/util/vue';
  *   docType: string,
  *   flattenRecords: (records: Array<Object>) => Array<Object>,
  *   records: function(): Promise<T[]>,
- *   source: MaybeRefOrGetter<string>
+ *   deviceName: MaybeRefOrGetter<string>
  * }} params An object containing all configurations:
  *          - `acronyms`: Maps acronyms to their full forms for clarity in the CSV content.
  *          - `docType`: The type of document to be generated, affecting the CSV structure.
  *          - `flattenRecords`: A function that flattens the array of record objects for CSV conversion.
  *          - `records`: An async function returning an array of record objects for the CSV.
- *          - `source`: The source from where the records are fetched, tailoring CSV content.
+ *          - `deviceName`: The deviceName from where the records are fetched, tailoring CSV content.
  *
  * Returned an object containing the `downloadCSV` method,
  * which generates and then downloads the CSV file asynchronously.
- * @return {{downloadCSV: function(): Promise<void>}}
+ * @return {void}
  */
-export const processToDownload = (params) => {
+export const csvDownload = async (params) => {
   /**
    * Capitalize the first letter of a string
    *
@@ -83,10 +83,10 @@ export const processToDownload = (params) => {
    *
    * @return {Promise<void>}
    */
-  const downloadCSV = async () => {
-    // Check if there's a selected source, if not, log a warning and return
-    if (!toValue(params.source)) {
-      console.warn('No source selected for downloading CSV');
+  const download = async () => {
+    // Check if there's a selected deviceName, if not, log a warning and return
+    if (!toValue(params.deviceName)) {
+      console.warn('No deviceName selected for downloading CSV');
       return;
     }
 
@@ -95,7 +95,7 @@ export const processToDownload = (params) => {
 
     // Check if there are records to process, if not, log a warning and return
     if (!availableRecords || availableRecords.length === 0) {
-      console.warn('No records found for source: ', toValue(params.source));
+      console.warn('No records found for deviceName: ', toValue(params.deviceName));
       return;
     }
 
@@ -116,7 +116,7 @@ export const processToDownload = (params) => {
     // Set the link attributes
     link.href = url;
     // Set the download attribute
-    link.setAttribute('download', `${params.docType} - ${toValue(params.source)} - ${dateString}.csv`);
+    link.setAttribute('download', `${params.docType} - ${toValue(params.deviceName)} - ${dateString}.csv`);
     // Append the link to the body
     document.body.appendChild(link);
     // Trigger the click event
@@ -127,7 +127,5 @@ export const processToDownload = (params) => {
     URL.revokeObjectURL(url);
   };
 
-  return {
-    downloadCSV
-  };
+  await download();
 };
