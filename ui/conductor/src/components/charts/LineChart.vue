@@ -2,10 +2,10 @@
   <div style="height: 100%; max-height: 275px;">
     <div class="d-flex flex-row flex-nowrap justify-end align-center mt-3 mb-6">
       <v-card-title class="text-h4 pa-0 mr-auto pl-4">{{ props.chartTitle }}</v-card-title>
-      <div v-if="!props.hideLegends" id="legend-container" class="mr-2"/>
+      <div id="legend-container" class="mr-2"/>
       <template v-if="$slots.options">
-        <v-divider v-if="!props.hideLegends" vertical class="mr-2" style="height: auto"/>
-        <span>
+        <v-divider vertical class="mr-2" style="height: auto"/>
+        <span class="mr-3">
           <slot name="options"/>
         </span>
       </template>
@@ -97,7 +97,7 @@ const getOrCreateLegendList = (id) => {
 
 const htmlLegendPlugin = {
   id: 'htmlLegend',
-  afterUpdate(chart, args, options) {
+  afterUpdate(chart) {
     if (props.hideLegends) return;
 
     const ul = getOrCreateLegendList('legend-container');

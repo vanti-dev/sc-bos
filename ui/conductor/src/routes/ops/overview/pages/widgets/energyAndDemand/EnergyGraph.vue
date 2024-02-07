@@ -8,20 +8,9 @@
         dataset-id-key="label"
         :hide-legends="props.hideLegends">
       <template #options>
-        <v-switch
-            v-model="showConversion"
-            color="primary"
-            dense
-            hide-details
-            inset
-            class="my-0 ml-2 mr-3">
-          <template #prepend>
-            <span class="text-caption white--text">kW</span>
-          </template>
-          <template #append>
-            <span class="text-caption white--text ml-n4">CO₂</span>
-          </template>
-        </v-switch>
+        <EnergyGraphOptionsMenu
+            :duration-option.sync="durationOption"
+            :show-conversion.sync="showConversion"/>
       </template>
     </LineChart>
   </div>
@@ -30,6 +19,7 @@
 <script setup>
 import LineChart from '@/components/charts/LineChart.vue';
 import {HOUR, MINUTE, useNow} from '@/components/now';
+import EnergyGraphOptionsMenu from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraphOptionsMenu.vue';
 import useMeterHistory from '@/routes/ops/overview/pages/widgets/energyAndDemand/useMeterHistory';
 import useTimePeriod from '@/routes/ops/overview/pages/widgets/energyAndDemand/useTimePeriod';
 import {useCarbonIntensity} from '@/stores/carbonIntensity';
@@ -71,165 +61,121 @@ const props = defineProps({
   height: {
     type: String,
     default: '275px'
-  },
-  span: {
-    type: Number,
-    default: 20 * MINUTE
-  },
-  timeFrame: {
-    type: Number,
-    default: 24 * HOUR
   }
 });
-const {now} = useNow(() => props.span);
-const {periodStart, periodEnd} = useTimePeriod(now, () => props.span, () => props.timeFrame);
+const durationOption = ref({
+  id: '24H',
+  span: 20 * MINUTE,
+  timeFrame: 24 * HOUR
+});
+const {now} = useNow(() => durationOption.value.span);
+const {periodStart, periodEnd} = useTimePeriod(
+    now,
+    () => durationOption.value.span,
+    () => durationOption.value.timeFrame
+);
 const showConversion = ref(false);
-
-
 const carbonIntensity = useCarbonIntensity();
 const gramsOfCO2PerKWh = ref(86);
-const kwhToGramsOfCO2 = (date) => {
-  if (!carbonIntensity.last24Hours) {
-    return gramsOfCO2PerKWh.value;
-  }
-  const first = carbonIntensity.last24Hours[0];
-  const last = carbonIntensity.last24Hours[carbonIntensity.last24Hours.length - 1];
-  if (date < first.from) {
-    return first.intensity.actual ?? first.intensity.forecast;
-  }
-  if (date > last.to) {
-    return last.intensity.actual ?? last.intensity.forecast;
-  }
-  for (const range of carbonIntensity.last24Hours) {
-    if (range.from <= date && date <= range.to) {
-      return range.intensity.actual ?? range.intensity.forecast;
-    }
-  }
-  return last.actual ?? last.forecast;
-};
-const yAxisUnit = computed(() => {
-  return showConversion.value ? 'Grams of CO₂ / hour' : 'kW';
-});
-const metered = useMeterHistory(() => props.metered, periodStart, periodEnd, () => props.span);
-const generated = useMeterHistory(() => props.generated, periodStart, periodEnd, () => props.span);
-const co2Metered = computed(() => {
-  return metered.seriesData.value.map((value) => {
-    return {
-      ...value,
-      y: value.y * kwhToGramsOfCO2(value.x)
-    };
-  });
-});
-const co2Generated = computed(() => {
-  return generated.seriesData.value.map((value) => {
-    return {
-      ...value,
-      y: value.y * kwhToGramsOfCO2(value.x)
-    };
-  });
-});
 
-const chartData = computed(() => {
-  // Return the restructured data for the chart
-  const datasets = [];
-
-  if (showConversion.value) {
-    if (props.generated) {
-      datasets.push({
-        borderColor: 'orange', // line color
-        data: co2Generated.value, // data for the line
-        fill: false, // fill the area under the line
-        label: 'Generated', // tooltip label
-        mode: 'nearest', // 'index' or 'nearest
-        pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
-        pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
-        pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
-        pointHoverBorderColor: 'orange', // point border color on hover
-        // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
-        pointStyle: 'circle',
-        tension: 0.35 // curve the line
-      });
-    }
-
-    if (props.metered) {
-      datasets.push({
-        backgroundColor: (ctx) => {
-          const canvas = ctx.chart.ctx;
-          const gradient = canvas.createLinearGradient(0, 0, 0, 425);
-
-          gradient.addColorStop(0, props.color); // color
-          gradient.addColorStop(0.5, props.colorMiddle); // darker shade of the color
-          gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // almost transparent
-
-          return gradient;
-        },
-        borderColor: props.color, // line color
-        data: co2Metered.value, // data for the line
-        fill: true, // fill the area under the line
-        label: 'Metered', // tooltip label
-        mode: 'nearest', // 'index' or 'nearest
-        pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
-        pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
-        pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
-        pointHoverBorderColor: 'orange', // point border color on hover
-        // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
-        pointStyle: 'circle',
-        tension: 0.35 // curve the line
-      });
-    }
-  }
-
-  if (!showConversion.value) {
-    if (props.generated) {
-      datasets.push({
-        borderColor: 'orange', // line color
-        data: generated.seriesData.value, // data for the line
-        fill: false, // fill the area under the line
-        label: 'Generated', // tooltip label
-        mode: 'nearest', // 'index' or 'nearest
-        pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
-        pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
-        pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
-        pointHoverBorderColor: 'orange', // point border color on hover
-        // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
-        pointStyle: 'circle',
-        tension: 0.35 // curve the line
-      });
-    }
-
-    if (props.metered) {
-      datasets.push({
-        // Setting background gradient on metered data
-        backgroundColor: (ctx) => {
-          const canvas = ctx.chart.ctx;
-          const gradient = canvas.createLinearGradient(0, 0, 0, 425);
-
-          gradient.addColorStop(0, props.color); // color
-          gradient.addColorStop(0.5, props.colorMiddle); // darker shade of the color
-          gradient.addColorStop(1, 'rgba(0, 94, 107, 0.1)'); // almost transparent
-
-          return gradient;
-        },
-        borderColor: props.color, // line color
-        data: metered.seriesData.value, // data for the line
-        fill: true, // fill area under the line graph
-        label: 'Metered', // tooltip label
-        mode: 'nearest', // 'index' or 'nearest
-        pointBackgroundColor: 'rgba(0, 0, 0, 0)', // point background color
-        pointBorderColor: 'rgba(0, 0, 0, 0)', // point border color
-        pointHoverBackgroundColor: 'rgb(255, 255, 255)', // point background color on hover
-        pointHoverBorderColor: props.color, // point border color on hover
-        // 'circle', 'cross', 'crossRot', 'dash', 'line', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'
-        pointStyle: 'circle',
-        tension: 0.35 // curve the line
-      });
-    }
-  }
-
-  return {
-    datasets
+// Simplify co2intervals computation by mapping duration IDs to carbonIntensity properties directly
+const co2intervals = computed(() => {
+  const mapping = {
+    '24H': carbonIntensity.last24Hours,
+    '1W': carbonIntensity.last7Days,
+    '30D': carbonIntensity.last30Days
   };
+  return mapping[durationOption.value.id] || [];
 });
+
+// Helper function to convert kWh to grams of CO2 based on the date and the carbon intensity data
+const kwhToGramsOfCO2 = date => {
+  const co2source = co2intervals.value;
+
+  // Handles empty co2source array by returning the default value if no data is available
+  if (!co2source.length) return gramsOfCO2PerKWh.value;
+
+  const first = co2source[0]; // Get the first element of the array
+  const last = co2source.at(-1); // Get the last element of the array
+
+  // Handles dates before the first range
+  if (date < first.from) {
+    return getIntensityValue(first);
+  }
+
+  // Handles dates after the last range
+  if (date > last.to) {
+    return getIntensityValue(last);
+  }
+
+  // Finds and returns intensity for a date within the ranges
+  const matchingRange = co2source.find(range => date >= range.from && date <= range.to);
+  return matchingRange ? getIntensityValue(matchingRange) : getIntensityValue(last);
+};
+
+// Helper function to get the actual or forecasted intensity value
+const getIntensityValue = (range) => range.intensity.actual ?? range.intensity.forecast;
+
+// Set the yAxis unit based on the `showConversion` value
+const yAxisUnit = computed(() => showConversion.value ? 'Grams of CO₂ / hour' : 'kW');
+
+// Fetch the metered and generated data based on the periodStart and periodEnd values and the durationOption's span
+const metered = useMeterHistory(() => props.metered, periodStart, periodEnd, () => durationOption.value.span);
+const generated = useMeterHistory(() => props.generated, periodStart, periodEnd, () => durationOption.value.span);
+
+// Helper function to compute the CO2 series data based on the seriesData value and the kwhToGramsOfCO2 function
+const computeCO2SeriesData = seriesData => seriesData.value.map(({x, y}) => ({x, y: y * kwhToGramsOfCO2(x)}));
+
+// Computed properties to compute the CO2 series data for the metered and generated data
+const co2Metered = computed(() => computeCO2SeriesData(metered.seriesData));
+const co2Generated = computed(() => computeCO2SeriesData(generated.seriesData));
+
+// ----------------- Chart Data and Options ----------------- //
+const chartData = computed(() => {
+  const datasets = [];
+  const colorEnd = 'rgba(0, 94, 107, 0.1)'; // Pre-defined for consistency and potential dynamic updates
+
+  // Function to create a gradient; improves readability and reusability
+  const createGradient = (ctx) => {
+    const canvas = ctx.chart.ctx;
+    const gradient = canvas.createLinearGradient(0, 0, 0, 425);
+    gradient.addColorStop(0, props.color);
+    gradient.addColorStop(0.5, props.colorMiddle);
+    gradient.addColorStop(1, colorEnd); // Use predefined value
+    return gradient;
+  };
+
+  // Helper function to avoid redundancy in dataset creation
+  const addDataset = (data, isMetered = false) => {
+    datasets.push({
+      borderColor: isMetered ? props.color : 'orange',
+      data: data,
+      fill: isMetered,
+      label: isMetered ? 'Metered' : 'Generated',
+      backgroundColor: isMetered ? createGradient : undefined,
+      pointBackgroundColor: 'rgba(0, 0, 0, 0)',
+      pointBorderColor: 'rgba(0, 0, 0, 0)',
+      pointHoverBackgroundColor: 'rgb(255, 255, 255)',
+      pointHoverBorderColor: isMetered ? props.color : 'orange',
+      pointStyle: 'circle',
+      tension: 0.35
+    });
+  };
+
+  // Decide which data to use based on `showConversion` and whether props are provided
+  if (props.generated) {
+    const generatedData = showConversion.value ? co2Generated.value : generated.seriesData.value;
+    addDataset(generatedData, false);
+  }
+
+  if (props.metered) {
+    const meteredData = showConversion.value ? co2Metered.value : metered.seriesData.value;
+    addDataset(meteredData, true);
+  }
+
+  return {datasets};
+});
+
 
 const chartOptions = computed(() => {
   return {
@@ -276,17 +222,15 @@ const chartOptions = computed(() => {
           // Format the tooltip title to Month Date, 24 Hour:Minute
           title: (data) => {
             const date = new Date(data[0].parsed.x);
-            const title = date.toLocaleString('en-GB', {
+            return date.toLocaleString('en-GB', {
               month: 'short',
               day: 'numeric',
               hour: 'numeric',
               minute: 'numeric',
               hour12: false
             });
-
-            return title;
           },
-          labelPointStyle: function(context) {
+          labelPointStyle: function() {
             return {
               pointStyle: 'line',
               rotation: 0
@@ -344,23 +288,20 @@ const chartOptions = computed(() => {
           // autoSkip: true,
           callback: (value) => {
             // Format the xAxis label to either Month Date or 24 Hour:Minute
-            let label = '';
             const date = new Date(value);
 
             if (date.getHours() === 0) {
-              label = date.toLocaleString('en-GB', {
+              return date.toLocaleString('en-GB', {
                 day: 'numeric',
                 month: 'short'
               });
             } else {
-              label = date.toLocaleString('en-GB', {
+              return date.toLocaleString('en-GB', {
                 hour: 'numeric',
                 minute: 'numeric',
                 hour12: false
               });
             }
-
-            return label;
           },
           color: '#fff',
           display: true,

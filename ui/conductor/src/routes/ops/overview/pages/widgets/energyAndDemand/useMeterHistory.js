@@ -2,6 +2,7 @@ import {timestampToDate} from '@/api/convpb';
 import {listMeterReadingHistory} from '@/api/sc/traits/meter';
 import {HOUR, MINUTE, useNow} from '@/components/now';
 import {toValue} from '@/util/vue';
+import debounce from 'debounce';
 import {computed, ref, watch, watchEffect} from 'vue';
 
 /**
@@ -26,6 +27,11 @@ import {computed, ref, watch, watchEffect} from 'vue';
 export default function(name, periodStart, periodEnd, spanSize) {
   // Contains all the raw (well AsObject) records we've fetched from the server
   const records = ref(/** @type {MeterReadingRecord.AsObject[]} */ []);
+  // Watch for changes to the span size, and reset the records if it changes.
+  watch(() => toValue(spanSize), () => {
+    records.value = []; // reset if the span size changes
+  });
+
   // A boolean indicating whether the async fetch is in progress
   const fetching = ref(false);
   // A Date recording the last time we fetched data from the server.
@@ -84,15 +90,8 @@ export default function(name, periodStart, periodEnd, spanSize) {
     return spans;
   });
 
-  // This watch tracks the missingPeriods that we have to query the server for.
-  // It will fetch the missing data from the server and store the results, along with any existing records,
-  // in the records ref.
-  watchEffect(() => {
-    if (!shouldFetch.value) {
-      return;
-    }
-    lastFetchTime.value = toValue(now);
-
+  // Debounce the data fetch to prevent multiple calls to the server within a certain time frame.
+  const debouncedDataFetch = debounce(() => {
     // We use these later to trim the records array and remove items that aren't needed any more.
     // We grab them now so that they are tracked for reactivity before we await anything.
     const periodStartDate = toValue(queryStart);
@@ -112,6 +111,18 @@ export default function(name, periodStart, periodEnd, spanSize) {
           console.error('Error fetching meter history', err);
         })
         .finally(() => fetching.value = false);
+  }, 500, false);
+
+  // This watch tracks the missingPeriods that we have to query the server for.
+  // It will fetch the missing data from the server and store the results, along with any existing records,
+  // in the records ref.
+  watchEffect(() => {
+    if (!shouldFetch.value || !toValue(name)) {
+      return;
+    }
+    lastFetchTime.value = toValue(now);
+
+    debouncedDataFetch();
   });
 
   const shouldSampleData = computed(() => toValue(spanSize) > 0);
