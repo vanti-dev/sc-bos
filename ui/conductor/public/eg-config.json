@@ -46,7 +46,8 @@
           "primary": {
             "base": "#ffcc00",
             "darken3": "#9c7c00"
-          }
+          },
+          "info": "#00c7b1"
         }
       }
     },
@@ -67,6 +68,7 @@
       {"name": "Floor 10", "svgPath": "/floorPlans/L10.svg"}
     ],
     "building": {
+      "showOccupancy": false,
       "children": [
         {
           "disabled": false,
