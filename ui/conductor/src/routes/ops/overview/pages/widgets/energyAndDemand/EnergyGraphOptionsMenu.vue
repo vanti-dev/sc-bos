@@ -19,16 +19,19 @@
           </template>
 
           <v-list height="100%">
-            <v-list-item class="d-flex flex-row justify-center pa-0 mt-n1 px-3">
+            <v-list-item
+                class="d-flex flex-row justify-center pa-0 mt-n1 px-3"
+                @click.stop="showConversionToggle = !showConversionToggle">
               <v-subheader class="text-body-2 pa-0">Unit Type</v-subheader>
               <v-spacer/>
               <v-switch
-                  v-model="showConversionToggle"
-                  class="ml-4 my-auto"
+                  class="ml-4 my-auto no-pointer-events"
                   color="primary"
                   dense
+                  readonly
                   hide-details
-                  inset>
+                  inset
+                  :value="props.showConversion">
                 <template #prepend>
                   <span class="text-caption grey--text text--lighten-1">kW</span>
                 </template>
@@ -37,22 +40,22 @@
                 </template>
               </v-switch>
             </v-list-item>
-            <v-list-item class="pa-0 d-flex flex-row justify-center px-3" dense>
+            <v-list-item class="pa-0 d-flex flex-row justify-center px-3" dense @click.stop="changeDuration">
               <v-subheader class="text-body-2 pa-0">Duration</v-subheader>
               <v-spacer/>
               <v-btn-toggle
-                  v-model="activeDuration"
-                  active-class="primary--text"
-                  color="transparent"
+                  active-class="primary"
                   dense
-                  mandatory>
+                  :value="durationOption">
                 <v-btn
                     v-for="option in durationOptions"
-                    class="transparent grey--text text--lighten-1"
+                    active-class="primary text--darken-3"
+                    class="transparent grey--text text--lighten-1 no-pointer-events btn-no-hover"
                     :key="option.id"
+                    :ripple="false"
                     small
                     :value="option.value">
-                  <span class="hidden-sm-and-down">{{ option.text }}</span>
+                  <span class="text-caption">{{ option.text }}</span>
                 </v-btn>
               </v-btn-toggle>
             </v-list-item>
@@ -65,8 +68,8 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
 import {DAY, HOUR, MINUTE} from '@/components/now';
+import {computed} from 'vue';
 
 const props = defineProps({
   durationOption: {
@@ -122,4 +125,25 @@ const activeDuration = computed({
   get: () => props.durationOption,
   set: (value) => emits('update:durationOption', value)
 });
+
+// Click handler on duration row.
+// Increasing the duration on each click to the next level. If reaching the last option
+// returns to the first available option and restarts the cycle.
+const changeDuration = () => {
+  const index = durationOptions.findIndex(option => option.value.id === activeDuration.value.id);
+  const nextIndex = (index + 1) % durationOptions.length;
+  activeDuration.value = durationOptions[nextIndex].value;
+};
+
 </script>
+
+<style lang="scss" scoped>
+.no-pointer-events {
+  pointer-events: none;
+}
+
+.v-btn-toggle.no-pointer-events .v-btn {
+  background-color: transparent !important;
+  color: inherit !important; /* Adjust based on your needs */
+}
+</style>
