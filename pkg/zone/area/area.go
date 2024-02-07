@@ -15,6 +15,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/zone/area/config"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/airquality"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/electric"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/enterleave"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/hvac"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/lighting"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/meter"
@@ -26,6 +27,7 @@ import (
 // DefaultFeatures lists all the default features for an area.
 var DefaultFeatures = []zone.Factory{
 	electric.Feature,
+	enterleave.Feature,
 	hvac.Feature,
 	lighting.Feature,
 	meter.Feature,
