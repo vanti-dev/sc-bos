@@ -19,10 +19,12 @@
 <script setup>
 import LineChart from '@/components/charts/LineChart.vue';
 import {HOUR, MINUTE, useNow} from '@/components/now';
+import useVuetify from '@/composables/useVuetify';
 import EnergyGraphOptionsMenu from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraphOptionsMenu.vue';
 import useMeterHistory from '@/routes/ops/overview/pages/widgets/energyAndDemand/useMeterHistory';
 import useTimePeriod from '@/routes/ops/overview/pages/widgets/energyAndDemand/useTimePeriod';
 import {useCarbonIntensity} from '@/stores/carbonIntensity';
+import {hexColor, rgbaColor} from '@/util/theme';
 import {computed, ref} from 'vue';
 
 const props = defineProps({
@@ -33,14 +35,6 @@ const props = defineProps({
   classes: {
     type: String,
     default: 'mt-n10'
-  },
-  color: {
-    type: String,
-    default: '#00bed6' // primary
-  },
-  colorMiddle: {
-    type: String,
-    default: 'rgba(51, 142, 161, 0.75)' // primary 75% opacity
   },
   hideLegends: {
     type: Boolean,
@@ -63,6 +57,7 @@ const props = defineProps({
     default: '275px'
   }
 });
+const vuetifyInstance = useVuetify();
 const durationOption = ref({
   id: '24H',
   span: 20 * MINUTE,
@@ -77,6 +72,14 @@ const {periodStart, periodEnd} = useTimePeriod(
 const showConversion = ref(false);
 const carbonIntensity = useCarbonIntensity();
 const gramsOfCO2PerKWh = ref(86);
+
+const themeColor = computed(() => {
+  return {
+    start: hexColor('primary', vuetifyInstance),
+    middle: rgbaColor(hexColor('primary darken-3', vuetifyInstance), 0.5),
+    end: rgbaColor(hexColor('primary darken-4', vuetifyInstance), 0.1)
+  };
+});
 
 // Simplify co2intervals computation by mapping duration IDs to carbonIntensity properties directly
 const co2intervals = computed(() => {
@@ -135,22 +138,24 @@ const co2Generated = computed(() => computeCO2SeriesData(generatedSeriesData));
 // ----------------- Chart Data and Options ----------------- //
 const chartData = computed(() => {
   const datasets = [];
-  const colorEnd = 'rgba(0, 94, 107, 0.1)'; // Pre-defined for consistency and potential dynamic updates
 
   // Function to create a gradient; improves readability and reusability
   const createGradient = (ctx) => {
     const canvas = ctx.chart.ctx;
     const gradient = canvas.createLinearGradient(0, 0, 0, 425);
-    gradient.addColorStop(0, props.color);
-    gradient.addColorStop(0.5, props.colorMiddle);
-    gradient.addColorStop(1, colorEnd); // Use predefined value
+    gradient.addColorStop(0, themeColor.value.start);
+    gradient.addColorStop(0.5, themeColor.value.middle);
+    gradient.addColorStop(1, themeColor.value.end); // Use predefined value
     return gradient;
   };
+
+  // Set Generated color to success lighten-3 (light green) by default
+  const generatedColor = rgbaColor(hexColor('success lighten-3', vuetifyInstance), 1);
 
   // Helper function to avoid redundancy in dataset creation
   const addDataset = (data, isMetered = false) => {
     datasets.push({
-      borderColor: isMetered ? props.color : 'orange',
+      borderColor: isMetered ? themeColor.value.start : generatedColor,
       data: data,
       fill: isMetered,
       label: isMetered ? 'Metered' : 'Generated',
@@ -158,7 +163,7 @@ const chartData = computed(() => {
       pointBackgroundColor: 'rgba(0, 0, 0, 0)',
       pointBorderColor: 'rgba(0, 0, 0, 0)',
       pointHoverBackgroundColor: 'rgb(255, 255, 255)',
-      pointHoverBorderColor: isMetered ? props.color : 'orange',
+      pointHoverBorderColor: isMetered ? themeColor.value.start : generatedColor,
       pointStyle: 'circle',
       tension: 0.35
     });
