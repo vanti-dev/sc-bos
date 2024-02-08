@@ -3,6 +3,7 @@ package hpd
 import (
 	"context"
 	"encoding/json"
+	"sync"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -84,11 +85,13 @@ func Test_PullExportMessages(t *testing.T) {
 		},
 	}
 
+	var wg sync.WaitGroup
 	for _, tt := range tests {
+		wg.Add(1)
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
+			defer wg.Done()
 
 			messages, err := client.PullExportMessages(ctx, req)
 			tt.set()
@@ -111,6 +114,8 @@ func Test_PullExportMessages(t *testing.T) {
 			if res := cmp.Diff(pointSetMessage.Points, tt.want); res != "" {
 				t.Fatal("trait does not match " + res)
 			}
+
 		})
 	}
+	wg.Wait()
 }
