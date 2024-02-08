@@ -309,10 +309,7 @@ func grpcClient[T any](a *Auto, c *T, f func(connInterface grpc.ClientConnInterf
 	// use local client config
 	rn := dev.RemoteNode
 	if rn == nil {
-		err := a.services.Node.Client(c)
-		if err != nil {
-			return err
-		}
+		return a.services.Node.Client(c)
 	}
 
 	a.connsMu.Lock()
