@@ -79,46 +79,53 @@ export const useAccountStore = defineStore('accountStore', () => {
     if (uiConfig.config.disableAuthentication) {
       return;
     }
-    try {
-      // Attempt to initialize Keycloak authentication
-      if (uiConfig.config?.keycloak) {
-        const details = await keyCloak.init();
-        availableAuthProviders.value = ['keyCloakAuth', 'localAuth'];
-        if (details) {
-          authenticationDetails.value = {
-            ...details,
-            authProvider: 'keyCloakAuth'
-          };
-          return;
-        }
-      }
-    } catch (error) {
-      availableAuthProviders.value = ['localAuth'];
-      console.error('Keycloak initialization failed', error);
-      snackbar.value = {
-        message: 'Keycloak initialization failed: ' + error.error,
-        visible: true
-      };
-      // Proceed to displaying the local authentication form if Keycloak fails
-      loginFormVisible.value = true;
-    }
 
-    // Initialize local authentication if Keycloak is not configured, fails, or is not authenticated
-    try {
-      const details = await localAuth.init();
-      if (details) {
-        authenticationDetails.value = {
-          ...details,
-          authProvider: 'localAuth'
+    const providers = [
+      {
+        name: 'keyCloakAuth',
+        init: keyCloak.init,
+        enabled: () => Boolean(uiConfig.config?.keycloak)
+      },
+      {
+        name: 'localAuth',
+        init: localAuth.init,
+        enabled: () => true
+      }
+    ];
+
+    let loginDetails = null; // details from the first successful init attempt (that returned 'logged in')
+    const availableProviderNames = [];
+    for (const provider of providers) {
+      if (!provider.enabled()) continue;
+      try {
+        if (loginDetails === null) {
+          const details = await provider.init();
+          if (details) {
+            loginDetails = {
+              ...details,
+              authProvider: provider.name
+            };
+          }
+        }
+        availableProviderNames.push(provider.name);
+      } catch (e) {
+        console.error(`${provider.name} initialization failed`, e);
+        snackbar.value = {
+          message: `${provider.name} initialization failed: ${e.error}`,
+          visible: true
         };
       }
-    } catch (error) {
-      console.error('Local authentication initialization failed', error);
-      snackbar.value = {
-        message: 'Local authentication initialization failed: ' + error.error,
-        visible: true
-      };
     }
+
+    availableAuthProviders.value = availableProviderNames;
+    if (loginDetails) {
+      // we are logged in already
+      authenticationDetails.value = loginDetails;
+      return;
+    }
+
+    // not logged in, show the login form
+    loginFormVisible.value = true;
   };
 
   /**
