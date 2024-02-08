@@ -88,6 +88,56 @@
             "buildingZone": {
               "description": "The device base name for the operations overview page",
               "type": "string"
+            },
+            "overview": {
+              "description": "Configuration for Ops overview building page and it's sub-pages",
+              "type": "object",
+              "properties": {
+                "widgets": {
+                  "description": "The widgets to show or hide on the building overview page",
+                  "type": "object",
+                  "properties": {
+                    "showEnergyConsumption": {
+                      "description": "Object or boolean to show/hide fully/partially the energy consumption widget",
+                      "oneOf": [
+                        {
+                          "description": "Boolean to show or hide completely",
+                          "type": "boolean"
+                        },
+                        {
+                          "description": "Object to show/hide specific parts",
+                          "type": "object",
+                          "properties": {
+                            "showChart": {
+                              "description": "Show/hide line graph",
+                              "type": "boolean"
+                            },
+                            "showIntensity": {
+                              "description": "Show/hide current power use and intensity",
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "showEnvironment": {
+                      "description": "Boolean to show or hide the environment card",
+                      "type": "boolean"
+                    },
+                    "showOccupancy": {
+                      "description": "Boolean to show or hide the occupancy bar chart",
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "children": {
+                  "description": "Sub pages to display as children to the building overview page",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/opsSubPage"
+                  }
+                }
+              }
             }
           }
         },
@@ -132,19 +182,6 @@
         "disableAuthentication": {
           "description": "A flag to disable authentication",
           "type": "boolean"
-        },
-        "building": {
-          "description": "Ops overview sub-page configuration",
-          "type": "object",
-          "properties": {
-            "children": {
-              "description": "Sub pages to display as children to the building overview page",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/opsSubPage"
-              }
-            }
-          }
         },
         "auth": {
           "description": "Configuration for user authentication",
@@ -223,8 +260,8 @@
           "description": "The title of the sub-page",
           "type": "string"
         },
-        "traits": {
-          "description": "The traits to show on the sub-page",
+        "widgets": {
+          "description": "The widgets to show on the sub-page",
           "type": "object",
           "properties": {
             "showAirQuality": {
