@@ -36,7 +36,7 @@ const overViewStore = useOverviewStore();
 const {activeOverview} = storeToRefs(overViewStore);
 
 const uiConfig = useUiConfigStore();
-const buildingChildren = computed(() => uiConfig.config?.building?.children || []);
+const overviewChildren = computed(() => uiConfig.config?.ops?.overview?.children || []);
 
 const pageStore = usePageStore();
 const graphWidth = computed(() => `min-width: calc(100% - 500px - ${pageStore.drawerWidth}px)`);
@@ -47,10 +47,10 @@ const graphWidth = computed(() => `min-width: calc(100% - 500px - ${pageStore.dr
  * @type {import('vue').ComputedRef<boolean>} displayLeftColumn
  */
 const displayLeftColumn = computed(() => {
-  const emergencyLighting = activeOverview.value?.traits?.showEmergencyLighting;
-  const notifications = activeOverview.value?.traits?.showNotifications;
-  const lighting = activeOverview.value?.traits?.showLighting;
-  const power = activeOverview.value?.traits?.showPower;
+  const emergencyLighting = activeOverview.value?.widgets?.showEmergencyLighting;
+  const notifications = activeOverview.value?.widgets?.showNotifications;
+  const lighting = activeOverview.value?.widgets?.showLighting;
+  const power = activeOverview.value?.widgets?.showPower;
 
   return emergencyLighting || notifications || lighting || power;
 });
@@ -61,16 +61,16 @@ const displayLeftColumn = computed(() => {
  * @type {import('vue').ComputedRef<boolean>} displayRightColumn
  */
 const displayRightColumn = computed(() => {
-  const airQuality = activeOverview.value?.traits?.showAirQuality;
-  const occupancy = activeOverview.value?.traits?.showOccupancy;
-  const energyConsumption = activeOverview.value?.traits?.showEnergyConsumption;
-  const environment = activeOverview.value?.traits?.showEnvironment;
+  const airQuality = activeOverview.value?.widgets?.showAirQuality;
+  const occupancy = activeOverview.value?.widgets?.showOccupancy;
+  const energyConsumption = activeOverview.value?.widgets?.showEnergyConsumption;
+  const environment = activeOverview.value?.widgets?.showEnvironment;
 
   return airQuality || occupancy || energyConsumption || environment;
 });
 
 const findActiveOverview = computed(() => {
-  return findActiveItem(buildingChildren.value, props.pathSegments);
+  return findActiveItem(overviewChildren.value, props.pathSegments);
 });
 
 watch(() => props.pathSegments, () => {
