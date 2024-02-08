@@ -49,20 +49,31 @@
                   }
                 },
                 "brandColors": {
-                  "description": "The colors used for the app branding",
+                  "description": "The colors used for the app branding/theming",
                   "type": "object",
                   "patternProperties": {
                     ".*": {
                       "description": "A named theme color",
-                      "examples": ["primary", "secondary"],
-                      "type": "object",
-                      "patternProperties": {
-                        ".*": {
-                          "description": "HEX color code for this color variant",
+                      "examples": ["primary", "info"],
+                      "oneOf": [
+                        {
+                          "description": "Variants of the theme color",
                           "examples": ["base", "darken3"],
+                          "type": "object",
+                          "patternProperties": {
+                            ".*": {
+                              "description": "A HEX color code for the theme color variant",
+                              "examples": ["#ff00ff", "#000000"],
+                              "type": "string"
+                            }
+                          }
+                        },
+                        {
+                          "description": "A HEX color code for the theme color when no variants are set",
+                          "examples": ["#000000"],
                           "type": "string"
                         }
-                      }
+                      ]
                     }
                   }
                 }
