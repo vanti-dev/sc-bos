@@ -120,15 +120,17 @@ const getIntensityValue = (range) => range.intensity.actual ?? range.intensity.f
 const yAxisUnit = computed(() => showConversion.value ? 'Grams of CO₂ / hour' : 'kW');
 
 // Fetch the metered and generated data based on the periodStart and periodEnd values and the durationOption's span
-const metered = useMeterHistory(() => props.metered, periodStart, periodEnd, () => durationOption.value.span);
-const generated = useMeterHistory(() => props.generated, periodStart, periodEnd, () => durationOption.value.span);
+const {seriesData: meteredSeriesData} =
+    useMeterHistory(() => props.metered, periodStart, periodEnd, () => durationOption.value.span);
+const {seriesData: generatedSeriesData} =
+    useMeterHistory(() => props.generated, periodStart, periodEnd, () => durationOption.value.span);
 
 // Helper function to compute the CO2 series data based on the seriesData value and the kwhToGramsOfCO2 function
 const computeCO2SeriesData = seriesData => seriesData.value.map(({x, y}) => ({x, y: y * kwhToGramsOfCO2(x)}));
 
 // Computed properties to compute the CO2 series data for the metered and generated data
-const co2Metered = computed(() => computeCO2SeriesData(metered.seriesData));
-const co2Generated = computed(() => computeCO2SeriesData(generated.seriesData));
+const co2Metered = computed(() => computeCO2SeriesData(meteredSeriesData));
+const co2Generated = computed(() => computeCO2SeriesData(generatedSeriesData));
 
 // ----------------- Chart Data and Options ----------------- //
 const chartData = computed(() => {
@@ -164,12 +166,12 @@ const chartData = computed(() => {
 
   // Decide which data to use based on `showConversion` and whether props are provided
   if (props.generated) {
-    const generatedData = showConversion.value ? co2Generated.value : generated.seriesData.value;
+    const generatedData = showConversion.value ? co2Generated.value : generatedSeriesData.value;
     addDataset(generatedData, false);
   }
 
   if (props.metered) {
-    const meteredData = showConversion.value ? co2Metered.value : metered.seriesData.value;
+    const meteredData = showConversion.value ? co2Metered.value : meteredSeriesData.value;
     addDataset(meteredData, true);
   }
 
