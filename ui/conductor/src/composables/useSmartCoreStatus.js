@@ -145,7 +145,6 @@ export default function() {
       enrollmentValue.error = null; // Reset the error
       await getTestEnrollmentValue(); // Test the enrollment
     } catch (e) {
-      console.error('Error fetching enrollment', e);
       enrollmentValue.response = null; // Reset the response
       nodeStatus.value = {}; // Reset the node status
     }
@@ -171,7 +170,6 @@ export default function() {
       await testEnrollment(testEnrollmentValue); // Test the enrollment
       testEnrollmentValue.error = null; // Reset the error
     } catch (e) {
-      console.error('Error fetching test enrollment', e);
       testEnrollmentValue.response = null; // Reset the response
     }
   };
@@ -192,7 +190,6 @@ export default function() {
     try {
       await listHubNodesAction(listHubNodesValue);
     } catch (e) {
-      console.error('Error fetching hub nodes', e);
       listHubNodesValue.response = null;
     }
     updatingNodeStatus.value = false;

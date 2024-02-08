@@ -72,37 +72,26 @@ export const useHubStore = defineStore('hub', () => {
       await listHubNodesAction(newActionTracker());
       _hubResolve(hubNode.value);
     } catch (e) {
-      console.warn('Error fetching first page', e);
       _hubReject(e);
     }
   };
 
 
   const listHubNodesAction = async (actionTracker) => {
-    try {
-      const nodes = await listHubNodes(actionTracker);
-
-      // reset the existing list
-      listedHubNodes.value = [];
-
-      // add the new nodes to the list
-      for (const node of nodes.nodesList) {
-        // collect the names of the nodes
-        listedHubNodes.value.push(node.name);
-
-        // updating the reactive object while keeping the reactivity
-        nodesListCollection.value = {
-          ...nodesListCollection.value,
-          [node.name]: node
-        };
-      }
-    } catch (error) {
-      console.error('Error in listHubNodesAction:', error);
-      throw error;
+    const nodes = await listHubNodes(actionTracker);
+    // reset the existing list
+    listedHubNodes.value = [];
+    // add the new nodes to the list
+    for (const node of nodes.nodesList) {
+      // collect the names of the nodes
+      listedHubNodes.value.push(node.name);
+      // updating the reactive object while keeping the reactivity
+      nodesListCollection.value = {
+        ...nodesListCollection.value,
+        [node.name]: node
+      };
     }
   };
-
-
   /**
    * @typedef {Object} Node
    * @property {string} name - the Smart Core name of the node
