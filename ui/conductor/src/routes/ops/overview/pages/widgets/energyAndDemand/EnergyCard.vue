@@ -1,10 +1,12 @@
 <template>
   <content-card class="mb-8 d-flex flex-column pt-6 pl-6 pr-8">
     <energy-graph
+        v-if="props.showChart"
         class="mt-8 mb-6"
+        :height="props.showIntensity ? '275px' : '315px'"
         :generated="props.generated"
         :metered="props.metered"/>
-    <v-row class="d-flex flex-row justify-center mt-10 mb-1 ml-12">
+    <v-row v-if="props.showIntensity" class="d-flex flex-row justify-center mt-10 mb-1 ml-12">
       <v-col cols="auto">
         <v-row>
           <v-col cols="auto" class="text-h1 align-self-center" style="line-height: 0.3em;">
@@ -76,6 +78,14 @@ const props = defineProps({
   metered: {
     type: String,
     default: 'building'
+  },
+  showChart: {
+    type: Boolean,
+    default: true
+  },
+  showIntensity: {
+    type: Boolean,
+    default: true
   }
 });
 
