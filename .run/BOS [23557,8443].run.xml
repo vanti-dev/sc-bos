@@ -2,7 +2,7 @@
   <configuration default="false" name="BOS [23557,8443]" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="sc-bos" />
     <working_directory value="$PROJECT_DIR$" />
-    <parameters value="--policy-mode=off --data-dir .data/bos --listen-https :8443" />
+    <parameters value="--policy-mode off --data .data/auth --appconf example/config/app.conf.json --sysconf example/config/system.json" />
     <kind value="PACKAGE" />
     <package value="github.com/vanti-dev/sc-bos/cmd/bos" />
     <directory value="$PROJECT_DIR$" />
