@@ -116,6 +116,7 @@ secrets:
 ### 3. Deploy to target machine or gateway
 
 1. SSH into the target machine or gateway
-2. Clone the manifests repo
-3. Add podman secrets
-3. Run `podman-compose up -d` to start the container
+2. Clone the manifests repo: `git clone https://github.com/vanti-dev/<client>-<site>-service-manifests.git`
+3. Add podman secrets as necessary
+4. Run `podman login -u vanti-bot ghcr.io` and enter the GH personal access token (PAT)
+5. Run `podman-compose up -d` to start the container
