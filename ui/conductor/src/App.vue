@@ -33,18 +33,26 @@ onBeforeMount(async () => {
     if (brandColors) {
       // Loop through each color key (e.g., 'primary', 'secondary', etc.)
       Object.entries(brandColors).forEach(([colorKey, colorVariants]) => {
-        // Now loop through each variant of the color (e.g., 'base', 'lighten1', etc.)
-        Object.entries(colorVariants).forEach(([variantKey, variantValue]) => {
-          // Update the corresponding Vuetify theme color
-          // Check if the variantKey exists to safely update the value
-          if (vuetifyInstance.theme.themes.dark[colorKey] && variantValue) {
-            vuetifyInstance.theme.themes.dark[colorKey][variantKey] = variantValue;
+        // Determine if the colorVariants is a string or an object
+        if (typeof colorVariants === 'string') {
+          // Directly assign the string color to theme if it's a simple color
+          if (vuetifyInstance.theme.themes.dark[colorKey] !== undefined) {
+            vuetifyInstance.theme.themes.dark[colorKey] = colorVariants;
           }
-        });
+        } else if (typeof colorVariants === 'object') {
+          // Now loop through each variant of the color (e.g., 'base', 'lighten1', etc.)
+          Object.entries(colorVariants).forEach(([variantKey, variantValue]) => {
+            // Safely update the corresponding Vuetify theme color
+            if (vuetifyInstance.theme.themes.dark[colorKey]) {
+              vuetifyInstance.theme.themes.dark[colorKey][variantKey] = variantValue;
+            }
+          });
+        }
       });
     }
   }
 });
+
 
 onMounted(() => {
   controller.sync();
