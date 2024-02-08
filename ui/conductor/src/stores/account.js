@@ -4,7 +4,7 @@ import useLocal from '@/composables/authentication/useLocal';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {loadFromBrowserStorage} from '@/util/browserStorage';
 import {defineStore} from 'pinia';
-import {computed, ref, watch} from 'vue';
+import {computed, ref} from 'vue';
 import {useRouter} from 'vue-router/composables';
 
 /**
@@ -50,7 +50,6 @@ export const useAccountStore = defineStore('accountStore', () => {
         loggedIn: false,
         token: ''
       });
-  const loginFormVisible = ref(false);
   const snackbar = ref({
     message: 'Failed to sign in, please try again',
     visible: false
@@ -71,13 +70,13 @@ export const useAccountStore = defineStore('accountStore', () => {
     };
   };
 
-
   /**
    * Helper for initialise that contains all the logic so any 'finally' logic can be run for all cases.
    *
+   * @param {string[]} [providerNames] List of providers to initialise, defaults to all
    * @return {Promise<void>}
    */
-  const _initialise = async () => {
+  const _initialise = async (providerNames) => {
     if (uiConfig.config.disableAuthentication) {
       return;
     }
@@ -98,7 +97,9 @@ export const useAccountStore = defineStore('accountStore', () => {
         init: localAuth.init,
         enabled: () => true
       }
-    ];
+    ]
+        // only initialise the providers we've been asked to (or all of them)
+        .filter((provider) => !providerNames || providerNames.includes(provider.name));
 
     let loginDetails = null; // details from the first successful init attempt (that returned 'logged in')
     const availableProviderNames = [];
@@ -128,21 +129,18 @@ export const useAccountStore = defineStore('accountStore', () => {
     if (loginDetails) {
       // we are logged in already
       authenticationDetails.value = loginDetails;
-      return;
     }
-
-    // not logged in, show the login form
-    loginFormVisible.value = true;
   };
 
   /**
    * Initialize Keycloak and Local Auth instances, so we can check if the user is logged in and/or manage the login flow
    *
+   * @param {string[]} [providerNames] List of providers to initialise, defaults to all
    * @return {Promise<void>}
    */
-  const initialise = async () => {
+  const initialise = async (providerNames) => {
     try {
-      await _initialise();
+      await _initialise(providerNames);
       initResolved();
     } catch (e) {
       initRejected(e);
@@ -175,18 +173,6 @@ export const useAccountStore = defineStore('accountStore', () => {
   const activeAuthProvider = computed(() => {
     return authenticationDetails.value.authProvider || null;
   });
-
-  /**
-   * Set the authentication provider depending on the login form visibility
-   * If the login form is visible, use the local authentication provider, otherwise use KeyCloak
-   */
-  const watchSources = [availableAuthProviders, isAuthenticationDisabled];
-
-  watch(watchSources, ([availableProviders, authDisabled]) => {
-    if (!authDisabled) {
-      loginFormVisible.value = !availableProviders.includes('keyCloakAuth');
-    }
-  }, {immediate: true, deep: true});
 
   /**
    * Returns the login status depending on the authentication provider
@@ -369,7 +355,6 @@ export const useAccountStore = defineStore('accountStore', () => {
   return {
     initialise,
     authenticationDetails,
-    loginFormVisible,
     snackbar,
     resetStoreToDefaults,
 
@@ -384,6 +369,27 @@ export const useAccountStore = defineStore('accountStore', () => {
     loginWithKeyCloak,
     beginDeviceFlow,
     logout,
-    refreshToken
+    refreshToken,
+
+
+    /**
+     * Check if the given provider is available.
+     *
+     * @param {string} provider
+     * @return {boolean}
+     */
+    hasProvider(provider) {
+      return availableAuthProviders.value.includes(provider);
+    },
+
+    /**
+     * Check if the given provider is the only available provider.
+     *
+     * @param {string} provider
+     * @return {boolean}
+     */
+    isOnlyProvider(provider) {
+      return availableAuthProviders.value.length === 1 && this.hasProvider(provider);
+    }
   };
 });

@@ -32,36 +32,17 @@
           Sign In
         </v-btn>
       </v-card-actions>
-      <v-card-text v-if="displayLoginSwitch" class="d-flex justify-center">
-        <a
-            @click="accountStore.loginFormVisible = !accountStore.loginFormVisible"
-            class="text-center">
-          Use a different sign in method
-        </a>
-      </v-card-text>
     </v-form>
-
-    <v-snackbar v-model="snackbar.visible">
-      {{ snackbar.message }}
-
-      <template #action="{ attrs }">
-        <v-btn color="pink" text v-bind="attrs" @click="snackbar.visible = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
   </div>
 </template>
 
 <script setup>
 import {useAccountStore} from '@/stores/account.js';
-import {storeToRefs} from 'pinia';
 import {computed, ref} from 'vue';
 
 const accountStore = useAccountStore();
 const password = ref('');
 const username = ref('');
-const {snackbar} = storeToRefs(accountStore);
 const rules = {
   required: (value) => !!value || 'Required.'
 };
@@ -82,9 +63,6 @@ const disableSignIn = computed(() => {
   const hasOne = !username.value && password.value || username.value && !password.value;
   return !!(hasNone || hasOne);
 });
-
-// Show/Hide the login switch depending on whether KeyCloak is enabled or not
-const displayLoginSwitch = computed(() => accountStore.availableAuthProviders.includes('keyCloakAuth'));
 </script>
 
 <style lang="scss" scoped>

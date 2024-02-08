@@ -41,7 +41,7 @@ if (window) {
     // Initialize Local and Keycloak auth instances,
     // so we can check if the user is logged in and/or manage the login flow
     try {
-      await accountStore.initialise();
+      await accountStore.initialise(uiConfig.config?.auth?.providers);
     } catch (e) {
       console.error('Failed to initialize the account store', e);
     }

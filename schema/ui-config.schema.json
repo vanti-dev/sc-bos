@@ -150,6 +150,13 @@
           "description": "Configuration for user authentication",
           "type": "object",
           "properties": {
+            "providers": {
+              "description": "A list of named providers that the ui should use for authentication. If absent any successfully initialised provider can be used.",
+              "type": "array",
+              "items": {
+                "enum": ["keyCloakAuth", "deviceFlow", "localAuth"]
+              }
+            },
             "deviceFlow": {
               "oneOf": [
                 {
