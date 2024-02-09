@@ -170,12 +170,12 @@ const chartData = computed(() => {
   };
 
   // Decide which data to use based on `showConversion` and whether props are provided
-  if (props.generated) {
+  if (props.generated !== '') {
     const generatedData = showConversion.value ? co2Generated.value : generatedSeriesData.value;
     addDataset(generatedData, false);
   }
 
-  if (props.metered) {
+  if (props.metered !== '') {
     const meteredData = showConversion.value ? co2Metered.value : meteredSeriesData.value;
     addDataset(meteredData, true);
   }
