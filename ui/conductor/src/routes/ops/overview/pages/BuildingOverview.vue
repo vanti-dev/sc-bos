@@ -41,11 +41,12 @@ const pageStore = usePageStore();
 const {activeOverviewWidgets} = useWidgetsStore();
 const graphWidth = computed(() => `min-width: calc(100% - 260px - ${pageStore.drawerWidth}px)`);
 
+const buildingZoneSource = computed(() => uiConfig.config?.ops?.buildingZone ?? '');
+const supplyZoneSource = computed(() => uiConfig.config?.ops?.supplyZone ?? '');
 
-const buildingZone = computed(() => uiConfig.config?.ops?.buildingZone ?? '');
-const showOccupancy = computed(() => activeOverviewWidgets?.showOccupancy);
-const occupancyZone = buildingZone;
-
+const buildingZone = computed(() => buildingZoneSource.value);
+const supplyZone = computed(() => supplyZoneSource.value ? supplyZoneSource.value + '/supply' : '');
+const energyZone = buildingZone;
 const showEnergy = computed(() => {
   if (typeof activeOverviewWidgets.showEnergyConsumption === 'boolean') {
     return activeOverviewWidgets.showEnergyConsumption;
@@ -68,8 +69,9 @@ const showEnergyIntensity = computed(() => {
     return activeOverviewWidgets.showEnergyConsumption?.showIntensity;
   }
 });
-const energyZone = buildingZone;
-const supplyZone = computed(() => energyZone.value + '/supply');
+
+const showOccupancy = computed(() => activeOverviewWidgets?.showOccupancy);
+const occupancyZone = buildingZone;
 
 const showEnvironment = computed(() => activeOverviewWidgets?.showEnvironment);
 const environmentalZone = buildingZone;
