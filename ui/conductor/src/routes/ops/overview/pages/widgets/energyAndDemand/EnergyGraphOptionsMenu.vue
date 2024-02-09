@@ -40,19 +40,19 @@
                 </template>
               </v-switch>
             </v-list-item>
-            <v-list-item class="pa-0 d-flex flex-row justify-center px-3" dense @click.stop="changeDuration">
+            <v-list-item class="pa-0 d-flex flex-row justify-center pt-1 px-3" dense>
               <v-subheader class="text-body-2 pa-0">Duration</v-subheader>
               <v-spacer/>
               <v-btn-toggle
+                  v-model="activeDuration"
                   active-class="primary"
                   dense
-                  :value="durationOption">
+                  mandatory>
                 <v-btn
                     v-for="option in durationOptions"
                     active-class="primary text--darken-3"
-                    class="transparent grey--text text--lighten-1 no-pointer-events btn-no-hover"
+                    class="transparent grey--text text--lighten-1"
                     :key="option.id"
-                    :ripple="false"
                     small
                     :value="option.value">
                   <span class="text-caption">{{ option.text }}</span>
@@ -125,25 +125,10 @@ const activeDuration = computed({
   get: () => props.durationOption,
   set: (value) => emits('update:durationOption', value)
 });
-
-// Click handler on duration row.
-// Increasing the duration on each click to the next level. If reaching the last option
-// returns to the first available option and restarts the cycle.
-const changeDuration = () => {
-  const index = durationOptions.findIndex(option => option.value.id === activeDuration.value.id);
-  const nextIndex = (index + 1) % durationOptions.length;
-  activeDuration.value = durationOptions[nextIndex].value;
-};
-
 </script>
 
 <style lang="scss" scoped>
 .no-pointer-events {
   pointer-events: none;
-}
-
-.v-btn-toggle.no-pointer-events .v-btn {
-  background-color: transparent !important;
-  color: inherit !important; /* Adjust based on your needs */
 }
 </style>
