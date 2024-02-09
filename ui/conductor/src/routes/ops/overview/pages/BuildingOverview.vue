@@ -46,19 +46,28 @@ const buildingZone = computed(() => uiConfig.config?.ops?.buildingZone ?? '');
 const showOccupancy = computed(() => activeOverviewWidgets?.showOccupancy);
 const occupancyZone = buildingZone;
 
-const showEnergy = computed(() =>
-  activeOverviewWidgets.showEnergyConsumption ||
-    activeOverviewWidgets.showEnergyConsumption?.showChart ||
-    activeOverviewWidgets.showEnergyConsumption?.showIntensity
-);
-const showEnergyChart = computed(() =>
-  activeOverviewWidgets.showEnergyConsumption ||
-    activeOverviewWidgets.showEnergyConsumption?.showChart
-);
-const showEnergyIntensity = computed(() =>
-  activeOverviewWidgets.showEnergyConsumption ||
-    activeOverviewWidgets.showEnergyConsumption?.showIntensity
-);
+const showEnergy = computed(() => {
+  if (typeof activeOverviewWidgets.showEnergyConsumption === 'boolean') {
+    return activeOverviewWidgets.showEnergyConsumption;
+  } else {
+    return activeOverviewWidgets.showEnergyConsumption?.showChart ||
+        activeOverviewWidgets.showEnergyConsumption?.showIntensity;
+  }
+});
+const showEnergyChart = computed(() => {
+  if (typeof activeOverviewWidgets.showEnergyConsumption === 'boolean') {
+    return activeOverviewWidgets.showEnergyConsumption;
+  } else {
+    return activeOverviewWidgets.showEnergyConsumption?.showChart;
+  }
+});
+const showEnergyIntensity = computed(() => {
+  if (typeof activeOverviewWidgets.showEnergyConsumption === 'boolean') {
+    return activeOverviewWidgets.showEnergyConsumption;
+  } else {
+    return activeOverviewWidgets.showEnergyConsumption?.showIntensity;
+  }
+});
 const energyZone = buildingZone;
 const supplyZone = computed(() => energyZone.value + '/supply');
 
