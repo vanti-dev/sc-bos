@@ -1,7 +1,7 @@
 <template>
   <v-row class="ml-0 mb-4 mt-1">
     <LightingStatus
-        v-if="props.item.traits.showEmergencyLighting"
+        v-if="props.item.widgets.showEmergencyLighting"
         :item="props.item"/>
   </v-row>
 </template>

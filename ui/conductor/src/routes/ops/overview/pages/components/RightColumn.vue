@@ -1,19 +1,19 @@
 <template>
   <div>
     <presence-card
-        v-if="showTrait('showOccupancy')"
+        v-if="showWidget('showOccupancy')"
         class="mb-5"
-        :name="traits.showOccupancy"/>
+        :name="widgets.showOccupancy"/>
 
     <environmental-card
-        v-if="showTrait('showEnvironment')"
+        v-if="showWidget('showEnvironment')"
         class="mt-3"
         gauge-color="#ffc432"
         :name="environmentalValues.indoor"
         :external-name="environmentalValues.outdoor"/>
 
     <content-card
-        v-if="showTrait('showEnergyConsumption')"
+        v-if="showWidget('showEnergyConsumption')"
         class="pb-0"
         style="min-height:385px;">
       <EnergyGraph
@@ -22,7 +22,7 @@
           color="#ffc432"
           color-middle="rgba(255, 196, 50, 0.35)"
           :hide-legends="true"
-          :metered="traits.showEnergyConsumption"/>
+          :metered="widgets.showEnergyConsumption"/>
     </content-card>
   </div>
 </template>
@@ -41,14 +41,14 @@ const props = defineProps({
   }
 });
 
-const traits = computed(() => {
-  return props.item.traits;
+const widgets = computed(() => {
+  return props.item.widgets;
 });
 
 const environmentalValues = computed(() => {
   // Extracting indoor and outdoor values, defaulting to undefined if not present
-  const indoor = traits.value?.showEnvironment?.indoor;
-  const outdoor = traits.value?.showEnvironment?.outdoor;
+  const indoor = widgets.value?.showEnvironment?.indoor;
+  const outdoor = widgets.value?.showEnvironment?.outdoor;
 
   // Function to handle the value conversion
   const handleValue = (value) => {
@@ -77,7 +77,7 @@ const environmentalValues = computed(() => {
  * @param {string} trait
  * @return {boolean}
  */
-const showTrait = (trait) => {
-  return traits.value[trait] !== false && traits.value[trait] !== undefined;
+const showWidget = (trait) => {
+  return widgets.value[trait] !== false && widgets.value[trait] !== undefined;
 };
 </script>

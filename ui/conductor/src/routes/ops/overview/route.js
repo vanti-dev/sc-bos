@@ -53,15 +53,15 @@ export default [
        * @property {string} shortTitle - A short title for the item - for the mini sized navigation.
        * @property {string} title - The full title of the item.
        * @property {Object} traits - Object containing various trait flags.
-       * @property {boolean} traits.showAirQuality - Flag to show air quality.
-       * @property {boolean} traits.showEmergencyLighting - Flag to show emergency lighting.
-       * @property {boolean} traits.showEnergyConsumption - Flag to show energy consumption.
-       * @property {boolean|EnvironmentTrait} traits.showEnvironment - Flag to show environment,
-       *                            or an object detailing indoor and outdoor environment traits.
-       * @property {boolean} traits.showNotifications - Flag to show notifications.
-       * @property {boolean|string} traits.showOccupancy -
+       * @property {boolean} widgets.showAirQuality - Flag to show air quality.
+       * @property {boolean} widgets.showEmergencyLighting - Flag to show emergency lighting.
+       * @property {boolean} widgets.showEnergyConsumption - Flag to show energy consumption.
+       * @property {boolean|EnvironmentTrait} widgets.showEnvironment - Flag to show environment,
+       *                            or an object detailing indoor and outdoor environment widgets.
+       * @property {boolean} widgets.showNotifications - Flag to show notifications.
+       * @property {boolean|string} widgets.showOccupancy -
        Flag to show occupancy, can be a string for specific occupancy.
-       * @property {boolean} traits.showPower - Flag to show power.
+       * @property {boolean} widgets.showPower - Flag to show power.
        * @property {OverviewChild[]} [children] - Optional array of children, each following the same structure.
        */
       const overviewChildren = uiConfig.config?.ops?.overview?.children || [];
