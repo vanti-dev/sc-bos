@@ -21,7 +21,8 @@ import {computed, ref, watch, watchEffect} from 'vue';
  *  now: import('vue').Ref<Date>,
  *  shouldFetch: import('vue').ComputedRef<boolean>,
  *  firstRecordTime: import('vue').ComputedRef<Date|null>,
- *  lastRecordTime: import('vue').ComputedRef<Date|null>
+ *  lastRecordTime: import('vue').ComputedRef<Date|null>,
+ *  exportData: () => Promise<void>
  * }}
  */
 export default function(name, periodStart, periodEnd, spanSize) {
@@ -273,6 +274,18 @@ export default function(name, periodStart, periodEnd, spanSize) {
     return data;
   });
 
+  // --------- Download data as CSV --------- //
+  // At the moment, we are only going to support the export of metered data
+  // as this is being billed, not like the generated data.
+  // The export will be done in a CSV format.
+  const exportData = async () => {
+    if (toValue(name) === '') {
+      return;
+    }
+
+    console.log('Exporting data as CSV');
+  };
+
   return {
     // the important data
     seriesData,
@@ -288,7 +301,8 @@ export default function(name, periodStart, periodEnd, spanSize) {
     lastFetchTime,
     fetchPeriod,
     now,
-    shouldFetch
+    shouldFetch,
+    exportData
   };
 };
 
