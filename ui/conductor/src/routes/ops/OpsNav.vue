@@ -14,7 +14,7 @@
           <template #activator="{ on }">
             <v-btn
                 class="ma-0 pa-0 ml-2"
-                :disabled="!buildingChildren.length"
+                :disabled="!overviewChildren.length"
                 icon
                 small
                 v-on="on"
@@ -33,7 +33,7 @@
         <OpsNavList
             v-if="displayList"
             :display-list="displayList"
-            :items="buildingChildren"
+            :items="overviewChildren"
             :mini-variant="miniVariant"/>
       </v-slide-y-transition>
 
@@ -87,15 +87,15 @@ const {config} = storeToRefs(uiConfig);
 const displayList = ref(false);
 
 /**
- * Collect the building children
+ * Collect the overview children
  * This is used to create the sub-lists
  * Each child has a list of children
  *
  * @type {
  *  import('vue').ComputedRef<{title: string, icon: string, children: {title: string, shortTitle: string}[]}[]>
- * } buildingChildren
+ * } overviewChildren
  */
-const buildingChildren = computed(() => config.value?.building?.children || []);
+const overviewChildren = computed(() => config.value?.ops?.overview?.children || []);
 
 
 // --------- Helpers --------- //

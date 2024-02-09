@@ -32,7 +32,7 @@ export function route(route) {
  * If any title is not found, the active item is null and is returned.
  *
  * Example:
- * const buildingChildren = [
+ * const overviewChildren = [
  *    {
  *      title: 'Area 1',
  *      children: [
@@ -49,18 +49,18 @@ export function route(route) {
  *  ];
  *
  * // Returns the item with title 'Area 3'
- * findActiveItem(buildingChildren, ['Area 1', 'Area 2', 'Area 3']);
+ * findActiveItem(overviewChildren, ['Area 1', 'Area 2', 'Area 3']);
  *
  * // Returns the item with title 'Area 2'
- * findActiveItem(buildingChildren, ['Area 1', 'Area 2']);
+ * findActiveItem(overviewChildren, ['Area 1', 'Area 2']);
  *
  * // Returns null
- * findActiveItem(buildingChildren, ['Area 1', 'Area 2', 'Area 4']);
+ * findActiveItem(overviewChildren, ['Area 1', 'Area 2', 'Area 4']);
  *
  *
- * @param {BuildingChild[]} children - Array of building children, each following the structure of BuildingChild.
+ * @param {OverviewChild[]} children - Array of building children, each following the structure of OverviewChild.
  * @param {string[]} childTitles - Array of titles to find in sequence.
- * @return {BuildingChild[]|null} - Array of found items in the order of the titles provided. If a title is not found,
+ * @return {OverviewChild[]|null} - Array of found items in the order of the titles provided. If a title is not found,
  *                             the array includes items up to the last found title.
  */
 export const findActiveItem = (children, childTitles) => {

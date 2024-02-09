@@ -44,6 +44,20 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     config: {
       'keycloak': false,
       'home': '/devices',
+      'ops': {
+        'overview': {
+          // Specifies all traits to show or hide on the building page
+          'widgets': {
+            'showEnergyConsumption': {
+              'showChart': true,
+              'showIntensity': true
+            },
+            'showEnvironment': true,
+            'showOccupancy': true
+          },
+          'children': [] // Specifies the children of the building (zones/floors)
+        }
+      },
       'theme': {
         'appBranding': {
           'brandName': 'Smart Core', // The name of the brand
@@ -51,6 +65,7 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
             'altText': 'Smart Core logo - representing nodes and connections', // Alt text for the logo
             'src': '' // Empty string will use the default logo
           },
+          // Specifies brand colors for the app (theming)
           'brandColors': {
             'primary': {
               'base': '#00BED6',
@@ -61,9 +76,6 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
       },
       'hub': false, // Specifies if we're talking to a hub or an area controller
       'proxy': false, // Specifies if we're using querying via a proxy (e.g. EdgeGateway) or not
-      'building': {
-        'children': []
-      },
       'disableAuthentication': false // Specifies if we're using authentication or not
     }
   };
@@ -144,6 +156,9 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
   }
 
   const config = computed(() => _config.value?.config ?? {});
+
+  // Returns the app branding, merging the default and the config values
+  // The config values will override the default ones if any are present
   const appBranding = computed(() => {
     return {
       ..._defaultConfig.config.theme.appBranding,
@@ -158,6 +173,7 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     config,
     configPromise,
     homePath: computed(() => _config.value?.config?.home ?? _defaultConfig.config.home),
-    appBranding
+    appBranding,
+    defaultConfig: _defaultConfig
   };
 });

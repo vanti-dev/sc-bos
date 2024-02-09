@@ -47,7 +47,7 @@ export default [
        */
 
       /**
-       * @typedef {Object} BuildingChild
+       * @typedef {Object} OverviewChild
        * @property {boolean} disabled - Indicates if the item is disabled.
        * @property {string} icon - Icon identifier, e.g., 'mdi-select-all'.
        * @property {string} shortTitle - A short title for the item - for the mini sized navigation.
@@ -62,15 +62,15 @@ export default [
        * @property {boolean|string} traits.showOccupancy -
        Flag to show occupancy, can be a string for specific occupancy.
        * @property {boolean} traits.showPower - Flag to show power.
-       * @property {BuildingChild[]} [children] - Optional array of children, each following the same structure.
+       * @property {OverviewChild[]} [children] - Optional array of children, each following the same structure.
        */
-      const buildingChildren = uiConfig.config?.building?.children || [];
+      const overviewChildren = uiConfig.config?.ops?.overview?.children || [];
 
       // Split the modified path into segments and remove empty segments then return an array of the segments
       const currentPathSegments = modifiedPath(to.path).split('/').filter(segment => segment);
 
       // Find active item based on the current path segments
-      const activeItem = findActiveItem(buildingChildren, currentPathSegments);
+      const activeItem = findActiveItem(overviewChildren, currentPathSegments);
 
       // If the path is '/ops/overview/building' and there is no active item, redirect to the building overview
       const overviewPath = to.path === basePath;
