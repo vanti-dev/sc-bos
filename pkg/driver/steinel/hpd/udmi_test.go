@@ -3,8 +3,8 @@ package hpd
 import (
 	"context"
 	"encoding/json"
-	"sync"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 
@@ -85,22 +85,20 @@ func Test_PullExportMessages(t *testing.T) {
 		},
 	}
 
-	var wg sync.WaitGroup
 	for _, tt := range tests {
-		wg.Add(1)
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			defer wg.Done()
 
 			messages, err := client.PullExportMessages(ctx, req)
 			tt.set()
+			time.Sleep(100 * time.Millisecond)
+			tt.set()
 
-			m := new(gen.PullExportMessagesResponse)
-			err = messages.RecvMsg(m)
+			m, err := messages.Recv()
 
 			if err != nil {
-				t.Fatal("essages.RecvMsg(&pointSetMessage) is nil")
+				t.Fatal("messages.RecvMsg(&pointSetMessage) is nil")
 			}
 
 			// take the response payload which should be a valid PointsetEventMessage
@@ -117,5 +115,4 @@ func Test_PullExportMessages(t *testing.T) {
 
 		})
 	}
-	wg.Wait()
 }
