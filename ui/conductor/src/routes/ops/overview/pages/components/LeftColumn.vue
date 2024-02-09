@@ -7,7 +7,7 @@
 
     <ContentCard>
       <h4 class="text-h4 pt-0 pt-lg-4 pl-4">Notifications</h4>
-      <notifications overview-page :zone="props.item.traits.showNotification"/>
+      <notifications overview-page :zone="props.item?.widgets?.showNotification"/>
     </ContentCard>
   </div>
 </template>
