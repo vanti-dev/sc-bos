@@ -87,7 +87,7 @@
           "properties": {
             "buildingZone": {
               "description": "The device base name for the operations overview page",
-              "type": "string"
+              "allOf": [{"$ref": "#/$defs/nameOrFalse"}]
             },
             "overview": {
               "description": "Configuration for Ops overview building page and it's sub-pages",
@@ -138,6 +138,10 @@
                   }
                 }
               }
+            },
+            "supplyZone": {
+              "description": "The device base name for the operations overview page (generated energy)",
+              "allOf": [{"$ref": "#/$defs/nameOrFalse"}]
             }
           }
         },
