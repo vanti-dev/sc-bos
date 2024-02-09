@@ -11,7 +11,7 @@
         <EnergyGraphOptionsMenu
             :duration-option.sync="durationOption"
             :show-conversion.sync="showConversion"
-            @exportCSV="exportMeteredData"/>
+            @exportCSV="meteredExportData('Meter Readings')"/>
       </template>
     </LineChart>
   </div>
@@ -124,7 +124,7 @@ const getIntensityValue = (range) => range.intensity.actual ?? range.intensity.f
 const yAxisUnit = computed(() => showConversion.value ? 'Grams of CO₂ / hour' : 'kW');
 
 // Fetch the metered and generated data based on the periodStart and periodEnd values and the durationOption's span
-const {seriesData: meteredSeriesData, exportData: exportMeteredData} =
+const {seriesData: meteredSeriesData, exportData: meteredExportData} =
     useMeterHistory(() => props.metered, periodStart, periodEnd, () => durationOption.value.span);
 const {seriesData: generatedSeriesData} =
     useMeterHistory(() => props.generated, periodStart, periodEnd, () => durationOption.value.span);

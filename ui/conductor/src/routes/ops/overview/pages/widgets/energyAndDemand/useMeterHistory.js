@@ -1,6 +1,7 @@
 import {timestampToDate} from '@/api/convpb';
 import {listMeterReadingHistory} from '@/api/sc/traits/meter';
 import {HOUR, MINUTE, useNow} from '@/components/now';
+import {csvDownload} from '@/util/downloadCSV';
 import {toValue} from '@/util/vue';
 import debounce from 'debounce';
 import {computed, ref, watch, watchEffect} from 'vue';
@@ -22,7 +23,7 @@ import {computed, ref, watch, watchEffect} from 'vue';
  *  shouldFetch: import('vue').ComputedRef<boolean>,
  *  firstRecordTime: import('vue').ComputedRef<Date|null>,
  *  lastRecordTime: import('vue').ComputedRef<Date|null>,
- *  exportData: () => Promise<void>
+ *  exportData: (fileName) => Promise<void>
  * }}
  */
 export default function(name, periodStart, periodEnd, spanSize) {
@@ -274,16 +275,101 @@ export default function(name, periodStart, periodEnd, spanSize) {
     return data;
   });
 
-  // --------- Download data as CSV --------- //
-  // At the moment, we are only going to support the export of metered data
-  // as this is being billed, not like the generated data.
-  // The export will be done in a CSV format.
-  const exportData = async () => {
-    if (toValue(name) === '') {
-      return;
+  // --------- Export data as CSV --------- //
+
+  // The acronyms object contains the labels and units for the CSV file.
+  const acronyms = {
+    usage: {label: 'Meter Reading', unit: 'kWh'}
+  };
+
+  /**
+   * Processes the records into spans of time and returns only the last record of each span.
+   *
+   * @template T
+   * @param {Array<T>} records
+   * @param {number} span
+   * @return {Array<T>}
+   */
+  const processRecordsForCSV = (records, span) => {
+    const spanRecords = []; // The records to be included in the output
+    let currentSpanIndex = 0; // The index of the current span
+    let spanStartTime = timestampToDate(records[0].recordTime).getTime(); // The start time of the current span
+
+    // Iterate through the records and group them into spans
+    records.forEach((record, index) => {
+      const recordTime = timestampToDate(record.recordTime).getTime(); // The time of the current record
+      // Check if the current record's time exceeds the current span's start time by the span duration
+      if (recordTime - spanStartTime >= span) {
+        // If the current record's time exceeds the current span's start time by the span duration,
+        // push the last record of the previous span to spanRecords
+        spanRecords.push(records[index - 1]);
+        // Update the span start time to the current record's time for the next span
+        spanStartTime = recordTime;
+        currentSpanIndex = index; // Update the current span index
+      }
+    });
+
+    // Add the last record if the last span has at least one record
+    if (currentSpanIndex < records.length) {
+      spanRecords.push(records[records.length - 1]);
     }
 
-    console.log('Exporting data as CSV');
+    return spanRecords;
+  };
+
+  /**
+   * Flattens the records into a format that can be exported as a CSV file.
+   * The output format is an array of objects, each with the following properties:
+   * - deviceName: The name of the device
+   * - usage: The usage value of the last record in the span
+   * - recordTime: The time of the last record in the span
+   *
+   * @param {MeterReadingRecord.AsObject[]} records
+   * @param {string} recordValue
+   * @param {number} span
+   * @param {string} deviceName
+   * @return {Array<{deviceName: string, usage: number, recordTime: string}>}
+   */
+  const flattenedRecords = (records, recordValue, span, deviceName) => {
+    // Process the records into spans
+    const spanRecords = processRecordsForCSV(records, span);
+    const findDeepestValue = (record, path) => {
+      let obj = record;
+      for (const part of path.split('.')) {
+        obj = obj[part];
+      }
+      return obj;
+    };
+
+    // Convert the spanRecords to the desired output format
+    return spanRecords.map(record => {
+      const recordDate = timestampToDate(record.recordTime);
+      return {
+        deviceName,
+        usage: findDeepestValue(record, recordValue),
+        recordTime: `${recordDate.toLocaleDateString()} ${recordDate.toLocaleTimeString()}`
+      };
+    });
+  };
+
+
+  /**
+   * Exports the data as a CSV file.
+   * We process the existing records and convert them into a CSV format.
+   *
+   * @param {string} fileName
+   * @return {Promise<void>}
+   */
+  const exportData = async (fileName) => {
+    csvDownload({
+      acronyms,
+      docType: fileName,
+      flattenRecords: (records) => {
+        return flattenedRecords(records, 'meterReading.usage', toValue(spanSize), toValue(name));
+      },
+      records: () => records.value,
+      deviceName: toValue(name)
+    });
   };
 
   return {
