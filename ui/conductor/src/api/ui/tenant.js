@@ -26,7 +26,7 @@ import {
 } from '@sc-bos/ui-gen/proto/tenants_pb';
 
 /**
- * @param {ListTenantsRequest.AsObject} request
+ * @param {Partial<ListTenantsRequest.AsObject>} request
  * @param {ActionTracker<ListTenantsResponse.AsObject>} [tracker]
  * @return {Promise<ListTenantsResponse.AsObject>}
  */
@@ -57,7 +57,7 @@ export function pullTenant(request, resource) {
 
 /**
  *
- * @param {CreateTenantRequest.AsObject} request
+ * @param {Partial<CreateTenantRequest.AsObject>} request
  * @param {ActionTracker<CreateTenantRequest.AsObject>} [tracker]
  * @return {Promise<Tenant.AsObject>}
  */
@@ -70,7 +70,7 @@ export function createTenant(request, tracker) {
 
 /**
  *
- * @param {UpdateTenantRequest.AsObject} request
+ * @param {Partial<UpdateTenantRequest.AsObject>} request
  * @param {ActionTracker<CreateTenantRequest.AsObject>} [tracker]
  * @return {Promise<Tenant.AsObject>}
  */
@@ -83,7 +83,7 @@ export function updateTenant(request, tracker) {
 
 /**
  *
- * @param {DeleteTenantRequest.AsObject} obj
+ * @param {Partial<DeleteTenantRequest.AsObject>} obj
  * @param {ActionTracker<DeleteTenantRequest.AsObject>} [tracker]
  * @return {Promise<DeleteTenantResponse>}
  */
@@ -96,7 +96,7 @@ export function deleteTenant(obj, tracker) {
 
 /**
  *
- * @param {GetTenantRequest.AsObject} request
+ * @param {Partial<GetTenantRequest.AsObject>} request
  * @param {ActionTracker<GetTenantRequest.AsObject>} [tracker]
  * @return {Promise<Tenant.AsObject>}
  */
@@ -111,7 +111,7 @@ export function getTenant(request, tracker) {
 
 /**
  *
- * @param {ListSecretsRequest.AsObject} request
+ * @param {Partial<ListSecretsRequest.AsObject>} request
  * @param {ActionTracker<ListSecretsRequest.AsObject>} [tracker]
  * @return {Promise<ListSecretsResponse.AsObject>}
  */
@@ -126,7 +126,7 @@ export function listSecrets(request, tracker) {
 
 /**
  *
- * @param {CreateSecretRequest.AsObject} request
+ * @param {Partial<CreateSecretRequest.AsObject>} request
  * @param {ActionTracker<CreateSecretRequest.AsObject>} [tracker]
  * @return {Promise<Secret.AsObject>}
  */
@@ -141,7 +141,7 @@ export function createSecret(request, tracker) {
 
 /**
  *
- * @param {DeleteSecretRequest.AsObject} request
+ * @param {Partial<DeleteSecretRequest.AsObject>} request
  * @param {ActionTracker<DeleteSecretRequest.AsObject>} [tracker]
  * @return {Promise<DeleteSecretResponse.AsObject>}
  */
@@ -167,7 +167,7 @@ export function addTenantZones(request, tracker) {
 }
 
 /**
- * @param {RemoveTenantZonesRequest.AsObject} request
+ * @param {Partial<RemoveTenantZonesRequest.AsObject>} request
  * @param {ActionTracker<RemoveTenantZonesRequest.AsObject>} [tracker]
  * @return {Promise<Tenant.AsObject>}
  */
@@ -199,7 +199,7 @@ function pullTenantRequestFromObject(obj) {
 }
 
 /**
- * @param {CreateTenantRequest.AsObject} obj
+ * @param {Partial<CreateTenantRequest.AsObject>} obj
  * @return {CreateTenantRequest}
  */
 function createTenantRequestFromObject(obj) {
@@ -211,7 +211,7 @@ function createTenantRequestFromObject(obj) {
 }
 
 /**
- * @param {UpdateTenantRequest.AsObject} obj
+ * @param {Partial<UpdateTenantRequest.AsObject>} obj
  * @return {UpdateTenantRequest}
  */
 function updateTenantRequestFromObject(obj) {
@@ -225,7 +225,7 @@ function updateTenantRequestFromObject(obj) {
 
 /**
  *
- * @param {DeleteTenantRequest.AsObject} obj
+ * @param {Partial<DeleteTenantRequest.AsObject>} obj
  * @return {DeleteTenantRequest}
  */
 function deleteTenantRequestFromObject(obj) {
@@ -238,7 +238,7 @@ function deleteTenantRequestFromObject(obj) {
 
 /**
  *
- * @param {Secret.AsObject} obj
+ * @param {Partial<Secret.AsObject>} obj
  * @return {Secret}
  */
 function secretFromObject(obj) {
@@ -267,7 +267,7 @@ export function secretToObject(s) {
 }
 
 /**
- * @param {Tenant.AsObject} obj
+ * @param {Partial<Tenant.AsObject>} obj
  * @return {Tenant}
  */
 function tenantFromObject(obj) {
@@ -279,7 +279,7 @@ function tenantFromObject(obj) {
 }
 
 /**
- * @param {AddTenantZonesRequest.AsObject} obj
+ * @param {Partial<AddTenantZonesRequest.AsObject>} obj
  * @return {undefined|AddTenantZonesRequest}
  */
 function addTenantZonesRequestFromObject(obj) {
@@ -290,7 +290,7 @@ function addTenantZonesRequestFromObject(obj) {
 }
 
 /**
- * @param {RemoveTenantZonesRequest.AsObject} obj
+ * @param {Partial<RemoveTenantZonesRequest.AsObject>} obj
  * @return {undefined|RemoveTenantZonesRequest}
  */
 function removeTenantZonesRequestFromObject(obj) {

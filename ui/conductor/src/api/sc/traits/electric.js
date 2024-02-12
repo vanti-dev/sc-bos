@@ -5,7 +5,7 @@ import {ElectricApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/el
 import {GetDemandRequest, PullDemandRequest} from '@smart-core-os/sc-api-grpc-web/traits/electric_pb';
 
 /**
- * @param {PullDemandRequest.AsObject} request
+ * @param {Partial<PullDemandRequest.AsObject>} request
  * @param {ResourceValue<ElectricDemand.AsObject, PullDemandResponse>} resource
  */
 export function pullDemand(request, resource) {
@@ -23,7 +23,7 @@ export function pullDemand(request, resource) {
 }
 
 /**
- * @param {GetDemandRequest.AsObject} request
+ * @param {Partial<GetDemandRequest.AsObject>} request
  * @param {ActionTracker<ElectricDemand.AsObject>} [tracker]
  * @return {Promise<ElectricDemand.AsObject>}
  */
@@ -43,7 +43,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {PullDemandRequest.AsObject} obj
+ * @param {Partial<PullDemandRequest.AsObject>} obj
  * @return {PullDemandRequest|undefined}
  */
 function pullDemandRequestFromObject(obj) {
@@ -56,7 +56,7 @@ function pullDemandRequestFromObject(obj) {
 }
 
 /**
- * @param {GetDemandRequest.AsObject} obj
+ * @param {Partial<GetDemandRequest.AsObject>} obj
  * @return {undefined|GetDemandRequest}
  */
 function getDemandRequestFromObject(obj) {

@@ -2,7 +2,7 @@ import {timestampFromObject} from '@/api/convpb';
 import {Period} from '@smart-core-os/sc-api-grpc-web/types/time/period_pb';
 
 /**
- * @param {Period.AsObject} obj
+ * @param {Partial<Period.AsObject>} obj
  * @return {Period|undefined}
  */
 export function periodFromObject(obj) {

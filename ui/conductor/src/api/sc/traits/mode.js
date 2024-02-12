@@ -12,7 +12,7 @@ import {
 } from '@smart-core-os/sc-api-grpc-web/traits/mode_pb';
 
 /**
- * @param {PullModeValuesRequest.AsObject} request
+ * @param {Partial<PullModeValuesRequest.AsObject>} request
  * @param {ResourceValue<ModeValues.AsObject, PullModeValuesResponse>} resource
  */
 export function pullModeValues(request, resource) {
@@ -31,7 +31,7 @@ export function pullModeValues(request, resource) {
 
 /**
  *
- * @param {UpdateModeValuesRequest.AsObject} request
+ * @param {Partial<UpdateModeValuesRequest.AsObject>} request
  * @param {ActionTracker<ModeValues.AsObject>} [tracker]
  * @return {Promise<ModeValues.AsObject>}
  */
@@ -44,7 +44,7 @@ export function updateModeValues(request, tracker) {
 
 /**
  *
- * @param {DescribeModesRequest.AsObject} request
+ * @param {Partial<DescribeModesRequest.AsObject>} request
  * @param {ActionTracker<ModesSupport.AsObject>} [tracker]
  * @return {Promise<ModesSupport.AsObject>}
  */
@@ -72,7 +72,7 @@ function infoClient(endpoint) {
 }
 
 /**
- * @param {PullModeValuesRequest.AsObject} obj
+ * @param {Partial<PullModeValuesRequest.AsObject>} obj
  * @return {PullModeValuesRequest|undefined}
  */
 function pullModeValuesRequestFromObject(obj) {
@@ -85,7 +85,7 @@ function pullModeValuesRequestFromObject(obj) {
 }
 
 /**
- * @param {UpdateModeValuesRequest.AsObject} obj
+ * @param {Partial<UpdateModeValuesRequest.AsObject>} obj
  * @return {UpdateModeValuesRequest}
  */
 function updateModeValuesRequestFromObject(obj) {
@@ -100,7 +100,7 @@ function updateModeValuesRequestFromObject(obj) {
 }
 
 /**
- * @param {DescribeModesRequest.AsObject} obj
+ * @param {Partial<DescribeModesRequest.AsObject>} obj
  * @return {DescribeModesRequest|undefined}
  */
 function describeModesRequestFromObject(obj) {
@@ -112,7 +112,7 @@ function describeModesRequestFromObject(obj) {
 }
 
 /**
- * @param {ModeValues.AsObject} obj
+ * @param {Partial<ModeValues.AsObject>} obj
  * @return {undefined|ModeValues}
  */
 function modeValuesFromObject(obj) {
@@ -132,7 +132,7 @@ function modeValuesFromObject(obj) {
 }
 
 /**
- * @param {ModeValuesRelative.AsObject} obj
+ * @param {Partial<ModeValuesRelative.AsObject>} obj
  * @return {undefined|ModeValuesRelative}
  */
 function modeValuesRelativeFromObject(obj) {

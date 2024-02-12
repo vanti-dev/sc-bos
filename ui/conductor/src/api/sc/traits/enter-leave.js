@@ -9,7 +9,7 @@ import {
 } from '@smart-core-os/sc-api-grpc-web/traits/enter_leave_sensor_pb';
 
 /**
- * @param {PullEnterLeaveEventsRequest.AsObject} request
+ * @param {Partial<PullEnterLeaveEventsRequest.AsObject>} request
  * @param {ResourceValue<EnterLeaveEvent.AsObject, PullEnterLeaveEventsResponse>} resource
  */
 export function pullEnterLeaveEvents(request, resource) {
@@ -27,7 +27,7 @@ export function pullEnterLeaveEvents(request, resource) {
 }
 
 /**
- * @param {GetEnterLeaveEventRequest.AsObject} request
+ * @param {Partial<GetEnterLeaveEventRequest.AsObject>} request
  * @param {ActionTracker<EnterLeaveEvent.AsObject>} [tracker]
  * @return {Promise<EnterLeaveEvent.AsObject>}
  */
@@ -39,7 +39,7 @@ export function getEnterLeaveEvent(request, tracker) {
 }
 
 /**
- * @param {GetEnterLeaveEventRequest.AsObject} request
+ * @param {Partial<GetEnterLeaveEventRequest.AsObject>} request
  * @param {ActionTracker<ResetEnterLeaveTotalsResponse.AsObject>} [tracker]
  * @return {Promise<ResetEnterLeaveTotalsResponse.AsObject>}
  */
@@ -59,7 +59,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {PullEnterLeaveEventsRequest.AsObject} obj
+ * @param {Partial<PullEnterLeaveEventsRequest.AsObject>} obj
  * @return {PullEnterLeaveEventsRequest|undefined}
  */
 function pullEnterLeaveEventsRequestFromObject(obj) {
@@ -72,7 +72,7 @@ function pullEnterLeaveEventsRequestFromObject(obj) {
 }
 
 /**
- * @param {GetEnterLeaveEventRequest.AsObject} obj
+ * @param {Partial<GetEnterLeaveEventRequest.AsObject>} obj
  * @return {undefined|GetEnterLeaveEventRequest}
  */
 function getEnterLeaveEventRequestFromObject(obj) {
@@ -85,7 +85,7 @@ function getEnterLeaveEventRequestFromObject(obj) {
 }
 
 /**
- * @param {ResetEnterLeaveTotalsRequest.AsObject} obj
+ * @param {Partial<ResetEnterLeaveTotalsRequest.AsObject>} obj
  * @return {ResetEnterLeaveTotalsRequest|undefined}
  */
 function resetEnterLeaveTotalsRequestFromObject(obj) {

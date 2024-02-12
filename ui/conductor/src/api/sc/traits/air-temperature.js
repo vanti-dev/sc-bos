@@ -33,7 +33,7 @@ export function pullAirTemperature(request, resource) {
 
 /**
  *
- * @param {UpdateAirTemperatureRequest.AsObject} request
+ * @param {Partial<UpdateAirTemperatureRequest.AsObject>} request
  * @param {ActionTracker<AirTemperature.AsObject>} [tracker]
  * @return {Promise<AirTemperature.AsObject>}
  */
@@ -46,7 +46,7 @@ export function updateAirTemperature(request, tracker) {
 
 /**
  *
- * @param {ListAirTemperatureHistoryRequest.AsObject} request
+ * @param {Partial<ListAirTemperatureHistoryRequest.AsObject>} request
  * @param {ActionTracker<ListAirTemperatureHistoryResponse.AsObject>} [tracker]
  * @return {Promise<ListAirTemperatureHistoryResponse.AsObject>}
  */
@@ -75,7 +75,7 @@ function historyClient(endpoint) {
 }
 
 /**
- * @param {PullAirTemperatureRequest.AsObject} obj
+ * @param {Partial<PullAirTemperatureRequest.AsObject>} obj
  * @return {PullAirTemperatureRequest|undefined}
  */
 function pullAirTemperatureRequestFromObject(obj) {
@@ -88,7 +88,7 @@ function pullAirTemperatureRequestFromObject(obj) {
 }
 
 /**
- * @param {UpdateAirTemperatureRequest.AsObject} obj
+ * @param {Partial<UpdateAirTemperatureRequest.AsObject>} obj
  * @return {UpdateAirTemperatureRequest}
  */
 function updateAirTemperatureRequestFromObject(obj) {
@@ -102,7 +102,7 @@ function updateAirTemperatureRequestFromObject(obj) {
 }
 
 /**
- * @param {AirTemperature.AsObject} obj
+ * @param {Partial<AirTemperature.AsObject>} obj
  * @return {AirTemperature}
  */
 function stateFromObject(obj) {
@@ -116,7 +116,7 @@ function stateFromObject(obj) {
 }
 
 /**
- * @param {Temperature.AsObject} obj
+ * @param {Partial<Temperature.AsObject>} obj
  * @return {Temperature|undefined}
  */
 function temperatureFromObject(obj) {
@@ -162,7 +162,7 @@ export function airTemperatureModeToString(mode) {
 
 /**
  *
- * @param {Temperature.AsObject} value
+ * @param {Partial<Temperature.AsObject>} value
  * @return {string}
  */
 export function temperatureToString(value) {
@@ -173,7 +173,7 @@ export function temperatureToString(value) {
 }
 
 /**
- * @param {ListAirTemperatureHistoryRequest.AsObject} obj
+ * @param {Partial<ListAirTemperatureHistoryRequest.AsObject>} obj
  * @return {ListAirTemperatureHistoryRequest|undefined}
  */
 function listAirTemperatureHistoryRequestFromObject(obj) {

@@ -45,7 +45,7 @@ export function pullHubNodes(resource) {
 
 /**
  *
- * @param {EnrollHubNodeRequest.AsObject} request
+ * @param {Partial<EnrollHubNodeRequest.AsObject>} request
  * @param {ActionTracker<HubNode.AsObject>} [tracker]
  * @return {Promise<HubNode.AsObject>}
  */
@@ -59,7 +59,7 @@ export function enrollHubNode(request, tracker) {
 
 /**
  *
- * @param {ForgetHubNodeRequest.AsObject} request
+ * @param {Partial<ForgetHubNodeRequest.AsObject>} request
  * @param {ActionTracker<ForgetHubNodeResponse.AsObject>} [tracker]
  * @return {Promise<ForgetHubNodeResponse.AsObject>}
  */
@@ -72,7 +72,7 @@ export function forgetHubNode(request, tracker) {
 }
 
 /**
- * @param {TestHubNodeRequest.AsObject} request
+ * @param {Partial<TestHubNodeRequest.AsObject>} request
  * @param {ActionTracker<TestHubNodeResponse.AsObject>} [tracker]
  * @return {Promise<TestHubNodeResponse.AsObject>}
  */
@@ -84,7 +84,7 @@ export function testHubNode(request, tracker) {
 }
 
 /**
- * @param {InspectHubNodeRequest.AsObject} request
+ * @param {Partial<InspectHubNodeRequest.AsObject>} request
  * @param {ActionTracker<HubNode.AsObject>} [tracker]
  * @return {Promise<HubNode.AsObject>}
  */
@@ -107,7 +107,7 @@ function apiClient(endpoint) {
 // ----- Test Hub Node ----- //
 /**
  *
- * @param {TestHubNodeRequest.AsObject} obj
+ * @param {Partial<TestHubNodeRequest.AsObject>} obj
  * @return {TestHubNodeRequest|undefined}
  */
 function testHubNodeRequestFromObject(obj) {
@@ -120,7 +120,7 @@ function testHubNodeRequestFromObject(obj) {
 
 /**
  *
- * @param {InspectHubNodeRequest.AsObject} obj
+ * @param {Partial<InspectHubNodeRequest.AsObject>} obj
  * @return {InspectHubNodeRequest|undefined}
  */
 function inspectHubNodeRequestFromObject(obj) {
@@ -136,7 +136,7 @@ function inspectHubNodeRequestFromObject(obj) {
 // --------------------------- //
 // ----- Enroll Hub Node ----- //
 /**
- * @param {EnrollHubNodeRequest.AsObject} obj
+ * @param {Partial<EnrollHubNodeRequest.AsObject>} obj
  * @return {HubNode.AsObject|undefined}
  */
 function enrollHubNodeRequestFromObject(obj) {
@@ -150,7 +150,7 @@ function enrollHubNodeRequestFromObject(obj) {
 
 
 /**
- * @param {EnrollHubNodeRequest.AsObject} obj
+ * @param {Partial<EnrollHubNodeRequest.AsObject>} obj
  * @return {HubNode.AsObject|undefined}
  */
 function hubNodeFromObject(obj) {
@@ -168,7 +168,7 @@ function hubNodeFromObject(obj) {
 // --------------------------- //
 // ----- Forget Hub Node ----- //
 /**
- * @param {HubNode.AsObject} obj
+ * @param {Partial<HubNode.AsObject>} obj
  * @return {ForgetHubNodeRequest|undefined}
  */
 function forgetHubNodeRequestFromObject(obj) {

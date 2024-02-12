@@ -8,7 +8,7 @@ import {AirQualitySensorApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/t
 import {PullAirQualityRequest} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
 
 /**
- * @param {PullAirQualityRequest.AsObject} request
+ * @param {Partial<PullAirQualityRequest.AsObject>} request
  * @param {ResourceValue<AirQuality.AsObject, PullAirQualityResponse>} resource
  */
 export function pullAirQualitySensor(request, resource) {
@@ -27,7 +27,7 @@ export function pullAirQualitySensor(request, resource) {
 
 /**
  *
- * @param {ListAirQualityHistoryRequest.AsObject} request
+ * @param {Partial<ListAirQualityHistoryRequest.AsObject>} request
  * @param {ActionTracker<ListAirQualityHistoryResponse.AsObject>} tracker
  * @return {Promise<ListAirQualityHistoryResponse.AsObject>}
  */
@@ -56,7 +56,7 @@ function historyClient(endpoint) {
 }
 
 /**
- * @param {PullAirQualityRequest.AsObject} obj
+ * @param {Partial<PullAirQualityRequest.AsObject>} obj
  * @return {PullAirQualityRequest|undefined}
  */
 function pullAirQualityRequestFromObject(obj) {
@@ -68,7 +68,7 @@ function pullAirQualityRequestFromObject(obj) {
 }
 
 /**
- * @param {ListAirQualityHistoryRequest.AsObject} obj
+ * @param {Partial<ListAirQualityHistoryRequest.AsObject>} obj
  * @return {ListAirQualityHistoryRequest|undefined}
  */
 function listAirQualitySensorHistoryRequestFromObject(obj) {

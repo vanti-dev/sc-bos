@@ -5,7 +5,7 @@ import {EmergencyApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/e
 import {GetEmergencyRequest, PullEmergencyRequest} from '@smart-core-os/sc-api-grpc-web/traits/emergency_pb';
 
 /**
- * @param {PullEmergencyRequest.AsObject} request
+ * @param {Partial<PullEmergencyRequest.AsObject>} request
  * @param {ResourceValue<Emergency.AsObject, PullEmergencyResponse>} resource
  */
 export function pullEmergency(request, resource) {
@@ -23,7 +23,7 @@ export function pullEmergency(request, resource) {
 }
 
 /**
- * @param {GetEmergencyRequest.AsObject} request
+ * @param {Partial<GetEmergencyRequest.AsObject>} request
  * @param {ActionTracker<Emergency.AsObject>} [tracker]
  * @return {Promise<Emergency.AsObject>}
  */
@@ -43,7 +43,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {PullEmergencyRequest.AsObject} obj
+ * @param {Partial<PullEmergencyRequest.AsObject>} obj
  * @return {PullEmergencyRequest|undefined}
  */
 function pullEmergencyRequestFromObject(obj) {
@@ -56,7 +56,7 @@ function pullEmergencyRequestFromObject(obj) {
 }
 
 /**
- * @param {GetEmergencyRequest.AsObject} obj
+ * @param {Partial<GetEmergencyRequest.AsObject>} obj
  * @return {undefined|GetEmergencyRequest}
  */
 function getEmergencyRequestFromObject(obj) {

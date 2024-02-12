@@ -11,7 +11,7 @@ import {
 } from '@smart-core-os/sc-api-grpc-web/traits/publication_pb';
 
 /**
- * @param {PullPublicationsRequest.AsObject} request
+ * @param {Partial<PullPublicationsRequest.AsObject>} request
  * @param {ResourceCollection<Publication.AsObject, OpenClosePositions>} resource
  */
 export function pullPublications(request, resource) {
@@ -29,7 +29,7 @@ export function pullPublications(request, resource) {
 }
 
 /**
- * @param {CreatePublicationRequest.AsObject} request
+ * @param {Partial<CreatePublicationRequest.AsObject>} request
  * @param {ActionTracker<Publication.AsObject>} [tracker]
  * @return {Promise<Publication.AsObject>}
  */
@@ -41,7 +41,7 @@ export function createPublication(request, tracker) {
 }
 
 /**
- * @param {UpdatePublicationRequest.AsObject} request
+ * @param {Partial<UpdatePublicationRequest.AsObject>} request
  * @param {ActionTracker<Publication.AsObject>} [tracker]
  * @return {Promise<Publication.AsObject>}
  */
@@ -53,7 +53,7 @@ export async function updatePublication(request, tracker) {
 }
 
 /**
- * @param {AcknowledgePublicationRequest.AsObject} request
+ * @param {Partial<AcknowledgePublicationRequest.AsObject>} request
  * @param {ActionTracker<Publication.AsObject>} [tracker]
  * @return {Promise<Publication.AsObject>}
  */
@@ -73,7 +73,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {PullPublicationsRequest.AsObject} obj
+ * @param {Partial<PullPublicationsRequest.AsObject>} obj
  * @return {undefined|PullPublicationsRequest}
  */
 function pullPublicationsRequestFromObject(obj) {
@@ -86,7 +86,7 @@ function pullPublicationsRequestFromObject(obj) {
 }
 
 /**
- * @param {CreatePublicationRequest.AsObject} obj
+ * @param {Partial<CreatePublicationRequest.AsObject>} obj
  * @return {CreatePublicationRequest|undefined}
  */
 function createPublicationRequestFromObject(obj) {
@@ -99,7 +99,7 @@ function createPublicationRequestFromObject(obj) {
 }
 
 /**
- * @param {UpdatePublicationRequest.AsObject} obj
+ * @param {Partial<UpdatePublicationRequest.AsObject>} obj
  * @return {undefined|UpdatePublicationRequest}
  */
 function updatePublicationRequestFromObject(obj) {
@@ -113,7 +113,7 @@ function updatePublicationRequestFromObject(obj) {
 }
 
 /**
- * @param {UpdatePublicationRequest.AsObject} obj
+ * @param {Partial<UpdatePublicationRequest.AsObject>} obj
  * @return {AcknowledgePublicationRequest|undefined}
  */
 function acknowledgePublicationRequestFromObject(obj) {
@@ -125,7 +125,7 @@ function acknowledgePublicationRequestFromObject(obj) {
 }
 
 /**
- * @param {Publication.AsObject} obj
+ * @param {Partial<Publication.AsObject>} obj
  * @return {undefined|Publication}
  */
 export function publicationFromObject(obj) {
@@ -138,7 +138,7 @@ export function publicationFromObject(obj) {
 }
 
 /**
- * @param {Publication.Audience.AsObject} obj
+ * @param {Partial<Publication.Audience.AsObject>} obj
  * @return {undefined|Publication.Audience}
  */
 export function audienceFromObject(obj) {

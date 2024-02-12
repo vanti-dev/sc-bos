@@ -12,7 +12,7 @@ import {
 } from '@smart-core-os/sc-api-grpc-web/traits/light_pb';
 
 /**
- * @param {PullBrightnessRequest.AsObject} request
+ * @param {Partial<PullBrightnessRequest.AsObject>} request
  * @param {ResourceValue<Brightness.AsObject, PullBrightnessResponse>} resource
  */
 export function pullBrightness(request, resource) {
@@ -30,7 +30,7 @@ export function pullBrightness(request, resource) {
 }
 
 /**
- * @param {GetBrightnessRequest.AsObject} request
+ * @param {Partial<GetBrightnessRequest.AsObject>} request
  * @param {ActionTracker<Brightness.AsObject>} [tracker]
  * @return {Promise<Brightness.AsObject>}
  */
@@ -42,7 +42,7 @@ export function getBrightness(request, tracker) {
 }
 
 /**
- * @param {UpdateBrightnessRequest.AsObject} request
+ * @param {Partial<UpdateBrightnessRequest.AsObject>} request
  * @param {ActionTracker<Brightness.AsObject>} [tracker]
  * @return {Promise<Brightness.AsObject>}
  */
@@ -62,7 +62,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {PullBrightnessRequest.AsObject} obj
+ * @param {Partial<PullBrightnessRequest.AsObject>} obj
  * @return {PullBrightnessRequest|undefined}
  */
 function pullBrightnessRequestFromObject(obj) {
@@ -76,7 +76,7 @@ function pullBrightnessRequestFromObject(obj) {
 
 /**
  *
- * @param {GetBrightnessRequest.AsObject} obj
+ * @param {Partial<GetBrightnessRequest.AsObject>} obj
  * @return {GetBrightnessRequest}
  */
 export function getBrightnessRequestFromObject(obj) {
@@ -90,7 +90,7 @@ export function getBrightnessRequestFromObject(obj) {
 
 /**
  *
- * @param {UpdateBrightnessRequest.AsObject} obj
+ * @param {Partial<UpdateBrightnessRequest.AsObject>} obj
  * @return {UpdateBrightnessRequest}
  */
 export function updateBrightnessRequestFromObject(obj) {
@@ -106,7 +106,7 @@ export function updateBrightnessRequestFromObject(obj) {
 /**
  * Convert a JS object representation of Brightness into a protobuf Brightness object.
  *
- * @param {Brightness.AsObject} obj
+ * @param {Partial<Brightness.AsObject>} obj
  * @return {Brightness}
  */
 export function brightnessFromObject(obj) {
@@ -123,7 +123,7 @@ export function brightnessFromObject(obj) {
 /**
  * Convert a JS object representation of LightPreset into a protobuf LightPreset object.
  *
- * @param {LightPreset.AsObject} obj
+ * @param {Partial<LightPreset.AsObject>} obj
  * @return {LightPreset|null}
  */
 export function lightPresetFromObject(obj) {

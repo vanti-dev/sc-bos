@@ -25,7 +25,7 @@ export function listDevices(request, tracker) {
 
 /**
  *
- * @param {GetDevicesMetadataRequest.AsObject} request
+ * @param {Partial<GetDevicesMetadataRequest.AsObject>} request
  * @param {ActionTracker<GetDevicesMetadataRequest.AsObject>} [tracker]
  * @return {Promise<DevicesMetadata.AsObject>}
  */
@@ -37,7 +37,7 @@ export function getDevicesMetadata(request, tracker) {
 }
 
 /**
- * @param {PullDevicesMetadataRequest.AsObject} request
+ * @param {Partial<PullDevicesMetadataRequest.AsObject>} request
  * @param {ResourceValue<DevicesMetadata.AsObject, DevicesMetadata>} resource
  */
 export function pullDevicesMetadata(request, resource) {
@@ -63,7 +63,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {ListDevicesRequest.AsObject} obj
+ * @param {Partial<ListDevicesRequest.AsObject>} obj
  * @return {undefined|ListDevicesRequest}
  */
 function listDevicesRequestFromObject(obj) {
@@ -75,7 +75,7 @@ function listDevicesRequestFromObject(obj) {
 }
 
 /**
- * @param {Device.Query.AsObject} obj
+ * @param {Partial<Device.Query.AsObject>} obj
  * @return {undefined|Device.Query}
  */
 function deviceQueryFromObject(obj) {
@@ -94,7 +94,7 @@ function deviceQueryFromObject(obj) {
 
 /**
  *
- * @param {DevicesMetadata.Include.AsObject} obj
+ * @param {Partial<DevicesMetadata.Include.AsObject>} obj
  * @return {undefined|DevicesMetadata.Include}
  */
 function devicesMetadataIncludeFromObject(obj) {
@@ -106,7 +106,7 @@ function devicesMetadataIncludeFromObject(obj) {
 
 /**
  *
- * @param {GetDevicesMetadataRequest.AsObject} obj
+ * @param {Partial<GetDevicesMetadataRequest.AsObject>} obj
  * @return {undefined|GetDevicesMetadataRequest}
  */
 function getDevicesMetadataRequestFromObject(obj) {
@@ -119,7 +119,7 @@ function getDevicesMetadataRequestFromObject(obj) {
 
 /**
  *
- * @param {PullDevicesMetadataRequest.AsObject} obj
+ * @param {Partial<PullDevicesMetadataRequest.AsObject>} obj
  * @return {undefined|PullDevicesMetadataRequest}
  */
 function pullDevicesMetadataRequestFromObject(obj) {

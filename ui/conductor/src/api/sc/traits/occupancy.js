@@ -10,7 +10,7 @@ import {Occupancy, PullOccupancyRequest} from '@smart-core-os/sc-api-grpc-web/tr
 
 /**
  *
- * @param {PullOccupancyRequest.AsObject} request
+ * @param {Partial<PullOccupancyRequest.AsObject>} request
  * @param {ResourceValue<Occupancy.AsObject, PullOccupancyResponse>} resource
  */
 export function pullOccupancy(request, resource) {
@@ -29,7 +29,7 @@ export function pullOccupancy(request, resource) {
 
 /**
  *
- * @param {ListOccupancyHistoryRequest.AsObject} request
+ * @param {Partial<ListOccupancyHistoryRequest.AsObject>} request
  * @param {ResourceValue<ListOccupancyHistoryResponse.AsObject>} tracker
  * @return {Promise<ListOccupancyHistoryResponse.AsObject>}
  */
@@ -58,7 +58,7 @@ function historyClient(endpoint) {
 }
 
 /**
- * @param {PullOccupancyRequest.AsObject} obj
+ * @param {Partial<PullOccupancyRequest.AsObject>} obj
  * @return {undefined|PullOccupancyRequest}
  */
 function pullOccupancyRequestFromObject(obj) {
@@ -70,7 +70,7 @@ function pullOccupancyRequestFromObject(obj) {
 }
 
 /**
- * @param {ListOccupancyHistoryRequest.AsObject} obj
+ * @param {Partial<ListOccupancyHistoryRequest.AsObject>} obj
  * @return {ListOccupancyHistoryRequest|undefined}
  */
 function listOccupancySensorHistoryRequestFromObject(obj) {

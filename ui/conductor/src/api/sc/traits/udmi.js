@@ -6,7 +6,7 @@ import {PullExportMessagesRequest} from '@sc-bos/ui-gen/proto/udmi_pb';
 
 /**
  *
- * @param {PullExportMessagesRequest.AsObject} request
+ * @param {Partial<PullExportMessagesRequest.AsObject>} request
  * @param {ResourceValue<MqttMessage.AsObject, PullExportMessagesResponse>} resource
  */
 export function pullExportMessages(request, resource) {
@@ -30,7 +30,7 @@ function apiClient(endpoint) {
 
 /**
  *
- * @param {PullExportMessagesRequest.AsObject} obj
+ * @param {Partial<PullExportMessagesRequest.AsObject>} obj
  * @return {undefined|PullExportMessagesRequest}
  */
 function pullExportMessagesRequestFromObject(obj) {

@@ -5,7 +5,7 @@ import {AccessApiPromiseClient} from '@sc-bos/ui-gen/proto/access_grpc_web_pb';
 import {AccessAttempt, GetLastAccessAttemptRequest, PullAccessAttemptsRequest} from '@sc-bos/ui-gen/proto/access_pb';
 
 /**
- * @param {PullAccessAttemptsRequest.AsObject} request
+ * @param {Partial<PullAccessAttemptsRequest.AsObject>} request
  * @param {ResourceValue<AccessAttempt.AsObject, PullAccessAttemptsResponse>} resource
  */
 export function pullAccessAttempts(request, resource) {
@@ -23,7 +23,7 @@ export function pullAccessAttempts(request, resource) {
 }
 
 /**
- * @param {GetLastAccessAttemptRequest.AsObject} request
+ * @param {Partial<GetLastAccessAttemptRequest.AsObject>} request
  * @param {ActionTracker<AccessAttempt.AsObject>} [tracker]
  * @return {Promise<AccessAttempt.AsObject>}
  */
@@ -53,7 +53,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {PullAccessAttemptsRequest.AsObject} obj
+ * @param {Partial<PullAccessAttemptsRequest.AsObject>} obj
  * @return {PullAccessAttemptsRequest|undefined}
  */
 function pullAccessAttemptsRequestFromObject(obj) {
@@ -66,7 +66,7 @@ function pullAccessAttemptsRequestFromObject(obj) {
 }
 
 /**
- * @param {GetLastAccessAttemptRequest.AsObject} obj
+ * @param {Partial<GetLastAccessAttemptRequest.AsObject>} obj
  * @return {undefined|GetLastAccessAttemptRequest}
  */
 function getLastAccessAttemptRequestFromObject(obj) {

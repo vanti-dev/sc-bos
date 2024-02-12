@@ -5,7 +5,7 @@ import {OnOffApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/on_of
 import {GetOnOffRequest, PullOnOffRequest} from '@smart-core-os/sc-api-grpc-web/traits/on_off_pb';
 
 /**
- * @param {PullOnOffRequest.AsObject} request
+ * @param {Partial<PullOnOffRequest.AsObject>} request
  * @param {ResourceValue<OnOff.AsObject, PullOnOffResponse>} resource
  */
 export function pullOnOff(request, resource) {
@@ -23,7 +23,7 @@ export function pullOnOff(request, resource) {
 }
 
 /**
- * @param {GetOnOffRequest.AsObject} request
+ * @param {Partial<GetOnOffRequest.AsObject>} request
  * @param {ActionTracker<OnOff.AsObject>} [tracker]
  * @return {Promise<OnOff.AsObject>}
  */
@@ -43,7 +43,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {PullOnOffRequest.AsObject} obj
+ * @param {Partial<PullOnOffRequest.AsObject>} obj
  * @return {undefined|PullOnOffRequest}
  */
 function pullOnOffRequestFromObject(obj) {
@@ -56,7 +56,7 @@ function pullOnOffRequestFromObject(obj) {
 }
 
 /**
- * @param {GetOnOffRequest.AsObject} obj
+ * @param {Partial<GetOnOffRequest.AsObject>} obj
  * @return {GetOnOffRequest|undefined}
  */
 function getOnOffRequestFromObject(obj) {

@@ -13,7 +13,7 @@ import {GetMetadataRequest} from '@smart-core-os/sc-api-grpc-web/traits/metadata
 
 
 /**
- * @param {GetMetadataRequest.AsObject} request
+ * @param {Partial<GetMetadataRequest.AsObject>} request
  * @param {ActionTracker<ServiceMetadata.AsObject>} [tracker]
  * @return {Promise<ServiceMetadata.AsObject>}
  */
@@ -27,7 +27,7 @@ export function getServiceMetadata(request, tracker) {
 }
 
 /**
- * @param {ListServicesRequest.AsObject} request
+ * @param {Partial<ListServicesRequest.AsObject>} request
  * @param {ActionTracker<ListServicesRequest.AsObject>} [tracker]
  * @return {Promise<ListServicesResponse.AsObject>}
  */
@@ -61,7 +61,7 @@ export function pullServices(request, resource) {
 }
 
 /**
- * @param {ConfigureServiceRequest.AsObject} request
+ * @param {Partial<ConfigureServiceRequest.AsObject>} request
  * @param {ActionTracker<Service.AsObject>} [tracker]
  * @return {Promise<Service.AsObject>}
  */
@@ -74,7 +74,7 @@ export function configureService(request, tracker) {
 }
 
 /**
- * @param {StartServiceRequest.AsObject} request
+ * @param {Partial<StartServiceRequest.AsObject>} request
  * @param {ActionTracker<Service.AsObject>} [tracker]
  * @return {Promise<Service.AsObject>}
  */
@@ -87,7 +87,7 @@ export function startService(request, tracker) {
 }
 
 /**
- * @param {StopServiceRequest.AsObject} request
+ * @param {Partial<StopServiceRequest.AsObject>} request
  * @param {ActionTracker<Service.AsObject>} [tracker]
  * @return {Promise<Service.AsObject>}
  */
@@ -108,7 +108,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {GetMetadataRequest.AsObject} obj
+ * @param {Partial<GetMetadataRequest.AsObject>} obj
  * @return {GetMetadataRequest}
  */
 function createGetMetadataRequestFromObject(obj) {
@@ -120,7 +120,7 @@ function createGetMetadataRequestFromObject(obj) {
 }
 
 /**
- * @param {ListServicesRequest.AsObject} obj
+ * @param {Partial<ListServicesRequest.AsObject>} obj
  * @return {ListServicesRequest}
  */
 function createListServicesRequestFromObject(obj) {
@@ -143,7 +143,7 @@ function pullServicesRequestFromObject(obj) {
 }
 
 /**
- * @param {ConfigureServiceRequest.AsObject} obj
+ * @param {Partial<ConfigureServiceRequest.AsObject>} obj
  * @return {ConfigureServiceRequest}
  */
 function createConfigureServiceRequestFromObject(obj) {
@@ -155,7 +155,7 @@ function createConfigureServiceRequestFromObject(obj) {
 }
 
 /**
- * @param {StartServiceRequest.AsObject} obj
+ * @param {Partial<StartServiceRequest.AsObject>} obj
  * @return {StartServiceRequest}
  */
 function createStartServiceRequestFromObject(obj) {
@@ -166,7 +166,7 @@ function createStartServiceRequestFromObject(obj) {
 }
 
 /**
- * @param {StopServiceRequest.AsObject} obj
+ * @param {Partial<StopServiceRequest.AsObject>} obj
  * @return {StopServiceRequest}
  */
 function createStopServiceRequestFromObject(obj) {

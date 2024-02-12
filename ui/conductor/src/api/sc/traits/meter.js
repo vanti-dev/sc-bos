@@ -8,7 +8,7 @@ import {MeterApiPromiseClient, MeterInfoPromiseClient} from '@sc-bos/ui-gen/prot
 import {DescribeMeterReadingRequest, PullMeterReadingsRequest} from '@sc-bos/ui-gen/proto/meter_pb';
 
 /**
- * @param {PullMeterReadingsRequest.AsObject} request
+ * @param {Partial<PullMeterReadingsRequest.AsObject>} request
  * @param {ResourceValue<MeterReading.AsObject, PullMeterReadingsResponse>} resource
  */
 export function pullMeterReading(request, resource) {
@@ -27,7 +27,7 @@ export function pullMeterReading(request, resource) {
 
 /**
  *
- * @param {DescribeMeterReadingRequest.AsObject} request
+ * @param {Partial<DescribeMeterReadingRequest.AsObject>} request
  * @param {ActionTracker<MeterReadingSupport.AsObject>} [tracker]
  * @return {Promise<MeterReadingSupport.AsObject>}
  */
@@ -40,7 +40,7 @@ export function describeMeterReading(request, tracker) {
 
 /**
  *
- * @param {ListMeterReadingHistoryRequest.AsObject} request
+ * @param {Partial<ListMeterReadingHistoryRequest.AsObject>} request
  * @param {ActionTracker<ListMeterReadingHistoryResponse.AsObject>} [tracker]
  * @return {Promise<ListMeterReadingHistoryResponse.AsObject>}
  */
@@ -79,7 +79,7 @@ function infoClient(endpoint) {
 }
 
 /**
- * @param {PullMeterReadingsRequest.AsObject} obj
+ * @param {Partial<PullMeterReadingsRequest.AsObject>} obj
  * @return {PullMeterReadingsRequest|undefined}
  */
 function pullMeterReadingsRequestFromObject(obj) {
@@ -91,7 +91,7 @@ function pullMeterReadingsRequestFromObject(obj) {
 }
 
 /**
- * @param {DescribeMeterReadingRequest.AsObject} obj
+ * @param {Partial<DescribeMeterReadingRequest.AsObject>} obj
  * @return {undefined|DescribeMeterReadingRequest}
  */
 function describeMeterReadingRequestFromObject(obj) {
@@ -102,7 +102,7 @@ function describeMeterReadingRequestFromObject(obj) {
 }
 
 /**
- * @param {ListMeterReadingHistoryRequest.AsObject} obj
+ * @param {Partial<ListMeterReadingHistoryRequest.AsObject>} obj
  * @return {ListMeterReadingHistoryRequest|undefined}
  */
 function listMeterReadingHistoryRequestFromObject(obj) {

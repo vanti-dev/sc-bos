@@ -5,7 +5,7 @@ import {OpenCloseApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/o
 import {PullOpenClosePositionsRequest} from '@smart-core-os/sc-api-grpc-web/traits/open_close_pb';
 
 /**
- * @param {PullOpenClosePositionsRequest.AsObject} request
+ * @param {Partial<PullOpenClosePositionsRequest.AsObject>} request
  * @param {ResourceValue<OpenClosePositions.AsObject, PullOpenClosePositionsResponse>} resource
  */
 export function pullOpenClosePositions(request, resource) {
@@ -31,7 +31,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {PullOpenClosePositionsRequest.AsObject} obj
+ * @param {Partial<PullOpenClosePositionsRequest.AsObject>} obj
  * @return {undefined|PullOpenClosePositionsRequest}
  */
 function pullOpenClosePositionsRequestFromObject(obj) {

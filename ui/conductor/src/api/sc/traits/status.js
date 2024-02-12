@@ -6,7 +6,7 @@ import {GetCurrentStatusRequest, PullCurrentStatusRequest} from '@sc-bos/ui-gen/
 
 
 /**
- * @param {PullCurrentStatusRequest.AsObject} request
+ * @param {Partial<PullCurrentStatusRequest.AsObject>} request
  * @param {ResourceValue<StatusLog.AsObject, PullCurrentStatusResponse>} resource
  */
 export function pullCurrentStatus(request, resource) {
@@ -24,7 +24,7 @@ export function pullCurrentStatus(request, resource) {
 }
 
 /**
- * @param {GetCurrentStatusRequest.AsObject} request
+ * @param {Partial<GetCurrentStatusRequest.AsObject>} request
  * @param {ActionTracker<StatusLog.AsObject>} [tracker]
  * @return {Promise<StatusLog.AsObject>}
  */
@@ -44,7 +44,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {PullCurrentStatusRequest.AsObject} obj
+ * @param {Partial<PullCurrentStatusRequest.AsObject>} obj
  * @return {PullCurrentStatusRequest|undefined}
  */
 function pullCurrentStatusRequestFromObject(obj) {
@@ -57,7 +57,7 @@ function pullCurrentStatusRequestFromObject(obj) {
 }
 
 /**
- * @param {GetCurrentStatusRequest.AsObject} obj
+ * @param {Partial<GetCurrentStatusRequest.AsObject>} obj
  * @return {undefined|GetCurrentStatusRequest}
  */
 function getCurrentStatusRequestFromObject(obj) {

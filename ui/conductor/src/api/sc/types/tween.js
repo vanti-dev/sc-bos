@@ -4,7 +4,7 @@ import {Tween} from '@smart-core-os/sc-api-grpc-web/types/tween_pb';
 /**
  * Convert a JS object representing a Tween into a protobuf Tween.
  *
- * @param {Tween.AsObject} obj
+ * @param {Partial<Tween.AsObject>} obj
  * @return {Tween}
  */
 export function tweenFromObject(obj) {

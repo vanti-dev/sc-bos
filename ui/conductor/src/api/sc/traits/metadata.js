@@ -6,7 +6,7 @@ import {GetMetadataRequest} from '@smart-core-os/sc-api-grpc-web/traits/metadata
 
 
 /**
- * @param {GetMetadataRequest.AsObject} request
+ * @param {Partial<GetMetadataRequest.AsObject>} request
  * @param {ActionTracker<Metadata.AsObject>} [tracker]
  * @return {Promise<Metadata.AsObject>}
  */
@@ -26,7 +26,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {GetMetadataRequest.AsObject} obj
+ * @param {Partial<GetMetadataRequest.AsObject>} obj
  * @return {GetMetadataRequest}
  */
 function getMetadataRequestFromObject(obj) {

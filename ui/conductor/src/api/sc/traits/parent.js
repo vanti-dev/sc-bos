@@ -5,7 +5,7 @@ import {ParentApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/pare
 import {PullChildrenRequest} from '@smart-core-os/sc-api-grpc-web/traits/parent_pb';
 
 /**
- * @param {PullChildrenRequest.AsObject} request
+ * @param {Partial<PullChildrenRequest.AsObject>} request
  * @param {ResourceCollection<Child.AsObject, PullChildrenResponse>} resources
  */
 export function pullChildren(request, resources) {
@@ -31,7 +31,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {PullChildrenRequest.AsObject} obj
+ * @param {Partial<PullChildrenRequest.AsObject>} obj
  * @return {undefined|PullChildrenRequest}
  */
 function pullChildrenRequestFromObject(obj) {

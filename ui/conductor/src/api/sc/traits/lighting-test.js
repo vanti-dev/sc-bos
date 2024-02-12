@@ -35,7 +35,7 @@ export function listLightHealth(request, tracker) {
 
 /**
  *
- * @param {StartTestRequest.AsObject} request
+ * @param {Partial<StartTestRequest.AsObject>} request
  * @param {ActionTracker<StartTestRequest.AsObject>} [tracker]
  * @return {Promise<StartTestResponse.AsObject>}
  */
@@ -80,7 +80,7 @@ function client(endpoint) {
 }
 
 /**
- * @param {StartTestRequest.AsObject} obj
+ * @param {Partial<StartTestRequest.AsObject>} obj
  * @return {StartTestRequest}
  */
 function startTestRequestFromObject(obj) {
@@ -92,7 +92,7 @@ function startTestRequestFromObject(obj) {
 }
 
 /**
- * @param {ListLightHealthRequest.AsObject} obj
+ * @param {Partial<ListLightHealthRequest.AsObject>} obj
  * @return {undefined|ListLightHealthRequest}
  */
 function listLightHealthRequestFromObject(obj) {

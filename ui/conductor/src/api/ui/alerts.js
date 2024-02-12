@@ -12,7 +12,7 @@ import {
 } from '@sc-bos/ui-gen/proto/alerts_pb';
 
 /**
- * @param {ListAlertsRequest.AsObject} request
+ * @param {Partial<ListAlertsRequest.AsObject>} request
  * @param {ActionTracker<ListAlertsResponse.AsObject>} [tracker]
  * @return {Promise<ListAlertsResponse.AsObject>}
  */
@@ -24,7 +24,7 @@ export function listAlerts(request, tracker) {
 }
 
 /**
- * @param {PullAlertsRequest.AsObject} request
+ * @param {Partial<PullAlertsRequest.AsObject>} request
  * @param {ResourceCollection<Alert.AsObject, PullAlertsResponse>} resource
  */
 export function pullAlerts(request, resource) {
@@ -42,7 +42,7 @@ export function pullAlerts(request, resource) {
 }
 
 /**
- * @param {GetAlertMetadataRequest.AsObject} request
+ * @param {Partial<GetAlertMetadataRequest.AsObject>} request
  * @param {ActionTracker<AlertMetadata.AsObject>} [tracker]
  * @return {Promise<AlertMetadata.AsObject>}
  */
@@ -54,7 +54,7 @@ export function getAlertMetadata(request, tracker) {
 }
 
 /**
- * @param {PullAlertMetadataRequest.AsObject} request
+ * @param {Partial<PullAlertMetadataRequest.AsObject>} request
  * @param {ResourceValue<AlertMetadata.AsObject, PullAlertMetadataResponse>} resource
  */
 export function pullAlertMetadata(request, resource) {
@@ -72,7 +72,7 @@ export function pullAlertMetadata(request, resource) {
 }
 
 /**
- * @param {AcknowledgeAlertRequest.AsObject} request
+ * @param {Partial<AcknowledgeAlertRequest.AsObject>} request
  * @param {ActionTracker<Alert.AsObject>} [tracker]
  * @return {Promise<Alert.AsObject>}
  */
@@ -84,7 +84,7 @@ export function acknowledgeAlert(request, tracker) {
 }
 
 /**
- * @param {AcknowledgeAlertRequest.AsObject} request
+ * @param {Partial<AcknowledgeAlertRequest.AsObject>} request
  * @param {ActionTracker<Alert.AsObject>} [tracker]
  * @return {Promise<Alert.AsObject>}
  */
@@ -104,7 +104,7 @@ function apiClient(endpoint) {
 }
 
 /**
- * @param {ListAlertsRequest.AsObject} obj
+ * @param {Partial<ListAlertsRequest.AsObject>} obj
  * @return {ListAlertsRequest}
  */
 function listAlertsRequestFromObject(obj) {
@@ -117,7 +117,7 @@ function listAlertsRequestFromObject(obj) {
 }
 
 /**
- * @param {PullAlertsRequest.AsObject} obj
+ * @param {Partial<PullAlertsRequest.AsObject>} obj
  * @return {PullAlertsRequest|undefined}
  */
 function pullAlertsRequestFromObject(obj) {
@@ -130,7 +130,7 @@ function pullAlertsRequestFromObject(obj) {
 }
 
 /**
- * @param {GetAlertMetadataRequest.AsObject} obj
+ * @param {Partial<GetAlertMetadataRequest.AsObject>} obj
  * @return {GetAlertMetadataRequest|undefined}
  */
 function getAlertMetadataRequestFromObject(obj) {
@@ -142,7 +142,7 @@ function getAlertMetadataRequestFromObject(obj) {
 }
 
 /**
- * @param {PullAlertMetadataRequest.AsObject} obj
+ * @param {Partial<PullAlertMetadataRequest.AsObject>} obj
  * @return {PullAlertMetadataRequest|undefined}
  */
 function pullAlertMetadataRequestFromObject(obj) {
@@ -154,7 +154,7 @@ function pullAlertMetadataRequestFromObject(obj) {
 }
 
 /**
- * @param {Alert.Query.AsObject} obj
+ * @param {Partial<Alert.Query.AsObject>} obj
  * @return {Alert.Query|undefined}
  */
 function alertQueryFromObject(obj) {
@@ -171,7 +171,7 @@ function alertQueryFromObject(obj) {
 
 /**
  *
- * @param {AcknowledgeAlertRequest.AsObject} obj
+ * @param {Partial<AcknowledgeAlertRequest.AsObject>} obj
  * @return {AcknowledgeAlertRequest|undefined}
  */
 function acknowledgeAlertRequestFromObject(obj) {
@@ -183,7 +183,7 @@ function acknowledgeAlertRequestFromObject(obj) {
 }
 
 /**
- * @param {Alert.Acknowledgement.Author.AsObject} obj
+ * @param {Partial<Alert.Acknowledgement.Author.AsObject>} obj
  * @return {undefined|Alert.Acknowledgement.Author}
  */
 function alertAuthorFromObject(obj) {
