@@ -119,7 +119,7 @@ export const useAccountStore = defineStore('accountStore', () => {
       } catch (e) {
         console.error(`${provider.name} initialization failed`, e);
         snackbar.value = {
-          message: `${provider.name} initialization failed: ${e.error}`,
+          message: `${provider.name} initialization failed: ${e?.error ?? e}`,
           visible: true
         };
       }
@@ -288,7 +288,9 @@ export const useAccountStore = defineStore('accountStore', () => {
     const redirect = loadFromBrowserStorage('session', 'redirect', '')[0];
     if (redirect !== '') {
       window.sessionStorage.removeItem('redirect');
-      await router.push(redirect);
+      if (router.currentRoute.path !== redirect) {
+        await router.push(redirect);
+      }
 
       // Otherwise, redirect to the home page
     } else {
