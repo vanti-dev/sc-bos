@@ -118,7 +118,8 @@
             }
           }
         ]
-      }
+      },
+      "supplyZone": "building"
     },
     "proxy": true,
     "siteFloorPlans": [
