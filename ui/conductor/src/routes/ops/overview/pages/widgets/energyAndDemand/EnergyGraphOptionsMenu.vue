@@ -40,7 +40,7 @@
                 </template>
               </v-switch>
             </v-list-item>
-            <v-list-item class="pa-0 d-flex flex-row justify-center pt-1 px-3" dense>
+            <v-list-item class="pa-0 d-flex flex-row justify-center px-3" dense>
               <v-subheader class="text-body-2 pa-0">Duration</v-subheader>
               <v-spacer/>
               <v-btn-toggle
@@ -58,6 +58,12 @@
                   <span class="text-caption">{{ option.text }}</span>
                 </v-btn>
               </v-btn-toggle>
+            </v-list-item>
+            <v-list-item
+                class="pa-0 d-flex flex-row align-left align-center px-3 mb-n1"
+                dense
+                @click="emits('exportCSV')">
+              <v-subheader class="text-body-2 pa-0">Export CSV...</v-subheader>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -82,7 +88,7 @@ const props = defineProps({
     default: false
   }
 });
-const emits = defineEmits(['update:durationOption', 'update:showConversion']);
+const emits = defineEmits(['update:durationOption', 'update:showConversion', 'exportCSV']);
 
 // Defining the options for the duration type buttons
 const durationOptions = [
