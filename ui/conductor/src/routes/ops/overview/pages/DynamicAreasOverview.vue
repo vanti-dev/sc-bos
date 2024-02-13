@@ -36,7 +36,7 @@ const overViewStore = useOverviewStore();
 const {activeOverview} = storeToRefs(overViewStore);
 
 const uiConfig = useUiConfigStore();
-const overviewChildren = computed(() => uiConfig.config?.ops?.overview?.children || []);
+const overviewChildren = computed(() => uiConfig.config?.ops?.overview?.children);
 
 const pageStore = usePageStore();
 const graphWidth = computed(() => `min-width: calc(100% - 500px - ${pageStore.drawerWidth}px)`);
@@ -70,7 +70,9 @@ const displayRightColumn = computed(() => {
 });
 
 const findActiveOverview = computed(() => {
-  return findActiveItem(overviewChildren.value, props.pathSegments);
+  const encodePathSegments = props.pathSegments.map(encodeURIComponent);
+
+  return findActiveItem(overviewChildren.value, encodePathSegments);
 });
 
 watch(() => props.pathSegments, () => {
@@ -80,5 +82,5 @@ watch(() => props.pathSegments, () => {
   } else {
     activeOverview.value = findActiveOverview.value;
   }
-}, {immediate: true, deep: true});
+}, {immediate: true, deep: true, flush: 'sync'});
 </script>

@@ -52,7 +52,7 @@ export default [
        * @property {string} icon - Icon identifier, e.g., 'mdi-select-all'.
        * @property {string} shortTitle - A short title for the item - for the mini sized navigation.
        * @property {string} title - The full title of the item.
-       * @property {Object} traits - Object containing various trait flags.
+       * @property {Object} widgets - Object containing various trait flags.
        * @property {boolean} widgets.showAirQuality - Flag to show air quality.
        * @property {boolean} widgets.showEmergencyLighting - Flag to show emergency lighting.
        * @property {boolean} widgets.showEnergyConsumption - Flag to show energy consumption.
@@ -64,7 +64,7 @@ export default [
        * @property {boolean} widgets.showPower - Flag to show power.
        * @property {OverviewChild[]} [children] - Optional array of children, each following the same structure.
        */
-      const overviewChildren = uiConfig.config?.ops?.overview?.children || [];
+      const overviewChildren = uiConfig.config?.ops?.overview?.children;
 
       // Split the modified path into segments and remove empty segments then return an array of the segments
       const currentPathSegments = modifiedPath(to.path).split('/').filter(segment => segment);

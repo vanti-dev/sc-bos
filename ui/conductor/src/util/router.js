@@ -72,8 +72,9 @@ export const findActiveItem = (children, childTitles) => {
     const formatTitle = (title) => encodeURIComponent(title);
 
     const foundItem = currentItems.find(
-        item => formatTitle(item.title) === formatTitle(title)
+        item => formatTitle(item.title) === title
     );
+
     if (!foundItem) break;
     result.push(foundItem);
     currentItems = foundItem.children || [];
