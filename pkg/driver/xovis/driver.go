@@ -14,10 +14,10 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/enterleavesensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
-
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -89,28 +89,37 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 		if dev.Metadata != nil {
 			features = append(features, node.HasMetadata(dev.Metadata))
 		}
+		var occupancyVal *resource.Value
 		if dev.Occupancy != nil {
+			occupancy := &occupancyServer{
+				client:      d.client,
+				multiSensor: conf.MultiSensor,
+				logicID:     dev.Occupancy.ID,
+				bus:         d.pushDataBus,
+			}
 			features = append(features, node.HasTrait(trait.OccupancySensor,
-				node.WithClients(occupancysensor.WrapApi(&occupancyServer{
-					client:      d.client,
-					multiSensor: conf.MultiSensor,
-					logicID:     dev.Occupancy.ID,
-					bus:         d.pushDataBus,
-				})),
-			))
+				node.WithClients(occupancysensor.WrapApi(occupancy))))
+			occupancyVal = occupancy.OccupancyTotal
 		}
+		var enterLeaveVal *resource.Value
 		if dev.EnterLeave != nil {
+			enterLeave := &enterLeaveServer{
+				client:      d.client,
+				logicID:     dev.EnterLeave.ID,
+				multiSensor: conf.MultiSensor,
+				bus:         d.pushDataBus,
+			}
+
 			features = append(features, node.HasTrait(trait.EnterLeaveSensor,
-				node.WithClients(enterleavesensor.WrapApi(&enterLeaveServer{
-					client:      d.client,
-					logicID:     dev.EnterLeave.ID,
-					multiSensor: conf.MultiSensor,
-					bus:         d.pushDataBus,
-				})),
-			))
+				node.WithClients(enterleavesensor.WrapApi(enterLeave))))
+			enterLeaveVal = enterLeave.EnterLeaveTotal
 		}
 
 		d.unannounceDevices = append(d.unannounceDevices, d.Node.Announce(dev.Name, features...))
+
+		if enterLeaveVal != nil || occupancyVal != nil {
+			NewUdmiServiceServer(d.Logger.Named("UdmiServiceServer"), enterLeaveVal, occupancyVal, dev.UDMITopicPrefix)
+		}
 	}
 	// register data push webhook
 	if d.server != nil {

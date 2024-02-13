@@ -11,12 +11,15 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 type enterLeaveServer struct {
 	traits.UnimplementedEnterLeaveSensorApiServer
+	gen.UnimplementedUdmiServiceServer
 	client      *Client
 	logicID     int
 	multiSensor bool
@@ -25,6 +28,8 @@ type enterLeaveServer struct {
 	pollInit sync.Once
 	poll     *task.Intermittent
 	polls    *minibus.Bus[LiveLogicResponse]
+
+	EnterLeaveTotal *resource.Value
 }
 
 func (e *enterLeaveServer) GetEnterLeaveEvent(ctx context.Context, request *traits.GetEnterLeaveEventRequest) (*traits.EnterLeaveEvent, error) {
@@ -41,6 +46,12 @@ func (e *enterLeaveServer) GetEnterLeaveEvent(ctx context.Context, request *trai
 	}
 
 	forwardCount32, backwardCount32 := int32(forwardCount), int32(backwardCount)
+
+	e.EnterLeaveTotal.Set(&traits.EnterLeaveEvent{
+		EnterTotal: &forwardCount32,
+		LeaveTotal: &backwardCount32,
+	})
+
 	return &traits.EnterLeaveEvent{
 		EnterTotal: &forwardCount32,
 		LeaveTotal: &backwardCount32,

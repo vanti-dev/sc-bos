@@ -45,6 +45,9 @@ type DeviceConfig struct {
 	Occupancy  *LogicConfig     `json:"occupancy"`  // an Occupancy logic
 	EnterLeave *LogicConfig     `json:"enterLeave"` // an In/Out logic
 	Metadata   *traits.Metadata `json:"metadata,omitempty"`
+
+	// to support UDMI/MQTT automation
+	UDMITopicPrefix string `json:"udmiTopicPrefix,omitempty"`
 }
 
 type LogicConfig struct {
