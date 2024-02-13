@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="pt-1">
     <presence-card
         v-if="showWidget('showOccupancy')"
         class="mb-5"
@@ -11,25 +11,10 @@
         gauge-color="#ffc432"
         :name="environmentalValues.indoor"
         :external-name="environmentalValues.outdoor"/>
-
-    <content-card
-        v-if="showWidget('showEnergyConsumption')"
-        class="pb-0"
-        style="min-height:385px;">
-      <EnergyGraph
-          chart-title="Energy Consumption"
-          classes="pb-2 mr-1"
-          color="#ffc432"
-          color-middle="rgba(255, 196, 50, 0.35)"
-          :hide-legends="true"
-          :metered="widgets.showEnergyConsumption"/>
-    </content-card>
   </div>
 </template>
 
 <script setup>
-import ContentCard from '@/components/ContentCard.vue';
-import EnergyGraph from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraph.vue';
 import EnvironmentalCard from '@/routes/ops/overview/pages/widgets/environmental/EnvironmentalCard.vue';
 import PresenceCard from '@/routes/ops/overview/pages/widgets/occupancy/PresenceCard.vue';
 import {computed} from 'vue';
