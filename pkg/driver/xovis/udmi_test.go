@@ -117,7 +117,7 @@ func Test_PullExportMessages(t *testing.T) {
 
 			messages, err := client.PullExportMessages(ctx, req)
 			tt.set()
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(1 * time.Millisecond)
 			tt.set()
 
 			m, err := messages.Recv()
