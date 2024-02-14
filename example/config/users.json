@@ -30,5 +30,21 @@
     "secrets": [
       {"hash": "$2a$10$Zvy4p2qQNZOMNim2B0oXg.0CAZj/FSuvdNExmVNalz3jbh/cJOh6W", "plaintext": "none"}
     ]
+  },
+  {
+    "id": "room1",
+    "title": "Room 1 User",
+    "zones": ["Room 1"],
+    "secrets": [
+      {"hash": "$2a$10$nA3g9oyEo83GECK5DdRnaeblz8d/H8e5IdSLzAkhS/wrV7Uv7SUmK", "plaintext": "room1"}
+    ]
+  },
+  {
+    "id": "rooms",
+    "title": "Rooms User",
+    "zones": ["Room 1", "Room 2"],
+    "secrets": [
+      {"hash": "$2a$10$Rvk5nnuhBYVyespRPqR1/OpnJgYuZsRJ8FnULpjtmKp7DAW0IKvh6", "plaintext": "rooms"}
+    ]
   }
 ]
