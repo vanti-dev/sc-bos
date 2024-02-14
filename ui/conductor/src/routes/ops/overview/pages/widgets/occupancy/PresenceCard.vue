@@ -1,17 +1,16 @@
 <template>
-  <content-card class="mt-3 mb-3">
+  <content-card class="mt-3 pt-4 pb-5 mb-3">
     <div class="d-flex flex-row mb-2">
       <v-card-title class="text-h4 pl-4">Presence</v-card-title>
       <StatusAlert :resource="occupancyValue.streamError"/>
     </div>
     <v-col cols="12" class="d-flex flex-column pl-4">
       <v-row class="d-flex flex-row align-center px-3 pb-2">
-        <span v-if="occupancyValue.value" :class="[stateColor, 'text-h6 font-weight-bold']">
+        <span :class="[stateColor, 'text-h6 font-weight-bold pb-1 mt-n3']">
           {{ stateStr }}
         </span>
-        <v-spacer/>
-        <div class="d-flex flex-row ma-0 text-caption font-weight-regular">
-          <span class="mr-1">Last presence detected:</span>
+        <div class="d-flex flex-row align-start ma-0 text-caption font-weight-regular">
+          <span class="mr-1">Last updated:</span>
           <span>{{ timeAgo }}</span>
         </div>
       </v-row>

@@ -1,65 +1,73 @@
 <template>
-  <content-card>
-    <v-data-table
-        :headers="headers"
-        :items="alerts.pageItems"
-        disable-sort
-        :server-items-length="queryTotalCount"
-        :item-class="rowClass"
-        :options.sync="dataTableOptions"
-        :footer-props="setFooterProps"
-        :loading="alerts.loading"
-        class="pt-4"
-        :class="{ 'hide-pagination': modifyFooter }"
-        @click:row="showNotification">
-      <template #top>
-        <filters
-            v-if="!props.overviewPage"
-            :floor.sync="query.floor"
-            :floor-items="floors"
-            :zone.sync="query.zone"
-            :zone-items="zones"
-            :subsystem.sync="query.subsystem"
-            :subsystem-items="subsystems"
-            :acknowledged.sync="query.acknowledged"
-            :resolved.sync="query.acknowledged"/>
-      </template>
-      <template #item.createTime="{ item }">
-        {{ item.createTime.toLocaleString() }}
-      </template>
-      <template #item.subsystem="{ item }">
-        <subsystem-icon size="20px" :subsystem="item.subsystem" no-default/>
-      </template>
-      <template #item.source="{ item }">
-        <v-tooltip bottom>
-          <template #activator="{ on }">
-            <span v-on="on">{{ formatSource(item.source) }}</span>
-          </template>
-          <span>{{ item.source }}</span>
-        </v-tooltip>
-      </template>
-      <template #item.severity="{ item }">
-        <v-tooltip v-if="item.resolveTime" bottom>
-          <template #activator="{ on }">
-            <span v-on="on">RESOLVED</span>
-          </template>
-          Was:
-          <span :class="notifications.severityData(item.severity).color">
+  <div class="ml-3">
+    <v-row :class="['mt-0 ml-0 pl-0', {'pl-4 mt-1': props.overviewPage}]">
+      <h3 :class="['text-h3 pt-2 pb-6', {'text-h4': props.overviewPage}]">Notifications</h3>
+      <v-spacer/>
+    </v-row>
+
+    <content-card :class="['px-4', {'mt-8': !props.overviewPage}]">
+      <v-data-table
+          :headers="headers"
+          :items="alerts.pageItems"
+          disable-sort
+          :server-items-length="queryTotalCount"
+          :item-class="rowClass"
+          :options.sync="dataTableOptions"
+          :footer-props="setFooterProps"
+          :loading="alerts.loading"
+          class="pt-4"
+          :class="{ 'hide-pagination': modifyFooter }"
+          @click:row="showNotification">
+        <template #top>
+          <filters
+              v-if="!props.overviewPage"
+              class="mb-4 mt-n2"
+              :floor.sync="query.floor"
+              :floor-items="floors"
+              :zone.sync="query.zone"
+              :zone-items="zones"
+              :subsystem.sync="query.subsystem"
+              :subsystem-items="subsystems"
+              :acknowledged.sync="query.acknowledged"
+              :resolved.sync="query.acknowledged"/>
+        </template>
+        <template #item.createTime="{ item }">
+          {{ item.createTime.toLocaleString() }}
+        </template>
+        <template #item.subsystem="{ item }">
+          <subsystem-icon size="20px" :subsystem="item.subsystem" no-default/>
+        </template>
+        <template #item.source="{ item }">
+          <v-tooltip bottom>
+            <template #activator="{ on }">
+              <span v-on="on">{{ formatSource(item.source) }}</span>
+            </template>
+            <span>{{ item.source }}</span>
+          </v-tooltip>
+        </template>
+        <template #item.severity="{ item }">
+          <v-tooltip v-if="item.resolveTime" bottom>
+            <template #activator="{ on }">
+              <span v-on="on">RESOLVED</span>
+            </template>
+            Was:
+            <span :class="notifications.severityData(item.severity).color">
+              {{ notifications.severityData(item.severity).text }}
+            </span>
+          </v-tooltip>
+          <span v-else :class="notifications.severityData(item.severity).color">
             {{ notifications.severityData(item.severity).text }}
           </span>
-        </v-tooltip>
-        <span v-else :class="notifications.severityData(item.severity).color">
-          {{ notifications.severityData(item.severity).text }}
-        </span>
-      </template>
-      <template #item.acknowledged="{ item }">
-        <acknowledgement
-            :ack="item.acknowledgement"
-            @acknowledge="notifications.setAcknowledged(true, item, name)"
-            @unacknowledge="notifications.setAcknowledged(false, item, name)"/>
-      </template>
-    </v-data-table>
-  </content-card>
+        </template>
+        <template #item.acknowledged="{ item }">
+          <acknowledgement
+              :ack="item.acknowledgement"
+              @acknowledge="notifications.setAcknowledged(true, item, name)"
+              @unacknowledge="notifications.setAcknowledged(false, item, name)"/>
+        </template>
+      </v-data-table>
+    </content-card>
+  </div>
 </template>
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';

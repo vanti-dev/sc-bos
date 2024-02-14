@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="d-flex flex-column pt-0 pr-0">
+  <v-container fluid class="d-flex flex-column pt-0 pl-0 pr-3">
     <div class="d-flex flex-row flex-nowrap mb-2">
       <h3 class="text-h3 pt-2 pb-6">
         {{ overViewStore.getActiveOverview?.title }} Status Overview
@@ -9,7 +9,7 @@
       <v-col :class="[{ 'pr-0': !displayRightColumn }, 'ml-0 pl-0']" :style="graphWidth">
         <left-column v-if="displayLeftColumn" :item="overViewStore.getActiveOverview"/>
       </v-col>
-      <v-col v-if="displayRightColumn" cols="6" class="mr-0 pr-0 pt-0" style="width: 500px; max-width: 500px;">
+      <v-col v-if="displayRightColumn" cols="3" class="mr-0 pr-0 pt-0" style="width: 260px; max-width: 260px;">
         <right-column :item="overViewStore.getActiveOverview"/>
       </v-col>
     </v-row>

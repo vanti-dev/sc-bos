@@ -1,20 +1,25 @@
 <template>
   <div>
-    <!--    <TopRow-->
-    <!--        v-if="true"-->
-    <!--        class="pb-4 mb-7"-->
-    <!--        :item="props.item"/>-->
-
-    <ContentCard>
-      <h4 class="text-h4 pt-0 pt-lg-4 pl-4">Notifications</h4>
-      <notifications overview-page :zone="props.item?.widgets?.showNotification"/>
+    <content-card
+        v-if="props.item.widgets.showEnergyConsumption"
+        class="mt-1 pb-0 mb-8"
+        style="min-height:385px;">
+      <EnergyGraph
+          chart-title="Energy Consumption"
+          classes="pt-1 pb-2 ml-3 mr-5"
+          color="#ffc432"
+          color-middle="rgba(255, 196, 50, 0.35)"
+          :metered="props.item.widgets.showEnergyConsumption"/>
+    </content-card>
+    <ContentCard v-if="props.item.widgets.showNotifications" class="pt-4 pl-0">
+      <notifications overview-page :zone="props.item.widgets.showNotifications"/>
     </ContentCard>
   </div>
 </template>
 
 <script setup>
-// import TopRow from '@/routes/ops/overview/pages/components/TopRow.vue';
 import ContentCard from '@/components/ContentCard.vue';
+import EnergyGraph from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraph.vue';
 import Notifications from '@/routes/ops/notifications/Notifications.vue';
 
 const props = defineProps({
