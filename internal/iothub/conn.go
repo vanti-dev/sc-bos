@@ -36,7 +36,7 @@ func Dial(ctx context.Context, params ConnectionParameters) (Conn, error) {
 
 	return &conn{
 		mqtt:           mqttClient,
-		telemetryTopic: fmt.Sprintf("devices/%s/messages/events/", params.DeviceID),
+		telemetryTopic: fmt.Sprintf("devices/%s/messages/events/$.ct=application%%2Fjson&$.ce=utf-8", params.DeviceID),
 	}, nil
 }
 
