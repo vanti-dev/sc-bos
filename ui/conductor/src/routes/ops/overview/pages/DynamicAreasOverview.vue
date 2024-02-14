@@ -70,17 +70,15 @@ const displayRightColumn = computed(() => {
 });
 
 const findActiveOverview = computed(() => {
+  if (!props.pathSegments.length || !overviewChildren.value.length) return null;
+
   const encodePathSegments = props.pathSegments.map(encodeURIComponent);
 
   return findActiveItem(overviewChildren.value, encodePathSegments);
 });
 
-watch(() => props.pathSegments, () => {
-  // If no path segments are provided, we are on the root overview page
-  if (props.pathSegments.length === 0) {
-    activeOverview.value = null;
-  } else {
-    activeOverview.value = findActiveOverview.value;
-  }
+watch(findActiveOverview, (overviewChild) => {
+  // Set the active overview or null if not found
+  activeOverview.value = overviewChild;
 }, {immediate: true, deep: true, flush: 'sync'});
 </script>
