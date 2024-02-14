@@ -4,7 +4,10 @@ import {findActiveItem} from '@/util/router.js';
 export default [
   {
     path: 'overview',
-    component: () => import('@/routes/ops/OpsHome.vue'),
+    components: {
+      default: () => import('@/routes/ops/OpsHome.vue'),
+      sidebar: () => import('@/routes/ops/notifications/NotificationSideBar.vue')
+    },
     redirect: 'overview/building',
     meta: {
       authentication: {
