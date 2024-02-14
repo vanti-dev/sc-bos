@@ -2,7 +2,6 @@
   "name": "test-ac",
   "drivers": [
     {
-      "disabled": true,
       "type": "mock", "name": "Test Devices",
       "devices": [
         {
@@ -104,7 +103,6 @@
   ],
   "zones": [
     {
-      "disabled":true,
       "name": "Floor 3",
       "type": "area",
       "lights": ["lights/01", "lights/02", "lights/03"],
@@ -112,7 +110,6 @@
       "occupancySensors": ["pir/01", "pir/02", "pir/03"]
     },
     {
-      "disabled": true,
       "name": "Room 1",
       "type": "area",
       "lights": ["lights/01", "lights/03"],
@@ -123,7 +120,6 @@
       "thermostats": ["FCU/01"]
     },
     {
-      "disabled": true,
       "name": "Room 2",
       "type": "area",
       "lights": ["lights/01", "lights/03"],
@@ -134,7 +130,6 @@
       "thermostats": ["FCU/01"]
     },
     {
-      "disabled": true,
       "name": "Office",
       "type": "area",
       "lights": ["lights/01", "lights/03"],
@@ -143,6 +138,17 @@
         "audience": ["lights/02", "lights/03"]
       },
       "thermostats": ["FCU/01"]
+    },
+    {
+      "name": "building",
+      "type": "area",
+      "metadata": {
+        "appearance": {"title": "Whole Building"}
+      },
+      "thermostats": ["FCU/01"],
+      "thermostatGroups": {
+        "outside": {"thermostats": ["FCU/02"]}
+      }
     }
   ]
 }
