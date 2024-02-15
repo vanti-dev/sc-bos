@@ -7,38 +7,43 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 )
 
 type AirQualitySensor struct {
 	traits.UnimplementedAirQualitySensorApiServer
+	gen.UnimplementedMqttServiceServer
+	gen.UnimplementedUdmiServiceServer
 
 	logger       *zap.Logger
 	pollInterval time.Duration
 
 	client *Client
 
-	airQuality *resource.Value
+	AirQualityValue *resource.Value
 }
 
-func NewAirQualitySensor(client *Client, logger *zap.Logger, pollInterval time.Duration) AirQualitySensor {
+func NewAirQualitySensor(client *Client, logger *zap.Logger, pollInterval time.Duration) *AirQualitySensor {
 	if pollInterval <= 0 {
 		pollInterval = time.Second * 60
 	}
 
-	airQualitySensor := AirQualitySensor{
-		client:       client,
-		logger:       logger,
-		pollInterval: pollInterval,
-		airQuality:   resource.NewValue(resource.WithInitialValue(&traits.AirQuality{}), resource.WithNoDuplicates()),
+	return &AirQualitySensor{
+		client:          client,
+		logger:          logger,
+		pollInterval:    pollInterval,
+		AirQualityValue: resource.NewValue(resource.WithInitialValue(&traits.AirQuality{}), resource.WithNoDuplicates()),
 	}
+}
 
-	airQualitySensor.GetUpdate()
-
-	go airQualitySensor.startPoll(context.Background())
-
-	return airQualitySensor
+// StartPollingForData starts a loop which fetches data from the sensor at a set interval
+func (a *AirQualitySensor) StartPollingForData() {
+	go func() {
+		_ = a.startPoll(context.Background())
+	}()
 }
 
 func (a *AirQualitySensor) startPoll(ctx context.Context) error {
@@ -53,25 +58,25 @@ func (a *AirQualitySensor) startPoll(ctx context.Context) error {
 		case <-ticker.C:
 			err := a.GetUpdate()
 			if err != nil {
-				a.logger.Error("error refreshing airQuality data", zap.Error(err))
+				a.logger.Error("error refreshing AirQualityValue data", zap.Error(err))
 			}
 		}
 	}
 }
 
-func (a *AirQualitySensor) GetAirQuality(ctx context.Context, req *traits.GetAirQualityRequest) (*traits.AirQuality, error) {
+func (a *AirQualitySensor) GetAirQuality(_ context.Context, _ *traits.GetAirQualityRequest) (*traits.AirQuality, error) {
 	err := a.GetUpdate()
 	if err != nil {
 		return nil, err
 	}
-	return a.airQuality.Get().(*traits.AirQuality), nil
+	return a.AirQualityValue.Get().(*traits.AirQuality), nil
 }
 
 func (a *AirQualitySensor) PullAirQuality(request *traits.PullAirQualityRequest, server traits.AirQualitySensorApi_PullAirQualityServer) error {
 	ctx, cancel := context.WithCancel(server.Context())
 	defer cancel()
 
-	changes := a.airQuality.Pull(ctx)
+	changes := a.AirQualityValue.Pull(ctx)
 
 	for change := range changes {
 		v := change.Value.(*traits.AirQuality)
@@ -127,7 +132,7 @@ func (a *AirQualitySensor) GetUpdate() error {
 		q.Score = &fscore
 	}
 
-	a.airQuality.Set(q)
+	a.AirQualityValue.Set(q)
 
 	return nil
 }

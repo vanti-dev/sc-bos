@@ -7,42 +7,46 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 )
 
 type Occupancy struct {
 	traits.UnimplementedOccupancySensorApiServer
+	gen.UnimplementedUdmiServiceServer
 
 	logger       *zap.Logger
 	pollInterval time.Duration
 
 	client *Client
 
-	occupancy *resource.Value
+	OccupancyValue *resource.Value
 }
 
-func NewOccupancySensor(client *Client, logger *zap.Logger, pollInterval time.Duration) Occupancy {
+func NewOccupancySensor(client *Client, logger *zap.Logger, pollInterval time.Duration) *Occupancy {
 	if pollInterval <= 0 {
 		pollInterval = time.Second * 60
 	}
 
-	occupancy := Occupancy{
-		client:       client,
-		logger:       logger,
-		pollInterval: pollInterval,
-		occupancy:    resource.NewValue(resource.WithInitialValue(&traits.Occupancy{}), resource.WithNoDuplicates()),
+	return &Occupancy{
+		client:         client,
+		logger:         logger,
+		pollInterval:   pollInterval,
+		OccupancyValue: resource.NewValue(resource.WithInitialValue(&traits.Occupancy{}), resource.WithNoDuplicates()),
 	}
-
-	occupancy.GetUpdate()
-
-	go occupancy.startPoll(context.Background())
-
-	return occupancy
 }
 
-func (a *Occupancy) startPoll(ctx context.Context) error {
-	ticker := time.NewTicker(a.pollInterval)
+// StartPollingForData starts a loop which fetches data from the sensor at a set interval
+func (o *Occupancy) StartPollingForData() {
+	go func() {
+		_ = o.startPoll(context.Background())
+	}()
+}
+
+func (o *Occupancy) startPoll(ctx context.Context) error {
+	ticker := time.NewTicker(o.pollInterval)
 	defer ticker.Stop()
 
 	for {
@@ -51,27 +55,27 @@ func (a *Occupancy) startPoll(ctx context.Context) error {
 			return nil
 
 		case <-ticker.C:
-			err := a.GetUpdate()
+			err := o.GetUpdate()
 			if err != nil {
-				a.logger.Error("error refreshing Occupancy data", zap.Error(err))
+				o.logger.Error("error refreshing Occupancy data", zap.Error(err))
 			}
 		}
 	}
 }
 
-func (a *Occupancy) GetOccupancy(ctx context.Context, req *traits.GetOccupancyRequest) (*traits.Occupancy, error) {
-	err := a.GetUpdate()
+func (o *Occupancy) GetOccupancy(_ context.Context, _ *traits.GetOccupancyRequest) (*traits.Occupancy, error) {
+	err := o.GetUpdate()
 	if err != nil {
 		return nil, err
 	}
-	return a.occupancy.Get().(*traits.Occupancy), nil
+	return o.OccupancyValue.Get().(*traits.Occupancy), nil
 }
 
-func (a *Occupancy) PullOccupancy(request *traits.PullOccupancyRequest, server traits.OccupancySensorApi_PullOccupancyServer) error {
+func (o *Occupancy) PullOccupancy(request *traits.PullOccupancyRequest, server traits.OccupancySensorApi_PullOccupancyServer) error {
 	ctx, cancel := context.WithCancel(server.Context())
 	defer cancel()
 
-	changes := a.occupancy.Pull(ctx)
+	changes := o.OccupancyValue.Pull(ctx)
 
 	for change := range changes {
 		v := change.Value.(*traits.Occupancy)
@@ -89,9 +93,9 @@ func (a *Occupancy) PullOccupancy(request *traits.PullOccupancyRequest, server t
 	return nil
 }
 
-func (a *Occupancy) GetUpdate() error {
+func (o *Occupancy) GetUpdate() error {
 	response := SensorResponse{}
-	err := doGetRequest(a.client, &response, "sensor")
+	err := doGetRequest(o.client, &response, "sensor")
 	if err != nil {
 		return err
 	}
@@ -110,7 +114,7 @@ func (a *Occupancy) GetUpdate() error {
 		peopleCount = response.ZonePeople0
 	}
 
-	a.occupancy.Set(&traits.Occupancy{
+	o.OccupancyValue.Set(&traits.Occupancy{
 		State:       state,
 		PeopleCount: int32(peopleCount),
 	})
