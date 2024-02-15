@@ -1,7 +1,7 @@
 <template>
   <content-card class="mb-5 d-flex flex-column pt-7 pb-0">
     <h4 class="text-h4 pl-4 pb-8 pt-1">Environmental</h4>
-    <div :class="['d-flex flex-row justify-center ml-n3', {'flex-wrap mb-4': props.shouldWrap}]">
+    <div class="d-flex flex-column align-center mb-4">
       <v-col cols="auto" class="ma-0 pa-0">
         <circular-gauge
             v-if="indoorTemperature > 0 || props.shouldWrap"
