@@ -43,12 +43,12 @@
     "eslint-plugin-jsdoc": "^39.6.4",
     "eslint-plugin-vue": "^9.8.0",
     "eslint-plugin-vuetify": "^1.1.0",
+    "git-revision-vite-plugin": "^0.0.11",
     "glob": "^8.0.3",
     "pkijs": "^3.0.15",
     "sass": "~1.32",
     "unplugin-vue-components": "^0.22.4",
     "vite": "^5.1.2",
-    "vite-plugin-eslint": "^1.8.1",
-    "vite-plugin-git-revision": "^0.1.9"
+    "vite-plugin-eslint": "^1.8.1"
   }
 }

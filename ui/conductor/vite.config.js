@@ -1,4 +1,5 @@
 import vue from '@vitejs/plugin-vue2';
+import gitRevisionVitePlugin from 'git-revision-vite-plugin';
 import glob from 'glob';
 import {createRequire} from 'module';
 import {dirname, join, relative} from 'path';
@@ -7,7 +8,6 @@ import Components from 'unplugin-vue-components/vite';
 import {fileURLToPath, URL} from 'url';
 import {defineConfig} from 'vite';
 import eslintPlugin from 'vite-plugin-eslint';
-import gitRevision from 'vite-plugin-git-revision';
 
 const _require = createRequire(import.meta.url);
 
@@ -45,7 +45,7 @@ export default defineConfig({
   plugins: [
     vue(),
     eslintPlugin(),
-    gitRevision({
+    gitRevisionVitePlugin({
       versionCommand: 'describe --tags --always --match ui/*'
     }),
     // can't fix imported var names, so tell eslint to ignore them

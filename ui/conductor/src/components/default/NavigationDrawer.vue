@@ -53,10 +53,10 @@ const {hasNav} = usePage();
 const {drawer, miniVariant, drawerWidth, pinDrawer} = storeToRefs(usePageStore());
 
 const appVersion = computed(() => {
-  if (GITVERSION.startsWith('ui/')) {
-    return GITVERSION.substring(3);
+  if (GIT_VERSION.startsWith('ui/')) {
+    return GIT_VERSION.substring(3);
   }
-  return GITVERSION;
+  return GIT_VERSION;
 });
 
 watch(
