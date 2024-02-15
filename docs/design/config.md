@@ -77,6 +77,31 @@ were written by hand). This ended up being quite a pain and ultimately got chang
 was effectively scp'd to the servers and loaded on boot. Now a restart of the node process is needed to apply config
 updates.
 
+### Cloud edge gateways (Kahu gateway)
+
+Moving outside of direct sc lineage, we also have cloud edge gateways, appliances that live inside a building with the
+goal of connecting it to a cloud service. The config for this system is split into different categories.
+
+Static config, config that is unlikely to change over time, lives on disk in json files and covers config like hosted
+web server port number, or which folders to host http static content from. This config can only be edited via these
+files and the process needs restarting for changes to be applied. These config files are typically deployed using tools
+like Ansible and the source of truth stored in a git repo.
+
+Dynamic config describes the processes domain, which desks are configured, what are their addresses, bus ids, etc. This
+config is stored in the cloud and pulled onto the device using cloud apis. The config is editable via cloud hosted admin
+pages which sync the config in 'real time' back to the gateway. The gateway is capable of applying these changes without
+a restart. There is no mechanism for local editing of this config.
+
+Credential config is stored locally in files on the gateway and can be edited via the embedded admin pages hosted by the
+gateway. These credentials can be updated while the gateway is running. The config on disk on the device is the only
+location where this config is stored, if you lose this information then it is lost. Only credentials are stored here so
+losing them means regenerating new credentials and applying them to the gateway.
+
+A consequence of this type of application is that a cloud connection is required for the appliance to function, so you
+may as well use that connection for as much config as you can. A huge benefit is that this allows you to put config into
+one and only one location, static config is always on disk, dynamic config is always in the cloud. This bypasses any
+conflict resolution issues and simplified the process.
+
 ## Bag of ideas
 
 Supporting both tool and manual config generation could be pushed onto the tool to support. While we also want to
