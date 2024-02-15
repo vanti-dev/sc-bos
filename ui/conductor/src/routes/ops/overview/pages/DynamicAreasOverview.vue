@@ -51,8 +51,9 @@ const displayLeftColumn = computed(() => {
   const notifications = activeOverview.value?.widgets?.showNotifications;
   const lighting = activeOverview.value?.widgets?.showLighting;
   const power = activeOverview.value?.widgets?.showPower;
+  const energyConsumption = activeOverview.value?.widgets?.showEnergyConsumption;
 
-  return emergencyLighting || notifications || lighting || power;
+  return emergencyLighting || notifications || lighting || power || energyConsumption;
 });
 
 /**
@@ -63,10 +64,9 @@ const displayLeftColumn = computed(() => {
 const displayRightColumn = computed(() => {
   const airQuality = activeOverview.value?.widgets?.showAirQuality;
   const occupancy = activeOverview.value?.widgets?.showOccupancy;
-  const energyConsumption = activeOverview.value?.widgets?.showEnergyConsumption;
   const environment = activeOverview.value?.widgets?.showEnvironment;
 
-  return airQuality || occupancy || energyConsumption || environment;
+  return airQuality || occupancy || environment;
 });
 
 const findActiveOverview = computed(() => {
