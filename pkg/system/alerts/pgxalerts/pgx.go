@@ -393,7 +393,7 @@ func (s *Server) ListAlerts(ctx context.Context, request *gen.ListAlertsRequest)
 		if err != nil {
 			return nil, status.Error(codes.InvalidArgument, "bad page token")
 		}
-		where = append(where, fmt.Sprintf(`create_time<=$%d OR (create_time=$%d AND id<=$%d)`, argIdx+1, argIdx+1, argIdx+2))
+		where = append(where, fmt.Sprintf(`create_time<$%d OR (create_time=$%d AND id<=$%d)`, argIdx+1, argIdx+1, argIdx+2))
 		args = append(args, pt.LastCreateTime, pt.LastID)
 		argIdx += 2
 	}
