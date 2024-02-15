@@ -8,7 +8,6 @@
     <environmental-card
         v-if="showWidget('showEnvironment')"
         class="mt-3"
-        gauge-color="#ffc432"
         :name="environmentalValues.indoor"
         :external-name="environmentalValues.outdoor"/>
   </div>
