@@ -173,6 +173,7 @@ export default function() {
     }
 
     // exclude traitsList from the metadata return
+    // eslint-disable-next-line no-unused-vars
     const {traitsList, ...metadata} = inspectHubNodeValue.response.metadata;
 
     return metadata;

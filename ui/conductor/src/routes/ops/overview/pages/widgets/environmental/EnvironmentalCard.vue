@@ -118,8 +118,4 @@ const outdoorTemperature = computed(() => {
 const indoorHumidity = computed(() => {
   return indoor.humidityValue.value;
 });
-
-const outdoorHumidity = computed(() => {
-  return outdoor.humidityValue.value;
-});
 </script>

@@ -57,7 +57,6 @@ export function route(route) {
  * // Returns null
  * findActiveItem(overviewChildren, ['Area 1', 'Area 2', 'Area 4']);
  *
- *
  * @param {OverviewChild[]} children - Array of building children, each following the structure of OverviewChild.
  * @param {string[]} pathSegments - Array of titles to find in sequence.
  * @return {OverviewChild[]|null} - Array of found items in the order of the titles provided. If a title is not found,

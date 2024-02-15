@@ -5,7 +5,7 @@
 let _serverConfig = null;
 
 /**
- *
+ * @return {Promise<ServerConfig>}
  */
 export async function serverConfig() {
   if (_serverConfig === null) {
