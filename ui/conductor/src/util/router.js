@@ -59,20 +59,18 @@ export function route(route) {
  *
  *
  * @param {OverviewChild[]} children - Array of building children, each following the structure of OverviewChild.
- * @param {string[]} childTitles - Array of titles to find in sequence.
+ * @param {string[]} pathSegments - Array of titles to find in sequence.
  * @return {OverviewChild[]|null} - Array of found items in the order of the titles provided. If a title is not found,
  *                             the array includes items up to the last found title.
  */
-export const findActiveItem = (children, childTitles) => {
+export const findActiveItem = (children, pathSegments) => {
   let currentItems = children;
   const result = [];
 
   // Iterate through the titles, searching for the corresponding item in the current items
-  for (const title of childTitles) {
-    const formatTitle = (title) => encodeURIComponent(title);
-
+  for (const segment of pathSegments) {
     const foundItem = currentItems.find(
-        item => formatTitle(item.title) === title
+        item => decodeURIComponent(segment) === item.title
     );
 
     if (!foundItem) break;
@@ -80,8 +78,8 @@ export const findActiveItem = (children, childTitles) => {
     currentItems = foundItem.children || [];
   }
 
-  // If the result array is the same length as the childTitles array, then all titles were found
+  // If the result array is the same length as the pathSegments array, then all titles were found
   // and the last item in the result array is the active item,
   // otherwise the active item is null
-  return result.length === childTitles.length ? result[result.length - 1] : null;
+  return result.length === pathSegments.length ? result[result.length - 1] : null;
 };
