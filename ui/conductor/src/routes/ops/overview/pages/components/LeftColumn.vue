@@ -2,16 +2,14 @@
   <div>
     <content-card
         v-if="props.item.widgets.showEnergyConsumption"
-        class="mt-1 pb-0 mb-8"
+        class="mt-1 pb-0 mb-7"
         style="min-height:385px;">
       <EnergyGraph
           chart-title="Energy Consumption"
           classes="pt-1 pb-2 ml-3 mr-5"
-          color="#ffc432"
-          color-middle="rgba(255, 196, 50, 0.35)"
           :metered="props.item.widgets.showEnergyConsumption"/>
     </content-card>
-    <ContentCard v-if="props.item.widgets.showNotifications" class="pt-4 pl-0">
+    <ContentCard v-if="props.item.widgets.showNotifications" class="mt-1 pt-4 pl-0">
       <notifications overview-page :zone="props.item.widgets.showNotifications"/>
     </ContentCard>
   </div>
