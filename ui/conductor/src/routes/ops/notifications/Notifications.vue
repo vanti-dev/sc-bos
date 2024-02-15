@@ -1,11 +1,14 @@
 <template>
   <div class="ml-3">
-    <v-row :class="['mt-0 ml-0 pl-0', {'pl-4 mt-1': props.overviewPage}]">
-      <h3 :class="['text-h3 pt-2 pb-6', {'text-h4': props.overviewPage}]">Notifications</h3>
+    <v-row v-if="!props.overviewPage" class="mt-0 ml-0 pl-0">
+      <h3 class="text-h3 pt-2 pb-6">Notifications</h3>
       <v-spacer/>
+      <v-btn class="mt-2 mr-3" color="neutral" @click="alerts.exportData('Notifications')">
+        Export CSV...
+      </v-btn>
     </v-row>
 
-    <content-card :class="['px-4', {'mt-8': !props.overviewPage}]">
+    <content-card :class="['px-8', {'mt-8 px-4': !props.overviewPage}]">
       <v-data-table
           :headers="headers"
           :items="alerts.pageItems"
@@ -19,17 +22,26 @@
           :class="{ 'hide-pagination': modifyFooter }"
           @click:row="showNotification">
         <template #top>
-          <filters
-              v-if="!props.overviewPage"
-              class="mb-4 mt-n2"
-              :floor.sync="query.floor"
-              :floor-items="floors"
-              :zone.sync="query.zone"
-              :zone-items="zones"
-              :subsystem.sync="query.subsystem"
-              :subsystem-items="subsystems"
-              :acknowledged.sync="query.acknowledged"
-              :resolved.sync="query.acknowledged"/>
+          <v-row :class="['mt-1 mb-2 ml-0 pl-0', {'mt-n4 mb-2 mr-2': props.overviewPage}]">
+            <h3 v-if="props.overviewPage" :class="['text-h3 pt-2 pb-6', {'text-h4': props.overviewPage}]">
+              Notifications
+            </h3>
+            <v-spacer/>
+            <filters
+                v-if="!props.overviewPage"
+                class="mb-4 mt-n2"
+                :floor.sync="query.floor"
+                :floor-items="floors"
+                :zone.sync="query.zone"
+                :zone-items="zones"
+                :subsystem.sync="query.subsystem"
+                :subsystem-items="subsystems"
+                :acknowledged.sync="query.acknowledged"
+                :resolved.sync="query.acknowledged"/>
+            <v-btn v-if="props.overviewPage" class="mt-2" color="primary" @click="alerts.exportData('Notifications')">
+              Export CSV...
+            </v-btn>
+          </v-row>
         </template>
         <template #item.createTime="{ item }">
           {{ item.createTime.toLocaleString() }}
