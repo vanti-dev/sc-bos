@@ -67,7 +67,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 			readOnly: cfg.ReadOnlyLights,
 			logger:   logger.With(zap.String("lightGroup", key)),
 		}
-		name := fmt.Sprintf("%s/lights/%s", cfg.Name, key)
+		name := fmt.Sprintf("%s/%s", cfg.Name, key)
 		f.devices.Add(lights...)
 		announce.Announce(name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group))))
 	}
