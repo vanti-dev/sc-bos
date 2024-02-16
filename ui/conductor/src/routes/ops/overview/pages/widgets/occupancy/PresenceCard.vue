@@ -5,7 +5,7 @@
       <StatusAlert :resource="occupancyValue.streamError"/>
     </div>
     <v-col cols="12" class="d-flex flex-column pl-4">
-      <v-row class="d-flex flex-row align-center px-3 pb-2">
+      <v-row class="d-flex flex-column align-left px-3 pb-2">
         <span :class="[stateColor, 'text-h6 font-weight-bold pb-1 mt-n3']">
           {{ stateStr }}
         </span>
