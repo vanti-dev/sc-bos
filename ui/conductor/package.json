@@ -50,6 +50,7 @@
     "vite-plugin-eslint": "^1.8.1"
   },
   "resolutions": {
-    "postcss": "^8.4.35"
+    "postcss": "^8.4.35",
+    "semver": "^7.5.2"
   }
 }
