@@ -44,7 +44,7 @@ export const csvDownload = async (params) => {
       const label = params.acronyms[key]?.label || camelToSentence(key);
       // Add unit if it exists
       const unit = params.acronyms[key]?.unit ? `(${params.acronyms[key].unit})` : '';
-      headerMap[key] = `${capitalize(label)} ${unit}`;
+      headerMap[key] = `${capitalize(label)}${unit !== '' ? ' ' + unit : ''}`;
     });
     return headerMap;
   };
