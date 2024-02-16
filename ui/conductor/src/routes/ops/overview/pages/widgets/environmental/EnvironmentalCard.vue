@@ -26,7 +26,7 @@
               props.shouldWrap
             "
             :class="[indoorHumidity > 0 ? 'mb-7' : 'mb-2',
-                     'd-flex flex-column justify-end align-center']"
+                     'd-flex flex-column align-center ml-2']"
             style="width: 150px;">
           <span
               class="text-h1 align-left mb-3"
