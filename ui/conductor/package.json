@@ -27,7 +27,7 @@
     "vue": "2.7",
     "vue-chartjs": "^5.2.0",
     "vue-router": "3.6",
-    "vuetify": "^2.6.8"
+    "vuetify": "^2.7.2"
   },
   "devDependencies": {
     "@mdi/font": "^7.2.96",

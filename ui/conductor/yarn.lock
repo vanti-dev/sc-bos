@@ -1817,10 +1817,10 @@ vue@2.7:
     "@vue/compiler-sfc" "2.7.13"
     csstype "^3.1.0"
 
-vuetify@^2.6.8:
-  version "2.6.8"
-  resolved "https://registry.npmjs.org/vuetify/-/vuetify-2.6.8.tgz"
-  integrity sha512-CbJsIGfye++an5/I5ypmYgf74vxt5j0NJ/7UUIDXRYXZsM9YuEpnqo97Ob4LD6QEli1gJa6WXWS8pXLWk0ArPQ==
+vuetify@^2.7.2:
+  version "2.7.2"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/vuetify/-/vuetify-2.7.2.tgz#b2b687e519257d789a63b87c418f98099f38990f"
+  integrity sha512-qr04ww7uzAPQbpk751x4fSdjsJ+zREzjQ/rBlcQGuWS6MIMFMXcXcwvp4+/tnGsULZxPMWfQ0kmZmg5Yc/XzgQ==
 
 webpack-sources@^3.2.3:
   version "3.2.3"
