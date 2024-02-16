@@ -50,7 +50,6 @@ export default function(name, periodStart, periodEnd, spanSize) {
 
   // Watch for changes to the span size and name, and reset the records and the last fetch if any changes.
   watch([() => toValue(spanSize), () => toValue(name)], () => {
-    console.log(toValue(name));
     records.value = []; // reset if the span size changes
     lastFetchTime.value = null; // reset if the span size or name changes
   }, {immediate: true});
