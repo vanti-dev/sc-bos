@@ -33,6 +33,7 @@ export const usePageStore = defineStore('page', () => {
     sidebarData.value = {};
     listedDevice.value = {};
     sidebarTitle.value = '';
+    showSidebar.value = false;
   };
 
   //

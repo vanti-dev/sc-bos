@@ -49,11 +49,9 @@ if (window) {
     // ------------------------ Data store logic ------------------------ //
 
     const pageStore = usePageStore();
-    const mainPathFrom = from.path.split('/')[1];
-    const mainPathTo = to.path.split('/')[1];
 
-    // Reset the sidebar to defaults if the main path has changed
-    if (mainPathFrom !== mainPathTo) {
+    // Reset the sidebar to defaults if the path has changed
+    if (to.path !== from.path) {
       pageStore.resetSidebarToDefaults();
     }
 
