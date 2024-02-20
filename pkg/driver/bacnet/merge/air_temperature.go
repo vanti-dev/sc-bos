@@ -90,22 +90,13 @@ func (t *airTemperature) GetAirTemperature(ctx context.Context, request *traits.
 	return t.ModelServer.GetAirTemperature(ctx, request)
 }
 
-func (t *airTemperature) isArtusUnit() bool {
-	if (t.config.Metadata != nil) && (t.config.Metadata.Product != nil) {
-		if t.config.Metadata.Product.Model == "artus" {
-			return true
-		}
-	}
-	return false
-}
-
 func (t *airTemperature) UpdateAirTemperature(ctx context.Context, request *traits.UpdateAirTemperatureRequest) (*traits.AirTemperature, error) {
 	if request.GetState().GetTemperatureSetPoint() == nil {
 		return t.GetAirTemperature(ctx, &traits.GetAirTemperatureRequest{Name: request.Name})
 	}
 	newSetPoint := float32(request.GetState().GetTemperatureSetPoint().GetValueCelsius())
 
-	if t.isArtusUnit() {
+	if t.config.SetPointLow != nil && t.config.SetPointHigh != nil {
 		// for the artus units at Arup, we need to set 2 additional high and low set points to control the dead band,
 		// just use +- 1 degree for now
 		err := comm.WriteProperty(ctx, t.client, t.known, *t.config.SetPointLow, newSetPoint-1, 0)
