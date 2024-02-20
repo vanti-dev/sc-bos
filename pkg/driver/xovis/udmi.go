@@ -76,14 +76,14 @@ func (u *UdmiServiceServer) PullExportMessages(request *gen.PullExportMessagesRe
 	ctx, cancel := context.WithCancel(server.Context())
 	defer cancel()
 
-	enterLeaveChanges := make(<-chan *resource.ValueChange)
+	var enterLeaveChanges <-chan *resource.ValueChange
 	if u.enterLeave != nil {
 		enterLeaveChanges = u.enterLeave.Pull(ctx,
 			resource.WithUpdatesOnly(true),
 		)
 	}
 
-	occupancyChanges := make(<-chan *resource.ValueChange)
+	var occupancyChanges <-chan *resource.ValueChange
 	if u.occupancy != nil {
 		occupancyChanges = u.occupancy.Pull(ctx,
 			resource.WithUpdatesOnly(true),
@@ -99,13 +99,21 @@ func (u *UdmiServiceServer) PullExportMessages(request *gen.PullExportMessagesRe
 		case <-ctx.Done():
 			return ctx.Err()
 
-		case change, _ := <-enterLeaveChanges:
+		case change, ok := <-enterLeaveChanges:
+			if !ok {
+				enterLeaveChanges = nil
+				break
+			}
 			if change != nil {
 				airQuality := change.Value.(*traits.EnterLeaveEvent)
 				appendEnterLeaveEventPoints(airQuality, &eventPoints)
 			}
 
-		case change, _ := <-occupancyChanges:
+		case change, ok := <-occupancyChanges:
+			if !ok {
+				occupancyChanges = nil
+				break
+			}
 			if change != nil {
 				temperature := change.Value.(*traits.Occupancy)
 				appendOccupancyEventPoints(temperature, &eventPoints)

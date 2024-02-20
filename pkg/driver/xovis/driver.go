@@ -19,6 +19,8 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/enterleavesensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -115,11 +117,13 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 			enterLeaveVal = enterLeave.EnterLeaveTotal
 		}
 
-		d.unannounceDevices = append(d.unannounceDevices, d.Node.Announce(dev.Name, features...))
-
 		if enterLeaveVal != nil || occupancyVal != nil {
-			NewUdmiServiceServer(d.Logger.Named("UdmiServiceServer"), enterLeaveVal, occupancyVal, dev.UDMITopicPrefix)
+			server := NewUdmiServiceServer(d.Logger.Named("UdmiServiceServer"), enterLeaveVal, occupancyVal, dev.UDMITopicPrefix)
+			features = append(features, node.HasTrait(udmipb.TraitName,
+				node.WithClients(gen.WrapUdmiService(server))))
 		}
+
+		d.unannounceDevices = append(d.unannounceDevices, d.Node.Announce(dev.Name, features...))
 	}
 	// register data push webhook
 	if d.server != nil {

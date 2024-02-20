@@ -12,14 +12,12 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 type occupancyServer struct {
 	traits.UnimplementedOccupancySensorApiServer
-	gen.UnimplementedUdmiServiceServer
 	bus         *minibus.Bus[PushData]
 	client      *Client
 	multiSensor bool
