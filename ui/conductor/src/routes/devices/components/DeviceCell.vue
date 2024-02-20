@@ -30,10 +30,9 @@
       <AirTemperatureCell v-if="!resource.streamError" v-bind="resource"/>
       <StatusAlert v-else icon="mdi-thermometer-low" :resource="resource.streamError"/>
     </WithAirTemperature>
-    <WithLighting v-if="hasCell('Light')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
-      <LightCell v-if="!resource.streamError" v-bind="resource"/>
-      <StatusAlert v-else icon="mdi-lightbulb-outline" :resource="resource.streamError"/>
-    </WithLighting>
+
+    <LightCell v-if="hasCell('Light')" :name="props.item.name" :paused="props.paused"/>
+
     <WithOccupancy v-if="hasCell('Occupancy')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
       <OccupancyCell v-if="!resource.streamError" v-bind="resource"/>
       <StatusAlert v-else icon="mdi-crosshairs" :resource="resource.streamError"/>
@@ -101,7 +100,6 @@ import WithAirTemperature from '@/routes/devices/components/renderless/WithAirTe
 import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
 import WithEmergency from '@/routes/devices/components/renderless/WithEmergency.vue';
 import WithEnterLeave from '@/routes/devices/components/renderless/WithEnterLeave.vue';
-import WithLighting from '@/routes/devices/components/renderless/WithLighting.vue';
 import WithMeter from '@/routes/devices/components/renderless/WithMeter.vue';
 import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
 import WithOpenClosed from '@/routes/devices/components/renderless/WithOpenClosed.vue';
@@ -111,7 +109,7 @@ import AirTemperatureCell from '@/routes/devices/components/trait-cells/AirTempe
 import ElectricDemandCell from '@/routes/devices/components/trait-cells/ElectricDemandCell.vue';
 import EmergencyCell from '@/routes/devices/components/trait-cells/EmergencyCell.vue';
 import EnterLeaveEventCell from '@/routes/devices/components/trait-cells/EnterLeaveEventCell.vue';
-import LightCell from '@/routes/devices/components/trait-cells/LightCell.vue';
+import LightCell from '@/traits/lighting/LightCell.vue';
 import MeterCell from '@/routes/devices/components/trait-cells/MeterCell.vue';
 import OccupancyCell from '@/routes/devices/components/trait-cells/OccupancyCell.vue';
 import OpenClosedCell from '@/routes/devices/components/trait-cells/OpenClosedCell.vue';
