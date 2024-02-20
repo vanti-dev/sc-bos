@@ -152,7 +152,6 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 			if err != nil {
 				return comm.ErrReadProperty{Prop: "setPoint", Cause: err}
 			}
-			t.logger.Debug("DEAN: got set point: ", zap.Float64("setPoint", setPoint))
 			data.TemperatureGoal = &traits.AirTemperature_TemperatureSetPoint{
 				TemperatureSetPoint: &types.Temperature{ValueCelsius: setPoint},
 			}
