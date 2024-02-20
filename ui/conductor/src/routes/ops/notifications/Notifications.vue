@@ -108,6 +108,14 @@ const notifications = useNotifications();
 const alertMetadata = useAlertMetadata();
 const hubStore = useHubStore();
 const pageStore = usePageStore();
+const activeZone = ref(props.zone);
+watch(
+    () => props.zone,
+    (value) => {
+      activeZone.value = value;
+    },
+    {immediate: true}
+);
 
 const query = reactive({
   createdNotBefore: undefined,
@@ -115,7 +123,12 @@ const query = reactive({
   severityNotAbove: undefined,
   severityNotBelow: undefined,
   floor: undefined,
-  zone: computed(() => props.zone),
+  zone: computed({
+    get: () => activeZone.value,
+    set: (value) => {
+      activeZone.value = value;
+    }
+  }),
   subsystem: undefined,
   source: undefined,
   acknowledged: undefined,
