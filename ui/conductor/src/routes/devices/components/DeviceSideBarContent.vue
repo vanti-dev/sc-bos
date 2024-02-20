@@ -14,9 +14,9 @@
       <air-quality-card v-bind="resource"/>
     </WithAirQuality>
     <v-divider v-if="traits['smartcore.traits.Light']" class="mt-4 mb-1"/>
-    <WithLighting v-if="traits['smartcore.traits.Light']" :name="deviceId" v-slot="{resource, update}">
-      <light-card v-bind="resource" @updateBrightness="update"/>
-    </WithLighting>
+
+    <light-card v-if="traits['smartcore.traits.Light']" :name="deviceId"/>
+
     <v-divider v-if="traits['smartcore.traits.OccupancySensor']" class="mt-4 mb-1"/>
     <WithOccupancy v-if="traits['smartcore.traits.OccupancySensor']" :name="deviceId" v-slot="{resource}">
       <occupancy-card v-bind="resource"/>
@@ -42,7 +42,6 @@
 import WithAirQuality from '@/routes/devices/components/renderless/WithAirQuality.vue';
 import WithAirTemperature from '@/routes/devices/components/renderless/WithAirTemperature.vue';
 import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
-import WithLighting from '@/routes/devices/components/renderless/WithLighting.vue';
 import WithMeter from '@/routes/devices/components/renderless/WithMeter.vue';
 import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
 import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
@@ -51,7 +50,7 @@ import AirTemperatureCard from '@/routes/devices/components/trait-cards/AirTempe
 import DeviceInfoCard from '@/routes/devices/components/trait-cards/DeviceInfoCard.vue';
 import ElectricDemandCard from '@/routes/devices/components/trait-cards/ElectricDemandCard.vue';
 import EmergencyLight from '@/routes/devices/components/trait-cards/EmergencyLight.vue';
-import LightCard from '@/routes/devices/components/trait-cards/LightCard.vue';
+import LightCard from '@/traits/lighting/LightCard.vue';
 import MeterCard from '@/routes/devices/components/trait-cards/MeterCard.vue';
 import ModeCard from '@/routes/devices/components/trait-cards/ModeCard.vue';
 import OccupancyCard from '@/routes/devices/components/trait-cards/OccupancyCard.vue';
