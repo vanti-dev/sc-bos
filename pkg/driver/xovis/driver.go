@@ -55,6 +55,7 @@ type Driver struct {
 	client            *Client
 	server            *http.Server // only used if httpPort is configured for the webhook
 	unannounceDevices []node.Undo
+	udmiServers       []*UdmiServiceServer
 }
 
 func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
@@ -119,6 +120,7 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 
 		if enterLeaveVal != nil || occupancyVal != nil {
 			server := NewUdmiServiceServer(d.Logger.Named("UdmiServiceServer"), enterLeaveVal, occupancyVal, dev.UDMITopicPrefix)
+			d.udmiServers = append(d.udmiServers, server)
 			features = append(features, node.HasTrait(udmipb.TraitName,
 				node.WithClients(gen.WrapUdmiService(server))))
 		}
