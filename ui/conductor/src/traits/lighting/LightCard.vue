@@ -4,33 +4,42 @@
       <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Lighting</v-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">Brightness</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">{{ brightnessStr }}</v-list-item-subtitle>
+        <v-list-item-subtitle class="text-capitalize">{{ brightnessLevelString }}</v-list-item-subtitle>
       </v-list-item>
     </v-list>
     <v-progress-linear
         height="34"
         class="mx-4 my-2"
-        :value="brightness"
+        :value="brightnessLevelNumber"
         background-color="neutral lighten-1"
         color="accent"/>
     <v-card-actions class="px-4">
-      <v-btn small color="neutral lighten-1" :disabled="blockActions" elevation="0" @click="updateLight(100)">On</v-btn>
-      <v-btn small color="neutral lighten-1" :disabled="blockActions" elevation="0" @click="updateLight(0)">Off</v-btn>
+      <v-btn
+          small
+          color="neutral lighten-1"
+          :disabled="blockActions"
+          elevation="0"
+          @click="updateBrightness(100)">
+        On
+      </v-btn>
+      <v-btn small color="neutral lighten-1" :disabled="blockActions" elevation="0" @click="updateBrightness(0)">
+        Off
+      </v-btn>
       <v-spacer/>
       <v-btn
           small
           color="neutral lighten-1"
           elevation="0"
-          @click="updateLight(brightness + 1)"
-          :disabled="blockActions || brightness >= 100">
+          @click="updateBrightness(brightnessLevelNumber + 1)"
+          :disabled="blockActions || brightnessLevelNumber >= 100">
         Up
       </v-btn>
       <v-btn
           small
           color="neutral lighten-1"
           elevation="0"
-          @click="updateLight(brightness - 1)"
-          :disabled="blockActions || brightness <= 0">
+          @click="updateBrightness(brightnessLevelNumber - 1)"
+          :disabled="blockActions || brightnessLevelNumber <= 0">
         Down
       </v-btn>
     </v-card-actions>
@@ -40,44 +49,21 @@
 
 <script setup>
 import useAuthSetup from '@/composables/useAuthSetup';
-import {computed} from 'vue';
+import useLightingTrait from '@/traits/lighting/useLightingTrait.js';
 
 const {blockActions} = useAuthSetup();
-
 const props = defineProps({
-  value: {
-    type: Object, // of type Brightness.AsObject
-    default: () => {}
-  },
-  loading: {
-    type: Boolean,
-    default: false
+  name: {
+    type: String,
+    default: ''
   }
 });
-const emit = defineEmits(['updateBrightness']);
-const brightness = computed(() => props.value?.levelPercent ?? 0);
-const brightnessStr = computed(() => {
-  const val = brightness.value;
-  if (val === 0) {
-    return 'Off';
-  } else if (val === 100) {
-    return 'Max';
-  } else if (val > 0 && val < 100) {
-    return `${val.toFixed(0)}%`;
-  }
-  return '';
-});
-
-/**
- * @param {number} brightness
- */
-function updateLight(brightness) {
-  emit('updateBrightness', {
-    brightness: {
-      levelPercent: Math.min(100, Math.round(brightness))
-    }
-  });
-}
+const {
+  brightnessLevelString,
+  brightnessLevelNumber,
+  updateBrightness,
+  loading
+} = useLightingTrait(() => props.name, false);
 </script>
 
 <style scoped>
