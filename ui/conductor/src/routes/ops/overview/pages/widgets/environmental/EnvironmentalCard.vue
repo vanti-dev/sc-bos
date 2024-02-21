@@ -63,7 +63,7 @@
 import CircularGauge from '@/components/CircularGauge.vue';
 import ContentCard from '@/components/ContentCard.vue';
 
-import useAirTemperatureTrait from '@/composables/traits/useAirTemperatureTrait';
+import useAirTemperatureTrait from '@/traits/airTemperature/useAirTemperatureTrait';
 import {computed, reactive, ref, watchEffect} from 'vue';
 
 const props = defineProps({
