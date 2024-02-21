@@ -1,5 +1,7 @@
 <template>
-  <v-tooltip left>
+  <StatusAlert v-if="props.streamError" icon="mdi-cancel" :resource="props.streamError"/>
+
+  <v-tooltip v-else left>
     <template #activator="{on}">
       <v-icon :class="[grantStates]" right size="20" v-on="on">mdi-door</v-icon>
     </template>
@@ -8,6 +10,7 @@
 </template>
 
 <script setup>
+import StatusAlert from '@/components/StatusAlert.vue';
 import {AccessAttempt} from '@sc-bos/ui-gen/proto/access_pb';
 import {computed} from 'vue';
 
@@ -24,6 +27,10 @@ const props = defineProps({
   showChangeDuration: {
     type: Number,
     default: 30 * 1000
+  },
+  streamError: {
+    type: Object,
+    default: null
   }
 });
 

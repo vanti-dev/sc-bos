@@ -6,37 +6,35 @@
         :name="props.item.name"
         :paused="props.paused">
       <EnterLeaveEventCell
-          v-if="!resource.streamError && (resource?.value?.enterTotal || resource?.value?.leaveTotal)"
+          v-if="resource?.value?.enterTotal || resource?.value?.leaveTotal"
           v-bind="resource"/>
-      <StatusAlert v-else :resource="resource.streamError"/>
     </WithEnterLeave>
     <WithElectricDemand
         v-if="hasCell('ElectricDemand')"
         v-slot="{ resource }"
         :name="props.item.name"
         :paused="props.paused">
-      <ElectricDemandCell v-if="!resource.streamError" v-bind="resource"/>
-      <StatusAlert v-else icon="mdi-meter-electric-outline" :resource="resource.streamError"/>
+      <ElectricDemandCell v-bind="resource"/>
     </WithElectricDemand>
     <WithMeter v-if="hasCell('Meter')" v-slot="{ resource, info }" :name="props.item.name" :paused="props.paused">
-      <MeterCell v-if="!resource.streamError" v-bind="resource" :unit="info?.response?.unit"/>
-      <StatusAlert v-else icon="mdi-counter" :resource="resource.streamError"/>
+      <MeterCell
+          v-bind="resource"
+          :unit="info?.response?.unit"/>
     </WithMeter>
     <WithAirTemperature
         v-if="hasCell('AirTemperature')"
         v-slot="{ resource }"
         :name="props.item.name"
         :paused="props.paused">
-      <AirTemperatureCell v-if="!resource.streamError" v-bind="resource"/>
-      <StatusAlert v-else icon="mdi-thermometer-low" :resource="resource.streamError"/>
+      <AirTemperatureCell v-bind="resource"/>
     </WithAirTemperature>
+
     <WithLighting v-if="hasCell('Light')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
-      <LightCell v-if="!resource.streamError" v-bind="resource"/>
-      <StatusAlert v-else icon="mdi-lightbulb-outline" :resource="resource.streamError"/>
+      <LightCell v-bind="resource"/>
     </WithLighting>
+
     <WithOccupancy v-if="hasCell('Occupancy')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
-      <OccupancyCell v-if="!resource.streamError" v-bind="resource"/>
-      <StatusAlert v-else icon="mdi-crosshairs" :resource="resource.streamError"/>
+      <OccupancyCell v-bind="resource"/>
     </WithOccupancy>
 
     <!-- If door has no access data reading and has OpenClose reading -->
@@ -45,8 +43,7 @@
         v-slot="{ resource }"
         :name="props.item.name"
         :paused="props.paused">
-      <OpenClosedCell v-if="!resource?.streamError" v-bind="resource"/>
-      <StatusAlert v-else icon="mdi-cancel" :resource="resource.streamError"/>
+      <OpenClosedCell v-bind="resource"/>
     </WithOpenClosed>
 
     <!-- If door has access data reading and has no OpenClose reading -->
@@ -55,8 +52,7 @@
         v-slot="{ resource }"
         :name="props.item.name"
         :paused="props.paused">
-      <AccessAttemptCell v-if="!resource.streamError" v-bind="resource"/>
-      <StatusAlert v-else icon="mdi-cancel" :resource="resource.streamError"/>
+      <AccessAttemptCell v-bind="resource"/>
     </WithAccess>
 
     <!-- If door has access data reading and has OpenClose reading -->
@@ -67,35 +63,24 @@
         :paused="props.paused">
       <WithOpenClosed v-slot="{ resource: openClosedResource }" :name="props.item.name" :paused="props.paused">
         <AccessAttemptCell
-            v-if="!accessResource.streamError || !openClosedResource.streamError"
             v-bind="accessResource"
-            :open-close-percentage="openClosedResource"/>
-        <StatusAlert
-            v-else-if="accessResource.streamError"
-            icon="mdi-cancel"
-            :resource="accessResource.streamError"/>
-        <StatusAlert
-            v-else-if="openClosedResource.streamError"
-            icon="mdi-cancel"
-            :resource="openClosedResource.streamError"/>
+            :open-close-percentage="openClosedResource"
+            :stream-error="accessResource.streamError || openClosedResource.streamError"/>
       </WithOpenClosed>
     </WithAccess>
     <!-- End -->
 
     <WithEmergency v-if="hasCell('Emergency')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
-      <EmergencyCell v-if="!resource.streamError" v-bind="resource"/>
-      <StatusAlert v-else icon="mdi-smoke-detector-outline" :resource="resource.streamError"/>
+      <EmergencyCell v-bind="resource"/>
     </WithEmergency>
 
     <WithStatus v-if="hasCell('StatusLog')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
-      <StatusLogCell v-if="!resource.streamError" v-bind="resource"/>
-      <StatusAlert v-else icon="mdi-connection" :resource="resource.streamError"/>
+      <StatusLogCell v-bind="resource"/>
     </WithStatus>
   </span>
 </template>
 
 <script setup>
-import StatusAlert from '@/components/StatusAlert.vue';
 import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
 import WithAirTemperature from '@/routes/devices/components/renderless/WithAirTemperature.vue';
 import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
@@ -130,6 +115,7 @@ const props = defineProps({
     }
   }
 });
+
 const visibleCells = computed(() => {
   const cells = {};
   if (hasTrait(props.item, 'smartcore.traits.OccupancySensor')) {

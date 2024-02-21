@@ -1,5 +1,7 @@
 <template>
-  <span class="text-no-wrap ed-cell" v-if="meterReading">
+  <StatusAlert v-if="props.streamError" icon="mdi-counter" :resource="props.streamError"/>
+
+  <span class="text-no-wrap ed-cell" v-else-if="meterReading && !props.streamError">
     <v-tooltip bottom>
       <template #activator="{ on, attrs }">
         <span v-on="on" v-bind="attrs">
@@ -12,6 +14,7 @@
   </span>
 </template>
 <script setup>
+import StatusAlert from '@/components/StatusAlert.vue';
 import {computed} from 'vue';
 
 const props = defineProps({
@@ -27,6 +30,10 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  streamError: {
+    type: Object,
+    default: null
   }
 });
 

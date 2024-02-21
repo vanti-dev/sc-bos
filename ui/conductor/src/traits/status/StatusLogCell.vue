@@ -1,6 +1,8 @@
 <template>
+  <StatusAlert v-if="props.streamError" icon="mdi-connection" :resource="props.streamError"/>
+
   <v-icon
-      v-if="ok"
+      v-else-if="ok"
       color="white"
       :style="{visibility: showOk ? 'initial' : 'hidden'}"
       size="20">
@@ -66,6 +68,7 @@
 </template>
 
 <script setup>
+import StatusAlert from '@/components/StatusAlert.vue';
 import {StatusLog} from '@sc-bos/ui-gen/proto/status_pb';
 import {computed, ref} from 'vue';
 
@@ -82,6 +85,10 @@ const props = defineProps({
   showOk: {
     type: Boolean,
     default: false
+  },
+  streamError: {
+    type: Object,
+    default: null
   }
 });
 

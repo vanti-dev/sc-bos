@@ -1,5 +1,8 @@
 <template>
+  <StatusAlert v-if="props.streamError" icon="mdi-crosshairs" :resource="props.streamError"/>
+
   <v-menu
+      v-else
       left
       bottom
       offset-y
@@ -19,6 +22,7 @@
 <script setup>
 import {timestampToDate} from '@/api/convpb';
 import {occupancyStateToString} from '@/api/sc/traits/occupancy';
+import StatusAlert from '@/components/StatusAlert.vue';
 import {Occupancy} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
 import {computed, onMounted, onUnmounted, ref} from 'vue';
 
@@ -31,6 +35,10 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  streamError: {
+    type: Object,
+    default: null
   }
 });
 

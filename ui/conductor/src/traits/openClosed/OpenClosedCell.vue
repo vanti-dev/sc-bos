@@ -1,5 +1,7 @@
 <template>
-  <v-tooltip left>
+  <StatusAlert v-if="props.streamError" icon="mdi-cancel" :resource="props.streamError"/>
+
+  <v-tooltip v-else left>
     <template #activator="{ on }">
       <v-icon :class="doorState.class" right size="20" v-on="on">{{ doorState.icon }}</v-icon>
     </template>
@@ -8,6 +10,7 @@
 </template>
 
 <script setup>
+import StatusAlert from '@/components/StatusAlert.vue';
 import {computed} from 'vue';
 
 const props = defineProps({
@@ -18,6 +21,10 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  streamError: {
+    type: Object,
+    default: null
   }
 });
 

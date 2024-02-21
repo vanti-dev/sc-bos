@@ -1,5 +1,7 @@
 <template>
-  <span v-if="value" class="text-no-wrap el-cell">
+  <StatusAlert v-if="props.streamError" :resource="props.streamError"/>
+
+  <span v-else-if="value && !props.streamError" class="text-no-wrap el-cell">
     <v-tooltip bottom>
       <template #activator="{ on, attrs }">
         <span v-on="on" v-bind="attrs">
@@ -22,6 +24,7 @@
   </span>
 </template>
 <script setup>
+import StatusAlert from '@/components/StatusAlert.vue';
 import {EnterLeaveEvent} from '@smart-core-os/sc-api-grpc-web/traits/enter_leave_sensor_pb';
 import {computed, ref, watch} from 'vue';
 
@@ -38,6 +41,10 @@ const props = defineProps({
   showChangeDuration: {
     type: Number,
     default: 30 * 1000
+  },
+  streamError: {
+    type: Object,
+    default: null
   }
 });
 
