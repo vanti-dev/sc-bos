@@ -29,9 +29,7 @@
       <AirTemperatureCell v-bind="resource"/>
     </WithAirTemperature>
 
-    <WithLighting v-if="hasCell('Light')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
-      <LightCell v-bind="resource"/>
-    </WithLighting>
+    <LightCell v-if="hasCell('Light')" :name="props.item.name" :paused="props.paused"/>
 
     <WithOccupancy v-if="hasCell('Occupancy')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
       <OccupancyCell v-bind="resource"/>
@@ -86,7 +84,6 @@ import WithAirTemperature from '@/routes/devices/components/renderless/WithAirTe
 import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
 import WithEmergency from '@/routes/devices/components/renderless/WithEmergency.vue';
 import WithEnterLeave from '@/routes/devices/components/renderless/WithEnterLeave.vue';
-import WithLighting from '@/routes/devices/components/renderless/WithLighting.vue';
 import WithMeter from '@/routes/devices/components/renderless/WithMeter.vue';
 import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
 import WithOpenClosed from '@/routes/devices/components/renderless/WithOpenClosed.vue';
