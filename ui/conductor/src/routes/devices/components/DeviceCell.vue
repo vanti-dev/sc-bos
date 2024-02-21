@@ -111,7 +111,7 @@ import AirTemperatureCell from '@/routes/devices/components/trait-cells/AirTempe
 import ElectricDemandCell from '@/routes/devices/components/trait-cells/ElectricDemandCell.vue';
 import EmergencyCell from '@/routes/devices/components/trait-cells/EmergencyCell.vue';
 import EnterLeaveEventCell from '@/routes/devices/components/trait-cells/EnterLeaveEventCell.vue';
-import LightCell from '@/routes/devices/components/trait-cells/LightCell.vue';
+import LightCell from '@/traits/lighting/LightCell.vue';
 import MeterCell from '@/routes/devices/components/trait-cells/MeterCell.vue';
 import OccupancyCell from '@/routes/devices/components/trait-cells/OccupancyCell.vue';
 import OpenClosedCell from '@/routes/devices/components/trait-cells/OpenClosedCell.vue';

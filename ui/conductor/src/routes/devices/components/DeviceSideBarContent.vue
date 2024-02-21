@@ -51,7 +51,7 @@ import AirTemperatureCard from '@/routes/devices/components/trait-cards/AirTempe
 import DeviceInfoCard from '@/routes/devices/components/trait-cards/DeviceInfoCard.vue';
 import ElectricDemandCard from '@/routes/devices/components/trait-cards/ElectricDemandCard.vue';
 import EmergencyLight from '@/routes/devices/components/trait-cards/EmergencyLight.vue';
-import LightCard from '@/routes/devices/components/trait-cards/LightCard.vue';
+import LightCard from '@/traits/lighting/LightCard.vue';
 import MeterCard from '@/routes/devices/components/trait-cards/MeterCard.vue';
 import ModeCard from '@/routes/devices/components/trait-cards/ModeCard.vue';
 import OccupancyCard from '@/routes/devices/components/trait-cards/OccupancyCard.vue';
