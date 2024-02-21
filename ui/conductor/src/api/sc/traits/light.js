@@ -2,9 +2,10 @@ import {fieldMaskFromObject, setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setValue, trackAction} from '@/api/resource.js';
 import {tweenFromObject} from '@/api/sc/types/tween.js';
-import {LightApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/light_grpc_web_pb';
+import {LightApiPromiseClient, LightInfoPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/light_grpc_web_pb';
 import {
   Brightness,
+  DescribeBrightnessRequest,
   GetBrightnessRequest,
   LightPreset,
   PullBrightnessRequest,
@@ -54,11 +55,32 @@ export function updateBrightness(request, tracker) {
 }
 
 /**
+ *
+ * @param {DescribeBrightnessRequest.AsObject} request
+ * @param {ActionTracker<BrightnessSupport>} [tracker]
+ * @return {Promise<BrightnessSupport>}
+ */
+export function describeBrightness(request, tracker) {
+  return trackAction('LightInfo.describeBrightness', tracker ?? {}, endpoint => {
+    const api = infoClient(endpoint);
+    return api.describeBrightness(describeBrightnessRequestFromObject(request));
+  });
+}
+
+/**
  * @param {string} endpoint
  * @return {LightApiPromiseClient}
  */
 function apiClient(endpoint) {
   return new LightApiPromiseClient(endpoint, null, clientOptions());
+}
+
+/**
+ * @param {string} endpoint
+ * @return {LightInfoPromiseClient}
+ */
+function infoClient(endpoint) {
+  return new LightInfoPromiseClient(endpoint, null, clientOptions());
 }
 
 /**
@@ -131,5 +153,19 @@ export function lightPresetFromObject(obj) {
 
   const dst = new LightPreset();
   setProperties(dst, obj, 'name', 'title');
+  return dst;
+}
+
+/**
+ * Convert a JS object representation of DescribeBrightnessRequest into a protobuf DescribeBrightnessRequest object.
+ *
+ * @param {Partial<DescribeBrightnessRequest.AsObject>} obj
+ * @return {DescribeBrightnessRequest|null}
+ */
+export function describeBrightnessRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const dst = new DescribeBrightnessRequest();
+  setProperties(dst, obj, 'name');
   return dst;
 }
