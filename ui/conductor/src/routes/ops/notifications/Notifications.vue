@@ -293,7 +293,7 @@ const allHeaders = [
 // see over and over.
 const headers = computed(() => {
   return allHeaders.filter((header) => {
-    if (!['floor', 'zone', 'subsystem', 'source', 'acknowledged'].includes(header.value)) return true;
+    if (!['floor', 'zone', 'subsystem', 'source'].includes(header.value)) return true;
     return query[header.value] === undefined;
   });
 });

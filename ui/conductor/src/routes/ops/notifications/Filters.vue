@@ -2,29 +2,14 @@
   <v-toolbar color="transparent" elevation="0">
     <v-spacer/>
     <v-select
-        hide-details
+        v-for="dropdown in filterDropdowns"
         filled
-        :menu-props="{offsetY: true}"
-        label="Subsystem"
-        :items="subsystems"
-        :value="selectedSubsystem"
-        @change="updateSubsystem"/>
-    <v-select
         hide-details
-        filled
+        :items="dropdown.items.value"
+        :key="dropdown.label"
+        :label="dropdown.label"
         :menu-props="{offsetY: true}"
-        label="Floor"
-        :items="floors"
-        :value="selectedFloor"
-        @change="updateFloor"/>
-    <v-select
-        hide-details
-        filled
-        :menu-props="{offsetY: true}"
-        label="Zone"
-        :value="selectedZone"
-        :items="zones"
-        @change="updateZone"/>
+        v-model="dropdown.vModel.value"/>
   </v-toolbar>
 </template>
 
@@ -76,60 +61,91 @@ const emit = defineEmits({
 const floors = computed(() => {
   return ['All', ...props.floorItems.filter(v => Boolean(v))];
 });
+const selectedFloor = computed({
+  get() {
+    return props.floor || 'All';
+  },
+  set(f) {
+    if (f === 'All') {
+      emit('update:floor', undefined);
+    } else {
+      emit('update:floor', f);
+    }
+  }
+});
+
 const zones = computed(() => {
   return ['All', ...props.zoneItems.filter(v => Boolean(v))];
 });
+const selectedZone = computed({
+  get() {
+    return props.zone || 'All';
+  },
+  set(z) {
+    if (z === 'All') {
+      emit('update:zone', undefined);
+    } else {
+      emit('update:zone', z);
+    }
+  }
+});
+
 const subsystems = computed(() => {
   return ['All', ...props.subsystemItems.filter(v => Boolean(v))];
 });
-
-const selectedFloor = computed(() => {
-  return props.floor || 'All';
+const selectedSubsystem = computed({
+  get() {
+    return props.subsystem || 'All';
+  },
+  set(s) {
+    if (s === 'All') {
+      emit('update:subsystem', undefined);
+    } else {
+      emit('update:subsystem', s);
+    }
+  }
 });
 
-/**
- *
- * @param {string} f
- */
-function updateFloor(f) {
-  if (f === 'All') {
-    emit('update:floor', undefined);
-  } else {
-    emit('update:floor', f);
+const notificationTypes = computed(() => {
+  return ['All', 'Acknowledged', 'Unacknowledged'];
+});
+const selectedNotificationType = computed({
+  get() {
+    return props.acknowledged === undefined ? 'All' : props.acknowledged ? 'Acknowledged' : 'Unacknowledged';
+  },
+  set(a) {
+    if (a === 'All') {
+      emit('update:acknowledged', undefined);
+    } else if (a === 'Acknowledged') {
+      emit('update:acknowledged', true);
+    } else {
+      emit('update:acknowledged', false);
+    }
   }
-}
-
-const selectedZone = computed(() => {
-  return props.zone || 'All';
 });
 
-/**
- *
- * @param {string} z
- */
-function updateZone(z) {
-  if (z === 'All') {
-    emit('update:zone', undefined);
-  } else {
-    emit('update:zone', z);
+const filterDropdowns = [
+  {
+    label: 'Subsystem',
+    items: subsystems,
+    vModel: selectedSubsystem
+  },
+  {
+    label: 'Floor',
+    items: floors,
+    vModel: selectedFloor
+  },
+  {
+    label: 'Zone',
+    items: zones,
+    vModel: selectedZone
+  },
+  {
+    label: 'Notification Type',
+    items: notificationTypes,
+    vModel: selectedNotificationType
   }
-}
-
-const selectedSubsystem = computed(() => {
-  return props.subsystem || 'All';
-});
-
-/**
- *
- * @param {string} s
- */
-function updateSubsystem(s) {
-  if (s === 'All') {
-    emit('update:subsystem', undefined);
-  } else {
-    emit('update:subsystem', s);
-  }
-}
+];
 </script>
 
 <style scoped>
