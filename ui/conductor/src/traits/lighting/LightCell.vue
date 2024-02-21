@@ -1,5 +1,7 @@
 <template>
-  <span class="d-flex flex-row flex-nowrap">
+  <StatusAlert v-if="props.resource.streamError" icon="mdi-lightbulb-outline" :resource="props.resource.streamError"/>
+
+  <span v-else class="d-flex flex-row flex-nowrap">
     <v-tooltip bottom>
       <template #activator="{ on, attrs }">
         <span v-on="on" v-bind="attrs" class="d-flex flex-row">
@@ -15,11 +17,12 @@
 </template>
 
 <script setup>
+import StatusAlert from '@/components/StatusAlert.vue';
 import {computed} from 'vue';
 
 const props = defineProps({
-  value: {
-    type: Object, // of type Brightness.AsObject
+  resource: {
+    type: Object,
     default: () => {
     }
   }
@@ -28,7 +31,7 @@ const props = defineProps({
 //
 //
 // Computed
-const brightness = computed(() => props.value?.levelPercent);
+const brightness = computed(() => props.resource.value?.levelPercent);
 const brightnessStr = computed(() => {
   if (brightness.value === 0) {
     return 'Off';

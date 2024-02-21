@@ -30,10 +30,11 @@
       <AirTemperatureCell v-if="!resource.streamError" v-bind="resource"/>
       <StatusAlert v-else icon="mdi-thermometer-low" :resource="resource.streamError"/>
     </WithAirTemperature>
+
     <WithLighting v-if="hasCell('Light')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
-      <LightCell v-if="!resource.streamError" v-bind="resource"/>
-      <StatusAlert v-else icon="mdi-lightbulb-outline" :resource="resource.streamError"/>
+      <LightCell :resource="resource"/>
     </WithLighting>
+
     <WithOccupancy v-if="hasCell('Occupancy')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
       <OccupancyCell v-if="!resource.streamError" v-bind="resource"/>
       <StatusAlert v-else icon="mdi-crosshairs" :resource="resource.streamError"/>
@@ -130,6 +131,7 @@ const props = defineProps({
     }
   }
 });
+
 const visibleCells = computed(() => {
   const cells = {};
   if (hasTrait(props.item, 'smartcore.traits.OccupancySensor')) {
