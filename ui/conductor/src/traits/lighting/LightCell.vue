@@ -1,13 +1,13 @@
 <template>
-  <StatusAlert v-if="props.streamError" icon="mdi-lightbulb-outline" :resource="props.streamError"/>
+  <StatusAlert v-if="error" icon="mdi-lightbulb-outline" :resource="error"/>
 
   <span v-else class="d-flex flex-row flex-nowrap">
     <v-tooltip bottom>
       <template #activator="{ on, attrs }">
         <span v-on="on" v-bind="attrs" class="d-flex flex-row">
-          <span class="text-caption" style="min-width: 4ex">{{ brightnessStr }}</span>
-          <v-icon right :color="brightness > 0 ? 'yellow' : 'white' " size="20">
-            {{ lightingIcon }}
+          <span class="text-caption" style="min-width: 4ex">{{ brightnessLevelString }}</span>
+          <v-icon right :color="brightnessLevelNumber > 0 ? 'yellow' : 'white' " size="20">
+            {{ lightIcon }}
           </v-icon>
         </span>
       </template>
@@ -18,39 +18,22 @@
 
 <script setup>
 import StatusAlert from '@/components/StatusAlert.vue';
-import {computed} from 'vue';
+import useLightingTrait from '@/traits/lighting/useLightingTrait.js';
 
 const props = defineProps({
-  value: {
-    type: Object,
-    default: () => {
-    }
+  name: {
+    type: String,
+    default: ''
   },
-  streamError: {
-    type: Object,
-    default: null
+  paused: {
+    type: Boolean,
+    default: false
   }
 });
-
-//
-//
-// Computed
-const brightness = computed(() => props.value?.levelPercent);
-const brightnessStr = computed(() => {
-  if (brightness.value === 0) {
-    return 'Off';
-  } else if (brightness.value === 100) {
-    return 'Max';
-  } else if (brightness.value > 0 && brightness.value < 100) {
-    return `${brightness.value.toFixed(0)}%`;
-  }
-
-  return '';
-});
-
-const lightingIcon = computed(() => {
-  if (brightness.value === 0) return 'mdi-lightbulb-outline';
-  if (brightness.value > 0) return 'mdi-lightbulb-on';
-  return '';
-});
+const {
+  brightnessLevelString,
+  brightnessLevelNumber,
+  lightIcon,
+  error
+} = useLightingTrait(() => props.name, () => props.paused);
 </script>
