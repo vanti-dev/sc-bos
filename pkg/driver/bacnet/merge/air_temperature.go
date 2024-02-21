@@ -28,6 +28,8 @@ type airTemperatureConfig struct {
 	SetPoint           *config.ValueSource `json:"setPoint,omitempty"`
 	AmbientTemperature *config.ValueSource `json:"ambientTemperature,omitempty"`
 	AmbientHumidity    *config.ValueSource `json:"ambientHumidity,omitempty"`
+	SetPointLow        *config.ValueSource `json:"setPointLow,omitempty"`
+	SetPointHigh       *config.ValueSource `json:"setPointHigh,omitempty"`
 }
 
 func readAirTemperatureConfig(raw []byte) (cfg airTemperatureConfig, err error) {
@@ -93,6 +95,23 @@ func (t *airTemperature) UpdateAirTemperature(ctx context.Context, request *trai
 		return t.GetAirTemperature(ctx, &traits.GetAirTemperatureRequest{Name: request.Name})
 	}
 	newSetPoint := float32(request.GetState().GetTemperatureSetPoint().GetValueCelsius())
+
+	if t.config.SetPointLow != nil && t.config.SetPointHigh != nil {
+		// for the artus units at Arup, we need to set 2 additional high and low set points to control the dead band,
+		// just use +- 1 degree for now
+		err := comm.WriteProperty(ctx, t.client, t.known, *t.config.SetPointLow, newSetPoint-1, 0)
+		if err != nil {
+			t.logger.Error("WriteProperty SetPointLow", zap.Error(err))
+			return nil, err
+		}
+
+		err = comm.WriteProperty(ctx, t.client, t.known, *t.config.SetPointHigh, newSetPoint+1, 0)
+		if err != nil {
+			t.logger.Error("WriteProperty SetPointHigh", zap.Error(err))
+			return nil, err
+		}
+	}
+
 	err := comm.WriteProperty(ctx, t.client, t.known, *t.config.SetPoint, newSetPoint, 0)
 	if err != nil {
 		return nil, err
