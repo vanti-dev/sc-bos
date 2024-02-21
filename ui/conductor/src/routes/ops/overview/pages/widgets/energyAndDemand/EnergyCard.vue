@@ -65,7 +65,7 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import useOccupancyTrait from '@/composables/traits/useOccupancyTrait';
+import useOccupancyTrait from '@/traits/occupancy/useOccupancyTrait';
 import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
 import EnergyGraph from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraph.vue';
 import {computed, reactive} from 'vue';

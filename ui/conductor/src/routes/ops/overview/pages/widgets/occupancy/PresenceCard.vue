@@ -23,7 +23,7 @@ import {occupancyStateToString} from '@/api/sc/traits/occupancy';
 import ContentCard from '@/components/ContentCard.vue';
 import {DAY, HOUR, MINUTE, SECOND, useNow} from '@/components/now';
 import StatusAlert from '@/components/StatusAlert.vue';
-import useOccupancyTrait from '@/composables/traits/useOccupancyTrait';
+import useOccupancyTrait from '@/traits/occupancy/useOccupancyTrait';
 import {formatTimeAgo} from '@/util/date';
 import {Occupancy} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
 import {computed, ref, watch} from 'vue';

@@ -54,7 +54,7 @@
 import LineChart from '@/components/charts/LineChart.vue';
 import ContentCard from '@/components/ContentCard.vue';
 import {HOUR, MINUTE} from '@/components/now';
-import useAirQualityTrait from '@/composables/traits/useAirQualityTrait.js';
+import useAirQualityTrait from '@/traits/airQuality/useAirQualityTrait.js';
 import {camelToSentence} from '@/util/string';
 import {computed, reactive} from 'vue';
 
