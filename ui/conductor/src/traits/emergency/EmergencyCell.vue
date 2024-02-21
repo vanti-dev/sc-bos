@@ -1,5 +1,7 @@
 <template>
-  <v-tooltip left nudge-right="8px">
+  <StatusAlert v-if="props.streamError" icon="mdi-smoke-detector-outline" :resource="props.streamError"/>
+
+  <v-tooltip v-else left nudge-right="8px">
     <template #activator="{attr, on}">
       <v-icon v-bind="attr" v-on="on" size="20" :color="colorClass">{{ iconStr }}</v-icon>
     </template>
@@ -7,6 +9,7 @@
   </v-tooltip>
 </template>
 <script setup>
+import StatusAlert from '@/components/StatusAlert.vue';
 import {Emergency} from '@smart-core-os/sc-api-grpc-web/traits/emergency_pb';
 import {computed} from 'vue';
 
@@ -19,6 +22,10 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  streamError: {
+    type: Object,
+    default: null
   }
 });
 

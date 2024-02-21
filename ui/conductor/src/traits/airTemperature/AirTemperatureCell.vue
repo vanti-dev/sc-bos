@@ -1,5 +1,7 @@
 <template>
-  <span class="text-no-wrap at-cell" v-if="hasTemp || hasSetPoint">
+  <StatusAlert v-if="props.streamError" icon="mdi-thermometer-low" :resource="props.streamError"/>
+
+  <span class="text-no-wrap at-cell" v-else-if="(hasTemp || hasSetPoint) && !props.streamError">
     <v-tooltip bottom v-if="hasTemp" open-delay="1000">
       <template #activator="{on, attrs}">
         <span v-bind="attrs" v-on="on">{{ tempStr }}</span>
@@ -17,6 +19,7 @@
   </span>
 </template>
 <script setup>
+import StatusAlert from '@/components/StatusAlert.vue';
 import {computed} from 'vue';
 
 const props = defineProps({
@@ -32,6 +35,10 @@ const props = defineProps({
   showChangeDuration: {
     type: Number,
     default: 30 * 1000
+  },
+  streamError: {
+    type: Object,
+    default: null
   }
 });
 
