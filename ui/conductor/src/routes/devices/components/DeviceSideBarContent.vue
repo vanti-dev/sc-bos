@@ -46,17 +46,17 @@ import WithLighting from '@/routes/devices/components/renderless/WithLighting.vu
 import WithMeter from '@/routes/devices/components/renderless/WithMeter.vue';
 import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
 import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
-import AirQualityCard from '@/routes/devices/components/trait-cards/AirQualityCard.vue';
-import AirTemperatureCard from '@/routes/devices/components/trait-cards/AirTemperatureCard.vue';
-import DeviceInfoCard from '@/routes/devices/components/trait-cards/DeviceInfoCard.vue';
-import ElectricDemandCard from '@/routes/devices/components/trait-cards/ElectricDemandCard.vue';
-import EmergencyLight from '@/routes/devices/components/trait-cards/EmergencyLight.vue';
-import LightCard from '@/routes/devices/components/trait-cards/LightCard.vue';
-import MeterCard from '@/routes/devices/components/trait-cards/MeterCard.vue';
-import ModeCard from '@/routes/devices/components/trait-cards/ModeCard.vue';
-import OccupancyCard from '@/routes/devices/components/trait-cards/OccupancyCard.vue';
-import StatusLogCard from '@/routes/devices/components/trait-cards/StatusLogCard.vue';
-import UdmiCard from '@/routes/devices/components/trait-cards/UdmiCard.vue';
+import AirQualityCard from '@/traits/airQuality/AirQualityCard.vue';
+import AirTemperatureCard from '@/traits/airTemperature/AirTemperatureCard.vue';
+import DeviceInfoCard from '@/traits/deviceInfo/DeviceInfoCard.vue';
+import ElectricDemandCard from '@/traits/electricDemand/ElectricDemandCard.vue';
+import EmergencyLight from '@/traits/emergency/EmergencyLight.vue';
+import LightCard from '@/traits/lighting/LightCard.vue';
+import MeterCard from '@/traits/meter/MeterCard.vue';
+import ModeCard from '@/traits/mode/ModeCard.vue';
+import OccupancyCard from '@/traits/occupancy/OccupancyCard.vue';
+import StatusLogCard from '@/traits/status/StatusLogCard.vue';
+import UdmiCard from '@/traits/udmi/UdmiCard.vue';
 
 defineProps({
   deviceId: {
