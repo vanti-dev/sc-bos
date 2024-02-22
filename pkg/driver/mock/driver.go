@@ -194,8 +194,14 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 		// todo: return []any{inputselect.WrapApi(inputselect.NewModelServer(inputselect.NewModel()))}, nil
 		return nil, nil
 	case trait.Light:
-		// todo: return []any{light.WrapApi(light.NewModelServer(light.NewModel())), nil
-		return []any{light.WrapApi(light.NewMemoryDevice())}, nil
+		server := light.NewModelServer(light.NewModel(
+			light.WithPreset(0, &traits.LightPreset{Name: "off", Title: "Off"}),
+			light.WithPreset(40, &traits.LightPreset{Name: "low", Title: "Low"}),
+			light.WithPreset(60, &traits.LightPreset{Name: "med", Title: "Normal"}),
+			light.WithPreset(80, &traits.LightPreset{Name: "high", Title: "High"}),
+			light.WithPreset(100, &traits.LightPreset{Name: "full", Title: "Full"}),
+		))
+		return []any{light.WrapApi(server), light.WrapInfo(server)}, nil
 	case trait.LockUnlock:
 		// todo: return []any{lockunlock.WrapApi(lockunlock.NewModelServer(lockunlock.NewModel()))}, nil
 		return nil, nil
