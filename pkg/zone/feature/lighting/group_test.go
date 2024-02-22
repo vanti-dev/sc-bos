@@ -5,14 +5,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/vanti-dev/sc-bos/pkg/util/chans"
 )
 
-func TestGroup_GetBrightness(t *testing.T) {
+func TestGroup_PullBrightness(t *testing.T) {
 	r := light.NewApiRouter()
 	client := light.WrapApi(r)
 	group := &Group{
@@ -116,4 +119,44 @@ func TestGroup_GetBrightness(t *testing.T) {
 	testUpdate("L2", 50)
 	testUpdate("L2", 0)
 	testUpdate("L1", 0)
+}
+
+func TestGroup_DescribeBrightness(t *testing.T) {
+	info := light.NewInfoRouter()
+	infoClient := light.WrapInfo(info)
+	group := &Group{
+		info: infoClient,
+		names: []string{
+			"L1", "L2", "L3", "L4", "L5",
+		},
+		logger: zap.NewNop(),
+	}
+
+	for _, name := range group.names {
+		modelServer := light.NewModelServer(light.NewModel(
+			light.WithPreset(10, &traits.LightPreset{Name: "dim", Title: "Low Light"}),
+			light.WithPreset(90, &traits.LightPreset{Name: "blind", Title: "High Light"}),
+		))
+		info.Add(name, light.WrapInfo(modelServer))
+	}
+
+	support, err := group.DescribeBrightness(context.Background(), &traits.DescribeBrightnessRequest{})
+	if err != nil {
+		t.Fatalf("describe brightness: %v", err)
+	}
+	want := &traits.BrightnessSupport{
+		ResourceSupport: &types.ResourceSupport{
+			Readable:    true,
+			Writable:    true,
+			Observable:  true,
+			PullSupport: types.PullSupport_PULL_SUPPORT_NATIVE,
+		},
+		Presets: []*traits.LightPreset{
+			{Name: "dim", Title: "Low Light"},
+			{Name: "blind", Title: "High Light"},
+		},
+	}
+	if diff := cmp.Diff(want, support, protocmp.Transform()); diff != "" {
+		t.Fatalf("describe brightness; (-want +got)\n%s", diff)
+	}
 }
