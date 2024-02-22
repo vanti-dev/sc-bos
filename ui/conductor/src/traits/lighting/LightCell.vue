@@ -35,5 +35,5 @@ const {
   brightnessLevelNumber,
   lightIcon,
   error
-} = useLightingTrait(() => props.name, () => props.paused);
+} = useLightingTrait(() => props.name, () => props.paused, {describeBrightness: false});
 </script>
