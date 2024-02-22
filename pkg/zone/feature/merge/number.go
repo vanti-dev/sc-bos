@@ -2,6 +2,8 @@ package merge
 
 import (
 	"golang.org/x/exp/constraints"
+
+	"github.com/smart-core-os/sc-api/go/types"
 )
 
 type Number interface {
@@ -89,4 +91,33 @@ func Ptr[T any](v T, ok bool) *T {
 		return &v
 	}
 	return nil
+}
+
+func Int32Bounds[E any](items []E, f func(E) *types.Int32Bounds) *types.Int32Bounds {
+	var dst *types.Int32Bounds
+	only := true
+	for _, item := range items {
+		src := f(item)
+		switch {
+		case src == nil:
+			continue
+		case dst == nil:
+			dst = src
+			continue
+		case only:
+			only = false
+			dst = &types.Int32Bounds{
+				Min: dst.Min,
+				Max: dst.Max,
+			}
+		}
+
+		if dst.Min == nil || (src.Min != nil && *src.Min < *dst.Min) {
+			dst.Min = src.Min
+		}
+		if dst.Max == nil || (src.Max != nil && *src.Max > *dst.Max) {
+			dst.Max = src.Max
+		}
+	}
+	return dst
 }
