@@ -5,6 +5,11 @@ import {toValue} from '@/util/vue';
 import {computed, reactive} from 'vue';
 
 /**
+ * @typedef {Object} LevelPercent
+ * @property {number} levelPercent
+ */
+
+/**
  *
  * @template T
  * @param {MaybeRefOrGetter<T>} query - The name of the device or a query object
@@ -19,7 +24,8 @@ import {computed, reactive} from 'vue';
  *  brightnessLevelNumber: import('vue').ComputedRef<number>,
  *  brightnessLevelString: import('vue').ComputedRef<string>,
  *  lightIcon: import('vue').ComputedRef<string>,
- *  updateBrightness: (req: number|Brightness.AsObject|UpdateBrightnessRequest.AsObject) => void,
+ *  toLevelPercentObject: (percent: LevelPercent|number) => LevelPercent,
+ *  updateBrightness: (req: {LevelPercent}|Brightness.AsObject|UpdateBrightnessRequest.AsObject) => void,
  *  error: import('vue').ComputedRef<ResourceError|ActionError>,
  *  loading: import('vue').ComputedRef<boolean>
  * }}
@@ -86,23 +92,40 @@ export default function(query, paused, options) {
 
   // ---------------- Light and Brightness Control ---------------- //
   /**
-   * @param {number|Brightness.AsObject|UpdateBrightnessRequest.AsObject} request
+   * Convert a number to a levelPercent object if it is not already
+   *
+   * @param {number | LevelPercent} percent
+   * @return {LevelPercent}
+   */
+  const toLevelPercentObject = (percent) => {
+    if (typeof percent === 'number') {
+      return {
+        levelPercent: Math.min(100, Math.round(percent))
+      };
+    } else {
+      return percent;
+    }
+  };
+
+  /**
+   * @param {{LevelPercent}|Brightness.AsObject|UpdateBrightnessRequest.AsObject} request
    * @return {void}
    */
   const doBrightnessUpdate = (request) => {
-    if (typeof request === 'number') {
-      request = {
-        levelPercent: Math.min(100, Math.round(request))
-      };
-    }
+    let modifiedRequest = request;
+
+    // Convert the request to an UpdateBrightnessRequest
     if (!request.hasOwnProperty('brightness')) {
-      request = {
+      modifiedRequest = {
         brightness: request
       };
     }
-    request.name = toValue(queryObject).name;
 
-    updateBrightness(request, brightnessUpdate);
+    // Set the name of the device
+    modifiedRequest.name = toValue(queryObject).name;
+
+    // Call the API
+    updateBrightness(modifiedRequest, brightnessUpdate);
   };
 
 
@@ -127,6 +150,9 @@ export default function(query, paused, options) {
     brightnessLevelNumber,
     brightnessLevelString,
     lightIcon,
+
+    // Utilities
+    toLevelPercentObject,
 
     // Actions
     updateBrightness: doBrightnessUpdate,

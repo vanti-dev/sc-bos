@@ -1,5 +1,6 @@
 <template>
   <v-card elevation="0" tile>
+    <!-- Brightness -->
     <v-list tile class="ma-0 pa-0">
       <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Lighting</v-subheader>
       <v-list-item class="py-1">
@@ -15,32 +16,25 @@
         color="accent"/>
     <v-card-actions class="px-4">
       <v-btn
-          small
+          v-for="control in brightnessControl.left"
           color="neutral lighten-1"
-          :disabled="blockActions"
+          :disabled="control.disabled"
           elevation="0"
-          @click="updateBrightness(100)">
-        On
-      </v-btn>
-      <v-btn small color="neutral lighten-1" :disabled="blockActions" elevation="0" @click="updateBrightness(0)">
-        Off
+          :key="control.label"
+          small
+          @click="control.onClick">
+        {{ control.label }}
       </v-btn>
       <v-spacer/>
       <v-btn
-          small
+          v-for="control in brightnessControl.right"
           color="neutral lighten-1"
+          :disabled="control.disabled"
           elevation="0"
-          @click="updateBrightness(brightnessLevelNumber + 1)"
-          :disabled="blockActions || brightnessLevelNumber >= 100">
-        Up
-      </v-btn>
-      <v-btn
+          :key="control.label"
           small
-          color="neutral lighten-1"
-          elevation="0"
-          @click="updateBrightness(brightnessLevelNumber - 1)"
-          :disabled="blockActions || brightnessLevelNumber <= 0">
-        Down
+          @click="control.onClick">
+        {{ control.label }}
       </v-btn>
     </v-card-actions>
     <v-progress-linear color="primary" indeterminate :active="loading"/>
@@ -50,6 +44,7 @@
 <script setup>
 import useAuthSetup from '@/composables/useAuthSetup';
 import useLightingTrait from '@/traits/lighting/useLightingTrait.js';
+import {computed} from 'vue';
 
 const {blockActions} = useAuthSetup();
 const props = defineProps({
@@ -62,8 +57,38 @@ const {
   brightnessLevelString,
   brightnessLevelNumber,
   updateBrightness,
+  toLevelPercentObject,
   loading
 } = useLightingTrait(() => props.name, false);
+
+const brightnessControl = computed(() => {
+  return {
+    left: [
+      {
+        disabled: blockActions.value,
+        label: 'On',
+        onClick: () => updateBrightness(toLevelPercentObject(100))
+      },
+      {
+        disabled: blockActions.value,
+        label: 'Off',
+        onClick: () => updateBrightness(toLevelPercentObject(0))
+      }
+    ],
+    right: [
+      {
+        disabled: blockActions.value || brightnessLevelNumber.value >= 100,
+        label: 'Up',
+        onClick: () => updateBrightness(toLevelPercentObject(brightnessLevelNumber.value + 1))
+      },
+      {
+        disabled: blockActions.value || brightnessLevelNumber.value <= 0,
+        label: 'Down',
+        onClick: () => updateBrightness(toLevelPercentObject(brightnessLevelNumber.value - 1))
+      }
+    ]
+  };
+});
 </script>
 
 <style scoped>
