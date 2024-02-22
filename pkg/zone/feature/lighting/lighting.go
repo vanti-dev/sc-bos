@@ -41,35 +41,33 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := node.AnnounceContext(ctx, f.announce)
 	logger := f.logger
 
-	if len(cfg.Lights) > 0 {
-		var lightClient traits.LightApiClient
-		if err := f.clients.Client(&lightClient); err != nil {
+	announceGroup := func(name string, lights []string, logger *zap.Logger) error {
+		var apiClient traits.LightApiClient
+		if err := f.clients.Client(&apiClient); err != nil {
 			return err
 		}
-
 		group := &Group{
-			client:   lightClient,
-			names:    cfg.Lights,
+			client:   apiClient,
+			names:    lights,
 			readOnly: cfg.ReadOnlyLights,
 			logger:   logger,
 		}
-		f.devices.Add(cfg.Lights...)
-		announce.Announce(cfg.Name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group))))
-	}
-	for key, lights := range cfg.LightGroups {
-		var lightClient traits.LightApiClient
-		if err := f.clients.Client(&lightClient); err != nil {
-			return err
-		}
-		group := &Group{
-			client:   lightClient,
-			names:    lights,
-			readOnly: cfg.ReadOnlyLights,
-			logger:   logger.With(zap.String("lightGroup", key)),
-		}
-		name := fmt.Sprintf("%s/%s", cfg.Name, key)
 		f.devices.Add(lights...)
 		announce.Announce(name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group))))
+		return nil
+	}
+
+	if len(cfg.Lights) > 0 {
+		if err := announceGroup(cfg.Name, cfg.Lights, logger); err != nil {
+			return err
+		}
+	}
+	for key, lights := range cfg.LightGroups {
+		name := fmt.Sprintf("%s/%s", cfg.Name, key)
+		logger := logger.With(zap.String("lightGroup", key))
+		if err := announceGroup(name, lights, logger); err != nil {
+			return err
+		}
 	}
 
 	return nil
