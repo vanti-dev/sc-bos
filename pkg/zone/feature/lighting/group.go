@@ -12,16 +12,20 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/sc-bos/pkg/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/merge"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
 )
 
 // Group implements traits.LightApiServer backed by a group of lights.
 type Group struct {
 	traits.UnimplementedLightApiServer
+	traits.UnimplementedLightInfoServer
 	client   traits.LightApiClient
+	info     traits.LightInfoClient
 	names    []string
 	readOnly bool
 
@@ -192,6 +196,70 @@ func mergeBrightness(allRes []*traits.Brightness) (*traits.Brightness, error) {
 			}
 		}
 		out.LevelPercent = averageBrightness
+		return out, nil
+	}
+}
+
+func (g *Group) DescribeBrightness(ctx context.Context, request *traits.DescribeBrightnessRequest) (*traits.BrightnessSupport, error) {
+	if g.info == nil {
+		return nil, status.Error(codes.Unimplemented, "info not supported")
+	}
+	fns := make([]func() (*traits.BrightnessSupport, error), len(g.names))
+	for i, name := range g.names {
+		request := proto.Clone(request).(*traits.DescribeBrightnessRequest)
+		request.Name = name
+		fns[i] = func() (*traits.BrightnessSupport, error) {
+			return g.info.DescribeBrightness(ctx, request)
+		}
+	}
+	allRes, allErrs := run.Collect(ctx, run.DefaultConcurrency, fns...)
+
+	err := multierr.Combine(allErrs...)
+	if len(multierr.Errors(err)) == len(g.names) {
+		return nil, err
+	}
+
+	if err != nil {
+		// ignore this error, assume some lights just don't support the info aspect
+	}
+	desc, err := mergeDescription(allRes)
+	if err != nil {
+		return nil, err
+	}
+	if g.readOnly {
+		desc.ResourceSupport.Writable = false
+	}
+	return desc, err
+}
+
+func mergeDescription(allRes []*traits.BrightnessSupport) (*traits.BrightnessSupport, error) {
+	switch len(allRes) {
+	case 0:
+		return nil, status.Error(codes.FailedPrecondition, "zone has no light names")
+	case 1:
+		return allRes[0], nil
+	default:
+		out := &traits.BrightnessSupport{}
+		out.ResourceSupport = merge.ResourceSupport(allRes, func(s *traits.BrightnessSupport) *types.ResourceSupport {
+			return s.GetResourceSupport()
+		})
+		out.BrightnessAttributes = merge.Int32Attributes(allRes, func(s *traits.BrightnessSupport) *types.Int32Attributes {
+			return s.GetBrightnessAttributes()
+		})
+
+		// Find a unique set of the presets from all the lights
+		// We want to preserve as much order as we can in case it's important,
+		// so instead of using a sorted slice approach we use a map to track duplicates.
+		seenPresets := make(map[string]struct{})
+		for _, item := range allRes {
+			for _, preset := range item.GetPresets() {
+				if _, ok := seenPresets[preset.Name]; ok {
+					continue
+				}
+				seenPresets[preset.Name] = struct{}{}
+				out.Presets = append(out.Presets, preset)
+			}
+		}
 		return out, nil
 	}
 }

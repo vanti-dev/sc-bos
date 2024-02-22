@@ -46,14 +46,19 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		if err := f.clients.Client(&apiClient); err != nil {
 			return err
 		}
+		var infoClient traits.LightInfoClient
+		if err := f.clients.Client(&infoClient); err != nil {
+			// we don't support info api, Group can handle this so just continue
+		}
 		group := &Group{
 			client:   apiClient,
+			info:     infoClient,
 			names:    lights,
 			readOnly: cfg.ReadOnlyLights,
 			logger:   logger,
 		}
 		f.devices.Add(lights...)
-		announce.Announce(name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group))))
+		announce.Announce(name, node.HasTrait(trait.Light, node.WithClients(light.WrapApi(group), light.WrapInfo(group))))
 		return nil
 	}
 
