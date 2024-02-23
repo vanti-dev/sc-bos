@@ -175,17 +175,21 @@ func (p *proxy) announceChange(announced announcedTraits, change *traits.PullChi
 	needAnnouncing := announced.updateChild(change.OldValue, change.NewValue)
 	childName := change.GetNewValue().GetName() // nil safe way to get the name
 	for _, tn := range needAnnouncing {
-		// todo: consider proxying other trait aspects like history or info
 		client := alltraits.APIClient(p.conn, tn)
 		if client == nil {
 			p.logger.Warn(fmt.Sprintf("remote child implements unknown trait %s", tn))
 			continue
 		}
+		infoClient := alltraits.InfoClient(p.conn, tn)
+		if infoClient == nil {
+			p.logger.Warn(fmt.Sprintf("remote child implements unknown info trait %s", tn))
+			continue
+		}
 		var undo node.Undo
 		if p.skipChild {
-			undo = p.announcer.Announce(childName, node.HasClient(client))
+			undo = p.announcer.Announce(childName, node.HasClient(client), node.HasClient(infoClient))
 		} else {
-			undo = p.announcer.Announce(childName, node.HasTrait(tn, node.WithClients(client)))
+			undo = p.announcer.Announce(childName, node.HasTrait(tn, node.WithClients(client), node.WithClients(infoClient)))
 		}
 		announced.add(childName, tn, undo)
 	}
