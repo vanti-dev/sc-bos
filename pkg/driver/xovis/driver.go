@@ -14,11 +14,13 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/enterleavesensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
-
 	"github.com/vanti-dev/sc-bos/pkg/driver"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -53,6 +55,7 @@ type Driver struct {
 	client            *Client
 	server            *http.Server // only used if httpPort is configured for the webhook
 	unannounceDevices []node.Undo
+	udmiServers       []*UdmiServiceServer
 }
 
 func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
@@ -89,25 +92,37 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 		if dev.Metadata != nil {
 			features = append(features, node.HasMetadata(dev.Metadata))
 		}
+		var occupancyVal *resource.Value
 		if dev.Occupancy != nil {
+			occupancy := &occupancyServer{
+				client:      d.client,
+				multiSensor: conf.MultiSensor,
+				logicID:     dev.Occupancy.ID,
+				bus:         d.pushDataBus,
+			}
 			features = append(features, node.HasTrait(trait.OccupancySensor,
-				node.WithClients(occupancysensor.WrapApi(&occupancyServer{
-					client:      d.client,
-					multiSensor: conf.MultiSensor,
-					logicID:     dev.Occupancy.ID,
-					bus:         d.pushDataBus,
-				})),
-			))
+				node.WithClients(occupancysensor.WrapApi(occupancy))))
+			occupancyVal = occupancy.OccupancyTotal
 		}
+		var enterLeaveVal *resource.Value
 		if dev.EnterLeave != nil {
+			enterLeave := &enterLeaveServer{
+				client:      d.client,
+				logicID:     dev.EnterLeave.ID,
+				multiSensor: conf.MultiSensor,
+				bus:         d.pushDataBus,
+			}
+
 			features = append(features, node.HasTrait(trait.EnterLeaveSensor,
-				node.WithClients(enterleavesensor.WrapApi(&enterLeaveServer{
-					client:      d.client,
-					logicID:     dev.EnterLeave.ID,
-					multiSensor: conf.MultiSensor,
-					bus:         d.pushDataBus,
-				})),
-			))
+				node.WithClients(enterleavesensor.WrapApi(enterLeave))))
+			enterLeaveVal = enterLeave.EnterLeaveTotal
+		}
+
+		if enterLeaveVal != nil || occupancyVal != nil {
+			server := NewUdmiServiceServer(d.Logger.Named("UdmiServiceServer"), enterLeaveVal, occupancyVal, dev.UDMITopicPrefix)
+			d.udmiServers = append(d.udmiServers, server)
+			features = append(features, node.HasTrait(udmipb.TraitName,
+				node.WithClients(gen.WrapUdmiService(server))))
 		}
 
 		d.unannounceDevices = append(d.unannounceDevices, d.Node.Announce(dev.Name, features...))

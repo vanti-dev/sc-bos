@@ -11,6 +11,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 )
@@ -25,6 +26,8 @@ type occupancyServer struct {
 	pollInit sync.Once
 	poll     *task.Intermittent
 	polls    *minibus.Bus[LiveLogicResponse]
+
+	OccupancyTotal *resource.Value
 }
 
 var errDataFormat = status.Error(codes.FailedPrecondition, "data received from sensor did not match expected format")
@@ -40,6 +43,7 @@ func (o *occupancyServer) GetOccupancy(ctx context.Context, request *traits.GetO
 		return nil, errDataFormat
 	}
 
+	o.OccupancyTotal.Set(occupancy)
 	return occupancy, nil
 }
 
