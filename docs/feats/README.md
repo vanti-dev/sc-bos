@@ -180,7 +180,7 @@ There is no user centric way to edit the contents of this JSON file.
 We don't recommend that this auth method is used as it is less secure and doesn't support single sign on or other
 advanced features like revocation.
 
-The Ops UI and client specific UIs support this and call is "Local Login."
+The Ops UI and client specific UIs support this and call it "Local Login."
 
 #### Client Credentials Grant
 
@@ -214,9 +214,9 @@ The Ops UI and project specific UIs support this and call it "Keycloak Login."
 
 ##### KC Device Authentication Flow
 
-Useful for apps that have limited user input, like a signage screen, this flow shows you a QR code and a sequence of
-letter you should follow and enter using another device in order to log in the app. Just like you get when logging into
-Netflix on your TV.
+Useful for apps that have limited user input, like a signage screen, this flow shows you a QR code to scan and a
+sequence of letters you should enter using another device in order to log in the app. Just like you get when logging
+into Netflix on your TV.
 
 The account you log in using is the same as with the other KC flows, you just do it on your personal device instead of
 on the hardware hosting the limited input app.
@@ -230,7 +230,7 @@ At a high level, authorization involves comparing who you are (the claims in you
 do (your request) and making sure they match. SC BOS implements this using policy files, files that contain rules like
 _allow write if token is present and valid and the "roles" claim includes "admin"_. There are a lot of authz policies
 we've written, some are pattern driven: _api requests that start with "Update" are writes_, some are specific: _only
-the "admin" role can access the "tenant" API_.
+the "admin" role can access the "tenant management" API_.
 
 SC BOS uses open policy agent (OPA) to write and enforce these policies, OPA is an open source library and language
 designed for this exact purpose.
@@ -704,8 +704,8 @@ These project specific integrations also implement UDMI:
 
 ### Azure IoT
 
-This auto publishes trait resources to Azure IoT Hub. Written for the INF data dashboard project originally, it has been
-written without that specific infrastructure in mind.
+This auto publishes trait resources to Azure IoT Hub. Written for a client data dashboard project originally, it has
+been written without that specific infrastructure in mind.
 
 The automation subscribes to changes in a configured list of device traits, serialises the changes to JSON, and
 publishes them to a configured MQTT topic.
