@@ -20,12 +20,8 @@
           :loading="isFetching"
           outlined/>
       <div class="pt-4" id="air-quality-graph" :style="{width: props.width, height: props.height}">
-        <div
-            class="pr-5"
-            :chart-options="chartOptions"
-            :chart-data="chartData"
-            dataset-id-key="label">
-          <LineChart :chart-data="chartData" :chart-options="chartOptions"/>
+        <div class="pr-5">
+          <LineChart :chart-data="chartData" :chart-options="chartOptions" dataset-id-key="label"/>
         </div>
       </div>
 
@@ -54,7 +50,7 @@
 import LineChart from '@/components/charts/LineChart.vue';
 import ContentCard from '@/components/ContentCard.vue';
 import {HOUR, MINUTE} from '@/components/now';
-import useAirQualityTrait from '@/traits/airQuality/useAirQualityTrait.js';
+import useAirQuality from '@/routes/ops/air-quality/useAirQualityHistory';
 import {camelToSentence} from '@/util/string';
 import {computed, reactive} from 'vue';
 
@@ -86,7 +82,7 @@ const {
   downloadCSV,
   isFetching,
   readComfortValue
-} = useAirQualityTrait(airQualityProps);
+} = useAirQuality(airQualityProps);
 
 // Define a color mapping for each key
 const colorMapping = {
