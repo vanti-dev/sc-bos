@@ -14,6 +14,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/enterleavesensor"
@@ -95,10 +96,11 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 		var occupancyVal *resource.Value
 		if dev.Occupancy != nil {
 			occupancy := &occupancyServer{
-				client:      d.client,
-				multiSensor: conf.MultiSensor,
-				logicID:     dev.Occupancy.ID,
-				bus:         d.pushDataBus,
+				client:         d.client,
+				multiSensor:    conf.MultiSensor,
+				logicID:        dev.Occupancy.ID,
+				bus:            d.pushDataBus,
+				OccupancyTotal: resource.NewValue(resource.WithInitialValue(&traits.Occupancy{}), resource.WithNoDuplicates()),
 			}
 			features = append(features, node.HasTrait(trait.OccupancySensor,
 				node.WithClients(occupancysensor.WrapApi(occupancy))))
@@ -107,10 +109,11 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 		var enterLeaveVal *resource.Value
 		if dev.EnterLeave != nil {
 			enterLeave := &enterLeaveServer{
-				client:      d.client,
-				logicID:     dev.EnterLeave.ID,
-				multiSensor: conf.MultiSensor,
-				bus:         d.pushDataBus,
+				client:          d.client,
+				logicID:         dev.EnterLeave.ID,
+				multiSensor:     conf.MultiSensor,
+				bus:             d.pushDataBus,
+				EnterLeaveTotal: resource.NewValue(resource.WithInitialValue(&traits.EnterLeaveEvent{}), resource.WithNoDuplicates()),
 			}
 
 			features = append(features, node.HasTrait(trait.EnterLeaveSensor,
