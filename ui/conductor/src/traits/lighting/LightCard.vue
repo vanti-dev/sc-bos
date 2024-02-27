@@ -39,25 +39,27 @@
     </v-card-actions>
 
     <!-- Presets -->
-    <v-container v-if="brightnessPresets.length > 0" class="pa-0">
+    <v-container v-if="brightnessPresets.length > 0" class="pa-0 px-4">
       <v-list tile class="ma-0 mt-2 pa-0">
-        <v-list-item class="py-1">
+        <v-list-item class="py-1 pl-0">
           <v-list-item-title class="text-body-small text-capitalize">Presets</v-list-item-title>
         </v-list-item>
       </v-list>
-      <v-card-actions class="flex-column justify-center px-4">
-        <v-btn
-            v-for="preset in brightnessPresets"
-            class="mx-0 my-1"
-            color="neutral lighten-1"
-            elevation="0"
-            :key="preset.name"
-            small
-            width="100%"
-            @click="updateBrightness(toPresetObject(preset))">
+      <v-btn
+          v-for="preset in brightnessPresets"
+          block
+          class="py-1 mx-0 mt-1 mb-2 preset"
+          color="neutral lighten-1"
+          elevation="0"
+          :key="preset.name"
+          small
+          width="100%"
+          max-width="575"
+          @click="updateBrightness(toPresetObject(preset))">
+        <span class="text-truncate">
           {{ preset.title ? preset.title : preset.name }}
-        </v-btn>
-      </v-card-actions>
+        </span>
+      </v-btn>
     </v-container>
     <v-progress-linear color="primary" indeterminate :active="loading"/>
   </v-card>
@@ -115,12 +117,16 @@ const brightnessControl = computed(() => {
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .v-list-item {
   min-height: auto;
 }
 
 .v-progress-linear {
   width: auto;
+}
+
+.preset ::v-deep(.v-btn__content) {
+  max-width: 100%;
 }
 </style>
