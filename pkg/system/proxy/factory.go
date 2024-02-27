@@ -150,7 +150,7 @@ func (s *System) announceHub(ctx context.Context, hubConn *grpc.ClientConn) (tas
 		// non-trait routed apis
 		undos = append(undos, announcer.Announce(hubName, node.HasMetadata(lastChange.Metadata), node.HasClient(
 			gen.NewAlertApiClient(hubConn),
-			// gen.NewAlertAdminApiClient(hubConn), // Don't do this, we don't want external control of this
+			gen.NewAlertAdminApiClient(hubConn), // Don't do this, we don't want external control of this // SC-469
 		)))
 
 		// this is the same logic that you find in announceNodeApis
