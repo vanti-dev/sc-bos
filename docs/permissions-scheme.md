@@ -22,7 +22,7 @@ Rules have access to an `input` object, containing request metadata.
     "IsService": false
   },
   "Method": "UpdateTest",
-  "Service": "vanti.ew_auth_poc.TestApi",
+  "Service": "vanti.auth_poc.TestApi",
   "Request": {
     "test": {
       "data": "foobar"
@@ -34,7 +34,7 @@ Rules have access to an `input` object, containing request metadata.
 That input data can be checked by a Rego policy package, like so:
 
 ```rego
-package vanti.ew_auch_poc.TestApi
+package vanti.auth_poc.TestApi
 
 import future.keywords.in
 

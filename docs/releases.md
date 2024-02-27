@@ -2,7 +2,7 @@
 
 Releases are created automatically by GitHub Actions when a tag is pushed to the repository. The tag should be of the
 form `v0.YYYY.R` (e.g. `v0.2024.1`). The 0 prefix is used to indicate the project is still under development and 
-private to Vanti - i.e. not yet publicly available. The `YYYY` is the year, and `R` is the release number for that year.
+not bound by any compatibility guarantees. The `YYYY` is the year, and `R` is the release number for that year.
 
 ## Testing releases
 

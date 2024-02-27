@@ -59,7 +59,7 @@ func TestSiteFaults(t *testing.T) {
 	ctx, cleanup := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cleanup()
 
-	appConfig, err := appconf.LoadLocalConfig("/Users/matt.nathan/projects/vanti-dev/bsp-ew/config/floor-04", "bms.part.json")
+	appConfig, err := appconf.LoadLocalConfig("/path/to/site/config/dir", "bms.part.json")
 	if err != nil {
 		t.Fatal(err)
 	}
