@@ -48,10 +48,10 @@
         <v-list-item-icon>
           <v-badge
               class="font-weight-bold"
-              :color="item.countType && counts[item.countType] ? 'primary' : 'transparent'"
-              :content="counts[item.countType]"
+              :color="item.badgeType ? badges[item.badgeType].color : 'transparent'"
+              :content="item.badgeType ? badges[item.badgeType].value : ''"
               overlap
-              :value="counts[item.countType]">
+              :value="item.badgeType ? badges[item.badgeType].value : null">
             <v-icon>
               {{ item.icon }}
             </v-icon>
@@ -67,13 +67,14 @@
 
 
 <script setup>
+import {closeResource} from '@/api/resource.js';
 import useAuthSetup from '@/composables/useAuthSetup';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import OpsNavList from '@/routes/ops/overview/OpsNavList.vue';
 import {usePageStore} from '@/stores/page';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {storeToRefs} from 'pinia';
-import {computed, onMounted, reactive, ref} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 
 const pageStore = usePageStore();
 const {miniVariant} = storeToRefs(pageStore);
@@ -102,14 +103,34 @@ const overviewChildren = computed(() => config.value?.ops?.overview?.children ||
 
 
 /**
- * Notification badge count
+ * Reactive object containing icon badge types and their values
  *
- * @type {
- *  import('vue').ComputedRef<number>
- * } counts
+ * @typedef {import('vue').ComputedRef<{color: string, value: string|number|null}>} unacknowledgedAlertCount
+ * @type {{
+ * unacknowledgedAlertCount: unacknowledgedAlertCount
+ * }} badges
  */
-const counts = reactive({
-  unacknowledgedAlertCount: computed(() => alertMetadata.badgeCount)
+const badges = reactive({
+  unacknowledgedAlertCount: computed(() => {
+    if (notificationEnabled.value) {
+      if (alertMetadata.alertError?.error) {
+        return {
+          color: 'error',
+          value: '!'
+        };
+      } else {
+        return {
+          color: 'primary',
+          value: alertMetadata.badgeCount
+        };
+      }
+    } else {
+      return {
+        color: 'transparent',
+        value: null
+      };
+    }
+  })
 });
 
 /**
@@ -125,22 +146,25 @@ const menuItems = computed(() => [
     title: 'Notifications',
     icon: 'mdi-bell-outline',
     link: {path: '/ops/notifications'},
-    countType: 'unacknowledgedAlertCount'
+    badgeType: 'unacknowledgedAlertCount'
   },
   {
     title: 'Air Quality',
     icon: 'mdi-air-filter',
-    link: {path: '/ops/air-quality'}
+    link: {path: '/ops/air-quality'},
+    badgeType: null
   },
   {
     title: 'Emergency Lighting',
     icon: 'mdi-alarm-light-outline',
-    link: {path: '/ops/emergency-lighting'}
+    link: {path: '/ops/emergency-lighting'},
+    badgeType: null
   },
   {
     title: 'Security',
     icon: 'mdi-shield-key',
-    link: {path: '/ops/security'}
+    link: {path: '/ops/security'},
+    badgeType: null
   }
 ]);
 
@@ -161,8 +185,15 @@ const enabledMenuItems = computed(() => menuItems.value.filter((item) => uiConfi
 const notificationEnabled = computed(() => uiConfig.pathEnabled('/ops/notifications'));
 
 onMounted(() => {
-  if (notificationEnabled.value) alertMetadata.init();
+  if (notificationEnabled.value) {
+    closeResource(alertMetadata.alertMetadata);
+    alertMetadata.init();
+  }
   displayList.value = false;
+});
+
+onUnmounted(() => {
+  closeResource(alertMetadata.alertMetadata);
 });
 </script>
 

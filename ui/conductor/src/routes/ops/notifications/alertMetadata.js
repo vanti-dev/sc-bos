@@ -1,11 +1,10 @@
-import {closeResource, newResourceValue} from '@/api/resource';
+import {newResourceValue} from '@/api/resource';
 import {pullAlertMetadata} from '@/api/ui/alerts';
-import {useErrorStore} from '@/components/ui-error/error';
 import {useHubStore} from '@/stores/hub';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {convertProtoMap} from '@/util/proto';
 import {defineStore} from 'pinia';
-import {computed, onMounted, onUnmounted, reactive} from 'vue';
+import {computed, reactive} from 'vue';
 
 /** @typedef {import('@sc-bos/ui-gen/proto/alerts_pb').AlertMetadata} AlertMetadata */
 
@@ -37,17 +36,6 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
     });
   }
 
-  // Ui Error Handling
-  const errorStore = useErrorStore();
-  let unwatchErrors;
-  onMounted(() => {
-    unwatchErrors = errorStore.registerValue(alertMetadata);
-  });
-  onUnmounted(() => {
-    closeResource(alertMetadata);
-    if (unwatchErrors) unwatchErrors();
-  });
-
   const acknowledgedCountMap = computed(() => convertProtoMap(alertMetadata.value?.acknowledgedCountsMap));
   const resolvedCountMap = computed(() => convertProtoMap(alertMetadata.value?.resolvedCountsMap));
   const floorCountsMap = computed(() => convertProtoMap(alertMetadata.value?.floorCountsMap));
@@ -58,6 +46,8 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
 
   const badgeCount = computed(() => needsAttentionCountsMap.value['nack_unresolved']);
   const unacknowledgedAlertCount = computed(() => acknowledgedCountMap.value[false]);
+
+  const alertError = computed(() => alertMetadata.streamError);
 
   return {
     alertMetadata,
@@ -75,6 +65,8 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
     needsAttentionCountsMap,
 
     badgeCount,
-    unacknowledgedAlertCount
+    unacknowledgedAlertCount,
+
+    alertError
   };
 });

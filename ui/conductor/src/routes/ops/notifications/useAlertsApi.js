@@ -105,6 +105,7 @@ export default function(name, query) {
   onMounted(() => (mounted.value = true));
   onBeforeUnmount(() => {
     mounted.value = false;
+    closeResource(pullResource);
   });
 
   const hasFetchedAnyPages = ref(false);
