@@ -22,23 +22,21 @@
           :class="{ 'hide-pagination': modifyFooter }"
           @click:row="showNotification">
         <template #top>
-          <v-row :class="['mt-1 mb-2 ml-0 pl-0', {'mt-n4 mb-2 mr-2': props.overviewPage}]">
+          <v-row
+              :class="[
+                'd-flex flex-row align-center mb-2 mt-3 ml-0 pl-0 mr-1',
+                {'mt-n4 mb-2 mr-2': props.overviewPage}
+              ]">
             <h3 v-if="props.overviewPage" :class="['text-h3 pt-2 pb-6', {'text-h4': props.overviewPage}]">
               Notifications
             </h3>
             <v-spacer/>
-            <filters
-                v-if="!props.overviewPage"
-                class="mb-4 mt-n2"
-                :floor.sync="query.floor"
-                :floor-items="floors"
-                :zone.sync="query.zone"
-                :zone-items="zones"
-                :subsystem.sync="query.subsystem"
-                :subsystem-items="subsystems"
-                :acknowledged.sync="query.acknowledged"
-                :resolved.sync="query.acknowledged"/>
-            <v-btn v-if="props.overviewPage" class="mr-2" color="primary" @click="alerts.exportData('Notifications')">
+            <FilterBy :class="['mt-n2', {'mb-4 mt-2 mr-2': !props.overviewPage}]" notification/>
+            <v-btn
+                v-if="props.overviewPage"
+                class="mt-n2"
+                color="primary"
+                @click="alerts.exportData('Notifications')">
               Export CSV...
             </v-btn>
             <v-tooltip bottom>
@@ -165,14 +163,16 @@
 import {newActionTracker} from '@/api/resource.js';
 import {createAlert} from '@/api/ui/alerts.js';
 import ContentCard from '@/components/ContentCard.vue';
+import FilterBy from '@/components/filterBy/FilterBy.vue';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
-import Filters from '@/routes/ops/notifications/Filters.vue';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
+import {useNotificationFilterStore} from '@/routes/ops/notifications/useNotificationFilterStore.js';
 import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
+import {storeToRefs} from 'pinia';
 import {computed, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
@@ -190,13 +190,21 @@ const notifications = useNotifications();
 const alertMetadata = useAlertMetadata();
 const hubStore = useHubStore();
 const pageStore = usePageStore();
-const activeZone = ref(props.zone);
+const notificationFilterStore = useNotificationFilterStore();
+const {availableSources, query} = storeToRefs(notificationFilterStore);
+
+// Set the active query to the default query values when the component is created
 watch(
-    () => props.zone,
-    (value) => {
-      activeZone.value = value;
+    () => props,
+    (defaultQuery) => {
+      notificationFilterStore.resetActiveQuery(); // Reset the active query to remove any previous filters
+
+      // Set the active query to the default query values
+      Object.entries(defaultQuery).forEach(([key, value]) => {
+        notificationFilterStore.updateActiveQuery(key, value);
+      });
     },
-    {immediate: true}
+    {immediate: true, deep: true}
 );
 
 const manualEntryValue = reactive(newActionTracker());
@@ -223,26 +231,6 @@ const addManualEntry = async () => {
   };
 };
 
-const query = reactive({
-  createdNotBefore: undefined,
-  createdNotAfter: undefined,
-  severityNotAbove: undefined,
-  severityNotBelow: undefined,
-  floor: undefined,
-  zone: computed({
-    get: () => activeZone.value,
-    set: (value) => {
-      activeZone.value = value;
-    }
-  }),
-  subsystem: undefined,
-  source: undefined,
-  acknowledged: undefined,
-  resolved: false,
-  resolvedNotBefore: undefined,
-  resolvedNotAfter: undefined
-});
-
 const dataTableOptions = ref({
   itemsPerPage: 20,
   page: 1
@@ -264,6 +252,31 @@ watch(
 const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
 const zones = computed(() => Object.keys(alertMetadata.zoneCountsMap).sort());
 const subsystems = computed(() => Object.keys(alertMetadata.subsystemCountsMap).sort());
+
+// Pre-defining the common default sources
+// These are available for both overviewPage and notificationsPage
+const defaultSources = [
+  {icon: 'mdi-checkbox-marked-circle-outline', title: 'Acknowledged', value: ['Yes', 'No']},
+  {icon: 'mdi-layers-triple-outline', title: 'Floor', value: floors},
+  {
+    icon: 'mdi-alert-box-outline', title: 'Severity', value: [
+      {label: notifications.severityData(9).text, value: 9},
+      {label: notifications.severityData(13).text, value: 13},
+      {label: notifications.severityData(17).text, value: 17},
+      {label: notifications.severityData(21).text, value: 21}
+    ], type: 'range'
+  },
+  {icon: 'mdi-file-tree', title: 'Subsystem', value: subsystems}
+];
+
+// Pre-defining the zone source
+// This is available only for notificationsPage - so we won't let the user filter by zone on the overviewPage
+const zoneSource = {icon: 'mdi-select-all', title: 'Zone', value: zones};
+
+// Setting availableSources based on whether overviewPage is active
+watch(() => props.overviewPage, (active) => {
+  availableSources.value = active ? defaultSources : [...defaultSources, zoneSource];
+}, {immediate: true});
 
 const queryFieldCount = computed(() => Object.values(query).filter((value) => value !== undefined).length);
 
