@@ -1,10 +1,11 @@
 import {convertProperties, fieldMaskFromObject, setProperties, timestampFromObject} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setCollection, setValue, trackAction} from '@/api/resource';
-import {AlertApiPromiseClient} from '@sc-bos/ui-gen/proto/alerts_grpc_web_pb';
+import {AlertApiPromiseClient, AlertAdminApiPromiseClient} from '@sc-bos/ui-gen/proto/alerts_grpc_web_pb';
 import {
   AcknowledgeAlertRequest,
   Alert,
+  CreateAlertRequest,
   GetAlertMetadataRequest,
   ListAlertsRequest,
   PullAlertMetadataRequest,
@@ -96,11 +97,32 @@ export function unacknowledgeAlert(request, tracker) {
 }
 
 /**
+ * @param {Partial<CreateAlertRequest.AsObject>} request
+ * @param {ActionTracker<CreateAlertRequest.AsObject>} [tracker]
+ * @return {Promise<Alert.AsObject>}
+ */
+export function createAlert(request, tracker) {
+  return trackAction('Alerts.createAlert', tracker ?? {}, endpoint => {
+    const api = adminClient(endpoint);
+    return api.createAlert(createAlertRequestFromObject(request));
+  });
+}
+
+/**
  * @param {string} endpoint
  * @return {AlertApiPromiseClient}
  */
 function apiClient(endpoint) {
   return new AlertApiPromiseClient(endpoint, null, clientOptions());
+}
+
+/**
+ *
+ * @param {string} endpoint
+ * @return {AlertAdminApiPromiseClient}
+ */
+function adminClient(endpoint) {
+  return new AlertAdminApiPromiseClient(endpoint, null, clientOptions());
 }
 
 /**
@@ -161,7 +183,7 @@ function alertQueryFromObject(obj) {
   if (!obj) return undefined;
   const dst = new Alert.Query();
   setProperties(dst, obj, 'floor', 'zone', 'subsystem', 'severity', 'source',
-      'severityNotAbove', 'severityNotBelow',
+      'severityNotBefore', 'severityNotAfter',
       'acknowledged', 'resolved');
   convertProperties(dst, obj, timestampFromObject,
       'createdNotBefore', 'createdNotAfter',
@@ -191,4 +213,30 @@ function alertAuthorFromObject(obj) {
   const dst = new Alert.Acknowledgement.Author();
   setProperties(dst, obj, 'id', 'displayName', 'email');
   return dst;
+}
+
+/**
+ *
+ * @param {Partial<CreateAlertRequest.AsObject>} obj
+ * @return {CreateAlertRequest}
+ */
+function createAlertRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const request = new CreateAlertRequest();
+  request.setAlert(alertFromObject(obj.alert));
+  return request;
+}
+
+/**
+ *
+ * @param {Partial<Alert.AsObject>} obj
+ * @return {Alert}
+ */
+function alertFromObject(obj) {
+  if (!obj) return undefined;
+
+  const alert = new Alert();
+  setProperties(alert, obj, 'description', 'source', 'floor', 'zone', 'severity');
+  return alert;
 }

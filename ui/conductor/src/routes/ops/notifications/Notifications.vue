@@ -38,9 +38,89 @@
                 :subsystem-items="subsystems"
                 :acknowledged.sync="query.acknowledged"
                 :resolved.sync="query.acknowledged"/>
-            <v-btn v-if="props.overviewPage" class="mt-2" color="primary" @click="alerts.exportData('Notifications')">
+            <v-btn v-if="props.overviewPage" class="mr-2" color="primary" @click="alerts.exportData('Notifications')">
               Export CSV...
             </v-btn>
+            <v-tooltip bottom>
+              <template #activator="{ on }">
+                <v-btn
+                    v-if="!props.overviewPage"
+                    @click="toggleManualEntry"
+                    color="primary"
+                    width="30"
+                    x-small
+                    height="36"
+                    :class="[{'mt-2 mr-5': !props.overviewPage, 'mt-0 ml-2 mr-0': props.overviewPage}]"
+                    v-on="on">
+                  <v-icon size="28">mdi-plus</v-icon>
+                </v-btn>
+              </template>
+              <span>Add new entry</span>
+            </v-tooltip>
+
+            <v-expansion-panels v-if="!props.overviewPage" class="mt-n3 mb-3" flat v-model="manualEntryPanel">
+              <v-expansion-panel>
+                <v-expansion-panel-content>
+                  <v-subheader class="pl-0 text-body-1">Manual Notification Entry Form</v-subheader>
+                  <v-row class="align-center mr-2">
+                    <v-col cols="self-align">
+                      <v-text-field
+                          v-model="manualEntryForm.description"
+                          label="Description"
+                          dense
+                          outlined
+                          hide-details
+                          maxlength="160">
+                        <template #append>
+                          <span class="character-counter">
+                            {{ manualEntryForm.description ? 160 - manualEntryForm.description.length : 160 }}
+                          </span>
+                        </template>
+                      </v-text-field>
+                    </v-col>
+                    <v-col cols="2">
+                      <v-select
+                          v-model="manualEntryForm.severity"
+                          dense
+                          hide-details
+                          :items="[
+                            {label: 'INFO', value: 9},
+                            {label:'WARN', value: 13},
+                            {label:'ALERT', value:17},
+                            {label:'DANGER', value: 21}
+                          ]"
+                          item-text="label"
+                          item-value="value"
+                          label="Severity"
+                          outlined/>
+                    </v-col>
+                    <v-col cols="2">
+                      <v-select
+                          v-model="manualEntryForm.floor"
+                          dense
+                          hide-details
+                          :items="floors"
+                          label="Floor"
+                          outlined/>
+                    </v-col>
+                    <v-col cols="2">
+                      <v-select
+                          v-model="manualEntryForm.zone"
+                          dense
+                          hide-details
+                          :items="zones"
+                          label="Zone"
+                          outlined/>
+                    </v-col>
+                    <v-col cols="auto">
+                      <v-btn @click="addManualEntry" :disabled="!manualEntryForm.description" color="primary">
+                        Add
+                      </v-btn>
+                    </v-col>
+                  </v-row>
+                </v-expansion-panel-content>
+              </v-expansion-panel>
+            </v-expansion-panels>
           </v-row>
         </template>
         <template #item.createTime="{ item }">
@@ -82,6 +162,8 @@
   </div>
 </template>
 <script setup>
+import {newActionTracker} from '@/api/resource.js';
+import {createAlert} from '@/api/ui/alerts.js';
 import ContentCard from '@/components/ContentCard.vue';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
@@ -116,6 +198,30 @@ watch(
     },
     {immediate: true}
 );
+
+const manualEntryValue = reactive(newActionTracker());
+const manualEntryPanel = ref(null);
+const manualEntryForm = ref({
+  source: 'manual',
+  description: undefined,
+  severity: undefined,
+  floor: undefined,
+  zone: undefined
+});
+const toggleManualEntry = () => {
+  manualEntryPanel.value === null ? manualEntryPanel.value = 0 : manualEntryPanel.value = null;
+};
+
+const addManualEntry = async () => {
+  await createAlert({alert: manualEntryForm.value}, manualEntryValue);
+  manualEntryForm.value = {
+    source: 'manual',
+    description: undefined,
+    severity: undefined,
+    floor: undefined,
+    zone: undefined
+  };
+};
 
 const query = reactive({
   createdNotBefore: undefined,
@@ -353,5 +459,17 @@ onUnmounted(() => {
   :deep(.v-data-footer__pagination) {
     display: none;
   }
+}
+
+.character-counter {
+  position: relative;
+  text-align: center;
+  width: 1.75em;
+  height: auto;
+  top: 6px;
+  bottom: 0;
+  right: -5px;
+  font-size: 75%;
+  color: var(--v-primary-base); /* Adjust color as needed */
 }
 </style>
