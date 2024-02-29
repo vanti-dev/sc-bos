@@ -105,15 +105,19 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		d.proxies = append(d.proxies, proxy)
 
 		// list, announce, and subscribe to updates to the list of children on the server
-		go func() {
-			err := proxy.AnnounceChildren(ctx)
-			if errors.Is(err, context.Canceled) {
-				return
-			}
-			if err != nil {
-				d.logger.Warn("Announcing children error", zap.Error(err))
-			}
-		}()
+		if len(n.Children) > 0 {
+			proxy.announceExplicitChildren(n.Children)
+		} else {
+			go func() {
+				err := proxy.AnnounceChildren(ctx)
+				if errors.Is(err, context.Canceled) {
+					return
+				}
+				if err != nil {
+					d.logger.Warn("Announcing children error", zap.Error(err))
+				}
+			}()
+		}
 	}
 	return allErrs
 }
@@ -161,6 +165,19 @@ func (p *proxy) AnnounceChildren(ctx context.Context) error {
 
 	fetcher := &childrenFetcher{name: p.config.Name, client: traits.NewParentApiClient(p.conn)}
 	return pull.Changes[*traits.PullChildrenResponse_Change](ctx, fetcher, changes, pull.WithLogger(p.logger))
+}
+
+func (p *proxy) announceExplicitChildren(children []config.Child) {
+	for _, c := range children {
+		for _, tn := range c.Traits {
+			client := alltraits.APIClient(p.conn, tn)
+			if client == nil {
+				p.logger.Warn("tried to proxy unknown trait", zap.String("trait", tn.String()))
+				continue
+			}
+			p.announcer.Announce(c.Name, node.HasTrait(tn, node.WithClients(client)))
+		}
+	}
 }
 
 func (p *proxy) announceChanges(changes <-chan *traits.PullChildrenResponse_Change) {
