@@ -5,17 +5,16 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"net/http"
-	"net/url"
 	"os"
 
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/credentials/oauth"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 )
@@ -54,46 +53,24 @@ func main() {
 		tlsConfig.RootCAs = pool
 	}
 
+	ccConfig := &clientcredentials.Config{
+		TokenURL:     flagTokenURL,
+		ClientID:     flagClientId,
+		ClientSecret: flagClientSecret,
+	}
 	httpClient := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}}
-	resp, err := httpClient.PostForm(flagTokenURL, url.Values{
-		"grant_type":    {"client_credentials"},
-		"client_id":     {flagClientId},
-		"client_secret": {flagClientSecret},
-	})
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "ERROR: get token: %s\n", err.Error())
-		os.Exit(1)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		_, _ = fmt.Fprintln(os.Stderr, "ERROR: token issue failed")
-		_, _ = io.Copy(os.Stderr, resp.Body)
-		_, _ = fmt.Fprintln(os.Stderr)
-		os.Exit(1)
-	}
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "ERROR: read response body: %s\n", err.Error())
-		os.Exit(1)
-	}
-	fmt.Printf("response body: %s\n", string(respBody))
-	var parsed struct {
-		AccessToken string `json:"access_token"`
-	}
-	err = json.Unmarshal(respBody, &parsed)
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "ERROR: invalid JSON: %s\n", err.Error())
-		os.Exit(1)
-	}
+	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, httpClient)
 
 	name := "light-1"
-	conn, err := grpc.Dial(flagGRPCAddr, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	conn, err := grpc.Dial(flagGRPCAddr,
+		grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)),
+		grpc.WithPerRPCCredentials(oauth.TokenSource{TokenSource: ccConfig.TokenSource(ctx)}),
+	)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "ERROR: can't connect: %s\n", err.Error())
 		os.Exit(1)
 	}
 	client := traits.NewLightApiClient(conn)
-	ctx := metadata.AppendToOutgoingContext(context.Background(), "authorization", "Bearer "+parsed.AccessToken)
 
 	res, err := client.GetBrightness(ctx, &traits.GetBrightnessRequest{Name: name})
 	if err != nil {
