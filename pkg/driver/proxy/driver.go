@@ -175,7 +175,12 @@ func (p *proxy) announceExplicitChildren(children []config.Child) {
 				p.logger.Warn("tried to proxy unknown trait", zap.String("trait", tn.String()))
 				continue
 			}
-			p.announcer.Announce(c.Name, node.HasTrait(tn, node.WithClients(client)))
+			infoClient := alltraits.InfoClient(p.conn, tn)
+			if infoClient == nil {
+				p.logger.Warn(fmt.Sprintf("remote child implements unknown info trait %s", tn))
+				continue
+			}
+			p.announcer.Announce(c.Name, node.HasTrait(tn, node.WithClients(client), node.WithClients(infoClient)))
 		}
 	}
 }
@@ -197,16 +202,22 @@ func (p *proxy) announceChange(announced announcedTraits, change *traits.PullChi
 			p.logger.Warn(fmt.Sprintf("remote child implements unknown trait %s", tn))
 			continue
 		}
+		hasClients := []node.Feature{node.HasClient(client)}
+		withClients := []node.TraitOption{node.WithClients(client)}
+
 		infoClient := alltraits.InfoClient(p.conn, tn)
 		if infoClient == nil {
 			p.logger.Warn(fmt.Sprintf("remote child implements unknown info trait %s", tn))
-			continue
+		} else {
+			hasClients = append(hasClients, node.HasClient(infoClient))
+			withClients = append(withClients, node.WithClients(infoClient))
 		}
+
 		var undo node.Undo
 		if p.skipChild {
-			undo = p.announcer.Announce(childName, node.HasClient(client), node.HasClient(infoClient))
+			undo = p.announcer.Announce(childName, hasClients...)
 		} else {
-			undo = p.announcer.Announce(childName, node.HasTrait(tn, node.WithClients(client), node.WithClients(infoClient)))
+			undo = p.announcer.Announce(childName, node.HasTrait(tn, withClients...))
 		}
 		announced.add(childName, tn, undo)
 	}

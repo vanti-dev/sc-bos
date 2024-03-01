@@ -48,11 +48,6 @@ type TLS struct {
 	InsecureSkipVerify   bool `json:"insecureSkipVerify,omitempty"`   // don't verify proxy server certificates
 }
 
-// type Trait struct {
-// 	Name  string     `json:"name,omitempty"`
-// 	Trait trait.Name `json:"trait,omitempty"`
-// }
-
 type Child struct {
 	Name   string       `json:"name,omitempty"`
 	Traits []trait.Name `json:"traits,omitempty"`
