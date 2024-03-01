@@ -205,6 +205,7 @@ const manualEntryForm = ref({
   source: 'manual',
   description: undefined,
   severity: undefined,
+  subsystem: undefined,
   floor: undefined,
   zone: undefined
 });
@@ -218,6 +219,7 @@ const addManualEntry = async () => {
     source: 'manual',
     description: undefined,
     severity: undefined,
+    subsystem: undefined,
     floor: undefined,
     zone: undefined
   };
