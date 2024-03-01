@@ -156,6 +156,7 @@ func (s *TokenServer) clientCredentialsFlow(ctx context.Context, writer http.Res
 		return errors.New("failed to marshal response")
 	}
 
+	writer.Header().Set("Content-Type", "application/json")
 	_, err = writer.Write(responseBytes)
 	if err != nil {
 		return errors.New("failed to write response body")
