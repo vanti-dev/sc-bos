@@ -39,9 +39,29 @@ func (f factory) New(services auto.Services) service.Lifecycle {
 	return a
 }
 
+func isAlertInPreviousMonth(a *gen.Alert, t time.Time) bool {
+	currentMonth := t.Month()
+	// if we in January, we want the alerts from December
+	if currentMonth == time.January && a.CreateTime.AsTime().Month() == time.December {
+		return true
+	} else {
+		return a.CreateTime.AsTime().Month() == (currentMonth - 1)
+	}
+}
+
+func isAlert2MonthsAgo(a *gen.Alert, t time.Time) bool {
+	currentMonth := t.Month()
+	if currentMonth == time.January && a.CreateTime.AsTime().Month() == time.November ||
+		currentMonth == time.February && a.CreateTime.AsTime().Month() == time.December {
+		return true
+	} else {
+		return a.CreateTime.AsTime().Month() <= (currentMonth - 2)
+	}
+}
+
 // getAlertsInLastMonth gets the alerts that have happened in the previous month (not the last 30 days)
 // this automation is intended to be run on the 1st of the month
-func (a *autoImpl) getAlertsInLastMonth(ctx context.Context, alertClient gen.AlertApiClient, name string) []*gen.Alert {
+func (a *autoImpl) getAlertsInLastMonth(ctx context.Context, alertClient gen.AlertApiClient, name string, t time.Time) []*gen.Alert {
 	var lastMonth []*gen.Alert
 
 	listAlerts := gen.ListAlertsRequest{
@@ -51,8 +71,7 @@ func (a *autoImpl) getAlertsInLastMonth(ctx context.Context, alertClient gen.Ale
 	res, err := alertClient.ListAlerts(ctx, &listAlerts)
 
 	for _, a := range res.Alerts {
-		// this auto is designed to be run on the 1st dat of the month, so -1 gets all last months
-		if a.CreateTime.AsTime().Month() == (time.Now().Month() - 1) {
+		if isAlertInPreviousMonth(a, t) {
 			lastMonth = append(lastMonth, a)
 		}
 	}
@@ -72,9 +91,9 @@ func (a *autoImpl) getAlertsInLastMonth(ctx context.Context, alertClient gen.Ale
 		}
 
 		for _, a := range res.Alerts {
-			if a.CreateTime.AsTime().Month() == (time.Now().Month() - 1) {
+			if isAlertInPreviousMonth(a, t) {
 				lastMonth = append(lastMonth, a)
-			} else if a.CreateTime.AsTime().Month() <= (time.Now().Month() - 2) {
+			} else if isAlert2MonthsAgo(a, t) {
 				// assuming that the alerts are given in descending chronological order we can stop looking here
 				res.NextPageToken = ""
 				break
@@ -135,10 +154,10 @@ func (a *autoImpl) createNotificationsFile(alerts *[]*gen.Alert) []byte {
 				}
 				resolveTime := "N/A"
 				if a.ResolveTime != nil {
-					resolveTime = a.ResolveTime.AsTime().Format("2006-01-02 15-04-05")
+					resolveTime = a.ResolveTime.AsTime().Format("2006-01-02 15:04:05")
 				}
 
-				fmt.Fprintf(buf, "%s,%s,%s,%s,%s,%s,%s,%s\n", a.CreateTime.AsTime().Format("2006-01-02 15-04-05"),
+				fmt.Fprintf(buf, "%s,%s,%s,%s,%s,%s,%s,%s\n", a.CreateTime.AsTime().Format("2006-01-02 15:04:05"),
 					resolveTime, a.Source, a.Floor,
 					a.Zone, a.Severity.String(), a.Description, acked)
 			}
@@ -153,7 +172,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 
 	var alertClient gen.AlertApiClient
 	if err := a.Node.Client(&alertClient); err != nil {
-		a.Logger.Warn("failed to create gen.MeterApiClient", zap.Error(err))
+		a.Logger.Warn("failed to create gen.AlertApiClient", zap.Error(err))
 		return err
 	}
 
@@ -178,15 +197,16 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 				t = next
 			}
 
+			timeNow := now()
 			timeout := cfg.Timeout
 
 			if timeout == 0 {
 				timeout = 10 * time.Second
 			}
 
-			lastMonth := a.getAlertsInLastMonth(ctx, alertClient, cfg.AlertHubName)
+			lastMonth := a.getAlertsInLastMonth(ctx, alertClient, cfg.AlertHubName, timeNow)
 			// generate the notifications CSV attachment file
-			attachmentName := "notifications-" + time.Now().Format("2006-01-02") + ".csv"
+			attachmentName := "notifications-" + timeNow.Format("2006-01-02") + ".csv"
 			file := a.createNotificationsFile(&lastMonth)
 			attachmentCfg := config.AttachmentCfg{
 				AttachmentName: attachmentName,
@@ -194,7 +214,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 			}
 
 			err := retry(ctx, func(ctx context.Context) error {
-				return sendEmail(cfg.Destination, attachmentCfg, cfg.Subject, logger)
+				return sendEmail(cfg.Destination, attachmentCfg, cfg.Subject, cfg.TemplateArgs, logger)
 			})
 			if err != nil {
 				logger.Warn("failed to send email", zap.Error(err))

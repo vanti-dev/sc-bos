@@ -16,7 +16,7 @@ import (
 
 var sampleNow = time.Date(2024, 01, 19, 0, 0, 0, 0, time.Local)
 
-func addDummyAlerts(m *alert.Model) {
+func addDummyAlerts(m *alert.Model, t *time.Time) {
 
 	sevs := []gen.Alert_Severity{
 		gen.Alert_SEVERITY_UNSPECIFIED,
@@ -36,7 +36,7 @@ func addDummyAlerts(m *alert.Model) {
 			Zone:        zones[i%2],
 			Floor:       fmt.Sprintf("%d", i/4),
 			Source:      "manual",
-			CreateTime:  timestamppb.New(time.Now().Add(-24 * 30 * time.Hour)),
+			CreateTime:  timestamppb.New(t.Add(-24 * 30 * time.Hour)),
 			ResolveTime: nil,
 		})
 	}
@@ -48,8 +48,8 @@ func addDummyAlerts(m *alert.Model) {
 		Zone:        zones[0],
 		Floor:       fmt.Sprintf("%d", 1),
 		Source:      "manual",
-		CreateTime:  timestamppb.New(time.Now()),
-		ResolveTime: timestamppb.Now(),
+		CreateTime:  timestamppb.New(*t),
+		ResolveTime: timestamppb.New(*t),
 	})
 }
 
@@ -59,9 +59,11 @@ func main() {
 		panic(err)
 	}
 	root := node.New("testdevice01")
-
 	m := alert.NewModel()
-	addDummyAlerts(m)
+	// run this test in January to capture the edge case of previous month
+	testTime := time.Date(
+		2024, 01, 01, 00, 00, 00, 651387237, time.UTC)
+	addDummyAlerts(m, &testTime)
 	client := gen.WrapAlertApi(alert.NewModelServer(m))
 	root.Announce(root.Name(), node.HasClient(client))
 	alertApiRouter := gen.NewAlertApiRouter()
@@ -80,7 +82,7 @@ func main() {
 		Logger: logger,
 		Node:   root,
 		Now: func() time.Time {
-			return now.Add(-2 * time.Second)
+			return testTime
 		},
 	}
 
@@ -96,7 +98,10 @@ func main() {
 	"sendTime": "* * * * MON-FRI"
 	},
 	"subject" : "test alerts",
-	"source" : "testdevice01"
+	"source" : "testdevice01",
+	"templateArgs" : {
+		"emailTitle" : "Test email title 54321"
+	}
 }`
 
 	_, err = lifecycle.Configure([]byte(cfg))

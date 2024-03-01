@@ -51,6 +51,10 @@ type Source struct {
 	Subsystem string `json:"subsystem,omitempty"`
 }
 
+type TemplateArgs struct {
+	EmailTitle string `json:"emailTitle,omitempty"`
+}
+
 type Root struct {
 	auto.Config
 	// Configuration information for how to send the email.
@@ -63,6 +67,8 @@ type Root struct {
 	Timeout time.Duration `json:"timeout,omitempty"`
 
 	Subject string `json:"subject,omitempty"`
+
+	TemplateArgs TemplateArgs `json:"templateArgs,omitempty"`
 }
 
 type AttachmentCfg struct {
@@ -206,10 +212,10 @@ func (d *AttachmentCfg) AttachFile(name string, b []byte) {
 const DefaultEmailSubject = `Smart Core Notifications Monthly Report {{.Now.Format "Jan 02, 2006"}}`
 const DefaultEmailBody = `<html lang="en">
 <head>
-  <title>One Centenary Way - Smart Core Notifications</title>
 </head>
 <body>
 <section>
+<h3>{{.EmailTitle}}</h3>
 <h4>Please find attached a list of all notifications recorded by the system within the last month</h4>
 </section>
 </body>

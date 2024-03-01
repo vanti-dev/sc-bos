@@ -17,7 +17,7 @@ import (
 // sendEmail creates the MIME/multipart email with attachment and then sends it over SMTP to the recipient in  dst
 //
 //goland:noinspection GoUnhandledErrorResult
-func sendEmail(dst config.Destination, attachment config.AttachmentCfg, subj string, logger *zap.Logger) error {
+func sendEmail(dst config.Destination, attachment config.AttachmentCfg, subj string, templateArgs config.TemplateArgs, logger *zap.Logger) error {
 	buf := bytes.NewBuffer(nil)
 	withAttachments := len(attachment.Attachment) > 0
 	p := dst.Parsed
@@ -64,7 +64,7 @@ func sendEmail(dst config.Destination, attachment config.AttachmentCfg, subj str
 	header.Set("Content-Type", "text/html; charset=utf-8")
 	header.Set("Content-Transfer-Encoding", "quoted-printable")
 	partWriter, _ := htmlWriter.CreatePart(header)
-	if err := p.BodyTemplate.Execute(partWriter, ""); err != nil {
+	if err := p.BodyTemplate.Execute(partWriter, templateArgs); err != nil {
 		return err
 	}
 	htmlWriter.Close()
