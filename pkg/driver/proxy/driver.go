@@ -175,12 +175,15 @@ func (p *proxy) announceExplicitChildren(children []config.Child) {
 				p.logger.Warn("tried to proxy unknown trait", zap.String("trait", tn.String()))
 				continue
 			}
+			withClients := []node.TraitOption{node.WithClients(client)}
+
 			infoClient := alltraits.InfoClient(p.conn, tn)
 			if infoClient == nil {
 				p.logger.Warn(fmt.Sprintf("remote child implements unknown info trait %s", tn))
-				continue
+			} else {
+				withClients = append(withClients, node.WithClients(infoClient))
 			}
-			p.announcer.Announce(c.Name, node.HasTrait(tn, node.WithClients(client), node.WithClients(infoClient)))
+			p.announcer.Announce(c.Name, node.HasTrait(tn, withClients...))
 		}
 	}
 }
