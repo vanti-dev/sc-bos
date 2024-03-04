@@ -26,6 +26,10 @@ type Node struct {
 	// If absent then the remote node should support empty/default names for Parent requests.
 	Name string `json:"name,omitempty"`
 
+	// Children is a list of children that should be announced by the proxy server.
+	// If empty then all devices on the proxy host will be available (provided the user has authorization)
+	Children []Child `json:"children,omitempty"`
+
 	// SkipChild skips associating the node and node children with this nodes parent trait.
 	// When true this doesn't stop clients of this node from communicating with the child, but it does stop discovery of
 	// this name from working.
@@ -44,9 +48,9 @@ type TLS struct {
 	InsecureSkipVerify   bool `json:"insecureSkipVerify,omitempty"`   // don't verify proxy server certificates
 }
 
-type Trait struct {
-	Name  string     `json:"name,omitempty"`
-	Trait trait.Name `json:"trait,omitempty"`
+type Child struct {
+	Name   string       `json:"name,omitempty"`
+	Traits []trait.Name `json:"traits,omitempty"`
 }
 
 type OAuth2 struct {

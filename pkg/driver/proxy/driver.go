@@ -105,15 +105,19 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		d.proxies = append(d.proxies, proxy)
 
 		// list, announce, and subscribe to updates to the list of children on the server
-		go func() {
-			err := proxy.AnnounceChildren(ctx)
-			if errors.Is(err, context.Canceled) {
-				return
-			}
-			if err != nil {
-				d.logger.Warn("Announcing children error", zap.Error(err))
-			}
-		}()
+		if len(n.Children) > 0 {
+			proxy.announceExplicitChildren(n.Children)
+		} else {
+			go func() {
+				err := proxy.AnnounceChildren(ctx)
+				if errors.Is(err, context.Canceled) {
+					return
+				}
+				if err != nil {
+					d.logger.Warn("Announcing children error", zap.Error(err))
+				}
+			}()
+		}
 	}
 	return allErrs
 }
@@ -163,6 +167,27 @@ func (p *proxy) AnnounceChildren(ctx context.Context) error {
 	return pull.Changes[*traits.PullChildrenResponse_Change](ctx, fetcher, changes, pull.WithLogger(p.logger))
 }
 
+func (p *proxy) announceExplicitChildren(children []config.Child) {
+	for _, c := range children {
+		for _, tn := range c.Traits {
+			client := alltraits.APIClient(p.conn, tn)
+			if client == nil {
+				p.logger.Warn("tried to proxy unknown trait", zap.String("trait", tn.String()))
+				continue
+			}
+			withClients := []node.TraitOption{node.WithClients(client)}
+
+			infoClient := alltraits.InfoClient(p.conn, tn)
+			if infoClient == nil {
+				p.logger.Warn(fmt.Sprintf("remote child implements unknown info trait %s", tn))
+			} else {
+				withClients = append(withClients, node.WithClients(infoClient))
+			}
+			p.announcer.Announce(c.Name, node.HasTrait(tn, withClients...))
+		}
+	}
+}
+
 func (p *proxy) announceChanges(changes <-chan *traits.PullChildrenResponse_Change) {
 	announced := announcedTraits{}
 	defer announced.deleteAll()
@@ -180,16 +205,22 @@ func (p *proxy) announceChange(announced announcedTraits, change *traits.PullChi
 			p.logger.Warn(fmt.Sprintf("remote child implements unknown trait %s", tn))
 			continue
 		}
+		hasClients := []node.Feature{node.HasClient(client)}
+		withClients := []node.TraitOption{node.WithClients(client)}
+
 		infoClient := alltraits.InfoClient(p.conn, tn)
 		if infoClient == nil {
 			p.logger.Warn(fmt.Sprintf("remote child implements unknown info trait %s", tn))
-			continue
+		} else {
+			hasClients = append(hasClients, node.HasClient(infoClient))
+			withClients = append(withClients, node.WithClients(infoClient))
 		}
+
 		var undo node.Undo
 		if p.skipChild {
-			undo = p.announcer.Announce(childName, node.HasClient(client), node.HasClient(infoClient))
+			undo = p.announcer.Announce(childName, hasClients...)
 		} else {
-			undo = p.announcer.Announce(childName, node.HasTrait(tn, node.WithClients(client), node.WithClients(infoClient)))
+			undo = p.announcer.Announce(childName, node.HasTrait(tn, withClients...))
 		}
 		announced.add(childName, tn, undo)
 	}
