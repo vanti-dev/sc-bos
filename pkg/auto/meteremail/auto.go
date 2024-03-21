@@ -19,6 +19,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 const AutoName = "meteremail"
@@ -48,7 +49,7 @@ func (a *autoImpl) getMeterReadingAndSource(ctx context.Context, meterName strin
 	}
 
 	meterRes, err := retryT(ctx, timing, func(ctx context.Context) (*gen.MeterReading, error) {
-		withTimeoutCtx, cancel := context.WithTimeout(ctx, timing.Timeout)
+		withTimeoutCtx, cancel := context.WithTimeout(ctx, timing.Timeout.Duration)
 		defer cancel()
 		return meterClient.GetMeterReading(withTimeoutCtx, meterReq)
 	})
@@ -65,7 +66,7 @@ func (a *autoImpl) getMeterReadingAndSource(ctx context.Context, meterName strin
 	}
 
 	if err := a.Node.Client(&metadataClient); err == nil {
-		withTimeoutCtx, cancel := context.WithTimeout(ctx, timing.Timeout)
+		withTimeoutCtx, cancel := context.WithTimeout(ctx, timing.Timeout.Duration)
 		defer cancel()
 		metadataRes, err := metadataClient.GetMetadata(withTimeoutCtx, metadataReq)
 		if err != nil {
@@ -183,19 +184,19 @@ func groupByFloorAndZone(attrs *Attrs) {
 }
 
 func applyDefaults(timing *config.Timing) {
-	if timing.Timeout == 0 {
-		timing.Timeout = 10
+	if timing.Timeout.Duration == 0 {
+		timing.Timeout = jsontypes.Duration{Duration: 10 * time.Second}
 	}
 	if timing.NoRetries == 0 {
 		timing.NoRetries = 3
 	}
-	if timing.BackoffStart == 0 {
-		timing.BackoffStart = 2 * time.Second
+	if timing.BackoffStart.Duration == 0 {
+		timing.BackoffStart = jsontypes.Duration{Duration: 2 * time.Second}
 	}
-	if timing.BackoffMax == 0 {
-		timing.BackoffMax = 10 * time.Second
+	if timing.BackoffMax.Duration == 0 {
+		timing.BackoffMax = jsontypes.Duration{Duration: 30 * time.Second}
 	}
-	if timing.BackoffMax < timing.BackoffStart {
+	if timing.BackoffMax.Duration < timing.BackoffStart.Duration {
 		timing.BackoffMax = timing.BackoffStart
 	}
 }
@@ -243,7 +244,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 				Stats: []Stats{},
 			}
 
-			logger.Debug("Meter email is being generated...", zap.Duration("timeout", cfg.Timing.Timeout))
+			logger.Debug("Meter email is being generated...", zap.Duration("timeout", cfg.Timing.Timeout.Duration))
 			for _, meterName := range cfg.ElectricMeters {
 				source, reading, err := a.getMeterReadingAndSource(ctx, meterName, MeterTypeElectric, meterClient, metadataClient, &cfg.Timing)
 				if err == nil {
@@ -292,7 +293,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 func retry(ctx context.Context, timing *config.Timing, f func(context.Context) error) error {
 	return task.Run(ctx, func(ctx context.Context) (task.Next, error) {
 		return 0, f(ctx)
-	}, task.WithBackoff(timing.BackoffStart, timing.BackoffMax), task.WithRetry(timing.NoRetries))
+	}, task.WithBackoff(timing.BackoffStart.Duration, timing.BackoffMax.Duration), task.WithRetry(timing.NoRetries))
 }
 
 func retryT[T any](ctx context.Context, timing *config.Timing, f func(context.Context) (T, error)) (T, error) {

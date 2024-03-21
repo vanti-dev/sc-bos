@@ -52,10 +52,10 @@ type Source struct {
 }
 
 type Timing struct {
-	Timeout      time.Duration `json:"timeout,omitempty"`
-	BackoffStart time.Duration `json:"backoffStart,omitempty"`
-	BackoffMax   time.Duration `json:"backoffMax,omitempty"`
-	NoRetries    int           `json:"noRetries,omitempty"`
+	Timeout      jsontypes.Duration `json:"timeout,omitempty"`
+	BackoffStart jsontypes.Duration `json:"backoffStart,omitempty"`
+	BackoffMax   jsontypes.Duration `json:"backoffMax,omitempty"`
+	NoRetries    int                `json:"noRetries,omitempty"`
 }
 
 type Root struct {

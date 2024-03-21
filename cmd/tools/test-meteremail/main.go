@@ -68,7 +68,13 @@ func main() {
 	"waterMeters" : [ 
 					"watermeter1",
 					"watermeter2"
-					]
+					],
+	"timing" : {
+		"timeout" : "9s",
+		"backoffStart" : "19s",
+		"backoffMax" : "59s",
+		"noRetries" : 7
+	}
 }`
 
 	_, err = lifecycle.Configure([]byte(cfg))
