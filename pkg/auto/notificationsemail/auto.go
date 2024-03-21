@@ -39,24 +39,18 @@ func (f factory) New(services auto.Services) service.Lifecycle {
 	return a
 }
 
-func isAlertInPreviousMonth(a *gen.Alert, t time.Time) bool {
-	currentMonth := t.Month()
-	// if we in January, we want the alerts from December
-	if currentMonth == time.January && a.CreateTime.AsTime().Month() == time.December {
-		return true
-	} else {
-		return a.CreateTime.AsTime().Month() == (currentMonth - 1)
-	}
+func isAlertInPreviousMonth(t, now time.Time) bool {
+	return t.Month() == prevMonth(now, 1)
 }
 
-func isAlert2MonthsAgo(a *gen.Alert, t time.Time) bool {
-	currentMonth := t.Month()
-	if currentMonth == time.January && a.CreateTime.AsTime().Month() == time.November ||
-		currentMonth == time.February && a.CreateTime.AsTime().Month() == time.December {
-		return true
-	} else {
-		return a.CreateTime.AsTime().Month() <= (currentMonth - 2)
-	}
+func isAlert2MonthsAgo(t, now time.Time) bool {
+	return t.Month() == prevMonth(now, 2)
+}
+
+func prevMonth(t time.Time, n time.Month) time.Month {
+	y, m, _ := t.Date()
+	_, m, _ = time.Date(y, m-n, 1, 0, 0, 0, 0, time.UTC).Date()
+	return m
 }
 
 // getAlertsInLastMonth gets the alerts that have happened in the previous month (not the last 30 days)
@@ -71,7 +65,7 @@ func (a *autoImpl) getAlertsInLastMonth(ctx context.Context, alertClient gen.Ale
 	res, err := alertClient.ListAlerts(ctx, &listAlerts)
 
 	for _, a := range res.Alerts {
-		if isAlertInPreviousMonth(a, t) {
+		if isAlertInPreviousMonth(a.CreateTime.AsTime(), t) {
 			lastMonth = append(lastMonth, a)
 		}
 	}
@@ -91,9 +85,9 @@ func (a *autoImpl) getAlertsInLastMonth(ctx context.Context, alertClient gen.Ale
 		}
 
 		for _, a := range res.Alerts {
-			if isAlertInPreviousMonth(a, t) {
+			if isAlertInPreviousMonth(a.CreateTime.AsTime(), t) {
 				lastMonth = append(lastMonth, a)
-			} else if isAlert2MonthsAgo(a, t) {
+			} else if isAlert2MonthsAgo(a.CreateTime.AsTime(), t) {
 				// assuming that the alerts are given in descending chronological order we can stop looking here
 				res.NextPageToken = ""
 				break
