@@ -86,5 +86,5 @@ func main() {
 		panic(err)
 	}
 
-	time.Sleep(60 * time.Second)
+	time.Sleep(5 * time.Second)
 }
