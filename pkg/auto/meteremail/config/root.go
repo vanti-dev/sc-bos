@@ -51,20 +51,22 @@ type Source struct {
 	Subsystem string `json:"subsystem,omitempty"`
 }
 
+type Timing struct {
+	Timeout      time.Duration `json:"timeout,omitempty"`
+	BackoffStart time.Duration `json:"backoffStart,omitempty"`
+	BackoffMax   time.Duration `json:"backoffMax,omitempty"`
+	NoRetries    int           `json:"noRetries,omitempty"`
+}
+
 type Root struct {
 	auto.Config
 	// Configuration information for how to send the email.
-	Destination Destination `json:"destination,omitempty"`
-
-	Source Source `json:"source,omitempty"`
-
-	Now func() time.Time `json:"-"`
-
-	ElectricMeters []string `json:"electricMeters,omitempty"`
-
-	WaterMeters []string `json:"waterMeters,omitempty"`
-
-	Timeout time.Duration `json:"timeout,omitempty"`
+	Destination    Destination      `json:"destination,omitempty"`
+	Source         Source           `json:"source,omitempty"`
+	Now            func() time.Time `json:"-"`
+	ElectricMeters []string         `json:"electricMeters,omitempty"`
+	WaterMeters    []string         `json:"waterMeters,omitempty"`
+	Timing         Timing           `json:"timing,omitempty"`
 }
 
 type AttachmentCfg struct {
