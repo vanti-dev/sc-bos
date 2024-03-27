@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"os"
+	"runtime"
 
 	"github.com/vanti-dev/sc-bos/internal/driver/settings"
 	"github.com/vanti-dev/sc-bos/pkg/app"
@@ -38,6 +39,9 @@ func run(ctx context.Context) error {
 func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig := sysconf.Default()
 
+	if runtime.GOOS != "windows" {
+		systemConfig.ConfigDirs = append(systemConfig.ConfigDirs, "/etc/sc-bos")
+	}
 	systemConfig.DriverFactories = alldrivers.Factories()
 	systemConfig.DriverFactories[settings.DriverName] = settings.Factory
 	systemConfig.AutoFactories = allautos.Factories()
