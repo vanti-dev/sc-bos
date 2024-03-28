@@ -19,7 +19,8 @@ import {computed, reactive} from 'vue';
  * }}
  */
 export default function(query, paused) {
-  const accessAttemptValue = reactive(/** @type {ResourceValue<AccessAttempt.AsObject, PullAccessAttemptsResponse>} */
+  const accessAttemptValue = reactive(
+      /** @type {ResourceValue<AccessAttempt.AsObject, PullAccessAttemptsResponse>} */
       newResourceValue()
   );
 

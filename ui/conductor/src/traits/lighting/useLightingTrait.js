@@ -39,14 +39,18 @@ import {computed, reactive} from 'vue';
  * }}
  */
 export default function(query, paused, options) {
-  const brightnessValue = reactive(/** @type {ResourceValue<Brightness.AsObject, Brightness>} */
-      newResourceValue());
-
-  const brightnessUpdate = reactive(/** @type {ActionTracker<Brightness.AsObject>}  */
-      newActionTracker());
-
-  const brightnessSupport = reactive(/** @type {ActionTracker<BrightnessSupport.AsObject>}  */
-      newActionTracker());
+  const brightnessValue = reactive(
+      /** @type {ResourceValue<Brightness.AsObject, Brightness>} */
+      newResourceValue()
+  );
+  const brightnessUpdate = reactive(
+      /** @type {ActionTracker<Brightness.AsObject>}  */
+      newActionTracker()
+  );
+  const brightnessSupport = reactive(
+      /** @type {ActionTracker<BrightnessSupport.AsObject>}  */
+      newActionTracker()
+  );
 
   /**
    * Create a list of API calls to make based on the options passed in

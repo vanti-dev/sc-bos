@@ -18,7 +18,8 @@ import {computed, reactive} from 'vue';
  */
 export default function(query, paused) {
   const openClosedValue = reactive(
-      /** @type {ResourceValue<OpenClose.AsObject, PullOpenClosePositionsResponse>} */ newResourceValue()
+      /** @type {ResourceValue<OpenClose.AsObject, PullOpenClosePositionsResponse>} */
+      newResourceValue()
   );
 
   const queryObject = computed(() => toQueryObject(query));
