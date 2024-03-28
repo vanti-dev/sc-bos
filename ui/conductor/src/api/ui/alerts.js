@@ -237,6 +237,6 @@ function alertFromObject(obj) {
   if (!obj) return undefined;
 
   const alert = new Alert();
-  setProperties(alert, obj, 'description', 'source', 'floor', 'zone', 'severity');
+  setProperties(alert, obj, 'description', 'source', 'floor', 'zone', 'severity', 'subsystem');
   return alert;
 }
