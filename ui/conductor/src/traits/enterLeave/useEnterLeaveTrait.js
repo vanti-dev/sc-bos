@@ -38,7 +38,6 @@ export default function(query, paused) {
       }
   );
 
-  // ---------------- Enter Leave Values ---------------- //
 
   /** @type {import('vue').ComputedRef<boolean>} */
   const enterLeaveHasTotals = computed(
@@ -89,13 +88,11 @@ export default function(query, paused) {
     }
   }, {deep: true});
 
-  // ---------------- Error ---------------- //
   /** @type {import('vue').ComputedRef<ResourceError>} */
   const error = computed(() => {
     return enterLeaveValue.streamError;
   });
 
-  // ---------------- Loading ---------------- //
   /** @type {import('vue').ComputedRef<boolean>} */
   const loading = computed(() => {
     return enterLeaveValue.loading;

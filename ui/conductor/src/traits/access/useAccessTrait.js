@@ -35,7 +35,6 @@ export default function(query, paused) {
       }
   );
 
-  // ---------------- Access Attempt ---------------- //
   /**
    * Returns the grant id of the access attempt
    *
@@ -117,10 +116,8 @@ export default function(query, paused) {
   });
 
 
-  // ----------- Errors ----------- //
   const error = computed(() => accessAttemptValue.streamError);
 
-  // ----------- Loading ----------- //
   const loading = computed(() => accessAttemptValue.loading);
 
   return {

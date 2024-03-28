@@ -79,7 +79,6 @@ export default function(query, paused, options) {
   watchResource(() => toValue(queryObject), () => toValue(paused), ...apiCalls);
   //
   //
-  // ---------------- Light and Brightness Display ---------------- //
 
   /** @type {import('vue').ComputedRef<number>} */
   const brightnessLevelNumber = computed(() => brightnessValue.value?.levelPercent || 0);
@@ -118,7 +117,6 @@ export default function(query, paused, options) {
   });
 
 
-  // ---------------- Light and Brightness Control ---------------- //
   /**
    * Convert a number to a levelPercent object if it is not already
    *
@@ -171,7 +169,6 @@ export default function(query, paused, options) {
   };
 
 
-  // ----------- Errors ----------- //
 
   /** @type {import('vue').ComputedRef<ResourceError|ActionError>} */
   const error = computed(() => {
@@ -179,14 +176,12 @@ export default function(query, paused, options) {
   });
 
 
-  // ----------- Loading ----------- //
 
   /** @type {import('vue').ComputedRef<boolean>} */
   const loading = computed(() => {
     return brightnessValue.loading || brightnessUpdate.loading || brightnessSupport.loading;
   });
 
-  // ---------------- Return ---------------- //
   return {
     // Resources
     brightnessValue,

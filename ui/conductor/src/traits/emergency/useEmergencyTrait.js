@@ -35,7 +35,6 @@ export default function(query, paused) {
         return emergencyValue;
       });
 
-  // ---------------- Emergency Display ---------------- //
 
   /** @type {import('vue').ComputedRef<string>} emergencyColorClass */
   const emergencyColorClass = computed(() => {
@@ -75,12 +74,10 @@ export default function(query, paused) {
     return 'Emergency status';
   });
 
-  // ---------------- Error ---------------- //
 
   /** @type {import('vue').ComputedRef<ResourceError>} */
   const error = computed(() => emergencyValue.streamError);
 
-  // ---------------- Loading ---------------- //
 
   /** @type {import('vue').ComputedRef<boolean>} */
   const loading = computed(() => emergencyValue.loading);

@@ -37,7 +37,6 @@ export default function(query, paused) {
       }
   );
 
-  // ---------------- AirQuality Values ---------------- //
   /** @type {import('vue').ComputedRef<boolean>} */
   const airQualityHasScore = computed(() => {
     return airQualityValue.value?.score !== undefined;
@@ -49,7 +48,6 @@ export default function(query, paused) {
   });
 
 
-  // ---------------- AirQuality Styles ---------------- //
   /** @type {import('vue').ComputedRef<string>} */
   const airQualityScoreColor = computed(() => {
     if (airQualityScore.value < 10) {
@@ -63,7 +61,6 @@ export default function(query, paused) {
     }
   });
 
-  // ---------------- AirQuality Information ---------------- //
   /** @type {import('vue').ComputedRef<{[key: string]: string}|{}>} */
   const airQualityInformation = computed(() => {
     if (airQualityValue.value) {
@@ -139,13 +136,11 @@ export default function(query, paused) {
     return {};
   });
 
-  // ---------------- Error ---------------- //
   /** @type {import('vue').ComputedRef<ResourceError>} */
   const error = computed(() => {
     return airQualityValue.streamError;
   });
 
-  // ---------------- Loading ---------------- //
   /** @type {import('vue').ComputedRef<boolean>} */
   const loading = computed(() => {
     return airQualityValue.loading;

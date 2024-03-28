@@ -57,7 +57,6 @@ export default function(query, paused, options) {
       ...apiCalls
   );
 
-  // ------------------ Meter Information ------------------ //
   /** @type {import('vue').ComputedRef<string>} */
   const meterUnit = computed(() => {
     return meterSupport.response?.unit || '';
@@ -77,13 +76,11 @@ export default function(query, paused, options) {
     };
   });
 
-  // ------------------ Error ------------------ //
   /** @type {import('vue').ComputedRef<ResourceError|ActionError>} */
   const error = computed(() => {
     return meterValue.streamError || meterSupport.error;
   });
 
-  // ------------------ Loading ------------------ //
   /** @type {import('vue').ComputedRef<boolean>} */
   const loading = computed(() => {
     return meterValue.loading || meterSupport.loading;

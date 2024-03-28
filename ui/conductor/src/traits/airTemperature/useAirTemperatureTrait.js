@@ -58,7 +58,6 @@ export default function(query, paused) {
       }
   );
 
-  // --------------------- Air Temperature Values --------------------- //
   /** @type {import('vue').Ref<{low: number, high: number}>} defaultTemperatureRange */
   const defaultTemperatureRange = ref({
     low: 18.0,
@@ -104,7 +103,6 @@ export default function(query, paused) {
   /** @type {import('vue').ComputedRef<number>} */
   const ambientHumidity = computed(() => airTemperatureValue?.value?.ambientHumidity);
 
-  // --------------------- Air Temperature Information --------------------- //
 
   /** @type {import('vue').ComputedRef<number>} airTemperatureProgress */
   const airTemperatureProgress = computed(() => {
@@ -156,7 +154,6 @@ export default function(query, paused) {
     return {};
   });
 
-  // --------------------- Air Temperature Control --------------------- //
   /**
    * Convert the request to UpdateAirTemperatureRequest partially with the temperatureSetPoint set if it is not already
    *

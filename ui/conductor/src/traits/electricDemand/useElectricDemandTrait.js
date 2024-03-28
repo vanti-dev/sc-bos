@@ -39,7 +39,6 @@ export default function(query, paused) {
       });
 
 
-  // --------------- Electric Demand Values ---------------- //
   /** @type {import('vue').ComputedRef<number>} electricDemandRealPower */
   const electricDemandRealPowerNumber = computed(() => electricDemandValue.value?.realPower);
 
@@ -104,12 +103,10 @@ export default function(query, paused) {
     };
   });
 
-  // --------------- Error ---------------- //
 
   /** @type {import('vue').ComputedRef<ResourceError>} */
   const error = computed(() => electricDemandValue.streamError);
 
-  // --------------- Loading ---------------- //
 
   /** @type {import('vue').ComputedRef<boolean>} */
   const loading = computed(() => electricDemandValue.loading);

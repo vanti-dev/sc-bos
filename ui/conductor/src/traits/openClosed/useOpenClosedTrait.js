@@ -33,7 +33,6 @@ export default function(query, paused) {
       }
   );
 
-  // ---------------- Open/Close ---------------- //
   /**
    * Returns if the door is open/closed or how wide open (in percentage) as a string
    *
@@ -87,11 +86,9 @@ export default function(query, paused) {
   });
 
 
-  // ---------------- Error ---------------- //
   /** @type {import('vue').ComputedRef<ResourceError>} */
   const error = computed(() => openClosedValue.streamError);
 
-  // ---------------- Loading ---------------- //
   /** @type {import('vue').ComputedRef<boolean>} */
   const loading = computed(() => openClosedValue.loading);
 

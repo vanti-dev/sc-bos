@@ -42,7 +42,6 @@ export default function(query, paused) {
   );
 
 
-  // ------------------- Occupancy Values ------------------- //
   /** @type {import('vue').ComputedRef<number>} */
   const occupancyPeopleCount = computed(() => {
     return occupancyValue.value?.peopleCount || 0;
@@ -62,7 +61,6 @@ export default function(query, paused) {
     return timestampToDate(occupancyValue.value?.stateChangeTime);
   });
 
-  // ------------------- Occupancy Styles ------------------- //
   /** @type {import('vue').ComputedRef<string>} */
   const occupancyColorString = computed(() => {
     return occupancyStateString.value.toLowerCase();
@@ -94,13 +92,11 @@ export default function(query, paused) {
     }
   });
 
-  // ------------------- Error ------------------- //
   /** @type {import('vue').ComputedRef<ResourceError>} */
   const error = computed(() => {
     return occupancyValue.streamError;
   });
 
-  // ------------------- Loading ------------------- //
   /** @type {import('vue').ComputedRef<boolean>} */
   const loading = computed(() => {
     return occupancyValue.loading;

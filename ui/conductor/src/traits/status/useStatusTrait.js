@@ -44,7 +44,6 @@ export default function(query, paused) {
       }
   );
 
-  // --------------------- Status Log --------------------- //
   /** @type {import('vue').ComputedRef<number>} */
   const statusLogLevel = computed(() => {
     return statusValue.value?.level || 0;
@@ -65,7 +64,6 @@ export default function(query, paused) {
     return statusValue.value?.level > StatusLog.Level.NOMINAL;
   });
 
-  // --------------------- Status Log Problems --------------------- //
   /** @type {import('vue').ComputedRef<Array<StatusLog.Problem.AsObject>>} */
   const statusLogProblems = computed(() => {
     return statusValue.value?.problemsList || [];
@@ -127,7 +125,6 @@ export default function(query, paused) {
     });
   });
 
-  // --------------------- Status Log Style --------------------- //
   /** @type {import('vue').ComputedRef<string>} */
   const statusLogIconColor = computed(() => {
     if (statusLogLevel.value <= StatusLog.Level.NOTICE) return 'info';
@@ -148,14 +145,12 @@ export default function(query, paused) {
     return '';
   });
 
-  // --------------------- Error --------------------- //
 
   /** @type {import('vue').ComputedRef<ResourceError>} */
   const error = computed(() => {
     return statusValue.streamError;
   });
 
-  // --------------------- Loading --------------------- //
 
   /** @type {import('vue').ComputedRef<boolean>} */
   const loading = computed(() => {
