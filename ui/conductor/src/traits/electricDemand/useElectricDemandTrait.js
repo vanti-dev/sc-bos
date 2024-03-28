@@ -28,7 +28,7 @@ export default function(query, paused) {
       newResourceValue()
   );
 
-  const queryObject = toQueryObject(query); // Make sure query is a query object
+  const queryObject = computed(() => toQueryObject(query));
 
   // Utility function to call the API with the query and the resource
   watchResource(

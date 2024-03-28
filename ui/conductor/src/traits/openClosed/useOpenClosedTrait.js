@@ -21,7 +21,7 @@ export default function(query, paused) {
       /** @type {ResourceValue<OpenClose.AsObject, PullOpenClosePositionsResponse>} */ newResourceValue()
   );
 
-  const queryObject = toQueryObject(query); // Make sure the query is an object
+  const queryObject = computed(() => toQueryObject(query));
 
   watchResource(
       () => toValue(queryObject),

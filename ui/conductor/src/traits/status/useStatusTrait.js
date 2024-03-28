@@ -34,7 +34,7 @@ export default function(query, paused) {
       newResourceValue()
   );
 
-  const queryObject = toQueryObject(query);
+  const queryObject = computed(() => toQueryObject(query));
 
   watchResource(
       () => toValue(queryObject),
