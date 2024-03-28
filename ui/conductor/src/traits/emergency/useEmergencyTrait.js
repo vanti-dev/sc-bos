@@ -1,52 +1,95 @@
-import {closeResource, newResourceValue} from '@/api/resource';
+import {newResourceValue} from '@/api/resource';
 import {pullEmergency} from '@/api/sc/traits/emergency';
-import {computed, onUnmounted, reactive, watch} from 'vue';
-import {deepEqual} from 'vuetify/src/util/helpers';
+import {toQueryObject, watchResource} from '@/util/traits.js';
+import {toValue} from '@/util/vue.js';
+import {Emergency} from '@smart-core-os/sc-api-grpc-web/traits/emergency_pb';
+import {computed, reactive} from 'vue';
+
 
 /**
- *
- * @param {Object} props
- * @param {string} props.name
- * @param {PullEmergencyRequest.AsObject} [props.request]
- * @param {boolean} [props.paused]
- * @return {{emergencyValue: import('vue').UnwrapNestedRefs<
- *  ResourceValue<Emergency.AsObject, proto.smartcore.traits.PullEmergencyResponse>
- * >}}
+ * @param {MaybeRefOrGetter<string|PullEmergencyRequest.AsObject>} query
+ * @param {MaybeRefOrGetter<boolean>} paused
+ * @return {{
+ *  emergencyValue: ResourceValue<Emergency.AsObject, PullEmergencyResponse>,
+ *  emergencyColorClass: import('vue').ComputedRef<string>,
+ *  emergencyIconString: import('vue').ComputedRef<string>,
+ *  emergencyTooltipString: import('vue').ComputedRef<string>,
+ *  error: import('vue').ComputedRef<ResourceError>,
+ *  loading: import('vue').ComputedRef<boolean>
+ * }}
  */
-export default function(props) {
+export default function(query, paused) {
   const emergencyValue = reactive(
-      /** @type {ResourceValue<Emergency.AsObject, PullEmergencyResponse>} */ newResourceValue());
-  const _request = computed(() => {
-    if (props.request) {
-      return props.request;
-    } else {
-      return {name: props.name};
+      /** @type {ResourceValue<Emergency.AsObject, PullEmergencyResponse>} */
+      newResourceValue()
+  );
+
+  const queryObject = computed(() => toQueryObject(query));
+
+  // Utility function to call the API with the query and the resource
+  watchResource(
+      () => toValue(queryObject),
+      () => toValue(paused),
+      (req) => {
+        pullEmergency(req, emergencyValue);
+        return emergencyValue;
+      });
+
+
+  /** @type {import('vue').ComputedRef<string>} emergencyColorClass */
+  const emergencyColorClass = computed(() => {
+    const val = emergencyValue.value?.level;
+    const drill = emergencyValue.value?.drill;
+    switch (val) {
+      default:
+      case Emergency.Level.OK:
+        return '';
+      case Emergency.Level.WARNING:
+        return 'warning--text';
+      case Emergency.Level.EMERGENCY:
+        if (drill) {
+          return 'info--text';
+        }
+        return 'error--text';
     }
   });
 
-  watch(
-      [() => _request.value, () => props.paused],
-      ([newReq, newPaused], [oldReq, oldPaused]) => {
-        const reqEqual = deepEqual(newReq, oldReq);
-        if (newPaused === oldPaused && reqEqual) return;
-
-        if (newPaused) {
-          closeResource(emergencyValue);
-        }
-
-        if (!newPaused && (oldPaused || !reqEqual)) {
-          closeResource(emergencyValue);
-          pullEmergency(newReq, emergencyValue);
-        }
-      },
-      {immediate: true, deep: true, flush: 'sync'}
-  );
-
-  onUnmounted(() => {
-    closeResource(emergencyValue);
+  /** @type {import('vue').ComputedRef<string>} emergencyIconString */
+  const emergencyIconString = computed(() => {
+    const val = emergencyValue.value?.level;
+    switch (val) {
+      default:
+      case Emergency.Level.OK:
+        return 'mdi-smoke-detector-outline';
+      case Emergency.Level.WARNING:
+        return 'mdi-smoke-detector';
+      case Emergency.Level.EMERGENCY:
+        return 'mdi-smoke-detector-alert';
+    }
   });
 
+  /** @type {import('vue').ComputedRef<string>} emergencyTooltipString */
+  const emergencyTooltipString = computed(() => {
+    // todo: work out a better message based on current state
+    return 'Emergency status';
+  });
+
+
+  /** @type {import('vue').ComputedRef<ResourceError>} */
+  const error = computed(() => emergencyValue.streamError);
+
+
+  /** @type {import('vue').ComputedRef<boolean>} */
+  const loading = computed(() => emergencyValue.loading);
+
   return {
-    emergencyValue
+    emergencyValue,
+
+    emergencyColorClass,
+    emergencyIconString,
+    emergencyTooltipString,
+
+    error,
+    loading
   };
 }

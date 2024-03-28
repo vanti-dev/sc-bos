@@ -1,55 +1,101 @@
-import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
+import {newActionTracker, newResourceValue} from '@/api/resource';
 import {describeMeterReading, pullMeterReading} from '@/api/sc/traits/meter';
-import {onUnmounted, reactive, watch} from 'vue';
-import {deepEqual} from 'vuetify/src/util/helpers';
+import {toQueryObject, watchResource} from '@/util/traits.js';
+import {toValue} from '@/util/vue.js';
+import {computed, reactive} from 'vue';
 
 /**
- *
- * @param {Object} props
- * @param {string} props.name
- * @param {boolean} [props.paused]
+ * @param {MaybeRefOrGetter<string|PullMeterReadingsRequest.AsObject>} query - The name of the device or a query object
+ * @param {MaybeRefOrGetter<boolean>} paused - Whether to pause the data stream
+ * @param {{
+ *  pullMeterReading?: boolean,
+ *  describeMeterReading?: boolean
+ * }} [options] - Options to control which API calls to make
  * @return {{
- *  meterReadings: import('vue').UnwrapNestedRefs<
- *    ResourceValue<MeterReading.AsObject, proto.smartcore.bos.PullMeterReadingsResponse>
- *    >,
- *    meterReadingInfo: UnwrapNestedRefs<ActionTracker<MeterReadingSupport.AsObject>>
+ *  meterValue: ResourceValue<MeterReading.AsObject, PullMeterReadingsResponse>,
+ *  meterSupport: ActionTracker<MeterReadingSupport.AsObject>,
+ *  meterUnit: import('vue').ComputedRef<string>,
+ *  meterReadingNumber: import('vue').ComputedRef<number|string>,
+ *  meterReadingObject: import('vue').ComputedRef<{[key: string]: number|string}>,
+ *  error: import('vue').ComputedRef<ResourceError|ActionError>,
+ *  loading: import('vue').ComputedRef<boolean>
  * }}
  */
-export default function(props) {
-  const meterReadings = reactive(
+export default function(query, paused, options) {
+  const meterValue = reactive(
       /** @type {ResourceValue<MeterReading.AsObject, PullMeterReadingsResponse>} */
       newResourceValue()
   );
-  const meterReadingInfo = reactive(
+
+  const meterSupport = reactive(
       /** @type {ActionTracker<MeterReadingSupport.AsObject>} */
       newActionTracker()
   );
 
-  watch(
-      [() => props.name, () => props.paused],
-      ([newName, newPaused], [oldName, oldPaused]) => {
-        const nameEqual = deepEqual(newName, oldName);
-        if (newPaused === oldPaused && nameEqual) return;
+  const apiCalls = [];
 
-        if (newPaused) {
-          closeResource(meterReadings);
-        }
+  // For meter state and updates
+  if (options?.pullMeterReading !== false) {
+    apiCalls.push((req) => {
+      pullMeterReading(req, meterValue);
+      return meterValue;
+    });
+  }
+  if (options?.describeMeterReading !== false) {
+    apiCalls.push((req) => {
+      describeMeterReading(req, meterSupport);
+      return meterSupport;
+    });
+  }
 
-        if (!newPaused && (oldPaused || !nameEqual)) {
-          closeResource(meterReadings);
-          pullMeterReading({name: newName}, meterReadings); // pulls in unit value
-          describeMeterReading({name: newName}, meterReadingInfo); // pulls in unit type
-        }
-      },
-      {immediate: true, deep: true, flush: 'sync'}
+  const queryObject = computed(() => toQueryObject(query));
+
+  // Utility function to call the API with the query and the resource
+  watchResource(
+      () => toValue(queryObject),
+      () => toValue(paused),
+      ...apiCalls
   );
 
-  onUnmounted(() => {
-    closeResource(meterReadings);
+  /** @type {import('vue').ComputedRef<string>} */
+  const meterUnit = computed(() => {
+    return meterSupport.response?.unit || '';
   });
 
+  /** @type {import('vue').ComputedRef<number|string>} */
+  const meterReadingNumber = computed(() => {
+    return meterValue.value?.usage?.toFixed(2) ?? '-';
+  });
+
+  /** @type {import('vue').ComputedRef<{[key: string]: number|string}>} */
+  const meterReadingObject = computed(() => {
+    return {
+      label: 'Usage',
+      unit: meterUnit.value,
+      value: meterReadingNumber.value
+    };
+  });
+
+  /** @type {import('vue').ComputedRef<ResourceError|ActionError>} */
+  const error = computed(() => {
+    return meterValue.streamError || meterSupport.error;
+  });
+
+  /** @type {import('vue').ComputedRef<boolean>} */
+  const loading = computed(() => {
+    return meterValue.loading || meterSupport.loading;
+  });
+
+
   return {
-    meterReadings,
-    meterReadingInfo
+    meterValue,
+    meterSupport,
+
+    meterUnit,
+    meterReadingNumber,
+    meterReadingObject,
+
+    error,
+    loading
   };
 }

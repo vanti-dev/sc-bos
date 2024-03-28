@@ -15,8 +15,7 @@ import {computed, reactive} from 'vue';
  */
 
 /**
- * @template T
- * @param {MaybeRefOrGetter<T>} query - The name of the device or a query object
+ * @param {MaybeRefOrGetter<string|PullBrightnessRequest.AsObject>} query - The name of the device or a query object
  * @param {MaybeRefOrGetter<boolean>} paused - Whether to pause the data stream
  * @param {{
  *  pullBrightness?: boolean,
@@ -40,14 +39,18 @@ import {computed, reactive} from 'vue';
  * }}
  */
 export default function(query, paused, options) {
-  const brightnessValue = reactive(/** @type {ResourceValue<Brightness.AsObject, Brightness>} */
-      newResourceValue());
-
-  const brightnessUpdate = reactive(/** @type {ActionTracker<Brightness.AsObject>}  */
-      newActionTracker());
-
-  const brightnessSupport = reactive(/** @type {ActionTracker<BrightnessSupport.AsObject>}  */
-      newActionTracker());
+  const brightnessValue = reactive(
+      /** @type {ResourceValue<Brightness.AsObject, Brightness>} */
+      newResourceValue()
+  );
+  const brightnessUpdate = reactive(
+      /** @type {ActionTracker<Brightness.AsObject>}  */
+      newActionTracker()
+  );
+  const brightnessSupport = reactive(
+      /** @type {ActionTracker<BrightnessSupport.AsObject>}  */
+      newActionTracker()
+  );
 
   /**
    * Create a list of API calls to make based on the options passed in
@@ -70,13 +73,12 @@ export default function(query, paused, options) {
     });
   }
 
-  const queryObject = toQueryObject(query); // Make sure the query is an object
+  const queryObject = computed(() => toQueryObject(query));
 
   // Utility function to call the API with the query and the resource
   watchResource(() => toValue(queryObject), () => toValue(paused), ...apiCalls);
   //
   //
-  // ---------------- Light and Brightness Display ---------------- //
 
   /** @type {import('vue').ComputedRef<number>} */
   const brightnessLevelNumber = computed(() => brightnessValue.value?.levelPercent || 0);
@@ -115,7 +117,6 @@ export default function(query, paused, options) {
   });
 
 
-  // ---------------- Light and Brightness Control ---------------- //
   /**
    * Convert a number to a levelPercent object if it is not already
    *
@@ -168,7 +169,6 @@ export default function(query, paused, options) {
   };
 
 
-  // ----------- Errors ----------- //
 
   /** @type {import('vue').ComputedRef<ResourceError|ActionError>} */
   const error = computed(() => {
@@ -176,14 +176,12 @@ export default function(query, paused, options) {
   });
 
 
-  // ----------- Loading ----------- //
 
   /** @type {import('vue').ComputedRef<boolean>} */
   const loading = computed(() => {
     return brightnessValue.loading || brightnessUpdate.loading || brightnessSupport.loading;
   });
 
-  // ---------------- Return ---------------- //
   return {
     // Resources
     brightnessValue,

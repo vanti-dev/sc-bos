@@ -1,54 +1,114 @@
-import {closeResource, newResourceValue} from '@/api/resource';
+import {newResourceValue} from '@/api/resource';
 import {pullEnterLeaveEvents} from '@/api/sc/traits/enter-leave';
-import {computed, onUnmounted, reactive, watch} from 'vue';
-import {deepEqual} from 'vuetify/src/util/helpers';
+import {toQueryObject, watchResource} from '@/util/traits';
+import {toValue} from '@/util/vue';
+import {EnterLeaveEvent} from '@smart-core-os/sc-api-grpc-web/traits/enter_leave_sensor_pb';
+import {computed, reactive, ref, watch} from 'vue';
 
 /**
- *
- * @param {Object} props
- * @param {string} props.name
- * @param {PullEnterLeaveEventsRequest.AsObject} [props.request]
- * @param {boolean} [props.paused]
- * @return {
- *  {enterLeaveEventValue: import('vue').UnwrapNestedRefs<
- *    ResourceValue<EnterLeaveEvent.AsObject, proto.smartcore.traits.PullEnterLeaveEventsResponse>
- *  >}
- * }
+ * @param {MaybeRefOrGetter<string|PullEnterLeaveEventsRequest.AsObject>} query - The name of the device or a query
+ *   object
+ * @param {MaybeRefOrGetter<boolean>} paused - Whether to pause the data stream
+ * @return {{
+ *  enterLeaveValue: ResourceValue<EnterLeaveEvent.AsObject, PullEnterLeaveEventsResponse>,
+ *  enterLeaveHasTotals: import('vue').ComputedRef<boolean>,
+ *  enterTotal: import('vue').ComputedRef<number>,
+ *  leaveTotal: import('vue').ComputedRef<number>,
+ *  justEntered: import('vue').Ref<boolean>,
+ *  justLeft: import('vue').Ref<boolean>,
+ *  error: import('vue').ComputedRef<ResourceError>,
+ *  loading: import('vue').ComputedRef<boolean>
+ * }}
  */
-export default function(props) {
-  const enterLeaveEventValue = reactive(
-      /** @type {ResourceValue<EnterLeaveEvent.AsObject, PullEnterLeaveEventsResponse>} */ newResourceValue());
-  const _request = computed(() => {
-    if (props.request) {
-      return props.request;
-    } else {
-      return {name: props.name};
-    }
-  });
-
-  watch(
-      [() => _request.value, () => props.paused],
-      ([newReq, newPaused], [oldReq, oldPaused]) => {
-        const reqEqual = deepEqual(newReq, oldReq);
-        if (newPaused === oldPaused && reqEqual) return;
-
-        if (newPaused) {
-          closeResource(enterLeaveEventValue);
-        }
-
-        if (!newPaused && (oldPaused || !reqEqual)) {
-          closeResource(enterLeaveEventValue);
-          pullEnterLeaveEvents(newReq, enterLeaveEventValue);
-        }
-      },
-      {immediate: true, deep: true, flush: 'sync'}
+export default function(query, paused) {
+  const enterLeaveValue = reactive(
+      /** @type {ResourceValue<EnterLeaveEvent.AsObject, PullEnterLeaveEventsResponse>} */
+      newResourceValue()
   );
 
-  onUnmounted(() => {
-    closeResource(enterLeaveEventValue);
+  const queryObject = computed(() => toQueryObject(query));
+
+  // Utility function to call the API with the query and the resource
+  watchResource(
+      () => toValue(queryObject),
+      () => toValue(paused),
+      (req) => {
+        pullEnterLeaveEvents(req, enterLeaveValue);
+        return enterLeaveValue;
+      }
+  );
+
+
+  /** @type {import('vue').ComputedRef<boolean>} */
+  const enterLeaveHasTotals = computed(
+      () => enterLeaveValue.value?.enterTotal !== undefined || enterLeaveValue.value?.leaveTotal !== undefined
+  );
+
+  /** @type {import('vue').ComputedRef<number>} */
+  const enterTotal = computed(() => enterLeaveValue.value?.enterTotal || 0);
+
+  /** @type {import('vue').ComputedRef<number>} */
+  const leaveTotal = computed(() => enterLeaveValue.value?.leaveTotal || 0);
+
+  /** @type {import('vue').Ref<number>} */
+  const enterTimeoutHandle = ref(0);
+
+  /** @type {import('vue').Ref<number>} */
+  const leaveTimeoutHandle = ref(0);
+
+  /** @type {import('vue').Ref<boolean>} */
+  const justEntered = ref(false);
+
+  /** @type {import('vue').Ref<boolean>} */
+  const justLeft = ref(false);
+
+  // Watch for changes in the enter/leave values and set the justEntered and justLeft flags accordingly
+  watch(() => enterLeaveValue.value, (newVal, oldVal) => {
+    if (!oldVal || !newVal) {
+      justEntered.value = false;
+      justLeft.value = false;
+      clearTimeout(enterTimeoutHandle.value);
+      clearTimeout(leaveTimeoutHandle.value);
+      return;
+    }
+
+    if (newVal.direction === EnterLeaveEvent.Direction.ENTER) {
+      justEntered.value = true;
+      clearTimeout(enterTimeoutHandle.value);
+      enterTimeoutHandle.value = setTimeout(() => {
+        justEntered.value = false;
+      }, props.showChangeDuration);
+    }
+    if (newVal.direction === EnterLeaveEvent.Direction.LEAVE) {
+      justLeft.value = true;
+      clearTimeout(leaveTimeoutHandle.value);
+      leaveTimeoutHandle.value = setTimeout(() => {
+        justLeft.value = false;
+      }, props.showChangeDuration);
+    }
+  }, {deep: true});
+
+  /** @type {import('vue').ComputedRef<ResourceError>} */
+  const error = computed(() => {
+    return enterLeaveValue.streamError;
+  });
+
+  /** @type {import('vue').ComputedRef<boolean>} */
+  const loading = computed(() => {
+    return enterLeaveValue.loading;
   });
 
   return {
-    enterLeaveEventValue
+    enterLeaveValue,
+
+    enterLeaveHasTotals,
+    enterTotal,
+    leaveTotal,
+
+    justEntered,
+    justLeft,
+
+    error,
+    loading
   };
 }

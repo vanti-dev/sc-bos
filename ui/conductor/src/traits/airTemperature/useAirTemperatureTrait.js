@@ -1,84 +1,243 @@
 import {newActionTracker, newResourceValue} from '@/api/resource';
-import {pullAirTemperature, updateAirTemperature} from '@/api/sc/traits/air-temperature';
-import {watchResource} from '@/util/traits';
+import {
+  airTemperatureModeToString,
+  pullAirTemperature,
+  temperatureToString,
+  updateAirTemperature
+} from '@/api/sc/traits/air-temperature';
+import {toQueryObject, watchResource} from '@/util/traits';
 import {toValue} from '@/util/vue';
-import {computed, reactive} from 'vue';
+import {AirTemperature} from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb';
+import {computed, reactive, ref} from 'vue';
 
 /**
- * @typedef {Object} AirTemperatureTrait
- * @property {ResourceValue<AirTemperature.AsObject, PullAirTemperatureResponse>} airTemperatureResource
- * @property {ActionTracker<AirTemperature.AsObject>} updateTracker
- * @property {
- *  (number|Partial<AirTemperature.AsObject>|Partial<UpdateAirTemperatureRequest.AsObject>)
- * } doUpdateAirTemperature
- * @property {import('vue').ComputedRef<number>} temperatureValue
- * @property {import('vue').ComputedRef<number>} humidityValue
- * @property {function} collectErrors
- * @property {function} clearResourceError
- * @param {Object} props
- * @param {string} props.name
- * @param {boolean} [props.paused]
- * @return {AirTemperatureTrait}
+ * @param {MaybeRefOrGetter<string|PullAirTemperatureRequest.AsObject>} query - The name of the device or a query object
+ * @param {MaybeRefOrGetter<boolean>} paused - Whether to pause the data stream
+ * @return {{
+ *   airTemperatureValue: ResourceValue<AirTemperature.AsObject, PullAirTemperatureResponse>,
+ *   airTemperatureUpdate: ActionTracker<AirTemperature.AsObject>,
+ *   hasSetPoint: import('vue').ComputedRef<boolean>,
+ *   hasTemperature: import('vue').ComputedRef<boolean>,
+ *   hasHumidity: import('vue').ComputedRef<boolean>,
+ *   ambientTemperature: import('vue').ComputedRef<number>,
+ *   airTemperatureSetPointNumber: import('vue').ComputedRef<number>,
+ *   airTemperatureSetPointString: import('vue').ComputedRef<string>,
+ *   ambientHumidity: import('vue').ComputedRef<number>,
+ *   airTemperatureProgress: import('vue').ComputedRef<number>,
+ *   airTemperatureInformation: import('vue').ComputedRef<{[key: string]: string|number}|{}>,
+ *   toTemperatureSetPointObject: (
+ *     valueCelsius: number|Partial<AirTemperature.AsObject>|Partial<UpdateAirTemperatureRequest.AsObject>
+ *   ) => Partial<UpdateAirTemperatureRequest.AsObject>,
+ *   updateAirTemperature: (
+ *     req: Partial<AirTemperature.AsObject>|Partial<UpdateAirTemperatureRequest.AsObject>
+ *   ) => void,
+ *   error: import('vue').ComputedRef<ResourceError|ActionError>,
+ *   loading: import('vue').ComputedRef<boolean>
+ * }}
  */
-export default function(props) {
-  const airTemperatureResource = reactive(
+export default function(query, paused) {
+  const airTemperatureValue = reactive(
       /** @type {ResourceValue<AirTemperature.AsObject, PullAirTemperatureResponse>} */
-      newResourceValue());
+      newResourceValue()
+  );
 
-  const updateTracker = reactive(
+  const airTemperatureUpdate = reactive(
       /** @type {ActionTracker<AirTemperature.AsObject>}  */
-      newActionTracker());
+      newActionTracker()
+  );
 
+  const queryObject = computed(() => toQueryObject(query));
 
-  //
-  //
-  // Methods
-  /**
-   * @param {number|Partial<AirTemperature.AsObject>|Partial<UpdateAirTemperatureRequest.AsObject>} req
-   */
-  function doUpdateAirTemperature(req) {
-    if (typeof req === 'number') {
-      req = {
-        state: {temperatureSetPoint: {valueCelsius: /** @type {number} */ req}},
-        updateMask: {pathsList: ['temperature_set_point']}
-      };
-    }
-    if (!req.hasOwnProperty('state')) {
-      req = {state: /** @type {AirTemperature.AsObject} */ req};
-    }
-    req.name = props.name;
-    updateAirTemperature(req, updateTracker);
-  }
-
-  //
-  //
-  // Watch
+  // Utility function to call the API with the query and the resource
   watchResource(
-      () => toValue(props.name),
-      () => toValue(props.paused),
-      (name) => {
-        pullAirTemperature({name}, airTemperatureResource);
-        return airTemperatureResource;
+      () => toValue(queryObject),
+      () => toValue(paused),
+      (req) => {
+        pullAirTemperature(req, airTemperatureValue);
+        return airTemperatureValue;
       }
   );
 
-  //
-  //
-  // Return the temperature of the single device specified
-  const temperatureValue = computed(
-      () => Number(airTemperatureResource?.value?.ambientTemperature?.valueCelsius ?? 0)
-  );
+  /** @type {import('vue').Ref<{low: number, high: number}>} defaultTemperatureRange */
+  const defaultTemperatureRange = ref({
+    low: 18.0,
+    high: 24.0
+  });
 
-  // Return the humidity of the single device specified
-  const humidityValue = computed(
-      () => Number(airTemperatureResource?.value?.ambientHumidity ?? 0)
-  );
+  /** @type {import('vue').ComputedRef<boolean>} */
+  const hasSetPoint = computed(() => {
+    return airTemperatureValue.value?.temperatureSetPoint?.valueCelsius !== undefined;
+  });
+
+  /** @type {import('vue').ComputedRef<boolean>} */
+  const hasTemperature = computed(() => {
+    return airTemperatureValue.value?.ambientTemperature?.valueCelsius !== undefined;
+  });
+
+  /** @type {import('vue').ComputedRef<boolean>} */
+  const hasHumidity = computed(() => {
+    return airTemperatureValue.value?.ambientHumidity !== undefined;
+  });
+
+  /** @type {import('vue').ComputedRef<number>} */
+  const ambientTemperature = computed(() => airTemperatureValue?.value?.ambientTemperature?.valueCelsius);
+
+  /** @type {import('vue').ComputedRef<number>} */
+  const airTemperatureSetPointNumber = computed(() => {
+    return airTemperatureValue.value?.temperatureSetPoint?.valueCelsius;
+  });
+
+  const UNIT = '°C'; // Temperature unit
+
+  /** @type {import('vue').ComputedRef<string>} */
+  const airTemperatureSetPointString = computed(() => {
+    const formattedTemperature = airTemperatureSetPointNumber.value?.toFixed(1);
+
+    if (hasSetPoint.value) {
+      return `${formattedTemperature}`;
+    } else {
+      return formattedTemperature + UNIT;
+    }
+  });
+
+  /** @type {import('vue').ComputedRef<number>} */
+  const ambientHumidity = computed(() => airTemperatureValue?.value?.ambientHumidity);
+
+
+  /** @type {import('vue').ComputedRef<number>} airTemperatureProgress */
+  const airTemperatureProgress = computed(() => {
+    let val = airTemperatureValue.value?.ambientTemperature?.valueCelsius ?? 0;
+    if (val > 0) {
+      val -= defaultTemperatureRange.value.low;
+      val = val / (defaultTemperatureRange.value.high - defaultTemperatureRange.value.low);
+    }
+    return val * 100;
+  });
+
+  /** @type {import('vue').ComputedRef<{[key: string]: string|number}|{}>} airTemperatureInformation */
+  const airTemperatureInformation = computed(() => {
+    if (airTemperatureValue.value) {
+      const data = {};
+      Object.entries(airTemperatureValue.value).forEach(([key, value]) => {
+        if (value !== undefined) {
+          switch (key) {
+            case 'mode':
+              if (value !== AirTemperature.Mode.MODE_UNSPECIFIED) {
+                data[key] = airTemperatureModeToString(value);
+              }
+              break;
+            case 'ambientTemperature': {
+              data['currentTemp'] = temperatureToString(value);
+              break;
+            }
+            case 'temperatureSetPoint': {
+              data['setPoint'] = temperatureToString(value);
+              break;
+            }
+            case 'ambientHumidity':
+              if (value !== 0) {
+                data['humidity'] = value.toFixed(1) + '%';
+              }
+              break;
+            case 'dewPoint': {
+              data[key] = temperatureToString(value);
+              break;
+            }
+            default: {
+              data[key] = value;
+            }
+          }
+        }
+      });
+      return data;
+    }
+    return {};
+  });
+
+  /**
+   * Convert the request to UpdateAirTemperatureRequest partially with the temperatureSetPoint set if it is not already
+   *
+   * @param {number|Partial<AirTemperature.AsObject>|Partial<UpdateAirTemperatureRequest.AsObject>} valueCelsius
+   * @return {Partial<UpdateAirTemperatureRequest.AsObject>}
+   */
+  const toTemperatureSetPointObject = (valueCelsius) => {
+    if (typeof valueCelsius === 'number') {
+      return {temperatureSetPoint: {valueCelsius}};
+    } else {
+      return valueCelsius;
+    }
+  };
+
+  /**
+   * Convert the request to UpdateAirTemperatureRequest partially with the updateMask set if it is not already
+   *
+   * @param {Partial<AirTemperature.AsObject>|Partial<UpdateAirTemperatureRequest.AsObject>} request
+   * @return {Partial<UpdateAirTemperatureRequest.AsObject>}
+   */
+  const toUpdateMaskObject = (request) => {
+    if (!request.hasOwnProperty('updateMask')) {
+      return {
+        ...request,
+        updateMask: {pathsList: ['temperature_set_point']}
+      };
+    } else {
+      return request;
+    }
+  };
+
+  /**
+   * Convert the request to an UpdateAirTemperatureRequest if it is not already
+   *
+   * @param {Partial<AirTemperature.AsObject>|Partial<UpdateAirTemperatureRequest.AsObject>} state
+   * @return {Partial<UpdateAirTemperatureRequest.AsObject>}
+   */
+  const toStateObject = (state) => {
+    if (!state.hasOwnProperty('state')) {
+      return toUpdateMaskObject({state});
+    } else {
+      return toUpdateMaskObject(state);
+    }
+  };
+
+  /**
+   * @param {Partial<AirTemperature.AsObject>|Partial<UpdateAirTemperatureRequest.AsObject>} request
+   * @return {void}
+   */
+  const doAirTemperatureUpdate = (request) => {
+    // Convert the request to UpdateAirTemperatureRequest if it is not already
+    const modifiedRequest = toStateObject(request);
+
+    // Make sure the name is set
+    modifiedRequest.name = toValue(queryObject).name;
+
+    // Call the API with the modified request
+    updateAirTemperature(modifiedRequest, airTemperatureUpdate);
+  };
+
+
+  const error = computed(() => {
+    return airTemperatureValue.streamError || airTemperatureUpdate.error;
+  });
+
+  const loading = computed(() => {
+    return airTemperatureValue.loading || airTemperatureUpdate.loading;
+  });
 
   return {
-    airTemperatureResource,
-    updateTracker,
-    doUpdateAirTemperature,
-    temperatureValue,
-    humidityValue
+    airTemperatureValue,
+    airTemperatureUpdate,
+    hasSetPoint,
+    hasTemperature,
+    hasHumidity,
+    ambientTemperature,
+    airTemperatureSetPointNumber,
+    airTemperatureSetPointString,
+    ambientHumidity,
+    airTemperatureProgress,
+    airTemperatureInformation,
+    toTemperatureSetPointObject,
+    updateAirTemperature: doAirTemperatureUpdate,
+    error,
+    loading
   };
 }

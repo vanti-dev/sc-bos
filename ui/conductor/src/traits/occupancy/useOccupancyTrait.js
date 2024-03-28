@@ -1,48 +1,121 @@
-import {closeResource, newResourceValue} from '@/api/resource';
-import {pullOccupancy} from '@/api/sc/traits/occupancy';
-import {onUnmounted, reactive, watch} from 'vue';
+import {timestampToDate} from '@/api/convpb.js';
+import {newResourceValue} from '@/api/resource';
+import {occupancyStateToString, pullOccupancy} from '@/api/sc/traits/occupancy';
+import {toQueryObject, watchResource} from '@/util/traits';
+import {toValue} from '@/util/vue';
+import {Occupancy} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
+import {computed, reactive} from 'vue';
 
 /**
  *
- * @param {{
- *  paused: boolean,
- *  name: string
- *}} props
- *@return {{
- *  occupancyValue: ResourceValue<Occupancy.AsObject, Occupancy>
- *}}
- * }
+ * @param {MaybeRefOrGetter<string|PullOccupancyRequest.AsObject>} query - The name of the device or a query object
+ * @param {MaybeRefOrGetter<boolean>} paused - Whether to pause the data stream
+ * @return {{
+ *  occupancyValue: ResourceValue<Occupancy.AsObject, Occupancy>,
+ *  occupancyPeopleCount: import('vue').ComputedRef<number>,
+ *  occupancyStateNumber: import('vue').ComputedRef<Occupancy.State>,
+ *  occupancyStateString: import('vue').ComputedRef<string>,
+ *  occupancyLastUpdateDate: import('vue').ComputedRef<Date>,
+ *  occupancyColorString: import('vue').ComputedRef<string>,
+ *  occupancyIconString: import('vue').ComputedRef<string>,
+ *  occupancyIconColor: import('vue').ComputedRef<string|undefined>,
+ *  error: import('vue').ComputedRef<ResourceError>,
+ *  loading: import('vue').ComputedRef<boolean>
+ * }}
  */
-export default function(props) {
+export default function(query, paused) {
   const occupancyValue = reactive(
       /** @type {ResourceValue<Occupancy.AsObject, Occupancy>} */
       newResourceValue()
   );
 
-  // Watch
-  // Depending on paused state/device name, we close/open data stream(s)
-  watch(
-      [() => props.paused, () => props.name],
-      ([newPaused, newName], [oldPaused, oldName]) => {
-        if (newPaused === oldPaused && newName === oldName) return;
+  const queryObject = computed(() => toQueryObject(query));
 
-        if (newPaused) {
-          closeResource(occupancyValue);
-        }
-
-        if (!newPaused && (oldPaused || newName !== oldName)) {
-          closeResource(occupancyValue);
-          pullOccupancy({name: newName}, occupancyValue);
-        }
-      },
-      {immediate: true, deep: true, flush: 'sync'}
+  // Utility function to call the API with the query and the resource
+  watchResource(
+      () => toValue(queryObject),
+      () => toValue(paused),
+      (req) => {
+        pullOccupancy(req, occupancyValue);
+        return occupancyValue;
+      }
   );
 
-  onUnmounted(() => {
-    closeResource(occupancyValue);
+
+  /** @type {import('vue').ComputedRef<number>} */
+  const occupancyPeopleCount = computed(() => {
+    return occupancyValue.value?.peopleCount || 0;
   });
 
+  /** @type {import('vue').ComputedRef<number>} */
+  const occupancyStateNumber = computed(() => {
+    return occupancyValue.value?.state;
+  });
+
+  const occupancyStateString = computed(() => {
+    return occupancyStateToString(occupancyValue.value?.state) || '';
+  });
+
+  /** @type {import('vue').ComputedRef<Date>} */
+  const occupancyLastUpdateDate = computed(() => {
+    return timestampToDate(occupancyValue.value?.stateChangeTime);
+  });
+
+  /** @type {import('vue').ComputedRef<string>} */
+  const occupancyColorString = computed(() => {
+    return occupancyStateString.value.toLowerCase();
+  });
+
+  /** @type {import('vue').ComputedRef<string>} */
+  const occupancyIconString = computed(() => {
+    if (occupancyStateNumber.value === Occupancy.State.OCCUPIED) {
+      return 'mdi-crosshairs-gps';
+    } else if (occupancyStateNumber.value === Occupancy.State.UNOCCUPIED) {
+      return 'mdi-crosshairs';
+    } else if (occupancyStateNumber.value === Occupancy.State.IDLE) {
+      return 'mdi-crosshairs-gps';
+    } else {
+      return '';
+    }
+  });
+
+  /** @type {import('vue').ComputedRef<string|undefined>} */
+  const occupancyIconColor = computed(() => {
+    if (occupancyStateNumber.value === Occupancy.State.OCCUPIED) {
+      return 'success lighten1';
+    } else if (occupancyStateNumber.value === Occupancy.State.UNOCCUPIED) {
+      return 'warning';
+    } else if (occupancyStateNumber.value === Occupancy.State.IDLE) {
+      return 'info';
+    } else {
+      return undefined;
+    }
+  });
+
+  /** @type {import('vue').ComputedRef<ResourceError>} */
+  const error = computed(() => {
+    return occupancyValue.streamError;
+  });
+
+  /** @type {import('vue').ComputedRef<boolean>} */
+  const loading = computed(() => {
+    return occupancyValue.loading;
+  });
+
+
   return {
-    occupancyValue
+    occupancyValue,
+
+    occupancyPeopleCount,
+    occupancyStateNumber,
+    occupancyStateString,
+    occupancyLastUpdateDate,
+
+    occupancyColorString,
+    occupancyIconString,
+    occupancyIconColor,
+
+    error,
+    loading
   };
 }
