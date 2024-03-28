@@ -7,8 +7,7 @@ import {StatusLog} from '@sc-bos/ui-gen/proto/status_pb';
 import {ref} from 'vue/src/v3/index.js';
 
 /**
- * @template T
- * @param {MaybeRefOrGetter<T>} query - The name of the device or a query object
+ * @param {MaybeRefOrGetter<string|PullCurrentStatusRequest.AsObject>} query - The name of the device or a query object
  * @param {MaybeRefOrGetter<boolean>} paused - Whether to pause the data stream
  * @return {{
  *  statusValue: ResourceValue<StatusLog.AsObject, StatusLog>,

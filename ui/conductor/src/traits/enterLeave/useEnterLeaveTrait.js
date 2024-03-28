@@ -6,8 +6,8 @@ import {EnterLeaveEvent} from '@smart-core-os/sc-api-grpc-web/traits/enter_leave
 import {computed, reactive, ref, watch} from 'vue';
 
 /**
- * @template T
- * @param {MaybeRefOrGetter<T>} query - The name of the device or a query object
+ * @param {MaybeRefOrGetter<string|PullEnterLeaveEventsRequest.AsObject>} query - The name of the device or a query
+ *   object
  * @param {MaybeRefOrGetter<boolean>} paused - Whether to pause the data stream
  * @return {{
  *  enterLeaveValue: ResourceValue<EnterLeaveEvent.AsObject, PullEnterLeaveEventsResponse>,

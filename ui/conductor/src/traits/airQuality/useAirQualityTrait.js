@@ -7,8 +7,7 @@ import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sens
 import {computed, reactive} from 'vue';
 
 /**
- * @template T
- * @param {MaybeRefOrGetter<T>} query - The name of the device or a query object
+ * @param {MaybeRefOrGetter<string|PullAirQualityRequest.AsObject>} query - The name of the device or a query object
  * @param {MaybeRefOrGetter<boolean>} paused - Whether to pause the data stream
  * @return {{
  *  airQualityValue: ResourceValue<AirQuality.AsObject, PullAirQualityResponse>,

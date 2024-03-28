@@ -8,8 +8,7 @@ import {computed, reactive} from 'vue';
 
 /**
  *
- * @template T
- * @param {MaybeRefOrGetter<T>} query - The name of the device or a query object
+ * @param {MaybeRefOrGetter<string|PullOccupancyRequest.AsObject>} query - The name of the device or a query object
  * @param {MaybeRefOrGetter<boolean>} paused - Whether to pause the data stream
  * @return {{
  *  occupancyValue: ResourceValue<Occupancy.AsObject, Occupancy>,

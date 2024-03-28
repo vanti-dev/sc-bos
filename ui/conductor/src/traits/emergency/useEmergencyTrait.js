@@ -7,8 +7,7 @@ import {computed, reactive} from 'vue';
 
 
 /**
- * @template T
- * @param {MaybeRefOrGetter<T>} query
+ * @param {MaybeRefOrGetter<string|PullEmergencyRequest.AsObject>} query
  * @param {MaybeRefOrGetter<boolean>} paused
  * @return {{
  *  emergencyValue: ResourceValue<Emergency.AsObject, PullEmergencyResponse>,

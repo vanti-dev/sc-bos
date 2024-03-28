@@ -11,8 +11,7 @@ import {AirTemperature} from '@smart-core-os/sc-api-grpc-web/traits/air_temperat
 import {computed, reactive, ref} from 'vue';
 
 /**
- * @template T
- * @param {MaybeRefOrGetter<T>} query - The name of the device or a query object
+ * @param {MaybeRefOrGetter<string|PullAirTemperatureRequest.AsObject>} query - The name of the device or a query object
  * @param {MaybeRefOrGetter<boolean>} paused - Whether to pause the data stream
  * @return {{
  *   airTemperatureValue: ResourceValue<AirTemperature.AsObject, PullAirTemperatureResponse>,
