@@ -25,7 +25,7 @@ export const toQueryObject = (input) => {
  * @template T
  * @param {MaybeRefOrGetter<T>} query - object representing the request to the API
  * @param {MaybeRefOrGetter<boolean>} [paused] - boolean representing whether the data stream is paused
- * @param {(req: T) => RemoteResource<any>} apiCalls - array of functions that return a resource
+ * @param {(req: T) => RemoteResource<*>} apiCalls - array of functions that return a resource
  * @example
  * watchResource(
  *   () => toValue(toQueryObject(query)),
