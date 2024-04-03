@@ -15,7 +15,7 @@
         },
         {
           "name": "lights/02",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "lighting"},
           "location": {"title": "L03_014/Reception"}
         },
@@ -60,6 +60,72 @@
           "membership": {"subsystem": "hvac"},
           "location": {
             "title": "L03_015/Meeting Room 2",
+            "more": {
+              "floor": "L03"
+            }
+          }
+        },
+        {
+          "name": "smart-core/doors/reader/1",
+          "traits": [{"name": "smartcore.bos.Access"}, {"name": "smartcore.traits.OpenClose"}],
+          "membership": {"subsystem": "acs"},
+          "location": {
+            "title": "L03_013/Meeting Room 1",
+            "more": {
+              "floor": "L03"
+            }
+          }
+        },
+        {
+          "name": "smart-core/doors/reader/2",
+          "traits": [{"name": "smartcore.bos.Access"}, {"name": "smartcore.traits.OpenClose"}],
+          "membership": {"subsystem": "acs"},
+          "location": {
+            "title": "L03_013/Meeting Room 2",
+            "more": {
+              "floor": "L03"
+            }
+          }
+        },
+        {
+          "name": "smart-core/doors/3",
+          "traits": [{"name": "smartcore.traits.EnterLeaveSensor"}],
+          "membership": {"subsystem": "acs"},
+          "location": {
+            "title": "L03_013/Meeting Room 1",
+            "more": {
+              "floor": "L03"
+            }
+          }
+        },
+        {
+          "name": "smart-core/doors/4",
+          "traits": [{"name": "smartcore.traits.OpenClose"}],
+          "membership": {"subsystem": "acs"},
+          "location": {
+            "title": "L03_013/Meeting Room 1",
+            "more": {
+              "floor": "L03"
+            }
+          }
+        },
+        {
+          "name": "smart-core/iaq/01",
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "membership": {"subsystem": "sensors"},
+          "location": {
+            "title": "L03_013/Meeting Room 1",
+            "more": {
+              "floor": "L03"
+            }
+          }
+        },
+        {
+          "name": "smart-core/meters/01",
+          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}],
+          "membership": {"subsystem": "metering"},
+          "location": {
+            "title": "L03_013/Meeting Room 1",
             "more": {
               "floor": "L03"
             }
