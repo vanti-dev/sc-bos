@@ -211,6 +211,9 @@
       "metadata": {
         "appearance": {"title": "Whole Building"}
       },
+      "meters": ["smart-core/meters/01"],
+      "electrics": ["smart-core/meters/01"],
+      "occupancySensors": ["pir/01", "pir/02", "pir/03"],
       "thermostats": ["FCU/01"],
       "thermostatGroups": {
         "outside": {"thermostats": ["FCU/02"]}
