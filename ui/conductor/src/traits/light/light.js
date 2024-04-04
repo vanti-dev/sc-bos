@@ -80,7 +80,7 @@ export function useDescribeBrightness(query, pollInterval = 0) {
 /**
  * @param {MaybeRefOrGetter<string>} name
  * @return {ToRefs<ActionTracker<Brightness.AsObject>> & {
- *  updateBrightness(req: MaybeRefOrGetter<UpdateBrightnessRequestLike>): Promise<Brightness.AsObject>
+ *  updateBrightness: (req: MaybeRefOrGetter<UpdateBrightnessRequestLike>) => Promise<Brightness.AsObject>
  * }}
  */
 export function useUpdateBrightness(name) {
