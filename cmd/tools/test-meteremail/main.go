@@ -73,7 +73,7 @@ func main() {
 		"timeout" : "9s",
 		"backoffStart" : "19s",
 		"backoffMax" : "59s",
-		"noRetries" : 7
+		"numRetries" : 7
 	}
 }`
 

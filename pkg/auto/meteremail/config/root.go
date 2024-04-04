@@ -55,7 +55,7 @@ type Timing struct {
 	Timeout      jsontypes.Duration `json:"timeout,omitempty"`
 	BackoffStart jsontypes.Duration `json:"backoffStart,omitempty"`
 	BackoffMax   jsontypes.Duration `json:"backoffMax,omitempty"`
-	NoRetries    int                `json:"noRetries,omitempty"`
+	NumRetries   int                `json:"numRetries,omitempty"`
 }
 
 type Root struct {

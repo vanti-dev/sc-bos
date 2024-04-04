@@ -187,8 +187,8 @@ func applyDefaults(timing *config.Timing) {
 	if timing.Timeout.Duration == 0 {
 		timing.Timeout = jsontypes.Duration{Duration: 10 * time.Second}
 	}
-	if timing.NoRetries == 0 {
-		timing.NoRetries = 3
+	if timing.NumRetries == 0 {
+		timing.NumRetries = 3
 	}
 	if timing.BackoffStart.Duration == 0 {
 		timing.BackoffStart = jsontypes.Duration{Duration: 2 * time.Second}
@@ -293,7 +293,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 func retry(ctx context.Context, timing *config.Timing, f func(context.Context) error) error {
 	return task.Run(ctx, func(ctx context.Context) (task.Next, error) {
 		return 0, f(ctx)
-	}, task.WithBackoff(timing.BackoffStart.Duration, timing.BackoffMax.Duration), task.WithRetry(timing.NoRetries))
+	}, task.WithBackoff(timing.BackoffStart.Duration, timing.BackoffMax.Duration), task.WithRetry(timing.NumRetries))
 }
 
 func retryT[T any](ctx context.Context, timing *config.Timing, f func(context.Context) (T, error)) (T, error) {
