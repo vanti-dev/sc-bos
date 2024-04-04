@@ -44,6 +44,8 @@
             v-if="indoorHumidity > 0"
             :value="indoorHumidity"
             :color="props.gaugeColor"
+            :min="0"
+            :max="100"
             segments="30"
             style="max-width: 140px;"
             class="mt-2">
