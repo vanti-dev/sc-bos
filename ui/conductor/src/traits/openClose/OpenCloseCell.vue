@@ -11,11 +11,12 @@
 
 <script setup>
 import StatusAlert from '@/components/StatusAlert.vue';
+import {useOpenClosePositions} from '@/traits/openClose/openClose.js';
 import {computed} from 'vue';
 
 const props = defineProps({
   value: {
-    type: Object,
+    type: Object, // of OpenClosePositions.AsObject
     default: () => {}
   },
   loading: {
@@ -28,18 +29,13 @@ const props = defineProps({
   }
 });
 
+const {openStr, openIcon, openClass} = useOpenClosePositions(() => props.value);
 const doorState = computed(() => {
-  if (!props.value) return {icon: 'mdi-door', class: 'unknown', text: ''};
-
-  return props.value?.statesList[0].openPercent === 0 ?
-      {icon: 'mdi-door-closed', class: 'closed', text: 'Closed'} :
-      props.value?.statesList[0].openPercent === 100 ?
-          {icon: 'mdi-door-open', class: 'open', text: 'Open'} :
-          {
-            icon: 'mdi-door',
-            class: 'moving',
-            text: '' + props.openClosePercentage?.value.statesList[0].openPercent + '%'
-          };
+  return {
+    icon: openIcon.value,
+    class: openClass.value,
+    text: openStr.value
+  };
 });
 </script>
 

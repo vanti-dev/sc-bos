@@ -2,13 +2,13 @@
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0">
       <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Meter</v-subheader>
-      <v-list-item class="py-1">
+      <v-list-item v-for="item of table" :key="item.label" class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">
-          {{ meterDetails.key }}
+          {{ item.label }}
         </v-list-item-title>
 
         <v-list-item-subtitle class="text-end">
-          {{ meterDetails.value }} {{ meterDetails.unit }}
+          {{ item.value }} {{ item.unit }}
         </v-list-item-subtitle>
       </v-list-item>
     </v-list>
@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
+import {useMeterReading} from '@/traits/meter/meter.js';
 
 
 const props = defineProps({
@@ -27,9 +27,9 @@ const props = defineProps({
     default: () => {
     }
   },
-  unit: {
-    type: String,
-    default: ''
+  info: {
+    type: Object, // of type MeterReadingInfo.AsObject
+    default: () => null
   },
   loading: {
     type: Boolean,
@@ -37,13 +37,7 @@ const props = defineProps({
   }
 });
 
-const meterDetails = computed(() => {
-  return {
-    key: 'Usage',
-    value: props.value?.usage?.toFixed(2) ?? '-',
-    unit: props.unit
-  };
-});
+const {table} = useMeterReading(() => props.value, () => props.info);
 </script>
 
 <style scoped>

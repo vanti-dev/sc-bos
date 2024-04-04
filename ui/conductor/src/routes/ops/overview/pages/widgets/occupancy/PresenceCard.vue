@@ -19,14 +19,12 @@
 </template>
 
 <script setup>
-import {occupancyStateToString} from '@/api/sc/traits/occupancy';
 import ContentCard from '@/components/ContentCard.vue';
 import {DAY, HOUR, MINUTE, SECOND, useNow} from '@/components/now';
 import StatusAlert from '@/components/StatusAlert.vue';
-import useOccupancyTrait from '@/traits/occupancy/useOccupancyTrait';
+import {useOccupancy, usePullOccupancy} from '@/traits/occupancy/occupancy.js';
 import {formatTimeAgo} from '@/util/date';
-import {Occupancy} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
-import {computed, ref, watch} from 'vue';
+import {computed} from 'vue';
 
 const props = defineProps({
   name: {
@@ -35,40 +33,15 @@ const props = defineProps({
   }
 });
 
-const {occupancyValue} = useOccupancyTrait(props);
-
-const state = computed(() => {
-  return occupancyValue?.value?.state;
-});
-const stateStr = computed(() => {
-  if (state.value === undefined) return '';
-  return occupancyStateToString(state.value);
-});
-
-const stateColor = computed(() => {
-  if (state.value === Occupancy.State.OCCUPIED) {
-    return 'success--text text--lighten-1';
-  } else if (state.value === Occupancy.State.UNOCCUPIED) {
-    return 'warning--text';
-  } else if (state.value === Occupancy.State.IDLE) {
-    return 'info--text';
-  } else {
-    return undefined;
-  }
-});
+const {value: occupancyValue} = usePullOccupancy(() => props.name);
+const {stateStr, stateColor, lastUpdate} = useOccupancy(occupancyValue);
 
 // Create a lastChecked timestamp (for second to be used in the status popup
 const {now} = useNow(SECOND);
-const lastChecked = ref(null);
-
-// Update lastChecked timestamp when isLoading changes
-watch(() => occupancyValue?.updateTime, (updated) => {
-  lastChecked.value = Date.parse(updated);
-}, {immediate: true});
 
 // Create a timeAgo computed property to display time in words
 const timeAgo = computed(() => {
-  if (!lastChecked.value) return 'Never';
-  return formatTimeAgo(lastChecked.value, now.value, MINUTE, HOUR, DAY);
+  if (!lastUpdate.value) return 'Never';
+  return formatTimeAgo(lastUpdate.value, now.value, MINUTE, HOUR, DAY);
 });
 </script>

@@ -19,7 +19,7 @@
     <WithMeter v-if="hasCell('Meter')" v-slot="{ resource, info }" :name="props.item.name" :paused="props.paused">
       <MeterCell
           v-bind="resource"
-          :unit="info?.response?.unit"/>
+          :info="info?.response"/>
     </WithMeter>
     <WithAirTemperature
         v-if="hasCell('AirTemperature')"
@@ -36,13 +36,13 @@
     </WithOccupancy>
 
     <!-- If door has no access data reading and has OpenClose reading -->
-    <WithOpenClosed
+    <WithOpenClose
         v-if="hasCell('OpenClose') && !hasCell('AccessAttempt')"
         v-slot="{ resource }"
         :name="props.item.name"
         :paused="props.paused">
-      <OpenClosedCell v-bind="resource"/>
-    </WithOpenClosed>
+      <OpenCloseCell v-bind="resource"/>
+    </WithOpenClose>
 
     <!-- If door has access data reading and has no OpenClose reading -->
     <WithAccess
@@ -59,12 +59,12 @@
         v-slot="{ resource: accessResource }"
         :name="props.item.name"
         :paused="props.paused">
-      <WithOpenClosed v-slot="{ resource: openClosedResource }" :name="props.item.name" :paused="props.paused">
+      <WithOpenClose v-slot="{ resource: openCloseResource }" :name="props.item.name" :paused="props.paused">
         <AccessAttemptCell
             v-bind="accessResource"
-            :open-close-percentage="openClosedResource"
-            :stream-error="accessResource.streamError || openClosedResource.streamError"/>
-      </WithOpenClosed>
+            :open-close-percentage="openCloseResource"
+            :stream-error="accessResource.streamError || openCloseResource.streamError"/>
+      </WithOpenClose>
     </WithAccess>
     <!-- End -->
 
@@ -79,25 +79,25 @@
 </template>
 
 <script setup>
-import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
-import WithAirTemperature from '@/routes/devices/components/renderless/WithAirTemperature.vue';
-import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
-import WithEmergency from '@/routes/devices/components/renderless/WithEmergency.vue';
-import WithEnterLeave from '@/routes/devices/components/renderless/WithEnterLeave.vue';
-import WithMeter from '@/routes/devices/components/renderless/WithMeter.vue';
-import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
-import WithOpenClosed from '@/routes/devices/components/renderless/WithOpenClosed.vue';
-import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
 import AccessAttemptCell from '@/traits/access/AccessAttemptCell.vue';
+import WithAccess from '@/traits/access/WithAccess.vue';
 import AirTemperatureCell from '@/traits/airTemperature/AirTemperatureCell.vue';
+import WithAirTemperature from '@/traits/airTemperature/WithAirTemperature.vue';
 import ElectricDemandCell from '@/traits/electricDemand/ElectricDemandCell.vue';
+import WithElectricDemand from '@/traits/electricDemand/WithElectricDemand.vue';
 import EmergencyCell from '@/traits/emergency/EmergencyCell.vue';
+import WithEmergency from '@/traits/emergency/WithEmergency.vue';
 import EnterLeaveEventCell from '@/traits/enterLeave/EnterLeaveEventCell.vue';
-import LightCell from '@/traits/lighting/LightCell.vue';
+import WithEnterLeave from '@/traits/enterLeave/WithEnterLeave.vue';
+import LightCell from '@/traits/light/LightCell.vue';
 import MeterCell from '@/traits/meter/MeterCell.vue';
+import WithMeter from '@/traits/meter/WithMeter.vue';
 import OccupancyCell from '@/traits/occupancy/OccupancyCell.vue';
-import OpenClosedCell from '@/traits/openClosed/OpenClosedCell.vue';
+import WithOccupancy from '@/traits/occupancy/WithOccupancy.vue';
+import OpenCloseCell from '@/traits/openClose/OpenCloseCell.vue';
+import WithOpenClose from '@/traits/openClose/WithOpenClose.vue';
 import StatusLogCell from '@/traits/status/StatusLogCell.vue';
+import WithStatus from '@/traits/status/WithStatus.vue';
 import {hasTrait} from '@/util/devices';
 import {computed} from 'vue';
 

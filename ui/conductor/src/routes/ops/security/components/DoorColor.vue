@@ -14,7 +14,7 @@ const props = defineProps({
     type: Object,
     default: () => ({})
   },
-  openClosed: {
+  openClose: {
     type: Object,
     default: () => ({})
   },
@@ -32,8 +32,8 @@ const {color} = useStatus(
 );
 
 const setDoorColor = computed(() => {
-  if (props.openClosed?.statesList?.[0]) {
-    const openPercent = props.openClosed.statesList[0].openPercent;
+  if (props.openClose?.statesList?.[0]) {
+    const openPercent = props.openClose.statesList[0].openPercent;
     if (openPercent === 0) {
       return 'closed';
     }
@@ -54,7 +54,7 @@ watch(color, (newColor) => {
 }, {immediate: true});
 
 watch(setDoorColor, (newColor) => {
-  if (props.openClosed && Object.keys(props.openClosed).length) {
+  if (props.openClose && Object.keys(props.openClose).length) {
     emit('updateStroke', {name: props.name, color: newColor});
   }
 }, {immediate: true});

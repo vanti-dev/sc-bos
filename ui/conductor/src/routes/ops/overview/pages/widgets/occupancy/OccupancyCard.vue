@@ -20,8 +20,8 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
 import OccupancyGraph from '@/routes/ops/overview/pages/widgets/occupancy/OccupancyGraph.vue';
+import WithOccupancy from '@/traits/occupancy/WithOccupancy.vue';
 import OccupancyPeopleCount from './OccupancyPeopleCount.vue';
 
 const props = defineProps({

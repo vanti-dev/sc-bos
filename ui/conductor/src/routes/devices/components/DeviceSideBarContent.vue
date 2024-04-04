@@ -27,7 +27,7 @@
     </WithElectricDemand>
     <WithMeter v-if="traits['smartcore.bos.Meter']" :name="deviceId" v-slot="{resource, info}">
       <v-divider class="mt-4 mb-1"/>
-      <meter-card v-bind="resource" :unit="info?.response?.unit"/>
+      <meter-card v-bind="resource" :info="info?.response"/>
     </WithMeter>
     <v-divider v-if="traits['smartcore.bsp.EmergencyLight']" class="mt-4 mb-1"/>
     <emergency-light :name="deviceId" v-if="traits['smartcore.bsp.EmergencyLight']"/>
@@ -39,22 +39,22 @@
 </template>
 
 <script setup>
-import WithAirQuality from '@/routes/devices/components/renderless/WithAirQuality.vue';
-import WithAirTemperature from '@/routes/devices/components/renderless/WithAirTemperature.vue';
-import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
-import WithMeter from '@/routes/devices/components/renderless/WithMeter.vue';
-import WithOccupancy from '@/routes/devices/components/renderless/WithOccupancy.vue';
-import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
 import AirQualityCard from '@/traits/airQuality/AirQualityCard.vue';
+import WithAirQuality from '@/traits/airQuality/WithAirQuality.vue';
 import AirTemperatureCard from '@/traits/airTemperature/AirTemperatureCard.vue';
+import WithAirTemperature from '@/traits/airTemperature/WithAirTemperature.vue';
 import DeviceInfoCard from '@/traits/deviceInfo/DeviceInfoCard.vue';
 import ElectricDemandCard from '@/traits/electricDemand/ElectricDemandCard.vue';
+import WithElectricDemand from '@/traits/electricDemand/WithElectricDemand.vue';
 import EmergencyLight from '@/traits/emergency/EmergencyLight.vue';
-import LightCard from '@/traits/lighting/LightCard.vue';
+import LightCard from '@/traits/light/LightCard.vue';
 import MeterCard from '@/traits/meter/MeterCard.vue';
+import WithMeter from '@/traits/meter/WithMeter.vue';
 import ModeCard from '@/traits/mode/ModeCard.vue';
 import OccupancyCard from '@/traits/occupancy/OccupancyCard.vue';
+import WithOccupancy from '@/traits/occupancy/WithOccupancy.vue';
 import StatusLogCard from '@/traits/status/StatusLogCard.vue';
+import WithStatus from '@/traits/status/WithStatus.vue';
 import UdmiCard from '@/traits/udmi/UdmiCard.vue';
 
 defineProps({

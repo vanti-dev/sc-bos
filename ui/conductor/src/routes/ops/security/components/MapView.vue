@@ -46,38 +46,38 @@
                 </WithStatus>
               </WithAccess>
               <!-- If door has no Access data reading and has OpenClose reading -->
-              <WithOpenClosed
+              <WithOpenClose
                   v-if="!hasTrait(door.name, 'Access') && hasTrait(door.name, 'OpenClose')"
                   :name="door.name"
                   :paused="!live"
-                  v-slot="{ resource: openClosedResource }">
+                  v-slot="{ resource: openCloseResource }">
                 <WithStatus :name="door.name" :paused="!live" v-slot="{ resource: statusResource }">
                   <door-color
                       :name="door.name"
-                      :open-closed="openClosedResource.value"
+                      :open-close="openCloseResource.value"
                       :status-log="statusResource.value"
                       class="door-status-tracker__item"
                       @updateStroke="setDoorStroke"/>
                 </WithStatus>
-              </WithOpenClosed>
+              </WithOpenClose>
               <!-- If door has Access data reading and has OpenClose reading -->
               <WithAccess
                   v-if="hasTrait(door.name, 'Access') && hasTrait(door.name, 'OpenClose')"
                   :name="door.name"
                   :paused="!live"
                   v-slot="{ resource: accessResource }">
-                <WithOpenClosed :name="door.name" :paused="!live" v-slot="{ resource: openClosedResource }">
+                <WithOpenClose :name="door.name" :paused="!live" v-slot="{ resource: openCloseResource }">
                   <WithStatus :name="door.name" :paused="!live" v-slot="{ resource: statusResource }">
                     <door-color
                         :name="door.name"
                         :access-attempt="accessResource.value"
-                        :open-closed="openClosedResource.value"
+                        :open-close="openCloseResource.value"
                         :status-log="statusResource.value"
                         class="door-status-tracker__item"
                         @updateFill="setDoorFill"
                         @updateStroke="setDoorStroke"/>
                   </WithStatus>
-                </WithOpenClosed>
+                </WithOpenClose>
               </WithAccess>
             </HotPoint>
           </div>
@@ -89,13 +89,13 @@
 
 <script setup>
 import HotPoint from '@/components/HotPoint.vue';
-import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
-import WithOpenClosed from '@/routes/devices/components/renderless/WithOpenClosed.vue';
-import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
 import DoorColor from '@/routes/ops/security/components/DoorColor.vue';
 import Stack from '@/routes/ops/security/components/Stack.vue';
 import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
 import {useUiConfigStore} from '@/stores/ui-config';
+import WithAccess from '@/traits/access/WithAccess.vue';
+import WithOpenClose from '@/traits/openClose/WithOpenClose.vue';
+import WithStatus from '@/traits/status/WithStatus.vue';
 import {convertSVGToPercentage} from '@/util/svg';
 import {storeToRefs} from 'pinia';
 import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, set, watch} from 'vue';

@@ -3,16 +3,15 @@
 
   <v-tooltip v-else left>
     <template #activator="{on}">
-      <v-icon :class="[grantStates]" right size="20" v-on="on">mdi-door</v-icon>
+      <v-icon :class="[grantClass]" right size="20" v-on="on">mdi-door</v-icon>
     </template>
-    <span class="text-capitalize">Access: {{ grantStates.split('_').join(' ') }}</span>
+    <span class="text-capitalize">Access: {{ grantState.split('_').join(' ') }}</span>
   </v-tooltip>
 </template>
 
 <script setup>
 import StatusAlert from '@/components/StatusAlert.vue';
-import {AccessAttempt} from '@sc-bos/ui-gen/proto/access_pb';
-import {computed} from 'vue';
+import {useAccessAttempt} from '@/traits/access/access.js';
 
 const props = defineProps({
   value: {
@@ -34,16 +33,7 @@ const props = defineProps({
   }
 });
 
-
-const grantId = computed(() => props.value?.grant);
-const grantNamesByID = Object.entries(AccessAttempt.Grant).reduce((all, [name, id]) => {
-  all[id] = name.toLowerCase();
-  return all;
-}, {});
-
-const grantStates = computed(() => {
-  return grantNamesByID[grantId.value || 0];
-});
+const {grantState, grantClass} = useAccessAttempt(() => props.value);
 </script>
 
 <style scoped>

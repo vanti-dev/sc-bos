@@ -56,9 +56,8 @@
 </template>
 
 <script setup>
+import {useAccessAttempt} from '@/traits/access/access.js';
 import {camelToSentence} from '@/util/string';
-import {AccessAttempt} from '@sc-bos/ui-gen/proto/access_pb';
-import {computed} from 'vue';
 
 const props = defineProps({
   value: {
@@ -75,65 +74,7 @@ const props = defineProps({
   }
 });
 
-const grantNamesByID = Object.entries(AccessAttempt.Grant).reduce((all, [name, id]) => {
-  all[id] = name.toLowerCase();
-  return all;
-}, {});
-
-const accessAttemptInfo = computed(() => {
-  // Initialize variables for info and subInfo
-  const info = {};
-  const subInfo = {};
-
-  // Check if sidebarData has metadata property
-  if (props?.value) {
-    // Get all properties of metadata as an array of [key, value] pairs
-    const data = Object.entries(props.value);
-
-    // // Flatten out the data
-    data.forEach(([key, value]) => {
-      // If value is not empty
-      if (value) {
-        // If value is not an object
-        if (typeof value !== 'object') {
-          if (key === 'grant') {
-            const state = grantNamesByID[value].split('_').join(' ');
-            info[key] = state.charAt(0).toUpperCase() + state.slice(1);
-          } else info[key] = value;
-        } else {
-          // Loop through the object for inner values
-          for (const subValue in value) {
-            if (subValue && value[subValue]) {
-              // If subInfo[key] does not exist, create it
-              if (!subInfo[key]) {
-                subInfo[key] = {};
-              }
-
-              // If subValue is an array, map it to an object
-              if (value[subValue].length) {
-                if (Array.isArray(value[subValue])) {
-                  // Map array to an object
-                  const mappedArray = value[subValue].map(([key, value]) => {
-                    return {[key]: value};
-                  });
-
-                  // Add subValue and its mapped value to subInfo[key]
-                  subInfo[key][subValue] = mappedArray;
-                } else {
-                  // Add subValue and its value to subInfo[key]
-                  subInfo[key][subValue] = value[subValue];
-                }
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-
-  // Return info and subInfo objects within an array
-  return [info, subInfo];
-});
+const {accessAttemptInfo} = useAccessAttempt(() => props.value);
 </script>
 
 <style scoped>

@@ -6,13 +6,13 @@
         <v-list-item-title class="text-body-small text-capitalize">State</v-list-item-title>
         <v-list-item-subtitle
             :class="[
-              state.toLowerCase(), 'text-capitalize text-subtitle-2 py-1 font-weight-medium text-end']">
-          {{ state }}
+              stateColor, 'text-capitalize text-subtitle-2 py-1 font-weight-medium text-end']">
+          {{ stateStr }}
         </v-list-item-subtitle>
       </v-list-item>
-      <v-list-item class="py-1" v-if="count !== 0">
+      <v-list-item class="py-1" v-if="peopleCount !== 0">
         <v-list-item-title class="text-body-small text-capitalize">Count</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">{{ count }}</v-list-item-subtitle>
+        <v-list-item-subtitle class="text-capitalize">{{ peopleCount }}</v-list-item-subtitle>
       </v-list-item>
       <v-progress-linear color="primary" indeterminate :active="props.loading"/>
     </v-list>
@@ -20,9 +20,7 @@
 </template>
 
 <script setup>
-
-import {occupancyStateToString} from '@/api/sc/traits/occupancy';
-import {computed} from 'vue';
+import {useOccupancy} from '@/traits/occupancy/occupancy.js';
 
 const props = defineProps({
   value: {
@@ -36,20 +34,7 @@ const props = defineProps({
   }
 });
 
-const count = computed(() => {
-  if (props.value) {
-    return props.value.peopleCount;
-  }
-  return 0;
-});
-
-const state = computed(() => {
-  if (props.value) {
-    return occupancyStateToString(props.value.state);
-  }
-  return '';
-});
-
+const {peopleCount, stateStr, stateColor} = useOccupancy(() => props.value);
 </script>
 
 <style scoped>

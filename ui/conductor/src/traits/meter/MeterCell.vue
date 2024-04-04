@@ -1,11 +1,11 @@
 <template>
   <StatusAlert v-if="props.streamError" icon="mdi-counter" :resource="props.streamError"/>
 
-  <span class="text-no-wrap ed-cell" v-else-if="meterReading && !props.streamError">
+  <span class="text-no-wrap ed-cell" v-else-if="value && !props.streamError">
     <v-tooltip bottom>
       <template #activator="{ on, attrs }">
         <span v-on="on" v-bind="attrs">
-          <span>{{ meterReading }}</span>
+          <span>{{ usageAndUnit }}</span>
           <v-icon right size="20">mdi-counter</v-icon>
         </span>
       </template>
@@ -15,7 +15,7 @@
 </template>
 <script setup>
 import StatusAlert from '@/components/StatusAlert.vue';
-import {computed} from 'vue';
+import {useMeterReading} from '@/traits/meter/meter.js';
 
 const props = defineProps({
   value: {
@@ -23,9 +23,9 @@ const props = defineProps({
     default: () => {
     }
   },
-  unit: {
-    type: String,
-    default: ''
+  info: {
+    type: Object, // of MeterReadingInfo.AsObject
+    default: () => null
   },
   loading: {
     type: Boolean,
@@ -37,13 +37,7 @@ const props = defineProps({
   }
 });
 
-const meterReading = computed(() => {
-  let val = props.value?.usage?.toFixed(2) ?? '';
-  if (props.unit) {
-    val += ` ${props.unit}`;
-  }
-  return val;
-});
+const {usageAndUnit} = useMeterReading(() => props.value, () => props.info);
 </script>
 
 <style scoped>

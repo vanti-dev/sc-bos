@@ -70,7 +70,7 @@ const props = defineProps({
     default: () => {
     }
   },
-  openClosed: {
+  openClose: {
     type: Object,
     default: () => {
     }
@@ -104,8 +104,8 @@ const {color} = useStatus(
 );
 
 const statusColor = computed(() => {
-  if (props.openClosed) {
-    const percentage = props.openClosed.statesList[0].openPercent;
+  if (props.openClose) {
+    const percentage = props.openClose.statesList[0].openPercent;
 
     if (percentage === 0) return 'success'; // closed
     if (percentage > 0 && percentage <= 100) return 'warning'; // moving and open
@@ -114,8 +114,8 @@ const statusColor = computed(() => {
 });
 
 const doorStatusText = computed(() => {
-  if (props.openClosed) {
-    const percentage = props.openClosed.statesList[0].openPercent;
+  if (props.openClose) {
+    const percentage = props.openClose.statesList[0].openPercent;
 
     if (percentage === 0) return 'closed'; // closed
     if (percentage > 0 && percentage < 100) return 'moving'; // moving

@@ -7,7 +7,7 @@
         <v-list-item-content class="d-flex flex-row flex-nowrap justify-space-between align-center py-0">
           <v-list-item-title class="text-body-small text-capitalize my-auto">Open Percentage</v-list-item-title>
           <v-list-item-subtitle class="text-subtitle-1 font-weight-medium text-wrap ml-2">
-            {{ openPercentage }}
+            {{ openStr }}
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
+import {useOpenClosePositions} from '@/traits/openClose/openClose.js';
 
 const props = defineProps({
   value: {
@@ -25,11 +25,5 @@ const props = defineProps({
   }
 });
 
-const openPercentage = computed(() => {
-  return props.value?.statesList[0].openPercent === 0 ?
-      'Closed' :
-      props.value?.statesList[0].openPercent === 100 ?
-          'Open' :
-          props.value?.statesList[0].openPercent + '%';
-});
+const {openStr} = useOpenClosePositions(() => props.value);
 </script>

@@ -20,7 +20,7 @@
 </template>
 <script setup>
 import StatusAlert from '@/components/StatusAlert.vue';
-import {computed} from 'vue';
+import {useAirTemperature} from '@/traits/airTemperature/airTemperature.js';
 
 const props = defineProps({
   value: {
@@ -42,33 +42,12 @@ const props = defineProps({
   }
 });
 
-const UNIT = '°C';
-
-const hasSetPoint = computed(() => {
-  return props.value?.temperatureSetPoint?.valueCelsius !== undefined;
-});
-const setPoint = computed(() => {
-  return props.value?.temperatureSetPoint?.valueCelsius;
-});
-const setPointStr = computed(() => {
-  return setPoint.value?.toFixed(1) + UNIT;
-});
-
-const hasTemp = computed(() => {
-  return props.value?.ambientTemperature?.valueCelsius !== undefined;
-});
-const temp = computed(() => {
-  return props.value?.ambientTemperature?.valueCelsius;
-});
-const tempStr = computed(() => {
-  const numStr = temp.value?.toFixed(1);
-  if (hasSetPoint.value) {
-    return numStr;
-  } else {
-    return numStr + UNIT;
-  }
-});
-
+const {
+  hasSetPoint,
+  setPointStr,
+  hasTemp,
+  tempStr
+} = useAirTemperature(() => props.value);
 </script>
 
 <style scoped>

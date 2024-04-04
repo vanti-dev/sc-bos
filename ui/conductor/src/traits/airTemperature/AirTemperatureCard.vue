@@ -10,7 +10,7 @@
     <v-progress-linear
         height="34"
         class="mx-4 my-2"
-        :value="tempProgress()"
+        :value="tempProgress"
         background-color="neutral lighten-1"
         color="accent"/>
     <v-card-actions class="px-4">
@@ -38,19 +38,12 @@
 
 <script setup>
 import {newActionTracker} from '@/api/resource';
-import {airTemperatureModeToString, temperatureToString} from '@/api/sc/traits/air-temperature';
 import useAuthSetup from '@/composables/useAuthSetup';
+import {useAirTemperature} from '@/traits/airTemperature/airTemperature.js';
 import {camelToSentence} from '@/util/string';
-import {AirTemperature} from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb';
-import {computed, reactive, ref} from 'vue';
+import {reactive} from 'vue';
 
 const {blockActions} = useAuthSetup();
-
-
-const temperatureRange = ref({
-  low: 18.0,
-  high: 24.0
-});
 
 const props = defineProps({
   value: {
@@ -66,61 +59,12 @@ const emit = defineEmits([
   'updateAirTemperature' // of number | AirTemperature.AsObject | UpdateAirTemperatureRequest.AsObject
 ]);
 
+const {
+  tempProgress,
+  airTempData
+} = useAirTemperature(() => props.value);
+
 const updateValue = reactive(newActionTracker());
-
-/**
- * Calculates the percentage value of the current temperature based on the temperature range
- *
- * @return {number}
- */
-function tempProgress() {
-  let val = props.value?.ambientTemperature?.valueCelsius ?? 0;
-  if (val > 0) {
-    val -= temperatureRange.value.low;
-    val = val / (temperatureRange.value.high - temperatureRange.value.low);
-  }
-  return val * 100;
-}
-
-const airTempData = computed(() => {
-  if (props && props.value) {
-    const data = {};
-    Object.entries(props.value).forEach(([key, value]) => {
-      if (value !== undefined) {
-        switch (key) {
-          case 'mode':
-            if (value !== AirTemperature.Mode.MODE_UNSPECIFIED) {
-              data[key] = airTemperatureModeToString(value);
-            }
-            break;
-          case 'ambientTemperature': {
-            data['currentTemp'] = temperatureToString(value);
-            break;
-          }
-          case 'temperatureSetPoint': {
-            data['setPoint'] = temperatureToString(value);
-            break;
-          }
-          case 'ambientHumidity':
-            if (value !== 0) {
-              data['humidity'] = value.toFixed(1) + '%';
-            }
-            break;
-          case 'dewPoint': {
-            data[key] = temperatureToString(value);
-            break;
-          }
-          default: {
-            data[key] = value;
-          }
-        }
-      }
-    });
-    return data;
-  }
-  return {};
-});
-
 
 /**
  * @param {number} value

@@ -5,13 +5,13 @@
       <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Lighting</v-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">Brightness</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">{{ brightnessLevelString }}</v-list-item-subtitle>
+        <v-list-item-subtitle class="text-capitalize">{{ levelStr }}</v-list-item-subtitle>
       </v-list-item>
     </v-list>
     <v-progress-linear
         height="34"
         class="mx-4 my-2"
-        :value="brightnessLevelNumber"
+        :value="level"
         background-color="neutral lighten-1"
         color="accent"/>
     <v-card-actions class="px-4">
@@ -39,14 +39,14 @@
     </v-card-actions>
 
     <!-- Presets -->
-    <v-container v-if="brightnessPresets.length > 0" class="pa-0 px-4">
+    <v-container v-if="presets.length > 0" class="pa-4">
       <v-list tile class="ma-0 mt-2 pa-0">
         <v-list-item class="py-1 pl-0">
           <v-list-item-title class="text-body-small text-capitalize">Presets</v-list-item-title>
         </v-list-item>
       </v-list>
       <v-btn
-          v-for="preset in brightnessPresets"
+          v-for="preset in presets"
           block
           class="py-1 mx-0 mt-1 mb-2 preset"
           color="neutral lighten-1"
@@ -55,7 +55,7 @@
           small
           width="100%"
           max-width="575"
-          @click="updateBrightness(toPresetObject(preset))">
+          @click="updateBrightnessPreset(preset)">
         <span class="text-truncate">
           {{ preset.title ? preset.title : preset.name }}
         </span>
@@ -67,7 +67,12 @@
 
 <script setup>
 import useAuthSetup from '@/composables/useAuthSetup';
-import useLightingTrait from '@/traits/lighting/useLightingTrait.js';
+import {
+  useBrightness,
+  useDescribeBrightness,
+  usePullBrightness,
+  useUpdateBrightness
+} from '@/traits/light/light.js';
 import {computed} from 'vue';
 
 const {blockActions} = useAuthSetup();
@@ -77,15 +82,33 @@ const props = defineProps({
     default: ''
   }
 });
-const {
-  brightnessLevelString,
-  brightnessLevelNumber,
-  brightnessPresets,
-  toLevelPercentObject,
-  toPresetObject,
-  updateBrightness,
-  loading
-} = useLightingTrait(() => props.name, false);
+
+const {value, loading: pullLoading} = usePullBrightness(() => props.name);
+const {response: support, loading: supportLoading} = useDescribeBrightness(() => props.name);
+const {updateBrightness, loading: updateLoading} = useUpdateBrightness(() => props.name);
+const {levelStr, level, presets} = useBrightness(value, support);
+
+const loading = computed(() => pullLoading.value || supportLoading.value || updateLoading.value);
+
+/**
+ * Update the brightness level.
+ *
+ * @param {number} level
+ * @return {Promise<Brightness.AsObject>}
+ */
+function updateBrightnessLevel(level) {
+  return updateBrightness(level);
+}
+
+/**
+ * Update the brightness preset.
+ *
+ * @param {LightPreset.AsObject} preset
+ * @return {Promise<Brightness.AsObject>}
+ */
+function updateBrightnessPreset(preset) {
+  return updateBrightness({preset: preset});
+}
 
 const brightnessControl = computed(() => {
   return {
@@ -93,24 +116,24 @@ const brightnessControl = computed(() => {
       {
         disabled: blockActions.value,
         label: 'On',
-        onClick: () => updateBrightness(toLevelPercentObject(100))
+        onClick: () => updateBrightnessLevel(100)
       },
       {
         disabled: blockActions.value,
         label: 'Off',
-        onClick: () => updateBrightness(toLevelPercentObject(0))
+        onClick: () => updateBrightnessLevel(0)
       }
     ],
     right: [
       {
-        disabled: blockActions.value || brightnessLevelNumber.value >= 100,
+        disabled: blockActions.value || level.value >= 100,
         label: 'Up',
-        onClick: () => updateBrightness(toLevelPercentObject(brightnessLevelNumber.value + 1))
+        onClick: () => updateBrightnessLevel(level.value + 1)
       },
       {
-        disabled: blockActions.value || brightnessLevelNumber.value <= 0,
+        disabled: blockActions.value || level.value <= 0,
         label: 'Down',
-        onClick: () => updateBrightness(toLevelPercentObject(brightnessLevelNumber.value - 1))
+        onClick: () => updateBrightnessLevel(level.value - 1)
       }
     ]
   };

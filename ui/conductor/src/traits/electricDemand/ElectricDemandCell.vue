@@ -15,6 +15,7 @@
 </template>
 <script setup>
 import StatusAlert from '@/components/StatusAlert.vue';
+import {useElectricDemand} from '@/traits/electricDemand/electric.js';
 import {computed} from 'vue';
 
 const props = defineProps({
@@ -33,12 +34,10 @@ const props = defineProps({
   }
 });
 
-const realPower = computed(() => {
-  return props.value?.realPower;
-});
+const {realPower, realPowerUnit} = useElectricDemand(() => props.value);
 const powerUseStr = computed(() => {
   if (!realPower.value) return '';
-  return `${(realPower.value / 1000).toFixed(2)}kW`;
+  return `${realPower.value.toFixed(2)}${realPowerUnit.value}`;
 });
 </script>
 

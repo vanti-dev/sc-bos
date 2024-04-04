@@ -18,50 +18,50 @@
       </WithStatus>
     </WithAccess>
     <!-- Has OpenClose data but has no Access data -->
-    <WithOpenClosed
+    <WithOpenClose
         v-if="!availableTraits.includes('Access') && availableTraits.includes('OpenClose')"
-        v-slot="{ resource: openClosedResource }"
+        v-slot="{ resource: openCloseResource }"
         :name="props.device.name"
         :paused="props.paused">
       <WithStatus v-slot="{ resource: statusResource }" :name="props.device.name" :paused="props.paused">
         <Access
-            :open-closed="openClosedResource.value"
+            :open-close="openCloseResource.value"
             :status-log="statusResource.value"
-            :loading="openClosedResource.loading || statusResource.loading"
+            :loading="openCloseResource.loading || statusResource.loading"
             :device="props.device"
             :show-close="props.showClose"
             :paused="props.paused"
             @click:close="emit('click:close')"/>
       </WithStatus>
-    </WithOpenClosed>
+    </WithOpenClose>
     <!-- Has both Access and OpenClose data -->
     <WithAccess
         v-if="availableTraits.includes('Access') && availableTraits.includes('OpenClose')"
         v-slot="{ resource: accessResource }"
         :name="props.device.name"
         :paused="props.paused">
-      <WithOpenClosed v-slot="{ resource: openClosedResource }" :name="props.device.name" :paused="props.paused">
+      <WithOpenClose v-slot="{ resource: openCloseResource }" :name="props.device.name" :paused="props.paused">
         <WithStatus v-slot="{ resource: statusResource }" :name="props.device.name" :paused="props.paused">
           <Access
               :access-attempt="accessResource.value"
-              :open-closed="openClosedResource.value"
+              :open-close="openCloseResource.value"
               :status-log="statusResource.value"
-              :loading="accessResource.loading || openClosedResource.loading || statusResource.loading"
+              :loading="accessResource.loading || openCloseResource.loading || statusResource.loading"
               :device="props.device"
               :show-close="props.showClose"
               :paused="props.paused"
               @click:close="emit('click:close')"/>
         </WithStatus>
-      </WithOpenClosed>
+      </WithOpenClose>
     </WithAccess>
   </v-card>
 </template>
 
 <script setup>
-import WithAccess from '@/routes/devices/components/renderless/WithAccess.vue';
-import WithOpenClosed from '@/routes/devices/components/renderless/WithOpenClosed.vue';
-import WithStatus from '@/routes/devices/components/renderless/WithStatus.vue';
 import Access from '@/routes/ops/security/components/access-point-card/Access.vue';
+import WithAccess from '@/traits/access/WithAccess.vue';
+import WithOpenClose from '@/traits/openClose/WithOpenClose.vue';
+import WithStatus from '@/traits/status/WithStatus.vue';
 import {computed} from 'vue';
 
 const props = defineProps({

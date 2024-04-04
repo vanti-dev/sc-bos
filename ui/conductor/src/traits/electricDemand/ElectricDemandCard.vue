@@ -12,6 +12,7 @@
   </v-card>
 </template>
 <script setup>
+import {useElectricDemand} from '@/traits/electricDemand/electric.js';
 import {computed} from 'vue';
 
 const props = defineProps({
@@ -26,27 +27,29 @@ const props = defineProps({
   }
 });
 
-const realPower = computed(() => props.value?.realPower);
-const apparentPower = computed(() => props.value?.apparentPower);
-const reactivePower = computed(() => props.value?.reactivePower);
-const powerFactor = computed(() => props.value?.powerFactor);
+const {
+  realPower, realPowerUnit,
+  apparentPower, apparentPowerUnit,
+  reactivePower, reactivePowerUnit,
+  powerFactor
+} = useElectricDemand(() => props.value);
 
 const rows = computed(() => {
   return [
     {
       label: 'Real Power',
-      value: (realPower.value ? realPower.value / 1000 : 0).toFixed(3),
-      unit: 'kW'
+      value: realPower.value.toFixed(3),
+      unit: realPowerUnit.value
     },
     {
       label: 'Apparent Power',
-      value: (apparentPower.value ? apparentPower.value / 1000 : 0).toFixed(3),
-      unit: 'kVA'
+      value: apparentPower.value.toFixed(3),
+      unit: apparentPowerUnit.value
     },
     {
       label: 'Reactive Power',
-      value: (reactivePower.value ? reactivePower.value / 1000 : 0).toFixed(3),
-      unit: 'kVAr'
+      value: reactivePower.value.toFixed(3),
+      unit: reactivePowerUnit.value
     },
     {
       label: 'Power Factor',

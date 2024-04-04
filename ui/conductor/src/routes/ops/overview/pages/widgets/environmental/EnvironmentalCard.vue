@@ -7,13 +7,13 @@
             v-if="indoorTemperature > 0 || props.shouldWrap"
             :value="indoorTemperature"
             :color="props.gaugeColor"
-            :min="temperatureRange.low"
-            :max="temperatureRange.high"
+            :min="tempRange.low"
+            :max="tempRange.high"
             segments="30"
             style="max-width: 140px;"
             class="mt-2 mb-5 ml-3 mr-2">
           <span class="mt-n4 ml-1 text-h1">
-            {{ indoorTemperature.toFixed(1) }}&deg;
+            {{ indoorTempStr }}&deg;
           </span>
           <template #title>
             <span class="ml-n1 mb-2">Avg. Indoor Temperature</span>
@@ -30,7 +30,7 @@
             style="width: 150px;">
           <span
               class="text-h1 align-left mb-3"
-              style="display: inline-block;">{{ outdoorTemperature.toFixed(1) }}&deg;
+              style="display: inline-block;">{{ outdoorTempStr }}&deg;
           </span>
           <span
               class="text-title text-center"
@@ -48,7 +48,7 @@
             style="max-width: 140px;"
             class="mt-2">
           <span class="align-baseline text-h1 mt-n2">
-            {{ (indoorHumidity * 100).toFixed(1) }}<span style="font-size: 0.7em;">%</span>
+            {{ indoorHumidityStr }}<span style="font-size: 0.7em;">%</span>
           </span>
           <template #title>
             <span class="mb-2">Avg. Humidity</span>
@@ -63,8 +63,8 @@
 import CircularGauge from '@/components/CircularGauge.vue';
 import ContentCard from '@/components/ContentCard.vue';
 
-import useAirTemperatureTrait from '@/traits/airTemperature/useAirTemperatureTrait';
-import {computed, reactive, ref, watchEffect} from 'vue';
+import {usePullAirTemperature, useAirTemperature} from '@/traits/airTemperature/airTemperature.js';
+import {computed} from 'vue';
 
 const props = defineProps({
   name: {
@@ -85,37 +85,28 @@ const props = defineProps({
   }
 });
 
-const temperatureRange = ref({
-  low: 18.0,
-  high: 24.0
+const {value: indoorValue} = usePullAirTemperature(() => props.name);
+const {
+  temp: indoorTemperature,
+  humidity: indoorHumidity,
+  tempRange
+} = useAirTemperature(indoorValue);
+const {value: outdoorValue} = usePullAirTemperature(() => props.externalName);
+const {temp: outdoorTemperature} = useAirTemperature(outdoorValue);
+
+const vOrDash = (r) => {
+  const v = r.value ?? '-';
+  if (v === '-') return v;
+  return v.toFixed(1);
+};
+const indoorTempStr = computed(() => {
+  return vOrDash(indoorTemperature);
+});
+const indoorHumidityStr = computed(() => {
+  return vOrDash(indoorHumidity);
+});
+const outdoorTempStr = computed(() => {
+  return vOrDash(outdoorTemperature);
 });
 
-const indoorProps = reactive({
-  name: props.name,
-  paused: false
-});
-const outdoorProps = reactive({
-  name: props.externalName,
-  paused: false
-});
-
-watchEffect(() => {
-  indoorProps.name = props.name;
-  outdoorProps.name = props.externalName;
-});
-
-const indoor = useAirTemperatureTrait(indoorProps);
-const outdoor = useAirTemperatureTrait(outdoorProps);
-
-const indoorTemperature = computed(() => {
-  return indoor.temperatureValue.value;
-});
-
-const outdoorTemperature = computed(() => {
-  return outdoor.temperatureValue.value;
-});
-
-const indoorHumidity = computed(() => {
-  return indoor.humidityValue.value;
-});
 </script>

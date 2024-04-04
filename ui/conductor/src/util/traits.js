@@ -1,33 +1,46 @@
 import {closeResource} from '@/api/resource';
 import {toValue} from '@/util/vue';
-import {computed, watch} from 'vue';
+import {watch} from 'vue';
 import {deepEqual} from 'vuetify/src/util/helpers';
 
 /**
- * Converts a ref or reactive object to a computed property that evaluates to a query object.
+ * @typedef {import('@/api/resource').RemoteResource} RemoteResource
+ */
+
+/**
+ * Converts a query like value into a Smart Core query object.
+ * Queries typically look like {name: 'someName'}, so if the passed input is a string it will be converted to
+ * {name: input}.
  *
  * @template {{name: string}} T
  * @param {MaybeRefOrGetter<string|T|null>} input - input value to be converted into a query object.
- * @return {
- *  import('vue').ComputedRef<T|null>
- * } - computed property that evaluates to a query object.
+ * @return {T|null} input or {name: input} if input is a string
  */
 export const toQueryObject = (input) => {
-  return computed(() => {
-    const inputValue = toValue(input);
+  const inputValue = toValue(input);
+  if (!inputValue) return null;
+  if (typeof inputValue === 'string') return {name: inputValue};
+  return inputValue;
+};
 
-    // If no input present, return null
-    if (!inputValue) return null;
-
-    // If input is a string, return an object with the name property
-    if (typeof inputValue === 'string') {
-      return {name: inputValue};
-      //
-      // If input is an object, return as is
-    } else {
-      return inputValue;
-    }
-  });
+/**
+ * Sets the name of the request if it is not already set.
+ *
+ * @template {{name: string}} T
+ * @param {T} req
+ * @param {MaybeRefOrGetter<string>} name
+ * @return {T}
+ */
+export const setRequestName = (req, name) => {
+  const nameValue = toValue(name);
+  const needsName = nameValue === null || nameValue === undefined;
+  if (needsName && !req.hasOwnProperty('name')) {
+    throw new Error('name is required as part of request');
+  }
+  if (!req.hasOwnProperty('name')) {
+    req.name = nameValue;
+  }
+  return req;
 };
 
 /**
@@ -36,7 +49,7 @@ export const toQueryObject = (input) => {
  * @template T
  * @param {MaybeRefOrGetter<T>} query - object representing the request to the API
  * @param {MaybeRefOrGetter<boolean>} [paused] - boolean representing whether the data stream is paused
- * @param {(req: T) => T<any, any>} apiCalls - array of functions that return a resource
+ * @param {(req: T) => RemoteResource<*>} apiCalls - array of functions that return a resource
  * @example
  * watchResource(
  *   () => toValue(toQueryObject(query)),

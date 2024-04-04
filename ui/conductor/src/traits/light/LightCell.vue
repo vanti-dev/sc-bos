@@ -5,9 +5,9 @@
     <v-tooltip bottom>
       <template #activator="{ on, attrs }">
         <span v-on="on" v-bind="attrs" class="d-flex flex-row">
-          <span class="text-caption" style="min-width: 4ex">{{ brightnessLevelString }}</span>
-          <v-icon right :color="brightnessLevelNumber > 0 ? 'yellow' : 'white' " size="20">
-            {{ lightIcon }}
+          <span class="text-caption" style="min-width: 4ex">{{ levelStr }}</span>
+          <v-icon right :color="level > 0 ? 'yellow' : 'white' " size="20">
+            {{ icon }}
           </v-icon>
         </span>
       </template>
@@ -18,7 +18,7 @@
 
 <script setup>
 import StatusAlert from '@/components/StatusAlert.vue';
-import useLightingTrait from '@/traits/lighting/useLightingTrait.js';
+import {useBrightness, usePullBrightness} from '@/traits/light/light.js';
 
 const props = defineProps({
   name: {
@@ -30,10 +30,6 @@ const props = defineProps({
     default: false
   }
 });
-const {
-  brightnessLevelString,
-  brightnessLevelNumber,
-  lightIcon,
-  error
-} = useLightingTrait(() => props.name, () => props.paused, {describeBrightness: false});
+const {value, error} = usePullBrightness(() => props.name, () => props.paused);
+const {levelStr, level, icon} = useBrightness(value);
 </script>

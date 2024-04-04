@@ -25,8 +25,7 @@
 </template>
 <script setup>
 import StatusAlert from '@/components/StatusAlert.vue';
-import {EnterLeaveEvent} from '@smart-core-os/sc-api-grpc-web/traits/enter_leave_sensor_pb';
-import {computed, ref, watch} from 'vue';
+import {useEnterLeaveEvent} from '@/traits/enterLeave/enterLeave.js';
 
 const props = defineProps({
   value: {
@@ -48,38 +47,12 @@ const props = defineProps({
   }
 });
 
-const hasTotals = computed(() => props.value?.enterTotal !== undefined || props.value?.leaveTotal !== undefined);
-const enterTotal = computed(() => props.value?.enterTotal || 0);
-const leaveTotal = computed(() => props.value?.leaveTotal || 0);
-
-const enterTimeoutHandle = ref(0);
-const leaveTimeoutHandle = ref(0);
-watch(() => props.value, (newVal, oldVal) => {
-  if (!oldVal || !newVal) {
-    justEntered.value = false;
-    justLeft.value = false;
-    clearTimeout(enterTimeoutHandle.value);
-    clearTimeout(leaveTimeoutHandle.value);
-    return;
-  }
-
-  if (newVal.direction === EnterLeaveEvent.Direction.ENTER) {
-    justEntered.value = true;
-    clearTimeout(enterTimeoutHandle.value);
-    enterTimeoutHandle.value = setTimeout(() => {
-      justEntered.value = false;
-    }, props.showChangeDuration);
-  }
-  if (newVal.direction === EnterLeaveEvent.Direction.LEAVE) {
-    justLeft.value = true;
-    clearTimeout(leaveTimeoutHandle.value);
-    leaveTimeoutHandle.value = setTimeout(() => {
-      justLeft.value = false;
-    }, props.showChangeDuration);
-  }
-}, {deep: true});
-const justEntered = ref(false);
-const justLeft = ref(false);
+const {
+  hasTotals, enterTotal, leaveTotal,
+  justEntered, justLeft
+} = useEnterLeaveEvent(() => props.value, {
+  showChangeDuration: () => props.showChangeDuration
+});
 </script>
 
 <style scoped>

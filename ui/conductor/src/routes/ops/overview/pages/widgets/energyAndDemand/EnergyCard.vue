@@ -65,9 +65,9 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import useOccupancyTrait from '@/traits/occupancy/useOccupancyTrait';
-import WithElectricDemand from '@/routes/devices/components/renderless/WithElectricDemand.vue';
 import EnergyGraph from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraph.vue';
+import WithElectricDemand from '@/traits/electricDemand/WithElectricDemand.vue';
+import {useOccupancy, usePullOccupancy} from '@/traits/occupancy/occupancy.js';
 import {computed, reactive} from 'vue';
 
 const props = defineProps({
@@ -94,14 +94,15 @@ const energy = reactive({
   metered: 0,
   total: computed(() => (energy.metered - energy.generated).toFixed(2))
 });
-const {occupancyValue} = useOccupancyTrait({name: props.metered});
-
+const {value: occupancyValue} = usePullOccupancy(() => props.metered);
+const {peopleCount} = useOccupancy(occupancyValue);
 const energyIntensity = computed(() => {
-  if (!occupancyValue?.value?.peopleCount) {
+  const pc = peopleCount.value;
+  if (!pc) {
     return Math.abs(energy.total).toFixed(2);
   }
 
-  return Math.abs(energy.total / occupancyValue?.value?.peopleCount).toFixed(2);
+  return Math.abs(energy.total / pc).toFixed(2);
 });
 
 /**
