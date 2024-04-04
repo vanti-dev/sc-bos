@@ -150,7 +150,7 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 		model := airqualitysensor.NewModel(airqualitysensor.WithInitialAirQuality(auto.GetAirQualityState()))
 		return []any{airqualitysensor.WrapApi(airqualitysensor.NewModelServer(model))}, auto.AirQualitySensorAuto(model)
 	case trait.AirTemperature:
-		h := rand.Float32()
+		h := rand.Float32() * 100
 		t := 15 + (rand.Float64() * 10)
 		initial := traits.AirTemperature{
 			Mode:               traits.AirTemperature_AUTO,
