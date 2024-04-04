@@ -163,7 +163,7 @@
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
-        "passwordFile": "./.data/area-controller-01/postgres-pass"
+        "passwordFile": "./.data/secrets/postgres-pass"
       }
     }
   ],
