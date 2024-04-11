@@ -2,20 +2,31 @@
 package main
 
 import (
-	"context"
-	"os"
-	"os/signal"
 	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/meteremail"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 )
 
 var sampleNow = time.Date(2024, 01, 19, 0, 0, 0, 0, time.Local)
+
+func addDummyMeters(root *node.Node) {
+	var models []*meter.Model
+	meterNames := []string{"elecmeter1", "elecmeter2", "watermeter1", "watermeter2"}
+	for _, meterName := range meterNames {
+		m := meter.NewModel()
+		m.RecordReading(123.45)
+		models = append(models, m)
+		client := node.WithClients(gen.WrapMeterApi(meter.NewModelServer(m)))
+		root.Announce(meterName, node.HasTrait(meter.TraitName, client))
+	}
+}
 
 func main() {
 	logger, err := zap.NewDevelopment()
@@ -24,6 +35,7 @@ func main() {
 	}
 	root := node.New("test")
 	alltraits.AddSupport(root)
+	addDummyMeters(root)
 
 	now, _ := time.Parse(time.DateTime, "2023-11-15 11:36:00")
 	now = now.Round(time.Second) // get rid of millis, etc
@@ -40,35 +52,29 @@ func main() {
 	lifecycle := meteremail.Factory.New(serv)
 	defer lifecycle.Stop()
 	cfg := `{
-	"name": "emails", "type": "meteremail",
+	"name": "emails", 
+	"type": "meteremail",
 	"destination": {
 	"host": "smtp.gmail.com",
 	"from": "OCW Paradise Build <vantiocwdev@gmail.com>",
 	"to": ["Dean Redfern <dean.redfern@vanti.co.uk>"],
 	"passwordFile" : ".localpassword",
-	"sendTime": "0 0 * * MON-FRI"
+	"sendTime": "* * * * MON-FRI"
 	},
-	"serverAddr" : "172.16.100.10:23557",
 	"electricMeters" : [
-					"uk-ocw/floors/01/devices/CE1-electric-meter/WestDBA/T1HVACTotalEnergy",
-					"uk-ocw/floors/01/devices/CE1-electric-meter/WestDBA/T1LightingTotalEnergy",
-					"uk-ocw/floors/01/devices/CE1-electric-meter/WestDBA/T1TotalLoadTotalEnergy",
-					"uk-ocw/floors/01/devices/CE2-electric-meter/SouthSideDBB/T1LPHVACTotalEnergy",
-					"uk-ocw/floors/01/devices/CE2-electric-meter/SouthSideDBB/T1LPLightingTotalEnergy",
-					"uk-ocw/floors/01/devices/CE2-electric-meter/SouthSideDBB/T1LPTotalLoadTotalEnergy",
-					"uk-ocw/floors/06/devices/CE11-electric-meter/WestDBA/T6HVACTotalEnergy",
-					"uk-ocw/floors/06/devices/CE11-electric-meter/WestDBA/T6LightingTotalEnergy",
-					"uk-ocw/floors/06/devices/CE11-electric-meter/WestDBA/T6TotalLoadTotalEnergy",
-					"uk-ocw/floors/06/devices/CE12-electric-meter/EASTSideDBB/T6HVACTotalEnergy",
-					"uk-ocw/floors/06/devices/CE12-electric-meter/EASTSideDBB/T6LightingTotalEnergy",
-					"uk-ocw/floors/06/devices/CE12-electric-meter/EASTSideDBB/T6TotalLoadTotalEnergy"
+					"elecmeter1",
+					"elecmeter2"
 					],
 	"waterMeters" : [ 
-					"uk-ocw/floors/01/devices/CE1-water-meter/FirstFloorWestBCWSMeter",
-					"uk-ocw/floors/01/devices/CE2-water-meter/1stFloorEastBCWSMeter",
-					"uk-ocw/floors/06/devices/CE11-water-meter/SixthFloorWestBCWSMeter",
-					"uk-ocw/floors/06/devices/CE12-water-meter/6thFloorEastBCWSMeter"],
-	"insecureSkipVerify" : true
+					"watermeter1",
+					"watermeter2"
+					],
+	"timing" : {
+		"timeout" : "9s",
+		"backoffStart" : "19s",
+		"backoffMax" : "59s",
+		"numRetries" : 7
+	}
 }`
 
 	_, err = lifecycle.Configure([]byte(cfg))
@@ -80,7 +86,5 @@ func main() {
 		panic(err)
 	}
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
-	<-ctx.Done()
+	time.Sleep(5 * time.Second)
 }
