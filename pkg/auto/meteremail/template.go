@@ -18,6 +18,7 @@ type Attrs struct {
 	ReadingsByFloorZone  map[string]map[string][]Stats // map floor -> zone -> reading
 	EnergySummaryReports []SummaryReport
 	WaterSummaryReports  []SummaryReport
+	TemplateArgs         config.TemplateArgs
 }
 
 // grab the floors and sort them so we can iterate over consistently

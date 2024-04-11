@@ -37,9 +37,6 @@ type Destination struct {
 
 	SendTime *jsontypes.Schedule `json:"sendTime,omitempty"` // defaults to midnight on Monday mornings: "0 0 * * 1"
 
-	SubjectTemplate jsontypes.String `json:"subjectTemplate,omitempty"`
-	BodyTemplate    jsontypes.String `json:"bodyTemplate,omitempty"`
-
 	Parsed *ParsedDestination `json:"-"`
 }
 
@@ -58,6 +55,12 @@ type Timing struct {
 	NumRetries   int                `json:"numRetries,omitempty"`
 }
 
+type TemplateArgs struct {
+	BodyTemplate    jsontypes.String `json:"bodyTemplate,omitempty"`
+	EmailTitle      string           `json:"emailTitle,omitempty"`
+	SubjectTemplate jsontypes.String `json:"subjectTemplate,omitempty"`
+}
+
 type Root struct {
 	auto.Config
 	// Configuration information for how to send the email.
@@ -67,6 +70,7 @@ type Root struct {
 	ElectricMeters []string         `json:"electricMeters,omitempty"`
 	WaterMeters    []string         `json:"waterMeters,omitempty"`
 	Timing         Timing           `json:"timing,omitempty"`
+	TemplateArgs   TemplateArgs     `json:"templateArgs,omitempty"`
 }
 
 type AttachmentCfg struct {
@@ -97,7 +101,7 @@ func ReadBytes(data []byte) (cfg Root, err error) {
 	}
 
 	// validate email addresses
-	parsed, err := cfg.Destination.Parse()
+	parsed, err := cfg.Destination.Parse(cfg)
 	if err != nil {
 		return
 	}
@@ -112,7 +116,7 @@ func ReadBytes(data []byte) (cfg Root, err error) {
 	return
 }
 
-func (d Destination) Parse() (*ParsedDestination, error) {
+func (d Destination) Parse(cfg Root) (*ParsedDestination, error) {
 	p := &ParsedDestination{}
 	var err error
 	p.Addr = d.Addr()
@@ -141,11 +145,11 @@ func (d Destination) Parse() (*ParsedDestination, error) {
 		return p.To[i].Address < p.To[j].Address
 	})
 
-	p.SubjectTemplate, err = d.ReadSubjectTemplate()
+	p.SubjectTemplate, err = cfg.ReadSubjectTemplate()
 	if err != nil {
 		return nil, fmt.Errorf("destination.subjectTemplate: %w", err)
 	}
-	p.BodyTemplate, err = d.ReadBodyTemplate()
+	p.BodyTemplate, err = cfg.ReadBodyTemplate()
 	if err != nil {
 		return nil, fmt.Errorf("destination.bodyTemplate: %w", err)
 	}
@@ -162,8 +166,8 @@ func (d Destination) Addr() string {
 	return net.JoinHostPort(d.Host, strconv.Itoa(p))
 }
 
-func (d Destination) ReadSubjectTemplate() (*template.Template, error) {
-	s, err := d.SubjectTemplate.Read()
+func (c Root) ReadSubjectTemplate() (*template.Template, error) {
+	s, err := c.TemplateArgs.SubjectTemplate.Read()
 	if err != nil {
 		return nil, err
 	}
@@ -173,8 +177,8 @@ func (d Destination) ReadSubjectTemplate() (*template.Template, error) {
 	return template.New("subject").Parse(s)
 }
 
-func (d Destination) ReadBodyTemplate() (*template.Template, error) {
-	s, err := d.BodyTemplate.Read()
+func (c Root) ReadBodyTemplate() (*template.Template, error) {
+	s, err := c.TemplateArgs.BodyTemplate.Read()
 	if err != nil {
 		return nil, err
 	}
@@ -209,11 +213,11 @@ func (d *AttachmentCfg) AttachFile(name string, b []byte) {
 
 const DefaultEmailSubject = `Smart Core Meter Readings {{.Now.Format "Jan 02, 2006"}}`
 const DefaultEmailBody = `<html lang="en">
-<head>
-  <title>One Centenary Way - Smart Core Meter Readings</title>
+<head>  
 </head>
 <body>
 <section>
+<h3>{{.TemplateArgs.EmailTitle}}</h3>
 <h4>Please find below the total meter readings per each half floor. Attached is a detailed report which breaks these totals down into individual meter readings</h4>  
 <h4>Electric Meter Readings
 </h4>
