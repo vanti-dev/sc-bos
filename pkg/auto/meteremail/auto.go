@@ -240,8 +240,9 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 			}
 
 			attrs := Attrs{
-				Now:   t,
-				Stats: []Stats{},
+				Now:          t,
+				Stats:        []Stats{},
+				TemplateArgs: cfg.TemplateArgs,
 			}
 
 			logger.Debug("Meter email is being generated...", zap.Duration("timeout", cfg.Timing.Timeout.Duration))

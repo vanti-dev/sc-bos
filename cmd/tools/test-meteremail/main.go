@@ -74,6 +74,10 @@ func main() {
 		"backoffStart" : "19s",
 		"backoffMax" : "59s",
 		"numRetries" : 7
+	},
+	"templateArgs" : {
+		"emailTitle" : "hello title",
+		"subjectTemplate" : "hello subject"
 	}
 }`
 
