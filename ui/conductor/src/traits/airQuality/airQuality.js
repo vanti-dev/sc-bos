@@ -18,7 +18,6 @@ import {computed, onUnmounted, reactive, toRefs} from 'vue';
  * @typedef {import('@/api/resource').ResourceValue} ResourceValue
  * @typedef {import('vue').Ref} Ref
  * @typedef {import('vue').ToRefs} ToRefs
- * @typedef {import('@/util/vue').MaybeRefOrGetter} MaybeRefOrGetter
  */
 
 /**
