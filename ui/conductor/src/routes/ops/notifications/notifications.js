@@ -3,38 +3,38 @@ import {useAccountStore} from '@/stores/account';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
 import {acceptHMRUpdate, defineStore} from 'pinia';
 
-const SeverityStrings = {
+export const SeverityStrings = {
   [Alert.Severity.INFO]: 'INFO',
   [Alert.Severity.WARNING]: 'WARN',
   [Alert.Severity.SEVERE]: 'ALERT',
   [Alert.Severity.LIFE_SAFETY]: 'DANGER'
 };
-const SeverityColor = {
+export const SeverityColor = {
   [Alert.Severity.INFO]: 'info',
   [Alert.Severity.WARNING]: 'warning',
   [Alert.Severity.SEVERE]: 'error',
   [Alert.Severity.LIFE_SAFETY]: 'error'
 };
 
-export const useNotifications = defineStore('notifications', () => {
-  /**
-   *
-   * @param {Severity} severity
-   * @return {{color: string, text: *}|{color: string, text: string}}
-   */
-  function severityData(severity) {
-    for (let i = severity; i > 0; i--) {
-      if (SeverityStrings[i]) {
-        let str = SeverityStrings[i];
-        if (i < severity) {
-          str += '+' + (severity - i);
-        }
-        return {text: str, color: `${SeverityColor[i]}--text`, background: `${SeverityColor[i]}`};
+/**
+ *
+ * @param {Severity} severity
+ * @return {{text: string, color: string, background: string}}
+ */
+export function severityData(severity) {
+  for (let i = severity; i > 0; i--) {
+    if (SeverityStrings[i]) {
+      let str = SeverityStrings[i];
+      if (i < severity) {
+        str += '+' + (severity - i);
       }
+      return {text: str, color: `${SeverityColor[i]}--text`, background: `${SeverityColor[i]}`};
     }
-    return {text: 'unspecified', color: 'gray--text', background: 'gray'};
   }
+  return {text: 'unspecified', color: 'gray--text', background: 'gray'};
+}
 
+export const useNotifications = defineStore('notifications', () => {
   const account = useAccountStore();
 
   /**

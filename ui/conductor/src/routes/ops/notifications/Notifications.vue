@@ -22,40 +22,58 @@
           :class="{ 'hide-pagination': modifyFooter }"
           @click:row="showNotification">
         <template #top>
-          <v-row :class="['mt-1 mb-2 ml-0 pl-0', {'mt-n4 mb-2 mr-2': props.overviewPage}]">
+          <v-row
+              :class="[
+                'd-flex flex-row align-center mb-2 mt-1 ml-0 pl-0 mr-1',
+                {'mt-n5 mb-2 mr-n2': props.overviewPage}
+              ]">
             <h3 v-if="props.overviewPage" :class="['text-h3 pt-2 pb-6', {'text-h4': props.overviewPage}]">
               Notifications
             </h3>
             <v-spacer/>
-            <filters
-                v-if="!props.overviewPage"
-                class="mb-4 mt-n2"
-                :floor.sync="query.floor"
-                :floor-items="floors"
-                :zone.sync="query.zone"
-                :zone-items="zones"
-                :subsystem.sync="query.subsystem"
-                :subsystem-items="subsystems"
-                :acknowledged.sync="query.acknowledged"
-                :resolved.sync="query.acknowledged"/>
-            <v-btn v-if="props.overviewPage" class="mr-2" color="primary" @click="alerts.exportData('Notifications')">
+            <filter-choice-chips
+                :ctx="filterCtx"
+                :class="['mr-2 mt-n2', {'mt-n2': props.overviewPage}, {'mb-4': !props.overviewPage}]"/>
+            <span :class="['mt-n2', {'mb-4 mt-2': !props.overviewPage}, {'mr-2': props.overviewPage}]">
+              <filter-btn :ctx="filterCtx" tile/>
+            </span>
+            <v-tooltip top>
+              <template #activator="{ on }">
+                <v-btn
+                    v-if="props.overviewPage"
+                    class="mt-n2 rounded"
+                    color="neutral"
+                    elevation="0"
+                    fab
+                    height="36"
+                    small
+                    tile
+                    v-on="on"
+                    width="34"
+                    @click="alerts.exportData('Notifications')">
+                  <v-icon>mdi-file-download</v-icon>
+                </v-btn>
+              </template>
               Export CSV...
-            </v-btn>
-            <v-tooltip bottom>
+            </v-tooltip>
+            <v-tooltip top>
               <template #activator="{ on }">
                 <v-btn
                     v-if="!props.overviewPage"
-                    @click="toggleManualEntry"
-                    color="primary"
-                    width="30"
-                    x-small
+                    class="mt-n2 ml-2 mb-4 rounded"
+                    color="neutral"
+                    elevation="0"
+                    fab
                     height="36"
-                    :class="[{'mt-2 mr-5': !props.overviewPage, 'mt-0 ml-2 mr-0': props.overviewPage}]"
-                    v-on="on">
-                  <v-icon size="28">mdi-plus</v-icon>
+                    width="34"
+                    small
+                    tile
+                    v-on="on"
+                    @click="toggleManualEntry">
+                  <v-icon size="30">mdi-plus</v-icon>
                 </v-btn>
               </template>
-              <span>Add new entry</span>
+              <span>Add New Entry</span>
             </v-tooltip>
 
             <v-expansion-panels v-if="!props.overviewPage" class="mt-n3 mb-3" flat v-model="manualEntryPanel">
@@ -165,14 +183,17 @@
 import {newActionTracker} from '@/api/resource.js';
 import {createAlert} from '@/api/ui/alerts.js';
 import ContentCard from '@/components/ContentCard.vue';
+import FilterBtn from '@/components/filter/FilterBtn.vue';
+import FilterChoiceChips from '@/components/filter/FilterChoiceChips.vue';
+import useFilterCtx from '@/components/filter/filterCtx.js';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
-import Filters from '@/routes/ops/notifications/Filters.vue';
-import {useNotifications} from '@/routes/ops/notifications/notifications.js';
+import {severityData, useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
+import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
 import {computed, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
@@ -190,14 +211,6 @@ const notifications = useNotifications();
 const alertMetadata = useAlertMetadata();
 const hubStore = useHubStore();
 const pageStore = usePageStore();
-const activeZone = ref(props.zone);
-watch(
-    () => props.zone,
-    (value) => {
-      activeZone.value = value;
-    },
-    {immediate: true}
-);
 
 const manualEntryValue = reactive(newActionTracker());
 const manualEntryPanel = ref(null);
@@ -225,32 +238,139 @@ const addManualEntry = async () => {
   };
 };
 
-const query = reactive({
-  createdNotBefore: undefined,
-  createdNotAfter: undefined,
-  severityNotAbove: undefined,
-  severityNotBelow: undefined,
-  floor: undefined,
-  zone: computed({
-    get: () => activeZone.value,
-    set: (value) => {
-      activeZone.value = value;
-    }
-  }),
-  subsystem: undefined,
-  source: undefined,
-  acknowledged: undefined,
-  resolved: false,
-  resolvedNotBefore: undefined,
-  resolvedNotAfter: undefined
-});
-
 const dataTableOptions = ref({
   itemsPerPage: 20,
   page: 1
 });
 const itemsPerPageOptions = [20, 50, 100];
 const modifyFooter = computed(() => queryMetadataCount.value === undefined);
+
+const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
+const zones = computed(() => Object.keys(alertMetadata.zoneCountsMap).sort());
+const subsystems = computed(() => Object.keys(alertMetadata.subsystemCountsMap).sort());
+
+const filterOpts = computed(() => {
+  // we only add filters that can affect the output, i.e. no floor filter if nothing has a floor.
+  const filters = [];
+  // Acknowledged
+  filters.push({
+    key: 'acknowledged',
+    icon: 'mdi-checkbox-marked-circle-outline', title: 'Acknowledgement', type: 'boolean',
+    valueToString(value) {
+      switch (value) {
+        case true:
+          return 'Acknowledged';
+        case false:
+          return 'Unacknowledged';
+        default:
+          return 'All';
+      }
+    }
+  });
+  // Floor
+  {
+    const items = floors.value
+        // we can't query for empty strings anyway.
+        .filter(s => Boolean(s));
+    if (items.length > 0) {
+      filters.push({key: 'floor', icon: 'mdi-layers-triple-outline', title: 'Floor', type: 'list', items});
+    }
+  }
+  // Severity
+  filters.push({
+    key: 'severity', // maps to severityNotBelow and severityNotAbove
+    icon: 'mdi-alert-box-outline', title: 'Severity', type: 'range',
+    items: Object.entries(Alert.Severity)
+        .map(([, v]) => ({value: v, title: severityData(v).text}))
+        .filter((item) => item.value !== 0) // skip UNSPECIFIED
+  });
+  // Subsystem
+  {
+    const items = subsystems.value
+        // we can't query for empty strings anyway.
+        .filter(s => Boolean(s));
+    if (items.length > 0) {
+      filters.push({key: 'subsystem', icon: 'mdi-file-tree', title: 'Subsystem', type: 'list', items});
+    }
+  }
+  // Zone
+  if (!props.overviewPage) {
+    const items = zones.value
+        // we can't query for empty strings anyway.
+        .filter(s => Boolean(s));
+    if (items.length > 0) {
+      filters.push({key: 'zone', icon: 'mdi-select-all', title: 'Zone', type: 'list', items});
+    }
+  }
+
+  filters.push({
+    key: 'resolved',
+    icon: 'mdi-checkbox-marked-circle-outline', title: 'Resolution', type: 'boolean',
+    valueToString(value) {
+      switch (value) {
+        case true:
+          return 'Resolved';
+        case false:
+          return 'Unresolved';
+        default:
+          return 'All';
+      }
+    }
+  });
+
+  const defaults = [
+    {filter: 'resolved', value: false}
+  ];
+  if (props.zone) {
+    defaults.push({filter: 'zone', value: props.zone});
+  }
+  return {filters, defaults};
+});
+const filterCtx = useFilterCtx(filterOpts);
+
+const nonFilterableQueryFields = computed(() => {
+  const res = /** @type {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} */ {};
+  if (props.zone) {
+    res.zone = props.zone;
+  }
+  return res;
+});
+const queryFields = computed(() => {
+  const res = /** @type {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} */ {};
+  for (const choice of filterCtx.sortedChoices.value) {
+    if (choice.value === undefined || choice.value === null) continue;
+    switch (choice.filter) {
+      case 'acknowledged':
+        res.acknowledged = choice.value;
+        break;
+      case 'floor':
+        res.floor = choice.value?.value ?? choice.value;
+        break;
+      case 'severity':
+        const {from, to} = choice.value;
+        if (from) {
+          res.severityNotBelow = from.value;
+        }
+        if (to) {
+          res.severityNotAbove = to.value;
+        }
+        break;
+      case 'subsystem':
+        res.subsystem = choice.value?.value ?? choice.value;
+        break;
+      case 'zone':
+        res.zone = choice.value?.value ?? choice.value;
+        break;
+      case 'resolved':
+        res.resolved = choice.value;
+        break;
+    }
+  }
+  return res;
+});
+const query = computed(() => {
+  return {...nonFilterableQueryFields.value, ...queryFields.value};
+});
 
 const name = computed(() => hubStore.hubNode?.name ?? '');
 const alerts = reactive(useAlertsApi(name, query));
@@ -263,18 +383,15 @@ watch(
     {deep: true, immediate: true}
 );
 
-const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
-const zones = computed(() => Object.keys(alertMetadata.zoneCountsMap).sort());
-const subsystems = computed(() => Object.keys(alertMetadata.subsystemCountsMap).sort());
-
 const queryFieldCount = computed(() => Object.values(query).filter((value) => value !== undefined).length);
 
 /**
  *  Calculate the total number of items in the query
  *
+ * @param {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} query
  * @return {number|undefined}
  */
-function calculateQueryMetadataCount() {
+function calculateQueryMetadataCount(query) {
   const fieldCount = queryFieldCount.value;
 
   /**
@@ -343,7 +460,7 @@ function calculateQueryMetadataCount() {
 }
 
 // Calculate the total number of items in the query
-const queryMetadataCount = computed(() => calculateQueryMetadataCount());
+const queryMetadataCount = computed(() => calculateQueryMetadataCount(query.value));
 const queryTotalCount = computed(() => {
   const totalCount = queryMetadataCount.value;
 
