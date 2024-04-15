@@ -24,7 +24,7 @@
     "keycloak-js": "^19.0.1",
     "pinia": "^2.0.17",
     "qrcode": "^1.5.3",
-    "vue": "2.7",
+    "vue": "2.7.16",
     "vue-chartjs": "^5.2.0",
     "vue-router": "3.6",
     "vuetify": "^2.7.2"
