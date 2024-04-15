@@ -2,7 +2,7 @@ import {timestampToDate} from '@/api/convpb';
 import {listAirQualitySensorHistory} from '@/api/sc/traits/air-quality-sensor';
 import {DAY, useNow} from '@/components/now';
 import useDevices from '@/composables/useDevices';
-import useTimePeriod from '@/routes/ops/overview/pages/widgets/energyAndDemand/useTimePeriod';
+import useTimePeriod from '@/composables/useTimePeriod';
 import {hasTrait} from '@/util/devices';
 import {csvDownload} from '@/util/downloadCSV';
 import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
@@ -62,11 +62,11 @@ export default function(props) {
   });
   // Mapping the device names to an array of objects for the dropdown
   const deviceOptions = computed(() => mappedDeviceNames.value.map(device => {
-    return {
-      label: device,
-      value: device
-    };
-  }
+        return {
+          label: device,
+          value: device
+        };
+      }
   ));
   const airDevice = ref('');
   const previousAirDevice = ref(''); // Store the previous device name

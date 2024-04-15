@@ -74,7 +74,7 @@
 </template>
 
 <script setup>
-import {DAY, HOUR, MINUTE} from '@/components/now';
+import {DAY, HOUR, MINUTE} from '@/components/now.js';
 import {computed} from 'vue';
 
 const props = defineProps({

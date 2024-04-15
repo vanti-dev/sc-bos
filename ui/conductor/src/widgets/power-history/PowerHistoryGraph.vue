@@ -8,7 +8,7 @@
         dataset-id-key="label"
         :hide-legends="props.hideLegends">
       <template #options>
-        <EnergyGraphOptionsMenu
+        <power-history-graph-options-menu
             :duration-option.sync="durationOption"
             :show-conversion.sync="showConversion"
             @exportCSV="meteredExportData('Meter Readings')"/>
@@ -19,13 +19,13 @@
 
 <script setup>
 import LineChart from '@/components/charts/LineChart.vue';
-import {HOUR, MINUTE, useNow} from '@/components/now';
-import useVuetify from '@/composables/useVuetify';
-import EnergyGraphOptionsMenu from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraphOptionsMenu.vue';
-import useMeterHistory from '@/routes/ops/overview/pages/widgets/energyAndDemand/useMeterHistory';
-import useTimePeriod from '@/routes/ops/overview/pages/widgets/energyAndDemand/useTimePeriod';
-import {useCarbonIntensity} from '@/stores/carbonIntensity';
-import {hexColor, rgbaColor} from '@/util/theme';
+import {HOUR, MINUTE, useNow} from '@/components/now.js';
+import useTimePeriod from '@/composables/useTimePeriod.js';
+import useVuetify from '@/composables/useVuetify.js';
+import {useCarbonIntensity} from '@/stores/carbonIntensity.js';
+import {hexColor, rgbaColor} from '@/util/theme.js';
+import PowerHistoryGraphOptionsMenu from '@/widgets/power-history/PowerHistoryGraphOptionsMenu.vue';
+import useMeterHistory from '@/widgets/power-history/useMeterHistory.js';
 import {computed, ref} from 'vue';
 
 const props = defineProps({

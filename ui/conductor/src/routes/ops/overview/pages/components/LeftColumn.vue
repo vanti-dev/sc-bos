@@ -4,7 +4,7 @@
         v-if="props.item.widgets.showEnergyConsumption"
         class="mt-1 pb-0 mb-7"
         style="min-height:385px;">
-      <EnergyGraph
+      <power-history-graph
           chart-title="Energy Consumption"
           classes="pt-1 pb-2 ml-3 mr-5"
           :metered="props.item.widgets.showEnergyConsumption"/>
@@ -17,8 +17,8 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import EnergyGraph from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyGraph.vue';
 import Notifications from '@/routes/ops/notifications/Notifications.vue';
+import PowerHistoryGraph from '@/widgets/power-history/PowerHistoryGraph.vue';
 
 const props = defineProps({
   item: {

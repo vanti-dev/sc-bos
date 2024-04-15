@@ -6,7 +6,7 @@
       </v-row>
       <v-row class="d-flex flex-row">
         <v-col cols="12">
-          <energy-card
+          <power-history-card
               v-if="showEnergy"
               :show-chart="showEnergyChart"
               :show-intensity="showEnergyIntensity"
@@ -28,12 +28,12 @@
 </template>
 
 <script setup>
-import EnergyCard from '@/routes/ops/overview/pages/widgets/energyAndDemand/EnergyCard.vue';
 import EnvironmentalCard from '@/routes/ops/overview/pages/widgets/environmental/EnvironmentalCard.vue';
 import OccupancyCard from '@/routes/ops/overview/pages/widgets/occupancy/OccupancyCard.vue';
 import {usePageStore} from '@/stores/page';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {useWidgetsStore} from '@/stores/widgets';
+import PowerHistoryCard from '@/widgets/power-history/PowerHistoryCard.vue';
 import {computed} from 'vue';
 
 const uiConfig = useUiConfigStore();

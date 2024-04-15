@@ -1,8 +1,8 @@
-import {timestampToDate} from '@/api/convpb';
-import {listMeterReadingHistory} from '@/api/sc/traits/meter';
-import {HOUR, MINUTE, useNow} from '@/components/now';
-import {csvDownload} from '@/util/downloadCSV';
-import {toValue} from '@/util/vue';
+import {timestampToDate} from '@/api/convpb.js';
+import {listMeterReadingHistory} from '@/api/sc/traits/meter.js';
+import {HOUR, MINUTE, useNow} from '@/components/now.js';
+import {csvDownload} from '@/util/downloadCSV.js';
+import {toValue} from '@/util/vue.js';
 import debounce from 'debounce';
 import {computed, ref, watch, watchEffect} from 'vue';
 
