@@ -2,9 +2,7 @@
   <Bar
       :options="props.chartOptions"
       :data="props.chartData"
-      :dataset-id-key="props.datasetIdKey"
-      :css-classes="props.cssClasses"
-      :styles="props.styles"/>
+      :dataset-id-key="props.datasetIdKey"/>
 </template>
 
 <script setup>
@@ -17,18 +15,6 @@ const props = defineProps({
   datasetIdKey: {
     type: String,
     default: 'label'
-  },
-  cssClasses: {
-    type: String,
-    default: 'position-relative'
-  },
-  styles: {
-    type: Object,
-    default: () => {
-      return {
-        height: ''
-      };
-    }
   },
   chartData: {
     type: Object,

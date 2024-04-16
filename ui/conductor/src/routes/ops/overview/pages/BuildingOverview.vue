@@ -13,7 +13,10 @@
               :show-intensity="showEnergyIntensity"
               :generated="supplyZone"
               :metered="energyZone"/>
-          <occupancy-card v-if="showOccupancy" :name="occupancyZone"/>
+          <occupancy-card
+              v-if="showOccupancy"
+              style="min-height: 415px"
+              :name="occupancyZone"/>
         </v-col>
       </v-row>
     </v-col>

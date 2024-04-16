@@ -1,5 +1,5 @@
 <template>
-  <div id="occupancy-graph" :style="{width, height}">
+  <div class="mb-n4">
     <BarChart :chart-data="chartData" :chart-options="chartOptions"/>
   </div>
 </template>
@@ -14,14 +14,6 @@ const props = defineProps({
   name: {
     type: String,
     default: 'building'
-  },
-  width: {
-    type: String,
-    default: '100%'
-  },
-  height: {
-    type: String,
-    default: '275px'
   },
   span: { // how wide the bars of the histogram are / group interval
     type: Number,
