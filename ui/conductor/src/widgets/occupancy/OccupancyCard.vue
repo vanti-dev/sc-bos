@@ -3,11 +3,7 @@
     <div class="d-flex flex-row mb-6 pl-4 pr-2 align-baseline">
       <h4 class="text-h4 ma-0">Occupancy</h4>
       <v-spacer/>
-      <WithOccupancy
-          v-slot="{ resource }"
-          :name="props.name">
-        <OccupancyPeopleCount :people-count="resource?.value?.peopleCount"/>
-      </WithOccupancy>
+      <occupancy-people-count :people-count="peopleCount" :error="streamError" class="text-h2"/>
     </div>
     <OccupancyGraph class="flex-grow-1" :name="props.name"/>
   </content-card>
@@ -15,8 +11,8 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
+import {useOccupancy, usePullOccupancy} from '@/traits/occupancy/occupancy.js';
 import OccupancyGraph from '@/widgets/occupancy/OccupancyGraph.vue';
-import WithOccupancy from '@/traits/occupancy/WithOccupancy.vue';
 import OccupancyPeopleCount from './OccupancyPeopleCount.vue';
 
 const props = defineProps({
@@ -25,4 +21,7 @@ const props = defineProps({
     default: 'building'
   }
 });
+
+const {value, streamError} = usePullOccupancy(() => props.name);
+const {peopleCount} = useOccupancy(value);
 </script>

@@ -17,6 +17,7 @@
 </template>
 
 <script setup>
+import useError from '@/composables/error.js';
 import {StatusCode} from 'grpc-web';
 import {computed} from 'vue';
 
@@ -49,23 +50,7 @@ const valueStr = computed(() => {
 });
 const unitStr = computed(() => props.unit);
 
-const statusCodeById = Object.entries(StatusCode).reduce((acc, [key, value]) => {
-  acc[value] = key;
-  return acc;
-}, {});
-const showErr = computed(() => Boolean(props.error));
-const errStr = computed(() => {
-  let e = props.error;
-  if (typeof e === 'string') return e; // simple case
-  if (!e) return ''; // no error
-  if (e.error) e = e.error;
-  let str = '';
-  if (e.code) {
-    str += statusCodeById[e.code] + ': ';
-  }
-  str += e.message ?? '';
-  return str;
-});
+const {errStr, showErr} = useError(() => props.error);
 </script>
 
 <style scoped>

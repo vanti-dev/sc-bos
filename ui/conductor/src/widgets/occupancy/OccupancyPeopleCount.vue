@@ -1,17 +1,27 @@
 <template>
-  <div class="d-flex flex-row flex-nowrap">
-    <div class="text-h2 d-flex flex-row flex-nowrap align-end">
-      {{ props.peopleCount }}
-      <span class="text-body-1 neutral--text text--lighten-5 pb-1 ml-1">/ {{ props.maxOccupancy }}</span>
-    </div>
-    <div class="text-h2 d-flex flex-row flex-nowrap align-end ml-8">
-      {{ occupancyPercentageDisplay }}
-      <span class="text-body-1 neutral--text text--lighten-9 pb-1 ml-1">%</span>
-    </div>
-  </div>
+  <span class="d-flex flex-row flex-nowrap">
+    <span>
+      <template v-if="showErr">
+        <v-tooltip bottom>
+          <template #activator="{on}">
+            <v-icon v-on="on" color="error" size="1em">mdi-alert-circle-outline</v-icon>
+          </template>
+          <span>{{ errStr }}</span>
+        </v-tooltip>
+      </template>
+      <span v-else class="value">{{ props.peopleCount }}</span>
+      <span class="div">/</span>
+      <span class="total">{{ props.maxOccupancy }}</span>
+    </span>
+    <span class="ml-5 text-right" style="min-width: 2.5em">
+      <span class="value">{{ occupancyPercentageDisplay }}</span>
+      <span class="unit">%</span>
+    </span>
+  </span>
 </template>
 
 <script setup>
+import useError from '@/composables/error.js';
 import {computed} from 'vue';
 
 const props = defineProps({
@@ -22,6 +32,10 @@ const props = defineProps({
   maxOccupancy: {
     type: Number,
     default: 1625
+  },
+  error: {
+    type: [Object, String],
+    default: null
   }
 });
 
@@ -35,4 +49,15 @@ const occupancyPercentage = computed(() => {
 const occupancyPercentageDisplay = computed(() =>
     occupancyPercentage.value > 0 ? occupancyPercentage.value.toFixed(1) : occupancyPercentage.value.toFixed(0)
 );
+
+const {errStr, showErr} = useError(() => props.error);
 </script>
+
+<style scoped>
+.div, .total, .unit {
+  font-size: 50%;
+  opacity: 0.8;
+  font-weight: lighter;
+  margin-left: 0.2em;
+}
+</style>
