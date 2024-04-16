@@ -20,10 +20,10 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import {DAY, HOUR, MINUTE, SECOND, useNow} from '@/components/now';
+import {DAY, HOUR, MINUTE, SECOND, useNow} from '@/components/now.js';
 import StatusAlert from '@/components/StatusAlert.vue';
 import {useOccupancy, usePullOccupancy} from '@/traits/occupancy/occupancy.js';
-import {formatTimeAgo} from '@/util/date';
+import {formatTimeAgo} from '@/util/date.js';
 import {computed} from 'vue';
 
 const props = defineProps({

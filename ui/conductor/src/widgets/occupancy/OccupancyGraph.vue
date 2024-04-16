@@ -5,8 +5,8 @@
 </template>
 
 <script setup>
-import {timestampToDate} from '@/api/convpb';
-import {listOccupancySensorHistory} from '@/api/sc/traits/occupancy';
+import {timestampToDate} from '@/api/convpb.js';
+import {listOccupancySensorHistory} from '@/api/sc/traits/occupancy.js';
 import BarChart from '@/components/charts/BarChart.vue';
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 

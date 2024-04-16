@@ -15,7 +15,7 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import OccupancyGraph from '@/routes/ops/overview/pages/widgets/occupancy/OccupancyGraph.vue';
+import OccupancyGraph from '@/widgets/occupancy/OccupancyGraph.vue';
 import WithOccupancy from '@/traits/occupancy/WithOccupancy.vue';
 import OccupancyPeopleCount from './OccupancyPeopleCount.vue';
 

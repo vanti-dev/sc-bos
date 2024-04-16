@@ -15,7 +15,7 @@
 
 <script setup>
 import EnvironmentalCard from '@/routes/ops/overview/pages/widgets/environmental/EnvironmentalCard.vue';
-import PresenceCard from '@/routes/ops/overview/pages/widgets/occupancy/PresenceCard.vue';
+import PresenceCard from '@/widgets/occupancy/PresenceCard.vue';
 import {computed} from 'vue';
 
 const props = defineProps({
