@@ -2,11 +2,11 @@
   <div>
     <content-card
         v-if="props.item.widgets.showEnergyConsumption"
-        class="mt-1 pb-0 mb-7"
+        class="mt-1 mb-7 pa-8 d-flex flex-column"
         style="min-height:385px;">
       <power-history-graph
           chart-title="Energy Consumption"
-          classes="pt-1 pb-2 ml-3 mr-5"
+          class="flex-grow-1"
           :metered="props.item.widgets.showEnergyConsumption"/>
     </content-card>
     <ContentCard v-if="props.item.widgets.showNotifications" class="mt-1 pt-4 pl-0">

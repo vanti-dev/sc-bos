@@ -61,7 +61,8 @@ export default function(props) {
     return devicesData.value.map(device => device.name);
   });
   // Mapping the device names to an array of objects for the dropdown
-  const deviceOptions = computed(() => mappedDeviceNames.value.map(device => {
+  const deviceOptions = computed(() => mappedDeviceNames.value.map(
+      device => {
         return {
           label: device,
           value: device

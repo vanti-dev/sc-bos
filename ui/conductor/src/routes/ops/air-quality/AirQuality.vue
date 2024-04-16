@@ -11,7 +11,7 @@
     <content-card class="mt-8 px-4 pt-6">
       <v-select
           v-model="airDevice"
-          class="mb-8"
+          class="mb-6"
           hide-details
           :items="deviceOptions"
           item-text="label"
@@ -19,10 +19,8 @@
           label="Data source"
           :loading="isFetching"
           outlined/>
-      <div class="pt-4" id="air-quality-graph" :style="{width: props.width, height: props.height}">
-        <div class="pr-5">
-          <LineChart :chart-data="chartData" :chart-options="chartOptions" dataset-id-key="label"/>
-        </div>
+      <div class="d-flex flex-column mr-5" style="min-height: 400px">
+        <LineChart :chart-data="chartData" :chart-options="chartOptions" dataset-id-key="label" class="flex-grow-1"/>
       </div>
 
       <!-- Most recent values -->
@@ -54,16 +52,6 @@ import useAirQuality from '@/routes/ops/air-quality/useAirQualityHistory';
 import {camelToSentence} from '@/util/string';
 import {computed, reactive} from 'vue';
 
-const props = defineProps({
-  width: {
-    type: String,
-    default: '100%'
-  },
-  height: {
-    type: String,
-    default: '350px'
-  }
-});
 const airQualityProps = reactive({
   filter: () => true, // Filter function to filter out data in deviceData
   name: '', // Zone or device name - if `subsystem` is not set, the name must be set

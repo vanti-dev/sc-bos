@@ -8,6 +8,7 @@
         <v-col cols="12">
           <power-history-card
               v-if="showEnergy"
+              style="min-height: 415px;"
               :show-chart="showEnergyChart"
               :show-intensity="showEnergyIntensity"
               :generated="supplyZone"

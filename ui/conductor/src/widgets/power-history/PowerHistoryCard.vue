@@ -1,17 +1,16 @@
 <template>
-  <content-card class="mb-8 d-flex flex-column pt-6 pl-6 pr-8">
+  <content-card class="mb-8 d-flex flex-column pa-8">
     <energy-graph
         v-if="props.showChart"
-        class="mt-8 mb-6"
-        :height="props.showIntensity ? '275px' : '315px'"
         :generated="props.generated"
-        :metered="props.metered"/>
+        :metered="props.metered"
+        class="flex-grow-1"/>
     <power-total
         v-if="props.showIntensity"
         :metered="props.metered"
         :generated="props.generated"
         :occupancy="props.metered"
-        class="mx-auto mt-10 mb-6"/>
+        class="mx-auto mt-8"/>
   </content-card>
 </template>
 

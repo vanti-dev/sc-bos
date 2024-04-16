@@ -1,6 +1,6 @@
 <template>
-  <div style="height: 100%">
-    <div class="d-flex flex-row flex-nowrap justify-end align-center mt-3 mb-6">
+  <div class="d-flex flex-column">
+    <div class="d-flex flex-row flex-nowrap justify-end align-center mb-6">
       <v-card-title class="text-h4 pa-0 mr-auto pl-4">{{ props.chartTitle }}</v-card-title>
       <div v-if="!props.hideLegends" class="legend">
         <v-checkbox
@@ -20,13 +20,13 @@
         </span>
       </template>
     </div>
-    <LineChartGenerator
-        :options="props.chartOptions"
-        :data="props.chartData"
-        :plugins="[htmlLegendPlugin]"
-        :dataset-id-key="props.datasetIdKey"
-        :css-classes="props.cssClasses"
-        :styles="props.styles"/>
+    <div class="flex-grow-1">
+      <LineChartGenerator
+          :options="props.chartOptions"
+          :data="props.chartData"
+          :plugins="[htmlLegendPlugin]"
+          :dataset-id-key="props.datasetIdKey"/>
+    </div>
   </div>
 </template>
 
@@ -54,21 +54,9 @@ const props = defineProps({
     type: String,
     default: 'x'
   },
-  cssClasses: {
-    type: String,
-    default: 'position-relative'
-  },
   hideLegends: {
     type: Boolean,
     default: false
-  },
-  styles: {
-    type: Object,
-    default: () => {
-      return {
-        height: ''
-      };
-    }
   },
   chartTitle: {
     type: String,

@@ -1,20 +1,17 @@
 <template>
-  <div id="energy-graph" :style="{width, height}">
-    <LineChart
-        :class="props.classes"
-        :chart-options="chartOptions"
-        :chart-data="chartData"
-        :chart-title="props.chartTitle"
-        dataset-id-key="label"
-        :hide-legends="props.hideLegends">
-      <template #options>
-        <power-history-graph-options-menu
-            :duration-option.sync="durationOption"
-            :show-conversion.sync="showConversion"
-            @exportCSV="meteredExportData('Meter Readings')"/>
-      </template>
-    </LineChart>
-  </div>
+  <LineChart
+      :chart-options="chartOptions"
+      :chart-data="chartData"
+      :chart-title="props.chartTitle"
+      dataset-id-key="label"
+      :hide-legends="props.hideLegends">
+    <template #options>
+      <power-history-graph-options-menu
+          :duration-option.sync="durationOption"
+          :show-conversion.sync="showConversion"
+          @exportCSV="meteredExportData('Meter Readings')"/>
+    </template>
+  </LineChart>
 </template>
 
 <script setup>
@@ -32,10 +29,6 @@ const props = defineProps({
   chartTitle: {
     type: String,
     default: 'Power'
-  },
-  classes: {
-    type: String,
-    default: 'mt-n10'
   },
   hideLegends: {
     type: Boolean,
@@ -186,7 +179,7 @@ const chartData = computed(() => {
 
 
 const chartOptions = computed(() => {
-  return {
+  return /** @type {ChartOptions<line>} */ {
     animation: {
       duration: 500
     },
