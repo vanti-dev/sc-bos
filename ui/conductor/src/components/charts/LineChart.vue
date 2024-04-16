@@ -1,11 +1,21 @@
 <template>
-  <div style="height: 100%; max-height: 275px;">
+  <div style="height: 100%">
     <div class="d-flex flex-row flex-nowrap justify-end align-center mt-3 mb-6">
       <v-card-title class="text-h4 pa-0 mr-auto pl-4">{{ props.chartTitle }}</v-card-title>
-      <div id="legend-container" class="mr-2"/>
+      <div v-if="!props.hideLegends" class="legend">
+        <v-checkbox
+            v-for="(item, index) in legendItems"
+            :key="index"
+            :input-value="!item.hidden"
+            @change="item.onClick"
+            :label="item.text"
+            :color="item.bgColor"
+            hide-details
+            class="mt-0"/>
+      </div>
       <template v-if="$slots.options">
-        <v-divider vertical class="mr-2" style="height: auto"/>
-        <span class="mr-3">
+        <v-divider vertical class="ml-6 mr-2"/>
+        <span>
           <slot name="options"/>
         </span>
       </template>
@@ -33,8 +43,9 @@ import {
   Title,
   Tooltip
 } from 'chart.js';
+import {computed, ref} from 'vue';
 import {Line as LineChartGenerator} from 'vue-chartjs';
-import 'chartjs-adapter-date-fns';
+import 'chartjs-adapter-date-fns'; // imported for side effects
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, LinearScale, TimeScale, Filler, CategoryScale, PointElement);
 
@@ -77,85 +88,42 @@ const props = defineProps({
   }
 });
 
-const getOrCreateLegendList = (id) => {
-  const legendContainer = document.getElementById(id);
-  let listContainer = legendContainer.querySelector('ul');
-
-  if (!listContainer) {
-    listContainer = document.createElement('ul');
-    listContainer.style.display = 'flex';
-    listContainer.style.flexDirection = 'row';
-    listContainer.style.justifyContent = 'end';
-    listContainer.style.margin = '0';
-    listContainer.style.padding = '0';
-
-    legendContainer.appendChild(listContainer);
-  }
-
-  return listContainer;
-};
+const _chart = ref(null);
+const legendItems = computed(() => {
+  /** @type {import('chart.js').Chart} */
+  const chart = _chart.value;
+  if (!chart) return [];
+  const items = chart.options.plugins.legend.labels.generateLabels(chart);
+  return items.map((item) => {
+    return {
+      text: item.text,
+      hidden: item.hidden,
+      bgColor: item.strokeStyle,
+      onClick: (e) => {
+        const {type} = chart.config;
+        if (type === 'pie' || type === 'doughnut') {
+          // Pie and doughnut charts only have a single dataset and visibility is per item
+          chart.setDatasetVisibility(item.index, e);
+        } else {
+          chart.setDatasetVisibility(item.datasetIndex, e);
+        }
+        chart.update();
+      }
+    };
+  });
+});
 
 const htmlLegendPlugin = {
   id: 'htmlLegend',
   afterUpdate(chart) {
-    if (props.hideLegends) return;
-
-    const ul = getOrCreateLegendList('legend-container');
-
-    // Remove old legend items
-    while (ul.firstChild) {
-      ul.firstChild.remove();
-    }
-
-    // Reuse the built-in legendItems generator
-    const items = chart.options.plugins.legend.labels.generateLabels(chart);
-
-    items.forEach((item, index) => {
-      // HTML Legend Item
-      const li = document.createElement('li');
-      li.id = 'legend-' + index;
-      li.style.alignItems = 'center';
-      li.style.cursor = 'pointer';
-      li.style.display = 'flex';
-      li.style.flexDirection = 'row';
-      li.style.marginLeft = '10px';
-
-      // Color box
-      const boxSpan = document.createElement('span');
-      boxSpan.style.background = item.strokeStyle;
-      boxSpan.style.borderColor = item.strokeStyle;
-      boxSpan.style.borderWidth = item.lineWidth + 'px';
-      boxSpan.style.display = 'inline-block';
-      boxSpan.style.height = '5px';
-      boxSpan.style.marginRight = '15px';
-      boxSpan.style.width = '15px';
-
-      // Text
-      const textContainer = document.createElement('p');
-      textContainer.style.color = 'white';
-      textContainer.style.marginRight = '15px';
-      textContainer.style.marginBottom = '0';
-      textContainer.style.padding = '0';
-      textContainer.style.textDecoration = item.hidden ? 'line-through' : '';
-
-      const text = document.createTextNode(item.text);
-      textContainer.appendChild(text);
-
-      li.onclick = () => {
-        const {type} = chart.config;
-        if (type === 'pie' || type === 'doughnut') {
-          // Pie and doughnut charts only have a single dataset and visibility is per item
-          chart.toggleDataVisibility(item.index);
-        } else {
-          chart.setDatasetVisibility(item.datasetIndex, !chart.isDatasetVisible(item.datasetIndex));
-        }
-        chart.update();
-      };
-
-      li.appendChild(boxSpan);
-      li.appendChild(textContainer);
-      ul.appendChild(li);
-    });
+    _chart.value = chart;
   }
 };
 </script>
+
+<style scoped>
+.legend {
+  display: inline-flex;
+  gap: 24px;
+}
+</style>
