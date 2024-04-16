@@ -1,14 +1,25 @@
 <template>
   <div class="text-h1 d-inline-flex justify-space-between" :style="{minWidth: expectedWidth}">
-    <labelled-unit :value="generatedKW" label="Generated" unit="kW" label-color="success--text text--lighten-3"/>
+    <labelled-unit
+        :value="generatedKW"
+        :error="_generated.streamError"
+        label="Generated"
+        unit="kW"
+        label-color="success--text text--lighten-3"/>
     <span v-if="showTotal" class="add mx-3 text-h2">+</span>
-    <labelled-unit :value="meteredKW" label="Metered" unit="kW" label-color="primary--text"/>
+    <labelled-unit
+        :value="meteredKW"
+        :error="_metered.streamError"
+        label="Metered"
+        unit="kW"
+        label-color="primary--text"/>
     <span v-if="showTotal" class="eq mx-3 text-h2">=</span>
     <labelled-unit v-if="showTotal" :value="totalKW" label="Total" unit="kW"/>
     <v-divider v-if="hasOccupancy" vertical class="mx-4"/>
     <labelled-unit
         v-if="hasOccupancy"
         :value="intensityKW"
+        :error="_occupancy.streamError"
         label="Energy Intensity"
         unit="kW/person"
         label-color="orange--text"/>
@@ -74,7 +85,7 @@ const meteredKW = computed(() => divIfPresent(_metered.value?.realPower, 1000));
 const totalKW = computed(() => divIfPresent(totalPower.value, 1000));
 const intensityKW = computed(() => divIfPresent(totalKW.value, _occupancy.value?.peopleCount));
 
-const segmentWidth = (title, unit='kW') => {
+const segmentWidth = (title, unit = 'kW') => {
   return Math.max(
       title.length * 0.4,
       '0.00'.length + unit.length / 2

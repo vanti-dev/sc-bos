@@ -1,12 +1,23 @@
 <template>
   <span class="labelled-unit">
-    <span class="value">{{ valueStr }}</span>
-    <span class="unit">{{ unitStr }}</span>
+    <template v-if="showErr">
+      <v-tooltip bottom>
+        <template #activator="{ on }">
+          <span style="height: 1em" class="err">
+            <v-icon v-on="on" color="error" size=".75em">mdi-alert-circle-outline</v-icon>
+          </span>
+        </template>
+        <span>{{ errStr }}</span>
+      </v-tooltip>
+    </template>
+    <span class="value" v-if="!showErr">{{ valueStr }}</span>
+    <span class="unit" v-if="!showErr">{{ unitStr }}</span>
     <span class="label" :class="labelColor">{{ label }}</span>
   </span>
 </template>
 
 <script setup>
+import {StatusCode} from 'grpc-web';
 import {computed} from 'vue';
 
 const props = defineProps({
@@ -25,6 +36,10 @@ const props = defineProps({
   labelColor: {
     type: String,
     default: null
+  },
+  error: {
+    type: [Object, String],
+    default: null
   }
 });
 
@@ -33,6 +48,24 @@ const valueStr = computed(() => {
   return props.value?.toFixed(2) ?? '-';
 });
 const unitStr = computed(() => props.unit);
+
+const statusCodeById = Object.entries(StatusCode).reduce((acc, [key, value]) => {
+  acc[value] = key;
+  return acc;
+}, {});
+const showErr = computed(() => Boolean(props.error));
+const errStr = computed(() => {
+  let e = props.error;
+  if (typeof e === 'string') return e; // simple case
+  if (!e) return ''; // no error
+  if (e.error) e = e.error;
+  let str = '';
+  if (e.code) {
+    str += statusCodeById[e.code] + ': ';
+  }
+  str += e.message ?? '';
+  return str;
+});
 </script>
 
 <style scoped>
@@ -51,17 +84,26 @@ const unitStr = computed(() => props.unit);
   grid-area: value;
   align-self: baseline;
 }
+
 .unit {
   grid-area: unit;
   align-self: baseline;
   font-size: 50%;
   font-weight: lighter;
 }
+
 .label {
   grid-area: label;
   font-size: 40%;
   font-weight: lighter;
   letter-spacing: 1px;
+}
+
+.err {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 </style>
