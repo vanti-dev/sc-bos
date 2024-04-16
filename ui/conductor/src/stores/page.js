@@ -41,7 +41,7 @@ export const usePageStore = defineStore('page', () => {
   // LEFT NAVIGATION SIDEBAR
   const drawer = ref(true);
   const miniVariant = ref(true);
-  const drawerWidth = ref(45);
+  const drawerWidth = ref(60);
   const pinDrawer = ref(false);
 
   return {

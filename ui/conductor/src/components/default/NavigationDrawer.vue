@@ -3,8 +3,7 @@
       v-if="hasNav && isLoggedIn"
       v-model="drawer"
       app
-      class="siteNavigation"
-      :class="[!miniVariant ? 'pt-0' : 'pt-3', 'pb-8 ml-2']"
+      class="siteNavigation pt-4"
       clipped
       color="transparent"
       :expand-on-hover="!pinDrawer"
@@ -13,29 +12,30 @@
       :mini-variant-width="drawerWidth"
       width="275"
       permanent>
-    <v-btn
-        v-if="hasNav && !miniVariant"
-        x-small
-        text
-        class="d-block neutral--text text--lighten-4 text-caption text-center ma-0 pa-0 mb-n3 ml-1 mt-1"
-        width="100%"
-        @click="pinDrawer = !pinDrawer">
-      {{ !pinDrawer ? 'Pin navigation' : 'Unpin navigation' }}
-    </v-btn>
     <router-view
         v-if="hasNav"
         name="nav"
-        class="ml-1 mt-4"
-        :style="miniVariant ? 'width: 40px;' : 'width: auto;'"/>
+        class="nav-btns"/>
     <template v-if="!miniVariant" #append>
-      <v-footer class="pa-0" style="background:transparent">
-        <v-col class="pa-0">
-          <v-divider/>
-          <p class="mt-2 mb-n4 text-caption text-center neutral--text text--lighten-2">
-            Smart Core {{ appVersion }}
-          </p>
-        </v-col>
-      </v-footer>
+      <div class="pa-2">
+        <v-btn
+            v-if="hasNav && !miniVariant"
+            text
+            block
+            @click="pinDrawer = !pinDrawer">
+          <v-icon left>mdi-pin-outline</v-icon>
+          {{ !pinDrawer ? 'Pin navigation' : 'Unpin navigation' }}
+        </v-btn>
+      </div>
+      <div class="text-caption text-center neutral--text text--lighten-2 text-no-wrap">
+        <v-divider/>
+        <p class="mt-2 mb-0">
+          Smart Core &copy; {{ new Date().getFullYear() }}
+        </p>
+        <p :title="appVersion" class="mt-0" style="cursor: default">
+          {{ appVersion.split('-')[0] }}
+        </p>
+      </div>
     </template>
   </v-navigation-drawer>
 </template>
@@ -45,7 +45,7 @@ import {usePage} from '@/components/page';
 import useAuthSetup from '@/composables/useAuthSetup';
 import {usePageStore} from '@/stores/page';
 import {storeToRefs} from 'pinia';
-import {computed, watch} from 'vue';
+import {computed} from 'vue';
 
 const {isLoggedIn} = useAuthSetup();
 const {hasNav} = usePage();
@@ -58,18 +58,6 @@ const appVersion = computed(() => {
   }
   return GIT_VERSION;
 });
-
-watch(
-    miniVariant,
-    (expanded) => {
-      if (expanded) {
-        drawerWidth.value = 45;
-      } else {
-        drawerWidth.value = 275;
-      }
-    },
-    {immediate: true, deep: true, flush: 'sync'}
-);
 </script>
 
 <style lang="scss" scoped>
@@ -85,5 +73,13 @@ watch(
 .siteNavigation,
 .siteNavigation ::v-deep .v-navigation-drawer__content {
   overflow: visible;
+}
+
+.nav-btns {
+  margin: 0 10px;
+}
+
+.v-navigation-drawer--mini-variant .nav-btns {
+  max-width: 40px;
 }
 </style>

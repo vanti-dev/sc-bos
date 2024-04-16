@@ -1,6 +1,6 @@
 <template>
   <v-container fluid class="pa-0">
-    <v-main class="mx-10 my-6">
+    <v-main class="mx-6 my-6">
       <router-view/>
     </v-main>
     <v-navigation-drawer

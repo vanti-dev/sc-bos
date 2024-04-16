@@ -90,6 +90,7 @@ const enabledMenuItems = computed(() => {
   margin-left: -16px !important;
   height: 60px !important;
   width: 60px;
+  min-width: auto;
 }
 
 #main-nav-button:focus {
