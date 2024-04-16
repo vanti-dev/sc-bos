@@ -1,5 +1,5 @@
 <template>
-  <sc-logo v-if="isDefault"/>
+  <sc-logo v-if="isDefault" v-bind="$attrs"/>
 
   <img
       v-else

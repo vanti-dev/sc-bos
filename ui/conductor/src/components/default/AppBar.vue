@@ -1,7 +1,7 @@
 <template>
   <v-app-bar app height="60" :clipped-left="hasNav" :clipped-right="hasSidebar" elevation="0" class="pr-7">
     <app-menu v-if="accountStore.isLoggedIn"/>
-    <brand-logo :theme="config.theme" outline="white" style="height: 35px; margin-left: 16px"/>
+    <brand-logo :theme="config.theme" outline="white" style="height: 35px" class="ml-4 mr-2"/>
     <span class="heading">{{ appBarHeadingWithBrand }}</span>
 
     <v-divider vertical v-if="hasSections" class="mx-8 section-divider" inset/>
