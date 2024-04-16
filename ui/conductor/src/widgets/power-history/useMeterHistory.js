@@ -69,8 +69,15 @@ export default function(name, periodStart, periodEnd, spanSize) {
       () => new Date(toValue(periodStart).getTime() - queryExtraLeadingTime.value));
   const queryEnd = computed(() => toValue(periodEnd));
 
-  // Inspects both [periodStart,periodEnd] and records to calculate which slices of time we don't have.
-  const missingPeriods = computed(() => {
+  /**
+   * @typedef {Object} MissingPeriod
+   * @property {Date} start
+   * @property {Date} end
+   * @property {'set'|'push'|'unshift'} type
+   */
+
+  /** Inspects both [periodStart,periodEnd] and records to calculate which slices of time we don't have. */
+  const missingPeriods = computed(/** @type {() => MissingPeriod[]} */() => {
     if (records.value.length === 0) {
       return [{start: toValue(queryStart), end: toValue(queryEnd), type: 'set'}];
     }
