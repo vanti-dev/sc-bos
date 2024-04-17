@@ -5,7 +5,7 @@
       <v-spacer/>
       <occupancy-people-count :people-count="peopleCount" :error="streamError" class="text-h2"/>
     </div>
-    <occupancy-graph class="flex-grow-1" :source="props.name"/>
+    <occupancy-graph class="flex-grow-1" :source="historyName"/>
   </content-card>
 </template>
 
@@ -13,15 +13,23 @@
 import ContentCard from '@/components/ContentCard.vue';
 import {useOccupancy, usePullOccupancy} from '@/traits/occupancy/occupancy.js';
 import OccupancyGraph from '@/widgets/occupancy/OccupancyGraph.vue';
+import {computed} from 'vue';
 import OccupancyPeopleCount from './OccupancyPeopleCount.vue';
 
 const props = defineProps({
-  name: {
+  source: {
     type: String,
-    default: 'building'
+    default: null
+  },
+  history: {
+    type: String,
+    default: null
   }
 });
 
-const {value, streamError} = usePullOccupancy(() => props.name);
+const sourceName = computed(() => props.source);
+const historyName = computed(() => props.history ?? sourceName.value);
+
+const {value, streamError} = usePullOccupancy(sourceName);
 const {peopleCount} = useOccupancy(value);
 </script>

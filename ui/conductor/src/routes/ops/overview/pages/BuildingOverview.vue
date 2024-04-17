@@ -14,7 +14,7 @@
       <occupancy-card
           v-if="showOccupancy"
           style="min-height: 415px"
-          :name="occupancyZone"/>
+          :source="occupancyZone"/>
     </section>
     <section v-if="showSectionRight" class="section-right">
       <environmental-card
