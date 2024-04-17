@@ -2,29 +2,27 @@
   <v-container fluid class="d-flex flex-column pt-0 pl-0 pr-3">
     <div class="d-flex flex-row flex-nowrap mb-2">
       <h3 class="text-h3 pt-2 pb-6">
-        {{ overViewStore.getActiveOverview?.title }} Status Overview
+        {{ activeOverview?.title }} Status Overview
       </h3>
     </div>
     <v-row class="ml-0">
       <v-col :class="[{ 'pr-0': !displayRightColumn }, 'ml-0 pl-0']" :style="graphWidth">
-        <left-column v-if="displayLeftColumn" :item="overViewStore.getActiveOverview"/>
+        <left-column v-if="displayLeftColumn" :item="activeOverview"/>
       </v-col>
       <v-col v-if="displayRightColumn" cols="3" class="mr-0 pr-0 pt-0" style="width: 260px; max-width: 260px;">
-        <right-column :item="overViewStore.getActiveOverview"/>
+        <right-column :item="activeOverview"/>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script setup>
-import {useOverviewStore} from '@/routes/ops/overview/overviewStore';
 import LeftColumn from '@/routes/ops/overview/pages/components/LeftColumn.vue';
 import RightColumn from '@/routes/ops/overview/pages/components/RightColumn.vue';
 import {usePageStore} from '@/stores/page';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {findActiveItem} from '@/util/router';
-import {storeToRefs} from 'pinia';
-import {computed, watch} from 'vue';
+import {computed} from 'vue';
 
 const props = defineProps({
   pathSegments: {
@@ -32,8 +30,6 @@ const props = defineProps({
     required: true
   }
 });
-const overViewStore = useOverviewStore();
-const {activeOverview} = storeToRefs(overViewStore);
 
 const uiConfig = useUiConfigStore();
 const overviewChildren = computed(() => uiConfig.config?.ops?.overview?.children);
@@ -76,9 +72,5 @@ const findActiveOverview = computed(() => {
 
   return findActiveItem(overviewChildren.value, encodePathSegments);
 });
-
-watch(findActiveOverview, (overviewChild) => {
-  // Set the active overview or null if not found
-  activeOverview.value = overviewChild;
-}, {immediate: true, deep: true, flush: 'sync'});
+const activeOverview = computed(() => findActiveOverview.value);
 </script>

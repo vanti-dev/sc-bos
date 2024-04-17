@@ -9,8 +9,7 @@
               'mr-9': !hasChildren && !props.miniVariant
             }
           ]"
-          :to="toAreaLink"
-          @click="setActiveOverview(item)">
+          :to="toAreaLink">
         <v-list-item-icon>
           <v-icon v-if="!props.miniVariant || !props.item.shortTitle">{{ props.item.icon }}</v-icon>
           <v-list-item-title v-else class="text-center text-truncate" style="max-width: 24px;">
@@ -42,8 +41,6 @@
 
 <script setup>
 import OpsNavList from '@/routes/ops/overview/OpsNavList.vue';
-import {useOverviewStore} from '@/routes/ops/overview/overviewStore';
-import {storeToRefs} from 'pinia';
 import {computed, ref} from 'vue';
 import {useRoute} from 'vue-router/composables';
 
@@ -69,7 +66,6 @@ const props = defineProps({
     default: ''
   }
 });
-const {activeOverview} = storeToRefs(useOverviewStore());
 const route = useRoute();
 const isOpen = ref(false);
 
@@ -128,20 +124,5 @@ const setLeftMargin = computed(() => {
  */
 const toggle = () => {
   isOpen.value = !isOpen.value;
-};
-
-/**
- * Set the active overview
- *
- * @param {Object} item
- * @return {void}
- */
-const setActiveOverview = (item) => {
-  // Destructure the item to separate the 'children' property and the rest of the properties
-  // eslint-disable-next-line no-unused-vars
-  const {children, ...rest} = item;
-
-  // Set activeOverview with the rest of the properties, excluding 'children'
-  activeOverview.value = rest;
 };
 </script>
