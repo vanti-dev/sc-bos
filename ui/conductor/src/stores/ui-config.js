@@ -1,3 +1,4 @@
+import {toValue} from '@/util/vue.js';
 import {defineStore} from 'pinia';
 import {computed, ref} from 'vue';
 
@@ -166,6 +167,26 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     };
   });
 
+
+  /**
+   * Gets the value of path from either uiConfig config or defaultConfig, depending on presence.
+   *
+   * @template T
+   * @param {string} path
+   * @param {T?} def
+   * @return {T}
+   */
+  const getOrDefault = (path, def) => {
+    const parts = path.split('.');
+    let a = config.value;
+    let b = _defaultConfig?.config;
+    for (let i = 0; i < parts.length; i++) {
+      a = a?.[parts[i]];
+      b = b?.[parts[i]];
+    }
+    return a ?? b ?? toValue(def);
+  };
+
   return {
     loadConfig,
     enabledPaths,
@@ -174,6 +195,7 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     configPromise,
     homePath: computed(() => _config.value?.config?.home ?? _defaultConfig.config.home),
     appBranding,
-    defaultConfig: _defaultConfig
+    defaultConfig: _defaultConfig,
+    getOrDefault
   };
 });
