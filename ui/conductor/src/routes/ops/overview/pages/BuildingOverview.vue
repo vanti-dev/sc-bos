@@ -5,22 +5,18 @@
     </header>
     <section v-if="showSectionMain" class="section-main">
       <power-history-card
-          v-if="showEnergy"
+          v-if="powerHistoryConfig"
           style="min-height: 415px;"
-          :demand="energyZone"
-          :generated="supplyZone"
-          :hide-chart="!showEnergyChart"
-          :hide-total="!showEnergyIntensity"/>
+          v-bind="powerHistoryConfig"/>
       <occupancy-card
-          v-if="showOccupancy"
+          v-if="occupancyHistoryConfig"
           style="min-height: 415px"
-          :source="occupancyZone"/>
+          v-bind="occupancyHistoryConfig"/>
     </section>
     <section v-if="showSectionRight" class="section-right">
       <environmental-card
-          v-if="showEnvironment"
-          :internal="environmentalZone"
-          :external="externalZone"
+          v-if="environmentalConfig"
+          v-bind="environmentalConfig"
           should-wrap/>
     </section>
   </div>
@@ -34,21 +30,13 @@ import PowerHistoryCard from '@/widgets/power-history/PowerHistoryCard.vue';
 import {computed} from 'vue';
 
 const {
-  showEnergy,
-  showEnergyChart,
-  showEnergyIntensity,
-  supplyZone,
-  energyZone,
-  showOccupancy,
-  occupancyZone,
-  showEnvironment,
-  environmentalZone,
-  externalZone
+  powerHistoryConfig,
+  occupancyHistoryConfig,
+  environmentalConfig
 } = useBuildingConfig();
 
-const showSectionMain = computed(() => showEnergy.value || showOccupancy.value);
-const showSectionRight = computed(() => showEnvironment.value);
-
+const showSectionMain = computed(() => Boolean(powerHistoryConfig.value || occupancyHistoryConfig.value));
+const showSectionRight = computed(() => Boolean(environmentalConfig.value));
 </script>
 
 <style scoped>
