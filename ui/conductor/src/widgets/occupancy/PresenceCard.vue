@@ -2,7 +2,7 @@
   <content-card class="mt-3 pt-4 pb-5 mb-3">
     <div class="d-flex flex-row mb-2">
       <v-card-title class="text-h4 pl-4">Presence</v-card-title>
-      <status-alert :resource="occupancyValue.streamError"/>
+      <status-alert :resource="occupancyErr"/>
     </div>
     <v-col cols="12" class="d-flex flex-column pl-4">
       <v-row class="d-flex flex-column align-left px-3 pb-2">
@@ -33,7 +33,7 @@ const props = defineProps({
   }
 });
 
-const {value: occupancyValue} = usePullOccupancy(() => props.name);
+const {value: occupancyValue, streamError: occupancyErr} = usePullOccupancy(() => props.name);
 const {stateStr, stateColor, lastUpdate} = useOccupancy(occupancyValue);
 
 // Create a lastChecked timestamp (for second to be used in the status popup

@@ -30,6 +30,6 @@ const props = defineProps({
     default: false
   }
 });
-const {value, error} = usePullBrightness(() => props.name, () => props.paused);
+const {value, streamError: error} = usePullBrightness(() => props.name, () => props.paused);
 const {levelStr, level, icon} = useBrightness(value);
 </script>
