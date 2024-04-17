@@ -1,24 +1,16 @@
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {isNullOrUndef} from '@/util/types.js';
 import {toValue} from '@/util/vue.js';
+import EnvironmentalCard from '@/widgets/environmental/EnvironmentalCard.vue';
+import OccupancyCard from '@/widgets/occupancy/OccupancyCard.vue';
+import PowerHistoryCard from '@/widgets/power-history/PowerHistoryCard.vue';
 import {computed, ref} from 'vue';
 
 /**
  * @return {{
- *   powerHistoryConfig: ComputedRef<false|{
- *     demandSource: string|undefined,
- *     generatedSource: string|undefined,
- *     occupancySource: string|undefined,
- *     hideChart: boolean,
- *     hideTotal: boolean
- *   }>,
- *   occupancyHistoryConfig: ComputedRef<false|{
- *     source: string|undefined
- *   }>,
- *   environmentalConfig: ComputedRef<false|{
- *     internalSource: string|undefined,
- *     externalSource: string|undefined
- *   }>
+ *   title: Ref<string>,
+ *   main: ComputedRef<{component: Component, props: Object}[]>,
+ *   after: ComputedRef<{component: Component, props: Object}[]>
  * }}
  */
 export default function useBuildingConfig() {
@@ -94,10 +86,24 @@ export default function useBuildingConfig() {
     };
   });
 
+  const addIfPresent = (arr, props, component) => {
+    props = toValue(props);
+    if (props) {
+      arr.push({props, component});
+    }
+  };
   return {
     title: ref('Building Status Overview'),
-    powerHistoryConfig,
-    occupancyHistoryConfig,
-    environmentalConfig
+    main: computed(() => {
+      const res = [];
+      addIfPresent(res, powerHistoryConfig, PowerHistoryCard);
+      addIfPresent(res, occupancyHistoryConfig, OccupancyCard);
+      return res;
+    }),
+    after: computed(() => {
+      const res = [];
+      addIfPresent(res, environmentalConfig, EnvironmentalCard);
+      return res;
+    })
   };
 }
