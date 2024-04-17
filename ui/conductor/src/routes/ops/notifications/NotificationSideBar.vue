@@ -9,11 +9,11 @@
       </v-tab>
 
       <v-tab-item>
-        <PastNotificationsTab/>
+        <past-notifications-tab/>
       </v-tab-item>
 
       <v-tab-item>
-        <DeviceInfoTab :device-id="pageStore.sidebarTitle" :device-data="pageStore.listedDevice"/>
+        <device-info-tab :device-id="pageStore.sidebarTitle" :device-data="pageStore.listedDevice"/>
       </v-tab-item>
     </v-tabs>
   </side-bar>

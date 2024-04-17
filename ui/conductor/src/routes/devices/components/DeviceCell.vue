@@ -1,80 +1,80 @@
 <template>
   <span class="root">
-    <WithEnterLeave
+    <with-enter-leave
         v-if="hasCell('EnterLeaveEvent')"
         v-slot="{ resource }"
         :name="props.item.name"
         :paused="props.paused">
-      <EnterLeaveEventCell
+      <enter-leave-event-cell
           v-if="resource?.value?.enterTotal || resource?.value?.leaveTotal"
           v-bind="resource"/>
-    </WithEnterLeave>
-    <WithElectricDemand
+    </with-enter-leave>
+    <with-electric-demand
         v-if="hasCell('ElectricDemand')"
         v-slot="{ resource }"
         :name="props.item.name"
         :paused="props.paused">
-      <ElectricDemandCell v-bind="resource"/>
-    </WithElectricDemand>
-    <WithMeter v-if="hasCell('Meter')" v-slot="{ resource, info }" :name="props.item.name" :paused="props.paused">
-      <MeterCell
+      <electric-demand-cell v-bind="resource"/>
+    </with-electric-demand>
+    <with-meter v-if="hasCell('Meter')" v-slot="{ resource, info }" :name="props.item.name" :paused="props.paused">
+      <meter-cell
           v-bind="resource"
           :info="info?.response"/>
-    </WithMeter>
-    <WithAirTemperature
+    </with-meter>
+    <with-air-temperature
         v-if="hasCell('AirTemperature')"
         v-slot="{ resource }"
         :name="props.item.name"
         :paused="props.paused">
-      <AirTemperatureCell v-bind="resource"/>
-    </WithAirTemperature>
+      <air-temperature-cell v-bind="resource"/>
+    </with-air-temperature>
 
-    <LightCell v-if="hasCell('Light')" :name="props.item.name" :paused="props.paused"/>
+    <light-cell v-if="hasCell('Light')" :name="props.item.name" :paused="props.paused"/>
 
-    <WithOccupancy v-if="hasCell('Occupancy')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
-      <OccupancyCell v-bind="resource"/>
-    </WithOccupancy>
+    <with-occupancy v-if="hasCell('Occupancy')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
+      <occupancy-cell v-bind="resource"/>
+    </with-occupancy>
 
     <!-- If door has no access data reading and has OpenClose reading -->
-    <WithOpenClose
+    <with-open-close
         v-if="hasCell('OpenClose') && !hasCell('AccessAttempt')"
         v-slot="{ resource }"
         :name="props.item.name"
         :paused="props.paused">
-      <OpenCloseCell v-bind="resource"/>
-    </WithOpenClose>
+      <open-close-cell v-bind="resource"/>
+    </with-open-close>
 
     <!-- If door has access data reading and has no OpenClose reading -->
-    <WithAccess
+    <with-access
         v-if="hasCell('AccessAttempt') && !hasCell('OpenClose')"
         v-slot="{ resource }"
         :name="props.item.name"
         :paused="props.paused">
-      <AccessAttemptCell v-bind="resource"/>
-    </WithAccess>
+      <access-attempt-cell v-bind="resource"/>
+    </with-access>
 
     <!-- If door has access data reading and has OpenClose reading -->
-    <WithAccess
+    <with-access
         v-if="hasCell('AccessAttempt') && hasCell('OpenClose')"
         v-slot="{ resource: accessResource }"
         :name="props.item.name"
         :paused="props.paused">
-      <WithOpenClose v-slot="{ resource: openCloseResource }" :name="props.item.name" :paused="props.paused">
-        <AccessAttemptCell
+      <with-open-close v-slot="{ resource: openCloseResource }" :name="props.item.name" :paused="props.paused">
+        <access-attempt-cell
             v-bind="accessResource"
             :open-close-percentage="openCloseResource"
             :stream-error="accessResource.streamError || openCloseResource.streamError"/>
-      </WithOpenClose>
-    </WithAccess>
+      </with-open-close>
+    </with-access>
     <!-- End -->
 
-    <WithEmergency v-if="hasCell('Emergency')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
-      <EmergencyCell v-bind="resource"/>
-    </WithEmergency>
+    <with-emergency v-if="hasCell('Emergency')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
+      <emergency-cell v-bind="resource"/>
+    </with-emergency>
 
-    <WithStatus v-if="hasCell('StatusLog')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
-      <StatusLogCell v-bind="resource"/>
-    </WithStatus>
+    <with-status v-if="hasCell('StatusLog')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
+      <status-log-cell v-bind="resource"/>
+    </with-status>
   </span>
 </template>
 

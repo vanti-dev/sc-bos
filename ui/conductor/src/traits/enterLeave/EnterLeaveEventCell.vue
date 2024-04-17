@@ -1,5 +1,5 @@
 <template>
-  <StatusAlert v-if="props.streamError" :resource="props.streamError"/>
+  <status-alert v-if="props.streamError" :resource="props.streamError"/>
 
   <span v-else-if="value && !props.streamError" class="text-no-wrap el-cell">
     <v-tooltip bottom>

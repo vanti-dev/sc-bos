@@ -57,13 +57,13 @@
         {{ item.metadata.appearance ? item.metadata.appearance.title : item.name }}
       </template>
       <template #item.hotpoint="{item}">
-        <HotPoint
+        <hot-point
             v-slot="{live}"
             class="d-flex align-center justify-end"
             :item-key="item.name"
             style="height:100%">
-          <DeviceCell :paused="!live" :item="item"/>
-        </HotPoint>
+          <device-cell :paused="!live" :item="item"/>
+        </hot-point>
       </template>
     </v-data-table>
   </content-card>

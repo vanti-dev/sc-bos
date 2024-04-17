@@ -1,5 +1,5 @@
 <template>
-  <StatusAlert v-if="props.streamError" icon="mdi-connection" :resource="props.streamError"/>
+  <status-alert v-if="props.streamError" icon="mdi-connection" :resource="props.streamError"/>
 
   <v-icon
       v-else-if="ok"

@@ -1,6 +1,6 @@
 <template>
   <side-bar>
-    <DeviceSideBarContent :device-id="deviceId" :traits="traits"/>
+    <device-side-bar-content :device-id="deviceId" :traits="traits"/>
   </side-bar>
 </template>
 

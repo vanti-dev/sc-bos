@@ -33,8 +33,8 @@
             outlined
             style="min-width: 100px; width: 100%; max-width: 170px"/>
       </v-row>
-      <ListView v-if="viewType === 'list'" :device-names="deviceQuery"/>
-      <MapView v-else :device-names="deviceNames" :floor="filterFloor"/>
+      <list-view v-if="viewType === 'list'" :device-names="deviceQuery"/>
+      <map-view v-else :device-names="deviceNames" :floor="filterFloor"/>
     </content-card>
   </v-container>
 </template>

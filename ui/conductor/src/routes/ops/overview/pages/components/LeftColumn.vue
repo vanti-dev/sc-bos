@@ -9,9 +9,9 @@
           class="flex-grow-1"
           :metered="props.item.widgets.showEnergyConsumption"/>
     </content-card>
-    <ContentCard v-if="props.item.widgets.showNotifications" class="mt-1 pt-4 pl-0">
+    <content-card v-if="props.item.widgets.showNotifications" class="mt-1 pt-4 pl-0">
       <notifications overview-page :zone="props.item.widgets.showNotifications"/>
-    </ContentCard>
+    </content-card>
   </div>
 </template>
 

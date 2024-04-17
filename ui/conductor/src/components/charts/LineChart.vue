@@ -21,7 +21,7 @@
       </template>
     </div>
     <div class="flex-grow-1">
-      <LineChartGenerator
+      <line-chart-generator
           :options="props.chartOptions"
           :data="props.chartData"
           :plugins="[htmlLegendPlugin]"

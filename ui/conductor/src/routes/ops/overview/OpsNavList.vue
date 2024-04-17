@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-list :class="['d-flex flex-column', {'mr-n2': !miniVariant}]" dense :nav="!miniVariant">
-      <OpsNavListItem
+      <ops-nav-list-item
           v-for="(item, index) in props.items"
           :key="index"
           :item="item"

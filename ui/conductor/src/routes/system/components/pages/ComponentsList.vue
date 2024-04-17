@@ -65,7 +65,7 @@
                 v-for="(trackers, service) in nodeDetails[node.name]"
                 :key="service">
               <span class="mr-1">{{ service }}: {{ trackers.metadataTracker?.response?.totalCount }}</span>
-              <StatusAlert :resource="trackers.metadataTracker?.error"/>
+              <status-alert :resource="trackers.metadataTracker?.error"/>
             </v-list-item>
           </v-list>
           <v-chip-group>
@@ -77,7 +77,7 @@
     </div>
 
     <!-- Modal -->
-    <EnrollHubNodeModal
+    <enroll-hub-node-modal
         :show-modal.sync="showModal"
         :node-query.sync="nodeQuery"
         :list-items="nodesList"/>

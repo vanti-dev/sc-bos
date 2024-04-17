@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Status bar -->
-    <Status
+    <status
         :title="props.device.title"
         :status-bar-color="statusColor"
         :door-status-text="doorStatusText"
@@ -41,7 +41,7 @@
         </v-col>
         <v-spacer/>
         <v-col class="mx-0 px-0" cols="1">
-          <Acknowledgement
+          <acknowledgement
               :ack="alert.acknowledgement"
               @acknowledge="notifications.setAcknowledged(true, alert, hubName)"
               @unacknowledge="notifications.setAcknowledged(false, alert, hubName)"/>

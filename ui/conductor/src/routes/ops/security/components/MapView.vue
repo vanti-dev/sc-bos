@@ -1,29 +1,29 @@
 <template>
   <v-container fluid class="mb-0 mt-0 pb-0 pt-0 floor-plan__container">
-    <PinchZoom @click="handleClick">
+    <pinch-zoom @click="handleClick">
       <template #default="{ scale }">
-        <Stack ref="groupingContainer">
+        <stack ref="groupingContainer">
           <!-- eslint-disable-next-line vue/no-v-html -->
           <div v-html="activeFloorPlan" ref="floorPlanSVG" :style="{ '--map-scale': scale }"/>
           <div v-if="showMenu" style="pointer-events: none">
             <div :style="calculateAnchorStyle" style="pointer-events: none">
-              <HotPoint
+              <hot-point
                   v-slot="{ live }"
                   :item-key="elementWithMenu?.device?.name"
                   style="position: relative; top: 100%; transform-origin: 0 0; pointer-events: auto"
                   :style="{
                     transform: `scale(${1 / scale})`,
                   }">
-                <AccessPointCard
+                <access-point-card
                     :device="elementWithMenu?.device"
                     :paused="!live"
                     @click:close="closeMenu"
                     show-close/>
-              </HotPoint>
+              </hot-point>
             </div>
           </div>
           <div class="door-status-tracker">
-            <HotPoint
+            <hot-point
                 v-slot="{ live }"
                 v-for="door in doors"
                 :key="door.name"
@@ -31,43 +31,43 @@
                 class="door-status-tracker__item"
                 :style="door.style">
               <!-- If door has Access data reading and has no OpenClose reading -->
-              <WithAccess
+              <with-access
                   v-if="hasTrait(door.name, 'Access') && !hasTrait(door.name, 'OpenClose')"
                   :name="door.name"
                   :paused="!live"
                   v-slot="{ resource: accessResource }">
-                <WithStatus :name="door.name" :paused="!live" v-slot="{ resource: statusResource }">
+                <with-status :name="door.name" :paused="!live" v-slot="{ resource: statusResource }">
                   <door-color
                       :name="door.name"
                       :access-attempt="accessResource.value"
                       :status-log="statusResource.value"
                       class="door-status-tracker__item"
                       @updateFill="setDoorFill"/>
-                </WithStatus>
-              </WithAccess>
+                </with-status>
+              </with-access>
               <!-- If door has no Access data reading and has OpenClose reading -->
-              <WithOpenClose
+              <with-open-close
                   v-if="!hasTrait(door.name, 'Access') && hasTrait(door.name, 'OpenClose')"
                   :name="door.name"
                   :paused="!live"
                   v-slot="{ resource: openCloseResource }">
-                <WithStatus :name="door.name" :paused="!live" v-slot="{ resource: statusResource }">
+                <with-status :name="door.name" :paused="!live" v-slot="{ resource: statusResource }">
                   <door-color
                       :name="door.name"
                       :open-close="openCloseResource.value"
                       :status-log="statusResource.value"
                       class="door-status-tracker__item"
                       @updateStroke="setDoorStroke"/>
-                </WithStatus>
-              </WithOpenClose>
+                </with-status>
+              </with-open-close>
               <!-- If door has Access data reading and has OpenClose reading -->
-              <WithAccess
+              <with-access
                   v-if="hasTrait(door.name, 'Access') && hasTrait(door.name, 'OpenClose')"
                   :name="door.name"
                   :paused="!live"
                   v-slot="{ resource: accessResource }">
-                <WithOpenClose :name="door.name" :paused="!live" v-slot="{ resource: openCloseResource }">
-                  <WithStatus :name="door.name" :paused="!live" v-slot="{ resource: statusResource }">
+                <with-open-close :name="door.name" :paused="!live" v-slot="{ resource: openCloseResource }">
+                  <with-status :name="door.name" :paused="!live" v-slot="{ resource: statusResource }">
                     <door-color
                         :name="door.name"
                         :access-attempt="accessResource.value"
@@ -76,14 +76,14 @@
                         class="door-status-tracker__item"
                         @updateFill="setDoorFill"
                         @updateStroke="setDoorStroke"/>
-                  </WithStatus>
-                </WithOpenClose>
-              </WithAccess>
-            </HotPoint>
+                  </with-status>
+                </with-open-close>
+              </with-access>
+            </hot-point>
           </div>
-        </Stack>
+        </stack>
       </template>
-    </PinchZoom>
+    </pinch-zoom>
   </v-container>
 </template>
 

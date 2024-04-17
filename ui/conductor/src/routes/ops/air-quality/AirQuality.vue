@@ -20,7 +20,7 @@
           :loading="isFetching"
           outlined/>
       <div class="d-flex flex-column mr-5" style="min-height: 400px">
-        <LineChart :chart-data="chartData" :chart-options="chartOptions" dataset-id-key="label" class="flex-grow-1"/>
+        <line-chart :chart-data="chartData" :chart-options="chartOptions" dataset-id-key="label" class="flex-grow-1"/>
       </div>
 
       <!-- Most recent values -->

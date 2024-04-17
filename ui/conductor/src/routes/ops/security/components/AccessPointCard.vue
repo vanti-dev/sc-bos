@@ -1,13 +1,13 @@
 <template>
   <v-card color="#40464D" elevation="0" dark min-width="420px" height="100%" min-height="240px" max-height="240px">
     <!-- Has Access data but has no OpenClose data -->
-    <WithAccess
+    <with-access
         v-if="availableTraits.includes('Access') && !availableTraits.includes('OpenClose')"
         v-slot="{ resource: accessResource }"
         :name="props.device.name"
         :paused="props.paused">
-      <WithStatus v-slot="{ resource: statusResource }" :name="props.device.name" :paused="props.paused">
-        <Access
+      <with-status v-slot="{ resource: statusResource }" :name="props.device.name" :paused="props.paused">
+        <access
             :access-attempt="accessResource.value"
             :status-log="statusResource.value"
             :loading="accessResource.loading || statusResource.loading"
@@ -15,16 +15,16 @@
             :show-close="props.showClose"
             :paused="props.paused"
             @click:close="emit('click:close')"/>
-      </WithStatus>
-    </WithAccess>
+      </with-status>
+    </with-access>
     <!-- Has OpenClose data but has no Access data -->
-    <WithOpenClose
+    <with-open-close
         v-if="!availableTraits.includes('Access') && availableTraits.includes('OpenClose')"
         v-slot="{ resource: openCloseResource }"
         :name="props.device.name"
         :paused="props.paused">
-      <WithStatus v-slot="{ resource: statusResource }" :name="props.device.name" :paused="props.paused">
-        <Access
+      <with-status v-slot="{ resource: statusResource }" :name="props.device.name" :paused="props.paused">
+        <access
             :open-close="openCloseResource.value"
             :status-log="statusResource.value"
             :loading="openCloseResource.loading || statusResource.loading"
@@ -32,17 +32,17 @@
             :show-close="props.showClose"
             :paused="props.paused"
             @click:close="emit('click:close')"/>
-      </WithStatus>
-    </WithOpenClose>
+      </with-status>
+    </with-open-close>
     <!-- Has both Access and OpenClose data -->
-    <WithAccess
+    <with-access
         v-if="availableTraits.includes('Access') && availableTraits.includes('OpenClose')"
         v-slot="{ resource: accessResource }"
         :name="props.device.name"
         :paused="props.paused">
-      <WithOpenClose v-slot="{ resource: openCloseResource }" :name="props.device.name" :paused="props.paused">
-        <WithStatus v-slot="{ resource: statusResource }" :name="props.device.name" :paused="props.paused">
-          <Access
+      <with-open-close v-slot="{ resource: openCloseResource }" :name="props.device.name" :paused="props.paused">
+        <with-status v-slot="{ resource: statusResource }" :name="props.device.name" :paused="props.paused">
+          <access
               :access-attempt="accessResource.value"
               :open-close="openCloseResource.value"
               :status-log="statusResource.value"
@@ -51,9 +51,9 @@
               :show-close="props.showClose"
               :paused="props.paused"
               @click:close="emit('click:close')"/>
-        </WithStatus>
-      </WithOpenClose>
-    </WithAccess>
+        </with-status>
+      </with-open-close>
+    </with-access>
   </v-card>
 </template>
 

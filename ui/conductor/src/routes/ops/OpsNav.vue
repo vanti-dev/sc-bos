@@ -30,7 +30,7 @@
 
       <!-- Overview Sub-lists (Areas and Floors) -->
       <v-slide-y-transition>
-        <OpsNavList
+        <ops-nav-list
             v-if="displayList"
             :display-list="displayList"
             :items="overviewChildren"

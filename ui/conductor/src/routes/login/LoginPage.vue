@@ -6,7 +6,7 @@
         Smart Core
       </v-card-title>
 
-      <LocalLogin v-if="displayLoginForm"/>
+      <local-login v-if="displayLoginForm"/>
       <device-flow-login v-else-if="displayDeviceLogin"/>
       <login-choice v-else @choose="chooseProvider"/>
 

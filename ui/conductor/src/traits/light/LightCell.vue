@@ -1,5 +1,5 @@
 <template>
-  <StatusAlert v-if="error" icon="mdi-lightbulb-outline" :resource="error"/>
+  <status-alert v-if="error" icon="mdi-lightbulb-outline" :resource="error"/>
 
   <span v-else class="d-flex flex-row flex-nowrap">
     <v-tooltip bottom>

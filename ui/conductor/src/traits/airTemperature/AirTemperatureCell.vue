@@ -1,5 +1,5 @@
 <template>
-  <StatusAlert v-if="props.streamError" icon="mdi-thermometer-low" :resource="props.streamError"/>
+  <status-alert v-if="props.streamError" icon="mdi-thermometer-low" :resource="props.streamError"/>
 
   <span class="text-no-wrap at-cell" v-else-if="(hasTemp || hasSetPoint) && !props.streamError">
     <v-tooltip bottom v-if="hasTemp" open-delay="1000">

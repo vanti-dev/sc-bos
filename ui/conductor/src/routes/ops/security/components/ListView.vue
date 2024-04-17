@@ -1,9 +1,9 @@
 <template>
   <v-container fluid class="d-flex flex-row flex-wrap justify-left pt-14 mt-14 mx-0 px-2">
     <span v-for="(device, deviceIndex) in props.deviceNames" :key="deviceIndex" class="mb-8 mx-auto">
-      <HotPoint v-slot="{ live }" :item-key="device.name">
-        <AccessPointCard :device="device" :paused="!live"/>
-      </HotPoint>
+      <hot-point v-slot="{ live }" :item-key="device.name">
+        <access-point-card :device="device" :paused="!live"/>
+      </hot-point>
     </span>
   </v-container>
 </template>

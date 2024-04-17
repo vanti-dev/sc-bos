@@ -1,6 +1,6 @@
 <template>
   <div class="mb-n4">
-    <BarChart :chart-data="chartData" :chart-options="chartOptions"/>
+    <bar-chart :chart-data="chartData" :chart-options="chartOptions"/>
   </div>
 </template>
 

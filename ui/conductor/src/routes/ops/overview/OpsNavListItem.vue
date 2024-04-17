@@ -29,7 +29,7 @@
       </v-btn>
     </div>
     <v-slide-y-transition hide-on-leave>
-      <OpsNavList
+      <ops-nav-list
           v-if="isOpen && hasChildren"
           :class="isOpen ? 'mt-n2 mb-n1' : ''"
           :items="props.item.children"

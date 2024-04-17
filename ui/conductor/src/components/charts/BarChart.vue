@@ -1,5 +1,5 @@
 <template>
-  <Bar
+  <bar
       :options="props.chartOptions"
       :data="props.chartData"
       :dataset-id-key="props.datasetIdKey"/>

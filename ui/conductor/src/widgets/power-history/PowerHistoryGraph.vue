@@ -1,5 +1,5 @@
 <template>
-  <LineChart
+  <line-chart
       :chart-options="chartOptions"
       :chart-data="chartData"
       :chart-title="props.chartTitle"
@@ -11,7 +11,7 @@
           :show-conversion.sync="showConversion"
           @exportCSV="meteredExportData('Meter Readings')"/>
     </template>
-  </LineChart>
+  </line-chart>
 </template>
 
 <script setup>

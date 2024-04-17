@@ -3,7 +3,7 @@
     <v-row class="ml-0 pl-0 my-0">
       <h3 class="text-h3 pt-2 pb-6">Drivers</h3>
     </v-row>
-    <ServicesList :name="ServiceNames.Drivers"/>
+    <services-list :name="ServiceNames.Drivers"/>
   </div>
 </template>
 

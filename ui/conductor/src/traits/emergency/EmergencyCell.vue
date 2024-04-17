@@ -1,5 +1,5 @@
 <template>
-  <StatusAlert v-if="props.streamError" icon="mdi-smoke-detector-outline" :resource="props.streamError"/>
+  <status-alert v-if="props.streamError" icon="mdi-smoke-detector-outline" :resource="props.streamError"/>
 
   <v-tooltip v-else left nudge-right="8px">
     <template #activator="{attr, on}">
