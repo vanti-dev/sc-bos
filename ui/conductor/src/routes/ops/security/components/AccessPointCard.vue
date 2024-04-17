@@ -7,7 +7,7 @@
         :name="props.device.name"
         :paused="props.paused">
       <with-status v-slot="{ resource: statusResource }" :name="props.device.name" :paused="props.paused">
-        <access
+        <access-info
             :access-attempt="accessResource.value"
             :status-log="statusResource.value"
             :loading="accessResource.loading || statusResource.loading"
@@ -24,7 +24,7 @@
         :name="props.device.name"
         :paused="props.paused">
       <with-status v-slot="{ resource: statusResource }" :name="props.device.name" :paused="props.paused">
-        <access
+        <access-info
             :open-close="openCloseResource.value"
             :status-log="statusResource.value"
             :loading="openCloseResource.loading || statusResource.loading"
@@ -42,7 +42,7 @@
         :paused="props.paused">
       <with-open-close v-slot="{ resource: openCloseResource }" :name="props.device.name" :paused="props.paused">
         <with-status v-slot="{ resource: statusResource }" :name="props.device.name" :paused="props.paused">
-          <access
+          <access-info
               :access-attempt="accessResource.value"
               :open-close="openCloseResource.value"
               :status-log="statusResource.value"
@@ -58,7 +58,7 @@
 </template>
 
 <script setup>
-import Access from '@/routes/ops/security/components/access-point-card/Access.vue';
+import AccessInfo from '@/routes/ops/security/components/access-point-card/AccessInfo.vue';
 import WithAccess from '@/traits/access/WithAccess.vue';
 import WithOpenClose from '@/traits/openClose/WithOpenClose.vue';
 import WithStatus from '@/traits/status/WithStatus.vue';

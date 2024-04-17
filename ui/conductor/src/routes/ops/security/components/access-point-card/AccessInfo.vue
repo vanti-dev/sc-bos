@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Status bar -->
-    <status
+    <status-bar
         :title="props.device.title"
         :status-bar-color="statusColor"
         :door-status-text="doorStatusText"
@@ -41,7 +41,7 @@
         </v-col>
         <v-spacer/>
         <v-col class="mx-0 px-0" cols="1">
-          <acknowledgement
+          <acknowledgement-btn
               :ack="alert.acknowledgement"
               @acknowledge="notifications.setAcknowledged(true, alert, hubName)"
               @unacknowledge="notifications.setAcknowledged(false, alert, hubName)"/>
@@ -54,12 +54,11 @@
 <script setup>
 import {closeResource} from '@/api/resource';
 import {grantNamesByID} from '@/api/sc/traits/access';
-import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
+import AcknowledgementBtn from '@/routes/ops/notifications/AcknowledgementBtn.vue';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
-
-import Status from '@/routes/ops/security/components/access-point-card/StatusBar.vue';
+import StatusBar from '@/routes/ops/security/components/access-point-card/StatusBar.vue';
 import {useStatus} from '@/routes/ops/security/components/access-point-card/useStatus';
 import {useHubStore} from '@/stores/hub';
 import {computed, onBeforeUnmount, reactive} from 'vue';

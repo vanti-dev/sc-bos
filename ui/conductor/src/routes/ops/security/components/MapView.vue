@@ -2,7 +2,7 @@
   <v-container fluid class="mb-0 mt-0 pb-0 pt-0 floor-plan__container">
     <pinch-zoom @click="handleClick">
       <template #default="{ scale }">
-        <stack ref="groupingContainer">
+        <overlay-stack ref="groupingContainer">
           <!-- eslint-disable-next-line vue/no-v-html -->
           <div v-html="activeFloorPlan" ref="floorPlanSVG" :style="{ '--map-scale': scale }"/>
           <div v-if="showMenu" style="pointer-events: none">
@@ -81,7 +81,7 @@
               </with-access>
             </hot-point>
           </div>
-        </stack>
+        </overlay-stack>
       </template>
     </pinch-zoom>
   </v-container>
@@ -90,7 +90,7 @@
 <script setup>
 import HotPoint from '@/components/HotPoint.vue';
 import DoorColor from '@/routes/ops/security/components/DoorColor.vue';
-import Stack from '@/routes/ops/security/components/Stack.vue';
+import OverlayStack from '@/routes/ops/security/components/OverlayStack.vue';
 import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
 import {useUiConfigStore} from '@/stores/ui-config';
 import WithAccess from '@/traits/access/WithAccess.vue';

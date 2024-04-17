@@ -2,7 +2,7 @@ export default [
   {
     path: 'notifications',
     components: {
-      default: () => import('./Notifications.vue'),
+      default: () => import('./NotificationsTable.vue'),
       sidebar: () => import('./NotificationSideBar.vue')
     },
     props: {

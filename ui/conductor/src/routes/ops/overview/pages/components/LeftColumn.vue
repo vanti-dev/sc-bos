@@ -10,14 +10,14 @@
           :metered="props.item.widgets.showEnergyConsumption"/>
     </content-card>
     <content-card v-if="props.item.widgets.showNotifications" class="mt-1 pt-4 pl-0">
-      <notifications overview-page :zone="props.item.widgets.showNotifications"/>
+      <notifications-table overview-page :zone="props.item.widgets.showNotifications"/>
     </content-card>
   </div>
 </template>
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import Notifications from '@/routes/ops/notifications/Notifications.vue';
+import NotificationsTable from '@/routes/ops/notifications/NotificationsTable.vue';
 import PowerHistoryGraph from '@/widgets/power-history/PowerHistoryGraph.vue';
 
 const props = defineProps({

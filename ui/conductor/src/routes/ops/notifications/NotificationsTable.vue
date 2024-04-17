@@ -170,7 +170,7 @@
           </span>
         </template>
         <template #item.acknowledged="{ item }">
-          <acknowledgement
+          <acknowledgement-btn
               :ack="item.acknowledgement"
               @acknowledge="notifications.setAcknowledged(true, item, name)"
               @unacknowledge="notifications.setAcknowledged(false, item, name)"/>
@@ -187,7 +187,7 @@ import FilterBtn from '@/components/filter/FilterBtn.vue';
 import FilterChoiceChips from '@/components/filter/FilterChoiceChips.vue';
 import useFilterCtx from '@/components/filter/filterCtx.js';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
-import Acknowledgement from '@/routes/ops/notifications/Acknowledgement.vue';
+import AcknowledgementBtn from '@/routes/ops/notifications/AcknowledgementBtn.vue';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import {severityData, useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
