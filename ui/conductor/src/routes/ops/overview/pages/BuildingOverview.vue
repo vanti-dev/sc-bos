@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import EnvironmentalCard from '@/routes/ops/overview/pages/widgets/environmental/EnvironmentalCard.vue';
+import EnvironmentalCard from '@/widgets/environmental/EnvironmentalCard.vue';
 import OccupancyCard from '@/widgets/occupancy/OccupancyCard.vue';
 import {usePageStore} from '@/stores/page';
 import {useUiConfigStore} from '@/stores/ui-config';

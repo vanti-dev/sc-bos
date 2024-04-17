@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import EnvironmentalCard from '@/routes/ops/overview/pages/widgets/environmental/EnvironmentalCard.vue';
+import EnvironmentalCard from '@/widgets/environmental/EnvironmentalCard.vue';
 import PresenceCard from '@/widgets/occupancy/PresenceCard.vue';
 import {computed} from 'vue';
 
