@@ -2,8 +2,8 @@
   <content-card class="d-flex flex-column pa-8">
     <energy-graph
         v-if="props.showChart"
+        :demand="props.metered"
         :generated="props.generated"
-        :metered="props.metered"
         class="flex-grow-1"/>
     <power-total
         v-if="props.showIntensity"

@@ -9,7 +9,7 @@
       <power-history-graph-options-menu
           :duration-option.sync="durationOption"
           :show-conversion.sync="showConversion"
-          @exportCSV="meteredExportData('Meter Readings')"/>
+          @exportCSV="demandExportData('Meter Readings')"/>
     </template>
   </line-chart>
 </template>
@@ -34,13 +34,13 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  metered: {
+  demand: {
     type: String,
-    default: 'building'
+    required: true
   },
   generated: {
     type: String,
-    default: ''
+    default: null
   },
   width: {
     type: String,
@@ -116,17 +116,17 @@ const getIntensityValue = (range) => range.intensity.actual ?? range.intensity.f
 // Set the yAxis unit based on the `showConversion` value
 const yAxisUnit = computed(() => showConversion.value ? 'Grams of CO₂ / hour' : 'kW');
 
-// Fetch the metered and generated data based on the periodStart and periodEnd values and the durationOption's span
-const {seriesData: meteredSeriesData, exportData: meteredExportData} =
-    useMeterHistory(() => props.metered, periodStart, periodEnd, () => durationOption.value.span);
+// Fetch the demand and generated data based on the periodStart and periodEnd values and the durationOption's span
+const {seriesData: demandSeriesData, exportData: demandExportData} =
+    useMeterHistory(() => props.demand, periodStart, periodEnd, () => durationOption.value.span);
 const {seriesData: generatedSeriesData} =
     useMeterHistory(() => props.generated, periodStart, periodEnd, () => durationOption.value.span);
 
 // Helper function to compute the CO2 series data based on the seriesData value and the kwhToGramsOfCO2 function
 const computeCO2SeriesData = seriesData => seriesData.value.map(({x, y}) => ({x, y: y * kwhToGramsOfCO2(x)}));
 
-// Computed properties to compute the CO2 series data for the metered and generated data
-const co2Metered = computed(() => computeCO2SeriesData(meteredSeriesData));
+// Computed properties to compute the CO2 series data for the demand and generated data
+const co2Demand = computed(() => computeCO2SeriesData(demandSeriesData));
 const co2Generated = computed(() => computeCO2SeriesData(generatedSeriesData));
 
 // ----------------- Chart Data and Options ----------------- //
@@ -147,31 +147,31 @@ const chartData = computed(() => {
   const generatedColor = rgbaColor(hexColor('success lighten-3', vuetifyInstance), 1);
 
   // Helper function to avoid redundancy in dataset creation
-  const addDataset = (data, isMetered = false) => {
+  const addDataset = (data, isDemand = false) => {
     datasets.push({
-      borderColor: isMetered ? themeColor.value.start : generatedColor,
+      borderColor: isDemand ? themeColor.value.start : generatedColor,
       data: data,
-      fill: isMetered,
-      label: isMetered ? 'Metered' : 'Generated',
-      backgroundColor: isMetered ? createGradient : undefined,
+      fill: isDemand,
+      label: isDemand ? 'Demand' : 'Generated',
+      backgroundColor: isDemand ? createGradient : undefined,
       pointBackgroundColor: 'rgba(0, 0, 0, 0)',
       pointBorderColor: 'rgba(0, 0, 0, 0)',
       pointHoverBackgroundColor: 'rgb(255, 255, 255)',
-      pointHoverBorderColor: isMetered ? themeColor.value.start : generatedColor,
+      pointHoverBorderColor: isDemand ? themeColor.value.start : generatedColor,
       pointStyle: 'circle',
       tension: 0.35
     });
   };
 
   // Decide which data to use based on `showConversion` and whether props are provided
-  if (props.generated !== '') {
+  if (props.generated) {
     const generatedData = showConversion.value ? co2Generated.value : generatedSeriesData.value;
     addDataset(generatedData, false);
   }
 
-  if (props.metered !== '') {
-    const meteredData = showConversion.value ? co2Metered.value : meteredSeriesData.value;
-    addDataset(meteredData, true);
+  if (props.demand) {
+    const demandData = showConversion.value ? co2Demand.value : demandSeriesData.value;
+    addDataset(demandData, true);
   }
 
   return {datasets};

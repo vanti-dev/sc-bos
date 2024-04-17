@@ -7,7 +7,7 @@
       <power-history-graph
           chart-title="Energy Consumption"
           class="flex-grow-1"
-          :metered="props.item.widgets.showEnergyConsumption"/>
+          :demand="props.item.widgets.showEnergyConsumption"/>
     </content-card>
     <content-card v-if="props.item.widgets.showNotifications" class="mt-1 pt-4 pl-0">
       <notifications-table overview-page :zone="props.item.widgets.showNotifications"/>
