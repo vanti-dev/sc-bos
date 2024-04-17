@@ -1,28 +1,9 @@
 <template>
-  <div class="fill-height layout-overview">
-    <header>
-      <h3 class="text-h3">{{ title }}</h3>
-    </header>
-    <section v-if="showSectionMain" class="section-main">
-      <power-history-card
-          v-if="powerHistoryConfig"
-          style="min-height: 415px;"
-          v-bind="powerHistoryConfig"/>
-      <occupancy-card
-          v-if="occupancyHistoryConfig"
-          style="min-height: 415px"
-          v-bind="occupancyHistoryConfig"/>
-    </section>
-    <section v-if="showSectionRight" class="section-right">
-      <environmental-card
-          v-if="environmentalConfig"
-          v-bind="environmentalConfig"
-          should-wrap/>
-    </section>
-  </div>
+  <layout-main-side v-bind="widgets"/>
 </template>
 
 <script setup>
+import LayoutMainSide from '@/layout/LayoutMainSide.vue';
 import useBuildingConfig from '@/routes/ops/overview/pages/buildingConfig.js';
 import EnvironmentalCard from '@/widgets/environmental/EnvironmentalCard.vue';
 import OccupancyCard from '@/widgets/occupancy/OccupancyCard.vue';
@@ -36,31 +17,19 @@ const {
   environmentalConfig
 } = useBuildingConfig();
 
-const showSectionMain = computed(() => Boolean(powerHistoryConfig.value || occupancyHistoryConfig.value));
-const showSectionRight = computed(() => Boolean(environmentalConfig.value));
+const widgets = computed(() => ({
+  title: title.value,
+  mainWidgetMinHeight: 415,
+  sideWidth: 260,
+  main: [
+    {component: PowerHistoryCard, props: powerHistoryConfig.value},
+    {component: OccupancyCard, props: occupancyHistoryConfig.value}
+  ],
+  after: [
+    {component: EnvironmentalCard, props: environmentalConfig.value}
+  ]
+}));
 </script>
 
 <style scoped>
-.layout-overview {
-  display: grid;
-  grid-template-columns: 1fr 260px;
-  grid-template-rows: auto  1fr;
-  gap: 24px;
-  width: 100%;
-  align-items: stretch;
-}
-
-.section-main, .section-right {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.section-main {
-  min-width: 0;
-}
-
-.layout-overview > header {
-  grid-column: 1 / span 2;
-}
 </style>
