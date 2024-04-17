@@ -1,9 +1,7 @@
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {isNullOrUndef} from '@/util/types.js';
 import {toValue} from '@/util/vue.js';
-import EnvironmentalCard from '@/widgets/environmental/EnvironmentalCard.vue';
-import OccupancyCard from '@/widgets/occupancy/OccupancyCard.vue';
-import PowerHistoryCard from '@/widgets/power-history/PowerHistoryCard.vue';
+import {builtinWidgets} from '@/widgets/pallet.js';
 import {computed, ref} from 'vue';
 
 /**
@@ -96,13 +94,13 @@ export default function useBuildingConfig() {
     title: ref('Building Status Overview'),
     main: computed(() => {
       const res = [];
-      addIfPresent(res, powerHistoryConfig, PowerHistoryCard);
-      addIfPresent(res, occupancyHistoryConfig, OccupancyCard);
+      addIfPresent(res, powerHistoryConfig, builtinWidgets['power-history']);
+      addIfPresent(res, occupancyHistoryConfig, builtinWidgets['occupancy-history']);
       return res;
     }),
     after: computed(() => {
       const res = [];
-      addIfPresent(res, environmentalConfig, EnvironmentalCard);
+      addIfPresent(res, environmentalConfig, builtinWidgets['environmental']);
       return res;
     })
   };
