@@ -23,7 +23,7 @@ import {computed, ref, watch, watchEffect} from 'vue';
  *  shouldFetch: import('vue').ComputedRef<boolean>,
  *  firstRecordTime: import('vue').ComputedRef<Date|null>,
  *  lastRecordTime: import('vue').ComputedRef<Date|null>,
- *  exportData: (fileName) => Promise<void>
+ *  exportData: (fileName: string) => Promise<void>
  * }}
  */
 export default function(name, periodStart, periodEnd, spanSize) {
