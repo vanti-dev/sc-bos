@@ -5,7 +5,7 @@
       <v-spacer/>
       <occupancy-people-count :people-count="peopleCount" :error="streamError" class="text-h2"/>
     </div>
-    <occupancy-graph class="flex-grow-1" :name="props.name"/>
+    <occupancy-graph class="flex-grow-1" :source="props.name"/>
   </content-card>
 </template>
 

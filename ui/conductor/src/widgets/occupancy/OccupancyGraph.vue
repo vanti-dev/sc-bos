@@ -11,9 +11,9 @@ import BarChart from '@/components/charts/BarChart.vue';
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
-  name: {
+  source: {
     type: String,
-    default: 'building'
+    required: true
   },
   span: { // how wide the bars of the histogram are / group interval
     type: Number,
@@ -28,7 +28,7 @@ const nowHandle = ref(0);
 const seriesMap = reactive({
   occupancy: {
     baseRequest: computed(() => {
-      return baseRequest(props.name);
+      return baseRequest(props.source);
     }),
     data: [],
     handle: 0,
