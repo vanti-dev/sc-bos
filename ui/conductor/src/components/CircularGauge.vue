@@ -1,5 +1,5 @@
 <template>
-  <v-card :width="width" :height="heightValue" flat tile class="gauge">
+  <v-sheet :width="width" :height="heightValue" elevation="0" color="transparent" v-bind="$attrs" class="gauge">
     <svg
         xmlns="http://www.w3.org/2000/svg"
         xml:space="preserve"
@@ -21,7 +21,7 @@
     <span class="text-title gauge-title">
       <slot name="title"/>
     </span>
-  </v-card>
+  </v-sheet>
 </template>
 
 <script setup>
@@ -57,6 +57,10 @@ const props = defineProps({
   color: {
     type: String,
     default: 'primary'
+  },
+  trackColor: {
+    type: String,
+    default: 'currentColor'
   }
 });
 
@@ -113,8 +117,7 @@ const fillColors = computed(() => {
     const val = minValue.value + i * segValue.value;
 
     if (val >= props.value) {
-      // todo: allow override of 'off' colour
-      cols.push('#ffffff');
+      cols.push(props.trackColor);
     } else {
       if (props.color.startsWith('#')) {
         cols.push(props.color);
@@ -135,6 +138,7 @@ const fillColors = computed(() => {
 <style scoped>
 .gauge {
   position: relative;
+  color: inherit;
 }
 
 .value {
