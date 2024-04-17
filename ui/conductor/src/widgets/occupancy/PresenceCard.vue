@@ -1,5 +1,5 @@
 <template>
-  <content-card class="mt-3 pt-4 pb-5 mb-3">
+  <content-card class="pt-4 pb-5">
     <div class="d-flex flex-row mb-2">
       <v-card-title class="text-h4 pl-4">Presence</v-card-title>
       <status-alert :resource="occupancyErr"/>

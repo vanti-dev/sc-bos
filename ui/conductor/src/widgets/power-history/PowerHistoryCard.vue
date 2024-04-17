@@ -2,6 +2,7 @@
   <content-card class="d-flex flex-column pa-8">
     <energy-graph
         v-if="showChart"
+        :chart-title="props.chartTitle"
         :demand="chartDemandName"
         :generated="chartGeneratedName"
         class="flex-grow-1"/>
@@ -54,6 +55,10 @@ const props = defineProps({
   hideTotal: {
     type: Boolean,
     default: false
+  },
+  chartTitle: {
+    type: String,
+    default: undefined
   }
 });
 
