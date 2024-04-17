@@ -38,6 +38,16 @@ export const isUndefined = (value) => {
   return typeof value === 'undefined';
 };
 
+/**
+ * Returns true if the value is null or undefined.
+ *
+ * @param {any} value
+ * @return {boolean}
+ */
+export const isNullOrUndef = (value) => {
+  return isNull(value) || isUndefined(value);
+};
+
 // isDate: Validates whether the value is a Date object and not an invalid date (NaN).
 export const isDate = (value) => {
   return value instanceof Date && !isNaN(value);
