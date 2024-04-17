@@ -1,5 +1,5 @@
 <template>
-  <content-card class="mb-8 d-flex flex-column pa-8">
+  <content-card class="d-flex flex-column pa-8">
     <energy-graph
         v-if="props.showChart"
         :generated="props.generated"
