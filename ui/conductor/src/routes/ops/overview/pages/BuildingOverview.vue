@@ -7,10 +7,10 @@
       <power-history-card
           v-if="showEnergy"
           style="min-height: 415px;"
-          :show-chart="showEnergyChart"
-          :show-intensity="showEnergyIntensity"
+          :demand="energyZone"
           :generated="supplyZone"
-          :metered="energyZone"/>
+          :hide-chart="!showEnergyChart"
+          :hide-total="!showEnergyIntensity"/>
       <occupancy-card
           v-if="showOccupancy"
           style="min-height: 415px"
