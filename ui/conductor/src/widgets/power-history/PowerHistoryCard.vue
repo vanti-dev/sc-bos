@@ -7,7 +7,7 @@
         class="flex-grow-1"/>
     <power-total
         v-if="props.showIntensity"
-        :metered="props.metered"
+        :demand="props.metered"
         :generated="props.generated"
         :occupancy="props.metered"
         class="mx-auto mt-8"/>

@@ -8,9 +8,9 @@
         label-color="success--text text--lighten-3"/>
     <span v-if="showTotal" class="add mx-3 text-h2">+</span>
     <labelled-unit
-        :value="meteredKW"
-        :error="_metered.streamError"
-        label="Metered"
+        :value="demandKW"
+        :error="_demand.streamError"
+        label="Demand"
         unit="kW"
         label-color="primary--text"/>
     <span v-if="showTotal" class="eq mx-3 text-h2">=</span>
@@ -41,7 +41,7 @@ const props = defineProps({
     ],
     default: null
   },
-  metered: {
+  demand: {
     type: [
       String, // name of the device
       Object // ElectricDemand.AsObject
@@ -58,17 +58,17 @@ const props = defineProps({
 });
 
 const hasGenerated = computed(() => props.generated != null);
-const hasMetered = computed(() => props.metered != null);
+const hasDemand = computed(() => props.demand != null);
 const hasOccupancy = computed(() => props.occupancy != null);
 
 const _generated = reactive(useValueOrQuery(() => props.generated, (s) => usePullElectricDemand(s)));
 
-const _metered = reactive(useValueOrQuery(() => props.metered, (s) => usePullElectricDemand(s)));
+const _demand = reactive(useValueOrQuery(() => props.demand, (s) => usePullElectricDemand(s)));
 const _occupancy = reactive(useValueOrQuery(() => props.occupancy, (s) => usePullOccupancy(s)));
 
-const showTotal = computed(() => hasGenerated.value && hasMetered.value);
+const showTotal = computed(() => hasGenerated.value && hasDemand.value);
 const totalPower = computed(() => {
-  return (_metered.value?.realPower ?? 0) + Math.abs(_generated.value?.realPower ?? 0);
+  return (_demand.value?.realPower ?? 0) + Math.abs(_generated.value?.realPower ?? 0);
 });
 
 const divIfPresent = (a, b) => {
@@ -81,7 +81,7 @@ const divIfPresent = (a, b) => {
   return a / b;
 };
 const generatedKW = computed(() => divIfPresent(_generated.value?.realPower, 1000));
-const meteredKW = computed(() => divIfPresent(_metered.value?.realPower, 1000));
+const demandKW = computed(() => divIfPresent(_demand.value?.realPower, 1000));
 const totalKW = computed(() => divIfPresent(totalPower.value, 1000));
 const intensityKW = computed(() => divIfPresent(totalKW.value, _occupancy.value?.peopleCount));
 
@@ -94,7 +94,7 @@ const segmentWidth = (title, unit = 'kW') => {
 const expectedWidth = computed(() => {
   let chars = 0;
   if (hasGenerated.value) chars += segmentWidth('Generated');
-  if (hasMetered.value) chars += segmentWidth('Metered');
+  if (hasDemand.value) chars += segmentWidth('Demand');
   if (showTotal.value) chars += segmentWidth('Total') + '+'.length + '='.length;
   if (hasOccupancy.value) chars += 1 + segmentWidth('Energy Intensity', 'kW/person');
   return `${chars * 0.6}em`;
