@@ -19,8 +19,8 @@
     <section v-if="showSectionRight" class="section-right">
       <environmental-card
           v-if="showEnvironment"
-          :name="environmentalZone"
-          :external-name="externalZone"
+          :internal="environmentalZone"
+          :external="externalZone"
           should-wrap/>
     </section>
   </div>

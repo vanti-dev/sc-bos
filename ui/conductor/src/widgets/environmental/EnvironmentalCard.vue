@@ -50,11 +50,11 @@ import {useAirTemperature, usePullAirTemperature} from '@/traits/airTemperature/
 import {computed} from 'vue';
 
 const props = defineProps({
-  name: {
+  internal: {
     type: String,
     default: null
   },
-  externalName: {
+  external: {
     type: String,
     default: null
   },
@@ -68,13 +68,13 @@ const props = defineProps({
   }
 });
 
-const {value: indoorValue} = usePullAirTemperature(() => props.name);
+const {value: indoorValue} = usePullAirTemperature(() => props.internal);
 const {
   temp: indoorTemperature,
   humidity: indoorHumidity,
   tempRange
 } = useAirTemperature(indoorValue);
-const {value: outdoorValue} = usePullAirTemperature(() => props.externalName);
+const {value: outdoorValue} = usePullAirTemperature(() => props.external);
 const {temp: outdoorTemperature} = useAirTemperature(outdoorValue);
 
 const vOrDash = (r) => {

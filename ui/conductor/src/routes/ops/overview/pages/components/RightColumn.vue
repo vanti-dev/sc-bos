@@ -8,8 +8,8 @@
     <environmental-card
         v-if="showWidget('showEnvironment')"
         class="mt-3"
-        :name="environmentalValues.indoor"
-        :external-name="environmentalValues.outdoor"/>
+        :internal="environmentalValues.indoor"
+        :external="environmentalValues.outdoor"/>
   </div>
 </template>
 
