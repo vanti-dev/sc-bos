@@ -27,51 +27,24 @@
 </template>
 
 <script setup>
-import {useUiConfigStore} from '@/stores/ui-config';
-import {useWidgetsStore} from '@/stores/widgets';
+import useBuildingConfig from '@/routes/ops/overview/pages/buildingConfig.js';
 import EnvironmentalCard from '@/widgets/environmental/EnvironmentalCard.vue';
 import OccupancyCard from '@/widgets/occupancy/OccupancyCard.vue';
 import PowerHistoryCard from '@/widgets/power-history/PowerHistoryCard.vue';
 import {computed} from 'vue';
 
-const uiConfig = useUiConfigStore();
-const {activeOverviewWidgets} = useWidgetsStore();
-
-const buildingZoneSource = computed(() => uiConfig.config?.ops?.buildingZone ?? '');
-const supplyZoneSource = computed(() => uiConfig.config?.ops?.supplyZone ?? '');
-
-const buildingZone = computed(() => buildingZoneSource.value);
-const supplyZone = computed(() => supplyZoneSource.value ? supplyZoneSource.value + '/supply' : '');
-const energyZone = buildingZone;
-const showEnergy = computed(() => {
-  if (typeof activeOverviewWidgets.showEnergyConsumption === 'boolean') {
-    return activeOverviewWidgets.showEnergyConsumption;
-  } else {
-    return activeOverviewWidgets.showEnergyConsumption?.showChart ||
-        activeOverviewWidgets.showEnergyConsumption?.showIntensity;
-  }
-});
-const showEnergyChart = computed(() => {
-  if (typeof activeOverviewWidgets.showEnergyConsumption === 'boolean') {
-    return activeOverviewWidgets.showEnergyConsumption;
-  } else {
-    return activeOverviewWidgets.showEnergyConsumption?.showChart;
-  }
-});
-const showEnergyIntensity = computed(() => {
-  if (typeof activeOverviewWidgets.showEnergyConsumption === 'boolean') {
-    return activeOverviewWidgets.showEnergyConsumption;
-  } else {
-    return activeOverviewWidgets.showEnergyConsumption?.showIntensity;
-  }
-});
-
-const showOccupancy = computed(() => activeOverviewWidgets?.showOccupancy);
-const occupancyZone = buildingZone;
-
-const showEnvironment = computed(() => activeOverviewWidgets?.showEnvironment);
-const environmentalZone = buildingZone;
-const externalZone = computed(() => environmentalZone.value + '/outside');
+const {
+  showEnergy,
+  showEnergyChart,
+  showEnergyIntensity,
+  supplyZone,
+  energyZone,
+  showOccupancy,
+  occupancyZone,
+  showEnvironment,
+  environmentalZone,
+  externalZone
+} = useBuildingConfig();
 
 const showSectionMain = computed(() => showEnergy.value || showOccupancy.value);
 const showSectionRight = computed(() => showEnvironment.value);
