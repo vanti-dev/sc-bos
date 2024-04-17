@@ -3,7 +3,7 @@
     <v-card-title class="text-h4 mb-0">Environmental</v-card-title>
     <v-card-text class="d-flex flex-row flex-wrap justify-center align-center pa-0 white--text">
       <circular-gauge
-          v-if="indoorTemperature > 0 || props.shouldWrap"
+          v-if="!isNullOrUndef(internal)"
           :value="indoorTemperature"
           :color="props.gaugeColor"
           :min="tempRange.low"
@@ -18,7 +18,7 @@
         </template>
       </circular-gauge>
       <div
-          v-if="outdoorTemperature > 0 || props.shouldWrap"
+          v-if="!isNullOrUndef(external)"
           class="d-flex flex-column align-center mt-6 mx-6">
         <span class="text-h1 align-left ml-1">{{ outdoorTempStr }}&deg;</span>
         <span class="text-title text-center">External<br>Temperature</span>
@@ -47,6 +47,7 @@ import CircularGauge from '@/components/CircularGauge.vue';
 import ContentCard from '@/components/ContentCard.vue';
 
 import {useAirTemperature, usePullAirTemperature} from '@/traits/airTemperature/airTemperature.js';
+import {isNullOrUndef} from '@/util/types.js';
 import {computed} from 'vue';
 
 const props = defineProps({
@@ -61,10 +62,6 @@ const props = defineProps({
   gaugeColor: {
     type: String,
     default: 'primary'
-  },
-  shouldWrap: {
-    type: Boolean,
-    default: false
   }
 });
 
