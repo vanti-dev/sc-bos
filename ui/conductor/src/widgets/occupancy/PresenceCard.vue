@@ -27,13 +27,13 @@ import {formatTimeAgo} from '@/util/date.js';
 import {computed} from 'vue';
 
 const props = defineProps({
-  name: {
+  source: {
     type: String,
     required: true
   }
 });
 
-const {value: occupancyValue, streamError: occupancyErr} = usePullOccupancy(() => props.name);
+const {value: occupancyValue, streamError: occupancyErr} = usePullOccupancy(() => props.source);
 const {stateStr, stateColor, lastUpdate} = useOccupancy(occupancyValue);
 
 // Create a lastChecked timestamp (for second to be used in the status popup

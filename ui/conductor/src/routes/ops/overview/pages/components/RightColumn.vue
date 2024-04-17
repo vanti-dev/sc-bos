@@ -3,7 +3,7 @@
     <presence-card
         v-if="showWidget('showOccupancy')"
         class="mb-5"
-        :name="widgets.showOccupancy"/>
+        :source="widgets.showOccupancy"/>
 
     <environmental-card
         v-if="showWidget('showEnvironment')"
