@@ -1,7 +1,7 @@
 <template>
   <content-card class="pt-6 pb-6">
     <v-card-title class="text-h4 mb-0">Environmental</v-card-title>
-    <v-card-text class="d-flex flex-row flex-wrap justify-center align-center pa-0">
+    <v-card-text class="d-flex flex-row flex-wrap justify-center align-center pa-0 white--text">
       <circular-gauge
           v-if="indoorTemperature > 0 || props.shouldWrap"
           :value="indoorTemperature"
