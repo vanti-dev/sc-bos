@@ -1,7 +1,7 @@
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {isNullOrUndef} from '@/util/types.js';
 import {toValue} from '@/util/vue.js';
-import {computed} from 'vue';
+import {computed, ref} from 'vue';
 
 /**
  * @return {{
@@ -95,6 +95,7 @@ export default function useBuildingConfig() {
   });
 
   return {
+    title: ref('Building Status Overview'),
     powerHistoryConfig,
     occupancyHistoryConfig,
     environmentalConfig

@@ -1,7 +1,7 @@
 <template>
   <div class="fill-height layout-overview">
     <header>
-      <h3 class="text-h3">Building Status Overview</h3>
+      <h3 class="text-h3">{{ title }}</h3>
     </header>
     <section v-if="showSectionMain" class="section-main">
       <power-history-card
@@ -30,6 +30,7 @@ import PowerHistoryCard from '@/widgets/power-history/PowerHistoryCard.vue';
 import {computed} from 'vue';
 
 const {
+  title,
   powerHistoryConfig,
   occupancyHistoryConfig,
   environmentalConfig
