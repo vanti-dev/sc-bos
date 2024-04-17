@@ -1,39 +1,41 @@
 <template>
-  <div class="d-flex flex-column align-center my-auto">
-    <v-card class="ma-auto pa-4" min-width="450px" max-width="500px">
-      <v-card-title class="justify-center text-h1 font-weight-semibold">
-        <brand-logo outline="white" style="height: 65px;"/>
-        Smart Core
-      </v-card-title>
+  <v-main>
+    <v-container class="d-flex flex-column align-center my-auto pa-6 fill-height">
+      <v-card class="ma-auto pa-4" min-width="450px" max-width="500px">
+        <v-card-title class="justify-center text-h1 font-weight-semibold">
+          <brand-logo outline="white" style="height: 65px;"/>
+          Smart Core
+        </v-card-title>
 
-      <local-login v-if="displayLoginForm"/>
-      <device-flow-login v-else-if="displayDeviceLogin"/>
-      <login-choice v-else @choose="chooseProvider"/>
+        <local-login v-if="displayLoginForm"/>
+        <device-flow-login v-else-if="displayDeviceLogin"/>
+        <login-choice v-else @choose="chooseProvider"/>
 
-      <v-card-actions v-if="choiceExists && !displayChoice" class="d-flex justify-center mt-8">
-        <a @click="showChoice" class="text-center">Use a different sign in method</a>
-      </v-card-actions>
-    </v-card>
-    <v-btn
-        v-if="uiConfig.config.disableAuthentication"
-        class="mt-4"
-        color="neutral"
-        elevation="0"
-        to="/">
-      <v-icon class="ml-n2">mdi-chevron-left</v-icon>
-      Return to home
-    </v-btn>
+        <v-card-actions v-if="choiceExists && !displayChoice" class="d-flex justify-center mt-8">
+          <a @click="showChoice" class="text-center">Use a different sign in method</a>
+        </v-card-actions>
+      </v-card>
+      <v-btn
+          v-if="uiConfig.config.disableAuthentication"
+          class="mt-4"
+          color="neutral"
+          elevation="0"
+          to="/">
+        <v-icon class="ml-n2">mdi-chevron-left</v-icon>
+        Return to home
+      </v-btn>
 
-    <v-snackbar v-model="snackbar.visible">
-      {{ snackbar.message }}
+      <v-snackbar v-model="snackbar.visible">
+        {{ snackbar.message }}
 
-      <template #action="{ attrs }">
-        <v-btn color="pink" text v-bind="attrs" @click="snackbar.visible = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
-  </div>
+        <template #action="{ attrs }">
+          <v-btn color="pink" text v-bind="attrs" @click="snackbar.visible = false">
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
+    </v-container>
+  </v-main>
 </template>
 <script setup>
 import BrandLogo from '@/components/BrandLogo.vue';

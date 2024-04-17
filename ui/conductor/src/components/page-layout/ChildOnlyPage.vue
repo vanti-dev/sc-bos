@@ -1,6 +1,6 @@
 <template>
-  <v-main class="mx-10 my-6">
-    <v-container fluid class="pa-0">
+  <v-main>
+    <v-container fluid class="pa-6">
       <router-view/>
     </v-container>
   </v-main>

@@ -1,7 +1,9 @@
 <template>
-  <v-container fluid class="pa-0">
-    <v-main class="mx-6 my-6">
-      <router-view/>
+  <div>
+    <v-main>
+      <v-container fluid class="pa-6">
+        <router-view/>
+      </v-container>
     </v-main>
     <v-navigation-drawer
         v-if="hasSidebar"
@@ -16,7 +18,7 @@
         :width="sideBar.width">
       <router-view name="sidebar"/>
     </v-navigation-drawer>
-  </v-container>
+  </div>
 </template>
 
 <script setup>
