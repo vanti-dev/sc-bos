@@ -1,5 +1,5 @@
 <template>
-  <content-card>
+  <content-card class="zone-notifications">
     <notifications-table overview-page :zone="props.zone"/>
   </content-card>
 </template>

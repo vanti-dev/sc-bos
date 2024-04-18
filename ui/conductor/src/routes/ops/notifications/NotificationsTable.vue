@@ -1,5 +1,5 @@
 <template>
-  <div class="ml-3">
+  <div class="ml-2">
     <v-row v-if="!props.overviewPage" class="mt-0 ml-0 pl-0">
       <h3 class="text-h3 pt-2 pb-6">Notifications</h3>
       <v-spacer/>
@@ -25,9 +25,9 @@
           <v-row
               :class="[
                 'd-flex flex-row align-center mb-2 mt-1 ml-0 pl-0 mr-1',
-                {'mt-n5 mb-2 mr-n2': props.overviewPage}
+                {'mb-4 mr-n2': props.overviewPage}
               ]">
-            <h3 v-if="props.overviewPage" :class="['text-h3 pt-2 pb-6', {'text-h4': props.overviewPage}]">
+            <h3 v-if="props.overviewPage" class="text-h4">
               Notifications
             </h3>
             <v-spacer/>
