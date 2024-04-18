@@ -18,7 +18,6 @@
 
 <script setup>
 import useError from '@/composables/error.js';
-import {StatusCode} from 'grpc-web';
 import {computed} from 'vue';
 
 const props = defineProps({
