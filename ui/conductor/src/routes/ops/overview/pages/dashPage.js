@@ -1,4 +1,4 @@
-import {builtinLayouts} from '@/layout/builtinLayouts.js';
+import {builtinLayouts} from '@/layout/pallet.js';
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {findActiveItem} from '@/util/router.js';
 import {toValue} from '@/util/vue.js';
@@ -78,23 +78,20 @@ export default function useDashPage(path) {
       arr.push({props, component});
     }
   };
-  const mainWidgets = computed(() => {
-    const res = [];
-    addIfPresent(res, powerHistoryConfig, builtinWidgets['power-history']);
-    addIfPresent(res, zoneNotificationConfig, builtinWidgets['zone-notifications']);
-    return res;
-  });
-  const afterWidgets = computed(() => {
-    const res = [];
-    addIfPresent(res, presenceConfig, builtinWidgets['presence']);
-    addIfPresent(res, environmentConfig, builtinWidgets['environmental']);
-    return res;
-  });
-
   return {
-    layout: builtinLayouts['main-side'],
+    layout: builtinLayouts['LayoutMainSide'],
     title: extendedTitle,
-    main: mainWidgets,
-    after: afterWidgets
+    main: computed(() => {
+      const res = [];
+      addIfPresent(res, powerHistoryConfig, builtinWidgets['power-history/PowerHistoryCard']);
+      addIfPresent(res, zoneNotificationConfig, builtinWidgets['notifications/ZoneNotifications']);
+      return res;
+    }),
+    after: computed(() => {
+      const res = [];
+      addIfPresent(res, presenceConfig, builtinWidgets['occupancy/PresenceCard']);
+      addIfPresent(res, environmentConfig, builtinWidgets['environmental/EnvironmentalCard']);
+      return res;
+    })
   };
 }

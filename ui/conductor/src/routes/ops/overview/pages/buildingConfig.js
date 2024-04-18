@@ -1,4 +1,4 @@
-import {builtinLayouts} from '@/layout/builtinLayouts.js';
+import {builtinLayouts} from '@/layout/pallet.js';
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {isNullOrUndef} from '@/util/types.js';
 import {toValue} from '@/util/vue.js';
@@ -78,17 +78,17 @@ export default function useBuildingConfig() {
     }
   };
   return {
-    layout: builtinLayouts['main-side'],
+    layout: builtinLayouts['LayoutMainSide'],
     title: ref('Building Status Overview'),
     main: computed(() => {
       const res = [];
-      addIfPresent(res, powerHistoryConfig, builtinWidgets['power-history']);
-      addIfPresent(res, occupancyHistoryConfig, builtinWidgets['occupancy-history']);
+      addIfPresent(res, powerHistoryConfig, builtinWidgets['power-history/PowerHistoryCard']);
+      addIfPresent(res, occupancyHistoryConfig, builtinWidgets['occupancy/OccupancyCard']);
       return res;
     }),
     after: computed(() => {
       const res = [];
-      addIfPresent(res, environmentalConfig, builtinWidgets['environmental']);
+      addIfPresent(res, environmentalConfig, builtinWidgets['environmental/EnvironmentalCard']);
       return res;
     })
   };
