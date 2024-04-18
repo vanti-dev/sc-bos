@@ -1,3 +1,4 @@
+import {builtinLayouts} from '@/layout/builtinLayouts.js';
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {findActiveItem} from '@/util/router.js';
 import {toValue} from '@/util/vue.js';
@@ -7,6 +8,7 @@ import {computed} from 'vue';
 /**
  * @param {MaybeRefOrGetter<string|string[]>} path
  * @return {{
+ *   layout: import('vue').Component,
  *   main: ComputedRef<{component:*,props:Object}[]>,
  *   after: ComputedRef<{component:*,props:Object}[]>,
  *   title: ComputedRef<string>
@@ -90,6 +92,7 @@ export default function useDashPage(path) {
   });
 
   return {
+    layout: builtinLayouts['main-side'],
     title: extendedTitle,
     main: mainWidgets,
     after: afterWidgets

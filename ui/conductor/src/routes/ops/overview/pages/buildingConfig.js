@@ -1,3 +1,4 @@
+import {builtinLayouts} from '@/layout/builtinLayouts.js';
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {isNullOrUndef} from '@/util/types.js';
 import {toValue} from '@/util/vue.js';
@@ -6,6 +7,7 @@ import {computed, ref} from 'vue';
 
 /**
  * @return {{
+ *   layout: import('vue').Component,
  *   title: Ref<string>,
  *   main: ComputedRef<{component: Component, props: Object}[]>,
  *   after: ComputedRef<{component: Component, props: Object}[]>
@@ -76,6 +78,7 @@ export default function useBuildingConfig() {
     }
   };
   return {
+    layout: builtinLayouts['main-side'],
     title: ref('Building Status Overview'),
     main: computed(() => {
       const res = [];

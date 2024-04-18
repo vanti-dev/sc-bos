@@ -1,9 +1,8 @@
 <template>
-  <layout-main-side v-bind="opts"/>
+  <component :is="opts.layout" v-bind="opts"/>
 </template>
 
 <script setup>
-import LayoutMainSide from '@/layout/LayoutMainSide.vue';
 import useDashPage from '@/routes/ops/overview/pages/dashPage.js';
 import {reactive} from 'vue';
 
