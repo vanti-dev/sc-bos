@@ -85,7 +85,6 @@ const {
   filterSearch, displayFilters,
   choices, choose,
   clear,
-  defaultsByKey,
   hasNonDefaultChoices,
   isDefaultChoice
 } = ctx;
