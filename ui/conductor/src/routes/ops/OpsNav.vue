@@ -1,43 +1,11 @@
 <template>
   <v-list class="pa-0" dense nav>
     <v-list-item-group class="mt-2 mb-n1">
-      <span v-if="uiConfig.pathEnabled('/ops/overview')" class="d-flex flex-row align-center ma-0">
-        <v-list-item class="mb-0" :disabled="hasNoAccess('/ops/overview/building')" to="/ops/overview/building">
-          <v-list-item-icon>
-            <v-icon>mdi-domain</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>Building Overview</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-tooltip v-if="!miniVariant" bottom>
-          <template #activator="{ on }">
-            <v-btn
-                class="ma-0 pa-0 ml-2"
-                :disabled="!overviewChildren.length"
-                icon
-                small
-                v-on="on"
-                @click="displayList = !displayList">
-              <v-icon>
-                {{ displayList ? 'mdi-chevron-down' : 'mdi-chevron-left' }}
-              </v-icon>
-            </v-btn>
-          </template>
-          <span>{{ displayList ? 'Hide' : 'Show' }} Lists</span>
-        </v-tooltip>
-      </span>
+      <ops-nav-list
+          :items="overviewChildren"
+          :mini-variant="miniVariant"/>
 
-      <!-- Overview Sub-lists (Areas and Floors) -->
-      <v-slide-y-transition>
-        <ops-nav-list
-            v-if="displayList"
-            :display-list="displayList"
-            :items="overviewChildren"
-            :mini-variant="miniVariant"/>
-      </v-slide-y-transition>
-
-      <v-divider v-if="displayList" class="mb-3 mt-n1"/>
+      <v-divider v-if="overviewChildren.length > 1" class="mb-3 mt-n1"/>
       <!-- Main List -->
       <v-list-item
           v-for="(item, key) in enabledMenuItems"
@@ -74,7 +42,7 @@ import OpsNavList from '@/routes/ops/overview/OpsNavList.vue';
 import {usePageStore} from '@/stores/page';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {storeToRefs} from 'pinia';
-import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
+import {computed, onMounted, onUnmounted, reactive} from 'vue';
 
 const pageStore = usePageStore();
 const {miniVariant} = storeToRefs(pageStore);
@@ -82,10 +50,6 @@ const {miniVariant} = storeToRefs(pageStore);
 const {hasNoAccess} = useAuthSetup();
 const alertMetadata = useAlertMetadata();
 const uiConfig = useUiConfigStore();
-const {config} = storeToRefs(uiConfig);
-
-
-const displayList = ref(false);
 
 /**
  * Collect the overview children
@@ -96,7 +60,19 @@ const displayList = ref(false);
  *  import('vue').ComputedRef<{title: string, icon: string, children: {title: string, shortTitle: string}[]}[]>
  * } overviewChildren
  */
-const overviewChildren = computed(() => config.value?.ops?.overview?.children || []);
+const overviewChildren = computed(function() {
+  const pages = uiConfig.getOrDefault('ops.pages');
+  if (!pages) {
+    const root = {
+      title: 'Building Overview',
+      icon: 'mdi-domain',
+      path: 'building',
+      ...uiConfig.getOrDefault('ops.overview')
+    };
+    return [root];
+  }
+  return pages;
+});
 
 
 // --------- Helpers --------- //
@@ -189,7 +165,6 @@ onMounted(() => {
     closeResource(alertMetadata.alertMetadata);
     alertMetadata.init();
   }
-  displayList.value = false;
 });
 
 onUnmounted(() => {

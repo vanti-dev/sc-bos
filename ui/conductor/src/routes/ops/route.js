@@ -11,7 +11,7 @@ export default {
   redirect: () => {
     const uiConfig = useUiConfigStore();
     if (uiConfig.pathEnabled('/ops/overview')) {
-      return '/ops/overview/building';
+      return '/ops/overview';
     } else if (uiConfig.pathEnabled('/ops/notifications')) {
       return '/ops/notifications';
     } else if (uiConfig.pathEnabled('/ops/air-quality')) {
@@ -21,12 +21,17 @@ export default {
     } else if (uiConfig.pathEnabled('/ops/security')) {
       return '/ops/security';
     }
+    return '/ops/loading';
   },
   components: {
     default: SidebarPage,
     nav: () => import('./OpsNav.vue')
   },
   children: [
+    {
+      path: 'loading',
+      component: () => import('./OpsLoading.vue')
+    },
     ...route(overview),
     {
       path: 'emergency-lighting',
@@ -65,9 +70,10 @@ export default {
   },
   beforeEnter: async (to, from, next) => {
     const appConfig = useUiConfigStore();
+    await appConfig.loadConfig();
     if (to.path === '/ops') {
       if (appConfig.pathEnabled('/ops/overview')) {
-        next('/ops/overview/building');
+        next('/ops/overview');
       } else if (appConfig.pathEnabled('/ops/notifications')) {
         next('/ops/notifications');
       } else if (appConfig.pathEnabled('/ops/air-quality')) {

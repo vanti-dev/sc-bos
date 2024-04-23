@@ -68,9 +68,9 @@ export const findActiveItem = (children, pathSegments) => {
 
   // Iterate through the titles, searching for the corresponding item in the current items
   for (const segment of pathSegments) {
+    const _segment = decodeURIComponent(segment);
     const foundItem = currentItems.find(
-        item => decodeURIComponent(segment) === item.title
-    );
+        item => _segment === item.path || _segment === item.title);
 
     if (!foundItem) break;
     result.push(foundItem);

@@ -1,12 +1,13 @@
 <template>
   <div>
-    <div class="d-flex flex-row align-center pb-2" :style="setLeftMargin">
+    <div class="d-flex flex-row align-center" :style="setLeftMargin">
       <v-list-item
           :active-class="!isDeepestActiveItem ? 'primary--text black' : ''"
           :class="[
-            'd-flex flex-row align-center my-0 mr-2',
+            'd-flex flex-row align-center mb-0',
             {
-              'mr-9': !hasChildren && !props.miniVariant
+              'mr-11': !hasChildren && !props.miniVariant,
+              'my-1': props.depth > 0
             }
           ]"
           :to="toAreaLink">
@@ -20,9 +21,8 @@
       </v-list-item>
       <v-btn
           v-show="hasChildren && !props.miniVariant"
-          class="ma-0 pa-0"
+          class="ml-2"
           icon
-          small
           @click="toggle">
         <v-icon>{{ isOpen ? 'mdi-chevron-down' : 'mdi-chevron-left' }}</v-icon>
       </v-btn>
@@ -30,9 +30,8 @@
     <v-slide-y-transition hide-on-leave>
       <ops-nav-list
           v-if="isOpen && hasChildren"
-          :class="isOpen ? 'mt-n2 mb-n1' : ''"
           :items="props.item.children"
-          :depth="props.depth + 0.5"
+          :depth="props.depth + 1"
           :mini-variant="props.miniVariant"
           :parent-path="currentPath"/>
     </v-slide-y-transition>
@@ -83,7 +82,7 @@ const hasChildren = computed(() => props.item.children && props.item.children.le
  */
 const currentPath = computed(() => {
   const pathSegments = props.parentPath ? [props.parentPath] : [];
-  pathSegments.push(encodeURIComponent(props.item.title));
+  pathSegments.push(encodeURIComponent(props.item.path ?? props.item.title));
   return pathSegments.join('/');
 });
 
@@ -92,7 +91,7 @@ const currentPath = computed(() => {
  *
  * @type {import('vue').ComputedRef<string>}
  */
-const toAreaLink = computed(() => `/ops/overview/building/${currentPath.value}`);
+const toAreaLink = computed(() => `/ops/overview/${currentPath.value}`);
 
 /**
  * Computed checker to see if the current path is the deepest active item
@@ -102,17 +101,20 @@ const toAreaLink = computed(() => `/ops/overview/building/${currentPath.value}`)
 const isDeepestActiveItem = computed(() => {
   const currentPathSegments = route.path.split('/').filter(segment => segment);
   const lastSegment = currentPathSegments[currentPathSegments.length - 1];
-  return lastSegment === encodeURIComponent(props.item.title);
+  return lastSegment === encodeURIComponent(props.item.path ?? props.item.title);
 });
 
 /**
  * Computed value to set the left margin
  *
- * @type {import('vue').ComputedRef<{marginLeft: string}>}
+ * @type {import('vue').ComputedRef<{marginLeft?: string}>}
  */
 const setLeftMargin = computed(() => {
-  const baseMargin = 1;
-  const increment = 7;
+  if (props.miniVariant) {
+    return {};
+  }
+  const baseMargin = 0;
+  const increment = 8;
   const marginLeft = `${baseMargin + (props.depth * increment)}px`;
   return {marginLeft};
 });

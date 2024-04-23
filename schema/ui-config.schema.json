@@ -85,9 +85,15 @@
           "description": "Configuration of the operations page",
           "type": "object",
           "properties": {
+            "pages": {
+              "description": "Dashboard page configuration.",
+              "type": "array",
+              "items": {"$ref": "#/$defs/dashboardPage"}
+            },
             "buildingZone": {
               "description": "The device base name for the operations overview page",
-              "allOf": [{"$ref": "#/$defs/nameOrFalse"}]
+              "allOf": [{"$ref": "#/$defs/nameOrFalse"}],
+              "deprecated": true
             },
             "overview": {
               "description": "Configuration for Ops overview building page and it's sub-pages",
@@ -137,11 +143,13 @@
                     "$ref": "#/$defs/opsSubPage"
                   }
                 }
-              }
+              },
+              "deprecated": true
             },
             "supplyZone": {
               "description": "The device base name for the operations overview page (generated energy)",
-              "allOf": [{"$ref": "#/$defs/nameOrFalse"}]
+              "allOf": [{"$ref": "#/$defs/nameOrFalse"}],
+              "deprecated": true
             }
           }
         },
@@ -327,6 +335,40 @@
         {"type": "string"},
         {"enum": [false]}
       ]
+    },
+    "dashboardPage": {
+      "description": "Configuration for a single dashboard page",
+      "type": "object",
+      "properties": {
+        "title": {
+          "description": "The title of the dashboard page, shown at the top of the page and in navigation",
+          "type": "string"
+        },
+        "shortTitle": {
+          "description": "The short title of the dashboard page, shown in navigation when the nav bar is collapsed",
+          "type": "string"
+        },
+        "icon": {
+          "description": "The mdi icon of the dashboard page",
+          "type": "string"
+        },
+        "path": {
+          "description": "The router path of the dashboard page, defaults to title",
+          "type": "string"
+        },
+        "layout": {
+          "description": "The layout uri for the page",
+          "type": "string",
+          "examples": ["builtin:LayoutMainSide"]
+        },
+        "children": {
+          "description": "Sub pages to display as children to this dashboard page",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/dashboardPage"
+          }
+        }
+      }
     }
   }
 }
