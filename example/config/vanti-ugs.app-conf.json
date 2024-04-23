@@ -594,6 +594,9 @@
         "van/uk/brum/ugs/zones/floors/basement",
         "van/uk/brum/ugs/zones/floors/ground"
       ],
+      "electricGroups": {
+        "generated": ["van/uk/brum/ugs/devices/PV-L02-01"]
+      },
       "occupancySensors": [
         "van/uk/brum/ugs/zones/floors/basement",
         "van/uk/brum/ugs/zones/floors/ground",
