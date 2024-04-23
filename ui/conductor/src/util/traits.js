@@ -79,7 +79,7 @@ export const watchResource = (query, paused = false, ...apiCalls) => {
         // and empty the array
         resources.forEach((resource) => closeResource(resource));
         resources = [];
-        if (!paused) { // If not paused, pull new resource
+        if (!paused && req) { // If not paused and there is a request, pull new resource
           apiCalls.forEach((apiCall) => resources.push(apiCall(req)));
         }
       },
