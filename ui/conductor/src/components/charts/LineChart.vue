@@ -24,7 +24,7 @@
       <line-chart-generator
           :options="props.chartOptions"
           :data="props.chartData"
-          :plugins="[htmlLegendPlugin]"
+          :plugins="[vueLegendPlugin]"
           :dataset-id-key="props.datasetIdKey"/>
     </div>
   </div>
@@ -43,7 +43,7 @@ import {
   Title,
   Tooltip
 } from 'chart.js';
-import {computed, ref} from 'vue';
+import {ref} from 'vue';
 import {Line as LineChartGenerator} from 'vue-chartjs';
 import 'chartjs-adapter-date-fns'; // imported for side effects
 
@@ -76,37 +76,39 @@ const props = defineProps({
   }
 });
 
-const _chart = ref(null);
-const legendItems = computed(() => {
-  /** @type {import('chart.js').Chart} */
-  const chart = _chart.value;
-  if (!chart) return [];
-  const items = chart.options.plugins.legend.labels.generateLabels(chart);
-  return items.map((item) => {
-    return {
-      text: item.text,
-      hidden: item.hidden,
-      bgColor: item.strokeStyle,
-      onClick: (e) => {
-        const {type} = chart.config;
-        if (type === 'pie' || type === 'doughnut') {
-          // Pie and doughnut charts only have a single dataset and visibility is per item
-          chart.setDatasetVisibility(item.index, e);
-        } else {
-          chart.setDatasetVisibility(item.datasetIndex, e);
-        }
-        chart.update();
-      }
-    };
-  });
-});
+/**
+ * Helper to give type assistance to chart.js plugins.
+ *
+ * @template {import('chart.js').Plugin} T
+ * @param {T} plugin
+ * @return {T}
+ */
+const definePlugin = (plugin) => plugin;
 
-const htmlLegendPlugin = {
-  id: 'htmlLegend',
+const legendItems = ref([]);
+const vueLegendPlugin = definePlugin({
+  id: 'vueLegend',
   afterUpdate(chart) {
-    _chart.value = chart;
+    const items = chart.options.plugins.legend.labels.generateLabels(chart);
+    legendItems.value = items.map((item) => {
+      return {
+        text: item.text,
+        hidden: item.hidden,
+        bgColor: item.strokeStyle,
+        onClick: (e) => {
+          const {type} = chart.config;
+          if (type === 'pie' || type === 'doughnut') {
+            // Pie and doughnut charts only have a single dataset and visibility is per item
+            chart.setDatasetVisibility(item.index, e);
+          } else {
+            chart.setDatasetVisibility(item.datasetIndex, e);
+          }
+          chart.update();
+        }
+      };
+    });
   }
-};
+});
 </script>
 
 <style scoped>
