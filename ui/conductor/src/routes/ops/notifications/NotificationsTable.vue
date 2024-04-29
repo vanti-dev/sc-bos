@@ -195,6 +195,7 @@ import {useHubStore} from '@/stores/hub';
 import {usePageStore} from '@/stores/page';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
 import {computed, onUnmounted, reactive, ref, watch} from 'vue';
+import {deepEqual} from 'vuetify/src/util/helpers';
 
 const props = defineProps({
   overviewPage: {
@@ -505,7 +506,8 @@ const setFooterProps = computed(() => {
 // Watch the query object for changes
 watch(
     query,
-    () => {
+    (oldQuery, newQuery) => {
+      if (deepEqual(oldQuery, newQuery)) return; // avoid reactivity churn
       // Reset the page to 1
       dataTableOptions.value = {
         ...dataTableOptions.value,
