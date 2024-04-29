@@ -484,6 +484,7 @@ const setFooterProps = computed(() => {
     if (nextPageToken) {
       // Keeping the item pp options and pagination object empty will show the next page button
       return {
+        showCurrentPage: true,
         itemsPerPageOptions,
         pagination: {}
       };
@@ -491,6 +492,7 @@ const setFooterProps = computed(() => {
       // If there is no next page token, then we know there are no more pages available.
       // We can block the next button by setting the itemsLength to the total number of items.
       return {
+        showCurrentPage: true,
         itemsPerPageOptions,
         pagination: {
           itemsLength: alerts.allItems.length
@@ -499,7 +501,10 @@ const setFooterProps = computed(() => {
     }
   } else {
     // If there are less than 2 query fields, then we can use the default pagination options.
-    return {itemsPerPageOptions};
+    return {
+      showCurrentPage: true,
+      itemsPerPageOptions
+    };
   }
 });
 
