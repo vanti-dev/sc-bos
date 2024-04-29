@@ -16,11 +16,7 @@ import {computed} from 'vue';
 const props = defineProps({
   items: {
     type: null, // of string | {title: string, value: any}
-    default: () => [],
-    validator(val) {
-      console.debug('ListChooser.items', val);
-      return true;
-    }
+    default: () => []
   },
   value: {
     type: null, // same type as items
