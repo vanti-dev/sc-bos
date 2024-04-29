@@ -25,6 +25,7 @@ const props = defineProps({
   }
 });
 
+// eslint-disable-next-line vue/no-setup-props-destructure
 const {title, choose, clear, value, text, defaultChoice} = props.ctx;
 const nextVal = (val) => {
   if (val === true) return false;

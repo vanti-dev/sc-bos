@@ -36,6 +36,7 @@ const props = defineProps({
   }
 });
 const emits = defineEmits(['active']);
+// eslint-disable-next-line vue/no-setup-props-destructure
 const {title, type, text, value, items, choose, clear, search} = props.ctx;
 const reset = (e) => {
   if (e) {
