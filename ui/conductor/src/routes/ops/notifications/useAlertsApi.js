@@ -11,6 +11,7 @@ import {csvDownload} from '@/util/downloadCSV';
 import {toValue} from '@/util/vue';
 import {computed, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
+import {deepEqual} from 'vuetify/src/util/helpers';
 
 /**
  * @param {MaybeRefOrGetter<string>} name
@@ -183,7 +184,8 @@ export default function(name, query) {
   const queryVersionCounter = ref(0);
   watch(
       listQuery,
-      () => {
+      (newQuery, oldQuery) => {
+        if (deepEqual(newQuery, oldQuery)) return; // avoid reactivity churn
         queryVersionCounter.value++;
         // tidy up state, if the query has changed then these are no longer valid.
         hasFetchedAnyPages.value = false;
