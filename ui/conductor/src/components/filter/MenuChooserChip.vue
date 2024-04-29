@@ -28,6 +28,7 @@
 
 <script setup>
 import PageChooser from '@/components/filter/PageChooser.vue';
+import {toRefs} from 'vue';
 
 const props = defineProps({
   ctx: {
@@ -36,8 +37,16 @@ const props = defineProps({
   }
 });
 const emits = defineEmits(['active']);
-// eslint-disable-next-line vue/no-setup-props-destructure
-const {title, type, text, value, items, choose, clear, search} = props.ctx;
+
+const {title} = toRefs(props.ctx);
+const {type} = toRefs(props.ctx);
+const {text} = toRefs(props.ctx);
+const {value} = toRefs(props.ctx);
+const {items} = toRefs(props.ctx);
+const {choose} = toRefs(props.ctx);
+const {clear} = toRefs(props.ctx);
+const {search} = toRefs(props.ctx);
+
 const reset = (e) => {
   if (e) {
     search.value = '';
