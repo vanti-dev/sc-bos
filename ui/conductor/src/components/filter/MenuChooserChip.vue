@@ -28,6 +28,7 @@
 
 <script setup>
 import PageChooser from '@/components/filter/PageChooser.vue';
+import {toRefs} from 'vue';
 
 const props = defineProps({
   ctx: {
@@ -36,7 +37,9 @@ const props = defineProps({
   }
 });
 const emits = defineEmits(['active']);
-const {title, type, text, value, items, choose, clear, search} = props.ctx;
+
+const {title, type, text, value, items, choose, clear, search} = toRefs(props.ctx);
+
 const reset = (e) => {
   if (e) {
     search.value = '';

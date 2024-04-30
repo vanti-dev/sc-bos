@@ -15,6 +15,8 @@
 </template>
 
 <script setup>
+import {toRefs} from 'vue';
+
 const props = defineProps({
   ctx: {
     type: /** @type {import('./pageCtx.js')} */ Object,
@@ -25,7 +27,8 @@ const props = defineProps({
   }
 });
 
-const {title, choose, clear, value, text, defaultChoice} = props.ctx;
+const {title, choose, clear, value, text, defaultChoice} = toRefs(props.ctx);
+
 const nextVal = (val) => {
   if (val === true) return false;
   if (val === null || val === undefined) return true;
