@@ -27,12 +27,7 @@ const props = defineProps({
   }
 });
 
-const {title} = toRefs(props.ctx);
-const {choose} = toRefs(props.ctx);
-const {clear} = toRefs(props.ctx);
-const {value} = toRefs(props.ctx);
-const {text} = toRefs(props.ctx);
-const {defaultChoice} = toRefs(props.ctx);
+const {title, choose, clear, value, text, defaultChoice} = toRefs(props.ctx);
 
 const nextVal = (val) => {
   if (val === true) return false;

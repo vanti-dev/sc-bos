@@ -38,14 +38,7 @@ const props = defineProps({
 });
 const emits = defineEmits(['active']);
 
-const {title} = toRefs(props.ctx);
-const {type} = toRefs(props.ctx);
-const {text} = toRefs(props.ctx);
-const {value} = toRefs(props.ctx);
-const {items} = toRefs(props.ctx);
-const {choose} = toRefs(props.ctx);
-const {clear} = toRefs(props.ctx);
-const {search} = toRefs(props.ctx);
+const {title, type, text, value, items, choose, clear, search} = toRefs(props.ctx);
 
 const reset = (e) => {
   if (e) {
