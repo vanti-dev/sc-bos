@@ -47,7 +47,7 @@ export default function useDashPage(path) {
     const v = pageConfig.value?.widgets?.showNotifications;
     if (!v) return false;
     return {
-      zone: /** @type {string} */ v
+      forceQuery: {zone: /** @type {string} */ v}
     };
   });
   const presenceConfig = computed(() => {

@@ -84,7 +84,7 @@
                 {
                   "component": "builtin:notifications/ZoneNotifications",
                   "props": {
-                    "zone": "Basement"
+                    "forceQuery": {"floor": "Basement"}
                   }
                 }
               ],
@@ -112,7 +112,10 @@
                     {
                       "component": "builtin:notifications/ZoneNotifications",
                       "props": {
-                        "zone": "Copper Room"
+                        "forceQuery": {
+                          "floor": "Basement",
+                          "zone": "Copper Room"
+                        }
                       }
                     }
                   ],
@@ -140,7 +143,10 @@
                     {
                       "component": "builtin:notifications/ZoneNotifications",
                       "props": {
-                        "zone": "Cotswold Room"
+                        "forceQuery": {
+                          "floor": "Basement",
+                          "zone": "Cotswold Room"
+                        }
                       }
                     }
                   ],
@@ -168,7 +174,10 @@
                     {
                       "component": "builtin:notifications/ZoneNotifications",
                       "props": {
-                        "zone": "Kaolin Room"
+                        "forceQuery": {
+                          "floor": "Basement",
+                          "zone": "Kaolin Room"
+                        }
                       }
                     }
                   ],
@@ -205,7 +214,7 @@
                 {
                   "component": "builtin:notifications/ZoneNotifications",
                   "props": {
-                    "zone": "Ground Floor"
+                    "forceQuery": {"floor": "Ground Floor"}
                   }
                 }
               ],
@@ -233,7 +242,10 @@
                     {
                       "component": "builtin:notifications/ZoneNotifications",
                       "props": {
-                        "zone": "Reception"
+                        "forceQuery": {
+                          "floor": "Ground Floor",
+                          "zone": "Reception"
+                        }
                       }
                     }
                   ],
@@ -261,7 +273,10 @@
                     {
                       "component": "builtin:notifications/ZoneNotifications",
                       "props": {
-                        "zone": "Teal Room"
+                        "forceQuery": {
+                          "floor": "Ground Floor",
+                          "zone": "Teal Room"
+                        }
                       }
                     }
                   ],
@@ -289,7 +304,10 @@
                     {
                       "component": "builtin:notifications/ZoneNotifications",
                       "props": {
-                        "zone": "Green Room"
+                        "forceQuery": {
+                          "floor": "Ground Floor",
+                          "zone": "Green Room"
+                        }
                       }
                     }
                   ],
@@ -317,7 +335,10 @@
                     {
                       "component": "builtin:notifications/ZoneNotifications",
                       "props": {
-                        "zone": "Yellow Room"
+                        "forceQuery": {
+                          "floor": "Ground Floor",
+                          "zone": "Yellow Room"
+                        }
                       }
                     }
                   ],
@@ -347,7 +368,7 @@
                 {
                   "component": "builtin:notifications/ZoneNotifications",
                   "props": {
-                    "zone": "First Floor"
+                    "forceQuery": {"floor": "First Floor"}
                   }
                 }
               ],
@@ -375,7 +396,10 @@
                     {
                       "component": "builtin:notifications/ZoneNotifications",
                       "props": {
-                        "zone": "The Bank"
+                        "forceQuery": {
+                          "floor": "First Floor",
+                          "zone": "The Bank"
+                        }
                       }
                     }
                   ],

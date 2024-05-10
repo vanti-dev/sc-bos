@@ -202,9 +202,9 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  zone: {
-    type: String,
-    default: undefined
+  forceQuery: {
+    type: Object, /** @type {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} */
+    default: null
   }
 });
 
@@ -253,23 +253,26 @@ const subsystems = computed(() => Object.keys(alertMetadata.subsystemCountsMap).
 const filterOpts = computed(() => {
   // we only add filters that can affect the output, i.e. no floor filter if nothing has a floor.
   const filters = [];
+  const defaults = [];
   // Acknowledged
-  filters.push({
-    key: 'acknowledged',
-    icon: 'mdi-checkbox-marked-circle-outline', title: 'Acknowledgement', type: 'boolean',
-    valueToString(value) {
-      switch (value) {
-        case true:
-          return 'Acknowledged';
-        case false:
-          return 'Unacknowledged';
-        default:
-          return 'All';
+  if (!props.forceQuery?.hasOwnProperty('acknowledged')) {
+    filters.push({
+      key: 'acknowledged',
+      icon: 'mdi-checkbox-marked-circle-outline', title: 'Acknowledgement', type: 'boolean',
+      valueToString(value) {
+        switch (value) {
+          case true:
+            return 'Acknowledged';
+          case false:
+            return 'Unacknowledged';
+          default:
+            return 'All';
+        }
       }
-    }
-  });
+    });
+  }
   // Floor
-  {
+  if (!props.forceQuery?.hasOwnProperty('floor')) {
     const items = floors.value
         // we can't query for empty strings anyway.
         .filter(s => Boolean(s));
@@ -278,15 +281,18 @@ const filterOpts = computed(() => {
     }
   }
   // Severity
-  filters.push({
-    key: 'severity', // maps to severityNotBelow and severityNotAbove
-    icon: 'mdi-alert-box-outline', title: 'Severity', type: 'range',
-    items: Object.entries(Alert.Severity)
-        .map(([, v]) => ({value: v, title: severityData(v).text}))
-        .filter((item) => item.value !== 0) // skip UNSPECIFIED
-  });
+  if (!props.forceQuery?.hasOwnProperty('severityNotAbove') &&
+      !props.forceQuery?.hasOwnProperty('severityNotBelow')) {
+    filters.push({
+      key: 'severity', // maps to severityNotBelow and severityNotAbove
+      icon: 'mdi-alert-box-outline', title: 'Severity', type: 'range',
+      items: Object.entries(Alert.Severity)
+          .map(([, v]) => ({value: v, title: severityData(v).text}))
+          .filter((item) => item.value !== 0) // skip UNSPECIFIED
+    });
+  }
   // Subsystem
-  {
+  if (!props.forceQuery?.hasOwnProperty('subsystem')) {
     const items = subsystems.value
         // we can't query for empty strings anyway.
         .filter(s => Boolean(s));
@@ -295,7 +301,7 @@ const filterOpts = computed(() => {
     }
   }
   // Zone
-  if (!props.overviewPage) {
+  if (!props.forceQuery?.hasOwnProperty('zone')) {
     const items = zones.value
         // we can't query for empty strings anyway.
         .filter(s => Boolean(s));
@@ -304,37 +310,29 @@ const filterOpts = computed(() => {
     }
   }
 
-  filters.push({
-    key: 'resolved',
-    icon: 'mdi-checkbox-marked-circle-outline', title: 'Resolution', type: 'boolean',
-    valueToString(value) {
-      switch (value) {
-        case true:
-          return 'Resolved';
-        case false:
-          return 'Unresolved';
-        default:
-          return 'All';
+  if (!props.forceQuery?.hasOwnProperty('resolved')) {
+    filters.push({
+      key: 'resolved',
+      icon: 'mdi-checkbox-marked-circle-outline', title: 'Resolution', type: 'boolean',
+      valueToString(value) {
+        switch (value) {
+          case true:
+            return 'Resolved';
+          case false:
+            return 'Unresolved';
+          default:
+            return 'All';
+        }
       }
-    }
-  });
-
-  const defaults = [
-    {filter: 'resolved', value: false}
-  ];
-  if (props.zone) {
-    defaults.push({filter: 'zone', value: props.zone});
+    });
+    defaults.push({filter: 'resolved', value: false});
   }
   return {filters, defaults};
 });
 const filterCtx = useFilterCtx(filterOpts);
 
 const nonFilterableQueryFields = computed(() => {
-  const res = /** @type {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} */ {};
-  if (props.zone) {
-    res.zone = props.zone;
-  }
-  return res;
+  return /** @type {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} */ props.forceQuery ?? {};
 });
 const queryFields = computed(() => {
   const res = /** @type {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} */ {};
@@ -537,9 +535,10 @@ const allHeaders = [
 // for example if we're filtering to show Floor1, then all rows would show Floor1 in that column which we don't need to
 // see over and over.
 const headers = computed(() => {
+  const q = query.value;
   return allHeaders.filter((header) => {
     if (!['floor', 'zone', 'subsystem', 'source'].includes(header.value)) return true;
-    return query[header.value] === undefined;
+    return q[header.value] === undefined;
   });
 });
 
