@@ -107,7 +107,7 @@ const inputModel = computed({
     if (inputZones.value.length > 0) {
       return inputZones.value;
     } else {
-      return propZones;
+      return propZones.value;
     }
   },
   set(v) {
