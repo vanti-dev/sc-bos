@@ -32,16 +32,6 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
 
   const config = computed(() => _config.value?.config ?? {});
 
-  // Returns the app branding, merging the default and the config values
-  // The config values will override the default ones if any are present
-  const appBranding = computed(() => {
-    return {
-      ..._defaultConfig.config.theme.appBranding,
-      ..._config.value?.config?.theme?.appBranding
-    };
-  });
-
-
   /**
    * Gets the value of path from either uiConfig config or defaultConfig, depending on presence.
    *
@@ -65,17 +55,17 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     loadConfig,
     config,
     configPromise,
-    ...useSiteMap(_config),
-    appBranding,
     defaultConfig: _defaultConfig,
-    getOrDefault
+    getOrDefault,
+    ...useSiteMap(_config),
+    ...useTheme(_config)
   };
 });
 
 /**
  * Exposes site map relating features of the UI config.
  *
- * @param config
+ * @param {MaybeRefOrGetter<Object>} config
  * @return {{
  *   enabledPaths: import('vue').ComputedRef<RegExp[]>,
  *   homePath: ComputedRef<unknown>,
@@ -147,6 +137,27 @@ export function useSiteMap(config) {
     enabledPaths,
     pathEnabled,
     homePath: computed(() => toValue(config)?.config?.home ?? _defaultConfig.config.home)
+  };
+}
+
+/**
+ * @param {MaybeRefOrGetter<Object>} config
+ * @return {{
+ *   appBranding: ComputedRef<Object>
+ * }}
+ */
+export function useTheme(config) {
+  // Returns the app branding, merging the default and the config values
+  // The config values will override the default ones if any are present
+  const appBranding = computed(() => {
+    const _config = toValue(config);
+    return {
+      ..._defaultConfig.config.theme.appBranding,
+      ..._config?.config?.theme?.appBranding
+    };
+  });
+  return {
+    appBranding
   };
 }
 
