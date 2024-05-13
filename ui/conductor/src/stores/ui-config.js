@@ -12,77 +12,6 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
   const configPromise = new Promise((resolve) => _configResolve = resolve);
 
   /**
-   * The default config for the UI - this should mostly be targeted as though it was running on an Area Controller, as
-   * this will have the most standardised feature set.
-   *
-   * @private
-   */
-  const _defaultConfig = {
-    features: {
-      'auth': {
-        'users': true,
-        'third-party': true
-      },
-      'devices': {
-        '*': true
-      },
-      'ops': {
-        'overview': {
-          '*': true
-        },
-        'emergency-lighting': false,
-        'notifications': true
-      },
-      'automations': {
-        '*': true
-      },
-      'site': false,
-      'system': {
-        'drivers': true,
-        'features': true
-      }
-    },
-    config: {
-      'keycloak': false,
-      'home': '/devices',
-      'ops': {
-        'overview': {
-          // Specifies all traits to show or hide on the building page
-          'widgets': {
-            'showEnergyConsumption': {
-              'showChart': true,
-              'showIntensity': true
-            },
-            'showEnvironment': true,
-            'showOccupancy': true
-          },
-          'children': [] // Specifies the children of the building (zones/floors)
-        }
-      },
-      'theme': {
-        'appBranding': {
-          'brandName': 'Smart Core', // The name of the brand
-          'brandLogo': {
-            'altText': 'Smart Core logo - representing nodes and connections', // Alt text for the logo
-            'src': '' // Empty string will use the default logo
-          },
-          // Specifies brand colors for the app (theming)
-          'brandColors': {
-            'primary': {
-              'base': '#00BED6',
-              'darken3': '#338fa1'
-            }
-          }
-        }
-      },
-      'hub': false, // Specifies if we're talking to a hub or an area controller
-      'proxy': false, // Specifies if we're using querying via a proxy (e.g. EdgeGateway) or not
-      'disableAuthentication': false // Specifies if we're using authentication or not
-    }
-  };
-
-
-  /**
    * Loads the config from the server
    */
   async function loadConfig() {
@@ -199,3 +128,73 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     getOrDefault
   };
 });
+
+/**
+ * The default config for the UI - this should mostly be targeted as though it was running on an Area Controller, as
+ * this will have the most standardised feature set.
+ *
+ * @private
+ */
+const _defaultConfig = {
+  features: {
+    'auth': {
+      'users': true,
+      'third-party': true
+    },
+    'devices': {
+      '*': true
+    },
+    'ops': {
+      'overview': {
+        '*': true
+      },
+      'emergency-lighting': false,
+      'notifications': true
+    },
+    'automations': {
+      '*': true
+    },
+    'site': false,
+    'system': {
+      'drivers': true,
+      'features': true
+    }
+  },
+  config: {
+    'keycloak': false,
+    'home': '/devices',
+    'ops': {
+      'overview': {
+        // Specifies all traits to show or hide on the building page
+        'widgets': {
+          'showEnergyConsumption': {
+            'showChart': true,
+            'showIntensity': true
+          },
+          'showEnvironment': true,
+          'showOccupancy': true
+        },
+        'children': [] // Specifies the children of the building (zones/floors)
+      }
+    },
+    'theme': {
+      'appBranding': {
+        'brandName': 'Smart Core', // The name of the brand
+        'brandLogo': {
+          'altText': 'Smart Core logo - representing nodes and connections', // Alt text for the logo
+          'src': '' // Empty string will use the default logo
+        },
+        // Specifies brand colors for the app (theming)
+        'brandColors': {
+          'primary': {
+            'base': '#00BED6',
+            'darken3': '#338fa1'
+          }
+        }
+      }
+    },
+    'hub': false, // Specifies if we're talking to a hub or an area controller
+    'proxy': false, // Specifies if we're using querying via a proxy (e.g. EdgeGateway) or not
+    'disableAuthentication': false // Specifies if we're using authentication or not
+  }
+};
