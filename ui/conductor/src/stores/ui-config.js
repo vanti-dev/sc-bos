@@ -59,7 +59,11 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     const paths = [];
     for (const [key, value] of Object.entries(obj)) {
       if (value === true) {
-        paths.push(`${prefix}/${key}`);
+        let path = `${prefix}/${key}`;
+        if (key !== '*') {
+          path += '(/*)?';
+        }
+        paths.push(path);
       } else if (value === false) {
         // do nothing
       } else {
