@@ -30,6 +30,59 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     _loaded.value = true;
   }
 
+  const config = computed(() => _config.value?.config ?? {});
+
+  // Returns the app branding, merging the default and the config values
+  // The config values will override the default ones if any are present
+  const appBranding = computed(() => {
+    return {
+      ..._defaultConfig.config.theme.appBranding,
+      ..._config.value?.config?.theme?.appBranding
+    };
+  });
+
+
+  /**
+   * Gets the value of path from either uiConfig config or defaultConfig, depending on presence.
+   *
+   * @template T
+   * @param {string} path
+   * @param {T?} def
+   * @return {T}
+   */
+  const getOrDefault = (path, def) => {
+    const parts = path.split('.');
+    let a = config.value;
+    let b = _defaultConfig?.config;
+    for (let i = 0; i < parts.length; i++) {
+      a = a?.[parts[i]];
+      b = b?.[parts[i]];
+    }
+    return a ?? b ?? toValue(def);
+  };
+
+  return {
+    loadConfig,
+    config,
+    configPromise,
+    ...useSiteMap(_config),
+    appBranding,
+    defaultConfig: _defaultConfig,
+    getOrDefault
+  };
+});
+
+/**
+ * Exposes site map relating features of the UI config.
+ *
+ * @param config
+ * @return {{
+ *   enabledPaths: import('vue').ComputedRef<RegExp[]>,
+ *   homePath: ComputedRef<unknown>,
+ *   pathEnabled: (function(string): boolean)
+ * }}
+ */
+export function useSiteMap(config) {
   /**
    * A list of regexp paths for all the enabled features.
    * These are provided as RegExp to handle wildcard paths (e.g. /devices/*)
@@ -38,9 +91,10 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
    */
   const enabledPaths = computed(() => {
     let features = [];
-    if (_config.value.hasOwnProperty('features')) {
+    const _config = toValue(config);
+    if (_config.hasOwnProperty('features')) {
       // generate paths list, then convert each one to regex
-      features = _generatePaths('', _config.value.features).map(path => {
+      features = _generatePaths('', _config.features).map(path => {
         return new RegExp(`^${path.replace(/\*/g, '.*')}$`);
       });
     }
@@ -89,49 +143,12 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     return false;
   }
 
-  const config = computed(() => _config.value?.config ?? {});
-
-  // Returns the app branding, merging the default and the config values
-  // The config values will override the default ones if any are present
-  const appBranding = computed(() => {
-    return {
-      ..._defaultConfig.config.theme.appBranding,
-      ..._config.value?.config?.theme?.appBranding
-    };
-  });
-
-
-  /**
-   * Gets the value of path from either uiConfig config or defaultConfig, depending on presence.
-   *
-   * @template T
-   * @param {string} path
-   * @param {T?} def
-   * @return {T}
-   */
-  const getOrDefault = (path, def) => {
-    const parts = path.split('.');
-    let a = config.value;
-    let b = _defaultConfig?.config;
-    for (let i = 0; i < parts.length; i++) {
-      a = a?.[parts[i]];
-      b = b?.[parts[i]];
-    }
-    return a ?? b ?? toValue(def);
-  };
-
   return {
-    loadConfig,
     enabledPaths,
     pathEnabled,
-    config,
-    configPromise,
-    homePath: computed(() => _config.value?.config?.home ?? _defaultConfig.config.home),
-    appBranding,
-    defaultConfig: _defaultConfig,
-    getOrDefault
+    homePath: computed(() => toValue(config)?.config?.home ?? _defaultConfig.config.home)
   };
-});
+}
 
 /**
  * The default config for the UI - this should mostly be targeted as though it was running on an Area Controller, as
