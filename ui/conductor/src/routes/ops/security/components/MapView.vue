@@ -96,8 +96,8 @@ import {useUiConfigStore} from '@/stores/ui-config';
 import WithAccess from '@/traits/access/WithAccess.vue';
 import WithOpenClose from '@/traits/openClose/WithOpenClose.vue';
 import WithStatus from '@/traits/status/WithStatus.vue';
+import {subPath} from '@/util/path.js';
 import {convertSVGToPercentage} from '@/util/svg';
-import {storeToRefs} from 'pinia';
 import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, set, watch} from 'vue';
 import AccessPointCard from './AccessPointCard.vue';
 
@@ -197,13 +197,10 @@ const calculateAnchorStyle = computed(() => {
 // -------------- Methods -------------- //
 const floorPlanSVGPath = computed(() => {
   const floorName = props.floor;
-  const svgPath = uiConfig.config.siteFloorPlans.find((floorPlan) => floorPlan.name === floorName)?.svgPath;
-  if (svgPath?.startsWith('./')) {
-    // relative to the config file location
-    const configUrl = uiConfig.configUrl;
-    const base = configUrl.substring(0, configUrl.lastIndexOf('/'));
-    return base + svgPath.substring(1);
-  }
+  const svgPath = subPath(
+      uiConfig.config.siteFloorPlans.find((floorPlan) => floorPlan.name === floorName)?.svgPath,
+      uiConfig.configUrl
+  );
   return svgPath;
 });
 /**
