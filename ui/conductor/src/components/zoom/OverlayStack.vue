@@ -7,6 +7,8 @@
 <style scoped>
 .stack {
   display: grid;
+  align-items: stretch;
+  justify-items: stretch;
 }
 
 .stack > * {

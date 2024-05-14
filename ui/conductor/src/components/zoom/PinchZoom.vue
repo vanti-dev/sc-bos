@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import ZoomControls from '@/routes/ops/security/map/ZoomControls.vue';
+import ZoomControls from '@/components/zoom/ZoomControls.vue';
 import PanZoom from '@/thirdparty/panzoom/PanZoom.vue';
 
 export default {

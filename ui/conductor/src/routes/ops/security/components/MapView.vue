@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="mb-0 mt-0 pb-0 pt-0 floor-plan__container">
+  <v-container fluid class="mb-0 mt-0 pt-0 floor-plan__container">
     <pinch-zoom @click="handleClick">
       <template #default="{ scale }">
         <overlay-stack ref="groupingContainer">
@@ -89,9 +89,9 @@
 
 <script setup>
 import HotPoint from '@/components/HotPoint.vue';
+import OverlayStack from '@/components/zoom/OverlayStack.vue';
+import PinchZoom from '@/components/zoom/PinchZoom.vue';
 import DoorColor from '@/routes/ops/security/components/DoorColor.vue';
-import OverlayStack from '@/routes/ops/security/components/OverlayStack.vue';
-import PinchZoom from '@/routes/ops/security/map/PinchZoom.vue';
 import {useUiConfigStore} from '@/stores/ui-config';
 import WithAccess from '@/traits/access/WithAccess.vue';
 import WithOpenClose from '@/traits/openClose/WithOpenClose.vue';
