@@ -11,6 +11,9 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
   let _configResolve;
   const configPromise = new Promise((resolve) => _configResolve = resolve);
 
+  /** @type {import('vue').ComputedRef<string>} */
+  const configUrl = computed(() => import.meta.env.VITE_UI_CONFIG_URL || '/__/scos/ui-config.json');
+
   /**
    * Loads the config from the server
    */
@@ -18,7 +21,7 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     if (_loaded.value) {
       return;
     }
-    const url = import.meta.env.VITE_UI_CONFIG_URL || '/__/scos/ui-config.json';
+    const url = configUrl.value;
     try {
       const res = await fetch(url);
       _config.value = await res.json();
@@ -52,6 +55,7 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
   };
 
   return {
+    configUrl,
     loadConfig,
     config,
     configPromise,

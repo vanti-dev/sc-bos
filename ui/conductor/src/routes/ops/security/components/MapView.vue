@@ -114,7 +114,7 @@ const props = defineProps({
 });
 
 // -------------- Data & Reactive References -------------- //
-const {config} = storeToRefs(useUiConfigStore());
+const uiConfig = useUiConfigStore();
 const showClose = ref(false);
 const activeFloorPlan = ref('');
 const floorPlanSVG = ref(null);
@@ -195,18 +195,27 @@ const calculateAnchorStyle = computed(() => {
 });
 
 // -------------- Methods -------------- //
+const floorPlanSVGPath = computed(() => {
+  const floorName = props.floor;
+  const svgPath = uiConfig.config.siteFloorPlans.find((floorPlan) => floorPlan.name === floorName)?.svgPath;
+  if (svgPath?.startsWith('./')) {
+    // relative to the config file location
+    const configUrl = uiConfig.configUrl;
+    const base = configUrl.substring(0, configUrl.lastIndexOf('/'));
+    return base + svgPath.substring(1);
+  }
+  return svgPath;
+});
 /**
  * Fetch function to get the floor plan svg
  *
- * @param {string} selectedFloor
+ * @param {string} svgPath
  * @return {Promise<Response>}
  */
-const fetchFloorPlan = async (selectedFloor) => {
-  const floorPlan = config.value.siteFloorPlans.find((floorPlan) => floorPlan.name === selectedFloor);
-
+const fetchFloorPlan = async (svgPath) => {
   // Fetch the floor plan svg
   // Don't forget to add ?raw to the end of the url to get the raw svg (string injected into v-html)
-  const response = await fetch(floorPlan.svgPath + '?raw', {
+  const response = await fetch(svgPath, {
     headers: {
       'Content-Type': 'image/svg+xml'
     }
@@ -388,7 +397,7 @@ onBeforeUnmount(() => {
 // Watch for changes in the floor prop then
 // fetch the floor plan svg
 watch(
-    () => props.floor,
+    floorPlanSVGPath,
     (newValue, oldValue) => {
       if (newValue !== oldValue) {
         closeMenu();
