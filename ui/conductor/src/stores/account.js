@@ -77,7 +77,7 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @return {Promise<void>}
    */
   const _initialise = async (providerNames) => {
-    if (uiConfig.disableAuthentication) {
+    if (uiConfig.auth.disableAuthentication) {
       return;
     }
 
@@ -85,7 +85,7 @@ export const useAccountStore = defineStore('accountStore', () => {
       {
         name: 'keyCloakAuth',
         init: keyCloak.init,
-        enabled: () => Boolean(uiConfig.config?.keycloak)
+        enabled: () => Boolean(uiConfig.auth.keycloak)
       },
       {
         name: 'deviceFlow',
@@ -155,7 +155,7 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @type {import('vue').ComputedRef<boolean>}
    */
   const isAuthenticationDisabled = computed(() => {
-    return uiConfig.disableAuthentication ?? false;
+    return uiConfig.auth.disableAuthentication ?? false;
   });
 
   /**

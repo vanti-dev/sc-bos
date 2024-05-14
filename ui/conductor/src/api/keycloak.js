@@ -61,9 +61,9 @@ async function newKeycloak() {
  * @return {Promise<import('keycloak-js').KeycloakConfig | string>}
  */
 async function constructorConfig() {
-  const useAppConfig = useUiConfigStore();
-  const config = await useAppConfig.configPromise;
-  return config?.keycloak ?? {
+  const uiConfig = useUiConfigStore();
+  await uiConfig.configPromise; // make sure it's loaded
+  return uiConfig.auth.keycloak ?? {
     realm: import.meta.env.VITE_KEYCLOAK_REALM || 'smart-core',
     url: import.meta.env.VITE_KEYCLOAK_URL || 'http://localhost:8888/',
     clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'sc-apps'

@@ -318,7 +318,7 @@ export function useUiConfig() {
     if (!deviceFlowConfig) return {}; // invalid, device flow not configured
     if (deviceFlowConfig === true) {
       // use keycloak config as the basis for our config
-      const kcConfig = computed(() => uiConfig.config?.keycloak);
+      const kcConfig = computed(() => uiConfig.auth.keycloak);
       const kcRealmPath = (path) => {
         let baseUrl = kcConfig.value?.url;
         const realm = kcConfig.value?.realm;

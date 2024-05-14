@@ -59,7 +59,7 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     getOrDefault,
     ...useSiteMap(_config),
     ...useTheme(_config),
-    ...useAuth(_config)
+    auth: useAuth(_config)
   };
 });
 
@@ -166,13 +166,18 @@ export function useTheme(config) {
  * @param {MaybeRefOrGetter<Object>} config
  * @return {{
  *   disableAuthentication: ComputedRef<boolean|undefined>
+ *   keycloak: ComputedRef<import('keycloak-js').KeycloakConfig|false>
  * }}
  */
 export function useAuth(config) {
   const disableAuthentication = computed(
       () => /** @type {boolean|undefined} */ toValue(config)?.config?.disableAuthentication);
+  const keycloak = computed(() => {
+    return /** @type {import('keycloak-js').KeycloakConfig|false} */ toValue(config)?.config?.keycloak ?? false;
+  });
   return {
-    disableAuthentication
+    disableAuthentication,
+    keycloak
   };
 }
 
