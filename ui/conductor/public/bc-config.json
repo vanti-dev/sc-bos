@@ -27,7 +27,37 @@
     "proxy": false,
     "home": "/ops",
     "ops": {
-      "buildingZone": "building"
+      "pages": [{
+        "title": "Building Overview",
+        "icon": "mdi-domain",
+        "path": "building",
+        "layout": "builtin:LayoutMainSide",
+        "main": [
+          {
+            "component": "builtin:power-history/PowerHistoryCard",
+            "props": {
+              "demand": "building",
+              "generated": "building/generated",
+              "occupancy": "building"
+            }
+          },
+          {
+            "component": "builtin:occupancy/OccupancyCard",
+            "props": {
+              "source": "building"
+            }
+          }
+        ],
+        "after": [
+          {
+            "component": "builtin:environmental/EnvironmentalCard",
+            "props": {
+              "external": "building/outside",
+              "internal": "building"
+            }
+          }
+        ]
+      }]
     },
     "auth": {
       "keycloak": {
