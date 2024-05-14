@@ -16,7 +16,7 @@
         </v-card-actions>
       </v-card>
       <v-btn
-          v-if="uiConfig.config.disableAuthentication"
+          v-if="uiConfig.disableAuthentication"
           class="mt-4"
           color="neutral"
           elevation="0"

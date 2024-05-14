@@ -58,7 +58,8 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     defaultConfig: _defaultConfig,
     getOrDefault,
     ...useSiteMap(_config),
-    ...useTheme(_config)
+    ...useTheme(_config),
+    ...useAuth(_config)
   };
 });
 
@@ -158,6 +159,20 @@ export function useTheme(config) {
   });
   return {
     appBranding
+  };
+}
+
+/**
+ * @param {MaybeRefOrGetter<Object>} config
+ * @return {{
+ *   disableAuthentication: ComputedRef<boolean|undefined>
+ * }}
+ */
+export function useAuth(config) {
+  const disableAuthentication = computed(
+      () => /** @type {boolean|undefined} */ toValue(config)?.config?.disableAuthentication);
+  return {
+    disableAuthentication
   };
 }
 

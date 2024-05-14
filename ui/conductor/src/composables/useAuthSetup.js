@@ -39,7 +39,7 @@ export default function() {
   // Depending on the role and role permissions, we are going to check if the user has
   // permission (and access) to certain pages and functionalities
   const accessLevel = (name) => {
-    if (!uiConfig.config?.disableAuthentication) {
+    if (!uiConfig.disableAuthentication) {
       // Formatting the name to match the main path (e.g. /site or /devices)
       const formattedName = !name.includes('/') ? `/${name}` : name;
 
@@ -95,14 +95,14 @@ export default function() {
 
   // Blocking actions (e.g. edit, delete, light control etc.)
   const blockActions = computed(() => {
-    if (!uiConfig.config?.disableAuthentication) {
+    if (!uiConfig.disableAuthentication) {
       return !allowActions.value;
     } else return false;
   });
 
   // Blocking system edit (e.g. add, edit, delete, restart etc.)
   const blockSystemEdit = computed(() => {
-    if (!uiConfig.config?.disableAuthentication) {
+    if (!uiConfig.disableAuthentication) {
       return !allowEdits.value;
     } else {
       return false;
