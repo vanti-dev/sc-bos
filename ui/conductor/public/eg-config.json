@@ -27,13 +27,15 @@
     }
   },
   "config": {
-    "disableAuthentication": true,
     "home": "/ops",
     "hub": true,
-    "keycloak": {
-      "realm": "Smart_Core",
-      "url": "http://localhost:8888/",
-      "clientId": "scos-opsui"
+    "auth": {
+      "disabled": true,
+      "keycloak": {
+        "realm": "Smart_Core",
+        "url": "http://localhost:8888/",
+        "clientId": "scos-opsui"
+      }
     },
     "ops": {
       "buildingZone": "building",
