@@ -1,0 +1,58 @@
+{
+  "name": "van/uk/brum/ugs/eg-ac-01",
+  "listenHTTPS": ":8443",
+  "cors": {
+    "debugMode": true,
+    "corsOrigins": ["https://localhost:8443", "http://localhost:5173"]
+  },
+  "staticHosting": [
+    {"path": "/__/vanti-ugs/", "filePath": "./example/config/vanti-ugs"}
+  ],
+  "systems": {
+    "alerts": {
+      "disabled": false,
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": "./.data/secrets/postgres-password"
+      }
+    },
+    "authn": {
+      "disabled": true,
+      "user": {
+        "fileAccounts": true,
+        "keycloakAccounts": {
+          "url": "http://localhost:8888",
+          "realm": "smart-core"
+        }
+      },
+      "system": {
+        "tenantAccounts": true
+      }
+    },
+    "hub": {
+      "disabled": true,
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": "./.data/secrets/postgres-password"
+      }
+    },
+    "publications": {
+      "disabled": true,
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": "./.data/secrets/postgres-password"
+      }
+    },
+    "tenants": {
+      "disabled": false,
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": "./.data/secrets/postgres-password"
+      }
+    }
+  }
+}
