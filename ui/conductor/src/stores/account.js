@@ -77,7 +77,7 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @return {Promise<void>}
    */
   const _initialise = async (providerNames) => {
-    if (uiConfig.auth.disableAuthentication) {
+    if (uiConfig.auth.disabled) {
       return;
     }
 
@@ -155,7 +155,7 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @type {import('vue').ComputedRef<boolean>}
    */
   const isAuthenticationDisabled = computed(() => {
-    return uiConfig.auth.disableAuthentication ?? false;
+    return uiConfig.auth.disabled ?? false;
   });
 
   /**

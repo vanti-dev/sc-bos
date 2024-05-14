@@ -36,7 +36,7 @@ if (window) {
   router.beforeEach(async (to, from, next) => {
     const uiConfig = useUiConfigStore();
     await uiConfig.loadConfig();
-    const authDisabled = uiConfig.auth.disableAuthentication;
+    const authDisabled = uiConfig.auth.disabled;
     const accountStore = useAccountStore();
     // Initialize Local and Keycloak auth instances,
     // so we can check if the user is logged in and/or manage the login flow

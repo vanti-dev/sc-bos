@@ -171,34 +171,27 @@
           }
         },
         "keycloak": {
-          "description": "Configuration of the Keycloak authentication",
-          "type": "object",
-          "properties": {
-            "realm": {
-              "description": "The realm name",
-              "examples": ["Smart_Core"],
-              "type": "string"
-            },
-            "url": {
-              "description": "The URL of the Keycloak server",
-              "examples": ["http://localhost:8888/", "https://keycloak.example.com/"],
-              "type": "string"
-            },
-            "clientId": {
-              "description": "The client ID",
-              "examples": ["scos-opsui"],
-              "type": "string"
-            }
-          }
+          "description": "Configuration of the Keycloak authentication. Deprecated, use auth.keycloak instead.",
+          "deprecated": true,
+          "allOf": [{"$ref": "#/$defs/keycloak"}]
         },
         "disableAuthentication": {
-          "description": "A flag to disable authentication",
-          "type": "boolean"
+          "description": "A flag to disable authentication. Deprecated, use auth.disabled instead.",
+          "type": "boolean",
+          "deprecated": true
         },
         "auth": {
           "description": "Configuration for user authentication",
           "type": "object",
           "properties": {
+            "disabled": {
+              "description": "Indicate that authentication is disabled, the user should not be required to log in",
+              "type": "boolean"
+            },
+            "keycloak": {
+              "description": "Configuration of the Keycloak authentication",
+              "$ref": "#/$defs/keycloak"
+            },
             "providers": {
               "description": "A list of named providers that the ui should use for authentication. If absent any successfully initialised provider can be used.",
               "type": "array",
@@ -367,6 +360,27 @@
           "items": {
             "$ref": "#/$defs/dashboardPage"
           }
+        }
+      }
+    },
+    "keycloak": {
+      "description": "Configuration of the Keycloak authentication",
+      "type": "object",
+      "properties": {
+        "realm": {
+          "description": "The realm name",
+          "examples": ["Smart_Core"],
+          "type": "string"
+        },
+        "url": {
+          "description": "The URL of the Keycloak server",
+          "examples": ["http://localhost:8888/", "https://keycloak.example.com/"],
+          "type": "string"
+        },
+        "clientId": {
+          "description": "The client ID",
+          "examples": ["scos-opsui"],
+          "type": "string"
         }
       }
     }

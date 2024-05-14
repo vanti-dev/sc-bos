@@ -4,22 +4,16 @@
       "users": true,
       "third-party": true
     },
-    "devices": {
-      "*": true
-    },
+    "devices": true,
     "ops": {
-      "overview": {
-        "*": true
-      },
+      "overview": true,
       "notifications": true,
       "air-quality": true,
       "emergency-lighting": true,
       "security": true
     },
     "site": false,
-    "automations": {
-      "*": true
-    },
+    "automations": true,
     "system": {
       "drivers": true,
       "features": true,
@@ -27,13 +21,15 @@
     }
   },
   "config": {
-    "disableAuthentication": true,
     "home": "/ops",
     "hub": true,
-    "keycloak": {
-      "realm": "Smart_Core",
-      "url": "http://localhost:8888/",
-      "clientId": "scos-opsui"
+    "auth": {
+      "disabled": true,
+      "keycloak": {
+        "realm": "Smart_Core",
+        "url": "http://localhost:8888/",
+        "clientId": "scos-opsui"
+      }
     },
     "ops": {
       "pages": [

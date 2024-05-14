@@ -165,18 +165,21 @@ export function useTheme(config) {
 /**
  * @param {MaybeRefOrGetter<Object>} config
  * @return {{
- *   disableAuthentication: ComputedRef<boolean|undefined>
+ *   disabled: ComputedRef<boolean|undefined>
  *   keycloak: ComputedRef<import('keycloak-js').KeycloakConfig|false>
  * }}
  */
 export function useAuth(config) {
-  const disableAuthentication = computed(
-      () => /** @type {boolean|undefined} */ toValue(config)?.config?.disableAuthentication);
+  const disabled = computed(() => {
+    const cfg = toValue(config)?.config;
+    return /** @type {boolean|undefined} */ cfg?.auth?.disabled ?? cfg?.disableAuthentication;
+  });
   const keycloak = computed(() => {
-    return /** @type {import('keycloak-js').KeycloakConfig|false} */ toValue(config)?.config?.keycloak ?? false;
+    const cfg = toValue(config)?.config;
+    return /** @type {import('keycloak-js').KeycloakConfig|false} */ cfg?.keycloak ?? cfg?.auth?.keycloak ?? false;
   });
   return {
-    disableAuthentication,
+    disabled,
     keycloak
   };
 }
@@ -193,19 +196,13 @@ const _defaultConfig = {
       'users': true,
       'third-party': true
     },
-    'devices': {
-      '*': true
-    },
+    'devices': true,
     'ops': {
-      'overview': {
-        '*': true
-      },
+      'overview': true,
       'emergency-lighting': false,
       'notifications': true
     },
-    'automations': {
-      '*': true
-    },
+    'automations': true,
     'site': false,
     'system': {
       'drivers': true,
@@ -213,7 +210,6 @@ const _defaultConfig = {
     }
   },
   config: {
-    'keycloak': false,
     'home': '/devices',
     'ops': {
       'overview': {
@@ -246,7 +242,6 @@ const _defaultConfig = {
       }
     },
     'hub': false, // Specifies if we're talking to a hub or an area controller
-    'proxy': false, // Specifies if we're using querying via a proxy (e.g. EdgeGateway) or not
-    'disableAuthentication': false // Specifies if we're using authentication or not
+    'proxy': false // Specifies if we're using querying via a proxy (e.g. EdgeGateway) or not
   }
 };
