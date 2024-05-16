@@ -345,6 +345,7 @@ func (es *Server) RequestRenew(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
 	client := gen.NewHubApiClient(conn)
 	// warning, do not hold es.m lock when invoking this method or we'll get a deadlock that includes a network hop
 	// which would be really hard to debug!
