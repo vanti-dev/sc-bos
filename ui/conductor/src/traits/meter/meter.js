@@ -2,7 +2,7 @@ import {closeResource, newActionTracker, newResourceValue} from '@/api/resource'
 import {describeMeterReading, pullMeterReading} from '@/api/sc/traits/meter';
 import {toQueryObject, watchResource} from '@/util/traits.js';
 import {toValue} from '@/util/vue.js';
-import {computed, onUnmounted, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs} from 'vue';
 
 /**
  * @typedef {import('@sc-bos/ui-gen/proto/meter_pb').MeterReading} MeterReading
@@ -27,7 +27,7 @@ export function usePullMeterReading(query, paused = false) {
       /** @type {ResourceValue<MeterReading.AsObject, PullMeterReadingsResponse>} */
       newResourceValue()
   );
-  onUnmounted(() => closeResource(resource));
+  onScopeDispose(() => closeResource(resource));
 
   const queryObject = computed(() => toQueryObject(query));
 

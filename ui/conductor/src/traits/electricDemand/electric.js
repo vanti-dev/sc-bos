@@ -2,7 +2,7 @@ import {closeResource, newResourceValue} from '@/api/resource';
 import {pullDemand} from '@/api/sc/traits/electric';
 import {toQueryObject, watchResource} from '@/util/traits.js';
 import {toValue} from '@/util/vue.js';
-import {computed, onUnmounted, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs} from 'vue';
 
 /**
  * @typedef {
@@ -30,7 +30,7 @@ export function usePullElectricDemand(query, paused = false) {
       /** @type {ResourceValue<ElectricDemand.AsObject, PullDemandResponse>} */
       newResourceValue()
   );
-  onUnmounted(() => closeResource(resource));
+  onScopeDispose(() => closeResource(resource));
 
   const queryObject = computed(() => toQueryObject(query));
 

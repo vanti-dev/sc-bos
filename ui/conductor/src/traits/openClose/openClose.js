@@ -2,7 +2,7 @@ import {closeResource, newResourceValue} from '@/api/resource';
 import {pullOpenClosePositions} from '@/api/sc/traits/open-close';
 import {toQueryObject, watchResource} from '@/util/traits';
 import {toValue} from '@/util/vue';
-import {computed, onUnmounted, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs} from 'vue';
 
 /**
  * @typedef {import('@smart-core-os/sc-api-grpc-web/traits/open_close_pb').OpenClosePositions} OpenClosePositions
@@ -28,7 +28,7 @@ export function usePullOpenClosePositions(query, paused = false) {
       /** @type {ResourceValue<OpenClosePositions.AsObject, PullOpenClosePositionsResponse>} */
       newResourceValue()
   );
-  onUnmounted(() => closeResource(openCloseValue));
+  onScopeDispose(() => closeResource(openCloseValue));
 
   const queryObject = computed(() => toQueryObject(query));
 

@@ -4,7 +4,7 @@ import {occupancyStateToString, pullOccupancy} from '@/api/sc/traits/occupancy';
 import {toQueryObject, watchResource} from '@/util/traits';
 import {toValue} from '@/util/vue';
 import {Occupancy} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
-import {computed, onUnmounted, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs} from 'vue';
 
 /**
  * @typedef {
@@ -31,7 +31,7 @@ export function usePullOccupancy(query, paused = false) {
       /** @type {ResourceValue<Occupancy.AsObject, PullOccupancyResponse>} */
       newResourceValue()
   );
-  onUnmounted(() => closeResource(resource));
+  onScopeDispose(() => closeResource(resource));
 
   const queryObject = computed(() => toQueryObject(query));
 

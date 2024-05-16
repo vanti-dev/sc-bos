@@ -8,7 +8,7 @@ import {
 import {setRequestName, toQueryObject, watchResource} from '@/util/traits';
 import {toValue} from '@/util/vue';
 import {AirTemperature} from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb';
-import {computed, onUnmounted, reactive, ref, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, ref, toRefs} from 'vue';
 
 /**
  * @typedef {
@@ -41,7 +41,7 @@ export function usePullAirTemperature(query, paused = false) {
       /** @type {ResourceValue<AirTemperature.AsObject, PullAirTemperatureResponse>} */
       newResourceValue()
   );
-  onUnmounted(() => closeResource(resource));
+  onScopeDispose(() => closeResource(resource));
 
   const queryObject = computed(() => toQueryObject(query));
 

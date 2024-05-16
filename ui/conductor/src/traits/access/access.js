@@ -3,7 +3,7 @@ import {pullAccessAttempts} from '@/api/sc/traits/access';
 import {toQueryObject, watchResource} from '@/util/traits';
 import {toValue} from '@/util/vue';
 import {AccessAttempt} from '@sc-bos/ui-gen/proto/access_pb';
-import {computed, onUnmounted, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs} from 'vue';
 
 /**
  * @typedef {import('@sc-bos/ui-gen/proto/access_pb').PullAccessAttemptsRequest} PullAccessAttemptsRequest
@@ -25,7 +25,7 @@ export function usePullAccessAttempts(query, paused = false) {
       /** @type {ResourceValue<AccessAttempt.AsObject, PullAccessAttemptsResponse>} */
       newResourceValue()
   );
-  onUnmounted(() => closeResource(resource));
+  onScopeDispose(() => closeResource(resource));
 
   const queryObject = computed(() => toQueryObject(query));
 

@@ -2,7 +2,7 @@ import {closeResource, newActionTracker, newResourceValue} from '@/api/resource'
 import {describeBrightness, pullBrightness, updateBrightness} from '@/api/sc/traits/light';
 import {setRequestName, toQueryObject, watchResource} from '@/util/traits.js';
 import {toValue} from '@/util/vue';
-import {computed, onUnmounted, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs} from 'vue';
 
 /**
  * @typedef {import('@smart-core-os/sc-api-grpc-web/traits/light_pb').PullBrightnessRequest} PullBrightnessRequest
@@ -31,7 +31,7 @@ export function usePullBrightness(query, paused = false) {
       /** @type {ResourceValue<Brightness.AsObject, PullBrightnessResponse>} */
       newResourceValue()
   );
-  onUnmounted(() => closeResource(resource));
+  onScopeDispose(() => closeResource(resource));
 
   const queryObject = computed(() => toQueryObject(query));
 
@@ -155,7 +155,7 @@ export function useBrightness(value, support = null) {
 
   /** @type {ComputedRef<Array<LightPreset.AsObject>>} */
   const presets = computed(() => {
-    return _s.value ?.presetsList ?? [];
+    return _s.value?.presetsList ?? [];
   });
 
   return {

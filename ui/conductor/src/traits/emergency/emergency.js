@@ -3,7 +3,7 @@ import {pullEmergency} from '@/api/sc/traits/emergency';
 import {toQueryObject, watchResource} from '@/util/traits.js';
 import {toValue} from '@/util/vue.js';
 import {Emergency} from '@smart-core-os/sc-api-grpc-web/traits/emergency_pb';
-import {computed, onUnmounted, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs} from 'vue';
 
 /**
  * @typedef {
@@ -30,7 +30,7 @@ export function usePullEmergency(query, paused = false) {
       /** @type {ResourceValue<Emergency.AsObject, PullEmergencyResponse>} */
       newResourceValue()
   );
-  onUnmounted(() => closeResource(resource));
+  onScopeDispose(() => closeResource(resource));
 
   const queryObject = computed(() => toQueryObject(query));
 

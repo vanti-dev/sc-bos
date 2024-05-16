@@ -3,7 +3,7 @@ import {pullCurrentStatus} from '@/api/sc/traits/status';
 import {toQueryObject, watchResource} from '@/util/traits.js';
 import {toValue} from '@/util/vue.js';
 import {StatusLog} from '@sc-bos/ui-gen/proto/status_pb';
-import {computed, onUnmounted, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs} from 'vue';
 
 /**
  * @typedef {import('@sc-bos/ui-gen/proto/status_pb').StatusLog} StatusLog
@@ -24,7 +24,7 @@ export function usePullCurrentStatus(query, paused = false) {
       /** @type {ResourceValue<StatusLog.AsObject, StatusLog>} */
       newResourceValue()
   );
-  onUnmounted(() => closeResource(statusValue));
+  onScopeDispose(() => closeResource(statusValue));
 
   const queryObject = computed(() => toQueryObject(query));
 

@@ -4,7 +4,7 @@ import {SECOND} from '@/components/now.js';
 import {toQueryObject, watchResource} from '@/util/traits';
 import {toValue} from '@/util/vue';
 import {EnterLeaveEvent} from '@smart-core-os/sc-api-grpc-web/traits/enter_leave_sensor_pb';
-import {computed, onUnmounted, reactive, ref, toRefs, watch} from 'vue';
+import {computed, onScopeDispose, reactive, ref, toRefs, watch} from 'vue';
 
 /**
  * @typedef {
@@ -33,7 +33,7 @@ export function usePullEnterLeaveEvents(query, paused = false) {
       /** @type {ResourceValue<EnterLeaveEvent.AsObject, PullEnterLeaveEventsResponse>} */
       newResourceValue()
   );
-  onUnmounted(() => closeResource(resource));
+  onScopeDispose(() => closeResource(resource));
 
   const queryObject = computed(() => toQueryObject(query));
 
@@ -96,7 +96,7 @@ export function useEnterLeaveEvent(value, {showChangeDuration = 30 * SECOND} = {
       }, toValue(showChangeDuration));
     }
   }, {deep: true});
-  onUnmounted(() => {
+  onScopeDispose(() => {
     clearTimeout(enterTimeoutHandle.value);
     clearTimeout(leaveTimeoutHandle.value);
   });

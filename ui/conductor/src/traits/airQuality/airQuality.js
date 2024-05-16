@@ -4,7 +4,7 @@ import {camelToSentence} from '@/util/string.js';
 import {toQueryObject, watchResource} from '@/util/traits.js';
 import {toValue} from '@/util/vue';
 import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
-import {computed, onUnmounted, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs} from 'vue';
 
 /**
  * @typedef {
@@ -30,7 +30,7 @@ export function usePullAirQuality(query, paused = false) {
       /** @type {ResourceValue<AirQuality.AsObject, PullAirQualityResponse>} */
       newResourceValue()
   );
-  onUnmounted(() => closeResource(resource));
+  onScopeDispose(() => closeResource(resource));
 
   const queryObject = computed(() => toQueryObject(query));
 
