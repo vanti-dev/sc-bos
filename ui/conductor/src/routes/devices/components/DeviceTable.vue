@@ -148,7 +148,7 @@ const selectedDevicesComp = computed({
  */
 function showDevice(item) {
   sidebar.showSidebar = true;
-  sidebar.sidebarTitle = item.metadata.appearance ? item.metadata.appearance.title : item.name;
+  sidebar.title = item.metadata.appearance ? item.metadata.appearance.title : item.name;
   sidebar.sidebarData = item;
 }
 

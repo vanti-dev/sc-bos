@@ -2,7 +2,7 @@
   <v-list tile class="ma-0 pa-0">
     <v-subheader class="text-body-large font-weight-bold sidebar-title pa-4 neutral lighten-1">
       <span class="sidebar-title-text my-auto">
-        {{ sidebarTitle }}
+        {{ sidebar.title }}
       </span>
       <v-spacer/>
       <v-btn icon small @click="sidebar.closeSidebar()" color="neutral lighten-4">
@@ -15,10 +15,8 @@
 
 <script setup>
 import {useSidebarStore} from '@/stores/sidebar';
-import {storeToRefs} from 'pinia';
 
 const sidebar = useSidebarStore();
-const {sidebarTitle} = storeToRefs(sidebar);
 
 </script>
 

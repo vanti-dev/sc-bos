@@ -10,7 +10,7 @@
             title="Delete Account"
             :progress-bar="deleteTracker.loading"
             @confirm="deleteAccount">
-          Are you sure you want to delete the account "{{ sidebarTitle }}"?
+          Are you sure you want to delete the account "{{ sidebar.title }}"?
           <template #alert-content>
             Deleting this account will stop all integrations that connect using this account.
             <br><br>
@@ -48,7 +48,7 @@ import {storeToRefs} from 'pinia';
 import {reactive} from 'vue';
 
 const sidebar = useSidebarStore();
-const {sidebarTitle, sidebarData} = storeToRefs(sidebar);
+const {sidebarData} = storeToRefs(sidebar);
 const tenantStore = useTenantStore();
 
 const deleteTracker = reactive(

@@ -87,7 +87,7 @@ onUnmounted(() => {
 function showTenant(item) {
   // router.push(`/auth/third-party/${item.id}`);
   sidebar.showSidebar = true;
-  sidebar.sidebarTitle = item.title;
+  sidebar.title = item.title;
   sidebar.sidebarData = item;
 }
 
@@ -97,7 +97,7 @@ watch(tenantsList, () => {
   if (!tenant) {
     return;
   }
-  sidebar.sidebarTitle = tenant.title;
+  sidebar.title = tenant.title;
   sidebar.sidebarData = tenant;
 }, {deep: true});
 

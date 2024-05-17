@@ -13,7 +13,7 @@
       </v-tab-item>
 
       <v-tab-item>
-        <device-info-tab :device-id="sidebar.sidebarTitle" :device-data="sidebar.listedDevice"/>
+        <device-info-tab :device-id="sidebar.title" :device-data="sidebar.listedDevice"/>
       </v-tab-item>
     </v-tabs>
   </side-bar>
@@ -32,7 +32,7 @@ import {reactive, watch} from 'vue';
 const sidebar = useSidebarStore();
 const listedDevice = reactive(newActionTracker());
 
-watch(() => sidebar.sidebarTitle, (newVal, oldVal) => {
+watch(() => sidebar.title, (newVal, oldVal) => {
   if (newVal !== oldVal) {
     const newQuery = {
       query: {

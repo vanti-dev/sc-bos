@@ -558,7 +558,7 @@ const rowClass = (item) => {
  */
 async function showNotification(item) {
   sidebar.showSidebar = true;
-  sidebar.sidebarTitle = item.source;
+  sidebar.title = item.source;
   sidebar.sidebarData = {name, item};
 }
 
