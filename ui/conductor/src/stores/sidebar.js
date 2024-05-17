@@ -3,7 +3,7 @@ import {ref} from 'vue';
 
 export const useSidebarStore = defineStore('sidebar', () => {
   // RIGHT SIDEBAR //
-  const showSidebar = ref(false);
+  const visible = ref(false);
   const sidebarData = ref({});
   const title = ref('');
   // for use when targeting a specific node
@@ -15,14 +15,14 @@ export const useSidebarStore = defineStore('sidebar', () => {
    * Open or close sidebar
    */
   const toggleSidebar = () => {
-    showSidebar.value = !showSidebar.value;
+    visible.value = !visible.value;
   };
 
   /**
    * Close sidebar if visible and reset sidebar data
    */
   const closeSidebar = () => {
-    showSidebar.value = false;
+    visible.value = false;
     resetSidebarToDefaults();
   };
 
@@ -33,12 +33,12 @@ export const useSidebarStore = defineStore('sidebar', () => {
     sidebarData.value = {};
     listedDevice.value = {};
     title.value = '';
-    showSidebar.value = false;
+    visible.value = false;
   };
 
   return {
     // RIGHT SIDEBAR
-    showSidebar,
+    visible,
     sidebarData,
     title,
     sidebarNode,

@@ -70,7 +70,7 @@ async function deleteAccount() {
       deleteTracker
   );
   tenantStore.refreshTenants();
-  sidebar.showSidebar = false;
+  sidebar.visible = false;
 }
 
 /**

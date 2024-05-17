@@ -557,7 +557,7 @@ const rowClass = (item) => {
  * @param {*} item
  */
 async function showNotification(item) {
-  sidebar.showSidebar = true;
+  sidebar.visible = true;
   sidebar.title = item.source;
   sidebar.sidebarData = {name, item};
 }

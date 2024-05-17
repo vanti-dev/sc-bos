@@ -86,7 +86,7 @@ onUnmounted(() => {
  */
 function showTenant(item) {
   // router.push(`/auth/third-party/${item.id}`);
-  sidebar.showSidebar = true;
+  sidebar.visible = true;
   sidebar.title = item.title;
   sidebar.sidebarData = item;
 }
@@ -106,7 +106,7 @@ watch(tenantsList, () => {
  * @return {string}
  */
 function rowClass(item) {
-  if (sidebar.showSidebar && sidebar.sidebarData?.id === item.id) {
+  if (sidebar.visible && sidebar.sidebarData?.id === item.id) {
     return 'item-selected';
   }
   return '';

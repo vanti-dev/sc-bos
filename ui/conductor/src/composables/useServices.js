@@ -100,7 +100,7 @@ export default function(props) {
    * @param {Service.AsObject} service
    */
   function showService(service) {
-    sidebar.showSidebar = true;
+    sidebar.visible = true;
     sidebar.title = service.id;
     sidebar.sidebarData = {...service, config: JSON.parse(service.configRaw)};
   }
@@ -111,7 +111,7 @@ export default function(props) {
    */
   async function _startService(service) {
     // Update the sidebarData if the sidebar is open and the service is being started
-    if (sidebar.showSidebar && sidebar.sidebarData.id !== service.id) {
+    if (sidebar.visible && sidebar.sidebarData.id !== service.id) {
       sidebar.title = service.id;
       sidebar.sidebarData = {...service, config: JSON.parse(service.configRaw)};
     }
@@ -129,7 +129,7 @@ export default function(props) {
    */
   async function _stopService(service) {
     // Update the sidebarData if the sidebar is open and the service is being stopped
-    if (sidebar.showSidebar && sidebar.sidebarData.id !== service.id) {
+    if (sidebar.visible && sidebar.sidebarData.id !== service.id) {
       sidebar.title = service.id;
       sidebar.sidebarData = {...service, config: JSON.parse(service.configRaw)};
     }

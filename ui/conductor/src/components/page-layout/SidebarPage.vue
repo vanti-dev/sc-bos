@@ -7,7 +7,7 @@
     </v-main>
     <v-navigation-drawer
         v-if="hasSidebar"
-        v-model="showSidebar"
+        v-model="sidebar.visible"
         ref="sidebarDOMElement"
         app
         class="sidebarDOMElement pa-0"
@@ -25,7 +25,6 @@
 <script setup>
 import {usePage} from '@/components/page';
 import {useSidebarStore} from '@/stores/sidebar';
-import {storeToRefs} from 'pinia';
 import {onUnmounted, ref, watchEffect} from 'vue';
 
 const props = defineProps({
@@ -49,7 +48,6 @@ const handleShift = ref(0);
 const pointerId = ref(0);
 
 const sidebar = useSidebarStore();
-const {showSidebar} = storeToRefs(sidebar);
 
 const beginDrag = (e) => {
   resizing.value = true; // update styles
@@ -98,7 +96,7 @@ const cleanUp = () => {
 
   resizing.value = false; // Reset resizing styles
   pointerId.value = 0; // Reset pointer ID
-  showSidebar.value = false; // Close sidebar
+  sidebar.closeSidebar(); // Close sidebar
   sideBarWidth.value = props.minWidth; // Reset sidebar width
 };
 
