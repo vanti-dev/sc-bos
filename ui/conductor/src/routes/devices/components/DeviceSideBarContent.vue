@@ -1,6 +1,6 @@
 <template>
   <span>
-    <device-info-card/>
+    <metadata-card/>
     <with-status v-if="traits['smartcore.bos.Status']" :name="deviceId" v-slot="{resource}">
       <v-divider class="mt-4 mb-1"/>
       <status-log-card v-bind="resource"/>
@@ -43,11 +43,11 @@ import AirQualityCard from '@/traits/airQuality/AirQualityCard.vue';
 import WithAirQuality from '@/traits/airQuality/WithAirQuality.vue';
 import AirTemperatureCard from '@/traits/airTemperature/AirTemperatureCard.vue';
 import WithAirTemperature from '@/traits/airTemperature/WithAirTemperature.vue';
-import DeviceInfoCard from '@/traits/deviceInfo/DeviceInfoCard.vue';
 import ElectricDemandCard from '@/traits/electricDemand/ElectricDemandCard.vue';
 import WithElectricDemand from '@/traits/electricDemand/WithElectricDemand.vue';
 import EmergencyLight from '@/traits/emergency/EmergencyLight.vue';
 import LightCard from '@/traits/light/LightCard.vue';
+import MetadataCard from '@/traits/metadata/MetadataCard.vue';
 import MeterCard from '@/traits/meter/MeterCard.vue';
 import WithMeter from '@/traits/meter/WithMeter.vue';
 import ModeCard from '@/traits/mode/ModeCard.vue';
