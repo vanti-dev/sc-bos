@@ -46,13 +46,13 @@
 </template>
 
 <script setup>
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {camelToSentence} from '@/util/string';
 import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 
-const pageStore = usePageStore();
-const {sidebarData, listedDevice} = storeToRefs(pageStore);
+const sidebar = useSidebarStore();
+const {sidebarData, listedDevice} = storeToRefs(sidebar);
 
 const deviceInfo = computed(() => {
   // Initialize variables for info and subInfo

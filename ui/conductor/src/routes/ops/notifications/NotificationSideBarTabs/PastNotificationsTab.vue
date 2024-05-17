@@ -37,13 +37,13 @@
 import {timestampToDate} from '@/api/convpb';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 
 
-const pageStore = usePageStore();
-const {sidebarData} = storeToRefs(pageStore);
+const sidebar = useSidebarStore();
+const {sidebarData} = storeToRefs(sidebar);
 const notification = useNotifications();
 
 const name = computed(() => sidebarData.value?.name);

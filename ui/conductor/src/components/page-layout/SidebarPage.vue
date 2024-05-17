@@ -24,7 +24,7 @@
 
 <script setup>
 import {usePage} from '@/components/page';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {storeToRefs} from 'pinia';
 import {onUnmounted, ref, watchEffect} from 'vue';
 
@@ -48,8 +48,8 @@ const resizing = ref(false);
 const handleShift = ref(0);
 const pointerId = ref(0);
 
-const pageStore = usePageStore();
-const {showSidebar} = storeToRefs(pageStore);
+const sidebar = useSidebarStore();
+const {showSidebar} = storeToRefs(sidebar);
 
 const beginDrag = (e) => {
   resizing.value = true; // update styles

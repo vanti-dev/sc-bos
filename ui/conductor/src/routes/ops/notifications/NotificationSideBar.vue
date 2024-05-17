@@ -13,7 +13,7 @@
       </v-tab-item>
 
       <v-tab-item>
-        <device-info-tab :device-id="pageStore.sidebarTitle" :device-data="pageStore.listedDevice"/>
+        <device-info-tab :device-id="sidebar.sidebarTitle" :device-data="sidebar.listedDevice"/>
       </v-tab-item>
     </v-tabs>
   </side-bar>
@@ -25,14 +25,14 @@ import {listDevices} from '@/api/ui/devices';
 import SideBar from '@/components/SideBar.vue';
 import DeviceInfoTab from '@/routes/ops/notifications/NotificationSideBarTabs/DeviceInfoTab.vue';
 import PastNotificationsTab from '@/routes/ops/notifications/NotificationSideBarTabs/PastNotificationsTab.vue';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {reactive, watch} from 'vue';
 
 
-const pageStore = usePageStore();
+const sidebar = useSidebarStore();
 const listedDevice = reactive(newActionTracker());
 
-watch(() => pageStore.sidebarTitle, (newVal, oldVal) => {
+watch(() => sidebar.sidebarTitle, (newVal, oldVal) => {
   if (newVal !== oldVal) {
     const newQuery = {
       query: {
@@ -52,7 +52,7 @@ watch(() => pageStore.sidebarTitle, (newVal, oldVal) => {
 }, {immediate: true, deep: true});
 
 watch(() => listedDevice, () => {
-  if (listedDevice.response) pageStore.listedDevice = listedDevice?.response?.devicesList[0];
+  if (listedDevice.response) sidebar.listedDevice = listedDevice?.response?.devicesList[0];
 }, {immediate: true, deep: true});
 </script>
 

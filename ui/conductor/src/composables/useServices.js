@@ -2,7 +2,7 @@ import {newActionTracker} from '@/api/resource';
 import {startService, stopService} from '@/api/ui/services';
 import {useErrorStore} from '@/components/ui-error/error';
 import {useHubStore} from '@/stores/hub';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {useServicesStore} from '@/stores/services';
 import {serviceName} from '@/util/proxy';
 import {toValue} from '@/util/vue';
@@ -27,7 +27,7 @@ import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} fro
  */
 export default function(props) {
   const serviceStore = useServicesStore();
-  const pageStore = usePageStore();
+  const sidebar = useSidebarStore();
   const errors = useErrorStore();
   const hubStore = useHubStore();
 
@@ -41,10 +41,10 @@ export default function(props) {
   // The node to query services from
   const node = computed({
     get() {
-      return pageStore.sidebarNode;
+      return sidebar.sidebarNode;
     },
     set(val) {
-      pageStore.sidebarNode = val;
+      sidebar.sidebarNode = val;
     }
   });
 
@@ -60,11 +60,11 @@ export default function(props) {
   const nodesListValues = computed(() => Object.values(hubStore.nodesList));
 
 
-  // Watch for changes in pageStore.sidebarNode.name and update it if needed
+  // Watch for changes in sidebar.sidebarNode.name and update it if needed
   watchEffect(() => {
-    if (!pageStore.sidebarNode.name) {
+    if (!sidebar.sidebarNode.name) {
       if (nodesListValues.value.length > 0) {
-        pageStore.sidebarNode = nodesListValues.value[0];
+        sidebar.sidebarNode = nodesListValues.value[0];
       }
     }
   });
@@ -100,9 +100,9 @@ export default function(props) {
    * @param {Service.AsObject} service
    */
   function showService(service) {
-    pageStore.showSidebar = true;
-    pageStore.sidebarTitle = service.id;
-    pageStore.sidebarData = {...service, config: JSON.parse(service.configRaw)};
+    sidebar.showSidebar = true;
+    sidebar.sidebarTitle = service.id;
+    sidebar.sidebarData = {...service, config: JSON.parse(service.configRaw)};
   }
 
   /**
@@ -111,9 +111,9 @@ export default function(props) {
    */
   async function _startService(service) {
     // Update the sidebarData if the sidebar is open and the service is being started
-    if (pageStore.showSidebar && pageStore.sidebarData.id !== service.id) {
-      pageStore.sidebarTitle = service.id;
-      pageStore.sidebarData = {...service, config: JSON.parse(service.configRaw)};
+    if (sidebar.showSidebar && sidebar.sidebarData.id !== service.id) {
+      sidebar.sidebarTitle = service.id;
+      sidebar.sidebarData = {...service, config: JSON.parse(service.configRaw)};
     }
 
     await startService({
@@ -129,9 +129,9 @@ export default function(props) {
    */
   async function _stopService(service) {
     // Update the sidebarData if the sidebar is open and the service is being stopped
-    if (pageStore.showSidebar && pageStore.sidebarData.id !== service.id) {
-      pageStore.sidebarTitle = service.id;
-      pageStore.sidebarData = {...service, config: JSON.parse(service.configRaw)};
+    if (sidebar.showSidebar && sidebar.sidebarData.id !== service.id) {
+      sidebar.sidebarTitle = service.id;
+      sidebar.sidebarData = {...service, config: JSON.parse(service.configRaw)};
     }
 
     await stopService({
@@ -147,10 +147,10 @@ export default function(props) {
   watch(
       serviceList,
       (newServiceList, oldServiceList) => {
-        if (pageStore.sidebarData === null || !pageStore.sidebarData.id) return;
+        if (sidebar.sidebarData === null || !sidebar.sidebarData.id) return;
 
         // Find the service in the new list that matches the id in sidebarData
-        const updatedService = newServiceList.find(s => s.id === pageStore.sidebarData.id);
+        const updatedService = newServiceList.find(s => s.id === sidebar.sidebarData.id);
 
         if (updatedService) {
           // Check if the service has been updated by comparing it with the old list
@@ -160,7 +160,7 @@ export default function(props) {
           if (!oldService || JSON.stringify(updatedService) !== JSON.stringify(oldService)) {
             // Update the sidebarData with the new service data
             // Ensuring to parse the config if it's in a raw JSON string format
-            pageStore.sidebarData = {
+            sidebar.sidebarData = {
               ...updatedService,
               config: updatedService.configRaw ? JSON.parse(updatedService.configRaw) : {}
             };

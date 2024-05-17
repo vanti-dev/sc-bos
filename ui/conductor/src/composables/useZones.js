@@ -1,5 +1,5 @@
 import {ServiceNames} from '@/api/ui/services';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {useServicesStore} from '@/stores/services';
 import {storeToRefs} from 'pinia';
 import {computed, onUnmounted, ref, watch} from 'vue';
@@ -12,9 +12,9 @@ import {computed, onUnmounted, ref, watch} from 'vue';
  */
 export default function() {
   const servicesStore = useServicesStore();
-  const pageStore = usePageStore();
+  const sidebar = useSidebarStore();
 
-  const {sidebarNode} = storeToRefs(pageStore);
+  const {sidebarNode} = storeToRefs(sidebar);
   const zoneCollection = ref({});
 
   const zoneListWithDetails = computed(() => {

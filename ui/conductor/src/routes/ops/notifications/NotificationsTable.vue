@@ -192,7 +192,7 @@ import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import {severityData, useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useHubStore} from '@/stores/hub';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
 import {computed, onUnmounted, reactive, ref, watch} from 'vue';
 import {deepEqual} from 'vuetify/src/util/helpers';
@@ -211,7 +211,7 @@ const props = defineProps({
 const notifications = useNotifications();
 const alertMetadata = useAlertMetadata();
 const hubStore = useHubStore();
-const pageStore = usePageStore();
+const sidebar = useSidebarStore();
 
 const manualEntryValue = reactive(newActionTracker());
 const manualEntryPanel = ref(null);
@@ -557,13 +557,13 @@ const rowClass = (item) => {
  * @param {*} item
  */
 async function showNotification(item) {
-  pageStore.showSidebar = true;
-  pageStore.sidebarTitle = item.source;
-  pageStore.sidebarData = {name, item};
+  sidebar.showSidebar = true;
+  sidebar.sidebarTitle = item.source;
+  sidebar.sidebarData = {name, item};
 }
 
 onUnmounted(() => {
-  pageStore.closeSidebar();
+  sidebar.closeSidebar();
 });
 </script>
 

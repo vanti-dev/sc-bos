@@ -19,15 +19,15 @@ import {useErrorStore} from '@/components/ui-error/error';
 import useAuthSetup from '@/composables/useAuthSetup';
 import LightsConfigCard from '@/routes/automations/components/config-cards/LightsConfigCard.vue';
 import EditConfigCard from '@/routes/system/components/service-cards/EditConfigCard.vue';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {serviceName} from '@/util/proxy';
 import {storeToRefs} from 'pinia';
 import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 
 const {blockActions} = useAuthSetup();
 
-const pageStore = usePageStore();
-const {sidebarData, sidebarNode} = storeToRefs(pageStore);
+const sidebar = useSidebarStore();
+const {sidebarData, sidebarNode} = storeToRefs(sidebar);
 
 const saveTracker = reactive(/** @type {ActionTracker<Service.AsObject>} */ newActionTracker());
 const saveConfirm = ref(false);

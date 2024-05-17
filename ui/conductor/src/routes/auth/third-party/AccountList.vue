@@ -53,11 +53,11 @@ import useAuthSetup from '@/composables/useAuthSetup';
 import NameChip from '@/routes/auth/third-party/components/NameChip.vue';
 import NewAccountDialog from '@/routes/auth/third-party/components/NewAccountDialog.vue';
 import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {storeToRefs} from 'pinia';
 import {onMounted, onUnmounted, ref, watch} from 'vue';
 
-const pageStore = usePageStore();
+const sidebar = useSidebarStore();
 const tenantStore = useTenantStore();
 const {tenantsList, tenantsTracker} = storeToRefs(tenantStore);
 const errorStore = useErrorStore();
@@ -86,19 +86,19 @@ onUnmounted(() => {
  */
 function showTenant(item) {
   // router.push(`/auth/third-party/${item.id}`);
-  pageStore.showSidebar = true;
-  pageStore.sidebarTitle = item.title;
-  pageStore.sidebarData = item;
+  sidebar.showSidebar = true;
+  sidebar.sidebarTitle = item.title;
+  sidebar.sidebarData = item;
 }
 
 // update the sidebar data if the tenant list is updated
 watch(tenantsList, () => {
-  const tenant = tenantsList.value.find(tenant => tenant.id === pageStore.sidebarData.id);
+  const tenant = tenantsList.value.find(tenant => tenant.id === sidebar.sidebarData.id);
   if (!tenant) {
     return;
   }
-  pageStore.sidebarTitle = tenant.title;
-  pageStore.sidebarData = tenant;
+  sidebar.sidebarTitle = tenant.title;
+  sidebar.sidebarData = tenant;
 }, {deep: true});
 
 /**
@@ -106,7 +106,7 @@ watch(tenantsList, () => {
  * @return {string}
  */
 function rowClass(item) {
-  if (pageStore.showSidebar && pageStore.sidebarData?.id === item.id) {
+  if (sidebar.showSidebar && sidebar.sidebarData?.id === item.id) {
     return 'item-selected';
   }
   return '';

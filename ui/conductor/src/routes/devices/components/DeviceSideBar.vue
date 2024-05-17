@@ -7,12 +7,12 @@
 <script setup>
 import SideBar from '@/components/SideBar.vue';
 import DeviceSideBarContent from '@/routes/devices/components/DeviceSideBarContent.vue';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 
-const pageStore = usePageStore();
-const {sidebarData} = storeToRefs(pageStore);
+const sidebar = useSidebarStore();
+const {sidebarData} = storeToRefs(sidebar);
 
 const deviceId = computed(() => {
   return sidebarData.value?.name ?? '';

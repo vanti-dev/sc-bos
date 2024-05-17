@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia';
 import {ref} from 'vue';
 
-export const usePageStore = defineStore('page', () => {
+export const useSidebarStore = defineStore('sidebar', () => {
   // RIGHT SIDEBAR //
   const showSidebar = ref(false);
   const sidebarData = ref({});

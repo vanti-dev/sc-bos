@@ -75,7 +75,7 @@ import HotPoint from '@/components/HotPoint.vue';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import useDevices from '@/composables/useDevices';
 import {Zone} from '@/routes/site/zone/zone';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {computed, ref} from 'vue';
 import DeviceCell from './DeviceCell.vue';
 
@@ -107,7 +107,7 @@ const props = defineProps({
   }
 });
 
-const pageStore = usePageStore();
+const sidebar = useSidebarStore();
 const {
   floorList,
   filterFloor,
@@ -147,9 +147,9 @@ const selectedDevicesComp = computed({
  * @param {*} item
  */
 function showDevice(item) {
-  pageStore.showSidebar = true;
-  pageStore.sidebarTitle = item.metadata.appearance ? item.metadata.appearance.title : item.name;
-  pageStore.sidebarData = item;
+  sidebar.showSidebar = true;
+  sidebar.sidebarTitle = item.metadata.appearance ? item.metadata.appearance.title : item.name;
+  sidebar.sidebarData = item;
 }
 
 /**
@@ -157,7 +157,7 @@ function showDevice(item) {
  * @return {string}
  */
 function rowClass(item) {
-  if (pageStore.showSidebar && pageStore.sidebarData?.name === item.name) {
+  if (sidebar.showSidebar && sidebar.sidebarData?.name === item.name) {
     return 'item-selected';
   }
   return '';

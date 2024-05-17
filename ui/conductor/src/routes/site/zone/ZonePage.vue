@@ -40,7 +40,7 @@ import useAuthSetup from '@/composables/useAuthSetup';
 import DeviceTable from '@/routes/devices/components/DeviceTable.vue';
 import {Zone} from '@/routes/site/zone/zone';
 import {useHubStore} from '@/stores/hub';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {useServicesStore} from '@/stores/services';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {Service} from '@sc-bos/ui-gen/proto/services_pb';
@@ -49,7 +49,7 @@ import {computed, ref, watch} from 'vue';
 const {blockActions} = useAuthSetup();
 
 const servicesStore = useServicesStore();
-const pageStore = usePageStore();
+const sidebar = useSidebarStore();
 const configStore = useUiConfigStore();
 const hubStore = useHubStore();
 const zoneCollection = ref();
@@ -63,10 +63,10 @@ const props = defineProps({
 
 const node = computed({
   get() {
-    return pageStore.sidebarNode;
+    return sidebar.sidebarNode;
   },
   set(val) {
-    pageStore.sidebarNode = val;
+    sidebar.sidebarNode = val;
   }
 });
 

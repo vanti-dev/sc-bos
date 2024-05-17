@@ -30,14 +30,14 @@
 
 <script setup>
 import useAuthSetup from '@/composables/useAuthSetup';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {storeToRefs} from 'pinia';
 import {computed, ref} from 'vue';
 
 const {blockSystemEdit} = useAuthSetup();
 
-const pageStore = usePageStore();
-const {sidebarData} = storeToRefs(pageStore);
+const sidebar = useSidebarStore();
+const {sidebarData} = storeToRefs(sidebar);
 
 const jsonError = ref('');
 

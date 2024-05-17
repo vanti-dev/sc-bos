@@ -27,7 +27,7 @@
 <script setup>
 import {ServiceNames} from '@/api/ui/services';
 import useAuthSetup from '@/composables/useAuthSetup';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {useServicesStore} from '@/stores/services';
 import {storeToRefs} from 'pinia';
 import {computed, ref, watch} from 'vue';
@@ -35,8 +35,8 @@ import {computed, ref, watch} from 'vue';
 const {hasNoAccess} = useAuthSetup();
 
 const serviceStore = useServicesStore();
-const pageStore = usePageStore();
-const {sidebarNode} = storeToRefs(pageStore);
+const sidebar = useSidebarStore();
+const {sidebarNode} = storeToRefs(sidebar);
 
 const metadataTracker = ref({});
 

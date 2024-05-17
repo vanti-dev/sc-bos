@@ -43,12 +43,12 @@ import AccountSecretsCard from '@/routes/auth/third-party/components/AccountSecr
 import AccountZoneListCard from '@/routes/auth/third-party/components/AccountZoneListCard.vue';
 import DeleteConfirmationDialog from '@/routes/auth/third-party/components/DeleteConfirmationDialog.vue';
 import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {storeToRefs} from 'pinia';
 import {reactive} from 'vue';
 
-const pageStore = usePageStore();
-const {sidebarTitle, sidebarData} = storeToRefs(pageStore);
+const sidebar = useSidebarStore();
+const {sidebarTitle, sidebarData} = storeToRefs(sidebar);
 const tenantStore = useTenantStore();
 
 const deleteTracker = reactive(
@@ -70,7 +70,7 @@ async function deleteAccount() {
       deleteTracker
   );
   tenantStore.refreshTenants();
-  pageStore.showSidebar = false;
+  sidebar.showSidebar = false;
 }
 
 /**

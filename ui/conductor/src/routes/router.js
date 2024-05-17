@@ -5,7 +5,7 @@ import ops from '@/routes/ops/route.js';
 import site from '@/routes/site/route.js';
 import system from '@/routes/system/route.js';
 import {useAccountStore} from '@/stores/account';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {route, routeTitle} from '@/util/router.js';
 
@@ -48,11 +48,11 @@ if (window) {
 
     // ------------------------ Data store logic ------------------------ //
 
-    const pageStore = usePageStore();
+    const sidebar = useSidebarStore();
 
     // Reset the sidebar to defaults if the path has changed
     if (to.path !== from.path) {
-      pageStore.resetSidebarToDefaults();
+      sidebar.resetSidebarToDefaults();
     }
 
     // ------------------------ NavigationGuard logic ------------------------ //

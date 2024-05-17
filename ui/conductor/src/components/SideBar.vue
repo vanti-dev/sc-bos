@@ -5,7 +5,7 @@
         {{ sidebarTitle }}
       </span>
       <v-spacer/>
-      <v-btn icon small @click="pageStore.closeSidebar()" color="neutral lighten-4">
+      <v-btn icon small @click="sidebar.closeSidebar()" color="neutral lighten-4">
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-subheader>
@@ -14,11 +14,11 @@
 </template>
 
 <script setup>
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {storeToRefs} from 'pinia';
 
-const pageStore = usePageStore();
-const {sidebarTitle} = storeToRefs(pageStore);
+const sidebar = useSidebarStore();
+const {sidebarTitle} = storeToRefs(sidebar);
 
 </script>
 

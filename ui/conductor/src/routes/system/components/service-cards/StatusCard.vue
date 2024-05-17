@@ -34,13 +34,13 @@
 <script setup>
 import {timestampToDate} from '@/api/convpb';
 import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
-import {usePageStore} from '@/stores/page';
+import {useSidebarStore} from '@/stores/sidebar';
 import {camelToSentence} from '@/util/string';
 import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 
-const pageStore = usePageStore();
-const {sidebarData} = storeToRefs(pageStore);
+const sidebar = useSidebarStore();
+const {sidebarData} = storeToRefs(sidebar);
 
 
 const isRunning = computed(() => sidebarData.value.active);
