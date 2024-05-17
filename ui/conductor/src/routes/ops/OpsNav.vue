@@ -39,13 +39,12 @@ import {closeResource} from '@/api/resource.js';
 import useAuthSetup from '@/composables/useAuthSetup';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import OpsNavList from '@/routes/ops/overview/OpsNavList.vue';
-import {usePageStore} from '@/stores/page';
+import {useNavStore} from '@/stores/nav';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {storeToRefs} from 'pinia';
 import {computed, onMounted, onUnmounted, reactive} from 'vue';
 
-const pageStore = usePageStore();
-const {miniVariant} = storeToRefs(pageStore);
+const {miniVariant} = storeToRefs(useNavStore());
 
 const {hasNoAccess} = useAuthSetup();
 const alertMetadata = useAlertMetadata();

@@ -36,14 +36,6 @@ export const usePageStore = defineStore('page', () => {
     showSidebar.value = false;
   };
 
-  //
-  //
-  // LEFT NAVIGATION SIDEBAR
-  const drawer = ref(true);
-  const miniVariant = ref(true);
-  const drawerWidth = ref(60);
-  const pinDrawer = ref(false);
-
   return {
     // RIGHT SIDEBAR
     showSidebar,
@@ -53,12 +45,6 @@ export const usePageStore = defineStore('page', () => {
     listedDevice,
     toggleSidebar,
     closeSidebar,
-    resetSidebarToDefaults,
-
-    // LEFT NAVIGATION SIDEBAR
-    drawer,
-    miniVariant,
-    drawerWidth,
-    pinDrawer
+    resetSidebarToDefaults
   };
 });

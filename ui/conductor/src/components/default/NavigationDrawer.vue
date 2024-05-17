@@ -43,14 +43,14 @@
 <script setup>
 import {usePage} from '@/components/page';
 import useAuthSetup from '@/composables/useAuthSetup';
-import {usePageStore} from '@/stores/page';
+import {useNavStore} from '@/stores/nav';
 import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 
 const {isLoggedIn} = useAuthSetup();
 const {hasNav} = usePage();
 
-const {drawer, miniVariant, drawerWidth, pinDrawer} = storeToRefs(usePageStore());
+const {drawer, miniVariant, drawerWidth, pinDrawer} = storeToRefs(useNavStore());
 
 const appVersion = computed(() => {
   if (GIT_VERSION.startsWith('ui/')) {
