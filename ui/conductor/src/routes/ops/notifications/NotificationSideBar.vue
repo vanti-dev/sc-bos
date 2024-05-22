@@ -13,46 +13,31 @@
       </v-tab-item>
 
       <v-tab-item>
-        <device-info-tab :device-id="sidebar.title" :device-data="sidebar.listedDevice"/>
+        <device-info-tab :device-id="sidebar.title" :device-data="sidebar.data"/>
       </v-tab-item>
     </v-tabs>
   </side-bar>
 </template>
 
 <script setup>
-import {newActionTracker} from '@/api/resource';
-import {listDevices} from '@/api/ui/devices';
 import SideBar from '@/components/SideBar.vue';
 import DeviceInfoTab from '@/routes/ops/notifications/NotificationSideBarTabs/DeviceInfoTab.vue';
 import PastNotificationsTab from '@/routes/ops/notifications/NotificationSideBarTabs/PastNotificationsTab.vue';
 import {useSidebarStore} from '@/stores/sidebar';
-import {reactive, watch} from 'vue';
+import {usePullMetadata} from '@/traits/metadata/metadata.js';
+import {watch} from 'vue';
 
 
 const sidebar = useSidebarStore();
-const listedDevice = reactive(newActionTracker());
+const {value: metadata} = usePullMetadata(() => sidebar.data?.notification?.item?.source);
 
-watch(() => sidebar.title, (newVal, oldVal) => {
-  if (newVal !== oldVal) {
-    const newQuery = {
-      query: {
-        conditionsList: [
-          {
-            field: 'metadata.name',
-            stringEqual: newVal
-          }
-        ]
-      }
+watch(metadata, (metadata) => {
+  if (metadata) {
+    sidebar.data = {
+      ...sidebar.data,
+      metadata
     };
-
-    if (newVal) {
-      listDevices(newQuery, listedDevice);
-    }
   }
-}, {immediate: true, deep: true});
-
-watch(() => listedDevice, () => {
-  if (listedDevice.response) sidebar.listedDevice = listedDevice?.response?.devicesList[0];
 }, {immediate: true, deep: true});
 </script>
 

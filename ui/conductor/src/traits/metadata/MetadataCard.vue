@@ -48,11 +48,9 @@
 <script setup>
 import {useSidebarStore} from '@/stores/sidebar';
 import {camelToSentence} from '@/util/string';
-import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 
 const sidebar = useSidebarStore();
-const {listedDevice} = storeToRefs(sidebar);
 
 const deviceInfo = computed(() => {
   // Initialize variables for info and subInfo
@@ -60,8 +58,8 @@ const deviceInfo = computed(() => {
   const subInfo = {};
 
   // Check if data has metadata property
-  if (sidebar.data?.metadata || listedDevice?.value?.metadata) {
-    const deviceData = sidebar.data?.metadata || listedDevice?.value?.metadata;
+  if (sidebar.data?.metadata) {
+    const deviceData = sidebar.data?.metadata;
 
     // Get all properties of metadata as an array of [key, value] pairs
     const data = Object.entries(deviceData);

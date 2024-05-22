@@ -2,6 +2,11 @@
   <span>
     <v-progress-linear indeterminate v-if="loading"/>
     <v-subheader
+        v-else-if="!hasSource"
+        class="text-title-caps-large neutral--text text--lighten-3">
+      No Notification Selected
+    </v-subheader>
+    <v-subheader
         v-else-if="!notificationSidebar.length"
         class="text-title-caps-large neutral--text text--lighten-3">
       No Past Notifications
@@ -44,8 +49,10 @@ import {computed} from 'vue';
 const sidebar = useSidebarStore();
 const notification = useNotifications();
 
-const name = computed(() => sidebar.data?.name);
-const item = computed(() => sidebar.data?.item);
+const name = computed(() => sidebar.data?.notification?.name);
+const item = computed(() => sidebar.data?.notification?.item);
+const hasSource = computed(() => Boolean(item.value?.source));
+// todo: don't fetch data if we don't have a source
 const query = computed(() => ({source: item.value?.source}));
 const {pageItems, pageSize, targetItemCount, loading} = useAlertsApi(name, query);
 pageSize.value = 10;
