@@ -88,17 +88,17 @@ function showTenant(item) {
   // router.push(`/auth/third-party/${item.id}`);
   sidebar.visible = true;
   sidebar.title = item.title;
-  sidebar.sidebarData = item;
+  sidebar.data = item;
 }
 
 // update the sidebar data if the tenant list is updated
 watch(tenantsList, () => {
-  const tenant = tenantsList.value.find(tenant => tenant.id === sidebar.sidebarData.id);
+  const tenant = tenantsList.value.find(tenant => tenant.id === sidebar.data.id);
   if (!tenant) {
     return;
   }
   sidebar.title = tenant.title;
-  sidebar.sidebarData = tenant;
+  sidebar.data = tenant;
 }, {deep: true});
 
 /**
@@ -106,7 +106,7 @@ watch(tenantsList, () => {
  * @return {string}
  */
 function rowClass(item) {
-  if (sidebar.visible && sidebar.sidebarData?.id === item.id) {
+  if (sidebar.visible && sidebar.data?.id === item.id) {
     return 'item-selected';
   }
   return '';

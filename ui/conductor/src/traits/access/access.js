@@ -64,7 +64,7 @@ export function useAccessAttempt(value) {
     const info = {};
     const subInfo = {};
 
-    // Check if sidebarData has metadata property
+    // Check if value has metadata property
     const v = toValue(value);
     if (v) {
       // Get all properties of metadata as an array of [key, value] pairs

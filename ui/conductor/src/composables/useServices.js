@@ -102,7 +102,7 @@ export default function(props) {
   function showService(service) {
     sidebar.visible = true;
     sidebar.title = service.id;
-    sidebar.sidebarData = {...service, config: JSON.parse(service.configRaw)};
+    sidebar.data = {...service, config: JSON.parse(service.configRaw)};
   }
 
   /**
@@ -110,10 +110,10 @@ export default function(props) {
    * @param {Service.AsObject} service
    */
   async function _startService(service) {
-    // Update the sidebarData if the sidebar is open and the service is being started
-    if (sidebar.visible && sidebar.sidebarData.id !== service.id) {
+    // Update the data if the sidebar is open and the service is being started
+    if (sidebar.visible && sidebar.data.id !== service.id) {
       sidebar.title = service.id;
-      sidebar.sidebarData = {...service, config: JSON.parse(service.configRaw)};
+      sidebar.data = {...service, config: JSON.parse(service.configRaw)};
     }
 
     await startService({
@@ -128,10 +128,10 @@ export default function(props) {
    * @param {Service.AsObject} service
    */
   async function _stopService(service) {
-    // Update the sidebarData if the sidebar is open and the service is being stopped
-    if (sidebar.visible && sidebar.sidebarData.id !== service.id) {
+    // Update the data if the sidebar is open and the service is being stopped
+    if (sidebar.visible && sidebar.data.id !== service.id) {
       sidebar.title = service.id;
-      sidebar.sidebarData = {...service, config: JSON.parse(service.configRaw)};
+      sidebar.data = {...service, config: JSON.parse(service.configRaw)};
     }
 
     await stopService({
@@ -140,17 +140,17 @@ export default function(props) {
     }, startStopTracker);
   }
 
-  // Watch for changes in the serviceList and update the sidebarData if needed
+  // Watch for changes in the serviceList and update the data if needed
   // This is necessary if we want to update the status details in the sidebar
   // simultaneously with the status details in the service list
   // Mainly when the sidebar is open and the service is being started/stopped
   watch(
       serviceList,
       (newServiceList, oldServiceList) => {
-        if (sidebar.sidebarData === null || !sidebar.sidebarData.id) return;
+        if (sidebar.data === null || !sidebar.data.id) return;
 
-        // Find the service in the new list that matches the id in sidebarData
-        const updatedService = newServiceList.find(s => s.id === sidebar.sidebarData.id);
+        // Find the service in the new list that matches the id in data
+        const updatedService = newServiceList.find(s => s.id === sidebar.data.id);
 
         if (updatedService) {
           // Check if the service has been updated by comparing it with the old list
@@ -158,9 +158,9 @@ export default function(props) {
 
           // Perform a deep comparison if necessary, for now, we just check if the old service exists
           if (!oldService || JSON.stringify(updatedService) !== JSON.stringify(oldService)) {
-            // Update the sidebarData with the new service data
+            // Update the data with the new service data
             // Ensuring to parse the config if it's in a raw JSON string format
-            sidebar.sidebarData = {
+            sidebar.data = {
               ...updatedService,
               config: updatedService.configRaw ? JSON.parse(updatedService.configRaw) : {}
             };

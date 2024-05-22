@@ -22,20 +22,18 @@
 <script setup>
 import useAuthSetup from '@/composables/useAuthSetup';
 import {useSidebarStore} from '@/stores/sidebar';
-import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 
 const {blockActions} = useAuthSetup();
 
 const sidebar = useSidebarStore();
-const {sidebarData} = storeToRefs(sidebar);
 
 const delayTimeout = computed({
   get() {
-    return sidebarData.value?.config?.unoccupiedOffDelay ?? '0m';
+    return sidebar.data?.config?.unoccupiedOffDelay ?? '0m';
   },
   set(value) {
-    sidebarData.value.config.unoccupiedOffDelay = value;
+    sidebar.data.config.unoccupiedOffDelay = value;
   }
 });
 

@@ -38,16 +38,14 @@ import {timestampToDate} from '@/api/convpb';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useSidebarStore} from '@/stores/sidebar';
-import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 
 
 const sidebar = useSidebarStore();
-const {sidebarData} = storeToRefs(sidebar);
 const notification = useNotifications();
 
-const name = computed(() => sidebarData.value?.name);
-const item = computed(() => sidebarData.value?.item);
+const name = computed(() => sidebar.data?.name);
+const item = computed(() => sidebar.data?.item);
 const query = computed(() => ({source: item.value?.source}));
 const {pageItems, pageSize, targetItemCount, loading} = useAlertsApi(name, query);
 pageSize.value = 10;

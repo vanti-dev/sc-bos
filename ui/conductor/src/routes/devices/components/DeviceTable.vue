@@ -149,7 +149,7 @@ const selectedDevicesComp = computed({
 function showDevice(item) {
   sidebar.visible = true;
   sidebar.title = item.metadata.appearance ? item.metadata.appearance.title : item.name;
-  sidebar.sidebarData = item;
+  sidebar.data = item;
 }
 
 /**
@@ -157,7 +157,7 @@ function showDevice(item) {
  * @return {string}
  */
 function rowClass(item) {
-  if (sidebar.visible && sidebar.sidebarData?.name === item.name) {
+  if (sidebar.visible && sidebar.data?.name === item.name) {
     return 'item-selected';
   }
   return '';

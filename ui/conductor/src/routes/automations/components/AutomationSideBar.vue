@@ -27,13 +27,13 @@ import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 const {blockActions} = useAuthSetup();
 
 const sidebar = useSidebarStore();
-const {sidebarData, sidebarNode} = storeToRefs(sidebar);
+const {sidebarNode} = storeToRefs(sidebar);
 
 const saveTracker = reactive(/** @type {ActionTracker<Service.AsObject>} */ newActionTracker());
 const saveConfirm = ref(false);
 
 const automationType = computed(() => {
-  return sidebarData.value?.config?.type ?? '';
+  return sidebar.data?.config?.type ?? '';
 });
 
 const node = computed(() => {
@@ -57,12 +57,12 @@ onUnmounted(() => {
 async function saveConfig() {
   const req = {
     name: serviceName(node.value, ServiceTypes.Automations),
-    id: sidebarData.value.id,
-    configRaw: JSON.stringify(sidebarData.value.config, null, 2)
+    id: sidebar.data.id,
+    configRaw: JSON.stringify(sidebar.data.config, null, 2)
   };
 
-  sidebarData.value = await configureService(req, saveTracker);
-  sidebarData.value.config = JSON.parse(sidebarData.value.configRaw ?? {});
+  sidebar.data = await configureService(req, saveTracker);
+  sidebar.data.config = JSON.parse(sidebar.data.configRaw ?? {});
   saveConfirm.value = true;
 }
 

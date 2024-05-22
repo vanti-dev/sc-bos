@@ -31,24 +31,22 @@
 <script setup>
 import useAuthSetup from '@/composables/useAuthSetup';
 import {useSidebarStore} from '@/stores/sidebar';
-import {storeToRefs} from 'pinia';
 import {computed, ref} from 'vue';
 
 const {blockSystemEdit} = useAuthSetup();
 
 const sidebar = useSidebarStore();
-const {sidebarData} = storeToRefs(sidebar);
 
 const jsonError = ref('');
 
 const config = computed({
   get() {
-    return sidebarData.value.configRaw;
+    return sidebar.data.configRaw;
   },
   set(value) {
     jsonError.value = '';
     try {
-      sidebarData.value.config = JSON.parse(value);
+      sidebar.data.config = JSON.parse(value);
       /**
        * @param {Error} e
        */
@@ -64,7 +62,7 @@ const copyConfirm = ref(false);
  *
  */
 function copyConfig() {
-  navigator.clipboard.writeText(sidebarData.value.configRaw);
+  navigator.clipboard.writeText(sidebar.data.configRaw);
   copyConfirm.value = true;
 }
 </script>

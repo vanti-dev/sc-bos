@@ -1,9 +1,9 @@
 <template>
   <side-bar>
     <v-list>
-      <account-zone-list-card :zone-list="sidebarData.zoneNamesList ?? []" @update:zone-list="saveZones"/>
+      <account-zone-list-card :zone-list="sidebar.data.zoneNamesList ?? []" @update:zone-list="saveZones"/>
       <v-divider/>
-      <account-secrets-card :account="sidebarData"/>
+      <account-secrets-card :account="sidebar.data"/>
       <v-divider/>
       <v-list-item class="pt-3">
         <delete-confirmation-dialog
@@ -44,11 +44,9 @@ import AccountZoneListCard from '@/routes/auth/third-party/components/AccountZon
 import DeleteConfirmationDialog from '@/routes/auth/third-party/components/DeleteConfirmationDialog.vue';
 import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
 import {useSidebarStore} from '@/stores/sidebar';
-import {storeToRefs} from 'pinia';
 import {reactive} from 'vue';
 
 const sidebar = useSidebarStore();
-const {sidebarData} = storeToRefs(sidebar);
 const tenantStore = useTenantStore();
 
 const deleteTracker = reactive(
@@ -65,7 +63,7 @@ const updateZonesTracker = reactive(
 async function deleteAccount() {
   await deleteTenant(
       {
-        id: sidebarData.value.id
+        id: sidebar.data.id
       },
       deleteTracker
   );
@@ -80,7 +78,7 @@ async function deleteAccount() {
 async function saveZones(zones) {
   await updateTenant({
     tenant: {
-      id: sidebarData.value.id,
+      id: sidebar.data.id,
       zoneNamesList: zones
     },
     updateMask: {

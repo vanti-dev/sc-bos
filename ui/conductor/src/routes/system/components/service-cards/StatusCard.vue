@@ -9,7 +9,7 @@
               Status
             </v-list-item-title>
             <v-list-item-subtitle class="text-subtitle-1 py-1 font-weight-medium text-wrap ml-2">
-              <service-status :service="sidebarData"/>
+              <service-status :service="sidebar.data"/>
             </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
@@ -36,19 +36,17 @@ import {timestampToDate} from '@/api/convpb';
 import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
 import {useSidebarStore} from '@/stores/sidebar';
 import {camelToSentence} from '@/util/string';
-import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 
 const sidebar = useSidebarStore();
-const {sidebarData} = storeToRefs(sidebar);
 
 
-const isRunning = computed(() => sidebarData.value.active);
-const lastActiveTime = computed(() => timestampToDate(sidebarData.value.lastActiveTime));
+const isRunning = computed(() => sidebar.data.active);
+const lastActiveTime = computed(() => timestampToDate(sidebar.data.lastActiveTime));
 const isStopped = computed(() => !isRunning.value);
-const lastInactiveTime = computed(() => timestampToDate(sidebarData.value.lastInactiveTime));
+const lastInactiveTime = computed(() => timestampToDate(sidebar.data.lastInactiveTime));
 
-const isErrored = computed(() => sidebarData.value.error);
+const isErrored = computed(() => sidebar.data.error);
 
 
 // Computed property for displaying status details

@@ -52,16 +52,16 @@ import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 
 const sidebar = useSidebarStore();
-const {sidebarData, listedDevice} = storeToRefs(sidebar);
+const {listedDevice} = storeToRefs(sidebar);
 
 const deviceInfo = computed(() => {
   // Initialize variables for info and subInfo
   const info = {};
   const subInfo = {};
 
-  // Check if sidebarData has metadata property
-  if (sidebarData?.value?.metadata || listedDevice?.value?.metadata) {
-    const deviceData = sidebarData?.value?.metadata || listedDevice?.value?.metadata;
+  // Check if data has metadata property
+  if (sidebar.data?.metadata || listedDevice?.value?.metadata) {
+    const deviceData = sidebar.data?.metadata || listedDevice?.value?.metadata;
 
     // Get all properties of metadata as an array of [key, value] pairs
     const data = Object.entries(deviceData);
