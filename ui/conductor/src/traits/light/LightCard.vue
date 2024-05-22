@@ -156,10 +156,4 @@ const brightnessControl = computed(() => {
 .preset ::v-deep(.v-btn__content) {
   max-width: 100%;
 }
-
-.is-active {
-  background-color: #4BA046;
-  color: purple;
-}
-
 </style>
