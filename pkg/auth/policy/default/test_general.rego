@@ -59,6 +59,11 @@ test_operator_ConfigureService_zones {
   }, ["operator"])
   data.smartcore.bos.ServicesApi.allow with input as input
 }
+test_operator_DaliApi {
+  data.smartcore.bos.driver.dali.DaliApi.allow with input as user_request("smartcore.bos.driver.dali.DaliApi", "StartTest", {}, ["operator"])
+  data.smartcore.bos.driver.dali.DaliApi.allow with input as user_request("smartcore.bos.driver.dali.DaliApi", "StopTest", {}, ["operator"])
+  not data.smartcore.bos.driver.dali.DaliApi.allow with input as user_request("smartcore.bos.driver.dali.DaliApi", "DeleteTestResult", {}, ["operator"])
+}
 
 tenant_request(service, method, request, zones) := input {
   input := {
