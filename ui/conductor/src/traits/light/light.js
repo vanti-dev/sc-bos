@@ -158,10 +158,16 @@ export function useBrightness(value, support = null) {
     return _s.value?.presetsList ?? [];
   });
 
+  /** @type {ComputedRef<string>} */
+  const currentPresetTitle = computed(() => {
+    return _v.value?.preset?.title ?? '';
+  });
+
   return {
     level,
     levelStr,
     icon,
-    presets
+    presets,
+    currentPresetTitle
   };
 }
