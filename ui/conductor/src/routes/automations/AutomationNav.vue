@@ -27,16 +27,14 @@
 <script setup>
 import {ServiceNames} from '@/api/ui/services';
 import useAuthSetup from '@/composables/useAuthSetup';
-import {useSidebarStore} from '@/stores/sidebar';
 import {useServicesStore} from '@/stores/services';
-import {storeToRefs} from 'pinia';
+import {useSidebarStore} from '@/stores/sidebar';
 import {computed, ref, watch} from 'vue';
 
 const {hasNoAccess} = useAuthSetup();
 
 const serviceStore = useServicesStore();
 const sidebar = useSidebarStore();
-const {sidebarNode} = storeToRefs(sidebar);
 
 const metadataTracker = ref({});
 
@@ -119,17 +117,17 @@ const mapIconKey = (name) => {
 };
 
 watch(
-    sidebarNode,
+    () => sidebar.sidebarNode,
     async () => {
       metadataTracker.value = serviceStore.getService(
           ServiceNames.Automations,
-          await sidebarNode.value.commsAddress,
-          await sidebarNode.value.commsName
+          await sidebar.sidebarNode.commsAddress,
+          await sidebar.sidebarNode.commsName
       ).metadataTracker;
       await serviceStore.refreshMetadata(
           ServiceNames.Automations,
-          await sidebarNode.value.commsAddress,
-          await sidebarNode.value.commsName
+          await sidebar.sidebarNode.commsAddress,
+          await sidebar.sidebarNode.commsName
       );
     },
     {immediate: true}

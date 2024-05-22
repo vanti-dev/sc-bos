@@ -1,7 +1,6 @@
 import {ServiceNames} from '@/api/ui/services';
-import {useSidebarStore} from '@/stores/sidebar';
 import {useServicesStore} from '@/stores/services';
-import {storeToRefs} from 'pinia';
+import {useSidebarStore} from '@/stores/sidebar';
 import {computed, onUnmounted, ref, watch} from 'vue';
 
 /**
@@ -14,7 +13,6 @@ export default function() {
   const servicesStore = useServicesStore();
   const sidebar = useSidebarStore();
 
-  const {sidebarNode} = storeToRefs(sidebar);
   const zoneCollection = ref({});
 
   const zoneListWithDetails = computed(() => {
@@ -31,12 +29,12 @@ export default function() {
 
   // Watch for changes to the sidebar node
   watch(
-      sidebarNode,
+      () => sidebar.sidebarNode,
       async () => {
         zoneCollection.value = servicesStore.getService(
             ServiceNames.Zones,
-            await sidebarNode.value.commsAddress,
-            await sidebarNode.value.commsName
+            await sidebar.sidebarNode.commsAddress,
+            await sidebar.sidebarNode.commsName
         ).servicesCollection;
 
         // todo: this causes us to load all pages, connect with paging logic instead
