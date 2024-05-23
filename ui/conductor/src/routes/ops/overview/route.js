@@ -5,7 +5,7 @@ export default [
     path: 'overview',
     components: {
       default: () => import('@/routes/ops/OpsHome.vue'),
-      sidebar: () => import('@/routes/ops/notifications/NotificationSideBar.vue')
+      sidebar: () => import('@/routes/ops/overview/OpsSideBar.vue')
     },
     meta: {
       authentication: {
