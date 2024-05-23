@@ -11,7 +11,6 @@ import {computed, onUnmounted, ref, watch} from 'vue';
  */
 export default function() {
   const servicesStore = useServicesStore();
-  const sidebar = useSidebarStore();
 
   const zoneCollection = ref({});
 
@@ -29,12 +28,12 @@ export default function() {
 
   // Watch for changes to the sidebar node
   watch(
-      () => sidebar.sidebarNode,
+      () => servicesStore.node,
       async () => {
         zoneCollection.value = servicesStore.getService(
             ServiceNames.Zones,
-            await sidebar.sidebarNode.commsAddress,
-            await sidebar.sidebarNode.commsName
+            await servicesStore.node?.commsAddress,
+            await servicesStore.node?.commsName
         ).servicesCollection;
 
         // todo: this causes us to load all pages, connect with paging logic instead

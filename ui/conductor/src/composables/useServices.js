@@ -38,16 +38,6 @@ export default function(props) {
   const serviceCollection = ref({});
   const search = ref('');
 
-  // The node to query services from
-  const node = computed({
-    get() {
-      return sidebar.sidebarNode;
-    },
-    set(val) {
-      sidebar.sidebarNode = val;
-    }
-  });
-
   // Available services to select from
   const serviceList = computed(() => {
     return Object.values(serviceCollection.value?.resources?.value ?? []).filter(service => {
@@ -60,37 +50,38 @@ export default function(props) {
   const nodesListValues = computed(() => Object.values(hubStore.nodesList));
 
 
-  // Watch for changes in sidebar.sidebarNode.name and update it if needed
+  // Watch for changes in node.value.name and update it if needed
   watchEffect(() => {
-    if (!sidebar.sidebarNode.name) {
+    if (!serviceStore.node?.name) {
       if (nodesListValues.value.length > 0) {
-        sidebar.sidebarNode = nodesListValues.value[0];
+        serviceStore.node = nodesListValues.value[0];
       }
     }
   });
 
-  // Watch for changes in the name prop and the name of the node and update the serviceCollection
-  watch(
-      [() => props.name, node],
-      async ([newName, newNode]) => {
-        if (serviceCollection.value.reset) serviceCollection.value.reset();
-
-        serviceCollection.value =
-            serviceStore.getService(
-                newName, await newNode?.commsAddress, await newNode?.commsName
-            ).servicesCollection;
-
-        // reinitialize in case this service collection has been previously reset;
-        serviceCollection.value.init();
-        serviceCollection.value.query(newName);
-      },
-      {immediate: true}
-  );
 
   watch(serviceCollection, () => {
     // todo: this causes us to load all pages, connect with paging logic instead
-    serviceCollection.value.needsMorePages = true;
+    if (serviceCollection.value) {
+      serviceCollection.value.needsMorePages = true;
+    }
   });
+  // Watch for changes in the name prop and the name of the node and update the serviceCollection
+  watch(
+      [() => props.name, () => serviceStore.node],
+      async ([newName, newNode]) => {
+        if (serviceCollection.value.reset) serviceCollection.value.reset();
+
+        const col = serviceStore.getService(
+            newName, await newNode?.commsAddress, await newNode?.commsName
+        ).servicesCollection;
+        // reinitialize in case this service collection has been previously reset;
+        col.init();
+        col.query(newName);
+        serviceCollection.value = col;
+      },
+      {immediate: true}
+  );
 
   //
   //
@@ -117,7 +108,7 @@ export default function(props) {
     }
 
     await startService({
-      name: serviceName(await node.value.commsName, toValue(props.name)),
+      name: serviceName(await serviceStore.node.commsName, toValue(props.name)),
       id: service.id
     }, startStopTracker);
   }
@@ -135,7 +126,7 @@ export default function(props) {
     }
 
     await stopService({
-      name: serviceName(await node.value.commsName, toValue(props.name)),
+      name: serviceName(await serviceStore.node.commsName, toValue(props.name)),
       id: service.id
     }, startStopTracker);
   }
@@ -191,7 +182,6 @@ export default function(props) {
     showService,
     startStopTracker,
     search,
-    node,
     nodesListValues,
     _startService,
     _stopService

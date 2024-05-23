@@ -3,7 +3,7 @@ import {getServiceMetadata, listServices, pullServices} from '@/api/ui/services'
 import {serviceName} from '@/util/proxy';
 import {Collection} from '@/util/query';
 import {defineStore} from 'pinia';
-import {reactive} from 'vue';
+import {reactive, ref} from 'vue';
 
 export const useServicesStore = defineStore('services', () => {
   const metadataTrackers =
@@ -79,7 +79,11 @@ export const useServicesStore = defineStore('services', () => {
     return new Collection(listFn, pullFn);
   }
 
+  // The SC node we're getting services from, if absent get services from the node we're communicating directly with.
+  const node = ref(null);
+
   return {
+    node,
     getService,
     refreshMetadata,
     newServicesCollection

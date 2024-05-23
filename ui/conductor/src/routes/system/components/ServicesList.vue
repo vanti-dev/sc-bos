@@ -2,7 +2,7 @@
   <content-card>
     <v-row class="pa-4" v-if="configStore.config?.hub">
       <v-combobox
-          v-model="node"
+          v-model="servicesStore.node"
           :items="nodesListValues"
           label="System Component"
           item-text="name"
@@ -55,6 +55,7 @@ import useAuthSetup from '@/composables/useAuthSetup';
 import useServices from '@/composables/useServices';
 import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
 import {useHubStore} from '@/stores/hub';
+import {useServicesStore} from '@/stores/services.js';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {computed} from 'vue';
 
@@ -78,13 +79,13 @@ const props = defineProps({
 const {
   serviceCollection,
   search,
-  node,
   serviceList,
   nodesListValues,
   showService,
   _startService,
   _stopService
 } = useServices(props);
+const servicesStore = useServicesStore();
 
 const headers = computed(() => {
   if (props.name === 'drivers') {

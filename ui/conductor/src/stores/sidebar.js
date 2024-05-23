@@ -6,8 +6,6 @@ export const useSidebarStore = defineStore('sidebar', () => {
   const visible = ref(false);
   const data = ref({});
   const title = ref('');
-  // for use when targeting a specific node
-  const sidebarNode = ref({name: ''});
 
   /**
    * Open or close sidebar
@@ -38,7 +36,6 @@ export const useSidebarStore = defineStore('sidebar', () => {
     visible,
     data,
     title,
-    sidebarNode,
     toggleSidebar,
     closeSidebar,
     resetSidebarToDefaults
