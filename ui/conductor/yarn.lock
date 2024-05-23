@@ -493,6 +493,11 @@ binary-extensions@^2.0.0:
   resolved "https://registry.npmjs.org/binary-extensions/-/binary-extensions-2.2.0.tgz"
   integrity sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==
 
+binary-search@^1.3.6:
+  version "1.3.6"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/binary-search/-/binary-search-1.3.6.tgz#e32426016a0c5092f0f3598836a1c7da3560565c"
+  integrity sha512-nbE1WxOTTrUWIfsfZ4aHGYu5DOuNkbxGokjV6Z2kxfJK3uaAb8zNK1muzOeipoLHZjInT4Br88BHpzevc681xA==
+
 boolbase@^1.0.0:
   version "1.0.0"
   resolved "https://nexus.vanti.co.uk/repository/npm-public/boolbase/-/boolbase-1.0.0.tgz#68dff5fbe60c51eb37725ea9e3ed310dcc1e776e"
@@ -600,6 +605,11 @@ color-name@~1.1.4:
   version "1.1.4"
   resolved "https://nexus.vanti.co.uk/repository/npm-public/color-name/-/color-name-1.1.4.tgz#c2a09a87acbde69543de6f63fa3995c826c536a2"
   integrity sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
+
+colorjs.io@^0.5.0:
+  version "0.5.0"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/colorjs.io/-/colorjs.io-0.5.0.tgz#b1034184b4812b54e28c5082029fbd8ca53aa532"
+  integrity sha512-qekjTiBLM3F/sXKks/ih5aWaHIGu+Ftel0yKEvmpbKvmxpNOhojKgha5uiWEUOqEpRjC1Tq3nJRT7WgdBOxIGg==
 
 comment-parser@1.4.1:
   version "1.4.1"
@@ -1230,6 +1240,13 @@ json-stable-stringify-without-jsonify@^1.0.1:
   resolved "https://nexus.vanti.co.uk/repository/npm-public/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz#9db7b59496ad3f3cfef30a75142d2d930ad72651"
   integrity sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==
 
+json-templates@^5.1.0:
+  version "5.1.0"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/json-templates/-/json-templates-5.1.0.tgz#5079a9a3d310f47b940de133e60fea64b945080e"
+  integrity sha512-WIurn7pduz4+HVfXKHlDyNjypO6UuyiMVf/aHScHqp96gl1QK7Nw1XzbFjUxKsDSPImT/Is+eAIbde8ns2EoLw==
+  dependencies:
+    object-path "^0.11.8"
+
 jwt-decode@^3.1.2:
   version "3.1.2"
   resolved "https://nexus.vanti.co.uk/repository/npm-public/jwt-decode/-/jwt-decode-3.1.2.tgz#3fb319f3675a2df0c2895c8f5e9fa4b67b04ed59"
@@ -1354,6 +1371,11 @@ nth-check@^2.1.1:
   integrity sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==
   dependencies:
     boolbase "^1.0.0"
+
+object-path@^0.11.8:
+  version "0.11.8"
+  resolved "https://nexus.vanti.co.uk/repository/npm-public/object-path/-/object-path-0.11.8.tgz#ed002c02bbdd0070b78a27455e8ae01fc14d4742"
+  integrity sha512-YJjNZrlXJFM42wTBn6zgOJVar9KFJvzx6sTWDte8sWZF//cnjl0BxHNpfZx+ZffXX63A9q0b1zsFiBX4g4X5KA==
 
 once@^1.3.0:
   version "1.4.0"
