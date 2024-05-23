@@ -15,6 +15,7 @@
         clipped
         color="neutral"
         floating
+        stateless
         right
         :width="sideBarWidth">
       <router-view name="sidebar"/>
