@@ -2,10 +2,12 @@ import {defineStore} from 'pinia';
 import {ref} from 'vue';
 
 export const useSidebarStore = defineStore('sidebar', () => {
-  // RIGHT SIDEBAR //
+  // indicates whether the sidebar is visible or not
   const visible = ref(false);
-  const data = ref({});
+  // The title of the sidebar
   const title = ref('');
+  // component provided data used to communicate between the main page and the sidebar
+  const data = ref({});
 
   /**
    * Open or close sidebar
@@ -26,16 +28,15 @@ export const useSidebarStore = defineStore('sidebar', () => {
    * Reset the sidebar data to default values
    */
   const resetSidebarToDefaults = () => {
-    data.value = {};
     title.value = '';
+    data.value = {};
     visible.value = false;
   };
 
   return {
-    // RIGHT SIDEBAR
     visible,
-    data,
     title,
+    data,
     toggleSidebar,
     closeSidebar,
     resetSidebarToDefaults
