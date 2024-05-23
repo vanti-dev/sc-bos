@@ -49,7 +49,7 @@
           v-for="preset in presets"
           block
           class="py-1 mx-0 mt-1 mb-2 preset"
-          color="neutral lighten-1"
+          :color="getColor(preset.title, currentPresetTitle)"
           elevation="0"
           :key="preset.name"
           small
@@ -86,9 +86,13 @@ const props = defineProps({
 const {value, loading: pullLoading} = usePullBrightness(() => props.name);
 const {response: support, loading: supportLoading} = useDescribeBrightness(() => props.name);
 const {updateBrightness, loading: updateLoading} = useUpdateBrightness(() => props.name);
-const {levelStr, level, presets} = useBrightness(value, support);
+const {levelStr, level, presets, currentPresetTitle} = useBrightness(value, support);
 
 const loading = computed(() => pullLoading.value || supportLoading.value || updateLoading.value);
+
+function getColor(title, currentPresetTitle) {
+  return title === currentPresetTitle ? 'primary' : 'neutral lighten-1';
+}
 
 /**
  * Update the brightness level.
