@@ -102,7 +102,7 @@ export default function(props) {
   function showService(service) {
     sidebar.visible = true;
     sidebar.title = service.id;
-    sidebar.data = {...service, config: JSON.parse(service.configRaw)};
+    sidebar.data = {service, config: JSON.parse(service.configRaw)};
   }
 
   /**
@@ -111,9 +111,9 @@ export default function(props) {
    */
   async function _startService(service) {
     // Update the data if the sidebar is open and the service is being started
-    if (sidebar.visible && sidebar.data.id !== service.id) {
+    if (sidebar.visible && sidebar.data?.service?.id !== service.id) {
       sidebar.title = service.id;
-      sidebar.data = {...service, config: JSON.parse(service.configRaw)};
+      sidebar.data = {service, config: JSON.parse(service.configRaw)};
     }
 
     await startService({
@@ -129,9 +129,9 @@ export default function(props) {
    */
   async function _stopService(service) {
     // Update the data if the sidebar is open and the service is being stopped
-    if (sidebar.visible && sidebar.data.id !== service.id) {
+    if (sidebar.visible && sidebar.data?.service?.id !== service.id) {
       sidebar.title = service.id;
-      sidebar.data = {...service, config: JSON.parse(service.configRaw)};
+      sidebar.data = {service, config: JSON.parse(service.configRaw)};
     }
 
     await stopService({
@@ -147,10 +147,10 @@ export default function(props) {
   watch(
       serviceList,
       (newServiceList, oldServiceList) => {
-        if (sidebar.data === null || !sidebar.data.id) return;
+        if (!sidebar.data?.service?.id) return;
 
         // Find the service in the new list that matches the id in data
-        const updatedService = newServiceList.find(s => s.id === sidebar.data.id);
+        const updatedService = newServiceList.find(s => s.id === sidebar.data.service.id);
 
         if (updatedService) {
           // Check if the service has been updated by comparing it with the old list
@@ -161,7 +161,7 @@ export default function(props) {
             // Update the data with the new service data
             // Ensuring to parse the config if it's in a raw JSON string format
             sidebar.data = {
-              ...updatedService,
+              service: updatedService,
               config: updatedService.configRaw ? JSON.parse(updatedService.configRaw) : {}
             };
           }

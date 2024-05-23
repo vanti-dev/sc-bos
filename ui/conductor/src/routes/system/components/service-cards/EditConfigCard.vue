@@ -41,7 +41,7 @@ const jsonError = ref('');
 
 const config = computed({
   get() {
-    return sidebar.data.configRaw;
+    return sidebar.data.service?.configRaw ?? '';
   },
   set(value) {
     jsonError.value = '';
@@ -62,7 +62,7 @@ const copyConfirm = ref(false);
  *
  */
 function copyConfig() {
-  navigator.clipboard.writeText(sidebar.data.configRaw);
+  navigator.clipboard.writeText(sidebar.data.service.configRaw);
   copyConfirm.value = true;
 }
 </script>
