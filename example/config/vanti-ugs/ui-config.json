@@ -215,6 +215,11 @@
                         "title": "ACS",
                         "svgPath": "./assets/floor0-acs.svg",
                         "configPath": "./assets/floor0-acs.json"
+                      },
+                      {
+                        "title": "Lighting",
+                        "svgPath": "./assets/floor0-lights.svg",
+                        "configPath": "./assets/floor0-lights.json"
                       }
                     ]
                   }
