@@ -1,6 +1,16 @@
 <template>
   <v-card :height="props.height" class="overflow-hidden pa-4">
-    <pinch-zoom class="fill-height" :hide-controls="props.hideControls">
+    <overlay-stack v-if="props.fixed" class="fill-height">
+      <img :src="bgSrc" alt="Background for other layers">
+      <graphic-layer
+          v-for="(layer, i) in props.layers"
+          :key="layer.title ?? i"
+          :layer="layer"
+          @click:element="onElementClick(layer, $event.element, $event.event)"
+          :selected="selectionsByLayer[i]"
+          @update:selected="onLayerSelectUpdate(i, $event)"/>
+    </overlay-stack>
+    <pinch-zoom v-else class="fill-height" :hide-controls="props.hideControls">
       <template #default>
         <overlay-stack>
           <img :src="bgSrc" alt="Background for other layers">
@@ -34,6 +44,10 @@ const props = defineProps({
     default: undefined
   },
   hideControls: {
+    type: Boolean,
+    default: false
+  },
+  fixed: {
     type: Boolean,
     default: false
   },
