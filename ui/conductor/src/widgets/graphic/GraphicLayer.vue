@@ -91,14 +91,18 @@ watch(_selected, (selected, oldSelected) => {
   // remove 'selected' class from everything that was selected, but isn't now
   for (const was of wasSelected) {
     if (nowSelected.has(was)) continue;
-    const el = svgEl.value.querySelector(`[data-element-idx="${was}"]`);
-    if (el) el.classList.remove('selected');
+    const els = svgEl.value.querySelectorAll(`[data-element-idx="${was}"]`);
+    for (const el of els) {
+      el.classList.remove('selected');
+    }
   }
   // add 'selected' class to everything that is selected now, but wasn't before
   for (const now of nowSelected) {
     if (wasSelected.has(now)) continue;
-    const el = svgEl.value.querySelector(`[data-element-idx="${now}"]`);
-    if (el) el.classList.add('selected');
+    const els = svgEl.value.querySelectorAll(`[data-element-idx="${now}"]`);
+    for (const el of els) {
+      el.classList.add('selected');
+    }
   }
 }, {immediate: true, deep: true});
 
@@ -140,15 +144,17 @@ watch([svgContainerEl, svgRaw], ([containerEl, svgRaw]) => {
 const annotateSvgDom = (svgEl, config) => {
   for (let i = 0; i < config.elements.length; i++) {
     const le = config.elements[i];
-    const el = svgEl.querySelector(le.selector);
-    if (!el) {
+    const els = svgEl.querySelectorAll(le.selector);
+    if (!els) {
       console.warn('layer element not found for selector', le.selector, props.layer.title);
       continue;
     }
     // we use this attribute during clicks to find
     // a. the correct element to use as the click target
     // b. to find the layer element that describes what to do with the click
-    el.setAttribute('data-element-idx', '' + i);
+    for (const el of els) {
+      el.setAttribute('data-element-idx', '' + i);
+    }
   }
 };
 watch([svgEl, config], ([svgEl, config]) => {
@@ -175,8 +181,8 @@ watch([svgEl, config], ([svgEl, config]) => {
   scope.run(() => {
     for (const element of config.elements ?? []) {
       if (!element.sources) continue; // no source of info, so skip
-      const el = svgEl.querySelector(element.selector);
-      if (!el) continue; // no point continuing as we can't update the element
+      const els = svgEl.querySelectorAll(element.selector);
+      if (!els) continue; // no point continuing as we can't update the element
 
       // capture information from the server
       const sources = {};
@@ -187,7 +193,9 @@ watch([svgEl, config], ([svgEl, config]) => {
       }
 
       // setup dom changes based on server collected data
-      useSvgEffects(el, element, sources);
+      for (const el of els) {
+        useSvgEffects(el, element, sources);
+      }
     }
   });
   scopeClosers.value.push(() => scope.stop());
@@ -212,10 +220,10 @@ watch([svgEl, config], ([svgEl, config]) => {
 .svg--container ::v-deep([data-element-idx]) {
   cursor: pointer;
   pointer-events: auto;
-  transition: filter 0.2s cubic-bezier(.25,.8,.25,1);
+  transition: filter 0.2s cubic-bezier(.25, .8, .25, 1);
 }
 
 .svg--container ::v-deep([data-element-idx].selected) {
-  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.19)) drop-shadow(0 3px 6px rgba(0,0,0,0.63));
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.19)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.63));
 }
 </style>
