@@ -12,7 +12,7 @@ Clicking on interactive elements in the SVG will show the elements first source 
 
 ## Getting Started
 
-The widget is named `builtin:graphics/LayeredGraphic` and can be used on any dashboard, configured via the ui config
+The widget is named `builtin:graphic/LayeredGraphic` and can be used on any dashboard, configured via the ui config
 json file.
 Here's an example snippet taken from [the UGS sample](../../example/config/vanti-ugs/ui-config.json):
 
