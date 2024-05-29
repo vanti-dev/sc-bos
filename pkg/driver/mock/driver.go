@@ -187,7 +187,15 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 		// todo: return []any{extendretract.WrapApi(extendretract.NewModelServer(extendretract.NewModel()))}, nil
 		return nil, nil
 	case trait.FanSpeed:
-		return []any{fanspeed.WrapApi(fanspeed.NewModelServer(fanspeed.NewModel()))}, nil
+		presets := []fanspeed.Preset{
+			{Name: "off", Percentage: 0},
+			{Name: "low", Percentage: 15},
+			{Name: "med", Percentage: 40},
+			{Name: "high", Percentage: 75},
+			{Name: "full", Percentage: 100},
+		}
+		model := fanspeed.NewModel(fanspeed.WithPresets(presets...))
+		return []any{fanspeed.WrapApi(fanspeed.NewModelServer(model))}, auto.FanSpeed(model, presets...)
 	case trait.Hail:
 		return []any{hail.WrapApi(hail.NewModelServer(hail.NewModel()))}, nil
 	case trait.InputSelect:
