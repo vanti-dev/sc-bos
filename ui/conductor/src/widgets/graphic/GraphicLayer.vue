@@ -226,4 +226,22 @@ watch([svgEl, config], ([svgEl, config]) => {
 .svg--container ::v-deep([data-element-idx].selected) {
   filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.19)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.63));
 }
+
+/* Styles for supporting the spin effect */
+.svg--container ::v-deep(.can-spin) {
+  transform-box: fill-box;
+  transform-origin: center;
+  position: relative;
+  animation: spin 2s linear infinite;
+  animation-play-state: paused;
+}
+
+.svg--container ::v-deep(.can-spin.spinning) {
+  animation-play-state: running;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 </style>

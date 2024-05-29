@@ -2,7 +2,7 @@ import {toValue} from '@/util/vue.js';
 import binarySearch from 'binary-search';
 import Color from 'colorjs.io';
 import {get as _get} from 'lodash';
-import {watch} from 'vue';
+import {onScopeDispose, watch} from 'vue';
 
 /**
  * Apply effects to the SVG based on the config and source data.
@@ -28,6 +28,10 @@ const effects = [
   {
     test: 'stroke',
     apply: (el, elementCfg, sources) => applyStyleColor('stroke', el, elementCfg, sources)
+  },
+  {
+    test: 'spin',
+    apply: (el, elementCtf, sources) => applySpin(el, elementCtf, sources)
   }
 ];
 
@@ -72,4 +76,56 @@ const doColorInterpolation = (val, steps, onChange) => {
       }
     }
   }, {immediate: true});
+};
+
+const applySpin = (el, elementCfg, sources) => {
+  const cfg = elementCfg['spin'];
+  const sourceCfg = cfg.source;
+  const sourceResource = sources[sourceCfg.ref];
+  if (!sourceResource) return;
+  // set up the element
+  el.classList.add('can-spin');
+  onScopeDispose(() => el.classList.remove('can-spin spinning'));
+
+  if (cfg.direction) {
+    const direction = cfg.direction;
+    watch(() => _get(toValue(sourceResource.value), direction.property), (value, oldValue) => {
+      if (value === oldValue) return;
+      if (value <= direction.clockwise) {
+        el.style.animationDirection = 'normal';
+      } else {
+        el.style.animationDirection = 'reverse';
+      }
+    }, {immediate: true});
+  }
+  if (cfg.duration) {
+    const duration = cfg.duration;
+    watch(() => _get(toValue(sourceResource.value), duration.property), (value, oldValue) => {
+      if (value === oldValue) return;
+      // stop spinning if the value is less than the minimum step
+      const min = duration.interpolate[0].value;
+      if (value <= min) {
+        el.classList.remove('spinning');
+      } else {
+        el.classList.add('spinning');
+      }
+      const foundStep = binarySearch(duration.interpolate, value, (s, v) => s.value - v);
+      if (foundStep >= 0) {
+        el.style.animationDuration = `${duration.interpolate[foundStep].durationMs}ms`;
+      } else {
+        const idx = ~foundStep;
+        if (idx === 0) {
+          el.style.animationDuration = `${duration.interpolate[0].durationMs}ms`;
+        } else if (idx === duration.interpolate.length) {
+          el.style.animationDuration = `${duration.interpolate[duration.interpolate.length - 1].durationMs}ms`;
+        } else {
+          const step1 = duration.interpolate[idx - 1];
+          const step2 = duration.interpolate[idx];
+          const ratio = (value - step1.value) / (step2.value - step1.value);
+          const durationMs = step1.durationMs + (step2.durationMs - step1.durationMs) * ratio;
+          el.style.animationDuration = `${durationMs.toFixed(3)}ms`;
+        }
+      }
+    }, {immediate: true});
+  }
 };
