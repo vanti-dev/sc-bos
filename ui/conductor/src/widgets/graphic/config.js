@@ -24,6 +24,10 @@ export async function loadConfig(path) {
       const context = element.template;
       const defaults = element;
       const template = templates[ref];
+      if (!template) {
+        console.warn(`element refers to unknown template: ${ref}`, {element});
+        continue;
+      }
       // todo: validate that each required property of the template is present in context
       const templateOutput = template(context);
       json.elements[i] = _merge(defaults, templateOutput);
