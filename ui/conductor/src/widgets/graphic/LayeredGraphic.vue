@@ -2,6 +2,7 @@
   <v-card :height="props.height" class="overflow-hidden pa-4">
     <overlay-stack v-if="props.fixed" class="fill-height">
       <img :src="bgSrc" alt="Background for other layers">
+      <img v-if="bgSrc" :src="bgSrc" alt="Background for other layers">
       <graphic-layer
           v-for="(layer, i) in props.layers"
           :key="layer.title ?? i"
@@ -13,7 +14,7 @@
     <pinch-zoom v-else class="fill-height" :hide-controls="props.hideControls">
       <template #default>
         <overlay-stack>
-          <img :src="bgSrc" alt="Background for other layers">
+          <img v-if="bgSrc" :src="bgSrc" alt="Background for other layers">
           <graphic-layer
               v-for="(layer, i) in props.layers"
               :key="layer.title ?? i"
