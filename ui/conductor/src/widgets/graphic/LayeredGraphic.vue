@@ -1,7 +1,7 @@
 <template>
-  <v-card :height="props.height" class="overflow-hidden pa-4">
-    <overlay-stack v-if="props.fixed" class="fill-height">
-      <img :src="bgSrc" alt="Background for other layers">
+  <v-card :height="props.height" class="overflow-hidden pa-3 d-flex flex-column">
+    <v-card-title v-if="props.title" class="text-h4 mb-0">{{ props.title }}</v-card-title>
+    <overlay-stack v-if="props.fixed">
       <img v-if="bgSrc" :src="bgSrc" alt="Background for other layers">
       <graphic-layer
           v-for="(layer, i) in props.layers"
@@ -40,6 +40,10 @@ import {nameFromRequest} from '@/widgets/graphic/traits.js';
 import {computed, ref, set, watch} from 'vue';
 
 const props = defineProps({
+  title: {
+    type: String,
+    default: null
+  },
   height: {
     type: [Number, String],
     default: undefined
