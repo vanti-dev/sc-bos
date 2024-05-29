@@ -312,6 +312,19 @@
                       "props": {
                         "internal": "van/uk/brum/ugs/zones/rooms/teal"
                       }
+                    },
+                    {
+                      "component": "builtin:graphic/LayeredGraphic",
+                      "props": {
+                        "title": "FCU Status",
+                        "fixed": true,
+                        "layers": [
+                          {
+                            "svgPath": "./assets/fcu.svg",
+                            "configPath": "./assets/floor0-teal-fcu.json"
+                          }
+                        ]
+                      }
                     }
                   ]
                 },
