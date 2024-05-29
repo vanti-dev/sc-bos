@@ -70,25 +70,25 @@
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-LN1-01",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Basement"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-LN1-02",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Basement", "zone": "Copper Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-LN1-03",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Basement", "zone": "Cotswold Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-LN1-04",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Basement", "zone": "Kaolin Room"}
         },
@@ -280,37 +280,37 @@
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-01",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Reception"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-02",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Teal Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-03",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Green Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-04",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Yellow Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-05",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Project Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-06",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Lab"}
         },
@@ -471,25 +471,25 @@
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L01-01",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "First Floor", "zone": "The Bank"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L01-02",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Near the toilets"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L01-03",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Near the back stairs"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L01-04",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "First Floor", "zone": "Service"}
         },
@@ -556,7 +556,7 @@
         },
         {
           "name": "van/uk/brum/ugs/devices/TMP-L02-01",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
           "appearance": {"title": "Outside Air Temperature"},
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Roof"}
