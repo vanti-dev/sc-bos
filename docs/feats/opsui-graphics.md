@@ -166,3 +166,26 @@ based on an interpolation between colour steps. Another similar effect is the `s
 colour.
 
 All available effects are listed in [effects array](../../ui/conductor/src/widgets/graphic/svg.js) in the js source.
+
+### Sidebar Interaction
+
+By default, clicking on an element will show the app sidebar using the first source with a named request as the subject.
+If this is not what you require from the element you can configure a specific subject name for the sidebar on element
+click via the `sidebar` property:
+
+```json5
+{
+  "elements": [
+    {
+      "selector": "#rooms #teal",
+      // When clicked, show "van/uk/brum/ugs/zones/rooms/teal" in the sidebar
+      // instead of inferring the subject from the sources
+      "sidebar": {"name": "van/uk/brum/ugs/zones/rooms/teal"}
+    }
+  ]
+}
+```
+
+The `sidebar` property is useful when the element only exists as a click target and doesn't have any sources or effects.
+The usual example is when drawing zones or rooms on a map, clicking on the zone should open that zone in the sidebar.
+You can see an example of this in the [UGS sample](../../example/config/vanti-ugs/assets/floor0-zones.json).
