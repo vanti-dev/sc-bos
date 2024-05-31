@@ -40,7 +40,7 @@ watch(() => props.selected, (v) => _selected.value = v);
  * @param {PointerEvent} event
  */
 const onSvgClick = (event) => {
-  const el = event.target.closest('[data-element-idx]');
+  const el = event.target.closest('[data-element-idx]:not(.decorative)');
   if (!el) return; // not an interesting click
   const elementIdx = parseInt(el.dataset.elementIdx);
   const layerElement = config.value.elements[elementIdx];
@@ -154,6 +154,10 @@ const annotateSvgDom = (svgEl, config) => {
     // b. to find the layer element that describes what to do with the click
     for (const el of els) {
       el.setAttribute('data-element-idx', '' + i);
+      // we do this now to avoid any flickering
+      if (le.decorative) {
+        el.classList.add('decorative');
+      }
     }
   }
 };
@@ -221,6 +225,11 @@ watch([svgEl, config], ([svgEl, config]) => {
   cursor: pointer;
   pointer-events: auto;
   transition: filter 0.2s cubic-bezier(.25, .8, .25, 1);
+}
+
+.svg--container ::v-deep([data-element-idx].decorative) {
+  cursor: default;
+  pointer-events: none;
 }
 
 .svg--container ::v-deep([data-element-idx].selected) {

@@ -189,3 +189,22 @@ click via the `sidebar` property:
 The `sidebar` property is useful when the element only exists as a click target and doesn't have any sources or effects.
 The usual example is when drawing zones or rooms on a map, clicking on the zone should open that zone in the sidebar.
 You can see an example of this in the [UGS sample](../../example/config/vanti-ugs/assets/floor0-zones.json).
+
+### Decorative Elements
+
+Sometimes you want to apply effects to an element without making it interactive.
+We call these decorative elements, and they are configured via a `"decorative": true` property on the element object.
+It's not recommended to use this feature, however sometimes elements are layered on top of each other - a text label is
+one example - and in this case the click target is handled via the underlying element.
+
+```json5
+{
+  "elements": [
+    {
+      "selector": "#label-FCU-L00-01",
+      "decorative": true,
+      // ... sources and effects
+    }
+  ]
+}
+```
