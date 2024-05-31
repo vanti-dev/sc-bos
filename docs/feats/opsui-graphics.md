@@ -156,6 +156,8 @@ Config that accomplishes this is:
 Note, it makes no sense to apply more than one effect of the same type without specifying a selector, the latter effect
 will override the former.
 
+Just like with [element groups](#element-groups), the selector property can match multiple child elements.
+
 ### Element Templates
 
 As the number of interactive elements grows the config file quickly becomes unwieldy.

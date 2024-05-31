@@ -25,23 +25,27 @@ const testEffect = (effect, cfg) => {
 const effects = [
   {
     test: 'fill',
-    apply: (el, elementCfg, sources) => applyStyleColor('fill', el, elementCfg, sources)
+    apply: (el, cfg, sources) => select(el, cfg, el => applyStyleColor('fill', el, cfg, sources))
   },
   {
     test: 'stroke',
-    apply: (el, elementCfg, sources) => applyStyleColor('stroke', el, elementCfg, sources)
+    apply: (el, cfg, sources) => select(el, cfg, el => applyStyleColor('stroke', el, cfg, sources))
   },
   {
     test: 'spin',
-    apply: (el, elementCtf, sources) => applySpin(el, elementCtf, sources)
+    apply: (el, cfg, sources) => select(el, cfg, el => applySpin(el, cfg, sources))
   }
 ];
 
+const select = (el, cfg, fn) => {
+  const els = cfg.selector ? el.querySelectorAll(cfg.selector) : [el];
+  for (const el of els) {
+    fn(el);
+  }
+};
+
 const applyStyleColor = (prop, el, cfg, sources) => {
   const sourceCfg = cfg.source;
-  if (cfg.selector) {
-    el = el.querySelector(cfg.selector);
-  }
   const sourceResource = sources[sourceCfg.ref];
   if (!sourceResource) return;
   if (cfg.interpolate) {
@@ -84,9 +88,6 @@ const doColorInterpolation = (val, steps, onChange) => {
 
 const applySpin = (el, cfg, sources) => {
   const sourceCfg = cfg.source;
-  if (cfg.selector) {
-    el = el.querySelector(cfg.selector);
-  }
   const sourceResource = sources[sourceCfg.ref];
   if (!sourceResource) return;
   // set up the element
