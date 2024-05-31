@@ -85,7 +85,7 @@ const applySpin = (el, elementCfg, sources) => {
   if (!sourceResource) return;
   // set up the element
   el.classList.add('can-spin');
-  onScopeDispose(() => el.classList.remove('can-spin spinning'));
+  onScopeDispose(() => el.classList.remove('can-spi', 'spinning'));
 
   if (cfg.direction) {
     const direction = cfg.direction;
