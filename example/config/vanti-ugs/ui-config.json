@@ -207,6 +207,11 @@
                     "background": {"svgPath": "./assets/floor0-bg.svg"},
                     "layers": [
                       {
+                        "title": "Zones",
+                        "svgPath": "./assets/floor0-zones.svg",
+                        "configPath": "./assets/floor0-zones.json"
+                      },
+                      {
                         "title": "BMS",
                         "svgPath": "./assets/floor0-bms.svg",
                         "configPath": "./assets/floor0-bms.json"
