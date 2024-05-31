@@ -2,6 +2,7 @@
   "templates": {
     "lightGroup": {
       "selector": "#{{id}} rect",
+      "sidebar": {"name": "van/uk/brum/ugs/devices/{{id}}"},
       "sources": {
         "light": {
           "trait": "smartcore.traits.Light",

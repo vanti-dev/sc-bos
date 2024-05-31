@@ -2,6 +2,7 @@
   "templates": {
     "acr": {
       "selector": "#{{id}}",
+      "sidebar": {"name": "van/uk/brum/ugs/devices/{{id}}"},
       "sources": {
         "access": {
           "trait": "smartcore.bos.Access",
@@ -39,6 +40,7 @@
     },
     "door": {
       "selector": "#{{id}}",
+      "sidebar": {"name": "van/uk/brum/ugs/devices/{{id}}"},
       "sources": {
         "openClose": {
           "trait": "smartcore.traits.OpenClose",

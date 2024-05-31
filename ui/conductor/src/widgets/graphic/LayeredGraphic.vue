@@ -71,11 +71,16 @@ const bgSrc = computed(() => toPath(props.background?.svgPath));
 
 const sidebar = useSidebarStore();
 const onElementClick = async (layer, element, event) => {
-  let name = null;
-  for (const [, source] of Object.entries(element.sources ?? {})) {
-    name = nameFromRequest(source.request);
-    if (name) {
-      break;
+  // Find the name of the device we should be showing in the sidebar.
+  // First we check if it's configured explicitly via the sidebar property.
+  // Then we try to find a source that mentions a device name in the request.
+  let name = element.sidebar?.name;
+  if (!name) {
+    for (const [, source] of Object.entries(element.sources ?? {})) {
+      name = nameFromRequest(source.request);
+      if (name) {
+        break;
+      }
     }
   }
   if (!name) return; // no name, nothing to show.

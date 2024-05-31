@@ -2,6 +2,7 @@
   "templates": {
     "fan": {
       "selector": "#fan",
+      "sidebar": {"name": "van/uk/brum/ugs/devices/{{id}}"},
       "sources": {
         "airTemp": {
           "trait": "smartcore.traits.AirTemperature",

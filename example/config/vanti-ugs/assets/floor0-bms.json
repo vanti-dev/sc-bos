@@ -2,6 +2,7 @@
   "templates": {
     "fcu": {
       "selector": "#{{id}}",
+      "sidebar": {"name": "van/uk/brum/ugs/devices/{{id}}"},
       "sources": {
         "airTemperature": {
           "trait": "smartcore.traits.AirTemperature",
