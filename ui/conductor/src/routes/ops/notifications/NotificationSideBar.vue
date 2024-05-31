@@ -34,8 +34,8 @@ const {value: metadata} = usePullMetadata(() => sidebar.data?.notification?.item
 watch(metadata, (metadata) => {
   if (metadata) {
     sidebar.data = {
-      ...sidebar.data,
-      metadata
+      metadata,
+      notification: sidebar.data?.notification
     };
   }
 }, {immediate: true, deep: true});

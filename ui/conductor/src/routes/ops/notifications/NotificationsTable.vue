@@ -559,7 +559,7 @@ const rowClass = (item) => {
 async function showNotification(item) {
   sidebar.visible = true;
   sidebar.title = item.source;
-  sidebar.data = {...sidebar.data, notification: {name, item}};
+  sidebar.data = {metadata: sidebar.data?.metadata, notification: {name, item}};
 }
 
 onUnmounted(() => {
