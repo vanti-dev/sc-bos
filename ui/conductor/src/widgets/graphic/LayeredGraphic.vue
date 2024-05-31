@@ -70,7 +70,9 @@ const {toPath} = usePathUtils();
 const bgSrc = computed(() => toPath(props.background?.svgPath));
 
 const sidebar = useSidebarStore();
+const selectionCtx = ref(null);
 const onElementClick = async (layer, element, event) => {
+  selectionCtx.value = {layer, element};
   // Find the name of the device we should be showing in the sidebar.
   // First we check if it's configured explicitly via the sidebar property.
   // Then we try to find a source that mentions a device name in the request.
@@ -90,20 +92,26 @@ const onElementClick = async (layer, element, event) => {
   if (md) {
     // open the sidebar with the metadata
     sidebar.title = md.appearance?.title ?? name;
-    sidebar.data = {metadata: md, name};
+    sidebar.data = {
+      metadata: md, name,
+      // these aren't used by the sidebar, but are used to work out if our selection is still the active one
+      layer, element
+    };
     sidebar.component = DeviceSideBar; // this line must be after the .data one!
     sidebar.visible = true;
   }
 };
 
-// force a single selection between all layers
+// force a single selection between all layers, and make sure we clear selection when someone else uses the sidebar
 const selectionsByLayer = ref([]);
 watch(() => props.layers, () => {
   selectionsByLayer.value = props.layers.map(() => null);
 });
-watch(() => sidebar.component, (c) => {
-  if (c !== DeviceSideBar) { // someone else selected something, or the sidebar was hidden
+watch(() => sidebar.data, (c) => {
+  if (c.element !== selectionCtx.value?.element || c.layer !== selectionCtx.value?.layer) {
+    // someone else selected something, or the sidebar was hidden
     selectionsByLayer.value = selectionsByLayer.value.map(() => null);
+    selectionCtx.value = null;
   }
 });
 const onLayerSelectUpdate = (layerIdx, selected) => {
