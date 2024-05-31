@@ -13,30 +13,34 @@
           "request": {"name": "van/uk/brum/ugs/devices/{{id}}"}
         }
       },
-      "fill": {
-        "source": {"ref": "access", "property": "grant"},
-        "interpolate": {
-          "steps": [
-            {"value": 0, "color": "grey"},
-            {"value": 1, "color": "green"},
-            {"value": 2, "color": "red"},
-            {"value": 3, "color": "blue"},
-            {"value": 4, "color": "yellow"},
-            {"value": 5, "color": "red"},
-            {"value": 6, "color": "yellow"},
-            {"value": 7, "color": "red"}
-          ]
+      "effects": [
+        {
+          "type": "fill",
+          "source": {"ref": "access", "property": "grant"},
+          "interpolate": {
+            "steps": [
+              {"value": 0, "color": "grey"},
+              {"value": 1, "color": "green"},
+              {"value": 2, "color": "red"},
+              {"value": 3, "color": "blue"},
+              {"value": 4, "color": "yellow"},
+              {"value": 5, "color": "red"},
+              {"value": 6, "color": "yellow"},
+              {"value": 7, "color": "red"}
+            ]
+          }
+        },
+        {
+          "type": "stroke",
+          "source": {"ref": "openClose", "property": "statesList[0].openPercent"},
+          "interpolate": {
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 100, "color": "red"}
+            ]
+          }
         }
-      },
-      "stroke": {
-        "source": {"ref": "openClose", "property": "statesList[0].openPercent"},
-        "interpolate": {
-          "steps": [
-            {"value": 0, "color": "green"},
-            {"value": 100, "color": "red"}
-          ]
-        }
-      }
+      ]
     },
     "door": {
       "selector": "#{{id}}",
@@ -47,24 +51,28 @@
           "request": {"name": "van/uk/brum/ugs/devices/{{id}}"}
         }
       },
-      "fill": {
-        "source": {"ref": "openClose", "property": "statesList[0].openPercent"},
-        "interpolate": {
-          "steps": [
-            {"value": 0, "color": "green"},
-            {"value": 100, "color": "red"}
-          ]
+      "effects": [
+        {
+          "type": "fill",
+          "source": {"ref": "openClose", "property": "statesList[0].openPercent"},
+          "interpolate": {
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 100, "color": "red"}
+            ]
+          }
+        },
+        {
+          "type": "stroke",
+          "source": {"ref": "openClose", "property": "statesList[0].openPercent"},
+          "interpolate": {
+            "steps": [
+              {"value": 0, "color": "darkgreen"},
+              {"value": 100, "color": "darkred"}
+            ]
+          }
         }
-      },
-      "stroke": {
-        "source": {"ref": "openClose", "property": "statesList[0].openPercent"},
-        "interpolate": {
-          "steps": [
-            {"value": 0, "color": "darkgreen"},
-            {"value": 100, "color": "darkred"}
-          ]
-        }
-      }
+      ]
     }
   },
   "elements": [

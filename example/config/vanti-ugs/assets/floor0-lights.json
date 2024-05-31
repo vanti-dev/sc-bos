@@ -9,15 +9,18 @@
           "request": {"name": "van/uk/brum/ugs/devices/{{id}}"}
         }
       },
-      "fill": {
-        "source": {"ref": "light", "property": "levelPercent"},
-        "interpolate": {
-          "steps": [
-            {"value": 0, "color": "#40464d"},
-            {"value": 100, "color": "#ffaf25"}
-          ]
+      "effects": [
+        {
+          "type": "fill",
+          "source": {"ref": "light", "property": "levelPercent"},
+          "interpolate": {
+            "steps": [
+              {"value": 0, "color": "#40464d"},
+              {"value": 100, "color": "#ffaf25"}
+            ]
+          }
         }
-      }
+      ]
     }
   },
   "elements": [

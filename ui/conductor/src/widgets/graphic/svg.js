@@ -8,14 +8,16 @@ import {onScopeDispose, watch} from 'vue';
  * Apply effects to the SVG based on the config and source data.
  */
 export function useSvgEffects(el, config, sources) {
-  for (const effect of effects) {
-    if (!testEffect(effect, config)) continue;
-    effect.apply(el, config, sources);
+  for (const effectCfg of config.effects ?? []) {
+    for (const effect of effects) {
+      if (!testEffect(effect, effectCfg)) continue;
+      effect.apply(el, effectCfg, sources);
+    }
   }
 }
 
 const testEffect = (effect, cfg) => {
-  if (typeof effect.test === 'string') return Boolean(cfg[effect.test]);
+  if (typeof effect.test === 'string') return cfg.type === effect.test;
   if (typeof effect.test === 'function') return effect.test(cfg);
   return false;
 };
@@ -35,9 +37,11 @@ const effects = [
   }
 ];
 
-const applyStyleColor = (prop, el, elementCfg, sources) => {
-  const cfg = elementCfg[prop];
+const applyStyleColor = (prop, el, cfg, sources) => {
   const sourceCfg = cfg.source;
+  if (cfg.selector) {
+    el = el.querySelector(cfg.selector);
+  }
   const sourceResource = sources[sourceCfg.ref];
   if (!sourceResource) return;
   if (cfg.interpolate) {
@@ -78,9 +82,11 @@ const doColorInterpolation = (val, steps, onChange) => {
   }, {immediate: true});
 };
 
-const applySpin = (el, elementCfg, sources) => {
-  const cfg = elementCfg['spin'];
+const applySpin = (el, cfg, sources) => {
   const sourceCfg = cfg.source;
+  if (cfg.selector) {
+    el = el.querySelector(cfg.selector);
+  }
   const sourceResource = sources[sourceCfg.ref];
   if (!sourceResource) return;
   // set up the element

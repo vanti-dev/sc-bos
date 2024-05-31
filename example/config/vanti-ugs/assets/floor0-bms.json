@@ -9,26 +9,30 @@
           "request": {"name": "van/uk/brum/ugs/devices/{{id}}"}
         }
       },
-      "fill": {
-        "source": {"ref": "airTemperature", "property": "ambientTemperature.valueCelsius"},
-        "interpolate": {
-          "steps": [
-            {"value": 14, "color": "#00aad9"},
-            {"value": 22.5, "color": "#11b139"},
-            {"value": 30, "color": "#d74c19"}
-          ]
+      "effects": [
+        {
+          "type": "fill",
+          "source": {"ref": "airTemperature", "property": "ambientTemperature.valueCelsius"},
+          "interpolate": {
+            "steps": [
+              {"value": 14, "color": "#00aad9"},
+              {"value": 22.5, "color": "#11b139"},
+              {"value": 30, "color": "#d74c19"}
+            ]
+          }
+        },
+        {
+          "type": "stroke",
+          "source": {"ref": "airTemperature", "property": "ambientTemperature.valueCelsius"},
+          "interpolate": {
+            "steps": [
+              {"value": 14, "color": "#007faa"},
+              {"value": 22.5, "color": "#008700"},
+              {"value": 30, "color": "#ad1f00"}
+            ]
+          }
         }
-      },
-      "stroke": {
-        "source": {"ref": "airTemperature", "property": "ambientTemperature.valueCelsius"},
-        "interpolate": {
-          "steps": [
-            {"value": 14, "color": "#007faa"},
-            {"value": 22.5, "color": "#008700"},
-            {"value": 30, "color": "#ad1f00"}
-          ]
-        }
-      }
+      ]
     }
   },
   "elements": [

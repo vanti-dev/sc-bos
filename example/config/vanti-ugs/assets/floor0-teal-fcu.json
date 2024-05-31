@@ -13,21 +13,24 @@
           "request": {"name": "van/uk/brum/ugs/devices/{{id}}"}
         }
       },
-      "spin": {
-        "source": {"ref": "fanSpeed"},
-        "direction": {
-          "property": "direction",
-          "clockwise": 1,
-          "anticlockwise": 2
-        },
-        "duration": {
-          "property": "percentage",
-          "interpolate": [
-            {"value": 1, "durationMs": 5000},
-            {"value": 100, "durationMs": 500}
-          ]
+      "effects": [
+        {
+          "type": "spin",
+          "source": {"ref": "fanSpeed"},
+          "direction": {
+            "property": "direction",
+            "clockwise": 1,
+            "anticlockwise": 2
+          },
+          "duration": {
+            "property": "percentage",
+            "interpolate": [
+              {"value": 1, "durationMs": 5000},
+              {"value": 100, "durationMs": 500}
+            ]
+          }
         }
-      }
+      ]
     }
   },
   "elements": [

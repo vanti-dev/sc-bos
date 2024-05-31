@@ -67,21 +67,24 @@ This example is slightly modified from the [UGS sample](../../example/config/van
         }
       },
       // effects to apply to the element based on the data
-      "fill": {
-        "source": {
-          // "light" refers to the source defined above
-          "ref": "light",
-          // the property path to the data to use, supports foo.bar[1].baz syntax
-          "property": "levelPercent"
-        },
-        // how to convert the data into a colour
-        "interpolate": {
-          "steps": [
-            {"value": 0, "color": "#40464d"}, // grey when off
-            {"value": 100, "color": "#ffaf25"} // yellow when on
-          ]
+      "effects": [
+        {
+          "type": "fill",
+          "source": {
+            // "light" refers to the source defined above
+            "ref": "light",
+            // the property path to the data to use, supports foo.bar[1].baz syntax
+            "property": "levelPercent"
+          },
+          // how to convert the data into a colour
+          "interpolate": {
+            "steps": [
+              {"value": 0, "color": "#40464d"}, // grey when off
+              {"value": 100, "color": "#ffaf25"} // yellow when on
+            ]
+          }
         }
-      }
+      ]
     }
   ]
 }
@@ -101,6 +104,57 @@ The lighting config in the UGS example uses this to configure the lights. The SV
 id attribute, then within those groups are the elements that represent the light fixtures.
 In the config the `"selector"` is set to `"#LTF-L00-01 rect`, which matches all `<rect>` elements that are a child of
 elements with `id="LTF-L00-01"`.
+
+### Effect Selectors
+
+By default, effects are applied to the SVG elements identified by the elements `selector` property, if instead you want
+to apply the effect to a child element then you can configure a `selector` property on the effect object as well.
+
+Assuming we have an SVG element representing a desk fan that is bound to both a FanSpeed and an OnOff trait.
+We want to spin the fan blades based on the FanSpeed.percentage property but adjust the colour of the power led based on
+the OnOff.status property.
+Config that accomplishes this is:
+
+```json5
+{
+  "element": [
+    {
+      "selector": "#deskFan",
+      "sources": {
+        "fanSpeed": {
+          "trait": "smartcore.traits.FanSpeed",
+          "request": {"name": "myHome/deskFan"}
+        },
+        "power": {
+          "trait": "smartcore.traits.OnOff",
+          "request": {"name": "myHome/deskFan"}
+        }
+      },
+      "effects": [
+        {
+          "type": "spin",
+          "selector": "#fanBlades", // select the element with id="fanBlades" that is a child of the deskFan element
+          "source": {"ref": "fanSpeed", "property": "percentage"}
+        },
+        {
+          "type": "fill",
+          "selector": "#powerLed", // select the element with id="powerLed" that is a child of the deskFan element
+          "source": {"ref": "power", "property": "status"},
+          "interpolate": {
+            "steps": [
+              {"value": 1, "color": "green"}, // 1 == ON
+              {"value": 2, "color": "red"} // 2 == OFF
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+Note, it makes no sense to apply more than one effect of the same type without specifying a selector, the latter effect
+will override the former.
 
 ### Element Templates
 
@@ -130,15 +184,18 @@ SVG.
           "request": {"name": "van/uk/brum/ugs/devices/{{id}}"}
         }
       },
-      "fill": {
-        "source": {"ref": "light", "property": "levelPercent"},
-        "interpolate": {
-          "steps": [
-            {"value": 0, "color": "#40464d"},
-            {"value": 100, "color": "#ffaf25"}
-          ]
+      "effects": [
+        {
+          "type": "fill",
+          "source": {"ref": "light", "property": "levelPercent"},
+          "interpolate": {
+            "steps": [
+              {"value": 0, "color": "#40464d"},
+              {"value": 100, "color": "#ffaf25"}
+            ]
+          }
         }
-      }
+      ]
     }
   },
   "elements": [
