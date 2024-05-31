@@ -18,12 +18,11 @@
       }
     },
     "authn": {
-      "disabled": true,
       "user": {
         "fileAccounts": true,
         "keycloakAccounts": {
           "url": "http://localhost:8888",
-          "realm": "smart-core"
+          "realm": "Smart_Core"
         }
       },
       "system": {

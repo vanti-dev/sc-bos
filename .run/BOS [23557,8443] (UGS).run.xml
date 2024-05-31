@@ -2,7 +2,7 @@
   <configuration default="false" name="BOS [23557,8443] (UGS)" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="sc-bos" />
     <working_directory value="$PROJECT_DIR$" />
-    <parameters value="--policy-mode off --data .data/vanti-ugs --appconf example/config/vanti-ugs/app.conf.json --sysconf example/config/vanti-ugs/system.conf.json" />
+    <parameters value="--policy-mode check --data .data/vanti-ugs --appconf example/config/vanti-ugs/app.conf.json --sysconf example/config/vanti-ugs/system.conf.json" />
     <kind value="PACKAGE" />
     <package value="github.com/vanti-dev/sc-bos/cmd/bos" />
     <directory value="$PROJECT_DIR$" />
