@@ -267,3 +267,100 @@ one example - and in this case the click target is handled via the underlying el
   ]
 }
 ```
+
+## Effect types
+
+### Fill and Stroke
+
+These effects adjust the colour of the fill or stroke property of the element.
+The effect is configured to read a numeric value from the source and interpolate between colours based on that value.
+
+Here is an example effect that sets the fill colour based on the openPercent property of a source:
+
+```json5
+{
+  "type": "fill",
+  "source": {"ref": "openClose", "property": "statesList[0].openPercent"},
+  "interpolate": {
+    "steps": [
+      {"value": 0, "color": "green"},
+      {"value": 100, "color": "red"}
+    ]
+  }
+}
+```
+
+Changing the stroke colour uses the same configuration but with the `"type": "stroke"` property.
+
+The interpolation steps should be sorted by value in ascending order.
+If the source value lies outside the min or max values then the first or last colour will be used respectively.
+
+You can use this effect even if the source value is not continuous.
+Here is an example that changes the colour based on the access grant type:
+
+```json5
+{
+  "type": "fill",
+  "source": {"ref": "access", "property": "grant"},
+  "interpolate": {
+    "steps": [
+      {"value": 0, "color": "grey"}, // unknown
+      {"value": 1, "color": "green"}, // granted
+      {"value": 2, "color": "red"}, // denied
+      {"value": 3, "color": "blue"}, // pending
+      {"value": 4, "color": "yellow"}, // aborted
+      {"value": 5, "color": "red"}, // forced
+      {"value": 6, "color": "yellow"}, // failed
+      {"value": 7, "color": "red"}     // tailgate
+    ]
+  }
+}
+```
+
+### Spin
+
+This effect causes the element to rotate around its centre.
+You can bind the direction and speed of the rotation to source properties.
+
+This example spins the 'fan' based on data from a FanSpeed device:
+
+```json5
+{
+  "type": "spin",
+  "source": {"ref": "fanSpeed"},
+  "direction": {
+    "property": "direction", // the property of the source is bound to the direction
+    "clockwise": 1, // when the direction property is 1, spin clockwise
+    "anticlockwise": 2       // otherwise spin anticlockwise
+  },
+  "duration": {
+    "property": "percentage", // the property of the source is bound to the speed
+    "interpolate": [
+      // The speed is described by how long 1 rotation takes and is mapped to the interpolation steps.
+      {"value": 1, "durationMs": 5000}, // when 'percentage' is 1, spin once every 5 seconds.
+      {"value": 100, "durationMs": 500}
+    ]
+  }
+}
+```
+
+For the duration of a spin, if the source property is below the minimum value then the spin will be paused.
+The duration will never be less than the maximum values duration.
+
+### Text
+
+Change the text content of an element based on a template string.
+Template strings look like `"{{foo}} is {{bar}}"` and are replaced with the values of the properties of the source.
+
+When using the text effect in a [template](#element-templates), instead of the usual double-mustache `{{` and `}}`
+tokens, use `{[` and `]}`.
+
+Under the hood we use [handlebars](https://handlebarsjs.com/) to render the template strings, which performs HTML
+escaping. We set the `textContent` property of the EFG element with the output of the template.
+The source object is passed to the handlebars template renderer, so you can use any property of the source in the
+template pattern.
+
+We provide the following additional helper functions for use in your template:
+
+- `toFixed` -
+  Uses [Number.prototype.toFixed()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed)
