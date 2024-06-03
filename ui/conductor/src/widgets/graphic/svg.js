@@ -1,6 +1,7 @@
 import {toValue} from '@/util/vue.js';
 import binarySearch from 'binary-search';
 import Color from 'colorjs.io';
+import Handlebars from 'handlebars';
 import {get as _get} from 'lodash';
 import {onScopeDispose, watch} from 'vue';
 
@@ -34,6 +35,10 @@ const effects = [
   {
     test: 'spin',
     apply: (el, cfg, sources) => select(el, cfg, el => applySpin(el, cfg, sources))
+  },
+  {
+    test: 'text',
+    apply: (el, cfg, sources) => select(el, cfg, el => applyText(el, cfg, sources))
   }
 ];
 
@@ -135,4 +140,24 @@ const applySpin = (el, cfg, sources) => {
       }
     }, {immediate: true});
   }
+};
+
+const applyText = (el, cfg, sources) => {
+  const sourceCfg = cfg.source;
+  const sourceResource = sources[sourceCfg.ref];
+  if (!sourceResource) return;
+
+  const helpers = {
+    toFixed: (value, decimals) => value?.toFixed(decimals)
+  };
+  const template = Handlebars.compile(cfg.template, {
+    knownHelpers: Object.keys(helpers).reduce((acc, key) => {
+      acc[key] = true;
+      return acc;
+    }, {})
+  });
+
+  watch(() => toValue(sourceResource.value), value => {
+    el.textContent = template(value ?? {}, {helpers});
+  }, {immediate: true});
 };

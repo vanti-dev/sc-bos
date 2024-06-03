@@ -13,7 +13,11 @@ export async function loadConfig(path) {
   const templates = {};
   if (json.templates) {
     for (const [name, template] of Object.entries(json.templates)) {
-      templates[name] = parseTemplate(template);
+      const render = parseTemplate(template);
+      templates[name] = (ctx) => {
+        const output = render(ctx);
+        return replaceTags(['{[', ']}'], ['{{', '}}'], output);
+      };
     }
   }
 
@@ -35,4 +39,74 @@ export async function loadConfig(path) {
   }
 
   return json;
+}
+
+/**
+ * @param {[string,string]} needle
+ * @param {[string,string]} replacement
+ * @param {T} haystack
+ * @return {T}
+ * @template T
+ */
+function replaceTags(needle, replacement, haystack) {
+  switch (typeOf(haystack)) {
+    case 'string':
+      return replaceStringTags(needle, replacement, haystack);
+    case 'object':
+      return replaceObjectTags(needle, replacement, haystack);
+    case 'array':
+      return replaceArrayTags(needle, replacement, haystack);
+    default:
+      return haystack;
+  }
+}
+
+/**
+ * @param {[string,string]} needle
+ * @param {[string,string]} replacement
+ * @param {string} haystack
+ * @return {string}
+ */
+function replaceStringTags(needle, replacement, haystack) {
+  for (let i = 0; i < needle.length; i++) {
+    haystack = haystack.replace(needle[i], replacement[i]);
+  }
+  return haystack;
+}
+
+/**
+ * @param {[string,string]} needle
+ * @param {[string,string]} replacement
+ * @param {Object} haystack
+ * @return {Object}
+ */
+function replaceObjectTags(needle, replacement, haystack) {
+  for (const [key, value] of Object.entries(haystack)) {
+    // todo: should we replace in the key too?
+    haystack[key] = replaceTags(needle, replacement, value);
+  }
+  return haystack;
+}
+
+/**
+ * @param {[string,string]} needle
+ * @param {[string,string]} replacement
+ * @param {Array} haystack
+ * @return {Array}
+ */
+function replaceArrayTags(needle, replacement, haystack) {
+  for (let i = 0; i < haystack.length; i++) {
+    haystack[i] = replaceTags(needle, replacement, haystack[i]);
+  }
+  return haystack;
+}
+
+/**
+ * @param {any} value
+ * @return {string}
+ */
+function typeOf(value) {
+  if (Array.isArray(value)) return 'array';
+  if (value === null) return 'null';
+  return typeof value;
 }
