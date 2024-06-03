@@ -12,6 +12,7 @@
       "effects": [
         {
           "type": "fill",
+          "selector": "path",
           "source": {"ref": "airTemperature", "property": "ambientTemperature.valueCelsius"},
           "interpolate": {
             "steps": [
@@ -23,6 +24,7 @@
         },
         {
           "type": "stroke",
+          "selector": "path",
           "source": {"ref": "airTemperature", "property": "ambientTemperature.valueCelsius"},
           "interpolate": {
             "steps": [
@@ -31,6 +33,12 @@
               {"value": 30, "color": "#ad1f00"}
             ]
           }
+        },
+        {
+          "type": "text",
+          "selector": "text tspan",
+          "source": {"ref": "airTemperature"},
+          "template": "{[toFixed ambientTemperature.valueCelsius 1]}°C"
         }
       ]
     }
