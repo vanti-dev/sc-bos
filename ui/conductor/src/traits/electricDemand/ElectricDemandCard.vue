@@ -35,28 +35,40 @@ const {
 } = useElectricDemand(() => props.value);
 
 const rows = computed(() => {
-  return [
-    {
+  const result = [];
+
+  if (realPower.value !== null) {
+    result.push({
       label: 'Real Power',
       value: realPower.value.toFixed(3),
       unit: realPowerUnit.value
-    },
-    {
+    });
+  }
+
+  if (apparentPower.value !== null) {
+    result.push({
       label: 'Apparent Power',
       value: apparentPower.value.toFixed(3),
       unit: apparentPowerUnit.value
-    },
-    {
+    });
+  }
+
+  if (reactivePower.value !== null) {
+    result.push({
       label: 'Reactive Power',
       value: reactivePower.value.toFixed(3),
       unit: reactivePowerUnit.value
-    },
-    {
+    });
+  }
+
+  if (powerFactor.value !== null) {
+    result.push({
       label: 'Power Factor',
       value: powerFactor.value?.toFixed(2),
       unit: undefined
-    }
-  ];
+    });
+  }
+  return result;
 });
 </script>
 
