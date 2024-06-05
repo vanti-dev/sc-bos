@@ -61,7 +61,7 @@ export function usePullElectricDemand(query, paused = false) {
 export function useElectricDemand(value) {
   const _v = computed(() => toValue(value));
 
-  // return (v / d) or 0 if v is undefined
+  // return (v / d) or null if v is undefined or 0
   const div = (v, d) => v ? v / d : null;
 
   const realPower = computed(() => div(_v.value?.realPower, 1000));
@@ -70,7 +70,7 @@ export function useElectricDemand(value) {
   const apparentPowerUnit = computed(() => 'kVA');
   const reactivePower = computed(() => div(_v.value?.reactivePower, 1000));
   const reactivePowerUnit = computed(() => 'kVAr');
-  const powerFactor = computed(() => _v.value?.powerFactor ? _v.value?.powerFactor : null);
+  const powerFactor = computed(() => div(_v.value?.powerFactor, 1));
 
   return {
     realPower, realPowerUnit,
