@@ -30,7 +30,7 @@ func unmarshalPageToken(pageToken string) (history.Record, error) {
 	if err != nil {
 		return history.Record{}, err
 	}
-	var pbRecord *gen.HistoryRecord
+	pbRecord := &gen.HistoryRecord{}
 	err = proto.Unmarshal(bs, pbRecord)
 	if err != nil {
 		return history.Record{}, err
