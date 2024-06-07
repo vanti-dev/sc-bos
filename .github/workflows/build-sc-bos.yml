@@ -31,11 +31,18 @@ jobs:
       - name: Test
         run: go test -v ./...
 
-      - name: Build for Linux (use with Docker)
+      - name: Build for Linux amd64 (use with Docker)
         run: go build -o .build/linux-amd64/sc-bos github.com/vanti-dev/sc-bos/cmd/bos
         env:
           GOOS: linux
           GOARCH: amd64
+          CGO_ENABLED: 0
+
+      - name: Build for Linux arm64 (use with Docker)
+        run: go build -o .build/linux-arm64/sc-bos github.com/vanti-dev/sc-bos/cmd/bos
+        env:
+          GOOS: linux
+          GOARCH: arm64
           CGO_ENABLED: 0
 
       - name: Build for Beckhoff
@@ -56,6 +63,7 @@ jobs:
         run: |
           mkdir -p .out
           tar -czf .out/sc-bos_${{ github.ref_name }}_linux-amd64.tar.gz -C .build/linux-amd64 .
+          tar -czf .out/sc-bos_${{ github.ref_name }}_linux-arm64.tar.gz -C .build/linux-arm64 .
           tar -czf .out/sc-bos_${{ github.ref_name }}_freebsd-amd64.tar.gz -C .build/freebsd-amd64 .
           tar -czf .out/sc-bos_${{ github.ref_name }}_win-amd64.tar.gz -C .build/win-amd64 .
 
