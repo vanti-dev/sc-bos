@@ -1,7 +1,11 @@
 FROM alpine:3.18
 LABEL vendor="Vanti Ltd"
 
-COPY .build/sc-bos /app/
+# automatically populated by the builder
+# will be 'linux/amd64' or 'linux/arm64' etc.
+ARG TARGETPLATFORM
+
+COPY .build/sc-bos/${TARGETPLATFORM} /app/
 COPY .build/ops-ui/ /app/ops-ui/
 COPY default/cfg/ /cfg/
 COPY default/ui-config/ /app/ui-config/
