@@ -1,13 +1,13 @@
 import vue from '@vitejs/plugin-vue2';
-import gitRevisionVitePlugin from 'git-revision-vite-plugin';
 import glob from 'glob';
 import {createRequire} from 'module';
 import {dirname, join, relative} from 'path';
 import {VuetifyResolver} from 'unplugin-vue-components/resolvers';
 import Components from 'unplugin-vue-components/vite';
 import {fileURLToPath, URL} from 'url';
-import {defineConfig} from 'vite';
+import {defineConfig, loadEnv} from 'vite';
 import eslintPlugin from 'vite-plugin-eslint';
+import {execSync} from 'child_process';
 
 const _require = createRequire(import.meta.url);
 
@@ -26,38 +26,42 @@ for (const dep of ['@sc-bos/ui-gen', '@smart-core-os/sc-api-grpc-web']) {
   optimizeDepsInclude.push(...protoFiles.map(f => f.substring(0, f.length - 3)));
 }
 
+const gitCommand = 'git describe --tags --always --match ui/*';
+
 // https://vitejs.dev/config/
-export default defineConfig({
-  define: {},
-  optimizeDeps: {
-    include: optimizeDepsInclude
-  },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        additionalData: `@import "@/sass/variables.scss";\n`
-      },
-      sass: {
-        additionalData: `@import "@/sass/variables.scss"\n`
+export default defineConfig(({mode}) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  return {
+    define: {
+      GIT_VERSION: JSON.stringify(env.GIT_VERSION || execSync(gitCommand).toString().trim())
+    },
+    optimizeDeps: {
+      include: optimizeDepsInclude
+    },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: `@import "@/sass/variables.scss";\n`
+        },
+        sass: {
+          additionalData: `@import "@/sass/variables.scss"\n`
+        }
+      }
+    },
+    plugins: [
+      vue(),
+      eslintPlugin(),
+      // can't fix imported var names, so tell eslint to ignore them
+      // eslint-disable-next-line new-cap
+      Components({
+        // eslint-disable-next-line new-cap
+        resolvers: [VuetifyResolver()]
+      })
+    ],
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url))
       }
     }
-  },
-  plugins: [
-    vue(),
-    eslintPlugin(),
-    gitRevisionVitePlugin({
-      versionCommand: 'describe --tags --always --match ui/*'
-    }),
-    // can't fix imported var names, so tell eslint to ignore them
-    // eslint-disable-next-line new-cap
-    Components({
-      // eslint-disable-next-line new-cap
-      resolvers: [VuetifyResolver()]
-    })
-  ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
-  }
+  };
 });

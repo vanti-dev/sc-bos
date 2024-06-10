@@ -47,7 +47,6 @@
     "eslint-plugin-jsdoc": "^48.1.0",
     "eslint-plugin-vue": "^9.8.0",
     "eslint-plugin-vuetify": "^1.1.0",
-    "git-revision-vite-plugin": "^0.0.11",
     "glob": "^8.0.3",
     "pkijs": "^3.0.15",
     "sass": "~1.32",
