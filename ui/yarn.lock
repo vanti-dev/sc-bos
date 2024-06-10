@@ -383,11 +383,6 @@
   resolved "https://registry.npmjs.org/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
-"@vanti/eslint-config-vue@^2.1.0":
-  version "2.1.0"
-  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@vanti/eslint-config-vue/-/eslint-config-vue-2.1.0.tgz#ada1f2b53bffa3889df306c425b54f14f090d688"
-  integrity sha512-sCJ/BG2rDe0C40TLwLK7psbBU8RqT3e3QJe7pamhLGlNQPH2+MKjG21LV7l9or/gMo3kUNtnvWxRQpLVoT5scA==
-
 "@vitejs/plugin-vue2@^1.1.2":
   version "1.1.2"
   resolved "https://registry.npmjs.org/@vitejs/plugin-vue2/-/plugin-vue2-1.1.2.tgz"

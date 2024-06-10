@@ -38,7 +38,6 @@
   "devDependencies": {
     "@mdi/font": "^7.2.96",
     "@types/google-protobuf": "^3.15.6",
-    "@vanti/eslint-config-vue": "^2.1.0",
     "@vitejs/plugin-vue2": "^1.1.2",
     "asn1js": "^3.0.5",
     "deepmerge": "^4.2.2",
