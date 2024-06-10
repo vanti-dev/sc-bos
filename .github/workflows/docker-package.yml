@@ -112,6 +112,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: .github/docker/prebuilt.Dockerfile
           # only push if not running locally using act
           push: ${{ !env.ACT }}
           tags: ghcr.io/vanti-dev/sc-bos:${{ env.TAG_NAME }}
