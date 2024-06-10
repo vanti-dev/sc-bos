@@ -1,13 +1,63 @@
 module.exports = {
   parserOptions: {
-    parser: null, // override the parser pulled in from @vanti/eslint-config-vue (babel)
+    parser: null,
     sourceType: 'module',
     ecmaVersion: 'latest'
   },
-  'extends': [
-    '@vanti/eslint-config-vue'
+  env: {
+    browser: true
+  },
+  // https://github.com/feross/standard/blob/master/RULES.md#javascript-standard-style
+  extends: [
+    'google',
+    'plugin:vue/recommended',
+    'plugin:vuetify/recommended',
+    'plugin:jsdoc/recommended'
   ],
-  'rules': {
+  rules: {
+    // allow paren-less arrow functions
+    'arrow-parens': 0,
+    // we don't like trailing commas
+    'comma-dangle': ['error', 'never'],
+    // allow async-await
+    'generator-star-spacing': 0,
+    'linebreak-style': 0,
+    // we have modern monitors these days
+    'max-len': ['error', 120],
+    // allow console debugger during development
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    'vue/attributes-order': 0,
+    // let us call things single words
+    'vue/multi-word-component-names': 0,
+    'vue/html-closing-bracket-newline': ['error', {
+      'multiline': 'never'
+    }],
+    'vue/html-closing-bracket-spacing': ['error', {
+      'selfClosingTag': 'never'
+    }],
+    'vue/html-indent': ['error', 2, {
+      'attribute': 2
+    }],
+    'vue/max-attributes-per-line': [2, {
+      'singleline': 10,
+      'multiline': 1
+    }],
+    'vue/first-attribute-linebreak': ['error', {
+      'singleline': 'beside'
+    }],
+    'vue/singleline-html-element-content-newline': ['off'],
+    // 'turn on' script-setup-uses-vars to allow declaration of vars in <script setup> tags
+    'vue/script-setup-uses-vars': 'error',
+    // we use the jsdoc plugin instead
+    'valid-jsdoc': 'off',
+    'require-jsdoc': 'off',
+    // because we haven't implemented modules correctly across most of our code
+    'jsdoc/no-undefined-types': 0,
+    // because it's the types that are more important, it's still preferred but we don't want
+    // all the explicit warnings
+    'jsdoc/require-param-description': 0,
+    'jsdoc/require-property-description': 0,
+    'jsdoc/require-returns-description': 0,
     'no-unused-vars': 'warn',
     // allow custom v-models
     'vue/no-v-model-argument': 0,
@@ -20,5 +70,17 @@ module.exports = {
       'tags': {'example': {lines: 'any'}}
     }]
   },
-  'ignorePatterns': ['**/dist/*']
+  settings: {
+    jsdoc: {
+      // Enable import('foo').Foo syntax
+      'mode': 'typescript',
+      'tagNamePreference': {
+        'returns': 'return'
+      },
+      'preferredTypes': {
+        'object': 'Object',
+        'Function': 'function'
+      }
+    }
+  }
 };
