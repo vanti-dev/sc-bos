@@ -17,6 +17,7 @@ require (
 	github.com/olebedev/emitter v0.0.0-20190110104742-e8d1457e6aee
 	github.com/open-policy-agent/opa v0.44.0
 	github.com/pborman/uuid v1.2.0
+	github.com/qri-io/jsonpointer v0.1.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/cors v1.8.3
 	github.com/sirupsen/logrus v1.9.0
