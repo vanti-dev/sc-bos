@@ -35,11 +35,13 @@ func sendEmail(dst config.Destination, attachment config.AttachmentCfg, attrs At
 
 	// To
 	var addrs []string
+	toString := ""
 	for _, a := range p.To {
 		addrs = append(addrs, a.Address)
-		fmt.Fprintf(buf, "To: %s\n", a.String())
+		toString += a.String() + ", "
 	}
 
+	fmt.Fprintf(buf, "To: %s\n", strings.TrimSuffix(toString, ", "))
 	fmt.Fprintf(buf, "MIME-Version: 1.0\n")
 
 	// Main message

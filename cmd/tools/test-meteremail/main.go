@@ -57,7 +57,7 @@ func main() {
 	"destination": {
 	"host": "smtp.gmail.com",
 	"from": "OCW Paradise Build <vantiocwdev@gmail.com>",
-	"to": ["Dean Redfern <dean.redfern@vanti.co.uk>"],
+	"to": ["Dean Redfern <dean.redfern@vanti.co.uk>", "Vanti OCW Dev <vantiocwdev@gmail.com>"],
 	"passwordFile" : ".localpassword",
 	"sendTime": "* * * * MON-FRI"
 	},
