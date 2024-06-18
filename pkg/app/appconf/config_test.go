@@ -3,12 +3,14 @@ package appconf
 import (
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
 	"testing/fstest"
 
 	"github.com/google/go-cmp/cmp"
+	"golang.org/x/tools/txtar"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 )
@@ -66,14 +68,14 @@ func TestLoadLocalConfig(t *testing.T) {
 	}
 	tests := []struct {
 		name   string
-		fs     fstest.MapFS
+		fs     fs.FS
 		dir    string
 		file   string
 		config *Config
 	}{
 		{
 			name:   "empty",
-			fs:     nil,
+			fs:     fstest.MapFS{},
 			dir:    "data",
 			file:   "base.json",
 			config: nil,
@@ -120,62 +122,7 @@ func TestLoadLocalConfig(t *testing.T) {
 		},
 		{
 			name: "with multiple nested includes",
-			fs: fstest.MapFS{
-				filepath.Join("data", "base.json"): {
-					Data: []byte(`{
-						"name": "my-config",
-						"includes": ["part-1.json", "part-2.json", "part-3.json"],
-						"drivers": [{"name": "driver-1"}]
-					}`),
-				},
-				filepath.Join("data", "part-1.json"): {
-					Data: []byte(`{
-						"name": "ignored",
-						"includes": ["part-1a.json", "part-1b.json"],
-						"drivers": [{"name": "driver-part-1"}]
-					}`),
-				},
-				filepath.Join("data", "part-1a.json"): {
-					Data: []byte(`{
-						"drivers": [{"name": "driver-part-1a"}]
-					}`),
-				},
-				filepath.Join("data", "part-1b.json"): {
-					Data: []byte(`{
-						"drivers": [{"name": "driver-part-1b"}]
-					}`),
-				},
-				filepath.Join("data", "part-2.json"): {
-					Data: []byte(`{
-						"name": "ignored",
-						"includes": ["part-2a.json", "part-2b.json"],
-						"drivers": [{"name": "driver-part-2"}]
-					}`),
-				},
-				filepath.Join("data", "part-2a.json"): {
-					Data: []byte(`{
-						"drivers": [{"name": "driver-part-2a"}]
-					}`),
-				},
-				filepath.Join("data", "part-2b.json"): {
-					Data: []byte(`{
-						"drivers": [{"name": "driver-part-2b"}]
-					}`),
-				},
-				filepath.Join("data", "part-3.json"): {
-					Data: []byte(`{
-						"name": "ignored",
-						"includes": ["part-3a.json", "part-3b.json"],
-						"drivers": [{"name": "driver-part-3"}]
-					}`),
-				},
-				filepath.Join("data", "part-3a.json"): {
-					Data: []byte(`{
-						"drivers": [{"name": "driver-part-3a"}]
-					}`),
-				},
-				// part-3b is missing
-			},
+			fs:   readTxtarFS(t, "testdata/nested-includes.txtar"),
 			dir:  "data",
 			file: "base.json",
 			config: &Config{
@@ -310,32 +257,7 @@ func TestLoadLocalConfig(t *testing.T) {
 		},
 		{
 			name: "reads directory",
-			fs: fstest.MapFS{
-				filepath.Join("data", "base.json"): {
-					Data: []byte(`{
-						"name": "my-config",
-						"includes": ["dir/*"],
-						"drivers": [{"name": "base1", "type": "base1"}]
-					}`),
-				},
-				// these are in reverse order to ensure they are sorted
-				filepath.Join("data", "dir", "1.json"): {
-					Data: []byte(`{
-						"drivers": [{"name": "dir1", "type": "dir1"}]
-					}`),
-				},
-				filepath.Join("data", "dir", "2.json"): {
-					Data: []byte(`{
-						"includes": ["more/*"],
-						"drivers": [{"name": "dir2", "type": "dir2"}]
-					}`),
-				},
-				filepath.Join("data", "dir", "more", "1.json"): {
-					Data: []byte(`{
-						"drivers": [{"name": "dir/more1", "type": "dir/more1"}]
-					}`),
-				},
-			},
+			fs:   readTxtarFS(t, "testdata/dir.txtar"),
 			dir:  "data",
 			file: "base.json",
 			config: &Config{
@@ -352,53 +274,7 @@ func TestLoadLocalConfig(t *testing.T) {
 		},
 		{
 			name: "directory overrides",
-			fs: fstest.MapFS{
-				filepath.Join("data", "base.json"): {
-					Data: []byte(`{
-						"name": "my-config",
-						"includes": ["file1.json","dir1/*","dir2/*","file2.json"],
-						"drivers": [{"name": "base", "type": "base"}]
-					}`),
-				},
-				filepath.Join("data", "file1.json"): {
-					Data: []byte(`{
-						"drivers": [
-							{"name": "base", "type": "file1"},
-							{"name": "file1", "type": "file1"}
-						]
-					}`),
-				},
-				filepath.Join("data", "file2.json"): {
-					Data: []byte(`{
-						"drivers": [
-							{"name": "base", "type": "file2"},
-							{"name": "file1", "type": "file2"},
-							{"name": "dir1/1", "type": "file2"},
-							{"name": "dir2/1", "type": "file2"},
-							{"name": "file2", "type": "file2"}
-						]
-					}`),
-				},
-				filepath.Join("data", "dir1", "1.json"): {
-					Data: []byte(`{
-						"drivers": [
-							{"name": "base", "type": "dir1/1"},
-							{"name": "file1", "type": "dir1/1"},
-							{"name": "dir1/1", "type": "dir1/1"}
-						]
-					}`),
-				},
-				filepath.Join("data", "dir2", "1.json"): {
-					Data: []byte(`{
-						"drivers": [
-							{"name": "base", "type": "dir2/1"},
-							{"name": "file1", "type": "dir2/1"},
-							{"name": "dir1/1", "type": "dir2/1"},
-							{"name": "dir2/1", "type": "dir2/1"}
-						]
-					}`),
-				},
-			},
+			fs:   readTxtarFS(t, "testdata/dir-overrides.txtar"),
 			dir:  "data",
 			file: "base.json",
 			config: &Config{
@@ -434,8 +310,12 @@ func TestLoadLocalConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			readFile = tt.fs.ReadFile
-			glob = tt.fs.Glob
+			readFile = func(name string) ([]byte, error) {
+				return fs.ReadFile(tt.fs, name)
+			}
+			glob = func(pattern string) (matches []string, err error) {
+				return fs.Glob(tt.fs, pattern)
+			}
 			conf, err := LoadLocalConfig(tt.dir, tt.file)
 			if tt.config != nil && conf == nil && err != nil {
 				t.Errorf("expected config, got error: %s", err)
@@ -447,4 +327,19 @@ func TestLoadLocalConfig(t *testing.T) {
 			readFile = os.ReadFile
 		})
 	}
+}
+
+func readTxtarFS(t *testing.T, file string) fs.FS {
+	// todo: once https://github.com/golang/go/issues/44158 is implemented all this can go away
+	t.Helper()
+	ar, err := txtar.ParseFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mfs := fstest.MapFS{}
+	for _, f := range ar.Files {
+		// it's slightly incorrect to use f.Name here as fs.FS has stricter requirements on path formats
+		mfs[f.Name] = &fstest.MapFile{Data: f.Data}
+	}
+	return mfs
 }

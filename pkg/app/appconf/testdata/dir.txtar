@@ -1,0 +1,19 @@
+-- data/base.json --
+{
+  "name": "my-config",
+  "includes": ["dir/*"],
+  "drivers": [{"name": "base1", "type": "base1"}]
+}
+-- data/dir/1.json --
+{
+  "drivers": [{"name": "dir1", "type": "dir1"}]
+}
+-- data/dir/2.json --
+{
+  "includes": ["more/*"],
+  "drivers": [{"name": "dir2", "type": "dir2"}]
+}
+-- data/dir/more/1.json --
+{
+  "drivers": [{"name": "dir/more1", "type": "dir/more1"}]
+}
