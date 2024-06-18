@@ -1,0 +1,44 @@
+-- data/base.json --
+{
+  "name": "my-config",
+  "includes": ["part-1.json", "part-2.json", "part-3.json"],
+  "drivers": [{"name": "driver-1"}]
+}
+-- data/part-1.json --
+{
+  "name": "ignored",
+  "includes": ["part-1a.json", "part-1b.json"],
+  "drivers": [{"name": "driver-part-1"}]
+}
+-- data/part-1a.json --
+{
+  "drivers": [{"name": "driver-part-1a"}]
+}
+-- data/part-1b.json --
+{
+  "drivers": [{"name": "driver-part-1b"}]
+}
+-- data/part-2.json --
+{
+  "name": "ignored",
+  "includes": ["part-2a.json", "part-2b.json"],
+  "drivers": [{"name": "driver-part-2"}]
+}
+-- data/part-2a.json --
+{
+  "drivers": [{"name": "driver-part-2a"}]
+}
+-- data/part-2b.json --
+{
+  "drivers": [{"name": "driver-part-2b"}]
+}
+-- data/part-3.json --
+{
+  "name": "ignored",
+  "includes": ["part-3a.json", "part-3b.json"],
+  "drivers": [{"name": "driver-part-3"}]
+}
+-- data/part-3a.json --
+{
+  "drivers": [{"name": "driver-part-3a"}]
+}
