@@ -4,6 +4,7 @@ package appconf
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -20,8 +21,12 @@ import (
 
 // for testing
 var (
-	readFile = os.ReadFile
-	glob     = filepath.Glob
+	readFile  = os.ReadFile
+	writeFile = os.WriteFile
+	copyFile  = io.Copy
+	openFile  = os.Open
+	mkdirAll  = os.MkdirAll
+	glob      = filepath.Glob
 )
 
 type Config struct {
