@@ -65,6 +65,10 @@ func (a *Auto) pullTraits(ctx context.Context, dst chan<- proto.Message, device 
 			grp.Go(func() error {
 				return handleErr(tn, a.pullAmbientBrightness(ctx, dst, device))
 			})
+		case trait.EnterLeaveSensor:
+			grp.Go(func() error {
+				return handleErr(tn, a.pullEnterLeave(ctx, dst, device))
+			})
 		case trait.Light:
 			grp.Go(func() error {
 				return handleErr(tn, a.pullBrightness(ctx, dst, device))
@@ -292,6 +296,41 @@ func (a *Auto) pullOccupancy(ctx context.Context, dst chan<- proto.Message, devi
 	}
 	reduce := func(cs []*traits.PullOccupancyResponse_Change) proto.Message {
 		return &traits.PullOccupancyResponse{Changes: cs}
+	}
+	delay := device.PollInterval.Or(DefaultPollInterval)
+
+	return doPull(ctx, dst, pullFunc, pollFunc, reduce, delay)
+}
+
+// pullEnterLeave publishes device's EnterLeave changes (as *traits.PullEnterLeaveEventsResponse) to dst,
+// returning when ctx is done or a non-recoverable error occurs.
+func (a *Auto) pullEnterLeave(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
+	var client traits.EnterLeaveSensorApiClient
+	err := grpcClient(a, &client, traits.NewEnterLeaveSensorApiClient, device)
+	if err != nil {
+		return err
+	}
+
+	pullFunc := func(ctx context.Context, stream chan<- *traits.PullEnterLeaveEventsResponse_Change) error {
+		ss, err := client.PullEnterLeaveEvents(ctx, &traits.PullEnterLeaveEventsRequest{Name: device.Name})
+		if err != nil {
+			return err
+		}
+		return pullStreamChanges[*traits.PullEnterLeaveEventsResponse](ctx, stream, ss)
+	}
+	pollFunc := func(ctx context.Context, stream chan<- *traits.PullEnterLeaveEventsResponse_Change) error {
+		msg, err := client.GetEnterLeaveEvent(ctx, &traits.GetEnterLeaveEventRequest{Name: device.Name})
+		if err != nil {
+			return err
+		}
+		return chans.SendContext(ctx, stream, &traits.PullEnterLeaveEventsResponse_Change{
+			Name:            device.Name,
+			ChangeTime:      timestamppb.Now(),
+			EnterLeaveEvent: msg,
+		})
+	}
+	reduce := func(cs []*traits.PullEnterLeaveEventsResponse_Change) proto.Message {
+		return &traits.PullEnterLeaveEventsResponse{Changes: cs}
 	}
 	delay := device.PollInterval.Or(DefaultPollInterval)
 
