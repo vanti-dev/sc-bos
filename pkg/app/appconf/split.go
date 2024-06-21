@@ -12,23 +12,80 @@ import (
 	"go.uber.org/multierr"
 )
 
+// Split The top level struct of the *.split.json file which defines how to split the *.json file
+// recursive
+type Split struct {
+	SplitKey string  `json:"splitKey"`
+	Key      string  `json:"key"`
+	Path     string  `json:"path"`
+	Splits   []Split `json:"splits"`
+}
+
 // unmarshalExt reads files and includes from external config files.
 func unmarshalExt(dst *Config, dir string, paths ...string) ([]string, error) {
 	return loadIncludes(dir, dst, paths, nil)
 }
 
 // readSplits reads split data from a file.
-func readSplits(file string) ([]split, error) {
-	var splits []split
-	data, err := readFile(file)
+func readSplits(file string) ([]Split, error) {
+	f, err := os.ReadFile(file)
+
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(data, &splits)
+
+	var splitFile []Split
+	err = json.Unmarshal(f, &splitFile)
 	if err != nil {
 		return nil, err
 	}
-	return splits, nil
+	return splitFile, nil
+}
+
+// writeSplit writes the split structure recursively
+func writeSplit(path string, split Split) error {
+	if len(split.Splits) == 0 {
+		// recursion over, write the child nodes & return
+		path = filepath.Join(path, split.Path)
+		// todo what to write in file here?
+		err := writeFile(path, []byte(split.Key), 0664)
+		if err != nil {
+			return err
+		}
+	} else {
+		path = filepath.Join(path, split.Path)
+		if err := mkdirAll(path, 0755); err != nil {
+			return err
+		}
+		for _, s := range split.Splits {
+			err := writeSplit(path, s)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// writeSplitStructure write the ext cache & config db files describing the config structure i.e.
+// */metadata/location/floor
+// */metadata/product/manufacturer
+// */metadata/product/model
+func writeSplitStructure(root string, splits []Split) error {
+
+	// first write the root directory
+	if err := mkdirAll(root, 0755); err != nil {
+		return err
+	}
+
+	// then let write the structure recursively
+	for _, s := range splits {
+		err := writeSplit(root, s)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // writeSplits writes split data to a file.
@@ -134,54 +191,6 @@ func unmarshalPages(dst *Config, file string) error {
 	return nil
 }
 
-func readJSONMapRefs(file string) (any, error) {
-	// read the file into a map
-	var jsonData any
-	data, err := readFile(file)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(data, &jsonData)
-	if err != nil {
-		return nil, err
-	}
-
-	err = replaceRefs(filepath.Dir(file), jsonData)
-	if err != nil {
-		return nil, err
-	}
-	return jsonData, nil
-}
-
-func replaceRefs(dir string, jsonData any) error {
-	switch v := jsonData.(type) {
-	case map[string]any:
-		if ref, ok := v["$ref"]; ok {
-			if len(v) != 1 {
-				return nil // our logic only creates single key ref objects, this isn't our $ref
-			}
-			refStr, ok := ref.(string)
-			if !ok {
-				return nil // not a string ref, not our $ref
-			}
-			path := filepath.Join(dir, refStr)
-			newDir := filepath.Dir(path)
-
-		}
-	case []any:
-		for i, item := range v {
-			err := replaceRefs(dir, item)
-			if err != nil {
-				return err
-			}
-			v[i] = item
-		}
-	default:
-		// nothing to change, other types of value remain the same
-		return nil
-	}
-}
-
 type split struct {
 	Path        string             `json:"path,omitempty"`
 	Key         string             `json:"key,omitempty"`
@@ -203,7 +212,7 @@ type bootConfig struct {
 }
 
 func (b bootConfig) unmarshalBootConfig(dst *Config, paths ...string) error {
-	splits, err := readSplits(b.splitCacheFile)
+	_, err := readSplits(b.splitCacheFile)
 	if errors.Is(err, os.ErrNotExist) {
 		// if the splits don't exist then ext cache and db shouldn't either, aka first boot
 		err := b.unmarshalFirstBootConfig(dst, paths...)
@@ -222,7 +231,7 @@ func (b bootConfig) unmarshalBootConfig(dst *Config, paths ...string) error {
 		return fmt.Errorf("ext unmarshal: %w", err)
 	}
 
-	extPages := paginate(extCfg, splits)
+	extPages := paginate(extCfg, nil)
 	extChanges, err := writePages(b.extCacheRootFile, extPages)
 	if err != nil {
 		return fmt.Errorf("write ext cache: %w", err)
@@ -246,7 +255,7 @@ func (b bootConfig) unmarshalBootConfig(dst *Config, paths ...string) error {
 	if err != nil {
 		return fmt.Errorf("get live splits: %w", err)
 	}
-	if !splitsEqual(splits, liveSplits) {
+	if !splitsEqual(nil, liveSplits) {
 		extPages = paginate(extCfg, liveSplits)
 		_, err = writePages(b.extCacheRootFile, extPages)
 		if err != nil {
