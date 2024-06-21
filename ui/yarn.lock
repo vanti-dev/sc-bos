@@ -342,10 +342,10 @@
   resolved "https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.14.0.tgz#0bb7ac3cd1c3292db1f39afdabfd03ccea3a3d34"
   integrity sha512-aGg7iToJjdklmxlUlJh/PaPNa4PmqHfyRMLunbL3eaMO0gp656+q1zOKkpJ/CVe9CryJv6tAN1HDoR8cNGzkag==
 
-"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.45":
-  version "1.0.0-beta.45"
-  resolved "https://nexus.vanti.co.uk/repository/npm-releases/@smart-core-os/sc-api-grpc-web/-/sc-api-grpc-web-1.0.0-beta.45.tgz#8e0bb327912e81fb17bffacef80329b4a35bd0b5"
-  integrity sha512-qpYtjPRCb0Zh2hp5NniQ5yelY+IvIZp3dIB6qJsCAhy7PAK0KgFs+YySaWEn9doSibdcSLmxuP7XU0p6JYn7Hg==
+"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.46":
+  version "1.0.0-beta.46"
+  resolved "https://npm.pkg.github.com/download/@smart-core-os/sc-api-grpc-web/1.0.0-beta.46/57e5da6098daf1f88f273685ae5af8dee9f745ae#57e5da6098daf1f88f273685ae5af8dee9f745ae"
+  integrity sha512-BijQgJpDVj7wCeDjtJzbpDoD1OQc1vyEZx7gLVVIZIrf4P41PYIxeIirsvdhoK/mHsroGT6hxIimtnwCBqZEkw==
   dependencies:
     google-protobuf "^3.21.2"
     grpc-web "^1.5.0"
