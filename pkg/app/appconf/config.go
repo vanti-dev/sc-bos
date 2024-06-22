@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -27,6 +28,7 @@ var (
 	openFile  = os.Open
 	mkdirAll  = os.MkdirAll
 	glob      = filepath.Glob
+	readDir   = ioutil.ReadDir
 )
 
 type Config struct {

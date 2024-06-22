@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "location": {
+      "floor": "Floor 1"
+    },
+    "product": {
+      "manufacturer": "Vanti",
+      "model": "Smart Core BOS"
+    },
+    "membership": {
+      "subsystem": "smart"
+    },
+    "more": {
+      "type": "sensor",
+      "function": "temperature"
+    }
+  }
+}
