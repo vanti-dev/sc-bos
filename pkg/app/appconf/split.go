@@ -24,6 +24,19 @@ type Split struct {
 	Splits   []Split `json:"splits"`
 }
 
+func isDirectory(path string) (bool, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+
+	if info.IsDir() {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
 // readSplits reads split data from a file.
 func readSplits(file string) ([]Split, error) {
 	f, err := readFile(file)
@@ -103,48 +116,23 @@ func mergeField(
 	if value.Kind() != reflect.Ptr {
 		return errors.New("not a pointer value")
 	}
-
-	// we now have a struct, which should resemble the given directory
-	// reflect on the struct, compare with the dir tree and when we reach primitive level
-	// update the value of the struct with the value of the file
-
 	value = reflect.Indirect(value)
-	typeOfT := value.Type()
 
-	kind := value.Kind()
-	switch kind {
-	case reflect.Int:
-		file, _ := readFile(path)
-		i, err := strconv.ParseInt(string(file), 10, 0)
+	// we now have a struct and a path to an element of that struct
+	// if the path points to a file, we are ready to update the struct
+	// else if the path is a dir, we keep recursing until we find a file
+	isDrcty, err := isDir(path)
+	if err != nil {
+		return err
+	}
+	if isDrcty {
+		directory, err := readDir(path)
 		if err != nil {
 			return err
 		}
-		value.SetInt(i)
-	case reflect.String:
-		file, _ := readFile(path)
-		value.SetString(string(file))
-	case reflect.Bool:
-		file, _ := readFile(path)
-		b, err := strconv.ParseBool(string(file))
-		if err != nil {
-			return err
-		}
-		value.SetBool(b)
-	case reflect.Float32:
-	case reflect.Float64:
-		file, _ := readFile(path)
-		f, err := strconv.ParseFloat(string(file), 64)
-		if err != nil {
-			return err
-		}
-		value.SetFloat(f)
-	case reflect.Struct:
-		for i := 0; i < value.NumField(); i++ {
-			directory, err := readDir(path)
-			if err != nil {
-				return err
-			}
-			for _, d := range directory {
+		typeOfT := value.Type()
+		for _, d := range directory {
+			for i := 0; i < value.NumField(); i++ {
 				if strings.EqualFold(d.Name(), typeOfT.Field(i).Name) {
 					path := filepath.Join(path, d.Name())
 
@@ -161,7 +149,38 @@ func mergeField(
 				}
 			}
 		}
-	default:
+	} else {
+		kind := value.Kind()
+		switch kind {
+		case reflect.Int:
+			file, _ := readFile(path)
+			i, err := strconv.ParseInt(string(file), 10, 0)
+			if err != nil {
+				return err
+			}
+			value.SetInt(i)
+		case reflect.String:
+			file, _ := readFile(path)
+			value.SetString(string(file))
+		case reflect.Bool:
+			file, _ := readFile(path)
+			b, err := strconv.ParseBool(string(file))
+			if err != nil {
+				return err
+			}
+			value.SetBool(b)
+		case reflect.Float32:
+		case reflect.Float64:
+			file, _ := readFile(path)
+			f, err := strconv.ParseFloat(string(file), 64)
+			if err != nil {
+				return err
+			}
+			value.SetFloat(f)
+		case reflect.Struct:
+
+		default:
+		}
 	}
 
 	return nil
