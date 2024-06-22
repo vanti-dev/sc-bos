@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
+	"strconv"
+	"strings"
 
 	"go.uber.org/multierr"
 )
@@ -21,14 +24,9 @@ type Split struct {
 	Splits   []Split `json:"splits"`
 }
 
-// unmarshalExt reads files and includes from external config files.
-func unmarshalExt(dst *Config, dir string, paths ...string) ([]string, error) {
-	return loadIncludes(dir, dst, paths, nil)
-}
-
 // readSplits reads split data from a file.
 func readSplits(file string) ([]Split, error) {
-	f, err := os.ReadFile(file)
+	f, err := readFile(file)
 
 	if err != nil {
 		return nil, err
@@ -47,8 +45,8 @@ func writeSplit(path string, split Split) error {
 	if len(split.Splits) == 0 {
 		// recursion over, write the child nodes & return
 		path = filepath.Join(path, split.Path)
-		// todo what to write in file here?
-		err := writeFile(path, []byte(split.Key), 0664)
+		// leave them empty on init, then if empty
+		err := writeFile(path, []byte{}, 0664)
 		if err != nil {
 			return err
 		}
@@ -71,6 +69,7 @@ func writeSplit(path string, split Split) error {
 // */metadata/location/floor
 // */metadata/product/manufacturer
 // */metadata/product/model
+// this only needs to be called on first boot to set up the structure
 func writeSplitStructure(root string, splits []Split) error {
 
 	// first write the root directory
@@ -95,6 +94,125 @@ func writeSplits(file string, splits []split) error {
 		return err
 	}
 	return writeFile(file, data, 0664)
+}
+
+func isPrimitiveType(t string) bool {
+	return t == "int" || t == "string" || t == "float32" || t == "float64" || t == "bool"
+}
+
+func setValue(value *reflect.Value, toSet any) {
+	typeOfT := value.Type()
+
+	switch typeOfT.Name() {
+	case "string":
+		value.SetString(toSet.(string))
+	case "int":
+		value.SetInt(int64(toSet.(int)))
+	case "float32":
+		value.SetFloat(float64(toSet.(float32)))
+	case "float64":
+		value.SetFloat(toSet.(float64))
+	case "bool":
+		value.SetBool(toSet.(bool))
+	}
+}
+
+// crap name recurses through the
+func mergeField(
+	value reflect.Value, path string) error {
+
+	if value.Kind() != reflect.Ptr {
+		return errors.New("Not a pointer value")
+	}
+
+	// we now have a struct, which should resemble the given directory
+	// reflect on the struct, compare with the dir tree and when we reach primitive level
+	// update the value of the struct with the value of the file
+
+	value = reflect.Indirect(value)
+	typeOfT := value.Type()
+
+	kind := value.Kind()
+	switch kind {
+	case reflect.Int:
+		file, _ := readFile(path)
+		i, err := strconv.ParseInt(string(file), 10, 0)
+		if err != nil {
+			return err
+		}
+		value.SetInt(i)
+	case reflect.String:
+		file, _ := readFile(path)
+		value.SetString(string(file))
+	case reflect.Bool:
+		file, _ := readFile(path)
+		b, err := strconv.ParseBool(string(file))
+		if err != nil {
+			return err
+		}
+		value.SetBool(b)
+	case reflect.Float32:
+	case reflect.Float64:
+		file, _ := readFile(path)
+		f, err := strconv.ParseFloat(string(file), 64)
+		if err != nil {
+			return err
+		}
+		value.SetFloat(f)
+	case reflect.Struct:
+		for i := 0; i < value.NumField(); i++ {
+			directory, err := os.ReadDir(path)
+			if err != nil {
+				return err
+			}
+			for _, d := range directory {
+				if strings.EqualFold(d.Name(), typeOfT.Field(i).Name) {
+					path := filepath.Join(path, d.Name())
+
+					if value.Field(i).Kind() == reflect.Ptr {
+						err = mergeField(value.Field(i), path)
+					} else {
+						err = mergeField(value.Field(i).Addr(), path)
+					}
+					if err != nil {
+						return err
+					}
+				} else {
+					// do nothing, if the directory name doesn't match the struct field then move on to the next
+				}
+			}
+		}
+	default:
+	}
+
+	return nil
+}
+
+// mergeDbWithExtConfig reads the ext config and merges changes from the DB into it
+func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
+
+	// so at this point we have the ext config loaded into appConfig & splits loaded into splits
+	// now we need to look through the db and merge the changes into appConfig
+
+	// open the root of the db, it should look like appConfig.Config top level, so:
+	// /metadata /drivers /automations /zones
+	directory, err := os.ReadDir(dbRoot)
+	if err != nil {
+		return err
+	}
+
+	for _, d := range directory {
+		switch d.Name() {
+		case "metadata":
+			path := filepath.Join(dbRoot, d.Name())
+			err := mergeField(reflect.ValueOf(appConfig.Metadata), path)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func splitsEqual(a, b []split) bool {
@@ -209,98 +327,4 @@ type bootConfig struct {
 	splitCacheFile   string
 	dbRootFile       string
 	liveSplits       func() ([]split, error)
-}
-
-func (b bootConfig) unmarshalBootConfig(dst *Config, paths ...string) error {
-	_, err := readSplits(b.splitCacheFile)
-	if errors.Is(err, os.ErrNotExist) {
-		// if the splits don't exist then ext cache and db shouldn't either, aka first boot
-		err := b.unmarshalFirstBootConfig(dst, paths...)
-		if err != nil {
-			return fmt.Errorf("first boot %w", err)
-		}
-		return nil
-	}
-	if err != nil {
-		return fmt.Errorf("read splits: %w", err)
-	}
-
-	extCfg := &Config{}
-	_, err = unmarshalExt(extCfg, b.extDir, paths...)
-	if err != nil {
-		return fmt.Errorf("ext unmarshal: %w", err)
-	}
-
-	extPages := paginate(extCfg, nil)
-	extChanges, err := writePages(b.extCacheRootFile, extPages)
-	if err != nil {
-		return fmt.Errorf("write ext cache: %w", err)
-	}
-	if len(extChanges) > 0 {
-		_, err = writePages(b.dbRootFile, extChanges)
-		if err != nil {
-			return fmt.Errorf("write ext changes to db: %w", err)
-		}
-	}
-
-	err = unmarshalPages(dst, b.dbRootFile)
-	if err != nil {
-		return fmt.Errorf("unmarshal db: %w", err)
-	}
-
-	// If the cached splits have changed when compared to live splits,
-	// then we need to update the files we have on disk to match the new format.
-	// Splits can change if drivers are updated or added (or removed) from the system.
-	liveSplits, err := b.liveSplits()
-	if err != nil {
-		return fmt.Errorf("get live splits: %w", err)
-	}
-	if !splitsEqual(nil, liveSplits) {
-		extPages = paginate(extCfg, liveSplits)
-		_, err = writePages(b.extCacheRootFile, extPages)
-		if err != nil {
-			return fmt.Errorf("update ext cache: %w", err)
-		}
-
-		dbPages := paginate(dst, liveSplits)
-		_, err = writePages(b.dbRootFile, dbPages)
-		if err != nil {
-			return fmt.Errorf("update db: %w", err)
-		}
-
-		err = writeSplits(b.splitCacheFile, liveSplits)
-		if err != nil {
-			return fmt.Errorf("write live splits: %w", err)
-		}
-	}
-
-	return nil
-}
-
-func (b bootConfig) unmarshalFirstBootConfig(dst *Config, paths ...string) error {
-	_, err := unmarshalExt(dst, b.extDir, paths...)
-	if err != nil {
-		return fmt.Errorf("ext unmarshal: %w", err)
-	}
-
-	splits, err := b.liveSplits()
-	if err != nil {
-		return fmt.Errorf("get live splits: %w", err)
-	}
-
-	pages := paginate(dst, splits)
-
-	_, err = writePages(b.dbRootFile, pages)
-	if err != nil {
-		return fmt.Errorf("write db: %w", err)
-	}
-	_, err = writePages(b.extCacheRootFile, pages)
-	if err != nil {
-		return fmt.Errorf("write ext cache: %w", err)
-	}
-	err = writeSplits(b.splitCacheFile, splits)
-	if err != nil {
-		return fmt.Errorf("write splits: %w", err)
-	}
-	return nil
 }

@@ -3,6 +3,8 @@ package appconf
 import (
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // the idea is that every driver that wants to be configurable defines a .split.json file (aka a split file)
@@ -12,16 +14,7 @@ import (
 // we are testing that the way we are defining how to split the config makes sense
 // we are defining the structure for the *.split.json files which themselves define how the *.json file can be split
 
-// TestLoadSplitFile sanity check that we can load the split structure from the metadata.split.json file
-func TestLoadSplitFile(t *testing.T) {
-	_, err := readSplits("testdata/metadata.split.json")
-
-	if err != nil {
-		t.Errorf("error reading split file: %s", err)
-	}
-}
-
-// now we have read the split file, we know how to split the file into parts we want to edit
+// read the split file, so we know how to split the file into parts we want to edit
 // we can now create the db & the ext cache file structures based on what we have read in
 // TestCreateSplitPathsStructure tests we can create the directory structure for db & ext cache
 func TestCreateSplitPathsStructure(t *testing.T) {
@@ -44,6 +37,7 @@ func TestCreateSplitPathsStructure(t *testing.T) {
 			"testdata/db/metadata/location/floor",
 			"testdata/db/metadata/product/manufacturer",
 			"testdata/db/metadata/product/model",
+			"testdata/db/metadata/more",
 		}
 
 		for _, p := range expectedPaths {
@@ -53,5 +47,37 @@ func TestCreateSplitPathsStructure(t *testing.T) {
 			}
 			// not sure yet about the file contents // todo need to check
 		}
+	})
+}
+
+// TestJoinDbWithExt test joining the database with the ext (appconf.Config)
+func TestJoinDbWithExt(t *testing.T) {
+
+	assert := assert.New(t)
+	dbRootPath := "testdata/db"
+	t.Run("TestCreateSplitPathsStructure", func(t *testing.T) {
+
+		appConfig, err := LoadLocalConfig("testdata", "metadata.json")
+
+		if err != nil {
+			t.Errorf("failed to LoadLocalConfig: %s", err)
+		}
+
+		assert.Equal("Floor 1", appConfig.Metadata.Location.Floor)
+		assert.Equal("Vanti", appConfig.Metadata.Product.Manufacturer)
+		assert.Equal("Smart Core BOS", appConfig.Metadata.Product.Model)
+		assert.Equal("smart", appConfig.Metadata.Membership.Subsystem)
+		assert.Equal("sensor", appConfig.Metadata.More["type"])
+		assert.Equal("temperature", appConfig.Metadata.More["function"])
+
+		err = mergeDbWithExtConfig(appConfig, dbRootPath)
+		if err != nil {
+			t.Errorf("failed to join app config & db: %s", err)
+		}
+
+		// at this point our appConfig should have been updated with the db values
+		assert.Equal("New Floor", appConfig.Metadata.Location.Floor)
+		assert.Equal("New Manufacturer", appConfig.Metadata.Product.Manufacturer)
+		assert.Equal("New Model", appConfig.Metadata.Product.Model)
 	})
 }
