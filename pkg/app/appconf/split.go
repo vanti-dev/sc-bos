@@ -96,33 +96,12 @@ func writeSplits(file string, splits []split) error {
 	return writeFile(file, data, 0664)
 }
 
-func isPrimitiveType(t string) bool {
-	return t == "int" || t == "string" || t == "float32" || t == "float64" || t == "bool"
-}
-
-func setValue(value *reflect.Value, toSet any) {
-	typeOfT := value.Type()
-
-	switch typeOfT.Name() {
-	case "string":
-		value.SetString(toSet.(string))
-	case "int":
-		value.SetInt(int64(toSet.(int)))
-	case "float32":
-		value.SetFloat(float64(toSet.(float32)))
-	case "float64":
-		value.SetFloat(toSet.(float64))
-	case "bool":
-		value.SetBool(toSet.(bool))
-	}
-}
-
 // crap name recurses through the
 func mergeField(
 	value reflect.Value, path string) error {
 
 	if value.Kind() != reflect.Ptr {
-		return errors.New("Not a pointer value")
+		return errors.New("not a pointer value")
 	}
 
 	// we now have a struct, which should resemble the given directory
@@ -161,7 +140,7 @@ func mergeField(
 		value.SetFloat(f)
 	case reflect.Struct:
 		for i := 0; i < value.NumField(); i++ {
-			directory, err := os.ReadDir(path)
+			directory, err := readDir(path)
 			if err != nil {
 				return err
 			}
@@ -196,7 +175,7 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 
 	// open the root of the db, it should look like appConfig.Config top level, so:
 	// /metadata /drivers /automations /zones
-	directory, err := os.ReadDir(dbRoot)
+	directory, err := readDir(dbRoot)
 	if err != nil {
 		return err
 	}
