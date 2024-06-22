@@ -29,6 +29,7 @@ var (
 	mkdirAll  = os.MkdirAll
 	glob      = filepath.Glob
 	readDir   = ioutil.ReadDir
+	isDir     = isDirectory
 )
 
 type Config struct {

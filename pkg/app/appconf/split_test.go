@@ -37,6 +37,10 @@ func (m MockFs) mockMkdirAll(path string, perm os.FileMode) error {
 	return m.fs.MkdirAll(path, perm)
 }
 
+func (m MockFs) mockIsDir(path string) (bool, error) {
+	return afero.IsDir(m.fs, path)
+}
+
 // read the split file, so we know how to split the file into parts we want to edit
 // we can now create the db file structure based on what we have read in
 // tests we can create the directory structure for db
@@ -51,6 +55,7 @@ func TestBasicMetadataSplit(t *testing.T) {
 	writeFile = mockFs.mockWriteFile
 	mkdirAll = mockFs.mockMkdirAll
 	readDir = mockFs.mockReadDir
+	isDir = mockFs.mockIsDir
 
 	file, err := os.ReadFile("testdata/metadata.split.json")
 	if err != nil {
@@ -122,5 +127,6 @@ func TestBasicMetadataSplit(t *testing.T) {
 		assert.Equal("New Floor", appConfig.Metadata.Location.Floor)
 		assert.Equal("New Manufacturer", appConfig.Metadata.Product.Manufacturer)
 		assert.Equal("New Model", appConfig.Metadata.Product.Model)
+		assert.Equal("smart", appConfig.Metadata.Membership.Subsystem)
 	})
 }
