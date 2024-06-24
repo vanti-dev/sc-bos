@@ -13,6 +13,9 @@
     "more": {
       "type": "sensor",
       "function": "temperature"
-    }
+    },
+    "traits" : [
+      {"name": "oldTrait" }
+    ]
   }
 }
