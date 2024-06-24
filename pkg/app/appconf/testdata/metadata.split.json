@@ -25,6 +25,18 @@
             "path": "/model"
           }
         ]
+      },
+      {
+        "splitKey": "membership",
+        "path": "/membership"
+      },
+      {
+        "splitKey": "traits",
+        "path": "/traits"
+      },
+      {
+        "splitKey": "more",
+        "path": "/more"
       }
     ]
   }

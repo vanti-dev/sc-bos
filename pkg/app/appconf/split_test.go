@@ -1,6 +1,7 @@
 package appconf
 
 import (
+	"encoding/json"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -8,6 +9,8 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/smart-core-os/sc-api/go/traits"
 )
 
 // the idea is that every driver that wants to be configurable defines a .split.json file (aka a split file)
@@ -90,14 +93,16 @@ func TestBasicMetadataSplit(t *testing.T) {
 			filepath.Join("testdata", "db", "metadata", "location", "floor"),
 			filepath.Join("testdata", "db", "metadata", "product", "manufacturer"),
 			filepath.Join("testdata", "db", "metadata", "product", "model"),
+			filepath.Join("testdata", "db", "metadata", "membership"),
+			filepath.Join("testdata", "db", "metadata", "traits"),
+			filepath.Join("testdata", "db", "metadata", "more"),
 		}
 
 		for _, p := range expectedPaths {
 			_, err := readFile(p)
 			if err != nil {
-				t.Errorf("error writing split file structure: %s", err)
+				t.Errorf("failed checking expected paths: %s %s", p, err)
 			}
-			// not sure yet about the file contents // todo need to check
 		}
 
 		appConfig, err := LoadLocalConfig("", "fstest.metadata.json")
@@ -112,11 +117,20 @@ func TestBasicMetadataSplit(t *testing.T) {
 		assert.Equal("smart", appConfig.Metadata.Membership.Subsystem)
 		assert.Equal("sensor", appConfig.Metadata.More["type"])
 		assert.Equal("temperature", appConfig.Metadata.More["function"])
+		assert.Equal(appConfig.Metadata.Traits[0].Name, "oldTrait")
+		assert.Equal(1, len(appConfig.Metadata.Traits))
+		assert.Equal(2, len(appConfig.Metadata.More))
 
 		// now update the db files to simulate a user edit
 		mockFs.mockWriteFile(expectedPaths[0], []byte("New Floor"), 0664)
 		mockFs.mockWriteFile(expectedPaths[1], []byte("New Manufacturer"), 0664)
 		mockFs.mockWriteFile(expectedPaths[2], []byte("New Model"), 0664)
+		mem, _ := json.Marshal(traits.Metadata_Membership{Subsystem: "New Subsystem"})
+		mockFs.mockWriteFile(expectedPaths[3], mem, 0664)
+		traits, _ := json.Marshal([]*traits.TraitMetadata{{Name: "newTrait"}})
+		mockFs.mockWriteFile(expectedPaths[4], traits, 0664)
+		newMoreMap, _ := json.Marshal(map[string]string{"type": "newType", "function": "newFunction"})
+		mockFs.mockWriteFile(expectedPaths[5], newMoreMap, 0664)
 
 		err = mergeDbWithExtConfig(appConfig, dbRootPath)
 		if err != nil {
@@ -127,6 +141,11 @@ func TestBasicMetadataSplit(t *testing.T) {
 		assert.Equal("New Floor", appConfig.Metadata.Location.Floor)
 		assert.Equal("New Manufacturer", appConfig.Metadata.Product.Manufacturer)
 		assert.Equal("New Model", appConfig.Metadata.Product.Model)
-		assert.Equal("smart", appConfig.Metadata.Membership.Subsystem)
+		assert.Equal("New Subsystem", appConfig.Metadata.Membership.Subsystem)
+		assert.Equal("newTrait", appConfig.Metadata.Traits[0].Name)
+		assert.Equal(1, len(appConfig.Metadata.Traits))
+		assert.Equal(2, len(appConfig.Metadata.More))
+		assert.Equal("newType", appConfig.Metadata.More["type"])
+		assert.Equal("newFunction", appConfig.Metadata.More["function"])
 	})
 }

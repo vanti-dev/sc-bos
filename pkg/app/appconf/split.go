@@ -1,18 +1,13 @@
 package appconf
 
 import (
-	"bytes"
-	"crypto/sha256"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
-
-	"go.uber.org/multierr"
 )
 
 // Split The top level struct of the *.split.json file which defines how to split the *.json file
@@ -111,12 +106,12 @@ func writeSplits(file string, splits []split) error {
 
 // crap name recurses through the
 func mergeField(
-	value reflect.Value, path string) error {
+	v reflect.Value, path string) error {
 
-	if value.Kind() != reflect.Ptr {
+	if v.Kind() != reflect.Ptr {
 		return errors.New("not a pointer value")
 	}
-	value = reflect.Indirect(value)
+	value := reflect.Indirect(v)
 
 	// we now have a struct and a path to an element of that struct
 	// if the path points to a file, we are ready to update the struct
@@ -151,34 +146,39 @@ func mergeField(
 		}
 	} else {
 		kind := value.Kind()
+		file, _ := readFile(path)
 		switch kind {
 		case reflect.Int:
-			file, _ := readFile(path)
 			i, err := strconv.ParseInt(string(file), 10, 0)
 			if err != nil {
 				return err
 			}
 			value.SetInt(i)
 		case reflect.String:
-			file, _ := readFile(path)
 			value.SetString(string(file))
 		case reflect.Bool:
-			file, _ := readFile(path)
 			b, err := strconv.ParseBool(string(file))
 			if err != nil {
 				return err
 			}
 			value.SetBool(b)
 		case reflect.Float32:
+			fallthrough
 		case reflect.Float64:
-			file, _ := readFile(path)
 			f, err := strconv.ParseFloat(string(file), 64)
 			if err != nil {
 				return err
 			}
 			value.SetFloat(f)
 		case reflect.Struct:
-
+			fallthrough
+		case reflect.Slice:
+			fallthrough
+		case reflect.Map:
+			err = json.Unmarshal(file, v.Interface())
+			if err != nil {
+				return err
+			}
 		default:
 		}
 	}
@@ -211,81 +211,6 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 	}
 
 	return nil
-}
-
-func splitsEqual(a, b []split) bool {
-	return true
-}
-
-func paginate(c *Config, splits []split) []page {
-	return nil
-}
-
-// writePages writes pages to files based in the directory file is in.
-// Unchanged pages when compared with the filesystem are skipped.
-// All written pages are returned.
-func writePages(file string, pages []page) ([]page, error) {
-	// todo: add a .sum file for pages
-	// The above will improve performance by reducing reads but also
-	// allow us to remove files that are no longer part of the config.
-
-	dir := filepath.Dir(file)
-	if err := mkdirAll(dir, 0755); err != nil {
-		return nil, err
-	}
-	var (
-		changed []page
-		errs    error
-	)
-	for _, p := range pages {
-		fullPath := filepath.Join(dir, p.Path)
-		var oldHash, newHash []byte
-
-		// hash the old page data
-		f, err := openFile(fullPath)
-		switch {
-		case errors.Is(err, os.ErrNotExist):
-			changed = append(changed, p)
-		case err != nil:
-			// don't report this error on the assumption that write will also fail,
-			// and the write error is more informative
-		default: // err == nil
-			h := sha256.New()
-			_, err = copyFile(h, f)
-			f.Close()
-
-			if err == nil {
-				oldHash = h.Sum(nil)
-			}
-		}
-
-		// hash the new page data
-		h := sha256.New()
-		_, err = h.Write(p.JSON)
-		if err != nil {
-			// unexpected error
-			errs = multierr.Append(errs, fmt.Errorf("hashing page %q %w", p.Path, err))
-			continue
-		}
-		newHash = h.Sum(nil)
-
-		if bytes.Equal(oldHash, newHash) {
-			continue // nothing has changed, skip writing
-		}
-
-		// write our changes
-		if err := mkdirAll(filepath.Dir(fullPath), 0755); err != nil {
-			errs = multierr.Append(errs, err)
-			continue
-		}
-		err = writeFile(filepath.Join(dir, p.Path), p.JSON, 0664)
-		if err != nil {
-			errs = multierr.Append(errs, err)
-			continue
-		}
-		changed = append(changed, p)
-	}
-	return changed, nil
 }
 
 func unmarshalPages(dst *Config, file string) error {
