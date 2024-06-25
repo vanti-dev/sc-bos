@@ -1,0 +1,63 @@
+{
+  "drivers": [
+    {
+      "name": "floor-01/bms",
+      "type": "bacnet",
+      "maxConcurrentTransactions": 100,
+      "deviceNamePrefix": "",
+      "objectNamePrefix": "",
+      "devices": [
+        {
+          "name": "uk-ocw/floors/01/devices/CE1",
+          "comm": {
+            "ip": "172.16.8.115:47808"
+          },
+          "id": 1100,
+          "metadata": {
+            "appearance": {
+              "title": "Floor 1 Controller North"
+            },
+            "location": {
+              "floor": "Floor 1",
+              "zone": "North"
+            },
+            "id": {
+              "bacnet": "1100"
+            },
+            "product": {
+              "model": "eBMGR"
+            },
+            "membership": {
+              "subsystem": "hvac"
+            }
+          }
+        },
+        {
+          "name": "uk-ocw/floors/01/devices/CE2",
+          "comm": {
+            "ip": "172.16.8.117:47808"
+          },
+          "id": 1200,
+          "metadata": {
+            "appearance": {
+              "title": "Floor 1 Controller South"
+            },
+            "location": {
+              "floor": "Floor 1",
+              "zone": "South"
+            },
+            "id": {
+              "bacnet": "1100"
+            },
+            "product": {
+              "model": "eBMGR"
+            },
+            "membership": {
+              "subsystem": "hvac"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
