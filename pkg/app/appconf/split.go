@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"strconv"
 	"strings"
 )
 
@@ -147,25 +146,26 @@ func mergeField(
 	} else {
 		kind := value.Kind()
 		file, _ := readFile(path)
+		var pageFile page
+		err := json.Unmarshal(file, &pageFile)
+		if err != nil {
+			return err
+		}
 		switch kind {
 		case reflect.Int:
-			i, err := strconv.ParseInt(string(file), 10, 0)
+			i, err := pageFile.Value.(json.Number).Int64()
 			if err != nil {
 				return err
 			}
 			value.SetInt(i)
 		case reflect.String:
-			value.SetString(string(file))
+			value.SetString(pageFile.Value.(string))
 		case reflect.Bool:
-			b, err := strconv.ParseBool(string(file))
-			if err != nil {
-				return err
-			}
-			value.SetBool(b)
+			value.SetBool((pageFile.Value).(bool))
 		case reflect.Float32:
 			fallthrough
 		case reflect.Float64:
-			f, err := strconv.ParseFloat(string(file), 64)
+			f, err := pageFile.Value.(json.Number).Float64()
 			if err != nil {
 				return err
 			}
@@ -175,7 +175,8 @@ func mergeField(
 		case reflect.Slice:
 			fallthrough
 		case reflect.Map:
-			err = json.Unmarshal(file, v.Interface())
+			bytes, err := json.Marshal(pageFile.Value)
+			err = json.Unmarshal(bytes, v.Interface())
 			if err != nil {
 				return err
 			}
@@ -240,8 +241,8 @@ type split struct {
 }
 
 type page struct {
-	Path string
-	JSON json.RawMessage
+	Key   string `json:"key,omitempty"`
+	Value any    `json:"value,omitempty"`
 }
 
 type bootConfig struct {
@@ -250,4 +251,31 @@ type bootConfig struct {
 	splitCacheFile   string
 	dbRootFile       string
 	liveSplits       func() ([]split, error)
+}
+
+// writePageFile this writes a page file to at the given path
+// a page file defines the value that is going to replace whatever config is located at the path
+// and also includes an optional key which specifies the item in a collection that we are editing
+// if no key is included then the entire config item located at path is replaced
+func writePageFile(path string, key *string, value any) error {
+
+	var pageFile page
+
+	if key != nil {
+		pageFile = page{
+			Key:   *key,
+			Value: value,
+		}
+	} else {
+		pageFile = page{
+			Value: value,
+		}
+	}
+
+	pageFileJson, err := json.Marshal(pageFile)
+	if err != nil {
+		return err
+	}
+
+	return writeFile(path, pageFileJson, 0664)
 }
