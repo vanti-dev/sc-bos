@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 )
 
 // the idea is that every driver that wants to be configurable defines a .split.json file (aka a split file)
@@ -59,25 +60,27 @@ func TestBasicMetadataSplit(t *testing.T) {
 	mkdirAll = mockFs.mockMkdirAll
 	readDir = mockFs.mockReadDir
 	isDir = mockFs.mockIsDir
+	mockFsSplitFileName := "fstest.metadata.split.json"
+	mockFsConfigFileName := "fstest.metadata.json"
 
 	file, err := os.ReadFile("testdata/metadata.split.json")
 	if err != nil {
 		t.Errorf("error reading split file: %s", err)
 	}
-	err = writeFile("fstest.metadata.split.json", file, 0664)
+	err = writeFile(mockFsSplitFileName, file, 0664)
 
 	file, err = os.ReadFile("testdata/metadata.json")
 	if err != nil {
-		t.Errorf("error reading metadata file: %s", err)
+		t.Errorf("error reading config file: %s", err)
 	}
-	writeFile("fstest.metadata.json", file, 0664)
+	writeFile(mockFsConfigFileName, file, 0664)
 
 	assert := assert.New(t)
 	dbRootPath := filepath.Join("testdata", "db")
 
 	t.Run("TestBasicMetadataSplit", func(t *testing.T) {
 
-		splits, err := readSplits("fstest.metadata.split.json")
+		splits, err := readSplits(mockFsSplitFileName)
 
 		if err != nil {
 			t.Errorf("error reading split file: %s", err)
@@ -105,7 +108,7 @@ func TestBasicMetadataSplit(t *testing.T) {
 			}
 		}
 
-		appConfig, err := LoadLocalConfig("", "fstest.metadata.json")
+		appConfig, err := LoadLocalConfig("", mockFsConfigFileName)
 
 		if err != nil {
 			t.Errorf("failed to LoadLocalConfig: %s", err)
@@ -121,16 +124,15 @@ func TestBasicMetadataSplit(t *testing.T) {
 		assert.Equal(1, len(appConfig.Metadata.Traits))
 		assert.Equal(2, len(appConfig.Metadata.More))
 
-		// now update the db files to simulate a user edit
-		mockFs.mockWriteFile(expectedPaths[0], []byte("New Floor"), 0664)
-		mockFs.mockWriteFile(expectedPaths[1], []byte("New Manufacturer"), 0664)
-		mockFs.mockWriteFile(expectedPaths[2], []byte("New Model"), 0664)
-		mem, _ := json.Marshal(traits.Metadata_Membership{Subsystem: "New Subsystem"})
-		mockFs.mockWriteFile(expectedPaths[3], mem, 0664)
-		traits, _ := json.Marshal([]*traits.TraitMetadata{{Name: "newTrait"}})
-		mockFs.mockWriteFile(expectedPaths[4], traits, 0664)
-		newMoreMap, _ := json.Marshal(map[string]string{"type": "newType", "function": "newFunction"})
-		mockFs.mockWriteFile(expectedPaths[5], newMoreMap, 0664)
+		// now update the db files to simulate a user edit.
+		// i.e. we are creating the page files that would contain the user edits to overlay onto our app config
+		writePageFile(expectedPaths[0], nil, "New Floor")
+		writePageFile(expectedPaths[1], nil, "New Manufacturer")
+		writePageFile(expectedPaths[2], nil, "New Model")
+		writePageFile(expectedPaths[3], nil, traits.Metadata_Membership{Subsystem: "New Subsystem"})
+		// we want to replace the whole array here to test that we can do that
+		writePageFile(expectedPaths[4], nil, []traits.TraitMetadata{{Name: "newTrait"}})
+		writePageFile(expectedPaths[5], nil, map[string]string{"type": "newType", "function": "newFunction"})
 
 		err = mergeDbWithExtConfig(appConfig, dbRootPath)
 		if err != nil {
@@ -147,5 +149,89 @@ func TestBasicMetadataSplit(t *testing.T) {
 		assert.Equal(2, len(appConfig.Metadata.More))
 		assert.Equal("newType", appConfig.Metadata.More["type"])
 		assert.Equal("newFunction", appConfig.Metadata.More["function"])
+	})
+}
+
+// tests the ability of the config system to update the property of a specific device in the config
+// the device is specified using the "key" attribute in the split file
+// when the split-config encounters the key property being present in the split file, for a given split
+// it will search through the array / map of objects in the config for the object with the matching key
+// and then follow the same process
+func TestDeviceSpecificBmsPage(t *testing.T) {
+
+	// first set up the mock filesystem, read & add the metadata & split files
+	// is more readable to do it this way
+	var mockFs = MockFs{fs: afero.NewMemMapFs()}
+	readFile = mockFs.mockReadFile
+	writeFile = mockFs.mockWriteFile
+	mkdirAll = mockFs.mockMkdirAll
+	readDir = mockFs.mockReadDir
+	isDir = mockFs.mockIsDir
+	mockFsSplitFileName := "fstest.bms.split.json"
+	mockFsConfigFileName := "fstest.bms.json"
+
+	file, err := os.ReadFile("testdata/bms.split.json")
+	if err != nil {
+		t.Errorf("error reading split file: %s", err)
+	}
+	err = writeFile(mockFsSplitFileName, file, 0664)
+
+	file, err = os.ReadFile("testdata/bms.json")
+	if err != nil {
+		t.Errorf("error reading config file: %s", err)
+	}
+
+	writeFile(mockFsConfigFileName, file, 0664)
+
+	assert := assert.New(t)
+	dbRootPath := filepath.Join("testdata", "db")
+
+	t.Run("TestDeviceSpecificBmsPage", func(t *testing.T) {
+
+		splits, err := readSplits(mockFsSplitFileName)
+
+		if err != nil {
+			t.Errorf("error reading split file: %s", err)
+		}
+
+		err = writeSplitStructure(dbRootPath, splits)
+
+		if err != nil {
+			t.Errorf("error writing split file structure: %s", err)
+		}
+
+		expectedPaths := []string{
+			filepath.Join("testdata", "db", "drivers", "devices", "comm"),
+			filepath.Join("testdata", "db", "drivers", "devices", "metadata", "appearance", "title"),
+		}
+
+		for _, p := range expectedPaths {
+			_, err := readFile(p)
+			if err != nil {
+				t.Errorf("failed checking expected paths: %s %s", p, err)
+			}
+		}
+
+		appConfig, err := LoadLocalConfig("", mockFsConfigFileName)
+
+		if err != nil {
+			t.Errorf("failed to LoadLocalConfig: %s", err)
+		}
+
+		assert.Equal(1, len(appConfig.Drivers))
+		assert.Equal("floor-01/bms", appConfig.Drivers[0].Name)
+		var bacnetConfig config.Root
+		err = json.Unmarshal(appConfig.Drivers[0].Raw, &bacnetConfig)
+		if err != nil {
+			t.Errorf("failed to unmarshall bacnet config: %s", err)
+		}
+		assert.Equal(2, len(bacnetConfig.Devices))
+		assert.Equal("uk-ocw/floors/01/devices/CE1", bacnetConfig.Devices[0].Name)
+		assert.Equal("172.16.8.115:47808", bacnetConfig.Devices[0].Comm.IP.String())
+		assert.Equal("uk-ocw/floors/01/devices/CE2", bacnetConfig.Devices[1].Name)
+		assert.Equal("172.16.8.117:47808", bacnetConfig.Devices[1].Comm.IP.String())
+
+		// ok now we want to update the IP address of the device with the key "uk-ocw/floors/01/devices/CE1"
+
 	})
 }
