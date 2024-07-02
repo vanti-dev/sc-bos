@@ -3,40 +3,40 @@
     "path": "/metadata",
     "splits" : [
       {
-        "splitKey": "location",
-        "path": "/location",
+        "splitKey": "Location",
+        "path": "/Location",
         "splits": [
           {
-            "key": "floor",
-            "path" : "/floor"
+            "key": "Floor",
+            "path" : "/Floor"
           }
         ]
       },
       {
-        "splitKey": "product",
-        "path" : "/product",
+        "splitKey": "Product",
+        "path" : "/Product",
         "splits": [
           {
-            "key" : "manufacturer",
-            "path": "/manufacturer"
+            "key" : "Manufacturer",
+            "path": "/Manufacturer"
           },
           {
-            "key" : "model",
-            "path": "/model"
+            "key" : "Model",
+            "path": "/Model"
           }
         ]
       },
       {
-        "splitKey": "membership",
-        "path": "/membership"
+        "splitKey": "Membership",
+        "path": "/Membership"
       },
       {
-        "splitKey": "traits",
-        "path": "/traits"
+        "splitKey": "Traits",
+        "path": "/Traits"
       },
       {
-        "splitKey": "more",
-        "path": "/more"
+        "splitKey": "More",
+        "path": "/More"
       }
     ]
   }
