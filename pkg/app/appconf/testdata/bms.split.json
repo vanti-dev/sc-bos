@@ -1,0 +1,41 @@
+[
+  {
+    "path": "/drivers",
+    "splits" : [
+      {
+        "splitKey": "type",
+        "path": "/bacnet",
+        "splits" : [
+          {
+            "splitKey": "localInterface",
+            "path": "/localInterface"
+          },
+          {
+            "splitKey": "localPort",
+            "path": "/localPort"
+          },
+          {
+            "splitKey": "name",
+            "path" : "/devices",
+            "splits": [
+              {
+                "key" : "title",
+                "path": "/title"
+              },
+              {
+                "key" : "comm",
+                "path": "/comm",
+                "splits": [
+                  {
+                    "key" : "ip",
+                    "path": "/ip"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
