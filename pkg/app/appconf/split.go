@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+
+	"go.uber.org/multierr"
 )
 
 // Split The top level struct of the *.split.json file which defines how to split the *.json file
@@ -94,13 +96,8 @@ func writeSplitStructure(root string, splits []Split) error {
 	return nil
 }
 
-// writeSplits writes split data to a file.
-func writeSplits(file string, splits []split) error {
-	data, err := json.Marshal(splits)
-	if err != nil {
-		return err
-	}
-	return writeFile(file, data, 0664)
+func normaliseDeviceName(s string) string {
+	return strings.ReplaceAll(s, "/", "-")
 }
 
 // crap name recurses through the
@@ -230,10 +227,6 @@ func setValue(s *any, path string) error {
 	return nil
 }
 
-func testModify(s any, path string, nextKey string) {
-	s.(map[string]interface{})["localInterface"] = "New Interface"
-}
-
 func mergeRawStruct(s any, path string, nextKey string) error {
 
 	isDrcty, err := isDir(path)
@@ -259,7 +252,6 @@ func mergeRawStruct(s any, path string, nextKey string) error {
 					// when we get to a file, then the corresponding value in the map could be a primitive.
 					// we can't pass a pointer to the value of a map so primitives will be passed by value and we can't
 					// do this to modify the value. so check if nextPath is a file and then modify the element in the map
-
 					isDrcty, err := isDir(nextPath)
 					if err != nil {
 						return err
@@ -282,7 +274,21 @@ func mergeRawStruct(s any, path string, nextKey string) error {
 					}
 				}
 			} else if kind == reflect.Slice {
-				//todo
+				// when we get to a slice, we need to know which element of the slice we are looking at
+				// the directory name is the key and at the moment just assume that name field is
+				//always what we are looking for
+				for i := 0; i < len(s.([]interface{})); i++ {
+					elem := s.([]interface{})[i]
+					// todo check that the field 'name' exists or whatever field we are using as the key
+					normalisedName := normaliseDeviceName(elem.(map[string]interface{})["name"].(string))
+					if normalisedName == key {
+						nextPath := filepath.Join(path, key)
+						err := mergeRawStruct(elem, nextPath, key)
+						if err != nil {
+							return err
+						}
+					}
+				}
 			}
 		}
 	} else {
@@ -322,19 +328,20 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 		return err
 	}
 
+	var errs error
 	for _, d := range directory {
 		switch strings.ToLower(d.Name()) {
 		case "metadata":
 			path := filepath.Join(dbRoot, d.Name())
 			err := mergeField(reflect.ValueOf(appConfig.Metadata), path)
 			if err != nil {
-				return err
+				errs = multierr.Append(errs, err)
 			}
 		case "drivers":
 			path := filepath.Join(dbRoot, d.Name())
 			driversDirectory, err := readDir(path)
 			if err != nil {
-				return err
+				errs = multierr.Append(errs, err)
 			}
 			for i := 0; i < len(appConfig.Drivers); i++ {
 				driver := &appConfig.Drivers[i]
@@ -344,19 +351,18 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 
 						err = json.Unmarshal(driver.Raw, &s)
 						if err != nil {
-							return err
+							errs = multierr.Append(errs, err)
 						}
 
 						path := filepath.Join(dbRoot, "drivers", d.Name())
-						//testModify(s, path, "")
 						err := mergeRawStruct(s, path, "")
 						if err != nil {
-							return err
+							errs = multierr.Append(errs, err)
 						}
 
 						driver.Raw, err = json.Marshal(s)
 						if err != nil {
-							return err
+							errs = multierr.Append(errs, err)
 						}
 					}
 				}
@@ -364,25 +370,6 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 		}
 	}
 
-	return nil
-}
-
-func unmarshalPages(dst *Config, file string) error {
-	// todo: I can't work out if it's safe to blindly follow $refs in these documents or not.
-	//  An alternative to this would be to accept a []split and only read $refs that come from there.
-	//  This might be required if the config schema also uses $ref for something else.
-	// todo: it's probably not a good idea to load all the json into memory at once,
-	//  but we don't have streaming json until json/v2
-
-	jsonMap := make(map[string]any)
-	data, err := readFile(file)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(data, &jsonMap)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -398,25 +385,17 @@ type page struct {
 	Value any    `json:"value,omitempty"`
 }
 
-type bootConfig struct {
-	extDir           string
-	extCacheRootFile string
-	splitCacheFile   string
-	dbRootFile       string
-	liveSplits       func() ([]split, error)
-}
-
 // writePageFile this writes a page file to at the given path
 // a page file defines the value that is going to replace whatever config is located at the path
 // and also includes an optional key which specifies the item in a collection that we are editing
 // if no key is included then the entire config item located at path is replaced
-func writePageFile(path string, key *string, value any) error {
+func writePageFile(path string, key string, value any) error {
 
 	var pageFile page
 
-	if key != nil {
+	if key != "" {
 		pageFile = page{
-			Key:   *key,
+			Key:   key,
 			Value: value,
 		}
 	} else {
