@@ -234,7 +234,6 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		fs         MockFs
 		which      interface{}
 		preExpect  any
 		patchFile  string
@@ -243,7 +242,6 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 	}{
 		{
 			name:       "localInterface",
-			fs:         mockFs,
 			which:      &bacnetConfig.LocalInterface,
 			preExpect:  "eth0",
 			patchFile:  filepath.Join("testdata", "db", "drivers", "bacnet", "localInterface"),
@@ -251,7 +249,6 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 		},
 		{
 			name:       "localPort",
-			fs:         mockFs,
 			which:      &bacnetConfig.LocalPort,
 			preExpect:  uint16(47808),
 			patchFile:  filepath.Join("testdata", "db", "drivers", "bacnet", "localPort"),
@@ -259,7 +256,6 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 		},
 		{
 			name:       "device1IP",
-			fs:         mockFs,
 			which:      &bacnetConfig.Devices[0].Comm.IP,
 			preExpect:  "172.16.8.115:47808",
 			patchFile:  filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "comm", "ip"),
@@ -267,11 +263,24 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 		},
 		{
 			name:       "device2IP",
-			fs:         mockFs,
 			which:      &bacnetConfig.Devices[1].Comm.IP,
 			preExpect:  "172.16.8.117:47808",
 			patchFile:  filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE2"), "comm", "ip"),
 			patchValue: "22.22.2.71:2222",
+		},
+		{
+			name:       "metadata_title",
+			which:      &bacnetConfig.Devices[0].Metadata.Appearance.Title,
+			preExpect:  "Floor 1 Controller North",
+			patchFile:  filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "metadata", "appearance", "title"),
+			patchValue: "New Title",
+		},
+		{
+			name:       "metadata_location",
+			which:      &bacnetConfig.Devices[0].Metadata.Location,
+			preExpect:  &traits.Metadata_Location{Floor: "Floor 1", Zone: "North"},
+			patchFile:  filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "metadata", "location"),
+			patchValue: &traits.Metadata_Location{Floor: "New Floor", Zone: "New Zone"},
 		},
 	}
 

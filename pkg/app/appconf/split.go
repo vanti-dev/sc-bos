@@ -279,7 +279,13 @@ func mergeRawStruct(s any, path string, nextKey string) error {
 				//always what we are looking for
 				for i := 0; i < len(s.([]interface{})); i++ {
 					elem := s.([]interface{})[i]
-					// todo check that the field 'name' exists or whatever field we are using as the key
+
+					if _, ok := elem.(map[string]interface{})["name"]; !ok {
+						return errors.New("no name field in slice element")
+					}
+
+					// todo support using fields other than name as the key to slice elements
+					// todo possibly a key.json file in the devices dir for example which specifies alternate key
 					normalisedName := normaliseDeviceName(elem.(map[string]interface{})["name"].(string))
 					if normalisedName == key {
 						nextPath := filepath.Join(path, key)
