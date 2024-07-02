@@ -3,6 +3,8 @@
     {
       "name": "floor-01/bms",
       "type": "bacnet",
+      "localInterface": "eth0",
+      "localPort": 47808,
       "maxConcurrentTransactions": 100,
       "deviceNamePrefix": "",
       "objectNamePrefix": "",

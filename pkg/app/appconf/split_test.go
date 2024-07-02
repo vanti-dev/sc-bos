@@ -93,12 +93,12 @@ func TestBasicMetadataSplit(t *testing.T) {
 		}
 
 		expectedPaths := []string{
-			filepath.Join("testdata", "db", "metadata", "location", "floor"),
-			filepath.Join("testdata", "db", "metadata", "product", "manufacturer"),
-			filepath.Join("testdata", "db", "metadata", "product", "model"),
-			filepath.Join("testdata", "db", "metadata", "membership"),
-			filepath.Join("testdata", "db", "metadata", "traits"),
-			filepath.Join("testdata", "db", "metadata", "more"),
+			filepath.Join("testdata", "db", "metadata", "Location", "Floor"),
+			filepath.Join("testdata", "db", "metadata", "Product", "Manufacturer"),
+			filepath.Join("testdata", "db", "metadata", "Product", "Model"),
+			filepath.Join("testdata", "db", "metadata", "Membership"),
+			filepath.Join("testdata", "db", "metadata", "Traits"),
+			filepath.Join("testdata", "db", "metadata", "More"),
 		}
 
 		for _, p := range expectedPaths {
@@ -149,6 +149,10 @@ func TestBasicMetadataSplit(t *testing.T) {
 		assert.Equal(2, len(appConfig.Metadata.More))
 		assert.Equal("newType", appConfig.Metadata.More["type"])
 		assert.Equal("newFunction", appConfig.Metadata.More["function"])
+		//_, err = mockFs.mockIsDir("")
+		//if err != nil {
+		//	return
+		//}
 	})
 }
 
@@ -201,8 +205,11 @@ func TestDeviceSpecificBmsPage(t *testing.T) {
 		}
 
 		expectedPaths := []string{
-			filepath.Join("testdata", "db", "drivers", "devices", "comm"),
-			filepath.Join("testdata", "db", "drivers", "devices", "metadata", "appearance", "title"),
+			filepath.Join("testdata", "db", "drivers", "bacnet", "localInterface"),
+			filepath.Join("testdata", "db", "drivers", "bacnet", "localPort"),
+			filepath.Join("testdata", "db", "drivers", "bacnet", "devices", "title"),
+			filepath.Join("testdata", "db", "drivers", "bacnet", "devices", "comm"),
+			//filepath.Join("testdata", "db", "Drivers", "Devices", "metadata", "appearance", "title"),
 		}
 
 		for _, p := range expectedPaths {
@@ -225,12 +232,28 @@ func TestDeviceSpecificBmsPage(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to unmarshall bacnet config: %s", err)
 		}
+		assert.Equal("eth0", bacnetConfig.LocalInterface)
+		assert.Equal(uint16(47808), bacnetConfig.LocalPort)
 		assert.Equal(2, len(bacnetConfig.Devices))
 		assert.Equal("uk-ocw/floors/01/devices/CE1", bacnetConfig.Devices[0].Name)
 		assert.Equal("172.16.8.115:47808", bacnetConfig.Devices[0].Comm.IP.String())
 		assert.Equal("uk-ocw/floors/01/devices/CE2", bacnetConfig.Devices[1].Name)
 		assert.Equal("172.16.8.117:47808", bacnetConfig.Devices[1].Comm.IP.String())
 
+		writePageFile(expectedPaths[0], nil, "New Interface") //local interface
+		writePageFile(expectedPaths[1], nil, 12345)           //local port
+		err = mergeDbWithExtConfig(appConfig, dbRootPath)
+		if err != nil {
+			t.Errorf("failed to join app config & db: %s", err)
+		}
+
+		var newBacnetConfig config.Root
+		err = json.Unmarshal(appConfig.Drivers[0].Raw, &newBacnetConfig)
+		if err != nil {
+			t.Errorf("failed to unmarshall bacnet config: %s", err)
+		}
+		assert.Equal("New Interface", newBacnetConfig.LocalInterface)
+		assert.Equal(uint16(12345), newBacnetConfig.LocalPort)
 		// ok now we want to update the IP address of the device with the key "uk-ocw/floors/01/devices/CE1"
 
 	})

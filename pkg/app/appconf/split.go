@@ -187,6 +187,128 @@ func mergeField(
 	return nil
 }
 
+func setValue(s *any, path string) error {
+	value := reflect.ValueOf(*s)
+	kind := value.Kind()
+	file, _ := readFile(path)
+	var pageFile page
+	err := json.Unmarshal(file, &pageFile)
+	if err != nil {
+		return err
+	}
+	switch kind {
+	case reflect.Int:
+		i, err := pageFile.Value.(json.Number).Int64()
+		if err != nil {
+			return err
+		}
+		value.SetInt(i)
+	case reflect.String:
+		*s = pageFile.Value.(string)
+	case reflect.Bool:
+		value.SetBool((pageFile.Value).(bool))
+	case reflect.Float32:
+		fallthrough
+	case reflect.Float64:
+		f, err := pageFile.Value.(json.Number).Float64()
+		if err != nil {
+			return err
+		}
+		value.SetFloat(f)
+	case reflect.Struct:
+		fallthrough
+	case reflect.Slice:
+		fallthrough
+	case reflect.Map:
+		bytes, err := json.Marshal(pageFile.Value)
+		err = json.Unmarshal(bytes, value.Interface())
+		if err != nil {
+			return err
+		}
+	default:
+	}
+	return nil
+}
+
+func testModify(s any, path string, nextKey string) {
+	s.(map[string]interface{})["localInterface"] = "New Interface"
+}
+
+func mergeRawStruct(s any, path string, nextKey string) error {
+
+	isDrcty, err := isDir(path)
+	if err != nil {
+		return err
+	}
+	if isDrcty {
+		// if we are at a directory the corresponding part w
+		directory, err := readDir(path)
+		if err != nil {
+			return err
+		}
+		for _, d := range directory {
+			key := d.Name()
+
+			value := reflect.ValueOf(s)
+			kind := value.Kind()
+
+			if kind == reflect.Map {
+				if _, ok := s.(map[string]interface{})[key]; ok {
+					nextPath := filepath.Join(path, key)
+
+					// when we get to a file, then the corresponding value in the map could be a primitive.
+					// we can't pass a pointer to the value of a map so primitives will be passed by value and we can't
+					// do this to modify the value. so check if nextPath is a file and then modify the element in the map
+
+					isDrcty, err := isDir(nextPath)
+					if err != nil {
+						return err
+					}
+
+					if isDrcty {
+						err := mergeRawStruct(s.(map[string]interface{})[key], nextPath, key)
+						if err != nil {
+							return err
+						}
+					} else {
+						file, _ := readFile(nextPath)
+						var pageFile page
+						err := json.Unmarshal(file, &pageFile)
+						if err != nil {
+							return err
+						}
+						// we are assuming that Value in the page file holds the correct type
+						s.(map[string]interface{})[key] = pageFile.Value
+					}
+				}
+			} else if kind == reflect.Slice {
+				//todo
+			}
+		}
+	} else {
+		// we are at the file level so we just try to set the value in the map
+		file, _ := readFile(path)
+		var pageFile page
+		err := json.Unmarshal(file, &pageFile)
+		if err != nil {
+			return err
+		}
+
+		if pageFile.Key != "" {
+			// we have a key so we are setting a specific value in a collection
+
+		} else {
+			// we are setting the whole value
+			err := setValue(&s, path)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+	return nil
+}
+
 // mergeDbWithExtConfig reads the ext config and merges changes from the DB into it
 func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 
@@ -201,12 +323,43 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 	}
 
 	for _, d := range directory {
-		switch d.Name() {
+		switch strings.ToLower(d.Name()) {
 		case "metadata":
 			path := filepath.Join(dbRoot, d.Name())
 			err := mergeField(reflect.ValueOf(appConfig.Metadata), path)
 			if err != nil {
 				return err
+			}
+		case "drivers":
+			path := filepath.Join(dbRoot, d.Name())
+			driversDirectory, err := readDir(path)
+			if err != nil {
+				return err
+			}
+			for i := 0; i < len(appConfig.Drivers); i++ {
+				driver := &appConfig.Drivers[i]
+				for _, d := range driversDirectory {
+					if strings.EqualFold(driver.Type, d.Name()) {
+						s := make(map[string]interface{})
+
+						err = json.Unmarshal(driver.Raw, &s)
+						if err != nil {
+							return err
+						}
+
+						path := filepath.Join(dbRoot, "drivers", d.Name())
+						//testModify(s, path, "")
+						err := mergeRawStruct(s, path, "")
+						if err != nil {
+							return err
+						}
+
+						driver.Raw, err = json.Marshal(s)
+						if err != nil {
+							return err
+						}
+					}
+				}
 			}
 		}
 	}
