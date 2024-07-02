@@ -3,15 +3,12 @@
     "path": "/drivers",
     "splits" : [
       {
-        "splitKey": "type",
         "path": "/bacnet",
         "splits" : [
           {
-            "splitKey": "localInterface",
             "path": "/localInterface"
           },
           {
-            "splitKey": "localPort",
             "path": "/localPort"
           },
           {

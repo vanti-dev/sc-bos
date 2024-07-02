@@ -126,13 +126,13 @@ func TestBasicMetadataSplit(t *testing.T) {
 
 		// now update the db files to simulate a user edit.
 		// i.e. we are creating the page files that would contain the user edits to overlay onto our app config
-		writePageFile(expectedPaths[0], nil, "New Floor")
-		writePageFile(expectedPaths[1], nil, "New Manufacturer")
-		writePageFile(expectedPaths[2], nil, "New Model")
-		writePageFile(expectedPaths[3], nil, traits.Metadata_Membership{Subsystem: "New Subsystem"})
+		writePageFile(expectedPaths[0], "", "New Floor")
+		writePageFile(expectedPaths[1], "", "New Manufacturer")
+		writePageFile(expectedPaths[2], "", "New Model")
+		writePageFile(expectedPaths[3], "", traits.Metadata_Membership{Subsystem: "New Subsystem"})
 		// we want to replace the whole array here to test that we can do that
-		writePageFile(expectedPaths[4], nil, []traits.TraitMetadata{{Name: "newTrait"}})
-		writePageFile(expectedPaths[5], nil, map[string]string{"type": "newType", "function": "newFunction"})
+		writePageFile(expectedPaths[4], "", []traits.TraitMetadata{{Name: "newTrait"}})
+		writePageFile(expectedPaths[5], "", map[string]string{"type": "newType", "function": "newFunction"})
 
 		err = mergeDbWithExtConfig(appConfig, dbRootPath)
 		if err != nil {
@@ -192,33 +192,6 @@ func TestDeviceSpecificBmsPage(t *testing.T) {
 
 	t.Run("TestDeviceSpecificBmsPage", func(t *testing.T) {
 
-		splits, err := readSplits(mockFsSplitFileName)
-
-		if err != nil {
-			t.Errorf("error reading split file: %s", err)
-		}
-
-		err = writeSplitStructure(dbRootPath, splits)
-
-		if err != nil {
-			t.Errorf("error writing split file structure: %s", err)
-		}
-
-		expectedPaths := []string{
-			filepath.Join("testdata", "db", "drivers", "bacnet", "localInterface"),
-			filepath.Join("testdata", "db", "drivers", "bacnet", "localPort"),
-			filepath.Join("testdata", "db", "drivers", "bacnet", "devices", "title"),
-			filepath.Join("testdata", "db", "drivers", "bacnet", "devices", "comm"),
-			//filepath.Join("testdata", "db", "Drivers", "Devices", "metadata", "appearance", "title"),
-		}
-
-		for _, p := range expectedPaths {
-			_, err := readFile(p)
-			if err != nil {
-				t.Errorf("failed checking expected paths: %s %s", p, err)
-			}
-		}
-
 		appConfig, err := LoadLocalConfig("", mockFsConfigFileName)
 
 		if err != nil {
@@ -240,8 +213,17 @@ func TestDeviceSpecificBmsPage(t *testing.T) {
 		assert.Equal("uk-ocw/floors/01/devices/CE2", bacnetConfig.Devices[1].Name)
 		assert.Equal("172.16.8.117:47808", bacnetConfig.Devices[1].Comm.IP.String())
 
-		writePageFile(expectedPaths[0], nil, "New Interface") //local interface
-		writePageFile(expectedPaths[1], nil, 12345)           //local port
+		writePageFile(filepath.Join("testdata", "db", "drivers", "bacnet", "localInterface"), "", "New Interface") //local interface
+		writePageFile(filepath.Join("testdata", "db", "drivers", "bacnet", "localPort"), "", 12345)                //local port
+		normalName := normaliseDeviceName("uk-ocw/floors/01/devices/CE1")
+		devicesPath := filepath.Join("testdata", "db", "drivers", "bacnet", "devices")
+		devicesPath = filepath.Join(devicesPath, normalName, "comm", "ip")
+		writePageFile(devicesPath, "", "188.88.8.71:8888") // update IP address of "uk-ocw/floors/01/devices/CE1"
+		normalName = normaliseDeviceName("uk-ocw/floors/01/devices/CE2")
+		devicesPath = filepath.Join("testdata", "db", "drivers", "bacnet", "devices")
+		devicesPath = filepath.Join(devicesPath, normalName, "comm", "ip")
+		writePageFile(devicesPath, "", "22.22.2.71:2222")
+
 		err = mergeDbWithExtConfig(appConfig, dbRootPath)
 		if err != nil {
 			t.Errorf("failed to join app config & db: %s", err)
@@ -254,7 +236,14 @@ func TestDeviceSpecificBmsPage(t *testing.T) {
 		}
 		assert.Equal("New Interface", newBacnetConfig.LocalInterface)
 		assert.Equal(uint16(12345), newBacnetConfig.LocalPort)
-		// ok now we want to update the IP address of the device with the key "uk-ocw/floors/01/devices/CE1"
+		assert.Equal("uk-ocw/floors/01/devices/CE1", bacnetConfig.Devices[0].Name)
+		assert.Equal("188.88.8.71:8888", newBacnetConfig.Devices[0].Comm.IP.String())
+		assert.Equal("uk-ocw/floors/01/devices/CE2", bacnetConfig.Devices[1].Name)
+		assert.Equal("22.22.2.71:2222", newBacnetConfig.Devices[1].Comm.IP.String())
 
+		_, err = mockFs.mockIsDir("")
+		if err != nil {
+			return
+		}
 	})
 }
