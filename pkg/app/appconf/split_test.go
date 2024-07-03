@@ -65,6 +65,11 @@ func unwrapValue(value interface{}) interface{} {
 	return result
 }
 
+type alternateKey struct {
+	Path string `json:"path,omitempty"`
+	Key  string `json:"key,omitempty"`
+}
+
 // read the split file, so we know how to split the file into parts we want to edit
 // we can now create the db file structure based on what we have read in
 // tests we can create the directory structure for db
@@ -111,7 +116,6 @@ func TestMetadataConfigPatch(t *testing.T) {
 		preExpect  any
 		patchFile  string
 		patchValue any
-		post       func(interface{}, interface{}, ...interface{}) bool
 	}{
 		{
 			name:       "Floor",
@@ -174,7 +178,7 @@ func TestMetadataConfigPatch(t *testing.T) {
 
 			assert.Equal(tt.preExpect, unwrapValue(tt.which))
 
-			err := writePageFile(tt.patchFile, "", tt.patchValue)
+			err := writePageFile(tt.patchFile, tt.patchValue)
 			if err != nil {
 				t.Errorf("failed to write patch file: %s", err)
 			}
@@ -233,54 +237,72 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 	}
 
 	tests := []struct {
-		name       string
-		which      interface{}
-		preExpect  any
-		patchFile  string
-		patchValue any
-		post       func(interface{}, interface{}, ...interface{}) bool
+		name         string
+		which        interface{}
+		preExpect    any
+		patchFile    string
+		change       any
+		alternateKey *alternateKey
 	}{
 		{
-			name:       "localInterface",
-			which:      &bacnetConfig.LocalInterface,
-			preExpect:  "eth0",
-			patchFile:  filepath.Join("testdata", "db", "drivers", "bacnet", "localInterface"),
-			patchValue: "New Interface",
+			name:      "localInterface",
+			which:     &bacnetConfig.LocalInterface,
+			preExpect: "eth0",
+			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "localInterface"),
+			change:    "New Interface",
 		},
 		{
-			name:       "localPort",
-			which:      &bacnetConfig.LocalPort,
-			preExpect:  uint16(47808),
-			patchFile:  filepath.Join("testdata", "db", "drivers", "bacnet", "localPort"),
-			patchValue: uint16(12345),
+			name:      "localPort",
+			which:     &bacnetConfig.LocalPort,
+			preExpect: uint16(47808),
+			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "localPort"),
+			change:    uint16(12345),
 		},
 		{
-			name:       "device1IP",
-			which:      &bacnetConfig.Devices[0].Comm.IP,
-			preExpect:  "172.16.8.115:47808",
-			patchFile:  filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "comm", "ip"),
-			patchValue: "188.88.8.71:8888",
+			name:      "device1IP",
+			which:     &bacnetConfig.Devices[0].Comm.IP,
+			preExpect: "172.16.8.115:47808",
+			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "comm", "ip"),
+			change:    "188.88.8.71:8888",
 		},
 		{
-			name:       "device2IP",
-			which:      &bacnetConfig.Devices[1].Comm.IP,
-			preExpect:  "172.16.8.117:47808",
-			patchFile:  filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE2"), "comm", "ip"),
-			patchValue: "22.22.2.71:2222",
+			name:      "device2IP",
+			which:     &bacnetConfig.Devices[1].Comm.IP,
+			preExpect: "172.16.8.117:47808",
+			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE2"), "comm", "ip"),
+			change:    "22.22.2.71:2222",
 		},
 		{
-			name:       "metadata_title",
-			which:      &bacnetConfig.Devices[0].Metadata.Appearance.Title,
-			preExpect:  "Floor 1 Controller North",
-			patchFile:  filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "metadata", "appearance", "title"),
-			patchValue: "New Title",
+			name:      "metadata_title",
+			which:     &bacnetConfig.Devices[0].Metadata.Appearance.Title,
+			preExpect: "Floor 1 Controller North",
+			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "metadata", "appearance", "title"),
+			change:    "New Title",
 		},
 		{
-			name:       "metadata_location",
-			which:      &bacnetConfig.Devices[0].Metadata.Location,
-			preExpect:  &traits.Metadata_Location{Floor: "Floor 1", Zone: "North"},
-			patchFile:  filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "metadata", "location"),
-			patchValue: &traits.Metadata_Location{Floor: "New Floor", Zone: "New Zone"},
+			name:      "metadata_location",
+			which:     &bacnetConfig.Devices[0].Metadata.Location,
+			preExpect: &traits.Metadata_Location{Floor: "Floor 1", Zone: "North"},
+			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "metadata", "location"),
+			change:    &traits.Metadata_Location{Floor: "New Floor", Zone: "New Zone"},
+		},
+		{
+			name:      "object_title",
+			which:     &bacnetConfig.Devices[0].Objects[0].Title,
+			preExpect: "CPU Board Temperature",
+			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "objects", normaliseDeviceName("CPUBoardTemp"), "title"),
+			change:    "New Object Title",
+		},
+		{
+			name:      "object_name_by_id",
+			which:     &bacnetConfig.Devices[0].Objects[1].Name,
+			preExpect: "SpVAVFeedback",
+			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "objects", normaliseDeviceName("AnalogInput:1101"), "name"),
+			change:    "New Object Name",
+			alternateKey: &alternateKey{
+				Path: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "objects"),
+				Key:  "id",
+			},
 		},
 	}
 
@@ -289,10 +311,18 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 
 			assert.Equal(tt.preExpect, unwrapValue(tt.which))
 
-			err := writePageFile(tt.patchFile, "", tt.patchValue)
+			err := writePageFile(tt.patchFile, tt.change)
 			if err != nil {
 				t.Errorf("failed to write patch file: %s", err)
 			}
+
+			if tt.alternateKey != nil {
+				err = writeAlternateKey(tt.alternateKey.Path, tt.alternateKey.Key)
+				if err != nil {
+					t.Errorf("failed to write alternate key file: %s", err)
+				}
+			}
+
 			err = mergeDbWithExtConfig(appConfig, dbRootPath)
 			if err != nil {
 				t.Errorf("failed to join app config & db: %s", err)
@@ -302,7 +332,7 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 				t.Errorf("failed to unmarshall bacnet config: %s", err)
 			}
 
-			assert.Equal(tt.patchValue, unwrapValue(tt.which))
+			assert.Equal(tt.change, unwrapValue(tt.which))
 		})
 	}
 }

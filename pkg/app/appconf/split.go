@@ -3,6 +3,7 @@ package appconf
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -10,6 +11,8 @@ import (
 
 	"go.uber.org/multierr"
 )
+
+const AlternateKey = "alternate_key.json"
 
 // Split The top level struct of the *.split.json file which defines how to split the *.json file
 // recursive
@@ -227,7 +230,7 @@ func setValue(s *any, path string) error {
 	return nil
 }
 
-func mergeRawStruct(s any, path string, nextKey string) error {
+func mergeRawStruct(s any, path string) error {
 
 	isDrcty, err := isDir(path)
 	if err != nil {
@@ -258,7 +261,7 @@ func mergeRawStruct(s any, path string, nextKey string) error {
 					}
 
 					if isDrcty {
-						err := mergeRawStruct(s.(map[string]interface{})[key], nextPath, key)
+						err := mergeRawStruct(s.(map[string]interface{})[key], nextPath)
 						if err != nil {
 							return err
 						}
@@ -275,24 +278,27 @@ func mergeRawStruct(s any, path string, nextKey string) error {
 				}
 			} else if kind == reflect.Slice {
 				// when we get to a slice, we need to know which element of the slice we are looking at
-				// the directory name is the key and at the moment just assume that name field is
-				//always what we are looking for
+				// default to 'name' but use getAlternateKey as we can define an alternate key
 				for i := 0; i < len(s.([]interface{})); i++ {
 					elem := s.([]interface{})[i]
+					elementKey := "name"
+					alternateKey, err := getAlternateKey(path)
 
-					if _, ok := elem.(map[string]interface{})["name"]; !ok {
-						return errors.New("no name field in slice element")
+					if err == nil {
+						elementKey = alternateKey
 					}
 
-					// todo support using fields other than name as the key to slice elements
-					// todo possibly a key.json file in the devices dir for example which specifies alternate key
-					normalisedName := normaliseDeviceName(elem.(map[string]interface{})["name"].(string))
-					if normalisedName == key {
-						nextPath := filepath.Join(path, key)
-						err := mergeRawStruct(elem, nextPath, key)
-						if err != nil {
-							return err
+					if v, ok := elem.(map[string]interface{})[elementKey]; ok {
+						normalisedName := normaliseDeviceName(v.(string))
+						if normalisedName == key {
+							nextPath := filepath.Join(path, key)
+							err := mergeRawStruct(elem, nextPath)
+							if err != nil {
+								return err
+							}
 						}
+					} else {
+						return errors.New(fmt.Sprintf("no %s field in slice element", elementKey))
 					}
 				}
 			}
@@ -306,19 +312,29 @@ func mergeRawStruct(s any, path string, nextKey string) error {
 			return err
 		}
 
-		if pageFile.Key != "" {
-			// we have a key so we are setting a specific value in a collection
-
-		} else {
-			// we are setting the whole value
-			err := setValue(&s, path)
-			if err != nil {
-				return err
-			}
+		err = setValue(&s, path)
+		if err != nil {
+			return err
 		}
 
 	}
 	return nil
+}
+
+func getAlternateKey(path string) (string, error) {
+
+	path = filepath.Join(path, AlternateKey)
+	f, err := readFile(path)
+	if err != nil {
+		return "", err
+	}
+
+	var keyFile alternate
+	err = json.Unmarshal(f, &keyFile)
+	if err != nil {
+		return "", err
+	}
+	return keyFile.Key, nil
 }
 
 // mergeDbWithExtConfig reads the ext config and merges changes from the DB into it
@@ -361,7 +377,7 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 						}
 
 						path := filepath.Join(dbRoot, "drivers", d.Name())
-						err := mergeRawStruct(s, path, "")
+						err := mergeRawStruct(s, path)
 						if err != nil {
 							errs = multierr.Append(errs, err)
 						}
@@ -387,27 +403,22 @@ type split struct {
 }
 
 type page struct {
-	Key   string `json:"key,omitempty"`
-	Value any    `json:"value,omitempty"`
+	Value any `json:"value,omitempty"`
+}
+
+type alternate struct {
+	Key string `json:"key,omitempty"`
 }
 
 // writePageFile this writes a page file to at the given path
 // a page file defines the value that is going to replace whatever config is located at the path
 // and also includes an optional key which specifies the item in a collection that we are editing
 // if no key is included then the entire config item located at path is replaced
-func writePageFile(path string, key string, value any) error {
+func writePageFile(path string, value any) error {
 
 	var pageFile page
-
-	if key != "" {
-		pageFile = page{
-			Key:   key,
-			Value: value,
-		}
-	} else {
-		pageFile = page{
-			Value: value,
-		}
+	pageFile = page{
+		Value: value,
 	}
 
 	pageFileJson, err := json.Marshal(pageFile)
@@ -416,4 +427,18 @@ func writePageFile(path string, key string, value any) error {
 	}
 
 	return writeFile(path, pageFileJson, 0664)
+}
+
+func writeAlternateKey(path string, key string) error {
+	keyFile := alternate{
+		Key: key,
+	}
+
+	keyFileJson, err := json.Marshal(keyFile)
+	if err != nil {
+		return err
+	}
+
+	path = filepath.Join(path, AlternateKey)
+	return writeFile(path, keyFileJson, 0664)
 }
