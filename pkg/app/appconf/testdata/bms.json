@@ -32,7 +32,24 @@
             "membership": {
               "subsystem": "hvac"
             }
-          }
+          },
+          "objects": [
+            {
+              "id": "AnalogInput:83",
+              "name": "CPUBoardTemp",
+              "title": "CPU Board Temperature"
+            },
+            {
+              "id": "AnalogInput:1101",
+              "name": "SpVAVFeedback",
+              "title": "Supply VAV Feedback"
+            },
+            {
+              "id": "AnalogInput:1102",
+              "name": "ExtVAVFeedback",
+              "title": "Extract VAV Feedback"
+            }
+          ]
         },
         {
           "name": "uk-ocw/floors/01/devices/CE2",
