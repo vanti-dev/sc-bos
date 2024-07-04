@@ -1,0 +1,35 @@
+[
+  {
+    "path": "/automation",
+    "splits": [
+      {
+        "path": "/lights",
+        "splits" : [
+          {
+            "path": "/unoccupiedOffDelay"
+          },
+          {
+            "path": "/modes",
+            "splits" : [
+              {
+                "path": "/unoccupiedOffDelay"
+              },
+              {
+                "path": "/onLevelPercent"
+              },
+              {
+                "path": "/offLevelPercent"
+              },
+              {
+                "path": "/start"
+              },
+              {
+                "path": "/end"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
