@@ -100,7 +100,10 @@ func writeSplitStructure(root string, splits []Split) error {
 }
 
 func normaliseDeviceName(s string) string {
-	return strings.ReplaceAll(s, "/", "-")
+	s = strings.ReplaceAll(s, "/", "-")
+	s = strings.ReplaceAll(s, " ", "-")
+	s = strings.ReplaceAll(s, ":", "-")
+	return s
 }
 
 // crap name recurses through the
@@ -352,7 +355,8 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 
 	var errs error
 	for _, d := range directory {
-		switch strings.ToLower(d.Name()) {
+		dirName := strings.ToLower(d.Name())
+		switch dirName {
 		case "metadata":
 			path := filepath.Join(dbRoot, d.Name())
 			err := mergeField(reflect.ValueOf(appConfig.Metadata), path)
@@ -361,28 +365,59 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 			}
 		case "drivers":
 			path := filepath.Join(dbRoot, d.Name())
-			driversDirectory, err := readDir(path)
+			autoDirectory, err := readDir(path)
 			if err != nil {
 				errs = multierr.Append(errs, err)
 			}
 			for i := 0; i < len(appConfig.Drivers); i++ {
-				driver := &appConfig.Drivers[i]
-				for _, d := range driversDirectory {
-					if strings.EqualFold(driver.Type, d.Name()) {
+				auto := &appConfig.Drivers[i]
+				for _, nextDir := range autoDirectory {
+					if strings.EqualFold(normaliseDeviceName(auto.Name), nextDir.Name()) {
 						s := make(map[string]interface{})
 
-						err = json.Unmarshal(driver.Raw, &s)
+						err = json.Unmarshal(auto.Raw, &s)
 						if err != nil {
 							errs = multierr.Append(errs, err)
 						}
 
-						path := filepath.Join(dbRoot, "drivers", d.Name())
+						path := filepath.Join(dbRoot, strings.ToLower(d.Name()), nextDir.Name())
 						err := mergeRawStruct(s, path)
 						if err != nil {
 							errs = multierr.Append(errs, err)
 						}
 
-						driver.Raw, err = json.Marshal(s)
+						auto.Raw, err = json.Marshal(s)
+						if err != nil {
+							errs = multierr.Append(errs, err)
+						}
+					}
+				}
+			}
+		case "automation":
+			// todo this is a c&p of case "drivers", if drivers, autos et. al implemented GetName/GetRaw it could be done using generics
+			path := filepath.Join(dbRoot, d.Name())
+			autoDirectory, err := readDir(path)
+			if err != nil {
+				errs = multierr.Append(errs, err)
+			}
+			for i := 0; i < len(appConfig.Automation); i++ {
+				auto := &appConfig.Automation[i]
+				for _, nextDir := range autoDirectory {
+					if strings.EqualFold(normaliseDeviceName(auto.Name), nextDir.Name()) {
+						s := make(map[string]interface{})
+
+						err = json.Unmarshal(auto.Raw, &s)
+						if err != nil {
+							errs = multierr.Append(errs, err)
+						}
+
+						path := filepath.Join(dbRoot, strings.ToLower(d.Name()), nextDir.Name())
+						err := mergeRawStruct(s, path)
+						if err != nil {
+							errs = multierr.Append(errs, err)
+						}
+
+						auto.Raw, err = json.Marshal(s)
 						if err != nil {
 							errs = multierr.Append(errs, err)
 						}

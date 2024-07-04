@@ -3,7 +3,7 @@
     "path": "/drivers",
     "splits" : [
       {
-        "path": "/bacnet",
+        "path": "/floor-01-bms",
         "splits" : [
           {
             "path": "/localInterface"

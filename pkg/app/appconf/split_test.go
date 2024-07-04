@@ -7,13 +7,16 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
+	lightingconfig "github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
+	bacnetconfig "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 // the idea is that every driver that wants to be configurable defines a .split.json file (aka a split file)
@@ -57,6 +60,9 @@ func unwrapValue(value interface{}) interface{} {
 		switch result.(type) {
 		case *netip.AddrPort:
 			result = result.(*netip.AddrPort).String()
+		case jsontypes.Duration:
+			result = result.(jsontypes.Duration).String()
+			result = strings.TrimSuffix(result.(string), "0s")
 		}
 
 	} else if val.Kind() == reflect.Slice {
@@ -85,16 +91,9 @@ func TestMetadataConfigPatch(t *testing.T) {
 	mkdirAll = mockFs.mockMkdirAll
 	readDir = mockFs.mockReadDir
 	isDir = mockFs.mockIsDir
-	mockFsSplitFileName := "fstest.metadata.split.json"
 	mockFsConfigFileName := "fstest.metadata.json"
 
-	file, err := os.ReadFile("testdata/metadata.split.json")
-	if err != nil {
-		t.Errorf("error reading split file: %s", err)
-	}
-	err = writeFile(mockFsSplitFileName, file, 0664)
-
-	file, err = os.ReadFile("testdata/metadata.json")
+	file, err := os.ReadFile("testdata/metadata.json")
 	if err != nil {
 		t.Errorf("error reading config file: %s", err)
 	}
@@ -207,16 +206,9 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 	mkdirAll = mockFs.mockMkdirAll
 	readDir = mockFs.mockReadDir
 	isDir = mockFs.mockIsDir
-	mockFsSplitFileName := "fstest.bms.split.json"
 	mockFsConfigFileName := "fstest.bms.json"
 
-	file, err := os.ReadFile("testdata/bms.split.json")
-	if err != nil {
-		t.Errorf("error reading split file: %s", err)
-	}
-	err = writeFile(mockFsSplitFileName, file, 0664)
-
-	file, err = os.ReadFile("testdata/bms.json")
+	file, err := os.ReadFile("testdata/bms.json")
 	if err != nil {
 		t.Errorf("error reading config file: %s", err)
 	}
@@ -230,7 +222,7 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 		t.Errorf("failed to LoadLocalConfig: %s", err)
 	}
 
-	var bacnetConfig config.Root
+	var bacnetConfig bacnetconfig.Root
 	err = json.Unmarshal(appConfig.Drivers[0].Raw, &bacnetConfig)
 	if err != nil {
 		t.Errorf("failed to unmarshall bacnet config: %s", err)
@@ -248,59 +240,59 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 			name:      "localInterface",
 			which:     &bacnetConfig.LocalInterface,
 			preExpect: "eth0",
-			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "localInterface"),
+			patchFile: filepath.Join("testdata", "db", "drivers", normaliseDeviceName("floor-01/bms"), "localInterface"),
 			change:    "New Interface",
 		},
 		{
 			name:      "localPort",
 			which:     &bacnetConfig.LocalPort,
 			preExpect: uint16(47808),
-			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "localPort"),
+			patchFile: filepath.Join("testdata", "db", "drivers", normaliseDeviceName(normaliseDeviceName("floor-01/bms")), "localPort"),
 			change:    uint16(12345),
 		},
 		{
 			name:      "device1IP",
 			which:     &bacnetConfig.Devices[0].Comm.IP,
 			preExpect: "172.16.8.115:47808",
-			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "comm", "ip"),
+			patchFile: filepath.Join("testdata", "db", "drivers", normaliseDeviceName("floor-01/bms"), "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "comm", "ip"),
 			change:    "188.88.8.71:8888",
 		},
 		{
 			name:      "device2IP",
 			which:     &bacnetConfig.Devices[1].Comm.IP,
 			preExpect: "172.16.8.117:47808",
-			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE2"), "comm", "ip"),
+			patchFile: filepath.Join("testdata", "db", "drivers", normaliseDeviceName("floor-01/bms"), "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE2"), "comm", "ip"),
 			change:    "22.22.2.71:2222",
 		},
 		{
 			name:      "metadata_title",
 			which:     &bacnetConfig.Devices[0].Metadata.Appearance.Title,
 			preExpect: "Floor 1 Controller North",
-			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "metadata", "appearance", "title"),
+			patchFile: filepath.Join("testdata", "db", "drivers", normaliseDeviceName("floor-01/bms"), "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "metadata", "appearance", "title"),
 			change:    "New Title",
 		},
 		{
 			name:      "metadata_location",
 			which:     &bacnetConfig.Devices[0].Metadata.Location,
 			preExpect: &traits.Metadata_Location{Floor: "Floor 1", Zone: "North"},
-			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "metadata", "location"),
+			patchFile: filepath.Join("testdata", "db", "drivers", normaliseDeviceName("floor-01/bms"), "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "metadata", "location"),
 			change:    &traits.Metadata_Location{Floor: "New Floor", Zone: "New Zone"},
 		},
 		{
 			name:      "object_title",
 			which:     &bacnetConfig.Devices[0].Objects[0].Title,
 			preExpect: "CPU Board Temperature",
-			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "objects", normaliseDeviceName("CPUBoardTemp"), "title"),
+			patchFile: filepath.Join("testdata", "db", "drivers", normaliseDeviceName("floor-01/bms"), "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "objects", normaliseDeviceName("CPUBoardTemp"), "title"),
 			change:    "New Object Title",
 		},
 		{
 			name:      "object_name_by_id",
 			which:     &bacnetConfig.Devices[0].Objects[1].Name,
 			preExpect: "SpVAVFeedback",
-			patchFile: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "objects", normaliseDeviceName("AnalogInput:1101"), "name"),
+			patchFile: filepath.Join("testdata", "db", "drivers", normaliseDeviceName("floor-01/bms"), "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "objects", normaliseDeviceName("AnalogInput:1101"), "name"),
 			change:    "New Object Name",
 			alternateKey: &alternateKey{
-				Path: filepath.Join("testdata", "db", "drivers", "bacnet", "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "objects"),
+				Path: filepath.Join("testdata", "db", "drivers", normaliseDeviceName("floor-01/bms"), "devices", normaliseDeviceName("uk-ocw/floors/01/devices/CE1"), "objects"),
 				Key:  "id",
 			},
 		},
@@ -330,6 +322,100 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 			err = json.Unmarshal(appConfig.Drivers[0].Raw, &bacnetConfig)
 			if err != nil {
 				t.Errorf("failed to unmarshall bacnet config: %s", err)
+			}
+
+			assert.Equal(tt.change, unwrapValue(tt.which))
+		})
+	}
+}
+
+func TestAutomation(t *testing.T) {
+
+	var mockFs = MockFs{fs: afero.NewMemMapFs()}
+	readFile = mockFs.mockReadFile
+	writeFile = mockFs.mockWriteFile
+	mkdirAll = mockFs.mockMkdirAll
+	readDir = mockFs.mockReadDir
+	isDir = mockFs.mockIsDir
+	mockFsConfigFileName := "fstest.automation.json"
+
+	file, err := os.ReadFile("testdata/automation.json")
+	if err != nil {
+		t.Errorf("error reading config file: %s", err)
+	}
+
+	writeFile(mockFsConfigFileName, file, 0664)
+
+	assert := assert.New(t)
+	dbRootPath := filepath.Join("testdata", "db")
+	appConfig, err := LoadLocalConfig("", mockFsConfigFileName)
+	if err != nil {
+		t.Errorf("failed to LoadLocalConfig: %s", err)
+	}
+
+	var lightsConfig lightingconfig.Root
+	err = json.Unmarshal(appConfig.Automation[0].Raw, &lightsConfig)
+	if err != nil {
+		t.Errorf("failed to unmarshall bacnet config: %s", err)
+	}
+
+	tests := []struct {
+		name         string
+		which        interface{}
+		preExpect    any
+		patchFile    string
+		change       any
+		alternateKey *alternateKey
+	}{
+		{
+			name:      "unoccupiedOffDelay",
+			which:     &lightsConfig.UnoccupiedOffDelay,
+			preExpect: "20m",
+			patchFile: filepath.Join("testdata", "db", "automation", normaliseDeviceName("Lights: Basecamp 2"), "unoccupiedOffDelay"),
+			change:    "45m",
+		},
+		{
+			name:      "unoccupiedOffDelay_Daytime",
+			which:     &lightsConfig.Modes[0].UnoccupiedOffDelay,
+			preExpect: "30m",
+			patchFile: filepath.Join("testdata", "db", "automation", normaliseDeviceName("Lights: Basecamp 2"), "modes",
+				normaliseDeviceName("Daytime work area"), "unoccupiedOffDelay"),
+			change: "20m",
+		},
+		{
+			name:      "unoccupiedOffDelay_Night",
+			which:     &lightsConfig.Modes[1].UnoccupiedOffDelay,
+			preExpect: "15m",
+			patchFile: filepath.Join("testdata", "db", "automation", normaliseDeviceName("Lights: Basecamp 2"), "modes",
+				normaliseDeviceName("Night work area"), "unoccupiedOffDelay"),
+			change: "20m",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			assert.Equal(tt.preExpect, unwrapValue(tt.which))
+
+			err := writePageFile(tt.patchFile, tt.change)
+			if err != nil {
+				t.Errorf("failed to write patch file: %s", err)
+			}
+
+			if tt.alternateKey != nil {
+				err = writeAlternateKey(tt.alternateKey.Path, tt.alternateKey.Key)
+				if err != nil {
+					t.Errorf("failed to write alternate key file: %s", err)
+				}
+			}
+
+			err = mergeDbWithExtConfig(appConfig, dbRootPath)
+			if err != nil {
+				t.Errorf("failed to join app config & db: %s", err)
+			}
+			err = json.Unmarshal(appConfig.Automation[0].Raw, &lightsConfig)
+			if err != nil {
+				t.Errorf("failed to unmarshall lights config: %s", err)
 			}
 
 			assert.Equal(tt.change, unwrapValue(tt.which))
