@@ -36,69 +36,7 @@ func isDirectory(path string) (bool, error) {
 	}
 }
 
-// readSplits reads split data from a file.
-func readSplits(file string) ([]Split, error) {
-	f, err := readFile(file)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var splitFile []Split
-	err = json.Unmarshal(f, &splitFile)
-	if err != nil {
-		return nil, err
-	}
-	return splitFile, nil
-}
-
-// writeSplit writes the split structure recursively
-func writeSplit(path string, split Split) error {
-	if len(split.Splits) == 0 {
-		// recursion over, write the child nodes & return
-		path = filepath.Join(path, split.Path)
-		// leave them empty on init, then if empty
-		err := writeFile(path, []byte{}, 0664)
-		if err != nil {
-			return err
-		}
-	} else {
-		path = filepath.Join(path, split.Path)
-		if err := mkdirAll(path, 0755); err != nil {
-			return err
-		}
-		for _, s := range split.Splits {
-			err := writeSplit(path, s)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-// writeSplitStructure write the ext cache & config db files describing the config structure i.e.
-// */metadata/location/floor
-// */metadata/product/manufacturer
-// */metadata/product/model
-// this only needs to be called on first boot to set up the structure
-func writeSplitStructure(root string, splits []Split) error {
-
-	// first write the root directory
-	if err := mkdirAll(root, 0755); err != nil {
-		return err
-	}
-
-	// then let write the structure recursively
-	for _, s := range splits {
-		err := writeSplit(root, s)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
+// normaliseDeviceName replaces all instances of /, :, and spaces with -
 func normaliseDeviceName(s string) string {
 	s = strings.ReplaceAll(s, "/", "-")
 	s = strings.ReplaceAll(s, " ", "-")
@@ -106,8 +44,9 @@ func normaliseDeviceName(s string) string {
 	return s
 }
 
-// crap name recurses through the
-func mergeField(
+// mergeWithReflection does the same thing as mergeRawStruct but uses reflection to merge the changes.
+// used only for Metadata at the moment, probably unnecessary as we can just use mergeRawStruct
+func mergeWithReflection(
 	v reflect.Value, path string) error {
 
 	if v.Kind() != reflect.Ptr {
@@ -134,9 +73,9 @@ func mergeField(
 					path := filepath.Join(path, d.Name())
 
 					if value.Field(i).Kind() == reflect.Ptr {
-						err = mergeField(value.Field(i), path)
+						err = mergeWithReflection(value.Field(i), path)
 					} else {
-						err = mergeField(value.Field(i).Addr(), path)
+						err = mergeWithReflection(value.Field(i).Addr(), path)
 					}
 					if err != nil {
 						return err
@@ -233,6 +172,12 @@ func setValue(s *any, path string) error {
 	return nil
 }
 
+// mergeRawStruct recursively merges the file structure located at the root path with the raw struct s
+// looks at path, if it is a directory we try to match the name of the directory with the name of a field in the struct
+// if the dir name matches a field, then recursively call mergeRawStruct(field, dirPath) again until the dirPath is a file not a dir
+// when path is a file then we are at the lowest level and we apply the change located in file to the corresponding field in struct
+// when we encounter a map or a slice we look at the dir name and try to match it with the key of the map or the `name` field of the slice element
+// if the dir at slice level contains an alternate_key.json file then we use the key specified in that file instead of the default `name`
 func mergeRawStruct(s any, path string) error {
 
 	isDrcty, err := isDir(path)
@@ -340,15 +285,13 @@ func getAlternateKey(path string) (string, error) {
 	return keyFile.Key, nil
 }
 
-// mergeDbWithExtConfig reads the ext config and merges changes from the DB into it
-func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
+// mergeDbWithExtConfig merges changes found in the root with the app config
+// this is done by reading the root and then recursively merging the changes
+// ie. if the root contains a file at root/drivers/floor-01-bms/localInterface
+// the value in this file will overwrite the config at appConfig.Drivers["floor-01/bms"].LocalInterface
+func mergeDbWithExtConfig(appConfig *Config, root string) error {
 
-	// so at this point we have the ext config loaded into appConfig & splits loaded into splits
-	// now we need to look through the db and merge the changes into appConfig
-
-	// open the root of the db, it should look like appConfig.Config top level, so:
-	// /metadata /drivers /automations /zones
-	directory, err := readDir(dbRoot)
+	directory, err := readDir(root)
 	if err != nil {
 		return err
 	}
@@ -358,13 +301,14 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 		dirName := strings.ToLower(d.Name())
 		switch dirName {
 		case "metadata":
-			path := filepath.Join(dbRoot, d.Name())
-			err := mergeField(reflect.ValueOf(appConfig.Metadata), path)
+			path := filepath.Join(root, d.Name())
+			// todo, probably unnecessary now as this uses a different method to perform the merge as the exact structure is known. can just use mergeRawStruct
+			err := mergeWithReflection(reflect.ValueOf(appConfig.Metadata), path)
 			if err != nil {
 				errs = multierr.Append(errs, err)
 			}
 		case "drivers":
-			path := filepath.Join(dbRoot, d.Name())
+			path := filepath.Join(root, d.Name())
 			autoDirectory, err := readDir(path)
 			if err != nil {
 				errs = multierr.Append(errs, err)
@@ -380,7 +324,7 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 							errs = multierr.Append(errs, err)
 						}
 
-						path := filepath.Join(dbRoot, strings.ToLower(d.Name()), nextDir.Name())
+						path := filepath.Join(root, strings.ToLower(d.Name()), nextDir.Name())
 						err := mergeRawStruct(s, path)
 						if err != nil {
 							errs = multierr.Append(errs, err)
@@ -395,7 +339,7 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 			}
 		case "automation":
 			// todo this is a c&p of case "drivers", if drivers, autos et. al implemented GetName/GetRaw it could be done using generics
-			path := filepath.Join(dbRoot, d.Name())
+			path := filepath.Join(root, d.Name())
 			autoDirectory, err := readDir(path)
 			if err != nil {
 				errs = multierr.Append(errs, err)
@@ -411,7 +355,38 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 							errs = multierr.Append(errs, err)
 						}
 
-						path := filepath.Join(dbRoot, strings.ToLower(d.Name()), nextDir.Name())
+						path := filepath.Join(root, strings.ToLower(d.Name()), nextDir.Name())
+						err := mergeRawStruct(s, path)
+						if err != nil {
+							errs = multierr.Append(errs, err)
+						}
+
+						auto.Raw, err = json.Marshal(s)
+						if err != nil {
+							errs = multierr.Append(errs, err)
+						}
+					}
+				}
+			}
+		case "zones":
+			// todo this is a c&p of case "drivers", if drivers, autos et. al implemented GetName/GetRaw it could be done using generics
+			path := filepath.Join(root, d.Name())
+			zonesDirectory, err := readDir(path)
+			if err != nil {
+				errs = multierr.Append(errs, err)
+			}
+			for i := 0; i < len(appConfig.Zones); i++ {
+				auto := &appConfig.Zones[i]
+				for _, nextDir := range zonesDirectory {
+					if strings.EqualFold(normaliseDeviceName(auto.Name), nextDir.Name()) {
+						s := make(map[string]interface{})
+
+						err = json.Unmarshal(auto.Raw, &s)
+						if err != nil {
+							errs = multierr.Append(errs, err)
+						}
+
+						path := filepath.Join(root, strings.ToLower(d.Name()), nextDir.Name())
 						err := mergeRawStruct(s, path)
 						if err != nil {
 							errs = multierr.Append(errs, err)
@@ -425,6 +400,7 @@ func mergeDbWithExtConfig(appConfig *Config, dbRoot string) error {
 				}
 			}
 		}
+
 	}
 
 	return nil

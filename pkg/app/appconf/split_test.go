@@ -17,14 +17,8 @@ import (
 	lightingconfig "github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	bacnetconfig "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
+	areaconfig "github.com/vanti-dev/sc-bos/pkg/zone/area/config"
 )
-
-// the idea is that every driver that wants to be configurable defines a .split.json file (aka a split file)
-// i.e. metadata.json would have a companion metadata.split.json file, which defines how the config can be split up
-// into atomic parts which can be independently edited without affecting the rest of the file
-// then if something is not defined in the .split.json file, it is not editable
-// we are testing that the way we are defining how to split the config makes sense
-// we are defining the structure for the *.split.json files which themselves define how the *.json file can be split
 
 type MockFs struct {
 	fs afero.Fs
@@ -76,15 +70,10 @@ type alternateKey struct {
 	Key  string `json:"key,omitempty"`
 }
 
-// read the split file, so we know how to split the file into parts we want to edit
-// we can now create the db file structure based on what we have read in
-// tests we can create the directory structure for db
-// test modifying the db & joining the db with the ext (appconf.Config)
-// appconf.Config should then contain the edits in db & the original values
+// Test that we can update the metadata section of the app config
 func TestMetadataConfigPatch(t *testing.T) {
 
-	// first set up the mock filesystem, read & add the metadata & split files
-	// is more readable to do it this way
+	// first set up the mock filesystem, read the test ext config
 	var mockFs = MockFs{fs: afero.NewMemMapFs()}
 	readFile = mockFs.mockReadFile
 	writeFile = mockFs.mockWriteFile
@@ -100,7 +89,7 @@ func TestMetadataConfigPatch(t *testing.T) {
 	writeFile(mockFsConfigFileName, file, 0664)
 
 	assert := assert.New(t)
-	dbRootPath := filepath.Join("testdata", "db")
+	rootPath := filepath.Join("testdata", "db")
 
 	appConfig, err := LoadLocalConfig("", mockFsConfigFileName)
 
@@ -109,63 +98,57 @@ func TestMetadataConfigPatch(t *testing.T) {
 	}
 
 	tests := []struct {
-		name       string
-		fs         MockFs
-		which      interface{}
-		preExpect  any
-		patchFile  string
-		patchValue any
+		name      string      // name of the test
+		which     interface{} // the field to be updated
+		preExpect any         // the value of the field before the update
+		patchFile string      // the file containing the new value
+		change    any         // the change we are applying
+		// at the end of each test the value of `which` should be equal to `change`
 	}{
 		{
-			name:       "Floor",
-			fs:         mockFs,
-			which:      &appConfig.Metadata.Location.Floor,
-			preExpect:  "Floor 1",
-			patchFile:  filepath.Join("testdata", "db", "metadata", "Location", "Floor"),
-			patchValue: "New Floor",
+			name:      "Floor",
+			which:     &appConfig.Metadata.Location.Floor,
+			preExpect: "Floor 1",
+			patchFile: filepath.Join("testdata", "db", "metadata", "Location", "Floor"),
+			change:    "New Floor",
 		},
 		{
-			name:       "Manufacturer",
-			fs:         mockFs,
-			which:      &appConfig.Metadata.Product.Manufacturer,
-			preExpect:  "Vanti",
-			patchFile:  filepath.Join("testdata", "db", "metadata", "Product", "Manufacturer"),
-			patchValue: "New Manufacturer",
+			name:      "Manufacturer",
+			which:     &appConfig.Metadata.Product.Manufacturer,
+			preExpect: "Vanti",
+			patchFile: filepath.Join("testdata", "db", "metadata", "Product", "Manufacturer"),
+			change:    "New Manufacturer",
 		},
 		{
-			name:       "Model",
-			fs:         mockFs,
-			which:      &appConfig.Metadata.Product.Model,
-			preExpect:  "Smart Core BOS",
-			patchFile:  filepath.Join("testdata", "db", "metadata", "Product", "Model"),
-			patchValue: "New Model",
+			name:      "Model",
+			which:     &appConfig.Metadata.Product.Model,
+			preExpect: "Smart Core BOS",
+			patchFile: filepath.Join("testdata", "db", "metadata", "Product", "Model"),
+			change:    "New Model",
 		},
 		{
-			name:       "Membership",
-			fs:         mockFs,
-			which:      appConfig.Metadata.Membership,
-			preExpect:  traits.Metadata_Membership{Subsystem: "smart"},
-			patchFile:  filepath.Join("testdata", "db", "metadata", "Membership"),
-			patchValue: traits.Metadata_Membership{Subsystem: "New Subsystem"},
+			name:      "Membership",
+			which:     appConfig.Metadata.Membership,
+			preExpect: traits.Metadata_Membership{Subsystem: "smart"},
+			patchFile: filepath.Join("testdata", "db", "metadata", "Membership"),
+			change:    traits.Metadata_Membership{Subsystem: "New Subsystem"},
 		},
 		{
-			name:       "Traits",
-			fs:         mockFs,
-			which:      appConfig.Metadata.Traits,
-			preExpect:  []*traits.TraitMetadata{{Name: "oldTrait"}},
-			patchFile:  filepath.Join("testdata", "db", "metadata", "Traits"),
-			patchValue: []*traits.TraitMetadata{{Name: "newTrait"}},
+			name:      "Traits",
+			which:     appConfig.Metadata.Traits,
+			preExpect: []*traits.TraitMetadata{{Name: "oldTrait"}},
+			patchFile: filepath.Join("testdata", "db", "metadata", "Traits"),
+			change:    []*traits.TraitMetadata{{Name: "newTrait"}},
 		},
 		{
 			name:  "MoreMap",
-			fs:    mockFs,
 			which: &appConfig.Metadata.More,
 			preExpect: map[string]string{
 				"type":     "sensor",
 				"function": "temperature",
 			},
 			patchFile: filepath.Join("testdata", "db", "metadata", "More"),
-			patchValue: map[string]string{
+			change: map[string]string{
 				"type":     "newType",
 				"function": "newFunction",
 			},
@@ -175,27 +158,28 @@ func TestMetadataConfigPatch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
+			// check the value at the beginning is the original from the ext
 			assert.Equal(tt.preExpect, unwrapValue(tt.which))
 
-			err := writePageFile(tt.patchFile, tt.patchValue)
+			// write the file containing the new value to the correct place
+			err := writePageFile(tt.patchFile, tt.change)
 			if err != nil {
 				t.Errorf("failed to write patch file: %s", err)
 			}
-			err = mergeDbWithExtConfig(appConfig, dbRootPath)
+
+			// merge changes from the files in rootPath directory into appConfig
+			err = mergeDbWithExtConfig(appConfig, rootPath)
 			if err != nil {
 				t.Errorf("failed to join app config & db: %s", err)
 			}
 
-			assert.Equal(tt.patchValue, unwrapValue(tt.which))
+			// the value in appConfig should have the new value from the patchFile
+			assert.Equal(tt.change, unwrapValue(tt.which))
 		})
 	}
 }
 
-// tests the ability of the config system to update the property of a specific device in the config
-// the device is specified using the "key" attribute in the split file
-// when the split-config encounters the key property being present in the split file, for a given split
-// it will search through the array / map of objects in the config for the object with the matching key
-// and then follow the same process
+// test we can update the drivers section of the config, using the bacnet driver as the test
 func TestBacnetDriverConfigPatch(t *testing.T) {
 
 	// first set up the mock filesystem, read & add the metadata & split files
@@ -216,7 +200,7 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 	writeFile(mockFsConfigFileName, file, 0664)
 
 	assert := assert.New(t)
-	dbRootPath := filepath.Join("testdata", "db")
+	rootPath := filepath.Join("testdata", "db")
 	appConfig, err := LoadLocalConfig("", mockFsConfigFileName)
 	if err != nil {
 		t.Errorf("failed to LoadLocalConfig: %s", err)
@@ -229,12 +213,12 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		which        interface{}
-		preExpect    any
-		patchFile    string
-		change       any
-		alternateKey *alternateKey
+		name         string        // name of the test
+		which        interface{}   // the field to be updated
+		preExpect    any           // the value of the field before the update
+		patchFile    string        // the file containing the new value
+		change       any           // the change we are applying
+		alternateKey *alternateKey // an alternate key to use instead of the default `name`
 	}{
 		{
 			name:      "localInterface",
@@ -301,34 +285,41 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
+			// check the value at the beginning is the original from the ext
 			assert.Equal(tt.preExpect, unwrapValue(tt.which))
 
+			// write the file containing the new value to the correct place
 			err := writePageFile(tt.patchFile, tt.change)
 			if err != nil {
 				t.Errorf("failed to write patch file: %s", err)
 			}
 
 			if tt.alternateKey != nil {
+				// tell the system to use a key other than 'name' to specify the value in slice/map we want
 				err = writeAlternateKey(tt.alternateKey.Path, tt.alternateKey.Key)
 				if err != nil {
 					t.Errorf("failed to write alternate key file: %s", err)
 				}
 			}
 
-			err = mergeDbWithExtConfig(appConfig, dbRootPath)
+			// merge changes from the files in rootPath directory into appConfig
+			err = mergeDbWithExtConfig(appConfig, rootPath)
 			if err != nil {
 				t.Errorf("failed to join app config & db: %s", err)
 			}
+
 			err = json.Unmarshal(appConfig.Drivers[0].Raw, &bacnetConfig)
 			if err != nil {
 				t.Errorf("failed to unmarshall bacnet config: %s", err)
 			}
 
+			// the value in appConfig should have the new value from the patchFile
 			assert.Equal(tt.change, unwrapValue(tt.which))
 		})
 	}
 }
 
+// test we can update the automations section of the config using lighting automation as an example
 func TestAutomation(t *testing.T) {
 
 	var mockFs = MockFs{fs: afero.NewMemMapFs()}
@@ -347,7 +338,7 @@ func TestAutomation(t *testing.T) {
 	writeFile(mockFsConfigFileName, file, 0664)
 
 	assert := assert.New(t)
-	dbRootPath := filepath.Join("testdata", "db")
+	rootPath := filepath.Join("testdata", "db")
 	appConfig, err := LoadLocalConfig("", mockFsConfigFileName)
 	if err != nil {
 		t.Errorf("failed to LoadLocalConfig: %s", err)
@@ -356,16 +347,16 @@ func TestAutomation(t *testing.T) {
 	var lightsConfig lightingconfig.Root
 	err = json.Unmarshal(appConfig.Automation[0].Raw, &lightsConfig)
 	if err != nil {
-		t.Errorf("failed to unmarshall bacnet config: %s", err)
+		t.Errorf("failed to unmarshall auto config: %s", err)
 	}
 
 	tests := []struct {
-		name         string
-		which        interface{}
-		preExpect    any
-		patchFile    string
-		change       any
-		alternateKey *alternateKey
+		name         string        // name of the test
+		which        interface{}   // the field to be updated
+		preExpect    any           // the value of the field before the update
+		patchFile    string        // the file containing the new value
+		change       any           // the change we are applying
+		alternateKey *alternateKey // an alternate key to use instead of the default `name`
 	}{
 		{
 			name:      "unoccupiedOffDelay",
@@ -395,21 +386,20 @@ func TestAutomation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
+			// check the value at the beginning is the original from the ext
 			assert.Equal(tt.preExpect, unwrapValue(tt.which))
 
+			// write the file containing the new value to the correct place
 			err := writePageFile(tt.patchFile, tt.change)
 			if err != nil {
 				t.Errorf("failed to write patch file: %s", err)
 			}
 
-			if tt.alternateKey != nil {
-				err = writeAlternateKey(tt.alternateKey.Path, tt.alternateKey.Key)
-				if err != nil {
-					t.Errorf("failed to write alternate key file: %s", err)
-				}
+			// merge changes from the files in rootPath directory into appConfig
+			err = mergeDbWithExtConfig(appConfig, rootPath)
+			if err != nil {
+				t.Errorf("failed to join app config & db: %s", err)
 			}
-
-			err = mergeDbWithExtConfig(appConfig, dbRootPath)
 			if err != nil {
 				t.Errorf("failed to join app config & db: %s", err)
 			}
@@ -418,6 +408,91 @@ func TestAutomation(t *testing.T) {
 				t.Errorf("failed to unmarshall lights config: %s", err)
 			}
 
+			// the value in appConfig should have the new value from the patchFile
+			assert.Equal(tt.change, unwrapValue(tt.which))
+		})
+	}
+}
+
+// test we can update the automations section of the config using area zone type as example
+func TestZones(t *testing.T) {
+
+	var mockFs = MockFs{fs: afero.NewMemMapFs()}
+	readFile = mockFs.mockReadFile
+	writeFile = mockFs.mockWriteFile
+	mkdirAll = mockFs.mockMkdirAll
+	readDir = mockFs.mockReadDir
+	isDir = mockFs.mockIsDir
+	mockFsConfigFileName := "fstest.zones.json"
+
+	file, err := os.ReadFile("testdata/zones.json")
+	if err != nil {
+		t.Errorf("error reading config file: %s", err)
+	}
+
+	writeFile(mockFsConfigFileName, file, 0664)
+
+	assert := assert.New(t)
+	rootPath := filepath.Join("testdata", "db")
+	appConfig, err := LoadLocalConfig("", mockFsConfigFileName)
+	if err != nil {
+		t.Errorf("failed to LoadLocalConfig: %s", err)
+	}
+
+	var areaConfig areaconfig.Root
+	err = json.Unmarshal(appConfig.Zones[0].Raw, &areaConfig)
+	if err != nil {
+		t.Errorf("failed to unmarshall zone config: %s", err)
+	}
+
+	tests := []struct {
+		name      string      // name of the test
+		which     interface{} // the field to be updated
+		preExpect any         // the value of the field before the update
+		patchFile string      // the file containing the new value
+		change    any         // the change we are applying
+	}{
+		{
+			name:      "metadataAppearanceTitle",
+			which:     &areaConfig.Metadata.Appearance.Title,
+			preExpect: "Audit Office",
+			patchFile: filepath.Join("testdata", "db", "zones", normaliseDeviceName("informa/uk/5hp/zone/audit-office"), "metadata", "appearance", "title"),
+			change:    "CEO Golf Club Storage",
+		},
+		{
+			name:      "disabled",
+			which:     &areaConfig.Disabled,
+			preExpect: false,
+			patchFile: filepath.Join("testdata", "db", "zones", normaliseDeviceName("informa/uk/5hp/zone/audit-office"), "disabled"),
+			change:    true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			// check the value at the beginning is the original from the ext
+			assert.Equal(tt.preExpect, unwrapValue(tt.which))
+
+			// write the file containing the new value to the correct place
+			err := writePageFile(tt.patchFile, tt.change)
+			if err != nil {
+				t.Errorf("failed to write patch file: %s", err)
+			}
+
+			// merge changes from the files in rootPath directory into appConfig
+			err = mergeDbWithExtConfig(appConfig, rootPath)
+			if err != nil {
+				t.Errorf("failed to join app config & db: %s", err)
+			}
+			if err != nil {
+				t.Errorf("failed to join app config & db: %s", err)
+			}
+			err = json.Unmarshal(appConfig.Zones[0].Raw, &areaConfig)
+			if err != nil {
+				t.Errorf("failed to unmarshall area config: %s", err)
+			}
+
+			// the value in appConfig should have the new value from the patchFile
 			assert.Equal(tt.change, unwrapValue(tt.which))
 		})
 	}

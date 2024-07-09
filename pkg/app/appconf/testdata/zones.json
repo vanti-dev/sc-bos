@@ -1,0 +1,56 @@
+{
+  "zones": [
+    {
+      "name": "informa/uk/5hp/zone/audit-office",
+      "type": "area",
+      "disabled" : false,
+      "metadata": {
+        "appearance": {
+          "title": "Audit Office"
+        },
+        "location": {
+          "floor": "2nd Floor"
+        },
+        "membership": {
+          "subsystem": "zones"
+        }
+      },
+      "lights": [
+        "informa/uk/5hp/lights/ac-01/buses/2/groups/10"
+      ],
+      "occupancySensors": [
+        "informa/uk/5hp/lights/ac-01/buses/2/pirs/1"
+      ],
+      "thermostats": [
+        "informa/uk/5hp/bms/fcu2-06"
+      ],
+      "modes": {
+        "lighting.mode": [
+          {
+            "name": "Daytime work area",
+            "sources": [
+              "informa/uk/5hp/zone/audit-office/settings"
+            ]
+          },
+          {
+            "name": "Night work area",
+            "sources": [
+              "informa/uk/5hp/zone/audit-office/settings"
+            ]
+          }
+        ]
+      },
+      "drivers": [
+        {
+          "name": "informa/uk/5hp/zone/audit-office/settings",
+          "type": "settings",
+          "lightingModes": [
+            "Daytime work area",
+            "Night work area"
+          ],
+          "hvacModes": null
+        }
+      ]
+    }
+  ]
+}
