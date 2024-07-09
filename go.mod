@@ -23,6 +23,8 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.45
 	github.com/smart-core-os/sc-golang v0.0.0-20240802120428-690285f06144
+	github.com/spf13/afero v1.8.2
+	github.com/stretchr/testify v1.8.1
 	github.com/timshannon/bolthold v0.0.0-20210913165410-232392fc8a6a
 	github.com/vanti-dev/gobacnet v0.0.0-20231102122752-32b0b38bcc53
 	go.etcd.io/bbolt v1.3.6
@@ -45,6 +47,7 @@ require (
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/chzyer/test v1.0.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
@@ -60,6 +63,7 @@ require (
 	github.com/jackc/puddle v1.3.0 // indirect
 	github.com/mennanov/fmutils v0.1.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0 // indirect
 	github.com/tanema/gween v0.0.0-20200427131925-c89ae23cc63c // indirect
 	github.com/tchap/go-patricia/v2 v2.3.1 // indirect
@@ -73,5 +77,6 @@ require (
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231002182017-d307bd883b97 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	nhooyr.io/websocket v1.8.10 // indirect
 )
