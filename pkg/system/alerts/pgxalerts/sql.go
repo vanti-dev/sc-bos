@@ -18,7 +18,7 @@ import (
 const selectAlertSQL = `SELECT id, description, severity, create_time, resolve_time, floor, zone, subsystem, source, federation, ack_time, ack_author_id, ack_author_name, ack_author_email FROM alerts`
 
 type QueryRower interface {
-	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 }
 
 func insertAlert(ctx context.Context, q QueryRower, alert *gen.Alert) (*gen.Alert, error) {
@@ -36,7 +36,7 @@ func insertAlert(ctx context.Context, q QueryRower, alert *gen.Alert) (*gen.Aler
 }
 
 type Execer interface {
-	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
+	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
 }
 
 func updateAlert(ctx context.Context, ex Execer, id string, fields []string, values []any) error {

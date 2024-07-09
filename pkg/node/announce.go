@@ -98,7 +98,7 @@ func AnnounceFeatures(a Announcer, moreFeatures ...Feature) Announcer {
 type announcement struct {
 	name           string
 	traits         []traitFeature
-	clients        []interface{}
+	clients        []any
 	metadata       []*traits.Metadata
 	noAutoMetadata bool
 	undo           []Undo
@@ -106,7 +106,7 @@ type announcement struct {
 
 type traitFeature struct {
 	name     trait.Name
-	clients  []interface{}
+	clients  []any
 	metadata map[string]string
 
 	noAddChildTrait bool
@@ -131,7 +131,7 @@ func (f featureFunc) apply(a *announcement) {
 
 // HasClient indicates that the name implements non-trait apis as defined by these clients.
 // The clients are still added to routers and all requests on the clients should accept a Name.
-func HasClient(clients ...interface{}) Feature {
+func HasClient(clients ...any) Feature {
 	return featureFunc(func(a *announcement) {
 		a.clients = append(a.clients, clients...)
 	})
@@ -180,7 +180,7 @@ type TraitOption func(t *traitFeature)
 
 // WithClients indicates that the trait is implemented by these client instances.
 // The clients will be added to the relevant routers when the trait is announced.
-func WithClients(client ...interface{}) TraitOption {
+func WithClients(client ...any) TraitOption {
 	return func(t *traitFeature) {
 		t.clients = append(t.clients, client...)
 	}

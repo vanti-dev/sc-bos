@@ -57,11 +57,11 @@ func main() {
 	log.Printf("Got response %v", test)
 }
 
-func logUnaryServerCalls(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+func logUnaryServerCalls(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 	log.Printf("intercept(%v, %v, %v)", ctx, req, info)
 	return handler(ctx, req)
 }
-func logStreamServerCalls(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+func logStreamServerCalls(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	log.Printf("intercept( %v, %v, %v)", srv, ss, info)
 	return handler(srv, &loggingServerStream{ss})
 }
@@ -70,12 +70,12 @@ type loggingServerStream struct {
 	grpc.ServerStream
 }
 
-func (ss *loggingServerStream) SendMsg(m interface{}) error {
+func (ss *loggingServerStream) SendMsg(m any) error {
 	log.Printf("intercept.SendMsg((%T) {%v})", m, m)
 	return ss.ServerStream.SendMsg(m)
 }
 
-func (ss *loggingServerStream) RecvMsg(m interface{}) error {
+func (ss *loggingServerStream) RecvMsg(m any) error {
 	err := ss.ServerStream.RecvMsg(m)
 	log.Printf("intercept.RecvMsg((%T) {%v}) %v", m, m, err)
 	return err

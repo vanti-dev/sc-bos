@@ -158,7 +158,7 @@ func (n *Node) addApi(apis ...server.GrpcApi) {
 }
 
 // addRoute adds name->impl as a route to all routers that support the type impl.
-func (n *Node) addRoute(name string, impl interface{}) Undo {
+func (n *Node) addRoute(name string, impl any) Undo {
 	var undo []Undo
 	var addCount int
 	for _, r := range n.routers {

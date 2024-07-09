@@ -8,7 +8,7 @@ import (
 )
 
 func TestDropExcess(t *testing.T) {
-	source := make(chan interface{})
+	source := make(chan any)
 	consumer := DropExcess(source)
 
 	// we can send a value and it gets buffered...
@@ -31,7 +31,7 @@ func TestDropExcess(t *testing.T) {
 	expectClosed(t, consumer)
 }
 
-func sendQuickly(t *testing.T, dest chan<- interface{}, value interface{}) {
+func sendQuickly(t *testing.T, dest chan<- any, value any) {
 	timer := time.NewTimer(100 * time.Millisecond)
 	defer timer.Stop()
 
@@ -42,7 +42,7 @@ func sendQuickly(t *testing.T, dest chan<- interface{}, value interface{}) {
 	}
 }
 
-func recvQuickly(t *testing.T, src <-chan interface{}) interface{} {
+func recvQuickly(t *testing.T, src <-chan any) any {
 	timer := time.NewTimer(100 * time.Millisecond)
 	defer timer.Stop()
 
@@ -58,14 +58,14 @@ func recvQuickly(t *testing.T, src <-chan interface{}) interface{} {
 	}
 }
 
-func expectRecv(t *testing.T, src <-chan interface{}, expect interface{}, opts ...cmp.Option) {
+func expectRecv(t *testing.T, src <-chan any, expect any, opts ...cmp.Option) {
 	value := recvQuickly(t, src)
 	if diff := cmp.Diff(expect, value, opts...); diff != "" {
 		t.Errorf("Received unexpected value: %s", diff)
 	}
 }
 
-func expectEmpty(t *testing.T, src <-chan interface{}) {
+func expectEmpty(t *testing.T, src <-chan any) {
 	timer := time.NewTimer(100 * time.Millisecond)
 	defer timer.Stop()
 
@@ -79,7 +79,7 @@ func expectEmpty(t *testing.T, src <-chan interface{}) {
 	}
 }
 
-func expectClosed(t *testing.T, ch <-chan interface{}) {
+func expectClosed(t *testing.T, ch <-chan any) {
 	timer := time.NewTimer(100 * time.Millisecond)
 	defer timer.Stop()
 
