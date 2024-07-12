@@ -47,7 +47,7 @@ func Routing(rs ...router.Router) Function {
 	return functionFunc(func(node *Node) {
 		node.addRouter(rs...)
 		// Special case, if the router implements GrpcApi, act as though they called Support(Router(r), Api(r)).
-		// This is mostly for backwards compatibility reasons, we didn't used ot have addApi.
+		// This is mostly for backwards compatibility reasons, we didn't use to have addApi.
 		for _, r := range rs {
 			if api, ok := r.(server.GrpcApi); ok {
 				node.addApi(api)
@@ -58,7 +58,7 @@ func Routing(rs ...router.Router) Function {
 
 // Clients adds the given clients, which should be proto service clients, to a node.
 // Code can access a nodes clients via Client.
-// Typically these are associated with the nodes routers via server->client conversion.
+// Typically, these are associated with the nodes routers via server->client conversion.
 func Clients(c ...any) Function {
 	return functionFunc(func(node *Node) {
 		node.addClient(c...)
