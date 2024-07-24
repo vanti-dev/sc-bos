@@ -3,6 +3,7 @@ package policy
 import (
 	"context"
 	"crypto/x509"
+	"encoding/json"
 	"log"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -11,6 +12,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
@@ -129,6 +132,25 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 		TokenPresent:       creds.token != "",
 		TokenValid:         creds.tokenClaims != nil,
 		TokenClaims:        creds.tokenClaims,
+	}
+
+	// rego.Eval (called by Validate) does a json.Marshal + json.Unmarshal on the input to convert the input to a map[string]any for use as data in policies.
+	// We actually want our protos to use protojson instead which is what we'd expect when interacting with protos via json.
+	// Using protojson is important, not only because it's a better defined proto-json mapping, but also because json.Marshal doesn't handle
+	// messages created via the dynamicpb package.
+	if m, ok := input.Request.(proto.Message); ok {
+		jsonBytes, err := protojson.MarshalOptions{
+			AllowPartial:      true, // avoid errors, this is not part of an RPC flow
+			EmitDefaultValues: true, // make the policy files easier to write
+		}.Marshal(m)
+		if err != nil {
+			// Keep the original message, but let people know that things aren't quite right.
+			// We hope to never see this log message.
+			i.logger.Warn("failed to marshal proto message to json during policy check", zap.Error(err))
+		} else {
+			// Avoid a json.Unmarshal(map[string]any), which would be followed by a json.Marshal in rego.Eval anyway
+			input.Request = json.RawMessage(jsonBytes)
+		}
 	}
 
 	queries, err := Validate(ctx, i.policy, input)

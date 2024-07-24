@@ -25,6 +25,7 @@ type Attributes struct {
 	// gRPC request message for unary and server streaming calls.
 	// For client and bidirectional streaming calls, Request is initially nil, but will contain the latest stream
 	// message once Stream.Open is true.
+	// Request, when not nil, is guaranteed to work correctly with json.Marshal, no other guarantees are made.
 	Request any `json:"request"`
 
 	CertificatePresent bool              `json:"certificate_present"` // A client cert was provided

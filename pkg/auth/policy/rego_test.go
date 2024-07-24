@@ -2,9 +2,9 @@ package policy
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 )
 
@@ -12,7 +12,7 @@ func BenchmarkPolicy(b *testing.B) {
 	attrs := Attributes{
 		Service:    "smartcore.traits.OnOff",
 		Method:     "UpdateOnOff",
-		Request:    &traits.UpdateOnOffRequest{Name: "test", OnOff: &traits.OnOff{State: traits.OnOff_ON}},
+		Request:    json.RawMessage(`{"name":"test","onOff":{"state":"ON"}}`),
 		TokenValid: true,
 		TokenClaims: token.Claims{
 			Roles:  []string{"admin"},
