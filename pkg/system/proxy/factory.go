@@ -1,3 +1,29 @@
+// Package proxy is a system that allows a node to proxy the APIs of other nodes.
+// The proxy system is closely tied with the hub and cohort concepts, using these to discover which nodes to proxy.
+//
+// # Types Of Proxying
+//
+// There are two types of proxying that this system does: routed and node APIs
+//
+// ## Routed APIs
+//
+// For any API that uses a name to direct API calls to the correct target, the proxy system will maintain a table of
+// name->target mappings and when a request comes in for a name, it will forward that request to the correct target.
+// Examples of this kind of API are Smart Core traits, or other APIs that are announced as part of a node.
+//
+// Routed APIs are handled in a generic way, using node metadata to construct the routing table and general trait patterns
+// to decide how to route the request.
+// The proxy can only route APIs that it knows about, specifically APIs mentioned in [alltraits].
+//
+// ## Node APIs
+//
+// These typically do not include a name, instead targeting the node itself as the party to respond to the request.
+// The hub is generally the primary source of these APIs though other nodes can also implement them.
+// Some examples of this kind of API are the services API, the history admin API, and the tenant API.
+//
+// Each node API is handled in a special way, with specific logic to handle the routing of the request.
+// Most node APIs are assumed to target the hub node, but some, like the services API, require special processing to
+// correctly route requests to the correct node.
 package proxy
 
 import (
@@ -170,12 +196,13 @@ func (s *System) announceHub(ctx context.Context, hubConn *grpc.ClientConn) (tas
 	}
 }
 
-// announceNodes fetches all the hubs enrolled nodes and sets up routed apis on this node that proxy those node apis.
+// announceNodes sets up proxies for all nodes enrolled with the hub hubConn is a connection for.
 func (s *System) announceNodes(ctx context.Context, hubConn *grpc.ClientConn, ignore ...string) (task.Next, error) {
 	hubClient := gen.NewHubApiClient(hubConn)
 	return s.announceHubNodes(ctx, hubClient, ignore...)
 }
 
+// announceLocalNodes sets up proxies for all nodes enrolled with this node, which should be a hub.
 func (s *System) announceLocalNodes(ctx context.Context, ignore ...string) (task.Next, error) {
 	var hubClient gen.HubApiClient
 	if err := s.self.Client(&hubClient); err != nil {
@@ -185,6 +212,7 @@ func (s *System) announceLocalNodes(ctx context.Context, ignore ...string) (task
 	return s.announceHubNodes(ctx, hubClient, ignore...)
 }
 
+// announceHubNodes sets up proxies for all nodes enrolled with hubClient.
 func (s *System) announceHubNodes(ctx context.Context, hubClient gen.HubApiClient, ignore ...string) (task.Next, error) {
 	stream, err := hubClient.PullHubNodes(ctx, &gen.PullHubNodesRequest{})
 	if err != nil {
@@ -234,6 +262,7 @@ func (s *System) announceHubNodes(ctx context.Context, hubClient gen.HubApiClien
 	}
 }
 
+// announceNode sets up proxying for nodeConn, which is enrolled with hubNode.
 func (s *System) announceNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) (task.Next, error) {
 	isProxyNode, err := s.isProxy(ctx, nodeConn)
 	if err != nil {
@@ -252,6 +281,9 @@ func (s *System) announceNode(ctx context.Context, hubNode *gen.HubNode, nodeCon
 	return task.ResetBackoff, ctx.Err()
 }
 
+// announceControllerNode sets up proxying for all the APIs of a standard controller node.
+// A controller node is one that is neither a hub nor a proxy.
+// We proxy trait and non-trait APIs and set up the routing table for any discovered names the node has.
 func (s *System) announceControllerNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) {
 	go s.retry(ctx, "proxyNodeParent", func(ctx context.Context) (task.Next, error) {
 		return s.announceNodeParent(ctx, nodeConn, hubNode.Name)
@@ -267,6 +299,9 @@ func (s *System) announceControllerNode(ctx context.Context, hubNode *gen.HubNod
 	})
 }
 
+// announceProxyNode sets up proxying for a node that is also a proxy.
+// This is similar to [announceControllerNode] but we skip updating the routing table as we assume all proxies have the same table and
+// including the other proxies table in ours would be redundant (and possible cause infinite routing loops).
 func (s *System) announceProxyNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) {
 	go s.retry(ctx, "proxyNodeParent", func(ctx context.Context) (task.Next, error) {
 		return s.announceNodeParent(ctx, nodeConn, hubNode.Name)
@@ -279,6 +314,7 @@ func (s *System) announceProxyNode(ctx context.Context, hubNode *gen.HubNode, no
 	})
 }
 
+// isProxy discovers if nodeConn is a proxy node, a node that has an enabled proxy system.
 func (s *System) isProxy(ctx context.Context, nodeConn *grpc.ClientConn) (bool, error) {
 	client := gen.NewServicesApiClient(nodeConn)
 	req := &gen.ListServicesRequest{Name: "systems"}
@@ -300,7 +336,7 @@ func (s *System) isProxy(ctx context.Context, nodeConn *grpc.ClientConn) (bool, 
 	}
 }
 
-// announceNodeParent discovers all the hub parents trait apis and announces them on this node.
+// announceNodeParent sets up proxying for trait-based APIs nodeConn implements directly.
 func (s *System) announceNodeParent(ctx context.Context, nodeConn *grpc.ClientConn, name string) (task.Next, error) {
 	announcer := node.AnnounceContext(ctx, s.announcer)
 
@@ -341,7 +377,8 @@ func (s *System) announceNodeParent(ctx context.Context, nodeConn *grpc.ClientCo
 	}
 }
 
-// announceNodeChildren discovers and routes all named traits surfaced via nodeConn.
+// announceNodeChildren sets up proxying for all trait-based APIs via nodeConn's announced children.
+// This uses the ParentAPI trait to discover the list of children nodeConn has.
 func (s *System) announceNodeChildren(ctx context.Context, nodeConn *grpc.ClientConn) (task.Next, error) {
 	// ctx is cancelled when this function returns - i.e. on error
 	// this makes sure we're forgetting any announcements in that case.
@@ -453,6 +490,8 @@ func (s *System) announceNodeApis(ctx context.Context, hubNode *gen.HubNode, nod
 	return task.ResetBackoff, ctx.Err()
 }
 
+// announceServiceApi adds proxying for the ServicesApi to conn.
+// As services are typically named `drivers`, `automations`, etc, we rename them to `name/drivers`, `name/automations`, etc.
 func (s *System) announceServiceApi(announcer node.Announcer, conn *grpc.ClientConn, name string) node.Undo {
 	servicesApi := servicepb.RenameApi(gen.NewServicesApiClient(conn), func(n string) string {
 		if strings.HasPrefix(n, name+"/") {
@@ -468,6 +507,7 @@ func (s *System) announceServiceApi(announcer node.Announcer, conn *grpc.ClientC
 	return node.UndoAll(undos...)
 }
 
+// announceTrait adds records to our routing table for name -> nodeConn for all known aspects of traitName.
 func (s *System) announceTrait(announcer node.Announcer, nodeConn *grpc.ClientConn, name string, traitName trait.Name) node.Undo {
 	var clients []any
 	if c := alltraits.APIClient(nodeConn, traitName); c != nil {
