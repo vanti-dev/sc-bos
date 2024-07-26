@@ -410,3 +410,12 @@ func AddSupport(n node.Supporter) {
 		f(n)
 	}
 }
+
+// AddSupportFor adds support to n for the given traits.
+func AddSupportFor(n node.Supporter, traits ...trait.Name) {
+	for _, t := range traits {
+		if f, ok := traitSupport[t]; ok {
+			f(n)
+		}
+	}
+}
