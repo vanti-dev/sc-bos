@@ -1,0 +1,6 @@
+{
+  "name": "hub",
+  "systems": {
+    "hub": {"storage": {"type": "bolt"}}
+  }
+}
