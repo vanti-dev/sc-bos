@@ -35,6 +35,10 @@ import (
 // TestProxy_e2e tests the proxy by running a cohort of nodes, each a different sc-bos process.
 // The test only runs if the -short flag is not set.
 func TestProxy_e2e(t *testing.T) {
+	// WARNING: This test doesn't play perfectly with go tests caching for a number of reasons:
+	// 1. it builds go binaries which are the target of the tests which don't get checked as part of cache invalidation
+	// 2. those binaries read files that are also not part of the cache invalidation
+
 	if testing.Short() {
 		t.Skip("long test")
 	}
