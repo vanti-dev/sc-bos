@@ -1,4 +1,4 @@
-package main
+package ac
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 )
 
-func main() {
+func Main() {
 	ctx := context.Background()
 
 	systemConfig, err := loadSystemConfig()

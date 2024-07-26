@@ -25,6 +25,11 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/system/proxy/internal/test/shared"
+
+	// make sure that test caching updates based on changes to these files too
+	_ "github.com/vanti-dev/sc-bos/pkg/system/proxy/internal/test/ac"
+	_ "github.com/vanti-dev/sc-bos/pkg/system/proxy/internal/test/gw"
+	_ "github.com/vanti-dev/sc-bos/pkg/system/proxy/internal/test/hub"
 )
 
 // TestProxy_e2e tests the proxy by running a cohort of nodes, each a different sc-bos process.
@@ -82,7 +87,7 @@ func buildAll(t *testing.T, dir string) {
 func build(t *testing.T, ctx context.Context, name, dir string) error {
 	t.Helper()
 
-	build := exec.CommandContext(ctx, "go", "build", "-o", filepath.Join(dir, name), "./"+name)
+	build := exec.CommandContext(ctx, "go", "build", "-o", filepath.Join(dir, name), "./"+name+"/cmd")
 	build.Stdout = os.Stdout
 	build.Stderr = os.Stderr
 	return build.Run()

@@ -1,4 +1,4 @@
-package main
+package gw
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system/proxy"
 )
 
-func main() {
+func Main() {
 	ctx := context.Background()
 
 	systemConfig, err := loadSystemConfig()
