@@ -266,7 +266,7 @@ func (s *ssSource) Certs() (*tls.Certificate, []*x509.Certificate, error) {
 	return cert, roots, nil
 }
 
-// SourceSet is a Source that will return certs from the first of sources to return a non-nil cert and err.
+// SourceSet is a Source that will return certs from the first of sources to return a non-nil cert and nil err.
 type SourceSet []Source
 
 func (ss *SourceSet) Certs() (cert *tls.Certificate, roots []*x509.Certificate, err error) {
