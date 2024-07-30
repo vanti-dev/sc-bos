@@ -250,75 +250,66 @@ func testOnOffApi(t *testing.T, ctx context.Context, addr, name string, client t
 	defer cancel()
 
 	// set initial known state: ON
-	{
-		res, err := client.UpdateOnOff(ctx, &traits.UpdateOnOffRequest{Name: name, OnOff: &traits.OnOff{State: traits.OnOff_ON}})
-		if err != nil {
-			t.Fatalf("[%s] update onoff %s: %v", addr, name, err)
-		}
-		if diff := cmp.Diff(res, &traits.OnOff{State: traits.OnOff_ON}, protocmp.Transform()); diff != "" {
-			t.Fatalf("[%s] update onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
-		}
+	res, err := client.UpdateOnOff(ctx, &traits.UpdateOnOffRequest{Name: name, OnOff: &traits.OnOff{State: traits.OnOff_ON}})
+	if err != nil {
+		t.Fatalf("[%s] update onoff %s: %v", addr, name, err)
+	}
+	if diff := cmp.Diff(res, &traits.OnOff{State: traits.OnOff_ON}, protocmp.Transform()); diff != "" {
+		t.Fatalf("[%s] update onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
 	}
 
 	// subscribe
 	changes := make(chan *traits.PullOnOffResponse, 1) // we're only expecting 1
-	{
-		stream, err := client.PullOnOff(ctx, &traits.PullOnOffRequest{Name: name, UpdatesOnly: true})
-		if err != nil {
-			t.Fatalf("[%s] pull onoff %s: %v", addr, name, err)
-		}
-		go func() {
-			for {
-				res, err := stream.Recv()
-				if errors.Is(err, io.EOF) || status.Code(err) == codes.Canceled {
-					close(changes)
-					return
-				}
-				if err != nil {
-					t.Errorf("[%s] pull onoff %s: %v", addr, name, err)
-					return
-				}
-				changes <- res
-			}
-		}()
+	stream, err := client.PullOnOff(ctx, &traits.PullOnOffRequest{Name: name, UpdatesOnly: true})
+	if err != nil {
+		t.Fatalf("[%s] pull onoff %s: %v", addr, name, err)
 	}
+	go func() {
+		for {
+			res, err := stream.Recv()
+			if errors.Is(err, io.EOF) || status.Code(err) == codes.Canceled {
+				close(changes)
+				return
+			}
+			if err != nil {
+				t.Errorf("[%s] pull onoff %s: %v", addr, name, err)
+				return
+			}
+			changes <- res
+		}
+	}()
 
 	// check initial state
-	{
-		res, err := client.GetOnOff(ctx, &traits.GetOnOffRequest{Name: name})
-		if err != nil {
-			t.Fatalf("[%s] get onoff %s: %v", addr, name, err)
-		}
-		if diff := cmp.Diff(res, &traits.OnOff{State: traits.OnOff_ON}, protocmp.Transform()); diff != "" {
-			t.Fatalf("[%s] get onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
-		}
+	res, err = client.GetOnOff(ctx, &traits.GetOnOffRequest{Name: name})
+	if err != nil {
+		t.Fatalf("[%s] get onoff %s: %v", addr, name, err)
+	}
+	if diff := cmp.Diff(res, &traits.OnOff{State: traits.OnOff_ON}, protocmp.Transform()); diff != "" {
+		t.Fatalf("[%s] get onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
 	}
 
 	// Perform update and check for change
-	{
-		res, err := client.UpdateOnOff(ctx, &traits.UpdateOnOffRequest{Name: name, OnOff: &traits.OnOff{State: traits.OnOff_OFF}})
-		if err != nil {
-			t.Fatalf("[%s] update onoff %s: %v", addr, name, err)
+	res, err = client.UpdateOnOff(ctx, &traits.UpdateOnOffRequest{Name: name, OnOff: &traits.OnOff{State: traits.OnOff_OFF}})
+	if err != nil {
+		t.Fatalf("[%s] update onoff %s: %v", addr, name, err)
+	}
+	if diff := cmp.Diff(res, &traits.OnOff{State: traits.OnOff_OFF}, protocmp.Transform()); diff != "" {
+		t.Fatalf("[%s] update onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
+	}
+	select {
+	case res := <-changes:
+		want := &traits.PullOnOffResponse{Changes: []*traits.PullOnOffResponse_Change{
+			{
+				Name:  name,
+				OnOff: &traits.OnOff{State: traits.OnOff_OFF},
+			},
+		}}
+		// clear timestamps to make comparing easier
+		for i := range res.Changes {
+			res.Changes[i].ChangeTime = nil
 		}
-		if diff := cmp.Diff(res, &traits.OnOff{State: traits.OnOff_OFF}, protocmp.Transform()); diff != "" {
-			t.Fatalf("[%s] update onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
-		}
-
-		select {
-		case res := <-changes:
-			want := &traits.PullOnOffResponse{Changes: []*traits.PullOnOffResponse_Change{
-				{
-					Name:  name,
-					OnOff: &traits.OnOff{State: traits.OnOff_OFF},
-				},
-			}}
-			// clear timestamps to make comparing easier
-			for i := range res.Changes {
-				res.Changes[i].ChangeTime = nil
-			}
-			if diff := cmp.Diff(res, want, protocmp.Transform()); diff != "" {
-				t.Fatalf("[%s] pull onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
-			}
+		if diff := cmp.Diff(res, want, protocmp.Transform()); diff != "" {
+			t.Fatalf("[%s] pull onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
 		}
 	}
 }
