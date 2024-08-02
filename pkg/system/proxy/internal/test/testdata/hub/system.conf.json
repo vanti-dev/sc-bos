@@ -1,5 +1,6 @@
 {
   "name": "hub",
+  "grpcAddr": "localhost",
   "systems": {
     "hub": {"storage": {"type": "bolt"}}
   }
