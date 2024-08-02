@@ -68,12 +68,15 @@ func TestProxy_e2e(t *testing.T) {
 
 	// Finally we're ready to start checking the setup
 	for _, addr := range shared.GWGRPCAddrs {
-		// this timeout is long because the GW is using an exponential backoff for retries,
-		// capped at 30s, but all attempts before the cohort is configured increase the delay.
-		testCtx, stopTests := context.WithTimeout(ctx, 60*time.Second)
-		// these func log themselves
-		testGW(t, testCtx, addr)
-		stopTests()
+		addr := addr
+		t.Run(fmt.Sprintf("gw %s", addr), func(t *testing.T) {
+			// this timeout is long because the GW is using an exponential backoff for retries,
+			// capped at 30s, but all attempts before the cohort is configured increase the delay.
+			testCtx, stopTests := context.WithTimeout(ctx, 60*time.Second)
+			defer stopTests()
+			// these func log themselves
+			testGW(t, testCtx, addr)
+		})
 	}
 }
 
@@ -215,21 +218,23 @@ func testGW(t *testing.T, ctx context.Context, addr string) {
 	}
 	defer conn.Close()
 
+	// Named devices are correctly routed
 	deviceNames := []string{
 		"ac1/dev1",
 		"ac2/dev1",
 		"hub/dev1",
 	}
-	t.Logf("[%s] Waiting for cohort devices", addr)
+	t.Logf("[%s] Waiting for gw to configure proxy", addr)
 	for _, name := range deviceNames {
 		waitForDevice(t, ctx, conn, name)
 	}
 
-	t.Logf("[%s] Testing proxying", addr)
-	client := traits.NewOnOffApiClient(conn)
-	for _, name := range deviceNames {
-		testOnOffApi(t, ctx, addr, name, client)
-	}
+	t.Run("named devices", func(t *testing.T) {
+		client := traits.NewOnOffApiClient(conn)
+		for _, name := range deviceNames {
+			testOnOffApi(t, ctx, addr, name, client)
+		}
+	})
 }
 
 func waitForDevice(t *testing.T, ctx context.Context, conn *grpc.ClientConn, name string) {
