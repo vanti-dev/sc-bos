@@ -1,11 +1,11 @@
 package shared
 
 var (
-	HubGRPCAddr = ":50101"
-	GWGRPCAddrs = []string{":50201", ":50202"}
-	ACGRPCAddrs = []string{":50301", ":50302"}
+	HubGRPCAddr = "localhost:50101"
+	GWGRPCAddrs = []string{"localhost:50201", "localhost:50202"}
+	ACGRPCAddrs = []string{"localhost:50301", "localhost:50302"}
 
-	HubHTTPSAddr = ":50111"
-	GWHTTPSAddrs = []string{":50211", ":50212"}
-	ACHTTPSAddrs = []string{":50311", ":50312"}
+	HubHTTPSAddr = "localhost:50111"
+	GWHTTPSAddrs = []string{"localhost:50211", "localhost:50212"}
+	ACHTTPSAddrs = []string{"localhost:50311", "localhost:50312"}
 )
