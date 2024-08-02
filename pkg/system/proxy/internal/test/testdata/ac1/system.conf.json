@@ -1,3 +1,4 @@
 {
-  "name": "ac1"
+  "name": "ac1",
+  "logger": {"initialFields": {"proc": "ac1"}}
 }

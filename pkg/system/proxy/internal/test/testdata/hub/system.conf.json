@@ -1,6 +1,7 @@
 {
   "name": "hub",
   "grpcAddr": "localhost",
+  "logger": {"initialFields": {"proc": "hub"}},
   "systems": {
     "hub": {"storage": {"type": "bolt"}}
   }
