@@ -529,9 +529,9 @@ func (s *System) announceTrait(announcer node.Announcer, nodeConn *grpc.ClientCo
 
 func (s *System) retry(ctx context.Context, name string, t task.Task) error {
 	attempt := 0
-	return task.Run(ctx, func(ctx context.Context) (task.Next, error) {
+	return task.Run(ctx, func(taskCtx context.Context) (task.Next, error) {
 		attempt++
-		next, err := t(ctx)
+		next, err := t(taskCtx)
 		if next == task.ResetBackoff {
 			// assume some success happened, reset err and attempts
 			attempt = 1
@@ -539,6 +539,10 @@ func (s *System) retry(ctx context.Context, name string, t task.Task) error {
 
 		if err == nil {
 			return next, err
+		}
+		if ctx.Err() != nil {
+			// s.logger.Debug("task aborted", zap.String("task", name), zap.Error(err), zap.Int("attempt", attempt))
+			return task.StopNow, err // this doesn't matter as the task runner will not retry when ctx is done
 		}
 
 		switch {
