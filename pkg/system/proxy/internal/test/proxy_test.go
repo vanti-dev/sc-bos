@@ -54,7 +54,7 @@ func TestProxy_e2e(t *testing.T) {
 	defer stop()
 
 	// Next we start each of the nodes we need for the test
-	startCtx, cancelStart := context.WithTimeout(ctx, 10*time.Second)
+	startCtx, cancelStart := context.WithTimeout(ctx, 30*time.Second)
 	defer cancelStart()
 	t.Logf("Starting all nodes")
 	go runAllNodes(t, startCtx, dir)
@@ -67,11 +67,14 @@ func TestProxy_e2e(t *testing.T) {
 	configureCohort(t, ctx)
 
 	// Finally we're ready to start checking the setup
-	testCtx, stopTests := context.WithTimeout(ctx, 10*time.Second)
-	defer stopTests()
-	// these func log themselves
-	testGW(t, testCtx, shared.GWGRPCAddrs[0])
-	testGW(t, testCtx, shared.GWGRPCAddrs[1])
+	for _, addr := range shared.GWGRPCAddrs {
+		// this timeout is long because the GW is using an exponential backoff for retries,
+		// capped at 30s, but all attempts before the cohort is configured increase the delay.
+		testCtx, stopTests := context.WithTimeout(ctx, 60*time.Second)
+		// these func log themselves
+		testGW(t, testCtx, addr)
+		stopTests()
+	}
 }
 
 func buildAll(t *testing.T, dir string) {
