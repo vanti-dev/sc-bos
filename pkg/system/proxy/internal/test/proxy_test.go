@@ -19,12 +19,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	reflectionpb "google.golang.org/grpc/reflection/grpc_reflection_v1"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/system/proxy/internal/test/shared"
+	"github.com/vanti-dev/sc-bos/pkg/util/grpc/reflectionapi"
 
 	// make sure that test caching updates based on changes to these files too
 	_ "github.com/vanti-dev/sc-bos/pkg/system/proxy/internal/test/ac"
@@ -235,6 +237,10 @@ func testGW(t *testing.T, ctx context.Context, addr string) {
 			testOnOffApi(t, ctx, addr, name, client)
 		}
 	})
+
+	t.Run("reflection", func(t *testing.T) {
+		testReflection(t, ctx, conn)
+	})
 }
 
 func waitForDevice(t *testing.T, ctx context.Context, conn *grpc.ClientConn, name string) {
@@ -318,6 +324,60 @@ func testOnOffApi(t *testing.T, ctx context.Context, addr, name string, client t
 		}
 		if diff := cmp.Diff(res, want, protocmp.Transform()); diff != "" {
 			t.Fatalf("[%s] pull onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
+		}
+	}
+}
+
+func testReflection(t *testing.T, ctx context.Context, conn *grpc.ClientConn) {
+	ctx, stop := context.WithCancel(ctx)
+	defer stop()
+
+	client := reflectionpb.NewServerReflectionClient(conn)
+	stream, err := client.ServerReflectionInfo(ctx)
+	if err != nil {
+		t.Fatal("server reflection info:", err)
+	}
+
+	services, err := reflectionapi.ListServices(stream)
+	if err != nil {
+		t.Fatal("list services:", err)
+	}
+	wantServices := []*reflectionpb.ServiceResponse{
+		{Name: "grpc.reflection.v1.ServerReflection"},
+		{Name: "grpc.reflection.v1alpha.ServerReflection"},
+		{Name: "smartcore.bos.DevicesApi"},
+		{Name: "smartcore.bos.EnrollmentApi"},
+		{Name: "smartcore.bos.ServicesApi"},
+		{Name: "smartcore.traits.MetadataApi"},
+		{Name: "smartcore.traits.MetadataInfo"},
+		{Name: "smartcore.traits.OnOffApi"},
+		{Name: "smartcore.traits.OnOffInfo"},
+		{Name: "smartcore.traits.ParentApi"},
+		{Name: "smartcore.traits.ParentInfo"},
+	}
+	if diff := cmp.Diff(services, wantServices, protocmp.Transform()); diff != "" {
+		t.Fatalf("services: (-want +got):\n%s", diff)
+	}
+
+	types := []string{
+		"smartcore.traits.OnOffApi",
+		"smartcore.bos.DevicesApi",
+	}
+	for _, typ := range types {
+		_, err = reflectionapi.FileContainingSymbol(stream, typ)
+		if err != nil {
+			t.Fatalf("file containing symbol %s: %v", typ, err)
+		}
+	}
+
+	unknownTypes := []string{
+		"smartcore.traits.UnknownApiForTesting", // doesn't exist
+		// note, all apis that are in the traits or gen packages get loaded at the same time (during package init)
+	}
+	for _, typ := range unknownTypes {
+		_, err = reflectionapi.FileContainingSymbol(stream, typ)
+		if status.Code(err) != codes.NotFound {
+			t.Fatalf("file containing symbol %s: expected error, got %v", typ, err)
 		}
 	}
 }
