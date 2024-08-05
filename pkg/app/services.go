@@ -90,18 +90,20 @@ func (c *Controller) startSystems() (*service.Map, error) {
 		return nil, err
 	}
 	ctxServices := system.Services{
-		ConfigDirs:      c.SystemConfig.ConfigDirs,
-		DataDir:         c.SystemConfig.DataDir,
-		Logger:          c.Logger.Named("system"),
-		Node:            c.Node,
-		GRPCEndpoint:    grpcEndpoint,
-		Database:        c.Database,
-		HTTPMux:         c.Mux,
-		TokenValidators: c.TokenValidators,
-		GRPCCerts:       c.GRPCCerts,
-		PrivateKey:      c.PrivateKey,
-		CohortManager:   c.ManagerConn,
-		ClientTLSConfig: c.ClientTLSConfig,
+		ConfigDirs:       c.SystemConfig.ConfigDirs,
+		DataDir:          c.SystemConfig.DataDir,
+		Logger:           c.Logger.Named("system"),
+		Node:             c.Node,
+		GRPCEndpoint:     grpcEndpoint,
+		Database:         c.Database,
+		HTTPMux:          c.Mux,
+		TokenValidators:  c.TokenValidators,
+		MethodTable:      c.MethodTable,
+		ReflectionServer: c.ReflectionServer,
+		GRPCCerts:        c.GRPCCerts,
+		PrivateKey:       c.PrivateKey,
+		CohortManager:    c.ManagerConn,
+		ClientTLSConfig:  c.ClientTLSConfig,
 	}
 	m := service.NewMap(func(_, kind string) (service.Lifecycle, error) {
 		f, ok := c.SystemConfig.SystemFactories[kind]
