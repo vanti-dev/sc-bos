@@ -3,6 +3,7 @@
   "logger": {"initialFields": {"proc": "gw1"}},
   "systems": {
     "proxy": {},
-    "hub": {"storage": {"type": "proxy"}}
+    "hub": {"storage": {"type": "proxy"}},
+    "tenants": {"storage": {"type": "proxy"}}
   }
 }

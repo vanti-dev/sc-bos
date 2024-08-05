@@ -12,6 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/hub"
 	"github.com/vanti-dev/sc-bos/pkg/system/proxy"
+	"github.com/vanti-dev/sc-bos/pkg/system/tenants"
 )
 
 func Main() {
@@ -40,7 +41,8 @@ func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig.SystemFactories = map[string]system.Factory{
 		proxy.Name: proxy.Factory(&lighttest.Holder{}),
 		// todo: remove these services
-		"hub": hub.Factory(),
+		"hub":     hub.Factory(),
+		"tenants": tenants.Factory,
 	}
 
 	err := sysconf.Load(&systemConfig)

@@ -12,6 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/hub"
+	"github.com/vanti-dev/sc-bos/pkg/system/tenants"
 )
 
 func Main() {
@@ -38,7 +39,8 @@ func Main() {
 func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig := sysconf.Default()
 	systemConfig.SystemFactories = map[string]system.Factory{
-		"hub": hub.Factory(),
+		"hub":     hub.Factory(),
+		"tenants": tenants.Factory,
 	}
 	systemConfig.DriverFactories = map[string]driver.Factory{
 		"mock": mock.Factory,
