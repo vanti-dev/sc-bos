@@ -32,8 +32,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/lighttest"
-
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -41,6 +39,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/lighttest"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/servicepb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
