@@ -61,6 +61,12 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	cfg.Lights = []string{"light01", "light02"}
 	cfg.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
 
+	tickChan := make(chan time.Time, 1)
+	automation.newTimer = func(d time.Duration) (<-chan time.Time, func() bool) {
+		return tickChan, func() bool {
+			return false
+		}
+	}
 	if err := automation.Start(context.Background()); err != nil {
 		t.Fatalf("Start: %v", err)
 	}
@@ -129,12 +135,6 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	testActions.assertNoMoreCalls()
 
 	// check that making both PIRs unoccupied doesn't do anything, but then does
-	tickChan := make(chan time.Time, 1)
-	automation.newTimer = func(d time.Duration) (<-chan time.Time, func() bool) {
-		return tickChan, func() bool {
-			return false
-		}
-	}
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(now.Add(-3 * time.Minute))})
 	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(now.Add(-8 * time.Minute))})
 	ttl, err = waitForState(func(state *ReadState) bool {

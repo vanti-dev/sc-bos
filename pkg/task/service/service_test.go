@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"sync"
 	"testing"
 	"time"
 
@@ -116,7 +117,7 @@ func TestLifecycle(t *testing.T) {
 		wantState.LastLoadingEndTime = tt.nextTick()
 
 		unblock()
-		tt.waitForState(wantState, time.Millisecond)
+		tt.waitForState(wantState, 100*time.Millisecond)
 		tt.assertNextApplyConfig("hello")
 	})
 
@@ -145,7 +146,7 @@ func TestLifecycle(t *testing.T) {
 		wantState.LastLoadingEndTime = tt.nextTick()
 
 		unblock()
-		tt.waitForState(wantState, time.Millisecond)
+		tt.waitForState(wantState, 100*time.Millisecond)
 		tt.assertNextApplyConfig("hello")
 	})
 
@@ -200,7 +201,7 @@ func TestLifecycle(t *testing.T) {
 		wantState.FailedAttempts = 1
 
 		unblock()
-		tt.waitForState(wantState, time.Millisecond)
+		tt.waitForState(wantState, 100*time.Millisecond)
 		tt.assertNextApplyConfig("hello")
 	})
 
@@ -235,7 +236,7 @@ func TestLifecycle(t *testing.T) {
 		wantState.FailedAttempts = 1
 
 		unblock()
-		tt.waitForState(wantState, time.Millisecond)
+		tt.waitForState(wantState, 100*time.Millisecond)
 		tt.assertNextApplyConfig("hello")
 	})
 
@@ -301,7 +302,7 @@ func TestLifecycle(t *testing.T) {
 		_, _ = tt.sub.Start()
 
 		unblock()
-		tt.waitForState(wantState, time.Millisecond)
+		tt.waitForState(wantState, 100*time.Millisecond)
 
 		tt.tick()
 		wantState.Active = false
@@ -334,7 +335,7 @@ func TestLifecycle(t *testing.T) {
 		_, _ = tt.sub.Configure([]byte("hello"))
 		_, _ = tt.sub.Start()
 
-		tt.waitForState(wantState, time.Millisecond)
+		tt.waitForState(wantState, 100*time.Millisecond)
 		l.assertLog(RetryContext{
 			Attempt: 1,
 			Err:     applyErr,
@@ -347,7 +348,7 @@ func TestLifecycle(t *testing.T) {
 		wantState.Loading = false
 		wantState.NextAttemptTime = time.Time{}
 		wantState.LastLoadingEndTime = tt.nextTick()
-		tt.waitForState(wantState, 20*time.Millisecond)
+		tt.waitForState(wantState, 100*time.Millisecond)
 	})
 }
 
@@ -357,6 +358,7 @@ type lifecycleTester struct {
 
 	now time.Time
 
+	m          sync.Mutex
 	applyCalls []applyCall
 
 	parseSetup []parseSetup
@@ -420,10 +422,8 @@ func newLifecycleTester(t *testing.T, opts ...Option[string]) *lifecycleTester {
 		}),
 	}, opts...)
 	s := New[string](func(ctx context.Context, config string) error {
-		tt.applyCalls = append(tt.applyCalls, applyCall{ctx, config})
-		if len(tt.applySetup) > 0 {
-			setup := tt.applySetup[0]
-			tt.applySetup = tt.applySetup[1:]
+		tt.pushApplyCall(applyCall{ctx, config})
+		if setup, ok := tt.tryPopApplySetup(); ok {
 			if setup.wait != nil {
 				<-setup.wait
 			}
@@ -442,26 +442,64 @@ func newLifecycleTester(t *testing.T, opts ...Option[string]) *lifecycleTester {
 	return tt
 }
 
+func (tt *lifecycleTester) pushApplyCall(ac applyCall) {
+	tt.m.Lock()
+	tt.applyCalls = append(tt.applyCalls, ac)
+	tt.m.Unlock()
+}
+
+func (tt *lifecycleTester) popApplyCall() applyCall {
+	tt.m.Lock()
+	defer tt.m.Unlock()
+	if len(tt.applyCalls) == 0 {
+		tt.Fatalf("Expecting at least one apply call")
+	}
+	ac := tt.applyCalls[0]
+	tt.applyCalls = tt.applyCalls[1:]
+	return ac
+}
+
+func (tt *lifecycleTester) tryPopApplySetup() (applySetup, bool) {
+	tt.m.Lock()
+	defer tt.m.Unlock()
+	if len(tt.applySetup) == 0 {
+		return applySetup{}, false
+	}
+	setup := tt.applySetup[0]
+	tt.applySetup = tt.applySetup[1:]
+	return setup, true
+}
+
 // tick adds 1 second to the current time.
 func (tt *lifecycleTester) tick() {
+	tt.m.Lock()
 	tt.now = tt.now.Add(time.Second)
+	tt.m.Unlock()
 }
 
 // lastTick returns the time before tick was called.
 func (tt *lifecycleTester) lastTick() time.Time {
+	tt.m.Lock()
+	defer tt.m.Unlock()
 	return tt.now.Add(-time.Second)
 }
 
 // nextTick returns the time after tick is next called.
 func (tt *lifecycleTester) nextTick() time.Time {
+	tt.m.Lock()
+	defer tt.m.Unlock()
 	return tt.now.Add(time.Second)
 }
 
 func (tt *lifecycleTester) setupParseErr(err error) {
+	tt.m.Lock()
 	tt.parseSetup = append(tt.parseSetup, parseSetup{err: err})
+	tt.m.Unlock()
 }
 
 func (tt *lifecycleTester) setupApply() *applySetup {
+	tt.m.Lock()
+	defer tt.m.Unlock()
 	tt.applySetup = append(tt.applySetup, applySetup{})
 	return &tt.applySetup[len(tt.applySetup)-1]
 }
@@ -489,11 +527,7 @@ func (tt *lifecycleTester) assertNoApply() {
 
 func (tt *lifecycleTester) assertNextApplyConfig(config string) {
 	tt.Helper()
-	if len(tt.applyCalls) == 0 {
-		tt.Fatalf("Expecting at least one call to apply")
-	}
-	a := tt.applyCalls[0]
-	tt.applyCalls = tt.applyCalls[1:]
+	a := tt.popApplyCall()
 	if a.config != config {
 		tt.Fatalf("Apply call config want %s, got %s", config, a.config)
 	}
@@ -501,11 +535,7 @@ func (tt *lifecycleTester) assertNextApplyConfig(config string) {
 
 func (tt *lifecycleTester) assertNextApplyContextCancelled(wait time.Duration) {
 	tt.Helper()
-	if len(tt.applyCalls) == 0 {
-		tt.Fatalf("Expecting at least one call to apply")
-	}
-	a := tt.applyCalls[0]
-	tt.applyCalls = tt.applyCalls[1:]
+	a := tt.popApplyCall()
 
 	timer := time.NewTimer(wait)
 	defer timer.Stop()
