@@ -2,6 +2,7 @@
   "name": "gw1",
   "logger": {"initialFields": {"proc": "gw1"}},
   "systems": {
-    "proxy": {}
+    "proxy": {},
+    "hub": {"storage": {"type": "proxy"}}
   }
 }

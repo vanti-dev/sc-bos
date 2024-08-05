@@ -15,6 +15,7 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -241,6 +242,8 @@ func testGW(t *testing.T, ctx context.Context, addr string) {
 	t.Run("reflection", func(t *testing.T) {
 		testReflection(t, ctx, conn)
 	})
+
+	testHubApis(t, ctx, conn)
 }
 
 func waitForDevice(t *testing.T, ctx context.Context, conn *grpc.ClientConn, name string) {
@@ -347,6 +350,7 @@ func testReflection(t *testing.T, ctx context.Context, conn *grpc.ClientConn) {
 		{Name: "grpc.reflection.v1alpha.ServerReflection"},
 		{Name: "smartcore.bos.DevicesApi"},
 		{Name: "smartcore.bos.EnrollmentApi"},
+		{Name: "smartcore.bos.HubApi"},
 		{Name: "smartcore.bos.ServicesApi"},
 		{Name: "smartcore.traits.MetadataApi"},
 		{Name: "smartcore.traits.MetadataInfo"},
@@ -380,6 +384,27 @@ func testReflection(t *testing.T, ctx context.Context, conn *grpc.ClientConn) {
 			t.Fatalf("file containing symbol %s: expected error, got %v", typ, err)
 		}
 	}
+}
+
+func testHubApis(t *testing.T, ctx context.Context, conn *grpc.ClientConn) {
+	t.Helper()
+
+	t.Run("HubApi", func(t *testing.T) {
+		client := gen.NewHubApiClient(conn)
+		res, err := client.ListHubNodes(ctx, &gen.ListHubNodesRequest{})
+		if err != nil {
+			t.Fatalf("list hub nodes: %v", err)
+		}
+		wantNames := []string{"ac1", "ac2", "gw1", "gw2"}
+		gotNames := make([]string, len(res.Nodes))
+		for i, node := range res.Nodes {
+			gotNames[i] = node.Name
+		}
+		sortStrings := cmpopts.SortSlices(func(a, b string) bool { return a < b })
+		if diff := cmp.Diff(gotNames, wantNames, sortStrings); diff != "" {
+			t.Fatalf("list hub nodes: unexpected response (-want +got):\n%s", diff)
+		}
+	})
 }
 
 func newCtx(t *testing.T) (context.Context, context.CancelFunc) {
