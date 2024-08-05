@@ -3,6 +3,7 @@ package lights
 import (
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -978,6 +979,7 @@ func newTestActions(t *testing.T) *testActions {
 type testActions struct {
 	t *testing.T
 
+	m        sync.Mutex
 	calls    []any
 	nextCall int // updated via assertNextCall
 
@@ -987,6 +989,8 @@ type testActions struct {
 func (ta *testActions) assertNoMoreCalls() {
 	ta.t.Helper()
 
+	ta.m.Lock()
+	defer ta.m.Unlock()
 	if len(ta.calls) > ta.nextCall {
 		callStr := ""
 		for i, call := range ta.calls[ta.nextCall:] {
@@ -999,6 +1003,8 @@ func (ta *testActions) assertNoMoreCalls() {
 func (ta *testActions) assertNextCall(req any) {
 	ta.t.Helper()
 
+	ta.m.Lock()
+	defer ta.m.Unlock()
 	if len(ta.calls) <= ta.nextCall {
 		ta.t.Fatalf("Call count want >%d, got %d", ta.nextCall, len(ta.calls))
 	}
@@ -1011,6 +1017,8 @@ func (ta *testActions) assertNextCall(req any) {
 }
 
 func (ta *testActions) UpdateBrightness(ctx context.Context, now time.Time, req *traits.UpdateBrightnessRequest, state *WriteState) error {
+	ta.m.Lock()
+	defer ta.m.Unlock()
 	ta.calls = append(ta.calls, req)
 	ta.brightnessCalls = append(ta.brightnessCalls, req)
 	state.Brightness[req.Name] = BrightnessWriteState{

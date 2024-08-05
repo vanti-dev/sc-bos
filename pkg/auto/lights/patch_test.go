@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sort"
+	"sync"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -134,6 +135,7 @@ func keyDiff[V any](m map[string]V, want ...string) string {
 }
 
 type testSubscriber struct {
+	m    sync.Mutex
 	stop func()
 	err  error
 }
@@ -143,18 +145,25 @@ func (t *testSubscriber) Subscribe(ctx context.Context, _ chan<- Patcher) error 
 		return errors.New("already subscribed")
 	}
 
+	t.m.Lock()
 	ctx, t.stop = context.WithCancel(ctx)
+	t.m.Unlock()
 
 	<-ctx.Done()
-	if t.err != nil {
-		return t.err
+	t.m.Lock()
+	err := t.err
+	t.m.Unlock()
+	if err != nil {
+		return err
 	}
 	return ctx.Err()
 }
 
 func (t *testSubscriber) Stop(err error) {
+	t.m.Lock()
 	t.err = err
 	if t.stop != nil {
 		t.stop()
 	}
+	t.m.Unlock()
 }

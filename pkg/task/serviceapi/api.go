@@ -211,12 +211,30 @@ func (a *Api) PullServices(request *gen.PullServicesRequest, server gen.Services
 
 func (a *Api) pullServices(ctx context.Context, request *gen.PullServicesRequest) <-chan *gen.PullServicesResponse_Change {
 	out := make(chan *gen.PullServicesResponse_Change)
+	// protects out to make sure that the watchRecord goroutines can never get hold of
+	// out after it's closed.
+	outSem := make(chan chan *gen.PullServicesResponse_Change, 1)
+	outSem <- out
 
 	ctx, stop := context.WithCancel(ctx)
 
 	// publish sends change to out unless ctx is done.
 	// Returns true if sending to out won, false if ctx is done.
 	publish := func(change *gen.PullServicesResponse_Change) bool {
+		// it's not valid to send on a channel that might be closed, even if another select case
+		// (sucn as <-ctx.Done()) is already complete.
+		// Therefore we protect out with outSem, so that publish can only get hold of the channel
+		// when it isn't closed yet. After outSem is closed, it will never be sent back to outSem.
+		var out chan *gen.PullServicesResponse_Change
+		select {
+		case <-ctx.Done():
+			return false
+		case out = <-outSem:
+		}
+		defer func() {
+			outSem <- out
+		}()
+
 		select {
 		case <-ctx.Done():
 			return false
@@ -276,8 +294,11 @@ func (a *Api) pullServices(ctx context.Context, request *gen.PullServicesRequest
 	}
 
 	go func() {
+		defer func() {
+			// close out and don't send it back to outSem, so other goroutines don't try to send to it
+			close(<-outSem)
+		}()
 		defer stop()
-		defer close(out)
 		for {
 			select {
 			case <-ctx.Done():
