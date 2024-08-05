@@ -20,7 +20,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/reflection"
 
 	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
@@ -36,6 +35,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
+	"github.com/vanti-dev/sc-bos/pkg/util/grpc/reflectionapi"
+	"github.com/vanti-dev/sc-bos/pkg/util/grpc/unknown"
 )
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
@@ -211,8 +212,15 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		)
 	}
 
+	// here we set up our support for runtime added RPCs.
+	unknownMethodTable := unknown.NewMethodTable()
+	grpcOpts = append(grpcOpts, grpc.UnknownServiceHandler(unknown.StreamHandler(unknownMethodTable)))
+
 	grpcServer := grpc.NewServer(grpcOpts...)
-	reflection.Register(grpcServer)
+
+	reflectionServer := reflectionapi.NewServer(grpcServer)
+	reflectionServer.Register(grpcServer)
+
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
 	devices.NewServer(rootNode).Register(grpcServer)
 	// support the services api for managing drivers, automations, and systems
@@ -270,6 +278,8 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		Database:         db,
 		TokenValidators:  tokenValidator,
 		GRPCCerts:        systemSource,
+		MethodTable:      unknownMethodTable,
+		ReflectionServer: reflectionServer,
 		PrivateKey:       key,
 		Mux:              mux,
 		GRPC:             grpcServer,
@@ -339,6 +349,11 @@ type Controller struct {
 	Database        *bolthold.Store
 	TokenValidators *token.ValidatorSet
 	GRPCCerts       *pki.SourceSet
+
+	// Support for runtime changes to served and reflected RPCs.
+	// Most services should use Node.Support between Bootstrap and Run to add their services to the controller.
+	MethodTable      *unknown.MethodTable
+	ReflectionServer *reflectionapi.Server
 
 	Mux  *http.ServeMux
 	GRPC *grpc.Server
