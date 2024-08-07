@@ -5,10 +5,12 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/dalipb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/mqttpb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/pointpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 
@@ -114,6 +116,8 @@ func APIClient(conn grpc.ClientConnInterface, t trait.Name) any {
 		return gen.NewMeterApiClient(conn)
 	case mqttpb.TraitName:
 		return gen.NewMqttServiceClient(conn)
+	case pointpb.TraitName:
+		return gen.NewPointApiClient(conn)
 	case statuspb.TraitName:
 		return gen.NewStatusApiClient(conn)
 	case udmipb.TraitName:
@@ -264,6 +268,8 @@ func InfoClient(conn grpc.ClientConnInterface, t trait.Name) any {
 	case udmipb.TraitName:
 		// return gen.NewUdmiInfoClient(conn)
 		return nil
+	case pointpb.TraitName:
+		return gen.NewPointInfoClient(conn)
 	}
 	return nil
 }

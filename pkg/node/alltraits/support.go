@@ -30,10 +30,12 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/speaker"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
+
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/dalipb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/mqttpb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/pointpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 
@@ -387,6 +389,16 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 	mqttpb.TraitName: func(s node.Supporter) {
 		r := gen.NewMqttServiceRouter()
 		s.Support(node.Routing(r), node.Clients(gen.WrapMqttService(r)))
+	},
+	pointpb.TraitName: func(s node.Supporter) {
+		{
+			r := gen.NewPointApiRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapPointApi(r)))
+		}
+		{
+			r := gen.NewPointInfoRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapPointInfo(r)))
+		}
 	},
 	statuspb.TraitName: func(s node.Supporter) {
 		{
