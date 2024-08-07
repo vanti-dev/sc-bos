@@ -526,8 +526,12 @@ func (s *System) announceTrait(announcer node.Announcer, nodeConn *grpc.ClientCo
 	return announcer.Announce(name, node.HasTrait(traitName, node.WithClients(clients...)))
 }
 
-func (s *System) retry(ctx context.Context, name string, t task.Task) error {
+func (s *System) retry(ctx context.Context, name string, t task.Task, logFields ...zap.Field) error {
 	attempt := 0
+	logger := s.logger.With(logFields...)
+	if name != "" {
+		logger = logger.With(zap.String("task", name))
+	}
 	return task.Run(ctx, func(taskCtx context.Context) (task.Next, error) {
 		attempt++
 		next, err := t(taskCtx)
@@ -546,11 +550,11 @@ func (s *System) retry(ctx context.Context, name string, t task.Task) error {
 
 		switch {
 		case attempt == 1:
-			s.logger.Warn("failed to run task, will retry", zap.String("task", name), zap.Error(err), zap.Int("attempt", attempt))
+			logger.Warn("failed to run task, will retry", zap.Error(err), zap.Int("attempt", attempt))
 		case attempt == 5:
-			s.logger.Warn("failed to run task, reducing logging", zap.String("task", name), zap.Error(err), zap.Int("attempt", attempt))
+			logger.Warn("failed to run task, reducing logging", zap.Error(err), zap.Int("attempt", attempt))
 		case attempt%10 == 0:
-			s.logger.Debug("failed to run task", zap.String("task", name), zap.Error(err), zap.Int("attempt", attempt))
+			logger.Debug("failed to run task", zap.Error(err), zap.Int("attempt", attempt))
 		}
 
 		return next, err
