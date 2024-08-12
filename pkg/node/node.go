@@ -158,21 +158,21 @@ func (n *Node) addApi(apis ...server.GrpcApi) {
 }
 
 // addRoute adds name->impl as a route to all routers that support the type impl.
-func (n *Node) addRoute(name string, impl any) Undo {
+func (n *Node) addRoute(name string, c client) Undo {
 	var undo []Undo
 	var addCount int
 	for _, r := range n.routers {
-		if r.HoldsType(impl) {
+		if r.HoldsType(c.impl) {
 			addCount++
-			r.Add(name, impl)
+			r.Add(name, c.impl)
 			r := r
 			undo = append(undo, func() {
 				r.Remove(name)
 			})
 		}
 	}
-	if addCount == 0 {
-		n.Logger.Warn(fmt.Sprintf("no router for %s typed %T", name, impl))
+	if addCount == 0 && !c.allowUnsupported {
+		n.Logger.Warn(fmt.Sprintf("no router for %s typed %T", name, c.impl))
 	}
 	return UndoAll(undo...)
 }

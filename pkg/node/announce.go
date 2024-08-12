@@ -98,7 +98,7 @@ func AnnounceFeatures(a Announcer, moreFeatures ...Feature) Announcer {
 type announcement struct {
 	name           string
 	traits         []traitFeature
-	clients        []any
+	clients        []client
 	metadata       []*traits.Metadata
 	noAutoMetadata bool
 	undo           []Undo
@@ -106,10 +106,15 @@ type announcement struct {
 
 type traitFeature struct {
 	name     trait.Name
-	clients  []any
+	clients  []client
 	metadata map[string]string
 
 	noAddChildTrait bool
+}
+
+type client struct {
+	impl             any
+	allowUnsupported bool // don't log when clients of this type are not supported
 }
 
 // Feature describes some aspect of a named device.
@@ -131,9 +136,21 @@ func (f featureFunc) apply(a *announcement) {
 
 // HasClient indicates that the name implements non-trait apis as defined by these clients.
 // The clients are still added to routers and all requests on the clients should accept a Name.
+// If the node does not support routing for the API the client is for a message will be logged during announce.
 func HasClient(clients ...any) Feature {
 	return featureFunc(func(a *announcement) {
-		a.clients = append(a.clients, clients...)
+		for _, impl := range clients {
+			a.clients = append(a.clients, client{impl: impl})
+		}
+	})
+}
+
+// HasOptClient is like HasClient without logging when the client is not supported.
+func HasOptClient(clients ...any) Feature {
+	return featureFunc(func(a *announcement) {
+		for _, impl := range clients {
+			a.clients = append(a.clients, client{impl: impl, allowUnsupported: true})
+		}
 	})
 }
 
@@ -180,9 +197,21 @@ type TraitOption func(t *traitFeature)
 
 // WithClients indicates that the trait is implemented by these client instances.
 // The clients will be added to the relevant routers when the trait is announced.
-func WithClients(client ...any) TraitOption {
+// If the node does not support routing for the API the client is for a message will be logged during announce.
+func WithClients(clients ...any) TraitOption {
 	return func(t *traitFeature) {
-		t.clients = append(t.clients, client...)
+		for _, impl := range clients {
+			t.clients = append(t.clients, client{impl: impl})
+		}
+	}
+}
+
+// WithOptClients is like WithClients without logging when the client is not supported.
+func WithOptClients(clients ...any) TraitOption {
+	return func(t *traitFeature) {
+		for _, impl := range clients {
+			t.clients = append(t.clients, client{impl: impl, allowUnsupported: true})
+		}
 	}
 }
 
