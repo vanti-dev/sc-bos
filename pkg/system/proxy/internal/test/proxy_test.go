@@ -271,7 +271,7 @@ func testOnOffApi(t *testing.T, ctx context.Context, addr, name string, client t
 	if err != nil {
 		t.Fatalf("[%s] update onoff %s: %v", addr, name, err)
 	}
-	if diff := cmp.Diff(res, &traits.OnOff{State: traits.OnOff_ON}, protocmp.Transform()); diff != "" {
+	if diff := cmp.Diff(&traits.OnOff{State: traits.OnOff_ON}, res, protocmp.Transform()); diff != "" {
 		t.Fatalf("[%s] update onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
 	}
 
@@ -301,7 +301,7 @@ func testOnOffApi(t *testing.T, ctx context.Context, addr, name string, client t
 	if err != nil {
 		t.Fatalf("[%s] get onoff %s: %v", addr, name, err)
 	}
-	if diff := cmp.Diff(res, &traits.OnOff{State: traits.OnOff_ON}, protocmp.Transform()); diff != "" {
+	if diff := cmp.Diff(&traits.OnOff{State: traits.OnOff_ON}, res, protocmp.Transform()); diff != "" {
 		t.Fatalf("[%s] get onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
 	}
 
@@ -310,7 +310,7 @@ func testOnOffApi(t *testing.T, ctx context.Context, addr, name string, client t
 	if err != nil {
 		t.Fatalf("[%s] update onoff %s: %v", addr, name, err)
 	}
-	if diff := cmp.Diff(res, &traits.OnOff{State: traits.OnOff_OFF}, protocmp.Transform()); diff != "" {
+	if diff := cmp.Diff(&traits.OnOff{State: traits.OnOff_OFF}, res, protocmp.Transform()); diff != "" {
 		t.Fatalf("[%s] update onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
 	}
 	select {
@@ -325,7 +325,7 @@ func testOnOffApi(t *testing.T, ctx context.Context, addr, name string, client t
 		for i := range res.Changes {
 			res.Changes[i].ChangeTime = nil
 		}
-		if diff := cmp.Diff(res, want, protocmp.Transform()); diff != "" {
+		if diff := cmp.Diff(want, res, protocmp.Transform()); diff != "" {
 			t.Fatalf("[%s] pull onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
 		}
 	}
@@ -360,7 +360,7 @@ func testReflection(t *testing.T, ctx context.Context, conn *grpc.ClientConn) {
 		{Name: "smartcore.traits.ParentApi"},
 		{Name: "smartcore.traits.ParentInfo"},
 	}
-	if diff := cmp.Diff(services, wantServices, protocmp.Transform()); diff != "" {
+	if diff := cmp.Diff(wantServices, services, protocmp.Transform()); diff != "" {
 		t.Fatalf("services: (-want +got):\n%s", diff)
 	}
 
@@ -402,7 +402,7 @@ func testHubApis(t *testing.T, ctx context.Context, conn *grpc.ClientConn) {
 			gotNames[i] = node.Name
 		}
 		sortStrings := cmpopts.SortSlices(func(a, b string) bool { return a < b })
-		if diff := cmp.Diff(gotNames, wantNames, sortStrings); diff != "" {
+		if diff := cmp.Diff(wantNames, gotNames, sortStrings); diff != "" {
 			t.Fatalf("list hub nodes: unexpected response (-want +got):\n%s", diff)
 		}
 	})
