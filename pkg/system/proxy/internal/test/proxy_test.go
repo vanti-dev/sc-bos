@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -35,6 +36,9 @@ import (
 	_ "github.com/vanti-dev/sc-bos/pkg/system/proxy/internal/test/hub"
 )
 
+var skipBuild = flag.Bool("skip-build", false, "skip building and running binaries")
+var ignoreEnrolErr = flag.Bool("ignore-enrol-err", false, "ignore enrolment errors")
+
 // TestProxy_e2e tests the proxy by running a cohort of nodes, each a different sc-bos process.
 // The test only runs if the -short flag is not set.
 func TestProxy_e2e(t *testing.T) {
@@ -46,24 +50,27 @@ func TestProxy_e2e(t *testing.T) {
 		t.Skip("long test")
 	}
 
-	dir := t.TempDir()
-
-	// First, we need to build each of the different binaries that make up the nodes in the cohort.
-	// After this completes we'll have a gw, ac, and hub binary in the tests temp directory.
-	t.Logf("Building binaries in %s", dir)
-	buildAll(t, dir)
-
 	ctx, stop := newCtx(t)
 	defer stop()
 
-	// Next we start each of the nodes we need for the test
-	startCtx, cancelStart := context.WithTimeout(ctx, 30*time.Second)
-	defer cancelStart()
-	t.Logf("Starting all nodes")
-	go runAllNodes(t, startCtx, dir)
-	// Wait for the nodes to start up, shouldn't take more than a few seconds on _decent_ hardware.
-	t.Logf("Waiting for nodes to start")
-	waitForNodes(t, startCtx)
+	if !*skipBuild {
+		dir := t.TempDir()
+
+		// First, we need to build each of the different binaries that make up the nodes in the cohort.
+		// After this completes we'll have a gw, ac, and hub binary in the tests temp directory.
+		t.Logf("Building binaries in %s", dir)
+		buildAll(t, dir)
+
+		// Next we start each of the nodes we need for the test
+		startCtx, cancelStart := context.WithTimeout(ctx, 30*time.Second)
+		defer cancelStart()
+		t.Logf("Starting all nodes")
+		go runAllNodes(t, startCtx, dir)
+
+		// Wait for the nodes to start up, shouldn't take more than a few seconds on _decent_ hardware.
+		t.Logf("Waiting for nodes to start")
+		waitForNodes(t, startCtx)
+	}
 
 	// Next up we need to configure the cohort
 	t.Logf("Configuring cohort")
@@ -195,18 +202,24 @@ func configureCohort(t *testing.T, ctx context.Context) {
 	}
 	defer hubConn.Close()
 
-	client := gen.NewHubApiClient(hubConn)
-	for _, addr := range shared.ACGRPCAddrs {
-		_, err := client.EnrollHubNode(ctx, &gen.EnrollHubNodeRequest{Node: &gen.HubNode{Address: addr}})
+	checkErr := func(addr string, err error) {
+		t.Helper()
+		if *ignoreEnrolErr {
+			return
+		}
 		if err != nil {
 			t.Fatalf("enroll %s: %v", addr, err)
 		}
 	}
+
+	client := gen.NewHubApiClient(hubConn)
+	for _, addr := range shared.ACGRPCAddrs {
+		_, err := client.EnrollHubNode(ctx, &gen.EnrollHubNodeRequest{Node: &gen.HubNode{Address: addr}})
+		checkErr(addr, err)
+	}
 	for _, addr := range shared.GWGRPCAddrs {
 		_, err := client.EnrollHubNode(ctx, &gen.EnrollHubNodeRequest{Node: &gen.HubNode{Address: addr}})
-		if err != nil {
-			t.Fatalf("enroll %s: %v", addr, err)
-		}
+		checkErr(addr, err)
 	}
 }
 

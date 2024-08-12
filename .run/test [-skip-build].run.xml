@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="test [-skip-build]" type="GoTestRunConfiguration" factoryName="Go Test" folderName="Proxy">
+    <module name="sc-bos" />
+    <working_directory value="$PROJECT_DIR$/pkg/system/proxy/internal/test" />
+    <parameters value="-skip-build -ignore-enrol-err" />
+    <root_directory value="$PROJECT_DIR$" />
+    <kind value="FILE" />
+    <package value="github.com/vanti-dev/sc-bos/pkg/system/proxy/internal/test" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/pkg/system/proxy/internal/test/proxy_test.go" />
+    <framework value="gotest" />
+    <method v="2" />
+  </configuration>
+</component>
