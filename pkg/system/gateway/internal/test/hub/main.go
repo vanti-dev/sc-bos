@@ -28,7 +28,7 @@ func Main() {
 		log.Fatal(err)
 	}
 
-	alltraits.AddSupportFor(controller.Node, trait.Parent, trait.Metadata, trait.OnOff)
+	alltraits.AddSupportFor(controller.Node, trait.OnOff)
 
 	err = controller.Run(ctx)
 	if err != nil {
