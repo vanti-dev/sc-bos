@@ -36,7 +36,7 @@ type Node struct {
 	// Populated via Support(Routing).
 	routers []router.Router
 	// clients holds instances of service clients returned by Client.
-	// Typically they are wrappers around each router instance.
+	// Typically, they are wrappers around each router instance.
 	// Populated via Support(Clients).
 	clients []any
 	// apis holds each of the APIs that this node registers with a grpc.Server.
@@ -50,7 +50,7 @@ type Node struct {
 	Logger *zap.Logger
 }
 
-// New creates a new Node node with the given name.
+// New creates a new Node with the given name.
 func New(name string) *Node {
 	return &Node{
 		name:        name,
