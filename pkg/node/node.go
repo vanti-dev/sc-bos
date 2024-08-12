@@ -1,6 +1,7 @@
 package node
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -129,7 +130,7 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 	for _, md := range mds {
 		undoMd, err := n.mergeMetadata(name, md)
 		if err != nil {
-			if err != MetadataTraitNotSupported {
+			if errors.Is(err, MetadataTraitNotSupported) {
 				log.Warnf("%v metadata: %v", name, err)
 			}
 			continue
