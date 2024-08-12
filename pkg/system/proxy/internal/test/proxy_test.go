@@ -70,9 +70,9 @@ func TestProxy_e2e(t *testing.T) {
 	configureCohort(t, ctx)
 
 	// Finally we're ready to start checking the setup
-	for _, addr := range shared.GWGRPCAddrs {
+	for i, addr := range shared.GWGRPCAddrs {
 		addr := addr
-		t.Run(fmt.Sprintf("gw %s", addr), func(t *testing.T) {
+		t.Run(fmt.Sprintf("gw%d %s", i+1, addr), func(t *testing.T) {
 			// this timeout is long because the GW is using an exponential backoff for retries,
 			// capped at 30s, but all attempts before the cohort is configured increase the delay.
 			testCtx, stopTests := context.WithTimeout(ctx, 60*time.Second)
