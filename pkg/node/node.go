@@ -16,6 +16,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/router"
 	"github.com/smart-core-os/sc-golang/pkg/server"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 )
 
@@ -69,10 +70,43 @@ func (n *Node) Name() string {
 func (n *Node) Register(s *grpc.Server) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
-	n.parentLocked() // force the parent api to be initialised
 	for _, api := range n.apis {
 		api.Register(s)
 	}
+	n.registerRequiredLocked(s)
+	n.parentLocked() // force the parent api to be initialised
+}
+
+// registerRequiredLocked registers the required APIs with s if they haven't already been registered.
+func (n *Node) registerRequiredLocked(s *grpc.Server) {
+	// Note: we don't use alltraits here to avoid importing and initialising all traits when we only need a few.
+	registeredServices := s.GetServiceInfo()
+	if _, ok := registeredServices["smartcore.traits.MetadataApi"]; !ok {
+		r := metadata.NewApiRouter()
+		registerRouter(n, s, r, metadata.WrapApi(r))
+	}
+	if _, ok := registeredServices["smartcore.traits.MetadataInfo"]; !ok {
+		r := metadata.NewInfoRouter()
+		registerRouter(n, s, r, metadata.WrapInfo(r))
+	}
+	if _, ok := registeredServices["smartcore.traits.ParentApi"]; !ok {
+		r := parent.NewApiRouter()
+		registerRouter(n, s, r, parent.WrapApi(r))
+	}
+	if _, ok := registeredServices["smartcore.traits.ParentInfo"]; !ok {
+		r := parent.NewInfoRouter()
+		registerRouter(n, s, r, parent.WrapInfo(r))
+	}
+}
+
+func registerRouter[R interface {
+	router.Router
+	server.GrpcApi
+}](n *Node, s *grpc.Server, r R, c any) {
+	n.addRouter(r)
+	n.addApi(r)
+	n.addClient(c)
+	r.Register(s)
 }
 
 // Announce adds a new name with the given features to this node.
