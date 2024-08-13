@@ -4,6 +4,7 @@ module.exports = {
     sourceType: 'module',
     ecmaVersion: 'latest'
   },
+  ignorePatterns: ['dist/**/*'],
   env: {
     browser: true
   },
