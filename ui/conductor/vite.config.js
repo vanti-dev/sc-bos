@@ -1,4 +1,5 @@
 import vue from '@vitejs/plugin-vue2';
+import {execSync} from 'child_process';
 import glob from 'glob';
 import {createRequire} from 'module';
 import {dirname, join, relative} from 'path';
@@ -7,12 +8,13 @@ import Components from 'unplugin-vue-components/vite';
 import {fileURLToPath, URL} from 'url';
 import {defineConfig, loadEnv} from 'vite';
 import eslintPlugin from 'vite-plugin-eslint';
-import {execSync} from 'child_process';
 
 const _require = createRequire(import.meta.url);
 
 // Any import that resolves to a local filesystem dependency that isn't an ESM dependency needs to be in this list.
-const optimizeDepsInclude = [];
+const optimizeDepsInclude = [
+  '@sc-bos/panzoom-package' // cjs imports that use the yarn workspace also need to be in this list
+];
 // Typically that includes local proto files that are referenced via either `file:../` dependencies in package.json
 // or via yarn/npm linking the generated sources into this project (or both).
 // This snippet will find all *_pb.js files and ensure that they will be handled correctly by vite.
@@ -37,6 +39,13 @@ export default defineConfig(({mode}) => {
     },
     optimizeDeps: {
       include: optimizeDepsInclude
+    },
+    build: {
+      commonjsOptions: {
+        // This should include regexes for any directory that should be processed by the commonjs transform.
+        // The entries match against filesystem paths (not import paths) and resolve after symbolic links.
+        include: [/node_modules/, /ui-gen/, /panzoom-package/]
+      }
     },
     css: {
       preprocessorOptions: {
