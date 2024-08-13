@@ -1,6 +1,5 @@
 import {ServiceNames} from '@/api/ui/services';
 import {useServicesStore} from '@/stores/services';
-import {useSidebarStore} from '@/stores/sidebar';
 import {computed, onUnmounted, ref, watch} from 'vue';
 
 /**

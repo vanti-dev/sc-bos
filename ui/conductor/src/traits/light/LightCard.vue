@@ -90,6 +90,11 @@ const {levelStr, level, presets, currentPresetTitle} = useBrightness(value, supp
 
 const loading = computed(() => pullLoading.value || supportLoading.value || updateLoading.value);
 
+/**
+ * @param {string} title
+ * @param {string} currentPresetTitle
+ * @return {string}
+ */
 function getColor(title, currentPresetTitle) {
   return title === currentPresetTitle ? 'primary' : 'neutral lighten-1';
 }
