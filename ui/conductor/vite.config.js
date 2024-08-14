@@ -48,16 +48,6 @@ export default defineConfig(({mode}) => {
         include: [/node_modules/, /ui-gen/, /panzoom-package/]
       }
     },
-    css: {
-      preprocessorOptions: {
-        scss: {
-          additionalData: `@import "@/sass/variables.scss";\n`
-        },
-        sass: {
-          additionalData: `@import "@/sass/variables.scss"\n`
-        }
-      }
-    },
     plugins: [
       vue(),
       vuetify(),
