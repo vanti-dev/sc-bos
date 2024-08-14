@@ -2,7 +2,7 @@
   <v-card elevation="0" tile>
     <!-- Brightness -->
     <v-list tile class="ma-0 pa-0">
-      <v-subheader class="text-title-caps-large text-neutral-lighten-3">Lighting</v-subheader>
+      <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Lighting</v-list-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">Brightness</v-list-item-title>
         <v-list-item-subtitle class="text-capitalize">{{ levelStr }}</v-list-item-subtitle>

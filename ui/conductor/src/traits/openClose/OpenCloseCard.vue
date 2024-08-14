@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0" two-line>
-      <v-subheader class="text-title-caps-large text-neutral-lighten-3">Open / Closed</v-subheader>
+      <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Open / Closed</v-list-subheader>
 
       <v-list-item class="mt-n4 mb-4">
         <v-list-item-content class="d-flex flex-row flex-nowrap justify-space-between align-center py-0">

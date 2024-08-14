@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0">
-      <v-subheader class="text-title-caps-large text-neutral-lighten-3">Air Quality</v-subheader>
+      <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Air Quality</v-list-subheader>
       <v-list-item v-for="(val, key) of tableData" :key="key" class="py-1">
         <v-list-item-title class="text-body-small">{{ key }}</v-list-item-title>
         <v-list-item-subtitle class="font-weight-medium">{{ val }}</v-list-item-subtitle>

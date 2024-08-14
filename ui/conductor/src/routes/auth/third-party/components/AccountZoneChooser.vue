@@ -21,7 +21,7 @@
         return-object
         :disabled="blockActions">
       <template #prepend-item v-if="findZonesTracker.response?.nextPageToken">
-        <v-subheader class="mx-2">
+        <v-list-subheader class="mx-2">
           <template v-if="findZonesTracker.response?.totalSize > 0">
             Showing {{ inputItems.length }} of {{ findZonesTracker.response.totalSize }}
             {{ zonesOnly ? 'zones' : 'devices' }}
@@ -30,7 +30,7 @@
           <template v-else>
             Showing up to {{ inputItems.length }} {{ zonesOnly ? 'zones' : 'devices' }}, search to refine your results.
           </template>
-        </v-subheader>
+        </v-list-subheader>
         <v-divider class="my-2"/>
       </template>
 

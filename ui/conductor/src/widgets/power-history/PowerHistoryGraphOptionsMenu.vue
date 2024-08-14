@@ -21,7 +21,7 @@
             <v-list-item
                 class="d-flex flex-row justify-center pa-0 mt-n1 px-3"
                 @click.stop="showConversionToggle = !showConversionToggle">
-              <v-subheader class="text-body-2 pa-0">Unit Type</v-subheader>
+              <v-list-subheader class="text-body-2 pa-0">Unit Type</v-list-subheader>
               <v-spacer/>
               <v-switch
                   class="ml-4 my-auto no-pointer-events"
@@ -40,7 +40,7 @@
               </v-switch>
             </v-list-item>
             <v-list-item class="pa-0 d-flex flex-row justify-center px-3" dense>
-              <v-subheader class="text-body-2 pa-0">Duration</v-subheader>
+              <v-list-subheader class="text-body-2 pa-0">Duration</v-list-subheader>
               <v-spacer/>
               <v-btn-toggle
                   v-model="activeDuration"
@@ -62,7 +62,7 @@
                 class="pa-0 d-flex flex-row align-left align-center px-3 mb-n1"
                 dense
                 @click="emits('exportCSV')">
-              <v-subheader class="text-body-2 pa-0">Export CSV...</v-subheader>
+              <v-list-subheader class="text-body-2 pa-0">Export CSV...</v-list-subheader>
             </v-list-item>
           </v-list>
         </v-menu>

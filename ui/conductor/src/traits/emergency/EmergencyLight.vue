@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0">
-      <v-subheader class="text-title-caps-large text-neutral-lighten-3">Emergency Lighting</v-subheader>
+      <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Emergency Lighting</v-list-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">Battery Level</v-list-item-title>
         <v-list-item-subtitle class="text-capitalize">{{ battery }}%</v-list-item-subtitle>
@@ -14,7 +14,7 @@
         background-color="neutral lighten-1"
         color="accent"/>
     <v-list>
-      <v-subheader class="text-body-large font-weight-bold">Testing History</v-subheader>
+      <v-list-subheader class="text-body-large font-weight-bold">Testing History</v-list-subheader>
       <v-list-item v-for="([date, state, textColor]) in testHistory" :key="date" class="pb-2">
         <v-list-item-title class="text-body-small">{{ date }}</v-list-item-title>
         <v-list-item-subtitle class="text-title-caps" :class="textColor">{{ state }}</v-list-item-subtitle>

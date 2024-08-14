@@ -2,7 +2,7 @@
   <v-form @submit.prevent="saveModeValues">
     <v-card elevation="0" tile>
       <v-list tile class="ma-0 pa-0">
-        <v-subheader class="text-title-caps-large text-neutral-lighten-3">Modes</v-subheader>
+        <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Modes</v-list-subheader>
         <v-list-item v-for="mode in modesDisplay" :key="mode.key">
           <template v-if="mode.values">
             <v-select
