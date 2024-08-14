@@ -1,6 +1,6 @@
 import {execSync} from 'child_process';
 import fs from 'fs';
-import replace from 'replace-in-file';
+import {replaceInFileSync} from 'replace-in-file';
 
 const protoFiles = fs.readdirSync('../../proto')
     .filter(f => f.endsWith('.proto'))
@@ -15,13 +15,13 @@ console.log(out.toString());
 // with `require('@smart-core-os/sc-api-grpc-web/traits/*_pb.js')`
 
 // replace .js imports
-replace.sync({
+replaceInFileSync({
   files: ['proto/**/*_pb.js'],
   from: /require\('(?:\.\/)+((?:traits|types|info)\/.+_pb.js)'\)/g,
   to: `require('@smart-core-os/sc-api-grpc-web/$1')`
 });
 // replace .d.ts imports
-replace.sync({
+replaceInFileSync({
   files: ['proto/**/*_pb.d.ts'],
   from: /from '(?:\.\/)+((?:traits|types|info)\/.+_pb)'/g,
   to: `from '@smart-core-os/sc-api-grpc-web/$1'`

@@ -15,6 +15,6 @@
     "grpc-web": "^1.4.2"
   },
   "devDependencies": {
-    "replace-in-file": "^6.3.5"
+    "replace-in-file": "^8.1.0"
   }
 }
