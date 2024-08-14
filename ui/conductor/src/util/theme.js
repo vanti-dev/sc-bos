@@ -1,4 +1,4 @@
-import colors from 'vuetify/lib/util/colors';
+import colors from 'vuetify/util/colors';
 
 /**
  * Get the hex color from the class name or Vuetify theme
