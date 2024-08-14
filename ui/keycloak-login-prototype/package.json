@@ -11,7 +11,7 @@
     "@smart-core-os/sc-api-grpc-web" : "^1.0.0-beta.46",
     "google-protobuf" : "^3.21.2",
     "grpc-web" : "^1.5.0",
-    "keycloak-js" : "^23.0.5",
+    "keycloak-js" : "^25.0.2",
     "vue" : "^3.4.37"
   },
   "devDependencies": {
