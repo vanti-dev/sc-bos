@@ -1,5 +1,4 @@
 import {grpcWebEndpoint} from '@/api/config.js';
-import Vue from 'vue';
 
 /**
  * Closes any open server streams associated with the given resource.
@@ -12,8 +11,8 @@ export function closeResource(resource) {
   //  The type says cancel, but our code said close.
   if (resource?.stream?.cancel) resource.stream.cancel();
   if (resource?.stream?.close) resource.stream.close();
-  if (resource?.value) Vue.set(resource, 'value', null);
-  if (resource?.updateTime) Vue.set(resource, 'updateTime', null);
+  if (resource?.value) resource.value = null;
+  if (resource?.updateTime) resource.updateTime = null;
 }
 
 /**
@@ -24,10 +23,10 @@ export function closeResource(resource) {
  * @template V,M
  */
 export function setValue(resource, val) {
-  Vue.set(resource, 'loading', false);
-  Vue.set(resource, 'streamError', null);
-  Vue.set(resource, 'value', val);
-  Vue.set(resource, 'updateTime', new Date());
+  resource.loading = false;
+  resource.streamError = null;
+  resource.value = val;
+  resource.updateTime = new Date();
 }
 
 /**
@@ -42,19 +41,19 @@ export function setValue(resource, val) {
  * @template V,M
  */
 export function setCollection(resource, change, idFunc) {
-  Vue.set(resource, 'loading', false);
-  Vue.set(resource, 'streamError', null);
+  resource.loading = false;
+  resource.streamError = null;
   const oldV = change.getOldValue()?.toObject();
   const newV = change.getNewValue()?.toObject();
   if (newV) {
-    if (!resource.value) Vue.set(resource, 'value', {});
-    Vue.set(resource.value, idFunc(newV), newV);
+    if (!resource.value) resource.value = {};
+    resource.lue =idFunc(newV), newV;
   } else if (oldV) {
     if (resource.value) {
-      Vue.delete(resource.value, idFunc(oldV));
+      delete(resource.value[idFunc(oldV)]);
     }
   }
-  Vue.set(resource, 'updateTime', change.getChangeTime().toDate());
+  resource.updateTime = change.getChangeTime().toDate();
 }
 
 /**
@@ -69,9 +68,9 @@ export function setError(resource, err, name = '') {
     name,
     error: err
   };
-  Vue.set(resource, 'loading', false);
-  Vue.set(resource, 'streamError', rErr);
-  Vue.set(resource, 'updateTime', new Date());
+  resource.loading = false;
+  resource.streamError = rErr;
+  resource.updateTime = new Date();
 }
 
 /**
@@ -172,18 +171,18 @@ export function pullResource(logPrefix, resource, newStream) {
         doPull(delay);
       }, retryDelayMs);
       // fake stream we use to cancel the timeout if this component is disposed.
-      Vue.set(resource, 'stream', {
+      resource.stream = {
         cancel() {
           clearTimeout(handle);
         }
-      });
+      };
     };
 
     const address = grpcWebEndpoint();
     Promise.resolve(address)
         .then((endpoint) => {
           const stream = newStream(endpoint);
-          Vue.set(resource, 'stream', stream);
+          resource.stream = stream;
           stream.on('data', () => {
             retryDelayMs = 1000; // if we were successful, we reset the retry delay
           });
@@ -254,22 +253,22 @@ export function pullResource(logPrefix, resource, newStream) {
  * @template V, M
  */
 export async function trackAction(logPrefix, tracker, action) {
-  Vue.set(tracker, 'loading', true);
+  tracker.loading = true;
   const endpoint = await grpcWebEndpoint();
   try {
     const msg = await action(endpoint);
     const value = msg.toObject();
-    Vue.set(tracker, 'response', value);
+    tracker.response = value;
     return value;
   } catch (err) {
     const rErr = /** @type {RemoteError} */ {
       name: logPrefix,
       error: err
     };
-    Vue.set(tracker, 'error', rErr);
+    tracker.error = rErr;
     throw err;
   } finally {
-    Vue.set(tracker, 'loading', false);
+    tracker.loading = false;
   }
 }
 

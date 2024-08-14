@@ -1,7 +1,7 @@
 import {statusCodeToString} from '@/components/ui-error/util';
 import {StatusCode} from 'grpc-web';
 import {defineStore} from 'pinia';
-import Vue, {computed, ref, watch} from 'vue';
+import {computed, ref, watch} from 'vue';
 
 /**
  * @typedef {Object} UiError
@@ -24,7 +24,7 @@ export const useErrorStore = defineStore('error', () => {
     // eslint-disable-next-line max-len
     console.error(`[${(new Date(e.timestamp)).toLocaleTimeString()}] ${e.name} | ${statusCodeToString(e.source.code)}: ${e.source.message}`, e.source);
 
-    Vue.set(_errorMap.value, e.id, e);
+    _errorMap.value[e.id] = e;
     // auto-clear errors after 1 minute
     setTimeout(() => {
       clearError(e);
@@ -36,7 +36,7 @@ export const useErrorStore = defineStore('error', () => {
    * @param {UiError} error
    */
   function clearError(error) {
-    Vue.delete(_errorMap.value, error.id);
+    delete(_errorMap.value[error.id]);
   }
 
   /**

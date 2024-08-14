@@ -6,7 +6,7 @@ import useTimePeriod from '@/composables/useTimePeriod';
 import {hasTrait} from '@/util/devices';
 import {csvDownload} from '@/util/downloadCSV';
 import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
-import Vue, {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
 
 /**
  *
@@ -91,14 +91,14 @@ export default function(props) {
   // Initialize data and polling state for each device
   const initializeAirQualityData = (deviceName) => {
     if (!airQualitySensorHistoryValues[deviceName]) {
-      Vue.set(airQualitySensorHistoryValues, deviceName, {
+      airQualitySensorHistoryValues[deviceName] = {
         data: [],
         fetching: false,
         lastSuccessfulFetchTime: 0,
         pollHandler: 0,
         records: [],
         request: {}
-      });
+      };
     }
     setUpRequest(deviceName);
   };
@@ -116,7 +116,7 @@ export default function(props) {
       }
     };
     // Ensuring reactivity when setting up the request
-    Vue.set(airQualitySensorHistoryValues[deviceName], 'request', request);
+    airQualitySensorHistoryValues[deviceName].request = request;
   };
 
   // Watch airDevice.value to trigger re-initialization and data fetch
@@ -160,9 +160,8 @@ export default function(props) {
     }
 
     // Initialize polling for each device
-    Vue.set(deviceData, 'pollHandler', setInterval(
-        () => fetchData(device), props.pollDelay)
-    );
+    deviceData.pollHandler = setInterval(
+        () => fetchData(device), props.pollDelay);
   };
 
 
@@ -182,7 +181,7 @@ export default function(props) {
       if (previousAirDevice.value !== currentDevice) {
         // If there was a previous device, delete its data
         if (previousAirDevice.value && airQualitySensorHistoryValues[previousAirDevice.value]) {
-          Vue.delete(airQualitySensorHistoryValues, previousAirDevice.value);
+          delete(airQualitySensorHistoryValues[previousAirDevice.value]);
         }
 
         // Initialize data for the current device
@@ -264,8 +263,8 @@ export default function(props) {
 
     // Set the records and data for the graph
     if (!type) {
-      Vue.set(airQualitySensorHistoryValues[request.name], 'records', uniqueRecords);
-      Vue.set(airQualitySensorHistoryValues[request.name], 'data', processRecordsForGraph(uniqueRecords));
+      airQualitySensorHistoryValues[request.name].records = uniqueRecords;
+      airQualitySensorHistoryValues[request.name].data = processRecordsForGraph(uniqueRecords);
     }
 
     return uniqueRecords;
@@ -351,7 +350,7 @@ export default function(props) {
     if (!airDevice.value) return;
 
     clearInterval(airQualitySensorHistoryValues[airDevice.value].pollHandler);
-    Vue.delete(airQualitySensorHistoryValues, airDevice.value);
+    delete(airQualitySensorHistoryValues[airDevice.value]);
   };
 
   // Function to remove records outside the time frame
