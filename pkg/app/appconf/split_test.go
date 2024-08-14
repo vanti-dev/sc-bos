@@ -10,8 +10,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/spf13/afero"
-	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	lightingconfig "github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
@@ -44,13 +45,12 @@ func (m MockFs) mockIsDir(path string) (bool, error) {
 	return afero.IsDir(m.fs, path)
 }
 
-func unwrapValue(value interface{}) interface{} {
+func unwrapValue(value any) any {
 
 	result := value
 	val := reflect.ValueOf(value)
 	if val.Kind() == reflect.Ptr {
 		result = reflect.ValueOf(value).Elem().Interface()
-
 		switch result.(type) {
 		case *netip.AddrPort:
 			result = result.(*netip.AddrPort).String()
@@ -58,9 +58,6 @@ func unwrapValue(value interface{}) interface{} {
 			result = result.(jsontypes.Duration).String()
 			result = strings.TrimSuffix(result.(string), "0s")
 		}
-
-	} else if val.Kind() == reflect.Slice {
-
 	}
 	return result
 }
@@ -86,9 +83,11 @@ func TestMetadataConfigPatch(t *testing.T) {
 	if err != nil {
 		t.Errorf("error reading config file: %s", err)
 	}
-	writeFile(mockFsConfigFileName, file, 0664)
+	err = writeFile(mockFsConfigFileName, file, 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	assert := assert.New(t)
 	rootPath := filepath.Join("testdata", "db")
 
 	appConfig, err := LoadLocalConfig("", mockFsConfigFileName)
@@ -159,7 +158,9 @@ func TestMetadataConfigPatch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			// check the value at the beginning is the original from the ext
-			assert.Equal(tt.preExpect, unwrapValue(tt.which))
+			if diff := cmp.Diff(tt.preExpect, unwrapValue(tt.which), protocmp.Transform()); diff != "" {
+				t.Errorf("unexpected value at the beginning (-want +got):\n%s", diff)
+			}
 
 			// write the file containing the new value to the correct place
 			err := writePageFile(tt.patchFile, tt.change)
@@ -174,7 +175,9 @@ func TestMetadataConfigPatch(t *testing.T) {
 			}
 
 			// the value in appConfig should have the new value from the patchFile
-			assert.Equal(tt.change, unwrapValue(tt.which))
+			if diff := cmp.Diff(tt.change, unwrapValue(tt.which), protocmp.Transform()); diff != "" {
+				t.Errorf("unexpected value at the end (-want +got):\n%s", diff)
+			}
 		})
 	}
 }
@@ -197,9 +200,11 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 		t.Errorf("error reading config file: %s", err)
 	}
 
-	writeFile(mockFsConfigFileName, file, 0664)
+	err = writeFile(mockFsConfigFileName, file, 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	assert := assert.New(t)
 	rootPath := filepath.Join("testdata", "db")
 	appConfig, err := LoadLocalConfig("", mockFsConfigFileName)
 	if err != nil {
@@ -286,7 +291,9 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			// check the value at the beginning is the original from the ext
-			assert.Equal(tt.preExpect, unwrapValue(tt.which))
+			if diff := cmp.Diff(tt.preExpect, unwrapValue(tt.which), protocmp.Transform()); diff != "" {
+				t.Errorf("unexpected value at the beginning (-want +got):\n%s", diff)
+			}
 
 			// write the file containing the new value to the correct place
 			err := writePageFile(tt.patchFile, tt.change)
@@ -314,7 +321,9 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 			}
 
 			// the value in appConfig should have the new value from the patchFile
-			assert.Equal(tt.change, unwrapValue(tt.which))
+			if diff := cmp.Diff(tt.change, unwrapValue(tt.which), protocmp.Transform()); diff != "" {
+				t.Errorf("unexpected value at the end (-want +got):\n%s", diff)
+			}
 		})
 	}
 }
@@ -335,9 +344,11 @@ func TestAutomation(t *testing.T) {
 		t.Errorf("error reading config file: %s", err)
 	}
 
-	writeFile(mockFsConfigFileName, file, 0664)
+	err = writeFile(mockFsConfigFileName, file, 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	assert := assert.New(t)
 	rootPath := filepath.Join("testdata", "db")
 	appConfig, err := LoadLocalConfig("", mockFsConfigFileName)
 	if err != nil {
@@ -387,7 +398,9 @@ func TestAutomation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			// check the value at the beginning is the original from the ext
-			assert.Equal(tt.preExpect, unwrapValue(tt.which))
+			if diff := cmp.Diff(tt.preExpect, unwrapValue(tt.which)); diff != "" {
+				t.Errorf("unexpected value at the beginning (-want +got):\n%s", diff)
+			}
 
 			// write the file containing the new value to the correct place
 			err := writePageFile(tt.patchFile, tt.change)
@@ -409,7 +422,9 @@ func TestAutomation(t *testing.T) {
 			}
 
 			// the value in appConfig should have the new value from the patchFile
-			assert.Equal(tt.change, unwrapValue(tt.which))
+			if diff := cmp.Diff(tt.change, unwrapValue(tt.which)); diff != "" {
+				t.Errorf("unexpected value at the end (-want +got):\n%s", diff)
+			}
 		})
 	}
 }
@@ -430,9 +445,11 @@ func TestZones(t *testing.T) {
 		t.Errorf("error reading config file: %s", err)
 	}
 
-	writeFile(mockFsConfigFileName, file, 0664)
+	err = writeFile(mockFsConfigFileName, file, 0664)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	assert := assert.New(t)
 	rootPath := filepath.Join("testdata", "db")
 	appConfig, err := LoadLocalConfig("", mockFsConfigFileName)
 	if err != nil {
@@ -471,7 +488,9 @@ func TestZones(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			// check the value at the beginning is the original from the ext
-			assert.Equal(tt.preExpect, unwrapValue(tt.which))
+			if diff := cmp.Diff(tt.preExpect, unwrapValue(tt.which)); diff != "" {
+				t.Errorf("unexpected value at the beginning (-want +got):\n%s", diff)
+			}
 
 			// write the file containing the new value to the correct place
 			err := writePageFile(tt.patchFile, tt.change)
@@ -493,7 +512,9 @@ func TestZones(t *testing.T) {
 			}
 
 			// the value in appConfig should have the new value from the patchFile
-			assert.Equal(tt.change, unwrapValue(tt.which))
+			if diff := cmp.Diff(tt.change, unwrapValue(tt.which)); diff != "" {
+				t.Errorf("unexpected value at the end (-want +got):\n%s", diff)
+			}
 		})
 	}
 }
