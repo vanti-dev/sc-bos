@@ -24,19 +24,17 @@
       <v-card-actions v-if="alert.length" class="mt-4">
         <v-col class="mx-0 px-0" cols="align-self" style="max-width: 370px">
           <v-list-item class="px-2">
-            <v-list-item-content>
-              <v-tooltip bottom>
-                <template #activator="{ props }">
-                  <v-list-item-title class="text-uppercase" v-bind="props">
-                    {{ alert.description }}
-                  </v-list-item-title>
-                </template>
-                {{ alert.description }}
-              </v-tooltip>
-              <v-list-item-subtitle>
-                {{ alert.createTime }}
-              </v-list-item-subtitle>
-            </v-list-item-content>
+            <v-tooltip bottom>
+              <template #activator="{ props }">
+                <v-list-item-title class="text-uppercase" v-bind="props">
+                  {{ alert.description }}
+                </v-list-item-title>
+              </template>
+              {{ alert.description }}
+            </v-tooltip>
+            <v-list-item-subtitle>
+              {{ alert.createTime }}
+            </v-list-item-subtitle>
           </v-list-item>
         </v-col>
         <v-spacer/>

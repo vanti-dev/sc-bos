@@ -15,10 +15,8 @@
           <v-list-item-icon>
             <v-icon x-large>{{ item.icon }}</v-icon>
           </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title class="text-h4">{{ item.title }}</v-list-item-title>
-            <v-list-item-subtitle class="text-body-small">{{ item.subtitle }}</v-list-item-subtitle>
-          </v-list-item-content>
+          <v-list-item-title class="text-h4">{{ item.title }}</v-list-item-title>
+          <v-list-item-subtitle class="text-body-small">{{ item.subtitle }}</v-list-item-subtitle>
         </v-list-item>
       </v-list>
     </v-card>

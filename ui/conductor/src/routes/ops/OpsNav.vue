@@ -25,9 +25,7 @@
             </v-icon>
           </v-badge>
         </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title class="text-truncate">{{ item.title }}</v-list-item-title>
-        </v-list-item-content>
+        <v-list-item-title class="text-truncate">{{ item.title }}</v-list-item-title>
       </v-list-item>
     </v-list-item-group>
   </v-list>

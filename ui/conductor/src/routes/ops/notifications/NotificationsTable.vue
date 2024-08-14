@@ -78,7 +78,7 @@
 
             <v-expansion-panels v-if="!props.overviewPage" class="mt-n3 mb-3" flat v-model="manualEntryPanel">
               <v-expansion-panel>
-                <v-expansion-panel-content>
+                <v-expansion-panel-text>
                   <v-subheader class="pl-0 text-body-1">Manual Notification Entry Form</v-subheader>
                   <v-row class="align-center mr-2">
                     <v-col cols="self-align">
@@ -136,7 +136,7 @@
                       </v-btn>
                     </v-col>
                   </v-row>
-                </v-expansion-panel-content>
+                </v-expansion-panel-text>
               </v-expansion-panel>
             </v-expansion-panels>
           </v-row>

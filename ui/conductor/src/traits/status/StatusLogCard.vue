@@ -20,11 +20,9 @@
         <v-card-text v-if="showMore" class="py-0">
           <v-list>
             <v-list-item v-for="problem in problems" :key="problem.name" three-line>
-              <v-list-item-content>
-                <v-list-item-title>{{ levelToStr(problem.level, 'Status: ') }}</v-list-item-title>
-                <v-list-item-subtitle>{{ problem.name }}</v-list-item-subtitle>
-                <v-list-item-subtitle>{{ problem.description }}</v-list-item-subtitle>
-              </v-list-item-content>
+              <v-list-item-title>{{ levelToStr(problem.level, 'Status: ') }}</v-list-item-title>
+              <v-list-item-subtitle>{{ problem.name }}</v-list-item-subtitle>
+              <v-list-item-subtitle>{{ problem.description }}</v-list-item-subtitle>
             </v-list-item>
           </v-list>
         </v-card-text>

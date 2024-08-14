@@ -65,9 +65,7 @@
       <v-card min-width="300">
         <v-list>
           <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>Only show zones</v-list-item-title>
-            </v-list-item-content>
+            <v-list-item-title>Only show zones</v-list-item-title>
             <v-list-item-action>
               <v-switch v-model="zonesOnly"/>
             </v-list-item-action>

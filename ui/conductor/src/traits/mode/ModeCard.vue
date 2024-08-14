@@ -4,29 +4,27 @@
       <v-list tile class="ma-0 pa-0">
         <v-subheader class="text-title-caps-large text-neutral-lighten-3">Modes</v-subheader>
         <v-list-item v-for="mode in modesDisplay" :key="mode.key">
-          <v-list-item-content>
-            <template v-if="mode.values">
-              <v-select
-                  :label="mode.title"
-                  :items="mode.values"
-                  :value="mode.value"
-                  @update:model-value="updateMode(mode.key, $event, true)"
-                  :disabled="blockActions || loading"
-                  outlined
-                  dense
-                  hide-details/>
-            </template>
-            <template v-else>
-              <v-text-field
-                  :label="mode.title"
-                  :value="mode.value"
-                  @update:model-value="updateMode(mode.key, $event)"
-                  :disabled="blockActions || loading"
-                  outlined
-                  dense
-                  hide-details/>
-            </template>
-          </v-list-item-content>
+          <template v-if="mode.values">
+            <v-select
+                :label="mode.title"
+                :items="mode.values"
+                :value="mode.value"
+                @update:model-value="updateMode(mode.key, $event, true)"
+                :disabled="blockActions || loading"
+                outlined
+                dense
+                hide-details/>
+          </template>
+          <template v-else>
+            <v-text-field
+                :label="mode.title"
+                :value="mode.value"
+                @update:model-value="updateMode(mode.key, $event)"
+                :disabled="blockActions || loading"
+                outlined
+                dense
+                hide-details/>
+          </template>
         </v-list-item>
       </v-list>
       <v-card-actions class="px-4">

@@ -18,7 +18,7 @@
             <v-list-item-icon>
               <v-icon>mdi-select-all</v-icon>
             </v-list-item-icon>
-            <v-list-item-content>{{ zone }}</v-list-item-content>
+            {{ zone }}
           </v-list-item>
         </v-list-item-group>
       </v-list-group>

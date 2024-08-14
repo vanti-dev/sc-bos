@@ -9,20 +9,18 @@
             :input-value="activeCertificate === 'root'"
             :ripple="false"
             @click="setActiveCertificate(rootCertificate, 'root')">
-          <v-list-item-content>
-            <div class="d-flex flex-row justify-space-between">
-              <div class="d-flex flex-row align-center mr-8 pt-1">
-                <v-icon v-if="intermediateCertificates" class="mr-2" size="20">mdi-chevron-down</v-icon>
-                <span>{{ rootCertificate?.subject?.commonName }}</span>
-              </div>
-              <div class="d-flex flex-row align-center">
-                <span class="font-weight-bold mr-2 pt-1">Valid:</span>
-                <v-icon :color="checkValidity(rootCertificate?.validityPeriod?.to).color" size="20">
-                  {{ checkValidity(rootCertificate?.validityPeriod?.to).icon }}
-                </v-icon>
-              </div>
+          <div class="d-flex flex-row justify-space-between">
+            <div class="d-flex flex-row align-center mr-8 pt-1">
+              <v-icon v-if="intermediateCertificates" class="mr-2" size="20">mdi-chevron-down</v-icon>
+              <span>{{ rootCertificate?.subject?.commonName }}</span>
             </div>
-          </v-list-item-content>
+            <div class="d-flex flex-row align-center">
+              <span class="font-weight-bold mr-2 pt-1">Valid:</span>
+              <v-icon :color="checkValidity(rootCertificate?.validityPeriod?.to).color" size="20">
+                {{ checkValidity(rootCertificate?.validityPeriod?.to).icon }}
+              </v-icon>
+            </div>
+          </div>
         </v-list-item>
 
         <v-list class="ma-0 pa-0">
@@ -35,25 +33,23 @@
               :key="intermediateKey"
               :ripple="false"
               @click="setActiveCertificate(intermediateValue, intermediateValue?.subject?.commonName)">
-            <v-list-item-content>
-              <div class="d-flex flex-row justify-space-between">
-                <div class="pt-1">
-                  <v-icon class="mr-2" size="20">
-                    {{
-                      activeCertificate === intermediateValue?.subject?.commonName ?
-                        'mdi-chevron-down' : 'mdi-chevron-right'
-                    }}
-                  </v-icon>
-                  <span>{{ intermediateValue?.subject?.commonName }}</span>
-                </div>
-                <div class="d-flex flex-row align-center">
-                  <span class="font-weight-bold mr-2 pt-1">Valid:</span>
-                  <v-icon :color="checkValidity(intermediateValue?.validityPeriod?.to).color" size="20">
-                    {{ checkValidity(intermediateValue?.validityPeriod?.to).icon }}
-                  </v-icon>
-                </div>
+            <div class="d-flex flex-row justify-space-between">
+              <div class="pt-1">
+                <v-icon class="mr-2" size="20">
+                  {{
+                    activeCertificate === intermediateValue?.subject?.commonName ?
+                      'mdi-chevron-down' : 'mdi-chevron-right'
+                  }}
+                </v-icon>
+                <span>{{ intermediateValue?.subject?.commonName }}</span>
               </div>
-            </v-list-item-content>
+              <div class="d-flex flex-row align-center">
+                <span class="font-weight-bold mr-2 pt-1">Valid:</span>
+                <v-icon :color="checkValidity(intermediateValue?.validityPeriod?.to).color" size="20">
+                  {{ checkValidity(intermediateValue?.validityPeriod?.to).icon }}
+                </v-icon>
+              </div>
+            </div>
           </v-list-item>
         </v-list>
       </v-list>
