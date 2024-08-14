@@ -2,7 +2,7 @@
   <div class="d-flex align-center">
     <v-combobox
         v-model="inputModel"
-        @input="sendZoneEvent($event)"
+        @update:model-value="sendZoneEvent($event)"
         :items="inputItems"
         item-text="title"
         item-value="name"

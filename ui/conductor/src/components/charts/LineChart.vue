@@ -7,7 +7,7 @@
             v-for="(item, index) in legendItems"
             :key="index"
             :input-value="!item.hidden"
-            @change="item.onClick"
+            @update:model-value="item.onClick"
             :label="item.text"
             :color="item.bgColor"
             hide-details

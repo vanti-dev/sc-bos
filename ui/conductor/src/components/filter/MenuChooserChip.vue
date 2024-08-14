@@ -3,7 +3,7 @@
       offset-y
       bottom
       :close-on-content-click="false"
-      @input="reset"
+      @update:model-value="reset"
       min-width="400"
       nudge-bottom="4">
     <template #activator="{ on: onMenu, attrs: bindMenu }">

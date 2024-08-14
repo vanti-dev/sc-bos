@@ -10,7 +10,7 @@
                   :label="mode.title"
                   :items="mode.values"
                   :value="mode.value"
-                  @input="updateMode(mode.key, $event, true)"
+                  @update:model-value="updateMode(mode.key, $event, true)"
                   :disabled="blockActions || loading"
                   outlined
                   dense
@@ -20,7 +20,7 @@
               <v-text-field
                   :label="mode.title"
                   :value="mode.value"
-                  @input="updateMode(mode.key, $event)"
+                  @update:model-value="updateMode(mode.key, $event)"
                   :disabled="blockActions || loading"
                   outlined
                   dense
