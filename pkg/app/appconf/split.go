@@ -46,10 +46,8 @@ func normaliseDeviceName(s string) string {
 
 // mergeWithReflection does the same thing as mergeRawStruct but uses reflection to merge the changes.
 // used only for Metadata at the moment, probably unnecessary as we can just use mergeRawStruct
-func mergeWithReflection(
-	v reflect.Value, path string) error {
-
-	if v.Kind() != reflect.Ptr {
+func mergeWithReflection(v reflect.Value, path string) error {
+	if v.Kind() != reflect.Ptr || v.IsNil() {
 		return errors.New("not a pointer value")
 	}
 	value := reflect.Indirect(v)
@@ -87,9 +85,12 @@ func mergeWithReflection(
 		}
 	} else {
 		kind := value.Kind()
-		file, _ := readFile(path)
+		file, err := readFile(path)
+		if err != nil {
+			return err
+		}
 		var pageFile page
-		err := json.Unmarshal(file, &pageFile)
+		err = json.Unmarshal(file, &pageFile)
 		if err != nil {
 			return err
 		}
@@ -149,19 +150,13 @@ func setValue(s *any, path string) error {
 		*s = pageFile.Value.(string)
 	case reflect.Bool:
 		value.SetBool((pageFile.Value).(bool))
-	case reflect.Float32:
-		fallthrough
-	case reflect.Float64:
+	case reflect.Float32, reflect.Float64:
 		f, err := pageFile.Value.(json.Number).Float64()
 		if err != nil {
 			return err
 		}
 		value.SetFloat(f)
-	case reflect.Struct:
-		fallthrough
-	case reflect.Slice:
-		fallthrough
-	case reflect.Map:
+	case reflect.Struct, reflect.Slice, reflect.Map:
 		bytes, err := json.Marshal(pageFile.Value)
 		err = json.Unmarshal(bytes, value.Interface())
 		if err != nil {
