@@ -49,7 +49,7 @@ import {closeResource, newActionTracker, newResourceValue} from '@/api/resource'
 import {describeModes, pullModeValues, updateModeValues} from '@/api/sc/traits/mode';
 import {useErrorStore} from '@/components/ui-error/error';
 import useAuthSetup from '@/composables/useAuthSetup';
-import {computed, onMounted, onUnmounted, reactive, set, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
 
 const {blockActions} = useAuthSetup();
 
@@ -169,7 +169,7 @@ function modeDisplay([k, v]) {
  * @param {boolean} commit
  */
 function updateMode(key, value, commit = false) {
-  set(edits, key, value);
+  edits[key] = value;
   if (commit) {
     saveModeValues();
   }

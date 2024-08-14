@@ -1,7 +1,7 @@
 import choiceRangeStr from '@/components/filter/choiceRange.js';
 import useVisibility from '@/composables/visibility.js';
 import {toValue} from '@/util/vue.js';
-import {computed, del, reactive, ref, set, watch} from 'vue';
+import {computed, reactive, ref, watch} from 'vue';
 import deepEqual from 'fast-deep-equal';
 
 /**
@@ -162,9 +162,9 @@ export default function useFilterCtx(opts) {
       }
     }
 
-    toRemove.forEach(key => del(choices, key));
+    toRemove.forEach(key => delete(choices[key]));
     const defaults = defaultsByKey.value;
-    toAdd.forEach(f => set(choices, f.key, {filter: f.key, value: defaults[f.key]?.value}));
+    toAdd.forEach(f => choices[f.key] = {filter: f.key, value: defaults[f.key]?.value});
   }, {deep: true, immediate: true});
 
   /**
@@ -178,8 +178,8 @@ export default function useFilterCtx(opts) {
     }
     if (value === undefined || value === null) {
       const wasSet = choices[key].value !== undefined;
-      set(choices[key], 'value', undefined);
-      del(choices[key], 'text');
+      choices[key].value = undefined;
+      delete(choices[key].text);
       return wasSet;
     }
 
@@ -213,26 +213,26 @@ export default function useFilterCtx(opts) {
     }
 
     const changed = !deepEqual(choices[key].value, value);
-    set(choices[key], 'value', value);
+    choices[key].value = value;
 
     // set text if we can.
     if (filter.valueToString) {
-      set(choices[key], 'text', filter.valueToString(value));
+      choices[key].text = filter.valueToString(value);
     } else {
       switch (filter.type) {
         case 'boolean':
           const boolS = value ? 'Yes' : 'No';
-          set(choices[key], 'text', `${filter.title}: ${boolS}`);
+          choices[key].text = `${filter.title}: ${boolS}`;
           break;
         case 'list':
           const listS = value.title ?? value.value ?? value;
-          set(choices[key], 'text', `${listS}`);
+          choices[key].text = `${listS}`;
           break;
         case 'range':
-          set(choices[key], 'text', choiceRangeStr(value));
+          choices[key].text = choiceRangeStr(value);
           break;
         default:
-          del(choices[key], 'text');
+          delete(choices[key].text);
       }
     }
     return changed;

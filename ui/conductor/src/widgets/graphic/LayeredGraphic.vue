@@ -37,7 +37,7 @@ import {useSidebarStore} from '@/stores/sidebar';
 import GraphicLayer from '@/widgets/graphic/GraphicLayer.vue';
 import {usePathUtils} from '@/widgets/graphic/path.js';
 import {nameFromRequest} from '@/widgets/graphic/traits.js';
-import {computed, ref, set, watch} from 'vue';
+import {computed, ref, watch} from 'vue';
 
 const props = defineProps({
   title: {
@@ -116,8 +116,8 @@ watch(() => sidebar.data, (c) => {
 });
 const onLayerSelectUpdate = (layerIdx, selected) => {
   for (let i = 0; i < props.layers.length; i++) {
-    if (i === layerIdx) set(selectionsByLayer.value, i, selected);
-    else set(selectionsByLayer.value, i, null);
+    if (i === layerIdx) selectionsByLayer.value[i] = selected;
+    else selectionsByLayer.value[i] = null;
   }
 };
 </script>

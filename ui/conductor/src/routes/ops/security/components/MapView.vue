@@ -98,7 +98,7 @@ import WithOpenClose from '@/traits/openClose/WithOpenClose.vue';
 import WithStatus from '@/traits/status/WithStatus.vue';
 import {subPath} from '@/util/path.js';
 import {convertSVGToPercentage} from '@/util/svg';
-import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, set, watch} from 'vue';
+import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue';
 import AccessPointCard from './AccessPointCard.vue';
 
 // -------------- Props -------------- //
@@ -317,10 +317,10 @@ const doors = computed(() => {
 const doorFills = ref({});
 const doorStrokes = ref({});
 const setDoorFill = ({name, color}) => {
-  set(doorFills.value, name, color);
+  doorFills.value[name] = color;
 };
 const setDoorStroke = ({name, color}) => {
-  set(doorStrokes.value, name, color);
+  doorStrokes.value[name] = color;
 };
 
 // watch for changes in the colours and svg and invoke dom actions to update the svg.
