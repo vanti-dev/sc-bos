@@ -38,7 +38,9 @@ export default defineConfig(({mode}) => {
       GIT_VERSION: JSON.stringify(env.GIT_VERSION || execSync(gitCommand).toString().trim())
     },
     optimizeDeps: {
-      include: optimizeDepsInclude
+      include: optimizeDepsInclude,
+      // See https://github.com/vueuse/vue-demi
+      exclude: ['vue-demi']
     },
     build: {
       commonjsOptions: {
