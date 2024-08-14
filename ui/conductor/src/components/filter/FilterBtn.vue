@@ -5,12 +5,11 @@
       offset-y
       left
       min-width="340">
-    <template #activator="{ on }">
+    <template #activator="{ props }">
       <v-btn
-          v-on="on"
+          v-bind="props"
           icon
-          class="filter-btn rounded"
-          v-bind="$attrs">
+          class="filter-btn rounded">
         <v-badge dot v-if="badgeShown" :color="badgeColor">
           <v-icon>mdi-filter</v-icon>
         </v-badge>

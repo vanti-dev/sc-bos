@@ -3,8 +3,8 @@
 
   <span class="text-no-wrap ed-cell" v-else-if="powerUseStr && !props.streamError">
     <v-tooltip bottom>
-      <template #activator="{ on, attrs }">
-        <span v-on="on" v-bind="attrs">
+      <template #activator="{ props }">
+        <span v-bind="props">
           <span>{{ powerUseStr }}</span>
           <v-icon right size="20">mdi-meter-electric-outline</v-icon>
         </span>

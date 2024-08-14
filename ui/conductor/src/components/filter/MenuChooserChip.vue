@@ -6,12 +6,11 @@
       @update:model-value="reset"
       min-width="400"
       nudge-bottom="4">
-    <template #activator="{ on: onMenu, attrs: bindMenu }">
+    <template #activator="{ props: menuProps }">
       <v-tooltip bottom>
-        <template #activator="{ on: onTooltip, attrs: bindTooltip }">
+        <template #activator="{ props: tooltipProps }">
           <v-chip
-              v-on="{ ...onMenu, ...onTooltip }"
-              v-bind="{ ...bindMenu, ...bindTooltip, ...$attrs }"
+              v-bind="{ ...menuProps, ...tooltipProps }"
               close
               @click:close="clear">
             {{ text }}

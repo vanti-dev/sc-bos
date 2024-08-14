@@ -1,12 +1,11 @@
 <template>
   <v-tooltip bottom>
-    <template #activator="{ on }">
+    <template #activator="{ props }">
       <v-chip
-          v-on="on"
+          v-bind="props"
           @click="toggle"
           close
-          @click:close="clear"
-          v-bind="$attrs">
+          @click:close="clear">
         {{ text }}
       </v-chip>
     </template>

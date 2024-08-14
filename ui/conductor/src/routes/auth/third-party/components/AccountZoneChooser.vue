@@ -57,8 +57,8 @@
       </template>
     </v-combobox>
     <v-menu bottom offset-y nudge-top="-8" v-if="!blockActions">
-      <template #activator="{on, attrs}">
-        <v-btn icon v-on="on" v-bind="attrs" class="ml-2 mr-n2">
+      <template #activator="{props}">
+        <v-btn icon v-bind="props" class="ml-2 mr-n2">
           <v-icon>mdi-dots-vertical</v-icon>
         </v-btn>
       </template>

@@ -1,19 +1,18 @@
 <template>
   <v-tooltip bottom>
-    <template #activator="{ on: onTooltip, attrs: attrsTooltip }">
-      <div v-bind="attrsTooltip" v-on="onTooltip">
+    <template #activator="{ props }">
+      <div v-bind="props">
         <v-menu
             bottom
             :close-on-content-click="false"
             left
             min-width="275px"
             offset-y>
-          <template #activator="{ on, attrs }">
+          <template #activator="{ props }">
             <v-btn
                 dark
                 icon
-                v-bind="attrs"
-                v-on="on">
+                v-bind="props">
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>
           </template>

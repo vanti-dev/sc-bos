@@ -2,9 +2,9 @@
   <span class="labelled-unit">
     <template v-if="showErr">
       <v-tooltip bottom>
-        <template #activator="{ on }">
+        <template #activator="{ props }">
           <span style="height: 1em" class="err">
-            <v-icon v-on="on" color="error" size=".75em">mdi-alert-circle-outline</v-icon>
+            <v-icon v-bind="props" color="error" size=".75em">mdi-alert-circle-outline</v-icon>
           </span>
         </template>
         <span>{{ errStr }}</span>

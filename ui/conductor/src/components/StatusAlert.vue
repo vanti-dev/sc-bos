@@ -4,10 +4,9 @@
       v-model="show"
       bottom
       :color="props.color">
-    <template #activator="{ on, attrs }">
+    <template #activator="{ props }">
       <v-icon
-          v-bind="attrs"
-          v-on="on"
+          v-bind="props"
           :color="props.color"
           size="22"
           style="padding-top: 1px;">

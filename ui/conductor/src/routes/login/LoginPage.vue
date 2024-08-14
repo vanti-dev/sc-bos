@@ -28,7 +28,7 @@
       <v-snackbar v-model="snackbar.visible">
         {{ snackbar.message }}
 
-        <template #action="{ attrs }">
+        <template #actions="attrs">
           <v-btn color="pink" text v-bind="attrs" @click="snackbar.visible = false">
             Close
           </v-btn>

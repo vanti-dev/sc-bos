@@ -11,7 +11,7 @@
           absolute>
         <span class="error-name">{{ item.name }}</span>
         {{ statusCodeToString(item.source.code) }}: {{ item.source.message }}
-        <template #action="{ attrs }">
+        <template #actions="attrs">
           <v-btn text v-bind="attrs" @click="errorStore.clearError(item)">
             Dismiss
           </v-btn>

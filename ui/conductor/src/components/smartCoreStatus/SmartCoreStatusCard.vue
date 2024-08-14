@@ -9,13 +9,12 @@
       min-width="400px"
       offset-y
       tile>
-    <template #activator="{on, attrs}">
+    <template #activator="{props}">
       <v-btn
           class="py-1 px-3"
           style="text-align: center"
           text
-          v-bind="attrs"
-          v-on="on">
+          v-bind="props">
         <span class="text-title mr-1">Smart Core OS:</span>
         <span :class="`text-title-bold text-uppercase ${generalStatus}`">
           {{ statusText }}
@@ -33,10 +32,10 @@
         </span>
         <v-spacer/>
         <v-tooltip left>
-          <template #activator="{ on, attrs }">
+          <template #activator="{ props }">
             <v-btn
-                v-bind="attrs"
-                v-on="on"
+
+                v-bind="props"
                 :class="['mb-0', {'rotate-icon': isRefreshing}]"
                 icon
                 small

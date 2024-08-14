@@ -3,8 +3,8 @@
 
   <span class="text-no-wrap ed-cell" v-else-if="value && !props.streamError">
     <v-tooltip bottom>
-      <template #activator="{ on, attrs }">
-        <span v-on="on" v-bind="attrs">
+      <template #activator="{ props }">
+        <span v-bind="props">
           <span>{{ usageAndUnit }}</span>
           <v-icon right size="20">mdi-counter</v-icon>
         </span>

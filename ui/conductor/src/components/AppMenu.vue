@@ -1,7 +1,7 @@
 <template>
   <v-menu v-bind="showMenu" bottom offset-y content-class="main-nav" tile transition="slide-x-transition">
-    <template #activator="{ on, attrs }">
-      <v-btn tile v-bind="attrs" v-on="on" :ripple="false" id="main-nav-button" color="neutral-lighten-1">
+    <template #activator="{ props }">
+      <v-btn tile v-bind="props" :ripple="false" id="main-nav-button" color="neutral-lighten-1">
         <menu-icon width="60"/>
       </v-btn>
     </template>

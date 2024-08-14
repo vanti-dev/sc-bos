@@ -1,7 +1,7 @@
 <template>
   <v-tooltip v-if="needsTooltip" v-bind="$attrs" bottom>
-    <template #activator="{on, attrs}">
-      <v-chip v-on="on" v-bind="{...attrs, ...$attrs}">
+    <template #activator="{props}">
+      <v-chip v-bind="{...props, ...$attrs}">
         <slot>{{ _title }}</slot>
       </v-chip>
     </template>
@@ -14,6 +14,10 @@
 
 <script setup>
 import {computed} from 'vue';
+
+defineOptions({
+  inheritAttrs: false
+});
 
 const props = defineProps({
   name: {

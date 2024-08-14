@@ -4,14 +4,13 @@
       <h3 class="text-h3 pt-2 pb-6">Components</h3>
       <v-spacer/>
       <v-tooltip left>
-        <template #activator="{ on, attrs }">
+        <template #activator="{ props }">
           <v-btn
               class="mr-4"
               color="primary"
               fab
               small
-              v-bind="attrs"
-              v-on="on"
+              v-bind="props"
               @click="showModal = true">
             <v-icon>mdi-plus</v-icon>
           </v-btn>
@@ -26,12 +25,12 @@
           <v-card-title class="text-body-large font-weight-bold">{{ node.name }}</v-card-title>
           <v-card-subtitle v-if="node.description !== ''">{{ node.description }}</v-card-subtitle>
           <v-menu min-width="175px" nudge-bottom="10" nudge-right="10" offset-y>
-            <template #activator="{ on, attrs }">
+            <template #activator="{ props }">
               <v-btn
                   class="ml-auto mr-3"
                   icon
-                  v-bind="attrs"
-                  v-on="on">
+
+                  v-bind="props">
                 <v-icon size="24">mdi-dots-vertical</v-icon>
               </v-btn>
             </template>

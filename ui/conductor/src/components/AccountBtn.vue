@@ -10,8 +10,8 @@
       Sign in
     </v-btn>
     <v-menu v-else bottom left offset-y max-width="100%" tile>
-      <template #activator="{ on, attrs }">
-        <v-btn icon elevation="0" :class="btnClass" v-bind="attrs" v-on="on">
+      <template #activator="{ props }">
+        <v-btn icon elevation="0" :class="btnClass" v-bind="props">
           <v-icon :left="!loggedIn">mdi-account-circle-outline</v-icon>
         </v-btn>
       </template>

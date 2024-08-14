@@ -2,8 +2,8 @@
   <status-alert v-if="props.streamError" icon="mdi-cancel" :resource="props.streamError"/>
 
   <v-tooltip v-else left>
-    <template #activator="{ on }">
-      <v-icon :class="doorState.class" right size="20" v-on="on">{{ doorState.icon }}</v-icon>
+    <template #activator="{ props }">
+      <v-icon :class="doorState.class" right size="20" v-bind="props">{{ doorState.icon }}</v-icon>
     </template>
     <span class="text-capitalize">{{ doorState?.text }}</span>
   </v-tooltip>

@@ -10,8 +10,8 @@
             <v-list-item-subtitle v-if="secret.expireTime" class="text-body-small text-neutral-lighten-5">
               Expire{{ secret.expireTime > Date.now() ? 's' : 'd' }}
               <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ humanizeDate(secret.expireTime) }}</span>
+                <template #activator="{ props }">
+                  <span v-bind="props">{{ humanizeDate(secret.expireTime) }}</span>
                 </template>
                 <span>{{ Intl.DateTimeFormat('en-GB').format(secret.expireTime) }}</span>
               </v-tooltip>

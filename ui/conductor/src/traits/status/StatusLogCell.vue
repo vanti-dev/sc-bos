@@ -16,12 +16,11 @@
       left
       max-width="500px"
       min-width="500px">
-    <template #activator="menuActivator">
+    <template #activator="{props: menuProps}">
       <v-tooltip left>
-        <template #activator="tooltipActivator">
+        <template #activator="{props: tooltipProps}">
           <v-icon
-              v-on="{...tooltipActivator.on, ...menuActivator.on}"
-              v-bind="tooltipActivator.attrs"
+              v-bind="{...menuProps, ...tooltipProps}"
               :color="iconColor"
               size="20">
             {{

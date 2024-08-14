@@ -26,8 +26,8 @@
           <v-list-item class="px-2">
             <v-list-item-content>
               <v-tooltip bottom>
-                <template #activator="{ on }">
-                  <v-list-item-title class="text-uppercase" v-on="on">
+                <template #activator="{ props }">
+                  <v-list-item-title class="text-uppercase" v-bind="props">
                     {{ alert.description }}
                   </v-list-item-title>
                 </template>

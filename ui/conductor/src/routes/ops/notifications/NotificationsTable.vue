@@ -38,7 +38,7 @@
               <filter-btn :ctx="filterCtx" tile/>
             </span>
             <v-tooltip top>
-              <template #activator="{ on }">
+              <template #activator="{ props }">
                 <v-btn
                     v-if="props.overviewPage"
                     class="mt-n2 rounded"
@@ -48,7 +48,7 @@
                     height="36"
                     small
                     tile
-                    v-on="on"
+                    v-bind="props"
                     width="34"
                     @click="alerts.exportData('Notifications')">
                   <v-icon>mdi-file-download</v-icon>
@@ -57,7 +57,7 @@
               Export CSV...
             </v-tooltip>
             <v-tooltip top>
-              <template #activator="{ on }">
+              <template #activator="{ props }">
                 <v-btn
                     v-if="!props.overviewPage"
                     class="mt-n2 ml-2 mb-4 rounded"
@@ -68,7 +68,7 @@
                     width="34"
                     small
                     tile
-                    v-on="on"
+                    v-bind="props"
                     @click="toggleManualEntry">
                   <v-icon size="30">mdi-plus</v-icon>
                 </v-btn>
@@ -149,16 +149,16 @@
         </template>
         <template #item.source="{ item }">
           <v-tooltip bottom>
-            <template #activator="{ on }">
-              <span v-on="on">{{ formatSource(item.source) }}</span>
+            <template #activator="{ props }">
+              <span v-bind="props">{{ formatSource(item.source) }}</span>
             </template>
             <span>{{ item.source }}</span>
           </v-tooltip>
         </template>
         <template #item.severity="{ item }">
           <v-tooltip v-if="item.resolveTime" bottom>
-            <template #activator="{ on }">
-              <span v-on="on">RESOLVED</span>
+            <template #activator="{ props }">
+              <span v-bind="props">RESOLVED</span>
             </template>
             Was:
             <span :class="notifications.severityData(item.severity).color">

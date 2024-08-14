@@ -2,7 +2,7 @@
   <span :class="color">
     {{ str }}
     <v-menu v-if="showErrorIcon" offset-y :close-on-content-click="false">
-      <template #activator="{ on, attrs }">
+      <template #activator="{ props }">
         <v-progress-circular
             v-if="showNextAttemptTime"
             v-on="on"
@@ -12,7 +12,7 @@
             :value="progressToNextAttempt"
             color="error-lighten-2"
             class="ml-2"/>
-        <v-icon v-else v-on="on" v-bind="attrs" class="text-error-lighten-2" right>
+        <v-icon v-else v-bind="props" class="text-error-lighten-2" right>
           mdi-alert-circle-outline
         </v-icon>
       </template>

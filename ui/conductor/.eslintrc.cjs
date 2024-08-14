@@ -43,6 +43,9 @@ module.exports = {
       'singleline': 10,
       'multiline': 1
     }],
+    // vuetify popup activators use { props } spelling which triggers this rule.
+    // todo: remove this rule when we've figured out a better way to support slot props and defineProps
+    'vue/no-template-shadow': 0,
     'vue/first-attribute-linebreak': ['error', {
       'singleline': 'beside'
     }],
