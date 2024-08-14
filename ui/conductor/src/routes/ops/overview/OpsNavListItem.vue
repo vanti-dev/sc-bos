@@ -41,7 +41,7 @@
 <script setup>
 import OpsNavList from '@/routes/ops/overview/OpsNavList.vue';
 import {computed, ref} from 'vue';
-import {useRoute} from 'vue-router/composables';
+import {useRoute} from 'vue-router';
 
 const props = defineProps({
   item: {

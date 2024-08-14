@@ -30,7 +30,7 @@ import {useUiConfigStore} from '@/stores/ui-config';
 import {storeToRefs} from 'pinia';
 
 import {computed} from 'vue';
-import {useRoute} from 'vue-router/composables';
+import {useRoute} from 'vue-router';
 
 const uiConfig = useUiConfigStore();
 const {config} = storeToRefs(uiConfig);

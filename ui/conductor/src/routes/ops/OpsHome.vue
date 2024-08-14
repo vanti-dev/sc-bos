@@ -6,7 +6,7 @@
 import router from '@/routes/router.js';
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {onUpdated} from 'vue';
-import {useRoute} from 'vue-router/composables';
+import {useRoute} from 'vue-router';
 
 const uiConfig = useUiConfigStore();
 const route = useRoute();
