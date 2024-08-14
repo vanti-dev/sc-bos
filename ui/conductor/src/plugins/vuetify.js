@@ -1,16 +1,12 @@
 import '@mdi/font/css/materialdesignicons.css';
-import Vue from 'vue';
-import Vuetify from 'vuetify/lib';
-import {Intersect} from 'vuetify/lib/directives';
+import {createVuetify} from 'vuetify';
+import {Intersect} from 'vuetify/directives';
 
 
-Vue.use(Vuetify, {
+export default createVuetify({
   directives: {
     Intersect
-  }
-});
-
-const opts = {
+  },
   theme: {
     dark: true,
     options: {
@@ -91,6 +87,4 @@ const opts = {
       }
     }
   }
-};
-
-export default new Vuetify(opts);
+});
