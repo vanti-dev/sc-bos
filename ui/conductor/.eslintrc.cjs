@@ -49,6 +49,10 @@ module.exports = {
     'vue/singleline-html-element-content-newline': ['off'],
     // 'turn on' script-setup-uses-vars to allow declaration of vars in <script setup> tags
     'vue/script-setup-uses-vars': 'error',
+    'vuetify/no-deprecated-colors': ['error', {
+      // from src/plugins/vuetify.js
+      themeColors: ['primary', 'secondary', 'primaryTeal', 'accent', 'neutral', 'error', 'success', 'info', 'warning']
+    }],
     // we use the jsdoc plugin instead
     'valid-jsdoc': 'off',
     'require-jsdoc': 'off',
