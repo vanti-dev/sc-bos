@@ -1,13 +1,12 @@
-import vue from '@vitejs/plugin-vue2';
+import vue from '@vitejs/plugin-vue';
 import {execSync} from 'child_process';
 import {globSync} from 'glob';
 import {createRequire} from 'module';
 import {dirname, join, relative} from 'path';
-import {VuetifyResolver} from 'unplugin-vue-components/resolvers';
-import Components from 'unplugin-vue-components/vite';
 import {fileURLToPath, URL} from 'url';
 import {defineConfig, loadEnv} from 'vite';
 import eslintPlugin from 'vite-plugin-eslint';
+import vuetify from 'vite-plugin-vuetify';
 
 const _require = createRequire(import.meta.url);
 
@@ -61,13 +60,8 @@ export default defineConfig(({mode}) => {
     },
     plugins: [
       vue(),
-      eslintPlugin(),
-      // can't fix imported var names, so tell eslint to ignore them
-      // eslint-disable-next-line new-cap
-      Components({
-        // eslint-disable-next-line new-cap
-        resolvers: [VuetifyResolver()]
-      })
+      vuetify(),
+      eslintPlugin()
     ],
     resolve: {
       alias: {
