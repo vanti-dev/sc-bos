@@ -9,13 +9,11 @@ import {useSidebarStore} from '@/stores/sidebar';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {route, routeTitle} from '@/util/router.js';
 
-import Vue, {nextTick} from 'vue';
-import VueRouter from 'vue-router';
+import {nextTick} from 'vue';
+import {createRouter, createWebHistory} from 'vue-router';
 
-Vue.use(VueRouter);
-
-const router = new VueRouter({
-  mode: 'history',
+const router = createRouter({
+  history: createWebHistory(),
   routes: [
     {
       path: '/login',
@@ -120,6 +118,7 @@ if (window) {
     }
 
     const title = nt ? `${nt} - Smart Core` : `Smart Core`;
+    // noinspection JSIgnoredPromiseFromCall
     nextTick(() => window.document.title = title);
   });
 }
