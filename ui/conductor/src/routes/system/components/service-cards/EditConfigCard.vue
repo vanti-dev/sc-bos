@@ -1,6 +1,6 @@
 <template>
   <v-card flat tile>
-    <v-subheader class="text-title-caps-large text-neutral-lighten-3">Config</v-subheader>
+    <div class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">Config</div>
     <v-card-text class="px-4 pt-0 json-form">
       <div class="text-caption pb-1 text-neutral text--lighten-6">Export</div>
       <v-textarea

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-subheader class="justify-center text-h6">{{ summaryStr }}</v-subheader>
+    <div class="text-subtitle-2 justify-center text-h6">{{ summaryStr }}</div>
     <v-range-slider
         :min="min"
         :max="max"

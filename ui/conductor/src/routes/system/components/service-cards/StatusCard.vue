@@ -1,6 +1,6 @@
 <template>
   <v-card flat tile>
-    <v-subheader class="text-title-caps-large text-neutral-lighten-3">Status Details</v-subheader>
+    <div class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">Status Details</div>
     <v-card-text class="px-4 pt-3 pb-5">
       <v-row>
         <v-list-item class="py-1">

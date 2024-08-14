@@ -1,10 +1,10 @@
 <template>
   <v-card class="pa-0" flat tile>
-    <v-subheader class="text-title-caps-large text-neutral-lighten-3">
+    <div class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">
       Zones
       <v-spacer/>
       <v-btn v-if="hasZoneChanges" color="primary" :disabled="blockActions" @click="emitZoneChanges">Save</v-btn>
-    </v-subheader>
+    </div>
     <v-card-actions>
       <account-zone-chooser :zones.sync="chooserZones" class="mx-2 flex-grow-1"/>
     </v-card-actions>

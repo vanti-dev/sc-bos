@@ -1,22 +1,22 @@
 <template>
-  <span>
+  <div>
     <v-progress-linear indeterminate v-if="loading"/>
-    <v-subheader
+    <div
         v-else-if="!hasSource"
-        class="text-title-caps-large text-neutral-lighten-3">
+        class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">
       No Notification Selected
-    </v-subheader>
-    <v-subheader
+    </div>
+    <div
         v-else-if="!notificationSidebar.length"
-        class="text-title-caps-large text-neutral-lighten-3">
+        class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">
       No Past Notifications
-    </v-subheader>
+    </div>
     <div v-else>
-      <v-subheader class="text-title-caps-large text-neutral-lighten-3">
+      <div class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">
         Past {{ notificationSidebar.length }} {{
           notificationSidebar.length === 1 ? 'Notification' : 'Notifications'
         }}
-      </v-subheader>
+      </div>
       <v-card
           v-for="(data, index) in notificationSidebar"
           :key="index"
@@ -35,7 +35,7 @@
         <v-divider v-if="index < notificationSidebar.length - 1" class="my-3"/>
       </v-card>
     </div>
-  </span>
+  </div>
 </template>
 
 <script setup>
