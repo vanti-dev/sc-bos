@@ -116,7 +116,7 @@
         class="d-flex flex-row justify-space-between mt-4">
       <v-btn
           class="ml-n8 pl-4 pr-6"
-          color="neutral lighten-4"
+          color="neutral-lighten-4"
           text
           @click="emits('resetCertificates')">
         <v-icon>mdi-chevron-left</v-icon>

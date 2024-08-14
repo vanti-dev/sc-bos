@@ -27,7 +27,7 @@
           {{ !pinDrawer ? 'Pin navigation' : 'Unpin navigation' }}
         </v-btn>
       </div>
-      <div class="text-caption text-center neutral--text text--lighten-2 text-no-wrap">
+      <div class="text-caption text-center text-neutral-lighten-2 text-no-wrap">
         <v-divider/>
         <p class="mt-2 mb-0">
           Smart Core &copy; {{ new Date().getFullYear() }}

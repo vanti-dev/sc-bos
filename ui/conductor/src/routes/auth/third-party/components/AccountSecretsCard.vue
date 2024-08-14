@@ -1,13 +1,13 @@
 <template>
   <v-card flat tile class="pa-0">
-    <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Tokens</v-subheader>
+    <v-subheader class="text-title-caps-large text-neutral-lighten-3">Tokens</v-subheader>
     <v-list two-line class="pt-0">
       <v-progress-linear color="primary" indeterminate :active="secretsTracker.loading"/>
       <v-hover v-slot="{ hover }" v-for="secret of secretList" :key="secret.id">
         <v-list-item class="py-0">
           <v-list-item-content class="py-0">
             <v-list-item-title>{{ secret.note }}</v-list-item-title>
-            <v-list-item-subtitle v-if="secret.expireTime" class="text-body-small neutral--text text--lighten-5">
+            <v-list-item-subtitle v-if="secret.expireTime" class="text-body-small text-neutral-lighten-5">
               Expire{{ secret.expireTime > Date.now() ? 's' : 'd' }}
               <v-tooltip bottom>
                 <template #activator="{ on, attrs }">
@@ -16,7 +16,7 @@
                 <span>{{ Intl.DateTimeFormat('en-GB').format(secret.expireTime) }}</span>
               </v-tooltip>
             </v-list-item-subtitle>
-            <v-list-item-subtitle v-else class="text-body-small neutral--text text--lighten-5">
+            <v-list-item-subtitle v-else class="text-body-small text-neutral-lighten-5">
               This secret will not expire
             </v-list-item-subtitle>
           </v-list-item-content>
@@ -33,7 +33,7 @@
             <template #activator="{ on, attrs }">
               <v-list-item-action v-show="hover" class="my-0" v-bind="attrs">
                 <v-btn icon small v-on="on" :disabled="blockActions">
-                  <v-icon color="neutral lighten-5">mdi-trash-can</v-icon>
+                  <v-icon color="neutral-lighten-5">mdi-trash-can</v-icon>
                 </v-btn>
               </v-list-item-action>
             </template>

@@ -22,7 +22,7 @@
       </span>
       <v-divider
           v-if="!props.single && index !== statusDetails.length - 1"
-          class="neutral lighten--4 my-1 mx-auto"
+          class="bg-neutral lighten--4 my-1 mx-auto"
           style="width:4em"/>
     </div>
   </v-tooltip>

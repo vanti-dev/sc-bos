@@ -10,13 +10,13 @@
 
     <!-- Grant area -->
     <div class="d-flex flex-column justify-space-between">
-      <v-card-text class="text-h6 white--text font-weight-regular d-flex flex-row pa-0 px-4 pt-4">
+      <v-card-text class="text-h6 text-white font-weight-regular d-flex flex-row pa-0 px-4 pt-4">
         <span>Last access:</span>
         <span :class="[`${color}--text`, 'ml-auto font-weight-bold']">
           {{ formatString(grantStates) }}
         </span>
       </v-card-text>
-      <v-card-text class="text-h6 white--text d-flex flex-column pt-1" style="max-width: 350px">
+      <v-card-text class="text-h6 text-white d-flex flex-column pt-1" style="max-width: 350px">
         <span class="text-subtitle-1"> {{ user.name }} {{ user.cardId }} </span>
       </v-card-text>
 

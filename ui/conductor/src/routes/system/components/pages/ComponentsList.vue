@@ -42,7 +42,7 @@
                 </v-list-item-title>
               </v-list-item>
               <v-list-item v-if="allowForget(node.name)" link @click="onForgetNode(node.address)">
-                <v-list-item-title class="error--text">
+                <v-list-item-title class="text-error">
                   Forget Node
                 </v-list-item-title>
               </v-list-item>

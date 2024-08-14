@@ -1,5 +1,5 @@
 <template>
-  <v-tooltip v-if="!acked" left transition="slide-x-reverse-transition" color="neutral lighten-4">
+  <v-tooltip v-if="!acked" left transition="slide-x-reverse-transition" color="neutral-lighten-4">
     <template #activator="{ on, attr }">
       <v-btn
           v-on="on"

@@ -49,12 +49,12 @@
     <v-card-text class="px-7 text-left text-subtitle-1 font-weight-regular">
       <p>
         Forgetting a node means
-        <span class="font-weight-bold warning--text">it can no longer interact with other Smart Core nodes,
+        <span class="font-weight-bold text-warning">it can no longer interact with other Smart Core nodes,
           and those nodes cannot interact with it.</span>
       </p>
       <p>
         Any automations that rely on inter-node communication with or from this node
-        <span class="font-weight-bold error--text">will stop working!</span>
+        <span class="font-weight-bold text-error">will stop working!</span>
         This includes managing the node centrally via this app. You can re-enrol this node at any time.
       </p>
     </v-card-text>

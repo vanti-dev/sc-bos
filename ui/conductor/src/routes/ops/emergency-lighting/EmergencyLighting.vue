@@ -21,12 +21,12 @@
       <template #top>
         <span v-if="selectedLights.length > 0">
           <v-btn
-              color="accent darken-1"
+              color="accent-darken-1"
               class="ml-4"
               :disabled="blockActions"
               @click="functionTest">Function Test</v-btn>
           <v-btn
-              color="accent darken-1"
+              color="accent-darken-1"
               class="ml-4"
               :disabled="blockActions"
               @click="durationTest">Duration Test</v-btn>
@@ -36,8 +36,8 @@
         </span>
       </template>
       <template #item.faultsList="{ value }">
-        <span class="text-title-bold success--text text--lighten-3" v-if="value.length === 0">OK</span>
-        <span class="text-title-bold error--text text--lighten-1" v-else>
+        <span class="text-title-bold text-success-lighten-3" v-if="value.length === 0">OK</span>
+        <span class="text-title-bold text-error-lighten-1" v-else>
           {{ value.map((v) => faultToString(v)).join(', ') }}
         </span>
       </template>

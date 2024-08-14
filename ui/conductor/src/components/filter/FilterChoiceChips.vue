@@ -5,12 +5,12 @@
           v-if="choiceType(choice) === 'boolean'"
           :key="choice.filter"
           :ctx="usePageCtx(ctx, choice.filter)"
-          color="neutral lighten-2"/>
+          color="neutral-lighten-2"/>
       <menu-chooser-chip
           v-else-if="choiceType(choice) === 'list'"
           :key="choice.filter"
           :ctx="usePageCtx(ctx, choice.filter)"
-          color="neutral lighten-2"
+          color="neutral-lighten-2"
           @active="activateChip($event, choice)"
           v-slot="{items, value, choose}">
         <list-chooser :items="items" :value="value" @input="choose"/>
@@ -19,7 +19,7 @@
           v-else-if="choiceType(choice) === 'range'"
           :key="choice.filter"
           :ctx="usePageCtx(ctx, choice.filter)"
-          color="neutral lighten-2"
+          color="neutral-lighten-2"
           @active="activateChip($event, choice)"
           v-slot="{items, value, choose}">
         <range-chooser :items="items" :value="value" @input="choose"/>
@@ -29,7 +29,7 @@
           :key="choice.filter"
           @click:close="clear(choice.filter)"
           close
-          color="neutral lighten-2">
+          color="neutral-lighten-2">
         {{ choice.text ?? choice.value }}
       </v-chip>
     </template>

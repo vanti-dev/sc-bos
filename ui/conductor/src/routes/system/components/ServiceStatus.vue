@@ -10,9 +10,9 @@
             :size="20"
             :width="2"
             :value="progressToNextAttempt"
-            color="error lighten-2"
+            color="error-lighten-2"
             class="ml-2"/>
-        <v-icon v-else v-on="on" v-bind="attrs" class="error--text text--lighten-2" right>
+        <v-icon v-else v-on="on" v-bind="attrs" class="text-error-lighten-2" right>
           mdi-alert-circle-outline
         </v-icon>
       </template>

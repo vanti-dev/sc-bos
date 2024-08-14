@@ -33,10 +33,10 @@
                   inset
                   :value="props.showConversion">
                 <template #prepend>
-                  <span class="text-caption grey--text text--lighten-1">kW</span>
+                  <span class="text-caption text-grey-lighten-1">kW</span>
                 </template>
                 <template #append>
-                  <span class="text-caption grey--text text--lighten-1 ml-n4">CO₂</span>
+                  <span class="text-caption text-grey-lighten-1 ml-n4">CO₂</span>
                 </template>
               </v-switch>
             </v-list-item>
@@ -51,7 +51,7 @@
                 <v-btn
                     v-for="option in durationOptions"
                     active-class="primary text--darken-3"
-                    class="transparent grey--text text--lighten-1"
+                    class="bg-transparent text-grey-lighten-1"
                     :key="option.id"
                     small
                     :value="option.value">

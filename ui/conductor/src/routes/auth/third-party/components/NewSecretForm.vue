@@ -57,7 +57,7 @@
         </v-card-text>
         <v-card-actions class="justify-end">
           <v-btn type="cancel" text @click.prevent="cancelAddSecret">Cancel</v-btn>
-          <v-btn class="primary" type="submit" depressed :disabled="!formValid">Create Secret</v-btn>
+          <v-btn class="bg-primary" type="submit" depressed :disabled="!formValid">Create Secret</v-btn>
         </v-card-actions>
         <v-progress-linear color="primary" indeterminate :active="createSecretTracker.loading"/>
       </v-form>
@@ -92,7 +92,7 @@
         </v-list-item>
         <v-card-actions class="justify-end pt-4 pb-0 pr-0">
           <v-btn outlined @click="creatingSecret=true" v-if="createSecretTracker.error">Back</v-btn>
-          <v-btn class="primary" @click="finished">Done</v-btn>
+          <v-btn class="bg-primary" @click="finished">Done</v-btn>
         </v-card-actions>
       </v-list>
       <v-snackbar v-model="copyConfirm" timeout="2000" color="success">

@@ -11,7 +11,7 @@
             v-show="!hiddenOnMap"
             v-model="search"
             append-icon="mdi-magnify"
-            class="neutral"
+            class="bg-neutral"
             dense
             filled
             hide-details

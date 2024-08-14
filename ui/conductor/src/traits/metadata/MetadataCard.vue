@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0" two-line>
-      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">
+      <v-subheader class="text-title-caps-large text-neutral-lighten-3">
         Information
       </v-subheader>
 

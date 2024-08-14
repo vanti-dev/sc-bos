@@ -1,11 +1,11 @@
 <template>
   <v-list tile class="ma-0 pa-0">
-    <v-subheader class="text-body-large font-weight-bold sidebar-title pa-4 neutral lighten-1">
+    <v-subheader class="text-body-large font-weight-bold sidebar-title pa-4 bg-neutral-lighten-1">
       <span class="sidebar-title-text my-auto">
         {{ sidebar.title }}
       </span>
       <v-spacer/>
-      <v-btn icon small @click="sidebar.closeSidebar()" color="neutral lighten-4">
+      <v-btn icon small @click="sidebar.closeSidebar()" color="neutral-lighten-4">
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-subheader>

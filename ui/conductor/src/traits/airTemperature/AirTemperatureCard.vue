@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0">
-      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Temperature</v-subheader>
+      <v-subheader class="text-title-caps-large text-neutral-lighten-3">Temperature</v-subheader>
       <v-list-item v-for="(val, key) of airTempData" :key="key" class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">{{ camelToSentence(key) }}</v-list-item-title>
         <v-list-item-subtitle class="text-capitalize font-weight-medium">{{ val }}</v-list-item-subtitle>
@@ -17,7 +17,7 @@
       <v-spacer/>
       <v-btn
           small
-          color="neutral lighten-1"
+          color="neutral-lighten-1"
           elevation="0"
           @click="changeSetPoint(-0.5)"
           :disabled="blockActions || (props.value?.temperatureSetPoint === undefined)">
@@ -25,7 +25,7 @@
       </v-btn>
       <v-btn
           small
-          color="neutral lighten-1"
+          color="neutral-lighten-1"
           elevation="0"
           @click="changeSetPoint(0.5)"
           :disabled="blockActions || (props.value?.temperatureSetPoint === undefined)">

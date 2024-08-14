@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0">
-      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Emergency Lighting</v-subheader>
+      <v-subheader class="text-title-caps-large text-neutral-lighten-3">Emergency Lighting</v-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">Battery Level</v-list-item-title>
         <v-list-item-subtitle class="text-capitalize">{{ battery }}%</v-list-item-subtitle>

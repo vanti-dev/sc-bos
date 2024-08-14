@@ -1,6 +1,6 @@
 <template>
   <v-card elevation="0" tile>
-    <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Electric</v-subheader>
+    <v-subheader class="text-title-caps-large text-neutral-lighten-3">Electric</v-subheader>
     <div class="layout mx-4">
       <template v-for="(row, i) in rows">
         <span :key="i+'label'" class="label text-body-small">{{ row.label }}</span>

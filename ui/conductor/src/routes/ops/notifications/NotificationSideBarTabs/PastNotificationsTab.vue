@@ -3,16 +3,16 @@
     <v-progress-linear indeterminate v-if="loading"/>
     <v-subheader
         v-else-if="!hasSource"
-        class="text-title-caps-large neutral--text text--lighten-3">
+        class="text-title-caps-large text-neutral-lighten-3">
       No Notification Selected
     </v-subheader>
     <v-subheader
         v-else-if="!notificationSidebar.length"
-        class="text-title-caps-large neutral--text text--lighten-3">
+        class="text-title-caps-large text-neutral-lighten-3">
       No Past Notifications
     </v-subheader>
     <div v-else>
-      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">
+      <v-subheader class="text-title-caps-large text-neutral-lighten-3">
         Past {{ notificationSidebar.length }} {{
           notificationSidebar.length === 1 ? 'Notification' : 'Notifications'
         }}
@@ -25,11 +25,11 @@
         <span class="d-flex flex-row flex-nowrap px-4 mb-2">
           <v-icon :class="[data.severity.color, 'mt-n2']" size="22">{{ data.severity.icon }}</v-icon>
           <v-spacer/>
-          <v-card-subtitle class="text-caption pa-0 pb-2 grey--text">
+          <v-card-subtitle class="text-caption pa-0 pb-2 text-grey">
             {{ data.created }}
           </v-card-subtitle>
         </span>
-        <v-card-subtitle class="ma-0 pa-0 px-4 white--text text-capitalize">
+        <v-card-subtitle class="ma-0 pa-0 px-4 text-white text-capitalize">
           {{ data.description }}
         </v-card-subtitle>
         <v-divider v-if="index < notificationSidebar.length - 1" class="my-3"/>

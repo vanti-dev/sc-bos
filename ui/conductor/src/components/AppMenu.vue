@@ -1,12 +1,12 @@
 <template>
   <v-menu v-bind="showMenu" bottom offset-y content-class="main-nav" tile transition="slide-x-transition">
     <template #activator="{ on, attrs }">
-      <v-btn tile v-bind="attrs" v-on="on" :ripple="false" id="main-nav-button" color="neutral lighten-1">
+      <v-btn tile v-bind="attrs" v-on="on" :ripple="false" id="main-nav-button" color="neutral-lighten-1">
         <menu-icon width="60"/>
       </v-btn>
     </template>
     <v-card max-width="512">
-      <v-list tile three-line subheader class="ma-0" color="neutral lighten-1">
+      <v-list tile three-line subheader class="ma-0" color="neutral-lighten-1">
         <v-list-item
             v-for="(item, key) in enabledMenuItems"
             :to="item.link"

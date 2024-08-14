@@ -1,6 +1,6 @@
 <template>
   <v-card class="pa-0" flat tile>
-    <v-subheader class="text-title-caps-large neutral--text text--lighten-3">
+    <v-subheader class="text-title-caps-large text-neutral-lighten-3">
       Zones
       <v-spacer/>
       <v-btn v-if="hasZoneChanges" color="primary" :disabled="blockActions" @click="emitZoneChanges">Save</v-btn>

@@ -2,7 +2,7 @@
   <v-card elevation="0" tile>
     <!-- Brightness -->
     <v-list tile class="ma-0 pa-0">
-      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Lighting</v-subheader>
+      <v-subheader class="text-title-caps-large text-neutral-lighten-3">Lighting</v-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">Brightness</v-list-item-title>
         <v-list-item-subtitle class="text-capitalize">{{ levelStr }}</v-list-item-subtitle>
@@ -17,7 +17,7 @@
     <v-card-actions class="px-4">
       <v-btn
           v-for="control in brightnessControl.left"
-          color="neutral lighten-1"
+          color="neutral-lighten-1"
           :disabled="control.disabled"
           elevation="0"
           :key="control.label"
@@ -28,7 +28,7 @@
       <v-spacer/>
       <v-btn
           v-for="control in brightnessControl.right"
-          color="neutral lighten-1"
+          color="neutral-lighten-1"
           :disabled="control.disabled"
           elevation="0"
           :key="control.label"
