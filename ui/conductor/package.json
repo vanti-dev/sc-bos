@@ -30,7 +30,7 @@
     "jwt-decode": "^3.1.2",
     "keycloak-js": "^19.0.1",
     "lodash": "^4.17.21",
-    "pinia": "^2.0.17",
+    "pinia": "^2.2.1",
     "qrcode": "^1.5.3",
     "vue": "2.7.16",
     "vue-chartjs": "^5.3.1",
