@@ -2,7 +2,7 @@ import choiceRangeStr from '@/components/filter/choiceRange.js';
 import useVisibility from '@/composables/visibility.js';
 import {toValue} from '@/util/vue.js';
 import {computed, del, reactive, ref, set, watch} from 'vue';
-import {deepEqual} from 'vuetify/src/util/helpers';
+import deepEqual from 'fast-deep-equal';
 
 /**
  * @typedef {Object} Options

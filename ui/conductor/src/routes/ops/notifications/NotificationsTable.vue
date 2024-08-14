@@ -195,7 +195,7 @@ import {useHubStore} from '@/stores/hub';
 import {useSidebarStore} from '@/stores/sidebar';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
 import {computed, onUnmounted, reactive, ref, watch} from 'vue';
-import {deepEqual} from 'vuetify/src/util/helpers';
+import deepEqual from 'fast-deep-equal';
 
 const props = defineProps({
   overviewPage: {

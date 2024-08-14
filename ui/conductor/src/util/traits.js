@@ -1,7 +1,7 @@
 import {closeResource} from '@/api/resource';
 import {toValue} from '@/util/vue';
 import {watch} from 'vue';
-import {deepEqual} from 'vuetify/src/util/helpers';
+import deepEqual from 'fast-deep-equal';
 
 /**
  * @typedef {import('@/api/resource').RemoteResource} RemoteResource

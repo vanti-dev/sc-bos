@@ -11,7 +11,7 @@ import {csvDownload} from '@/util/downloadCSV';
 import {toValue} from '@/util/vue';
 import {computed, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
-import {deepEqual} from 'vuetify/src/util/helpers';
+import deepEqual from 'fast-deep-equal';
 
 /**
  * @param {MaybeRefOrGetter<string>} name
