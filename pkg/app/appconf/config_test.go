@@ -330,16 +330,14 @@ func TestLoadLocalConfig(t *testing.T) {
 }
 
 func readTxtarFS(t *testing.T, file string) fs.FS {
-	// todo: once https://github.com/golang/go/issues/44158 is implemented all this can go away
 	t.Helper()
 	ar, err := txtar.ParseFile(file)
 	if err != nil {
 		t.Fatal(err)
 	}
-	mfs := fstest.MapFS{}
-	for _, f := range ar.Files {
-		// it's slightly incorrect to use f.Name here as fs.FS has stricter requirements on path formats
-		mfs[f.Name] = &fstest.MapFile{Data: f.Data}
+	f, err := txtar.FS(ar)
+	if err != nil {
+		t.Fatal(err)
 	}
-	return mfs
+	return f
 }
