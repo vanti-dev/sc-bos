@@ -28,12 +28,7 @@ func isDirectory(path string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-
-	if info.IsDir() {
-		return true, nil
-	} else {
-		return false, nil
-	}
+	return info.IsDir(), nil
 }
 
 // normaliseDeviceName replaces all instances of /, :, and spaces with -
@@ -174,7 +169,6 @@ func setValue(s *any, path string) error {
 // when we encounter a map or a slice we look at the dir name and try to match it with the key of the map or the `name` field of the slice element
 // if the dir at slice level contains an alternate_key.json file then we use the key specified in that file instead of the default `name`
 func mergeRawStruct(s any, path string) error {
-
 	isDrcty, err := isDir(path)
 	if err != nil {
 		return err

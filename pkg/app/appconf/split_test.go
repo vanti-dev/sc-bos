@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/spf13/afero"
 	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -21,28 +20,42 @@ import (
 	areaconfig "github.com/vanti-dev/sc-bos/pkg/zone/area/config"
 )
 
-type MockFs struct {
-	fs afero.Fs
+type MockFS struct {
+	base string
 }
 
-func (m MockFs) mockWriteFile(name string, data []byte, perm fs.FileMode) error {
-	return afero.WriteFile(m.fs, name, data, perm)
+func (m MockFS) mockWriteFile(name string, data []byte, perm fs.FileMode) error {
+	return os.WriteFile(filepath.Join(m.base, name), data, perm)
 }
 
-func (m MockFs) mockReadFile(name string) ([]byte, error) {
-	return afero.ReadFile(m.fs, name)
+func (m MockFS) mockReadFile(name string) ([]byte, error) {
+	return os.ReadFile(filepath.Join(m.base, name))
 }
 
-func (m MockFs) mockReadDir(name string) ([]os.FileInfo, error) {
-	return afero.ReadDir(m.fs, name)
+func (m MockFS) mockReadDir(name string) ([]os.DirEntry, error) {
+	return os.ReadDir(filepath.Join(m.base, name))
 }
 
-func (m MockFs) mockMkdirAll(path string, perm os.FileMode) error {
-	return m.fs.MkdirAll(path, perm)
+func (m MockFS) mockIsDir(name string) (bool, error) {
+	info, err := os.Stat(filepath.Join(m.base, name))
+	if err != nil {
+		return false, err
+	}
+	return info.IsDir(), nil
 }
 
-func (m MockFs) mockIsDir(path string) (bool, error) {
-	return afero.IsDir(m.fs, path)
+func (m MockFS) mockMkdirAll(name string, perm fs.FileMode) error {
+	return os.MkdirAll(filepath.Join(m.base, name), perm)
+}
+
+func setupMockFS(t *testing.T) {
+	baseDir := t.TempDir()
+	mockFs := MockFS{base: baseDir}
+	writeFile = mockFs.mockWriteFile
+	readFile = mockFs.mockReadFile
+	readDir = mockFs.mockReadDir
+	isDir = mockFs.mockIsDir
+	mkdirAll = mockFs.mockMkdirAll
 }
 
 func unwrapValue(value any) any {
@@ -71,12 +84,7 @@ type alternateKey struct {
 func TestMetadataConfigPatch(t *testing.T) {
 
 	// first set up the mock filesystem, read the test ext config
-	var mockFs = MockFs{fs: afero.NewMemMapFs()}
-	readFile = mockFs.mockReadFile
-	writeFile = mockFs.mockWriteFile
-	mkdirAll = mockFs.mockMkdirAll
-	readDir = mockFs.mockReadDir
-	isDir = mockFs.mockIsDir
+	setupMockFS(t)
 	mockFsConfigFileName := "fstest.metadata.json"
 
 	file, err := os.ReadFile("testdata/metadata.json")
@@ -163,7 +171,11 @@ func TestMetadataConfigPatch(t *testing.T) {
 			}
 
 			// write the file containing the new value to the correct place
-			err := writePageFile(tt.patchFile, tt.change)
+			err := mkdirAll(filepath.Dir(tt.patchFile), 0755)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = writePageFile(tt.patchFile, tt.change)
 			if err != nil {
 				t.Errorf("failed to write patch file: %s", err)
 			}
@@ -187,12 +199,7 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 
 	// first set up the mock filesystem, read & add the metadata & split files
 	// is more readable to do it this way
-	var mockFs = MockFs{fs: afero.NewMemMapFs()}
-	readFile = mockFs.mockReadFile
-	writeFile = mockFs.mockWriteFile
-	mkdirAll = mockFs.mockMkdirAll
-	readDir = mockFs.mockReadDir
-	isDir = mockFs.mockIsDir
+	setupMockFS(t)
 	mockFsConfigFileName := "fstest.bms.json"
 
 	file, err := os.ReadFile("testdata/bms.json")
@@ -296,7 +303,11 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 			}
 
 			// write the file containing the new value to the correct place
-			err := writePageFile(tt.patchFile, tt.change)
+			err := mkdirAll(filepath.Dir(tt.patchFile), 0755)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = writePageFile(tt.patchFile, tt.change)
 			if err != nil {
 				t.Errorf("failed to write patch file: %s", err)
 			}
@@ -330,13 +341,7 @@ func TestBacnetDriverConfigPatch(t *testing.T) {
 
 // test we can update the automations section of the config using lighting automation as an example
 func TestAutomation(t *testing.T) {
-
-	var mockFs = MockFs{fs: afero.NewMemMapFs()}
-	readFile = mockFs.mockReadFile
-	writeFile = mockFs.mockWriteFile
-	mkdirAll = mockFs.mockMkdirAll
-	readDir = mockFs.mockReadDir
-	isDir = mockFs.mockIsDir
+	setupMockFS(t)
 	mockFsConfigFileName := "fstest.automation.json"
 
 	file, err := os.ReadFile("testdata/automation.json")
@@ -403,7 +408,11 @@ func TestAutomation(t *testing.T) {
 			}
 
 			// write the file containing the new value to the correct place
-			err := writePageFile(tt.patchFile, tt.change)
+			err := mkdirAll(filepath.Dir(tt.patchFile), 0755)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = writePageFile(tt.patchFile, tt.change)
 			if err != nil {
 				t.Errorf("failed to write patch file: %s", err)
 			}
@@ -431,13 +440,7 @@ func TestAutomation(t *testing.T) {
 
 // test we can update the automations section of the config using area zone type as example
 func TestZones(t *testing.T) {
-
-	var mockFs = MockFs{fs: afero.NewMemMapFs()}
-	readFile = mockFs.mockReadFile
-	writeFile = mockFs.mockWriteFile
-	mkdirAll = mockFs.mockMkdirAll
-	readDir = mockFs.mockReadDir
-	isDir = mockFs.mockIsDir
+	setupMockFS(t)
 	mockFsConfigFileName := "fstest.zones.json"
 
 	file, err := os.ReadFile("testdata/zones.json")
@@ -493,7 +496,11 @@ func TestZones(t *testing.T) {
 			}
 
 			// write the file containing the new value to the correct place
-			err := writePageFile(tt.patchFile, tt.change)
+			err := mkdirAll(filepath.Dir(tt.patchFile), 0755)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = writePageFile(tt.patchFile, tt.change)
 			if err != nil {
 				t.Errorf("failed to write patch file: %s", err)
 			}
