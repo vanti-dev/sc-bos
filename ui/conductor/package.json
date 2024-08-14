@@ -48,7 +48,7 @@
     "eslint-plugin-jsdoc": "^50.2.1",
     "eslint-plugin-vue": "^9.27.0",
     "eslint-plugin-vuetify": "^1.1.0",
-    "glob": "^8.0.3",
+    "glob": "^11.0.0",
     "pkijs": "^3.0.15",
     "sass": "~1.32",
     "unplugin-vue-components": "^0.26.0",

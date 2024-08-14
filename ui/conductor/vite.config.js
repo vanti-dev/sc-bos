@@ -1,6 +1,6 @@
 import vue from '@vitejs/plugin-vue2';
 import {execSync} from 'child_process';
-import glob from 'glob';
+import {globSync} from 'glob';
 import {createRequire} from 'module';
 import {dirname, join, relative} from 'path';
 import {VuetifyResolver} from 'unplugin-vue-components/resolvers';
@@ -21,7 +21,7 @@ const optimizeDepsInclude = [
 for (const dep of ['@sc-bos/ui-gen', '@smart-core-os/sc-api-grpc-web']) {
   // find proto files in projects
   const protoDirRoot = dirname(_require.resolve(dep + '/package.json'));
-  const protoFiles = glob.sync(join(protoDirRoot, '!(node_modules)/**/*_pb.js'))
+  const protoFiles = globSync(join(protoDirRoot, '!(node_modules)/**/*_pb.js'))
       .map(p => dep + '/' + relative(protoDirRoot, p));
   optimizeDepsInclude.push(...protoFiles);
   // remove the .js extension so import statements without .js still use the bundle
