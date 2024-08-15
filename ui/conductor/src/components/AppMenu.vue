@@ -6,7 +6,7 @@
       </v-btn>
     </template>
     <v-card max-width="512" tile>
-      <v-list tile lines="three" subheader class="ma-0" color="neutral-lighten-1">
+      <v-list tile lines="three" class="ma-0" color="neutral-lighten-1">
         <v-list-item
             v-for="(item, key) in enabledMenuItems"
             :to="item.link"
