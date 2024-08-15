@@ -18,7 +18,7 @@
               class="font-weight-bold"
               :color="item.badgeType ? badges[item.badgeType].color : 'transparent'"
               :content="item.badgeType ? badges[item.badgeType].value : ''"
-              :model-value="item.badgeType ? badges[item.badgeType].value : null">
+              :model-value="Boolean(item.badgeType ? badges[item.badgeType].value : null)">
             <v-icon>
               {{ item.icon }}
             </v-icon>
