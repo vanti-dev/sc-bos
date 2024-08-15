@@ -6,9 +6,8 @@
       <v-tooltip location="left">
         <template #activator="{ props }">
           <v-btn
-              class="mr-4"
+              class="mr-4 rounded-circle"
               color="primary"
-              fab
               size="small"
               v-bind="props"
               @click="showModal = true">

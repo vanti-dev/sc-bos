@@ -44,7 +44,6 @@
                     class="mt-n2 rounded"
                     color="neutral"
                     elevation="0"
-                    fab
                     height="36"
                     size="small"
                     tile
@@ -63,7 +62,6 @@
                     class="mt-n2 ml-2 mb-4 rounded"
                     color="neutral"
                     elevation="0"
-                    fab
                     height="36"
                     width="34"
                     size="small"
