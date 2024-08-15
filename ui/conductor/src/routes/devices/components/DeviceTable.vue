@@ -5,7 +5,7 @@
         :headers="headers"
         :items="devicesData"
         item-key="name"
-        :item-class="rowClass"
+        :row-props="rowProps"
         :footer-props="{
           'items-per-page-options': [
             20,
@@ -154,13 +154,13 @@ function showDevice(item) {
 
 /**
  * @param {*} item
- * @return {string}
+ * @return {Record<string, any>}
  */
-function rowClass(item) {
+function rowProps({item}) {
   if (sidebar.visible && sidebar.data?.name === item.name) {
-    return 'item-selected';
+    return {class: 'item-selected'};
   }
-  return '';
+  return {};
 }
 
 </script>

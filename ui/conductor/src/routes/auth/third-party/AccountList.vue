@@ -8,7 +8,7 @@
         sort-by="title"
         :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
         :loading="tenantsTracker.loading"
-        :item-class="rowClass"
+        :row-props="rowProps"
         @click:row="showTenant">
       <template #item.zoneNamesList="{ index, value }">
         <span class="d-inline-flex justify-start" style="gap: 8px">
@@ -103,13 +103,13 @@ watch(tenantsList, () => {
 
 /**
  * @param {*} item
- * @return {string}
+ * @return {Record<string,any>}
  */
-function rowClass(item) {
+function rowProps({item}) {
   if (sidebar.visible && sidebar.data?.id === item.id) {
-    return 'item-selected';
+    return {class: 'item-selected'};
   }
-  return '';
+  return {};
 }
 
 // ------------------------------ //

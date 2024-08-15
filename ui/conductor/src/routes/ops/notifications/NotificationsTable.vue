@@ -14,7 +14,7 @@
           :items="alerts.pageItems"
           disable-sort
           :server-items-length="queryTotalCount"
-          :item-class="rowClass"
+          :row-props="rowProps"
           :options.sync="dataTableOptions"
           :footer-props="setFooterProps"
           :loading="alerts.loading"
@@ -544,9 +544,9 @@ const formatSource = (source) => {
   const parts = source.split('/');
   return parts[parts.length - 1];
 };
-const rowClass = (item) => {
-  if (item.resolveTime) return 'resolved';
-  return '';
+const rowProps = ({item}) => {
+  if (item.resolveTime) return {class: 'resolved'};
+  return {};
 };
 
 /**
