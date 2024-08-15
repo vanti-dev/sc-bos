@@ -18,7 +18,7 @@ export default [
         path: ':pathMatch(.+)*', // Captures all segments after /building/
         component: () => import('@/routes/ops/overview/OpsDashPage.vue'),
         // Splits segments into an array and passes it as a prop so the component can use it to find the active item
-        props: route => ({pathSegments: modifiedPath(route.params['pathMatch']).split('/')}),
+        props: route => ({pathSegments: route.params['pathMatch']}),
         meta: {
           authentication: {
             rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
@@ -44,9 +44,7 @@ export default [
   }
 ];
 
-// Remove the specific beginning '/ops/overview' from the path, if it exists
 const basePath = '/ops/overview';
-const modifiedPath = (path) => path.startsWith(basePath) ? path.slice(basePath.length) : path;
 
 /**
  * @typedef {Object} EnvironmentTrait
