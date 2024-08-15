@@ -9,7 +9,7 @@
       <v-list-item-icon>
         <v-icon>{{ item.icon }}</v-icon>
       </v-list-item-icon>
-      <v-list-item-content class="text-truncate">{{ item.title }}</v-list-item-content>
+      <v-list-item-title class="text-truncate">{{ item.title }}</v-list-item-title>
     </v-list-item>
   </v-list>
 </template>

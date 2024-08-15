@@ -7,38 +7,34 @@
 
       <v-col v-for="(val, key) in deviceInfo[0]" :key="key" class="pa-0" cols="align-self">
         <v-list-item class="py-1">
-          <v-list-item-content class="py-0 pb-3">
-            <v-list-item-title class="text-body-small text-capitalize">
-              {{ camelToSentence(key) }}
-            </v-list-item-title>
-            <v-list-item-subtitle class="text-subtitle-1 py-1 font-weight-medium text-wrap ml-2">
-              {{ val }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
+          <v-list-item-title class="text-body-small text-capitalize">
+            {{ camelToSentence(key) }}
+          </v-list-item-title>
+          <v-list-item-subtitle class="text-subtitle-1 py-1 font-weight-medium text-wrap ml-2">
+            {{ val }}
+          </v-list-item-subtitle>
         </v-list-item>
       </v-col>
 
       <v-col v-for="(subValue, subKey) in deviceInfo[1]" :key="subKey" class="pa-0" cols="align-self">
         <v-list-item class="py-1">
-          <v-list-item-content class="py-0 pb-3">
-            <v-list-item-title class="text-body-small text-capitalize">
-              {{ camelToSentence(subKey) }}
-            </v-list-item-title>
-            <v-row class="py-0">
-              <v-col v-for="(val, key) in subValue" :key="key" cols="align-self">
-                <v-list-item-subtitle class="py-1 mx-2">
-                  <v-col cols="align-self">
-                    <v-row class="text-capitalize text-caption">
-                      {{ camelToSentence(key) }}
-                    </v-row>
-                    <v-row class="text-subtitle-1">
-                      {{ val }}
-                    </v-row>
-                  </v-col>
-                </v-list-item-subtitle>
-              </v-col>
-            </v-row>
-          </v-list-item-content>
+          <v-list-item-title class="text-body-small text-capitalize">
+            {{ camelToSentence(subKey) }}
+          </v-list-item-title>
+          <v-row class="py-0">
+            <v-col v-for="(val, key) in subValue" :key="key" cols="align-self">
+              <v-list-item-subtitle class="py-1 mx-2">
+                <v-col cols="align-self">
+                  <v-row class="text-capitalize text-caption">
+                    {{ camelToSentence(key) }}
+                  </v-row>
+                  <v-row class="text-subtitle-1">
+                    {{ val }}
+                  </v-row>
+                </v-col>
+              </v-list-item-subtitle>
+            </v-col>
+          </v-row>
         </v-list-item>
       </v-col>
     </v-list>

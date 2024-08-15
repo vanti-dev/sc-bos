@@ -7,7 +7,7 @@
             v-if="isValueAvailable(value)"
             class="ma-0 pa-0 mb-n4"
             :key="key">
-          <v-list-item-content class="d-flex flex-row flex-nowrap align-start">
+          <div class="d-flex flex-row flex-nowrap align-start">
             <v-col cols="align-self" class="ma-0 pa-0 mr-4">
               <v-list-item-title class="text-capitalize font-weight-bold ma-0 pa-0">
                 {{ camelToSentence(key) }}:
@@ -34,7 +34,7 @@
                       v-if="isValueAvailable(subValue)"
                       class="ma-0 pa-0 mt-n3 mb-n2"
                       :key="subKey">
-                    <v-list-item-content
+                    <div
                         v-if="isValueAvailable(subValue)"
                         class="d-flex flex-row pb-4">
                       <v-col cols="3" class="ma-0 pa-0">
@@ -61,12 +61,12 @@
                           </template>
                         </div>
                       </v-col>
-                    </v-list-item-content>
+                    </div>
                   </v-list-item>
                 </template>
               </div>
             </v-col>
-          </v-list-item-content>
+          </div>
         </v-list-item>
       </template>
     </div>

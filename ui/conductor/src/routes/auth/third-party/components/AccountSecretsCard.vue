@@ -5,21 +5,19 @@
       <v-progress-linear color="primary" indeterminate :active="secretsTracker.loading"/>
       <v-hover v-slot="{ hover }" v-for="secret of secretList" :key="secret.id">
         <v-list-item class="py-0">
-          <v-list-item-content class="py-0">
-            <v-list-item-title>{{ secret.note }}</v-list-item-title>
-            <v-list-item-subtitle v-if="secret.expireTime" class="text-body-small text-neutral-lighten-5">
-              Expire{{ secret.expireTime > Date.now() ? 's' : 'd' }}
-              <v-tooltip bottom>
-                <template #activator="{ props }">
-                  <span v-bind="props">{{ humanizeDate(secret.expireTime) }}</span>
-                </template>
-                <span>{{ Intl.DateTimeFormat('en-GB').format(secret.expireTime) }}</span>
-              </v-tooltip>
-            </v-list-item-subtitle>
-            <v-list-item-subtitle v-else class="text-body-small text-neutral-lighten-5">
-              This secret will not expire
-            </v-list-item-subtitle>
-          </v-list-item-content>
+          <v-list-item-title>{{ secret.note }}</v-list-item-title>
+          <v-list-item-subtitle v-if="secret.expireTime" class="text-body-small text-neutral-lighten-5">
+            Expire{{ secret.expireTime > Date.now() ? 's' : 'd' }}
+            <v-tooltip bottom>
+              <template #activator="{ props }">
+                <span v-bind="props">{{ humanizeDate(secret.expireTime) }}</span>
+              </template>
+              <span>{{ Intl.DateTimeFormat('en-GB').format(secret.expireTime) }}</span>
+            </v-tooltip>
+          </v-list-item-subtitle>
+          <v-list-item-subtitle v-else class="text-body-small text-neutral-lighten-5">
+            This secret will not expire
+          </v-list-item-subtitle>
           <delete-confirmation-dialog
               title="Delete Token"
               :progress-bar="deleteSecretTracker.loading"

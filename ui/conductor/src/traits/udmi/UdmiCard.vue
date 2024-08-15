@@ -3,18 +3,14 @@
     <v-list tile class="ma-0 pa-0" three-line>
       <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">UDMI Event</v-list-subheader>
       <v-list-item class="py-1 mb-2" v-if="message.updateTime">
-        <v-list-item-content class="py-0">
-          <v-list-item-title class="text-body-small text-capitalize">Last updated</v-list-item-title>
-          <v-list-item-subtitle class="text-capitalize">
-            {{ Intl.DateTimeFormat('en-GB', {dateStyle: 'short', timeStyle: 'long'}).format(message.updateTime) }}
-          </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-title class="text-body-small text-capitalize">Last updated</v-list-item-title>
+        <v-list-item-subtitle class="text-capitalize">
+          {{ Intl.DateTimeFormat('en-GB', {dateStyle: 'short', timeStyle: 'long'}).format(message.updateTime) }}
+        </v-list-item-subtitle>
       </v-list-item>
       <v-list-item class="py-1 mb-2" v-if="message.value">
-        <v-list-item-content class="py-0">
-          <v-list-item-title class="text-body-small text-capitalize">Topic</v-list-item-title>
-          <v-list-item-subtitle class="text-capitalize">{{ message.value?.topic }}</v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item-title class="text-body-small text-capitalize">Topic</v-list-item-title>
+        <v-list-item-subtitle class="text-capitalize">{{ message.value?.topic }}</v-list-item-subtitle>
       </v-list-item>
       <v-list-item class="py-1" v-for="(value, key) in messagePayload" :key="key">
         <v-list-item-title class="text-body-small text-capitalize flex-fill">{{ key }}</v-list-item-title>

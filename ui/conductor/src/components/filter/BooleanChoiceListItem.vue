@@ -3,14 +3,11 @@
     <v-list-item-icon>
       <v-icon>{{ props.icon }}</v-icon>
     </v-list-item-icon>
-    <!-- all this flexing is to stop some strange layout issues caused by the default flex: row of content -->
-    <v-list-item-content class="flex-column align-start">
-      <template v-if="choiceText">
-        <v-list-item-subtitle class="text-overline">{{ props.title }}</v-list-item-subtitle>
-        <v-list-item-title class="align-self-auto">{{ choiceText }}</v-list-item-title>
-      </template>
-      <v-list-item-title class="align-self-auto" v-else>{{ props.title }}</v-list-item-title>
-    </v-list-item-content>
+    <template v-if="choiceText">
+      <v-list-item-subtitle class="text-overline">{{ props.title }}</v-list-item-subtitle>
+      <v-list-item-title class="align-self-auto">{{ choiceText }}</v-list-item-title>
+    </template>
+    <v-list-item-title class="align-self-auto" v-else>{{ props.title }}</v-list-item-title>
     <v-list-item-action>
       <v-switch2 :indeterminate="_indeterminate" v-model="_value" style="pointer-events: none"/>
     </v-list-item-action>

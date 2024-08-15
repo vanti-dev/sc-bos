@@ -3,15 +3,13 @@
     <v-list-item-icon>
       <v-icon>{{ props.filter.icon }}</v-icon>
     </v-list-item-icon>
-    <v-list-item-content class="flex-column align-start">
-      <template v-if="props.defaultChoice">
-        <v-list-item-title class="align-self-auto">{{ props.filter.title }}</v-list-item-title>
-      </template>
-      <template v-else>
-        <v-list-item-subtitle class="text-overline">{{ props.filter.title }}</v-list-item-subtitle>
-        <v-list-item-title class="align-self-auto">{{ props.choice.text ?? props.choice.value }}</v-list-item-title>
-      </template>
-    </v-list-item-content>
+    <template v-if="props.defaultChoice">
+      <v-list-item-title class="align-self-auto">{{ props.filter.title }}</v-list-item-title>
+    </template>
+    <template v-else>
+      <v-list-item-subtitle class="text-overline">{{ props.filter.title }}</v-list-item-subtitle>
+      <v-list-item-title class="align-self-auto">{{ props.choice.text ?? props.choice.value }}</v-list-item-title>
+    </template>
     <v-list-item-action>
       <v-icon v-if="props.defaultChoice">mdi-chevron-right</v-icon>
       <v-btn v-else icon @click.stop="emits('clear', props.filter.key)" class="mr-n1">

@@ -4,7 +4,7 @@
       <v-list-item-icon>
         <v-icon>mdi-view-list</v-icon>
       </v-list-item-icon>
-      <v-list-item-content class="text-capitalize">All</v-list-item-content>
+      <v-list-item-title class="text-capitalize">All</v-list-item-title>
     </v-list-item>
     <v-list-item
         v-for="automation of automationTypeList"
@@ -17,9 +17,9 @@
           {{ icon[mapIconKey(automation.type)] ?? defaultIcon }}
         </v-icon>
       </v-list-item-icon>
-      <v-list-item-content class="text-capitalize text-truncate">
+      <v-list-item-title class="text-capitalize text-truncate">
         {{ formatNaming(automation.type) }}
-      </v-list-item-content>
+      </v-list-item-title>
     </v-list-item>
   </v-list>
 </template>

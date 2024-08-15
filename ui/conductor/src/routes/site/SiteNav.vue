@@ -6,7 +6,7 @@
           <v-list-item-icon>
             <v-icon>mdi-group</v-icon>
           </v-list-item-icon>
-          <v-list-item-content class="text-truncate">Zone Editor</v-list-item-content>
+          <v-list-item-title class="text-truncate">Zone Editor</v-list-item-title>
         </template>
         <v-list-item-group>
           <v-list-item

@@ -60,7 +60,7 @@
               v-if="value"
               class="ma-0 pa-0 mb-n4"
               :key="key">
-            <v-list-item-content class="d-flex flex-row flex-nowrap align-start">
+            <div class="d-flex flex-row flex-nowrap align-start">
               <v-col cols="align-self" class="ma-0 pa-0 mr-n4">
                 <v-list-item-title class="text-capitalize font-weight-bold ma-0 pa-0">
                   {{ camelToSentence(formatFingerprint(key)) }}:
@@ -75,7 +75,7 @@
                 <div v-else class="d-flex flex-column">
                   <template v-for="(subValue, subKey) in value">
                     <v-list-item v-if="subValue" class="ma-0 pa-0 mt-n3 mb-n2" :key="subKey">
-                      <v-list-item-content class="d-flex flex-row pb-4">
+                      <div class="d-flex flex-row pb-4">
                         <v-col cols="3" class="ma-0 pa-0">
                           <v-list-item-title
                               class="text-capitalize
@@ -91,12 +91,12 @@
                             {{ subValue }}
                           </v-list-item-subtitle>
                         </v-col>
-                      </v-list-item-content>
+                      </div>
                     </v-list-item>
                   </template>
                 </div>
               </v-col>
-            </v-list-item-content>
+            </div>
           </v-list-item>
         </template>
       </div>
