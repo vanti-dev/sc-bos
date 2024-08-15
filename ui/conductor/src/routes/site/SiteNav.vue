@@ -1,6 +1,6 @@
 <template>
   <v-list class="pa-0" density="compact" nav>
-    <v-list-group group="zone">
+    <v-list-group>
       <template #activator>
         <v-list-item>
           <template #prepend>
