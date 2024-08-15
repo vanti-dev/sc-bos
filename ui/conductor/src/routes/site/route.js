@@ -11,7 +11,7 @@ export default {
   children: [
     {
       name: 'zone',
-      path: 'zone/:zone*',
+      path: 'zone/:zone(.*)*',
       component: () => import('./zone/ZonePage.vue'),
       props: true,
       meta: {

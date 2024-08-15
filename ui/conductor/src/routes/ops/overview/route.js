@@ -15,7 +15,7 @@ export default [
     children: [
       {
         name: 'dynamic-areas-overview',
-        path: ':pathMatch(.+)+', // Captures all segments after /building/
+        path: ':pathMatch(.+)*', // Captures all segments after /building/
         component: () => import('@/routes/ops/overview/OpsDashPage.vue'),
         // Splits segments into an array and passes it as a prop so the component can use it to find the active item
         props: route => ({pathSegments: modifiedPath(route.params['pathMatch']).split('/')}),
