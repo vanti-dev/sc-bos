@@ -2,7 +2,6 @@
   <v-menu
       :close-on-content-click="false"
       v-model="active"
-      offset-y
       location="left"
       min-width="340">
     <template #activator="{ props }">

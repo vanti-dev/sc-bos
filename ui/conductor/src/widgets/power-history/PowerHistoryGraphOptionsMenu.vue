@@ -5,8 +5,7 @@
         <v-menu
             location="bottom left"
             :close-on-content-click="false"
-            min-width="275px"
-            offset-y>
+            min-width="275px">
           <template #activator="{ props }">
             <v-btn
                 dark

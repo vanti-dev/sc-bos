@@ -12,7 +12,6 @@
   <v-menu
       v-else-if="notOK"
       :close-on-content-click="false"
-      offset-y
       location="left"
       max-width="500px"
       min-width="500px">

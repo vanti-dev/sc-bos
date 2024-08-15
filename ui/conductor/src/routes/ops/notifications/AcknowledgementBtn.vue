@@ -14,7 +14,7 @@
     </template>
     Acknowledge this notification
   </v-tooltip>
-  <v-menu v-else location="bottom left" offset-y>
+  <v-menu v-else location="bottom left">
     <template #activator="{ props }">
       <v-avatar v-bind="props" color="neutral lighten-8" class="text--black" size="21">
         <template v-if="hasAuthor">{{ authorInitials }}</template>

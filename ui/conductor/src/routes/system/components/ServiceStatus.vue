@@ -1,7 +1,7 @@
 <template>
   <span :class="color">
     {{ str }}
-    <v-menu v-if="showErrorIcon" offset-y :close-on-content-click="false">
+    <v-menu v-if="showErrorIcon" :close-on-content-click="false">
       <template #activator="{ props }">
         <v-progress-circular
             v-if="showNextAttemptTime"

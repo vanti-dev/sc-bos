@@ -56,7 +56,7 @@
         </v-btn>
       </template>
     </v-combobox>
-    <v-menu location="bottom" offset-y nudge-top="-8" v-if="!blockActions">
+    <v-menu location="bottom" v-if="!blockActions">
       <template #activator="{props}">
         <v-btn icon v-bind="props" class="ml-2 mr-n2">
           <v-icon>mdi-dots-vertical</v-icon>

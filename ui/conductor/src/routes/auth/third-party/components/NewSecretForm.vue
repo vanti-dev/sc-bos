@@ -32,8 +32,7 @@
             <v-menu
                 v-if="newSecret.expiresIn === suggestedExpiresIn.custom"
                 v-model="customExpiryMenuVisible"
-                :close-on-content-click="false"
-                offset-y>
+                :close-on-content-click="false">
               <template #activator="{props}">
                 <v-text-field
                     v-model="newSecret.expiresAt"

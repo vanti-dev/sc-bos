@@ -24,7 +24,7 @@
         <div class="d-flex flex-row align-center pt-2 mb-n4">
           <v-card-title class="text-body-large font-weight-bold">{{ node.name }}</v-card-title>
           <v-card-subtitle v-if="node.description !== ''">{{ node.description }}</v-card-subtitle>
-          <v-menu min-width="175px" nudge-bottom="10" nudge-right="10" offset-y>
+          <v-menu min-width="175px">
             <template #activator="{ props }">
               <v-btn
                   class="ml-auto mr-3"

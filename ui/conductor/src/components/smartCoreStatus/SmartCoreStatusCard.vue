@@ -6,7 +6,6 @@
       max-height="600px"
       max-width="550px"
       min-width="400px"
-      offset-y
       tile>
     <template #activator="{props}">
       <v-btn

@@ -1,11 +1,9 @@
 <template>
   <v-menu
-      offset-y
       location="bottom"
       :close-on-content-click="false"
       @update:model-value="reset"
-      min-width="400"
-      nudge-bottom="4">
+      min-width="400">
     <template #activator="{ props: menuProps }">
       <v-tooltip location="bottom">
         <template #activator="{ props: tooltipProps }">

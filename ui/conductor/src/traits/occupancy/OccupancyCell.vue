@@ -4,9 +4,6 @@
   <v-menu
       v-else
       location="left bottom"
-      offset-y
-      nudge-bottom="4px"
-      nudge-right="4px"
       transition="slide-x-reverse-transition"
       open-on-hover>
     <template #activator="{props}">
