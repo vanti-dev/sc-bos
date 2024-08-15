@@ -166,13 +166,15 @@ function rowProps({item}) {
 </script>
 
 <style lang="scss" scoped>
+@use 'vuetify/settings';
+
 :deep(.v-data-table-header__icon) {
   margin-left: 8px;
 }
 
 .v-data-table :deep(.v-data-footer) {
   background: var(--v-neutral-lighten1) !important;
-  border-radius: 0px 0px $border-radius-root*2 $border-radius-root*2;
+  border-radius: 0 0 settings.$border-radius-root*2 settings.$border-radius-root*2;
   border: none;
   margin: 0 -12px -12px;
 }
