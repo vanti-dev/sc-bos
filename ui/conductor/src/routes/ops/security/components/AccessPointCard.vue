@@ -1,5 +1,12 @@
 <template>
-  <v-card color="#40464D" elevation="0" dark min-width="420px" height="100%" min-height="240px" max-height="240px">
+  <v-card
+      color="#40464D"
+      elevation="0"
+      theme="dark"
+      min-width="420px"
+      height="100%"
+      min-height="240px"
+      max-height="240px">
     <!-- Has Access data but has no OpenClose data -->
     <with-access
         v-if="availableTraits.includes('Access') && !availableTraits.includes('OpenClose')"

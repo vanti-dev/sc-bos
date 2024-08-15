@@ -18,7 +18,7 @@
 
       <v-card
           tile
-          :light="$vuetify.theme.dark"
+          theme="light"
           class="text-center"
           min-width="300px">
         <v-avatar
