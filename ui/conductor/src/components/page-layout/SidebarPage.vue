@@ -16,7 +16,7 @@
         color="neutral"
         floating
         stateless
-        right
+        location="right"
         :width="sideBarWidth">
       <router-view name="sidebar"/>
     </v-navigation-drawer>

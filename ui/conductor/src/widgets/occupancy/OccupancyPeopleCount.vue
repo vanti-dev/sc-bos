@@ -2,7 +2,7 @@
   <span class="d-flex flex-row flex-nowrap">
     <span>
       <template v-if="showErr">
-        <v-tooltip bottom>
+        <v-tooltip location="bottom">
           <template #activator="{props}">
             <v-icon v-bind="props" color="error" size="1em">mdi-alert-circle-outline</v-icon>
           </template>

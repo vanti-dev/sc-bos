@@ -1,5 +1,5 @@
 <template>
-  <v-list class="pa-0" dense nav>
+  <v-list class="pa-0" density="compact" nav>
     <v-list-item :disabled="hasNoAccess('/automations/all')" to="/automations/all">
       <template #prepend>
         <v-icon>mdi-view-list</v-icon>

@@ -9,7 +9,7 @@
             @click="emit('choose', 'keyCloakAuth')"
             color="primary"
             block
-            large
+            size="large"
             class="text-body-1 font-weight-bold">
           Sign in
         </v-btn>
@@ -34,7 +34,7 @@
             @click="emit('choose', 'deviceFlow')"
             color="primary"
             block
-            large
+            size="large"
             class="text-body-1 font-weight-bold">
           Sign in using your device
         </v-btn>
@@ -49,7 +49,7 @@
         <v-btn
             block
             class="text-body-2 ma-0"
-            text
+            variant="text"
             @click="emit('choose', 'localAuth')">
           Sign in with local Account
         </v-btn>

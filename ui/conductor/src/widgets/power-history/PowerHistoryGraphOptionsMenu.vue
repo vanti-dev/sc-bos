@@ -1,11 +1,10 @@
 <template>
-  <v-tooltip bottom>
+  <v-tooltip location="bottom">
     <template #activator="{ props }">
       <div v-bind="props">
         <v-menu
-            bottom
+            location="bottom left"
             :close-on-content-click="false"
-            left
             min-width="275px"
             offset-y>
           <template #activator="{ props }">
@@ -26,7 +25,7 @@
               <v-switch
                   class="ml-4 my-auto no-pointer-events"
                   color="primary"
-                  dense
+                  density="compact"
                   readonly
                   hide-details
                   inset
@@ -39,20 +38,20 @@
                 </template>
               </v-switch>
             </v-list-item>
-            <v-list-item class="pa-0 d-flex flex-row justify-center px-3" dense>
+            <v-list-item class="pa-0 d-flex flex-row justify-center px-3" density="compact">
               <v-list-subheader class="text-body-2 pa-0">Duration</v-list-subheader>
               <v-spacer/>
               <v-btn-toggle
                   v-model="activeDuration"
-                  active-class="primary"
-                  dense
+                  selected-class="primary"
+                  density="compact"
                   mandatory>
                 <v-btn
                     v-for="option in durationOptions"
-                    active-class="primary text--darken-3"
+                    selected-class="primary text--darken-3"
                     class="bg-transparent text-grey-lighten-1"
                     :key="option.id"
-                    small
+                    size="small"
                     :value="option.value">
                   <span class="text-caption">{{ option.text }}</span>
                 </v-btn>
@@ -60,7 +59,7 @@
             </v-list-item>
             <v-list-item
                 class="pa-0 d-flex flex-row align-left align-center px-3 mb-n1"
-                dense
+                density="compact"
                 @click="emits('exportCSV')">
               <v-list-subheader class="text-body-2 pa-0">Export CSV...</v-list-subheader>
             </v-list-item>

@@ -6,7 +6,7 @@
         <v-checkbox
             v-for="(item, index) in legendItems"
             :key="index"
-            :input-value="!item.hidden"
+            :model-value="!item.hidden"
             @update:model-value="item.onClick"
             :label="item.text"
             :color="item.bgColor"

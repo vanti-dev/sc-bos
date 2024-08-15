@@ -21,7 +21,7 @@
             <v-col cols="12" md="5">
               <v-text-field
                   label="Search accounts"
-                  outlined
+                  variant="outlined"
                   hide-details
                   prepend-inner-icon="mdi-magnify"
                   v-model="search"/>
@@ -30,12 +30,12 @@
             <new-account-dialog @finished="tenantStore.refreshTenants">
               <template #activator="{ on, attrs }">
                 <v-btn
-                    outlined
+                    variant="outlined"
                     v-bind="attrs"
                     v-on="on"
                     :disabled="blockActions">
                   Add Account
-                  <v-icon right>mdi-plus</v-icon>
+                  <v-icon end>mdi-plus</v-icon>
                 </v-btn>
               </template>
             </new-account-dialog>

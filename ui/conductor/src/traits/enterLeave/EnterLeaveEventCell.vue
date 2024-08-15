@@ -2,21 +2,21 @@
   <status-alert v-if="props.streamError" :resource="props.streamError"/>
 
   <span v-else-if="value && !props.streamError" class="text-no-wrap el-cell">
-    <v-tooltip bottom>
+    <v-tooltip location="bottom">
       <template #activator="{ props }">
         <span v-bind="props">
-          <v-icon :left="hasTotals" :class="{justEntered}" size="20">mdi-location-enter</v-icon>
+          <v-icon :start="hasTotals" :class="{justEntered}" size="20">mdi-location-enter</v-icon>
           <span :class="{justEntered}" v-if="hasTotals">{{ enterTotal }}</span>
         </span>
       </template>
       Entered
     </v-tooltip>
     <v-divider vertical class="mx-2"/>
-    <v-tooltip bottom>
+    <v-tooltip location="bottom">
       <template #activator="{ props }">
         <span v-bind="props">
           <span :class="{justLeft}" v-if="hasTotals">{{ leaveTotal }}</span>
-          <v-icon :right="hasTotals" :class="{justLeft}" size="20">mdi-location-exit</v-icon>
+          <v-icon :end="hasTotals" :class="{justLeft}" size="20">mdi-location-exit</v-icon>
         </span>
       </template>
       Left

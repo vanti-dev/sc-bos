@@ -9,7 +9,7 @@
           class="text-body-code"
           :disabled="blockSystemEdit"
           :error-messages="jsonError"
-          filled
+          variant="filled"
           full-width
           hide-details="auto"
           readonly/>
@@ -22,7 +22,7 @@
         <v-icon>mdi-content-copy</v-icon>
       </v-btn>
       <v-snackbar v-model="copyConfirm" timeout="2000" color="success" max-width="250" min-width="200">
-        <span class="text-body-large align-baseline"><v-icon left>mdi-check-circle</v-icon>Config copied</span>
+        <span class="text-body-large align-baseline"><v-icon start>mdi-check-circle</v-icon>Config copied</span>
       </v-snackbar>
     </v-card-text>
   </v-card>

@@ -2,11 +2,11 @@
   <status-alert v-if="error" icon="mdi-lightbulb-outline" :resource="error"/>
 
   <span v-else class="d-flex flex-row flex-nowrap">
-    <v-tooltip bottom>
+    <v-tooltip location="bottom">
       <template #activator="{ props }">
         <span v-bind="props" class="d-flex flex-row">
           <span class="text-caption" style="min-width: 4ex">{{ levelStr }}</span>
-          <v-icon right :color="level > 0 ? 'yellow' : 'white' " size="20">
+          <v-icon end :color="level > 0 ? 'yellow' : 'white' " size="20">
             {{ icon }}
           </v-icon>
         </span>

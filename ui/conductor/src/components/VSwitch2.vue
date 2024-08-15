@@ -2,7 +2,7 @@
   <v-switch
       v-bind="$attrs"
       :class="{indeterminate: _indeterminate}"
-      :input-value="_value"
+      :model-value="_value"
       @update:model-value="emit('input', $event)"
       v-on="$listeners">
     <template #label v-if="$slots.label">

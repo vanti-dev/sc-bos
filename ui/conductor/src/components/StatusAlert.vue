@@ -2,7 +2,7 @@
   <v-tooltip
       v-if="props.resource"
       v-model="show"
-      bottom
+      location="bottom"
       :color="props.color">
     <template #activator="{ props }">
       <v-icon

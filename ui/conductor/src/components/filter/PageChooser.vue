@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-title>
-      <v-text-field v-bind="topTextInputBind" clearable hide-details dense v-model="search"/>
+      <v-text-field v-bind="topTextInputBind" clearable hide-details density="compact" v-model="search"/>
     </v-card-title>
     <slot/>
   </v-card>

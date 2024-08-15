@@ -3,7 +3,7 @@
       :close-on-content-click="false"
       v-model="active"
       offset-y
-      left
+      location="left"
       min-width="340">
     <template #activator="{ props }">
       <v-btn

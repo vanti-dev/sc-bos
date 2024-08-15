@@ -1,5 +1,5 @@
 <template>
-  <v-list class="pa-0" dense nav>
+  <v-list class="pa-0" density="compact" nav>
     <v-list-group class="mt-2 mb-n1">
       <ops-nav-list
           :items="overviewChildren"
@@ -19,7 +19,7 @@
               :color="item.badgeType ? badges[item.badgeType].color : 'transparent'"
               :content="item.badgeType ? badges[item.badgeType].value : ''"
               overlap
-              :value="item.badgeType ? badges[item.badgeType].value : null">
+              :model-value="item.badgeType ? badges[item.badgeType].value : null">
             <v-icon>
               {{ item.icon }}
             </v-icon>

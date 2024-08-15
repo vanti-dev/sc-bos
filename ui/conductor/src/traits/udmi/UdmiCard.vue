@@ -1,6 +1,6 @@
 <template>
   <v-card elevation="0" tile>
-    <v-list tile class="ma-0 pa-0" three-line>
+    <v-list tile class="ma-0 pa-0" lines="three">
       <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">UDMI Event</v-list-subheader>
       <v-list-item class="py-1 mb-2" v-if="message.updateTime">
         <v-list-item-title class="text-body-small text-capitalize">Last updated</v-list-item-title>

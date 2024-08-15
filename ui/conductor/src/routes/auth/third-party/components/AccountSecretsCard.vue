@@ -1,14 +1,14 @@
 <template>
   <v-card flat tile class="pa-0">
     <div class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">Tokens</div>
-    <v-list two-line class="pt-0">
+    <v-list lines="two" class="pt-0">
       <v-progress-linear color="primary" indeterminate :active="secretsTracker.loading"/>
       <v-hover v-slot="{ hover }" v-for="secret of secretList" :key="secret.id">
         <v-list-item class="py-0">
           <v-list-item-title>{{ secret.note }}</v-list-item-title>
           <v-list-item-subtitle v-if="secret.expireTime" class="text-body-small text-neutral-lighten-5">
             Expire{{ secret.expireTime > Date.now() ? 's' : 'd' }}
-            <v-tooltip bottom>
+            <v-tooltip location="bottom">
               <template #activator="{ props }">
                 <span v-bind="props">{{ humanizeDate(secret.expireTime) }}</span>
               </template>
@@ -30,7 +30,7 @@
             <template #confirmBtn>Delete Token</template>
             <template #activator="{ on, attrs }">
               <v-list-item-action v-show="hover" class="my-0" v-bind="attrs">
-                <v-btn icon small v-on="on" :disabled="blockActions">
+                <v-btn icon size="small" v-on="on" :disabled="blockActions">
                   <v-icon color="neutral-lighten-5">mdi-trash-can</v-icon>
                 </v-btn>
               </v-list-item-action>
@@ -44,7 +44,7 @@
         <template #activator="{ on }">
           <v-btn width="100%" color="primary" class="font-weight-bold" v-on="on" :disabled="blockActions">
             Create new token
-            <v-icon right>mdi-key</v-icon>
+            <v-icon end>mdi-key</v-icon>
           </v-btn>
         </template>
       </new-secret-form>

@@ -8,7 +8,7 @@
           :disabled="blockActions"
           @click="downloadCSV">
         Download CSV
-        <v-icon right>mdi-download</v-icon>
+        <v-icon end>mdi-download</v-icon>
       </v-btn>
     </v-card-title>
     <v-data-table

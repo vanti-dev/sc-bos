@@ -14,11 +14,11 @@
           class="mb-6"
           hide-details
           :items="deviceOptions"
-          item-text="label"
+          item-title="label"
           item-value="value"
           label="Data source"
           :loading="isFetching"
-          outlined/>
+          variant="outlined"/>
       <div class="d-flex flex-column mr-5" style="min-height: 400px">
         <line-chart :chart-data="chartData" :chart-options="chartOptions" dataset-id-key="label" class="flex-grow-1"/>
       </div>

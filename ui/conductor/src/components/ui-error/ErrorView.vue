@@ -5,14 +5,14 @@
         :key="index"
         style="height: 64px;">
       <v-snackbar
-          :value="true"
+          :model-value="true"
           timeout="5000"
           color="error"
           absolute>
         <span class="error-name">{{ item.name }}</span>
         {{ statusCodeToString(item.source.code) }}: {{ item.source.message }}
         <template #actions="attrs">
-          <v-btn text v-bind="attrs" @click="errorStore.clearError(item)">
+          <v-btn variant="text" v-bind="attrs" @click="errorStore.clearError(item)">
             Dismiss
           </v-btn>
         </template>

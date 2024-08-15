@@ -5,10 +5,10 @@
           v-model="addressInput"
           class="mx-8"
           :clearable="addressInput !== null"
-          dense
+          density="compact"
           hide-details
           label="Component Address"
-          outlined
+          variant="outlined"
           @click:clear="addressInput = null"/>
       <!-- Error label if the address is already enrolled -->
       <v-alert
@@ -17,9 +17,9 @@
         mx-8
         mt-2"
           color="error"
-          dense
+          density="compact"
           max-width="400px"
-          outlined
+          variant="outlined"
           type="error">
         <v-row class="pa-2 d-flex flex-row flex-nowrap">
           <span class="text-capitalize">{{ errorText.message }}</span>
@@ -37,7 +37,7 @@
             class="mr-4 px-4"
             color="primary"
             :disabled="!address || isEnrolled"
-            text
+            variant="text"
             type="submit"
             @click="onEnroll">
           Enroll Node
@@ -61,14 +61,14 @@
     <v-card-actions class="d-flex flex-row justify-space-around mt-10">
       <v-btn
           class="mr-4 px-4"
-          text
+          variant="text"
           @click="cancelAction">
         Cancel
       </v-btn>
       <v-btn
           class="px-4"
           color="error"
-          text
+          variant="text"
           @click="forgetHubNode">
         Forget Node
       </v-btn>

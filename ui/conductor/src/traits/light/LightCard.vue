@@ -11,8 +11,8 @@
     <v-progress-linear
         height="34"
         class="mx-4 my-2"
-        :value="level"
-        background-color="neutral lighten-1"
+        :model-value="level"
+        bg-color="neutral lighten-1"
         color="accent"/>
     <v-card-actions class="px-4">
       <v-btn
@@ -21,7 +21,7 @@
           :disabled="control.disabled"
           elevation="0"
           :key="control.label"
-          small
+          size="small"
           @click="control.onClick">
         {{ control.label }}
       </v-btn>
@@ -32,7 +32,7 @@
           :disabled="control.disabled"
           elevation="0"
           :key="control.label"
-          small
+          size="small"
           @click="control.onClick">
         {{ control.label }}
       </v-btn>
@@ -52,7 +52,7 @@
           :color="getColor(preset.title, currentPresetTitle)"
           elevation="0"
           :key="preset.name"
-          small
+          size="small"
           width="100%"
           max-width="575"
           @click="updateBrightnessPreset(preset)">

@@ -5,7 +5,7 @@
         <v-list-item
             active-class="primary--text"
             class="ml-n1 mb-2"
-            dense
+            density="compact"
             :input-value="activeCertificate === 'root'"
             :ripple="false"
             @click="setActiveCertificate(rootCertificate, 'root')">
@@ -28,7 +28,7 @@
               v-for="(intermediateValue, intermediateKey) in intermediateCertificates"
               active-class="primary--text"
               class="ml-4"
-              dense
+              density="compact"
               :input-value="activeCertificate === intermediateValue?.subject?.commonName"
               :key="intermediateKey"
               :ripple="false"
@@ -113,7 +113,7 @@
       <v-btn
           class="ml-n8 pl-4 pr-6"
           color="neutral-lighten-4"
-          text
+          variant="text"
           @click="emits('resetCertificates')">
         <v-icon>mdi-chevron-left</v-icon>
         Back
@@ -121,7 +121,7 @@
       <v-btn
           class="px-4"
           color="primary"
-          text
+          variant="text"
           @click="confirmEnroll">
         Enroll
       </v-btn>

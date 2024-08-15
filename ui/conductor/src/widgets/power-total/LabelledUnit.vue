@@ -1,7 +1,7 @@
 <template>
   <span class="labelled-unit">
     <template v-if="showErr">
-      <v-tooltip bottom>
+      <v-tooltip location="bottom">
         <template #activator="{ props }">
           <span style="height: 1em" class="err">
             <v-icon v-bind="props" color="error" size=".75em">mdi-alert-circle-outline</v-icon>

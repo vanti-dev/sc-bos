@@ -10,8 +10,8 @@
     <v-progress-linear
         height="34"
         class="mx-4 my-2"
-        :value="battery"
-        background-color="neutral lighten-1"
+        :model-value="battery"
+        bg-color="neutral lighten-1"
         color="accent"/>
     <v-list>
       <v-list-subheader class="text-body-large font-weight-bold">Testing History</v-list-subheader>
@@ -21,7 +21,7 @@
       </v-list-item>
       <v-list-item>
         <v-list-item-action>
-          <v-btn color="green" :disabled="blockActions" small>Test Now</v-btn>
+          <v-btn color="green" :disabled="blockActions" size="small">Test Now</v-btn>
         </v-list-item-action>
       </v-list-item>
     </v-list>

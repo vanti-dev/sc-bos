@@ -21,7 +21,7 @@
               color="warning"
               :size="28"
               :width="3"
-              :value="codeExpiresInPercentage"/>
+              :model-value="codeExpiresInPercentage"/>
         </div>
       </v-card-text>
       <v-card-text class="qr d-flex flex-column align-center">

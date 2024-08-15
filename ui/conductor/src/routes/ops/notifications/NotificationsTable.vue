@@ -37,7 +37,7 @@
             <span :class="['mt-n2', {'mb-4 mt-2': !props.overviewPage}, {'mr-2': props.overviewPage}]">
               <filter-btn :ctx="filterCtx" tile/>
             </span>
-            <v-tooltip top>
+            <v-tooltip location="top">
               <template #activator="{ props }">
                 <v-btn
                     v-if="props.overviewPage"
@@ -46,7 +46,7 @@
                     elevation="0"
                     fab
                     height="36"
-                    small
+                    size="small"
                     tile
                     v-bind="props"
                     width="34"
@@ -56,7 +56,7 @@
               </template>
               Export CSV...
             </v-tooltip>
-            <v-tooltip top>
+            <v-tooltip location="top">
               <template #activator="{ props }">
                 <v-btn
                     v-if="!props.overviewPage"
@@ -66,7 +66,7 @@
                     fab
                     height="36"
                     width="34"
-                    small
+                    size="small"
                     tile
                     v-bind="props"
                     @click="toggleManualEntry">
@@ -85,8 +85,8 @@
                       <v-text-field
                           v-model="manualEntryForm.description"
                           label="Description"
-                          dense
-                          outlined
+                          density="compact"
+                          variant="outlined"
                           hide-details
                           maxlength="160">
                         <template #append>
@@ -99,7 +99,7 @@
                     <v-col cols="2">
                       <v-select
                           v-model="manualEntryForm.severity"
-                          dense
+                          density="compact"
                           hide-details
                           :items="[
                             {label: 'INFO', value: 9},
@@ -107,28 +107,28 @@
                             {label:'ALERT', value:17},
                             {label:'DANGER', value: 21}
                           ]"
-                          item-text="label"
+                          item-title="label"
                           item-value="value"
                           label="Severity"
-                          outlined/>
+                          variant="outlined"/>
                     </v-col>
                     <v-col cols="2">
                       <v-select
                           v-model="manualEntryForm.floor"
-                          dense
+                          density="compact"
                           hide-details
                           :items="floors"
                           label="Floor"
-                          outlined/>
+                          variant="outlined"/>
                     </v-col>
                     <v-col cols="2">
                       <v-select
                           v-model="manualEntryForm.zone"
-                          dense
+                          density="compact"
                           hide-details
                           :items="zones"
                           label="Zone"
-                          outlined/>
+                          variant="outlined"/>
                     </v-col>
                     <v-col cols="auto">
                       <v-btn @click="addManualEntry" :disabled="!manualEntryForm.description" color="primary">
@@ -148,7 +148,7 @@
           <subsystem-icon size="20px" :subsystem="item.subsystem" no-default/>
         </template>
         <template #item.source="{ item }">
-          <v-tooltip bottom>
+          <v-tooltip location="bottom">
             <template #activator="{ props }">
               <span v-bind="props">{{ formatSource(item.source) }}</span>
             </template>
@@ -156,7 +156,7 @@
           </v-tooltip>
         </template>
         <template #item.severity="{ item }">
-          <v-tooltip v-if="item.resolveTime" bottom>
+          <v-tooltip v-if="item.resolveTime" location="bottom">
             <template #activator="{ props }">
               <span v-bind="props">RESOLVED</span>
             </template>

@@ -6,10 +6,10 @@
           <v-icon>mdi-arrow-left</v-icon>
         </v-btn>
       </v-expand-x-transition>
-      <v-text-field v-bind="topTextInputBind" clearable hide-details dense v-model="topSearch"/>
+      <v-text-field v-bind="topTextInputBind" clearable hide-details density="compact" v-model="topSearch"/>
     </v-card-title>
     <v-card-subtitle class="pt-2 pb-0">
-      <v-btn text block small @click="topClear()" :disabled="!topIsDefaultChoice" class="overlap">
+      <v-btn variant="text" block size="small" @click="topClear()" :disabled="!topIsDefaultChoice" class="overlap">
         <v-slide-x-transition>
           <span v-if="!pageIsSelected">Clear All Filters</span>
         </v-slide-x-transition>

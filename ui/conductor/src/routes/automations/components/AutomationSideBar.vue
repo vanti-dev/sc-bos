@@ -6,7 +6,7 @@
       <v-btn class="bg-primary" :disabled="blockActions" @click="saveConfig">Save</v-btn>
     </v-card-actions>
     <v-snackbar v-model="saveConfirm" timeout="2000" color="success" max-width="250" min-width="200">
-      <span class="text-body-large align-baseline"><v-icon left>mdi-content-save-check</v-icon>Config saved</span>
+      <span class="text-body-large align-baseline"><v-icon start>mdi-content-save-check</v-icon>Config saved</span>
     </v-snackbar>
   </side-bar>
 </template>

@@ -3,8 +3,7 @@
 
   <v-menu
       v-else
-      left
-      bottom
+      location="left bottom"
       offset-y
       nudge-bottom="4px"
       nudge-right="4px"

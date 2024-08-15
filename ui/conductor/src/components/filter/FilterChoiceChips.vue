@@ -28,7 +28,7 @@
           v-else
           :key="choice.filter"
           @click:close="clear(choice.filter)"
-          close
+          closable
           color="neutral-lighten-2">
         {{ choice.text ?? choice.value }}
       </v-chip>

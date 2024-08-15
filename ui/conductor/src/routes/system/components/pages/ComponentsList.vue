@@ -3,13 +3,13 @@
     <v-row class="ml-0 pl-0 my-0">
       <h3 class="text-h3 pt-2 pb-6">Components</h3>
       <v-spacer/>
-      <v-tooltip left>
+      <v-tooltip location="left">
         <template #activator="{ props }">
           <v-btn
               class="mr-4"
               color="primary"
               fab
-              small
+              size="small"
               v-bind="props"
               @click="showModal = true">
             <v-icon>mdi-plus</v-icon>
@@ -52,7 +52,7 @@
         <!--        <v-card-title class="text-body-large font-weight-bold">{{ node.name }}</v-card-title>-->
 
         <v-card-text>
-          <v-list dense>
+          <v-list density="compact">
             <v-list-item
                 class="pa-0"
                 style="min-height: 20px">
@@ -68,8 +68,8 @@
             </v-list-item>
           </v-list>
           <v-chip-group>
-            <v-chip v-if="isProxy(node.name)" color="accent" small>gateway</v-chip>
-            <v-chip v-if="isHub(node.name) && !isProxy(node.name)" color="primary" small>hub</v-chip>
+            <v-chip v-if="isProxy(node.name)" color="accent" size="small">gateway</v-chip>
+            <v-chip v-if="isHub(node.name) && !isProxy(node.name)" color="primary" size="small">hub</v-chip>
           </v-chip-group>
         </v-card-text>
       </v-card>

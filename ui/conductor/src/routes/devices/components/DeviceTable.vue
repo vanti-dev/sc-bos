@@ -27,7 +27,7 @@
                   append-icon="mdi-magnify"
                   label="Search devices"
                   hide-details
-                  filled/>
+                  variant="filled"/>
             </v-col>
             <v-spacer/>
             <v-col cols="12" md="2">
@@ -37,7 +37,7 @@
                   :items="floorList"
                   label="Floor"
                   hide-details
-                  filled/>
+                  variant="filled"/>
             </v-col>
             <!--            <v-col cols="12" md="2">
               <v-select
@@ -45,7 +45,7 @@
                   :items="zoneList"
                   label="Zone"
                   hide-details
-                  filled/>
+                  variant="filled"/>
             </v-col>-->
           </v-row>
         </v-container>

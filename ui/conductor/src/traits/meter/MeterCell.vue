@@ -2,11 +2,11 @@
   <status-alert v-if="props.streamError" icon="mdi-counter" :resource="props.streamError"/>
 
   <span class="text-no-wrap ed-cell" v-else-if="value && !props.streamError">
-    <v-tooltip bottom>
+    <v-tooltip location="bottom">
       <template #activator="{ props }">
         <span v-bind="props">
           <span>{{ usageAndUnit }}</span>
-          <v-icon right size="20">mdi-counter</v-icon>
+          <v-icon end size="20">mdi-counter</v-icon>
         </span>
       </template>
       <span>Meter reading</span>

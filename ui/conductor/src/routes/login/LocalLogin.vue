@@ -9,7 +9,7 @@
           label="Username"
           placeholder="Username"
           :rules="[rules.required]"
-          outlined
+          variant="outlined"
           v-model="username"
           type="text"
           required/>
@@ -17,7 +17,7 @@
           label="Password"
           placeholder="Password"
           :rules="[rules.required]"
-          outlined
+          variant="outlined"
           v-model="password"
           type="password"
           required/>
@@ -27,7 +27,7 @@
             color="primary"
             :disabled="disableSignIn"
             block
-            large
+            size="large"
             class="text-body-1 font-weight-bold mb-4">
           Sign In
         </v-btn>

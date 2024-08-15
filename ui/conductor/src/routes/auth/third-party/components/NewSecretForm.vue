@@ -17,7 +17,7 @@
               label="Note"
               v-model="newSecret.note"
               required
-              filled
+              variant="filled"
               hide-details="auto"
               hint="Easily recognisable (e.g. 'Read only', 'AV System')"
               :rules="noteRules"/>
@@ -26,7 +26,7 @@
                 v-model="newSecret.expiresIn"
                 :items="Object.values(suggestedExpiresIn)"
                 hide-details
-                filled
+                variant="filled"
                 class="expires-in"
                 label="Expires"/>
             <v-menu
@@ -55,8 +55,8 @@
           </div>
         </v-card-text>
         <v-card-actions class="justify-end">
-          <v-btn type="cancel" text @click.prevent="cancelAddSecret">Cancel</v-btn>
-          <v-btn class="bg-primary" type="submit" depressed :disabled="!formValid">Create Secret</v-btn>
+          <v-btn type="cancel" variant="text" @click.prevent="cancelAddSecret">Cancel</v-btn>
+          <v-btn class="bg-primary" type="submit" variant="flat" :disabled="!formValid">Create Secret</v-btn>
         </v-card-actions>
         <v-progress-linear color="primary" indeterminate :active="createSecretTracker.loading"/>
       </v-form>
@@ -86,12 +86,12 @@
           </v-list-item-action>
         </v-list-item>
         <v-card-actions class="justify-end pt-4 pb-0 pr-0">
-          <v-btn outlined @click="creatingSecret=true" v-if="createSecretTracker.error">Back</v-btn>
+          <v-btn variant="outlined" @click="creatingSecret=true" v-if="createSecretTracker.error">Back</v-btn>
           <v-btn class="bg-primary" @click="finished">Done</v-btn>
         </v-card-actions>
       </v-list>
       <v-snackbar v-model="copyConfirm" timeout="2000" color="success">
-        <span class="text-body-large align-baseline"><v-icon left>mdi-check-circle</v-icon>Secret copied</span>
+        <span class="text-body-large align-baseline"><v-icon start>mdi-check-circle</v-icon>Secret copied</span>
       </v-snackbar>
     </v-card>
     <template #activator="attrs">

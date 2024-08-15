@@ -4,18 +4,18 @@
         v-model="inputModel"
         @update:model-value="sendZoneEvent($event)"
         :items="inputItems"
-        item-text="title"
+        item-title="title"
         item-value="name"
         :loading="findZonesLoading"
-        :search-input.sync="searchText"
+        :search.sync="searchText"
         :message="findZonesError || []"
         no-filter
         chips
-        deletable-chips
-        dense
+        closable-chips
+        density="compact"
         hide-details="auto"
         :no-data-text="`No ${zonesOnly ? 'zones' : 'devices'} found match your query`"
-        outlined
+        variant="outlined"
         multiple
         auto-select-first
         return-object
@@ -56,7 +56,7 @@
         </v-btn>
       </template>
     </v-combobox>
-    <v-menu bottom offset-y nudge-top="-8" v-if="!blockActions">
+    <v-menu location="bottom" offset-y nudge-top="-8" v-if="!blockActions">
       <template #activator="{props}">
         <v-btn icon v-bind="props" class="ml-2 mr-n2">
           <v-icon>mdi-dots-vertical</v-icon>

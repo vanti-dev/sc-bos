@@ -3,7 +3,7 @@
     <v-spacer/>
     <v-select
         v-for="dropdown in filterDropdowns"
-        filled
+        variant="filled"
         hide-details
         :items="dropdown.items.value"
         :key="dropdown.label"

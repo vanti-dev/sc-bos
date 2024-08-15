@@ -5,11 +5,11 @@
           v-model="servicesStore.node"
           :items="nodesListValues"
           label="System Component"
-          item-text="name"
+          item-title="name"
           item-value="name"
           hide-details="auto"
           :loading="hubStore.nodesListCollection.loading ?? true"
-          outlined/>
+          variant="outlined"/>
       <v-spacer/>
     </v-row>
     <v-data-table
@@ -25,7 +25,7 @@
       <template #item.actions="{item}">
         <v-btn
             v-if="item.active"
-            outlined
+            variant="outlined"
             class="automation-device__btn--red"
             color="error"
             :disabled="blockActions"
@@ -35,7 +35,7 @@
         </v-btn>
         <v-btn
             v-else
-            outlined
+            variant="outlined"
             class="automation-device__btn--green"
             color="success"
             :disabled="blockActions"

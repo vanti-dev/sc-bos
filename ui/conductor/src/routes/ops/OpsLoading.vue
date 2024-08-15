@@ -7,7 +7,7 @@
             indeterminate
             size="64"
             color="primary"/>
-        <v-alert v-else dense outlined color="error">
+        <v-alert v-else density="compact" variant="outlined" color="error">
           {{ err }}
         </v-alert>
       </v-col>

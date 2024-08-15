@@ -1,9 +1,9 @@
 <template>
   <status-alert v-if="props.streamError" icon="mdi-cancel" :resource="props.streamError"/>
 
-  <v-tooltip v-else left>
+  <v-tooltip v-else location="left">
     <template #activator="{props}">
-      <v-icon :class="[grantClass]" right size="20" v-bind="props">mdi-door</v-icon>
+      <v-icon :class="[grantClass]" end size="20" v-bind="props">mdi-door</v-icon>
     </template>
     <span class="text-capitalize">Access: {{ grantState.split('_').join(' ') }}</span>
   </v-tooltip>

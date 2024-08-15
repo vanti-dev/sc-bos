@@ -8,8 +8,8 @@
             v-model="delayTimeout"
             hide-details
             :disabled="blockActions"
-            dense
-            outlined
+            density="compact"
+            variant="outlined"
             :rules="[delayRule]"
             readonly
             style="width: 100px;"/>

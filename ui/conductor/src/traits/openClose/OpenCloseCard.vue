@@ -1,6 +1,6 @@
 <template>
   <v-card elevation="0" tile>
-    <v-list tile class="ma-0 pa-0" two-line>
+    <v-list tile class="ma-0 pa-0" lines="two">
       <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Open / Closed</v-list-subheader>
 
       <v-list-item class="mt-n4 mb-4">

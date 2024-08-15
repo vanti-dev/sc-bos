@@ -19,7 +19,7 @@
           <template #confirmBtn>I understand, delete account</template>
           <template #activator="{ on, attrs }">
             <v-btn
-                outlined
+                variant="outlined"
                 color="error"
                 :disabled="blockActions"
                 width="100%"

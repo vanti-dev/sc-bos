@@ -1,10 +1,10 @@
 <template>
-  <v-tooltip bottom>
+  <v-tooltip location="bottom">
     <template #activator="{ props }">
       <v-chip
           v-bind="props"
           @click="toggle"
-          close
+          closable
           @click:close="clear">
         {{ text }}
       </v-chip>

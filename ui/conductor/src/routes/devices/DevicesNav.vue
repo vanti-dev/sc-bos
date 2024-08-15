@@ -1,5 +1,5 @@
 <template>
-  <v-list class="pa-0" dense nav>
+  <v-list class="pa-0" density="compact" nav>
     <v-list-item
         v-for="(device, key) in availableSubSystems"
         :key="key"

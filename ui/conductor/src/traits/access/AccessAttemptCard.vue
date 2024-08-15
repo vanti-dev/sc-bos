@@ -1,6 +1,6 @@
 <template>
   <v-card elevation="0" tile>
-    <v-list tile class="ma-0 pa-0" two-line>
+    <v-list tile class="ma-0 pa-0" lines="two">
       <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Access Attempt</v-list-subheader>
 
       <v-col v-for="(val, key) in accessAttemptInfo[0]" :key="key" class="pa-0" cols="align-self">

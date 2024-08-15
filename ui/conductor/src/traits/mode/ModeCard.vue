@@ -8,21 +8,21 @@
             <v-select
                 :label="mode.title"
                 :items="mode.values"
-                :value="mode.value"
+                :model-value="mode.value"
                 @update:model-value="updateMode(mode.key, $event, true)"
                 :disabled="blockActions || loading"
-                outlined
-                dense
+                variant="outlined"
+                density="compact"
                 hide-details/>
           </template>
           <template v-else>
             <v-text-field
                 :label="mode.title"
-                :value="mode.value"
+                :model-value="mode.value"
                 @update:model-value="updateMode(mode.key, $event)"
                 :disabled="blockActions || loading"
-                outlined
-                dense
+                variant="outlined"
+                density="compact"
                 hide-details/>
           </template>
         </v-list-item>
@@ -30,7 +30,7 @@
       <v-card-actions class="px-4">
         <v-spacer/>
         <v-btn
-            text
+            variant="text"
             type="submit"
             @click="saveModeValues"
             :disabled="updateValue.loading || !dirty || blockActions">

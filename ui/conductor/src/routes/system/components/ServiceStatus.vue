@@ -9,10 +9,10 @@
             v-bind="attrs"
             :size="20"
             :width="2"
-            :value="progressToNextAttempt"
+            :model-value="progressToNextAttempt"
             color="error-lighten-2"
             class="ml-2"/>
-        <v-icon v-else v-bind="props" class="text-error-lighten-2" right>
+        <v-icon v-else v-bind="props" class="text-error-lighten-2" end>
           mdi-alert-circle-outline
         </v-icon>
       </template>

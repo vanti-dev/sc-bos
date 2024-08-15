@@ -1,5 +1,5 @@
 <template>
-  <v-list class="pa-0" dense nav>
+  <v-list class="pa-0" density="compact" nav>
     <v-list-group group="zone">
       <template #activator>
         <v-list-item>

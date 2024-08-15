@@ -24,7 +24,7 @@
       <v-card-actions v-if="alert.length" class="mt-4">
         <v-col class="mx-0 px-0" cols="align-self" style="max-width: 370px">
           <v-list-item class="px-2">
-            <v-tooltip bottom>
+            <v-tooltip location="bottom">
               <template #activator="{ props }">
                 <v-list-item-title class="text-uppercase" v-bind="props">
                   {{ alert.description }}

@@ -1,9 +1,8 @@
 <template>
   <v-menu
-      bottom
+      location="bottom left"
       :close-on-content-click="false"
       content-class="elevation-0"
-      left
       max-height="600px"
       max-width="550px"
       min-width="400px"
@@ -13,7 +12,7 @@
       <v-btn
           class="py-1 px-3"
           style="text-align: center"
-          text
+          variant="text"
           v-bind="props">
         <span class="text-title mr-1">Smart Core OS:</span>
         <span :class="`text-title-bold text-uppercase ${generalStatus}`">
@@ -31,14 +30,14 @@
           {{ isLoading ? '- Checking...' : 'Updated ' + timeAgo }}
         </span>
         <v-spacer/>
-        <v-tooltip left>
+        <v-tooltip location="left">
           <template #activator="{ props }">
             <v-btn
 
                 v-bind="props"
                 :class="['mb-0', {'rotate-icon': isRefreshing}]"
                 icon
-                small
+                size="small"
                 style="padding-left: 1px;"
                 @click="triggerRefresh">
               <v-icon size="18">mdi-reload</v-icon>
@@ -51,7 +50,7 @@
       </v-card-title>
       <v-card-text class="d-flex flex-row justify-center align-center mb-n1 mt-4">
         <!-- Display chips and status alerts -->
-        <v-chip class="bg-neutral-lighten-1" small>UI</v-chip>
+        <v-chip class="bg-neutral-lighten-1" size="small">UI</v-chip>
         <template v-for="(chip, index) in statusPopupSetup">
           <v-divider class="mx-2" style="width: 10px; max-width: 10px;" :key="index + '-divider'"/>
           <status-alert
@@ -67,7 +66,7 @@
               :key="chip.id + '-chip'"
               :class="chip.color"
               :disabled="chipDisabled"
-              small
+              size="small"
               :to="navigateToNodes(chip.to)">
             {{ chip.label }}
           </v-chip>

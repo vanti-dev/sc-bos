@@ -1,17 +1,17 @@
 <template>
   <v-menu
       offset-y
-      bottom
+      location="bottom"
       :close-on-content-click="false"
       @update:model-value="reset"
       min-width="400"
       nudge-bottom="4">
     <template #activator="{ props: menuProps }">
-      <v-tooltip bottom>
+      <v-tooltip location="bottom">
         <template #activator="{ props: tooltipProps }">
           <v-chip
               v-bind="{ ...menuProps, ...tooltipProps }"
-              close
+              closable
               @click:close="clear">
             {{ text }}
           </v-chip>

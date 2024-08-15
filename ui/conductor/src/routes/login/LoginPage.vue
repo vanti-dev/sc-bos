@@ -29,7 +29,7 @@
         {{ snackbar.message }}
 
         <template #actions="attrs">
-          <v-btn color="pink" text v-bind="attrs" @click="snackbar.visible = false">
+          <v-btn color="pink" variant="text" v-bind="attrs" @click="snackbar.visible = false">
             Close
           </v-btn>
         </template>

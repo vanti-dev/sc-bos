@@ -1,5 +1,5 @@
 <template>
-  <v-list class="d-flex flex-column pa-0" dense :nav="!miniVariant">
+  <v-list class="d-flex flex-column pa-0" density="compact" :nav="!miniVariant">
     <ops-nav-list-item
         v-for="(item, index) in props.items"
         :key="index"

@@ -1,18 +1,18 @@
 <template>
   <div>
     <v-btn
-        text
+        variant="text"
         elevation="0"
         v-if="!loggedIn"
         :class="btnClass"
         to="/login">
-      <v-icon left>mdi-account-circle-outline</v-icon>
+      <v-icon start>mdi-account-circle-outline</v-icon>
       Sign in
     </v-btn>
-    <v-menu v-else bottom left offset-y max-width="100%" tile>
+    <v-menu v-else location="bottom left" offset-y max-width="100%" tile>
       <template #activator="{ props }">
         <v-btn icon elevation="0" :class="btnClass" v-bind="props">
-          <v-icon :left="!loggedIn">mdi-account-circle-outline</v-icon>
+          <v-icon :start="!loggedIn">mdi-account-circle-outline</v-icon>
         </v-btn>
       </template>
 

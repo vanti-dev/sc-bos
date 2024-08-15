@@ -8,8 +8,8 @@
       color="transparent"
       :expand-on-hover="!pinDrawer"
       floating
-      :mini-variant.sync="miniVariant"
-      :mini-variant-width="drawerWidth"
+      :rail.sync="miniVariant"
+      :rail-width="drawerWidth"
       width="275"
       permanent>
     <router-view
@@ -20,10 +20,10 @@
       <div class="pa-2">
         <v-btn
             v-if="hasNav && !miniVariant"
-            text
+            variant="text"
             block
             @click="pinDrawer = !pinDrawer">
-          <v-icon left>mdi-pin-outline</v-icon>
+          <v-icon start>mdi-pin-outline</v-icon>
           {{ !pinDrawer ? 'Pin navigation' : 'Unpin navigation' }}
         </v-btn>
       </div>
