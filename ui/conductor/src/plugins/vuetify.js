@@ -8,82 +8,68 @@ export default createVuetify({
     Intersect
   },
   theme: {
-    dark: true,
-    options: {
-      customProperties: true
-    },
+    defaultTheme: 'dark',
     themes: {
       dark: {
-        primary: {
-          darken4: '#00525E',
-          darken1: '#00AAC1',
-          base: '#00BED6',
-          lighten1: '#33CADE',
-          lighten2: '#4DD1E2',
-          lighten3: '#66D7E6',
-          lighten4: '#80DEEB',
-          lighten5: '#99E5EF'
-        },
-        secondary: {
-          darken1: '#C5CC3C',
-          base: '#DAE343',
-          lighten1: '#E2E969',
-          lighten2: '#E6EB7B',
-          lighten3: '#E9EE8E',
-          lighten4: '#EDF1A1',
-          lighten5: '#F1F4B4'
-        },
-        secondaryTeal: {
-          darken1: '#004651',
-          base: '#195962',
-          lighten1: '#336B74',
-          lighten2: '#4D7E85',
-          lighten3: '#669097',
-          lighten4: '#80A3A8',
-          lighten5: '#99B5B9'
-        },
-        accent: {
-          darken1: '#FFA400',
-          base: '#FFAF25',
-          lighten1: '#FFB833',
-          lighten2: '#FFC14D',
-          lighten3: '#FFCA66',
-          lighten4: '#FFD380',
-          lighten5: '#FFDB99'
-        },
-        neutral: {
-          darken1: '#101820',
-          base: '#282F36',
-          lighten1: '#40464D',
-          lighten2: '#585D63',
-          lighten3: '#707479',
-          lighten4: '#888C90',
-          lighten5: '#9FA3A6',
-          lighten6: '#B7BABC',
-          lighten7: '#CFD1D2',
-          lighten8: '#ECEDED',
-          lighten9: '#F7F7F7'
-        },
-        error: {
-          darken1: '#BB0434',
-          base: '#D0043C',
-          lighten1: '#D93661',
-          lighten2: '#DE4F75',
-          lighten3: '#E36889',
-          lighten4: '#E8829D',
-          lighten5: '#EC9BB0'
-        },
-        success: {
-          darken1: '#00613E',
-          base: '#008052',
-          lighten1: '#00955F',
-          lighten2: '#00A76B',
-          lighten3: '#00B674',
-          lighten4: '#00C27C',
-          lighten5: '#0CCE88'
-        },
-        info: '#00BED6',
-        warning: '#FFA400'
+        dark: true,
+        colors: {
+          'primary-darken-4': '#00525E',
+          'primary-darken-1': '#00AAC1',
+          'primary': '#00BED6',
+          'primary-lighten-1': '#33CADE',
+          'primary-lighten-2': '#4DD1E2',
+          'primary-lighten-3': '#66D7E6',
+          'primary-lighten-4': '#80DEEB',
+          'primary-lighten-5': '#99E5EF',
+          'secondary-darken-1': '#C5CC3C',
+          'secondary': '#DAE343',
+          'secondary-lighten-1': '#E2E969',
+          'secondary-lighten-2': '#E6EB7B',
+          'secondary-lighten-3': '#E9EE8E',
+          'secondary-lighten-4': '#EDF1A1',
+          'secondary-lighten-5': '#F1F4B4',
+          'secondary-teal-darken-1': '#004651',
+          'secondary-teal': '#195962',
+          'secondary-teal-lighten-1': '#336B74',
+          'secondary-teal-lighten-2': '#4D7E85',
+          'secondary-teal-lighten-3': '#669097',
+          'secondary-teal-lighten-4': '#80A3A8',
+          'secondary-teal-lighten-5': '#99B5B9',
+          'accent-darken-1': '#FFA400',
+          'accent': '#FFAF25',
+          'accent-lighten-1': '#FFB833',
+          'accent-lighten-2': '#FFC14D',
+          'accent-lighten-3': '#FFCA66',
+          'accent-lighten-4': '#FFD380',
+          'accent-lighten-5': '#FFDB99',
+          'neutral-darken-1': '#101820',
+          'neutral': '#282F36',
+          'neutral-lighten-1': '#40464D',
+          'neutral-lighten-2': '#585D63',
+          'neutral-lighten-3': '#707479',
+          'neutral-lighten-4': '#888C90',
+          'neutral-lighten-5': '#9FA3A6',
+          'neutral-lighten-6': '#B7BABC',
+          'neutral-lighten-7': '#CFD1D2',
+          'neutral-lighten-8': '#ECEDED',
+          'neutral-lighten-9': '#F7F7F7',
+          'error-darken-1': '#BB0434',
+          'error': '#D0043C',
+          'error-lighten-1': '#D93661',
+          'error-lighten-2': '#DE4F75',
+          'error-lighten-3': '#E36889',
+          'error-lighten-4': '#E8829D',
+          'error-lighten-5': '#EC9BB0',
+          'success-darken-1': '#00613E',
+          'success': '#008052',
+          'success-lighten-1': '#00955F',
+          'success-lighten-2': '#00A76B',
+          'success-lighten-3': '#00B674',
+          'success-lighten-4': '#00C27C',
+          'success-lighten-5': '#0CCE88',
+          'info': '#00BED6',
+          'warning': '#FFA400'
+        }
       }
     }
   }
