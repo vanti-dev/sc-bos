@@ -9,11 +9,11 @@
     </v-row>
 
     <content-card :class="['px-8', {'mt-8 px-4': !props.overviewPage}]">
-      <v-data-table
+      <v-data-table-server
           :headers="headers"
           :items="alerts.pageItems"
           disable-sort
-          :server-items-length="queryTotalCount"
+          :items-length="queryTotalCount"
           :row-props="rowProps"
           :options.sync="dataTableOptions"
           :footer-props="setFooterProps"
@@ -173,7 +173,7 @@
               @acknowledge="notifications.setAcknowledged(true, item, name)"
               @unacknowledge="notifications.setAcknowledged(false, item, name)"/>
         </template>
-      </v-data-table>
+      </v-data-table-server>
     </content-card>
   </div>
 </template>
