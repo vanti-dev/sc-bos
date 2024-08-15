@@ -9,7 +9,7 @@
           <template #activator="{ props }">
             <v-btn
                 dark
-                icon
+                rounded="circle"
                 v-bind="props">
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>

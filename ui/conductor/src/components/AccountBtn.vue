@@ -11,7 +11,7 @@
     </v-btn>
     <v-menu v-else location="bottom left" max-width="100%" tile>
       <template #activator="{ props }">
-        <v-btn icon elevation="0" :class="btnClass" v-bind="props">
+        <v-btn rounded="circle" elevation="0" :class="btnClass" v-bind="props">
           <v-icon :start="!loggedIn">mdi-account-circle-outline</v-icon>
         </v-btn>
       </template>

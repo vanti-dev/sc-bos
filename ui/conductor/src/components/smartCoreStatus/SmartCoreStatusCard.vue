@@ -35,7 +35,7 @@
 
                 v-bind="props"
                 :class="['mb-0', {'rotate-icon': isRefreshing}]"
-                icon
+                rounded="circle"
                 size="small"
                 style="padding-left: 1px;"
                 @click="triggerRefresh">

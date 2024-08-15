@@ -30,7 +30,7 @@
             <template #confirmBtn>Delete Token</template>
             <template #activator="{ on, attrs }">
               <v-list-item-action v-show="hover" class="my-0" v-bind="attrs">
-                <v-btn icon size="small" v-on="on" :disabled="blockActions">
+                <v-btn rounded="circle" size="small" v-on="on" :disabled="blockActions">
                   <v-icon color="neutral-lighten-5">mdi-trash-can</v-icon>
                 </v-btn>
               </v-list-item-action>

@@ -5,7 +5,7 @@
         :key="b.c"
         :class="[b.c, 'black--text']"
         @click="handleClick(b.c)"
-        icon
+        rounded="circle"
         elevation="2">
       <slot :name="b.c">
         <v-icon>{{ b.i }}</v-icon>

@@ -12,7 +12,7 @@
     </template>
     <v-list-item-action>
       <v-icon v-if="props.defaultChoice">mdi-chevron-right</v-icon>
-      <v-btn v-else icon @click.stop="emits('clear', props.filter.key)" class="mr-n1">
+      <v-btn v-else rounded="circle" @click.stop="emits('clear', props.filter.key)" class="mr-n1">
         <v-icon size="20">mdi-close</v-icon>
       </v-btn>
     </v-list-item-action>

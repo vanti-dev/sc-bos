@@ -3,7 +3,7 @@
     <template #activator="{ props }">
       <v-btn
           v-bind="props"
-          icon
+          rounded="circle"
           v-if="!acked"
           color="warning"
           :disabled="blockActions"

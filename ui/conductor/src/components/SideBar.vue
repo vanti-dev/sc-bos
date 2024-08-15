@@ -5,7 +5,7 @@
         {{ sidebar.title }}
       </span>
       <v-spacer/>
-      <v-btn icon size="small" @click="sidebar.closeSidebar()" color="neutral-lighten-4">
+      <v-btn rounded="circle" size="small" @click="sidebar.closeSidebar()" color="neutral-lighten-4">
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-list-subheader>

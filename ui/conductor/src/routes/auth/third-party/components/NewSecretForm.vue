@@ -79,7 +79,7 @@
           </template>
           {{ createdSecret.secret }}
           <v-list-item-action>
-            <v-btn icon @click="copySecret">
+            <v-btn rounded="circle" @click="copySecret">
               <v-icon>mdi-content-copy</v-icon>
             </v-btn>
           </v-list-item-action>

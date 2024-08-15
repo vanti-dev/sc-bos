@@ -28,8 +28,7 @@
             <template #activator="{ props }">
               <v-btn
                   class="ml-auto mr-3"
-                  icon
-
+                  rounded="circle"
                   v-bind="props">
                 <v-icon size="24">mdi-dots-vertical</v-icon>
               </v-btn>

@@ -14,7 +14,6 @@
           hide-details="auto"
           readonly/>
       <v-btn
-          icon
           tile
           class="copy-btn"
           :disabled="blockSystemEdit"

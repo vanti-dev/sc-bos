@@ -2,7 +2,7 @@
   <v-card>
     <v-card-title>
       <v-expand-x-transition>
-        <v-btn icon v-if="pageIsSelected" @click="activeFilter = null" class="ml-n2 mr-2">
+        <v-btn rounded="circle" v-if="pageIsSelected" @click="activeFilter = null" class="ml-n2 mr-2">
           <v-icon>mdi-arrow-left</v-icon>
         </v-btn>
       </v-expand-x-transition>

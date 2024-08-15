@@ -22,7 +22,7 @@
       <v-btn
           v-show="hasChildren && !props.miniVariant"
           class="ml-2"
-          icon
+          rounded="circle"
           @click="toggle">
         <v-icon>{{ isOpen ? 'mdi-chevron-down' : 'mdi-chevron-left' }}</v-icon>
       </v-btn>

@@ -6,7 +6,7 @@
           {{ modalTitle }}
         </v-card-title>
         <v-spacer/>
-        <v-btn class="mr-2 mt-3" icon @click="dialogState = false">
+        <v-btn class="mr-2 mt-3" rounded="circle" @click="dialogState = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-row>

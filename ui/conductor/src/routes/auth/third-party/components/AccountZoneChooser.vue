@@ -58,7 +58,7 @@
     </v-combobox>
     <v-menu location="bottom" v-if="!blockActions">
       <template #activator="{props}">
-        <v-btn icon v-bind="props" class="ml-2 mr-n2">
+        <v-btn rounded="circle" v-bind="props" class="ml-2 mr-n2">
           <v-icon>mdi-dots-vertical</v-icon>
         </v-btn>
       </template>

@@ -12,7 +12,7 @@
       <v-switch2 :indeterminate="_indeterminate" v-model="_value" style="pointer-events: none"/>
     </v-list-item-action>
     <v-list-item-action>
-      <v-btn icon @click.stop="emits('clear')" class="mx-n2" :disabled="isDefault">
+      <v-btn rounded="circle" @click.stop="emits('clear')" class="mx-n2" :disabled="isDefault">
         <v-icon size="20">mdi-close</v-icon>
       </v-btn>
     </v-list-item-action>

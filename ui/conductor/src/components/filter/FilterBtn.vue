@@ -7,7 +7,7 @@
     <template #activator="{ props }">
       <v-btn
           v-bind="props"
-          icon
+          rounded
           class="filter-btn rounded">
         <v-badge dot v-if="badgeShown" :color="badgeColor">
           <v-icon>mdi-filter</v-icon>
