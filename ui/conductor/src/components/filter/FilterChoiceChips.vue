@@ -1,14 +1,12 @@
 <template>
   <span class="chip-list">
-    <template v-for="choice in chipChoices">
+    <template v-for="choice in chipChoices" :key="choice.filter">
       <boolean-chooser-chip
           v-if="choiceType(choice) === 'boolean'"
-          :key="choice.filter"
           :ctx="usePageCtx(ctx, choice.filter)"
           color="neutral-lighten-2"/>
       <menu-chooser-chip
           v-else-if="choiceType(choice) === 'list'"
-          :key="choice.filter"
           :ctx="usePageCtx(ctx, choice.filter)"
           color="neutral-lighten-2"
           @active="activateChip($event, choice)"
@@ -17,7 +15,6 @@
       </menu-chooser-chip>
       <menu-chooser-chip
           v-else-if="choiceType(choice) === 'range'"
-          :key="choice.filter"
           :ctx="usePageCtx(ctx, choice.filter)"
           color="neutral-lighten-2"
           @active="activateChip($event, choice)"
@@ -26,7 +23,6 @@
       </menu-chooser-chip>
       <v-chip
           v-else
-          :key="choice.filter"
           @click:close="clear(choice.filter)"
           closable
           color="neutral-lighten-2">

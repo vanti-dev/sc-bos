@@ -1,12 +1,11 @@
 <template>
   <div class="px-6">
     <div class="pt-2 pb-2 px-6">
-      <template v-for="(value, key) in props.metadata">
+      <template v-for="(value, key) in props.metadata" :key="key">
         <!-- Check if the value is not empty or an empty array/object -->
         <v-list-item
             v-if="isValueAvailable(value)"
-            class="ma-0 pa-0 mb-n4"
-            :key="key">
+            class="ma-0 pa-0 mb-n4">
           <div class="d-flex flex-row flex-nowrap align-start">
             <v-col cols="align-self" class="ma-0 pa-0 mr-4">
               <v-list-item-title class="text-capitalize font-weight-bold ma-0 pa-0">
@@ -29,11 +28,10 @@
               </v-list-item-subtitle>
               <!-- Handle nested objects -->
               <div v-else class="d-flex flex-column ml-n5">
-                <template v-for="(subValue, subKey) in value">
+                <template v-for="(subValue, subKey) in value" :key="subKey">
                   <v-list-item
                       v-if="isValueAvailable(subValue)"
-                      class="ma-0 pa-0 mt-n3 mb-n2"
-                      :key="subKey">
+                      class="ma-0 pa-0 mt-n3 mb-n2">
                     <div
                         v-if="isValueAvailable(subValue)"
                         class="d-flex flex-row pb-4">
@@ -49,11 +47,10 @@
                         </v-list-item-subtitle>
                         <!-- Handle arrays and objects inside nested objects -->
                         <div v-else>
-                          <template v-for="(deepValue, deepKey) in subValue">
+                          <template v-for="(deepValue, deepKey) in subValue" :key="deepKey">
                             <v-list-item-subtitle
                                 v-if="isValueAvailable(deepValue)"
-                                class="ma-0 pa-0 text-wrap"
-                                :key="deepKey">
+                                class="ma-0 pa-0 text-wrap">
                               {{ camelToSentence(deepKey) }}: {{
                                 isObject(deepValue) ? deepValue.name || JSON.stringify(deepValue) : deepValue
                               }}

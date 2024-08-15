@@ -55,11 +55,10 @@
       </v-list>
       <v-divider v-if="displayedCertificate" class="mt-5"/>
       <div v-if="displayedCertificate" class="pt-2 pb-4">
-        <template v-for="(value, key) in displayedCertificate">
+        <template v-for="(value, key) in displayedCertificate" :key="key">
           <v-list-item
               v-if="value"
-              class="ma-0 pa-0 mb-n4"
-              :key="key">
+              class="ma-0 pa-0 mb-n4">
             <div class="d-flex flex-row flex-nowrap align-start">
               <v-col cols="align-self" class="ma-0 pa-0 mr-n4">
                 <v-list-item-title class="text-capitalize font-weight-bold ma-0 pa-0">
@@ -73,8 +72,8 @@
                   {{ value }}
                 </v-list-item-subtitle>
                 <div v-else class="d-flex flex-column">
-                  <template v-for="(subValue, subKey) in value">
-                    <v-list-item v-if="subValue" class="ma-0 pa-0 mt-n3 mb-n2" :key="subKey">
+                  <template v-for="(subValue, subKey) in value" :key="subKey">
+                    <v-list-item v-if="subValue" class="ma-0 pa-0 mt-n3 mb-n2">
                       <div class="d-flex flex-row pb-4">
                         <v-col cols="3" class="ma-0 pa-0">
                           <v-list-item-title

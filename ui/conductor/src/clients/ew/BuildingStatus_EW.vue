@@ -31,8 +31,8 @@
     <div id="status-grid">
       <span/>
       <span v-for="sys in systems" :key="sys.shortName" class="text-title system-name">{{ sys.shortName }}</span>
-      <template v-for="floor in floors.slice().reverse()">
-        <span :key="floor.name" class="floor-number text-title">{{ floor.name }}</span>
+      <template v-for="floor in floors.slice().reverse()" :key="floor.name">
+        <span class="floor-number text-title">{{ floor.name }}</span>
         <span
             v-for="sys in systems"
             :key="floor.name+sys.shortName"

@@ -48,11 +48,10 @@
       <v-card-text class="d-flex flex-row justify-center align-center mb-n1 mt-4">
         <!-- Display chips and status alerts -->
         <v-chip class="bg-neutral-lighten-1" size="small">UI</v-chip>
-        <template v-for="(chip, index) in statusPopupSetup">
-          <v-divider class="mx-2" style="width: 10px; max-width: 10px;" :key="index + '-divider'"/>
+        <template v-for="(chip, index) in statusPopupSetup" :key="index">
+          <v-divider class="mx-2" style="width: 10px; max-width: 10px;"/>
           <status-alert
               v-if="chip.id.includes('Status')"
-              :key="chip.id + '-status'"
               :is-clickable="chip.isClickable"
               :color="chip.color"
               :icon="chip.icon"

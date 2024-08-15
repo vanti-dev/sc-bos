@@ -2,10 +2,10 @@
   <v-card elevation="0" tile>
     <div class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">Electric</div>
     <div class="layout mx-4">
-      <template v-for="(row, i) in rows">
-        <span :key="i+'label'" class="label text-body-small">{{ row.label }}</span>
-        <span :key="i+'value'" class="value">{{ row.value ?? '' }}</span>
-        <span :key="i+'unit'" class="unit">{{ row.unit ?? '' }}</span>
+      <template v-for="(row, i) in rows" :key="i">
+        <span class="label text-body-small">{{ row.label }}</span>
+        <span class="value">{{ row.value ?? '' }}</span>
+        <span class="unit">{{ row.unit ?? '' }}</span>
       </template>
     </div>
     <v-progress-linear color="primary" indeterminate :active="props.loading"/>

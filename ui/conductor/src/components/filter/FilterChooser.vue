@@ -22,10 +22,9 @@
       <v-window-item :value="1">
         <v-list>
           <v-fade-transition group>
-            <template v-for="filter in displayFilters">
+            <template v-for="filter in displayFilters" :key="filter.key">
               <boolean-choice-list-item
                   v-if="filter.type === 'boolean'"
-                  :key="filter.key"
                   :title="filter.title"
                   :icon="filter.icon"
                   :choice="choices[filter.key]"
@@ -35,7 +34,6 @@
                   v-bind="filterMenuSelect"/>
               <page-choice-list-item
                   v-else
-                  :key="filter.key"
                   :filter="filter"
                   :choice="choices[filter.key]"
                   :default-choice="isDefaultChoice(choices[filter.key])"
