@@ -10,7 +10,6 @@
           :disabled="blockSystemEdit"
           :error-messages="jsonError"
           variant="filled"
-          full-width
           hide-details="auto"
           readonly/>
       <v-btn
