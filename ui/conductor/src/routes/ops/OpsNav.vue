@@ -18,7 +18,6 @@
               class="font-weight-bold"
               :color="item.badgeType ? badges[item.badgeType].color : 'transparent'"
               :content="item.badgeType ? badges[item.badgeType].value : ''"
-              overlap
               :model-value="item.badgeType ? badges[item.badgeType].value : null">
             <v-icon>
               {{ item.icon }}
