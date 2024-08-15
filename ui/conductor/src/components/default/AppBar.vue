@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app height="60" :clipped-left="hasNav" :clipped-right="hasSidebar" elevation="0" class="pr-7">
+  <v-app-bar height="60" elevation="0" class="pr-7">
     <app-menu v-if="accountStore.isLoggedIn"/>
     <brand-logo :theme="config.theme" outline="white" style="height: 35px" class="ml-4 mr-2"/>
     <span class="heading">{{ appBarHeadingWithBrand }}</span>
@@ -37,7 +37,7 @@ const {config} = storeToRefs(uiConfig);
 const accountStore = useAccountStore();
 const route = useRoute();
 
-const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
+const {pageTitle, hasSections} = usePage();
 
 const appBarHeadingWithBrand = computed(() => {
   const brandName = config.value.theme?.appBranding.brandName ?? 'Smart Core';

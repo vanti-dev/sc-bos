@@ -2,9 +2,7 @@
   <v-navigation-drawer
       v-if="hasNav && isLoggedIn"
       v-model="drawer"
-      app
       class="siteNavigation pt-4"
-      clipped
       color="transparent"
       :expand-on-hover="!pinDrawer"
       floating

@@ -9,13 +9,10 @@
         v-if="hasSidebar"
         v-model="sidebar.visible"
         ref="sidebarDOMElement"
-        app
         class="sidebarDOMElement pa-0"
         :class="{resizing}"
-        clipped
         color="neutral"
         floating
-        stateless
         location="right"
         :width="sideBarWidth">
       <router-view name="sidebar"/>
