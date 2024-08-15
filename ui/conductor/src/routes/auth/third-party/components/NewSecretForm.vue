@@ -63,21 +63,21 @@
       <!-- Display secret details -->
       <v-list v-else class="pb-0">
         <v-list-item class="banner info-banner my-4" v-if="createSecretTracker.response">
-          <v-list-item-icon>
+          <template #prepend>
             <v-icon>mdi-information</v-icon>
-          </v-list-item-icon>
+          </template>
           Make sure to copy your secret token now. You won't be able to see it again.
         </v-list-item>
         <v-list-item class="banner error-banner" v-if="createSecretTracker.error">
-          <v-list-item-icon>
+          <template #prepend>
             <v-icon>mdi-alert-circle</v-icon>
-          </v-list-item-icon>
+          </template>
           {{ createSecretTracker.error.name }}: {{ createSecretTracker.error.message }}
         </v-list-item>
         <v-list-item class="banner secret-banner" v-if="createSecretTracker.response">
-          <v-list-item-icon>
+          <template #prepend>
             <v-icon>mdi-key</v-icon>
-          </v-list-item-icon>
+          </template>
           {{ createdSecret.secret }}
           <v-list-item-action>
             <v-btn icon @click="copySecret">

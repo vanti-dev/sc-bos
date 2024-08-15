@@ -12,9 +12,9 @@
             :to="item.link"
             :disabled="hasNoAccess(item.link.name)"
             :key="key">
-          <v-list-item-icon>
+          <template #prepend>
             <v-icon x-large>{{ item.icon }}</v-icon>
-          </v-list-item-icon>
+          </template>
           <v-list-item-title class="text-h4">{{ item.title }}</v-list-item-title>
           <v-list-item-subtitle class="text-body-small">{{ item.subtitle }}</v-list-item-subtitle>
         </v-list-item>

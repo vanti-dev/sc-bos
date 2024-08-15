@@ -1,8 +1,8 @@
 <template>
   <v-list-item @click="emits('click', props.filter.key)">
-    <v-list-item-icon>
+    <template #prepend>
       <v-icon>{{ props.filter.icon }}</v-icon>
-    </v-list-item-icon>
+    </template>
     <template v-if="props.defaultChoice">
       <v-list-item-title class="align-self-auto">{{ props.filter.title }}</v-list-item-title>
     </template>

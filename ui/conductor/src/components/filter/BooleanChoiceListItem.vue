@@ -1,8 +1,8 @@
 <template>
   <v-list-item @click="_value = !_value">
-    <v-list-item-icon>
+    <template #prepend>
       <v-icon>{{ props.icon }}</v-icon>
-    </v-list-item-icon>
+    </template>
     <template v-if="choiceText">
       <v-list-item-subtitle class="text-overline">{{ props.title }}</v-list-item-subtitle>
       <v-list-item-title class="align-self-auto">{{ choiceText }}</v-list-item-title>

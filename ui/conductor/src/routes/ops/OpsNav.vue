@@ -13,7 +13,7 @@
           :key="key"
           class="my-2"
           :disabled="hasNoAccess(item.link.path)">
-        <v-list-item-icon>
+        <template #prepend>
           <v-badge
               class="font-weight-bold"
               :color="item.badgeType ? badges[item.badgeType].color : 'transparent'"
@@ -24,7 +24,7 @@
               {{ item.icon }}
             </v-icon>
           </v-badge>
-        </v-list-item-icon>
+        </template>
         <v-list-item-title class="text-truncate">{{ item.title }}</v-list-item-title>
       </v-list-item>
     </v-list-item-group>

@@ -11,12 +11,12 @@
             }
           ]"
           :to="toAreaLink">
-        <v-list-item-icon>
+        <template #prepend>
           <v-icon v-if="!props.miniVariant || !props.item.shortTitle">{{ props.item.icon }}</v-icon>
           <v-list-item-title v-else class="text-center text-truncate" style="max-width: 24px;">
             {{ props.item.shortTitle }}
           </v-list-item-title>
-        </v-list-item-icon>
+        </template>
         <v-list-item-title>{{ props.item.title }}</v-list-item-title>
       </v-list-item>
       <v-btn

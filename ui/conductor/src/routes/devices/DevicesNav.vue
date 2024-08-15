@@ -6,10 +6,10 @@
         :to="device.to"
         :disabled="hasNoAccess(device.to)"
         class="my-2">
-      <v-list-item-icon>
+      <template #prepend>
         <v-icon v-if="device.icon">{{ device.icon }}</v-icon>
         <subsystem-icon v-else :subsystem="device.subSystem"/>
-      </v-list-item-icon>
+      </template>
       <v-list-item-title :class="[device.class, 'text-truncate']">
         {{ device.label }}
       </v-list-item-title>
