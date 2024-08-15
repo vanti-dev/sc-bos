@@ -432,8 +432,8 @@ watch(
   --translate-y: 0;
 }
 
-.floor-plan__container ::v-deep path[id],
-.floor-plan__container ::v-deep rect[id] {
+.floor-plan__container :deep(path[id]),
+.floor-plan__container :deep(rect[id]) {
   cursor: pointer;
 }
 
@@ -446,49 +446,49 @@ watch(
   position: absolute;
 }
 
-::v-deep(svg .success) {
+:deep(svg .success) {
   fill: var(--v-success-base);
 }
 
-::v-deep(svg .warning) {
+:deep(svg .warning) {
   fill: var(--v-warning-base);
 }
 
-::v-deep(svg .error) {
+:deep(svg .error) {
   fill: var(--v-error-base);
 }
 
-::v-deep(svg .open),
-::v-deep(svg .moving) {
+:deep(svg .open),
+:deep(svg .moving) {
   stroke: var(--v-warning-base);
   stroke-width: 125px;
   transition: all 0.5s ease-in-out;
 }
 
-::v-deep(svg .closed) {
+:deep(svg .closed) {
   stroke: var(--v-success-base);
   stroke-width: 75px;
   transition: all 0.5s ease-in-out;
 }
 
-::v-deep(svg .unknown) {
+:deep(svg .unknown) {
   stroke: #ffffff5e;
   stroke-width: 75px;
   transition: all 0.5s ease-in-out;
 }
 
-::v-deep(svg .open-fill),
-::v-deep(svg .moving-fill) {
+:deep(svg .open-fill),
+:deep(svg .moving-fill) {
   fill: var(--v-warning-base);
   transition: all 0.5s ease-in-out;
 }
 
-::v-deep(svg .closed-fill) {
+:deep(svg .closed-fill) {
   fill: var(--v-success-base);
   transition: all 0.5s ease-in-out;
 }
 
-::v-deep(svg .unknown-fill) {
+:deep(svg .unknown-fill) {
   fill: #ffffff85;
   transition: all 0.5s ease-in-out;
 }

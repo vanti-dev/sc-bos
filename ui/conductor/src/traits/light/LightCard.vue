@@ -158,7 +158,7 @@ const brightnessControl = computed(() => {
   width: auto;
 }
 
-.preset ::v-deep(.v-btn__content) {
+.preset :deep(.v-btn__content) {
   max-width: 100%;
 }
 </style>

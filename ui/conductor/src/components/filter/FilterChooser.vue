@@ -179,16 +179,16 @@ const pageIndex = computed({
 </script>
 
 <style scoped>
-.v-input--switch.indeterminate ::v-deep(.v-input--switch__thumb),
-.v-input--switch.indeterminate ::v-deep(.v-input--selection-controls__ripple) {
+.v-input--switch.indeterminate :deep(.v-input--switch__thumb),
+.v-input--switch.indeterminate :deep(.v-input--selection-controls__ripple) {
   transform: translate(10px, 0) scale(0.5) !important;
 }
 
-.v-btn.overlap ::v-deep(.v-btn__content) {
+.v-btn.overlap :deep(.v-btn__content) {
   display: grid;
 }
 
-.v-btn.overlap ::v-deep(.v-btn__content) > * {
+.v-btn.overlap :deep(.v-btn__content) > * {
   grid-row: 1;
   grid-column: 1;
 }

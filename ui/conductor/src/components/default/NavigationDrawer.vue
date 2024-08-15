@@ -69,7 +69,7 @@ const appVersion = computed(() => {
 
 /** This helps displaying the notification counter badge, while keeping the right sidebar scrollable */
 .siteNavigation,
-.siteNavigation ::v-deep .v-navigation-drawer__content {
+.siteNavigation :deep(.v-navigation-drawer__content) {
   overflow: visible;
 }
 
