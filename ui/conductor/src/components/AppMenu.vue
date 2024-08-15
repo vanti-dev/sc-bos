@@ -1,11 +1,11 @@
 <template>
-  <v-menu v-bind="showMenu" location="bottom" content-class="main-nav" tile transition="slide-x-transition">
+  <v-menu v-bind="showMenu" location="bottom" content-class="main-nav" transition="slide-x-transition">
     <template #activator="{ props }">
       <v-btn tile v-bind="props" :ripple="false" id="main-nav-button" color="neutral-lighten-1">
         <menu-icon width="60"/>
       </v-btn>
     </template>
-    <v-card max-width="512">
+    <v-card max-width="512" tile>
       <v-list tile lines="three" subheader class="ma-0" color="neutral-lighten-1">
         <v-list-item
             v-for="(item, key) in enabledMenuItems"

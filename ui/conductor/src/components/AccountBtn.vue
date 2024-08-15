@@ -9,7 +9,7 @@
       <v-icon start>mdi-account-circle-outline</v-icon>
       Sign in
     </v-btn>
-    <v-menu v-else location="bottom left" max-width="100%" tile>
+    <v-menu v-else location="bottom left" max-width="100%">
       <template #activator="{ props }">
         <v-btn rounded="circle" elevation="0" :class="btnClass" v-bind="props">
           <v-icon :start="!loggedIn">mdi-account-circle-outline</v-icon>

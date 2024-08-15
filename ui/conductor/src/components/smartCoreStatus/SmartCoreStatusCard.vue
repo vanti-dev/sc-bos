@@ -5,8 +5,7 @@
       content-class="elevation-0"
       max-height="600px"
       max-width="550px"
-      min-width="400px"
-      tile>
+      min-width="400px">
     <template #activator="{props}">
       <v-btn
           class="py-1 px-3"
@@ -20,7 +19,7 @@
       </v-btn>
     </template>
 
-    <v-card class="elevation-0 mt-4 pb-1" min-width="400px" style="border: 1px solid var(--v-neutral-lighten2)">
+    <v-card class="elevation-0 mt-4 pb-1" min-width="400px" tile style="border: 1px solid var(--v-neutral-lighten2)">
       <v-card-title class="text-subtitle-1 mb-0 pb-0 mt-n1 mb-2">
         Smart Core Status
         <span
@@ -32,7 +31,6 @@
         <v-tooltip location="left">
           <template #activator="{ props }">
             <v-btn
-
                 v-bind="props"
                 :class="['mb-0', {'rotate-icon': isRefreshing}]"
                 rounded="circle"
