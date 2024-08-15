@@ -6,7 +6,7 @@
             active-class="primary--text"
             class="ml-n1 mb-2"
             density="compact"
-            :input-value="activeCertificate === 'root'"
+            :active="activeCertificate === 'root'"
             :ripple="false"
             @click="setActiveCertificate(rootCertificate, 'root')">
           <div class="d-flex flex-row justify-space-between">
@@ -29,7 +29,7 @@
               active-class="primary--text"
               class="ml-4"
               density="compact"
-              :input-value="activeCertificate === intermediateValue?.subject?.commonName"
+              :active="activeCertificate === intermediateValue?.subject?.commonName"
               :key="intermediateKey"
               :ripple="false"
               @click="setActiveCertificate(intermediateValue, intermediateValue?.subject?.commonName)">
