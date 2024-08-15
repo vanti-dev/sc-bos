@@ -6,7 +6,7 @@
       <v-btn v-if="hasZoneChanges" color="primary" :disabled="blockActions" @click="emitZoneChanges">Save</v-btn>
     </div>
     <v-card-actions>
-      <account-zone-chooser :zones.sync="chooserZones" class="mx-2 flex-grow-1"/>
+      <account-zone-chooser v-model:zones="chooserZones" class="mx-2 flex-grow-1"/>
     </v-card-actions>
     <v-card-text v-if="chooserZones.length === 0" class="pt-1 font-italic">
       {{ hasZoneChanges ? 'If there are no' : 'No' }}

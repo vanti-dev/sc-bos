@@ -7,8 +7,8 @@
       :hide-legends="props.hideLegends">
     <template #options>
       <power-history-graph-options-menu
-          :duration-option.sync="durationOption"
-          :show-conversion.sync="showConversion"
+          v-model:duration-option="durationOption"
+          v-model:show-conversion="showConversion"
           @exportCSV="demandExportData('Meter Readings')"/>
     </template>
   </line-chart>

@@ -7,7 +7,7 @@
         item-title="title"
         item-value="name"
         :loading="findZonesLoading"
-        :search.sync="searchText"
+        @update:search="searchText"
         :message="findZonesError || []"
         no-filter
         chips
@@ -83,19 +83,16 @@ import useAuthSetup from '@/composables/useAuthSetup';
 import debounce from 'debounce';
 import {computed, reactive, ref, watch} from 'vue';
 
-const props = defineProps({
-  zones: {
-    type: Array, // string[]
-    default: () => ([])
-  },
-  maxResultSize: {
-    type: Number,
-    default: 5
-  }
+const _zones = defineModel('zones', {
+  type: Array,
+  default: () => []
 });
-const emit = defineEmits(['update:zones', 'update:maxResultSize']);
+const _maxResultSize = defineModel('maxResultSize', {
+  type: Number,
+  default: 5
+});
 
-const propZones = computed(() => deviceArrToItems(props.zones));
+const propZones = computed(() => deviceArrToItems(_zones.value));
 const inputZones = ref([]);
 const inputItems = computed(() => {
   return deviceArrToItems(findZonesTracker.response?.devicesList ?? []);
@@ -121,7 +118,7 @@ const sendZoneEvent = (event) => {
       zones.push(zone); // zone selected from search results
     }
   }
-  emit('update:zones', zones);
+  _zones.value = zones;
 };
 
 const deviceArrToItems = (devices) => devices.map(device => {
@@ -173,7 +170,7 @@ const findZonesQuery = computed(() => {
 });
 // do the fetch of zones, debounced to avoid spamming the server
 const fetchZones = debounce((query) => {
-  listDevices({query, pageSize: props.maxResultSize}, findZonesTracker)
+  listDevices({query, pageSize: _maxResultSize.value}, findZonesTracker)
       .catch(() => {
       }); // errors are recorded in findZonesTracker
 }, 500);
@@ -184,7 +181,7 @@ const nextPageToken = computed(() => findZonesTracker.response?.nextPageToken);
 const fetchNextPage = async () => {
   const pageToken = nextPageToken.value;
   if (pageToken) {
-    const req = {query: findZonesQuery.value, pageSize: props.maxResultSize, pageToken};
+    const req = {query: findZonesQuery.value, pageSize: _maxResultSize.value, pageToken};
     try {
       const res = await listDevices(req, findZonesNextPageTracker);
       findZonesTracker.response.devicesList.push(...res.devicesList);

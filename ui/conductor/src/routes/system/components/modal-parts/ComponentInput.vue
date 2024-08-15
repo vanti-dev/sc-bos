@@ -2,14 +2,14 @@
   <div v-if="!confirmForget">
     <v-form @submit.prevent="onEnroll">
       <v-text-field
-          v-model="addressInput"
+          v-model="_address"
           class="mx-8"
-          :clearable="addressInput !== null"
+          :clearable="_address !== null"
           density="compact"
           hide-details
           label="Component Address"
           variant="outlined"
-          @click:clear="addressInput = null"/>
+          @click:clear="_address = null"/>
       <!-- Error label if the address is already enrolled -->
       <v-alert
           v-if="errorText"
@@ -82,21 +82,11 @@ import {formatErrorMessage} from '@/util/error';
 import {computed, ref, watch} from 'vue';
 
 const emits = defineEmits([
-  'update:dialogState',
-  'update:address',
   'inspectHubNodeAction',
   'resetInspectHubNodeValue',
   'forgetHubNodeAction'
 ]);
 const props = defineProps({
-  address: {
-    type: String,
-    default: null
-  },
-  dialogState: {
-    type: Boolean,
-    default: false
-  },
   inspectHubNodeValue: {
     type: Object,
     default: () => ({})
@@ -110,25 +100,25 @@ const props = defineProps({
     default: () => ({})
   }
 });
+const _address = defineModel('address', {
+  type: String,
+  default: null
+});
+const _dialogState = defineModel('dialogState', {
+  type: Boolean,
+  default: false
+});
 
 const isEnrolled = ref(null);
 const confirmForget = ref(false);
-const addressInput = computed({
-  get() {
-    return props.address;
-  },
-  set(value) {
-    emits('update:address', value);
-  }
-});
 
 // Enroll the hub node
 const onEnroll = () => {
-  if (!addressInput.value) {
+  if (!_address.value) {
     return;
   }
 
-  emits('inspectHubNodeAction', addressInput.value);
+  emits('inspectHubNodeAction', _address.value);
 };
 
 const forgetHubNode = () => {
@@ -137,12 +127,12 @@ const forgetHubNode = () => {
   }
 
   emits('forgetHubNodeAction', props.nodeQuery.address);
-  emits('update:dialogState', false);
+  _dialogState.value = false;
   confirmForget.value = false;
 };
 
 const cancelAction = () => {
-  return props.nodeQuery.isToForget ? emits('update:dialogState', false) : confirmForget.value = false;
+  return props.nodeQuery.isToForget ? _dialogState.value = false : confirmForget.value = false;
 };
 
 // Display the correct dialog content depending on the confirmForget value
@@ -154,7 +144,7 @@ watch(() => props.nodeQuery, (newQuery) => {
 
 // Depending on input, check if the address is enrolled
 // and update the isEnrolled value to enable the correct button
-watch(addressInput, (newAddress, oldAddress) => {
+watch(_address, (newAddress, oldAddress) => {
   if (newAddress !== oldAddress) {
     emits('resetInspectHubNodeValue');
   }
@@ -185,7 +175,7 @@ watch(addressInput, (newAddress, oldAddress) => {
 // Reset the address value when the dialog is closed
 watch(() => props.dialogState, (newState) => {
   if (!newState) {
-    addressInput.value = null;
+    _address.value = null;
   }
 }, {immediate: true, deep: true});
 

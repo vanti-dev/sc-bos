@@ -132,12 +132,8 @@
 import {camelToSentence} from '@/util/string';
 import {computed, ref, watchEffect} from 'vue';
 
-const emits = defineEmits(['resetCertificates', 'enrollHubNodeAction', 'update:address']);
+const emits = defineEmits(['resetCertificates', 'enrollHubNodeAction']);
 const props = defineProps({
-  address: {
-    type: String,
-    default: null
-  },
   nodeQuery: {
     type: Object,
     default: () => ({})
@@ -146,6 +142,10 @@ const props = defineProps({
     type: Array,
     default: () => []
   }
+});
+const _address = defineModel('address', {
+  type: String,
+  default: null
 });
 
 const activeCertificate = ref(null);
@@ -220,9 +220,9 @@ watchEffect(() => {
 });
 
 const confirmEnroll = () => {
-  emits('enrollHubNodeAction', props.address);
+  emits('enrollHubNodeAction', _address.value);
   emits('resetCertificates');
   resetActiveCertificate();
-  emits('update:address', null);
+  _address.value = null;
 };
 </script>

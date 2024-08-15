@@ -72,20 +72,8 @@
 
 <script setup>
 import {DAY, HOUR, MINUTE} from '@/components/now.js';
-import {computed} from 'vue';
 
-const props = defineProps({
-  durationOption: {
-    type: Object,
-    default: () => {
-    }
-  },
-  showConversion: {
-    type: Boolean,
-    default: false
-  }
-});
-const emits = defineEmits(['update:durationOption', 'update:showConversion', 'exportCSV']);
+const emits = defineEmits(['exportCSV']);
 
 // Defining the options for the duration type buttons
 const durationOptions = [
@@ -117,16 +105,16 @@ const durationOptions = [
 
 // Computed property to toggle between kW and CO2
 // Syncs with the parent component
-const showConversionToggle = computed({
-  get: () => props.showConversion,
-  set: (value) => emits('update:showConversion', value)
+const showConversionToggle = defineModel('showConversion', {
+  type: Boolean,
+  default: false
 });
 
 // Computed property to toggle between the duration options
 // Syncs with the parent component
-const activeDuration = computed({
-  get: () => props.durationOption,
-  set: (value) => emits('update:durationOption', value)
+const activeDuration = defineModel('durationOption', {
+  type: Object,
+  default: () => durationOptions[0].value
 });
 </script>
 

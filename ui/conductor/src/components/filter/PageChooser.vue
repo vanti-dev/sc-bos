@@ -18,17 +18,12 @@ const props = defineProps({
   type: {
     type: String,
     default: 'list'
-  },
-  search: {
-    type: String,
-    default: ''
   }
 });
-const emits = defineEmits(['update:search']);
 
-const search = computed({
-  get: () => props.search,
-  set: (value) => emits('update:search', value)
+const search = defineModel('search', {
+  type: String,
+  default: ''
 });
 
 const topTextInputBind = computed(() => {

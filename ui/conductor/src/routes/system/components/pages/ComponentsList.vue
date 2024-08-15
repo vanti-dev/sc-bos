@@ -75,8 +75,8 @@
 
     <!-- Modal -->
     <enroll-hub-node-modal
-        :show-modal.sync="showModal"
-        :node-query.sync="nodeQuery"
+        v-model:show-modal="showModal"
+        v-model:node-query="nodeQuery"
         :list-items="nodesList"/>
   </div>
 </template>

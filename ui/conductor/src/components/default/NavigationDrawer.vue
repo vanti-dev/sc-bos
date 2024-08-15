@@ -6,7 +6,7 @@
       color="transparent"
       :expand-on-hover="!pinDrawer"
       floating
-      :rail.sync="miniVariant"
+      v-model:rail="miniVariant"
       :rail-width="drawerWidth"
       width="275"
       permanent>

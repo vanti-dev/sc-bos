@@ -13,11 +13,11 @@
       <div>
         <component-input
             v-if="showInput"
-            :address.sync="address"
-            :dialog-state.sync="dialogState"
+            v-model:address="address"
+            v-model:dialog-state="dialogState"
             :inspect-hub-node-value="inspectHubNodeValue"
             :list-items="props.listItems"
-            :node-query="props.nodeQuery"
+            :node-query="_nodeQuery"
             @inspectHubNodeAction="inspectHubNodeAction"
             @resetInspectHubNodeValue="resetInspectHubNodeValue"
             @forgetHubNodeAction="forgetHubNodeAction"
@@ -28,8 +28,8 @@
           <metadata-details v-if="readMetadata" :metadata="readMetadata"/>
           <certificate-details
               v-if="readCertificates"
-              :address.sync="address"
-              :node-query="props.nodeQuery"
+              v-model:address="address"
+              :node-query="_nodeQuery"
               :read-certificates="readCertificates"
               @enrollHubNodeAction="enrollHubNodeAction"
               @resetCertificates="resetCertificates"/>
@@ -47,20 +47,19 @@ import ComponentInput from '@/routes/system/components/modal-parts/ComponentInpu
 import MetadataDetails from '@/routes/system/components/modal-parts/MetadataDetails.vue';
 import {computed, ref, watch} from 'vue';
 
-const emits = defineEmits(['update:showModal']);
 const props = defineProps({
-  nodeQuery: {
-    type: Object,
-    default: () => ({})
-  },
-  showModal: {
-    type: Boolean,
-    required: true
-  },
   listItems: {
     type: Array,
     default: () => []
   }
+});
+const _showModal = defineModel('showModal', {
+  type: Boolean,
+  default: false
+});
+const _nodeQuery = defineModel('nodeQuery', {
+  type: Object,
+  default: () => ({})
 });
 
 const {
@@ -78,7 +77,7 @@ const address = ref(null);
 
 const dialogState = computed({
   get() {
-    return props.showModal;
+    return _showModal.value;
   },
   set(value) {
     if (value === false) {
@@ -86,14 +85,14 @@ const dialogState = computed({
       address.value = null;
       resetCertificates(); // reset certificates when modal is closed
     }
-    emits('update:showModal', value);
+    _showModal.value = value;
   }
 });
 
 const modalTitle = computed(() => {
-  if (props.nodeQuery.isQueried) {
+  if (_nodeQuery.value.isQueried) {
     return 'View Details';
-  } else if (props.nodeQuery.isToForget) {
+  } else if (_nodeQuery.value.isToForget) {
     return 'Forget node';
   } else {
     return 'Enroll a new node';
@@ -102,17 +101,17 @@ const modalTitle = computed(() => {
 
 
 const showInput = computed(() => {
-  return readCertificates.value.length === 0 && !props.nodeQuery.isQueried;
+  return readCertificates.value.length === 0 && !_nodeQuery.value.isQueried;
 });
 
 const showDetails = computed(() => {
-  return props.nodeQuery.isQueried || readCertificates.value.length > 0;
+  return _nodeQuery.value.isQueried || readCertificates.value.length > 0;
 });
 
-// Watch the nodeQuery object for changes
+// Watch the _nodeQuery object for changes
 // If we have an address and it's not to forget, then we want to inspect the node
 // If it is to forget, then we want to forget the node
-watch(() => props.nodeQuery, async (newValue) => {
+watch(_nodeQuery, async (newValue) => {
   if (!newValue.address || newValue.isToForget) {
     return;
   }

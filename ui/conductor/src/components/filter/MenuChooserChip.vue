@@ -17,7 +17,7 @@
         Change {{ title.toLowerCase() }} filter
       </v-tooltip>
     </template>
-    <page-chooser :title="title" :type="type" :search.sync="search">
+    <page-chooser :title="title" :type="type" v-model:search="search">
       <slot :value="value" :items="items" :choose="choose"/>
     </page-chooser>
   </v-menu>

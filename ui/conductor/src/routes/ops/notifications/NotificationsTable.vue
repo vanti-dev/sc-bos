@@ -15,7 +15,8 @@
           disable-sort
           :items-length="queryTotalCount"
           :row-props="rowProps"
-          :options.sync="dataTableOptions"
+          v-model:page="dataTablePage"
+          v-model:items-per-page="dataTableItemsPerPage"
           :footer-props="setFooterProps"
           :loading="alerts.loading"
           class="pt-4"
@@ -237,10 +238,8 @@ const addManualEntry = async () => {
   };
 };
 
-const dataTableOptions = ref({
-  itemsPerPage: 20,
-  page: 1
-});
+const dataTablePage = ref(1);
+const dataTableItemsPerPage = ref(20);
 const itemsPerPageOptions = [20, 50, 100];
 const modifyFooter = computed(() => queryMetadataCount.value === undefined);
 
@@ -372,10 +371,10 @@ const query = computed(() => {
 const name = computed(() => hubStore.hubNode?.name ?? '');
 const alerts = reactive(useAlertsApi(name, query));
 watch(
-    dataTableOptions,
+    [dataTablePage, dataTableItemsPerPage],
     () => {
-      alerts.pageSize = dataTableOptions.value.itemsPerPage;
-      alerts.pageIndex = dataTableOptions.value.page - 1;
+      alerts.pageSize = dataTableItemsPerPage.value;
+      alerts.pageIndex = dataTablePage.value - 1;
     },
     {deep: true, immediate: true}
 );
@@ -510,10 +509,7 @@ watch(
     (oldQuery, newQuery) => {
       if (deepEqual(oldQuery, newQuery)) return; // avoid reactivity churn
       // Reset the page to 1
-      dataTableOptions.value = {
-        ...dataTableOptions.value,
-        page: 1
-      };
+      dataTablePage.value = 1;
     },
     {immediate: true, deep: true}
 );
