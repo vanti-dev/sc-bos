@@ -5,7 +5,7 @@
         :min="min"
         :max="max"
         :step="1"
-        ticks="always"
+        show-ticks="always"
         tick-size="4"
         v-model="model"
         hide-details
