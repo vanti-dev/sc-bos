@@ -1,6 +1,6 @@
 <template>
   <v-list class="pa-0" dense nav>
-    <v-list-item-group class="mt-2 mb-n1">
+    <v-list-group class="mt-2 mb-n1">
       <ops-nav-list
           :items="overviewChildren"
           :mini-variant="miniVariant"/>
@@ -27,7 +27,7 @@
         </template>
         <v-list-item-title class="text-truncate">{{ item.title }}</v-list-item-title>
       </v-list-item>
-    </v-list-item-group>
+    </v-list-group>
   </v-list>
 </template>
 
