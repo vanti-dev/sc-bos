@@ -50,7 +50,11 @@ export default defineConfig(({mode}) => {
     },
     plugins: [
       vue(),
-      vuetify(),
+      vuetify({
+        styles: {
+          configFile: 'src/sass/settings.scss'
+        }
+      }),
       eslintPlugin()
     ],
     resolve: {

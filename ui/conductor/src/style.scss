@@ -1,11 +1,11 @@
-@use 'sass/settings';
+@use 'sass/main';
 @use 'vuetify/settings' as v;
 
 code,
 kbd,
 pre,
 samp {
-  font-family: settings.$mono-font-family; /* Specify the font family of code elements */
+  font-family: main.$mono-font-family; /* Specify the font family of code elements */
 }
 
 .v-text-field--outlined {
