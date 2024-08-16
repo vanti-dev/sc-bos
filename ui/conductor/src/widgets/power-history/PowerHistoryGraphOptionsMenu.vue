@@ -70,13 +70,11 @@
   </v-tooltip>
 </template>
 
-<script setup>
+<script>
 import {DAY, HOUR, MINUTE} from '@/components/now.js';
 
-const emits = defineEmits(['exportCSV']);
-
 // Defining the options for the duration type buttons
-const durationOptions = [
+export const durationOptions = [
   {
     text: '24H',
     value: {
@@ -102,6 +100,9 @@ const durationOptions = [
     }
   }
 ];
+</script>
+<script setup>
+const emits = defineEmits(['exportCSV']);
 
 // Computed property to toggle between kW and CO2
 // Syncs with the parent component
