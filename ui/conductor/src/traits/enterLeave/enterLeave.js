@@ -2,9 +2,8 @@ import {closeResource, newResourceValue} from '@/api/resource';
 import {pullEnterLeaveEvents} from '@/api/sc/traits/enter-leave';
 import {SECOND} from '@/components/now.js';
 import {toQueryObject, watchResource} from '@/util/traits';
-import {toValue} from '@/util/vue';
 import {EnterLeaveEvent} from '@smart-core-os/sc-api-grpc-web/traits/enter_leave_sensor_pb';
-import {computed, onScopeDispose, reactive, ref, toRefs, watch} from 'vue';
+import {computed, onScopeDispose, reactive, ref, toRefs, toValue, watch} from 'vue';
 
 /**
  * @typedef {

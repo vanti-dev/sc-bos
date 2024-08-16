@@ -2,9 +2,8 @@ import {timestampToDate} from '@/api/convpb.js';
 import {listMeterReadingHistory} from '@/api/sc/traits/meter.js';
 import {HOUR, MINUTE, useNow} from '@/components/now.js';
 import {csvDownload} from '@/util/downloadCSV.js';
-import {toValue} from '@/util/vue.js';
 import debounce from 'debounce';
-import {computed, ref, watch, watchEffect} from 'vue';
+import {computed, ref, toValue, watch, watchEffect} from 'vue';
 
 /**
  * @param {MaybeRefOrGetter<string>} name

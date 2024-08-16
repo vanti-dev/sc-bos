@@ -3,9 +3,8 @@ import useBuildingConfig from '@/routes/ops/overview/pages/buildingConfig.js';
 import useDashPage from '@/routes/ops/overview/pages/dashPage.js';
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {findActiveItem} from '@/util/router.js';
-import {toValue} from '@/util/vue.js';
 import {builtinWidgets} from '@/widgets/pallet.js';
-import {computed, reactive} from 'vue';
+import {computed, reactive, toValue} from 'vue';
 
 /**
  * @param {MaybeRefOrGetter<string|string[]>} path - uri decoded path to the page

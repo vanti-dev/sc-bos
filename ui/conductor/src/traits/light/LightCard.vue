@@ -12,7 +12,7 @@
         height="34"
         class="mx-4 my-2"
         :model-value="level"
-        bg-color="neutral lighten-1"
+        bg-color="neutral-lighten-1"
         color="accent"/>
     <v-card-actions class="px-4">
       <v-btn
@@ -96,7 +96,7 @@ const loading = computed(() => pullLoading.value || supportLoading.value || upda
  * @return {string}
  */
 function getColor(title, currentPresetTitle) {
-  return title === currentPresetTitle ? 'primary' : 'neutral lighten-1';
+  return title === currentPresetTitle ? 'primary' : 'neutral-lighten-1';
 }
 
 /**

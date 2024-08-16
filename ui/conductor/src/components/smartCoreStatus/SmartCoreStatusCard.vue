@@ -318,7 +318,7 @@ const statusPopupSetup = computed(() => {
   };
 
   // Populate the chips array with the appropriate chips
-  addChip('server', {color: 'neutral lighten-4', id: 'server', label: 'Server'}, true);
+  addChip('server', {color: 'neutral-lighten-4', id: 'server', label: 'Server'}, true);
   addChip('gateway', {color: 'accent', id: 'gateway', label: 'Gateway'}, true);
   addChip('hub', {color: 'primary', id: 'hub', label: 'Hub'});
 
@@ -332,7 +332,7 @@ const statusPopupSetup = computed(() => {
     chips.push({id: 'nodeStatus', ...nodeOverallStatus.value});
     // Then add the nodes chip to the chips array
     chips.push({
-      color: nodeError ? 'error' : nodeWarning ? 'red darken-2' : 'neutral lighten-2',
+      color: nodeError ? 'error' : nodeWarning ? 'red-darken-2' : 'neutral-lighten-2',
       id: 'nodes',
       label: 'Nodes',
       to: '/system/components'

@@ -1,6 +1,5 @@
-import {toValue} from '@/util/vue.js';
 import {StatusCode} from 'grpc-web';
-import {computed} from 'vue';
+import {computed, toValue} from 'vue';
 
 export const statusCodeById = Object.entries(StatusCode).reduce((acc, [key, value]) => {
   acc[value] = key;

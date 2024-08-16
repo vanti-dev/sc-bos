@@ -16,7 +16,7 @@
   </v-tooltip>
   <v-menu v-else location="bottom left">
     <template #activator="{ props }">
-      <v-avatar v-bind="props" color="neutral lighten-8" class="text--black" size="21">
+      <v-avatar v-bind="props" color="neutral-lighten-8" class="text--black" size="21">
         <template v-if="hasAuthor">{{ authorInitials }}</template>
         <v-icon v-else color="black" size="small">mdi-check</v-icon>
       </v-avatar>

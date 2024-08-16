@@ -6,9 +6,8 @@ import {
   updateAirTemperature
 } from '@/api/sc/traits/air-temperature';
 import {setRequestName, toQueryObject, watchResource} from '@/util/traits';
-import {toValue} from '@/util/vue';
 import {AirTemperature} from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb';
-import {computed, onScopeDispose, reactive, ref, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, ref, toRefs, toValue} from 'vue';
 
 /**
  * @typedef {

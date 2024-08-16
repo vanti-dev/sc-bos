@@ -1,5 +1,4 @@
-import {toValue} from '@/util/vue';
-import {onBeforeUnmount, onMounted, ref} from 'vue';
+import {onBeforeUnmount, onMounted, ref, toValue} from 'vue';
 
 export const MILLISECOND = 1;
 export const SECOND = 1000 * MILLISECOND;

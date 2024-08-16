@@ -1,8 +1,7 @@
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullDemand} from '@/api/sc/traits/electric';
 import {toQueryObject, watchResource} from '@/util/traits.js';
-import {toValue} from '@/util/vue.js';
-import {computed, onScopeDispose, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
 /**
  * @typedef {

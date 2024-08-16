@@ -1,9 +1,8 @@
 import {builtinLayouts} from '@/layout/pallet.js';
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {findActiveItem} from '@/util/router.js';
-import {toValue} from '@/util/vue.js';
 import {builtinWidgets} from '@/widgets/pallet.js';
-import {computed} from 'vue';
+import {computed, toValue} from 'vue';
 
 /**
  * @param {MaybeRefOrGetter<string|string[]>} path

@@ -11,7 +11,7 @@
         height="34"
         class="mx-4 my-2"
         :model-value="tempProgress"
-        bg-color="neutral lighten-1"
+        bg-color="neutral-lighten-1"
         color="accent"/>
     <v-card-actions class="px-4">
       <v-spacer/>

@@ -1,8 +1,7 @@
 import {closeResource, newResourceValue} from '@/api/resource.js';
 import {pullFanSpeed} from '@/api/sc/traits/fan-speed.js';
 import {toQueryObject, watchResource} from '@/util/traits.js';
-import {toValue} from '@/util/vue.js';
-import {computed, onScopeDispose, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
 /**
  * @param {MaybeRefOrGetter<string|PullFanSpeedRequest.AsObject>} query

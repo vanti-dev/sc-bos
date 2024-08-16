@@ -1,9 +1,8 @@
-import {toValue} from '@/util/vue.js';
 import binarySearch from 'binary-search';
 import Color from 'colorjs.io';
 import Handlebars from 'handlebars';
 import {get as _get} from 'lodash';
-import {onScopeDispose, watch} from 'vue';
+import {onScopeDispose, toValue, watch} from 'vue';
 
 /**
  * Apply effects to the SVG based on the config and source data.

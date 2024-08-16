@@ -185,7 +185,7 @@ const checkValidity = (date) => {
   }
   return {
     icon: 'mdi-check-circle',
-    color: 'success lighten-2'
+    color: 'success-lighten-2'
   };
 };
 

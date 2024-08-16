@@ -1,9 +1,8 @@
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullEmergency} from '@/api/sc/traits/emergency';
 import {toQueryObject, watchResource} from '@/util/traits.js';
-import {toValue} from '@/util/vue.js';
 import {Emergency} from '@smart-core-os/sc-api-grpc-web/traits/emergency_pb';
-import {computed, onScopeDispose, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
 /**
  * @typedef {

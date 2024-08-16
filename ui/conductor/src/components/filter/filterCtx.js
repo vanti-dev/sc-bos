@@ -1,7 +1,6 @@
 import choiceRangeStr from '@/components/filter/choiceRange.js';
 import useVisibility from '@/composables/visibility.js';
-import {toValue} from '@/util/vue.js';
-import {computed, reactive, ref, watch} from 'vue';
+import {computed, reactive, ref, toValue, watch} from 'vue';
 import deepEqual from 'fast-deep-equal';
 
 /**
