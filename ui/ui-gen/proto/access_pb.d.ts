@@ -17,6 +17,14 @@ export class AccessAttempt extends jspb.Message {
   hasActor(): boolean;
   clearActor(): AccessAttempt;
 
+  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setTime(value?: google_protobuf_timestamp_pb.Timestamp): AccessAttempt;
+  hasTime(): boolean;
+  clearTime(): AccessAttempt;
+
+  getName(): string;
+  setName(value: string): AccessAttempt;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): AccessAttempt.AsObject;
   static toObject(includeInstance: boolean, msg: AccessAttempt): AccessAttempt.AsObject;
@@ -30,6 +38,8 @@ export namespace AccessAttempt {
     grant: AccessAttempt.Grant,
     reason: string,
     actor?: AccessAttempt.Actor.AsObject,
+    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    name: string,
   }
 
   export class Actor extends jspb.Message {
