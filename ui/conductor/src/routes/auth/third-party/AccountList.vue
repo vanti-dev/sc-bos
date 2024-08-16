@@ -5,7 +5,7 @@
         :headers="headers"
         :items="tenantsList"
         :search="search"
-        sort-by="title"
+        :sort-by="[{key: 'title'}]"
         :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
         :loading="tenantsTracker.loading"
         :row-props="rowProps"
