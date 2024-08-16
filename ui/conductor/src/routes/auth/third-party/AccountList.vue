@@ -130,13 +130,13 @@ const {blockActions} = useAuthSetup();
 }
 
 .v-data-table :deep(.v-data-footer) {
-  background: var(--v-neutral-lighten1) !important;
+  background: rgb(var(--v-theme-neutral-lighten-1)) !important;
   border-radius: 0 0 settings.$border-radius-root * 2 settings.$border-radius-root * 2;
   border: none;
   margin: 0 -12px -12px;
 }
 
 .v-data-table :deep(.item-selected) {
-  background-color: var(--v-primary-darken4);
+  background-color: rgb(var(--v-theme-primary-darken-4));
 }
 </style>

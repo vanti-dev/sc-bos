@@ -77,6 +77,6 @@ deviceStore.fetchDeviceSubsystemCounts(tracker);
 
 <style scoped>
 :deep(.v-list-item--active) {
-  color: var(--v-primary-base);
+  color: rgb(var(--v-theme-primary));
 }
 </style>

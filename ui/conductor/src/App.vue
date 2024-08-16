@@ -40,7 +40,7 @@ onBeforeMount(async () => {
             vuetifyInstance.theme.themes.dark[colorKey] = colorVariants;
           }
         } else if (typeof colorVariants === 'object') {
-          // Now loop through each variant of the color (e.g., 'base', 'lighten1', etc.)
+          // Now loop through each variant of the color (e.g., 'base', 'lighten-1', etc.)
           Object.entries(colorVariants).forEach(([variantKey, variantValue]) => {
             // Safely update the corresponding Vuetify theme color
             if (vuetifyInstance.theme.themes.dark[colorKey]) {
@@ -62,6 +62,6 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .v-application {
-  background: var(--v-neutral-darken1);
+  background: rgb(var(--v-theme-neutral-darken-1));
 }
 </style>

@@ -43,14 +43,14 @@ const {peopleCount, stateStr, stateColor} = useOccupancy(() => props.value);
 }
 
 .v-list-item__subtitle.occupied {
-  color: var(--v-success-lighten1) !important;
+  color: rgb(var(--v-theme-success-lighten-1)) !important;
 }
 
 .v-list-item__subtitle.idle {
-  color: var(--v-info-base) !important;
+  color: rgb(var(--v-theme-info)) !important;
 }
 
 .v-list-item__subtitle.unoccupied {
-  color: var(--v-warning-base) !important;
+  color: rgb(var(--v-theme-warning)) !important;
 }
 </style>

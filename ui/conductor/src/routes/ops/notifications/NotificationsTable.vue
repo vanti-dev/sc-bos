@@ -590,6 +590,6 @@ onUnmounted(() => {
   bottom: 0;
   right: -5px;
   font-size: 75%;
-  color: var(--v-primary-base); /* Adjust color as needed */
+  color: rgb(var(--v-theme-primary)); /* Adjust color as needed */
 }
 </style>

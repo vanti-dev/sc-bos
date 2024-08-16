@@ -92,7 +92,7 @@ const enabledMenuItems = computed(() => {
 }
 
 #main-nav-button:focus {
-  background-color: var(--v-neutral-base) !important;
+  background-color: rgb(var(--v-theme-neutral)) !important;
   background-blend-mode: normal;
 }
 

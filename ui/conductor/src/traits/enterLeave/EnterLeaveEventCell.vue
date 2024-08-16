@@ -67,6 +67,6 @@ const {
 
 .justEntered,
 .justLeft {
-  color: var(--v-success-base);
+  color: rgb(var(--v-theme-success));
 }
 </style>

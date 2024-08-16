@@ -99,6 +99,6 @@ const authorInitials = computed(() => authorToInitials(props.ack?.author));
 <style scoped>
 .v-avatar {
   font-size: 12px;
-  color: var(--v-neutral-base);
+  color: rgb(var(--v-theme-neutral));
 }
 </style>

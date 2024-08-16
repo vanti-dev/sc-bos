@@ -27,14 +27,14 @@ const doUpdateAirTemperature = updateTracker.updateAirTemperature;
 
 <style lang="scss">
 .occupied {
-  color: var(--v-success-lighten1) !important;
+  color: rgb(var(--v-theme-success-lighten-1)) !important;
 }
 
 .idle {
-  color: var(--v-info-base) !important;
+  color: rgb(var(--v-theme-info)) !important;
 }
 
 .unoccupied {
-  color: var(--v-warning-base) !important;
+  color: rgb(var(--v-theme-warning)) !important;
 }
 </style>

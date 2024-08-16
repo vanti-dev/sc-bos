@@ -112,13 +112,13 @@ onUnmounted(() => {
 <style lang="scss">
 .sidebarDOMElement > .v-navigation-drawer__border {
   width: 4px;
-  background-color: var(--v-primary-darken4);
+  background-color: rgb(var(--v-theme-primary-darken-4));
   transition: all 0.2s ease-in-out;
   cursor: ew-resize;
 
   &:hover {
     width: 8px;
-    background-color: var(--v-primary-darken1);
+    background-color: rgb(var(--v-theme-primary-darken-1));
   }
 }
 
@@ -126,7 +126,7 @@ onUnmounted(() => {
   transition: none;
 
   > .v-navigation-drawer__border {
-    background-color: var(--v-primary-darken1);
+    background-color: rgb(var(--v-theme-primary-darken-1));
     width: 8px;
   }
 }

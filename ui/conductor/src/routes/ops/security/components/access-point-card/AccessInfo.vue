@@ -191,20 +191,20 @@ onBeforeUnmount(() => {
 </script>
 <style lang="scss" scoped>
 .granted {
-  color: var(--v-success-base);
+  color: rgb(var(--v-theme-success));
   transition: color 0.5s ease-in-out;
 }
 
 .denied,
 .forced,
 .failed {
-  color: var(--v-error-base);
+  color: rgb(var(--v-theme-error));
 }
 
 .pending,
 .aborted,
 .tailgate {
-  color: var(--v-warning-base);
+  color: rgb(var(--v-theme-warning));
 }
 
 .grant_unknown {

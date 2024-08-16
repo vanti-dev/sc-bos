@@ -41,11 +41,11 @@ const doorState = computed(() => {
 
 <style scoped>
 .open, .moving {
-  color: var(--v-success-base);
+  color: rgb(var(--v-theme-success));
 }
 
 .closed {
-  color: var(--v-warning-base);
+  color: rgb(var(--v-theme-warning));
 }
 
 .unknown {

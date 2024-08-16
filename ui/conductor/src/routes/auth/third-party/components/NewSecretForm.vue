@@ -277,18 +277,18 @@ function copySecret() {
 }
 
 .banner.secret-banner:before {
-  background-color: var(--v-secondary-base);
+  background-color: rgb(var(--v-theme-secondary));
   opacity: 0.2;
 }
 
 .banner.info-banner:before {
-  background-color: var(--v-secondaryTeal-darken1);
+  background-color: rgb(var(--v-theme-secondaryTeal-darken-1));
   color: white;
   opacity: 1;
 }
 
 .banner.error-banner:before {
-  background-color: var(--v-error-base);
+  background-color: rgb(var(--v-theme-error));
   opacity: 0.5;
 }
 </style>

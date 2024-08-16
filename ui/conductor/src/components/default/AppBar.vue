@@ -54,7 +54,7 @@ const hideAccountBtn = computed(() => isLoginPage.value || isAuthDisabled.value)
 
 <style lang="scss" scoped>
 .v-app-bar.v-toolbar.v-sheet {
-  background: var(--v-neutral-base);
+  background: rgb(var(--v-theme-neutral));
 }
 
 .v-app-bar :deep(.v-toolbar__content) {

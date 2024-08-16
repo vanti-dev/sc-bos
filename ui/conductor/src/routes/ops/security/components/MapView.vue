@@ -447,26 +447,26 @@ watch(
 }
 
 :deep(svg .success) {
-  fill: var(--v-success-base);
+  fill: rgb(var(--v-theme-success));
 }
 
 :deep(svg .warning) {
-  fill: var(--v-warning-base);
+  fill: rgb(var(--v-theme-warning));
 }
 
 :deep(svg .error) {
-  fill: var(--v-error-base);
+  fill: rgb(var(--v-theme-error));
 }
 
 :deep(svg .open),
 :deep(svg .moving) {
-  stroke: var(--v-warning-base);
+  stroke: rgb(var(--v-theme-warning));
   stroke-width: 125px;
   transition: all 0.5s ease-in-out;
 }
 
 :deep(svg .closed) {
-  stroke: var(--v-success-base);
+  stroke: rgb(var(--v-theme-success));
   stroke-width: 75px;
   transition: all 0.5s ease-in-out;
 }
@@ -479,12 +479,12 @@ watch(
 
 :deep(svg .open-fill),
 :deep(svg .moving-fill) {
-  fill: var(--v-warning-base);
+  fill: rgb(var(--v-theme-warning));
   transition: all 0.5s ease-in-out;
 }
 
 :deep(svg .closed-fill) {
-  fill: var(--v-success-base);
+  fill: rgb(var(--v-theme-success));
   transition: all 0.5s ease-in-out;
 }
 

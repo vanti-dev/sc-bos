@@ -38,19 +38,19 @@ const {grantState, grantClass} = useAccessAttempt(() => props.value);
 
 <style scoped>
 .granted {
-  color: var(--v-success-base);
+  color: rgb(var(--v-theme-success));
 }
 
 .denied {
-  color: var(--v-warning-base);
+  color: rgb(var(--v-theme-warning));
 }
 
 .tailgate, .forced, .failed {
-  color: var(--v-error-base);
+  color: rgb(var(--v-theme-error));
 }
 
 .pending, .aborted {
-  color: var(--v-info-base);
+  color: rgb(var(--v-theme-info));
 }
 
 .grant_unknown {

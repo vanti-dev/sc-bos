@@ -175,17 +175,17 @@ const floorStatus = computed(() => {
   flex-grow: inherit;
 
   .floor-status {
-    fill: var(--v-secondaryTeal-darken1);
+    fill: rgb(var(--v-theme-secondaryTeal-darken-1));
     opacity: 0.5;
   }
   .online {
-    fill: var(--v-success-lighten2);
+    fill: rgb(var(--v-theme-success-lighten-2));
   }
   .warning {
-    fill: var(--v-warning-base);
+    fill: rgb(var(--v-theme-warning));
   }
   .error {
-    fill: var(--v-error-lighten1);
+    fill: rgb(var(--v-theme-error-lighten-1));
   }
 }
 
@@ -207,18 +207,18 @@ const floorStatus = computed(() => {
   .status-block {
     display: block;
     height: 22px;
-    background-color: var(--v-neutral-darken1);
-    border: 1px solid var(--v-neutral-lighten4);
+    background-color: rgb(var(--v-theme-neutral-darken-1));
+    border: 1px solid rgb(var(--v-theme-neutral-lighten-4));
   }
   .online {
-    background-color: var(--v-success-lighten2);
+    background-color: rgb(var(--v-theme-success-lighten-2));
     border: none;
   }
   .warning {
-    background-color: var(--v-warning-base);
+    background-color: rgb(var(--v-theme-warning));
   }
   .error {
-    background-color: var(--v-error-lighten1);
+    background-color: rgb(var(--v-theme-error-lighten-1));
   }
 }
 
