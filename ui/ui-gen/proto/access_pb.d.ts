@@ -22,8 +22,8 @@ export class AccessAttempt extends jspb.Message {
   hasTime(): boolean;
   clearTime(): AccessAttempt;
 
-  getName(): string;
-  setName(value: string): AccessAttempt;
+  getZone(): string;
+  setZone(value: string): AccessAttempt;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): AccessAttempt.AsObject;
@@ -39,7 +39,7 @@ export namespace AccessAttempt {
     reason: string,
     actor?: AccessAttempt.Actor.AsObject,
     time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    name: string,
+    zone: string,
   }
 
   export class Actor extends jspb.Message {

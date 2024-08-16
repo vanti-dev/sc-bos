@@ -196,7 +196,7 @@ grant: jspb.Message.getFieldWithDefault(msg, 1, 0),
 reason: jspb.Message.getFieldWithDefault(msg, 2, ""),
 actor: (f = msg.getActor()) && proto.smartcore.bos.AccessAttempt.Actor.toObject(includeInstance, f),
 time: (f = msg.getTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-name: jspb.Message.getFieldWithDefault(msg, 5, "")
+zone: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
   if (includeInstance) {
@@ -253,7 +253,7 @@ proto.smartcore.bos.AccessAttempt.deserializeBinaryFromReader = function(msg, re
       break;
     case 5:
       var value = /** @type {string} */ (reader.readString());
-      msg.setName(value);
+      msg.setZone(value);
       break;
     default:
       reader.skipField();
@@ -314,7 +314,7 @@ proto.smartcore.bos.AccessAttempt.serializeBinaryToWriter = function(message, wr
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
-  f = message.getName();
+  f = message.getZone();
   if (f.length > 0) {
     writer.writeString(
       5,
@@ -818,10 +818,10 @@ proto.smartcore.bos.AccessAttempt.prototype.hasTime = function() {
 
 
 /**
- * optional string name = 5;
+ * optional string zone = 5;
  * @return {string}
  */
-proto.smartcore.bos.AccessAttempt.prototype.getName = function() {
+proto.smartcore.bos.AccessAttempt.prototype.getZone = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -830,7 +830,7 @@ proto.smartcore.bos.AccessAttempt.prototype.getName = function() {
  * @param {string} value
  * @return {!proto.smartcore.bos.AccessAttempt} returns this
  */
-proto.smartcore.bos.AccessAttempt.prototype.setName = function(value) {
+proto.smartcore.bos.AccessAttempt.prototype.setZone = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
