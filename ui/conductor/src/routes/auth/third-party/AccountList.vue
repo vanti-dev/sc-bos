@@ -28,11 +28,10 @@
             </v-col>
             <v-spacer/>
             <new-account-dialog @finished="tenantStore.refreshTenants">
-              <template #activator="{ on, attrs }">
+              <template #activator="{ props }">
                 <v-btn
                     variant="outlined"
-                    v-bind="attrs"
-                    v-on="on"
+                    v-bind="props"
                     :disabled="blockActions">
                   Add Account
                   <v-icon end>mdi-plus</v-icon>
@@ -82,9 +81,10 @@ onUnmounted(() => {
 });
 
 /**
+ * @param {PointerEvent} e
  * @param {Tenant.AsObject} item
  */
-function showTenant(item) {
+function showTenant(e, {item}) {
   // router.push(`/auth/third-party/${item.id}`);
   sidebar.visible = true;
   sidebar.title = item.title;

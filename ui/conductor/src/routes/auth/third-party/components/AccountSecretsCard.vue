@@ -28,9 +28,9 @@
               This action cannot be undone.
             </template>
             <template #confirmBtn>Delete Token</template>
-            <template #activator="{ on, attrs }">
-              <v-list-item-action v-show="hover" class="my-0" v-bind="attrs">
-                <v-btn rounded="circle" size="small" v-on="on" :disabled="blockActions">
+            <template #activator="{ props }">
+              <v-list-item-action v-show="hover" class="my-0">
+                <v-btn rounded="circle" size="small" v-bind="props" :disabled="blockActions">
                   <v-icon color="neutral-lighten-5">mdi-trash-can</v-icon>
                 </v-btn>
               </v-list-item-action>
@@ -41,8 +41,8 @@
     </v-list>
     <v-card-actions class="px-4 pb-4">
       <new-secret-form :account-name="account.title" :account-id="account.id" @finished="refreshSecrets">
-        <template #activator="{ on }">
-          <v-btn width="100%" color="primary" class="font-weight-bold" v-on="on" :disabled="blockActions">
+        <template #activator="{ props }">
+          <v-btn width="100%" color="primary" class="font-weight-bold" v-bind="props" :disabled="blockActions">
             Create new token
             <v-icon end>mdi-key</v-icon>
           </v-btn>

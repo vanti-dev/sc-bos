@@ -17,14 +17,13 @@
             This action cannot be undone.
           </template>
           <template #confirmBtn>I understand, delete account</template>
-          <template #activator="{ on, attrs }">
+          <template #activator="{ props }">
             <v-btn
                 variant="outlined"
                 color="error"
                 :disabled="blockActions"
                 width="100%"
-                v-on="on"
-                v-bind="attrs">
+                v-bind="props">
               Delete Account
             </v-btn>
           </template>
