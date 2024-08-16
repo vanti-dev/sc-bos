@@ -13,7 +13,7 @@
         {{ props.icon }}
       </v-icon>
     </template>
-    <div v-for="(status, index) in statusDetails" :key="status.statusName + index">
+    <div v-for="(status, index) in statusDetails" :key="index">
       <span class="error-name">{{ status.statusName }}</span>
       <span class="error-details">
         {{ status.statusCode }}
