@@ -25,7 +25,8 @@
 </template>
 
 <script setup>
-import {computed, getCurrentInstance} from 'vue';
+import {computed} from 'vue';
+import {useTheme} from 'vuetify';
 
 const center = [0, 73];
 
@@ -109,6 +110,7 @@ const transforms = computed(() => {
   return ts;
 });
 
+const theme = useTheme();
 // list of colors per segment
 const fillColors = computed(() => {
   const cols = [];
@@ -122,9 +124,7 @@ const fillColors = computed(() => {
       if (props.color.startsWith('#')) {
         cols.push(props.color);
       } else {
-        const theme = getCurrentInstance().proxy.$vuetify.theme.currentTheme;
-        const c = props.color.split(' ');
-        const col = theme[c[0]][c[1] ?? 'base'];
+        const col = theme.current.value.colors[props.color];
         cols.push(col);
       }
     }
