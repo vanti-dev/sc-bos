@@ -24,7 +24,7 @@ const isLive = computed(() => {
 });
 
 const onIntersect = {
-  handler: (entries, observer) => intersectionHandler(entries, observer, props.itemKey),
+  handler: (isIntersecting, entries, observer) => intersectionHandler(entries, observer, props.itemKey),
   options: {
     // 60 for the page header
     rootMargin: '-60px 0px 0px 0px',
