@@ -18,7 +18,7 @@
         item-key="id"
         :search="search"
         :loading="serviceCollection.loading"
-        @click:row="showService">
+        @click:row="(_, s) => showService(s.item)">
       <template #item.active="{item}">
         <service-status :service="item"/>
       </template>

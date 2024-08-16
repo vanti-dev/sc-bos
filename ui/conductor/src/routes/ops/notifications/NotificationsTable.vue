@@ -548,9 +548,10 @@ const rowProps = ({item}) => {
 /**
  * Shows the device in the sidebar
  *
+ * @param {PointerEvent} e
  * @param {*} item
  */
-async function showNotification(item) {
+async function showNotification(e, {item}) {
   sidebar.visible = true;
   sidebar.title = item.source;
   sidebar.data = {metadata: sidebar.data?.metadata, notification: {name, item}};

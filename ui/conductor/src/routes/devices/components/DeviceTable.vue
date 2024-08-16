@@ -144,9 +144,10 @@ const selectedDevicesComp = computed({
 /**
  * Shows the device in the sidebar
  *
+ * @param {PointerEvent} e
  * @param {*} item
  */
-function showDevice(item) {
+function showDevice(e, {item}) {
   sidebar.visible = true;
   sidebar.title = item.metadata.appearance ? item.metadata.appearance.title : item.name;
   sidebar.data = item;
