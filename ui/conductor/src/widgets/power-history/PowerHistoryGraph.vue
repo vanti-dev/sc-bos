@@ -18,7 +18,6 @@
 import LineChart from '@/components/charts/LineChart.vue';
 import {HOUR, MINUTE, useNow} from '@/components/now.js';
 import useTimePeriod from '@/composables/useTimePeriod.js';
-import useVuetify from '@/composables/useVuetify.js';
 import {useCarbonIntensity} from '@/stores/carbonIntensity.js';
 import PowerHistoryGraphOptionsMenu from '@/widgets/power-history/PowerHistoryGraphOptionsMenu.vue';
 import useMeterHistory from '@/widgets/power-history/useMeterHistory.js';
@@ -51,7 +50,6 @@ const props = defineProps({
     default: '275px'
   }
 });
-const vuetifyInstance = useVuetify();
 const theme = useTheme();
 const durationOption = ref({
   id: '24H',

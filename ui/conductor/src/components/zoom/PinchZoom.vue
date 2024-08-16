@@ -51,7 +51,6 @@
 <script>
 import ZoomControls from '@/components/zoom/ZoomControls.vue';
 import PanZoom from '@/thirdparty/panzoom/PanZoom.vue';
-import {getCurrentInstance} from 'vue';
 
 export default {
   name: 'PinchZoom',
