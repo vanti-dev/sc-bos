@@ -8,6 +8,10 @@ samp {
   font-family: main.$mono-font-family; /* Specify the font family of code elements */
 }
 
+p {
+  margin-bottom: 16px;
+}
+
 .v-text-field--outlined {
   background: var(--v-neutral-lighten1);
   border-color: var(--v-neutral-lighten2);
