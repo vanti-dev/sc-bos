@@ -1,7 +1,7 @@
 <template>
   <v-menu v-bind="showMenu" location="bottom" content-class="main-nav" transition="slide-x-transition">
     <template #activator="{ props }">
-      <v-btn tile v-bind="props" :ripple="false" id="main-nav-button" color="neutral-lighten-1">
+      <v-btn tile variant="flat" v-bind="props" :ripple="false" id="main-nav-button" color="neutral-lighten-1">
         <menu-icon width="60"/>
       </v-btn>
     </template>
@@ -83,9 +83,7 @@ const enabledMenuItems = computed(() => {
 
 <style scoped>
 #main-nav-button {
-  margin-top: -12px;
-  margin-bottom: -12px;
-  margin-left: -16px !important;
+  margin-left: 0;
   height: 60px !important;
   width: 60px;
   min-width: auto;
