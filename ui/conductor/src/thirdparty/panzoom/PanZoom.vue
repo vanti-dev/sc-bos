@@ -40,7 +40,7 @@ export default {
   },
   data() {
     return {
-      $pz: null,
+      pz: null,
       moving: false
     };
   },
@@ -60,31 +60,31 @@ export default {
   watch: {
     disable(v) {
       if (v) {
-        this.$pz.destroy();
-        this.$pz = null;
+        this.pz.destroy();
+        this.pz = null;
       } else {
-        this.$pz = panzoom(this.$el, {...this.$attrs, ...this.options});
-        this.$emit('init', this.$pz);
+        this.pz = panzoom(this.$el, {...this.$attrs, ...this.options});
+        this.$emit('init', this.pz);
       }
     }
   },
   mounted() {
     if (!this.disable) {
-      this.$pz = panzoom(this.$el, {...this.$attrs, ...this.options});
-      this.$emit('init', this.$pz);
+      this.pz = panzoom(this.$el, {...this.$attrs, ...this.options});
+      this.$emit('init', this.pz);
     }
   },
   beforeDestroy() {
-    if (this.$pz) {
-      this.$pz.destroy();
-      this.$pz = null;
+    if (this.pz) {
+      this.pz.destroy();
+      this.pz = null;
     }
   },
   methods: {
     handleWheel(e) {
       if (!this.disable) {
         this.$emit('start');
-        this.$pz.zoomWithWheel(e);
+        this.pz.zoomWithWheel(e);
       }
     }
   }
