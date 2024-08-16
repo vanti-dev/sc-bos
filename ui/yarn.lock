@@ -1970,7 +1970,7 @@ postcss-selector-parser@^6.0.15:
     cssesc "^3.0.0"
     util-deprecate "^1.0.2"
 
-postcss@^8.4.35, postcss@^8.4.40:
+postcss@^8.4.40:
   version "8.4.41"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.41.tgz#d6104d3ba272d882fe18fc07d15dc2da62fa2681"
   integrity sha512-TesUflQ0WKZqAvg52PWL6kHgLKP6xB6heTOdoYM0Wt2UHyxNa4K25EZZMgKns3BH1RLVbZCREPpLY0rhnNoHVQ==
@@ -2150,7 +2150,7 @@ sass@^1.77.8:
     immutable "^4.0.0"
     source-map-js ">=0.6.2 <2.0.0"
 
-semver@^7.3.6, semver@^7.5.2, semver@^7.6.0, semver@^7.6.3:
+semver@^7.3.6, semver@^7.6.0, semver@^7.6.3:
   version "7.6.3"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.6.3.tgz#980f7b5550bc175fb4dc09403085627f9eb33143"
   integrity sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A==
