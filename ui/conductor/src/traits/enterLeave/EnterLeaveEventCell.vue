@@ -3,8 +3,8 @@
 
   <span v-else-if="value && !props.streamError" class="text-no-wrap el-cell">
     <v-tooltip location="bottom">
-      <template #activator="{ props }">
-        <span v-bind="props">
+      <template #activator="{ props: _props }">
+        <span v-bind="_props">
           <v-icon :start="hasTotals" :class="{justEntered}" size="20">mdi-location-enter</v-icon>
           <span :class="{justEntered}" v-if="hasTotals">{{ enterTotal }}</span>
         </span>
@@ -13,8 +13,8 @@
     </v-tooltip>
     <v-divider vertical class="mx-2"/>
     <v-tooltip location="bottom">
-      <template #activator="{ props }">
-        <span v-bind="props">
+      <template #activator="{ props: _props }">
+        <span v-bind="_props">
           <span :class="{justLeft}" v-if="hasTotals">{{ leaveTotal }}</span>
           <v-icon :end="hasTotals" :class="{justLeft}" size="20">mdi-location-exit</v-icon>
         </span>

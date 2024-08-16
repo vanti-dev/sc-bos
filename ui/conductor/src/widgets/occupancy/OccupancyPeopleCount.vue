@@ -3,8 +3,8 @@
     <span>
       <template v-if="showErr">
         <v-tooltip location="bottom">
-          <template #activator="{props}">
-            <v-icon v-bind="props" color="error" size="1em">mdi-alert-circle-outline</v-icon>
+          <template #activator="{props: _props}">
+            <v-icon v-bind="_props" color="error" size="1em">mdi-alert-circle-outline</v-icon>
           </template>
           <span>{{ errStr }}</span>
         </v-tooltip>

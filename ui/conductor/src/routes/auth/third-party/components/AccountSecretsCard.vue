@@ -9,8 +9,8 @@
           <v-list-item-subtitle v-if="secret.expireTime" class="text-body-small text-neutral-lighten-5">
             Expire{{ secret.expireTime > Date.now() ? 's' : 'd' }}
             <v-tooltip location="bottom">
-              <template #activator="{ props }">
-                <span v-bind="props">{{ humanizeDate(secret.expireTime) }}</span>
+              <template #activator="{ props: _props }">
+                <span v-bind="_props">{{ humanizeDate(secret.expireTime) }}</span>
               </template>
               <span>{{ Intl.DateTimeFormat('en-GB').format(secret.expireTime) }}</span>
             </v-tooltip>
@@ -28,9 +28,9 @@
               This action cannot be undone.
             </template>
             <template #confirmBtn>Delete Token</template>
-            <template #activator="{ props }">
+            <template #activator="{ props: _props }">
               <v-list-item-action v-show="hover" class="my-0">
-                <v-btn rounded="circle" size="small" v-bind="props" :disabled="blockActions">
+                <v-btn rounded="circle" size="small" v-bind="_props" :disabled="blockActions">
                   <v-icon color="neutral-lighten-5">mdi-trash-can</v-icon>
                 </v-btn>
               </v-list-item-action>
@@ -41,8 +41,8 @@
     </v-list>
     <v-card-actions class="px-4 pb-4">
       <new-secret-form :account-name="account.title" :account-id="account.id" @finished="refreshSecrets">
-        <template #activator="{ props }">
-          <v-btn width="100%" color="primary" class="font-weight-bold" v-bind="props" :disabled="blockActions">
+        <template #activator="{ props: _props }">
+          <v-btn width="100%" color="primary" class="font-weight-bold" v-bind="_props" :disabled="blockActions">
             Create new token
             <v-icon end>mdi-key</v-icon>
           </v-btn>

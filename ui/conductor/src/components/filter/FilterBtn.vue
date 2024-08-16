@@ -4,9 +4,9 @@
       v-model="active"
       location="left"
       min-width="340">
-    <template #activator="{ props }">
+    <template #activator="{ props: _props }">
       <v-btn
-          v-bind="props"
+          v-bind="_props"
           rounded
           class="filter-btn rounded">
         <v-badge dot v-if="badgeShown" :color="badgeColor">

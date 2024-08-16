@@ -3,15 +3,15 @@
 
   <span class="text-no-wrap at-cell" v-else-if="(hasTemp || hasSetPoint) && !props.streamError">
     <v-tooltip location="bottom" v-if="hasTemp" open-delay="1000">
-      <template #activator="{props}">
-        <span v-bind="props">{{ tempStr }}</span>
+      <template #activator="{props: _props}">
+        <span v-bind="_props">{{ tempStr }}</span>
       </template>
       <span>Current temperature</span>
     </v-tooltip>
     <v-icon class="mx-n1" v-if="hasTemp && hasSetPoint" size="20">mdi-menu-right</v-icon>
     <v-tooltip location="bottom" v-if="hasSetPoint" open-delay="1000">
-      <template #activator="{props}">
-        <span v-bind="props">{{ setPointStr }}</span>
+      <template #activator="{props: _props}">
+        <span v-bind="_props">{{ setPointStr }}</span>
       </template>
       <span>Set point</span>
     </v-tooltip>

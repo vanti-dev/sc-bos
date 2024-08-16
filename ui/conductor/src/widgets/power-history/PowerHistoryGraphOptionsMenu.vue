@@ -6,11 +6,11 @@
             location="bottom left"
             :close-on-content-click="false"
             min-width="275px">
-          <template #activator="{ props }">
+          <template #activator="{ props: _props }">
             <v-btn
                 theme="dark"
                 rounded="circle"
-                v-bind="props">
+                v-bind="_props">
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>
           </template>

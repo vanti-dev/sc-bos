@@ -1,8 +1,8 @@
 <template>
   <v-tooltip v-if="!acked" location="left" transition="slide-x-reverse-transition" color="neutral-lighten-4">
-    <template #activator="{ props }">
+    <template #activator="{ props: _props }">
       <v-btn
-          v-bind="props"
+          v-bind="_props"
           rounded="circle"
           v-if="!acked"
           color="warning"
@@ -15,8 +15,8 @@
     Acknowledge this notification
   </v-tooltip>
   <v-menu v-else location="bottom left">
-    <template #activator="{ props }">
-      <v-avatar v-bind="props" color="neutral-lighten-8" class="text--black" size="21">
+    <template #activator="{ props: _props }">
+      <v-avatar v-bind="_props" color="neutral-lighten-8" class="text--black" size="21">
         <template v-if="hasAuthor">{{ authorInitials }}</template>
         <v-icon v-else color="black" size="small">mdi-check</v-icon>
       </v-avatar>

@@ -8,7 +8,7 @@
       min-width="400px">
     <template #activator="{props}">
       <v-btn
-          class="py-1 px-3"
+          class="py-1 px-3 mr-0"
           variant="text"
           v-bind="props">
         <span class="text-title mr-1">Smart Core OS:</span>
@@ -19,14 +19,14 @@
     </template>
 
     <v-card
-        class="elevation-0 mt-4 pb-1"
+        class="elevation-0 mt-4 py-1"
         min-width="400px"
         style="border: 1px solid rgb(var(--v-theme-neutral-lighten-2))">
-      <v-card-title class="text-subtitle-1 mb-0 pb-0 mt-n1 mb-2">
+      <v-card-title class="text-subtitle-1 d-flex align-center">
         Smart Core Status
         <span
             class="ml-2 font-weight-light"
-            style="font-size: 10px; margin-bottom: -1px">
+            style="font-size: 10px">
           {{ isLoading ? '- Checking...' : 'Updated ' + timeAgo }}
         </span>
         <v-spacer/>
@@ -35,12 +35,11 @@
             <v-btn
                 v-bind="props"
                 :class="['mb-0', {'rotate-icon': isRefreshing}]"
-                rounded="circle"
-                size="small"
-                style="padding-left: 1px;"
-                @click="triggerRefresh">
-              <v-icon size="18">mdi-reload</v-icon>
-            </v-btn>
+                icon="mdi-reload"
+                variant="flat"
+                size="x-small"
+                style="padding-left: 1px; font-size: 12px"
+                @click="triggerRefresh"/>
           </template>
           <div class="d-flex flex-column">
             <span>Check Now</span>
@@ -50,7 +49,7 @@
       <v-card-text class="d-flex flex-row justify-center align-center mb-n1 mt-4">
         <!-- Display chips and status alerts -->
         <v-chip class="bg-neutral-lighten-1" size="small">UI</v-chip>
-        <template v-for="(chip, index) in statusPopupSetup" :key="index">
+        <template v-for="(chip) in statusPopupSetup" :key="chip.id">
           <v-divider class="mx-2" style="width: 10px; max-width: 10px;"/>
           <status-alert
               v-if="chip.id.includes('Status')"
@@ -61,7 +60,6 @@
               :single="chip.single"/>
           <v-chip
               v-else
-              :key="chip.id + '-chip'"
               :class="chip.color"
               :disabled="chipDisabled"
               size="small"

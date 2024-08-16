@@ -33,12 +33,12 @@
                 v-if="newSecret.expiresIn === suggestedExpiresIn.custom"
                 v-model="customExpiryMenuVisible"
                 :close-on-content-click="false">
-              <template #activator="{props}">
+              <template #activator="{props: _props}">
                 <v-text-field
                     v-model="newSecret.expiresAt"
                     placeholder="yyyy-mm-dd"
                     readonly
-                    v-bind="props"
+                    v-bind="_props"
                     class="expires-at"
                     hide-details="auto"
                     :rules="expiresAtRules"/>

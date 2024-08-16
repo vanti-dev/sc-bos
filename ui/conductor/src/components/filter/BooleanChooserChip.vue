@@ -1,8 +1,8 @@
 <template>
   <v-tooltip location="bottom">
-    <template #activator="{ props }">
+    <template #activator="{ props: _props }">
       <v-chip
-          v-bind="props"
+          v-bind="_props"
           @click="toggle"
           closable
           @click:close="clear">

@@ -12,8 +12,8 @@
     </div>
     <v-spacer/>
     <v-tooltip v-if="showClose" location="bottom">
-      <template #activator="{ props }">
-        <v-btn class="elevation-0 mr-1 mt-1" rounded="circle" v-bind="props" @click="emit('click:close')">
+      <template #activator="{ props: _props }">
+        <v-btn class="elevation-0 mr-1 mt-1" rounded="circle" v-bind="_props" @click="emit('click:close')">
           <v-icon color="white">mdi-close</v-icon>
         </v-btn>
       </template>

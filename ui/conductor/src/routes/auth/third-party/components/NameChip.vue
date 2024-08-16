@@ -1,7 +1,7 @@
 <template>
   <v-tooltip v-if="needsTooltip" v-bind="$attrs" location="bottom">
-    <template #activator="{props}">
-      <v-chip v-bind="{...props, ...$attrs}">
+    <template #activator="{props: _props}">
+      <v-chip v-bind="{..._props, ...$attrs}">
         <slot>{{ _title }}</slot>
       </v-chip>
     </template>

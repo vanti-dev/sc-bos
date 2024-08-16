@@ -2,17 +2,16 @@
   <span :class="color">
     {{ str }}
     <v-menu v-if="showErrorIcon" :close-on-content-click="false">
-      <template #activator="{ props }">
+      <template #activator="{ props: _props }">
         <v-progress-circular
             v-if="showNextAttemptTime"
-            v-on="on"
-            v-bind="attrs"
+            v-bind="_props"
             :size="20"
             :width="2"
             :model-value="progressToNextAttempt"
             color="error-lighten-2"
             class="ml-2"/>
-        <v-icon v-else v-bind="props" class="text-error-lighten-2" end>
+        <v-icon v-else v-bind="_props" class="text-error-lighten-2" end>
           mdi-alert-circle-outline
         </v-icon>
       </template>

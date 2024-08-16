@@ -43,9 +43,6 @@ module.exports = {
       'singleline': 10,
       'multiline': 1
     }],
-    // vuetify popup activators use { props } spelling which triggers this rule.
-    // todo: remove this rule when we've figured out a better way to support slot props and defineProps
-    'vue/no-template-shadow': 0,
     // This rule is in conflict with the vue/no-v-for-template-key-on-child rule, which should be used instead.
     // This rule seems to be enabled by default, even though we're using vue 3, not sure why.
     'vue/no-v-for-template-key': 0,
