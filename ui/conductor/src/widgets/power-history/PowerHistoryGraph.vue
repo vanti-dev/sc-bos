@@ -20,10 +20,10 @@ import {HOUR, MINUTE, useNow} from '@/components/now.js';
 import useTimePeriod from '@/composables/useTimePeriod.js';
 import useVuetify from '@/composables/useVuetify.js';
 import {useCarbonIntensity} from '@/stores/carbonIntensity.js';
-import {hexColor, rgbaColor} from '@/util/theme.js';
 import PowerHistoryGraphOptionsMenu from '@/widgets/power-history/PowerHistoryGraphOptionsMenu.vue';
 import useMeterHistory from '@/widgets/power-history/useMeterHistory.js';
 import {computed, ref} from 'vue';
+import {useTheme} from 'vuetify';
 
 const props = defineProps({
   chartTitle: {
@@ -52,6 +52,7 @@ const props = defineProps({
   }
 });
 const vuetifyInstance = useVuetify();
+const theme = useTheme();
 const durationOption = ref({
   id: '24H',
   span: 20 * MINUTE,
@@ -69,9 +70,9 @@ const gramsOfCO2PerKWh = ref(86);
 
 const themeColor = computed(() => {
   return {
-    start: hexColor('primary', vuetifyInstance),
-    middle: rgbaColor(hexColor('primary darken-3', vuetifyInstance), 0.5),
-    end: rgbaColor(hexColor('primary darken-4', vuetifyInstance), 0.1)
+    start: theme.current.value.colors.primary,
+    middle: theme.current.value.colors.primary + '80',
+    end: theme.current.value.colors.primary + '19'
   };
 });
 
@@ -143,8 +144,8 @@ const chartData = computed(() => {
     return gradient;
   };
 
-  // Set Generated color to success lighten-3 (light green) by default
-  const generatedColor = rgbaColor(hexColor('success lighten-3', vuetifyInstance), 1);
+  // Set Generated color to success-lighten-3 (light green) by default
+  const generatedColor = theme.current.value.colors['success-lighten-3'];
 
   // Helper function to avoid redundancy in dataset creation
   const addDataset = (data, isDemand = false) => {
