@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar height="60" elevation="0" class="pr-7">
+  <v-app-bar height="60" elevation="0" class="pr-7" color="neutral">
     <app-menu v-if="accountStore.isLoggedIn"/>
     <brand-logo :theme="config.theme" outline="white" style="height: 35px" class="ml-4 mr-2"/>
     <span class="heading">{{ appBarHeadingWithBrand }}</span>
