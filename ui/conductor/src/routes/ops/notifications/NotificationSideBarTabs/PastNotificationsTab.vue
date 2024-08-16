@@ -71,7 +71,7 @@ const notificationSidebar = computed(() => {
   return pageItems.value.map(item => {
     const icon = icons[notification.severityData(item.severity).text.toLowerCase()];
     const color = item.resolveTime ?
-        'grey--text' :
+        'text-grey' :
         notification.severityData(item.severity).color;
     return {
       ...item,

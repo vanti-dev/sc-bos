@@ -12,7 +12,7 @@
     <div class="d-flex flex-column justify-space-between">
       <v-card-text class="text-h6 text-white font-weight-regular d-flex flex-row pa-0 px-4 pt-4">
         <span>Last access:</span>
-        <span :class="[`${color}--text`, 'ml-auto font-weight-bold']">
+        <span :class="[`text-${color}`, 'ml-auto font-weight-bold']">
           {{ formatString(grantStates) }}
         </span>
       </v-card-text>

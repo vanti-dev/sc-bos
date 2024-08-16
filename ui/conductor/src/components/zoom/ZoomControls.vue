@@ -3,7 +3,7 @@
     <v-btn
         v-for="b in activeBtns"
         :key="b.c"
-        :class="[b.c, 'black--text']"
+        :class="[b.c, 'text-black']"
         @click="handleClick(b.c)"
         rounded="circle"
         elevation="2">

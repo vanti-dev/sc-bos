@@ -65,12 +65,12 @@ export function useEmergency(value) {
       case Emergency.Level.OK:
         return '';
       case Emergency.Level.WARNING:
-        return 'warning--text';
+        return 'text-warning';
       case Emergency.Level.EMERGENCY:
         if (drill.value) {
-          return 'info--text';
+          return 'text-info';
         }
-        return 'error--text';
+        return 'text-error';
     }
   });
   const iconStr = computed(() => {
@@ -136,12 +136,12 @@ export default function(query, paused) {
       case Emergency.Level.OK:
         return '';
       case Emergency.Level.WARNING:
-        return 'warning--text';
+        return 'text-warning';
       case Emergency.Level.EMERGENCY:
         if (drill) {
-          return 'info--text';
+          return 'text-info';
         }
-        return 'error--text';
+        return 'text-error';
     }
   });
 

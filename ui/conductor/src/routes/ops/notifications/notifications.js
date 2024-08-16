@@ -31,7 +31,7 @@ export function severityData(severity) {
       return {text: str, color: `${SeverityColor[i]}--text`, background: `${SeverityColor[i]}`};
     }
   }
-  return {text: 'unspecified', color: 'gray--text', background: 'gray'};
+  return {text: 'unspecified', color: 'text-gray', background: 'gray'};
 }
 
 export const useNotifications = defineStore('notifications', () => {

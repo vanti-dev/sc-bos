@@ -9,7 +9,6 @@
     <template #activator="{props}">
       <v-btn
           class="py-1 px-3"
-          style="text-align: center"
           variant="text"
           v-bind="props">
         <span class="text-title mr-1">Smart Core OS:</span>
@@ -112,11 +111,11 @@ const generalStatus = computed(() => {
   }
 
   if (!!networkIssue.value.error) {
-    return 'error--text';
+    return 'text-error';
   } else if (isUIError || hasError) {
-    return 'warning--text';
+    return 'text-warning';
   } else {
-    return 'success--text text--lighten-4';
+    return 'text-success-lighten-4';
   }
 });
 

@@ -49,11 +49,11 @@ const str = computed(() => {
 });
 const color = computed(() => {
   const s = props.service ?? {};
-  if (s.active === false && s.error) return 'error--text text--lighten-2';
+  if (s.active === false && s.error) return 'text-error-lighten-2';
   if (s.active === false) return '';
-  if (s.loading && s.error) return 'error--text text--lighten-2';
-  if (s.loading) return 'info--text text--lighten-2';
-  return 'success--text text--lighten-2';
+  if (s.loading && s.error) return 'text-error-lighten-2';
+  if (s.loading) return 'text-info-lighten-2';
+  return 'text-success-lighten-2';
 });
 
 const showErrorIcon = computed(() => props.service?.error &&

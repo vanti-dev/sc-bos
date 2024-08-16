@@ -2,7 +2,7 @@
   <div>
     <div class="d-flex flex-row align-center" :style="setLeftMargin">
       <v-list-item
-          :active-class="!isDeepestActiveItem ? 'primary--text black' : ''"
+          :active-class="!isDeepestActiveItem ? 'text-primary black' : ''"
           :class="[
             'd-flex flex-row align-center mb-0',
             {

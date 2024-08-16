@@ -3,7 +3,7 @@
     <div class="mb-2 pt-1 pb-4 px-6">
       <v-list class="ma-0 pa-0" rounded>
         <v-list-item
-            active-class="primary--text"
+            active-class="text-primary"
             class="ml-n1 mb-2"
             density="compact"
             :active="activeCertificate === 'root'"
@@ -26,7 +26,7 @@
         <v-list class="ma-0 pa-0">
           <v-list-item
               v-for="(intermediateValue, intermediateKey) in intermediateCertificates"
-              active-class="primary--text"
+              active-class="text-primary"
               class="ml-4"
               density="compact"
               :active="activeCertificate === intermediateValue?.subject?.commonName"

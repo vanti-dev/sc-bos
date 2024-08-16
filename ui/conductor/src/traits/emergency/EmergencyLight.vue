@@ -67,11 +67,11 @@ const battery = computed(() => {
 
 const testHistory = computed(() => {
   return [
-    ['28.09.22', 'Pass', 'success--text text--lighten-3'],
-    ['21.09.22', 'Pass', 'success--text text--lighten-3'],
-    ['14.09.22', 'Fail', 'error--text text--lighten-1'],
-    ['07.09.22', 'Pass', 'success--text text--lighten-3'],
-    ['31.08.22', 'Pass', 'success--text text--lighten-3']
+    ['28.09.22', 'Pass', 'text-success-lighten-3'],
+    ['21.09.22', 'Pass', 'text-success-lighten-3'],
+    ['14.09.22', 'Fail', 'text-error-lighten-1'],
+    ['07.09.22', 'Pass', 'text-success-lighten-3'],
+    ['31.08.22', 'Pass', 'text-success-lighten-3']
   ];
 });
 

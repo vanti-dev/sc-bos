@@ -57,7 +57,7 @@
               {{ node.address }}
             </v-list-item>
             <v-list-item
-                :class="[{'red--text': trackers.metadataTracker.error}, 'pa-0 ma-0']"
+                :class="[{'text-red': trackers.metadataTracker.error}, 'pa-0 ma-0']"
                 style="min-height: 20px"
                 v-for="(trackers, service) in nodeDetails[node.name]"
                 :key="service">
