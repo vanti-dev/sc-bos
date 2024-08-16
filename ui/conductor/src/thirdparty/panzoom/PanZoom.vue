@@ -49,7 +49,8 @@ export default {
       const on = {};
       for (let i = 0; i < names.length; i++) {
         const name = names[i];
-        if (this.$listeners.hasOwnProperty(name)) {
+        const eName = 'on' + name[0].toUpperCase() + name.slice(1);
+        if (this.$attrs.hasOwnProperty(eName)) {
           on[`panzoom${name}`] = (e) => this.$emit(name, e.detail);
         }
       }

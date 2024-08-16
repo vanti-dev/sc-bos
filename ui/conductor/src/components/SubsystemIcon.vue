@@ -1,5 +1,5 @@
 <template>
-  <v-icon v-bind="$attrs" v-on="$listeners">{{ icon }}</v-icon>
+  <v-icon>{{ icon }}</v-icon>
 </template>
 <script setup>
 import {computed} from 'vue';
