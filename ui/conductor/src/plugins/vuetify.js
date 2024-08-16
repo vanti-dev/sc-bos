@@ -13,6 +13,7 @@ export default createVuetify({
       dark: {
         dark: true,
         colors: {
+          'surface': '#282F36', // neutral: for cards and menu content, etc
           'primary-darken-4': '#00525E',
           'primary-darken-1': '#00AAC1',
           'primary': '#00BED6',
