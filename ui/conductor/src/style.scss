@@ -82,3 +82,9 @@ Also center the text when it's small
     border-top-color: rgba(255, 255, 255, 0.25);
   }
 }
+
+.v-data-table__tr {
+  &:hover {
+    background-color: rgba(var(--v-theme-surface-lighten-2), 0.3);
+  }
+}
