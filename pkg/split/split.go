@@ -1,16 +1,32 @@
+// Package split provides a way to compare and apply changes to nested data structures.
+// It supports JSON-like data structures of map[string]any, []any and primitive types.
+//
+// The data structures are compared in logical sections defined by a schema of Split objects.
+// Each Patch returned from Diff will replace the value of one such section.
+// Array elements (which must be map[string]any) are identified by a key, rather than their index within the array.
 package split
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"golang.org/x/exp/slices"
 
 	"github.com/vanti-dev/sc-bos/pkg/util/maps"
 )
 
-func Diff(a, b any, schema []Split) []Patch {
+// Diff finds the changes required to transform a into b, using the provided Splits to define logical sections of
+// the data.
+// Only JSON-like data structures are supported, i.e. map[string]any, []any and primitive types (in any nested arrangement).
+// The returned patches will be non-conflicting, meaning that they can be applied in any order and will produce
+// the same result.
+func Diff(a, b any, splits []Split) []Patch {
+	return diff(a, b, Split{Splits: splits})
+}
+
+func diff(a, b any, split Split) []Patch {
 	if equal(a, b) {
 		return nil
 	}
@@ -21,14 +37,14 @@ func Diff(a, b any, schema []Split) []Patch {
 		if !ok {
 			return []Patch{{Value: b}}
 		}
-		return diffMap(a, b, schema)
+		return diffMap(a, b, split.Splits)
 
 	case []any:
 		b, ok := b.([]any)
 		if !ok {
 			return []Patch{{Value: b}}
 		}
-		return diffArray(a, b, schema)
+		return diffArray(a, b, split)
 
 	default:
 		if equal(a, b) {
@@ -110,15 +126,21 @@ func diffPages(a, b []page) []Patch {
 			continue
 		}
 
-		subpatches := Diff(c.A.Value, c.B.Value, c.B.Split.Splits)
-		for i := range subpatches {
-			// prepend the current field path to the subpatch path so that paths are absolute
-			subpatches[i].Path = append(fieldPathSegments(c.Path), subpatches[i].Path...)
-		}
+		subpatches := diff(c.A.Value, c.B.Value, c.B.Split)
+		prefixPatches(subpatches, fieldPathSegments(c.Path))
 		patches = append(patches, subpatches...)
 	}
 
 	return patches
+}
+
+func prefixPatches(patches []Patch, prefix []PathSegment) {
+	for i := range patches {
+		var prefixed []PathSegment
+		prefixed = append(prefixed, prefix...)
+		prefixed = append(prefixed, patches[i].Path...)
+		patches[i].Path = prefixed
+	}
 }
 
 func fieldPathSegments(path []string) []PathSegment {
@@ -162,6 +184,8 @@ func buildFieldTree(schema []Split) fieldTree {
 	return tree
 }
 
+// splits a map into its own fields, and a list of pages that represent the fields that were split
+// In the returned map, fields that were split are replaced with Ignore{}
 func splitMap(m map[string]any, fields fieldTree) (map[string]any, []page) {
 	if len(fields) == 0 {
 		return m, nil
@@ -190,19 +214,133 @@ func splitMap(m map[string]any, fields fieldTree) (map[string]any, []page) {
 			// not a map, don't need to delete this field or any of its children
 		}
 	}
+	markIgnored(m, fields)
 	return m, pages
 }
 
+// places an Ignore{} value at every position in m corresponding to a leaf in ft
+func markIgnored(m map[string]any, ft fieldTree) {
+	for k, entry := range ft {
+		if entry.IsLeaf() {
+			m[k] = Ignore{}
+		} else if submap, ok := m[k].(map[string]any); ok {
+			markIgnored(submap, entry.Fields)
+		}
+	}
+}
+
+// represents the position of a section within the structure, and its value
 type page struct {
-	Path  []string
-	Split Split
+	Path  []string // hierarchy of object field names to reach this page
+	Split Split    // the split that applies to Value
 	Value any
 }
 
-func diffArray(a, b []any, schema []Split) []Patch {
-	panic("not implemented")
+func diffArray(a, b []any, split Split) []Patch {
+	if split.Key == "" {
+		// TODO: propagate error
+		panic("split key is required for array diff")
+	}
+
+	type entry struct {
+		A, B                 map[string]any
+		ASplitKey, BSplitKey string
+		Splits               []Split
+	}
+	entries := make(map[any]entry) // we allow any comparable type as array keys
+	for _, v := range a {
+		key, ok := extractArrayEntryKey(v, split.Key)
+		if !ok {
+			continue
+		}
+		// if there is no SplitKey, we'll use "" to indicate that
+		splitKey, ok := extractArrayEntrySplitKey(v, split.SplitKey)
+		if !ok {
+			splitKey = ""
+		}
+		entries[key] = entry{
+			A:         v.(map[string]any),
+			ASplitKey: splitKey,
+		}
+	}
+	for _, v := range b {
+		key, ok := extractArrayEntryKey(v, split.Key)
+		if !ok {
+			continue
+		}
+		splitKey, ok := extractArrayEntrySplitKey(v, split.SplitKey)
+		if !ok {
+			splitKey = ""
+		}
+		e := entries[key]
+		e.B = v.(map[string]any)
+		e.BSplitKey = splitKey
+		entries[key] = e
+	}
+
+	var patches []Patch
+	for k, e := range entries {
+		if e.B == nil {
+			// array element was deleted
+			patches = append(patches, Patch{
+				Path:    []PathSegment{{ArrayKey: split.Key, ArrayElem: k}},
+				Deleted: true,
+			})
+		} else if e.ASplitKey != e.BSplitKey {
+			// array element moved over to different split set, not directly comparable, replace the entire element
+			// (this also covers the case where a new element was added)
+			patches = append(patches, Patch{
+				Path:  []PathSegment{{ArrayKey: split.Key, ArrayElem: k}},
+				Value: e.B,
+			})
+		} else {
+			splits, ok := split.SplitsByKey[e.BSplitKey]
+			if !ok {
+				// fall back to the global splits
+				// this case is used when SplitByKey isn't used
+				splits = split.Splits
+			}
+
+			subpatches := Diff(e.A, e.B, splits)
+			prefixPatches(subpatches, []PathSegment{{ArrayKey: split.Key, ArrayElem: k}})
+			patches = append(patches, subpatches...)
+		}
+	}
+
+	return patches
 }
 
+// extracts the logical key from an object which is used to identify it within an array
+// if a key is returned, it is guaranteed to be comparable
+func extractArrayEntryKey(v any, key string) (any, bool) {
+	m, ok := v.(map[string]any)
+	if !ok {
+		return nil, false
+	}
+	keyValue, ok := m[key]
+	if !ok || !reflect.ValueOf(keyValue).Comparable() {
+		return nil, false
+	}
+	return keyValue, true
+}
+
+func extractArrayEntrySplitKey(v any, splitKey string) (string, bool) {
+	m, ok := v.(map[string]any)
+	if !ok {
+		return "", false
+	}
+	splitKeyValue, ok := m[splitKey]
+	if !ok {
+		return "", false
+	}
+	splitKeyStr, ok := splitKeyValue.(string)
+	return splitKeyStr, ok
+}
+
+// deep equality check for supporting the following nested types:
+// - map[string]any
+// - []any
+// - comparable types
 func equal(a, b any) bool {
 	switch a := a.(type) {
 	case map[string]any:
@@ -240,6 +378,7 @@ func equal(a, b any) bool {
 	}
 }
 
+// returns true if a and b have the same key set
 func equalKeys(a, b map[string]any) bool {
 	if len(a) != len(b) {
 		return false
@@ -257,29 +396,36 @@ func equalKeys(a, b map[string]any) bool {
 	return true
 }
 
-func ApplyPatch(data any, diff Patch) (any, error) {
-	if len(diff.Path) == 0 {
-		return patchValue(data, diff.Value)
+// ApplyPatch applies a Patch to a data structure.
+// The patch will be performed in-place if possible, and the modified data structure will be returned.
+// The data structure must be a JSON-like structure of map[string]any, []any and primitive types.
+func ApplyPatch(data any, patch Patch) (any, error) {
+	if len(patch.Path) == 0 {
+		if patch.Deleted {
+			return nil, errors.New("cannot delete root")
+		} else {
+			return patchValue(data, patch.Value)
+		}
 	}
 
-	segment := diff.Path[0]
+	segment := patch.Path[0]
 	if segment.IsField() {
 		m, ok := data.(map[string]any)
 		if !ok {
 			return data, fmt.Errorf("cannot patch %T with field", data)
 		}
-		if diff.Deleted {
+		if patch.Deleted {
 			delete(m, segment.Field)
 			return m, nil
 		}
 
 		fieldValue, ok := m[segment.Field]
 		if !ok {
-			fieldValue = emptyValue(diff.Path[1:])
+			fieldValue = emptyValue(patch.Path[1:])
 		}
 		patched, err := ApplyPatch(fieldValue, Patch{
-			Path:  diff.Path[1:],
-			Value: diff.Value,
+			Path:  patch.Path[1:],
+			Value: patch.Value,
 		})
 		if err != nil {
 			return data, err
@@ -301,7 +447,7 @@ func ApplyPatch(data any, diff Patch) (any, error) {
 			if !ok {
 				return false
 			}
-			return v == segment.ArrayElem
+			return reflect.ValueOf(v).Comparable() && v == segment.ArrayElem
 		})
 		var existing any
 		if i >= 0 {
@@ -309,8 +455,8 @@ func ApplyPatch(data any, diff Patch) (any, error) {
 		}
 
 		patched, err := ApplyPatch(existing, Patch{
-			Path:  diff.Path[1:],
-			Value: diff.Value,
+			Path:  patch.Path[1:],
+			Value: patch.Value,
 		})
 		if err != nil {
 			return data, err
@@ -331,7 +477,7 @@ func patchValue(dst any, value any) (any, error) {
 	if dst == nil {
 		return value, nil
 	}
-	if _, ok := value.(Point); ok {
+	if _, ok := value.(Ignore); ok {
 		// points represent the limit of the patch
 		// nothing to apply
 		return dst, nil
@@ -363,7 +509,7 @@ func patchValue(dst any, value any) (any, error) {
 func patchMap(m map[string]any, patch map[string]any) (map[string]any, error) {
 	patched := make(map[string]any)
 	for k, v := range patch {
-		if _, ok := v.(Point); ok {
+		if _, ok := v.(Ignore); ok {
 			// we need to preserve the original value, if it exists
 			if original, ok := m[k]; ok {
 				patched[k] = original
@@ -397,30 +543,29 @@ func emptyValue(segs []PathSegment) any {
 }
 
 type Patch struct {
-	Path    []PathSegment `json:"path"`
-	Value   any           `json:"value"`
-	Deleted bool          `json:"deleted"`
+	// How to reach the section to be patched from the root of the data structure
+	Path []PathSegment `json:"path"`
+	// The new value to replace the section with
+	// If an Ignore{} value is present, the data in this position will be left unchanged
+	Value any `json:"value"`
+	// If true, the section will be deleted
+	// e.g. if the section is a field, the field will be removed
+	//      if the section is an array element, the element will be removed
+	Deleted bool `json:"deleted"`
 }
 
-type Point struct {
-	Kind PointKind
+// Ignore is a special value that can be used in a Patch value
+// to indicate that the data in this position should be left unchanged.
+type Ignore struct{}
+
+func (i *Ignore) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]string{"$split": "ignore"})
 }
-
-func (p *Point) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]string{"$split": string(p.Kind)})
-}
-
-type PointKind string
-
-const (
-	ObjectPoint PointKind = "object"
-	ArrayPoint  PointKind = "array"
-)
 
 type PathSegment struct {
 	Field     string
 	ArrayKey  string
-	ArrayElem string
+	ArrayElem any // must be comparable
 }
 
 func (ps *PathSegment) IsField() bool {
@@ -435,7 +580,7 @@ func (ps *PathSegment) MarshalJSON() ([]byte, error) {
 	if ps.IsField() {
 		return json.Marshal(ps.Field)
 	} else if ps.IsArrayElem() {
-		return json.Marshal(map[string]string{ps.ArrayKey: ps.ArrayElem})
+		return json.Marshal(map[string]any{ps.ArrayKey: ps.ArrayElem})
 	} else {
 		return nil, ErrInvalidPathSegment
 	}
