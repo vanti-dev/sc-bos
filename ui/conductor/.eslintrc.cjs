@@ -46,6 +46,7 @@ module.exports = {
     // This rule is in conflict with the vue/no-v-for-template-key-on-child rule, which should be used instead.
     // This rule seems to be enabled by default, even though we're using vue 3, not sure why.
     'vue/no-v-for-template-key': 0,
+    'vue/no-multiple-template-root': 0, // vue 3 has no problems with this
     'vue/first-attribute-linebreak': ['error', {
       'singleline': 'beside'
     }],
