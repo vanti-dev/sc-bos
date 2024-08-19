@@ -554,12 +554,44 @@ type Patch struct {
 	Deleted bool `json:"deleted"`
 }
 
+func (p *Patch) UnmarshalJSON(data []byte) error {
+	type patchAlias Patch
+	err := json.Unmarshal(data, (*patchAlias)(p))
+	if err != nil {
+		return err
+	}
+	// make sure JSON maps of the form {"$split": "ignore"} are converted to Ignore{} values
+	// to match the behavior of Ignore.MarshalJSON
+	convertIgnores(p.Value)
+	return nil
+}
+
 // Ignore is a special value that can be used in a Patch value
 // to indicate that the data in this position should be left unchanged.
 type Ignore struct{}
 
 func (i *Ignore) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]string{"$split": "ignore"})
+}
+
+// modifies data in-place to swap any values of the form map[string]any{"$split": "ignore"} with Ignore{}
+func convertIgnores(data any) any {
+	switch data := data.(type) {
+	case map[string]any:
+		if v, ok := data["$split"]; ok && len(data) == 1 && v == "ignore" {
+			return Ignore{}
+		}
+		for k, v := range data {
+			data[k] = convertIgnores(v)
+		}
+
+	case []any:
+		for i, v := range data {
+			data[i] = convertIgnores(v)
+		}
+	default:
+	}
+	return data
 }
 
 type PathSegment struct {
