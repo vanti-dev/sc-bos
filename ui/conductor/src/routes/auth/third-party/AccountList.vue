@@ -5,8 +5,9 @@
         :headers="headers"
         :items="tenantsList"
         :search="search"
-        :sort-by="[{key: 'title'}]"
-        :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
+        v-model:sort-by="sortBy"
+        sort-asc-icon="mdi-arrow-up-drop-circle-outline"
+        sort-desc-icon="mdi-arrow-down-drop-circle-outline"
         :loading="tenantsTracker.loading"
         :row-props="rowProps"
         @click:row="showTenant">
@@ -64,11 +65,13 @@ const errorStore = useErrorStore();
 const search = ref('');
 
 const headers = [
-  {text: 'Name', value: 'title', width: '30%'},
-  {text: 'Client ID', value: 'id', width: '28em'},
-  // {text: 'Permissions', value: 'permissions'},
-  {text: 'Zones', value: 'zoneNamesList'}
+  {title: 'Name', key: 'title', width: '30%'},
+  {title: 'Client ID', key: 'id', width: '28em'},
+  // {title: 'Permissions', key: 'permissions'},
+  {title: 'Zones', key: 'zoneNamesList', sortable: false}
 ];
+
+const sortBy = ref([{key: 'title', order: 'asc'}]);
 
 // UI error handling
 let unwatchErrors;
@@ -121,7 +124,7 @@ const {blockActions} = useAuthSetup();
 <style lang="scss" scoped>
 @use 'vuetify/settings';
 
-:deep(.v-data-table-header__icon) {
+:deep(.v-data-table-header__sort-icon) {
   margin-left: 8px;
 }
 

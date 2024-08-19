@@ -515,14 +515,14 @@ watch(
 );
 
 const allHeaders = [
-  {text: 'Timestamp', value: 'createTime', width: '15em'},
+  {title: 'Timestamp', value: 'createTime', width: '15em'},
   {value: 'subsystem', width: '20px', class: 'pl-2 pr-0', cellClass: 'pl-2 pr-0'},
-  {text: 'Source', value: 'source', width: '15em'},
-  {text: 'Floor', value: 'floor', width: '10em'},
-  {text: 'Zone', value: 'zone', width: '10em'},
-  {text: 'Severity', value: 'severity', width: '9em', align: 'center'},
-  {text: 'Description', value: 'description', width: '100%'},
-  {text: 'Acknowledged', value: 'acknowledged', align: 'center', width: '12em'}
+  {title: 'Source', value: 'source', width: '15em'},
+  {title: 'Floor', value: 'floor', width: '10em'},
+  {title: 'Zone', value: 'zone', width: '10em'},
+  {title: 'Severity', value: 'severity', width: '9em', align: 'center'},
+  {title: 'Description', value: 'description', width: '100%'},
+  {title: 'Acknowledged', value: 'acknowledged', align: 'center', width: '12em'}
 ];
 
 // We don't include _some_ headers we're filtering out to avoid repetition,

@@ -119,10 +119,10 @@ const emit = defineEmits(['update:selectedDevices']);
 
 const headers = ref([
   {value: 'metadata.membership.subsystem', width: '20px', class: 'pl-4 pr-0', cellClass: 'pl-4 pr-0', sortable: false},
-  {text: 'Device name', value: 'name'},
-  {text: 'Floor', value: 'metadata.location.floor'},
-  {text: 'Zone', value: 'metadata.location.zone'},
-  {text: '', value: 'hotpoint', align: 'end', width: '100', sortable: false}
+  {title: 'Device name', value: 'name'},
+  {title: 'Floor', value: 'metadata.location.floor'},
+  {title: 'Zone', value: 'metadata.location.zone'},
+  {value: 'hotpoint', align: 'end', width: '100', sortable: false}
 ]);
 
 const tableClasses = computed(() => {

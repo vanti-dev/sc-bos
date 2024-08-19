@@ -58,9 +58,9 @@ import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 const {blockActions} = useAuthSetup();
 
 const headers = [
-  {text: 'Name', value: 'name'},
-  {text: 'Status', value: 'faultsList'}
-  // {text: 'Updated', value: 'updateTime'}
+  {title: 'Name', value: 'name'},
+  {title: 'Status', value: 'faultsList'}
+  // {title: 'Updated', value: 'updateTime'}
 ];
 
 const selectedLights = ref([]);
