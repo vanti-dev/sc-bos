@@ -1,32 +1,29 @@
 <template>
-  <v-list class="pa-0" density="compact" nav>
-    <v-list class="mt-2 mb-n1">
-      <ops-nav-list
-          :items="overviewChildren"
-          :mini-variant="miniVariant"/>
+  <v-list class="px-0" density="compact" nav>
+    <ops-nav-list-items
+        :items="overviewChildren"
+        :mini-variant="miniVariant"/>
 
-      <v-divider v-if="overviewChildren.length > 1" class="mb-3 mt-n1"/>
-      <!-- Main List -->
-      <v-list-item
-          v-for="(item, key) in enabledMenuItems"
-          :to="item.link"
-          :key="key"
-          class="my-2"
-          :disabled="hasNoAccess(item.link.path)">
-        <template #prepend>
-          <v-badge
-              class="font-weight-bold"
-              :color="item.badgeType ? badges[item.badgeType].color : 'transparent'"
-              :content="item.badgeType ? badges[item.badgeType].value : ''"
-              :model-value="Boolean(item.badgeType ? badges[item.badgeType].value : null)">
-            <v-icon>
-              {{ item.icon }}
-            </v-icon>
-          </v-badge>
-        </template>
-        <v-list-item-title class="text-truncate">{{ item.title }}</v-list-item-title>
-      </v-list-item>
-    </v-list>
+    <v-divider v-if="overviewChildren.length > 1" class="mb-3 mt-n1"/>
+    <!-- Main List -->
+    <v-list-item
+        v-for="(item, key) in enabledMenuItems"
+        :to="item.link"
+        :key="key"
+        :disabled="hasNoAccess(item.link.path)">
+      <template #prepend>
+        <v-badge
+            class="font-weight-bold"
+            :color="item.badgeType ? badges[item.badgeType].color : 'transparent'"
+            :content="item.badgeType ? badges[item.badgeType].value : ''"
+            :model-value="Boolean(item.badgeType ? badges[item.badgeType].value : null)">
+          <v-icon>
+            {{ item.icon }}
+          </v-icon>
+        </v-badge>
+      </template>
+      <v-list-item-title class="text-truncate">{{ item.title }}</v-list-item-title>
+    </v-list-item>
   </v-list>
 </template>
 
@@ -35,7 +32,7 @@
 import {closeResource} from '@/api/resource.js';
 import useAuthSetup from '@/composables/useAuthSetup';
 import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
-import OpsNavList from '@/routes/ops/overview/OpsNavList.vue';
+import OpsNavListItems from '@/routes/ops/overview/OpsNavListItems.vue';
 import {useNavStore} from '@/stores/nav';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {storeToRefs} from 'pinia';

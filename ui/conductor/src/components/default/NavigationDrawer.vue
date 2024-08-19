@@ -68,9 +68,21 @@ const appVersion = computed(() => {
 }
 
 /** This helps displaying the notification counter badge, while keeping the right sidebar scrollable */
-.siteNavigation,
-.siteNavigation :deep(.v-navigation-drawer__content) {
+.siteNavigation.v-navigation-drawer--rail :deep(.v-list) {
   overflow: visible;
+}
+
+.siteNavigation.v-navigation-drawer--rail :deep(.v-navigation-drawer__content) {
+  overflow: hidden;
+}
+
+/** this fixes indentation of list items in groups when showing rail variant */
+.siteNavigation :deep(.v-list-group__items .v-list-item) {
+  transition: padding-inline-start 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.siteNavigation.v-navigation-drawer--rail :deep(.v-list-group__items .v-list-item) {
+  padding-inline-start: 8px !important;
 }
 
 .nav-btns {
