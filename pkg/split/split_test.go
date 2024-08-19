@@ -132,8 +132,110 @@ func TestDiff(t *testing.T) {
 				{
 					Path: []PathSegment{{Field: "foo"}},
 					Value: map[string]any{
+						"bar": Ignore{},
 						"qux": "quxqux",
 					},
+				},
+			},
+		},
+		"Array": {
+			a: map[string]any{
+				"foo": []any{
+					map[string]any{"id": 1, "addr": "foo"},
+					map[string]any{"id": 2, "addr": "bar"},
+				},
+			},
+			b: map[string]any{
+				"foo": []any{
+					map[string]any{"id": 1, "addr": "foo"},
+					map[string]any{"id": 2, "addr": "baz"},
+				},
+			},
+			schema: []Split{
+				{
+					Path: []string{"foo"},
+					Key:  "id",
+				},
+			},
+			expect: []Patch{
+				{
+					Path:  []PathSegment{{Field: "foo"}, {ArrayKey: "id", ArrayElem: 2}},
+					Value: map[string]any{"id": 2, "addr": "baz"},
+				},
+			},
+		},
+		"ArraySplitByKey": {
+			a: map[string]any{
+				"drivers": []any{
+					map[string]any{
+						"type": "a",
+						"name": "driver-1",
+						"objects": []any{
+							map[string]any{"id": 1, "addr": "foo"},
+							map[string]any{"id": 2, "addr": "bar"},
+						},
+					},
+					map[string]any{
+						"type":     "b",
+						"name":     "driver-2",
+						"settings": map[string]any{"mode": "on"},
+					},
+				},
+			},
+			b: map[string]any{
+				"drivers": []any{
+					map[string]any{
+						"type": "a",
+						"name": "driver-1",
+						"objects": []any{
+							map[string]any{"id": 1, "addr": "foo2"},
+							map[string]any{"id": 2, "addr": "bar"},
+						},
+					},
+					map[string]any{
+						"type":     "b",
+						"name":     "driver-2",
+						"settings": map[string]any{"mode": "off"},
+					},
+				},
+			},
+			schema: []Split{
+				{
+					Path:     []string{"drivers"},
+					Key:      "name",
+					SplitKey: "type",
+					SplitsByKey: map[string][]Split{
+						"a": {
+							{
+								Path: []string{"objects"},
+								Key:  "id",
+							},
+						},
+						"b": {
+							{
+								Path: []string{"settings"},
+							},
+						},
+					},
+				},
+			},
+			expect: []Patch{
+				{
+					Path: []PathSegment{
+						{Field: "drivers"},
+						{ArrayKey: "name", ArrayElem: "driver-1"},
+						{Field: "objects"},
+						{ArrayKey: "id", ArrayElem: 1},
+					},
+					Value: map[string]any{"id": 1, "addr": "foo2"},
+				},
+				{
+					Path: []PathSegment{
+						{Field: "drivers"},
+						{ArrayKey: "name", ArrayElem: "driver-2"},
+						{Field: "settings"},
+					},
+					Value: map[string]any{"mode": "off"},
 				},
 			},
 		},
@@ -205,7 +307,7 @@ func TestApplyPatch(t *testing.T) {
 				Path: nil,
 				Value: map[string]any{
 					"newfoo": "replaced",
-					"qux":    Point{Kind: ObjectPoint},
+					"qux":    Ignore{},
 				},
 			},
 			expect: map[string]any{
