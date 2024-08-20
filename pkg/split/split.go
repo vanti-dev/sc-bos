@@ -11,8 +11,8 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-
-	"golang.org/x/exp/slices"
+	"slices"
+	"strings"
 
 	"github.com/vanti-dev/sc-bos/pkg/util/maps"
 )
@@ -23,7 +23,46 @@ import (
 // The returned patches will be non-conflicting, meaning that they can be applied in any order and will produce
 // the same result.
 func Diff(a, b any, splits []Split) []Patch {
-	return diff(a, b, Split{Splits: splits})
+	patches := diff(a, b, Split{Splits: splits})
+	// sort patches to create a deterministic output
+	slices.SortStableFunc(patches, func(i, j Patch) int {
+		return slices.CompareFunc(i.Path, j.Path, comparePathSegments)
+	})
+	return patches
+}
+
+func comparePathSegments(a, b PathSegment) int {
+	if a.IsField() && b.IsField() {
+		return strings.Compare(a.Field, b.Field)
+	} else if a.IsArrayElem() && b.IsArrayElem() {
+		if c := strings.Compare(a.ArrayKey, b.ArrayKey); c != 0 {
+			return c
+		} else {
+			return compareAny(a.ArrayElem, b.ArrayElem)
+		}
+	} else if a.IsField() {
+		return -1
+	} else if b.IsField() {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+// compare strings before all other types, which are ordered according to their string representation
+func compareAny(a, b any) int {
+	aStr, okA := a.(string)
+	bStr, okB := b.(string)
+	if okA && okB {
+		return strings.Compare(aStr, bStr)
+	} else if okA && !okB {
+		return -1
+	} else if !okA && okB {
+		return 1
+	} else {
+		// non-strings are compared by their string representation
+		return strings.Compare(fmt.Sprintf("%v", a), fmt.Sprintf("%v", b))
+	}
 }
 
 func diff(a, b any, split Split) []Patch {
@@ -69,26 +108,26 @@ func diffMap(a, b map[string]any, schema []Split) []Patch {
 }
 
 func diffPages(a, b []page) []Patch {
-	pageLess := func(a, b page) bool {
+	comparePages := func(a, b page) int {
 		if len(a.Path) < len(b.Path) {
-			return true
+			return -1
 		} else if len(a.Path) > len(b.Path) {
-			return false
+			return 1
 		}
 
 		for i := range a.Path {
 			if a.Path[i] < b.Path[i] {
-				return true
+				return -1
 			} else if a.Path[i] > b.Path[i] {
-				return false
+				return 1
 			}
 		}
-		return false
+		return 0
 	}
 	// by sorting the pages, we can step through them in order (linear time)
 	// to find pages with matching paths
-	slices.SortFunc(a, pageLess)
-	slices.SortFunc(b, pageLess)
+	slices.SortFunc(a, comparePages)
+	slices.SortFunc(b, comparePages)
 
 	type change struct {
 		Path    []string
@@ -98,10 +137,11 @@ func diffPages(a, b []page) []Patch {
 	var changes []change
 
 	for len(a) > 0 && len(b) > 0 {
-		if pageLess(a[0], b[0]) {
+		c := comparePages(a[0], b[0])
+		if c < 0 {
 			changes = append(changes, change{Path: a[0].Path, A: a[0], Deleted: true})
 			a = a[1:]
-		} else if pageLess(b[0], a[0]) {
+		} else if c > 0 {
 			changes = append(changes, change{Path: b[0].Path, B: b[0]})
 			b = b[1:]
 		} else {
@@ -305,7 +345,7 @@ func diffArray(a, b []any, split Split) []Patch {
 				splits = split.Splits
 			}
 
-			subpatches := Diff(e.A, e.B, splits)
+			subpatches := diff(e.A, e.B, Split{Splits: splits})
 			prefixPatches(subpatches, []PathSegment{{ArrayKey: split.Key, ArrayElem: k}})
 			patches = append(patches, subpatches...)
 		}
