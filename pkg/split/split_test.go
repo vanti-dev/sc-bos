@@ -1,6 +1,7 @@
 package split
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 
@@ -436,6 +437,43 @@ func TestApplyPatch(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPatch_UnmarshalJSON(t *testing.T) {
+	original := `
+{
+	"path": ["a", {"id": "theid"}],
+	"value": {
+		"foo": "foo",
+	   	"bar": {
+	 		"barbar": {"$split": "ignore"}
+		}
+	}
+}
+`
+	expect := Patch{
+		Path: []PathSegment{
+			{Field: "a"},
+			{ArrayKey: "id", ArrayElem: "theid"},
+		},
+		Value: map[string]any{
+			"foo": "foo",
+			"bar": map[string]any{
+				"barbar": Ignore{},
+			},
+		},
+	}
+
+	var decoded Patch
+	err := json.Unmarshal([]byte(original), &decoded)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if diff := cmp.Diff(expect, decoded); diff != "" {
+		t.Errorf("unexpected decode (-want +got):\n%s", diff)
+	}
+
 }
 
 func clone(dst any) any {
