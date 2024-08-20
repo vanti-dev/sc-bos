@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestDiff(t *testing.T) {
@@ -127,15 +128,15 @@ func TestDiff(t *testing.T) {
 			},
 			expect: []Patch{
 				{
-					Path:  []PathSegment{{Field: "foo"}, {Field: "bar"}},
-					Value: "bazbaz",
-				},
-				{
 					Path: []PathSegment{{Field: "foo"}},
 					Value: map[string]any{
 						"bar": Ignore{},
 						"qux": "quxqux",
 					},
+				},
+				{
+					Path:  []PathSegment{{Field: "foo"}, {Field: "bar"}},
+					Value: "bazbaz",
 				},
 			},
 		},
@@ -474,6 +475,96 @@ func TestPatch_UnmarshalJSON(t *testing.T) {
 		t.Errorf("unexpected decode (-want +got):\n%s", diff)
 	}
 
+}
+
+// tests that applying all the diffs between a and b to a results in b
+func TestApplyPatch_Consistency(t *testing.T) {
+	type testCase struct {
+		a, b   any
+		splits [][]Split // allows us to try multiple splits and check they all work
+	}
+	cases := map[string]testCase{
+		"Primitive": {
+			a:      "foo",
+			b:      "bar",
+			splits: nil,
+		},
+		"Object": {
+			a: map[string]any{
+				"foo": "bar",
+				"baz": "qux",
+			},
+			b: map[string]any{
+				"foofoo": "barbar",
+				"baz":    "qux2",
+			},
+			splits: [][]Split{
+				{},
+				{{Path: []string{"baz"}}},
+				{{Path: []string{"foo"}}},
+				{{Path: []string{"foo", "baz"}}},
+				{{Path: []string{"foofoo"}}},
+			},
+		},
+		"Array": {
+			a: map[string]any{
+				"objects": []any{
+					map[string]any{"type": "a", "name": "a-1", "addr": "foo"},
+					map[string]any{"type": "b", "name": "b-1", "id": 1},
+					map[string]any{"type": "b", "name": "b-2", "id": 2},
+				},
+			},
+			b: map[string]any{
+				"objects": []any{
+					map[string]any{"type": "a", "name": "a-1", "addr": "oof"},
+					map[string]any{"type": "a", "name": "a-2", "addr": "foo2"},
+					map[string]any{"type": "b", "name": "b-2", "id": 3},
+				},
+			},
+			splits: [][]Split{
+				{},
+				{{Path: []string{"objects"}}},
+				{{Path: []string{"objects"}, Key: "name"}},
+				{{Path: []string{"objects"}, Key: "name", SplitKey: "type", SplitsByKey: map[string][]Split{
+					"a": {{Path: []string{"addr"}}},
+					"b": {{Path: []string{"id"}}},
+				}}},
+			},
+		},
+	}
+
+	// ignore the order of entries in maps
+	mapLess := func(a, b any) bool {
+		aMap, okA := a.(map[string]any)
+		bMap, okB := b.(map[string]any)
+		if !okA || !okB {
+			return false
+		}
+		nameA, okA := aMap["name"].(string)
+		nameB, okB := bMap["name"].(string)
+		if okA && okB {
+			return nameA < nameB
+		}
+		return false
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			for i, splits := range tc.splits {
+				patches := Diff(tc.a, tc.b, splits)
+				dst := clone(tc.a)
+				var err error
+				for j, patch := range patches {
+					dst, err = ApplyPatch(dst, patch)
+					if err != nil {
+						t.Errorf("splits %d patch %d: unexpected error: %v", i, j, err)
+					}
+				}
+				if diff := cmp.Diff(tc.b, dst, cmpopts.SortSlices(mapLess)); diff != "" {
+					t.Errorf("splits %d unexpected result (-want +got):\n%s", i, diff)
+				}
+			}
+		})
+	}
 }
 
 func clone(dst any) any {
