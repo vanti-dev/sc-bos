@@ -3,26 +3,29 @@
     <template #activator="{ props: _props }">
       <v-btn
           v-bind="_props"
-          rounded="circle"
           v-if="!acked"
+          icon="true"
+          variant="text"
           color="warning"
           :disabled="blockActions"
           size="small"
           @click.stop="$emit('acknowledge')">
-        <v-icon>mdi-circle-outline</v-icon>
+        <v-icon size="24">mdi-circle-outline</v-icon>
       </v-btn>
     </template>
     Acknowledge this notification
   </v-tooltip>
-  <v-menu v-else location="bottom left">
+  <v-menu v-else location="bottom right">
     <template #activator="{ props: _props }">
-      <v-avatar v-bind="_props" color="neutral-lighten-8" class="text--black" size="21">
-        <template v-if="hasAuthor">{{ authorInitials }}</template>
-        <v-icon v-else color="black" size="small">mdi-check</v-icon>
-      </v-avatar>
+      <v-btn icon="true" v-bind="_props" size="small" variant="text">
+        <v-avatar color="neutral-lighten-8" class="text--black" size="21">
+          <template v-if="hasAuthor">{{ authorInitials }}</template>
+          <v-icon v-else color="black" size="small">mdi-check</v-icon>
+        </v-avatar>
+      </v-btn>
     </template>
     <v-card min-width="300">
-      <v-card-title>
+      <v-card-title class="d-flex">
         Acknowledged
         <v-spacer/>
         <v-icon end color="secondary">mdi-check</v-icon>
