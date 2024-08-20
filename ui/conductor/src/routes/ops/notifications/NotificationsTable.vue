@@ -25,8 +25,7 @@
         <template #top>
           <v-row
               :class="[
-                'd-flex flex-row align-center mb-2 mt-1 ml-0 pl-0 mr-1',
-                {'mb-4 mr-n2': props.overviewPage}
+                'd-flex flex-row align-center mb-2 mt-1 ml-0 pl-0 mr-1'
               ]">
             <h3 v-if="props.overviewPage" class="text-h4">
               Notifications
@@ -34,24 +33,17 @@
             <v-spacer/>
             <filter-choice-chips
                 :ctx="filterCtx"
-                :class="['mr-2 mt-n2', {'mt-n2': props.overviewPage}, {'mb-4': !props.overviewPage}]"/>
-            <span :class="['mt-n2', {'mb-4 mt-2': !props.overviewPage}, {'mr-2': props.overviewPage}]">
-              <filter-btn :ctx="filterCtx" tile/>
-            </span>
+                class="ml-2"/>
+            <filter-btn
+                :ctx="filterCtx"
+                v-bind="btnStyles"/>
             <v-tooltip location="top">
               <template #activator="{ props: _props }">
                 <v-btn
                     v-if="props.overviewPage"
-                    class="mt-n2 rounded"
-                    color="neutral"
-                    elevation="0"
-                    height="36"
-                    size="small"
-                    tile
-                    v-bind="_props"
-                    width="34"
+                    v-bind="{..._props, ...btnStyles}"
                     @click="alerts.exportData('Notifications')">
-                  <v-icon>mdi-file-download</v-icon>
+                  <v-icon size="24">mdi-file-download</v-icon>
                 </v-btn>
               </template>
               Export CSV...
@@ -60,14 +52,7 @@
               <template #activator="{ props: _props }">
                 <v-btn
                     v-if="!props.overviewPage"
-                    class="mt-n2 ml-2 mb-4 rounded"
-                    color="neutral"
-                    elevation="0"
-                    height="36"
-                    width="34"
-                    size="small"
-                    tile
-                    v-bind="_props"
+                    v-bind="{..._props, ...btnStyles}"
                     @click="toggleManualEntry">
                   <v-icon size="30">mdi-plus</v-icon>
                 </v-btn>
@@ -75,7 +60,7 @@
               <span>Add New Entry</span>
             </v-tooltip>
 
-            <v-expansion-panels v-if="!props.overviewPage" class="mt-n3 mb-3" flat v-model="manualEntryPanel">
+            <v-expansion-panels v-if="!props.overviewPage" class="mb-3" flat v-model="manualEntryPanel">
               <v-expansion-panel>
                 <v-expansion-panel-text>
                   <div class="text-subtitle-2 pl-0 text-body-1">Manual Notification Entry Form</div>
@@ -193,8 +178,8 @@ import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useHubStore} from '@/stores/hub';
 import {useSidebarStore} from '@/stores/sidebar';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
-import {computed, onUnmounted, reactive, ref, watch} from 'vue';
 import deepEqual from 'fast-deep-equal';
+import {computed, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
   overviewPage: {
@@ -205,6 +190,14 @@ const props = defineProps({
     type: Object, /** @type {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} */
     default: null
   }
+});
+const btnStyles = ref({
+  'icon': true,
+  'tile': true,
+  'class': 'rounded ml-2',
+  'elevation': 0,
+  'size': 'small',
+  'variant': 'text'
 });
 
 const notifications = useNotifications();
