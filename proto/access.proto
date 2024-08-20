@@ -84,7 +84,7 @@ message AccessAttempt {
   google.protobuf.Timestamp time = 4;
 
   // The name of the zone that was being accessed.
-  string name = 5;
+  string zone = 5;
 }
 
 message GetLastAccessAttemptRequest {
