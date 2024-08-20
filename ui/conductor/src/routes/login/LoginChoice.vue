@@ -8,6 +8,7 @@
         <v-btn
             @click="emit('choose', 'keyCloakAuth')"
             color="primary"
+            variant="elevated"
             block
             size="large"
             class="text-body-1 font-weight-bold">
@@ -16,11 +17,12 @@
       </v-card-actions>
       <template v-if="canChooseDevice">
         <v-card-actions class="justify-center">
-          <a
+          <v-btn
               @click="emit('choose', 'deviceFlow')"
+              variant="text"
               class="text-body-1">
             Or sign in using your device
-          </a>
+          </v-btn>
         </v-card-actions>
       </template>
     </template>

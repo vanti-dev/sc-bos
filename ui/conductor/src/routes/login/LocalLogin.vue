@@ -25,6 +25,7 @@
         <v-btn
             type="submit"
             color="primary"
+            variant="elevated"
             :disabled="disableSignIn"
             block
             size="large"
