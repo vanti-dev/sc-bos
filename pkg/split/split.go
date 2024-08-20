@@ -238,8 +238,12 @@ type page struct {
 
 func diffArray(a, b []any, split Split) []Patch {
 	if split.Key == "" {
-		// TODO: propagate error
-		panic("split key is required for array diff")
+		// if the array doesn't have a key, we can only compare the whole thing
+		if equal(a, b) {
+			return nil
+		} else {
+			return []Patch{{Value: b}}
+		}
 	}
 
 	type entry struct {
@@ -414,7 +418,7 @@ func ApplyPatch(data any, patch Patch) (any, error) {
 		if !ok {
 			return data, fmt.Errorf("cannot patch %T with field", data)
 		}
-		if patch.Deleted {
+		if len(patch.Path) == 1 && patch.Deleted {
 			delete(m, segment.Field)
 			return m, nil
 		}
@@ -424,8 +428,9 @@ func ApplyPatch(data any, patch Patch) (any, error) {
 			fieldValue = emptyValue(patch.Path[1:])
 		}
 		patched, err := ApplyPatch(fieldValue, Patch{
-			Path:  patch.Path[1:],
-			Value: patch.Value,
+			Path:    patch.Path[1:],
+			Value:   patch.Value,
+			Deleted: patch.Deleted,
 		})
 		if err != nil {
 			return data, err
@@ -449,14 +454,21 @@ func ApplyPatch(data any, patch Patch) (any, error) {
 			}
 			return reflect.ValueOf(v).Comparable() && v == segment.ArrayElem
 		})
+		if patch.Deleted && len(patch.Path) == 1 {
+			if i >= 0 {
+				a = slices.Delete(a, i, i+1)
+			}
+			return a, nil
+		}
 		var existing any
 		if i >= 0 {
 			existing = a[i]
 		}
 
 		patched, err := ApplyPatch(existing, Patch{
-			Path:  patch.Path[1:],
-			Value: patch.Value,
+			Path:    patch.Path[1:],
+			Value:   patch.Value,
+			Deleted: patch.Deleted,
 		})
 		if err != nil {
 			return data, err
