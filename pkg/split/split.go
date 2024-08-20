@@ -619,12 +619,15 @@ func (ps *PathSegment) MarshalJSON() ([]byte, error) {
 }
 
 func (ps *PathSegment) UnmarshalJSON(data []byte) error {
-	var m map[string]string
+	var m map[string]any
 	if err := json.Unmarshal(data, &m); err == nil {
 		if len(m) != 1 {
 			return ErrInvalidPathSegment
 		}
 		for k, v := range m {
+			if !reflect.ValueOf(v).Comparable() {
+				return ErrInvalidPathSegment
+			}
 			ps.ArrayKey = k
 			ps.ArrayElem = v
 		}
