@@ -183,6 +183,13 @@ func (p *proxy) announceExplicitChildren(children []config.Child) {
 			} else {
 				withClients = append(withClients, node.WithClients(infoClient))
 			}
+
+			historyClient := alltraits.HistoryClient(p.conn, tn)
+			if historyClient == nil {
+				p.logger.Warn(fmt.Sprintf("remote child implements unknown history trait %s", tn))
+			} else {
+				withClients = append(withClients, node.WithClients(historyClient))
+			}
 			p.announcer.Announce(c.Name, node.HasTrait(tn, withClients...))
 		}
 	}
@@ -214,6 +221,14 @@ func (p *proxy) announceChange(announced announcedTraits, change *traits.PullChi
 		} else {
 			hasClients = append(hasClients, node.HasClient(infoClient))
 			withClients = append(withClients, node.WithClients(infoClient))
+		}
+
+		historyClient := alltraits.HistoryClient(p.conn, tn)
+		if historyClient == nil {
+			p.logger.Warn(fmt.Sprintf("remote child implements unknown history trait %s", tn))
+		} else {
+			hasClients = append(hasClients, node.HasClient(historyClient))
+			withClients = append(withClients, node.WithClients(historyClient))
 		}
 
 		var undo node.Undo
