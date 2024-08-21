@@ -56,19 +56,21 @@
         </v-btn>
       </template>
     </v-combobox>
-    <v-menu location="bottom" v-if="!blockActions">
+    <v-menu location="bottom" v-if="!blockActions" :close-on-content-click="false">
       <template #activator="{props}">
-        <v-btn rounded="circle" v-bind="props" class="ml-2 mr-n2">
-          <v-icon>mdi-dots-vertical</v-icon>
+        <v-btn icon="true" variant="text" v-bind="props" size="small" class="ml-2 mr-n2">
+          <v-icon size="24">mdi-dots-vertical</v-icon>
         </v-btn>
       </template>
       <v-card min-width="300">
-        <v-list>
-          <v-list-item>
+        <v-list density="compact">
+          <v-list-item @click="zonesOnly = !zonesOnly">
             <v-list-item-title>Only show zones</v-list-item-title>
-            <v-list-item-action>
-              <v-switch v-model="zonesOnly"/>
-            </v-list-item-action>
+            <template #append>
+              <v-list-item-action end>
+                <v-switch v-model="zonesOnly" hide-details/>
+              </v-list-item-action>
+            </template>
           </v-list-item>
         </v-list>
       </v-card>

@@ -6,12 +6,13 @@
       <v-tooltip location="left">
         <template #activator="{ props }">
           <v-btn
-              class="mr-4 rounded-circle"
+              class="mr-4"
               color="primary"
+              icon="mdi-plus"
               size="small"
               v-bind="props"
               @click="showModal = true">
-            <v-icon>mdi-plus</v-icon>
+            <v-icon size="24"/>
           </v-btn>
         </template>
         Enroll Node
@@ -27,9 +28,11 @@
             <template #activator="{ props }">
               <v-btn
                   class="ml-auto mr-3"
-                  rounded="circle"
+                  icon="mdi-dots-vertical"
+                  variant="text"
+                  size="small"
                   v-bind="props">
-                <v-icon size="24">mdi-dots-vertical</v-icon>
+                <v-icon size="24"/>
               </v-btn>
             </template>
             <v-list class="py-0">

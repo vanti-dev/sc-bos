@@ -60,8 +60,8 @@
         <v-progress-linear color="primary" indeterminate :active="createSecretTracker.loading"/>
       </v-form>
       <!-- Display secret details -->
-      <v-list v-else class="pb-0">
-        <v-list-item class="banner info-banner my-4" v-if="createSecretTracker.response">
+      <v-list v-else class="pb-0" lines="two">
+        <v-list-item class="banner info-banner my-4" variant="tonal" v-if="createSecretTracker.response">
           <template #prepend>
             <v-icon>mdi-information</v-icon>
           </template>
@@ -78,11 +78,13 @@
             <v-icon>mdi-key</v-icon>
           </template>
           {{ createdSecret.secret }}
-          <v-list-item-action>
-            <v-btn rounded="circle" @click="copySecret">
-              <v-icon>mdi-content-copy</v-icon>
-            </v-btn>
-          </v-list-item-action>
+          <template #append>
+            <v-list-item-action class="mr-n2">
+              <v-btn icon="mdi-content-copy" variant="text" @click="copySecret">
+                <v-icon size="24"/>
+              </v-btn>
+            </v-list-item-action>
+          </template>
         </v-list-item>
         <v-card-actions class="justify-end pt-4 pb-0 pr-0">
           <v-btn variant="outlined" @click="creatingSecret=true" v-if="createSecretTracker.error">Back</v-btn>

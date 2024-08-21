@@ -2,8 +2,8 @@
   <v-menu
       :close-on-content-click="false"
       v-model="active"
-      location="left"
-      min-width="340">
+      location="bottom left"
+      width="340">
     <template #activator="{ props: _props }">
       <v-btn
           v-bind="{..._props, ...$attrs}"

@@ -5,10 +5,11 @@
         :key="b.c"
         :class="[b.c, 'text-black']"
         @click="handleClick(b.c)"
-        rounded="circle"
+        icon="true"
+        size="36"
         elevation="2">
       <slot :name="b.c">
-        <v-icon>{{ b.i }}</v-icon>
+        <v-icon size="24">{{ b.i }}</v-icon>
       </slot>
     </v-btn>
   </div>

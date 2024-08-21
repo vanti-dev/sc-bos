@@ -3,8 +3,8 @@
     <div class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">Tokens</div>
     <v-list lines="two" class="pt-0">
       <v-progress-linear color="primary" indeterminate :active="secretsTracker.loading"/>
-      <v-hover v-slot="{ hover }" v-for="secret of secretList" :key="secret.id">
-        <v-list-item class="py-0">
+      <v-hover v-slot="{ isHovering, props: hoverProps }" v-for="secret of secretList" :key="secret.id">
+        <v-list-item class="py-0" v-bind="hoverProps">
           <v-list-item-title>{{ secret.note }}</v-list-item-title>
           <v-list-item-subtitle v-if="secret.expireTime" class="text-body-small text-neutral-lighten-5">
             Expire{{ secret.expireTime > Date.now() ? 's' : 'd' }}
@@ -18,31 +18,43 @@
           <v-list-item-subtitle v-else class="text-body-small text-neutral-lighten-5">
             This secret will not expire
           </v-list-item-subtitle>
-          <delete-confirmation-dialog
-              title="Delete Token"
-              :progress-bar="deleteSecretTracker.loading"
-              @confirm="delSecret(secret.id)">
-            Are you sure you want to delete the token "{{ secret.note }}"?
-            <template #alert-content>
-              This action will stop any integrations using this token from functioning.<br><br>
-              This action cannot be undone.
-            </template>
-            <template #confirmBtn>Delete Token</template>
-            <template #activator="{ props: _props }">
-              <v-list-item-action v-show="hover" class="my-0">
-                <v-btn rounded="circle" size="small" v-bind="_props" :disabled="blockActions">
-                  <v-icon color="neutral-lighten-5">mdi-trash-can</v-icon>
+          <template #append>
+            <delete-confirmation-dialog
+                title="Delete Token"
+                :progress-bar="deleteSecretTracker.loading"
+                @confirm="delSecret(secret.id)">
+              Are you sure you want to delete the token "{{ secret.note }}"?
+              <template #alert-content>
+                This action will stop any integrations using this token from functioning.<br><br>
+                This action cannot be undone.
+              </template>
+              <template #confirmBtn>Delete Token</template>
+              <template #activator="{ props: _props }">
+                <v-btn
+                    v-show="isHovering"
+                    icon="true"
+                    variant="text"
+                    size="small"
+                    v-bind="_props"
+                    :disabled="blockActions">
+                  <v-icon color="neutral-lighten-5" size="24">mdi-trash-can</v-icon>
                 </v-btn>
-              </v-list-item-action>
-            </template>
-          </delete-confirmation-dialog>
+              </template>
+            </delete-confirmation-dialog>
+          </template>
         </v-list-item>
       </v-hover>
     </v-list>
     <v-card-actions class="px-4 pb-4">
       <new-secret-form :account-name="account.title" :account-id="account.id" @finished="refreshSecrets">
         <template #activator="{ props: _props }">
-          <v-btn width="100%" color="primary" class="font-weight-bold" v-bind="_props" :disabled="blockActions">
+          <v-btn
+              block
+              color="primary"
+              variant="elevated"
+              class="font-weight-bold"
+              v-bind="_props"
+              :disabled="blockActions">
             Create new token
             <v-icon end>mdi-key</v-icon>
           </v-btn>

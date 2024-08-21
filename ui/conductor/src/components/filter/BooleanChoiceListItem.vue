@@ -4,18 +4,20 @@
       <v-icon>{{ props.icon }}</v-icon>
     </template>
     <template v-if="choiceText">
-      <v-list-item-subtitle class="text-overline">{{ props.title }}</v-list-item-subtitle>
+      <v-list-item-subtitle class="text-overline mb-n2">{{ props.title }}</v-list-item-subtitle>
       <v-list-item-title class="align-self-auto">{{ choiceText }}</v-list-item-title>
     </template>
     <v-list-item-title class="align-self-auto" v-else>{{ props.title }}</v-list-item-title>
-    <v-list-item-action>
-      <v-switch2 :indeterminate="_indeterminate" v-model="_value" style="pointer-events: none"/>
-    </v-list-item-action>
-    <v-list-item-action>
-      <v-btn rounded="circle" @click.stop="emits('clear')" class="mx-n2" :disabled="isDefault">
-        <v-icon size="20">mdi-close</v-icon>
-      </v-btn>
-    </v-list-item-action>
+    <template #append>
+      <v-list-item-action>
+        <v-switch2 :indeterminate="_indeterminate" hide-details v-model="_value" style="pointer-events: none"/>
+      </v-list-item-action>
+      <v-list-item-action class="ml-1 mr-n2">
+        <v-btn icon="true" variant="text" size="small" @click.stop="emits('clear')" :disabled="isDefault">
+          <v-icon size="20">mdi-close</v-icon>
+        </v-btn>
+      </v-list-item-action>
+    </template>
   </v-list-item>
 </template>
 

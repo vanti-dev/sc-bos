@@ -25,7 +25,7 @@
             @left="panLeft"
             @right="panRight">
           <template #home>
-            <v-icon>
+            <v-icon size="24">
               {{ isDefaultTransform ? 'mdi-image-filter-center-focus' : 'mdi-image-filter-center-focus-weak' }}
             </v-icon>
           </template>

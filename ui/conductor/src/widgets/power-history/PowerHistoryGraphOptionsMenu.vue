@@ -8,10 +8,11 @@
             min-width="275px">
           <template #activator="{ props: _props }">
             <v-btn
-                theme="dark"
-                rounded="circle"
+                icon="mdi-dots-vertical"
+                size="small"
+                variant="text"
                 v-bind="_props">
-              <v-icon>mdi-dots-vertical</v-icon>
+              <v-icon size="24"/>
             </v-btn>
           </template>
 

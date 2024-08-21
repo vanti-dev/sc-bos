@@ -1,15 +1,13 @@
 <template>
   <v-dialog v-model="dialogState" class="elevation-0" width="auto" max-width="975px">
     <content-card v-if="dialogState">
-      <v-row class="py-4 px-6 mb-2">
+      <div class="d-flex align-baseline px-4 mb-6">
         <v-card-title>
           {{ modalTitle }}
         </v-card-title>
         <v-spacer/>
-        <v-btn class="mr-2 mt-3" rounded="circle" @click="dialogState = false">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-row>
+        <v-btn icon="mdi-close" variant="text" @click="dialogState = false"/>
+      </div>
       <div>
         <component-input
             v-if="showInput"
