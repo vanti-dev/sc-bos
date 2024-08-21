@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="text-subtitle-2 justify-center text-h6">{{ summaryStr }}</div>
+    <div class="text-center text-h6 my-2">{{ summaryStr }}</div>
     <v-range-slider
         :min="min"
         :max="max"
@@ -10,6 +10,7 @@
         v-model="model"
         hide-details
         class="mx-4 mb-4"
+        color="primary"
         prepend-icon="mdi-infinity"
         append-icon="mdi-infinity"/>
   </div>

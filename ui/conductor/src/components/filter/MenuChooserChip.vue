@@ -1,9 +1,10 @@
 <template>
   <v-menu
       location="bottom"
+      offset="4"
       :close-on-content-click="false"
       @update:model-value="reset"
-      min-width="400">
+      width="400">
     <template #activator="{ props: menuProps }">
       <v-tooltip location="bottom">
         <template #activator="{ props: tooltipProps }">
@@ -18,7 +19,7 @@
       </v-tooltip>
     </template>
     <page-chooser :title="title" :type="type" v-model:search="search">
-      <slot :value="value" :items="items" :choose="choose"/>
+      <slot :value="value" :items="items" :choose="props.ctx.choose"/>
     </page-chooser>
   </v-menu>
 </template>
@@ -35,7 +36,7 @@ const props = defineProps({
 });
 const emits = defineEmits(['active']);
 
-const {title, type, text, value, items, choose, clear, search} = toRefs(props.ctx);
+const {title, type, text, value, items, clear, search} = toRefs(props.ctx);
 
 const reset = (e) => {
   if (e) {

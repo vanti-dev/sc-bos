@@ -51,7 +51,10 @@ const props = defineProps({
 
 const ctx = /** @type {FilterCtx} */ inject(filterCtxSymbol, () => props.ctx, true);
 const {sortedChoices, nonDefaultChoices, clear, filtersByKey} = ctx;
-const choiceType = (choice) => filtersByKey.value[choice.filter].type;
+const choiceType = (choice) => {
+  if (Array.isArray(choice)) debugger;
+  return filtersByKey.value[choice.filter].type;
+};
 
 const activateChip = (b, choice) => {
   if (b) {
@@ -74,8 +77,8 @@ const chipChoices = computed(() => {
   let i = 0;
   for (const sc of sortedChoices.value) {
     if (ndc.length > i && ndc[i].filter === sc.filter) {
+      res.push(ndc[i]);
       i++;
-      res.push(ndc);
       continue;
     }
     if (ac.filter === sc.filter) {
