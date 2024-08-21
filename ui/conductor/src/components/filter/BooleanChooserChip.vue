@@ -26,7 +26,7 @@ const props = defineProps({
   }
 });
 
-const {title, choose, clear, value, text, defaultChoice} = toRefs(props.ctx);
+const {title, clear, value, text, defaultChoice} = toRefs(props.ctx);
 
 const nextVal = (val) => {
   if (val === true) return false;
@@ -42,6 +42,6 @@ const toggle = () => {
   if (next === def) {
     next = nextVal(next);
   }
-  choose(next);
+  props.ctx.choose(next);
 };
 </script>
