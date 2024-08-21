@@ -12,7 +12,7 @@
       No Past Notifications
     </div>
     <div v-else>
-      <div class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">
+      <div class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3 pa-4">
         Past {{ notificationSidebar.length }} {{
           notificationSidebar.length === 1 ? 'Notification' : 'Notifications'
         }}
@@ -22,16 +22,16 @@
           :key="index"
           class="mt-4"
           elevation="0">
-        <span class="d-flex flex-row flex-nowrap px-4 mb-2">
-          <v-icon :class="[data.severity.color, 'mt-n2']" size="22">{{ data.severity.icon }}</v-icon>
+        <span class="d-flex flex-row align-center flex-nowrap px-4 mb-2">
+          <v-icon :class="data.severity.color" size="22">{{ data.severity.icon }}</v-icon>
           <v-spacer/>
-          <v-card-subtitle class="text-caption pa-0 pb-2 text-grey">
+          <v-card-subtitle class="text-caption pa-0 text-grey">
             {{ data.created }}
           </v-card-subtitle>
         </span>
-        <v-card-subtitle class="ma-0 pa-0 px-4 text-white text-capitalize">
+        <v-card-text class="ma-0 pa-0 px-4 text-white text-capitalize">
           {{ data.description }}
-        </v-card-subtitle>
+        </v-card-text>
         <v-divider v-if="index < notificationSidebar.length - 1" class="my-3"/>
       </v-card>
     </div>
