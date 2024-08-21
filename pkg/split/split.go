@@ -104,25 +104,22 @@ func diff(a, b any, split Split) []Patch {
 
 	switch a := a.(type) {
 	case map[string]any:
-		b, ok := b.(map[string]any)
+		bMap, ok := b.(map[string]any)
 		if !ok {
 			return []Patch{{Value: b}}
 		}
-		return diffMap(a, b, split.Splits)
+		return diffMap(a, bMap, split.Splits)
 
 	case []any:
-		b, ok := b.([]any)
+		bSlice, ok := b.([]any)
 		if !ok {
 			return []Patch{{Value: b}}
 		}
-		return diffArray(a, b, split)
+		return diffArray(a, bSlice, split)
 
 	default:
-		if equal(a, b) {
-			return nil
-		} else {
-			return []Patch{{Value: b}}
-		}
+		// we know that a and b are not equal and cannot be split further
+		return []Patch{{Value: b}}
 	}
 }
 
@@ -140,24 +137,11 @@ func diffMap(a, b map[string]any, schema []Split) []Patch {
 }
 
 func diffPages(a, b []page) []Patch {
-	comparePages := func(a, b page) int {
-		if len(a.Path) < len(b.Path) {
-			return -1
-		} else if len(a.Path) > len(b.Path) {
-			return 1
-		}
-
-		for i := range a.Path {
-			if a.Path[i] < b.Path[i] {
-				return -1
-			} else if a.Path[i] > b.Path[i] {
-				return 1
-			}
-		}
-		return 0
-	}
 	// by sorting the pages, we can step through them in order (linear time)
 	// to find pages with matching paths
+	comparePages := func(a, b page) int {
+		return slices.CompareFunc(a.Path, b.Path, strings.Compare)
+	}
 	slices.SortFunc(a, comparePages)
 	slices.SortFunc(b, comparePages)
 
@@ -292,6 +276,9 @@ func splitMap(m map[string]any, fields fieldTree) (map[string]any, []page) {
 
 // places an Ignore{} value at every position in m corresponding to a leaf in ft
 func markIgnored(m map[string]any, ft fieldTree) {
+	if m == nil {
+		panic("cannot mark fields in nil map")
+	}
 	for k, entry := range ft {
 		if entry.IsLeaf() {
 			m[k] = Ignore{}
@@ -648,11 +635,11 @@ type Patch struct {
 	Path []PathSegment `json:"path"`
 	// The new value to replace the section with
 	// If an Ignore{} value is present, the data in this position will be left unchanged
-	Value any `json:"value"`
+	Value any `json:"value,omitempty"`
 	// If true, the section will be deleted
 	// e.g. if the section is a field, the field will be removed
 	//      if the section is an array element, the element will be removed
-	Deleted bool `json:"deleted"`
+	Deleted bool `json:"deleted,omitempty"`
 }
 
 func (p *Patch) UnmarshalJSON(data []byte) error {
