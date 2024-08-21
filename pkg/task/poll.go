@@ -147,6 +147,11 @@ func (p poller) poll(ctx context.Context, run func(context.Context) error) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
+			if ctx.Err() != nil {
+				// If both <-ctx.Done() and <-ticker.C are ready, <-ticker.C could be selected, which we don't want.
+				// If the context is complete, we want to stop the poll immediately.
+				return
+			}
 		}
 	}
 }
