@@ -10,7 +10,7 @@
         <v-text-field
             v-show="!hiddenOnMap"
             v-model="search"
-            append-icon="mdi-magnify"
+            append-inner-icon="mdi-magnify"
             class="bg-neutral"
             density="compact"
             variant="filled"
