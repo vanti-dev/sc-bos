@@ -17,7 +17,9 @@
           :row-props="rowProps"
           v-model:page="dataTablePage"
           v-model:items-per-page="dataTableItemsPerPage"
-          :footer-props="setFooterProps"
+          :items-per-page-options="itemsPerPageOptions"
+          show-current-page
+          :show-first-last-page="false"
           :loading="alerts.loading"
           class="pt-4"
           :class="{ 'hide-pagination': modifyFooter }"
@@ -233,7 +235,7 @@ const addManualEntry = async () => {
 
 const dataTablePage = ref(1);
 const dataTableItemsPerPage = ref(20);
-const itemsPerPageOptions = [20, 50, 100];
+const itemsPerPageOptions = [20, 50, 100].map(n => ({title: String(n), value: n}));
 const modifyFooter = computed(() => queryMetadataCount.value === undefined);
 
 const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
@@ -461,41 +463,6 @@ const queryTotalCount = computed(() => {
   else return alerts.allItems.length;
 });
 
-
-// Set the footer props
-const setFooterProps = computed(() => {
-  // If there are more than 2 query fields, then we need to hide the pagination
-  if (queryMetadataCount.value === undefined) {
-    const nextPageToken = alerts.nextPageToken; // Get the next page token
-
-    // If there is a next page token 'ready' to be used, then we know there are more pages available.
-    if (nextPageToken) {
-      // Keeping the item pp options and pagination object empty will show the next page button
-      return {
-        showCurrentPage: true,
-        itemsPerPageOptions,
-        pagination: {}
-      };
-    } else {
-      // If there is no next page token, then we know there are no more pages available.
-      // We can block the next button by setting the itemsLength to the total number of items.
-      return {
-        showCurrentPage: true,
-        itemsPerPageOptions,
-        pagination: {
-          itemsLength: alerts.allItems.length
-        }
-      };
-    }
-  } else {
-    // If there are less than 2 query fields, then we can use the default pagination options.
-    return {
-      showCurrentPage: true,
-      itemsPerPageOptions
-    };
-  }
-});
-
 // Watch the query object for changes
 watch(
     query,
@@ -569,8 +536,13 @@ onUnmounted(() => {
 }
 
 .hide-pagination {
-  :deep(.v-data-footer__pagination) {
+  :deep(.v-data-table-footer__info),
+  :deep(.v-pagination__last){
     display: none;
+  }
+
+  :deep(.v-pagination__first) {
+    margin-left: 16px;
   }
 }
 
