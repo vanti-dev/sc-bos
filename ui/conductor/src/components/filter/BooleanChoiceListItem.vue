@@ -10,7 +10,7 @@
     <v-list-item-title class="align-self-auto" v-else>{{ props.title }}</v-list-item-title>
     <template #append>
       <v-list-item-action>
-        <v-switch2 :indeterminate="_indeterminate" hide-details v-model="_value" style="pointer-events: none"/>
+        <v-switch :indeterminate="_indeterminate" hide-details v-model="_value" style="pointer-events: none"/>
       </v-list-item-action>
       <v-list-item-action class="ml-1 mr-n2">
         <v-btn icon="true" variant="text" size="small" @click.stop="emits('clear')" :disabled="isDefault">
@@ -22,7 +22,6 @@
 </template>
 
 <script setup>
-import VSwitch2 from '@/components/VSwitch2.vue';
 import {computed, ref, watch} from 'vue';
 
 const props = defineProps({
