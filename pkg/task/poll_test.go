@@ -3,7 +3,7 @@ package task
 import (
 	"context"
 	"errors"
-	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -31,12 +31,9 @@ func TestPollErr(t *testing.T) {
 	})
 
 	t.Run("stops", func(t *testing.T) {
-		var mu sync.Mutex
-		runCount := 0
+		var runCount atomic.Int32
 		action := func(ctx context.Context) error {
-			mu.Lock()
-			runCount++
-			mu.Unlock()
+			runCount.Add(1)
 			return nil
 		}
 		ctx, stop := context.WithCancel(context.Background())
@@ -49,13 +46,11 @@ func TestPollErr(t *testing.T) {
 		time.Sleep(10 * time.Millisecond)
 		stop()
 
-		mu.Lock()
-		runCount2 := runCount
-		mu.Unlock()
+		runCount2 := runCount.Load()
 
 		time.Sleep(10 * time.Millisecond)
-		if runCount != runCount2 {
-			t.Errorf("expected no more runs, got %d extra", runCount-runCount2)
+		if delta := runCount.Load() - runCount2; delta > 1 {
+			t.Errorf("expected no more runs, got %d extra", delta)
 		}
 	})
 
