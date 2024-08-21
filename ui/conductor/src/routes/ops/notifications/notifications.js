@@ -28,7 +28,7 @@ export function severityData(severity) {
       if (i < severity) {
         str += '+' + (severity - i);
       }
-      return {text: str, color: `${SeverityColor[i]}--text`, background: `${SeverityColor[i]}`};
+      return {text: str, color: `text-${SeverityColor[i]}`, background: `bg-${SeverityColor[i]}`};
     }
   }
   return {text: 'unspecified', color: 'text-gray', background: 'gray'};
