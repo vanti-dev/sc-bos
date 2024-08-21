@@ -6,13 +6,12 @@
         :items="devicesData"
         item-key="name"
         :row-props="rowProps"
-        :footer-props="{
-          'items-per-page-options': [
-            20,
-            50,
-            100
-          ]
-        }"
+        :items-per-page="20"
+        :items-per-page-options="[
+          {title: '20', value: 20},
+          {title: '50', value: 50},
+          {title: '100', value: 100}
+        ]"
         :show-select="showSelect"
         :class="tableClasses"
         @click:row="showDevice">
