@@ -63,7 +63,7 @@
             <v-expansion-panels v-if="!props.overviewPage" class="mb-3" flat v-model="manualEntryPanel">
               <v-expansion-panel>
                 <v-expansion-panel-text>
-                  <div class="text-subtitle-2 pl-0 text-body-1">Manual Notification Entry Form</div>
+                  <div class="text-subtitle-2 pl-0 text-body-1 mb-4">Manual Notification Entry Form</div>
                   <v-row class="align-center mr-2">
                     <v-col cols="self-align">
                       <v-text-field
@@ -73,7 +73,7 @@
                           variant="outlined"
                           hide-details
                           maxlength="160">
-                        <template #append>
+                        <template #append-inner>
                           <span class="character-counter">
                             {{ manualEntryForm.description ? 160 - manualEntryForm.description.length : 160 }}
                           </span>
@@ -575,13 +575,6 @@ onUnmounted(() => {
 }
 
 .character-counter {
-  position: relative;
-  text-align: center;
-  width: 1.75em;
-  height: auto;
-  top: 6px;
-  bottom: 0;
-  right: -5px;
   font-size: 75%;
   color: rgb(var(--v-theme-primary)); /* Adjust color as needed */
 }
