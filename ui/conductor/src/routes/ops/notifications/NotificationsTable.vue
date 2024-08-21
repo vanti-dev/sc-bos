@@ -372,7 +372,7 @@ watch(
     {deep: true, immediate: true}
 );
 
-const queryFieldCount = computed(() => Object.values(query).filter((value) => value !== undefined).length);
+const queryFieldCount = computed(() => Object.values(query.value).filter((value) => value !== undefined).length);
 
 /**
  *  Calculate the total number of items in the query
