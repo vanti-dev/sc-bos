@@ -10,9 +10,9 @@ import (
 
 func TestPollErr(t *testing.T) {
 	t.Run("repeats", func(t *testing.T) {
-		runCount := 0
+		var runCount atomic.Int32
 		action := func(ctx context.Context) error {
-			runCount++
+			runCount.Add(1)
 			return nil
 		}
 		ctx, stop := context.WithCancel(context.Background())
@@ -25,8 +25,8 @@ func TestPollErr(t *testing.T) {
 		time.Sleep(10 * time.Millisecond)
 		stop()
 
-		if runCount < 2 {
-			t.Errorf("expected at least 2 runs, got %d", runCount)
+		if c := runCount.Load(); c < 2 {
+			t.Errorf("expected at least 2 runs, got %d", c)
 		}
 	})
 
@@ -55,9 +55,9 @@ func TestPollErr(t *testing.T) {
 	})
 
 	t.Run("uses err backoff", func(t *testing.T) {
-		runCount := 0
+		var runCount atomic.Int32
 		action := func(ctx context.Context) error {
-			runCount++
+			runCount.Add(1)
 			return errors.New("expected test error")
 		}
 		ctx, stop := context.WithCancel(context.Background())
@@ -70,8 +70,8 @@ func TestPollErr(t *testing.T) {
 		time.Sleep(10 * time.Millisecond)
 		stop()
 
-		if runCount < 2 {
-			t.Errorf("expected at least 2 runs, got %d", runCount)
+		if c := runCount.Load(); c < 2 {
+			t.Errorf("expected at least 2 runs, got %d", c)
 		}
 	})
 }
