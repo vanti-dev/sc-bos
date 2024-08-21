@@ -141,16 +141,17 @@ func TestDiff(t *testing.T) {
 			},
 		},
 		"Array": {
+			// because of the JSON roundtrip, the numbers must be float64
 			a: map[string]any{
 				"foo": []any{
-					map[string]any{"id": 1, "addr": "foo"},
-					map[string]any{"id": 2, "addr": "bar"},
+					map[string]any{"id": float64(1), "addr": "foo"},
+					map[string]any{"id": float64(2), "addr": "bar"},
 				},
 			},
 			b: map[string]any{
 				"foo": []any{
-					map[string]any{"id": 1, "addr": "foo"},
-					map[string]any{"id": 2, "addr": "baz"},
+					map[string]any{"id": float64(1), "addr": "foo"},
+					map[string]any{"id": float64(2), "addr": "baz"},
 				},
 			},
 			schema: []Split{
@@ -161,8 +162,8 @@ func TestDiff(t *testing.T) {
 			},
 			expect: []Patch{
 				{
-					Path:  []PathSegment{{Field: "foo"}, {ArrayKey: "id", ArrayElem: 2}},
-					Value: map[string]any{"id": 2, "addr": "baz"},
+					Path:  []PathSegment{{Field: "foo"}, {ArrayKey: "id", ArrayElem: float64(2)}},
+					Value: map[string]any{"id": float64(2), "addr": "baz"},
 				},
 			},
 		},
@@ -173,8 +174,8 @@ func TestDiff(t *testing.T) {
 						"type": "a",
 						"name": "driver-1",
 						"objects": []any{
-							map[string]any{"id": 1, "addr": "foo"},
-							map[string]any{"id": 2, "addr": "bar"},
+							map[string]any{"id": float64(1), "addr": "foo"},
+							map[string]any{"id": float64(2), "addr": "bar"},
 						},
 					},
 					map[string]any{
@@ -190,8 +191,8 @@ func TestDiff(t *testing.T) {
 						"type": "a",
 						"name": "driver-1",
 						"objects": []any{
-							map[string]any{"id": 1, "addr": "foo2"},
-							map[string]any{"id": 2, "addr": "bar"},
+							map[string]any{"id": float64(1), "addr": "foo2"},
+							map[string]any{"id": float64(2), "addr": "bar"},
 						},
 					},
 					map[string]any{
@@ -227,9 +228,9 @@ func TestDiff(t *testing.T) {
 						{Field: "drivers"},
 						{ArrayKey: "name", ArrayElem: "driver-1"},
 						{Field: "objects"},
-						{ArrayKey: "id", ArrayElem: 1},
+						{ArrayKey: "id", ArrayElem: float64(1)},
 					},
-					Value: map[string]any{"id": 1, "addr": "foo2"},
+					Value: map[string]any{"id": float64(1), "addr": "foo2"},
 				},
 				{
 					Path: []PathSegment{
@@ -245,7 +246,11 @@ func TestDiff(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			if diff := cmp.Diff(tc.expect, Diff(tc.a, tc.b, tc.schema)); diff != "" {
+			patches, err := Diff(tc.a, tc.b, tc.schema)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if diff := cmp.Diff(tc.expect, patches); diff != "" {
 				t.Errorf("unexpected result (-want +got):\n%s", diff)
 			}
 		})
@@ -429,7 +434,7 @@ func TestApplyPatch(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			dst := clone(base)
-			dst, err := ApplyPatch(dst, tc.patch)
+			dst, err := ApplyPatches(dst, []Patch{tc.patch})
 			if !errors.Is(err, tc.err) {
 				t.Errorf("expected error %v, got %v", tc.err, err)
 			}
@@ -550,14 +555,13 @@ func TestApplyPatch_Consistency(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			for i, splits := range tc.splits {
-				patches := Diff(tc.a, tc.b, splits)
-				dst := clone(tc.a)
-				var err error
-				for j, patch := range patches {
-					dst, err = ApplyPatch(dst, patch)
-					if err != nil {
-						t.Errorf("splits %d patch %d: unexpected error: %v", i, j, err)
-					}
+				patches, err := Diff(tc.a, tc.b, splits)
+				if err != nil {
+					t.Errorf("splits %d unexpected diff error: %v", i, err)
+				}
+				dst, err := ApplyPatches(tc.a, patches)
+				if err != nil {
+					t.Errorf("splits %d unexpected patch error: %v", i, err)
 				}
 				if diff := cmp.Diff(tc.b, dst, cmpopts.SortSlices(mapLess)); diff != "" {
 					t.Errorf("splits %d unexpected result (-want +got):\n%s", i, diff)

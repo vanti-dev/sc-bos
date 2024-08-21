@@ -19,16 +19,48 @@ import (
 
 // Diff finds the changes required to transform a into b, using the provided Splits to define logical sections of
 // the data.
-// Only JSON-like data structures are supported, i.e. map[string]any, []any and primitive types (in any nested arrangement).
+// Diffing will be performed on the JSON representation of the data, so the data must be JSON-serializable.
 // The returned patches will be non-conflicting, meaning that they can be applied in any order and will produce
 // the same result.
-func Diff(a, b any, splits []Split) []Patch {
+func Diff(a, b any, splits []Split) ([]Patch, error) {
+	var err error
+	a, err = convertToWorking(a)
+	if err != nil {
+		return nil, err
+	}
+	b, err = convertToWorking(b)
+	if err != nil {
+		return nil, err
+	}
+
 	patches := diff(a, b, Split{Splits: splits})
 	// sort patches to create a deterministic output
 	slices.SortStableFunc(patches, func(i, j Patch) int {
 		return slices.CompareFunc(i.Path, j.Path, comparePathSegments)
 	})
-	return patches
+	return patches, nil
+}
+
+// converts an arbitrary Go value to a JSON-like tree of map[string]any, []any and primitive types
+func convertToWorking(in any) (any, error) {
+	serialised, err := json.Marshal(in)
+	if err != nil {
+		return nil, err
+	}
+	var out any
+	err = json.Unmarshal(serialised, &out)
+	return out, err
+}
+
+// converts from the working representation back to a Go JSON-deserializable value
+func convertFromWorking[T any](working any) (T, error) {
+	var out T
+	serialised, err := json.Marshal(working)
+	if err != nil {
+		return out, err
+	}
+	err = json.Unmarshal(serialised, &out)
+	return out, err
 }
 
 func comparePathSegments(a, b PathSegment) int {
@@ -440,10 +472,27 @@ func equalKeys(a, b map[string]any) bool {
 	return true
 }
 
-// ApplyPatch applies a Patch to a data structure.
+// ApplyPatches applies a slice of Patch to a data structure.
+// The type must be both JSON-serializable and JSON-deserializable.
+// A patched copy of the data structure will be returned. The original will not be modified.
+func ApplyPatches[T any](data T, patches []Patch) (T, error) {
+	workingCopy, err := convertToWorking(data)
+	if err != nil {
+		return data, err
+	}
+	for _, patch := range patches {
+		var err error
+		workingCopy, err = applyPatch(workingCopy, patch)
+		if err != nil {
+			return data, err
+		}
+	}
+	return convertFromWorking[T](workingCopy)
+}
+
 // The patch will be performed in-place if possible, and the modified data structure will be returned.
 // The data structure must be a JSON-like structure of map[string]any, []any and primitive types.
-func ApplyPatch(data any, patch Patch) (any, error) {
+func applyPatch(data any, patch Patch) (any, error) {
 	if len(patch.Path) == 0 {
 		if patch.Deleted {
 			return nil, errors.New("cannot delete root")
@@ -467,7 +516,7 @@ func ApplyPatch(data any, patch Patch) (any, error) {
 		if !ok {
 			fieldValue = emptyValue(patch.Path[1:])
 		}
-		patched, err := ApplyPatch(fieldValue, Patch{
+		patched, err := applyPatch(fieldValue, Patch{
 			Path:    patch.Path[1:],
 			Value:   patch.Value,
 			Deleted: patch.Deleted,
@@ -505,7 +554,7 @@ func ApplyPatch(data any, patch Patch) (any, error) {
 			existing = a[i]
 		}
 
-		patched, err := ApplyPatch(existing, Patch{
+		patched, err := applyPatch(existing, Patch{
 			Path:    patch.Path[1:],
 			Value:   patch.Value,
 			Deleted: patch.Deleted,
