@@ -12,8 +12,8 @@ jobs:
     env:
       GOPRIVATE: github.com/smart-core-os/*,github.com/vanti-dev/*
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           cache: true
           go-version: '^1.22.5'
