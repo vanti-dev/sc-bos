@@ -3,11 +3,157 @@ package split
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
+
+func ExampleDiff() {
+	type object struct {
+		Name string `json:"name"`
+		Addr int    `json:"addr"`
+		Mode string `json:"mode"`
+	}
+
+	type config struct {
+		Objects []object `json:"objects"`
+	}
+
+	a := config{
+		Objects: []object{
+			{Name: "foo", Addr: 1, Mode: "auto"},
+			{Name: "bar", Addr: 2, Mode: "manual"},
+			{Name: "baz", Addr: 3, Mode: "auto"},
+		},
+	}
+	b := config{
+		Objects: []object{
+			{Name: "foo", Addr: 1, Mode: "manual"},
+			{Name: "baz", Addr: 22, Mode: "auto"},
+			{Name: "new", Addr: 4, Mode: "manual"},
+		},
+	}
+	splits := []Split{
+		{
+			Path: []string{"objects"},
+			Key:  "name",
+		},
+	}
+
+	patches, err := Diff(a, b, splits)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, patch := range patches {
+		encoded, err := json.Marshal(patch)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(string(encoded))
+	}
+	// Output:
+	// {"path":["objects",{"name":"bar"}],"deleted":true}
+	// {"path":["objects",{"name":"baz"}],"value":{"addr":22,"mode":"auto","name":"baz"}}
+	// {"path":["objects",{"name":"foo"}],"value":{"addr":1,"mode":"manual","name":"foo"}}
+	// {"path":["objects",{"name":"new"}],"value":{"addr":4,"mode":"manual","name":"new"}}
+}
+
+func ExampleApplyPatches() {
+	type hvac struct {
+		Setpoint float64 `json:"setpoint"`
+		Heat     bool    `json:"heat"`
+	}
+	type space struct {
+		Name string `json:"name"`
+		Mode string `json:"mode"`
+		HVAC *hvac  `json:"hvac,omitempty"`
+	}
+	type config struct {
+		Foo    string  `json:"foo"`
+		Bar    string  `json:"bar"`
+		Spaces []space `json:"spaces"`
+	}
+
+	base := config{
+		Foo: "foo",
+		Bar: "bar",
+		Spaces: []space{
+			{Name: "kitchen", Mode: "auto", HVAC: &hvac{Setpoint: 20.0, Heat: true}},
+			{Name: "bedroom", Mode: "manual", HVAC: &hvac{Setpoint: 22.0, Heat: false}},
+		},
+	}
+	// all field references are the JSON field names
+	patches := []Patch{
+		// replace top-level fields, without disturbing 'spaces'
+		{
+			Path: nil,
+			Value: map[string]any{
+				"foo":    "newfoo",
+				"spaces": Ignore{},
+			},
+		},
+		// replaces a sub-object of an array element
+		{
+			Path: []PathSegment{{Field: "spaces"}, {ArrayKey: "name", ArrayElem: "kitchen"}, {Field: "hvac"}},
+			Value: map[string]any{
+				"setpoint": 21.0,
+				"heat":     false,
+			},
+		},
+		// deletes an array element
+		{
+			Path:    []PathSegment{{Field: "spaces"}, {ArrayKey: "name", ArrayElem: "bedroom"}},
+			Deleted: true,
+		},
+		// adds a new array element (because it references a non-existing key)
+		{
+			Path: []PathSegment{{Field: "spaces"}, {ArrayKey: "name", ArrayElem: "livingroom"}},
+			Value: map[string]any{
+				"name": "livingroom",
+				"mode": "auto",
+				"hvac": map[string]any{
+					"setpoint": 23.0,
+					"heat":     true,
+				},
+			},
+		},
+	}
+	patched, err := ApplyPatches(base, patches)
+	if err != nil {
+		panic(err)
+	}
+	patchedJSON, err := json.MarshalIndent(patched, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(patchedJSON))
+	// Output:
+	// {
+	//   "foo": "newfoo",
+	//   "bar": "",
+	//   "spaces": [
+	//     {
+	//       "name": "kitchen",
+	//       "mode": "auto",
+	//       "hvac": {
+	//         "setpoint": 21,
+	//         "heat": false
+	//       }
+	//     },
+	//     {
+	//       "name": "livingroom",
+	//       "mode": "auto",
+	//       "hvac": {
+	//         "setpoint": 23,
+	//         "heat": true
+	//       }
+	//     }
+	//   ]
+	// }
+}
 
 func TestDiff(t *testing.T) {
 	type testCase struct {
@@ -29,6 +175,25 @@ func TestDiff(t *testing.T) {
 			b:      "bar",
 			schema: nil,
 			expect: []Patch{{Value: "bar"}},
+		},
+		"EqualPrimitives": {
+			a:      "foo",
+			b:      "foo",
+			expect: []Patch{},
+		},
+		"EqualMaps": {
+			a: map[string]any{
+				"foo": "bar",
+			},
+			b: map[string]any{
+				"foo": "bar",
+			},
+			expect: []Patch{},
+		},
+		"EqualSlice": {
+			a:      []any{"hello", "world"},
+			b:      []any{"hello", "world"},
+			expect: []Patch{},
 		},
 		"TopLevelFields": {
 			a: map[string]any{
@@ -56,6 +221,20 @@ func TestDiff(t *testing.T) {
 			schema: nil,
 			expect: []Patch{{Value: map[string]any{"foo": map[string]any{"bar": "qux"}}}},
 		},
+		"NestedFields_IrrelevantSplit": {
+			a: map[string]any{
+				"foo": map[string]any{
+					"bar": "baz",
+				},
+			},
+			b: map[string]any{
+				"foo": map[string]any{
+					"bar": "qux",
+				},
+			},
+			schema: []Split{{Path: []string{"foo", "fooooo"}}},
+			expect: []Patch{{Value: map[string]any{"foo": map[string]any{"bar": "qux", "fooooo": Ignore{}}}}},
+		},
 		"SplitField": {
 			a: map[string]any{
 				"foo": "bar",
@@ -69,6 +248,27 @@ func TestDiff(t *testing.T) {
 			expect: []Patch{
 				{
 					Path:  []PathSegment{{Field: "foo"}},
+					Value: "barbar",
+				},
+			},
+		},
+		"SplitNestedField": {
+			a: map[string]any{
+				"props": map[string]any{
+					"foo": "bar",
+					"baz": "qux",
+				},
+			},
+			b: map[string]any{
+				"props": map[string]any{
+					"foo": "barbar",
+					"baz": "qux",
+				},
+			},
+			schema: []Split{{Path: []string{"props", "foo"}}},
+			expect: []Patch{
+				{
+					Path:  []PathSegment{{Field: "props"}, {Field: "foo"}},
 					Value: "barbar",
 				},
 			},
@@ -167,6 +367,70 @@ func TestDiff(t *testing.T) {
 				},
 			},
 		},
+		"ArraySplit": {
+			a: map[string]any{
+				"drivers": []any{
+					map[string]any{
+						"name": "driver-1",
+						"foo":  "foo-1",
+					},
+					map[string]any{
+						"name": "driver-2",
+					},
+				},
+			},
+			b: map[string]any{
+				"drivers": []any{
+					map[string]any{
+						"name": "driver-1",
+						"foo":  "oof-1",
+					},
+					map[string]any{
+						"name": "driver-2",
+						"foo":  "foo-2",
+						"bar":  "bar-2",
+					},
+				},
+			},
+			schema: []Split{
+				{
+					Path: []string{"drivers"},
+					Key:  "name",
+					Splits: []Split{
+						{Path: []string{"foo"}},
+					},
+				},
+			},
+			expect: []Patch{
+				{
+					Path: []PathSegment{
+						{Field: "drivers"},
+						{ArrayKey: "name", ArrayElem: "driver-1"},
+						{Field: "foo"},
+					},
+					Value: "oof-1",
+				},
+				{
+					Path: []PathSegment{
+						{Field: "drivers"},
+						{ArrayKey: "name", ArrayElem: "driver-2"},
+					},
+					Value: map[string]any{
+						"name": "driver-2",
+						"foo":  Ignore{},
+						"bar":  "bar-2",
+					},
+				},
+				{
+					Path: []PathSegment{
+						{Field: "drivers"},
+						{ArrayKey: "name", ArrayElem: "driver-2"},
+						{Field: "foo"},
+					},
+					Value: "foo-2",
+				},
+			},
+		},
 		"ArraySplitByKey": {
 			a: map[string]any{
 				"drivers": []any{
@@ -242,6 +506,46 @@ func TestDiff(t *testing.T) {
 				},
 			},
 		},
+		"ChangeType_MapToSlice": {
+			a: map[string]any{
+				"hello": "world",
+			},
+			b: []any{
+				"hello", "world",
+			},
+			expect: []Patch{
+				{
+					Path:  nil,
+					Value: []any{"hello", "world"},
+				},
+			},
+		},
+		"ChangeType_SliceToMap": {
+			a: []any{
+				"hello", "world",
+			},
+			b: map[string]any{
+				"hello": "world",
+			},
+			expect: []Patch{
+				{
+					Path:  nil,
+					Value: map[string]any{"hello": "world"},
+				},
+			},
+		},
+		"ChangeType_PrimitiveToMap": {
+			a: "hello",
+			b: map[string]any{
+				"hello": "world",
+			},
+			expect: []Patch{
+				{
+					Path:  nil,
+					Value: map[string]any{"hello": "world"},
+				},
+			},
+		},
 	}
 
 	for name, tc := range cases {
@@ -250,7 +554,7 @@ func TestDiff(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
-			if diff := cmp.Diff(tc.expect, patches); diff != "" {
+			if diff := cmp.Diff(tc.expect, patches, cmpopts.EquateEmpty()); diff != "" {
 				t.Errorf("unexpected result (-want +got):\n%s", diff)
 			}
 		})
@@ -260,14 +564,14 @@ func TestDiff(t *testing.T) {
 func TestApplyPatch(t *testing.T) {
 	base := map[string]any{
 		"foo": "bar",
-		"baz": []any{1, 2, 3},
+		"baz": []any{1.0, 2.0, 3.0},
 		"qux": map[string]any{
 			"flub": map[string]any{
 				"garply": "waldo",
 			},
 			"objects": []any{
-				map[string]any{"name": "foo", "address": 123},
-				map[string]any{"name": "bar", "address": 456},
+				map[string]any{"name": "foo", "address": "1.2.3"},
+				map[string]any{"name": "bar", "address": "4.5.6"},
 			},
 		},
 	}
@@ -297,14 +601,14 @@ func TestApplyPatch(t *testing.T) {
 			},
 			expect: map[string]any{
 				"foo": "replaced",
-				"baz": []any{1, 2, 3},
+				"baz": []any{1.0, 2.0, 3.0},
 				"qux": map[string]any{
 					"flub": map[string]any{
 						"garply": "waldo",
 					},
 					"objects": []any{
-						map[string]any{"name": "foo", "address": 123},
-						map[string]any{"name": "bar", "address": 456},
+						map[string]any{"name": "foo", "address": "1.2.3"},
+						map[string]any{"name": "bar", "address": "4.5.6"},
 					},
 				},
 			},
@@ -324,8 +628,8 @@ func TestApplyPatch(t *testing.T) {
 						"garply": "waldo",
 					},
 					"objects": []any{
-						map[string]any{"name": "foo", "address": 123},
-						map[string]any{"name": "bar", "address": 456},
+						map[string]any{"name": "foo", "address": "1.2.3"},
+						map[string]any{"name": "bar", "address": "4.5.6"},
 					},
 				},
 			},
@@ -333,18 +637,18 @@ func TestApplyPatch(t *testing.T) {
 		"ReplaceArrayElem": {
 			patch: Patch{
 				Path:  []PathSegment{{Field: "qux"}, {Field: "objects"}, {ArrayKey: "name", ArrayElem: "foo"}},
-				Value: map[string]any{"name": "foo", "address": 789},
+				Value: map[string]any{"name": "foo", "address": "7.8.9"},
 			},
 			expect: map[string]any{
 				"foo": "bar",
-				"baz": []any{1, 2, 3},
+				"baz": []any{1.0, 2.0, 3.0},
 				"qux": map[string]any{
 					"flub": map[string]any{
 						"garply": "waldo",
 					},
 					"objects": []any{
-						map[string]any{"name": "foo", "address": 789},
-						map[string]any{"name": "bar", "address": 456},
+						map[string]any{"name": "foo", "address": "7.8.9"},
+						map[string]any{"name": "bar", "address": "4.5.6"},
 					},
 				},
 			},
@@ -352,19 +656,19 @@ func TestApplyPatch(t *testing.T) {
 		"AddArrayElem": {
 			patch: Patch{
 				Path:  []PathSegment{{Field: "qux"}, {Field: "objects"}, {ArrayKey: "name", ArrayElem: "baz"}},
-				Value: map[string]any{"name": "baz", "address": 789},
+				Value: map[string]any{"name": "baz", "address": "7.8.9"},
 			},
 			expect: map[string]any{
 				"foo": "bar",
-				"baz": []any{1, 2, 3},
+				"baz": []any{1.0, 2.0, 3.0},
 				"qux": map[string]any{
 					"flub": map[string]any{
 						"garply": "waldo",
 					},
 					"objects": []any{
-						map[string]any{"name": "foo", "address": 123},
-						map[string]any{"name": "bar", "address": 456},
-						map[string]any{"name": "baz", "address": 789},
+						map[string]any{"name": "foo", "address": "1.2.3"},
+						map[string]any{"name": "bar", "address": "4.5.6"},
+						map[string]any{"name": "baz", "address": "7.8.9"},
 					},
 				},
 			},
@@ -376,14 +680,14 @@ func TestApplyPatch(t *testing.T) {
 			},
 			expect: map[string]any{
 				"foo": "bar",
-				"baz": []any{1, 2, 3},
+				"baz": []any{1.0, 2.0, 3.0},
 				"qux": map[string]any{
 					"flub": map[string]any{
 						"garply": "waldo",
 					},
 					"objects": []any{
-						map[string]any{"name": "foo", "address": 123},
-						map[string]any{"name": "bar", "address": 456},
+						map[string]any{"name": "foo", "address": "1.2.3"},
+						map[string]any{"name": "bar", "address": "4.5.6"},
 					},
 				},
 				"newfield": "newfieldvalue",
@@ -396,14 +700,14 @@ func TestApplyPatch(t *testing.T) {
 			},
 			expect: map[string]any{
 				"foo": "bar",
-				"baz": []any{1, 2, 3},
+				"baz": []any{1.0, 2.0, 3.0},
 				"qux": map[string]any{
 					"flub": map[string]any{
 						"garply": "waldo",
 					},
 					"objects": []any{
-						map[string]any{"name": "foo", "address": 123},
-						map[string]any{"name": "bar", "address": 456},
+						map[string]any{"name": "foo", "address": "1.2.3"},
+						map[string]any{"name": "bar", "address": "4.5.6"},
 					},
 				},
 				"newfield1": map[string]any{
@@ -417,14 +721,14 @@ func TestApplyPatch(t *testing.T) {
 				Deleted: true,
 			},
 			expect: map[string]any{
-				"baz": []any{1, 2, 3},
+				"baz": []any{1.0, 2.0, 3.0},
 				"qux": map[string]any{
 					"flub": map[string]any{
 						"garply": "waldo",
 					},
 					"objects": []any{
-						map[string]any{"name": "foo", "address": 123},
-						map[string]any{"name": "bar", "address": 456},
+						map[string]any{"name": "foo", "address": "1.2.3"},
+						map[string]any{"name": "bar", "address": "4.5.6"},
 					},
 				},
 			},
@@ -515,15 +819,15 @@ func TestApplyPatch_Consistency(t *testing.T) {
 			a: map[string]any{
 				"objects": []any{
 					map[string]any{"type": "a", "name": "a-1", "addr": "foo"},
-					map[string]any{"type": "b", "name": "b-1", "id": 1},
-					map[string]any{"type": "b", "name": "b-2", "id": 2},
+					map[string]any{"type": "b", "name": "b-1", "id": 1.0},
+					map[string]any{"type": "b", "name": "b-2", "id": 2.0},
 				},
 			},
 			b: map[string]any{
 				"objects": []any{
 					map[string]any{"type": "a", "name": "a-1", "addr": "oof"},
 					map[string]any{"type": "a", "name": "a-2", "addr": "foo2"},
-					map[string]any{"type": "b", "name": "b-2", "id": 3},
+					map[string]any{"type": "b", "name": "b-2", "id": 3.0},
 				},
 			},
 			splits: [][]Split{
