@@ -41,6 +41,8 @@ export function useStatus(accessAttempt, statusLog) {
     const grant = accessGrantName.value?.toLowerCase();
     switch (grant) {
       case 'granted':
+      case 'pending':
+      case 'aborted':
         return 'success';
       case 'tailgate':
         return 'warning';

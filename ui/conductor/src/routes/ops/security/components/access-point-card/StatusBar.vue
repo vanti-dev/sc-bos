@@ -1,5 +1,5 @@
 <template>
-  <div :class="[props.statusBarColor, 'status-bar d-flex flex-row rounded-t']" style="height: 44px">
+  <div :class="['bg-'+props.statusBarColor, 'status-bar d-flex flex-row rounded-t']" style="height: 44px">
     <div class="d-flex flex-row flex-nowrap align-center my-auto" style="width: 100%; max-width: 400px">
       <v-card-title
           class="d-block text-body-1 font-weight-medium pt-3 text-truncate"
