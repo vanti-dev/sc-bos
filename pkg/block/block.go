@@ -1,10 +1,14 @@
-// Package split provides a way to compare and apply changes to nested data structures.
-// It supports JSON-like data structures of map[string]any, []any and primitive types.
+// Package block provides a way to compare and apply changes to nested data structures.
 //
-// The data structures are compared in logical sections defined by a schema of Split objects.
-// Each Patch returned from Diff will replace the value of one such section.
-// Array elements (which must be map[string]any) are identified by a key, rather than their index within the array.
-package split
+// The data structures are compared in logical blocks defined by a schema of Block objects.
+// Each Patch returned from Diff will replace the value of one such Block. When the Patch is applied, the value of that
+// block will be replaced, but other blocks (including blocks that are children of the replaced block) are left unchanged.
+// Arrays can be split into a block per element, as long as the elements are struct-like and have a key which can be
+// used to identify them.
+//
+// The package can be used to apply configuration changes from multiple sources to a single configuration object,
+// in a way that reduces the chances of conflict or incorrect merging.
+package block
 
 import (
 	"encoding/json"
@@ -17,12 +21,12 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/util/maps"
 )
 
-// Diff finds the changes required to transform a into b, using the provided Splits to define logical sections of
+// Diff finds the changes required to transform a into b, using the provided blocks to define logical sections of
 // the data.
 // Diffing will be performed on the JSON representation of the data, so the data must be JSON-serializable.
 // The returned patches will be non-conflicting, meaning that they can be applied in any order and will produce
 // the same result.
-func Diff(a, b any, splits []Split) ([]Patch, error) {
+func Diff(a, b any, blocks []Block) ([]Patch, error) {
 	var err error
 	a, err = convertToWorking(a)
 	if err != nil {
@@ -33,7 +37,7 @@ func Diff(a, b any, splits []Split) ([]Patch, error) {
 		return nil, err
 	}
 
-	patches := diff(a, b, Split{Splits: splits})
+	patches := diff(a, b, Block{Blocks: blocks})
 	// sort patches to create a deterministic output
 	slices.SortStableFunc(patches, func(i, j Patch) int {
 		return slices.CompareFunc(i.Path, j.Path, comparePathSegments)
@@ -97,7 +101,7 @@ func compareAny(a, b any) int {
 	}
 }
 
-func diff(a, b any, split Split) []Patch {
+func diff(a, b any, block Block) []Patch {
 	if equal(a, b) {
 		return nil
 	}
@@ -108,14 +112,14 @@ func diff(a, b any, split Split) []Patch {
 		if !ok {
 			return []Patch{{Value: b}}
 		}
-		return diffMap(a, bMap, split.Splits)
+		return diffMap(a, bMap, block.Blocks)
 
 	case []any:
 		bSlice, ok := b.([]any)
 		if !ok {
 			return []Patch{{Value: b}}
 		}
-		return diffArray(a, bSlice, split)
+		return diffArray(a, bSlice, block)
 
 	default:
 		// we know that a and b are not equal and cannot be split further
@@ -123,8 +127,8 @@ func diff(a, b any, split Split) []Patch {
 	}
 }
 
-func diffMap(a, b map[string]any, schema []Split) []Patch {
-	tree := buildFieldTree(schema)
+func diffMap(a, b map[string]any, blocks []Block) []Patch {
+	tree := buildFieldTree(blocks)
 	a, aPages := splitMap(a, tree)
 	b, bPages := splitMap(b, tree)
 
@@ -136,10 +140,10 @@ func diffMap(a, b map[string]any, schema []Split) []Patch {
 	return patches
 }
 
-func diffPages(a, b []page) []Patch {
+func diffPages(a, b []blockValue) []Patch {
 	// by sorting the pages, we can step through them in order (linear time)
 	// to find pages with matching paths
-	comparePages := func(a, b page) int {
+	comparePages := func(a, b blockValue) int {
 		return slices.CompareFunc(a.Path, b.Path, strings.Compare)
 	}
 	slices.SortFunc(a, comparePages)
@@ -148,7 +152,7 @@ func diffPages(a, b []page) []Patch {
 	type change struct {
 		Path    []string
 		Deleted bool
-		A, B    page
+		A, B    blockValue
 	}
 	var changes []change
 
@@ -182,7 +186,7 @@ func diffPages(a, b []page) []Patch {
 			continue
 		}
 
-		subpatches := diff(c.A.Value, c.B.Value, c.B.Split)
+		subpatches := diff(c.A.Value, c.B.Value, c.B.Block)
 		prefixPatches(subpatches, fieldPathSegments(c.Path))
 		patches = append(patches, subpatches...)
 	}
@@ -209,9 +213,9 @@ func fieldPathSegments(path []string) []PathSegment {
 
 type fieldTree map[string]fieldTreeEntry
 
-// fieldTreeEntry contains either a Split or a fieldTree, not both
+// fieldTreeEntry contains either a Block or a fieldTree, not both
 type fieldTreeEntry struct {
-	Split  Split
+	Block  Block
 	Fields fieldTree
 }
 
@@ -219,15 +223,15 @@ func (e fieldTreeEntry) IsLeaf() bool {
 	return len(e.Fields) == 0
 }
 
-func buildFieldTree(schema []Split) fieldTree {
+func buildFieldTree(blocks []Block) fieldTree {
 	tree := make(fieldTree)
-	for _, split := range schema {
+	for _, block := range blocks {
 		node := tree
-		path := split.Path
+		path := block.Path
 		for len(path) > 0 {
 			key := path[0]
 			if len(path) == 1 {
-				node[key] = fieldTreeEntry{Split: split}
+				node[key] = fieldTreeEntry{Block: block}
 			} else {
 				if _, ok := node[key]; !ok {
 					node[key] = fieldTreeEntry{Fields: make(fieldTree)}
@@ -240,15 +244,15 @@ func buildFieldTree(schema []Split) fieldTree {
 	return tree
 }
 
-// splits a map into its own fields, and a list of pages that represent the fields that were split
-// In the returned map, fields that were split are replaced with Ignore{}
-func splitMap(m map[string]any, fields fieldTree) (map[string]any, []page) {
+// splits a map into its own fields, and a list of blockValues that represent the fields that are split out into different blocks.
+// In the returned map, fields that were split out into other blocks are replaced with Ignore{}
+func splitMap(m map[string]any, fields fieldTree) (map[string]any, []blockValue) {
 	if len(fields) == 0 {
 		return m, nil
 	}
 	m = maps.Clone(m)
 
-	var pages []page
+	var pages []blockValue
 	for k, v := range m {
 		subfields, ok := fields[k]
 		if !ok {
@@ -258,7 +262,7 @@ func splitMap(m map[string]any, fields fieldTree) (map[string]any, []page) {
 		if subfields.IsLeaf() {
 			// leaf of the fieldTree, need to delete this key
 			delete(m, k)
-			pages = append(pages, page{Path: []string{k}, Value: v, Split: subfields.Split})
+			pages = append(pages, blockValue{Path: []string{k}, Value: v, Block: subfields.Block})
 		} else if submap, ok := v.(map[string]any); ok {
 			submap, subpages := splitMap(submap, subfields.Fields)
 			m[k] = submap
@@ -288,15 +292,15 @@ func markIgnored(m map[string]any, ft fieldTree) {
 	}
 }
 
-// represents the position of a section within the structure, and its value
-type page struct {
-	Path  []string // hierarchy of object field names to reach this page
-	Split Split    // the split that applies to Value
+// represents a pair of a block (at a certain position in the data) and the value it contains
+type blockValue struct {
+	Path  []string // hierarchy of object field names to reach this block
+	Block Block    // the Block that applies to Value
 	Value any
 }
 
-func diffArray(a, b []any, split Split) []Patch {
-	if split.Key == "" {
+func diffArray(a, b []any, block Block) []Patch {
+	if block.Key == "" {
 		// if the array doesn't have a key, we can only compare the whole thing
 		if equal(a, b) {
 			return nil
@@ -306,38 +310,38 @@ func diffArray(a, b []any, split Split) []Patch {
 	}
 
 	type entry struct {
-		A, B                 map[string]any
-		ASplitKey, BSplitKey string
-		Splits               []Split
+		A, B         map[string]any
+		AType, BType string
+		Blocks       []Block
 	}
 	entries := make(map[any]entry) // we allow any comparable type as array keys
 	for _, v := range a {
-		key, ok := extractArrayEntryKey(v, split.Key)
+		key, ok := extractArrayEntryKey(v, block.Key)
 		if !ok {
 			continue
 		}
-		// if there is no SplitKey, we'll use "" to indicate that
-		splitKey, ok := extractArrayEntrySplitKey(v, split.SplitKey)
+		// if there is no TypeKey, we'll use "" to indicate that
+		entryType, ok := extractArrayEntryType(v, block.TypeKey)
 		if !ok {
-			splitKey = ""
+			entryType = ""
 		}
 		entries[key] = entry{
-			A:         v.(map[string]any),
-			ASplitKey: splitKey,
+			A:     v.(map[string]any),
+			AType: entryType,
 		}
 	}
 	for _, v := range b {
-		key, ok := extractArrayEntryKey(v, split.Key)
+		key, ok := extractArrayEntryKey(v, block.Key)
 		if !ok {
 			continue
 		}
-		splitKey, ok := extractArrayEntrySplitKey(v, split.SplitKey)
+		ty, ok := extractArrayEntryType(v, block.TypeKey)
 		if !ok {
-			splitKey = ""
+			ty = ""
 		}
 		e := entries[key]
 		e.B = v.(map[string]any)
-		e.BSplitKey = splitKey
+		e.BType = ty
 		entries[key] = e
 	}
 
@@ -346,26 +350,26 @@ func diffArray(a, b []any, split Split) []Patch {
 		if e.B == nil {
 			// array element was deleted
 			patches = append(patches, Patch{
-				Path:    []PathSegment{{ArrayKey: split.Key, ArrayElem: k}},
+				Path:    []PathSegment{{ArrayKey: block.Key, ArrayElem: k}},
 				Deleted: true,
 			})
-		} else if e.ASplitKey != e.BSplitKey {
-			// array element moved over to different split set, not directly comparable, replace the entire element
+		} else if e.AType != e.BType {
+			// array element changed types and therefore block list, not directly comparable, replace the entire element
 			// (this also covers the case where a new element was added)
 			patches = append(patches, Patch{
-				Path:  []PathSegment{{ArrayKey: split.Key, ArrayElem: k}},
+				Path:  []PathSegment{{ArrayKey: block.Key, ArrayElem: k}},
 				Value: e.B,
 			})
 		} else {
-			splits, ok := split.SplitsByKey[e.BSplitKey]
+			blocks, ok := block.BlocksByType[e.BType]
 			if !ok {
-				// fall back to the global splits
+				// fall back to the global blocks
 				// this case is used when SplitByKey isn't used
-				splits = split.Splits
+				blocks = block.Blocks
 			}
 
-			subpatches := diff(e.A, e.B, Split{Splits: splits})
-			prefixPatches(subpatches, []PathSegment{{ArrayKey: split.Key, ArrayElem: k}})
+			subpatches := diff(e.A, e.B, Block{Blocks: blocks})
+			prefixPatches(subpatches, []PathSegment{{ArrayKey: block.Key, ArrayElem: k}})
 			patches = append(patches, subpatches...)
 		}
 	}
@@ -387,16 +391,16 @@ func extractArrayEntryKey(v any, key string) (any, bool) {
 	return keyValue, true
 }
 
-func extractArrayEntrySplitKey(v any, splitKey string) (string, bool) {
+func extractArrayEntryType(v any, typeKey string) (string, bool) {
 	m, ok := v.(map[string]any)
 	if !ok {
 		return "", false
 	}
-	splitKeyValue, ok := m[splitKey]
+	entryType, ok := m[typeKey]
 	if !ok {
 		return "", false
 	}
-	splitKeyStr, ok := splitKeyValue.(string)
+	splitKeyStr, ok := entryType.(string)
 	return splitKeyStr, ok
 }
 
@@ -682,6 +686,7 @@ func convertIgnores(data any) any {
 	return data
 }
 
+// PathSegment represents one part of a path to a block in a data structure.
 type PathSegment struct {
 	Field     string
 	ArrayKey  string
@@ -731,12 +736,23 @@ func (ps *PathSegment) UnmarshalJSON(data []byte) error {
 	return ErrInvalidPathSegment
 }
 
-type Split struct {
-	SplitKey    string             `json:"splitKey"`
-	Key         string             `json:"key"`
-	Path        []string           `json:"path"`
-	Splits      []Split            `json:"splits"`
-	SplitsByKey map[string][]Split `json:"splitsByKey"`
+// Block represents a logical section of a data structure.
+// When using Diff, a Block will be compared/replaced in its entirety, except for any child blocks.
+type Block struct {
+	// The name of a field in array elements that determines which blocks (from BlocksByType) to use for that element
+	// Optional - if absent, all array elements will use the Blocks field.
+	// If an array element lacks the TypeKey, or the TypeKey does not match any key in BlocksByType, the Blocks field will be used.
+	TypeKey string `json:"typeKey,omitempty"`
+	// The name of a field in array elements whose value identifies the array element.
+	// When diffing and patching, array elements are located by the value of this field, not the position in the array.
+	Key string `json:"key,omitempty"`
+	// The names of fields traversed from the root object to reach this block.
+	// If this block is a child of another block, the path will be relative to the parent block.
+	Path []string `json:"path"`
+	// Where Path points to an array (Key is set), the sub-blocks that apply to each element of the array.
+	// Otherwise, the sub-blocks of the object at Path.
+	Blocks       []Block            `json:"blocks,omitempty"`
+	BlocksByType map[string][]Block `json:"blocksByType,omitempty"`
 }
 
 var ErrInvalidPathSegment = errors.New("invalid path segment")
