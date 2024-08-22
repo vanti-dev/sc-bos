@@ -8,14 +8,14 @@
     <v-navigation-drawer
         v-if="hasSidebar"
         v-model="sidebar.visible"
-        ref="sidebarDOMElement"
-        class="sidebarDOMElement pa-0"
+        class="resizable pa-0"
         :class="{resizing}"
         color="neutral"
         floating
         location="right"
         :width="sideBarWidth">
       <router-view name="sidebar"/>
+      <div class="resize--handle" ref="resizeHandleElement"/>
     </v-navigation-drawer>
   </div>
 </template>
@@ -37,8 +37,7 @@ const props = defineProps({
 });
 
 const {hasSidebar} = usePage();
-const sidebarDOMElement = ref(null);
-const drawerBorder = ref(/** @type {HTMLDivElement} */ null);
+const resizeHandleElement = ref(/** @type {HTMLDivElement} */ null);
 const sideBarWidth = ref(props.minWidth);
 
 const resizing = ref(false);
@@ -51,10 +50,10 @@ const beginDrag = (e) => {
   resizing.value = true; // update styles
   pointerId.value = e.pointerId; // for cleaning up later if needed
   // receive mouse events even when mouse is outside the element/browser window
-  drawerBorder.value.setPointerCapture(e.pointerId);
+  resizeHandleElement.value.setPointerCapture(e.pointerId);
   // record where in the border the mouse was pressed to anchor it there to avoid jumps
-  handleShift.value = e.clientX - drawerBorder.value.getBoundingClientRect().left;
-  drawerBorder.value.addEventListener('pointermove', drag, false); // Add event listener
+  handleShift.value = e.clientX - resizeHandleElement.value.getBoundingClientRect().left;
+  resizeHandleElement.value.addEventListener('pointermove', drag, false); // Add event listener
 };
 
 const drag = (event) => {
@@ -67,30 +66,26 @@ const drag = (event) => {
 
 const endDrag = (e) => {
   resizing.value = false;
-  drawerBorder.value.releasePointerCapture(e.pointerId);
-  drawerBorder.value.removeEventListener('pointermove', drag, false);
+  resizeHandleElement.value.releasePointerCapture(e.pointerId);
+  resizeHandleElement.value.removeEventListener('pointermove', drag, false);
 };
 
 // Set event listeners for sidebar resizing
 const setUp = () => {
-  if (hasSidebar.value && sidebarDOMElement.value.$el) {
+  if (hasSidebar.value && resizeHandleElement.value) {
     sideBarWidth.value = props.minWidth; // Set sidebar width to default
 
-    drawerBorder.value = sidebarDOMElement.value.$el.querySelector(
-        '.v-navigation-drawer__border'
-    ); // Get border element
-
-    drawerBorder.value.addEventListener('pointerdown', beginDrag);
-    drawerBorder.value.addEventListener('pointerup', endDrag);
+    resizeHandleElement.value.addEventListener('pointerdown', beginDrag);
+    resizeHandleElement.value.addEventListener('pointerup', endDrag);
   }
 };
 
 const cleanUp = () => {
   // clean up listeners and event state
-  drawerBorder.value?.removeEventListener('pointerdown', beginDrag, false);
-  drawerBorder.value?.removeEventListener('pointerup', endDrag, false);
-  drawerBorder.value?.removeEventListener('pointermove', drag, false);
-  drawerBorder.value?.releasePointerCapture(pointerId.value);
+  resizeHandleElement.value?.removeEventListener('pointerdown', beginDrag, false);
+  resizeHandleElement.value?.removeEventListener('pointerup', endDrag, false);
+  resizeHandleElement.value?.removeEventListener('pointermove', drag, false);
+  resizeHandleElement.value?.releasePointerCapture(pointerId.value);
 
   resizing.value = false; // Reset resizing styles
   pointerId.value = 0; // Reset pointer ID
@@ -100,7 +95,7 @@ const cleanUp = () => {
 
 // Watch for sidebar DOM element
 watchEffect(() => {
-  if (sidebarDOMElement.value?.$el) {
+  if (resizeHandleElement.value) {
     setUp(); // Set event listeners
   }
 });
@@ -110,7 +105,11 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss">
-.sidebarDOMElement > .v-navigation-drawer__border {
+.resizable .resize--handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
   width: 4px;
   background-color: rgb(var(--v-theme-primary-darken-4));
   transition: all 0.2s ease-in-out;
@@ -122,10 +121,10 @@ onUnmounted(() => {
   }
 }
 
-.sidebarDOMElement.resizing {
+.resizable.resizing {
   transition: none;
 
-  > .v-navigation-drawer__border {
+   .resize--handle {
     background-color: rgb(var(--v-theme-primary-darken-1));
     width: 8px;
   }
