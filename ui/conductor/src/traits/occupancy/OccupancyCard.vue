@@ -4,11 +4,13 @@
       <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Occupancy Sensor</v-list-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">State</v-list-item-title>
-        <v-list-item-subtitle
-            :class="[
-              stateColor, 'text-capitalize text-subtitle-2 py-1 font-weight-medium text-end']">
-          {{ stateStr }}
-        </v-list-item-subtitle>
+        <template #append>
+          <v-list-item-subtitle
+              :class="[
+                stateColor, 'text-capitalize text-body-1 py-1 font-weight-medium text-end']">
+            {{ stateStr }}
+          </v-list-item-subtitle>
+        </template>
       </v-list-item>
       <v-list-item class="py-1" v-if="peopleCount !== 0">
         <v-list-item-title class="text-body-small text-capitalize">Count</v-list-item-title>
