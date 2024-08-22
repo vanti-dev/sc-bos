@@ -1,4 +1,4 @@
-package split
+package block
 
 import (
 	"encoding/json"
@@ -36,14 +36,14 @@ func ExampleDiff() {
 			{Name: "new", Addr: 4, Mode: "manual"}, // new object
 		},
 	}
-	splits := []Split{
+	blocks := []Block{
 		{
 			Path: []string{"objects"},
 			Key:  "name",
 		},
 	}
 
-	patches, err := Diff(before, after, splits)
+	patches, err := Diff(before, after, blocks)
 	if err != nil {
 		panic(err)
 	}
@@ -160,7 +160,7 @@ func TestDiff(t *testing.T) {
 	type testCase struct {
 		a      any
 		b      any
-		schema []Split
+		schema []Block
 		expect []Patch
 	}
 
@@ -233,7 +233,7 @@ func TestDiff(t *testing.T) {
 					"bar": "qux",
 				},
 			},
-			schema: []Split{{Path: []string{"foo", "fooooo"}}},
+			schema: []Block{{Path: []string{"foo", "fooooo"}}},
 			expect: []Patch{{Value: map[string]any{"foo": map[string]any{"bar": "qux", "fooooo": Ignore{}}}}},
 		},
 		"SplitField": {
@@ -245,7 +245,7 @@ func TestDiff(t *testing.T) {
 				"foo": "barbar",
 				"baz": "qux",
 			},
-			schema: []Split{{Path: []string{"foo"}}},
+			schema: []Block{{Path: []string{"foo"}}},
 			expect: []Patch{
 				{
 					Path:  []PathSegment{{Field: "foo"}},
@@ -266,7 +266,7 @@ func TestDiff(t *testing.T) {
 					"baz": "qux",
 				},
 			},
-			schema: []Split{{Path: []string{"props", "foo"}}},
+			schema: []Block{{Path: []string{"props", "foo"}}},
 			expect: []Patch{
 				{
 					Path:  []PathSegment{{Field: "props"}, {Field: "foo"}},
@@ -282,7 +282,7 @@ func TestDiff(t *testing.T) {
 				"foo": "barbar",
 				"baz": "qux",
 			},
-			schema: []Split{{Path: []string{"foo"}}},
+			schema: []Block{{Path: []string{"foo"}}},
 			expect: []Patch{
 				{
 					Path:  []PathSegment{{Field: "foo"}},
@@ -298,7 +298,7 @@ func TestDiff(t *testing.T) {
 			b: map[string]any{
 				"baz": "qux",
 			},
-			schema: []Split{{Path: []string{"foo"}}},
+			schema: []Block{{Path: []string{"foo"}}},
 			expect: []Patch{
 				{
 					Path:    []PathSegment{{Field: "foo"}},
@@ -319,10 +319,10 @@ func TestDiff(t *testing.T) {
 					"qux": "quxqux",
 				},
 			},
-			schema: []Split{
+			schema: []Block{
 				{
 					Path: []string{"foo"},
-					Splits: []Split{
+					Blocks: []Block{
 						{Path: []string{"bar"}},
 					},
 				},
@@ -355,7 +355,7 @@ func TestDiff(t *testing.T) {
 					map[string]any{"id": float64(2), "addr": "baz"},
 				},
 			},
-			schema: []Split{
+			schema: []Block{
 				{
 					Path: []string{"foo"},
 					Key:  "id",
@@ -393,11 +393,11 @@ func TestDiff(t *testing.T) {
 					},
 				},
 			},
-			schema: []Split{
+			schema: []Block{
 				{
 					Path: []string{"drivers"},
 					Key:  "name",
-					Splits: []Split{
+					Blocks: []Block{
 						{Path: []string{"foo"}},
 					},
 				},
@@ -467,12 +467,12 @@ func TestDiff(t *testing.T) {
 					},
 				},
 			},
-			schema: []Split{
+			schema: []Block{
 				{
-					Path:     []string{"drivers"},
-					Key:      "name",
-					SplitKey: "type",
-					SplitsByKey: map[string][]Split{
+					Path:    []string{"drivers"},
+					Key:     "name",
+					TypeKey: "type",
+					BlocksByType: map[string][]Block{
 						"a": {
 							{
 								Path: []string{"objects"},
@@ -757,7 +757,7 @@ func TestPatch_UnmarshalJSON(t *testing.T) {
 	"value": {
 		"foo": "foo",
 	   	"bar": {
-	 		"barbar": {"$split": "ignore"}
+	 		"barbar": {"$block": "ignore"}
 		}
 	}
 }
@@ -790,14 +790,14 @@ func TestPatch_UnmarshalJSON(t *testing.T) {
 // tests that applying all the diffs between a and b to a results in b
 func TestApplyPatch_Consistency(t *testing.T) {
 	type testCase struct {
-		a, b   any
-		splits [][]Split // allows us to try multiple splits and check they all work
+		a, b      any
+		blockSets [][]Block // allows us to try multiple splits and check they all work
 	}
 	cases := map[string]testCase{
 		"Primitive": {
-			a:      "foo",
-			b:      "bar",
-			splits: nil,
+			a:         "foo",
+			b:         "bar",
+			blockSets: nil,
 		},
 		"Object": {
 			a: map[string]any{
@@ -808,7 +808,7 @@ func TestApplyPatch_Consistency(t *testing.T) {
 				"foofoo": "barbar",
 				"baz":    "qux2",
 			},
-			splits: [][]Split{
+			blockSets: [][]Block{
 				{},
 				{{Path: []string{"baz"}}},
 				{{Path: []string{"foo"}}},
@@ -831,11 +831,11 @@ func TestApplyPatch_Consistency(t *testing.T) {
 					map[string]any{"type": "b", "name": "b-2", "id": 3.0},
 				},
 			},
-			splits: [][]Split{
+			blockSets: [][]Block{
 				{},
 				{{Path: []string{"objects"}}},
 				{{Path: []string{"objects"}, Key: "name"}},
-				{{Path: []string{"objects"}, Key: "name", SplitKey: "type", SplitsByKey: map[string][]Split{
+				{{Path: []string{"objects"}, Key: "name", TypeKey: "type", BlocksByType: map[string][]Block{
 					"a": {{Path: []string{"addr"}}},
 					"b": {{Path: []string{"id"}}},
 				}}},
@@ -859,17 +859,17 @@ func TestApplyPatch_Consistency(t *testing.T) {
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			for i, splits := range tc.splits {
-				patches, err := Diff(tc.a, tc.b, splits)
+			for i, blocks := range tc.blockSets {
+				patches, err := Diff(tc.a, tc.b, blocks)
 				if err != nil {
-					t.Errorf("splits %d unexpected diff error: %v", i, err)
+					t.Errorf("blocks %d unexpected diff error: %v", i, err)
 				}
 				dst, err := ApplyPatches(tc.a, patches)
 				if err != nil {
-					t.Errorf("splits %d unexpected patch error: %v", i, err)
+					t.Errorf("blocks %d unexpected patch error: %v", i, err)
 				}
 				if diff := cmp.Diff(tc.b, dst, cmpopts.SortSlices(mapLess)); diff != "" {
-					t.Errorf("splits %d unexpected result (-want +got):\n%s", i, diff)
+					t.Errorf("blocks %d unexpected result (-want +got):\n%s", i, diff)
 				}
 			}
 		})
