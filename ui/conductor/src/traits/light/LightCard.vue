@@ -20,22 +20,20 @@
     <v-card-actions class="px-4">
       <v-btn
           v-for="control in brightnessControl.left"
-          color="neutral-lighten-1"
           :disabled="control.disabled"
-          elevation="0"
           :key="control.label"
           size="small"
+          variant="tonal"
           @click="control.onClick">
         {{ control.label }}
       </v-btn>
       <v-spacer/>
       <v-btn
           v-for="control in brightnessControl.right"
-          color="neutral-lighten-1"
           :disabled="control.disabled"
-          elevation="0"
           :key="control.label"
           size="small"
+          variant="tonal"
           @click="control.onClick">
         {{ control.label }}
       </v-btn>
