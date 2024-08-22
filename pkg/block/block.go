@@ -18,7 +18,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/vanti-dev/sc-bos/pkg/util/maps"
+	"golang.org/x/exp/maps"
 )
 
 // Diff finds the changes required to transform a into b, using the provided blocks to define logical sections of
@@ -652,7 +652,7 @@ func (p *Patch) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	// make sure JSON maps of the form {"$split": "ignore"} are converted to Ignore{} values
+	// make sure JSON maps of the form {"$block": "ignore"} are converted to Ignore{} values
 	// to match the behavior of Ignore.MarshalJSON
 	convertIgnores(p.Value)
 	return nil
@@ -663,14 +663,14 @@ func (p *Patch) UnmarshalJSON(data []byte) error {
 type Ignore struct{}
 
 func (i *Ignore) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]string{"$split": "ignore"})
+	return json.Marshal(map[string]string{"$block": "ignore"})
 }
 
-// modifies data in-place to swap any values of the form map[string]any{"$split": "ignore"} with Ignore{}
+// modifies data in-place to swap any values of the form map[string]any{"$block": "ignore"} with Ignore{}
 func convertIgnores(data any) any {
 	switch data := data.(type) {
 	case map[string]any:
-		if v, ok := data["$split"]; ok && len(data) == 1 && v == "ignore" {
+		if v, ok := data["$block"]; ok && len(data) == 1 && v == "ignore" {
 			return Ignore{}
 		}
 		for k, v := range data {
