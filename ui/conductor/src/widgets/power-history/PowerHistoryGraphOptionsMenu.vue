@@ -3,7 +3,7 @@
     <template #activator="{ props }">
       <div v-bind="props">
         <v-menu
-            location="bottom left"
+            location="bottom right"
             :close-on-content-click="false"
             min-width="275px">
           <template #activator="{ props: _props }">
@@ -16,52 +16,53 @@
             </v-btn>
           </template>
 
-          <v-list height="100%">
-            <v-list-item
-                class="d-flex flex-row justify-center pa-0 mt-n1 px-3"
-                @click.stop="showConversionToggle = !showConversionToggle">
-              <v-list-subheader class="text-body-2 pa-0">Unit Type</v-list-subheader>
-              <v-spacer/>
-              <v-switch
-                  class="ml-4 my-auto no-pointer-events"
-                  color="primary"
-                  density="compact"
-                  readonly
-                  hide-details
-                  inset
-                  :value="props.showConversion">
-                <template #prepend>
-                  <span class="text-caption text-grey-lighten-1">kW</span>
-                </template>
-                <template #append>
-                  <span class="text-caption text-grey-lighten-1 ml-n4">CO₂</span>
-                </template>
-              </v-switch>
+          <v-list>
+            <v-list-item @click.stop="showConversionToggle = !showConversionToggle">
+              <v-list-item-title>Unit Type</v-list-item-title>
+              <template #append>
+                <v-list-item-action end>
+                  <v-switch
+                      class="ml-4 my-auto no-pointer-events"
+                      density="compact"
+                      readonly
+                      hide-details
+                      :model-value="showConversionToggle">
+                    <template #prepend>
+                      <span class="text-grey-lighten-1">kW</span>
+                    </template>
+                    <template #append>
+                      <span class="text-grey-lighten-1">CO₂</span>
+                    </template>
+                  </v-switch>
+                </v-list-item-action>
+              </template>
             </v-list-item>
-            <v-list-item class="pa-0 d-flex flex-row justify-center px-3" density="compact">
-              <v-list-subheader class="text-body-2 pa-0">Duration</v-list-subheader>
-              <v-spacer/>
-              <v-btn-toggle
-                  v-model="activeDuration"
-                  color="primary"
-                  density="compact"
-                  variant="outlined"
-                  divided
-                  mandatory>
-                <v-btn
-                    v-for="option in durationOptions"
-                    size="small"
-                    :key="option.id"
-                    :value="option.value">
-                  <span class="text-caption">{{ option.text }}</span>
-                </v-btn>
-              </v-btn-toggle>
+
+            <v-list-item>
+              <v-list-item-title>Duration</v-list-item-title>
+              <template #append>
+                <v-list-item-action end>
+                  <v-btn-toggle
+                      v-model="activeDuration"
+                      color="primary"
+                      density="compact"
+                      variant="outlined"
+                      divided
+                      mandatory>
+                    <v-btn
+                        v-for="option in durationOptions"
+                        size="small"
+                        :key="option.id"
+                        :value="option.value">
+                      <span class="text-caption">{{ option.text }}</span>
+                    </v-btn>
+                  </v-btn-toggle>
+                </v-list-item-action>
+              </template>
             </v-list-item>
-            <v-list-item
-                class="pa-0 d-flex flex-row align-left align-center px-3 mb-n1"
-                density="compact"
-                @click="emits('exportCSV')">
-              <v-list-subheader class="text-body-2 pa-0">Export CSV...</v-list-subheader>
+
+            <v-list-item @click="emits('exportCSV')">
+              <v-list-item-title class="">Export CSV...</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
