@@ -1,6 +1,6 @@
 <template>
   <v-card flat tile class="pa-0">
-    <div class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">Tokens</div>
+    <v-card-title class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">Tokens</v-card-title>
     <v-list lines="two" class="pt-0">
       <v-progress-linear color="primary" indeterminate :active="secretsTracker.loading"/>
       <v-hover v-slot="{ isHovering, props: hoverProps }" v-for="secret of secretList" :key="secret.id">
