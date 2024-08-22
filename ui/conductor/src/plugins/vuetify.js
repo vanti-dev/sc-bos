@@ -74,5 +74,13 @@ export default createVuetify({
         }
       }
     }
+  },
+  defaults: {
+    VDataTable: {
+      hover: true
+    },
+    VDataTableServer: {
+      hover: true
+    }
   }
 });
