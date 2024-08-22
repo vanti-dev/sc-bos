@@ -12,6 +12,7 @@
         class="mx-4 my-2"
         :model-value="battery"
         bg-color="neutral-lighten-1"
+        bg-opacity="1"
         color="accent"/>
     <v-list>
       <v-list-subheader class="text-body-large font-weight-bold">Testing History</v-list-subheader>

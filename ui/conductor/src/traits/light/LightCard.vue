@@ -13,6 +13,7 @@
         class="mx-4 my-2"
         :model-value="level"
         bg-color="neutral-lighten-1"
+        bg-opacity="1"
         color="accent"/>
     <v-card-actions class="px-4">
       <v-btn

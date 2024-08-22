@@ -13,6 +13,7 @@
         height="34"
         class="mx-4 my-2"
         bg-color="neutral-lighten-1"
+        bg-opacity="1"
         :color="scoreColor"/>
   </v-card>
 </template>
