@@ -86,3 +86,9 @@ Also center the text when it's small
 .v-data-table-header__sort-icon {
   margin-left: 8px;
 }
+
+// this only works when the table has no footer, in other case it causes strange
+// rounding when hovering or selecting the last row on a page
+.v-table--has-bottom .v-table__wrapper {
+  border-radius: initial;
+}
