@@ -35,7 +35,7 @@
                 :close-on-content-click="false">
               <template #activator="{props: _props}">
                 <v-text-field
-                    v-model="newSecret.expiresAt"
+                    v-model="expiresAtString"
                     placeholder="yyyy-mm-dd"
                     readonly
                     v-bind="_props"
@@ -108,7 +108,8 @@ import {DAY, useNow} from '@/components/now.js';
 import RelativeDate from '@/components/RelativeDate.vue';
 import {useErrorStore} from '@/components/ui-error/error';
 import {add} from 'date-fns';
-import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import {useDate} from 'vuetify';
 
 const emit = defineEmits(['finished']);
 const props = defineProps({
@@ -142,9 +143,17 @@ const suggestedExpiresIn = {
 const newSecret = reactive({
   note: '',
   expiresIn: suggestedExpiresIn.month,
-  expiresAt: null
+  expiresAt: /** @type {Date} */ null
+});
+const date = useDate();
+const expiresAtString = computed({
+  get: () => newSecret.expiresAt ? date.format(newSecret.expiresAt, 'keyboardDate') : undefined,
+  set: v => {
+    newSecret.expiresAt = date.date(v);
+  }
 });
 const customExpiryMenuVisible = ref(false);
+watch(() => newSecret.expiresAt, (n, o) => console.debug('expiresAt', n, typeof n, o, typeof o));
 
 const {now} = useNow(DAY);
 const computedExpiresAt = computed(() => {
