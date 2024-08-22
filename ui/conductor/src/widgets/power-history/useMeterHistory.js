@@ -3,7 +3,7 @@ import {listMeterReadingHistory} from '@/api/sc/traits/meter.js';
 import {HOUR, MINUTE, useNow} from '@/components/now.js';
 import {csvDownload} from '@/util/downloadCSV.js';
 import debounce from 'debounce';
-import {computed, ref, toValue, watch, watchEffect} from 'vue';
+import {computed, ref, toValue, watch} from 'vue';
 
 /**
  * @param {MaybeRefOrGetter<string>} name
@@ -33,7 +33,7 @@ export default function(name, periodStart, periodEnd, spanSize) {
   // A Date recording the last time we fetched data from the server.
   // Used to limit fetches to a reasonable rate.
   const lastFetchTime = ref(/** @type {Date|null} */null);
-  watch(() => [toValue(periodStart), toValue(periodEnd)], () => {
+  watch([() => toValue(periodStart), () => toValue(periodEnd)], () => {
     lastFetchTime.value = null; // reset if the period changes
   });
   // How often do we retry a fetch that didn't return all the data we're after.
@@ -44,7 +44,7 @@ export default function(name, periodStart, periodEnd, spanSize) {
   const shouldFetch = computed(() => {
     if (fetching.value) return false;
     if (lastFetchTime.value === null) return true;
-    return now.value.getTime() > lastFetchTime.value.getTime() + fetchPeriod.value;
+    return now.value.getTime() > (lastFetchTime.value.getTime() + fetchPeriod.value);
   });
 
   // Watch for changes to the span size and name, and reset the records and the last fetch if any changes.
@@ -125,14 +125,14 @@ export default function(name, periodStart, periodEnd, spanSize) {
   // This watch tracks the missingPeriods that we have to query the server for.
   // It will fetch the missing data from the server and store the results, along with any existing records,
   // in the records ref.
-  watchEffect(() => {
+  watch([shouldFetch, () => toValue(name)], () => {
     if (!shouldFetch.value || !toValue(name)) {
       return;
     }
     lastFetchTime.value = toValue(now);
 
     debouncedDataFetch();
-  });
+  }, {immediate: true});
 
   const shouldSampleData = computed(() => toValue(spanSize) > 0);
   // Converts the records into series data for the chart.
