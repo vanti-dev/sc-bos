@@ -7,9 +7,11 @@
           {{ item.label }}
         </v-list-item-title>
 
-        <v-list-item-subtitle class="text-end">
-          {{ item.value }} {{ item.unit }}
-        </v-list-item-subtitle>
+        <template #append>
+          <v-list-item-subtitle class="text-body-1">
+            {{ item.value }} {{ item.unit }}
+          </v-list-item-subtitle>
+        </template>
       </v-list-item>
     </v-list>
 
