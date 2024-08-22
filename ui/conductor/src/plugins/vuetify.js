@@ -88,10 +88,14 @@ export default createVuetify({
   },
   defaults: {
     VDataTable: {
-      hover: true
+      hover: true,
+      sortAscIcon: 'mdi-arrow-up-drop-circle-outline',
+      sortDescIcon: 'mdi-arrow-down-drop-circle-outline'
     },
     VDataTableServer: {
-      hover: true
+      hover: true,
+      sortAscIcon: 'mdi-arrow-up-drop-circle-outline',
+      sortDescIcon: 'mdi-arrow-down-drop-circle-outline'
     }
   }
 });

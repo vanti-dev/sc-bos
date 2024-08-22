@@ -6,8 +6,6 @@
         :items="tenantsList"
         :search="search"
         v-model:sort-by="sortBy"
-        sort-asc-icon="mdi-arrow-up-drop-circle-outline"
-        sort-desc-icon="mdi-arrow-down-drop-circle-outline"
         :loading="tenantsTracker.loading"
         :row-props="rowProps"
         @click:row="showTenant">
@@ -123,10 +121,6 @@ const {blockActions} = useAuthSetup();
 
 <style lang="scss" scoped>
 @use 'vuetify/settings';
-
-:deep(.v-data-table-header__sort-icon) {
-  margin-left: 8px;
-}
 
 .table :deep(tbody tr) {
   cursor: pointer;
