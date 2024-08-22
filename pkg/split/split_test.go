@@ -72,15 +72,15 @@ func ExampleApplyPatches() {
 		Mode string `json:"mode"`
 		HVAC *hvac  `json:"hvac,omitempty"`
 	}
-	type config struct {
-		Foo    string  `json:"foo"`
-		Bar    string  `json:"bar"`
-		Spaces []space `json:"spaces"`
+	type house struct {
+		Addr     string  `json:"addr"`
+		Codeword string  `json:"codeword"`
+		Spaces   []space `json:"spaces"`
 	}
 
-	base := config{
-		Foo: "foo",
-		Bar: "bar",
+	base := house{
+		Addr:     "123 Road",
+		Codeword: "please",
 		Spaces: []space{
 			{Name: "kitchen", Mode: "auto", HVAC: &hvac{Setpoint: 20.0, Heat: true}},
 			{Name: "bedroom", Mode: "manual", HVAC: &hvac{Setpoint: 22.0, Heat: false}},
@@ -88,15 +88,15 @@ func ExampleApplyPatches() {
 	}
 	// all field references are the JSON field names
 	patches := []Patch{
-		// replace top-level fields, without disturbing 'spaces'
+		// replace all top-level fields, without disturbing 'spaces'
 		{
 			Path: nil,
 			Value: map[string]any{
-				"foo":    "newfoo",
+				"addr":   "123b Road",
 				"spaces": Ignore{},
 			},
 		},
-		// replaces a sub-object of an array element
+		// replaces an entire sub-object of an array element
 		{
 			Path: []PathSegment{{Field: "spaces"}, {ArrayKey: "name", ArrayElem: "kitchen"}, {Field: "hvac"}},
 			Value: map[string]any{
@@ -133,8 +133,8 @@ func ExampleApplyPatches() {
 	fmt.Println(string(patchedJSON))
 	// Output:
 	// {
-	//   "foo": "newfoo",
-	//   "bar": "",
+	//   "addr": "123b Road",
+	//   "codeword": "",
 	//   "spaces": [
 	//     {
 	//       "name": "kitchen",
