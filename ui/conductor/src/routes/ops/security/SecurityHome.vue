@@ -17,9 +17,9 @@
             hide-details
             label="Search devices"/>
         <v-spacer style="pointer-events: none"/>
-        <v-btn-toggle v-model="viewType" density="compact" mandatory>
-          <v-btn size="large" variant="text" value="list">List View</v-btn>
-          <v-btn size="large" variant="text" value="map">Map View</v-btn>
+        <v-btn-toggle v-model="viewType" mandatory variant="outlined">
+          <v-btn value="list">List View</v-btn>
+          <v-btn value="map">Map View</v-btn>
         </v-btn-toggle>
         <v-select
             v-model="filterFloor"

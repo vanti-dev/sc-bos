@@ -43,15 +43,15 @@
               <v-spacer/>
               <v-btn-toggle
                   v-model="activeDuration"
-                  selected-class="primary"
+                  color="primary"
                   density="compact"
+                  variant="outlined"
+                  divided
                   mandatory>
                 <v-btn
                     v-for="option in durationOptions"
-                    selected-class="primary text--darken-3"
-                    class="bg-transparent text-grey-lighten-1"
-                    :key="option.id"
                     size="small"
+                    :key="option.id"
                     :value="option.value">
                   <span class="text-caption">{{ option.text }}</span>
                 </v-btn>
