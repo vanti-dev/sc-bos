@@ -686,56 +686,6 @@ func convertIgnores(data any) any {
 	return data
 }
 
-// PathSegment represents one part of a path to a block in a data structure.
-type PathSegment struct {
-	Field     string
-	ArrayKey  string
-	ArrayElem any // must be comparable
-}
-
-func (ps *PathSegment) IsField() bool {
-	return ps.Field != "" && ps.ArrayKey == ""
-}
-
-func (ps *PathSegment) IsArrayElem() bool {
-	return ps.Field == "" && ps.ArrayKey != ""
-}
-
-func (ps *PathSegment) MarshalJSON() ([]byte, error) {
-	if ps.IsField() {
-		return json.Marshal(ps.Field)
-	} else if ps.IsArrayElem() {
-		return json.Marshal(map[string]any{ps.ArrayKey: ps.ArrayElem})
-	} else {
-		return nil, ErrInvalidPathSegment
-	}
-}
-
-func (ps *PathSegment) UnmarshalJSON(data []byte) error {
-	var m map[string]any
-	if err := json.Unmarshal(data, &m); err == nil {
-		if len(m) != 1 {
-			return ErrInvalidPathSegment
-		}
-		for k, v := range m {
-			if !reflect.ValueOf(v).Comparable() {
-				return ErrInvalidPathSegment
-			}
-			ps.ArrayKey = k
-			ps.ArrayElem = v
-		}
-		return nil
-	}
-
-	var s string
-	if err := json.Unmarshal(data, &s); err == nil {
-		ps.Field = s
-		return nil
-	}
-
-	return ErrInvalidPathSegment
-}
-
 // Block represents a logical section of a data structure.
 // When using Diff, a Block will be compared/replaced in its entirety, except for any child blocks.
 type Block struct {
