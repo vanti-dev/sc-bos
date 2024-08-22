@@ -12,7 +12,9 @@
       </v-list-item>
       <v-list-item class="py-1" v-if="peopleCount !== 0">
         <v-list-item-title class="text-body-small text-capitalize">Count</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">{{ peopleCount }}</v-list-item-subtitle>
+        <template #append>
+          <v-list-item-subtitle class="text-capitalize text-body-1">{{ peopleCount }}</v-list-item-subtitle>
+        </template>
       </v-list-item>
       <v-progress-linear color="primary" indeterminate :active="props.loading"/>
     </v-list>

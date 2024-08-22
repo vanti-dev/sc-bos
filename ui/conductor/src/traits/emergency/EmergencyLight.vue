@@ -4,7 +4,9 @@
       <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Emergency Lighting</v-list-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">Battery Level</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">{{ battery }}%</v-list-item-subtitle>
+        <template #append>
+          <v-list-item-subtitle class="text-capitalize text-body-1">{{ battery }}%</v-list-item-subtitle>
+        </template>
       </v-list-item>
     </v-list>
     <v-progress-linear

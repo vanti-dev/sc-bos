@@ -5,7 +5,9 @@
       <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Lighting</v-list-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">Brightness</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">{{ levelStr }}</v-list-item-subtitle>
+        <template #append>
+          <v-list-item-subtitle class="text-capitalize text-body-1">{{ levelStr }}</v-list-item-subtitle>
+        </template>
       </v-list-item>
     </v-list>
     <v-progress-linear

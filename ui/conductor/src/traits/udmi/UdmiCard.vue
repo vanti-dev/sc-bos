@@ -4,9 +4,11 @@
       <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">UDMI Event</v-list-subheader>
       <v-list-item class="py-1 mb-2" v-if="message.updateTime">
         <v-list-item-title class="text-body-small text-capitalize">Last updated</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">
-          {{ Intl.DateTimeFormat('en-GB', {dateStyle: 'short', timeStyle: 'long'}).format(message.updateTime) }}
-        </v-list-item-subtitle>
+        <template #append>
+          <v-list-item-subtitle class="text-capitalize text-body-1">
+            {{ Intl.DateTimeFormat('en-GB', {dateStyle: 'short', timeStyle: 'long'}).format(message.updateTime) }}
+          </v-list-item-subtitle>
+        </template>
       </v-list-item>
       <v-list-item class="py-1 mb-2" v-if="message.value">
         <v-list-item-title class="text-body-small text-capitalize">Topic</v-list-item-title>
@@ -14,9 +16,11 @@
       </v-list-item>
       <v-list-item class="py-1" v-for="(value, key) in messagePayload" :key="key">
         <v-list-item-title class="text-body-small text-capitalize flex-fill">{{ key }}</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize text-end flex-fill">
-          {{ value['present_value'] ?? value }}
-        </v-list-item-subtitle>
+        <template #append>
+          <v-list-item-subtitle class="text-capitalize text-end flex-fill text-body-1">
+            {{ value['present_value'] ?? value }}
+          </v-list-item-subtitle>
+        </template>
       </v-list-item>
       <v-progress-linear color="primary" indeterminate :active="message.loading || message.value === null"/>
     </v-list>
