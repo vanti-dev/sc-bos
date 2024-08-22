@@ -21,18 +21,19 @@ func ExampleDiff() {
 		Objects []object `json:"objects"`
 	}
 
-	a := config{
+	before := config{
 		Objects: []object{
 			{Name: "foo", Addr: 1, Mode: "auto"},
 			{Name: "bar", Addr: 2, Mode: "manual"},
 			{Name: "baz", Addr: 3, Mode: "auto"},
 		},
 	}
-	b := config{
+	after := config{
 		Objects: []object{
-			{Name: "foo", Addr: 1, Mode: "manual"},
-			{Name: "baz", Addr: 22, Mode: "auto"},
-			{Name: "new", Addr: 4, Mode: "manual"},
+			{Name: "foo", Addr: 1, Mode: "manual"}, // Mode changed
+			// bar removed
+			{Name: "baz", Addr: 22, Mode: "auto"},  // Addr changed
+			{Name: "new", Addr: 4, Mode: "manual"}, // new object
 		},
 	}
 	splits := []Split{
@@ -42,7 +43,7 @@ func ExampleDiff() {
 		},
 	}
 
-	patches, err := Diff(a, b, splits)
+	patches, err := Diff(before, after, splits)
 	if err != nil {
 		panic(err)
 	}
