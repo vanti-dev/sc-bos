@@ -19,8 +19,7 @@
         multiple
         auto-select-first
         return-object
-        :disabled="blockActions"
-        :menu="true">
+        :disabled="blockActions">
       <template #prepend-item v-if="findZonesTracker.response?.nextPageToken">
         <v-list-subheader class="mx-2">
           <template v-if="findZonesTracker.response?.totalSize > 0">
