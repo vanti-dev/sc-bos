@@ -19,7 +19,8 @@
         multiple
         auto-select-first
         return-object
-        :disabled="blockActions">
+        :disabled="blockActions"
+        :menu="true">
       <template #prepend-item v-if="findZonesTracker.response?.nextPageToken">
         <v-list-subheader class="mx-2">
           <template v-if="findZonesTracker.response?.totalSize > 0">
@@ -34,11 +35,8 @@
         <v-divider class="my-2"/>
       </template>
 
-      <template #item="{ item }">
-        <div class="d-flex flex-row flex-wrap">
-          <v-list-item-title>{{ item.title }}</v-list-item-title>
-          <v-list-item-subtitle v-if="item.title !== item.name">{{ item.name }}</v-list-item-subtitle>
-        </div>
+      <template #item="{ item, props: _props }">
+        <v-list-item v-bind="_props" :subtitle="item.props.title !== item.props.value ? item.props.value : undefined"/>
       </template>
 
       <template #append-item v-if="findZonesTracker.response?.nextPageToken">
