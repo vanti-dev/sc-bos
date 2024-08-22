@@ -2,10 +2,21 @@ import '@mdi/font/css/materialdesignicons.css';
 import {createVuetify} from 'vuetify';
 import {Intersect} from 'vuetify/directives';
 
+// a map like {en: 'en-GB', fr: 'fr-FR', ...} used to correctly format dates based on the users preferences
+const dateLocales = (navigator?.languages ?? ['en-GB']).reduce((acc, lang) => {
+  const parts = lang.split('-');
+  if (parts.length > 1 && acc[parts[0]] === undefined) {
+    acc[parts[0]] = lang;
+  }
+  return acc;
+}, {});
 
 export default createVuetify({
   directives: {
     Intersect
+  },
+  date: {
+    locale: dateLocales
   },
   theme: {
     defaultTheme: 'dark',
