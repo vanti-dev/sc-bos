@@ -636,7 +636,7 @@ func emptyValue(segs []PathSegment) any {
 
 type Patch struct {
 	// How to reach the section to be patched from the root of the data structure
-	Path []PathSegment `json:"path"`
+	Path Path `json:"path"`
 	// The new value to replace the section with
 	// If an Ignore{} value is present, the data in this position will be left unchanged
 	Value any `json:"value,omitempty"`
