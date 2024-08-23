@@ -1,6 +1,6 @@
 <template>
   <v-card elevation="0" tile>
-    <v-card-title class="text-title-caps-large text-neutral-lighten-3">
+    <v-card-title class="d-flex text-title-caps-large text-neutral-lighten-3">
       <span>{{ levelToStr(level, 'Status: ') }}</span>
       <v-spacer/>
       <v-icon end :color="iconColor">{{ iconStr }}</v-icon>
