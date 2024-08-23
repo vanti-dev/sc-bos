@@ -56,10 +56,10 @@ func ExampleDiff() {
 		fmt.Println(string(encoded))
 	}
 	// Output:
-	// {"path":["objects",{"name":"bar"}],"deleted":true}
-	// {"path":["objects",{"name":"baz"}],"value":{"addr":22,"mode":"auto","name":"baz"}}
-	// {"path":["objects",{"name":"foo"}],"value":{"addr":1,"mode":"manual","name":"foo"}}
-	// {"path":["objects",{"name":"new"}],"value":{"addr":4,"mode":"manual","name":"new"}}
+	// {"path":"/objects[name=\"bar\"]","deleted":true}
+	// {"path":"/objects[name=\"baz\"]","value":{"addr":22,"mode":"auto","name":"baz"}}
+	// {"path":"/objects[name=\"foo\"]","value":{"addr":1,"mode":"manual","name":"foo"}}
+	// {"path":"/objects[name=\"new\"]","value":{"addr":4,"mode":"manual","name":"new"}}
 }
 
 func ExampleApplyPatches() {
