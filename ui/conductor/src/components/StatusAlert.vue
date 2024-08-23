@@ -6,9 +6,9 @@
       :color="props.color">
     <template #activator="{ props: _props }">
       <v-icon
-          v-bind="_props"
+          v-bind="{..._props, ...$attrs}"
           :color="props.color"
-          size="22"
+          :size="iconSize"
           style="padding-top: 1px;">
         {{ props.icon }}
       </v-icon>
@@ -31,6 +31,7 @@
 import {statusCodeToString} from '@/components/ui-error/util';
 import {computed, ref} from 'vue';
 
+defineOptions({inheritAttrs: false});
 const props = defineProps({
   color: {
     type: String,
@@ -39,6 +40,10 @@ const props = defineProps({
   icon: {
     type: String,
     default: 'mdi-alert-circle-outline'
+  },
+  iconSize: {
+    type: [String, Number],
+    default: 22
   },
   isClickable: {
     type: Boolean,

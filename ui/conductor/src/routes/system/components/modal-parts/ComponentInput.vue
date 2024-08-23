@@ -13,23 +13,21 @@
       <!-- Error label if the address is already enrolled -->
       <v-alert
           v-if="errorText"
-          class="
-        mx-8
-        mt-2"
+          class="mx-8 mt-2 text-capitalize"
           color="error"
           density="compact"
           max-width="400px"
           variant="outlined"
-          type="error">
-        <v-row class="pa-2 d-flex flex-row flex-nowrap">
-          <span class="text-capitalize">{{ errorText.message }}</span>
-          <v-spacer/>
+          type="error"
+          :text="errorText.message">
+        <template #append>
           <status-alert
               v-if="errorText?.error"
               :resource="errorText.error"
               icon="mdi-alert-circle-outline"
-              class="ml-2"/>
-        </v-row>
+              icon-size="24"
+              style="margin-top: 2px"/>
+        </template>
       </v-alert>
 
       <v-card-actions class="d-flex flex-row justify-space-around mt-10">
