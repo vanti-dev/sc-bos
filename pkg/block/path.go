@@ -355,7 +355,7 @@ func comparePathSegments(a, b PathSegment) int {
 		if c := strings.Compare(a.ArrayKey, b.ArrayKey); c != 0 {
 			return c
 		} else {
-			return compareAny(a.ArrayElem, b.ArrayElem)
+			return comparePrimitives(a.ArrayElem, b.ArrayElem)
 		}
 	} else if a.IsField() {
 		return -1
@@ -363,5 +363,25 @@ func comparePathSegments(a, b PathSegment) int {
 		return 1
 	} else {
 		return 0
+	}
+}
+
+// compares primitive values a and b
+// strings are sorted before other types
+// if a and b are not strings, they are compared by their string representation
+//
+// this is only intended for primitive types (string, numeric, bool) - these are the types valid in path selectors
+func comparePrimitives(a, b any) int {
+	aStr, okA := a.(string)
+	bStr, okB := b.(string)
+	if okA && okB {
+		return strings.Compare(aStr, bStr)
+	} else if okA && !okB {
+		return -1
+	} else if !okA && okB {
+		return 1
+	} else {
+		// non-strings are compared by their string representation
+		return strings.Compare(fmt.Sprint(a), fmt.Sprint(b))
 	}
 }
