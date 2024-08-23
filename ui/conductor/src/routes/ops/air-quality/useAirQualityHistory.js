@@ -35,11 +35,9 @@ export default function(props) {
 
   // Filter zones to only those with air quality sensors
   const zonesWithAirQualitySensors = computed(() => {
-    return devicesData.value.map(zone => {
-      if (hasTrait(zone, 'smartcore.traits.AirQualitySensor')) {
-        return zone.name;
-      }
-    });
+    return devicesData.value
+        .filter(zone => hasTrait(zone, 'smartcore.traits.AirQualitySensor'))
+        .map(zone => zone.name);
   });
   // Mapping the device or zone names to an array
   const mappedDeviceNames = computed(() => {
