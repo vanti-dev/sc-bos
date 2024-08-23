@@ -90,16 +90,16 @@ const servicesStore = useServicesStore();
 const headers = computed(() => {
   if (props.name === 'drivers') {
     return [
-      {title: 'ID', value: 'id'},
-      {title: 'Type', value: 'type'},
-      {title: 'Status', value: 'active', width: '20em'},
-      {value: 'actions', align: 'end', width: '100'}
+      {title: 'ID', key: 'id'},
+      {title: 'Type', key: 'type'},
+      {title: 'Status', key: 'active', width: '20em'},
+      {key: 'actions', align: 'end', width: '100', sortable: false}
     ];
   } else {
     return [
-      {title: 'ID', value: 'id'},
-      {title: 'Status', value: 'active', width: '20em'},
-      {value: 'actions', align: 'end', width: '100'}
+      {title: 'ID', key: 'id'},
+      {title: 'Status', key: 'active', width: '20em'},
+      {key: 'actions', align: 'end', width: '100', sortable: false}
     ];
   }
 });
