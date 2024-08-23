@@ -55,22 +55,8 @@ func convert[T any](in any) (T, error) {
 	return out, err
 }
 
-// compare strings before all other types, which are ordered according to their string representation
-func compareAny(a, b any) int {
-	aStr, okA := a.(string)
-	bStr, okB := b.(string)
-	if okA && okB {
-		return strings.Compare(aStr, bStr)
-	} else if okA && !okB {
-		return -1
-	} else if !okA && okB {
-		return 1
-	} else {
-		// non-strings are compared by their string representation
-		return strings.Compare(fmt.Sprintf("%v", a), fmt.Sprintf("%v", b))
-	}
-}
-
+// a and b must be map[string]any, []any, or primitive types nested in any arrangement.
+// returns patches that transform a into b
 func diff(a, b any, block Block) []Patch {
 	if equal(a, b) {
 		return nil
@@ -98,11 +84,13 @@ func diff(a, b any, block Block) []Patch {
 }
 
 func diffMap(a, b map[string]any, blocks []Block) []Patch {
-	tree := buildFieldTree(blocks)
-	a, aPages := splitMap(a, tree)
-	b, bPages := splitMap(b, tree)
+	// alternate representation of block which is better for recursive descent
+	tree := buildBlockTree(blocks)
+	// a and b might have sub-blocks - need to split them out and compare separately from a and b's own fields
+	a, aBlockValues := splitMap(a, tree)
+	b, bBlockValues := splitMap(b, tree)
 
-	patches := diffPages(aPages, bPages)
+	patches := diffBlockValues(aBlockValues, bBlockValues)
 	if !equal(a, b) {
 		patches = append(patches, Patch{Value: b})
 	}
@@ -110,14 +98,14 @@ func diffMap(a, b map[string]any, blocks []Block) []Patch {
 	return patches
 }
 
-func diffPages(a, b []blockValue) []Patch {
-	// by sorting the pages, we can step through them in order (linear time)
+func diffBlockValues(a, b []blockValue) []Patch {
+	// by sorting the blocks, we can step through them in order (linear time)
 	// to find pages with matching paths
-	comparePages := func(a, b blockValue) int {
+	compareBlockValues := func(a, b blockValue) int {
 		return slices.CompareFunc(a.Path, b.Path, strings.Compare)
 	}
-	slices.SortFunc(a, comparePages)
-	slices.SortFunc(b, comparePages)
+	slices.SortFunc(a, compareBlockValues)
+	slices.SortFunc(b, compareBlockValues)
 
 	type change struct {
 		Path    []string
@@ -127,7 +115,7 @@ func diffPages(a, b []blockValue) []Patch {
 	var changes []change
 
 	for len(a) > 0 && len(b) > 0 {
-		c := comparePages(a[0], b[0])
+		c := compareBlockValues(a[0], b[0])
 		if c < 0 {
 			changes = append(changes, change{Path: a[0].Path, A: a[0], Deleted: true})
 			a = a[1:]
@@ -164,7 +152,7 @@ func diffPages(a, b []blockValue) []Patch {
 	return patches
 }
 
-func prefixPatches(patches []Patch, prefix []PathSegment) {
+func prefixPatches(patches []Patch, prefix Path) {
 	for i := range patches {
 		var prefixed []PathSegment
 		prefixed = append(prefixed, prefix...)
@@ -173,7 +161,7 @@ func prefixPatches(patches []Patch, prefix []PathSegment) {
 	}
 }
 
-func fieldPathSegments(path []string) []PathSegment {
+func fieldPathSegments(path []string) Path {
 	var segs []PathSegment
 	for _, p := range path {
 		segs = append(segs, PathSegment{Field: p})
@@ -181,30 +169,45 @@ func fieldPathSegments(path []string) []PathSegment {
 	return segs
 }
 
-type fieldTree map[string]fieldTreeEntry
+// A blockTree is like a []Block, but instead block location being identified by a list of field names to traverse,
+// it is transformed into a tree.
+// A leaf node in this tree is equivalent to a Block from the original []Block
+//
+// e.g. the following []Block:
+//   - Block A at path ["foo", "bar"]
+//   - Block B at path ["foo", "baz"]
+//   - Block C at path ["qux"]
+//
+// would be transformed into the following blockTree:
+// - foo:
+//   - bar - Block A
+//   - baz - Block B
+//
+// - qux - Block C
+type blockTree map[string]blockTreeEntry
 
-// fieldTreeEntry contains either a Block or a fieldTree, not both
-type fieldTreeEntry struct {
+// blockTreeEntry contains either a Block or a blockTree, not both
+type blockTreeEntry struct {
 	Block  Block
-	Fields fieldTree
+	Fields blockTree
 }
 
-func (e fieldTreeEntry) IsLeaf() bool {
+func (e blockTreeEntry) IsLeaf() bool {
 	return len(e.Fields) == 0
 }
 
-func buildFieldTree(blocks []Block) fieldTree {
-	tree := make(fieldTree)
+func buildBlockTree(blocks []Block) blockTree {
+	tree := make(blockTree)
 	for _, block := range blocks {
 		node := tree
 		path := block.Path
 		for len(path) > 0 {
 			key := path[0]
 			if len(path) == 1 {
-				node[key] = fieldTreeEntry{Block: block}
+				node[key] = blockTreeEntry{Block: block}
 			} else {
 				if _, ok := node[key]; !ok {
-					node[key] = fieldTreeEntry{Fields: make(fieldTree)}
+					node[key] = blockTreeEntry{Fields: make(blockTree)}
 				}
 				node = node[key].Fields
 			}
@@ -214,23 +217,55 @@ func buildFieldTree(blocks []Block) fieldTree {
 	return tree
 }
 
-// splits a map into its own fields, and a list of blockValues that represent the fields that are split out into different blocks.
-// In the returned map, fields that were split out into other blocks are replaced with Ignore{}
-func splitMap(m map[string]any, fields fieldTree) (map[string]any, []blockValue) {
-	if len(fields) == 0 {
+// splits out parts of m that belong to separate sub-blocks
+// returns a copy of m with those parts removed, and a blockValue for each block that was separated
+// In the returned map, each removed block is replaced with Ignore{}
+// tree should be a blockTree representing the []Block that applies to m
+//
+// e.g. if m is:
+//
+//	{
+//	  "foo": {
+//	    "bar": 42,
+//	    "baz": "hello"
+//	  },
+//	  "qux": true
+//	}
+//
+// and tree is:
+//
+//	foo -> bar = Block A
+//	qux        = Block B
+//
+// then this will be split into:
+//
+//	{
+//	  "foo": {
+//	    "bar": Ignore{},
+//	    "baz": "hello"
+//	  },
+//	  "qux": Ignore{}
+//	}
+//
+// and the following blockValues:
+//
+//   - Path: ["foo", "bar"], Value: 42, Block: Block A
+//   - Path: ["qux"], Value: true, Block: Block B
+func splitMap(m map[string]any, tree blockTree) (map[string]any, []blockValue) {
+	if len(tree) == 0 {
 		return m, nil
 	}
 	m = maps.Clone(m)
 
 	var pages []blockValue
 	for k, v := range m {
-		subfields, ok := fields[k]
+		subfields, ok := tree[k]
 		if !ok {
 			// don't need to delete this field or any of its children
 			continue
 		}
 		if subfields.IsLeaf() {
-			// leaf of the fieldTree, need to delete this key
+			// leaf of the blockTree, need to delete this key
 			delete(m, k)
 			pages = append(pages, blockValue{Path: []string{k}, Value: v, Block: subfields.Block})
 		} else if submap, ok := v.(map[string]any); ok {
@@ -244,16 +279,16 @@ func splitMap(m map[string]any, fields fieldTree) (map[string]any, []blockValue)
 			// not a map, don't need to delete this field or any of its children
 		}
 	}
-	markIgnored(m, fields)
+	markIgnored(m, tree)
 	return m, pages
 }
 
-// places an Ignore{} value at every position in m corresponding to a leaf in ft
-func markIgnored(m map[string]any, ft fieldTree) {
+// places an Ignore{} value at every position in m corresponding to a leaf in tree
+func markIgnored(m map[string]any, tree blockTree) {
 	if m == nil {
 		panic("cannot mark fields in nil map")
 	}
-	for k, entry := range ft {
+	for k, entry := range tree {
 		if entry.IsLeaf() {
 			m[k] = Ignore{}
 		} else if submap, ok := m[k].(map[string]any); ok {
@@ -370,8 +405,8 @@ func extractArrayEntryType(v any, typeKey string) (string, bool) {
 	if !ok {
 		return "", false
 	}
-	splitKeyStr, ok := entryType.(string)
-	return splitKeyStr, ok
+	entryTypeStr, ok := entryType.(string)
+	return entryTypeStr, ok
 }
 
 // deep equality check for supporting the following nested types:
@@ -636,11 +671,13 @@ func (i *Ignore) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]string{"$block": "ignore"})
 }
 
+var ignoreSentinal = map[string]any{"$block": "ignore"}
+
 // modifies data in-place to swap any values of the form map[string]any{"$block": "ignore"} with Ignore{}
 func convertIgnores(data any) any {
 	switch data := data.(type) {
 	case map[string]any:
-		if v, ok := data["$block"]; ok && len(data) == 1 && v == "ignore" {
+		if maps.Equal(data, ignoreSentinal) {
 			return Ignore{}
 		}
 		for k, v := range data {
@@ -659,19 +696,19 @@ func convertIgnores(data any) any {
 // Block represents a logical section of a data structure.
 // When using Diff, a Block will be compared/replaced in its entirety, except for any child blocks.
 type Block struct {
-	// The name of a field in array elements that determines which blocks (from BlocksByType) to use for that element
-	// Optional - if absent, all array elements will use the Blocks field.
-	// If an array element lacks the TypeKey, or the TypeKey does not match any key in BlocksByType, the Blocks field will be used.
-	TypeKey string `json:"typeKey,omitempty"`
+	// The names of fields traversed from the parent block to reach this block (or from the root if there is no
+	// parent block).
+	Path []string `json:"path"`
 	// The name of a field in array elements whose value identifies the array element.
 	// When diffing and patching, array elements are located by the value of this field, not the position in the array.
 	Key string `json:"key,omitempty"`
-	// The names of fields traversed from the root object to reach this block.
-	// If this block is a child of another block, the path will be relative to the parent block.
-	Path []string `json:"path"`
 	// Where Path points to an array (Key is set), the sub-blocks that apply to each element of the array.
 	// Otherwise, the sub-blocks of the object at Path.
-	Blocks       []Block            `json:"blocks,omitempty"`
+	Blocks []Block `json:"blocks,omitempty"`
+	// The name of a field in array elements that determines which blocks (from BlocksByType) to use for that element
+	// Optional - if absent, all array elements will use the Blocks field.
+	// If an array element lacks the TypeKey, or the value of TypeKey does not match any key in BlocksByType, the Blocks field will be used.
+	TypeKey      string             `json:"typeKey,omitempty"`
 	BlocksByType map[string][]Block `json:"blocksByType,omitempty"`
 }
 
