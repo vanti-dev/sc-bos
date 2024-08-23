@@ -81,6 +81,7 @@ func (ps *PathSegment) UnmarshalJSON(data []byte) error {
 // The input JSON representation can be either the string format or an array of PathSegments.
 type Path []PathSegment
 
+//goland:noinspection GoMixedReceiverTypes
 func (p *Path) UnmarshalJSON(data []byte) error {
 	var str string
 	if err := json.Unmarshal(data, &str); err == nil {
@@ -97,13 +98,15 @@ func (p *Path) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (p *Path) MarshalJSON() ([]byte, error) {
+//goland:noinspection GoMixedReceiverTypes
+func (p Path) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.String())
 }
 
-func (p *Path) String() string {
+//goland:noinspection GoMixedReceiverTypes
+func (p Path) String() string {
 	var b strings.Builder
-	for _, ps := range *p {
+	for _, ps := range p {
 		writePathSegment(&b, ps)
 	}
 	if b.Len() == 0 {
