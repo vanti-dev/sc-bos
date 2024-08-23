@@ -13,6 +13,7 @@
           {title: '100', value: 100}
         ]"
         :show-select="showSelect"
+        item-value="name"
         :class="tableClasses"
         @click:row="showDevice">
       <template #top>

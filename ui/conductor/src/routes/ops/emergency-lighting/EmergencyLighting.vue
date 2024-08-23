@@ -1,6 +1,6 @@
 <template>
   <content-card>
-    <v-card-title>
+    <v-card-title class="d-flex">
       <h4 class="text-h4">Emergency Lighting</h4>
       <v-spacer/>
       <v-btn
@@ -16,6 +16,7 @@
         :items="lightHealth"
         :loading="lightHealthTracker.loading"
         show-select
+        item-value="name"
         v-model="selectedLights"
         item-key="name">
       <template #top>
@@ -58,9 +59,9 @@ import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 const {blockActions} = useAuthSetup();
 
 const headers = [
-  {title: 'Name', value: 'name'},
-  {title: 'Status', value: 'faultsList'}
-  // {title: 'Updated', value: 'updateTime'}
+  {title: 'Name', key: 'name'},
+  {title: 'Status', key: 'faultsList'}
+  // {title: 'Updated', key: 'updateTime'}
 ];
 
 const selectedLights = ref([]);
