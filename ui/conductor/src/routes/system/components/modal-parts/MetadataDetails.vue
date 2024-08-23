@@ -1,75 +1,58 @@
 <template>
-  <div class="px-6">
-    <div class="pt-2 pb-2 px-6">
-      <template v-for="(value, key) in props.metadata" :key="key">
-        <!-- Check if the value is not empty or an empty array/object -->
-        <v-list-item
-            v-if="isValueAvailable(value)"
-            class="ma-0 pa-0 mb-n4">
-          <div class="d-flex flex-row flex-nowrap align-start">
-            <v-col cols="align-self" class="ma-0 pa-0 mr-4">
-              <v-list-item-title class="text-capitalize font-weight-bold ma-0 pa-0">
-                {{ camelToSentence(key) }}:
-              </v-list-item-title>
-            </v-col>
-            <v-col cols="10" class="ma-0 pa-0 pl-6 mb-2">
-              <!-- Handle simple values and arrays with simple values -->
-              <v-list-item-subtitle
-                  v-if="!isObject(value) || isArray(value)"
-                  class="ma-0 pa-0 text-wrap">
-                <div v-if="isArray(value)" class="ml-0">
-                  <div v-for="(item, idx) in value" class="pb-1" :key="idx">
-                    {{ item.name || item }}
-                  </div>
-                </div>
-                <span v-else class="">
-                  {{ value }}
-                </span>
-              </v-list-item-subtitle>
-              <!-- Handle nested objects -->
-              <div v-else class="d-flex flex-column ml-n5">
-                <template v-for="(subValue, subKey) in value" :key="subKey">
-                  <v-list-item
-                      v-if="isValueAvailable(subValue)"
-                      class="ma-0 pa-0 mt-n3 mb-n2">
-                    <div
-                        v-if="isValueAvailable(subValue)"
-                        class="d-flex flex-row pb-4">
-                      <v-col cols="3" class="ma-0 pa-0">
-                        <v-list-item-title class="text-capitalize text-body-2 font-weight-medium ma-0 pa-0 ml-5">
-                          {{ camelToSentence(subKey) }}:
-                        </v-list-item-title>
-                      </v-col>
-                      <v-col cols="9" class="ma-0 pa-0">
-                        <!-- Handle simple values inside nested objects -->
-                        <v-list-item-subtitle v-if="!isObject(subValue)" class="ma-0 pa-0 text-wrap">
-                          {{ subValue }}
-                        </v-list-item-subtitle>
-                        <!-- Handle arrays and objects inside nested objects -->
-                        <div v-else>
-                          <template v-for="(deepValue, deepKey) in subValue" :key="deepKey">
-                            <v-list-item-subtitle
-                                v-if="isValueAvailable(deepValue)"
-                                class="ma-0 pa-0 text-wrap">
-                              {{ camelToSentence(deepKey) }}: {{
-                                isObject(deepValue) ? deepValue.name || JSON.stringify(deepValue) : deepValue
-                              }}
-                            </v-list-item-subtitle>
-                          </template>
-                        </div>
-                      </v-col>
-                    </div>
-                  </v-list-item>
-                </template>
-              </div>
-            </v-col>
-          </div>
-        </v-list-item>
+  <dl class="val-obj md">
+    <template v-for="(value, key) in props.metadata" :key="key">
+      <!-- Check if the value is not empty or an empty array/object -->
+      <template v-if="isValueAvailable(value)">
+        <dt>
+          {{ camelToSentence(key) }}:
+        </dt>
+        <dd class="md-prop-val">
+          <ul v-if="isArray(value)" class="val-arr">
+            <li v-for="(item, idx) in value" :key="idx">
+              {{ item.name || item }}
+            </li>
+          </ul>
+          <!-- Handle nested objects -->
+          <dl v-else-if="isObject(value)" class="val-obj">
+            <template v-for="(subValue, subKey) in value" :key="subKey">
+              <template v-if="isValueAvailable(subValue)">
+                <dt class="md-prop-key">
+                  {{ camelToSentence(subKey) }}:
+                </dt>
+                <dd class="md-prop-val">
+                  <!-- Handle simple values inside nested objects -->
+                  <ul v-if="isArray(subValue)" class="val-arr">
+                    <li v-for="(item, idx) in value" :key="idx">
+                      {{ item.name || item }}
+                    </li>
+                  </ul>
+                  <!-- Handle arrays and objects inside nested objects -->
+                  <dl v-else-if="isObject(subValue)">
+                    <template v-for="(deepValue, deepKey) in subValue" :key="deepKey">
+                      <div v-if="isValueAvailable(deepValue)" class="md-prop-row">
+                        <dt class="md-prop-key">{{ camelToSentence(deepKey) }}</dt>
+                        <dd class="md-prop-val">
+                          {{ isObject(deepValue) ? deepValue.name || JSON.stringify(deepValue) : deepValue }}
+                        </dd>
+                      </div>
+                    </template>
+                  </dl>
+                  <template v-else>
+                    <span class="val-plain">{{ subValue }}</span>
+                  </template>
+                </dd>
+              </template>
+            </template>
+          </dl>
+          <!-- Handle simple values and arrays with simple values -->
+          <template v-else>
+            <span class="val-plain">{{ value }}</span>
+          </template>
+        </dd>
       </template>
-    </div>
-  </div>
+    </template>
+  </dl>
 </template>
-
 
 <script setup>
 import {camelToSentence} from '@/util/string';
@@ -84,5 +67,24 @@ const props = defineProps({
 </script>
 
 <style scoped>
+.md {
+  --base-font-weight: 800;
+}
 
+dl {
+  display: grid;
+  grid-template-columns: minmax(10em, auto) 1fr;
+  gap: .5em 1em;
+  --child-font-weight: calc(var(--base-font-weight) * .6);
+}
+
+dt {
+  text-transform: capitalize;
+  font-weight: var(--base-font-weight);
+}
+
+dd {
+  --base-font-weight: calc(var(--child-font-weight));
+  font-weight: lighter;
+}
 </style>

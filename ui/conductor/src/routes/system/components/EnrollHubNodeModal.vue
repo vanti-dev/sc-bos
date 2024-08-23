@@ -23,7 +23,7 @@
 
         <!-- Node details -->
         <div v-if="showDetails">
-          <metadata-details v-if="readMetadata" :metadata="readMetadata"/>
+          <metadata-details v-if="readMetadata" :metadata="readMetadata" class="px-8 mb-4"/>
           <certificate-details
               v-if="readCertificates"
               v-model:address="address"
