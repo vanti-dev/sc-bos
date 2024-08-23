@@ -1,58 +1,59 @@
 <template>
-  <div class="d-flex flex-column align-center px-4" style="min-height: 500px;">
-    <div class="mb-2 pt-1 pb-4 px-6">
-      <v-list class="ma-0 pa-0" rounded>
-        <v-list-item
-            active-class="text-primary"
-            class="ml-n1 mb-2"
-            density="compact"
-            :active="activeCertificate === 'root'"
-            :ripple="false"
-            @click="setActiveCertificate(rootCertificate, 'root')">
-          <div class="d-flex flex-row justify-space-between">
-            <div class="d-flex flex-row align-center mr-8 pt-1">
-              <v-icon v-if="intermediateCertificates" class="mr-2" size="20">mdi-chevron-down</v-icon>
-              <span>{{ rootCertificate?.subject?.commonName }}</span>
-            </div>
-            <div class="d-flex flex-row align-center">
-              <span class="font-weight-bold mr-2 pt-1">Valid:</span>
-              <v-icon :color="checkValidity(rootCertificate?.validityPeriod?.to).color" size="20">
+  <div class="d-flex flex-column align-center">
+    <v-list width="100%" active-color="primary">
+      <v-list-group>
+        <template #activator="{props: _props, isOpen: _isOpen}">
+          <v-list-item
+              rounded="xl"
+              :active="activeCertificate === 'root'"
+              @click="setActiveCertificate(rootCertificate, 'root')">
+            <template #prepend>
+              <v-btn
+                  v-bind="_props"
+                  size="small"
+                  variant="text"
+                  :icon="_isOpen ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+                  class="mr-8">
+                <v-icon size="22"/>
+              </v-btn>
+            </template>
+            <v-list-item-title>
+              {{ rootCertificate?.subject?.commonName }}
+            </v-list-item-title>
+            <template #append>
+              <span class="font-weight-bold">Valid:</span>
+              <v-icon end :color="checkValidity(rootCertificate?.validityPeriod?.to).color">
                 {{ checkValidity(rootCertificate?.validityPeriod?.to).icon }}
               </v-icon>
-            </div>
-          </div>
-        </v-list-item>
-
-        <v-list class="ma-0 pa-0">
-          <v-list-item
-              v-for="(intermediateValue, intermediateKey) in intermediateCertificates"
-              active-class="text-primary"
-              class="ml-4"
-              density="compact"
-              :active="activeCertificate === intermediateValue?.subject?.commonName"
-              :key="intermediateKey"
-              :ripple="false"
-              @click="setActiveCertificate(intermediateValue, intermediateValue?.subject?.commonName)">
-            <div class="d-flex flex-row justify-space-between">
-              <div class="pt-1">
-                <v-icon class="mr-2" size="20">
-                  {{
-                    activeCertificate === intermediateValue?.subject?.commonName ?
-                      'mdi-chevron-down' : 'mdi-chevron-right'
-                  }}
-                </v-icon>
-                <span>{{ intermediateValue?.subject?.commonName }}</span>
-              </div>
-              <div class="d-flex flex-row align-center">
-                <span class="font-weight-bold mr-2 pt-1">Valid:</span>
-                <v-icon :color="checkValidity(intermediateValue?.validityPeriod?.to).color" size="20">
-                  {{ checkValidity(intermediateValue?.validityPeriod?.to).icon }}
-                </v-icon>
-              </div>
-            </div>
+            </template>
           </v-list-item>
-        </v-list>
-      </v-list>
+        </template>
+        <v-list-item
+            v-for="(intermediateValue, intermediateKey) in intermediateCertificates"
+            :key="intermediateKey"
+            rounded="xl"
+            class="mt-2"
+            :active="activeCertificate === intermediateValue?.subject?.commonName"
+            @click="setActiveCertificate(intermediateValue, intermediateValue?.subject?.commonName)">
+          <template #prepend>
+            <v-icon
+                start
+                :icon="activeCertificate === intermediateValue?.subject?.commonName ?
+                  'mdi-chevron-down' : 'mdi-chevron-right'"/>
+          </template>
+          <v-list-item-title>
+            {{ intermediateValue?.subject?.commonName }}
+          </v-list-item-title>
+          <template #append>
+            <span class="font-weight-bold">Valid:</span>
+            <v-icon end :color="checkValidity(intermediateValue?.validityPeriod?.to).color">
+              {{ checkValidity(intermediateValue?.validityPeriod?.to).icon }}
+            </v-icon>
+          </template>
+        </v-list-item>
+      </v-list-group>
+    </v-list>
+    <div class="mb-2 pt-1 pb-4 px-6">
       <v-divider v-if="displayedCertificate" class="mt-5"/>
       <div v-if="displayedCertificate" class="pt-2 pb-4">
         <template v-for="(value, key) in displayedCertificate" :key="key">
