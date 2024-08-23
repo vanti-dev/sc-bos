@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"golang.org/x/exp/slices"
 )
 
 func ExampleDiff() {
@@ -47,6 +48,10 @@ func ExampleDiff() {
 	if err != nil {
 		panic(err)
 	}
+	// sort patches for deterministic output
+	slices.SortFunc(patches, func(i, j Patch) int {
+		return ComparePaths(i.Path, j.Path)
+	})
 
 	for _, patch := range patches {
 		encoded, err := json.Marshal(patch)
@@ -555,6 +560,9 @@ func TestDiff(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+			slices.SortFunc(patches, func(i, j Patch) int {
+				return ComparePaths(i.Path, j.Path)
+			})
 			if diff := cmp.Diff(tc.expect, patches, cmpopts.EquateEmpty()); diff != "" {
 				t.Errorf("unexpected result (-want +got):\n%s", diff)
 			}

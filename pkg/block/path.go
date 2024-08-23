@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"golang.org/x/exp/slices"
 )
 
 // PathSegment represents one part of a path to a block in a data structure.
@@ -339,5 +341,27 @@ func (e *PathParseError) Error() string {
 		return fmt.Sprintf("invalid path: at offset %d expected %s; %v", e.Where, e.Expected, e.Err)
 	} else {
 		return fmt.Sprintf("invalid path: at offset %d expected %s but found %q", e.Where, e.Expected, e.Found)
+	}
+}
+
+func ComparePaths(a, b Path) int {
+	return slices.CompareFunc(a, b, comparePathSegments)
+}
+
+func comparePathSegments(a, b PathSegment) int {
+	if a.IsField() && b.IsField() {
+		return strings.Compare(a.Field, b.Field)
+	} else if a.IsArrayElem() && b.IsArrayElem() {
+		if c := strings.Compare(a.ArrayKey, b.ArrayKey); c != 0 {
+			return c
+		} else {
+			return compareAny(a.ArrayElem, b.ArrayElem)
+		}
+	} else if a.IsField() {
+		return -1
+	} else if b.IsField() {
+		return 1
+	} else {
+		return 0
 	}
 }
