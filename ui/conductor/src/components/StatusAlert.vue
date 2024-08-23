@@ -2,8 +2,8 @@
   <v-tooltip
       v-if="props.resource"
       v-model="show"
-      location="bottom"
-      :color="props.color">
+      :content-props="{'class': [props.color ? `bg-${props.color}` : '']}"
+      location="bottom">
     <template #activator="{ props: _props }">
       <v-icon
           v-bind="{..._props, ...$attrs}"

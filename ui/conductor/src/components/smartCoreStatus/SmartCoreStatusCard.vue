@@ -60,9 +60,10 @@
               :single="chip.single"/>
           <v-chip
               v-else
-              :class="chip.color"
+              :color="chip.color"
               :disabled="chipDisabled"
               size="small"
+              variant="flat"
               :to="navigateToNodes(chip.to)">
             {{ chip.label }}
           </v-chip>
