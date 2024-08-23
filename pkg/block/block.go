@@ -27,12 +27,13 @@ import (
 // The returned patches will be non-conflicting, meaning that they can be applied in any order and will produce
 // the same result.
 func Diff(a, b any, blocks []Block) ([]Patch, error) {
+	// convert a and b from any Go type to the default JSON representation: map[string]any, []any, and primitive types
 	var err error
-	a, err = convertToWorking(a)
+	a, err = convert[any](a)
 	if err != nil {
 		return nil, err
 	}
-	b, err = convertToWorking(b)
+	b, err = convert[any](b)
 	if err != nil {
 		return nil, err
 	}
@@ -45,21 +46,10 @@ func Diff(a, b any, blocks []Block) ([]Patch, error) {
 	return patches, nil
 }
 
-// converts an arbitrary Go value to a JSON-like tree of map[string]any, []any and primitive types
-func convertToWorking(in any) (any, error) {
-	serialised, err := json.Marshal(in)
-	if err != nil {
-		return nil, err
-	}
-	var out any
-	err = json.Unmarshal(serialised, &out)
-	return out, err
-}
-
-// converts from the working representation back to a Go JSON-deserializable value
-func convertFromWorking[T any](working any) (T, error) {
+// performs a round-trip conversion to and from JSON
+func convert[T any](in any) (T, error) {
 	var out T
-	serialised, err := json.Marshal(working)
+	serialised, err := json.Marshal(in)
 	if err != nil {
 		return out, err
 	}
@@ -467,7 +457,7 @@ func equalKeys(a, b map[string]any) bool {
 // The type must be both JSON-serializable and JSON-deserializable.
 // A patched copy of the data structure will be returned. The original will not be modified.
 func ApplyPatches[T any](data T, patches []Patch) (T, error) {
-	workingCopy, err := convertToWorking(data)
+	workingCopy, err := convert[any](data)
 	if err != nil {
 		return data, err
 	}
@@ -478,7 +468,7 @@ func ApplyPatches[T any](data T, patches []Patch) (T, error) {
 			return data, err
 		}
 	}
-	return convertFromWorking[T](workingCopy)
+	return convert[T](workingCopy)
 }
 
 // The patch will be performed in-place if possible, and the modified data structure will be returned.
