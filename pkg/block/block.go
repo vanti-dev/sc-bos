@@ -15,10 +15,10 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"slices"
 	"strings"
 
 	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 )
 
 // Diff finds the changes required to transform a into b, using the provided blocks to define logical sections of

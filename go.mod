@@ -28,13 +28,13 @@ require (
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
 	go.uber.org/zap v1.19.1
-	golang.org/x/crypto v0.25.0
-	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
+	golang.org/x/crypto v0.26.0
+	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
 	golang.org/x/oauth2 v0.13.0
-	golang.org/x/sync v0.7.0
-	golang.org/x/term v0.22.0
+	golang.org/x/sync v0.8.0
+	golang.org/x/term v0.23.0
 	golang.org/x/time v0.3.0
-	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d
+	golang.org/x/tools v0.24.0
 	google.golang.org/grpc v1.60.1
 	google.golang.org/protobuf v1.33.0
 )
@@ -67,9 +67,9 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
 	go.uber.org/atomic v1.8.0 // indirect
-	golang.org/x/net v0.25.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
+	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/sys v0.23.0 // indirect
+	golang.org/x/text v0.17.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231002182017-d307bd883b97 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
