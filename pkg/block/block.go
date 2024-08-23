@@ -25,7 +25,9 @@ import (
 // the data.
 // Diffing will be performed on the JSON representation of the data, so the data must be JSON-serializable.
 // The returned patches will be non-conflicting, meaning that they can be applied in any order and will produce
-// the same result.
+// the same result. The order of patches is not guaranteed to be consistent between runs - if a deterministic order
+// is required, you can sort the patches by Path.
+// Returns an error when a or b fail to marshal to JSON.
 func Diff(a, b any, blocks []Block) ([]Patch, error) {
 	// convert a and b from any Go type to the default JSON representation: map[string]any, []any, and primitive types
 	var err error
@@ -39,10 +41,6 @@ func Diff(a, b any, blocks []Block) ([]Patch, error) {
 	}
 
 	patches := diff(a, b, Block{Blocks: blocks})
-	// sort patches to create a deterministic output
-	slices.SortStableFunc(patches, func(i, j Patch) int {
-		return slices.CompareFunc(i.Path, j.Path, comparePathSegments)
-	})
 	return patches, nil
 }
 
@@ -55,24 +53,6 @@ func convert[T any](in any) (T, error) {
 	}
 	err = json.Unmarshal(serialised, &out)
 	return out, err
-}
-
-func comparePathSegments(a, b PathSegment) int {
-	if a.IsField() && b.IsField() {
-		return strings.Compare(a.Field, b.Field)
-	} else if a.IsArrayElem() && b.IsArrayElem() {
-		if c := strings.Compare(a.ArrayKey, b.ArrayKey); c != 0 {
-			return c
-		} else {
-			return compareAny(a.ArrayElem, b.ArrayElem)
-		}
-	} else if a.IsField() {
-		return -1
-	} else if b.IsField() {
-		return 1
-	} else {
-		return 0
-	}
 }
 
 // compare strings before all other types, which are ordered according to their string representation
