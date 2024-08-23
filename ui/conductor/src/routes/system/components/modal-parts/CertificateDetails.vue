@@ -1,7 +1,7 @@
 <template>
-  <div class="d-flex flex-column align-center">
-    <v-list width="100%" active-color="primary">
-      <v-list-group>
+  <div class="d-flex flex-column align-stretch">
+    <v-list color="primary" :opened="['intermediates']">
+      <v-list-group value="intermediates">
         <template #activator="{props: _props, isOpen: _isOpen}">
           <v-list-item
               rounded="xl"
@@ -53,54 +53,8 @@
         </v-list-item>
       </v-list-group>
     </v-list>
-    <div class="mb-2 pt-1 pb-4 px-6">
-      <v-divider v-if="displayedCertificate" class="mt-5"/>
-      <div v-if="displayedCertificate" class="pt-2 pb-4">
-        <template v-for="(value, key) in displayedCertificate" :key="key">
-          <v-list-item
-              v-if="value"
-              class="ma-0 pa-0 mb-n4">
-            <div class="d-flex flex-row flex-nowrap align-start">
-              <v-col cols="align-self" class="ma-0 pa-0 mr-n4">
-                <v-list-item-title class="text-capitalize font-weight-bold ma-0 pa-0">
-                  {{ camelToSentence(formatFingerprint(key)) }}:
-                </v-list-item-title>
-              </v-col>
-              <v-col cols="10" class="ma-0 pa-0 pl-6">
-                <v-list-item-subtitle
-                    v-if="typeof value !== 'object'"
-                    class="ma-0 pa-0 text-wrap">
-                  {{ value }}
-                </v-list-item-subtitle>
-                <div v-else class="d-flex flex-column">
-                  <template v-for="(subValue, subKey) in value" :key="subKey">
-                    <v-list-item v-if="subValue" class="ma-0 pa-0 mt-n3 mb-n2">
-                      <div class="d-flex flex-row pb-4">
-                        <v-col cols="3" class="ma-0 pa-0">
-                          <v-list-item-title
-                              class="text-capitalize
-                                text-body-2
-                                font-weight-medium
-                                ma-0
-                                pa-0">
-                            {{ camelToSentence(subKey) }}:
-                          </v-list-item-title>
-                        </v-col>
-                        <v-col cols="9" class="ma-0 pa-0 pl-6">
-                          <v-list-item-subtitle class="ma-0 pa-0 text-wrap">
-                            {{ subValue }}
-                          </v-list-item-subtitle>
-                        </v-col>
-                      </div>
-                    </v-list-item>
-                  </template>
-                </div>
-              </v-col>
-            </div>
-          </v-list-item>
-        </template>
-      </div>
-    </div>
+    <v-divider v-if="displayedCertificate" class="my-4"/>
+    <metadata-details :metadata="displayedCertificate" class="mb-4 px-4"/>
 
     <v-row class="mt-4" v-if="!props.nodeQuery.isQueried && !props.nodeQuery.isToForget">
       <v-card-text>
@@ -130,7 +84,7 @@
 </template>
 
 <script setup>
-import {camelToSentence} from '@/util/string';
+import MetadataDetails from '@/routes/system/components/modal-parts/MetadataDetails.vue';
 import {computed, ref, watchEffect} from 'vue';
 
 const emits = defineEmits(['resetCertificates', 'enrollHubNodeAction']);
@@ -188,15 +142,6 @@ const checkValidity = (date) => {
     icon: 'mdi-check-circle',
     color: 'success-lighten-2'
   };
-};
-
-const formatFingerprint = (fingerprint) => {
-  if (fingerprint.includes('sha1')) {
-    return fingerprint.replace('sha1', 'sha-1');
-  } else if (fingerprint.includes('sha256')) {
-    return fingerprint.replace('sha256', 'sha-256');
-  }
-  return fingerprint;
 };
 
 const setActiveCertificate = (certificate, certificateName) => {

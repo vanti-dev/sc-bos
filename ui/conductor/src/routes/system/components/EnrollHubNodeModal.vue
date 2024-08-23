@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialogState" class="elevation-0" width="auto" max-width="975px">
     <content-card v-if="dialogState">
-      <div class="d-flex align-baseline px-4 mb-6">
+      <div class="d-flex align-baseline mb-6">
         <v-card-title>
           {{ modalTitle }}
         </v-card-title>
@@ -23,7 +23,7 @@
 
         <!-- Node details -->
         <div v-if="showDetails">
-          <metadata-details v-if="readMetadata" :metadata="readMetadata" class="px-8 mb-4"/>
+          <metadata-details v-if="readMetadata" :metadata="readMetadata" class="px-4 mb-4"/>
           <certificate-details
               v-if="readCertificates"
               v-model:address="address"
