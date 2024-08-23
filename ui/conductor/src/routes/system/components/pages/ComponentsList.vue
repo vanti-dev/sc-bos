@@ -21,13 +21,14 @@
 
     <div class="d-flex flex-wrap ml-n2">
       <v-card v-for="node in nodesList" :key="node.name" width="300px" class="ma-2">
-        <div class="d-flex flex-row align-center pt-2 mb-n4">
-          <v-card-title class="text-body-large font-weight-bold">{{ node.name }}</v-card-title>
-          <v-card-subtitle v-if="node.description !== ''">{{ node.description }}</v-card-subtitle>
+        <v-card-title
+            class="text-body-large font-weight-bold d-flex align-center text-wrap"
+            style="word-break: break-all">
+          {{ node.name }}
+          <v-spacer/>
           <v-menu min-width="175px">
             <template #activator="{ props }">
               <v-btn
-                  class="ml-auto mr-3"
                   icon="mdi-dots-vertical"
                   variant="text"
                   size="small"
@@ -48,9 +49,8 @@
               </v-list-item>
             </v-list>
           </v-menu>
-        </div>
-
-        <!--        <v-card-title class="text-body-large font-weight-bold">{{ node.name }}</v-card-title>-->
+        </v-card-title>
+        <v-card-subtitle v-if="node.description !== ''">{{ node.description }}</v-card-subtitle>
 
         <v-card-text>
           <v-list density="compact">
@@ -68,10 +68,12 @@
               <status-alert :resource="trackers.metadataTracker?.error"/>
             </v-list-item>
           </v-list>
-          <v-chip-group>
-            <v-chip v-if="isProxy(node.name)" color="accent" size="small">gateway</v-chip>
-            <v-chip v-if="isHub(node.name) && !isProxy(node.name)" color="primary" size="small">hub</v-chip>
-          </v-chip-group>
+          <div>
+            <v-chip v-if="isProxy(node.name)" color="accent" size="small" variant="flat">gateway</v-chip>
+            <v-chip v-if="isHub(node.name) && !isProxy(node.name)" color="primary" size="small" variant="flat">
+              hub
+            </v-chip>
+          </div>
         </v-card-text>
       </v-card>
     </div>
