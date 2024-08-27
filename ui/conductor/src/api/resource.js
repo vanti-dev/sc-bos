@@ -47,7 +47,7 @@ export function setCollection(resource, change, idFunc) {
   const newV = change.getNewValue()?.toObject();
   if (newV) {
     if (!resource.value) resource.value = {};
-    resource.lue =idFunc(newV), newV;
+    resource.value[idFunc(newV)] = newV;
   } else if (oldV) {
     if (resource.value) {
       delete(resource.value[idFunc(oldV)]);
