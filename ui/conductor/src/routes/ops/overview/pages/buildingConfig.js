@@ -2,7 +2,7 @@ import {builtinLayouts} from '@/layout/pallet.js';
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {isNullOrUndef} from '@/util/types.js';
 import {builtinWidgets} from '@/widgets/pallet.js';
-import {computed, ref, toValue} from 'vue';
+import {computed, markRaw, ref, toValue} from 'vue';
 
 /**
  * @return {{
@@ -73,11 +73,11 @@ export default function useBuildingConfig() {
   const addIfPresent = (arr, props, component) => {
     props = toValue(props);
     if (props) {
-      arr.push({props, component});
+      arr.push({props, component: markRaw(component)});
     }
   };
   return {
-    layout: builtinLayouts['LayoutMainSide'],
+    layout: markRaw(builtinLayouts['LayoutMainSide']),
     title: ref('Building Status Overview'),
     main: computed(() => {
       const res = [];

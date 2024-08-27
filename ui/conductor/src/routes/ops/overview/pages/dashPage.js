@@ -2,7 +2,7 @@ import {builtinLayouts} from '@/layout/pallet.js';
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {findActiveItem} from '@/util/router.js';
 import {builtinWidgets} from '@/widgets/pallet.js';
-import {computed, toValue} from 'vue';
+import {computed, markRaw, toValue} from 'vue';
 
 /**
  * @param {MaybeRefOrGetter<string|string[]>} path
@@ -74,11 +74,11 @@ export default function useDashPage(path) {
   const addIfPresent = (arr, props, component) => {
     props = toValue(props);
     if (props) {
-      arr.push({props, component});
+      arr.push({props, component: markRaw(component)});
     }
   };
   return {
-    layout: builtinLayouts['LayoutMainSide'],
+    layout: markRaw(builtinLayouts['LayoutMainSide']),
     title: extendedTitle,
     main: computed(() => {
       const res = [];
