@@ -155,7 +155,12 @@ func ParsePath(p string) (Path, error) {
 	}
 
 	r := strings.NewReader(p)
-	var parsed Path
+	// parse top-level array subscripts
+	parsed, err := readSubscripts(r, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	for {
 		err := readSeparator(r)
 		if errors.Is(err, io.EOF) {
@@ -171,13 +176,9 @@ func ParsePath(p string) (Path, error) {
 
 		parsed = append(parsed, PathSegment{Field: field})
 
-		skipWhitespace(r)
-		if ch, ok := peek(r); ok && ch == '[' {
-			k, v, err := readSubscript(r)
-			if err != nil {
-				return nil, err
-			}
-			parsed = append(parsed, PathSegment{ArrayKey: k, ArrayElem: v})
+		parsed, err = readSubscripts(r, parsed)
+		if err != nil {
+			return nil, err
 		}
 	}
 	if len(parsed) == 0 {
@@ -268,6 +269,21 @@ func readSubscript(r *strings.Reader) (string, any, error) {
 	}
 
 	return key, value, nil
+}
+
+func readSubscripts(r *strings.Reader, parsed Path) (Path, error) {
+	for {
+		skipWhitespace(r)
+		if ch, ok := peek(r); !ok || ch != '[' {
+			break
+		}
+		k, v, err := readSubscript(r)
+		if err != nil {
+			return nil, err
+		}
+		parsed = append(parsed, PathSegment{ArrayKey: k, ArrayElem: v})
+	}
+	return parsed, nil
 }
 
 func readSubscriptValue(r *strings.Reader) (any, error) {

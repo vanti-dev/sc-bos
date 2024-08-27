@@ -28,6 +28,14 @@ func TestPath_String(t *testing.T) {
 			path:   Path{{Field: " foo bar "}},
 			expect: `/" foo bar "`,
 		},
+		"field_escape_quote": {
+			path:   Path{{Field: `foo"bar`}},
+			expect: `/"foo\"bar"`,
+		},
+		"field_escape_backslash": {
+			path:   Path{{Field: `foo\bar`}},
+			expect: `/"foo\\bar"`,
+		},
 		"field_leading_digit": {
 			path:   Path{{Field: "42foo"}},
 			expect: `/"42foo"`,
@@ -52,6 +60,14 @@ func TestPath_String(t *testing.T) {
 			path:   Path{{Field: "foo"}, {ArrayKey: "id", ArrayElem: 42}},
 			expect: `/foo[id=42]`,
 		},
+		"array_elem_quote": {
+			path:   Path{{Field: "foo"}, {ArrayKey: "name", ArrayElem: `bar"baz`}},
+			expect: `/foo[name="bar\"baz"]`,
+		},
+		"array_elem_backslash": {
+			path:   Path{{Field: "foo"}, {ArrayKey: "name", ArrayElem: `bar\baz`}},
+			expect: `/foo[name="bar\\baz"]`,
+		},
 		"array_key_with_whitespace": {
 			path:   Path{{Field: "foo"}, {ArrayKey: " name ", ArrayElem: "bar"}},
 			expect: `/foo[" name "="bar"]`,
@@ -59,6 +75,10 @@ func TestPath_String(t *testing.T) {
 		"array_key_unicode": {
 			path:   Path{{Field: "foo"}, {ArrayKey: "nåme", ArrayElem: "bar"}},
 			expect: `/foo["nåme"="bar"]`,
+		},
+		"array_key_quote": {
+			path:   Path{{Field: "foo"}, {ArrayKey: `na"me`, ArrayElem: "bar"}},
+			expect: `/foo["na\"me"="bar"]`,
 		},
 	}
 
@@ -86,6 +106,10 @@ var parsePathTests = map[string]parsePathTest{
 		path:   "/",
 		expect: Path{},
 	},
+	"bare_subscripts": {
+		path:   `[name="bar"][id=42]`,
+		expect: Path{{ArrayKey: "name", ArrayElem: "bar"}, {ArrayKey: "id", ArrayElem: 42.0}},
+	},
 	"empty_field": {
 		path:      "/foo/",
 		shouldErr: true,
@@ -106,6 +130,10 @@ var parsePathTests = map[string]parsePathTest{
 		path:   `/"foo\"bar"`,
 		expect: Path{{Field: `foo"bar`}},
 	},
+	"field_backslash": {
+		path:   `/"foo\\bar"`,
+		expect: Path{{Field: `foo\bar`}},
+	},
 	"field_not_quoted": {
 		path:      `/foo bar`,
 		shouldErr: true,
@@ -114,17 +142,45 @@ var parsePathTests = map[string]parsePathTest{
 		path:   "/foo/bar",
 		expect: Path{{Field: "foo"}, {Field: "bar"}},
 	},
+	"empty_subscript": {
+		path:      `/foo[]`,
+		shouldErr: true,
+	},
+	"array_key_missing": {
+		path:      `/foo[="bar"]`,
+		shouldErr: true,
+	},
+	"array_key_quoted": {
+		path:   `/foo["na\\me"="bar"]`,
+		expect: Path{{Field: "foo"}, {ArrayKey: `na\me`, ArrayElem: "bar"}},
+	},
+	"array_elem_unquoted": {
+		path:      `/foo[name=bar]`,
+		shouldErr: true,
+	},
 	"array_elem_str": {
 		path:   `/foo[name="bar"]`,
 		expect: Path{{Field: "foo"}, {ArrayKey: "name", ArrayElem: "bar"}},
+	},
+	"array_elem_missing_1": {
+		path:      `/foo[name=]`,
+		shouldErr: true,
+	},
+	"array_elem_missing_2": {
+		path:      `/foo[name]`,
+		shouldErr: true,
 	},
 	"array_elem_int": {
 		path:   `/foo[id=42]`,
 		expect: Path{{Field: "foo"}, {ArrayKey: "id", ArrayElem: 42.0}},
 	},
+	"array_elem_quote": {
+		path:   `/foo[name="bar\"baz"]`,
+		expect: Path{{Field: "foo"}, {ArrayKey: "name", ArrayElem: `bar"baz`}},
+	},
 	"double_subscript": {
-		path:      `/foo[name="bar"][id=42]`,
-		shouldErr: true,
+		path:   `/foo[name="bar"][id=42]`,
+		expect: Path{{Field: "foo"}, {ArrayKey: "name", ArrayElem: "bar"}, {ArrayKey: "id", ArrayElem: 42.0}},
 	},
 }
 
@@ -171,7 +227,7 @@ func FuzzParsePath(f *testing.F) {
 func TestPath_UnmarshalJSON(t *testing.T) {
 	// should be able to parse in the string format (the same as accepted by ParsePath)
 	for name, tc := range parsePathTests {
-		t.Run("strfmt_"+name, func(t *testing.T) {
+		t.Run(name, func(t *testing.T) {
 			data := []byte(strconv.Quote(tc.path))
 			var p Path
 			err := json.Unmarshal(data, &p)
@@ -195,37 +251,37 @@ func TestPath_UnmarshalJSON(t *testing.T) {
 		shouldErr bool
 	}
 	cases := map[string]testCase{
-		"empty": {
+		"arrfmt_empty": {
 			input: "[]",
 			path:  Path{},
 		},
-		"field": {
+		"arrfmt_field": {
 			input: `["foo"]`,
 			path:  Path{{Field: "foo"}},
 		},
-		"nested_field": {
+		"arrfmt_nested_field": {
 			input: `["foo", "bar"]`,
 			path:  Path{{Field: "foo"}, {Field: "bar"}},
 		},
-		"array_elem_str": {
+		"arrfmt_array_elem_str": {
 			input: `["foo", {"name": "bar"}]`,
 			path:  Path{{Field: "foo"}, {ArrayKey: "name", ArrayElem: "bar"}},
 		},
-		"array_elem_num": {
+		"arrfmt_array_elem_num": {
 			input: `["foo", {"id": 42}]`,
 			path:  Path{{Field: "foo"}, {ArrayKey: "id", ArrayElem: 42.0}},
 		},
-		"invalid_array_elem": {
+		"arrfmt_invalid_array_elem": {
 			input:     `["foo", {"id": "bar", "extra": "field"}]`,
 			shouldErr: true,
 		},
-		"invalid_field": {
+		"arrfmt_invalid_field": {
 			input:     `["foo", 42]`,
 			shouldErr: true,
 		},
 	}
 	for name, tc := range cases {
-		t.Run("arrfmt_"+name, func(t *testing.T) {
+		t.Run(name, func(t *testing.T) {
 			data := []byte(tc.input)
 			var p Path
 			err := json.Unmarshal(data, &p)
