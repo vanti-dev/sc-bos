@@ -52,7 +52,6 @@ const props = defineProps({
 const ctx = /** @type {FilterCtx} */ inject(filterCtxSymbol, () => props.ctx, true);
 const {sortedChoices, nonDefaultChoices, clear, filtersByKey} = ctx;
 const choiceType = (choice) => {
-  if (Array.isArray(choice)) debugger;
   return filtersByKey.value[choice.filter].type;
 };
 
