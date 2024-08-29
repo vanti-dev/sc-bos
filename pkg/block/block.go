@@ -549,9 +549,13 @@ func applyPatch(data any, patch Patch) (any, error) {
 			}
 			return a, nil
 		}
-		var existing any
+		var existing map[string]any
 		if i >= 0 {
-			existing = a[i]
+			// only a map[string]any can pass the slices.IndexFunc check
+			existing = a[i].(map[string]any)
+		} else {
+			// create a placeholder map with the right key to hold the change
+			existing = map[string]any{segment.ArrayKey: segment.ArrayElem}
 		}
 
 		patched, err := applyPatch(existing, Patch{
