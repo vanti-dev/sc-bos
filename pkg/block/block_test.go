@@ -759,6 +759,28 @@ func TestApplyPatch(t *testing.T) {
 				},
 			},
 		},
+		"AddNestedFieldInArray": {
+			patch: Patch{
+				Path:  []PathSegment{{Field: "newarray"}, {ArrayKey: "name", ArrayElem: "newelem"}, {Field: "newfield"}},
+				Value: "newfieldvalue",
+			},
+			expect: map[string]any{
+				"foo": "bar",
+				"baz": []any{1.0, 2.0, 3.0},
+				"qux": map[string]any{
+					"flub": map[string]any{
+						"garply": "waldo",
+					},
+					"objects": []any{
+						map[string]any{"name": "foo", "address": "1.2.3"},
+						map[string]any{"name": "bar", "address": "4.5.6"},
+					},
+				},
+				"newarray": []any{
+					map[string]any{"name": "newelem", "newfield": "newfieldvalue"},
+				},
+			},
+		},
 		"DeleteField": {
 			patch: Patch{
 				Path:    []PathSegment{{Field: "foo"}},
