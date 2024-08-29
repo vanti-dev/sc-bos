@@ -255,7 +255,11 @@ func splitMap(m map[string]any, tree blockTree) (map[string]any, []blockValue) {
 	if len(tree) == 0 {
 		return m, nil
 	}
-	m = maps.Clone(m)
+	if m == nil {
+		m = make(map[string]any)
+	} else {
+		m = maps.Clone(m)
+	}
 
 	var pages []blockValue
 	for k, v := range m {

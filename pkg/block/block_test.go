@@ -437,6 +437,41 @@ func TestDiff(t *testing.T) {
 				},
 			},
 		},
+		// regression test for panic("cannot mark fields in nil map")
+		"ArraySplitAddWithBlock": {
+			a: map[string]any{
+				"array": []any{
+					map[string]any{"name": "entry1", "foo": "foo1"},
+				},
+			},
+			b: map[string]any{
+				"array": []any{
+					map[string]any{"name": "entry1", "foo": "foo1"},
+					map[string]any{"name": "entry2", "foo": "foo2"},
+				},
+			},
+			schema: []Block{
+				{
+					Path: []string{"array"},
+					Key:  "name",
+					Blocks: []Block{
+						{
+							Path: []string{"foo"},
+						},
+					},
+				},
+			},
+			expect: []Patch{
+				{
+					Path:  Path{{Field: "array"}, {ArrayKey: "name", ArrayElem: "entry2"}},
+					Value: map[string]any{"name": "entry2", "foo": Ignore{}},
+				},
+				{
+					Path:  Path{{Field: "array"}, {ArrayKey: "name", ArrayElem: "entry2"}, {Field: "foo"}},
+					Value: "foo2",
+				},
+			},
+		},
 		"ArraySplitByKey": {
 			a: map[string]any{
 				"drivers": []any{
