@@ -464,11 +464,6 @@ func equalKeys(a, b map[string]any) bool {
 			return false
 		}
 	}
-	for k := range b {
-		if _, ok := a[k]; !ok {
-			return false
-		}
-	}
 	return true
 }
 
@@ -676,7 +671,7 @@ func (p *Patch) UnmarshalJSON(data []byte) error {
 type Ignore struct{}
 
 func (i *Ignore) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]string{"$block": "ignore"})
+	return json.Marshal(ignoreSentinal)
 }
 
 var ignoreSentinal = map[string]any{"$block": "ignore"}
