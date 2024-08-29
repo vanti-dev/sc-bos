@@ -48,7 +48,7 @@
       </v-card-title>
       <v-card-text class="d-flex flex-row justify-center align-center mb-n1 mt-4">
         <!-- Display chips and status alerts -->
-        <v-chip class="bg-neutral-lighten-1" size="small">UI</v-chip>
+        <v-chip color="neutral-lighten-1" variant="flat" size="small">UI</v-chip>
         <template v-for="(chip) in statusPopupSetup" :key="chip.id">
           <v-divider class="mx-2" style="width: 10px; max-width: 10px;"/>
           <status-alert

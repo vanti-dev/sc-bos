@@ -11,8 +11,6 @@
             v-show="!hiddenOnMap"
             v-model="search"
             append-inner-icon="mdi-magnify"
-            class="bg-neutral"
-            density="compact"
             variant="filled"
             hide-details
             label="Search devices"/>
