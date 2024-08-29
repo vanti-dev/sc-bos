@@ -9,6 +9,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/app/http"
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
+	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/util/netutil"
@@ -72,6 +73,28 @@ type Config struct {
 	AutoFactories   map[string]auto.Factory   `json:"-"` // keyed by automation type
 	SystemFactories map[string]system.Factory `json:"-"` // keyed by system type
 	ZoneFactories   map[string]zone.Factory   `json:"-"` // keyed by zone type
+}
+
+func (c *Config) DriverConfigBlocks() map[string][]block.Block {
+	return extractConfigBlocks(c.DriverFactories)
+}
+
+func (c *Config) AutoConfigBlocks() map[string][]block.Block {
+	return extractConfigBlocks(c.AutoFactories)
+}
+
+func (c *Config) ZoneConfigBlocks() map[string][]block.Block {
+	return extractConfigBlocks(c.ZoneFactories)
+}
+
+func extractConfigBlocks[Factory any](factories map[string]Factory) map[string][]block.Block {
+	blocks := make(map[string][]block.Block)
+	for name, factory := range factories {
+		if source, ok := any(factory).(BlockSource); ok {
+			blocks[name] = source.ConfigBlocks()
+		}
+	}
+	return blocks
 }
 
 // Certs encapsulates different settings used for loading and present certificates to clients and servers.
@@ -148,4 +171,8 @@ func (c *Certs) FillDefaults() *Certs {
 	or(&c.HTTPKeyFile, "https.key.pem")
 	or(&c.HTTPCertFile, "https.cert.pem")
 	return c
+}
+
+type BlockSource interface {
+	ConfigBlocks() []block.Block
 }
