@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" max-width="512">
     <v-card class="pa-2">
-      <v-card-title class="text-h4 text-error text--lighten px-4">{{ title }}</v-card-title>
+      <v-card-title class="text-h4 text-error-lighten-1 px-4">{{ title }}</v-card-title>
       <v-card-text class="px-4">
         <div class="pb-4">
           <slot/>
