@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -66,11 +67,20 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		// successfully loaded the config
 		logger.Debug("loaded local config", zap.Strings("paths", config.AppConfig), zap.Strings("includes", localConfig.Includes), zap.Strings("filesLoaded", filesLoaded))
 	}
+	activeConfig, err := appconf.BootConfig(
+		localConfig,
+		appconf.NewDirStore(filepath.Join(config.DataDir, "config")),
+		appconf.Blocks(config.DriverConfigBlocks(), config.AutoConfigBlocks(), config.ZoneConfigBlocks()),
+		logger.Named("config"),
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	// rootNode grants both local (in process) and networked (via grpc.Server) access to controller apis.
 	// If you have a device you want expose via a Smart Core API, rootNode is where you'd do that via Announce.
 	// If you need to know the brightness of another controller device, rootNode.Clients is how you'd do that.
-	cName := localConfig.Name
+	cName := activeConfig.Name
 	if cName == "" {
 		cName = config.Name
 	}
@@ -253,7 +263,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	c := &Controller{
 		SystemConfig:     config,
-		ControllerConfig: *localConfig,
+		ControllerConfig: *activeConfig,
 		Enrollment:       enrollServer,
 		Logger:           logger,
 		Node:             rootNode,
