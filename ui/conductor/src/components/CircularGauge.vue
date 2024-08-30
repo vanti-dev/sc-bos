@@ -1,5 +1,5 @@
 <template>
-  <v-sheet :width="width" :height="heightValue" elevation="0" color="transparent" v-bind="$attrs" class="gauge">
+  <v-sheet :width="width" :height="heightValue" elevation="0" color="transparent" class="gauge">
     <svg
         xmlns="http://www.w3.org/2000/svg"
         xml:space="preserve"
