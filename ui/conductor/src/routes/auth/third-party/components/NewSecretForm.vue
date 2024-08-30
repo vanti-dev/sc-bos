@@ -61,22 +61,17 @@
       </v-form>
       <!-- Display secret details -->
       <v-list v-else class="pb-0" lines="two">
-        <v-list-item class="banner info-banner my-4" variant="tonal" v-if="createSecretTracker.response">
-          <template #prepend>
-            <v-icon>mdi-information</v-icon>
-          </template>
+        <v-list-item
+            class="banner info-banner my-4"
+            variant="tonal"
+            v-if="createSecretTracker.response"
+            prepend-icon="mdi-information">
           Make sure to copy your secret token now. You won't be able to see it again.
         </v-list-item>
-        <v-list-item class="banner error-banner" v-if="createSecretTracker.error">
-          <template #prepend>
-            <v-icon>mdi-alert-circle</v-icon>
-          </template>
+        <v-list-item class="banner error-banner" v-if="createSecretTracker.error" prepend-icon="mdi-alert-circle">
           {{ createSecretTracker.error.name }}: {{ createSecretTracker.error.message }}
         </v-list-item>
-        <v-list-item class="banner secret-banner" v-if="createSecretTracker.response">
-          <template #prepend>
-            <v-icon>mdi-key</v-icon>
-          </template>
+        <v-list-item class="banner secret-banner" v-if="createSecretTracker.response" prepend-icon="mdi-key">
           {{ createdSecret.secret }}
           <template #append>
             <v-list-item-action class="mr-n2">

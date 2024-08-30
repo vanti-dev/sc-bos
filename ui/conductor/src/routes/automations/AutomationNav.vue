@@ -1,9 +1,6 @@
 <template>
   <v-list class="pa-0" density="compact" nav>
-    <v-list-item :disabled="hasNoAccess('/automations/all')" to="/automations/all">
-      <template #prepend>
-        <v-icon>mdi-view-list</v-icon>
-      </template>
+    <v-list-item :disabled="hasNoAccess('/automations/all')" to="/automations/all" prepend-icon="mdi-view-list">
       <v-list-item-title class="text-capitalize">All</v-list-item-title>
     </v-list-item>
     <v-list-item
@@ -11,12 +8,8 @@
         :key="automation.type"
         :to="'/automations/' + encodeURIComponent(automation.type)"
         class="my-2"
-        :disabled="hasNoAccess('/automations/' + automation.type)">
-      <template #prepend>
-        <v-icon>
-          {{ icon[mapIconKey(automation.type)] ?? defaultIcon }}
-        </v-icon>
-      </template>
+        :disabled="hasNoAccess('/automations/' + automation.type)"
+        :prepend-icon="icon[mapIconKey(automation.type)] ?? defaultIcon">
       <v-list-item-title class="text-capitalize text-truncate">
         {{ formatNaming(automation.type) }}
       </v-list-item-title>

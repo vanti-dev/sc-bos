@@ -2,10 +2,7 @@
   <v-list class="pa-0" density="compact" nav>
     <v-list-group>
       <template #activator>
-        <v-list-item>
-          <template #prepend>
-            <v-icon>mdi-group</v-icon>
-          </template>
+        <v-list-item prepend-icon="mdi-group">
           <v-list-item-title class="text-truncate">Zone Editor</v-list-item-title>
         </v-list-item>
       </template>
@@ -14,10 +11,8 @@
           :key="zone"
           :to="'/site/zone/' + zone"
           class="my-2 text-truncate"
-          :disabled="hasNoAccess('/site/zone/' + zone)">
-        <template #prepend>
-          <v-icon>mdi-select-all</v-icon>
-        </template>
+          :disabled="hasNoAccess('/site/zone/' + zone)"
+          prepend-icon="mdi-select-all">
         {{ zone }}
       </v-list-item>
     </v-list-group>

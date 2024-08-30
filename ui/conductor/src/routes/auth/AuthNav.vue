@@ -5,10 +5,8 @@
         :to="item.link"
         :key="key"
         class="my-2"
-        :disabled="hasNoAccess(item.link.path)">
-      <template #prepend>
-        <v-icon>{{ item.icon }}</v-icon>
-      </template>
+        :disabled="hasNoAccess(item.link.path)"
+        :prepend-icon="item.icon">
       <v-list-item-title class="text-truncate">{{ item.title }}</v-list-item-title>
     </v-list-item>
   </v-list>

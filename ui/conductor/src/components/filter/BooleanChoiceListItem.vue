@@ -1,8 +1,5 @@
 <template>
-  <v-list-item @click="_value = !_value">
-    <template #prepend>
-      <v-icon>{{ props.icon }}</v-icon>
-    </template>
+  <v-list-item @click="_value = !_value" :prepend-icon="props.icon">
     <template v-if="choiceText">
       <v-list-item-subtitle class="text-overline mb-n2">{{ props.title }}</v-list-item-subtitle>
       <v-list-item-title class="align-self-auto">{{ choiceText }}</v-list-item-title>
