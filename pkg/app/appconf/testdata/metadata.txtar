@@ -1,3 +1,4 @@
+-- input/app.conf.json --
 {
   "metadata": {
     "location": {
@@ -19,3 +20,20 @@
     ]
   }
 }
+
+-- blocks.json --
+[
+  {
+    "path": ["metadata"],
+    "splits" : [
+      {"path": ["location"]},
+      {"path": ["product"]},
+      {"path": ["membership"]},
+      {"path": ["more"]},
+      {
+        "path": ["traits"],
+        "key": "name"
+      }
+    ]
+  }
+]

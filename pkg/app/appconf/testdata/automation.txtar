@@ -1,3 +1,4 @@
+-- input/app.conf.json --
 {
   "automation": [
     {
@@ -34,3 +35,40 @@
     }
   ]
 }
+
+-- blocks.json --
+[
+  {
+    "path": ["automation"],
+    "key": "name",
+    "typeKey": "type",
+    "blocksByType": {
+      "lights": [
+        {
+          "path": ["unoccupiedOffDelay"]
+        },
+        {
+          "path": ["modes"],
+          "key": "name",
+          "blocks" : [
+            {
+              "path": ["unoccupiedOffDelay"]
+            },
+            {
+              "path": ["onLevelPercent"]
+            },
+            {
+              "path": ["offLevelPercent"]
+            },
+            {
+              "path": ["start"]
+            },
+            {
+              "path": ["end"]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

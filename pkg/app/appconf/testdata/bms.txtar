@@ -1,3 +1,4 @@
+-- input/app.conf.json --
 {
   "drivers": [
     {
@@ -80,3 +81,38 @@
     }
   ]
 }
+
+-- blocks.json --
+[
+  {
+    "path": ["drivers"],
+    "key": "name",
+    "typeKey": "type",
+    "blocksByType" : {
+      "bacnet": [
+        {
+          "path": ["localInterface"]
+        },
+        {
+          "path": ["localPort"]
+        },
+        {
+          "path" : ["devices"],
+          "key" : "name",
+          "blocks": [
+            {"path": ["metadata"]},
+            {"path": ["comm"]},
+            {
+              "path": ["objects"],
+              "key": "name",
+              "blocks": [
+                {"path": ["id"]},
+                {"path": ["title"]}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

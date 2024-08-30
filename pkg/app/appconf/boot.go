@@ -84,7 +84,7 @@ func BootConfig(newLocal *Config, store Store, schema []block.Block, logger *zap
 	}
 
 	oldActive, err := store.GetActiveConfig()
-	if err != nil {
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return nil, err
 	}
 	if oldActive == nil {
@@ -119,14 +119,14 @@ func BootConfig(newLocal *Config, store Store, schema []block.Block, logger *zap
 	return newActive, nil
 }
 
-func writeJSONAtomic(dir, filename string, data any) error {
+func writeFileAtomic(dir, filename string, data []byte) (err error) {
 	tmpFile, err := os.CreateTemp(dir, filename)
 	if err != nil {
 		return err
 	}
-	defer tmpFile.Close()
-	err = json.NewEncoder(tmpFile).Encode(data)
+	_, err = tmpFile.Write(data)
 	if err != nil {
+		_ = tmpFile.Close()
 		return err
 	}
 	err = tmpFile.Close()
@@ -134,6 +134,14 @@ func writeJSONAtomic(dir, filename string, data any) error {
 		return err
 	}
 	return os.Rename(tmpFile.Name(), filepath.Join(dir, filename))
+}
+
+func writeJSONAtomic(dir, filename string, data any) error {
+	encoded, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return err
+	}
+	return writeAtomic(dir, filename, encoded)
 }
 
 // Blocks returns a set of block.Block that represent the structure of a Config object.
