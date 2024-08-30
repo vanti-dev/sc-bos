@@ -17,13 +17,13 @@ export class AccessAttempt extends jspb.Message {
   hasActor(): boolean;
   clearActor(): AccessAttempt;
 
-  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setTime(value?: google_protobuf_timestamp_pb.Timestamp): AccessAttempt;
-  hasTime(): boolean;
-  clearTime(): AccessAttempt;
+  getLastSuccessfulAccessTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setLastSuccessfulAccessTime(value?: google_protobuf_timestamp_pb.Timestamp): AccessAttempt;
+  hasLastSuccessfulAccessTime(): boolean;
+  clearLastSuccessfulAccessTime(): AccessAttempt;
 
-  getZone(): string;
-  setZone(value: string): AccessAttempt;
+  getLastSuccessfulAccessZone(): string;
+  setLastSuccessfulAccessZone(value: string): AccessAttempt;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): AccessAttempt.AsObject;
@@ -38,8 +38,8 @@ export namespace AccessAttempt {
     grant: AccessAttempt.Grant,
     reason: string,
     actor?: AccessAttempt.Actor.AsObject,
-    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    zone: string,
+    lastSuccessfulAccessTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    lastSuccessfulAccessZone: string,
   }
 
   export class Actor extends jspb.Message {

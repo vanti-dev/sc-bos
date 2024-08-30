@@ -80,11 +80,11 @@ message AccessAttempt {
   // Optional.
   Actor actor = 3;
 
-  // The time the access attempt was made.
-  google.protobuf.Timestamp time = 4;
+  // The time the last successful access attempt was made.
+  google.protobuf.Timestamp last_successful_access_time = 4;
 
-  // The name of the zone that was being accessed.
-  string zone = 5;
+  // The name of the zone that was last successfully accessed.
+  string last_successful_access_zone = 5;
 }
 
 message GetLastAccessAttemptRequest {
