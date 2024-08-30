@@ -18,14 +18,11 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/zone"
 )
 
-// for testing
+// replaceable for testing
 var (
-	readFile  = os.ReadFile
-	writeFile = os.WriteFile
-	glob      = filepath.Glob
-	readDir   = os.ReadDir
-	isDir     = isDirectory
-	mkdirAll  = os.MkdirAll
+	readFile    = os.ReadFile
+	writeAtomic = writeFileAtomic
+	glob        = filepath.Glob
 )
 
 type Config struct {

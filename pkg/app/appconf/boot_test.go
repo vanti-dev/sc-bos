@@ -43,6 +43,7 @@ var sampleBlocks = Blocks(
 func TestBootConfig(t *testing.T) {
 	store := &memStore{}
 
+	// boot with an empty store - this should just return the local config
 	conf, err := BootConfig(&Config{
 		Name: "test",
 		Drivers: []driver.RawConfig{
