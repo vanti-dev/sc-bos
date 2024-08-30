@@ -75,14 +75,23 @@ type Config struct {
 	ZoneFactories   map[string]zone.Factory   `json:"-"` // keyed by zone type
 }
 
+// DriverConfigBlocks returns a map of driver type to a block list that describes the config for that driver.
+// It scans DriverFactories for factories that implement the BlockSource interface.
+// Drivers that do not implement BlockSource are not included in the output.
 func (c *Config) DriverConfigBlocks() map[string][]block.Block {
 	return extractConfigBlocks(c.DriverFactories)
 }
 
+// AutoConfigBlocks returns a map of automation type to a block list that describes the config for that automation.
+// It scans AutoFactories for factories that implement the BlockSource interface.
+// Automations that do not implement BlockSource are not included in the output.
 func (c *Config) AutoConfigBlocks() map[string][]block.Block {
 	return extractConfigBlocks(c.AutoFactories)
 }
 
+// ZoneConfigBlocks returns a map of zone type to a block list that describes the config for that zone.
+// It scans ZoneFactories for factories that implement the BlockSource interface.
+// Zone types that do not implement BlockSource are not included in the output.
 func (c *Config) ZoneConfigBlocks() map[string][]block.Block {
 	return extractConfigBlocks(c.ZoneFactories)
 }
@@ -173,6 +182,9 @@ func (c *Certs) FillDefaults() *Certs {
 	return c
 }
 
+// BlockSource is an interface that can be implemented by a factory to provide a list of blocks that describe the config
+// for that driver/automation/zone type.
+// This is used to produce granular diffs for config changes.
 type BlockSource interface {
 	ConfigBlocks() []block.Block
 }

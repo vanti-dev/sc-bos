@@ -12,13 +12,29 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/block"
 )
 
+// Store is the set of operations required for a config store, as used by BootConfig.
+//
+// DirStore is the canonical implementation of this interface.
 type Store interface {
+	// SwapLocalConfig loads the local config from the store, returning it, and then replaces it with the provided config.
+	// If the store does not contain local config, returns a nil old config and no error.
+	// If err is not nil, the state of the local config cache is undefined.
 	SwapLocalConfig(new *Config) (old *Config, err error)
+	// GetActiveConfig returns the active config from the store, or nil if there is no active config.
 	GetActiveConfig() (*Config, error)
+	// SetActiveConfig replaces the active config in the store with the provided config.
+	// c must not be nil.
 	SetActiveConfig(c *Config) error
+	// SavePatches saves a set of patches to the patch log, returning a unique name for the log entry.
 	SavePatches(patches []block.Patch) (ref string, err error)
 }
 
+const (
+	localConfigFilename  = "local.json"
+	activeConfigFilename = "active.json"
+)
+
+// DirStore is a Store that stores config files in a directory on disk.
 type DirStore struct {
 	dir string
 }
@@ -27,11 +43,8 @@ func NewDirStore(dir string) *DirStore {
 	return &DirStore{dir: dir}
 }
 
-// SwapLocalConfig loads the contents of the local config cache, returning it, and then replaces it with the provided config.
-// If the local config cache is empty, returns a nil old config and no error.
-// If err is not nil, the state of the local config cache is undefined.
 func (s *DirStore) SwapLocalConfig(new *Config) (old *Config, err error) {
-	localPath := filepath.Join(s.dir, "local.json")
+	localPath := filepath.Join(s.dir, localConfigFilename)
 	// if the file simply doesn't exist, that's fine, we will continue with old == nil
 	old, err = configFromFile(localPath)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -41,19 +54,23 @@ func (s *DirStore) SwapLocalConfig(new *Config) (old *Config, err error) {
 	if err != nil {
 		return nil, err
 	}
-	err = writeJSONAtomic(s.dir, "local.json", new)
+	err = writeJSONAtomic(s.dir, localConfigFilename, new)
 	return old, err
 }
 
 func (s *DirStore) GetActiveConfig() (*Config, error) {
-	return configFromFile(filepath.Join(s.dir, "active.json"))
+	conf, err := configFromFile(filepath.Join(s.dir, activeConfigFilename))
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	return conf, err
 }
 
 func (s *DirStore) SetActiveConfig(c *Config) error {
 	if err := s.ensureDirExists(); err != nil {
 		return err
 	}
-	return writeJSONAtomic(s.dir, "active.json", c)
+	return writeJSONAtomic(s.dir, activeConfigFilename, c)
 }
 
 func (s *DirStore) SavePatches(patches []block.Patch) (ref string, err error) {
@@ -73,6 +90,14 @@ func (s *DirStore) ensureDirExists() error {
 	return os.MkdirAll(s.dir, 0755)
 }
 
+// BootConfig resolves the active Config for a node.
+// newLocal should be the fully loaded Config from outside the system.
+// The provided newLocal config and resolved active config are stored in the provided Store.
+// The store may be empty:
+//   - If the store has no saved local config, this is treated the same as an empty saved local config.
+//   - If the store has no saved active config, the newLocal config is used verbatim as the active config.
+//
+// schema describes the structure of the Config object, used to produce patches. Blocks can be used to generate an appropriate schema.
 func BootConfig(newLocal *Config, store Store, schema []block.Block, logger *zap.Logger) (*Config, error) {
 	oldLocal, err := store.SwapLocalConfig(newLocal)
 	if err != nil {
@@ -84,7 +109,7 @@ func BootConfig(newLocal *Config, store Store, schema []block.Block, logger *zap
 	}
 
 	oldActive, err := store.GetActiveConfig()
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err != nil {
 		return nil, err
 	}
 	if oldActive == nil {
