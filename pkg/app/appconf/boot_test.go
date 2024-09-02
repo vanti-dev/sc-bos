@@ -157,10 +157,13 @@ type memStore struct {
 	patches [][]block.Patch
 }
 
-func (m *memStore) SwapLocalConfig(new *Config) (old *Config, err error) {
-	old = cloneConfig(m.local)
-	m.local = cloneConfig(new)
-	return old, nil
+func (m *memStore) GetLocalConfig() (*Config, error) {
+	return cloneConfig(m.local), nil
+}
+
+func (m *memStore) SetLocalConfig(c *Config) error {
+	m.local = cloneConfig(c)
+	return nil
 }
 
 func (m *memStore) GetActiveConfig() (*Config, error) {

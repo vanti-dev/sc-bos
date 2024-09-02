@@ -16,10 +16,11 @@ import (
 //
 // DirStore is the canonical implementation of this interface.
 type Store interface {
-	// SwapLocalConfig loads the local config from the store, returning it, and then replaces it with the provided config.
-	// If the store does not contain local config, returns a nil old config and no error.
-	// If err is not nil, the state of the local config cache is undefined.
-	SwapLocalConfig(new *Config) (old *Config, err error)
+	// GetLocalConfig returns the local config from the store, or nil if there is no local config.
+	GetLocalConfig() (*Config, error)
+	// SetLocalConfig replaces the local config in the store with the provided config.
+	// c must not be nil.
+	SetLocalConfig(c *Config) error
 	// GetActiveConfig returns the active config from the store, or nil if there is no active config.
 	GetActiveConfig() (*Config, error)
 	// SetActiveConfig replaces the active config in the store with the provided config.
@@ -43,19 +44,19 @@ func NewDirStore(dir string) *DirStore {
 	return &DirStore{dir: dir}
 }
 
-func (s *DirStore) SwapLocalConfig(new *Config) (old *Config, err error) {
-	localPath := filepath.Join(s.dir, localConfigFilename)
-	// if the file simply doesn't exist, that's fine, we will continue with old == nil
-	old, err = configFromFile(localPath)
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return nil, err
+func (s *DirStore) GetLocalConfig() (*Config, error) {
+	local, err := configFromFile(filepath.Join(s.dir, localConfigFilename))
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
 	}
-	err = s.ensureDirExists()
-	if err != nil {
-		return nil, err
+	return local, err
+}
+
+func (s *DirStore) SetLocalConfig(c *Config) error {
+	if err := s.ensureDirExists(); err != nil {
+		return err
 	}
-	err = writeJSONAtomic(s.dir, localConfigFilename, new)
-	return old, err
+	return writeJSONAtomic(s.dir, localConfigFilename, c)
 }
 
 func (s *DirStore) GetActiveConfig() (*Config, error) {
@@ -99,7 +100,7 @@ func (s *DirStore) ensureDirExists() error {
 //
 // schema describes the structure of the Config object, used to produce patches. Blocks can be used to generate an appropriate schema.
 func BootConfig(newLocal *Config, store Store, schema []block.Block, logger *zap.Logger) (*Config, error) {
-	oldLocal, err := store.SwapLocalConfig(newLocal)
+	oldLocal, err := store.GetLocalConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -112,32 +113,34 @@ func BootConfig(newLocal *Config, store Store, schema []block.Block, logger *zap
 	if err != nil {
 		return nil, err
 	}
+	var newActive *Config
 	if oldActive == nil {
 		// no active config, just use the provided local config
-		err = store.SetActiveConfig(newLocal)
+		newActive = newLocal
+	} else {
+		patches, err := block.Diff(oldLocal, newLocal, schema)
 		if err != nil {
 			return nil, err
 		}
-		return newLocal, nil
-	}
+		if len(patches) > 0 {
+			patchRef, err := store.SavePatches(patches)
+			if err != nil {
+				return nil, err
+			}
+			logger.Info("applied config patch", zap.String("ref", patchRef))
+		}
 
-	patches, err := block.Diff(oldLocal, newLocal, schema)
-	if err != nil {
-		return nil, err
-	}
-	if len(patches) > 0 {
-		patchRef, err := store.SavePatches(patches)
+		newActive, err = block.ApplyPatches(oldActive, patches)
 		if err != nil {
 			return nil, err
 		}
-		logger.Info("applied config patch", zap.String("ref", patchRef))
 	}
 
-	newActive, err := block.ApplyPatches(oldActive, patches)
-	if err != nil {
-		return nil, err
-	}
 	err = store.SetActiveConfig(newActive)
+	if err != nil {
+		return nil, err
+	}
+	err = store.SetLocalConfig(newLocal)
 	if err != nil {
 		return nil, err
 	}
