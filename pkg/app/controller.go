@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
+	"github.com/vanti-dev/sc-bos/internal/confmerge"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
@@ -67,9 +68,9 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		// successfully loaded the config
 		logger.Debug("loaded local config", zap.Strings("paths", config.AppConfig), zap.Strings("includes", localConfig.Includes), zap.Strings("filesLoaded", filesLoaded))
 	}
-	activeConfig, err := appconf.BootConfig(
+	activeConfig, err := confmerge.Merge(
 		localConfig,
-		appconf.NewDirStore(filepath.Join(config.DataDir, "config")),
+		confmerge.NewDirStore(filepath.Join(config.DataDir, "config")),
 		appconf.Blocks(config.DriverConfigBlocks(), config.AutoConfigBlocks(), config.ZoneConfigBlocks()),
 		logger.Named("config"),
 	)
