@@ -5,6 +5,8 @@ import {builtinWidgets} from '@/widgets/pallet.js';
 import {computed, markRaw, toValue} from 'vue';
 
 /**
+ * Returns a modern page config object based on the legacy `ops.overview.children` json.
+ *
  * @param {MaybeRefOrGetter<string|string[]>} path
  * @return {{
  *   layout: import('vue').Component,
