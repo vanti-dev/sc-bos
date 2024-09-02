@@ -13,6 +13,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/app/files"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
+	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/util/slices"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
@@ -20,9 +21,8 @@ import (
 
 // replaceable for testing
 var (
-	readFile    = os.ReadFile
-	writeAtomic = writeFileAtomic
-	glob        = filepath.Glob
+	readFile = os.ReadFile
+	glob     = filepath.Glob
 )
 
 type Config struct {
@@ -179,4 +179,41 @@ func configFromFile(path string) (*Config, error) {
 	}
 	conf.FilePath = path
 	return &conf, nil
+}
+
+// Blocks returns a set of block.Block that represent the structure of a Config object.
+// The parameters describe blocks for driver, automations and zones, keyed by type.
+func Blocks(driverBlocks, autoBlocks, zoneBlocks map[string][]block.Block) []block.Block {
+	defaultBlocks := []block.Block{
+		{
+			Path: []string{"disabled"},
+		},
+	}
+
+	return []block.Block{
+		{
+			Path:         []string{"drivers"},
+			Key:          "name",
+			TypeKey:      "type",
+			BlocksByType: driverBlocks,
+			Blocks:       defaultBlocks,
+		},
+		{
+			Path:         []string{"automation"},
+			Key:          "name",
+			TypeKey:      "type",
+			BlocksByType: autoBlocks,
+			Blocks:       defaultBlocks,
+		},
+		{
+			Path:         []string{"zones"},
+			Key:          "name",
+			TypeKey:      "type",
+			BlocksByType: zoneBlocks,
+			Blocks:       defaultBlocks,
+		},
+		{
+			Path: []string{"metadata"},
+		},
+	}
 }
