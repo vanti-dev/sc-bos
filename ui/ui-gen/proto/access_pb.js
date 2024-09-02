@@ -194,9 +194,7 @@ proto.smartcore.bos.AccessAttempt.toObject = function(includeInstance, msg) {
   var f, obj = {
 grant: jspb.Message.getFieldWithDefault(msg, 1, 0),
 reason: jspb.Message.getFieldWithDefault(msg, 2, ""),
-actor: (f = msg.getActor()) && proto.smartcore.bos.AccessAttempt.Actor.toObject(includeInstance, f),
-lastSuccessfulAccessTime: (f = msg.getLastSuccessfulAccessTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-lastSuccessfulAccessZone: jspb.Message.getFieldWithDefault(msg, 5, "")
+actor: (f = msg.getActor()) && proto.smartcore.bos.AccessAttempt.Actor.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -245,15 +243,6 @@ proto.smartcore.bos.AccessAttempt.deserializeBinaryFromReader = function(msg, re
       var value = new proto.smartcore.bos.AccessAttempt.Actor;
       reader.readMessage(value,proto.smartcore.bos.AccessAttempt.Actor.deserializeBinaryFromReader);
       msg.setActor(value);
-      break;
-    case 4:
-      var value = new google_protobuf_timestamp_pb.Timestamp;
-      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-      msg.setLastSuccessfulAccessTime(value);
-      break;
-    case 5:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setLastSuccessfulAccessZone(value);
       break;
     default:
       reader.skipField();
@@ -306,21 +295,6 @@ proto.smartcore.bos.AccessAttempt.serializeBinaryToWriter = function(message, wr
       proto.smartcore.bos.AccessAttempt.Actor.serializeBinaryToWriter
     );
   }
-  f = message.getLastSuccessfulAccessTime();
-  if (f != null) {
-    writer.writeMessage(
-      4,
-      f,
-      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
-    );
-  }
-  f = message.getLastSuccessfulAccessZone();
-  if (f.length > 0) {
-    writer.writeString(
-      5,
-      f
-    );
-  }
 };
 
 
@@ -371,6 +345,8 @@ proto.smartcore.bos.AccessAttempt.Actor.prototype.toObject = function(opt_includ
 proto.smartcore.bos.AccessAttempt.Actor.toObject = function(includeInstance, msg) {
   var f, obj = {
 name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+lastGrantTime: (f = msg.getLastGrantTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+lastGrantZone: jspb.Message.getFieldWithDefault(msg, 3, ""),
 title: jspb.Message.getFieldWithDefault(msg, 10, ""),
 displayName: jspb.Message.getFieldWithDefault(msg, 11, ""),
 picture: (f = msg.getPicture()) && types_image_pb.Image.toObject(includeInstance, f),
@@ -417,6 +393,15 @@ proto.smartcore.bos.AccessAttempt.Actor.deserializeBinaryFromReader = function(m
     case 1:
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
+      break;
+    case 2:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setLastGrantTime(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setLastGrantZone(value);
       break;
     case 10:
       var value = /** @type {string} */ (reader.readString());
@@ -487,6 +472,21 @@ proto.smartcore.bos.AccessAttempt.Actor.serializeBinaryToWriter = function(messa
       f
     );
   }
+  f = message.getLastGrantTime();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getLastGrantZone();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
   f = message.getTitle();
   if (f.length > 0) {
     writer.writeString(
@@ -549,6 +549,61 @@ proto.smartcore.bos.AccessAttempt.Actor.prototype.getName = function() {
  */
 proto.smartcore.bos.AccessAttempt.Actor.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional google.protobuf.Timestamp last_grant_time = 2;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.AccessAttempt.Actor.prototype.getLastGrantTime = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 2));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.AccessAttempt.Actor} returns this
+*/
+proto.smartcore.bos.AccessAttempt.Actor.prototype.setLastGrantTime = function(value) {
+  return jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.AccessAttempt.Actor} returns this
+ */
+proto.smartcore.bos.AccessAttempt.Actor.prototype.clearLastGrantTime = function() {
+  return this.setLastGrantTime(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.AccessAttempt.Actor.prototype.hasLastGrantTime = function() {
+  return jspb.Message.getField(this, 2) != null;
+};
+
+
+/**
+ * optional string last_grant_zone = 3;
+ * @return {string}
+ */
+proto.smartcore.bos.AccessAttempt.Actor.prototype.getLastGrantZone = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.AccessAttempt.Actor} returns this
+ */
+proto.smartcore.bos.AccessAttempt.Actor.prototype.setLastGrantZone = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -777,61 +832,6 @@ proto.smartcore.bos.AccessAttempt.prototype.clearActor = function() {
  */
 proto.smartcore.bos.AccessAttempt.prototype.hasActor = function() {
   return jspb.Message.getField(this, 3) != null;
-};
-
-
-/**
- * optional google.protobuf.Timestamp last_successful_access_time = 4;
- * @return {?proto.google.protobuf.Timestamp}
- */
-proto.smartcore.bos.AccessAttempt.prototype.getLastSuccessfulAccessTime = function() {
-  return /** @type{?proto.google.protobuf.Timestamp} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 4));
-};
-
-
-/**
- * @param {?proto.google.protobuf.Timestamp|undefined} value
- * @return {!proto.smartcore.bos.AccessAttempt} returns this
-*/
-proto.smartcore.bos.AccessAttempt.prototype.setLastSuccessfulAccessTime = function(value) {
-  return jspb.Message.setWrapperField(this, 4, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
- * @return {!proto.smartcore.bos.AccessAttempt} returns this
- */
-proto.smartcore.bos.AccessAttempt.prototype.clearLastSuccessfulAccessTime = function() {
-  return this.setLastSuccessfulAccessTime(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.smartcore.bos.AccessAttempt.prototype.hasLastSuccessfulAccessTime = function() {
-  return jspb.Message.getField(this, 4) != null;
-};
-
-
-/**
- * optional string last_successful_access_zone = 5;
- * @return {string}
- */
-proto.smartcore.bos.AccessAttempt.prototype.getLastSuccessfulAccessZone = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.smartcore.bos.AccessAttempt} returns this
- */
-proto.smartcore.bos.AccessAttempt.prototype.setLastSuccessfulAccessZone = function(value) {
-  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 
