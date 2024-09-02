@@ -45,6 +45,14 @@ import {useTenantStore} from '@/routes/auth/third-party/tenantStore';
 import {useSidebarStore} from '@/stores/sidebar';
 import {reactive} from 'vue';
 
+defineProps({
+  // This is passed as part of the routing, but we aren't currently using it.
+  accountId: {
+    type: String,
+    default: ''
+  }
+});
+
 const sidebar = useSidebarStore();
 const tenantStore = useTenantStore();
 
