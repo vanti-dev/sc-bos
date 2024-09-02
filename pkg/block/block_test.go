@@ -811,6 +811,17 @@ func TestApplyPatch(t *testing.T) {
 			if diff := cmp.Diff(tc.expect, dst); diff != "" {
 				t.Errorf("unexpected result (-want +got):\n%s", diff)
 			}
+
+			// test idempotence by applying the same patch again
+			if tc.err == nil {
+				dst, err = ApplyPatches(dst, []Patch{tc.patch})
+				if err != nil {
+					t.Errorf("second patch failed: %v", err)
+				}
+				if diff := cmp.Diff(tc.expect, dst); diff != "" {
+					t.Errorf("unexpected result after second patch (-want +got):\n%s", diff)
+				}
+			}
 		})
 	}
 }
