@@ -27,6 +27,8 @@ export default function usePageConfig(path) {
     return p.map(s => encodeURIComponent(s));
   });
 
+  // The config object (in ops.paths) described by path.
+  // If ops.pages is not defined - i.e. legacy config is being used - this will also be undefined.
   const pageConfig = computed(() => {
     const pages = uiConfig.getOrDefault('ops.pages');
     if (!pages) {
@@ -37,6 +39,7 @@ export default function usePageConfig(path) {
     }
     return findActiveItem(pages, pathSegments.value);
   });
+  // The same as pageConfig but with special values hydrated to their component references.
   const pageConfigNorm = computed(() => {
     const cfg = pageConfig.value;
     if (!cfg) return cfg;
@@ -73,6 +76,7 @@ export default function usePageConfig(path) {
   const isLegacyOverview = computed(() => !pageConfig.value && pathSegments.value.length === 1);
   const isLegacySubPage = computed(() => !pageConfig.value && pathSegments.value.length > 1);
 
+  // Page config taken from either the newer ops.pages or legacy ops.overview as needed.
   const configObj = computed(() => {
     if (isLegacyOverview.value) {
       return reactive(useBuildingConfig());
@@ -87,12 +91,22 @@ export default function usePageConfig(path) {
     return pageConfigNorm.value;
   });
 
+  // We filter out special properties of the config when binding it to elements.
+  // Without this we'd be trying to bind props like `children` which is a DOM property.
+  const filterProps = {'layout': true, 'children': true};
+  const filteredConfig = computed(() => Object.entries(configObj.value)
+      .reduce((acc, [k, v]) => {
+        if (filterProps.hasOwnProperty(k)) return acc;
+        acc[k] = v;
+        return acc;
+      }, {}));
+
   return {
     pageConfig,
     pageConfigNorm,
     isLegacyOverview,
     isLegacySubPage,
     layout: computed(() => configObj.value.layout),
-    config: configObj
+    config: filteredConfig
   };
 }
