@@ -69,8 +69,8 @@
             </v-list-item>
           </v-list>
           <div>
-            <v-chip v-if="isProxy(node.name)" color="accent" size="small" variant="flat">gateway</v-chip>
-            <v-chip v-if="isHub(node.name) && !isProxy(node.name)" color="primary" size="small" variant="flat">
+            <v-chip v-if="isGateway(node.name)" color="accent" size="small" variant="flat">gateway</v-chip>
+            <v-chip v-if="isHub(node.name) && !isGateway(node.name)" color="primary" size="small" variant="flat">
               hub
             </v-chip>
           </div>
@@ -96,7 +96,7 @@ const showModal = ref(false);
 const {
   nodeDetails,
   nodesList,
-  isProxy,
+  isGateway,
   isHub,
   allowForget
 } = useSystemComponents();

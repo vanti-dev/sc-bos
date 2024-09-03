@@ -1,6 +1,6 @@
 import {newActionTracker} from '@/api/resource';
 import {getServiceMetadata, listServices, pullServices} from '@/api/ui/services';
-import {serviceName} from '@/util/proxy';
+import {serviceName} from '@/util/gateway';
 import {Collection} from '@/util/query';
 import {defineStore} from 'pinia';
 import {reactive, ref} from 'vue';

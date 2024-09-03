@@ -8,7 +8,7 @@
       "system": {"cohortAccounts": true}
     },
     "hub": {"storage": {"type": "proxy"}},
-    "proxy": {},
+    "gateway": {},
     "tenants": {"storage": {"type": "proxy"}}
   }
 }

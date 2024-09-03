@@ -11,3 +11,13 @@ export function serviceName(controllerName, serviceName) {
     return controllerName + '/' + serviceName;
   }
 }
+
+/**
+ * Decides if a system ID is for the gateway system.
+ *
+ * @param {string} id
+ * @return {boolean}
+ */
+export function isGatewayId(id) {
+  return id === 'gateway' || id === 'proxy';
+}

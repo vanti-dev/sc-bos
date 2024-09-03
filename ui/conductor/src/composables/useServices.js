@@ -4,7 +4,7 @@ import {useErrorStore} from '@/components/ui-error/error';
 import {useHubStore} from '@/stores/hub';
 import {useSidebarStore} from '@/stores/sidebar';
 import {useServicesStore} from '@/stores/services';
-import {serviceName} from '@/util/proxy';
+import {serviceName} from '@/util/gateway';
 import {computed, onMounted, onUnmounted, reactive, ref, toValue, watch, watchEffect} from 'vue';
 
 /**

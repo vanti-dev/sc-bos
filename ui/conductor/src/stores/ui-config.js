@@ -23,7 +23,9 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     const url = configUrl.value;
     try {
       const res = await fetch(url);
-      _config.value = await res.json();
+      const json = await res.json();
+      migrateConfig(json.config);
+      _config.value = json;
     } catch (e) {
       console.warn('Failed to load config from server, using default config', e);
       _config.value = _defaultConfig;
@@ -188,6 +190,20 @@ export function useAuth(config) {
 }
 
 /**
+ * Converts legacy config properties to their current equivalents.
+ *
+ * @param {Object} config The config to migrate - modified in place
+ */
+function migrateConfig(config) {
+  // config.gateway used to be called config.proxy
+  if (Object.hasOwn(config, 'proxy') && !Object.hasOwn(config, 'gateway')) {
+    console.warn('ui config property "proxy" is deprecated, please use "gateway" instead');
+    config.gateway = config.proxy;
+    delete config.proxy;
+  }
+}
+
+/**
  * The default config for the UI - this should mostly be targeted as though it was running on an Area Controller, as
  * this will have the most standardised feature set.
  *
@@ -245,6 +261,6 @@ const _defaultConfig = {
       }
     },
     'hub': false, // Specifies if we're talking to a hub or an area controller
-    'proxy': false // Specifies if we're using querying via a proxy (e.g. EdgeGateway) or not
+    'gateway': false // Specifies if we're using querying via a gateway (e.g. EdgeGateway) or not
   }
 };

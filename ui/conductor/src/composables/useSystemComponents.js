@@ -4,6 +4,7 @@ import {ServiceNames} from '@/api/ui/services';
 import {useHubStore} from '@/stores/hub';
 import {useServicesStore} from '@/stores/services';
 import {parseCertificate} from '@/util/certificates';
+import {isGatewayId} from '@/util/gateway';
 import {computed, onUnmounted, reactive, ref, watchEffect} from 'vue';
 
 /**
@@ -225,14 +226,14 @@ export default function() {
   });
 
   /**
-   * Check if the node has a proxy system service configured
+   * Check if the node has a gateway system service configured
    *
    * @param {string} nodeName
    * @return {boolean}
    */
-  function isProxy(nodeName) {
+  function isGateway(nodeName) {
     return nodeDetails[nodeName]?.systems.metadataTracker?.response?.typeCountsMap?.some(
-        ([name, count]) => name === 'proxy' && count > 0
+        ([name, count]) => isGatewayId(name) && count > 0
     );
   }
 
@@ -278,7 +279,7 @@ export default function() {
     nodeDetails,
     nodesList,
     processNodes,
-    isProxy,
+    isGateway,
     isHub,
     allowForget
 

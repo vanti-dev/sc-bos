@@ -21,7 +21,7 @@ export const useAlertMetadata = defineStore('alertMetadata', () => {
   function init() {
     // wait for config to load
     return uiConfig.configPromise.then((config) => {
-      if (config.proxy) {
+      if (config.gateway) {
         // wait for hub info to load
         hubStore.hubPromise
             .then((hub) => {
