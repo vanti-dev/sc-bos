@@ -316,7 +316,7 @@ func (s *System) announceProxyNode(ctx context.Context, hubNode *gen.HubNode, no
 	})
 }
 
-// isGateway discovers if nodeConn is a proxy node, a node that has an enabled proxy system.
+// isGateway discovers if nodeConn is a gateway node, a node that has an enabled gateway system.
 func (s *System) isGateway(ctx context.Context, nodeConn *grpc.ClientConn) (bool, error) {
 	client := gen.NewServicesApiClient(nodeConn)
 	req := &gen.ListServicesRequest{Name: "systems"}
@@ -326,7 +326,7 @@ func (s *System) isGateway(ctx context.Context, nodeConn *grpc.ClientConn) (bool
 			return false, err
 		}
 		for _, sys := range systems.Services {
-			if sys.Type == Name {
+			if sys.Type == Name || sys.Type == LegacyName {
 				return true, nil
 			}
 		}
