@@ -4,13 +4,13 @@ import {Timestamp} from "google-protobuf/google/protobuf/timestamp_pb";
 import {ChangeType} from "@smart-core-os/sc-api-grpc-web/types/change_pb";
 
 type Opt<T> = T | null | undefined;
-type Msg<T> = Message | { toObject(includeInstance?: boolean): T };
+type Msg<T> = Message & { toObject(includeInstance?: boolean): T };
 
 export function closeResource(resource: RemoteResource<any> | null);
 
 export function setValue<V>(resource: ResourceValue<V, any>, val: V);
 
-export function setCollection<V>(resource: ResourceCollection<V, any>, change: CollectionChange<V, any>, idFunc: (T) => string)
+export function setCollection<V, M extends Msg<V>>(resource: ResourceCollection<V, M>, change: CollectionChange<V, M>, idFunc: (T) => string)
 
 export function setError(resource: RemoteResource<any>, err: Error);
 
