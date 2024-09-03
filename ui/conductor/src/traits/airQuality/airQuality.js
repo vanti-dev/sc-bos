@@ -39,7 +39,7 @@ export function usePullAirQuality(query, paused = false) {
       () => toValue(paused),
       (req) => {
         pullAirQualitySensor(req, resource);
-        return resource;
+        return () => closeResource(resource);
       }
   );
 

@@ -40,7 +40,7 @@ export function usePullMetadata(query, paused = false) {
       () => toValue(paused),
       (req) => {
         pullMetadata(req, resource);
-        return resource;
+        return () => closeResource(resource);
       }
   );
 

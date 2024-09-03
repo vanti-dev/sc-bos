@@ -49,7 +49,7 @@ export function usePullAirTemperature(query, paused = false) {
       () => toValue(paused),
       (req) => {
         pullAirTemperature(req, resource);
-        return resource;
+        return () => closeResource(resource);
       }
   );
 

@@ -39,7 +39,7 @@ export function usePullOccupancy(query, paused = false) {
       () => toValue(paused),
       (req) => {
         pullOccupancy(req, resource);
-        return resource;
+        return () => closeResource(resource);
       }
   );
 
@@ -133,7 +133,7 @@ export default function(query, paused) {
       () => toValue(paused),
       (req) => {
         pullOccupancy(req, occupancyValue);
-        return occupancyValue;
+        return () => closeResource(occupancyValue);
       }
   );
 

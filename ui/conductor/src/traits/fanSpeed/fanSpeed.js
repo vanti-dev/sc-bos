@@ -16,7 +16,7 @@ export function usePullFanSpeed(query, paused = false) {
   const queryObject = computed(() => toQueryObject(query));
   watchResource(() => toValue(queryObject), () => toValue(paused), req => {
     pullFanSpeed(req, resource);
-    return resource;
+    return () => closeResource(resource);
   });
   return toRefs(resource);
 }

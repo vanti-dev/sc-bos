@@ -39,7 +39,7 @@ export function usePullBrightness(query, paused = false) {
       () => toValue(paused),
       (req) => {
         pullBrightness(req, resource);
-        return resource;
+        return () => closeResource(resource);
       }
   );
 
@@ -65,7 +65,7 @@ export function useDescribeBrightness(query, pollInterval = 0) {
       (req) => {
         describeBrightness(req, tracker)
             .catch(() => {}); // errors are handled by the tracker
-        return tracker;
+        return () => closeResource(tracker);
       }
   );
 

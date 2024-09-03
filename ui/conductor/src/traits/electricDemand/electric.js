@@ -38,7 +38,7 @@ export function usePullElectricDemand(query, paused = false) {
       () => toValue(paused),
       (req) => {
         pullDemand(req, resource);
-        return resource;
+        return () => closeResource(resource);
       }
   );
 

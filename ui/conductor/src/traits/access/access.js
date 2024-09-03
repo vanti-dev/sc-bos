@@ -34,7 +34,7 @@ export function usePullAccessAttempts(query, paused = false) {
       () => toValue(paused),
       (req) => {
         pullAccessAttempts(req, resource);
-        return resource;
+        return () => closeResource(resource);
       }
   );
 

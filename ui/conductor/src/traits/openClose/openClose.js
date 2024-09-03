@@ -36,7 +36,7 @@ export function usePullOpenClosePositions(query, paused = false) {
       () => toValue(paused),
       (req) => {
         pullOpenClosePositions(req, openCloseValue);
-        return openCloseValue;
+        return () => closeResource(openCloseValue);
       }
   );
 

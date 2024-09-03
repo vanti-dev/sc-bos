@@ -32,7 +32,7 @@ export function usePullCurrentStatus(query, paused = false) {
       () => toValue(paused),
       (req) => {
         pullCurrentStatus(req, statusValue);
-        return statusValue;
+        return () => closeResource(statusValue);
       }
   );
 

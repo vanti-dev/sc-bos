@@ -41,7 +41,7 @@ export function usePullEnterLeaveEvents(query, paused = false) {
       () => toValue(paused),
       (req) => {
         pullEnterLeaveEvents(req, resource);
-        return resource;
+        return () => closeResource(resource);
       }
   );
 

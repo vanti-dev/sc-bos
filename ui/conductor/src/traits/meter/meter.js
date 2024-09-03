@@ -35,7 +35,7 @@ export function usePullMeterReading(query, paused = false) {
       () => toValue(paused),
       (req) => {
         pullMeterReading(req, resource);
-        return resource;
+        return () => closeResource(resource);
       }
   );
 
@@ -61,7 +61,7 @@ export function useDescribeMeterReading(query) {
       (req) => {
         describeMeterReading(req, tracker)
             .catch(() => {}); // errors are tracked by tracker
-        return tracker;
+        return () => closeResource(tracker);
       }
   );
 

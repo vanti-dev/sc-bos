@@ -1,6 +1,5 @@
-import {closeResource} from '@/api/resource';
-import {toValue, watch} from 'vue';
 import deepEqual from 'fast-deep-equal';
+import {toValue, watch} from 'vue';
 
 /**
  * @typedef {import('@/api/resource').RemoteResource} RemoteResource
@@ -43,24 +42,24 @@ export const setRequestName = (req, name) => {
 };
 
 /**
- * Calls apiCalls each time the query changes, tracking and managing resource cleanup.
+ * Calls apiCall each time the query changes, tracking and managing stop cleanup.
  *
  * @template T
  * @param {MaybeRefOrGetter<T>} query - object representing the request to the API
  * @param {MaybeRefOrGetter<boolean>} [paused] - boolean representing whether the data stream is paused
- * @param {(req: T) => RemoteResource<*>} apiCalls - array of functions that return a resource
+ * @param {(req: T) => () => {}} apiCall - a function that starts a bg task and returns a cleanup function
  * @example
  * watchResource(
  *   () => toValue(toQueryObject(query)),
  *   () => toValue(paused),
  *   (req) => {
  *     pullAirTemperature(req, resource);
- *     return resource;
+ *     return () => closeResource(resource);
  *   }
  * );
  */
-export const watchResource = (query, paused = false, ...apiCalls) => {
-  let resources = [];
+export const watchResource = (query, paused = false, apiCall) => {
+  let stop = null;
 
   watch(
       [() => toValue(query), () => toValue(paused)],
@@ -76,10 +75,10 @@ export const watchResource = (query, paused = false, ...apiCalls) => {
 
         // If the props have changed (either the name or the paused state or both), close the old resources
         // and empty the array
-        resources.forEach((resource) => closeResource(resource));
-        resources = [];
-        if (!paused && req) { // If not paused and there is a request, pull new resource
-          apiCalls.forEach((apiCall) => resources.push(apiCall(req)));
+        if (stop) stop();
+        stop = null; // free up memory if needed
+        if (!paused && req) { // If not paused and there is a request, pull new stop
+          stop = apiCall(req);
         }
       },
       {immediate: true, deep: true, flush: 'sync'}

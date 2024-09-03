@@ -38,7 +38,7 @@ export function usePullEmergency(query, paused = false) {
       () => toValue(paused),
       (req) => {
         pullEmergency(req, resource);
-        return resource;
+        return () => closeResource(resource);
       });
 
   return toRefs(resource);
@@ -123,7 +123,7 @@ export default function(query, paused) {
       () => toValue(paused),
       (req) => {
         pullEmergency(req, emergencyValue);
-        return emergencyValue;
+        return () => closeResource(emergencyValue);
       });
 
 
