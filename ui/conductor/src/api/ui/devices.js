@@ -1,6 +1,6 @@
 import {fieldMaskFromObject, setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
-import {pullResource, setValue} from '@/api/resource';
+import {pullResource, setCollection, setValue} from '@/api/resource';
 import {trackAction} from '@/api/resource.js';
 import {DevicesApiPromiseClient} from '@sc-bos/ui-gen/proto/devices_grpc_web_pb';
 import {
@@ -20,6 +20,24 @@ export function listDevices(request, tracker) {
   return trackAction('Devices.listDevices', tracker ?? {}, endpoint => {
     const api = apiClient(endpoint);
     return api.listDevices(listDevicesRequestFromObject(request));
+  });
+}
+
+/**
+ * @param {Partial<PullDevicesRequest.AsObject>} request
+ * @param {ResourceCollection<Device.AsObject, PullDevicesResponse>} resource
+ */
+export function pullDevices(request, resource) {
+  pullResource('Devices.pullDevices', resource, endpoint => {
+    const api = apiClient(endpoint);
+    const stream = api.pullDevices(listDevicesRequestFromObject(request));
+    stream.on('data', msg => {
+      const changes = msg.getChangesList();
+      for (const change of changes) {
+        setCollection(resource, change, (d) => d.name);
+      }
+    });
+    return stream;
   });
 }
 
