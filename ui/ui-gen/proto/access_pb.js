@@ -192,9 +192,9 @@ proto.smartcore.bos.AccessAttempt.prototype.toObject = function(opt_includeInsta
  */
 proto.smartcore.bos.AccessAttempt.toObject = function(includeInstance, msg) {
   var f, obj = {
-    grant: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    reason: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    actor: (f = msg.getActor()) && proto.smartcore.bos.AccessAttempt.Actor.toObject(includeInstance, f)
+grant: jspb.Message.getFieldWithDefault(msg, 1, 0),
+reason: jspb.Message.getFieldWithDefault(msg, 2, ""),
+actor: (f = msg.getActor()) && proto.smartcore.bos.AccessAttempt.Actor.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -344,14 +344,16 @@ proto.smartcore.bos.AccessAttempt.Actor.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.AccessAttempt.Actor.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    title: jspb.Message.getFieldWithDefault(msg, 10, ""),
-    displayName: jspb.Message.getFieldWithDefault(msg, 11, ""),
-    picture: (f = msg.getPicture()) && types_image_pb.Image.toObject(includeInstance, f),
-    url: jspb.Message.getFieldWithDefault(msg, 13, ""),
-    email: jspb.Message.getFieldWithDefault(msg, 14, ""),
-    idsMap: (f = msg.getIdsMap()) ? f.toObject(includeInstance, undefined) : [],
-    moreMap: (f = msg.getMoreMap()) ? f.toObject(includeInstance, undefined) : []
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+title: jspb.Message.getFieldWithDefault(msg, 10, ""),
+displayName: jspb.Message.getFieldWithDefault(msg, 11, ""),
+picture: (f = msg.getPicture()) && types_image_pb.Image.toObject(includeInstance, f),
+url: jspb.Message.getFieldWithDefault(msg, 13, ""),
+email: jspb.Message.getFieldWithDefault(msg, 14, ""),
+lastGrantTime: (f = msg.getLastGrantTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+lastGrantZone: jspb.Message.getFieldWithDefault(msg, 16, ""),
+idsMap: (f = msg.getIdsMap()) ? f.toObject(includeInstance, undefined) : [],
+moreMap: (f = msg.getMoreMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -412,6 +414,15 @@ proto.smartcore.bos.AccessAttempt.Actor.deserializeBinaryFromReader = function(m
     case 14:
       var value = /** @type {string} */ (reader.readString());
       msg.setEmail(value);
+      break;
+    case 15:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setLastGrantTime(value);
+      break;
+    case 16:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setLastGrantZone(value);
       break;
     case 100:
       var value = msg.getIdsMap();
@@ -494,6 +505,21 @@ proto.smartcore.bos.AccessAttempt.Actor.serializeBinaryToWriter = function(messa
   if (f.length > 0) {
     writer.writeString(
       14,
+      f
+    );
+  }
+  f = message.getLastGrantTime();
+  if (f != null) {
+    writer.writeMessage(
+      15,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getLastGrantZone();
+  if (f.length > 0) {
+    writer.writeString(
+      16,
       f
     );
   }
@@ -632,6 +658,61 @@ proto.smartcore.bos.AccessAttempt.Actor.prototype.getEmail = function() {
  */
 proto.smartcore.bos.AccessAttempt.Actor.prototype.setEmail = function(value) {
   return jspb.Message.setProto3StringField(this, 14, value);
+};
+
+
+/**
+ * optional google.protobuf.Timestamp last_grant_time = 15;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.AccessAttempt.Actor.prototype.getLastGrantTime = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 15));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.AccessAttempt.Actor} returns this
+*/
+proto.smartcore.bos.AccessAttempt.Actor.prototype.setLastGrantTime = function(value) {
+  return jspb.Message.setWrapperField(this, 15, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.AccessAttempt.Actor} returns this
+ */
+proto.smartcore.bos.AccessAttempt.Actor.prototype.clearLastGrantTime = function() {
+  return this.setLastGrantTime(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.AccessAttempt.Actor.prototype.hasLastGrantTime = function() {
+  return jspb.Message.getField(this, 15) != null;
+};
+
+
+/**
+ * optional string last_grant_zone = 16;
+ * @return {string}
+ */
+proto.smartcore.bos.AccessAttempt.Actor.prototype.getLastGrantZone = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 16, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.AccessAttempt.Actor} returns this
+ */
+proto.smartcore.bos.AccessAttempt.Actor.prototype.setLastGrantZone = function(value) {
+  return jspb.Message.setProto3StringField(this, 16, value);
 };
 
 
@@ -786,8 +867,8 @@ proto.smartcore.bos.GetLastAccessAttemptRequest.prototype.toObject = function(op
  */
 proto.smartcore.bos.GetLastAccessAttemptRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -967,9 +1048,9 @@ proto.smartcore.bos.PullAccessAttemptsRequest.prototype.toObject = function(opt_
  */
 proto.smartcore.bos.PullAccessAttemptsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -1185,7 +1266,7 @@ proto.smartcore.bos.PullAccessAttemptsResponse.prototype.toObject = function(opt
  */
 proto.smartcore.bos.PullAccessAttemptsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+changesList: jspb.Message.toObjectList(msg.getChangesList(),
     proto.smartcore.bos.PullAccessAttemptsResponse.Change.toObject, includeInstance)
   };
 
@@ -1300,9 +1381,9 @@ proto.smartcore.bos.PullAccessAttemptsResponse.Change.prototype.toObject = funct
  */
 proto.smartcore.bos.PullAccessAttemptsResponse.Change.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    accessAttempt: (f = msg.getAccessAttempt()) && proto.smartcore.bos.AccessAttempt.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+accessAttempt: (f = msg.getAccessAttempt()) && proto.smartcore.bos.AccessAttempt.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
