@@ -10,8 +10,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/lighttest"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
+	"github.com/vanti-dev/sc-bos/pkg/system/gateway"
 	"github.com/vanti-dev/sc-bos/pkg/system/hub"
-	"github.com/vanti-dev/sc-bos/pkg/system/proxy"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants"
 )
 
@@ -39,7 +39,7 @@ func Main() {
 func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig := sysconf.Default()
 	systemConfig.SystemFactories = map[string]system.Factory{
-		proxy.Name: proxy.Factory(&lighttest.Holder{}),
+		gateway.Name: gateway.Factory(&lighttest.Holder{}),
 		// todo: remove these services
 		"hub":     hub.Factory(),
 		"tenants": tenants.Factory,
