@@ -21,7 +21,7 @@ import LightsConfigCard from '@/routes/automations/components/config-cards/Light
 import EditConfigCard from '@/routes/system/components/service-cards/EditConfigCard.vue';
 import {useServicesStore} from '@/stores/services.js';
 import {useSidebarStore} from '@/stores/sidebar';
-import {serviceName} from '@/util/proxy';
+import {serviceName} from '@/util/gateway';
 import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 
 const {blockActions} = useAuthSetup();

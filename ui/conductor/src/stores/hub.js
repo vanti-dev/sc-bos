@@ -5,6 +5,7 @@ import {listHubNodes, pullHubNodes} from '@/api/sc/traits/hub';
 import {listServices, ServiceNames} from '@/api/ui/services';
 import {useControllerStore} from '@/stores/controller';
 import {useUiConfigStore} from '@/stores/ui-config';
+import {isGatewayId} from '@/util/gateway';
 import {defineStore} from 'pinia';
 import {computed, reactive, ref, watch} from 'vue';
 
@@ -32,24 +33,24 @@ export const useHubStore = defineStore('hub', () => {
 
   const nodesListCollectionInit = async () => {
     try {
-      // if local proxy hub mode is enabled, the hub node will be the same as the proxy node
-      // get systems config, so we can check if the proxy is in local mode
+      // if local gateway hub mode is enabled, the hub node will be the same as the gateway node
+      // get systems config, so we can check if the gateway is in local mode
       const systems = await listServices({name: ServiceNames.Systems}, newActionTracker());
-      let proxyHubLocalMode = false;
+      let gatewayHubLocalMode = false;
 
-      // search through systems to find the proxy
+      // search through systems to find the gateway
       for (const system of systems.servicesList) {
-        if (system.id === 'proxy') {
+        if (isGatewayId(system.id)) {
           const cfg = JSON.parse(system.configRaw);
           // check hub mode
           if (cfg.hubMode && cfg.hubMode === 'local') {
-            proxyHubLocalMode = true;
+            gatewayHubLocalMode = true;
             break;
           }
         }
       }
 
-      if (proxyHubLocalMode) {
+      if (gatewayHubLocalMode) {
         hubNode.value = {
           name: controller.controllerName,
           address: ''
@@ -97,8 +98,8 @@ export const useHubStore = defineStore('hub', () => {
    * @property {string} name - the Smart Core name of the node
    * @property {string} address - the address of the node
    * @property {string} description - a human-readable description of the node
-   * @property {string} commsAddress - the address to use to communicate with the node (based on proxy settings)
-   * @property {string} commsName - the name to use to communicate with the node (based on proxy settings)
+   * @property {string} commsAddress - the address to use to communicate with the node (based on gateway settings)
+   * @property {string} commsName - the name to use to communicate with the node (based on gateway settings)
    */
 
   const nodesList = computed(() => {
@@ -116,7 +117,7 @@ export const useHubStore = defineStore('hub', () => {
 
 
   /**
-   * If we're communicating with named devices via a proxy, this will return prepend the controller name to the
+   * If we're communicating with named devices via a gateway, this will return prepend the controller name to the
    * resource, otherwise it will return the resource name as-is.
    *
    * @param {string} name
@@ -124,22 +125,22 @@ export const useHubStore = defineStore('hub', () => {
    * @return {string}
    */
   async function proxiedName(name, address) {
-    // check if running in proxy mode, and that the node address is not the same as our endpoint address
-    if (uiConfig.config?.proxy && (await grpcWebEndpoint()) !== address) {
+    // check if running in gateway mode, and that the node address is not the same as our endpoint address
+    if (uiConfig.config?.gateway && (await grpcWebEndpoint()) !== address) {
       return name;
     }
     return '';
   }
 
   /**
-   * If we're communicating with named devices via a proxy, this will return the proxy address, otherwise it will return
-   * the address as-is.
+   * If we're communicating with named devices via a gateway, this will return the gateway address, otherwise it will
+   * return the address as-is.
    *
    * @param {string} address
    * @return {string}
    */
   async function proxiedAddress(address) {
-    if (uiConfig.config?.proxy) {
+    if (uiConfig.config?.gateway) {
       return await grpcWebEndpoint();
     }
     return address;
