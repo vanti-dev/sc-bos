@@ -36,14 +36,6 @@ export namespace AccessAttempt {
     getName(): string;
     setName(value: string): Actor;
 
-    getLastGrantTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
-    setLastGrantTime(value?: google_protobuf_timestamp_pb.Timestamp): Actor;
-    hasLastGrantTime(): boolean;
-    clearLastGrantTime(): Actor;
-
-    getLastGrantZone(): string;
-    setLastGrantZone(value: string): Actor;
-
     getTitle(): string;
     setTitle(value: string): Actor;
 
@@ -60,6 +52,14 @@ export namespace AccessAttempt {
 
     getEmail(): string;
     setEmail(value: string): Actor;
+
+    getLastGrantTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setLastGrantTime(value?: google_protobuf_timestamp_pb.Timestamp): Actor;
+    hasLastGrantTime(): boolean;
+    clearLastGrantTime(): Actor;
+
+    getLastGrantZone(): string;
+    setLastGrantZone(value: string): Actor;
 
     getIdsMap(): jspb.Map<string, string>;
     clearIdsMap(): Actor;
@@ -78,13 +78,13 @@ export namespace AccessAttempt {
   export namespace Actor {
     export type AsObject = {
       name: string,
-      lastGrantTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      lastGrantZone: string,
       title: string,
       displayName: string,
       picture?: types_image_pb.Image.AsObject,
       url: string,
       email: string,
+      lastGrantTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+      lastGrantZone: string,
       idsMap: Array<[string, string]>,
       moreMap: Array<[string, string]>,
     }

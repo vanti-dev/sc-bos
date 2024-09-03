@@ -56,14 +56,6 @@ message AccessAttempt {
     // Name allows correlation between enter and leave events.
     string name = 1;
 
-    // The time this actor was last granted access.
-    // The grant may have been performed by a different device to this one.
-    google.protobuf.Timestamp last_grant_time = 2;
-
-    // The access zone the actor was last granted access to.
-    // The zone will be provided by the device and may not map to any Smart Core zone or device.
-    string last_grant_zone = 3;
-
     // An official title for this actor.
     string title = 10;
     // A recognisable display name for this actor.
@@ -74,6 +66,12 @@ message AccessAttempt {
     string url = 13;
     // An email address for the actor.
     string email = 14;
+    // The time this actor was last granted access.
+    // The grant may have been performed by a different device to this one.
+    google.protobuf.Timestamp last_grant_time = 15;
+    // The access zone the actor was last granted access to.
+    // The zone will be provided by the device and may not map to any Smart Core zone or device.
+    string last_grant_zone = 16;
 
     // IDs holds external actor ids.
     // For example this might hold an id representing a person in an access control system.
