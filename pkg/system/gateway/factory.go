@@ -1,19 +1,19 @@
-// Package proxy is a system that allows a node to proxy the APIs of other nodes.
-// The proxy system is closely tied with the hub and cohort concepts, using these to discover which nodes to proxy.
+// Package gateway is a system that allows a node to proxy the APIs of other nodes.
+// The gateway system is closely tied with the hub and cohort concepts, using these to discover which nodes to proxy.
 //
-// # Types Of Proxying
+// # Types Of Gateway Proxying
 //
 // There are two types of proxying that this system does: routed and node APIs
 //
 // ## Routed APIs
 //
-// For any API that uses a name to direct API calls to the correct target, the proxy system will maintain a table of
+// For any API that uses a name to direct API calls to the correct target, the gateway system will maintain a table of
 // name->target mappings and when a request comes in for a name, it will forward that request to the correct target.
 // Examples of this kind of API are Smart Core traits, or other APIs that are announced as part of a node.
 //
 // Routed APIs are handled in a generic way, using node metadata to construct the routing table and general trait patterns
 // to decide how to route the request.
-// The proxy can only route APIs that it knows about, specifically APIs mentioned in [alltraits].
+// The gateway can only route APIs that it knows about, specifically APIs mentioned in [alltraits].
 //
 // ## Node APIs
 //
@@ -24,7 +24,7 @@
 // Each node API is handled in a special way, with specific logic to handle the routing of the request.
 // Most node APIs are assumed to target the hub node, but some, like the services API, require special processing to
 // correctly route requests to the correct node.
-package proxy
+package gateway
 
 import (
 	"context"
@@ -44,13 +44,16 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
-	"github.com/vanti-dev/sc-bos/pkg/system/proxy/config"
+	"github.com/vanti-dev/sc-bos/pkg/system/gateway/config"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/util/slices"
 )
 
-const Name = "proxy"
+const (
+	Name       = "gateway"
+	LegacyName = "proxy"
+)
 
 func Factory(holder *lighttest.Holder) system.Factory {
 	return &factory{
@@ -70,7 +73,7 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 		ignore:    []string{services.GRPCEndpoint}, // avoid infinite recursion
 		tlsConfig: services.ClientTLSConfig,
 		announcer: services.Node,
-		logger:    services.Logger.Named("proxy"),
+		logger:    services.Logger.Named("gateway"),
 	}
 	return service.New(service.MonoApply(s.applyConfig))
 }
@@ -263,14 +266,14 @@ func (s *System) announceHubNodes(ctx context.Context, hubClient gen.HubApiClien
 
 // announceNode sets up proxying for nodeConn, which is enrolled with hubNode.
 func (s *System) announceNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) (task.Next, error) {
-	isProxyNode, err := s.isProxy(ctx, nodeConn)
+	isGatewayNode, err := s.isGateway(ctx, nodeConn)
 	if err != nil {
 		return task.Normal, err
 	}
 
-	s.logger.Debug("Proxying node", zap.String("name", hubNode.Name), zap.String("node", hubNode.Address), zap.Bool("isProxy", isProxyNode))
+	s.logger.Debug("Proxying node", zap.String("name", hubNode.Name), zap.String("node", hubNode.Address), zap.Bool("isGateway", isGatewayNode))
 	switch {
-	case isProxyNode:
+	case isGatewayNode:
 		s.announceProxyNode(ctx, hubNode, nodeConn)
 	default:
 		s.announceControllerNode(ctx, hubNode, nodeConn)
@@ -281,7 +284,7 @@ func (s *System) announceNode(ctx context.Context, hubNode *gen.HubNode, nodeCon
 }
 
 // announceControllerNode sets up proxying for all the APIs of a standard controller node.
-// A controller node is one that is neither a hub nor a proxy.
+// A controller node is one that is neither a hub nor a gateway.
 // We proxy trait and non-trait APIs and set up the routing table for any discovered names the node has.
 func (s *System) announceControllerNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) {
 	go s.retry(ctx, "proxyNodeParent", func(ctx context.Context) (task.Next, error) {
@@ -298,14 +301,14 @@ func (s *System) announceControllerNode(ctx context.Context, hubNode *gen.HubNod
 	})
 }
 
-// announceProxyNode sets up proxying for a node that is also a proxy.
-// This is similar to [announceControllerNode] but we skip updating the routing table as we assume all proxies have the same table and
-// including the other proxies table in ours would be redundant (and possible cause infinite routing loops).
+// announceProxyNode sets up proxying for a node that is also a gateway.
+// This is similar to [announceControllerNode] but we skip updating the routing table as we assume all gateways have the same table and
+// including the other gateways' table in ours would be redundant (and possible cause infinite routing loops).
 func (s *System) announceProxyNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) {
 	go s.retry(ctx, "proxyNodeParent", func(ctx context.Context) (task.Next, error) {
 		return s.announceNodeParent(ctx, nodeConn, hubNode.Name)
 	})
-	// explicitly don't fetch proxy children as they will have the same children as us anyway
+	// explicitly don't fetch gateway children as they will have the same children as us anyway
 
 	// proxy any non-trait apis that also use routing
 	go s.retry(ctx, "proxyNodeApis", func(ctx context.Context) (task.Next, error) {
@@ -313,8 +316,8 @@ func (s *System) announceProxyNode(ctx context.Context, hubNode *gen.HubNode, no
 	})
 }
 
-// isProxy discovers if nodeConn is a proxy node, a node that has an enabled proxy system.
-func (s *System) isProxy(ctx context.Context, nodeConn *grpc.ClientConn) (bool, error) {
+// isGateway discovers if nodeConn is a proxy node, a node that has an enabled proxy system.
+func (s *System) isGateway(ctx context.Context, nodeConn *grpc.ClientConn) (bool, error) {
 	client := gen.NewServicesApiClient(nodeConn)
 	req := &gen.ListServicesRequest{Name: "systems"}
 	for {

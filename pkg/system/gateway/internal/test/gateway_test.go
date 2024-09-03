@@ -27,21 +27,21 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/system/proxy/internal/test/shared"
+	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/shared"
 	"github.com/vanti-dev/sc-bos/pkg/util/grpc/reflectionapi"
 
 	// make sure that test caching updates based on changes to these files too
-	_ "github.com/vanti-dev/sc-bos/pkg/system/proxy/internal/test/ac"
-	_ "github.com/vanti-dev/sc-bos/pkg/system/proxy/internal/test/gw"
-	_ "github.com/vanti-dev/sc-bos/pkg/system/proxy/internal/test/hub"
+	_ "github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/ac"
+	_ "github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/gw"
+	_ "github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/hub"
 )
 
 var skipBuild = flag.Bool("skip-build", false, "skip building and running binaries")
 var ignoreEnrolErr = flag.Bool("ignore-enrol-err", false, "ignore enrolment errors")
 
-// TestProxy_e2e tests the proxy by running a cohort of nodes, each a different sc-bos process.
+// TestGateway_e2e tests the gateway by running a cohort of nodes, each a different sc-bos process.
 // The test only runs if the -short flag is not set.
-func TestProxy_e2e(t *testing.T) {
+func TestGateway_e2e(t *testing.T) {
 	// WARNING: This test doesn't play perfectly with go tests caching for a number of reasons:
 	// 1. it builds go binaries which are the target of the tests which don't get checked as part of cache invalidation
 	// 2. those binaries read files that are also not part of the cache invalidation
@@ -240,7 +240,7 @@ func testGW(t *testing.T, ctx context.Context, addr string) {
 		"ac2/dev1",
 		"hub/dev1",
 	}
-	t.Logf("[%s] Waiting for gw to configure proxy", addr)
+	t.Logf("[%s] Waiting for gw to configure gateway system", addr)
 	for _, name := range deviceNames {
 		waitForDevice(t, ctx, conn, name)
 	}

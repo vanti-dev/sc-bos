@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/vanti-dev/sc-bos/pkg/system/proxy/internal/test/gw"
+	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/gw"
 )
 
 func main() {
