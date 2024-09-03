@@ -38,8 +38,10 @@ func Main() {
 
 func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig := sysconf.Default()
+	gwFactory := gateway.Factory(&lighttest.Holder{})
 	systemConfig.SystemFactories = map[string]system.Factory{
-		gateway.Name: gateway.Factory(&lighttest.Holder{}),
+		gateway.Name:       gwFactory,
+		gateway.LegacyName: gwFactory,
 		// todo: remove these services
 		"hub":     hub.Factory(),
 		"tenants": tenants.Factory,

@@ -2,7 +2,7 @@
   "name": "gw2",
   "logger": {"initialFields": {"proc": "gw2"}},
   "systems": {
-    "gateway": {},
+    "proxy": {},
     "hub": {"storage": {"type": "proxy"}},
     "tenants": {"storage": {"type": "proxy"}}
   }
