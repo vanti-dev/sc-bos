@@ -10,13 +10,13 @@
 
     <!-- Grant area -->
     <div class="d-flex flex-column justify-space-between">
-      <v-card-text class="text-h6 white--text font-weight-regular d-flex flex-row pa-0 px-4 pt-4">
+      <v-card-text class="text-h6 text-white font-weight-regular d-flex flex-row pa-0 px-4 pt-4">
         <span>Last access:</span>
-        <span :class="[`${color}--text`, 'ml-auto font-weight-bold']">
+        <span :class="[`text-${color}`, 'ml-auto font-weight-bold']">
           {{ formatString(grantStates) }}
         </span>
       </v-card-text>
-      <v-card-text class="text-h6 white--text d-flex flex-column pt-1" style="max-width: 350px">
+      <v-card-text class="text-h6 text-white d-flex flex-column pt-1" style="max-width: 350px">
         <span class="text-subtitle-1"> {{ user.name }} {{ user.cardId }} </span>
       </v-card-text>
 
@@ -24,19 +24,17 @@
       <v-card-actions v-if="alert.length" class="mt-4">
         <v-col class="mx-0 px-0" cols="align-self" style="max-width: 370px">
           <v-list-item class="px-2">
-            <v-list-item-content>
-              <v-tooltip bottom>
-                <template #activator="{ on }">
-                  <v-list-item-title class="text-uppercase" v-on="on">
-                    {{ alert.description }}
-                  </v-list-item-title>
-                </template>
-                {{ alert.description }}
-              </v-tooltip>
-              <v-list-item-subtitle>
-                {{ alert.createTime }}
-              </v-list-item-subtitle>
-            </v-list-item-content>
+            <v-tooltip location="bottom">
+              <template #activator="{ props: _props }">
+                <v-list-item-title class="text-uppercase" v-bind="_props">
+                  {{ alert.description }}
+                </v-list-item-title>
+              </template>
+              {{ alert.description }}
+            </v-tooltip>
+            <v-list-item-subtitle>
+              {{ alert.createTime }}
+            </v-list-item-subtitle>
           </v-list-item>
         </v-col>
         <v-spacer/>
@@ -193,20 +191,20 @@ onBeforeUnmount(() => {
 </script>
 <style lang="scss" scoped>
 .granted {
-  color: var(--v-success-base);
+  color: rgb(var(--v-theme-success));
   transition: color 0.5s ease-in-out;
 }
 
 .denied,
 .forced,
 .failed {
-  color: var(--v-error-base);
+  color: rgb(var(--v-theme-error));
 }
 
 .pending,
 .aborted,
 .tailgate {
-  color: var(--v-warning-base);
+  color: rgb(var(--v-theme-warning));
 }
 
 .grant_unknown {

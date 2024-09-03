@@ -1,3 +1,5 @@
+import {defineAsyncComponent} from 'vue';
+
 export const builtinLayouts = {
-  'LayoutMainSide': () => import('@/layout/LayoutMainSide.vue')
+  'LayoutMainSide': defineAsyncComponent(() => import('@/layout/LayoutMainSide.vue'))
 };

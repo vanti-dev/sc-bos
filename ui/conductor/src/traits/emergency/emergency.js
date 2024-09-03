@@ -1,9 +1,8 @@
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullEmergency} from '@/api/sc/traits/emergency';
 import {toQueryObject, watchResource} from '@/util/traits.js';
-import {toValue} from '@/util/vue.js';
 import {Emergency} from '@smart-core-os/sc-api-grpc-web/traits/emergency_pb';
-import {computed, onScopeDispose, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
 /**
  * @typedef {
@@ -66,12 +65,12 @@ export function useEmergency(value) {
       case Emergency.Level.OK:
         return '';
       case Emergency.Level.WARNING:
-        return 'warning--text';
+        return 'text-warning';
       case Emergency.Level.EMERGENCY:
         if (drill.value) {
-          return 'info--text';
+          return 'text-info';
         }
-        return 'error--text';
+        return 'text-error';
     }
   });
   const iconStr = computed(() => {
@@ -137,12 +136,12 @@ export default function(query, paused) {
       case Emergency.Level.OK:
         return '';
       case Emergency.Level.WARNING:
-        return 'warning--text';
+        return 'text-warning';
       case Emergency.Level.EMERGENCY:
         if (drill) {
-          return 'info--text';
+          return 'text-info';
         }
-        return 'error--text';
+        return 'text-error';
     }
   });
 

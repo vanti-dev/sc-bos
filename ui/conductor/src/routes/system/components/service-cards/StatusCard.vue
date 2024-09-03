@@ -1,30 +1,26 @@
 <template>
   <v-card flat tile>
-    <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Status Details</v-subheader>
+    <v-card-title class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">Status Details</v-card-title>
     <v-card-text class="px-4 pt-3 pb-5">
       <v-row>
         <v-list-item class="py-1">
-          <v-list-item-content class="py-0">
-            <v-list-item-title class="text-body-small neutral--text text--lighten-4 text-capitalize">
-              Status
-            </v-list-item-title>
-            <v-list-item-subtitle class="text-subtitle-1 py-1 font-weight-medium text-wrap ml-2">
-              <service-status :service="sidebar.data.service"/>
-            </v-list-item-subtitle>
-          </v-list-item-content>
+          <v-list-item-title class="text-body-small text-neutral-lighten-4 text-capitalize">
+            Status
+          </v-list-item-title>
+          <v-list-item-subtitle class="text-subtitle-1 py-1 font-weight-medium text-wrap ml-2">
+            <service-status :service="sidebar.data.service"/>
+          </v-list-item-subtitle>
         </v-list-item>
       </v-row>
 
       <v-row v-for="(value, key) in statusDetails" :key="key">
         <v-list-item class="py-1">
-          <v-list-item-content class="py-0">
-            <v-list-item-title class="text-body-small neutral--text text--lighten-4 text-capitalize">
-              {{ camelToSentence(key) }}
-            </v-list-item-title>
-            <v-list-item-subtitle class="text-subtitle-1 py-1 font-weight-medium text-wrap ml-2">
-              {{ value }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
+          <v-list-item-title class="text-body-small text-neutral-lighten-4 text-capitalize">
+            {{ camelToSentence(key) }}
+          </v-list-item-title>
+          <v-list-item-subtitle class="text-subtitle-1 py-1 font-weight-medium text-wrap ml-2">
+            {{ value }}
+          </v-list-item-subtitle>
         </v-list-item>
       </v-row>
     </v-card-text>

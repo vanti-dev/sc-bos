@@ -40,7 +40,7 @@ export default {
   },
   data() {
     return {
-      $pz: null,
+      pz: null,
       moving: false
     };
   },
@@ -49,7 +49,8 @@ export default {
       const on = {};
       for (let i = 0; i < names.length; i++) {
         const name = names[i];
-        if (this.$listeners.hasOwnProperty(name)) {
+        const eName = 'on' + name[0].toUpperCase() + name.slice(1);
+        if (this.$attrs.hasOwnProperty(eName)) {
           on[`panzoom${name}`] = (e) => this.$emit(name, e.detail);
         }
       }
@@ -59,31 +60,31 @@ export default {
   watch: {
     disable(v) {
       if (v) {
-        this.$pz.destroy();
-        this.$pz = null;
+        this.pz.destroy();
+        this.pz = null;
       } else {
-        this.$pz = panzoom(this.$el, {...this.$attrs, ...this.options});
-        this.$emit('init', this.$pz);
+        this.pz = panzoom(this.$el, {...this.$attrs, ...this.options});
+        this.$emit('init', this.pz);
       }
     }
   },
   mounted() {
     if (!this.disable) {
-      this.$pz = panzoom(this.$el, {...this.$attrs, ...this.options});
-      this.$emit('init', this.$pz);
+      this.pz = panzoom(this.$el, {...this.$attrs, ...this.options});
+      this.$emit('init', this.pz);
     }
   },
   beforeDestroy() {
-    if (this.$pz) {
-      this.$pz.destroy();
-      this.$pz = null;
+    if (this.pz) {
+      this.pz.destroy();
+      this.pz = null;
     }
   },
   methods: {
     handleWheel(e) {
       if (!this.disable) {
         this.$emit('start');
-        this.$pz.zoomWithWheel(e);
+        this.pz.zoomWithWheel(e);
       }
     }
   }

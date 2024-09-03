@@ -1,18 +1,16 @@
 <template>
   <v-menu
-      offset-y
-      bottom
+      location="bottom"
+      offset="4"
       :close-on-content-click="false"
-      @input="reset"
-      min-width="400"
-      nudge-bottom="4">
-    <template #activator="{ on: onMenu, attrs: bindMenu }">
-      <v-tooltip bottom>
-        <template #activator="{ on: onTooltip, attrs: bindTooltip }">
+      @update:model-value="reset"
+      width="400">
+    <template #activator="{ props: menuProps }">
+      <v-tooltip location="bottom">
+        <template #activator="{ props: tooltipProps }">
           <v-chip
-              v-on="{ ...onMenu, ...onTooltip }"
-              v-bind="{ ...bindMenu, ...bindTooltip, ...$attrs }"
-              close
+              v-bind="{ ...menuProps, ...tooltipProps }"
+              closable
               @click:close="clear">
             {{ text }}
           </v-chip>
@@ -20,8 +18,8 @@
         Change {{ title.toLowerCase() }} filter
       </v-tooltip>
     </template>
-    <page-chooser :title="title" :type="type" :search.sync="search">
-      <slot :value="value" :items="items" :choose="choose"/>
+    <page-chooser :title="title" :type="type" v-model:search="search">
+      <slot :value="value" :items="items" :choose="props.ctx.choose"/>
     </page-chooser>
   </v-menu>
 </template>
@@ -38,7 +36,7 @@ const props = defineProps({
 });
 const emits = defineEmits(['active']);
 
-const {title, type, text, value, items, choose, clear, search} = toRefs(props.ctx);
+const {title, type, text, value, items, clear, search} = toRefs(props.ctx);
 
 const reset = (e) => {
   if (e) {

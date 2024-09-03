@@ -2,20 +2,20 @@
   <status-alert v-if="props.streamError" icon="mdi-thermometer-low" :resource="props.streamError"/>
 
   <span class="text-no-wrap at-cell" v-else-if="(hasTemp || hasSetPoint) && !props.streamError">
-    <v-tooltip bottom v-if="hasTemp" open-delay="1000">
-      <template #activator="{on, attrs}">
-        <span v-bind="attrs" v-on="on">{{ tempStr }}</span>
+    <v-tooltip location="bottom" v-if="hasTemp" open-delay="1000">
+      <template #activator="{props: _props}">
+        <span v-bind="_props">{{ tempStr }}</span>
       </template>
       <span>Current temperature</span>
     </v-tooltip>
     <v-icon class="mx-n1" v-if="hasTemp && hasSetPoint" size="20">mdi-menu-right</v-icon>
-    <v-tooltip bottom v-if="hasSetPoint" open-delay="1000">
-      <template #activator="{on, attrs}">
-        <span v-bind="attrs" v-on="on">{{ setPointStr }}</span>
+    <v-tooltip location="bottom" v-if="hasSetPoint" open-delay="1000">
+      <template #activator="{props: _props}">
+        <span v-bind="_props">{{ setPointStr }}</span>
       </template>
       <span>Set point</span>
     </v-tooltip>
-    <v-icon right size="20">mdi-thermometer</v-icon>
+    <v-icon end size="20">mdi-thermometer</v-icon>
   </span>
 </template>
 <script setup>

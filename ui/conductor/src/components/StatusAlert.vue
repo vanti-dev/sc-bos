@@ -2,19 +2,18 @@
   <v-tooltip
       v-if="props.resource"
       v-model="show"
-      bottom
-      :color="props.color">
-    <template #activator="{ on, attrs }">
+      :content-props="{'class': [props.color ? `bg-${props.color}` : '']}"
+      location="bottom">
+    <template #activator="{ props: _props }">
       <v-icon
-          v-bind="attrs"
-          v-on="on"
+          v-bind="{..._props, ...$attrs}"
           :color="props.color"
-          size="22"
+          :size="iconSize"
           style="padding-top: 1px;">
         {{ props.icon }}
       </v-icon>
     </template>
-    <div v-for="(status, index) in statusDetails" :key="status.statusName + index">
+    <div v-for="(status, index) in statusDetails" :key="index">
       <span class="error-name">{{ status.statusName }}</span>
       <span class="error-details">
         {{ status.statusCode }}
@@ -22,7 +21,7 @@
       </span>
       <v-divider
           v-if="!props.single && index !== statusDetails.length - 1"
-          class="neutral lighten--4 my-1 mx-auto"
+          class="bg-neutral-lighten--4 my-1 mx-auto"
           style="width:4em"/>
     </div>
   </v-tooltip>
@@ -32,6 +31,7 @@
 import {statusCodeToString} from '@/components/ui-error/util';
 import {computed, ref} from 'vue';
 
+defineOptions({inheritAttrs: false});
 const props = defineProps({
   color: {
     type: String,
@@ -40,6 +40,10 @@ const props = defineProps({
   icon: {
     type: String,
     default: 'mdi-alert-circle-outline'
+  },
+  iconSize: {
+    type: [String, Number],
+    default: 22
   },
   isClickable: {
     type: Boolean,

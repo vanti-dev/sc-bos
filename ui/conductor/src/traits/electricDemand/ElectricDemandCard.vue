@@ -1,11 +1,13 @@
 <template>
   <v-card elevation="0" tile>
-    <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Electric</v-subheader>
+    <v-card-subtitle class="text-title-caps-large text-neutral-lighten-3 py-3 opacity-100">
+      Electric
+    </v-card-subtitle>
     <div class="layout mx-4">
-      <template v-for="(row, i) in rows">
-        <span :key="i+'label'" class="label text-body-small">{{ row.label }}</span>
-        <span :key="i+'value'" class="value">{{ row.value ?? '' }}</span>
-        <span :key="i+'unit'" class="unit">{{ row.unit ?? '' }}</span>
+      <template v-for="(row, i) in rows" :key="i">
+        <span class="label text-body-small">{{ row.label }}</span>
+        <span class="value">{{ row.value ?? '' }}</span>
+        <span class="unit">{{ row.unit ?? '' }}</span>
       </template>
     </div>
     <v-progress-linear color="primary" indeterminate :active="props.loading"/>

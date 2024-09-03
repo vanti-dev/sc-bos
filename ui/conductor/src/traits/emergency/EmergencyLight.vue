@@ -1,27 +1,30 @@
 <template>
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0">
-      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Emergency Lighting</v-subheader>
+      <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Emergency Lighting</v-list-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">Battery Level</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">{{ battery }}%</v-list-item-subtitle>
+        <template #append>
+          <v-list-item-subtitle class="text-capitalize text-body-1">{{ battery }}%</v-list-item-subtitle>
+        </template>
       </v-list-item>
     </v-list>
     <v-progress-linear
         height="34"
         class="mx-4 my-2"
-        :value="battery"
-        background-color="neutral lighten-1"
+        :model-value="battery"
+        bg-color="neutral-lighten-1"
+        bg-opacity="1"
         color="accent"/>
     <v-list>
-      <v-subheader class="text-body-large font-weight-bold">Testing History</v-subheader>
+      <v-list-subheader class="text-body-large font-weight-bold">Testing History</v-list-subheader>
       <v-list-item v-for="([date, state, textColor]) in testHistory" :key="date" class="pb-2">
         <v-list-item-title class="text-body-small">{{ date }}</v-list-item-title>
         <v-list-item-subtitle class="text-title-caps" :class="textColor">{{ state }}</v-list-item-subtitle>
       </v-list-item>
       <v-list-item>
         <v-list-item-action>
-          <v-btn color="green" :disabled="blockActions" small>Test Now</v-btn>
+          <v-btn color="green" :disabled="blockActions" size="small">Test Now</v-btn>
         </v-list-item-action>
       </v-list-item>
     </v-list>
@@ -67,11 +70,11 @@ const battery = computed(() => {
 
 const testHistory = computed(() => {
   return [
-    ['28.09.22', 'Pass', 'success--text text--lighten-3'],
-    ['21.09.22', 'Pass', 'success--text text--lighten-3'],
-    ['14.09.22', 'Fail', 'error--text text--lighten-1'],
-    ['07.09.22', 'Pass', 'success--text text--lighten-3'],
-    ['31.08.22', 'Pass', 'success--text text--lighten-3']
+    ['28.09.22', 'Pass', 'text-success-lighten-3'],
+    ['21.09.22', 'Pass', 'text-success-lighten-3'],
+    ['14.09.22', 'Fail', 'text-error-lighten-1'],
+    ['07.09.22', 'Pass', 'text-success-lighten-3'],
+    ['31.08.22', 'Pass', 'text-success-lighten-3']
   ];
 });
 

@@ -8,7 +8,7 @@
         <v-card-title>Add Tenant</v-card-title>
         <v-list>
           <v-list-item>
-            <v-text-field label="Name" v-model="name" filled hide-details/>
+            <v-text-field label="Name" v-model="name" variant="filled" hide-details/>
           </v-list-item>
         </v-list>
         <v-card-actions>

@@ -2,26 +2,26 @@
   <div class="d-flex align-center">
     <v-combobox
         v-model="inputModel"
-        @input="sendZoneEvent($event)"
+        @update:model-value="sendZoneEvent($event)"
         :items="inputItems"
-        item-text="title"
+        item-title="title"
         item-value="name"
         :loading="findZonesLoading"
-        :search-input.sync="searchText"
+        @update:search="searchText"
         :message="findZonesError || []"
         no-filter
         chips
-        deletable-chips
-        dense
+        closable-chips
+        density="compact"
         hide-details="auto"
         :no-data-text="`No ${zonesOnly ? 'zones' : 'devices'} found match your query`"
-        outlined
+        variant="outlined"
         multiple
         auto-select-first
         return-object
         :disabled="blockActions">
       <template #prepend-item v-if="findZonesTracker.response?.nextPageToken">
-        <v-subheader class="mx-2">
+        <v-list-subheader class="mx-2">
           <template v-if="findZonesTracker.response?.totalSize > 0">
             Showing {{ inputItems.length }} of {{ findZonesTracker.response.totalSize }}
             {{ zonesOnly ? 'zones' : 'devices' }}
@@ -30,15 +30,12 @@
           <template v-else>
             Showing up to {{ inputItems.length }} {{ zonesOnly ? 'zones' : 'devices' }}, search to refine your results.
           </template>
-        </v-subheader>
+        </v-list-subheader>
         <v-divider class="my-2"/>
       </template>
 
-      <template #item="{ item }">
-        <div class="d-flex flex-row flex-wrap">
-          <v-list-item-title>{{ item.title }}</v-list-item-title>
-          <v-list-item-subtitle v-if="item.title !== item.name">{{ item.name }}</v-list-item-subtitle>
-        </div>
+      <template #item="{ item, props: _props }">
+        <v-list-item v-bind="_props" :subtitle="item.props.title !== item.props.value ? item.props.value : undefined"/>
       </template>
 
       <template #append-item v-if="findZonesTracker.response?.nextPageToken">
@@ -56,21 +53,21 @@
         </v-btn>
       </template>
     </v-combobox>
-    <v-menu bottom offset-y nudge-top="-8" v-if="!blockActions">
-      <template #activator="{on, attrs}">
-        <v-btn icon v-on="on" v-bind="attrs" class="ml-2 mr-n2">
-          <v-icon>mdi-dots-vertical</v-icon>
+    <v-menu location="bottom" v-if="!blockActions" :close-on-content-click="false">
+      <template #activator="{props}">
+        <v-btn icon="true" variant="text" v-bind="props" size="small" class="ml-2 mr-n2">
+          <v-icon size="24">mdi-dots-vertical</v-icon>
         </v-btn>
       </template>
       <v-card min-width="300">
-        <v-list>
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>Only show zones</v-list-item-title>
-            </v-list-item-content>
-            <v-list-item-action>
-              <v-switch v-model="zonesOnly"/>
-            </v-list-item-action>
+        <v-list density="compact">
+          <v-list-item @click="zonesOnly = !zonesOnly">
+            <v-list-item-title>Only show zones</v-list-item-title>
+            <template #append>
+              <v-list-item-action end>
+                <v-switch v-model="zonesOnly" hide-details/>
+              </v-list-item-action>
+            </template>
           </v-list-item>
         </v-list>
       </v-card>
@@ -85,19 +82,16 @@ import useAuthSetup from '@/composables/useAuthSetup';
 import debounce from 'debounce';
 import {computed, reactive, ref, watch} from 'vue';
 
-const props = defineProps({
-  zones: {
-    type: Array, // string[]
-    default: () => ([])
-  },
-  maxResultSize: {
-    type: Number,
-    default: 5
-  }
+const _zones = defineModel('zones', {
+  type: Array,
+  default: () => []
 });
-const emit = defineEmits(['update:zones', 'update:maxResultSize']);
+const _maxResultSize = defineModel('maxResultSize', {
+  type: Number,
+  default: 5
+});
 
-const propZones = computed(() => deviceArrToItems(props.zones));
+const propZones = computed(() => deviceArrToItems(_zones.value));
 const inputZones = ref([]);
 const inputItems = computed(() => {
   return deviceArrToItems(findZonesTracker.response?.devicesList ?? []);
@@ -123,7 +117,7 @@ const sendZoneEvent = (event) => {
       zones.push(zone); // zone selected from search results
     }
   }
-  emit('update:zones', zones);
+  _zones.value = zones;
 };
 
 const deviceArrToItems = (devices) => devices.map(device => {
@@ -175,7 +169,7 @@ const findZonesQuery = computed(() => {
 });
 // do the fetch of zones, debounced to avoid spamming the server
 const fetchZones = debounce((query) => {
-  listDevices({query, pageSize: props.maxResultSize}, findZonesTracker)
+  listDevices({query, pageSize: _maxResultSize.value}, findZonesTracker)
       .catch(() => {
       }); // errors are recorded in findZonesTracker
 }, 500);
@@ -186,7 +180,7 @@ const nextPageToken = computed(() => findZonesTracker.response?.nextPageToken);
 const fetchNextPage = async () => {
   const pageToken = nextPageToken.value;
   if (pageToken) {
-    const req = {query: findZonesQuery.value, pageSize: props.maxResultSize, pageToken};
+    const req = {query: findZonesQuery.value, pageSize: _maxResultSize.value, pageToken};
     try {
       const res = await listDevices(req, findZonesNextPageTracker);
       findZonesTracker.response.devicesList.push(...res.devicesList);

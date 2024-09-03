@@ -1,15 +1,15 @@
 <template>
   <v-card elevation="0" tile>
     <v-list tile class="ma-0 pa-0">
-      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Lights</v-subheader>
+      <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Lights</v-list-subheader>
       <v-list-item>
         <v-list-item-title>Unoccupied timeout</v-list-item-title>
         <v-text-field
             v-model="delayTimeout"
             hide-details
             :disabled="blockActions"
-            dense
-            outlined
+            density="compact"
+            variant="outlined"
             :rules="[delayRule]"
             readonly
             style="width: 100px;"/>

@@ -3,15 +3,11 @@
 
   <v-menu
       v-else
-      left
-      bottom
-      offset-y
-      nudge-bottom="4px"
-      nudge-right="4px"
+      location="left bottom"
       transition="slide-x-reverse-transition"
       open-on-hover>
-    <template #activator="{on}">
-      <v-icon :class="state" :color="iconColor" v-on="on" size="20">{{ icon }}</v-icon>
+    <template #activator="{props: _props}">
+      <v-icon :class="state" :color="iconColor" v-bind="_props" size="20">{{ icon }}</v-icon>
     </template>
     <v-card :color="stateColor">
       <v-card-text class="py-2">{{ tooltipStr }}</v-card-text>

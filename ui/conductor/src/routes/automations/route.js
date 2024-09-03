@@ -10,7 +10,7 @@ export default {
   },
   children: [
     {
-      path: ':type*',
+      path: ':type',
       components: {
         default: () => import('./components/AutomationList.vue'),
         sidebar: () => import('./components/AutomationSideBar.vue')

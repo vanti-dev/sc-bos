@@ -2,9 +2,8 @@ import {timestampToDate} from '@/api/convpb.js';
 import {closeResource, newResourceValue} from '@/api/resource';
 import {occupancyStateToString, pullOccupancy} from '@/api/sc/traits/occupancy';
 import {toQueryObject, watchResource} from '@/util/traits';
-import {toValue} from '@/util/vue';
 import {Occupancy} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
-import {computed, onScopeDispose, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
 /**
  * @typedef {
@@ -78,7 +77,7 @@ export function useOccupancy(value) {
   });
   const iconColor = computed(() => {
     if (state.value === Occupancy.State.OCCUPIED) {
-      return 'success lighten1';
+      return 'success-lighten-1';
     } else if (state.value === Occupancy.State.UNOCCUPIED) {
       return 'warning';
     } else if (state.value === Occupancy.State.IDLE) {
@@ -179,7 +178,7 @@ export default function(query, paused) {
   /** @type {import('vue').ComputedRef<string|undefined>} */
   const occupancyIconColor = computed(() => {
     if (occupancyStateNumber.value === Occupancy.State.OCCUPIED) {
-      return 'success lighten1';
+      return 'success-lighten-1';
     } else if (occupancyStateNumber.value === Occupancy.State.UNOCCUPIED) {
       return 'warning';
     } else if (occupancyStateNumber.value === Occupancy.State.IDLE) {

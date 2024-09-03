@@ -12,48 +12,51 @@
 import AppBar from '@/components/default/AppBar.vue';
 import NavigationDrawer from '@/components/default/NavigationDrawer.vue';
 import ErrorView from '@/components/ui-error/ErrorView.vue';
-import useVuetify from '@/composables/useVuetify';
 import {useControllerStore} from '@/stores/controller';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {storeToRefs} from 'pinia';
 import {onBeforeMount, onMounted} from 'vue';
+import {useTheme} from 'vuetify';
 
 const controller = useControllerStore();
 const uiConfig = useUiConfigStore();
 const {appBranding} = storeToRefs(uiConfig);
-const vuetifyInstance = useVuetify();
+const theme = useTheme();
 
 onBeforeMount(async () => {
   await uiConfig.loadConfig();
+  const brandColors = appBranding.value?.brandColors;
 
-  // Access the vuetify instance from the Vue app
-  if (vuetifyInstance) {
-    const brandColors = appBranding.value?.brandColors;
+  // Apply appBranding colors to the vuetify theme
+  if (theme && brandColors) {
+    // we support two flavours of brandColors:
+    // {foo: "#aabbcc"} or {foo: {base: "#aabbcc", lighten1: "#ddeeff"}}
+    // The second format is discouraged as it is based on the old Vuetify2 theme format.
 
-    if (brandColors) {
-      // Loop through each color key (e.g., 'primary', 'secondary', etc.)
-      Object.entries(brandColors).forEach(([colorKey, colorVariants]) => {
-        // Determine if the colorVariants is a string or an object
-        if (typeof colorVariants === 'string') {
-          // Directly assign the string color to theme if it's a simple color
-          if (vuetifyInstance.theme.themes.dark[colorKey] !== undefined) {
-            vuetifyInstance.theme.themes.dark[colorKey] = colorVariants;
+    const brandTheme = theme.themes.value['dark'];
+
+    for (const [key, value] of Object.entries(brandColors)) {
+      if (typeof value === 'string') {
+        brandTheme.colors[key] = /** @type {string} */ value;
+      } else {
+        for (const [variant, color] of Object.entries(value)) {
+          // Vuetify now uses a different variant naming scheme: lighten-1 instead of lighten1.
+          // Vuetify also removed the -base suffix from colors.
+          // This converts the old format to the new one
+          if (variant.startsWith('lighten')) {
+            brandTheme.colors[`${key}-lighten-${variant.substring('lighten'.length)}`] = color;
+          } else if (variant.includes('darken')) {
+            brandTheme.colors[`${key}-darken-${variant.substring('darken'.length)}`] = color;
+          } else if (variant === 'base') {
+            brandTheme.colors[key] = color;
+          } else {
+            brandTheme.colors[`${key}-${variant}`] = color;
           }
-        } else if (typeof colorVariants === 'object') {
-          // Now loop through each variant of the color (e.g., 'base', 'lighten1', etc.)
-          Object.entries(colorVariants).forEach(([variantKey, variantValue]) => {
-            // Safely update the corresponding Vuetify theme color
-            if (vuetifyInstance.theme.themes.dark[colorKey]) {
-              vuetifyInstance.theme.themes.dark[colorKey][variantKey] = variantValue;
-            }
-          });
         }
-      });
+      }
     }
   }
 });
-
-
 onMounted(() => {
   controller.sync();
 });
@@ -62,6 +65,6 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .v-application {
-  background: var(--v-neutral-darken1);
+  background: rgb(var(--v-theme-neutral-darken-1));
 }
 </style>

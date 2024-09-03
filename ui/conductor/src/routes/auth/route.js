@@ -1,4 +1,4 @@
-import ChildOnlyPage from '@/components/page-layout/ChildOnlyPage.vue';
+import SidebarPage from '@/components/page-layout/SidebarPage.vue';
 import thirdParty from '@/routes/auth/third-party/route.js';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {route} from '@/util/router.js';
@@ -8,7 +8,7 @@ export default [
     name: 'auth',
     path: '/auth',
     components: {
-      default: ChildOnlyPage,
+      default: SidebarPage,
       nav: () => import('./AuthNav.vue')
     },
     children: [
@@ -21,7 +21,8 @@ export default [
           },
           title: 'Users'
         }
-      }
+      },
+      ...route(thirdParty)
     ],
     meta: {
       authentication: {
@@ -41,6 +42,5 @@ export default [
         next();
       }
     }
-  },
-  ...route(thirdParty)
+  }
 ];

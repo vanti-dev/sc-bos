@@ -1,6 +1,5 @@
-import {toValue} from '@/util/vue.js';
 import {defineStore} from 'pinia';
-import {computed, ref} from 'vue';
+import {computed, ref, toValue} from 'vue';
 
 export const useUiConfigStore = defineStore('uiConfig', () => {
   /**

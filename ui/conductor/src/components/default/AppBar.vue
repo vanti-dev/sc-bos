@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app height="60" :clipped-left="hasNav" :clipped-right="hasSidebar" elevation="0" class="pr-7">
+  <v-app-bar height="60" elevation="0" class="pr-7" color="neutral">
     <app-menu v-if="accountStore.isLoggedIn"/>
     <brand-logo :theme="config.theme" outline="white" style="height: 35px" class="ml-4 mr-2"/>
     <span class="heading">{{ appBarHeadingWithBrand }}</span>
@@ -30,14 +30,14 @@ import {useUiConfigStore} from '@/stores/ui-config';
 import {storeToRefs} from 'pinia';
 
 import {computed} from 'vue';
-import {useRoute} from 'vue-router/composables';
+import {useRoute} from 'vue-router';
 
 const uiConfig = useUiConfigStore();
 const {config} = storeToRefs(uiConfig);
 const accountStore = useAccountStore();
 const route = useRoute();
 
-const {pageTitle, hasSections, hasNav, hasSidebar} = usePage();
+const {pageTitle, hasSections} = usePage();
 
 const appBarHeadingWithBrand = computed(() => {
   const brandName = config.value.theme?.appBranding.brandName ?? 'Smart Core';
@@ -54,7 +54,7 @@ const hideAccountBtn = computed(() => isLoginPage.value || isAuthDisabled.value)
 
 <style lang="scss" scoped>
 .v-app-bar.v-toolbar.v-sheet {
-  background: var(--v-neutral-base);
+  background: rgb(var(--v-theme-neutral));
 }
 
 .v-app-bar :deep(.v-toolbar__content) {

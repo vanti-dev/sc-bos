@@ -17,7 +17,7 @@
               label="Note"
               v-model="newSecret.note"
               required
-              filled
+              variant="filled"
               hide-details="auto"
               hint="Easily recognisable (e.g. 'Read only', 'AV System')"
               :rules="noteRules"/>
@@ -26,21 +26,19 @@
                 v-model="newSecret.expiresIn"
                 :items="Object.values(suggestedExpiresIn)"
                 hide-details
-                filled
+                variant="filled"
                 class="expires-in"
                 label="Expires"/>
             <v-menu
                 v-if="newSecret.expiresIn === suggestedExpiresIn.custom"
                 v-model="customExpiryMenuVisible"
-                :close-on-content-click="false"
-                offset-y>
-              <template #activator="{on, attrs}">
+                :close-on-content-click="false">
+              <template #activator="{props: _props}">
                 <v-text-field
-                    v-model="newSecret.expiresAt"
+                    v-model="expiresAtString"
                     placeholder="yyyy-mm-dd"
                     readonly
-                    v-bind="attrs"
-                    v-on="on"
+                    v-bind="_props"
                     class="expires-at"
                     hide-details="auto"
                     :rules="expiresAtRules"/>
@@ -56,47 +54,45 @@
           </div>
         </v-card-text>
         <v-card-actions class="justify-end">
-          <v-btn type="cancel" text @click.prevent="cancelAddSecret">Cancel</v-btn>
-          <v-btn class="primary" type="submit" depressed :disabled="!formValid">Create Secret</v-btn>
+          <v-btn type="cancel" variant="text" @click.prevent="cancelAddSecret">Cancel</v-btn>
+          <v-btn class="bg-primary" type="submit" variant="flat" :disabled="!formValid">Create Secret</v-btn>
         </v-card-actions>
         <v-progress-linear color="primary" indeterminate :active="createSecretTracker.loading"/>
       </v-form>
       <!-- Display secret details -->
-      <v-list v-else class="pb-0">
-        <v-list-item class="banner info-banner my-4" v-if="createSecretTracker.response">
-          <v-list-item-icon>
+      <v-list v-else class="pb-0" lines="two">
+        <v-list-item class="banner info-banner my-4" variant="tonal" v-if="createSecretTracker.response">
+          <template #prepend>
             <v-icon>mdi-information</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            Make sure to copy your secret token now. You won't be able to see it again.
-          </v-list-item-content>
+          </template>
+          Make sure to copy your secret token now. You won't be able to see it again.
         </v-list-item>
         <v-list-item class="banner error-banner" v-if="createSecretTracker.error">
-          <v-list-item-icon>
+          <template #prepend>
             <v-icon>mdi-alert-circle</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            {{ createSecretTracker.error.name }}: {{ createSecretTracker.error.message }}
-          </v-list-item-content>
+          </template>
+          {{ createSecretTracker.error.name }}: {{ createSecretTracker.error.message }}
         </v-list-item>
         <v-list-item class="banner secret-banner" v-if="createSecretTracker.response">
-          <v-list-item-icon>
+          <template #prepend>
             <v-icon>mdi-key</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>{{ createdSecret.secret }}</v-list-item-content>
-          <v-list-item-action>
-            <v-btn icon @click="copySecret">
-              <v-icon>mdi-content-copy</v-icon>
-            </v-btn>
-          </v-list-item-action>
+          </template>
+          {{ createdSecret.secret }}
+          <template #append>
+            <v-list-item-action class="mr-n2">
+              <v-btn icon="mdi-content-copy" variant="text" @click="copySecret">
+                <v-icon size="24"/>
+              </v-btn>
+            </v-list-item-action>
+          </template>
         </v-list-item>
         <v-card-actions class="justify-end pt-4 pb-0 pr-0">
-          <v-btn outlined @click="creatingSecret=true" v-if="createSecretTracker.error">Back</v-btn>
-          <v-btn class="primary" @click="finished">Done</v-btn>
+          <v-btn variant="outlined" @click="creatingSecret=true" v-if="createSecretTracker.error">Back</v-btn>
+          <v-btn class="bg-primary" @click="finished">Done</v-btn>
         </v-card-actions>
       </v-list>
       <v-snackbar v-model="copyConfirm" timeout="2000" color="success">
-        <span class="text-body-large align-baseline"><v-icon left>mdi-check-circle</v-icon>Secret copied</span>
+        <span class="text-body-large align-baseline"><v-icon start>mdi-check-circle</v-icon>Secret copied</span>
       </v-snackbar>
     </v-card>
     <template #activator="attrs">
@@ -112,7 +108,8 @@ import {DAY, useNow} from '@/components/now.js';
 import RelativeDate from '@/components/RelativeDate.vue';
 import {useErrorStore} from '@/components/ui-error/error';
 import {add} from 'date-fns';
-import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import {useDate} from 'vuetify';
 
 const emit = defineEmits(['finished']);
 const props = defineProps({
@@ -146,9 +143,17 @@ const suggestedExpiresIn = {
 const newSecret = reactive({
   note: '',
   expiresIn: suggestedExpiresIn.month,
-  expiresAt: null
+  expiresAt: /** @type {Date} */ null
+});
+const date = useDate();
+const expiresAtString = computed({
+  get: () => newSecret.expiresAt ? date.format(newSecret.expiresAt, 'keyboardDate') : undefined,
+  set: v => {
+    newSecret.expiresAt = date.date(v);
+  }
 });
 const customExpiryMenuVisible = ref(false);
+watch(() => newSecret.expiresAt, (n, o) => console.debug('expiresAt', n, typeof n, o, typeof o));
 
 const {now} = useNow(DAY);
 const computedExpiresAt = computed(() => {
@@ -283,18 +288,18 @@ function copySecret() {
 }
 
 .banner.secret-banner:before {
-  background-color: var(--v-secondary-base);
+  background-color: rgb(var(--v-theme-secondary));
   opacity: 0.2;
 }
 
 .banner.info-banner:before {
-  background-color: var(--v-secondaryTeal-darken1);
+  background-color: rgb(var(--v-theme-secondaryTeal-darken-1));
   color: white;
   opacity: 1;
 }
 
 .banner.error-banner:before {
-  background-color: var(--v-error-base);
+  background-color: rgb(var(--v-theme-error));
   opacity: 0.5;
 }
 </style>

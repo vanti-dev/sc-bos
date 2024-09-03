@@ -2,21 +2,21 @@
   <status-alert v-if="props.streamError" :resource="props.streamError"/>
 
   <span v-else-if="value && !props.streamError" class="text-no-wrap el-cell">
-    <v-tooltip bottom>
-      <template #activator="{ on, attrs }">
-        <span v-on="on" v-bind="attrs">
-          <v-icon :left="hasTotals" :class="{justEntered}" size="20">mdi-location-enter</v-icon>
+    <v-tooltip location="bottom">
+      <template #activator="{ props: _props }">
+        <span v-bind="_props">
+          <v-icon :start="hasTotals" :class="{justEntered}" size="20">mdi-location-enter</v-icon>
           <span :class="{justEntered}" v-if="hasTotals">{{ enterTotal }}</span>
         </span>
       </template>
       Entered
     </v-tooltip>
     <v-divider vertical class="mx-2"/>
-    <v-tooltip bottom>
-      <template #activator="{ on, attrs }">
-        <span v-on="on" v-bind="attrs">
+    <v-tooltip location="bottom">
+      <template #activator="{ props: _props }">
+        <span v-bind="_props">
           <span :class="{justLeft}" v-if="hasTotals">{{ leaveTotal }}</span>
-          <v-icon :right="hasTotals" :class="{justLeft}" size="20">mdi-location-exit</v-icon>
+          <v-icon :end="hasTotals" :class="{justLeft}" size="20">mdi-location-exit</v-icon>
         </span>
       </template>
       Left
@@ -67,6 +67,6 @@ const {
 
 .justEntered,
 .justLeft {
-  color: var(--v-success-base);
+  color: rgb(var(--v-theme-success));
 }
 </style>

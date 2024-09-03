@@ -1,15 +1,15 @@
 <template>
-  <v-list class="pa-0" dense nav>
+  <v-list class="pa-0" density="compact" nav>
     <v-list-item
         v-for="(item, key) in enabledMenuItems"
         :to="item.link"
         :key="key"
         class="my-2"
         :disabled="hasNoAccess(item.link.path)">
-      <v-list-item-icon>
+      <template #prepend>
         <v-icon>{{ item.icon }}</v-icon>
-      </v-list-item-icon>
-      <v-list-item-content class="text-truncate">{{ item.title }}</v-list-item-content>
+      </template>
+      <v-list-item-title class="text-truncate">{{ item.title }}</v-list-item-title>
     </v-list-item>
   </v-list>
 </template>
@@ -43,6 +43,6 @@ const enabledMenuItems = computed(() => {
 
 <style scoped>
 :deep(.v-list-item--active) {
-  color: var(--v-primary-base);
+  color: rgb(var(--v-theme-primary));
 }
 </style>

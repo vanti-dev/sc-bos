@@ -1,7 +1,16 @@
-@import "vuetify/src/styles/styles.sass";
-@import "vuetify/src/components/VChip/_variables.scss";
-@import "vuetify/src/components/VTextField/_variables.scss";
+@use 'sass/main';
+@use 'vuetify/settings' as v;
 
+code,
+kbd,
+pre,
+samp {
+  font-family: main.$mono-font-family; /* Specify the font family of code elements */
+}
+
+p {
+  margin-bottom: 16px;
+}
 
 .v-text-field--outlined {
   background: var(--v-neutral-lighten1);
@@ -14,7 +23,7 @@ to have a border all around instead of just at the bottom
 */
 
 .v-text-field--filled {
-  border-radius: $text-field-border-radius;
+  border-radius: v.$text-field-border-radius;
 }
 
 .v-text-field--filled:not(.v-text-field--outlined):before {
@@ -23,12 +32,12 @@ to have a border all around instead of just at the bottom
   inset: 0;
   border-radius: inherit;
   border-style: solid;
-  border-width: $text-field-outlined-fieldset-border-width;
+  // todo: border-width: v.$text-field-outlined-fieldset-border-width;
   opacity: 0.24;
   // These are copied from VTextField fieldset styles, where the outline border styles come from
   transition-duration: 0.15s;
   transition-property: color, opacity;
-  transition-timing-function: map-get($transition, 'fast-in-fast-out');
+  transition-timing-function: v.$accelerated-easing;
 }
 
 .v-text-field--filled:hover:before {
@@ -37,7 +46,7 @@ to have a border all around instead of just at the bottom
 
 .v-text-field--filled.v-input--is-focused:before {
   opacity: 1;
-  border: $text-field-outlined-fieldset-border;
+  // todo: border: v.$text-field-outlined-fieldset-border;
 }
 
 .v-text-field--filled.v-input--is-dirty .v-label {
@@ -58,18 +67,28 @@ Also center the text when it's small
 }
 
 .v-chip {
-  @each $name, $size in $icon-sizes {
+  @each $name, $size in v.$icon-sizes {
     &.v-size--#{$name} {
-      min-width: #{map-get($size, 'height')}px
+      min-width: $size
     }
   }
 }
 
 // increase the contrast between dark card based menus and their background
-.v-menu__content.theme--dark {
-  > .v-card.theme--dark,
-  > .v-list.theme--dark {
+.v-theme--dark > .v-overlay__content {
+  > .v-card.v-theme--dark,
+  > .v-list.v-theme--dark {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-top-color: rgba(255, 255, 255, 0.25);
   }
+}
+
+.v-data-table-header__sort-icon {
+  margin-left: 8px;
+}
+
+// this only works when the table has no footer, in other case it causes strange
+// rounding when hovering or selecting the last row on a page
+.v-table--has-bottom .v-table__wrapper {
+  border-radius: initial;
 }

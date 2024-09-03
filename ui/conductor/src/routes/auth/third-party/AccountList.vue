@@ -5,10 +5,9 @@
         :headers="headers"
         :items="tenantsList"
         :search="search"
-        sort-by="title"
-        :header-props="{ sortIcon: 'mdi-arrow-up-drop-circle-outline' }"
+        v-model:sort-by="sortBy"
         :loading="tenantsTracker.loading"
-        :item-class="rowClass"
+        :row-props="rowProps"
         @click:row="showTenant">
       <template #item.zoneNamesList="{ index, value }">
         <span class="d-inline-flex justify-start" style="gap: 8px">
@@ -21,21 +20,20 @@
             <v-col cols="12" md="5">
               <v-text-field
                   label="Search accounts"
-                  outlined
+                  variant="outlined"
                   hide-details
                   prepend-inner-icon="mdi-magnify"
                   v-model="search"/>
             </v-col>
             <v-spacer/>
             <new-account-dialog @finished="tenantStore.refreshTenants">
-              <template #activator="{ on, attrs }">
+              <template #activator="{ props }">
                 <v-btn
-                    outlined
-                    v-bind="attrs"
-                    v-on="on"
+                    variant="outlined"
+                    v-bind="props"
                     :disabled="blockActions">
                   Add Account
-                  <v-icon right>mdi-plus</v-icon>
+                  <v-icon end>mdi-plus</v-icon>
                 </v-btn>
               </template>
             </new-account-dialog>
@@ -65,11 +63,13 @@ const errorStore = useErrorStore();
 const search = ref('');
 
 const headers = [
-  {text: 'Name', value: 'title', width: '30%'},
-  {text: 'Client ID', value: 'id', width: '28em'},
-  // {text: 'Permissions', value: 'permissions'},
-  {text: 'Zones', value: 'zoneNamesList'}
+  {title: 'Name', key: 'title', width: '30%'},
+  {title: 'Client ID', key: 'id', width: '28em'},
+  // {title: 'Permissions', key: 'permissions'},
+  {title: 'Zones', key: 'zoneNamesList', sortable: false}
 ];
+
+const sortBy = ref([{key: 'title', order: 'asc'}]);
 
 // UI error handling
 let unwatchErrors;
@@ -82,9 +82,10 @@ onUnmounted(() => {
 });
 
 /**
+ * @param {PointerEvent} e
  * @param {Tenant.AsObject} item
  */
-function showTenant(item) {
+function showTenant(e, {item}) {
   // router.push(`/auth/third-party/${item.id}`);
   sidebar.visible = true;
   sidebar.title = item.title;
@@ -103,13 +104,13 @@ watch(tenantsList, () => {
 
 /**
  * @param {*} item
- * @return {string}
+ * @return {Record<string,any>}
  */
-function rowClass(item) {
+function rowProps({item}) {
   if (sidebar.visible && sidebar.data?.id === item.id) {
-    return 'item-selected';
+    return {class: 'item-selected'};
   }
-  return '';
+  return {};
 }
 
 // ------------------------------ //
@@ -119,22 +120,20 @@ const {blockActions} = useAuthSetup();
 </script>
 
 <style lang="scss" scoped>
-:deep(.v-data-table-header__icon) {
-  margin-left: 8px;
-}
+@use 'vuetify/settings';
 
 .table :deep(tbody tr) {
   cursor: pointer;
 }
 
 .v-data-table :deep(.v-data-footer) {
-  background: var(--v-neutral-lighten1) !important;
-  border-radius: 0px 0px $border-radius-root * 2 $border-radius-root * 2;
+  background: rgb(var(--v-theme-neutral-lighten-1)) !important;
+  border-radius: 0 0 settings.$border-radius-root * 2 settings.$border-radius-root * 2;
   border: none;
   margin: 0 -12px -12px;
 }
 
 .v-data-table :deep(.item-selected) {
-  background-color: var(--v-primary-darken4);
+  background-color: rgb(var(--v-theme-primary-darken-4));
 }
 </style>

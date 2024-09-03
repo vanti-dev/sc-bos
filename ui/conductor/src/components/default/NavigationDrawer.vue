@@ -2,14 +2,12 @@
   <v-navigation-drawer
       v-if="hasNav && isLoggedIn"
       v-model="drawer"
-      app
       class="siteNavigation pt-4"
-      clipped
       color="transparent"
       :expand-on-hover="!pinDrawer"
       floating
-      :mini-variant.sync="miniVariant"
-      :mini-variant-width="drawerWidth"
+      v-model:rail="miniVariant"
+      :rail-width="drawerWidth"
       width="275"
       permanent>
     <router-view
@@ -20,14 +18,14 @@
       <div class="pa-2">
         <v-btn
             v-if="hasNav && !miniVariant"
-            text
+            variant="text"
             block
             @click="pinDrawer = !pinDrawer">
-          <v-icon left>mdi-pin-outline</v-icon>
+          <v-icon start>mdi-pin-outline</v-icon>
           {{ !pinDrawer ? 'Pin navigation' : 'Unpin navigation' }}
         </v-btn>
       </div>
-      <div class="text-caption text-center neutral--text text--lighten-2 text-no-wrap">
+      <div class="text-caption text-center text-neutral-lighten-2 text-no-wrap">
         <v-divider/>
         <p class="mt-2 mb-0">
           Smart Core &copy; {{ new Date().getFullYear() }}
@@ -70,9 +68,21 @@ const appVersion = computed(() => {
 }
 
 /** This helps displaying the notification counter badge, while keeping the right sidebar scrollable */
-.siteNavigation,
-.siteNavigation ::v-deep .v-navigation-drawer__content {
+.siteNavigation.v-navigation-drawer--rail :deep(.v-list) {
   overflow: visible;
+}
+
+.siteNavigation.v-navigation-drawer--rail :deep(.v-navigation-drawer__content) {
+  overflow: hidden;
+}
+
+/** this fixes indentation of list items in groups when showing rail variant */
+.siteNavigation :deep(.v-list-group__items .v-list-item) {
+  transition: padding-inline-start 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.siteNavigation.v-navigation-drawer--rail :deep(.v-list-group__items .v-list-item) {
+  padding-inline-start: 8px !important;
 }
 
 .nav-btns {

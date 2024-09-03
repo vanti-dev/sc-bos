@@ -10,27 +10,26 @@
         <v-text-field
             v-show="!hiddenOnMap"
             v-model="search"
-            append-icon="mdi-magnify"
-            class="neutral"
-            dense
-            filled
+            append-inner-icon="mdi-magnify"
+            class="bg-neutral"
+            density="compact"
+            variant="filled"
             hide-details
             label="Search devices"/>
         <v-spacer style="pointer-events: none"/>
-        <v-btn-toggle v-model="viewType" dense mandatory>
-          <v-btn large text value="list">List View</v-btn>
-          <v-btn large text value="map">Map View</v-btn>
+        <v-btn-toggle v-model="viewType" mandatory variant="outlined">
+          <v-btn value="list">List View</v-btn>
+          <v-btn value="map">Map View</v-btn>
         </v-btn-toggle>
         <v-select
             v-model="filterFloor"
             class="ml-4"
-            dense
+            density="compact"
             :disabled="floorList.length <= 1"
-            filled
             hide-details
             :items="formattedFloorList"
             label="Floor"
-            outlined
+            variant="outlined"
             style="min-width: 100px; width: 100%; max-width: 170px"/>
       </v-row>
       <list-view v-if="viewType === 'list'" :device-names="deviceQuery"/>

@@ -1,9 +1,8 @@
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullAccessAttempts} from '@/api/sc/traits/access';
 import {toQueryObject, watchResource} from '@/util/traits';
-import {toValue} from '@/util/vue';
 import {AccessAttempt} from '@sc-bos/ui-gen/proto/access_pb';
-import {computed, onScopeDispose, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
 /**
  * @typedef {import('@sc-bos/ui-gen/proto/access_pb').PullAccessAttemptsRequest} PullAccessAttemptsRequest
@@ -12,6 +11,7 @@ import {computed, onScopeDispose, reactive, toRefs} from 'vue';
  * @typedef {import('vue').UnwrapNestedRefs} UnwrapNestedRefs
  * @typedef {import('vue').ToRefs} ToRefs
  * @typedef {import('vue').ComputedRef} ComputedRef
+ * @typedef {import('vue').MaybeRefOrGetter} MaybeRefOrGetter
  * @typedef {import('@/api/resource').ResourceValue} ResourceValue
  */
 

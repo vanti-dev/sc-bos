@@ -2,11 +2,13 @@
   <v-list>
     <v-list-item v-for="item in _items" :key="item.value" @click="onClick(item)">
       <v-list-item-title>{{ item.title }}</v-list-item-title>
-      <v-fade-transition>
-        <v-list-item-action v-if="isSelectedItem(item)">
-          <v-icon>mdi-check</v-icon>
-        </v-list-item-action>
-      </v-fade-transition>
+      <template #append>
+        <v-fade-transition hide-on-leave>
+          <v-list-item-action v-if="isSelectedItem(item)">
+            <v-icon>mdi-check</v-icon>
+          </v-list-item-action>
+        </v-fade-transition>
+      </template>
     </v-list-item>
   </v-list>
 </template>

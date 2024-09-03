@@ -1,9 +1,8 @@
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullCurrentStatus} from '@/api/sc/traits/status';
 import {toQueryObject, watchResource} from '@/util/traits.js';
-import {toValue} from '@/util/vue.js';
 import {StatusLog} from '@sc-bos/ui-gen/proto/status_pb';
-import {computed, onScopeDispose, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
 /**
  * @typedef {import('@sc-bos/ui-gen/proto/status_pb').StatusLog} StatusLog

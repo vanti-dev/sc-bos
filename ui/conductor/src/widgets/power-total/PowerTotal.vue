@@ -5,14 +5,14 @@
         :error="_generated.streamError"
         label="Generated"
         unit="kW"
-        label-color="success--text text--lighten-3"/>
+        label-color="text-success-lighten-3"/>
     <span v-if="showTotal" class="add mx-3 text-h2">+</span>
     <labelled-unit
         :value="demandKW"
         :error="_demand.streamError"
         label="Demand"
         unit="kW"
-        label-color="primary--text"/>
+        label-color="text-primary"/>
     <span v-if="showTotal" class="eq mx-3 text-h2">=</span>
     <labelled-unit v-if="showTotal" :value="totalKW" label="Total" unit="kW"/>
     <v-divider v-if="hasOccupancy" vertical class="mx-4"/>
@@ -22,7 +22,7 @@
         :error="_occupancy.streamError"
         label="Energy Intensity"
         unit="kW/person"
-        label-color="orange--text"/>
+        label-color="text-orange"/>
   </div>
 </template>
 

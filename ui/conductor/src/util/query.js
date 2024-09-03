@@ -1,6 +1,6 @@
 import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource.js';
 import {useErrorStore} from '@/components/ui-error/error';
-import {nextTick, reactive, set} from 'vue';
+import {nextTick, reactive} from 'vue';
 
 export class Collection {
   constructor(listFn, pullFn) {
@@ -45,7 +45,7 @@ export class Collection {
     const queryVersion = this._queryVersion;
     this._nextPageToken = await this.listFn(this.queryRaw, this._fetchingPage, this._nextPageToken, (item, id) => {
       if (queryVersion === this._queryVersion) {
-        set(this._resources.value, id, item);
+        this._resources.value[id] = item;
       }
     });
 

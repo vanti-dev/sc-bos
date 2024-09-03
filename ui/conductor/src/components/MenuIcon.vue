@@ -1,8 +1,8 @@
 <template>
   <svg :viewBox="`0 0 ${iconSize} ${iconSize}`" class="icon">
-    <template v-for="(_,y) in 3">
-      <template v-for="(__,x) in 3">
-        <circle :r="iconRadius" :cx="iconPadding + x*iconGap" :cy="iconPadding + y*iconGap" :key="y+'-'+x"/>
+    <template v-for="(_,y) in 3" :key="y">
+      <template v-for="(__,x) in 3" :key="x">
+        <circle :r="iconRadius" :cx="iconPadding + x*iconGap" :cy="iconPadding + y*iconGap"/>
       </template>
     </template>
   </svg>

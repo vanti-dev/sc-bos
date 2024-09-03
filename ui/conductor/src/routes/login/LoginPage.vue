@@ -2,7 +2,7 @@
   <v-main>
     <v-container class="d-flex flex-column align-center my-auto pa-6 fill-height">
       <v-card class="ma-auto pa-4" min-width="450px" max-width="500px">
-        <v-card-title class="justify-center text-h1 font-weight-semibold">
+        <v-card-title class="d-flex justify-center text-h1 font-weight-semibold">
           <brand-logo outline="white" style="height: 65px;"/>
           Smart Core
         </v-card-title>
@@ -12,7 +12,9 @@
         <login-choice v-else @choose="chooseProvider"/>
 
         <v-card-actions v-if="choiceExists && !displayChoice" class="d-flex justify-center mt-8">
-          <a @click="showChoice" class="text-center">Use a different sign in method</a>
+          <v-btn @click="showChoice" variant="text" class="text-body-1 text-center">
+            Use a different sign in method
+          </v-btn>
         </v-card-actions>
       </v-card>
       <v-btn
@@ -28,8 +30,8 @@
       <v-snackbar v-model="snackbar.visible">
         {{ snackbar.message }}
 
-        <template #action="{ attrs }">
-          <v-btn color="pink" text v-bind="attrs" @click="snackbar.visible = false">
+        <template #actions="attrs">
+          <v-btn color="pink" variant="text" v-bind="attrs" @click="snackbar.visible = false">
             Close
           </v-btn>
         </template>

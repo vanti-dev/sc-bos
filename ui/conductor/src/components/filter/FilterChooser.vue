@@ -1,15 +1,21 @@
 <template>
   <v-card>
-    <v-card-title>
+    <v-card-title class="d-flex align-center pt-4">
       <v-expand-x-transition>
-        <v-btn icon v-if="pageIsSelected" @click="activeFilter = null" class="ml-n2 mr-2">
-          <v-icon>mdi-arrow-left</v-icon>
+        <v-btn
+            icon="mdi-arrow-left"
+            variant="text"
+            size="small"
+            v-if="pageIsSelected"
+            @click="activeFilter = null"
+            class="ml-n2 mr-2">
+          <v-icon size="24"/>
         </v-btn>
       </v-expand-x-transition>
-      <v-text-field v-bind="topTextInputBind" clearable hide-details dense v-model="topSearch"/>
+      <v-text-field v-bind="topTextInputBind" clearable hide-details density="compact" v-model="topSearch"/>
     </v-card-title>
-    <v-card-subtitle class="pt-2 pb-0">
-      <v-btn text block small @click="topClear()" :disabled="!topIsDefaultChoice" class="overlap">
+    <v-card-subtitle class="pt-2 pb-0 mt-n2">
+      <v-btn variant="text" block size="small" @click="topClear()" :disabled="!topIsDefaultChoice" class="overlap">
         <v-slide-x-transition>
           <span v-if="!pageIsSelected">Clear All Filters</span>
         </v-slide-x-transition>
@@ -22,10 +28,9 @@
       <v-window-item :value="1">
         <v-list>
           <v-fade-transition group>
-            <template v-for="filter in displayFilters">
+            <template v-for="filter in displayFilters" :key="filter.key">
               <boolean-choice-list-item
                   v-if="filter.type === 'boolean'"
-                  :key="filter.key"
                   :title="filter.title"
                   :icon="filter.icon"
                   :choice="choices[filter.key]"
@@ -35,7 +40,6 @@
                   v-bind="filterMenuSelect"/>
               <page-choice-list-item
                   v-else
-                  :key="filter.key"
                   :filter="filter"
                   :choice="choices[filter.key]"
                   :default-choice="isDefaultChoice(choices[filter.key])"
@@ -179,16 +183,16 @@ const pageIndex = computed({
 </script>
 
 <style scoped>
-.v-input--switch.indeterminate ::v-deep(.v-input--switch__thumb),
-.v-input--switch.indeterminate ::v-deep(.v-input--selection-controls__ripple) {
+.v-input--switch.indeterminate :deep(.v-input--switch__thumb),
+.v-input--switch.indeterminate :deep(.v-input--selection-controls__ripple) {
   transform: translate(10px, 0) scale(0.5) !important;
 }
 
-.v-btn.overlap ::v-deep(.v-btn__content) {
+.v-btn.overlap :deep(.v-btn__content) {
   display: grid;
 }
 
-.v-btn.overlap ::v-deep(.v-btn__content) > * {
+.v-btn.overlap :deep(.v-btn__content) > * {
   grid-row: 1;
   grid-column: 1;
 }

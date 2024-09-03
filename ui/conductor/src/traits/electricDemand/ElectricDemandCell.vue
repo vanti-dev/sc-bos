@@ -2,11 +2,11 @@
   <status-alert v-if="props.streamError" icon="mdi-meter-electric-outline" :resource="props.streamError"/>
 
   <span class="text-no-wrap ed-cell" v-else-if="powerUseStr && !props.streamError">
-    <v-tooltip bottom>
-      <template #activator="{ on, attrs }">
-        <span v-on="on" v-bind="attrs">
+    <v-tooltip location="bottom">
+      <template #activator="{ props: _props }">
+        <span v-bind="_props">
           <span>{{ powerUseStr }}</span>
-          <v-icon right size="20">mdi-meter-electric-outline</v-icon>
+          <v-icon end size="20">mdi-meter-electric-outline</v-icon>
         </span>
       </template>
       Power use

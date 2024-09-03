@@ -98,7 +98,7 @@ import WithOpenClose from '@/traits/openClose/WithOpenClose.vue';
 import WithStatus from '@/traits/status/WithStatus.vue';
 import {subPath} from '@/util/path.js';
 import {convertSVGToPercentage} from '@/util/svg';
-import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, set, watch} from 'vue';
+import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue';
 import AccessPointCard from './AccessPointCard.vue';
 
 // -------------- Props -------------- //
@@ -317,10 +317,10 @@ const doors = computed(() => {
 const doorFills = ref({});
 const doorStrokes = ref({});
 const setDoorFill = ({name, color}) => {
-  set(doorFills.value, name, color);
+  doorFills.value[name] = color;
 };
 const setDoorStroke = ({name, color}) => {
-  set(doorStrokes.value, name, color);
+  doorStrokes.value[name] = color;
 };
 
 // watch for changes in the colours and svg and invoke dom actions to update the svg.
@@ -432,8 +432,8 @@ watch(
   --translate-y: 0;
 }
 
-.floor-plan__container ::v-deep path[id],
-.floor-plan__container ::v-deep rect[id] {
+.floor-plan__container :deep(path[id]),
+.floor-plan__container :deep(rect[id]) {
   cursor: pointer;
 }
 
@@ -446,49 +446,49 @@ watch(
   position: absolute;
 }
 
-::v-deep(svg .success) {
-  fill: var(--v-success-base);
+:deep(svg .success) {
+  fill: rgb(var(--v-theme-success));
 }
 
-::v-deep(svg .warning) {
-  fill: var(--v-warning-base);
+:deep(svg .warning) {
+  fill: rgb(var(--v-theme-warning));
 }
 
-::v-deep(svg .error) {
-  fill: var(--v-error-base);
+:deep(svg .error) {
+  fill: rgb(var(--v-theme-error));
 }
 
-::v-deep(svg .open),
-::v-deep(svg .moving) {
-  stroke: var(--v-warning-base);
+:deep(svg .open),
+:deep(svg .moving) {
+  stroke: rgb(var(--v-theme-warning));
   stroke-width: 125px;
   transition: all 0.5s ease-in-out;
 }
 
-::v-deep(svg .closed) {
-  stroke: var(--v-success-base);
+:deep(svg .closed) {
+  stroke: rgb(var(--v-theme-success));
   stroke-width: 75px;
   transition: all 0.5s ease-in-out;
 }
 
-::v-deep(svg .unknown) {
+:deep(svg .unknown) {
   stroke: #ffffff5e;
   stroke-width: 75px;
   transition: all 0.5s ease-in-out;
 }
 
-::v-deep(svg .open-fill),
-::v-deep(svg .moving-fill) {
-  fill: var(--v-warning-base);
+:deep(svg .open-fill),
+:deep(svg .moving-fill) {
+  fill: rgb(var(--v-theme-warning));
   transition: all 0.5s ease-in-out;
 }
 
-::v-deep(svg .closed-fill) {
-  fill: var(--v-success-base);
+:deep(svg .closed-fill) {
+  fill: rgb(var(--v-theme-success));
   transition: all 0.5s ease-in-out;
 }
 
-::v-deep(svg .unknown-fill) {
+:deep(svg .unknown-fill) {
   fill: #ffffff85;
   transition: all 0.5s ease-in-out;
 }

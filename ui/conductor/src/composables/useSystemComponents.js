@@ -4,7 +4,7 @@ import {ServiceNames} from '@/api/ui/services';
 import {useHubStore} from '@/stores/hub';
 import {useServicesStore} from '@/stores/services';
 import {parseCertificate} from '@/util/certificates';
-import {computed, onUnmounted, reactive, ref, set, watchEffect} from 'vue';
+import {computed, onUnmounted, reactive, ref, watchEffect} from 'vue';
 
 /**
  * @typedef {import('@/api/ui/services').ServiceTracker} ServiceTracker
@@ -194,11 +194,11 @@ export default function() {
         try {
           const [address, name] = await Promise.all([node.commsAddress, node.commsName]);
 
-          set(nodeDetails, node.name, {
+          nodeDetails[node.name] = {
             automations: servicesStore.getService(ServiceNames.Automations, address, name),
             drivers: servicesStore.getService(ServiceNames.Drivers, address, name),
             systems: servicesStore.getService(ServiceNames.Systems, address, name)
-          });
+          };
 
           unwatchTrackers.push(nodeDetails[node.name].automations.metadataTracker);
           unwatchTrackers.push(nodeDetails[node.name].drivers.metadataTracker);

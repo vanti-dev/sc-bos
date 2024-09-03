@@ -2,9 +2,8 @@ import {closeResource, newResourceValue} from '@/api/resource.js';
 import {pullAirQualitySensor} from '@/api/sc/traits/air-quality-sensor';
 import {camelToSentence} from '@/util/string.js';
 import {toQueryObject, watchResource} from '@/util/traits.js';
-import {toValue} from '@/util/vue';
 import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
-import {computed, onScopeDispose, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
 /**
  * @typedef {
@@ -18,6 +17,7 @@ import {computed, onScopeDispose, reactive, toRefs} from 'vue';
  * @typedef {import('@/api/resource').ResourceValue} ResourceValue
  * @typedef {import('vue').Ref} Ref
  * @typedef {import('vue').ToRefs} ToRefs
+ * @typedef {import('vue').MaybeRefOrGetter} MaybeRefOrGetter
  */
 
 /**
@@ -62,13 +62,13 @@ export function useAirQuality(value) {
   const score = computed(() => _v.value?.score ?? 0);
   const scoreColor = computed(() => {
     if (score.value < 10) {
-      return 'error lighten-1';
+      return 'error-lighten-1';
     } else if (score.value < 50) {
       return 'warning';
     } else if (score.value < 75) {
       return 'secondary';
     } else {
-      return 'success lighten-1';
+      return 'success-lighten-1';
     }
   });
 

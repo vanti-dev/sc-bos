@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia';
-import {del, reactive, set} from 'vue';
+import {reactive} from 'vue';
 
 export const useIntersectedItemsStore = defineStore('intersectedItems', () => {
   const intersectedItemNames = reactive(
@@ -31,7 +31,7 @@ export const useIntersectedItemsStore = defineStore('intersectedItems', () => {
     if (hasName(name)) {
       intersectedItemNames[name]--;
       if (!hasName(name)) {
-        del(intersectedItemNames, name);
+        delete(intersectedItemNames[name]);
       }
     }
   };
@@ -40,7 +40,7 @@ export const useIntersectedItemsStore = defineStore('intersectedItems', () => {
     if (hasName(name)) {
       intersectedItemNames[name]++;
     } else {
-      set(intersectedItemNames, name, 1);
+      intersectedItemNames[name] = 1;
     }
   };
 

@@ -6,18 +6,18 @@
           v-model="node"
           :items="Object.values(hubStore.nodesList)"
           label="System Component"
-          item-text="name"
+          item-title="name"
           item-value="name"
           hide-details="auto"
           :loading="hubStore.nodesListCollection.loading ?? true"
-          outlined/>
+          variant="outlined"/>
       <v-spacer/>
       <v-btn class="ml-6" v-if="editMode" @click="save" color="accent" :disabled="blockActions">
-        <v-icon left>mdi-content-save</v-icon>
+        <v-icon start>mdi-content-save</v-icon>
         Save
       </v-btn>
       <v-btn class="ml-6" v-else @click="editMode=true" :disabled="blockActions">
-        <v-icon left>mdi-pencil</v-icon>
+        <v-icon start>mdi-pencil</v-icon>
         Edit
       </v-btn>
     </v-toolbar>

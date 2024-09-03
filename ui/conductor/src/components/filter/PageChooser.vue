@@ -1,7 +1,7 @@
 <template>
   <v-card>
-    <v-card-title>
-      <v-text-field v-bind="topTextInputBind" clearable hide-details dense v-model="search"/>
+    <v-card-title class="pt-4">
+      <v-text-field v-bind="topTextInputBind" clearable hide-details density="compact" v-model="search"/>
     </v-card-title>
     <slot/>
   </v-card>
@@ -18,17 +18,12 @@ const props = defineProps({
   type: {
     type: String,
     default: 'list'
-  },
-  search: {
-    type: String,
-    default: ''
   }
 });
-const emits = defineEmits(['update:search']);
 
-const search = computed({
-  get: () => props.search,
-  set: (value) => emits('update:search', value)
+const search = defineModel('search', {
+  type: String,
+  default: ''
 });
 
 const topTextInputBind = computed(() => {

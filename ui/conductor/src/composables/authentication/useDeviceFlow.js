@@ -1,8 +1,7 @@
 import {useUiConfigStore} from '@/stores/ui-config';
 import {loadFromBrowserStorage, saveToBrowserStorage} from '@/util/browserStorage';
-import {toValue} from '@/util/vue';
 import jwtDecode from 'jwt-decode';
-import {computed, ref} from 'vue';
+import {computed, ref, toValue} from 'vue';
 
 
 /**

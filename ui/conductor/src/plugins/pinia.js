@@ -1,5 +1,3 @@
-import {createPinia, PiniaVuePlugin} from 'pinia';
-import Vue from 'vue';
+import {createPinia} from 'pinia';
 
-Vue.use(PiniaVuePlugin);
 export default createPinia();

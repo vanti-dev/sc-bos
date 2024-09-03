@@ -2,37 +2,38 @@
   <v-card elevation="0" tile>
     <!-- Brightness -->
     <v-list tile class="ma-0 pa-0">
-      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Lighting</v-subheader>
+      <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Lighting</v-list-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">Brightness</v-list-item-title>
-        <v-list-item-subtitle class="text-capitalize">{{ levelStr }}</v-list-item-subtitle>
+        <template #append>
+          <v-list-item-subtitle class="text-capitalize text-body-1">{{ levelStr }}</v-list-item-subtitle>
+        </template>
       </v-list-item>
     </v-list>
     <v-progress-linear
         height="34"
         class="mx-4 my-2"
-        :value="level"
-        background-color="neutral lighten-1"
+        :model-value="level"
+        bg-color="neutral-lighten-1"
+        bg-opacity="1"
         color="accent"/>
     <v-card-actions class="px-4">
       <v-btn
           v-for="control in brightnessControl.left"
-          color="neutral lighten-1"
           :disabled="control.disabled"
-          elevation="0"
           :key="control.label"
-          small
+          size="small"
+          variant="tonal"
           @click="control.onClick">
         {{ control.label }}
       </v-btn>
       <v-spacer/>
       <v-btn
           v-for="control in brightnessControl.right"
-          color="neutral lighten-1"
           :disabled="control.disabled"
-          elevation="0"
           :key="control.label"
-          small
+          size="small"
+          variant="tonal"
           @click="control.onClick">
         {{ control.label }}
       </v-btn>
@@ -52,7 +53,7 @@
           :color="getColor(preset.title, currentPresetTitle)"
           elevation="0"
           :key="preset.name"
-          small
+          size="small"
           width="100%"
           max-width="575"
           @click="updateBrightnessPreset(preset)">
@@ -96,7 +97,7 @@ const loading = computed(() => pullLoading.value || supportLoading.value || upda
  * @return {string}
  */
 function getColor(title, currentPresetTitle) {
-  return title === currentPresetTitle ? 'primary' : 'neutral lighten-1';
+  return title === currentPresetTitle ? 'primary' : 'neutral-lighten-1';
 }
 
 /**
@@ -158,7 +159,7 @@ const brightnessControl = computed(() => {
   width: auto;
 }
 
-.preset ::v-deep(.v-btn__content) {
+.preset :deep(.v-btn__content) {
   max-width: 100%;
 }
 </style>

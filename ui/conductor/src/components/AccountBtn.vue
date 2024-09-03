@@ -1,24 +1,24 @@
 <template>
   <div>
     <v-btn
-        text
+        variant="text"
         elevation="0"
         v-if="!loggedIn"
         :class="btnClass"
         to="/login">
-      <v-icon left>mdi-account-circle-outline</v-icon>
+      <v-icon start size="24">mdi-account-circle-outline</v-icon>
       Sign in
     </v-btn>
-    <v-menu v-else bottom left offset-y max-width="100%" tile>
-      <template #activator="{ on, attrs }">
-        <v-btn icon elevation="0" :class="btnClass" v-bind="attrs" v-on="on">
-          <v-icon :left="!loggedIn">mdi-account-circle-outline</v-icon>
+    <v-menu v-else location="bottom left">
+      <template #activator="{ props }">
+        <v-btn icon="true" variant="text" :class="btnClass" v-bind="props">
+          <v-icon :start="!loggedIn" size="24">mdi-account-circle-outline</v-icon>
         </v-btn>
       </template>
 
       <v-card
           tile
-          :light="$vuetify.theme.dark"
+          theme="light"
           class="text-center"
           min-width="300px">
         <v-avatar
@@ -26,14 +26,14 @@
             style="background: #eee; padding: 40px; margin-top: 24px">
           <v-icon size="64">mdi-account-circle-outline</v-icon>
         </v-avatar>
-        <v-card-title class="justify-center">
+        <v-card-title class="justify-center pb-0">
           {{ accountStore.fullName }}
         </v-card-title>
-        <v-card-subtitle>
+        <v-card-subtitle class="mb-4">
           {{ accountStore.email }}
         </v-card-subtitle>
         <v-card-actions>
-          <v-btn elevation="0" @click="logout" block>Sign out</v-btn>
+          <v-btn variant="tonal" @click="logout" block>Sign out</v-btn>
         </v-card-actions>
       </v-card>
     </v-menu>

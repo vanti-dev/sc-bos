@@ -215,29 +215,29 @@ watch([svgEl, config], ([svgEl, config]) => {
   pointer-events: none;
 }
 
-.svg--container > ::v-deep(svg) {
+.svg--container > :deep(svg) {
   /** fix svgs that have width/height attributes in them **/
   width: auto !important;
   height: auto !important;
 }
 
-.svg--container ::v-deep([data-element-idx]) {
+.svg--container :deep([data-element-idx]) {
   cursor: pointer;
   pointer-events: auto;
   transition: filter 0.2s cubic-bezier(.25, .8, .25, 1);
 }
 
-.svg--container ::v-deep([data-element-idx].decorative) {
+.svg--container :deep([data-element-idx].decorative) {
   cursor: default;
   pointer-events: none;
 }
 
-.svg--container ::v-deep([data-element-idx].selected) {
+.svg--container :deep([data-element-idx].selected) {
   filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.19)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.63));
 }
 
 /* Styles for supporting the spin effect */
-.svg--container ::v-deep(.can-spin) {
+.svg--container :deep(.can-spin) {
   transform-box: fill-box;
   transform-origin: center;
   position: relative;
@@ -245,7 +245,7 @@ watch([svgEl, config], ([svgEl, config]) => {
   animation-play-state: paused;
 }
 
-.svg--container ::v-deep(.can-spin.spinning) {
+.svg--container :deep(.can-spin.spinning) {
   animation-play-state: running;
 }
 

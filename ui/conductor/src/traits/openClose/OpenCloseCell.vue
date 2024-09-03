@@ -1,9 +1,9 @@
 <template>
   <status-alert v-if="props.streamError" icon="mdi-cancel" :resource="props.streamError"/>
 
-  <v-tooltip v-else left>
-    <template #activator="{ on }">
-      <v-icon :class="doorState.class" right size="20" v-on="on">{{ doorState.icon }}</v-icon>
+  <v-tooltip v-else location="left">
+    <template #activator="{ props: _props }">
+      <v-icon :class="doorState.class" end size="20" v-bind="_props">{{ doorState.icon }}</v-icon>
     </template>
     <span class="text-capitalize">{{ doorState?.text }}</span>
   </v-tooltip>
@@ -41,11 +41,11 @@ const doorState = computed(() => {
 
 <style scoped>
 .open, .moving {
-  color: var(--v-success-base);
+  color: rgb(var(--v-theme-success));
 }
 
 .closed {
-  color: var(--v-warning-base);
+  color: rgb(var(--v-theme-warning));
 }
 
 .unknown {

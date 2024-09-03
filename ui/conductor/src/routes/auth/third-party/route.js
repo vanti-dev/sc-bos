@@ -1,36 +1,18 @@
-import SidebarPage from '@/components/page-layout/SidebarPage.vue';
-
 export default [
   {
-    name: 'third-party',
-    path: '/auth/third-party',
+    path: 'third-party/:accountId?',
     components: {
-      default: SidebarPage,
-      nav: () => import('../AuthNav.vue')
+      default: () => import('./AccountList.vue'),
+      sidebar: () => import('./AccountSideBar.vue')
     },
-    children: [
-      {
-        path: ':accountId?',
-        components: {
-          default: () => import('./AccountList.vue'),
-          sidebar: () => import('./AccountSideBar.vue')
-        },
-        props: {
-          default: false,
-          sidebar: true
-        },
-        meta: {
-          authentication: {
-            rolesRequired: ['superAdmin', 'admin', 'operator', 'viewer']
-          }
-        }
-      }
-    ],
+    props: {
+      default: false,
+      sidebar: true
+    },
     meta: {
       authentication: {
         rolesRequired: ['superAdmin', 'admin', 'operator', 'viewer']
-      },
-      title: 'Auth'
+      }
     }
   }
 ];

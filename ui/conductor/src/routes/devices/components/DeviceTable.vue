@@ -5,15 +5,15 @@
         :headers="headers"
         :items="devicesData"
         item-key="name"
-        :item-class="rowClass"
-        :footer-props="{
-          'items-per-page-options': [
-            20,
-            50,
-            100
-          ]
-        }"
+        :row-props="rowProps"
+        :items-per-page="20"
+        :items-per-page-options="[
+          {title: '20', value: 20},
+          {title: '50', value: 50},
+          {title: '100', value: 100}
+        ]"
         :show-select="showSelect"
+        item-value="name"
         :class="tableClasses"
         @click:row="showDevice">
       <template #top>
@@ -24,10 +24,10 @@
             <v-col cols="12" md="5">
               <v-text-field
                   v-model="search"
-                  append-icon="mdi-magnify"
+                  append-inner-icon="mdi-magnify"
                   label="Search devices"
                   hide-details
-                  filled/>
+                  variant="filled"/>
             </v-col>
             <v-spacer/>
             <v-col cols="12" md="2">
@@ -37,7 +37,7 @@
                   :items="floorList"
                   label="Floor"
                   hide-details
-                  filled/>
+                  variant="filled"/>
             </v-col>
             <!--            <v-col cols="12" md="2">
               <v-select
@@ -45,7 +45,7 @@
                   :items="zoneList"
                   label="Zone"
                   hide-details
-                  filled/>
+                  variant="filled"/>
             </v-col>-->
           </v-row>
         </v-container>
@@ -118,11 +118,11 @@ const {
 const emit = defineEmits(['update:selectedDevices']);
 
 const headers = ref([
-  {value: 'metadata.membership.subsystem', width: '20px', class: 'pl-4 pr-0', cellClass: 'pl-4 pr-0', sortable: false},
-  {text: 'Device name', value: 'name'},
-  {text: 'Floor', value: 'metadata.location.floor'},
-  {text: 'Zone', value: 'metadata.location.zone'},
-  {text: '', value: 'hotpoint', align: 'end', width: '100', sortable: false}
+  {key: 'metadata.membership.subsystem', width: '20px', class: 'pl-4 pr-0', cellClass: 'pl-4 pr-0', sortable: false},
+  {title: 'Device name', key: 'name'},
+  {title: 'Floor', key: 'metadata.location.floor'},
+  {title: 'Zone', key: 'metadata.location.zone'},
+  {key: 'hotpoint', align: 'end', width: '100', sortable: false}
 ]);
 
 const tableClasses = computed(() => {
@@ -144,9 +144,10 @@ const selectedDevicesComp = computed({
 /**
  * Shows the device in the sidebar
  *
+ * @param {PointerEvent} e
  * @param {*} item
  */
-function showDevice(item) {
+function showDevice(e, {item}) {
   sidebar.visible = true;
   sidebar.title = item.metadata.appearance ? item.metadata.appearance.title : item.name;
   sidebar.data = item;
@@ -154,25 +155,27 @@ function showDevice(item) {
 
 /**
  * @param {*} item
- * @return {string}
+ * @return {Record<string, any>}
  */
-function rowClass(item) {
+function rowProps({item}) {
   if (sidebar.visible && sidebar.data?.name === item.name) {
-    return 'item-selected';
+    return {class: 'item-selected'};
   }
-  return '';
+  return {};
 }
 
 </script>
 
 <style lang="scss" scoped>
+@use 'vuetify/settings';
+
 :deep(.v-data-table-header__icon) {
   margin-left: 8px;
 }
 
 .v-data-table :deep(.v-data-footer) {
-  background: var(--v-neutral-lighten1) !important;
-  border-radius: 0px 0px $border-radius-root*2 $border-radius-root*2;
+  background: rgb(var(--v-theme-neutral-lighten-1)) !important;
+  border-radius: 0 0 settings.$border-radius-root*2 settings.$border-radius-root*2;
   border: none;
   margin: 0 -12px -12px;
 }
@@ -183,6 +186,6 @@ function rowClass(item) {
 }
 
 .v-data-table.rowSelectable :deep(.item-selected) {
-  background-color: var(--v-primary-darken4);
+  background-color: rgb(var(--v-theme-primary-darken-4));
 }
 </style>

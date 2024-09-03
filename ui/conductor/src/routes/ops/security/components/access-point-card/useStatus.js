@@ -1,7 +1,6 @@
 import {grantNamesByID} from '@/api/sc/traits/access';
-import {toValue} from '@/util/vue';
 import {StatusLog} from '@sc-bos/ui-gen/proto/status_pb';
-import {computed} from 'vue';
+import {computed, toValue} from 'vue';
 
 /**
  * Composable for providing status information for access control units.
@@ -42,6 +41,8 @@ export function useStatus(accessAttempt, statusLog) {
     const grant = accessGrantName.value?.toLowerCase();
     switch (grant) {
       case 'granted':
+      case 'pending':
+      case 'aborted':
         return 'success';
       case 'tailgate':
         return 'warning';

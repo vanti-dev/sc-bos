@@ -1,38 +1,34 @@
 <template>
   <v-form @submit.prevent="saveModeValues">
     <v-card elevation="0" tile>
-      <v-list tile class="ma-0 pa-0">
-        <v-subheader class="text-title-caps-large neutral--text text--lighten-3">Modes</v-subheader>
-        <v-list-item v-for="mode in modesDisplay" :key="mode.key">
-          <v-list-item-content>
-            <template v-if="mode.values">
-              <v-select
-                  :label="mode.title"
-                  :items="mode.values"
-                  :value="mode.value"
-                  @input="updateMode(mode.key, $event, true)"
-                  :disabled="blockActions || loading"
-                  outlined
-                  dense
-                  hide-details/>
-            </template>
-            <template v-else>
-              <v-text-field
-                  :label="mode.title"
-                  :value="mode.value"
-                  @input="updateMode(mode.key, $event)"
-                  :disabled="blockActions || loading"
-                  outlined
-                  dense
-                  hide-details/>
-            </template>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
+      <v-card-title class="text-title-caps-large text-neutral-lighten-3">Modes</v-card-title>
+      <v-card-item v-for="mode in modesDisplay" :key="mode.key">
+        <v-select
+            v-if="mode.values"
+            class="mt-2"
+            :label="mode.title"
+            :items="mode.values"
+            :model-value="mode.value"
+            @update:model-value="updateMode(mode.key, $event, true)"
+            :disabled="blockActions || loading"
+            variant="outlined"
+            density="compact"
+            hide-details/>
+        <v-text-field
+            v-else
+            class="mt-2"
+            :label="mode.title"
+            :model-value="mode.value"
+            @update:model-value="updateMode(mode.key, $event)"
+            :disabled="blockActions || loading"
+            variant="outlined"
+            density="compact"
+            hide-details/>
+      </v-card-item>
       <v-card-actions class="px-4">
         <v-spacer/>
         <v-btn
-            text
+            variant="text"
             type="submit"
             @click="saveModeValues"
             :disabled="updateValue.loading || !dirty || blockActions">
@@ -49,7 +45,7 @@ import {closeResource, newActionTracker, newResourceValue} from '@/api/resource'
 import {describeModes, pullModeValues, updateModeValues} from '@/api/sc/traits/mode';
 import {useErrorStore} from '@/components/ui-error/error';
 import useAuthSetup from '@/composables/useAuthSetup';
-import {computed, onMounted, onUnmounted, reactive, set, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
 
 const {blockActions} = useAuthSetup();
 
@@ -169,7 +165,7 @@ function modeDisplay([k, v]) {
  * @param {boolean} commit
  */
 function updateMode(key, value, commit = false) {
-  set(edits, key, value);
+  edits[key] = value;
   if (commit) {
     saveModeValues();
   }

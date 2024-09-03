@@ -12,16 +12,14 @@
   <v-menu
       v-else-if="notOK"
       :close-on-content-click="false"
-      offset-y
-      left
+      location="left"
       max-width="500px"
       min-width="500px">
-    <template #activator="menuActivator">
-      <v-tooltip left>
-        <template #activator="tooltipActivator">
+    <template #activator="{props: menuProps}">
+      <v-tooltip location="left">
+        <template #activator="{props: tooltipProps}">
           <v-icon
-              v-on="{...tooltipActivator.on, ...menuActivator.on}"
-              v-bind="tooltipActivator.attrs"
+              v-bind="{...menuProps, ...tooltipProps}"
               :color="iconColor"
               size="20">
             {{
@@ -34,7 +32,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <v-icon left :color="iconColor">{{ iconStr }}</v-icon>
+        <v-icon start :color="iconColor">{{ iconStr }}</v-icon>
         <span>{{ levelToStr(level) }}</span>
       </v-card-title>
       <v-card-text>
@@ -42,21 +40,19 @@
       </v-card-text>
       <template v-if="hasMoreProblems">
         <v-card-actions>
-          <v-btn text @click="showMore = !showMore" block>
+          <v-btn variant="text" @click="showMore = !showMore" block>
             Show details
             <v-spacer/>
-            <v-icon right>{{ showMore ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+            <v-icon end>{{ showMore ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
           </v-btn>
         </v-card-actions>
         <v-expand-transition>
           <v-card-text v-if="showMore" class="py-0">
             <v-list>
-              <v-list-item v-for="problem in problems" :key="problem.name" three-line>
-                <v-list-item-content>
-                  <v-list-item-title>{{ levelToStr(problem.level) }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ problem.name }}</v-list-item-subtitle>
-                  <v-list-item-subtitle>{{ problem.description }}</v-list-item-subtitle>
-                </v-list-item-content>
+              <v-list-item v-for="problem in problems" :key="problem.name" lines="three">
+                <v-list-item-title>{{ levelToStr(problem.level) }}</v-list-item-title>
+                <v-list-item-subtitle>{{ problem.name }}</v-list-item-subtitle>
+                <v-list-item-subtitle>{{ problem.description }}</v-list-item-subtitle>
               </v-list-item>
             </v-list>
           </v-card-text>

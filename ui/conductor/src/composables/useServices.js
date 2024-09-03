@@ -5,8 +5,7 @@ import {useHubStore} from '@/stores/hub';
 import {useSidebarStore} from '@/stores/sidebar';
 import {useServicesStore} from '@/stores/services';
 import {serviceName} from '@/util/proxy';
-import {toValue} from '@/util/vue';
-import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref, toValue, watch, watchEffect} from 'vue';
 
 /**
  * @param {{

@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js --fix",
-    "lint:nofix": "eslint . --ext .vue,.js"
+    "lint:nofix": "eslint . --ext .vue,.js",
+    "lint:nibble": "eslint-nibble . --ext .vue,.js"
   },
   "dependencies": {
     "@sc-bos/panzoom-package": "1.0.1-vanti.0",
@@ -32,28 +33,29 @@
     "lodash": "^4.17.21",
     "pinia": "^2.2.1",
     "qrcode": "^1.5.3",
-    "vue": "2.7.16",
+    "vue": "^3.4.38",
     "vue-chartjs": "^5.3.1",
-    "vue-router": "3.6",
-    "vuetify": "^2.7.2"
+    "vue-router": "^4.4.3",
+    "vuetify": "^3.6.14"
   },
   "devDependencies": {
     "@mdi/font": "^7.2.96",
     "@types/google-protobuf": "^3.15.6",
-    "@vitejs/plugin-vue2": "^1.1.2",
+    "@vitejs/plugin-vue": "^5.1.2",
     "asn1js": "^3.0.5",
     "deepmerge": "^4.2.2",
     "eslint": "^8.57.0",
     "eslint-config-google": "^0.14.0",
+    "eslint-nibble": "^8.1.0",
     "eslint-plugin-jsdoc": "^50.2.1",
     "eslint-plugin-vue": "^9.27.0",
-    "eslint-plugin-vuetify": "^1.1.0",
+    "eslint-plugin-vuetify": "^2.4.0",
     "glob": "^11.0.0",
     "pkijs": "^3.0.15",
-    "sass": "~1.32",
-    "unplugin-vue-components": "^0.26.0",
+    "sass": "^1.77.8",
     "vite": "^5.4.0",
-    "vite-plugin-eslint": "^1.8.1"
+    "vite-plugin-eslint": "^1.8.1",
+    "vite-plugin-vuetify": "^2.0.4"
   },
   "resolutions": {
     "postcss": "^8.4.35",

@@ -1,35 +1,31 @@
 <template>
   <span class="chip-list">
-    <template v-for="choice in chipChoices">
+    <template v-for="choice in chipChoices" :key="choice.filter">
       <boolean-chooser-chip
           v-if="choiceType(choice) === 'boolean'"
-          :key="choice.filter"
           :ctx="usePageCtx(ctx, choice.filter)"
-          color="neutral lighten-2"/>
+          color="neutral-lighten-2"/>
       <menu-chooser-chip
           v-else-if="choiceType(choice) === 'list'"
-          :key="choice.filter"
           :ctx="usePageCtx(ctx, choice.filter)"
-          color="neutral lighten-2"
+          color="neutral-lighten-2"
           @active="activateChip($event, choice)"
           v-slot="{items, value, choose}">
         <list-chooser :items="items" :value="value" @input="choose"/>
       </menu-chooser-chip>
       <menu-chooser-chip
           v-else-if="choiceType(choice) === 'range'"
-          :key="choice.filter"
           :ctx="usePageCtx(ctx, choice.filter)"
-          color="neutral lighten-2"
+          color="neutral-lighten-2"
           @active="activateChip($event, choice)"
           v-slot="{items, value, choose}">
         <range-chooser :items="items" :value="value" @input="choose"/>
       </menu-chooser-chip>
       <v-chip
           v-else
-          :key="choice.filter"
           @click:close="clear(choice.filter)"
-          close
-          color="neutral lighten-2">
+          closable
+          color="neutral-lighten-2">
         {{ choice.text ?? choice.value }}
       </v-chip>
     </template>
@@ -55,7 +51,9 @@ const props = defineProps({
 
 const ctx = /** @type {FilterCtx} */ inject(filterCtxSymbol, () => props.ctx, true);
 const {sortedChoices, nonDefaultChoices, clear, filtersByKey} = ctx;
-const choiceType = (choice) => filtersByKey.value[choice.filter].type;
+const choiceType = (choice) => {
+  return filtersByKey.value[choice.filter].type;
+};
 
 const activateChip = (b, choice) => {
   if (b) {
@@ -78,8 +76,8 @@ const chipChoices = computed(() => {
   let i = 0;
   for (const sc of sortedChoices.value) {
     if (ndc.length > i && ndc[i].filter === sc.filter) {
+      res.push(ndc[i]);
       i++;
-      res.push(ndc);
       continue;
     }
     if (ac.filter === sc.filter) {

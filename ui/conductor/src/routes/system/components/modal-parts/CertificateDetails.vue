@@ -1,110 +1,60 @@
 <template>
-  <div class="d-flex flex-column align-center px-4" style="min-height: 500px;">
-    <div class="mb-2 pt-1 pb-4 px-6">
-      <v-list class="ma-0 pa-0" rounded>
-        <v-list-item
-            active-class="primary--text"
-            class="ml-n1 mb-2"
-            dense
-            :input-value="activeCertificate === 'root'"
-            :ripple="false"
-            @click="setActiveCertificate(rootCertificate, 'root')">
-          <v-list-item-content>
-            <div class="d-flex flex-row justify-space-between">
-              <div class="d-flex flex-row align-center mr-8 pt-1">
-                <v-icon v-if="intermediateCertificates" class="mr-2" size="20">mdi-chevron-down</v-icon>
-                <span>{{ rootCertificate?.subject?.commonName }}</span>
-              </div>
-              <div class="d-flex flex-row align-center">
-                <span class="font-weight-bold mr-2 pt-1">Valid:</span>
-                <v-icon :color="checkValidity(rootCertificate?.validityPeriod?.to).color" size="20">
-                  {{ checkValidity(rootCertificate?.validityPeriod?.to).icon }}
-                </v-icon>
-              </div>
-            </div>
-          </v-list-item-content>
-        </v-list-item>
-
-        <v-list class="ma-0 pa-0">
+  <div class="d-flex flex-column align-stretch">
+    <v-list color="primary" :opened="['intermediates']">
+      <v-list-group value="intermediates">
+        <template #activator="{props: _props, isOpen: _isOpen}">
           <v-list-item
-              v-for="(intermediateValue, intermediateKey) in intermediateCertificates"
-              active-class="primary--text"
-              class="ml-4"
-              dense
-              :input-value="activeCertificate === intermediateValue?.subject?.commonName"
-              :key="intermediateKey"
-              :ripple="false"
-              @click="setActiveCertificate(intermediateValue, intermediateValue?.subject?.commonName)">
-            <v-list-item-content>
-              <div class="d-flex flex-row justify-space-between">
-                <div class="pt-1">
-                  <v-icon class="mr-2" size="20">
-                    {{
-                      activeCertificate === intermediateValue?.subject?.commonName ?
-                        'mdi-chevron-down' : 'mdi-chevron-right'
-                    }}
-                  </v-icon>
-                  <span>{{ intermediateValue?.subject?.commonName }}</span>
-                </div>
-                <div class="d-flex flex-row align-center">
-                  <span class="font-weight-bold mr-2 pt-1">Valid:</span>
-                  <v-icon :color="checkValidity(intermediateValue?.validityPeriod?.to).color" size="20">
-                    {{ checkValidity(intermediateValue?.validityPeriod?.to).icon }}
-                  </v-icon>
-                </div>
-              </div>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </v-list>
-      <v-divider v-if="displayedCertificate" class="mt-5"/>
-      <div v-if="displayedCertificate" class="pt-2 pb-4">
-        <template v-for="(value, key) in displayedCertificate">
-          <v-list-item
-              v-if="value"
-              class="ma-0 pa-0 mb-n4"
-              :key="key">
-            <v-list-item-content class="d-flex flex-row flex-nowrap align-start">
-              <v-col cols="align-self" class="ma-0 pa-0 mr-n4">
-                <v-list-item-title class="text-capitalize font-weight-bold ma-0 pa-0">
-                  {{ camelToSentence(formatFingerprint(key)) }}:
-                </v-list-item-title>
-              </v-col>
-              <v-col cols="10" class="ma-0 pa-0 pl-6">
-                <v-list-item-subtitle
-                    v-if="typeof value !== 'object'"
-                    class="ma-0 pa-0 text-wrap">
-                  {{ value }}
-                </v-list-item-subtitle>
-                <div v-else class="d-flex flex-column">
-                  <template v-for="(subValue, subKey) in value">
-                    <v-list-item v-if="subValue" class="ma-0 pa-0 mt-n3 mb-n2" :key="subKey">
-                      <v-list-item-content class="d-flex flex-row pb-4">
-                        <v-col cols="3" class="ma-0 pa-0">
-                          <v-list-item-title
-                              class="text-capitalize
-                                text-body-2
-                                font-weight-medium
-                                ma-0
-                                pa-0">
-                            {{ camelToSentence(subKey) }}:
-                          </v-list-item-title>
-                        </v-col>
-                        <v-col cols="9" class="ma-0 pa-0 pl-6">
-                          <v-list-item-subtitle class="ma-0 pa-0 text-wrap">
-                            {{ subValue }}
-                          </v-list-item-subtitle>
-                        </v-col>
-                      </v-list-item-content>
-                    </v-list-item>
-                  </template>
-                </div>
-              </v-col>
-            </v-list-item-content>
+              rounded="xl"
+              :active="activeCertificate === 'root'"
+              @click="setActiveCertificate(rootCertificate, 'root')">
+            <template #prepend>
+              <v-btn
+                  v-bind="_props"
+                  size="small"
+                  variant="text"
+                  :icon="_isOpen ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+                  class="mr-8">
+                <v-icon size="22"/>
+              </v-btn>
+            </template>
+            <v-list-item-title>
+              {{ rootCertificate?.subject?.commonName }}
+            </v-list-item-title>
+            <template #append>
+              <span class="font-weight-bold">Valid:</span>
+              <v-icon end :color="checkValidity(rootCertificate?.validityPeriod?.to).color">
+                {{ checkValidity(rootCertificate?.validityPeriod?.to).icon }}
+              </v-icon>
+            </template>
           </v-list-item>
         </template>
-      </div>
-    </div>
+        <v-list-item
+            v-for="(intermediateValue, intermediateKey) in intermediateCertificates"
+            :key="intermediateKey"
+            rounded="xl"
+            class="mt-2"
+            :active="activeCertificate === intermediateValue?.subject?.commonName"
+            @click="setActiveCertificate(intermediateValue, intermediateValue?.subject?.commonName)">
+          <template #prepend>
+            <v-icon
+                start
+                :icon="activeCertificate === intermediateValue?.subject?.commonName ?
+                  'mdi-chevron-down' : 'mdi-chevron-right'"/>
+          </template>
+          <v-list-item-title>
+            {{ intermediateValue?.subject?.commonName }}
+          </v-list-item-title>
+          <template #append>
+            <span class="font-weight-bold">Valid:</span>
+            <v-icon end :color="checkValidity(intermediateValue?.validityPeriod?.to).color">
+              {{ checkValidity(intermediateValue?.validityPeriod?.to).icon }}
+            </v-icon>
+          </template>
+        </v-list-item>
+      </v-list-group>
+    </v-list>
+    <v-divider v-if="displayedCertificate" class="my-4"/>
+    <metadata-details :metadata="displayedCertificate" class="mb-4 px-4"/>
 
     <v-row class="mt-4" v-if="!props.nodeQuery.isQueried && !props.nodeQuery.isToForget">
       <v-card-text>
@@ -116,8 +66,8 @@
         class="d-flex flex-row justify-space-between mt-4">
       <v-btn
           class="ml-n8 pl-4 pr-6"
-          color="neutral lighten-4"
-          text
+          color="neutral-lighten-4"
+          variant="text"
           @click="emits('resetCertificates')">
         <v-icon>mdi-chevron-left</v-icon>
         Back
@@ -125,7 +75,7 @@
       <v-btn
           class="px-4"
           color="primary"
-          text
+          variant="text"
           @click="confirmEnroll">
         Enroll
       </v-btn>
@@ -134,15 +84,11 @@
 </template>
 
 <script setup>
-import {camelToSentence} from '@/util/string';
+import MetadataDetails from '@/routes/system/components/modal-parts/MetadataDetails.vue';
 import {computed, ref, watchEffect} from 'vue';
 
-const emits = defineEmits(['resetCertificates', 'enrollHubNodeAction', 'update:address']);
+const emits = defineEmits(['resetCertificates', 'enrollHubNodeAction']);
 const props = defineProps({
-  address: {
-    type: String,
-    default: null
-  },
   nodeQuery: {
     type: Object,
     default: () => ({})
@@ -151,6 +97,10 @@ const props = defineProps({
     type: Array,
     default: () => []
   }
+});
+const _address = defineModel('address', {
+  type: String,
+  default: null
 });
 
 const activeCertificate = ref(null);
@@ -190,17 +140,8 @@ const checkValidity = (date) => {
   }
   return {
     icon: 'mdi-check-circle',
-    color: 'success lighten-2'
+    color: 'success-lighten-2'
   };
-};
-
-const formatFingerprint = (fingerprint) => {
-  if (fingerprint.includes('sha1')) {
-    return fingerprint.replace('sha1', 'sha-1');
-  } else if (fingerprint.includes('sha256')) {
-    return fingerprint.replace('sha256', 'sha-256');
-  }
-  return fingerprint;
 };
 
 const setActiveCertificate = (certificate, certificateName) => {
@@ -225,9 +166,9 @@ watchEffect(() => {
 });
 
 const confirmEnroll = () => {
-  emits('enrollHubNodeAction', props.address);
+  emits('enrollHubNodeAction', _address.value);
   emits('resetCertificates');
   resetActiveCertificate();
-  emits('update:address', null);
+  _address.value = null;
 };
 </script>

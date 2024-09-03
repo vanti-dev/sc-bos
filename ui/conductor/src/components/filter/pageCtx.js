@@ -1,5 +1,4 @@
-import {toValue} from '@/util/vue.js';
-import {computed, ref, watch} from 'vue';
+import {computed, ref, toValue, watch} from 'vue';
 
 /**
  *
@@ -85,7 +84,7 @@ export default function usePageCtx(filterCtx, page) {
   const search = ref('');
   // if the filter changes, clear the search text.
   watch(filter, () => search.value = '');
-  const searchNorm = computed(() => search.value.trim().toLowerCase());
+  const searchNorm = computed(() => search.value?.trim().toLowerCase() ?? '');
   const items = computed(() => {
     if (!filter.value) return [];
     if (searchNorm.value === '') return filter.value.items;

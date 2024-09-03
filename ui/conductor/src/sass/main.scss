@@ -1,23 +1,25 @@
-$body-font-family: 'Poppins', sans-serif;
-$mono-font-family: 'Consolas', monospace;
-$font-size-root: 14px;
-$line-height-root: 1.5;
+$body-font-family: 'Poppins', sans-serif !default;
+$mono-font-family: 'Consolas', monospace !default;
+@use 'vuetify' with (
+$body-font-family: $body-font-family,
+$font-size-root: 14px,
+$line-height-root: 1.5,
 
-$border-radius-root: 5px;
+$border-radius-root: 5px,
 
-$material-dark: (
-    'cards': var(--v-neutral-base),
-    'table': (
-        'hover': var(--v-neutral-lighten2),
-        'active': var(--v-neutral-lighten1),
-    ),
-);
+// todo: see below
+//$material-dark: (
+//    'table': (
+//        'hover': var(--v-neutral-lighten2),
+//        'active': var(--v-neutral-lighten1),
+//    ),
+//),
 
 $font-weights: (
     'semibold': 600
-);
+),
 
-$headings: (
+$typography: (
     'h1': (
         'size': 2.571rem,
         'weight': 700,
@@ -138,4 +140,5 @@ $headings: (
         'font-family': $body-font-family,
         'text-transform': false
     ),
+)
 );

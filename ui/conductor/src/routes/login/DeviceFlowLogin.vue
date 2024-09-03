@@ -21,14 +21,14 @@
               color="warning"
               :size="28"
               :width="3"
-              :value="codeExpiresInPercentage"/>
+              :model-value="codeExpiresInPercentage"/>
         </div>
       </v-card-text>
       <v-card-text class="qr d-flex flex-column align-center">
         <a :href="code.verification_uri_complete" target="_blank">
           <img :src="qrCodeDataUrl" alt="QR Code containing the url to login using your device" class="qr--container">
         </a>
-        <div class="qr--text mt-2">Or scan this QR Code</div>
+        <div class="text-qr mt-2">Or scan this QR Code</div>
       </v-card-text>
     </template>
   </div>

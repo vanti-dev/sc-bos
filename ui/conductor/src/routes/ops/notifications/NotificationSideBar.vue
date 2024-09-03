@@ -1,21 +1,21 @@
 <template>
   <side-bar>
-    <v-tabs grow>
-      <v-tab>
+    <v-tabs grow v-model="tab">
+      <v-tab value="notifications">
         <v-icon>mdi-bell</v-icon>
       </v-tab>
-      <v-tab>
+      <v-tab value="control">
         <v-icon>mdi-devices</v-icon>
       </v-tab>
-
-      <v-tab-item>
-        <past-notifications-tab/>
-      </v-tab-item>
-
-      <v-tab-item>
-        <device-info-tab :device-id="sidebar.title" :device-data="sidebar.data"/>
-      </v-tab-item>
     </v-tabs>
+    <v-tabs-window v-model="tab">
+      <v-tabs-window-item value="notifications">
+        <past-notifications-tab/>
+      </v-tabs-window-item>
+      <v-tabs-window-item value="control">
+        <device-info-tab :device-id="sidebar.title" :device-data="sidebar.data"/>
+      </v-tabs-window-item>
+    </v-tabs-window>
   </side-bar>
 </template>
 
@@ -25,9 +25,9 @@ import DeviceInfoTab from '@/routes/ops/notifications/NotificationSideBarTabs/De
 import PastNotificationsTab from '@/routes/ops/notifications/NotificationSideBarTabs/PastNotificationsTab.vue';
 import {useSidebarStore} from '@/stores/sidebar';
 import {usePullMetadata} from '@/traits/metadata/metadata.js';
-import {watch} from 'vue';
+import {ref, watch} from 'vue';
 
-
+const tab = ref(null);
 const sidebar = useSidebarStore();
 const {value: metadata} = usePullMetadata(() => sidebar.data?.notification?.item?.source);
 

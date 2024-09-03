@@ -8,8 +8,7 @@ import {timestampToDate} from '@/api/convpb';
 import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource';
 import {listAlerts, pullAlerts} from '@/api/ui/alerts';
 import {csvDownload} from '@/util/downloadCSV';
-import {toValue} from '@/util/vue';
-import {computed, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue';
+import {computed, onBeforeUnmount, onMounted, reactive, ref, toValue, watch} from 'vue';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import deepEqual from 'fast-deep-equal';
 

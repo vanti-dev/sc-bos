@@ -1,5 +1,4 @@
-import {toValue} from '@/util/vue.js';
-import {computed, onMounted, onUnmounted, ref} from 'vue';
+import {computed, onMounted, onUnmounted, ref, toValue} from 'vue';
 
 /**
  * Returns values that can show time since a given time.

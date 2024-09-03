@@ -1,7 +1,6 @@
 import {HOUR, MINUTE} from '@/components/now.js';
 import {roundDown} from '@/util/date.js';
-import {toValue} from '@/util/vue.js';
-import {computed} from 'vue';
+import {computed, toValue} from 'vue';
 
 /**
  * @param {MaybeRefOrGetter<Date>}now

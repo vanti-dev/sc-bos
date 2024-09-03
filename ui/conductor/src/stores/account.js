@@ -5,7 +5,7 @@ import {useUiConfigStore} from '@/stores/ui-config';
 import {loadFromBrowserStorage} from '@/util/browserStorage';
 import {defineStore} from 'pinia';
 import {computed, ref} from 'vue';
-import {useRouter} from 'vue-router/composables';
+import {useRouter} from 'vue-router';
 
 /**
  * @typedef AuthenticationDetails

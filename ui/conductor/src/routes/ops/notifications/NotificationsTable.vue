@@ -9,14 +9,17 @@
     </v-row>
 
     <content-card :class="['px-8', {'mt-8 px-4': !props.overviewPage}]">
-      <v-data-table
+      <v-data-table-server
           :headers="headers"
           :items="alerts.pageItems"
           disable-sort
-          :server-items-length="queryTotalCount"
-          :item-class="rowClass"
-          :options.sync="dataTableOptions"
-          :footer-props="setFooterProps"
+          :items-length="queryTotalCount"
+          :row-props="rowProps"
+          v-model:page="dataTablePage"
+          v-model:items-per-page="dataTableItemsPerPage"
+          :items-per-page-options="itemsPerPageOptions"
+          show-current-page
+          :show-first-last-page="false"
           :loading="alerts.loading"
           class="pt-4"
           :class="{ 'hide-pagination': modifyFooter }"
@@ -24,8 +27,7 @@
         <template #top>
           <v-row
               :class="[
-                'd-flex flex-row align-center mb-2 mt-1 ml-0 pl-0 mr-1',
-                {'mb-4 mr-n2': props.overviewPage}
+                'd-flex flex-row align-center mb-2 mt-1 ml-0 pl-0 mr-1'
               ]">
             <h3 v-if="props.overviewPage" class="text-h4">
               Notifications
@@ -33,42 +35,26 @@
             <v-spacer/>
             <filter-choice-chips
                 :ctx="filterCtx"
-                :class="['mr-2 mt-n2', {'mt-n2': props.overviewPage}, {'mb-4': !props.overviewPage}]"/>
-            <span :class="['mt-n2', {'mb-4 mt-2': !props.overviewPage}, {'mr-2': props.overviewPage}]">
-              <filter-btn :ctx="filterCtx" tile/>
-            </span>
-            <v-tooltip top>
-              <template #activator="{ on }">
+                class="ml-2"/>
+            <filter-btn
+                :ctx="filterCtx"
+                v-bind="btnStyles"/>
+            <v-tooltip location="top">
+              <template #activator="{ props: _props }">
                 <v-btn
                     v-if="props.overviewPage"
-                    class="mt-n2 rounded"
-                    color="neutral"
-                    elevation="0"
-                    fab
-                    height="36"
-                    small
-                    tile
-                    v-on="on"
-                    width="34"
+                    v-bind="{..._props, ...btnStyles}"
                     @click="alerts.exportData('Notifications')">
-                  <v-icon>mdi-file-download</v-icon>
+                  <v-icon size="24">mdi-file-download</v-icon>
                 </v-btn>
               </template>
               Export CSV...
             </v-tooltip>
-            <v-tooltip top>
-              <template #activator="{ on }">
+            <v-tooltip location="top">
+              <template #activator="{ props: _props }">
                 <v-btn
                     v-if="!props.overviewPage"
-                    class="mt-n2 ml-2 mb-4 rounded"
-                    color="neutral"
-                    elevation="0"
-                    fab
-                    height="36"
-                    width="34"
-                    small
-                    tile
-                    v-on="on"
+                    v-bind="{..._props, ...btnStyles}"
                     @click="toggleManualEntry">
                   <v-icon size="30">mdi-plus</v-icon>
                 </v-btn>
@@ -76,20 +62,20 @@
               <span>Add New Entry</span>
             </v-tooltip>
 
-            <v-expansion-panels v-if="!props.overviewPage" class="mt-n3 mb-3" flat v-model="manualEntryPanel">
+            <v-expansion-panels v-if="!props.overviewPage" class="mb-3" flat v-model="manualEntryPanel">
               <v-expansion-panel>
-                <v-expansion-panel-content>
-                  <v-subheader class="pl-0 text-body-1">Manual Notification Entry Form</v-subheader>
+                <v-expansion-panel-text>
+                  <div class="text-subtitle-2 pl-0 text-body-1 mb-4">Manual Notification Entry Form</div>
                   <v-row class="align-center mr-2">
                     <v-col cols="self-align">
                       <v-text-field
                           v-model="manualEntryForm.description"
                           label="Description"
-                          dense
-                          outlined
+                          density="compact"
+                          variant="outlined"
                           hide-details
                           maxlength="160">
-                        <template #append>
+                        <template #append-inner>
                           <span class="character-counter">
                             {{ manualEntryForm.description ? 160 - manualEntryForm.description.length : 160 }}
                           </span>
@@ -99,7 +85,7 @@
                     <v-col cols="2">
                       <v-select
                           v-model="manualEntryForm.severity"
-                          dense
+                          density="compact"
                           hide-details
                           :items="[
                             {label: 'INFO', value: 9},
@@ -107,28 +93,28 @@
                             {label:'ALERT', value:17},
                             {label:'DANGER', value: 21}
                           ]"
-                          item-text="label"
+                          item-title="label"
                           item-value="value"
                           label="Severity"
-                          outlined/>
+                          variant="outlined"/>
                     </v-col>
                     <v-col cols="2">
                       <v-select
                           v-model="manualEntryForm.floor"
-                          dense
+                          density="compact"
                           hide-details
                           :items="floors"
                           label="Floor"
-                          outlined/>
+                          variant="outlined"/>
                     </v-col>
                     <v-col cols="2">
                       <v-select
                           v-model="manualEntryForm.zone"
-                          dense
+                          density="compact"
                           hide-details
                           :items="zones"
                           label="Zone"
-                          outlined/>
+                          variant="outlined"/>
                     </v-col>
                     <v-col cols="auto">
                       <v-btn @click="addManualEntry" :disabled="!manualEntryForm.description" color="primary">
@@ -136,7 +122,7 @@
                       </v-btn>
                     </v-col>
                   </v-row>
-                </v-expansion-panel-content>
+                </v-expansion-panel-text>
               </v-expansion-panel>
             </v-expansion-panels>
           </v-row>
@@ -148,17 +134,17 @@
           <subsystem-icon size="20px" :subsystem="item.subsystem" no-default/>
         </template>
         <template #item.source="{ item }">
-          <v-tooltip bottom>
-            <template #activator="{ on }">
-              <span v-on="on">{{ formatSource(item.source) }}</span>
+          <v-tooltip location="bottom">
+            <template #activator="{ props: _props }">
+              <span v-bind="_props">{{ formatSource(item.source) }}</span>
             </template>
             <span>{{ item.source }}</span>
           </v-tooltip>
         </template>
         <template #item.severity="{ item }">
-          <v-tooltip v-if="item.resolveTime" bottom>
-            <template #activator="{ on }">
-              <span v-on="on">RESOLVED</span>
+          <v-tooltip v-if="item.resolveTime" location="bottom">
+            <template #activator="{ props: _props }">
+              <span v-bind="_props">RESOLVED</span>
             </template>
             Was:
             <span :class="notifications.severityData(item.severity).color">
@@ -175,7 +161,7 @@
               @acknowledge="notifications.setAcknowledged(true, item, name)"
               @unacknowledge="notifications.setAcknowledged(false, item, name)"/>
         </template>
-      </v-data-table>
+      </v-data-table-server>
     </content-card>
   </div>
 </template>
@@ -194,8 +180,8 @@ import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useHubStore} from '@/stores/hub';
 import {useSidebarStore} from '@/stores/sidebar';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
-import {computed, onUnmounted, reactive, ref, watch} from 'vue';
 import deepEqual from 'fast-deep-equal';
+import {computed, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
   overviewPage: {
@@ -206,6 +192,14 @@ const props = defineProps({
     type: Object, /** @type {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} */
     default: null
   }
+});
+const btnStyles = ref({
+  'icon': true,
+  'tile': true,
+  'class': 'rounded ml-2',
+  'elevation': 0,
+  'size': 'small',
+  'variant': 'text'
 });
 
 const notifications = useNotifications();
@@ -239,11 +233,9 @@ const addManualEntry = async () => {
   };
 };
 
-const dataTableOptions = ref({
-  itemsPerPage: 20,
-  page: 1
-});
-const itemsPerPageOptions = [20, 50, 100];
+const dataTablePage = ref(1);
+const dataTableItemsPerPage = ref(20);
+const itemsPerPageOptions = [20, 50, 100].map(n => ({title: String(n), value: n}));
 const modifyFooter = computed(() => queryMetadataCount.value === undefined);
 
 const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
@@ -374,15 +366,15 @@ const query = computed(() => {
 const name = computed(() => hubStore.hubNode?.name ?? '');
 const alerts = reactive(useAlertsApi(name, query));
 watch(
-    dataTableOptions,
+    [dataTablePage, dataTableItemsPerPage],
     () => {
-      alerts.pageSize = dataTableOptions.value.itemsPerPage;
-      alerts.pageIndex = dataTableOptions.value.page - 1;
+      alerts.pageSize = dataTableItemsPerPage.value;
+      alerts.pageIndex = dataTablePage.value - 1;
     },
     {deep: true, immediate: true}
 );
 
-const queryFieldCount = computed(() => Object.values(query).filter((value) => value !== undefined).length);
+const queryFieldCount = computed(() => Object.values(query.value).filter((value) => value !== undefined).length);
 
 /**
  *  Calculate the total number of items in the query
@@ -471,64 +463,26 @@ const queryTotalCount = computed(() => {
   else return alerts.allItems.length;
 });
 
-
-// Set the footer props
-const setFooterProps = computed(() => {
-  // If there are more than 2 query fields, then we need to hide the pagination
-  if (queryMetadataCount.value === undefined) {
-    const nextPageToken = alerts.nextPageToken; // Get the next page token
-
-    // If there is a next page token 'ready' to be used, then we know there are more pages available.
-    if (nextPageToken) {
-      // Keeping the item pp options and pagination object empty will show the next page button
-      return {
-        showCurrentPage: true,
-        itemsPerPageOptions,
-        pagination: {}
-      };
-    } else {
-      // If there is no next page token, then we know there are no more pages available.
-      // We can block the next button by setting the itemsLength to the total number of items.
-      return {
-        showCurrentPage: true,
-        itemsPerPageOptions,
-        pagination: {
-          itemsLength: alerts.allItems.length
-        }
-      };
-    }
-  } else {
-    // If there are less than 2 query fields, then we can use the default pagination options.
-    return {
-      showCurrentPage: true,
-      itemsPerPageOptions
-    };
-  }
-});
-
 // Watch the query object for changes
 watch(
     query,
     (oldQuery, newQuery) => {
       if (deepEqual(oldQuery, newQuery)) return; // avoid reactivity churn
       // Reset the page to 1
-      dataTableOptions.value = {
-        ...dataTableOptions.value,
-        page: 1
-      };
+      dataTablePage.value = 1;
     },
     {immediate: true, deep: true}
 );
 
 const allHeaders = [
-  {text: 'Timestamp', value: 'createTime', width: '15em'},
+  {title: 'Timestamp', value: 'createTime', width: '15em'},
   {value: 'subsystem', width: '20px', class: 'pl-2 pr-0', cellClass: 'pl-2 pr-0'},
-  {text: 'Source', value: 'source', width: '15em'},
-  {text: 'Floor', value: 'floor', width: '10em'},
-  {text: 'Zone', value: 'zone', width: '10em'},
-  {text: 'Severity', value: 'severity', width: '9em', align: 'center'},
-  {text: 'Description', value: 'description', width: '100%'},
-  {text: 'Acknowledged', value: 'acknowledged', align: 'center', width: '12em'}
+  {title: 'Source', value: 'source', width: '15em'},
+  {title: 'Floor', value: 'floor', width: '10em'},
+  {title: 'Zone', value: 'zone', width: '10em'},
+  {title: 'Severity', value: 'severity', width: '9em', align: 'center'},
+  {title: 'Description', value: 'description', width: '100%'},
+  {title: 'Acknowledged', value: 'acknowledged', align: 'center', width: '12em'}
 ];
 
 // We don't include _some_ headers we're filtering out to avoid repetition,
@@ -546,17 +500,18 @@ const formatSource = (source) => {
   const parts = source.split('/');
   return parts[parts.length - 1];
 };
-const rowClass = (item) => {
-  if (item.resolveTime) return 'resolved';
-  return '';
+const rowProps = ({item}) => {
+  if (item.resolveTime) return {class: 'resolved'};
+  return {};
 };
 
 /**
  * Shows the device in the sidebar
  *
+ * @param {PointerEvent} e
  * @param {*} item
  */
-async function showNotification(item) {
+async function showNotification(e, {item}) {
   sidebar.visible = true;
   sidebar.title = item.source;
   sidebar.data = {metadata: sidebar.data?.metadata, notification: {name, item}};
@@ -581,20 +536,18 @@ onUnmounted(() => {
 }
 
 .hide-pagination {
-  :deep(.v-data-footer__pagination) {
+  :deep(.v-data-table-footer__info),
+  :deep(.v-pagination__last){
     display: none;
+  }
+
+  :deep(.v-pagination__first) {
+    margin-left: 16px;
   }
 }
 
 .character-counter {
-  position: relative;
-  text-align: center;
-  width: 1.75em;
-  height: auto;
-  top: 6px;
-  bottom: 0;
-  right: -5px;
   font-size: 75%;
-  color: var(--v-primary-base); /* Adjust color as needed */
+  color: rgb(var(--v-theme-primary)); /* Adjust color as needed */
 }
 </style>

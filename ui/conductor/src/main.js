@@ -3,12 +3,10 @@ import pinia from '@/plugins/pinia.js';
 import vuetify from '@/plugins/vuetify.js';
 import router from '@/routes/router.js';
 import '@/style.scss';
-import Vue from 'vue';
+import {createApp} from 'vue';
 
-const app = new Vue({
-  pinia,
-  router,
-  vuetify,
-  render: (h) => h(App)
-});
-app.$mount('#app');
+createApp(App)
+    .use(pinia)
+    .use(router)
+    .use(vuetify)
+    .mount('#app');

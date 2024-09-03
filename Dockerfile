@@ -5,7 +5,7 @@
 # To build, assuming your .npmrc is set up on your machine, run:
 #     docker/podman build --secret=id=npmrc,src=$HOME/.npmrc .
 
-FROM --platform=$BUILDPLATFORM node:20 AS build_ui
+FROM --platform=$BUILDPLATFORM node:22 AS build_ui
 
 WORKDIR /src
 

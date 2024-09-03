@@ -1,8 +1,7 @@
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
 import {describeMeterReading, pullMeterReading} from '@/api/sc/traits/meter';
 import {toQueryObject, watchResource} from '@/util/traits.js';
-import {toValue} from '@/util/vue.js';
-import {computed, onScopeDispose, reactive, toRefs} from 'vue';
+import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
 /**
  * @typedef {import('@sc-bos/ui-gen/proto/meter_pb').MeterReading} MeterReading

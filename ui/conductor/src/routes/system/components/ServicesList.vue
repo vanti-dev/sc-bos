@@ -5,11 +5,11 @@
           v-model="servicesStore.node"
           :items="nodesListValues"
           label="System Component"
-          item-text="name"
+          item-title="name"
           item-value="name"
           hide-details="auto"
           :loading="hubStore.nodesListCollection.loading ?? true"
-          outlined/>
+          variant="outlined"/>
       <v-spacer/>
     </v-row>
     <v-data-table
@@ -18,14 +18,14 @@
         item-key="id"
         :search="search"
         :loading="serviceCollection.loading"
-        @click:row="showService">
+        @click:row="(_, s) => showService(s.item)">
       <template #item.active="{item}">
         <service-status :service="item"/>
       </template>
       <template #item.actions="{item}">
         <v-btn
             v-if="item.active"
-            outlined
+            variant="outlined"
             class="automation-device__btn--red"
             color="error"
             :disabled="blockActions"
@@ -35,7 +35,7 @@
         </v-btn>
         <v-btn
             v-else
-            outlined
+            variant="outlined"
             class="automation-device__btn--green"
             color="success"
             :disabled="blockActions"
@@ -90,42 +90,44 @@ const servicesStore = useServicesStore();
 const headers = computed(() => {
   if (props.name === 'drivers') {
     return [
-      {text: 'ID', value: 'id'},
-      {text: 'Type', value: 'type'},
-      {text: 'Status', value: 'active', width: '20em'},
-      {text: '', value: 'actions', align: 'end', width: '100'}
+      {title: 'ID', key: 'id'},
+      {title: 'Type', key: 'type'},
+      {title: 'Status', key: 'active', width: '20em'},
+      {key: 'actions', align: 'end', width: '100', sortable: false}
     ];
   } else {
     return [
-      {text: 'ID', value: 'id'},
-      {text: 'Status', value: 'active', width: '20em'},
-      {text: '', value: 'actions', align: 'end', width: '100'}
+      {title: 'ID', key: 'id'},
+      {title: 'Status', key: 'active', width: '20em'},
+      {key: 'actions', align: 'end', width: '100', sortable: false}
     ];
   }
 });
 </script>
 
 <style lang="scss" scoped>
+@use 'vuetify/settings';
+
 :deep(.v-data-table-header__icon) {
   margin-left: 8px;
 }
 
 .v-data-table :deep(.v-data-footer) {
-  background: var(--v-neutral-lighten1) !important;
-  border-radius: 0px 0px $border-radius-root*2 $border-radius-root*2;
+  background: rgb(var(--v-theme-neutral-lighten-1)) !important;
+  border-radius: 0 0 settings.$border-radius-root*2 settings.$border-radius-root*2;
   border: none;
   margin: 0 -12px -12px;
 }
 
 .v-data-table :deep(.item-selected) {
-  background-color: var(--v-primary-darken4);
+  background-color: rgb(var(--v-theme-primary-darken-4));
 }
 
 
 .v-data-table :deep(tr:hover) {
   .automation-device__btn {
     &--red {
-      background-color: var(--v-error-base);
+      background-color: rgb(var(--v-theme-error));
 
       .v-btn__content {
         color: white;
@@ -137,7 +139,7 @@ const headers = computed(() => {
     }
 
     &--green {
-      background-color: var(--v-success-base);
+      background-color: rgb(var(--v-theme-success));
 
       .v-btn__content {
         color: white;

@@ -1,18 +1,18 @@
 <template>
-  <v-list class="pa-0" dense nav>
+  <v-list class="pa-0" density="compact" nav>
     <v-list-item
         v-for="(device, key) in availableSubSystems"
         :key="key"
         :to="device.to"
         :disabled="hasNoAccess(device.to)"
         class="my-2">
-      <v-list-item-icon>
+      <template #prepend>
         <v-icon v-if="device.icon">{{ device.icon }}</v-icon>
         <subsystem-icon v-else :subsystem="device.subSystem"/>
-      </v-list-item-icon>
-      <v-list-item-content :class="[device.class, 'text-truncate']">
+      </template>
+      <v-list-item-title :class="[device.class, 'text-truncate']">
         {{ device.label }}
-      </v-list-item-content>
+      </v-list-item-title>
     </v-list-item>
   </v-list>
 </template>
@@ -77,6 +77,6 @@ deviceStore.fetchDeviceSubsystemCounts(tracker);
 
 <style scoped>
 :deep(.v-list-item--active) {
-  color: var(--v-primary-base);
+  color: rgb(var(--v-theme-primary));
 }
 </style>

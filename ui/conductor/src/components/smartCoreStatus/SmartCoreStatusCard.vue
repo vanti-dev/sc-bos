@@ -1,21 +1,16 @@
 <template>
   <v-menu
-      bottom
+      location="bottom left"
       :close-on-content-click="false"
       content-class="elevation-0"
-      left
       max-height="600px"
       max-width="550px"
-      min-width="400px"
-      offset-y
-      tile>
-    <template #activator="{on, attrs}">
+      min-width="400px">
+    <template #activator="{props}">
       <v-btn
-          class="py-1 px-3"
-          style="text-align: center"
-          text
-          v-bind="attrs"
-          v-on="on">
+          class="py-1 px-3 mr-0"
+          variant="text"
+          v-bind="props">
         <span class="text-title mr-1">Smart Core OS:</span>
         <span :class="`text-title-bold text-uppercase ${generalStatus}`">
           {{ statusText }}
@@ -23,27 +18,28 @@
       </v-btn>
     </template>
 
-    <v-card class="elevation-0 mt-4 pb-1" min-width="400px" style="border: 1px solid var(--v-neutral-lighten2)">
-      <v-card-title class="text-subtitle-1 mb-0 pb-0 mt-n1 mb-2">
+    <v-card
+        class="elevation-0 mt-4 py-1"
+        min-width="400px"
+        style="border: 1px solid rgb(var(--v-theme-neutral-lighten-2))">
+      <v-card-title class="text-subtitle-1 d-flex align-center">
         Smart Core Status
         <span
             class="ml-2 font-weight-light"
-            style="font-size: 10px; margin-bottom: -1px">
+            style="font-size: 10px">
           {{ isLoading ? '- Checking...' : 'Updated ' + timeAgo }}
         </span>
         <v-spacer/>
-        <v-tooltip left>
-          <template #activator="{ on, attrs }">
+        <v-tooltip location="left">
+          <template #activator="{ props }">
             <v-btn
-                v-bind="attrs"
-                v-on="on"
+                v-bind="props"
                 :class="['mb-0', {'rotate-icon': isRefreshing}]"
-                icon
-                small
-                style="padding-left: 1px;"
-                @click="triggerRefresh">
-              <v-icon size="18">mdi-reload</v-icon>
-            </v-btn>
+                icon="mdi-reload"
+                variant="flat"
+                size="x-small"
+                style="padding-left: 1px; font-size: 12px"
+                @click="triggerRefresh"/>
           </template>
           <div class="d-flex flex-column">
             <span>Check Now</span>
@@ -52,12 +48,11 @@
       </v-card-title>
       <v-card-text class="d-flex flex-row justify-center align-center mb-n1 mt-4">
         <!-- Display chips and status alerts -->
-        <v-chip class="neutral lighten-1" small>UI</v-chip>
-        <template v-for="(chip, index) in statusPopupSetup">
-          <v-divider class="mx-2" style="width: 10px; max-width: 10px;" :key="index + '-divider'"/>
+        <v-chip class="bg-neutral-lighten-1" size="small">UI</v-chip>
+        <template v-for="(chip) in statusPopupSetup" :key="chip.id">
+          <v-divider class="mx-2" style="width: 10px; max-width: 10px;"/>
           <status-alert
               v-if="chip.id.includes('Status')"
-              :key="chip.id + '-status'"
               :is-clickable="chip.isClickable"
               :color="chip.color"
               :icon="chip.icon"
@@ -65,10 +60,10 @@
               :single="chip.single"/>
           <v-chip
               v-else
-              :key="chip.id + '-chip'"
-              :class="chip.color"
+              :color="chip.color"
               :disabled="chipDisabled"
-              small
+              size="small"
+              variant="flat"
               :to="navigateToNodes(chip.to)">
             {{ chip.label }}
           </v-chip>
@@ -114,11 +109,11 @@ const generalStatus = computed(() => {
   }
 
   if (!!networkIssue.value.error) {
-    return 'error--text';
+    return 'text-error';
   } else if (isUIError || hasError) {
-    return 'warning--text';
+    return 'text-warning';
   } else {
-    return 'success--text text--lighten-4';
+    return 'text-success-lighten-4';
   }
 });
 
@@ -324,7 +319,7 @@ const statusPopupSetup = computed(() => {
   };
 
   // Populate the chips array with the appropriate chips
-  addChip('server', {color: 'neutral lighten-4', id: 'server', label: 'Server'}, true);
+  addChip('server', {color: 'neutral-lighten-4', id: 'server', label: 'Server'}, true);
   addChip('gateway', {color: 'accent', id: 'gateway', label: 'Gateway'}, true);
   addChip('hub', {color: 'primary', id: 'hub', label: 'Hub'});
 
@@ -338,7 +333,7 @@ const statusPopupSetup = computed(() => {
     chips.push({id: 'nodeStatus', ...nodeOverallStatus.value});
     // Then add the nodes chip to the chips array
     chips.push({
-      color: nodeError ? 'error' : nodeWarning ? 'red darken-2' : 'neutral lighten-2',
+      color: nodeError ? 'error' : nodeWarning ? 'red-darken-2' : 'neutral-lighten-2',
       id: 'nodes',
       label: 'Nodes',
       to: '/system/components'

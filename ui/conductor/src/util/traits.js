@@ -1,6 +1,5 @@
 import {closeResource} from '@/api/resource';
-import {toValue} from '@/util/vue';
-import {watch} from 'vue';
+import {toValue, watch} from 'vue';
 import deepEqual from 'fast-deep-equal';
 
 /**

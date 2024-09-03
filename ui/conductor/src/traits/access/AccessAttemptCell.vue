@@ -1,9 +1,9 @@
 <template>
   <status-alert v-if="props.streamError" icon="mdi-cancel" :resource="props.streamError"/>
 
-  <v-tooltip v-else left>
-    <template #activator="{on}">
-      <v-icon :class="[grantClass]" right size="20" v-on="on">mdi-door</v-icon>
+  <v-tooltip v-else location="left">
+    <template #activator="{props: _props}">
+      <v-icon :class="[grantClass]" end size="20" v-bind="_props">mdi-door</v-icon>
     </template>
     <span class="text-capitalize">Access: {{ grantState.split('_').join(' ') }}</span>
   </v-tooltip>
@@ -38,19 +38,19 @@ const {grantState, grantClass} = useAccessAttempt(() => props.value);
 
 <style scoped>
 .granted {
-  color: var(--v-success-base);
+  color: rgb(var(--v-theme-success));
 }
 
 .denied {
-  color: var(--v-warning-base);
+  color: rgb(var(--v-theme-warning));
 }
 
 .tailgate, .forced, .failed {
-  color: var(--v-error-base);
+  color: rgb(var(--v-theme-error));
 }
 
 .pending, .aborted {
-  color: var(--v-info-base);
+  color: rgb(var(--v-theme-info));
 }
 
 .grant_unknown {

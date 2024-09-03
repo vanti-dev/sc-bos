@@ -7,7 +7,7 @@
             indeterminate
             size="64"
             color="primary"/>
-        <v-alert v-else dense outlined color="error">
+        <v-alert v-else density="compact" variant="outlined" color="error">
           {{ err }}
         </v-alert>
       </v-col>
@@ -19,7 +19,7 @@
 import router from '@/routes/router.js';
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {onUpdated, ref} from 'vue';
-import {useRoute} from 'vue-router/composables';
+import {useRoute} from 'vue-router';
 
 const uiConfig = useUiConfigStore();
 const route = useRoute();

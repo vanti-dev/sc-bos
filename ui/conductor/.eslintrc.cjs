@@ -43,12 +43,20 @@ module.exports = {
       'singleline': 10,
       'multiline': 1
     }],
+    // This rule is in conflict with the vue/no-v-for-template-key-on-child rule, which should be used instead.
+    // This rule seems to be enabled by default, even though we're using vue 3, not sure why.
+    'vue/no-v-for-template-key': 0,
+    'vue/no-multiple-template-root': 0, // vue 3 has no problems with this
     'vue/first-attribute-linebreak': ['error', {
       'singleline': 'beside'
     }],
     'vue/singleline-html-element-content-newline': ['off'],
     // 'turn on' script-setup-uses-vars to allow declaration of vars in <script setup> tags
     'vue/script-setup-uses-vars': 'error',
+    'vuetify/no-deprecated-colors': ['error', {
+      // from src/plugins/vuetify.js
+      themeColors: ['primary', 'secondary', 'primaryTeal', 'accent', 'neutral', 'error', 'success', 'info', 'warning']
+    }],
     // we use the jsdoc plugin instead
     'valid-jsdoc': 'off',
     'require-jsdoc': 'off',

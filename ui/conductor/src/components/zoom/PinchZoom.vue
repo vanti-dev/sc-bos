@@ -1,5 +1,5 @@
 <template>
-  <div class="pinch-zoom" :class="{debug: debug, center}">
+  <div class="pinch-zoom" :class="{debug: debug, center}" v-bind="attrs">
     <div class="event-target" ref="el">
       <pan-zoom
           :options="panZoomOptions"
@@ -7,7 +7,7 @@
           @init="panZoomInit"
           @change="updateTransform"
           @start="currentTransition = false"
-          v-on="$listeners">
+          v-bind="listeners">
         <slot v-bind="{...currentTransform, transition: internalTransition}"/>
       </pan-zoom>
     </div>
@@ -25,7 +25,7 @@
             @left="panLeft"
             @right="panRight">
           <template #home>
-            <v-icon>
+            <v-icon size="24">
               {{ isDefaultTransform ? 'mdi-image-filter-center-focus' : 'mdi-image-filter-center-focus-weak' }}
             </v-icon>
           </template>
@@ -55,6 +55,8 @@ import PanZoom from '@/thirdparty/panzoom/PanZoom.vue';
 export default {
   name: 'PinchZoom',
   components: {PanZoom, ZoomControls},
+  // attrs target the root node, listeners for the pan-zoom component
+  inheritAttrs: false,
   props: {
     scaleMax: {
       type: Number,
@@ -110,7 +112,7 @@ export default {
         this.internalTransform = transform;
         // note: this is an optimisation for the dev-tools. Transforms update a lot, if no code is listening the
         // dev-tools still does which causes a lot of event churn
-        if ('update:transform' in this.$listeners) {
+        if (this.hasListener('onUpdate:transform')) {
           this.$emit('update:transform', transform);
         }
       }
@@ -161,6 +163,22 @@ export default {
       } else {
         return undefined; // all
       }
+    },
+    listeners() {
+      return Object.entries(this.$attrs).reduce((acc, [k, v]) => {
+        if (k.startsWith('on')) {
+          acc[k] = v;
+        }
+        return acc;
+      }, {});
+    },
+    attrs() {
+      return Object.entries(this.$attrs).reduce((acc, [k, v]) => {
+        if (!k.startsWith('on')) {
+          acc[k] = v;
+        }
+        return acc;
+      }, {});
     }
   },
   watch: {
@@ -175,7 +193,7 @@ export default {
       handler: 'updateTransform'
     },
     ['currentTransform.scale'](v) {
-      if ('update:scale' in this.$listeners) {
+      if (this.hasListener('update:scale')) {
         this.$emit('update:scale', v);
       }
     },
@@ -268,6 +286,9 @@ export default {
           Math.abs(t1.x - t2.x) < fpError &&
           Math.abs(t1.y - t2.y) < fpError &&
           Math.abs(t1.scale - t2.scale) < fpError;
+    },
+    hasListener(l) {
+      return Boolean(this.$props?.['on' + l[0].toUpperCase() + l.slice(1)]);
     }
   }
 };

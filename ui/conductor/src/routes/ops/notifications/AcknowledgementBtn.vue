@@ -1,32 +1,34 @@
 <template>
-  <v-tooltip v-if="!acked" left transition="slide-x-reverse-transition" color="neutral lighten-4">
-    <template #activator="{ on, attr }">
+  <v-tooltip v-if="!acked" location="left" transition="slide-x-reverse-transition" color="neutral-lighten-4">
+    <template #activator="{ props: _props }">
       <v-btn
-          v-on="on"
-          v-bind="attr"
-          icon
+          v-bind="_props"
           v-if="!acked"
+          icon="true"
+          variant="text"
           color="warning"
           :disabled="blockActions"
-          small
+          size="small"
           @click.stop="$emit('acknowledge')">
-        <v-icon>mdi-circle-outline</v-icon>
+        <v-icon size="24">mdi-circle-outline</v-icon>
       </v-btn>
     </template>
     Acknowledge this notification
   </v-tooltip>
-  <v-menu v-else bottom left offset-y>
-    <template #activator="{ on, attrs }">
-      <v-avatar v-bind="attrs" v-on="on" color="neutral lighten-8" class="text--black" size="21">
-        <template v-if="hasAuthor">{{ authorInitials }}</template>
-        <v-icon v-else color="black" small>mdi-check</v-icon>
-      </v-avatar>
+  <v-menu v-else location="bottom right">
+    <template #activator="{ props: _props }">
+      <v-btn icon="true" v-bind="_props" size="small" variant="text">
+        <v-avatar color="neutral-lighten-8" class="text--black" size="21">
+          <template v-if="hasAuthor">{{ authorInitials }}</template>
+          <v-icon v-else color="black" size="small">mdi-check</v-icon>
+        </v-avatar>
+      </v-btn>
     </template>
     <v-card min-width="300">
-      <v-card-title>
+      <v-card-title class="d-flex">
         Acknowledged
         <v-spacer/>
-        <v-icon right color="secondary">mdi-check</v-icon>
+        <v-icon end color="secondary">mdi-check</v-icon>
       </v-card-title>
       <v-card-subtitle>{{ ackTimeStr }}</v-card-subtitle>
       <v-card-text>
@@ -37,8 +39,8 @@
         <template v-else> Anonymous acknowledgement</template>
       </v-card-text>
       <v-card-actions>
-        <v-btn @click="$emit('unacknowledge')" text block color="error" :disabled="blockActions">
-          <v-icon left>mdi-close</v-icon>
+        <v-btn @click="$emit('unacknowledge')" variant="text" block color="error" :disabled="blockActions">
+          <v-icon start>mdi-close</v-icon>
           Clear Acknowledgement
         </v-btn>
       </v-card-actions>
@@ -100,6 +102,6 @@ const authorInitials = computed(() => authorToInitials(props.ack?.author));
 <style scoped>
 .v-avatar {
   font-size: 12px;
-  color: var(--v-neutral-base);
+  color: rgb(var(--v-theme-neutral));
 }
 </style>

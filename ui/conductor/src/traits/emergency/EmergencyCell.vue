@@ -1,9 +1,9 @@
 <template>
   <status-alert v-if="props.streamError" icon="mdi-smoke-detector-outline" :resource="props.streamError"/>
 
-  <v-tooltip v-else left nudge-right="8px">
-    <template #activator="{attr, on}">
-      <v-icon v-bind="attr" v-on="on" size="20" :color="colorClass">{{ iconStr }}</v-icon>
+  <v-tooltip v-else location="left">
+    <template #activator="{props: _props}">
+      <v-icon v-bind="_props" size="20" :color="colorClass">{{ iconStr }}</v-icon>
     </template>
     <span>{{ tooltipStr }}</span>
   </v-tooltip>

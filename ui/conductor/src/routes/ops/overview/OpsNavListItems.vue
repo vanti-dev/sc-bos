@@ -1,14 +1,12 @@
 <template>
-  <v-list class="d-flex flex-column pa-0" dense :nav="!miniVariant">
-    <ops-nav-list-item
-        v-for="(item, index) in props.items"
-        :key="index"
-        :item="item"
-        :items="props.items"
-        :depth="depth"
-        :mini-variant="props.miniVariant"
-        :parent-path="props.parentPath"/>
-  </v-list>
+  <ops-nav-list-item
+      v-for="(item, index) in props.items"
+      :key="index"
+      :item="item"
+      :items="props.items"
+      :depth="depth"
+      :mini-variant="props.miniVariant"
+      :parent-path="props.parentPath"/>
 </template>
 
 <script setup>

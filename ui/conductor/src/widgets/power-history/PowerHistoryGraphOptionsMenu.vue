@@ -1,69 +1,68 @@
 <template>
-  <v-tooltip bottom>
-    <template #activator="{ on: onTooltip, attrs: attrsTooltip }">
-      <div v-bind="attrsTooltip" v-on="onTooltip">
+  <v-tooltip location="bottom">
+    <template #activator="{ props }">
+      <div v-bind="props">
         <v-menu
-            bottom
+            location="bottom right"
             :close-on-content-click="false"
-            left
-            min-width="275px"
-            offset-y>
-          <template #activator="{ on, attrs }">
+            min-width="275px">
+          <template #activator="{ props: _props }">
             <v-btn
-                dark
-                icon
-                v-bind="attrs"
-                v-on="on">
-              <v-icon>mdi-dots-vertical</v-icon>
+                icon="mdi-dots-vertical"
+                size="small"
+                variant="text"
+                v-bind="_props">
+              <v-icon size="24"/>
             </v-btn>
           </template>
 
-          <v-list height="100%">
-            <v-list-item
-                class="d-flex flex-row justify-center pa-0 mt-n1 px-3"
-                @click.stop="showConversionToggle = !showConversionToggle">
-              <v-subheader class="text-body-2 pa-0">Unit Type</v-subheader>
-              <v-spacer/>
-              <v-switch
-                  class="ml-4 my-auto no-pointer-events"
-                  color="primary"
-                  dense
-                  readonly
-                  hide-details
-                  inset
-                  :value="props.showConversion">
-                <template #prepend>
-                  <span class="text-caption grey--text text--lighten-1">kW</span>
-                </template>
-                <template #append>
-                  <span class="text-caption grey--text text--lighten-1 ml-n4">CO₂</span>
-                </template>
-              </v-switch>
+          <v-list>
+            <v-list-item @click.stop="showConversionToggle = !showConversionToggle">
+              <v-list-item-title>Unit Type</v-list-item-title>
+              <template #append>
+                <v-list-item-action end>
+                  <v-switch
+                      class="ml-4 my-auto no-pointer-events"
+                      density="compact"
+                      readonly
+                      hide-details
+                      :model-value="showConversionToggle">
+                    <template #prepend>
+                      <span class="text-grey-lighten-1">kW</span>
+                    </template>
+                    <template #append>
+                      <span class="text-grey-lighten-1">CO₂</span>
+                    </template>
+                  </v-switch>
+                </v-list-item-action>
+              </template>
             </v-list-item>
-            <v-list-item class="pa-0 d-flex flex-row justify-center px-3" dense>
-              <v-subheader class="text-body-2 pa-0">Duration</v-subheader>
-              <v-spacer/>
-              <v-btn-toggle
-                  v-model="activeDuration"
-                  active-class="primary"
-                  dense
-                  mandatory>
-                <v-btn
-                    v-for="option in durationOptions"
-                    active-class="primary text--darken-3"
-                    class="transparent grey--text text--lighten-1"
-                    :key="option.id"
-                    small
-                    :value="option.value">
-                  <span class="text-caption">{{ option.text }}</span>
-                </v-btn>
-              </v-btn-toggle>
+
+            <v-list-item>
+              <v-list-item-title>Duration</v-list-item-title>
+              <template #append>
+                <v-list-item-action end>
+                  <v-btn-toggle
+                      v-model="activeDuration"
+                      color="primary"
+                      density="compact"
+                      variant="outlined"
+                      divided
+                      mandatory>
+                    <v-btn
+                        v-for="option in durationOptions"
+                        size="small"
+                        :key="option.id"
+                        :value="option.value">
+                      <span class="text-caption">{{ option.text }}</span>
+                    </v-btn>
+                  </v-btn-toggle>
+                </v-list-item-action>
+              </template>
             </v-list-item>
-            <v-list-item
-                class="pa-0 d-flex flex-row align-left align-center px-3 mb-n1"
-                dense
-                @click="emits('exportCSV')">
-              <v-subheader class="text-body-2 pa-0">Export CSV...</v-subheader>
+
+            <v-list-item @click="emits('exportCSV')">
+              <v-list-item-title class="">Export CSV...</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -73,25 +72,11 @@
   </v-tooltip>
 </template>
 
-<script setup>
+<script>
 import {DAY, HOUR, MINUTE} from '@/components/now.js';
-import {computed} from 'vue';
-
-const props = defineProps({
-  durationOption: {
-    type: Object,
-    default: () => {
-    }
-  },
-  showConversion: {
-    type: Boolean,
-    default: false
-  }
-});
-const emits = defineEmits(['update:durationOption', 'update:showConversion', 'exportCSV']);
 
 // Defining the options for the duration type buttons
-const durationOptions = [
+export const durationOptions = [
   {
     text: '24H',
     value: {
@@ -117,19 +102,22 @@ const durationOptions = [
     }
   }
 ];
+</script>
+<script setup>
+const emits = defineEmits(['exportCSV']);
 
 // Computed property to toggle between kW and CO2
 // Syncs with the parent component
-const showConversionToggle = computed({
-  get: () => props.showConversion,
-  set: (value) => emits('update:showConversion', value)
+const showConversionToggle = defineModel('showConversion', {
+  type: Boolean,
+  default: false
 });
 
 // Computed property to toggle between the duration options
 // Syncs with the parent component
-const activeDuration = computed({
-  get: () => props.durationOption,
-  set: (value) => emits('update:durationOption', value)
+const activeDuration = defineModel('durationOption', {
+  type: Object,
+  default: () => durationOptions[0].value
 });
 </script>
 

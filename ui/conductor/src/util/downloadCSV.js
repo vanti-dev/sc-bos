@@ -1,5 +1,5 @@
 import {camelToSentence} from '@/util/string';
-import {toValue} from '@/util/vue';
+import {toValue} from 'vue';
 
 /**
  * Generates a function to download records as a CSV file based on specified properties.

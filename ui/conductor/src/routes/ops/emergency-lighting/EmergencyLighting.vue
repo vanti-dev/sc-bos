@@ -1,6 +1,6 @@
 <template>
   <content-card>
-    <v-card-title>
+    <v-card-title class="d-flex">
       <h4 class="text-h4">Emergency Lighting</h4>
       <v-spacer/>
       <v-btn
@@ -8,7 +8,7 @@
           :disabled="blockActions"
           @click="downloadCSV">
         Download CSV
-        <v-icon right>mdi-download</v-icon>
+        <v-icon end>mdi-download</v-icon>
       </v-btn>
     </v-card-title>
     <v-data-table
@@ -16,17 +16,18 @@
         :items="lightHealth"
         :loading="lightHealthTracker.loading"
         show-select
+        item-value="name"
         v-model="selectedLights"
         item-key="name">
       <template #top>
         <span v-if="selectedLights.length > 0">
           <v-btn
-              color="accent darken-1"
+              color="accent-darken-1"
               class="ml-4"
               :disabled="blockActions"
               @click="functionTest">Function Test</v-btn>
           <v-btn
-              color="accent darken-1"
+              color="accent-darken-1"
               class="ml-4"
               :disabled="blockActions"
               @click="durationTest">Duration Test</v-btn>
@@ -36,8 +37,8 @@
         </span>
       </template>
       <template #item.faultsList="{ value }">
-        <span class="text-title-bold success--text text--lighten-3" v-if="value.length === 0">OK</span>
-        <span class="text-title-bold error--text text--lighten-1" v-else>
+        <span class="text-title-bold text-success-lighten-3" v-if="value.length === 0">OK</span>
+        <span class="text-title-bold text-error-lighten-1" v-else>
           {{ value.map((v) => faultToString(v)).join(', ') }}
         </span>
       </template>
@@ -58,9 +59,9 @@ import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 const {blockActions} = useAuthSetup();
 
 const headers = [
-  {text: 'Name', value: 'name'},
-  {text: 'Status', value: 'faultsList'}
-  // {text: 'Updated', value: 'updateTime'}
+  {title: 'Name', key: 'name'},
+  {title: 'Status', key: 'faultsList'}
+  // {title: 'Updated', key: 'updateTime'}
 ];
 
 const selectedLights = ref([]);

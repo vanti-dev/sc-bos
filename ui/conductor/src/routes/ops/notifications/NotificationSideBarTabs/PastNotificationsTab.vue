@@ -1,41 +1,41 @@
 <template>
-  <span>
+  <div>
     <v-progress-linear indeterminate v-if="loading"/>
-    <v-subheader
+    <div
         v-else-if="!hasSource"
-        class="text-title-caps-large neutral--text text--lighten-3">
+        class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">
       No Notification Selected
-    </v-subheader>
-    <v-subheader
+    </div>
+    <div
         v-else-if="!notificationSidebar.length"
-        class="text-title-caps-large neutral--text text--lighten-3">
+        class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3">
       No Past Notifications
-    </v-subheader>
+    </div>
     <div v-else>
-      <v-subheader class="text-title-caps-large neutral--text text--lighten-3">
+      <div class="text-subtitle-2 text-title-caps-large text-neutral-lighten-3 pa-4">
         Past {{ notificationSidebar.length }} {{
           notificationSidebar.length === 1 ? 'Notification' : 'Notifications'
         }}
-      </v-subheader>
+      </div>
       <v-card
           v-for="(data, index) in notificationSidebar"
           :key="index"
           class="mt-4"
           elevation="0">
-        <span class="d-flex flex-row flex-nowrap px-4 mb-2">
-          <v-icon :class="[data.severity.color, 'mt-n2']" size="22">{{ data.severity.icon }}</v-icon>
+        <span class="d-flex flex-row align-center flex-nowrap px-4 mb-2">
+          <v-icon :class="data.severity.color" size="22">{{ data.severity.icon }}</v-icon>
           <v-spacer/>
-          <v-card-subtitle class="text-caption pa-0 pb-2 grey--text">
+          <v-card-subtitle class="text-caption pa-0 text-grey">
             {{ data.created }}
           </v-card-subtitle>
         </span>
-        <v-card-subtitle class="ma-0 pa-0 px-4 white--text text-capitalize">
+        <v-card-text class="ma-0 pa-0 px-4 text-white text-capitalize">
           {{ data.description }}
-        </v-card-subtitle>
+        </v-card-text>
         <v-divider v-if="index < notificationSidebar.length - 1" class="my-3"/>
       </v-card>
     </div>
-  </span>
+  </div>
 </template>
 
 <script setup>
@@ -71,7 +71,7 @@ const notificationSidebar = computed(() => {
   return pageItems.value.map(item => {
     const icon = icons[notification.severityData(item.severity).text.toLowerCase()];
     const color = item.resolveTime ?
-        'grey--text' :
+        'text-grey' :
         notification.severityData(item.severity).color;
     return {
       ...item,
