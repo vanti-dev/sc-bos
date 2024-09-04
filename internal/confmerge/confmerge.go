@@ -1,3 +1,16 @@
+// Package confmerge provides a way to merge external configuration changes into a config store managed by the system.
+//
+// The system has two types of configuration: external and active.
+// External configuration is configuration generated outside of Smart Core (for example, handwriten or tool-generated).
+// Active configuration is the one actually used by the system, and is managed by Smart Core.
+//
+// When the external configuration changes, we need to apply those changes to the active configuration.
+// However, there may be conflicting updates to the active configuration. To resolve these conflicts, we use a
+// structure-aware diff and patch system based on the block package.
+//
+// Merge will save a copy of the most recently encountered external configuration in the Store.
+// This allows Merge to detect what has changed in the external configuration since the last time it was called.
+// The patches from this are then applied to the active configuration.
 package confmerge
 
 import (
