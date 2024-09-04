@@ -20,8 +20,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/google/renameio/v2/maybe"
 
 	"github.com/vanti-dev/sc-bos/pkg/block"
@@ -57,6 +55,10 @@ type DirStore struct {
 
 func NewDirStore(dir string) *DirStore {
 	return &DirStore{dir: dir}
+}
+
+func (s *DirStore) Dir() string {
+	return s.dir
 }
 
 func (s *DirStore) GetExternalConfig() ([]byte, error) {
@@ -122,55 +124,50 @@ func (s *DirStore) write(name string, data []byte) error {
 //   - If the store has no saved external config, then external is compared against the zero value of T.
 //   - If the store has no saved active config, the provided external config is used verbatim as the active config.
 //
+// Also returns a slice of the patches that were applied and saved successfully.
+//
 // schema describes the structure of T object, used to produce patches. This controls the granularity of patches
 // that will be applied to the active config. For full detail of this, see the block package.
 //
 // Configs are stored as JSON, so T must marshal and unmarshal to/from JSON correctly.
-func Merge[T any](external T, store Store, schema []block.Block, logger *zap.Logger) (T, error) {
+func Merge[T any](external T, store Store, schema []block.Block) (result T, applied []block.Patch, err error) {
 	var zero T
 
 	// if external JSON doesn't exist, getExternalJSON returns the zero value which we we can use
 	oldExternal, _, err := getExternalJSON[T](store)
 	if err != nil {
-		return zero, err
+		return zero, nil, err
 	}
 
 	oldActive, ok, err := getActiveJSON[T](store)
 	if err != nil {
-		return zero, err
+		return zero, nil, err
 	}
 	var newActive T
 	if !ok {
 		// no active config, just use the provided external config
 		newActive = external
 	} else {
-		patches, err := block.Diff(oldExternal, external, schema)
+		applied, err = block.Diff(oldExternal, external, schema)
 		if err != nil {
-			return zero, err
-		}
-		if len(patches) > 0 {
-			patchRef, err := store.SavePatches(patches)
-			if err != nil {
-				return zero, err
-			}
-			logger.Info("applied config patch", zap.String("ref", patchRef))
+			return zero, nil, err
 		}
 
-		newActive, err = block.ApplyPatches(oldActive, patches)
+		newActive, err = block.ApplyPatches(oldActive, applied)
 		if err != nil {
-			return zero, err
+			return zero, nil, err
 		}
 	}
 
 	err = setActiveJSON(store, newActive)
 	if err != nil {
-		return zero, err
+		return zero, nil, err
 	}
 	err = setExternalJSON(store, external)
 	if err != nil {
-		return zero, err
+		return zero, applied, err
 	}
-	return newActive, nil
+	return newActive, applied, nil
 }
 
 func getExternalJSON[T any](store Store) (ext T, ok bool, err error) {
