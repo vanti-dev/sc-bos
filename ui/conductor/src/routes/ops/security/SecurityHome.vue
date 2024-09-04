@@ -62,7 +62,7 @@ const {config} = storeToRefs(useUiConfigStore());
 const viewType = ref('list');
 const hiddenOnMap = ref(false);
 const search = ref('');
-const selectedFloor = ref('');
+const selectedFloor = ref('All');
 const useDevicesOpts = computed(() => {
   return {
     subsystem: props.subsystem,

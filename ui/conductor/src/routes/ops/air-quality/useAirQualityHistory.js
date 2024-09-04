@@ -34,6 +34,12 @@ export default function(props) {
   // Pull in devices to check if any available
   const useDevicesOpts = computed(() => {
     return {
+      conditions: [
+        // todo: match against `field: 'metadata.traits.name'` when SC-618 is fixed
+        {stringEqualFold: 'smartcore.traits.AirQualitySensor'}
+      ],
+      // todo: support either infinite scroll or search for selecting the IAQ sensor
+      wantCount: 1000, // we have to define some limit here
       filter: props.filter
     };
   });
@@ -185,7 +191,7 @@ export default function(props) {
       if (previousAirDevice.value !== currentDevice) {
         // If there was a previous device, delete its data
         if (previousAirDevice.value && airQualitySensorHistoryValues[previousAirDevice.value]) {
-          delete(airQualitySensorHistoryValues[previousAirDevice.value]);
+          delete (airQualitySensorHistoryValues[previousAirDevice.value]);
         }
 
         // Initialize data for the current device
@@ -354,7 +360,7 @@ export default function(props) {
     if (!airDevice.value) return;
 
     clearInterval(airQualitySensorHistoryValues[airDevice.value].pollHandler);
-    delete(airQualitySensorHistoryValues[airDevice.value]);
+    delete (airQualitySensorHistoryValues[airDevice.value]);
   };
 
   // Function to remove records outside the time frame

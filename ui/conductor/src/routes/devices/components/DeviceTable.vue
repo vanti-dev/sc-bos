@@ -1,12 +1,16 @@
 <template>
   <content-card>
-    <v-data-table
+    <v-data-table-server
         v-model="selectedDevicesComp"
         :headers="headers"
-        :items="devicesData"
+        :items="pagedItems"
         item-key="name"
         :row-props="rowProps"
-        :items-per-page="20"
+        @update:options="fetchMoreItems"
+        :items-length="totalItems"
+        v-model:page="currentPage"
+        v-model:items-per-page="itemsPerPage"
+        :loading="loading"
         :items-per-page-options="[
           {title: '20', value: 20},
           {title: '50', value: 50},
@@ -65,7 +69,7 @@
           <device-cell :paused="!live" :item="item"/>
         </hot-point>
       </template>
-    </v-data-table>
+    </v-data-table-server>
   </content-card>
 </template>
 
@@ -107,23 +111,36 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['update:selectedDevices']);
+
 const sidebar = useSidebarStore();
 const search = ref('');
-const selectedFloor = ref('');
+const selectedFloor = ref('All');
+const wantCount = ref(20); // same as initial itemsPerPage
 const useDevicesOpts = computed(() => {
   return {
     filter: props.filter,
     subsystem: props.subsystem,
     search: search.value,
-    floor: selectedFloor.value
+    floor: selectedFloor.value,
+    wantCount: wantCount.value
   };
 });
 const {
   floorList,
-  devicesData
+  devicesData,
+  totalItems,
+  loading
 } = useDevices(useDevicesOpts); // composables/useDevices
 
-const emit = defineEmits(['update:selectedDevices']);
+const currentPage = ref(1);
+const itemsPerPage = ref(20);
+const fetchMoreItems = ({page, itemsPerPage}) => {
+  wantCount.value = page * itemsPerPage;
+};
+const pagedItems = computed(() => {
+  return devicesData.value.slice((currentPage.value - 1) * itemsPerPage.value, currentPage.value * itemsPerPage.value);
+});
 
 const headers = ref([
   {key: 'metadata.membership.subsystem', width: '20px', class: 'pl-4 pr-0', cellClass: 'pl-4 pr-0', sortable: false},
