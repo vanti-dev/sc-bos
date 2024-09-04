@@ -42,6 +42,7 @@ export interface ResourceValue<V, M extends Msg<?>> extends RemoteResource<M> {
 
 export interface ResourceCollection<V, M extends Msg<?>> extends RemoteResource<any> {
   value?: { [id: string]: V };
+  lastResponse?: M;
 }
 
 export interface ResourceCallback<V> {

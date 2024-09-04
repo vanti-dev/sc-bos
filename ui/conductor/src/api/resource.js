@@ -183,8 +183,9 @@ export function pullResource(logPrefix, resource, newStream) {
         .then((endpoint) => {
           const stream = newStream(endpoint);
           resource.stream = stream;
-          stream.on('data', () => {
+          stream.on('data', (r) => {
             retryDelayMs = 1000; // if we were successful, we reset the retry delay
+            resource.lastResponse = r;
           });
           stream.on('error', (err) => {
             setError(resource, err, logPrefix);
@@ -319,6 +320,7 @@ export function newResourceCollection() {
     loading: false,
     stream: null,
     streamError: null,
+    lastResponse: null,
     updateTime: null,
     value: {}
   };
