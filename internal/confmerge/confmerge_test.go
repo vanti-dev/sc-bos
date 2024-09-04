@@ -167,11 +167,11 @@ type memStore struct {
 	patches [][]block.Patch
 }
 
-func (m *memStore) GetLocalConfig() ([]byte, error) {
+func (m *memStore) GetExternalConfig() ([]byte, error) {
 	return bytes.Clone(m.local), nil
 }
 
-func (m *memStore) SetLocalConfig(c []byte) error {
+func (m *memStore) SetExternalConfig(c []byte) error {
 	m.local = bytes.Clone(c)
 	return nil
 }
