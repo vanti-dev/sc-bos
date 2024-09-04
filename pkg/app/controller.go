@@ -314,7 +314,7 @@ func saveConfigPatches(patches []block.Patch, dir string, logger *zap.Logger) er
 		return err
 	}
 	filename := filepath.Join(dir, "patch-"+time.Now().UTC().Format("20060102-150405")+".json")
-	raw, err := json.Marshal(patches)
+	raw, err := json.MarshalIndent(patches, "", "  ")
 	if err != nil {
 		return err
 	}
