@@ -55,8 +55,8 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	// load the external config file if possible
 	// TODO: pull config from manager publication
-	externalConf := &appconf.Config{}
-	filesLoaded, err := appconf.LoadIncludes("", externalConf, config.AppConfig)
+	var externalConf appconf.Config
+	filesLoaded, err := appconf.LoadIncludes("", &externalConf, config.AppConfig)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			// warn that file(s) couldn't be found, but continue with default config
@@ -264,7 +264,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	c := &Controller{
 		SystemConfig:     config,
-		ControllerConfig: *activeConfig,
+		ControllerConfig: activeConfig,
 		Enrollment:       enrollServer,
 		Logger:           logger,
 		Node:             rootNode,
