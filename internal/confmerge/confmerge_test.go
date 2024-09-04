@@ -2,12 +2,10 @@ package confmerge
 
 import (
 	"bytes"
-	"strconv"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/vanti-dev/sc-bos/pkg/block"
@@ -158,9 +156,8 @@ func TestBootConfig(t *testing.T) {
 }
 
 type memStore struct {
-	local   []byte
-	active  []byte
-	patches [][]block.Patch
+	local  []byte
+	active []byte
 }
 
 func (m *memStore) GetExternalConfig() ([]byte, error) {
@@ -179,10 +176,4 @@ func (m *memStore) GetActiveConfig() ([]byte, error) {
 func (m *memStore) SetActiveConfig(c []byte) error {
 	m.active = bytes.Clone(c)
 	return nil
-}
-
-func (m *memStore) SavePatches(patches []block.Patch) (ref string, err error) {
-	ref = strconv.Itoa(len(m.patches))
-	m.patches = append(m.patches, slices.Clone(patches))
-	return ref, nil
 }

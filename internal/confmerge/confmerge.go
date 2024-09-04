@@ -18,7 +18,6 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/google/renameio/v2/maybe"
 
@@ -39,8 +38,6 @@ type Store interface {
 	// SetActiveConfig replaces the active config in the store with the provided config.
 	// c must not be nil.
 	SetActiveConfig(c []byte) error
-	// SavePatches saves a set of patches to the patch log, returning a unique name for the log entry.
-	SavePatches(patches []block.Patch) (ref string, err error)
 }
 
 const (
@@ -57,10 +54,6 @@ func NewDirStore(dir string) *DirStore {
 	return &DirStore{dir: dir}
 }
 
-func (s *DirStore) Dir() string {
-	return s.dir
-}
-
 func (s *DirStore) GetExternalConfig() ([]byte, error) {
 	return s.read(externalConfigFilename)
 }
@@ -75,23 +68,6 @@ func (s *DirStore) GetActiveConfig() ([]byte, error) {
 
 func (s *DirStore) SetActiveConfig(c []byte) error {
 	return s.write(activeConfigFilename, c)
-}
-
-func (s *DirStore) SavePatches(patches []block.Patch) (ref string, err error) {
-	err = s.ensureDirExists()
-	if err != nil {
-		return "", err
-	}
-	name := "patch-" + time.Now().UTC().Format("20060102-150405") + ".json"
-	raw, err := json.Marshal(patches)
-	if err != nil {
-		return "", err
-	}
-	err = s.write(name, raw)
-	if err != nil {
-		return "", err
-	}
-	return name, nil
 }
 
 func (s *DirStore) ensureDirExists() error {
