@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/json"
 	"errors"
 	"net"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/google/renameio/v2/maybe"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/rs/cors"
@@ -69,12 +71,16 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		// successfully loaded the config
 		logger.Debug("loaded external config", zap.Strings("paths", config.AppConfig), zap.Strings("includes", externalConf.Includes), zap.Strings("filesLoaded", filesLoaded))
 	}
-	configStore := confmerge.NewDirStore(filepath.Join(config.DataDir, "config"))
+	// resolve the app config we will use by merging the external config into the active config
+	configDir := filepath.Join(config.DataDir, configDirName)
 	activeConfig, configPatches, err := confmerge.Merge(
-		externalConf, configStore,
+		externalConf, confmerge.NewDirStore(configDir),
 		appconf.Blocks(config.DriverConfigBlocks(), config.AutoConfigBlocks(), config.ZoneConfigBlocks()),
 	)
-	saveConfigPatches(configPatches, configStore, logger)
+	if err != nil {
+		return nil, err
+	}
+	err = saveConfigPatches(configPatches, filepath.Join(configDir, configPatchDirName), logger)
 	if err != nil {
 		return nil, err
 	}
@@ -298,19 +304,30 @@ func logPolicyMode(mode sysconf.PolicyMode, logger *zap.Logger) {
 	}
 }
 
-func saveConfigPatches(patches []block.Patch, store *confmerge.DirStore, logger *zap.Logger) {
+func saveConfigPatches(patches []block.Patch, dir string, logger *zap.Logger) error {
 	if len(patches) == 0 {
-		return
+		return nil
 	}
-	ref, err := store.SavePatches(patches)
+
+	err := os.MkdirAll(dir, 0755)
 	if err != nil {
-		logger.Info("applied patches based on external config",
-			zap.Int("count", len(patches)),
-			zap.String("patchLogFile", filepath.Join(store.Dir(), ref)),
-		)
-	} else {
-		logger.Error("failed to save log of applied config patches", zap.Error(err))
+		return err
 	}
+	filename := filepath.Join(dir, "patch-"+time.Now().UTC().Format("20060102-150405")+".json")
+	raw, err := json.Marshal(patches)
+	if err != nil {
+		return err
+	}
+	err = maybe.WriteFile(filename, raw, 0644)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("applied patches based on external config",
+		zap.Int("count", len(patches)),
+		zap.String("patchLogFile", filename),
+	)
+	return nil
 }
 
 // configPolicy converts the given config into a policy.Policy.
@@ -462,3 +479,8 @@ func (c *Controller) httpEndpoint() (string, error) {
 	}
 	return net.JoinHostPort(addr, p), nil
 }
+
+const (
+	configDirName      = "config"
+	configPatchDirName = "patches"
+)
