@@ -126,88 +126,84 @@ func (s *DirStore) write(name string, data []byte) error {
 // that will be applied to the active config. For full detail of this, see the block package.
 //
 // Configs are stored as JSON, so T must marshal and unmarshal to/from JSON correctly.
-func Merge[T any](external *T, store Store, schema []block.Block, logger *zap.Logger) (*T, error) {
-	oldExternal, err := getExternalJSON[T](store)
+func Merge[T any](external T, store Store, schema []block.Block, logger *zap.Logger) (T, error) {
+	var zero T
+
+	// if external JSON doesn't exist, getExternalJSON returns the zero value which we we can use
+	oldExternal, _, err := getExternalJSON[T](store)
 	if err != nil {
-		return nil, err
-	}
-	if oldExternal == nil {
-		logger.Debug("no external config cache found, treating as empty")
-		var empty T
-		oldExternal = &empty
+		return zero, err
 	}
 
-	oldActive, err := getActiveJSON[T](store)
+	oldActive, ok, err := getActiveJSON[T](store)
 	if err != nil {
-		return nil, err
+		return zero, err
 	}
-	var newActive *T
-	if oldActive == nil {
+	var newActive T
+	if !ok {
 		// no active config, just use the provided external config
 		newActive = external
 	} else {
 		patches, err := block.Diff(oldExternal, external, schema)
 		if err != nil {
-			return nil, err
+			return zero, err
 		}
 		if len(patches) > 0 {
 			patchRef, err := store.SavePatches(patches)
 			if err != nil {
-				return nil, err
+				return zero, err
 			}
 			logger.Info("applied config patch", zap.String("ref", patchRef))
 		}
 
 		newActive, err = block.ApplyPatches(oldActive, patches)
 		if err != nil {
-			return nil, err
+			return zero, err
 		}
 	}
 
 	err = setActiveJSON(store, newActive)
 	if err != nil {
-		return nil, err
+		return zero, err
 	}
 	err = setExternalJSON(store, external)
 	if err != nil {
-		return nil, err
+		return zero, err
 	}
 	return newActive, nil
 }
 
-func getExternalJSON[T any](store Store) (*T, error) {
+func getExternalJSON[T any](store Store) (ext T, ok bool, err error) {
 	raw, err := store.GetExternalConfig()
 	if err != nil {
-		return nil, err
+		return ext, false, err
 	}
 	if raw == nil {
-		return nil, nil
+		return ext, false, nil
 	}
-	var c T
-	err = json.Unmarshal(raw, &c)
+	err = json.Unmarshal(raw, &ext)
 	if err != nil {
-		return nil, err
+		return ext, false, err
 	}
-	return &c, nil
+	return ext, true, nil
 }
 
-func getActiveJSON[T any](store Store) (*T, error) {
+func getActiveJSON[T any](store Store) (ext T, ok bool, err error) {
 	raw, err := store.GetActiveConfig()
 	if err != nil {
-		return nil, err
+		return ext, false, err
 	}
 	if raw == nil {
-		return nil, nil
+		return ext, false, nil
 	}
-	var c T
-	err = json.Unmarshal(raw, &c)
+	err = json.Unmarshal(raw, &ext)
 	if err != nil {
-		return nil, err
+		return ext, false, err
 	}
-	return &c, nil
+	return ext, true, nil
 }
 
-func setExternalJSON[T any](store Store, c *T) error {
+func setExternalJSON[T any](store Store, c T) error {
 	raw, err := json.Marshal(c)
 	if err != nil {
 		return err
@@ -215,7 +211,7 @@ func setExternalJSON[T any](store Store, c *T) error {
 	return store.SetExternalConfig(raw)
 }
 
-func setActiveJSON[T any](store Store, c *T) error {
+func setActiveJSON[T any](store Store, c T) error {
 	raw, err := json.Marshal(c)
 	if err != nil {
 		return err

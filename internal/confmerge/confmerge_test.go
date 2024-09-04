@@ -55,14 +55,11 @@ var sampleBlocks = []block.Block{
 func TestBootConfig(t *testing.T) {
 	store := &memStore{}
 	mutate := func(mutator func(*sampleConfig)) {
-		active, err := getActiveJSON[sampleConfig](store)
+		active, _, err := getActiveJSON[sampleConfig](store)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if active == nil {
-			active = &sampleConfig{}
-		}
-		mutator(active)
+		mutator(&active)
 		err = setActiveJSON(store, active)
 		if err != nil {
 			t.Fatal(err)
@@ -70,7 +67,7 @@ func TestBootConfig(t *testing.T) {
 	}
 
 	// boot with an empty store - this should just return the local config
-	conf, err := Merge(&sampleConfig{
+	conf, err := Merge(sampleConfig{
 		Name: "test",
 		Drivers: []sampleDriver{
 			{
@@ -87,7 +84,7 @@ func TestBootConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expect := &sampleConfig{
+	expect := sampleConfig{
 		Name: "test",
 		Drivers: []sampleDriver{
 			{
@@ -118,7 +115,7 @@ func TestBootConfig(t *testing.T) {
 	})
 
 	// modify the local config with a patch adds another device to driver1
-	conf, err = Merge(&sampleConfig{
+	conf, err = Merge(sampleConfig{
 		Name: "test",
 		Drivers: []sampleDriver{
 			{
@@ -137,7 +134,7 @@ func TestBootConfig(t *testing.T) {
 	}
 
 	// check that both changes from local config were applied to the active config
-	expect = &sampleConfig{
+	expect = sampleConfig{
 		Name: "test",
 		Drivers: []sampleDriver{
 			{
