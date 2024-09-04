@@ -177,7 +177,7 @@ func getActiveJSON[T any](store Store) (ext T, ok bool, err error) {
 }
 
 func setExternalJSON[T any](store Store, c T) error {
-	raw, err := json.Marshal(c)
+	raw, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func setExternalJSON[T any](store Store, c T) error {
 }
 
 func setActiveJSON[T any](store Store, c T) error {
-	raw, err := json.Marshal(c)
+	raw, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
 		return err
 	}
