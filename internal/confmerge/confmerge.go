@@ -18,11 +18,11 @@ import (
 //
 // DirStore is the canonical implementation of this interface.
 type Store interface {
-	// GetLocalConfig returns the local config from the store, or nil if there is no local config.
-	GetLocalConfig() ([]byte, error)
-	// SetLocalConfig replaces the local config in the store with the provided config.
+	// GetExternalConfig returns the external config from the store, or nil if there is no external config.
+	GetExternalConfig() ([]byte, error)
+	// SetExternalConfig replaces the external config in the store with the provided config.
 	// c must not be nil.
-	SetLocalConfig(c []byte) error
+	SetExternalConfig(c []byte) error
 	// GetActiveConfig returns the active config from the store, or nil if there is no active config.
 	GetActiveConfig() ([]byte, error)
 	// SetActiveConfig replaces the active config in the store with the provided config.
@@ -33,8 +33,8 @@ type Store interface {
 }
 
 const (
-	localConfigFilename  = "local.json"
-	activeConfigFilename = "active.json"
+	externalConfigFilename = "external.json"
+	activeConfigFilename   = "active.json"
 )
 
 // DirStore is a Store that stores config files in a directory on disk.
@@ -46,12 +46,12 @@ func NewDirStore(dir string) *DirStore {
 	return &DirStore{dir: dir}
 }
 
-func (s *DirStore) GetLocalConfig() ([]byte, error) {
-	return s.read(localConfigFilename)
+func (s *DirStore) GetExternalConfig() ([]byte, error) {
+	return s.read(externalConfigFilename)
 }
 
-func (s *DirStore) SetLocalConfig(c []byte) error {
-	return s.write(localConfigFilename, c)
+func (s *DirStore) SetExternalConfig(c []byte) error {
+	return s.write(externalConfigFilename, c)
 }
 
 func (s *DirStore) GetActiveConfig() ([]byte, error) {
@@ -100,28 +100,28 @@ func (s *DirStore) write(name string, data []byte) error {
 	return maybe.WriteFile(filepath.Join(s.dir, name), data, 0644)
 }
 
-// Merge detects changes to local configuration, and applies those changes to the active configuration.
+// Merge detects changes to external configuration, and applies those changes to the active configuration.
 //
 // Returns the new active configuration.
-// newLocal should be the fully loaded Config from outside the system.
-// The provided newLocal config and resolved active config are stored in the provided Store.
+// external should be the fully loaded Config from outside the system.
+// The provided external config and resolved active config are stored in the provided Store.
 // The store may be empty:
-//   - If the store has no saved local config, then newLocal is compared against the zero value of T.
-//   - If the store has no saved active config, the newLocal config is used verbatim as the active config.
+//   - If the store has no saved external config, then external is compared against the zero value of T.
+//   - If the store has no saved active config, the provided external config is used verbatim as the active config.
 //
 // schema describes the structure of T object, used to produce patches. This controls the granularity of patches
 // that will be applied to the active config. For full detail of this, see the block package.
 //
 // Configs are stored as JSON, so T must marshal and unmarshal to/from JSON correctly.
-func Merge[T any](newLocal *T, store Store, schema []block.Block, logger *zap.Logger) (*T, error) {
-	oldLocal, err := getLocalJSON[T](store)
+func Merge[T any](external *T, store Store, schema []block.Block, logger *zap.Logger) (*T, error) {
+	oldExternal, err := getExternalJSON[T](store)
 	if err != nil {
 		return nil, err
 	}
-	if oldLocal == nil {
-		logger.Debug("no local config cache found, treating as empty")
+	if oldExternal == nil {
+		logger.Debug("no external config cache found, treating as empty")
 		var empty T
-		oldLocal = &empty
+		oldExternal = &empty
 	}
 
 	oldActive, err := getActiveJSON[T](store)
@@ -130,10 +130,10 @@ func Merge[T any](newLocal *T, store Store, schema []block.Block, logger *zap.Lo
 	}
 	var newActive *T
 	if oldActive == nil {
-		// no active config, just use the provided local config
-		newActive = newLocal
+		// no active config, just use the provided external config
+		newActive = external
 	} else {
-		patches, err := block.Diff(oldLocal, newLocal, schema)
+		patches, err := block.Diff(oldExternal, external, schema)
 		if err != nil {
 			return nil, err
 		}
@@ -155,15 +155,15 @@ func Merge[T any](newLocal *T, store Store, schema []block.Block, logger *zap.Lo
 	if err != nil {
 		return nil, err
 	}
-	err = setLocalJSON(store, newLocal)
+	err = setExternalJSON(store, external)
 	if err != nil {
 		return nil, err
 	}
 	return newActive, nil
 }
 
-func getLocalJSON[T any](store Store) (*T, error) {
-	raw, err := store.GetLocalConfig()
+func getExternalJSON[T any](store Store) (*T, error) {
+	raw, err := store.GetExternalConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -194,12 +194,12 @@ func getActiveJSON[T any](store Store) (*T, error) {
 	return &c, nil
 }
 
-func setLocalJSON[T any](store Store, c *T) error {
+func setExternalJSON[T any](store Store, c *T) error {
 	raw, err := json.Marshal(c)
 	if err != nil {
 		return err
 	}
-	return store.SetLocalConfig(raw)
+	return store.SetExternalConfig(raw)
 }
 
 func setActiveJSON[T any](store Store, c *T) error {

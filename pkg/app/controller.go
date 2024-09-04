@@ -53,10 +53,10 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		return nil, err
 	}
 
-	// load the local config file if possible
+	// load the external config file if possible
 	// TODO: pull config from manager publication
-	localConfig := &appconf.Config{}
-	filesLoaded, err := appconf.LoadIncludes("", localConfig, config.AppConfig)
+	externalConf := &appconf.Config{}
+	filesLoaded, err := appconf.LoadIncludes("", externalConf, config.AppConfig)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			// warn that file(s) couldn't be found, but continue with default config
@@ -66,10 +66,10 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		}
 	} else {
 		// successfully loaded the config
-		logger.Debug("loaded local config", zap.Strings("paths", config.AppConfig), zap.Strings("includes", localConfig.Includes), zap.Strings("filesLoaded", filesLoaded))
+		logger.Debug("loaded external config", zap.Strings("paths", config.AppConfig), zap.Strings("includes", externalConf.Includes), zap.Strings("filesLoaded", filesLoaded))
 	}
 	activeConfig, err := confmerge.Merge(
-		localConfig,
+		externalConf,
 		confmerge.NewDirStore(filepath.Join(config.DataDir, "config")),
 		appconf.Blocks(config.DriverConfigBlocks(), config.AutoConfigBlocks(), config.ZoneConfigBlocks()),
 		logger.Named("config"),
