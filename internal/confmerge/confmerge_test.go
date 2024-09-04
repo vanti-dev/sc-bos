@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/testing/protocmp"
 
@@ -67,7 +66,7 @@ func TestBootConfig(t *testing.T) {
 	}
 
 	// boot with an empty store - this should just return the local config
-	conf, err := Merge(sampleConfig{
+	conf, _, err := Merge(sampleConfig{
 		Name: "test",
 		Drivers: []sampleDriver{
 			{
@@ -79,7 +78,7 @@ func TestBootConfig(t *testing.T) {
 				},
 			},
 		},
-	}, store, sampleBlocks, zap.NewNop())
+	}, store, sampleBlocks)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +114,7 @@ func TestBootConfig(t *testing.T) {
 	})
 
 	// modify the local config with a patch adds another device to driver1
-	conf, err = Merge(sampleConfig{
+	conf, _, err = Merge(sampleConfig{
 		Name: "test",
 		Drivers: []sampleDriver{
 			{
@@ -128,7 +127,7 @@ func TestBootConfig(t *testing.T) {
 				},
 			},
 		},
-	}, store, sampleBlocks, zap.NewNop())
+	}, store, sampleBlocks)
 	if err != nil {
 		t.Fatal(err)
 	}

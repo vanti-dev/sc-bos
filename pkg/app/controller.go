@@ -34,6 +34,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
+	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -68,12 +69,12 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		// successfully loaded the config
 		logger.Debug("loaded external config", zap.Strings("paths", config.AppConfig), zap.Strings("includes", externalConf.Includes), zap.Strings("filesLoaded", filesLoaded))
 	}
-	activeConfig, err := confmerge.Merge(
-		externalConf,
-		confmerge.NewDirStore(filepath.Join(config.DataDir, "config")),
+	configStore := confmerge.NewDirStore(filepath.Join(config.DataDir, "config"))
+	activeConfig, configPatches, err := confmerge.Merge(
+		externalConf, configStore,
 		appconf.Blocks(config.DriverConfigBlocks(), config.AutoConfigBlocks(), config.ZoneConfigBlocks()),
-		logger.Named("config"),
 	)
+	saveConfigPatches(configPatches, configStore, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -294,6 +295,21 @@ func logPolicyMode(mode sysconf.PolicyMode, logger *zap.Logger) {
 	default:
 		// this shouldn't happen as unknown modes are caught in the config parsing
 		logger.Warn("unknown policy mode", zap.String("mode", string(mode)))
+	}
+}
+
+func saveConfigPatches(patches []block.Patch, store *confmerge.DirStore, logger *zap.Logger) {
+	if len(patches) == 0 {
+		return
+	}
+	ref, err := store.SavePatches(patches)
+	if err != nil {
+		logger.Info("applied patches based on external config",
+			zap.Int("count", len(patches)),
+			zap.String("patchLogFile", filepath.Join(store.Dir(), ref)),
+		)
+	} else {
+		logger.Error("failed to save log of applied config patches", zap.Error(err))
 	}
 }
 
