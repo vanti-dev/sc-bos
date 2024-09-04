@@ -1,13 +1,15 @@
 import {useErrorStore} from '@/components/ui-error/error';
 import useFloors from '@/composables/useFloors';
 import {useDevicesStore} from '@/routes/devices/store';
-import {computed, onMounted, onUnmounted, reactive, ref, toValue, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, toValue, watch} from 'vue';
 
 const NO_FLOOR = '< no floor >';
 
 /**
  * @typedef {Object} UseDevicesOptions
  * @property {string} subsystem
+ * @property {string} floor
+ * @property {string} search
  * @property {(value: Device.AsObject, index: number, array: Device.AsObject[]) => boolean} filter
  */
 
@@ -16,8 +18,6 @@ const NO_FLOOR = '< no floor >';
  * @param {MaybeRefOrGetter<Partial<UseDevicesOptions>>} props
  * @return {{
  * floorList: import('vue').ComputedRef<Array>,
- * filterFloor: import('vue').Ref<string>,
- * search: import('vue').Ref<string>,
  * query: import('vue').ComputedRef<Object>,
  * devicesData: import('vue').ComputedRef<Array>
  * }}
@@ -26,9 +26,6 @@ export default function(props) {
   const devicesStore = useDevicesStore();
   const errorStore = useErrorStore();
   const {listOfFloors} = useFloors();
-
-  const filterFloor = ref('All');
-  const search = ref('');
 
   // Computed property for the floor list
   const floorList = computed(() => {
@@ -42,24 +39,26 @@ export default function(props) {
   // Computed property for the query object
   const query = computed(() => {
     const q = {conditionsList: []};
-    const opts = toValue(props);
-    if (search.value) {
-      const words = search.value.split(/\s+/);
+    const opts = /** @type {Partial<UseDevicesOptions>} */ toValue(props);
+    if (opts.search) {
+      const words = opts.search.split(/\s+/);
       q.conditionsList.push(...words.map(word => ({stringContainsFold: word})));
     }
     if (opts.subsystem && opts.subsystem.toLowerCase() !== 'all') {
       q.conditionsList.push({field: 'metadata.membership.subsystem', stringEqualFold: opts.subsystem});
     }
-    switch (filterFloor.value.toLowerCase()) {
-      case 'all':
-        // no filter
-        break;
-      case NO_FLOOR:
-        q.conditionsList.push({field: 'metadata.location.floor', stringEqualFold: ''});
-        break;
-      default:
-        q.conditionsList.push({field: 'metadata.location.floor', stringEqualFold: filterFloor.value});
-        break;
+    if (opts.floor) {
+      switch (opts.floor.toLowerCase()) {
+        case 'all':
+          // no filter
+          break;
+        case NO_FLOOR:
+          q.conditionsList.push({field: 'metadata.location.floor', stringEqualFold: ''});
+          break;
+        default:
+          q.conditionsList.push({field: 'metadata.location.floor', stringEqualFold: opts.floor});
+          break;
+      }
     }
     return q;
   });
@@ -88,8 +87,6 @@ export default function(props) {
 
   return {
     floorList,
-    filterFloor,
-    search,
     query,
     devicesData
   };

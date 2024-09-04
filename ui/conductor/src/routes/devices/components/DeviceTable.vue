@@ -33,7 +33,7 @@
             <v-col cols="12" md="2">
               <v-select
                   :disabled="floorList.length <= 1"
-                  v-model="filterFloor"
+                  v-model="selectedFloor"
                   :items="floorList"
                   label="Floor"
                   hide-details
@@ -108,16 +108,18 @@ const props = defineProps({
 });
 
 const sidebar = useSidebarStore();
+const search = ref('');
+const selectedFloor = ref('');
 const useDevicesOpts = computed(() => {
   return {
+    filter: props.filter,
     subsystem: props.subsystem,
-    filter: props.filter
+    search: search.value,
+    floor: selectedFloor.value
   };
 });
 const {
   floorList,
-  filterFloor,
-  search,
   devicesData
 } = useDevices(useDevicesOpts); // composables/useDevices
 

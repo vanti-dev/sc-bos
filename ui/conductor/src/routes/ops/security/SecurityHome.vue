@@ -20,7 +20,7 @@
           <v-btn value="map">Map View</v-btn>
         </v-btn-toggle>
         <v-select
-            v-model="filterFloor"
+            v-model="selectedFloor"
             class="ml-4"
             density="compact"
             :disabled="floorList.length <= 1"
@@ -31,7 +31,7 @@
             style="min-width: 100px; width: 100%; max-width: 170px"/>
       </v-row>
       <list-view v-if="viewType === 'list'" :device-names="deviceQuery"/>
-      <map-view v-else :device-names="deviceNames" :floor="filterFloor"/>
+      <map-view v-else :device-names="deviceNames" :floor="selectedFloor"/>
     </content-card>
   </v-container>
 </template>
@@ -62,14 +62,15 @@ const {config} = storeToRefs(useUiConfigStore());
 const viewType = ref('list');
 const hiddenOnMap = ref(false);
 const search = ref('');
-
+const selectedFloor = ref('');
 const useDevicesOpts = computed(() => {
   return {
     subsystem: props.subsystem,
+    floor: selectedFloor.value,
     filter: props.filter
   };
 });
-const {floorList, filterFloor, devicesData} = useDevices(useDevicesOpts);
+const {floorList, devicesData} = useDevices(useDevicesOpts);
 
 const deviceNames = computed(() => {
   return devicesData.value.map((device) => {
@@ -106,10 +107,10 @@ watch(
     viewType,
     (newVal) => {
       if (newVal === 'map') {
-        filterFloor.value = 'Ground Floor';
+        selectedFloor.value = 'Ground Floor';
         hiddenOnMap.value = true;
       } else {
-        filterFloor.value = 'All';
+        selectedFloor.value = 'All';
         hiddenOnMap.value = false;
       }
     },
