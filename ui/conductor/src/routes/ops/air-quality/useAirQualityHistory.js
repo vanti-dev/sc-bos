@@ -14,7 +14,8 @@ import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} fro
  *   name: import('vue').GetterOrRef<string>,
  *   span: import('vue').GetterOrRef<number>,
  *   timeFrame: import('vue').GetterOrRef<number>,
- *   pollDelay: import('vue').GetterOrRef<number>
+ *   pollDelay: import('vue').GetterOrRef<number>,
+ *   filter: (v: Device.AsObject) => boolean
  * }} props
  * @return {{
  *   airQualitySensorHistoryValues: {},
@@ -31,7 +32,12 @@ import {computed, onMounted, onUnmounted, reactive, ref, watch, watchEffect} fro
  */
 export default function(props) {
   // Pull in devices to check if any available
-  const {devicesData} = useDevices(props);
+  const useDevicesOpts = computed(() => {
+    return {
+      filter: props.filter
+    };
+  });
+  const {devicesData} = useDevices(useDevicesOpts);
 
   // Filter zones to only those with air quality sensors
   const zonesWithAirQualitySensors = computed(() => {

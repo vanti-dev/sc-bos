@@ -108,12 +108,18 @@ const props = defineProps({
 });
 
 const sidebar = useSidebarStore();
+const useDevicesOpts = computed(() => {
+  return {
+    subsystem: props.subsystem,
+    filter: props.filter
+  };
+});
 const {
   floorList,
   filterFloor,
   search,
   devicesData
-} = useDevices(props); // composables/useDevices
+} = useDevices(useDevicesOpts); // composables/useDevices
 
 const emit = defineEmits(['update:selectedDevices']);
 

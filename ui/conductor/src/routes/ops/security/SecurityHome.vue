@@ -63,7 +63,13 @@ const viewType = ref('list');
 const hiddenOnMap = ref(false);
 const search = ref('');
 
-const {floorList, filterFloor, devicesData} = useDevices(props);
+const useDevicesOpts = computed(() => {
+  return {
+    subsystem: props.subsystem,
+    filter: props.filter
+  };
+});
+const {floorList, filterFloor, devicesData} = useDevices(useDevicesOpts);
 
 const deviceNames = computed(() => {
   return devicesData.value.map((device) => {

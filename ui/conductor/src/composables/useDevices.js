@@ -1,13 +1,19 @@
 import {useErrorStore} from '@/components/ui-error/error';
 import useFloors from '@/composables/useFloors';
 import {useDevicesStore} from '@/routes/devices/store';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref, toValue, watch} from 'vue';
 
 const NO_FLOOR = '< no floor >';
 
 /**
+ * @typedef {Object} UseDevicesOptions
+ * @property {string} subsystem
+ * @property {(value: Device.AsObject, index: number, array: Device.AsObject[]) => boolean} filter
+ */
+
+/**
  *
- * @param {Object} props
+ * @param {MaybeRefOrGetter<Partial<UseDevicesOptions>>} props
  * @return {{
  * floorList: import('vue').ComputedRef<Array>,
  * filterFloor: import('vue').Ref<string>,
@@ -36,12 +42,13 @@ export default function(props) {
   // Computed property for the query object
   const query = computed(() => {
     const q = {conditionsList: []};
+    const opts = toValue(props);
     if (search.value) {
       const words = search.value.split(/\s+/);
       q.conditionsList.push(...words.map(word => ({stringContainsFold: word})));
     }
-    if (props.subsystem.toLowerCase() !== 'all') {
-      q.conditionsList.push({field: 'metadata.membership.subsystem', stringEqualFold: props.subsystem});
+    if (opts.subsystem && opts.subsystem.toLowerCase() !== 'all') {
+      q.conditionsList.push({field: 'metadata.membership.subsystem', stringEqualFold: opts.subsystem});
     }
     switch (filterFloor.value.toLowerCase()) {
       case 'all':
@@ -73,7 +80,10 @@ export default function(props) {
 
   // Computed property for the filtered table data
   const devicesData = computed(() => {
-    return Object.values(collection.resources.value).filter(props.filter);
+    const opts = toValue(props);
+    const values = Object.values(collection.resources.value);
+    if (!opts.filter) return values;
+    return values.filter(opts.filter);
   });
 
   return {
