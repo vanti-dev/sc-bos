@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"context"
 	"crypto/tls"
 	"net/http"
 
@@ -15,11 +16,13 @@ type Services struct {
 	Node            *node.Node  // for advertising devices
 	ClientTLSConfig *tls.Config // for connecting to other smartcore nodes
 	HTTPMux         *http.ServeMux
-}
-
-type Driver interface {
+	ConfigUpdater   ConfigUpdater
 }
 
 type Factory interface {
 	New(services Services) service.Lifecycle
+}
+
+type ConfigUpdater interface {
+	UpdateConfig(ctx context.Context, config []byte) error
 }

@@ -3,10 +3,7 @@ package serviceapi
 
 import (
 	"context"
-	"encoding/base32"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"sort"
 	"strings"
 	"time"
@@ -32,7 +29,6 @@ type Api struct {
 
 	knownTypes []string
 	store      Store
-	marshaller Marshaller
 	logger     *zap.Logger
 }
 
@@ -378,7 +374,7 @@ func (a *Api) ConfigureService(ctx context.Context, request *gen.ConfigureServic
 		return nil, err
 	}
 
-	// note, during update kind either exists or isn't needed
+	// note, during update type is determined based on the existing type
 	if err := a.storeConfig(ctx, request.Id, "", state.Config); err != nil {
 		// todo: revert the update
 		return nil, err
@@ -524,7 +520,7 @@ func addInt[N constraints.Integer](a N, b int) N {
 	}
 }
 
-func (a *Api) storeConfig(ctx context.Context, id, kind string, data []byte) error {
+func (a *Api) storeConfig(ctx context.Context, name, typ string, data []byte) error {
 	if a.store == nil {
 		return nil
 	}
@@ -532,34 +528,8 @@ func (a *Api) storeConfig(ctx context.Context, id, kind string, data []byte) err
 	if len(data) == 0 {
 		data = []byte("{}")
 	}
-	// We need to make sure the config contains the relevant metadata fields like name and kind.
-	// This code converts raw config data like {"foo": "bar"} to {"name": "id", "type": "kind", "foo": "bar"}
-	jsonData := make(map[string]json.RawMessage)
-	if err := json.Unmarshal(data, &jsonData); err == nil {
-		if _, ok := jsonData["name"]; !ok {
-			jsonData["name"] = json.RawMessage(fmt.Sprintf("%q", id))
-		}
-		if kind != "" {
-			if _, ok := jsonData["type"]; !ok {
-				jsonData["type"] = json.RawMessage(fmt.Sprintf("%q", kind))
-			}
-		}
-		if d, err := json.Marshal(jsonData); err == nil {
-			data = d
-		}
-	} // else, just use the original data
 
-	if a.marshaller != nil {
-		var err error
-		data, err = a.marshaller.MarshalConfig(data)
-		if err != nil {
-			return err
-		}
-	}
-
-	// Avoid allowing users to write arbitrary file names to disk.
-	safeName := fileNameEncoder.EncodeToString([]byte(id))
-	if err := a.store.Save(ctx, fmt.Sprintf("%s.json", safeName), data); err != nil {
+	if err := a.store.Save(ctx, name, typ, data); err != nil {
 		if a.logger != nil {
 			a.logger.Warn("writing config file failed", zap.Error(err))
 		}
@@ -568,4 +538,12 @@ func (a *Api) storeConfig(ctx context.Context, id, kind string, data []byte) err
 	return nil
 }
 
-var fileNameEncoder = base32.StdEncoding.WithPadding(base32.NoPadding)
+type Store interface {
+	// Save will persist the configuration for a service.
+	// The data must be an encoded JSON object.
+	// name identifies the service, and is required.
+	// typ is the type of the service. If the store already contains a service with the given name, typ may be empty,
+	// in which case the existing type is used. If the store does not contain a service with the given name, typ must
+	// be non-empty.
+	Save(ctx context.Context, name string, typ string, data []byte) error
+}

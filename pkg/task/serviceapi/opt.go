@@ -33,9 +33,3 @@ func WithStore(s Store) Option {
 		a.store = s
 	}
 }
-
-func WithMarshaller(m Marshaller) Option {
-	return func(a *Api) {
-		a.marshaller = m
-	}
-}
