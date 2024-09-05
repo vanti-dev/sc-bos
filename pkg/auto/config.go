@@ -1,6 +1,10 @@
 package auto
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/vanti-dev/sc-bos/internal/util/jsonutil"
+)
 
 type Config struct {
 	Name     string `json:"name"`
@@ -14,7 +18,8 @@ type RawConfig struct {
 }
 
 func (c *RawConfig) MarshalJSON() ([]byte, error) {
-	return c.Raw, nil
+	// override "name", "type" and "disabled" from Config
+	return jsonutil.MarshalObjects(c.Raw, c.Config)
 }
 
 func (c *RawConfig) UnmarshalJSON(buf []byte) error {
