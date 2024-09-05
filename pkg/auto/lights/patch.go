@@ -135,7 +135,12 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 		case <-ctx.Done():
 			return ctx.Err()
 		case e := <-configChanged:
-			if sc := b.processConfig(ctx, e.Args[0].(config.Root), sources, changes); sc == 0 {
+			cfg := e.Args[0].(config.Root)
+			// update the config in the ReadState too
+			changes <- PatchFunc(func(s *ReadState) {
+				s.Config = cfg
+			})
+			if sc := b.processConfig(ctx, cfg, sources, changes); sc == 0 {
 				b.logger.Debug("no sources configured, automation will do nothing")
 			}
 		}
@@ -195,11 +200,6 @@ func (b *BrightnessAutomation) processConfig(ctx context.Context, cfg config.Roo
 			delete(source.runningSources, name)
 		}
 	}
-
-	// update the config in the ReadState too
-	changes <- PatchFunc(func(s *ReadState) {
-		s.Config = cfg
-	})
 
 	return sourceCount
 }

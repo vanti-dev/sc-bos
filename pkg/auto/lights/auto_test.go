@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/olebedev/emitter"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -75,7 +76,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		t.Fatalf("Configure: %v", err)
 	}
 
-	processComplete := automation.bus.On("process-complete")
+	processComplete := automation.bus.On("process-complete", emitter.Sync)
 	waitForState := func(test func(state *ReadState) bool) (time.Duration, error) {
 		t.Helper()
 		timeout := time.NewTimer(500 * time.Millisecond)

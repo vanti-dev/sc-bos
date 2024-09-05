@@ -7,3 +7,4 @@ results_*.csv
 .secret/
 .secrets/
 .build/
+.vscode
