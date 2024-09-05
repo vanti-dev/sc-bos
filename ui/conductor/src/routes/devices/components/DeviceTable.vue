@@ -2,15 +2,10 @@
   <content-card>
     <v-data-table-server
         v-model="selectedDevicesComp"
+        v-bind="tableAttrs"
         :headers="headers"
-        :items="pagedItems"
         item-key="name"
         :row-props="rowProps"
-        @update:options="fetchMoreItems"
-        :items-length="totalItems"
-        v-model:page="currentPage"
-        v-model:items-per-page="itemsPerPage"
-        :loading="loading"
         :items-per-page-options="[
           {title: '20', value: 20},
           {title: '50', value: 50},
@@ -77,10 +72,11 @@
 import ContentCard from '@/components/ContentCard.vue';
 import HotPoint from '@/components/HotPoint.vue';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
+import {useDataTableCollection} from '@/composables/table.js';
 import useDevices from '@/composables/useDevices';
 import {Zone} from '@/routes/site/zone/zone';
 import {useSidebarStore} from '@/stores/sidebar';
-import {computed, ref} from 'vue';
+import {computed, reactive, ref} from 'vue';
 import DeviceCell from './DeviceCell.vue';
 
 const props = defineProps({
@@ -126,21 +122,9 @@ const useDevicesOpts = computed(() => {
     wantCount: wantCount.value
   };
 });
-const {
-  floorList,
-  items,
-  totalItems,
-  loadingNextPage: loading
-} = useDevices(useDevicesOpts); // composables/useDevices
-
-const currentPage = ref(1);
-const itemsPerPage = ref(20);
-const fetchMoreItems = ({page, itemsPerPage}) => {
-  wantCount.value = page * itemsPerPage;
-};
-const pagedItems = computed(() => {
-  return items.value.slice((currentPage.value - 1) * itemsPerPage.value, currentPage.value * itemsPerPage.value);
-});
+const devices = useDevices(useDevicesOpts);
+const tableAttrs = useDataTableCollection(wantCount, devices);
+const {floorList, items} = devices;
 
 const headers = ref([
   {key: 'metadata.membership.subsystem', width: '20px', class: 'pl-4 pr-0', cellClass: 'pl-4 pr-0', sortable: false},
