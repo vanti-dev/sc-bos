@@ -10,7 +10,7 @@
   </v-icon>
 
   <v-menu
-      v-else-if="notOK"
+      v-else-if="notOk"
       :close-on-content-click="false"
       location="left"
       max-width="500px"
@@ -90,7 +90,7 @@ const props = defineProps({
 
 const {
   level, levelToStr,
-  ok, notOK,
+  ok, notOk,
   description,
   iconStr, iconColor,
   problems, hasMoreProblems
