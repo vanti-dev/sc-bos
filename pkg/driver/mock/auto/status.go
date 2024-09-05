@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"golang.org/x/exp/rand"
+
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -29,7 +31,11 @@ func Status(model *statuspb.Model, name string) service.Lifecycle {
 		go func() {
 			timer := time.NewTimer(durationBetween(30*time.Second, 2*time.Minute))
 			for {
-				level := gen.StatusLog_Level(oneOf(levels...))
+				level := oneOf(levels...)
+				// 90% chance that the problem is nominal, to make things more likely to be working.
+				if rand.Float32() < 0.9 {
+					level = gen.StatusLog_NOMINAL
+				}
 				problem := &gen.StatusLog_Problem{
 					Name:        oneOf(names...),
 					Level:       level,
