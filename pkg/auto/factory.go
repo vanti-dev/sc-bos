@@ -20,6 +20,7 @@ type Services struct {
 	CohortManager   node.Remote
 	ClientTLSConfig *tls.Config
 	Now             func() time.Time
+	Config          service.ConfigUpdater
 }
 
 // Factory constructs new automation instances.

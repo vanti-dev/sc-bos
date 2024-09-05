@@ -529,7 +529,7 @@ func (a *Api) storeConfig(ctx context.Context, name, typ string, data []byte) er
 		data = []byte("{}")
 	}
 
-	if err := a.store.Save(ctx, name, typ, data); err != nil {
+	if err := a.store.SaveConfig(ctx, name, typ, data); err != nil {
 		if a.logger != nil {
 			a.logger.Warn("writing config file failed", zap.Error(err))
 		}
@@ -539,11 +539,11 @@ func (a *Api) storeConfig(ctx context.Context, name, typ string, data []byte) er
 }
 
 type Store interface {
-	// Save will persist the configuration for a service.
+	// SaveConfig will persist the configuration for a service.
 	// The data must be an encoded JSON object.
 	// name identifies the service, and is required.
 	// typ is the type of the service. If the store already contains a service with the given name, typ may be empty,
 	// in which case the existing type is used. If the store does not contain a service with the given name, typ must
 	// be non-empty.
-	Save(ctx context.Context, name string, typ string, data []byte) error
+	SaveConfig(ctx context.Context, name string, typ string, data []byte) error
 }

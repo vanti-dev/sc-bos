@@ -37,7 +37,7 @@ type Map struct {
 
 // CreateFunc returns a new Lifecycle for the given kind.
 // CreateFunc is called during Map.Create.
-type CreateFunc func(kind string) (Lifecycle, error)
+type CreateFunc func(id, kind string) (Lifecycle, error)
 
 // IdFunc generates a new id given the passed parameters.
 // The function should return an error if no id can be found for which exists(id) returns false.
@@ -366,11 +366,6 @@ func (m *Map) createRecord(id, kind string) (*Record, uint64, error) {
 	if m.create == nil {
 		return nil, 0, ErrImmutable
 	}
-	s, err := m.create(kind)
-	if err != nil {
-		return nil, 0, err
-	}
-
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	// gen id if needed
@@ -380,6 +375,11 @@ func (m *Map) createRecord(id, kind string) (*Record, uint64, error) {
 		if err != nil {
 			return nil, 0, fmt.Errorf("bad id %w", err)
 		}
+	}
+
+	s, err := m.create(id, kind)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	r := &Record{

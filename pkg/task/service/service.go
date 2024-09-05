@@ -64,6 +64,11 @@ type Lifecycle interface {
 	StateAndChanges(ctx context.Context) (State, <-chan State)
 }
 
+type ConfigUpdater interface {
+	// UpdateConfig reconfigures the current service, and persists the updated configuration (where applicable).
+	UpdateConfig(ctx context.Context, data []byte) error
+}
+
 // ApplyFunc is called each time an active service has its config updated.
 // The func should block for as long as config is being read but no longer.
 // Background tasks, like opening connections to other network devices, should not block.

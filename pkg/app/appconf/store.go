@@ -79,7 +79,7 @@ type DriverStore struct {
 	store *Store
 }
 
-func (ds *DriverStore) Save(_ context.Context, name string, typ string, data []byte) error {
+func (ds *DriverStore) SaveConfig(_ context.Context, name string, typ string, data []byte) error {
 	ds.store.m.Lock()
 	defer ds.store.m.Unlock()
 
@@ -130,7 +130,7 @@ type AutomationStore struct {
 	store *Store
 }
 
-func (as *AutomationStore) Save(_ context.Context, name string, typ string, data []byte) error {
+func (as *AutomationStore) SaveConfig(_ context.Context, name string, typ string, data []byte) error {
 	as.store.m.Lock()
 	defer as.store.m.Unlock()
 
@@ -181,7 +181,7 @@ type ZoneStore struct {
 	store *Store
 }
 
-func (zs *ZoneStore) Save(_ context.Context, name string, typ string, data []byte) error {
+func (zs *ZoneStore) SaveConfig(_ context.Context, name string, typ string, data []byte) error {
 	zs.store.m.Lock()
 	defer zs.store.m.Unlock()
 
