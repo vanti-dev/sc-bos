@@ -7,149 +7,149 @@
       "devices": [
         {
           "name": "van/uk/brum/ugs/devices/LTF-LN1-01",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Bar Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Basement", "zone": "Bar"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-LN1-02",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Basement"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-LN1-03",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Stairwell Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Basement", "zone": "Stairwell"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-LN1-04",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Basement", "zone": "Copper Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-LN1-05",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ring Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Basement", "zone": "Copper Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-LN1-06",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Basement", "zone": "Cotswold Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-LN1-07",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ring Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Basement", "zone": "Cotswold Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-LN1-08",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Basement", "zone": "Kaolin Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-LN1-09",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ring Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Basement", "zone": "Kaolin Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-LN1-01",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Basement"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-LN1-02",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Basement", "zone": "Copper Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-LN1-03",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Basement", "zone": "Cotswold Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-LN1-04",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Basement", "zone": "Kaolin Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/EMT-LN1-01",
-          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}],
+          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "DN1-001"},
           "membership": {"subsystem": "metering"},
           "location": {"floor": "Basement", "description": "In the riser room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-LN1-01",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Basement", "zone": "Bar"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-LN1-02",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Basement", "zone": "Copper Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-LN1-03",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Basement", "zone": "Cotswold Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-LN1-04",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Basement", "zone": "Kaolin Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-LN1-05",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Basement", "zone": "Stairwell"}
         },
         {
           "name": "van/uk/brum/ugs/devices/IAQ-LN1-01",
-          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Basement", "zone": "Copper Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/IAQ-LN1-02",
-          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Basement", "zone": "Cotswold Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/IAQ-LN1-03",
-          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Basement", "zone": "Kaolin Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/IAQ-LN1-04",
-          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Basement", "zone": "Bar"}
         }
@@ -161,277 +161,277 @@
       "devices": [
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-01",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Entrance Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Reception"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-02",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Spiral Stair Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Reception"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-03",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Meeting Room Corridor Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Reception"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-04",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Kitchen Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Kitchen"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-05",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Teal Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-06",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Green Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-07",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Yellow Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-08",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Project Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-09",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Lab"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-10",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Tool Station Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Lab"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-11",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Warehouse"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-12",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Workshop"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-13",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Bench Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Workshop"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-14",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Secure Store"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-15",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Goods In"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-16",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Comms Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L00-17",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Loading Bay"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-01",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Reception"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-02",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Teal Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-03",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Green Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-04",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Yellow Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-05",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Project Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-06",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Lab"}
         },
         {
           "name": "van/uk/brum/ugs/devices/EMT-L00-01",
-          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}],
+          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "D00-001", "description": "Incomer"},
           "membership": {"subsystem": "metering"},
           "location": {"floor": "Ground Floor", "zone": "Loading Bay"}
         },
         {
           "name": "van/uk/brum/ugs/devices/EMT-L00-02",
-          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}],
+          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "D00-002"},
           "membership": {"subsystem": "metering"},
           "location": {"floor": "Ground Floor", "zone": "Comms Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/EMT-L00-03",
-          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}],
+          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "D00-003"},
           "membership": {"subsystem": "metering"},
           "location": {"floor": "Ground Floor", "zone": "Lab"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-L00-01",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Ground Floor", "zone": "Reception"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-L00-02",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Ground Floor", "zone": "Teal Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-L00-03",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Ground Floor", "zone": "Green Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-L00-04",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Ground Floor", "zone": "Yellow Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-L00-05",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Ground Floor", "zone": "Project Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-L00-06",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Ground Floor", "zone": "Lab"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-L00-07",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Ground Floor", "zone": "Lab"}
         },
         {
           "name": "van/uk/brum/ugs/devices/ACR-L00-01",
-          "traits": [{"name": "smartcore.bos.Access"}, {"name": "smartcore.traits.OpenClose"}],
+          "traits": [{"name": "smartcore.bos.Access"}, {"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Main Door"},
           "membership": {"subsystem": "acs"},
           "location": {"floor": "Ground Floor", "zone": "Reception"}
         },
         {
           "name": "van/uk/brum/ugs/devices/ACR-L00-02",
-          "traits": [{"name": "smartcore.bos.Access"}],
+          "traits": [{"name": "smartcore.bos.Access"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Secure Store Door"},
           "membership": {"subsystem": "acs"},
           "location": {"floor": "Ground Floor", "zone": "Secure Store"}
         },
         {
           "name": "van/uk/brum/ugs/devices/DOR-L00-01",
-          "traits": [{"name": "smartcore.traits.OpenClose"}],
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Shutter"},
           "membership": {"subsystem": "acs"},
           "location": {"floor": "Ground Floor", "zone": "Loading Bay"}
         },
         {
           "name": "van/uk/brum/ugs/devices/DOR-L00-02",
-          "traits": [{"name": "smartcore.traits.OpenClose"}],
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Fire Door"},
           "membership": {"subsystem": "acs"},
           "location": {"floor": "Ground Floor", "zone": "Warehouse"}
         },
         {
           "name": "van/uk/brum/ugs/devices/IAQ-L00-01",
-          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Ground Floor", "zone": "Teal Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/IAQ-L00-02",
-          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Ground Floor", "zone": "Green Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/IAQ-L00-03",
-          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Ground Floor", "zone": "Yellow Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/IAQ-L00-04",
-          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Ground Floor", "zone": "Workshop"}
         },
         {
           "name": "van/uk/brum/ugs/devices/IAQ-L00-05",
-          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Ground Floor", "zone": "Lab"}
         }
@@ -443,101 +443,101 @@
       "devices": [
         {
           "name": "van/uk/brum/ugs/devices/LTF-L01-01",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "First Floor", "zone": "The Bank"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L01-02",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "First Floor", "zone": "Service"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L01-03",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "First Floor", "zone": "Open Plan"}
         },
         {
           "name": "van/uk/brum/ugs/devices/LTF-L01-04",
-          "traits": [{"name": "smartcore.traits.Light"}],
+          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Ceiling Lights"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "First Floor", "zone": "Printer Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L01-01",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "First Floor", "zone": "The Bank"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L01-02",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Near the toilets"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L01-03",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Near the back stairs"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L01-04",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "First Floor", "zone": "Service"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-L01-01",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "First Floor", "zone": "The Bank"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-L01-02",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "First Floor", "zone": "Service"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-L01-03",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Near the toilets"}
         },
         {
           "name": "van/uk/brum/ugs/devices/PIR-L01-04",
-          "traits": [{"name": "smartcore.traits.OccupancySensor"}],
+          "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Near the back stairs"}
         },
         {
           "name": "van/uk/brum/ugs/devices/IAQ-L01-01",
-          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "First Floor", "zone": "The Bank"}
         },
         {
           "name": "van/uk/brum/ugs/devices/IAQ-L01-02",
-          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "First Floor", "zone": "Printer Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/IAQ-L01-03",
-          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "First Floor", "zone": "Open Plan"}
         },
         {
           "name": "van/uk/brum/ugs/devices/IAQ-L01-04",
-          "traits": [{"name": "smartcore.traits.AirQualitySensor"}],
+          "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "First Floor", "zone": "Service"}
         }
@@ -549,14 +549,14 @@
       "devices": [
         {
           "name": "van/uk/brum/ugs/devices/PV-L02-01",
-          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}],
+          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Solar PV"},
           "membership": {"subsystem": "metering"},
           "location": {"floor": "Roof"}
         },
         {
           "name": "van/uk/brum/ugs/devices/TMP-L02-01",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}],
+          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
           "appearance": {"title": "Outside Air Temperature"},
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Roof"}
