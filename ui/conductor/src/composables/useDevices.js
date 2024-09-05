@@ -20,10 +20,9 @@ const NO_FLOOR = '< no floor >';
 /**
  *
  * @param {MaybeRefOrGetter<Partial<UseDevicesOptions>>} props
- * @return {{
- * floorList: import('vue').ComputedRef<Array>,
- * query: import('vue').ComputedRef<Object>,
- * devicesData: import('vue').ComputedRef<Array>
+ * @return {UseCollectionResponse<Device.AsObject> & {
+ *   floorList: import('vue').ComputedRef<Array>,
+ *   query: import('vue').ComputedRef<Object>,
  * }}
  */
 export default function(props) {
@@ -71,20 +70,19 @@ export default function(props) {
     };
   });
 
-  const {items, totalItems, loadingNextPage} = useDevicesCollection(request, deviceCollectionOptions);
+  const collection = useDevicesCollection(request, deviceCollectionOptions);
 
   // Computed property for the filtered table data
-  const devicesData = computed(() => {
-    const values = items.value;
+  const items = computed(() => {
+    const values = collection.items.value;
     if (!opts.value.filter) return values;
     return values.filter(opts.value.filter);
   });
 
   return {
+    ...collection,
     floorList,
     query,
-    devicesData,
-    totalItems,
-    loading: loadingNextPage
+    items
   };
 }

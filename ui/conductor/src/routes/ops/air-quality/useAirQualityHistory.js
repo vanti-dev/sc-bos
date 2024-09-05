@@ -43,7 +43,7 @@ export default function(props) {
       filter: props.filter
     };
   });
-  const {devicesData} = useDevices(useDevicesOpts);
+  const {items: devicesData} = useDevices(useDevicesOpts);
 
   // Filter zones to only those with air quality sensors
   const zonesWithAirQualitySensors = computed(() => {

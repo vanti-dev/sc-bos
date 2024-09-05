@@ -70,7 +70,7 @@ const useDevicesOpts = computed(() => {
     filter: props.filter
   };
 });
-const {floorList, devicesData} = useDevices(useDevicesOpts);
+const {floorList, items: devicesData} = useDevices(useDevicesOpts);
 
 const deviceNames = computed(() => {
   return devicesData.value.map((device) => {

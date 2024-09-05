@@ -128,9 +128,9 @@ const useDevicesOpts = computed(() => {
 });
 const {
   floorList,
-  devicesData,
+  items,
   totalItems,
-  loading
+  loadingNextPage: loading
 } = useDevices(useDevicesOpts); // composables/useDevices
 
 const currentPage = ref(1);
@@ -139,7 +139,7 @@ const fetchMoreItems = ({page, itemsPerPage}) => {
   wantCount.value = page * itemsPerPage;
 };
 const pagedItems = computed(() => {
-  return devicesData.value.slice((currentPage.value - 1) * itemsPerPage.value, currentPage.value * itemsPerPage.value);
+  return items.value.slice((currentPage.value - 1) * itemsPerPage.value, currentPage.value * itemsPerPage.value);
 });
 
 const headers = ref([
@@ -159,7 +159,7 @@ const tableClasses = computed(() => {
 
 const selectedDevicesComp = computed({
   get() {
-    return devicesData.value.filter(device => props.selectedDevices.indexOf(device.name) >= 0);
+    return items.value.filter(device => props.selectedDevices.indexOf(device.name) >= 0);
   },
   set(value) {
     emit('update:selectedDevices', value);
