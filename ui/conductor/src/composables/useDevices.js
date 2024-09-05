@@ -1,7 +1,9 @@
+import useFilterCtx from '@/components/filter/filterCtx.js';
 import {useDevicesCollection, useDevicesMetadataField, usePullDevicesMetadata} from '@/devices/devices.js';
 import {computed, toValue} from 'vue';
 
 const NO_FLOOR = '< no floor >';
+const NO_ZONE = '< no zone >';
 
 /**
  * @typedef {Object} UseDevicesOptions
@@ -20,19 +22,11 @@ const NO_FLOOR = '< no floor >';
  *
  * @param {MaybeRefOrGetter<Partial<UseDevicesOptions>>} props
  * @return {UseCollectionResponse<Device.AsObject> & {
- *   floorList: import('vue').ComputedRef<Array>,
  *   query: import('vue').ComputedRef<Object>,
  * }}
  */
 export default function(props) {
   const opts = computed(() => /** @type {Partial<UseDevicesOptions>} */ toValue(props));
-
-  const {value: md} = usePullDevicesMetadata('metadata.location.floor');
-  const {keys: listOfFloors} = useDevicesMetadataField(md, 'metadata.location.floor');
-
-  const floorList = computed(() => {
-    return ['All', ...listOfFloors.value.map(v => v === '' ? NO_FLOOR : v)];
-  });
 
   const conditions = computed(() => {
     const _opts = opts.value;
@@ -82,8 +76,109 @@ export default function(props) {
 
   return {
     ...collection,
-    floorList,
     query,
     items
   };
+}
+
+/**
+ * Returns the list of floors, suitable for use in a select box.
+ * Each item in the floorList is suitable for use as the `floor` prop in the useDevices function.
+ *
+ * @return {{floorList: ComputedRef<string[]>}}
+ */
+export function useDeviceFloorList() {
+  const {value: md} = usePullDevicesMetadata('metadata.location.floor');
+  const {keys: listOfFloors} = useDevicesMetadataField(md, 'metadata.location.floor');
+  const floorList = computed(() => {
+    return ['All', ...listOfFloors.value.map(v => v === '' ? NO_FLOOR : v)];
+  });
+  return {floorList};
+}
+
+/**
+ * @param {MaybeRefOrGetter<Record<string, any>>?} forcedFilters
+ * @return {{
+ *   filterOpts: Ref<import('@/components/filter/filterCtx').Options>,
+ *   filterCtx: import('@/components/filter/filterCtx').FilterCtx,
+ *   forcedConditions: import('vue').Ref<Device.Query.Condition.AsObject[]>,
+ *   filterConditions: import('vue').Ref<Device.Query.Condition.AsObject[]>,
+ * }}
+ */
+export function useDeviceFilters(forcedFilters) {
+  const {value: md} = usePullDevicesMetadata([
+    'metadata.location.floor',
+    'metadata.location.zone'
+  ]);
+  const {keys: floorKeys} = useDevicesMetadataField(md, 'metadata.location.floor');
+  const {keys: zoneKeys} = useDevicesMetadataField(md, 'metadata.location.zone');
+  const filterOpts = computed(() => {
+    const filters = [];
+    const defaults = [];
+
+    const forced = toValue(forcedFilters) ?? {};
+
+    if (!Object.hasOwn(forced, 'floor')) {
+      const floors = floorKeys.value.map(f => f === '' ? NO_FLOOR : f);
+      if (floors.length > 1) {
+        filters.push({
+          key: 'floor',
+          icon: 'mdi-layers-triple-outline',
+          title: 'Floor',
+          type: 'list',
+          items: floors
+        });
+      }
+    }
+
+    if (!Object.hasOwn(forced, 'zone')) {
+      const zones = zoneKeys.value.map(z => z === '' ? NO_ZONE : z);
+      if (zones.length > 1) {
+        filters.push({
+          key: 'zone',
+          icon: 'mdi-select-all',
+          title: 'Zone',
+          type: 'list',
+          items: zones
+        });
+      }
+    }
+
+    return {filters, defaults};
+  });
+
+  const filterCtx = useFilterCtx(filterOpts);
+
+  const toCondition = (field, value) => {
+    if (value === undefined || value === null) return null;
+    switch (field) {
+      case 'floor':
+        return {field: 'metadata.location.floor', stringEqualFold: value === NO_FLOOR ? '' : value};
+      case 'zone':
+        return {field: 'metadata.location.zone', stringEqualFold: value === NO_ZONE ? '' : value};
+      case 'subsystem':
+        return {field: 'metadata.membership.subsystem', stringEqualFold: value};
+    }
+    return null;
+  };
+
+  const forcedConditions = computed(() => {
+    const res = [];
+    for (const [k, v] of Object.entries(forcedFilters.value)) {
+      const cond = toCondition(k, v);
+      if (cond) res.push(cond);
+    }
+    return res;
+  });
+  const filterConditions = computed(() => {
+    const res = [];
+    const choices = /** @type {import('@/components/filter/filterCtx').Choice[]} */ filterCtx.sortedChoices.value;
+    for (const choice of choices) {
+      const cond = toCondition(choice?.filter, choice?.value);
+      if (cond) res.push(cond);
+    }
+    return res;
+  });
+
+  return {filterOpts, filterCtx, forcedConditions, filterConditions};
 }

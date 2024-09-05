@@ -39,7 +39,8 @@
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
 
-import useDevices from '@/composables/useDevices';
+import useDevices, {useDeviceFloorList} from '@/composables/useDevices';
+import {usePullDevicesMetadata} from '@/devices/devices.js';
 import ListView from '@/routes/ops/security/components/ListView.vue';
 import MapView from '@/routes/ops/security/components/MapView.vue';
 import {useUiConfigStore} from '@/stores/ui-config';
@@ -70,7 +71,8 @@ const useDevicesOpts = computed(() => {
     filter: props.filter
   };
 });
-const {floorList, items: devicesData} = useDevices(useDevicesOpts);
+const {items: devicesData} = useDevices(useDevicesOpts);
+const {floorList} = useDeviceFloorList();
 
 const deviceNames = computed(() => {
   return devicesData.value.map((device) => {

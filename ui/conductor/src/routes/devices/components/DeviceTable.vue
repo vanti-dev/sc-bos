@@ -1,5 +1,17 @@
 <template>
   <content-card>
+    <v-toolbar color="transparent" class="pl-4 py-2">
+      <v-text-field
+          v-model="search"
+          append-inner-icon="mdi-magnify"
+          label="Search devices"
+          hide-details
+          variant="filled"
+          max-width="600px"
+          class="flex-fill mr-auto"/>
+      <filter-choice-chips :ctx="filterCtx" class="mx-2"/>
+      <filter-btn :ctx="filterCtx"/>
+    </v-toolbar>
     <v-data-table-server
         v-model="selectedDevicesComp"
         v-bind="tableAttrs"
@@ -15,40 +27,6 @@
         item-value="name"
         :class="tableClasses"
         @click:row="showDevice">
-      <template #top>
-        <!-- todo: bulk actions -->
-        <!-- filters -->
-        <v-container fluid style="width: 100%">
-          <v-row dense>
-            <v-col cols="12" md="5">
-              <v-text-field
-                  v-model="search"
-                  append-inner-icon="mdi-magnify"
-                  label="Search devices"
-                  hide-details
-                  variant="filled"/>
-            </v-col>
-            <v-spacer/>
-            <v-col cols="12" md="2">
-              <v-select
-                  :disabled="floorList.length <= 1"
-                  v-model="selectedFloor"
-                  :items="floorList"
-                  label="Floor"
-                  hide-details
-                  variant="filled"/>
-            </v-col>
-            <!--            <v-col cols="12" md="2">
-              <v-select
-                  v-model="filterZone"
-                  :items="zoneList"
-                  label="Zone"
-                  hide-details
-                  variant="filled"/>
-            </v-col>-->
-          </v-row>
-        </v-container>
-      </template>
       <template #item.metadata.membership.subsystem="{ item }">
         <subsystem-icon size="20px" :subsystem="item.metadata?.membership?.subsystem" no-default/>
       </template>
@@ -70,24 +48,20 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
+import FilterBtn from '@/components/filter/FilterBtn.vue';
+import FilterChoiceChips from '@/components/filter/FilterChoiceChips.vue';
 import HotPoint from '@/components/HotPoint.vue';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import {useDataTableCollection} from '@/composables/table.js';
-import useDevices from '@/composables/useDevices';
-import {Zone} from '@/routes/site/zone/zone';
+import useDevices, {useDeviceFilters} from '@/composables/useDevices';
 import {useSidebarStore} from '@/stores/sidebar';
-import {computed, reactive, ref} from 'vue';
+import {computed, ref} from 'vue';
 import DeviceCell from './DeviceCell.vue';
 
 const props = defineProps({
   subsystem: {
     type: String,
     default: 'all'
-  },
-  zone: {
-    type: Zone,
-    default: () => {
-    }
   },
   showSelect: {
     type: Boolean,
@@ -106,25 +80,33 @@ const props = defineProps({
     default: () => true
   }
 });
-
 const emit = defineEmits(['update:selectedDevices']);
 
 const sidebar = useSidebarStore();
+
+// searching and filtering
 const search = ref('');
-const selectedFloor = ref('All');
+const forcedFilters = computed(() => {
+  const res = {};
+  if (props.subsystem && props.subsystem !== 'all') res.subsystem = props.subsystem;
+  return res;
+});
+const {filterCtx, forcedConditions, filterConditions} = useDeviceFilters(forcedFilters);
+
+// pagination
 const wantCount = ref(20); // same as initial itemsPerPage
+
 const useDevicesOpts = computed(() => {
   return {
     filter: props.filter,
-    subsystem: props.subsystem,
     search: search.value,
-    floor: selectedFloor.value,
+    conditions: [...forcedConditions.value, ...filterConditions.value],
     wantCount: wantCount.value
   };
 });
 const devices = useDevices(useDevicesOpts);
 const tableAttrs = useDataTableCollection(wantCount, devices);
-const {floorList, items} = devices;
+const {items} = devices;
 
 const headers = ref([
   {key: 'metadata.membership.subsystem', width: '20px', class: 'pl-4 pr-0', cellClass: 'pl-4 pr-0', sortable: false},
