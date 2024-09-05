@@ -36,7 +36,10 @@ func (c *Controller) startDrivers(configs []driver.RawConfig) (*service.Map, err
 		HTTPMux:         c.Mux,
 	}
 
-	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
+		driverServices := ctxServices
+		driverServices.Config = &serviceConfigStore{store: c.ControllerConfig.Drivers(), id: id}
+
 		f, ok := c.SystemConfig.DriverFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported driver type %v", kind)
@@ -62,7 +65,10 @@ func (c *Controller) startAutomations(configs []auto.RawConfig) (*service.Map, e
 		ClientTLSConfig: c.ClientTLSConfig,
 	}
 
-	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
+		autoServices := ctxServices
+		autoServices.Config = &serviceConfigStore{store: c.ControllerConfig.Automations(), id: id}
+
 		f, ok := c.SystemConfig.AutoFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported automation type %v", kind)
@@ -97,7 +103,7 @@ func (c *Controller) startSystems() (*service.Map, error) {
 		CohortManager:   c.ManagerConn,
 		ClientTLSConfig: c.ClientTLSConfig,
 	}
-	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+	m := service.NewMap(func(_, kind string) (service.Lifecycle, error) {
 		f, ok := c.SystemConfig.SystemFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported system type %v", kind)
@@ -122,7 +128,10 @@ func (c *Controller) startZones(configs []zone.RawConfig) (*service.Map, error) 
 		DriverFactories: c.SystemConfig.DriverFactories,
 	}
 
-	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
+		zoneServices := ctxServices
+		zoneServices.Config = &serviceConfigStore{store: c.ControllerConfig.Zones(), id: id}
+
 		f, ok := c.SystemConfig.ZoneFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported zone type %v", kind)
@@ -218,4 +227,23 @@ func announceSystemServices[M ~map[string]T, T any](c *Controller, services *ser
 		c.Node.Announce("systems", node.HasClient(client)),
 		c.Node.Announce(filepath.Join(c.Node.Name(), "systems"), node.HasClient(client)),
 	)
+}
+
+type serviceConfigStore struct {
+	store    serviceapi.Store
+	services *service.Map
+	id       string
+}
+
+func (s *serviceConfigStore) UpdateConfig(ctx context.Context, data []byte) error {
+	serv := s.services.Get(s.id)
+	if serv == nil {
+		return fmt.Errorf("service %s not found", s.id)
+	}
+	_, err := serv.Service.Configure(data)
+	if err != nil {
+		return err
+	}
+
+	return s.store.SaveConfig(ctx, s.id, "", data)
 }
