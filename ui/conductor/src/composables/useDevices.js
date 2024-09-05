@@ -1,5 +1,4 @@
-import useFloors from '@/composables/useFloors';
-import {useDevicesCollection} from '@/devices/devices.js';
+import {useDevicesCollection, useDevicesMetadataField, usePullDevicesMetadata} from '@/devices/devices.js';
 import {computed, toValue} from 'vue';
 
 const NO_FLOOR = '< no floor >';
@@ -27,10 +26,12 @@ const NO_FLOOR = '< no floor >';
  */
 export default function(props) {
   const opts = computed(() => /** @type {Partial<UseDevicesOptions>} */ toValue(props));
-  const {listOfFloors} = useFloors();
+
+  const {value: md} = usePullDevicesMetadata('metadata.location.floor');
+  const {keys: listOfFloors} = useDevicesMetadataField(md, 'metadata.location.floor');
 
   const floorList = computed(() => {
-    return ['All', ...listOfFloors.value];
+    return ['All', ...listOfFloors.value.map(v => v === '' ? NO_FLOOR : v)];
   });
 
   const conditions = computed(() => {
