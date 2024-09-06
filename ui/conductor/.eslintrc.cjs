@@ -24,7 +24,7 @@ module.exports = {
     'generator-star-spacing': 0,
     'linebreak-style': 0,
     // we have modern monitors these days
-    'max-len': ['error', 120],
+    'max-len': ['off'],
     // allow console debugger during development
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'vue/attributes-order': 0,
@@ -41,15 +41,14 @@ module.exports = {
     }],
     'vue/max-attributes-per-line': [2, {
       'singleline': 10,
-      'multiline': 1
+      'multiline': 10
     }],
     // This rule is in conflict with the vue/no-v-for-template-key-on-child rule, which should be used instead.
     // This rule seems to be enabled by default, even though we're using vue 3, not sure why.
     'vue/no-v-for-template-key': 0,
     'vue/no-multiple-template-root': 0, // vue 3 has no problems with this
-    'vue/first-attribute-linebreak': ['error', {
-      'singleline': 'beside'
-    }],
+    // Arrange your attributes in any order you like
+    'vue/first-attribute-linebreak': ['off'],
     'vue/singleline-html-element-content-newline': ['off'],
     // 'turn on' script-setup-uses-vars to allow declaration of vars in <script setup> tags
     'vue/script-setup-uses-vars': 'error',
