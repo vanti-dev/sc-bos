@@ -7,5 +7,7 @@ export const builtinWidgets = {
   'occupancy/OccupancyCard': defineAsyncComponent(() => import('@/widgets/occupancy/OccupancyCard.vue')),
   'power-history/PowerHistoryCard': defineAsyncComponent(() => import('@/widgets/power-history/PowerHistoryCard.vue')),
   'occupancy/PresenceCard': defineAsyncComponent(() => import('@/widgets/occupancy/PresenceCard.vue')),
-  'notifications/ZoneNotifications': defineAsyncComponent(() => import('@/widgets/notifications/ZoneNotifications.vue'))
+  'notifications/ZoneNotifications': defineAsyncComponent(() => import('@/widgets/notifications/ZoneNotifications.vue')),
+  // from elsewhere in our codebase
+  'lighting/LightIcon': defineAsyncComponent(() => import('@/traits/light/LightIcon.vue'))
 };
