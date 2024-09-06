@@ -1,6 +1,6 @@
 {
   "templates": {
-    "lightGroup": {
+    "stripGroup": {
       "selector": "#{{id}} rect",
       "sidebar": {"name": "van/uk/brum/ugs/devices/{{id}}"},
       "sources": {
@@ -21,25 +21,44 @@
           }
         }
       ]
+    },
+    "spotGroup": {
+      "selector": "#{{id}} rect",
+      "sidebar": {"name": "van/uk/brum/ugs/devices/{{id}}"},
+      "sources": {
+        "light": {
+          "trait": "smartcore.traits.Light",
+          "request": {"name": "van/uk/brum/ugs/devices/{{id}}"}
+        }
+      },
+      "effects": [
+        {
+          "type": "widget",
+          "component": "builtin:lighting/LightIcon",
+          "props": {
+            "level": {"ref": "light", "property": "levelPercent"}
+          }
+        }
+      ]
     }
   },
   "elements": [
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-01"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-02"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-03"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-04"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-05"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-06"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-07"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-08"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-09"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-10"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-11"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-12"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-13"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-14"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-15"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-16"}},
-    {"template": {"ref": "lightGroup", "id": "LTF-L00-17"}}
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-01"}},
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-02"}},
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-03"}},
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-04"}},
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-05"}},
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-06"}},
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-07"}},
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-08"}},
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-09"}},
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-10"}},
+    {"template": {"ref": "stripGroup", "id": "LTF-L00-11"}},
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-12"}},
+    {"template": {"ref": "stripGroup", "id": "LTF-L00-13"}},
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-14"}},
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-15"}},
+    {"template": {"ref": "spotGroup", "id": "LTF-L00-16"}},
+    {"template": {"ref": "stripGroup", "id": "LTF-L00-17"}}
   ]
 }
