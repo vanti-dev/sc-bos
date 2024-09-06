@@ -8,8 +8,8 @@ import {onScopeDispose, toValue, watch} from 'vue';
  * Apply effects to the SVG based on the config and source data.
  *
  * @param {SVGElement} el
- * @param {Object} config
- * @param {Object} sources
+ * @param {layer.Element} config
+ * @param {Record<string, RemoteResource<any>>} sources
  */
 export function useSvgEffects(el, config, sources) {
   for (const effectCfg of config.effects ?? []) {

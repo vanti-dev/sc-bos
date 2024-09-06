@@ -5,6 +5,15 @@
       class="svg--container"
       @click="onSvgClick"
       ref="svgContainerEl"/>
+  <div class="widget--container">
+    <component
+        v-for="w in widgets"
+        :key="w.key"
+        :is="w.component"
+        :style="w.bounds"
+        v-bind="w.props"
+        @click="onWidgetClick(w, $event)"/>
+  </div>
 </template>
 
 <script setup>
@@ -13,6 +22,7 @@ import {usePullTrait} from '@/traits/traits.js';
 import {loadConfig} from '@/widgets/graphic/config.js';
 import {usePathUtils} from '@/widgets/graphic/path.js';
 import {useSvgEffects} from '@/widgets/graphic/svg.js';
+import {useWidgetEffects} from '@/widgets/graphic/widgets.js';
 import {effectScope, nextTick, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
@@ -45,10 +55,20 @@ const onSvgClick = (event) => {
   const elementIdx = parseInt(el.dataset.elementIdx);
   const layerElement = config.value.elements[elementIdx];
   emit('click:element', {element: layerElement, index: elementIdx, event});
-  selectElement(el, elementIdx, layerElement);
+  selectElement(elementIdx);
 };
 
-const selectElement = (el, elementIdx, element) => {
+/**
+ * @param {layer.WidgetInstance & {elementIdx: number}} widget
+ * @param {PointerEvent} event
+ */
+const onWidgetClick = (widget, event) => {
+  const layerElement = config.value.elements[widget.elementIdx];
+  emit('click:element', {element: layerElement, index: widget.elementIdx, event});
+  selectElement(widget.elementIdx);
+};
+
+const selectElement = (elementIdx) => {
   if (props.multiple) {
     const oldIdx = _selected.value.indexOf(elementIdx);
     if (oldIdx === -1) {
@@ -129,8 +149,8 @@ watch(() => props.layer, async () => {
 }, {immediate: true});
 
 // adjust/inspect the dom to make future interactions easier/faster
-const svgContainerEl = ref(null);
-const svgEl = ref(null);
+const svgContainerEl = ref(/** @type {HTMLElement | null} */ null);
+const svgEl = ref(/** @type {SVGSVGElement | null} */ null);
 watch([svgContainerEl, svgRaw], ([containerEl, svgRaw]) => {
   if (!containerEl || !svgRaw) return;
   nextTick(() => {
@@ -142,6 +162,8 @@ watch([svgContainerEl, svgRaw], ([containerEl, svgRaw]) => {
 });
 
 const annotateSvgDom = (svgEl, config) => {
+  svgEl.removeAttribute('width');
+  svgEl.removeAttribute('height');
   for (let i = 0; i < config.elements.length; i++) {
     const le = config.elements[i];
     const els = svgEl.querySelectorAll(le.selector);
@@ -168,22 +190,29 @@ watch([svgEl, config], ([svgEl, config]) => {
 
 // setup any effects on the svg elements based on the sources of data
 
+
+// widgets that provide more advanced features than simple svg effects
+const widgets = ref(/** @type {(layer.WidgetInstance & {elementIdx: number})[]} */ []);
 // A cache of all the server request resources.
 const scopeClosers = ref(/** @type {(function():void)[]} */ []);
 const closeAll = () => {
   scopeClosers.value.forEach(r => r());
   scopeClosers.value = [];
+  widgets.value = [];
 };
 onUnmounted(() => {
   closeAll();
 });
+
 watch([svgEl, config], ([svgEl, config]) => {
   closeAll();
   if (!svgEl || !config) return; // do nothing, not ready yet
 
   const scope = effectScope();
   scope.run(() => {
-    for (const element of config.elements ?? []) {
+    const elements = config.elements ?? [];
+    for (let ei = 0; ei < elements.length; ei++) {
+      const element = elements[ei];
       if (!element.sources) continue; // no source of info, so skip
       const els = svgEl.querySelectorAll(element.selector);
       if (!els) continue; // no point continuing as we can't update the element
@@ -197,8 +226,15 @@ watch([svgEl, config], ([svgEl, config]) => {
       }
 
       // setup dom changes based on server collected data
-      for (const el of els) {
+      for (let i = 0; i < els.length; i++) {
+        const el = els[i];
         useSvgEffects(el, element, sources);
+        const w = useWidgetEffects(el, element, sources);
+        if (w) {
+          w.key = `${element.selector}-${i}`;
+          w.elementIdx = ei;
+          widgets.value.push(w);
+        }
       }
     }
   });
@@ -250,7 +286,22 @@ watch([svgEl, config], ([svgEl, config]) => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.widget--container {
+  pointer-events: none;
+  position: relative;
+}
+
+.widget--container > * {
+  pointer-events: initial;
+  position: absolute;
+  cursor: pointer;
 }
 </style>
