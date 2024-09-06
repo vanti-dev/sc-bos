@@ -1,6 +1,7 @@
+import {elementBounds, svgRootSize} from '@/util/svg.js';
 import {builtinWidgets} from '@/widgets/pallet.js';
-import {computed, markRaw, reactive, toValue} from 'vue';
 import {get as _get} from 'lodash';
+import {computed, markRaw, reactive, toValue} from 'vue';
 
 /**
  * Calculates widget placement and props for a single source element and effect
@@ -22,13 +23,30 @@ export function useWidgetEffects(el, config, sources) {
     return null;
   }
 
+  // allow selecting a child element for the widget to replace
+  if (effect.selector) {
+    el = el.querySelector(effect.selector);
+    if (!el) {
+      console.warn(`Could not find child element with selector: ${effect.selector}`);
+      return null;
+    }
+  }
+
   const {rootWidth, rootHeight} = svgRootSize(el);
   const bounds = elementBounds(el);
   const percent = (v, t) => {
     return (v / t * 100).toFixed(4) + '%';
   };
+  const boundsPercent = {
+    top: percent(bounds.y, rootHeight),
+    left: percent(bounds.x, rootWidth),
+    width: percent(bounds.width, rootWidth),
+    height: percent(bounds.height, rootHeight)
+  };
 
-  el.style.visibility = 'hidden';
+  if (!effect.showElement) {
+    el.style.visibility = 'hidden';
+  }
 
   const props = {};
   for (const [k, v] of Object.entries(effect.props)) {
@@ -46,12 +64,7 @@ export function useWidgetEffects(el, config, sources) {
 
   return {
     component: markRaw(comp),
-    bounds: {
-      top: percent(bounds.y, rootHeight),
-      left: percent(bounds.x, rootWidth),
-      width: percent(bounds.width, rootWidth),
-      height: percent(bounds.height, rootHeight)
-    },
+    bounds: boundsPercent,
     props: reactive(props)
   };
 }
@@ -62,47 +75,4 @@ const loadComponent = (compString) => {
     return markRaw(builtinWidgets[builtin]);
   }
   return null;
-};
-
-const svgRootSize = (el) => {
-  const svg = el.ownerSVGElement;
-  return {rootWidth: svg.width.baseVal.value, rootHeight: svg.height.baseVal.value};
-};
-
-const elementBounds = (el) => {
-  const bBox = el.getBBox({stroke: true, markers: true});
-  const ctm = el.getCTM();
-
-  // note: browsers don't currently support {stroke: true} for getBBox so we fake it
-  const style = window.getComputedStyle(el);
-  const strokeWidth = style.getPropertyValue('stroke-width');
-  if (strokeWidth) {
-    const stroke = parseFloat(strokeWidth);
-    const halfStroke = stroke / 2;
-    bBox.x -= halfStroke;
-    bBox.y -= halfStroke;
-    bBox.width += stroke;
-    bBox.height += stroke;
-  }
-
-  return matrixTransformRect(bBox, ctm);
-};
-
-/**
- * @param {DOMRect} rect
- * @param {DOMMatrix} matrix
- * @return {DOMRect}
- */
-const matrixTransformRect = (rect, matrix) => {
-  const tl = new DOMPoint(rect.x, rect.y).matrixTransform(matrix);
-  const tr = new DOMPoint(rect.x + rect.width, rect.y).matrixTransform(matrix);
-  const bl = new DOMPoint(rect.x, rect.y + rect.height).matrixTransform(matrix);
-  const br = new DOMPoint(rect.x + rect.width, rect.y + rect.height).matrixTransform(matrix);
-
-  const minx = Math.min(tl.x, tr.x, bl.x, br.x);
-  const miny = Math.min(tl.y, tr.y, bl.y, br.y);
-  const maxx = Math.max(tl.x, tr.x, bl.x, br.x);
-  const maxy = Math.max(tl.y, tr.y, bl.y, br.y);
-
-  return new DOMRect(minx, miny, maxx - minx, maxy - miny);
 };
