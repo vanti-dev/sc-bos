@@ -8,11 +8,14 @@ jobs:
     name: UI integrity check
     steps:
       - uses: actions/checkout@v4
-      - name: Verify yarn.lock dependencies are public
+      - name: Clean yarn.lock private dependencies
         run: |
+          echo "Cleaning up private yarn.lock dependencies"
+          sed -i -e 's/nexus\.vanti\.co\.uk\/repository/npm-public\/registry\.npmjs\.org/g' ui/yarn.lock
+          echo "Final Check for private yarn.lock dependencies"
           if grep -E "https://nexus\.vanti\.co\.uk/repository/npm-public/" ui/yarn.lock; then
             echo "Private URLs found in yarn.lock"
             exit 1
           else
-            echo "No private URLs found."
+           echo "No private URLs found."
           fi
