@@ -545,5 +545,5 @@ type Store interface {
 	// typ is the type of the service. If the store already contains a service with the given name, typ may be empty,
 	// in which case the existing type is used. If the store does not contain a service with the given name, typ must
 	// be non-empty.
-	SaveConfig(ctx context.Context, name string, typ string, data []byte) error
+	SaveConfig(ctx context.Context, name, typ string, data []byte) error
 }
