@@ -75,6 +75,48 @@ func (s *Store) save(updated Config) error {
 	return nil
 }
 
+type serviceConfigOps[T any] struct {
+	getMetadata func(T) (name, typ string)
+	update      func(existing T, typ string, data []byte) T
+}
+
+func updateServiceConfig[T any](services []T, name, typ string, data []byte, ops serviceConfigOps[T]) ([]T, error) {
+	if name == "" {
+		return services, errors.New("name is required")
+	}
+	idx := slices.IndexFunc(services, func(s T) bool {
+		n, _ := ops.getMetadata(s)
+		return n == name
+	})
+	var serviceCfg T
+	if idx < 0 {
+		// add new service
+		if typ == "" {
+			return services, errors.New("type is required to add a new service")
+		}
+		serviceCfg = ops.update(serviceCfg, typ, data)
+		services = append(services, serviceCfg)
+	} else {
+		serviceCfg = services[idx]
+		if typ != "" {
+			_, existingType := ops.getMetadata(serviceCfg)
+			if typ != existingType {
+				return services, errors.New("type cannot be changed")
+			}
+		}
+		serviceCfg = ops.update(serviceCfg, typ, data)
+		services[idx] = serviceCfg
+	}
+
+	// test that the updated config marshalls successfully - we don't want to store a bad config
+	_, err := json.Marshal(serviceCfg)
+	if err != nil {
+		return services, err
+	}
+
+	return services, nil
+}
+
 type DriverStore struct {
 	store *Store
 }
@@ -83,42 +125,19 @@ func (ds *DriverStore) SaveConfig(_ context.Context, name string, typ string, da
 	ds.store.m.Lock()
 	defer ds.store.m.Unlock()
 
-	if name == "" {
-		return errors.New("driver name is required")
-	}
-
 	// insert the updated driver into a copy of the config
 	updated := ds.store.active.clone()
-	idx := slices.IndexFunc(updated.Drivers, func(c driver.RawConfig) bool {
-		return c.Name == name
+	var err error
+	updated.Drivers, err = updateServiceConfig(updated.Drivers, name, typ, data, serviceConfigOps[driver.RawConfig]{
+		getMetadata: func(d driver.RawConfig) (string, string) {
+			return d.Name, d.Type
+		},
+		update: func(cfg driver.RawConfig, typ string, data []byte) driver.RawConfig {
+			cfg.Type = typ
+			cfg.Raw = data
+			return cfg
+		},
 	})
-	var driverCfg driver.RawConfig
-	if idx < 0 {
-		// add new driver
-		if typ == "" {
-			return errors.New("driver type is required to add a new driver")
-		}
-		driverCfg = driver.RawConfig{
-			BaseConfig: driver.BaseConfig{
-				Name:     name,
-				Type:     typ,
-				Disabled: false,
-			},
-			Raw: data,
-		}
-		updated.Drivers = append(updated.Drivers, driverCfg)
-	} else {
-		existing := updated.Drivers[idx]
-		if typ != "" && typ != existing.Type {
-			return errors.New("driver type cannot be changed")
-		}
-		driverCfg = existing
-		driverCfg.Raw = data
-		updated.Drivers[idx] = driverCfg
-	}
-
-	// test that the new/updated driver config marshalls successfully - we don't want to store a bad config
-	_, err := json.Marshal(driverCfg)
 	if err != nil {
 		return err
 	}
@@ -134,42 +153,19 @@ func (as *AutomationStore) SaveConfig(_ context.Context, name string, typ string
 	as.store.m.Lock()
 	defer as.store.m.Unlock()
 
-	if name == "" {
-		return errors.New("automation name is required")
-	}
-
 	// insert the updated driver into a copy of the config
 	updated := as.store.active.clone()
-	idx := slices.IndexFunc(updated.Automation, func(c auto.RawConfig) bool {
-		return c.Name == name
+	var err error
+	updated.Automation, err = updateServiceConfig(updated.Automation, name, typ, data, serviceConfigOps[auto.RawConfig]{
+		getMetadata: func(a auto.RawConfig) (string, string) {
+			return a.Name, a.Type
+		},
+		update: func(cfg auto.RawConfig, typ string, data []byte) auto.RawConfig {
+			cfg.Type = typ
+			cfg.Raw = data
+			return cfg
+		},
 	})
-	var autoCfg auto.RawConfig
-	if idx < 0 {
-		// add new driver
-		if typ == "" {
-			return errors.New("automation type is required to add a new automation")
-		}
-		autoCfg = auto.RawConfig{
-			Config: auto.Config{
-				Name:     name,
-				Type:     typ,
-				Disabled: false,
-			},
-			Raw: data,
-		}
-		updated.Automation = append(updated.Automation, autoCfg)
-	} else {
-		existing := updated.Automation[idx]
-		if typ != "" && typ != existing.Type {
-			return errors.New("automation type cannot be changed")
-		}
-		autoCfg = existing
-		autoCfg.Raw = data
-		updated.Automation[idx] = autoCfg
-	}
-
-	// test that the updated config marshalls successfully - we don't want to store a bad config
-	_, err := json.Marshal(updated)
 	if err != nil {
 		return err
 	}
@@ -185,42 +181,19 @@ func (zs *ZoneStore) SaveConfig(_ context.Context, name string, typ string, data
 	zs.store.m.Lock()
 	defer zs.store.m.Unlock()
 
-	if name == "" {
-		return errors.New("zone name is required")
-	}
-
 	// insert the updated driver into a copy of the config
 	updated := zs.store.active.clone()
-	idx := slices.IndexFunc(updated.Zones, func(c zone.RawConfig) bool {
-		return c.Name == name
+	var err error
+	updated.Zones, err = updateServiceConfig(updated.Zones, name, typ, data, serviceConfigOps[zone.RawConfig]{
+		getMetadata: func(z zone.RawConfig) (string, string) {
+			return z.Name, z.Type
+		},
+		update: func(cfg zone.RawConfig, typ string, data []byte) zone.RawConfig {
+			cfg.Type = typ
+			cfg.Raw = data
+			return cfg
+		},
 	})
-	var zoneCfg zone.RawConfig
-	if idx < 0 {
-		// add new driver
-		if typ == "" {
-			return errors.New("zone type is required to add a new zone")
-		}
-		zoneCfg = zone.RawConfig{
-			Config: zone.Config{
-				Name:     name,
-				Type:     typ,
-				Disabled: false,
-			},
-			Raw: data,
-		}
-		updated.Zones = append(updated.Zones, zoneCfg)
-	} else {
-		existing := updated.Zones[idx]
-		if typ != "" && typ != existing.Type {
-			return errors.New("zone type cannot be changed")
-		}
-		zoneCfg = existing
-		zoneCfg.Raw = data
-		updated.Zones[idx] = zoneCfg
-	}
-
-	// test that the updated config marshalls successfully - we don't want to store a bad config
-	_, err := json.Marshal(updated)
 	if err != nil {
 		return err
 	}
