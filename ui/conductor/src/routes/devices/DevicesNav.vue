@@ -19,8 +19,8 @@
 
 <script setup>
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
+import {useDevicesMetadataField, usePullDevicesMetadata} from '@/composables/devices.js';
 import useAuthSetup from '@/composables/useAuthSetup';
-import {useDevicesMetadataField, usePullDevicesMetadata} from '@/devices/devices.js';
 import {computed} from 'vue';
 
 const {hasNoAccess} = useAuthSetup();
