@@ -53,7 +53,7 @@ import FilterChoiceChips from '@/components/filter/FilterChoiceChips.vue';
 import HotPoint from '@/components/HotPoint.vue';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import {useDataTableCollection} from '@/composables/table.js';
-import {useDevices, useDeviceFilters} from '@/composables/useDevices';
+import {useDevices, useDeviceFilters} from '@/composables/devices';
 import {useSidebarStore} from '@/stores/sidebar';
 import {computed, ref} from 'vue';
 import DeviceCell from './DeviceCell.vue';
