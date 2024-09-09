@@ -28,5 +28,5 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add ui/yarn.lock
-          git commit -m "[auto] fix: remove private repository references from ui/yarn.lock"
+          git commit -m "[auto] remove private repository references from ui/yarn.lock"
           git push
