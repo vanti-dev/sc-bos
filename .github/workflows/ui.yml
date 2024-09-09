@@ -7,17 +7,10 @@ jobs:
     runs-on: ubuntu-latest
     name: UI integrity check
     steps:
-      # this is a custom git fetch
-      # I didn't use
-      # - uses: actions/checkout
-      # as this targets the commit from the current push.
-      # Since we are doing an auto commit using the GitHub git user
-      # re-running this CI pipeline step will fail as it won't fetch the now latest commit
-      - name: Git fetch & checkout
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git fetch --prune --unshallow
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
       - name: Clean yarn.lock private dependencies
         run: |
           echo "Checking for private yarn.lock dependencies"
