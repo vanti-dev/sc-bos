@@ -1,7 +1,7 @@
 import {timestampToDate} from '@/api/convpb';
 import {listAirQualitySensorHistory} from '@/api/sc/traits/air-quality-sensor';
 import {DAY, useNow} from '@/components/now';
-import useDevices from '@/composables/useDevices';
+import {useDevices} from '@/composables/useDevices';
 import useTimePeriod from '@/composables/useTimePeriod';
 import {hasTrait} from '@/util/devices';
 import {csvDownload} from '@/util/downloadCSV';

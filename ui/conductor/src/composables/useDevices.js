@@ -25,7 +25,7 @@ const NO_ZONE = '< no zone >';
  *   query: import('vue').ComputedRef<Object>,
  * }}
  */
-export default function(props) {
+export function useDevices(props) {
   const opts = computed(() => /** @type {Partial<UseDevicesOptions>} */ toValue(props));
 
   const conditions = computed(() => {
