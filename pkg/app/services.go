@@ -230,20 +230,10 @@ func announceSystemServices[M ~map[string]T, T any](c *Controller, services *ser
 }
 
 type serviceConfigStore struct {
-	store    serviceapi.Store
-	services *service.Map
-	id       string
+	store serviceapi.Store
+	id    string
 }
 
 func (s *serviceConfigStore) UpdateConfig(ctx context.Context, data []byte) error {
-	serv := s.services.Get(s.id)
-	if serv == nil {
-		return fmt.Errorf("service %s not found", s.id)
-	}
-	_, err := serv.Service.Configure(data)
-	if err != nil {
-		return err
-	}
-
 	return s.store.SaveConfig(ctx, s.id, "", data)
 }
