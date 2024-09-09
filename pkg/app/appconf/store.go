@@ -117,8 +117,8 @@ func (ds *DriverStore) SaveConfig(_ context.Context, name string, typ string, da
 		updated.Drivers[idx] = driverCfg
 	}
 
-	// test that the updated config marshalls successfully - we don't want to store a bad config
-	_, err := json.Marshal(updated)
+	// test that the new/updated driver config marshalls successfully - we don't want to store a bad config
+	_, err := json.Marshal(driverCfg)
 	if err != nil {
 		return err
 	}
