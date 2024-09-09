@@ -10,16 +10,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Clean yarn.lock private dependencies
         run: |
-          echo "Cleaning up private yarn.lock dependencies"
-          sed -i -e 's/nexus\.vanti\.co\.uk\/repository\/npm-public/registry\.npmjs\.org/g' ui/yarn.lock
-          echo "Final Check for private yarn.lock dependencies"
-          if grep -E "https://nexus\.vanti\.co\.uk/repository/npm-public/" ui/yarn.lock; then
+          echo "Checking for private yarn.lock dependencies"
+          if grep -E "nexus\.vanti\.co\.uk/repository/npm-public/" ui/yarn.lock; then
             echo "Private URLs found in yarn.lock"
-            exit 1
+            echo "Auto cleaning yarn.lock dependencies"
+            echo "YARN_LOCK_CLEANED=true" >> $GITHUB_ENV
+            sed -i -e 's/nexus\.vanti\.co\.uk\/repository\/npm-public/registry\.npmjs\.org/g' ui/yarn.lock
           else
-           echo "No private URLs found."
+            echo "No private URLs found."
           fi
       - name: Commit & push auto-edited yarn.lock file
+        if: ${{ env.YARN_LOCK_CLEANED }}
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
