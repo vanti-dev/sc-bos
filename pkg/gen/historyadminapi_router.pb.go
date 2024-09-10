@@ -3,13 +3,15 @@
 package gen
 
 import (
-	context "context"
-	fmt "fmt"
-	router "github.com/smart-core-os/sc-golang/pkg/router"
-	grpc "google.golang.org/grpc"
+	"context"
+	"fmt"
+
+	"google.golang.org/grpc"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
 )
 
-// HistoryAdminApiRouter is a HistoryAdminApiServer that allows routing named requests to specific HistoryAdminApiClient
+// HistoryAdminApiRouter is a gen.HistoryAdminApiServer that allows routing named requests to specific gen.HistoryAdminApiClient
 type HistoryAdminApiRouter struct {
 	UnimplementedHistoryAdminApiServer
 
@@ -37,10 +39,10 @@ func (r *HistoryAdminApiRouter) Register(server *grpc.Server) {
 	RegisterHistoryAdminApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type HistoryAdminApiClient.
+// Add extends Router.Add to panic if client is not of type gen.HistoryAdminApiClient.
 func (r *HistoryAdminApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a HistoryAdminApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.HistoryAdminApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

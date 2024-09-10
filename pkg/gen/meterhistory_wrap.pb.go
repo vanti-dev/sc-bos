@@ -3,16 +3,22 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
-// WrapMeterHistory	adapts a MeterHistoryServer	and presents it as a MeterHistoryClient
+// WrapMeterHistory	adapts a gen.MeterHistoryServer	and presents it as a gen.MeterHistoryClient
 func WrapMeterHistory(server MeterHistoryServer) MeterHistoryClient {
-	return &meterHistoryWrapper{server}
+	conn := wrap.ServerToClient(MeterHistory_ServiceDesc, server)
+	client := NewMeterHistoryClient(conn)
+	return &meterHistoryWrapper{
+		MeterHistoryClient: client,
+		server:             server,
+	}
 }
 
 type meterHistoryWrapper struct {
+	MeterHistoryClient
+
 	server MeterHistoryServer
 }
 
@@ -27,8 +33,4 @@ func (w *meterHistoryWrapper) UnwrapServer() MeterHistoryServer {
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *meterHistoryWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *meterHistoryWrapper) ListMeterReadingHistory(ctx context.Context, req *ListMeterReadingHistoryRequest, _ ...grpc.CallOption) (*ListMeterReadingHistoryResponse, error) {
-	return w.server.ListMeterReadingHistory(ctx, req)
 }

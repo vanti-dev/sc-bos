@@ -3,14 +3,16 @@
 package gen
 
 import (
-	context "context"
-	fmt "fmt"
-	router "github.com/smart-core-os/sc-golang/pkg/router"
-	grpc "google.golang.org/grpc"
-	io "io"
+	"context"
+	"fmt"
+	"io"
+
+	"google.golang.org/grpc"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
 )
 
-// MqttServiceRouter is a MqttServiceServer that allows routing named requests to specific MqttServiceClient
+// MqttServiceRouter is a gen.MqttServiceServer that allows routing named requests to specific gen.MqttServiceClient
 type MqttServiceRouter struct {
 	UnimplementedMqttServiceServer
 
@@ -38,10 +40,10 @@ func (r *MqttServiceRouter) Register(server *grpc.Server) {
 	RegisterMqttServiceServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type MqttServiceClient.
+// Add extends Router.Add to panic if client is not of type gen.MqttServiceClient.
 func (r *MqttServiceRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a MqttServiceClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.MqttServiceClient", client))
 	}
 	return r.Router.Add(name, client)
 }

@@ -3,14 +3,16 @@
 package gen
 
 import (
-	context "context"
-	fmt "fmt"
-	router "github.com/smart-core-os/sc-golang/pkg/router"
-	grpc "google.golang.org/grpc"
-	io "io"
+	"context"
+	"fmt"
+	"io"
+
+	"google.golang.org/grpc"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
 )
 
-// UdmiServiceRouter is a UdmiServiceServer that allows routing named requests to specific UdmiServiceClient
+// UdmiServiceRouter is a gen.UdmiServiceServer that allows routing named requests to specific gen.UdmiServiceClient
 type UdmiServiceRouter struct {
 	UnimplementedUdmiServiceServer
 
@@ -38,10 +40,10 @@ func (r *UdmiServiceRouter) Register(server *grpc.Server) {
 	RegisterUdmiServiceServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type UdmiServiceClient.
+// Add extends Router.Add to panic if client is not of type gen.UdmiServiceClient.
 func (r *UdmiServiceRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a UdmiServiceClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.UdmiServiceClient", client))
 	}
 	return r.Router.Add(name, client)
 }
