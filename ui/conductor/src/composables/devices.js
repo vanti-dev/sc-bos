@@ -6,7 +6,7 @@ import {watchResource} from '@/util/traits.js';
 import {computed, reactive, toRefs, toValue} from 'vue';
 
 /**
- * @param {MaybeRefOrGetter<Partial<ListDevicesRequest.AsObject>>}request
+ * @param {MaybeRefOrGetter<Partial<ListDevicesRequest.AsObject>>} request
  * @param {MaybeRefOrGetter<Partial<UseCollectionOptions>>?} options
  * @return {UseCollectionResponse<Device.AsObject>}
  */
