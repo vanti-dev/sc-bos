@@ -3,13 +3,15 @@
 package gen
 
 import (
-	context "context"
-	fmt "fmt"
-	router "github.com/smart-core-os/sc-golang/pkg/router"
-	grpc "google.golang.org/grpc"
+	"context"
+	"fmt"
+
+	"google.golang.org/grpc"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
 )
 
-// OccupancySensorHistoryRouter is a OccupancySensorHistoryServer that allows routing named requests to specific OccupancySensorHistoryClient
+// OccupancySensorHistoryRouter is a gen.OccupancySensorHistoryServer that allows routing named requests to specific gen.OccupancySensorHistoryClient
 type OccupancySensorHistoryRouter struct {
 	UnimplementedOccupancySensorHistoryServer
 
@@ -37,10 +39,10 @@ func (r *OccupancySensorHistoryRouter) Register(server *grpc.Server) {
 	RegisterOccupancySensorHistoryServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type OccupancySensorHistoryClient.
+// Add extends Router.Add to panic if client is not of type gen.OccupancySensorHistoryClient.
 func (r *OccupancySensorHistoryRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a OccupancySensorHistoryClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.OccupancySensorHistoryClient", client))
 	}
 	return r.Router.Add(name, client)
 }

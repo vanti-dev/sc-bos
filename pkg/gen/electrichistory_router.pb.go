@@ -3,13 +3,15 @@
 package gen
 
 import (
-	context "context"
-	fmt "fmt"
-	router "github.com/smart-core-os/sc-golang/pkg/router"
-	grpc "google.golang.org/grpc"
+	"context"
+	"fmt"
+
+	"google.golang.org/grpc"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
 )
 
-// ElectricHistoryRouter is a ElectricHistoryServer that allows routing named requests to specific ElectricHistoryClient
+// ElectricHistoryRouter is a gen.ElectricHistoryServer that allows routing named requests to specific gen.ElectricHistoryClient
 type ElectricHistoryRouter struct {
 	UnimplementedElectricHistoryServer
 
@@ -37,10 +39,10 @@ func (r *ElectricHistoryRouter) Register(server *grpc.Server) {
 	RegisterElectricHistoryServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type ElectricHistoryClient.
+// Add extends Router.Add to panic if client is not of type gen.ElectricHistoryClient.
 func (r *ElectricHistoryRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a ElectricHistoryClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.ElectricHistoryClient", client))
 	}
 	return r.Router.Add(name, client)
 }

@@ -3,16 +3,22 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
-// WrapAlertAdminApi	adapts a AlertAdminApiServer	and presents it as a AlertAdminApiClient
+// WrapAlertAdminApi	adapts a gen.AlertAdminApiServer	and presents it as a gen.AlertAdminApiClient
 func WrapAlertAdminApi(server AlertAdminApiServer) AlertAdminApiClient {
-	return &alertAdminApiWrapper{server}
+	conn := wrap.ServerToClient(AlertAdminApi_ServiceDesc, server)
+	client := NewAlertAdminApiClient(conn)
+	return &alertAdminApiWrapper{
+		AlertAdminApiClient: client,
+		server:              server,
+	}
 }
 
 type alertAdminApiWrapper struct {
+	AlertAdminApiClient
+
 	server AlertAdminApiServer
 }
 
@@ -27,20 +33,4 @@ func (w *alertAdminApiWrapper) UnwrapServer() AlertAdminApiServer {
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *alertAdminApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *alertAdminApiWrapper) CreateAlert(ctx context.Context, req *CreateAlertRequest, _ ...grpc.CallOption) (*Alert, error) {
-	return w.server.CreateAlert(ctx, req)
-}
-
-func (w *alertAdminApiWrapper) UpdateAlert(ctx context.Context, req *UpdateAlertRequest, _ ...grpc.CallOption) (*Alert, error) {
-	return w.server.UpdateAlert(ctx, req)
-}
-
-func (w *alertAdminApiWrapper) ResolveAlert(ctx context.Context, req *ResolveAlertRequest, _ ...grpc.CallOption) (*Alert, error) {
-	return w.server.ResolveAlert(ctx, req)
-}
-
-func (w *alertAdminApiWrapper) DeleteAlert(ctx context.Context, req *DeleteAlertRequest, _ ...grpc.CallOption) (*DeleteAlertResponse, error) {
-	return w.server.DeleteAlert(ctx, req)
 }

@@ -3,16 +3,22 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
-// WrapAirTemperatureHistory	adapts a AirTemperatureHistoryServer	and presents it as a AirTemperatureHistoryClient
+// WrapAirTemperatureHistory	adapts a gen.AirTemperatureHistoryServer	and presents it as a gen.AirTemperatureHistoryClient
 func WrapAirTemperatureHistory(server AirTemperatureHistoryServer) AirTemperatureHistoryClient {
-	return &airTemperatureHistoryWrapper{server}
+	conn := wrap.ServerToClient(AirTemperatureHistory_ServiceDesc, server)
+	client := NewAirTemperatureHistoryClient(conn)
+	return &airTemperatureHistoryWrapper{
+		AirTemperatureHistoryClient: client,
+		server:                      server,
+	}
 }
 
 type airTemperatureHistoryWrapper struct {
+	AirTemperatureHistoryClient
+
 	server AirTemperatureHistoryServer
 }
 
@@ -27,8 +33,4 @@ func (w *airTemperatureHistoryWrapper) UnwrapServer() AirTemperatureHistoryServe
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *airTemperatureHistoryWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *airTemperatureHistoryWrapper) ListAirTemperatureHistory(ctx context.Context, req *ListAirTemperatureHistoryRequest, _ ...grpc.CallOption) (*ListAirTemperatureHistoryResponse, error) {
-	return w.server.ListAirTemperatureHistory(ctx, req)
 }

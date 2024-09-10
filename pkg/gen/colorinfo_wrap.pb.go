@@ -3,16 +3,22 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
-// WrapColorInfo	adapts a ColorInfoServer	and presents it as a ColorInfoClient
+// WrapColorInfo	adapts a gen.ColorInfoServer	and presents it as a gen.ColorInfoClient
 func WrapColorInfo(server ColorInfoServer) ColorInfoClient {
-	return &colorInfoWrapper{server}
+	conn := wrap.ServerToClient(ColorInfo_ServiceDesc, server)
+	client := NewColorInfoClient(conn)
+	return &colorInfoWrapper{
+		ColorInfoClient: client,
+		server:          server,
+	}
 }
 
 type colorInfoWrapper struct {
+	ColorInfoClient
+
 	server ColorInfoServer
 }
 
@@ -27,8 +33,4 @@ func (w *colorInfoWrapper) UnwrapServer() ColorInfoServer {
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *colorInfoWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *colorInfoWrapper) DescribeColor(ctx context.Context, req *DescribeColorRequest, _ ...grpc.CallOption) (*ColorSupport, error) {
-	return w.server.DescribeColor(ctx, req)
 }

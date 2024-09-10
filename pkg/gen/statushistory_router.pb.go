@@ -3,13 +3,15 @@
 package gen
 
 import (
-	context "context"
-	fmt "fmt"
-	router "github.com/smart-core-os/sc-golang/pkg/router"
-	grpc "google.golang.org/grpc"
+	"context"
+	"fmt"
+
+	"google.golang.org/grpc"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
 )
 
-// StatusHistoryRouter is a StatusHistoryServer that allows routing named requests to specific StatusHistoryClient
+// StatusHistoryRouter is a gen.StatusHistoryServer that allows routing named requests to specific gen.StatusHistoryClient
 type StatusHistoryRouter struct {
 	UnimplementedStatusHistoryServer
 
@@ -37,10 +39,10 @@ func (r *StatusHistoryRouter) Register(server *grpc.Server) {
 	RegisterStatusHistoryServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type StatusHistoryClient.
+// Add extends Router.Add to panic if client is not of type gen.StatusHistoryClient.
 func (r *StatusHistoryRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a StatusHistoryClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.StatusHistoryClient", client))
 	}
 	return r.Router.Add(name, client)
 }
