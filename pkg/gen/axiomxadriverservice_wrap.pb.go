@@ -3,16 +3,22 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapAxiomXaDriverService	adapts a AxiomXaDriverServiceServer	and presents it as a AxiomXaDriverServiceClient
 func WrapAxiomXaDriverService(server AxiomXaDriverServiceServer) AxiomXaDriverServiceClient {
-	return &axiomXaDriverServiceWrapper{server}
+	conn := wrap.ServerToClient(AxiomXaDriverService_ServiceDesc, server)
+	client := NewAxiomXaDriverServiceClient(conn)
+	return &axiomXaDriverServiceWrapper{
+		AxiomXaDriverServiceClient: client,
+		server:                     server,
+	}
 }
 
 type axiomXaDriverServiceWrapper struct {
+	AxiomXaDriverServiceClient
+
 	server AxiomXaDriverServiceServer
 }
 
@@ -27,8 +33,4 @@ func (w *axiomXaDriverServiceWrapper) UnwrapServer() AxiomXaDriverServiceServer 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *axiomXaDriverServiceWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *axiomXaDriverServiceWrapper) SaveQRCredential(ctx context.Context, req *SaveQRCredentialRequest, _ ...grpc.CallOption) (*SaveQRCredentialResponse, error) {
-	return w.server.SaveQRCredential(ctx, req)
 }

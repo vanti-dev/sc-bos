@@ -3,16 +3,22 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapDaliApi	adapts a DaliApiServer	and presents it as a DaliApiClient
 func WrapDaliApi(server DaliApiServer) DaliApiClient {
-	return &daliApiWrapper{server}
+	conn := wrap.ServerToClient(DaliApi_ServiceDesc, server)
+	client := NewDaliApiClient(conn)
+	return &daliApiWrapper{
+		DaliApiClient: client,
+		server:        server,
+	}
 }
 
 type daliApiWrapper struct {
+	DaliApiClient
+
 	server DaliApiServer
 }
 
@@ -27,44 +33,4 @@ func (w *daliApiWrapper) UnwrapServer() DaliApiServer {
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *daliApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *daliApiWrapper) AddToGroup(ctx context.Context, req *AddToGroupRequest, _ ...grpc.CallOption) (*AddToGroupResponse, error) {
-	return w.server.AddToGroup(ctx, req)
-}
-
-func (w *daliApiWrapper) RemoveFromGroup(ctx context.Context, req *RemoveFromGroupRequest, _ ...grpc.CallOption) (*RemoveFromGroupResponse, error) {
-	return w.server.RemoveFromGroup(ctx, req)
-}
-
-func (w *daliApiWrapper) GetGroupMembership(ctx context.Context, req *GetGroupMembershipRequest, _ ...grpc.CallOption) (*GetGroupMembershipResponse, error) {
-	return w.server.GetGroupMembership(ctx, req)
-}
-
-func (w *daliApiWrapper) GetControlGearStatus(ctx context.Context, req *GetControlGearStatusRequest, _ ...grpc.CallOption) (*ControlGearStatus, error) {
-	return w.server.GetControlGearStatus(ctx, req)
-}
-
-func (w *daliApiWrapper) GetEmergencyStatus(ctx context.Context, req *GetEmergencyStatusRequest, _ ...grpc.CallOption) (*EmergencyStatus, error) {
-	return w.server.GetEmergencyStatus(ctx, req)
-}
-
-func (w *daliApiWrapper) Identify(ctx context.Context, req *IdentifyRequest, _ ...grpc.CallOption) (*IdentifyResponse, error) {
-	return w.server.Identify(ctx, req)
-}
-
-func (w *daliApiWrapper) StartTest(ctx context.Context, req *StartTestRequest, _ ...grpc.CallOption) (*StartTestResponse, error) {
-	return w.server.StartTest(ctx, req)
-}
-
-func (w *daliApiWrapper) StopTest(ctx context.Context, req *StopTestRequest, _ ...grpc.CallOption) (*StopTestResponse, error) {
-	return w.server.StopTest(ctx, req)
-}
-
-func (w *daliApiWrapper) GetTestResult(ctx context.Context, req *GetTestResultRequest, _ ...grpc.CallOption) (*TestResult, error) {
-	return w.server.GetTestResult(ctx, req)
-}
-
-func (w *daliApiWrapper) DeleteTestResult(ctx context.Context, req *DeleteTestResultRequest, _ ...grpc.CallOption) (*TestResult, error) {
-	return w.server.DeleteTestResult(ctx, req)
 }

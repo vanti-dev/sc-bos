@@ -3,16 +3,22 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapStatusHistory	adapts a StatusHistoryServer	and presents it as a StatusHistoryClient
 func WrapStatusHistory(server StatusHistoryServer) StatusHistoryClient {
-	return &statusHistoryWrapper{server}
+	conn := wrap.ServerToClient(StatusHistory_ServiceDesc, server)
+	client := NewStatusHistoryClient(conn)
+	return &statusHistoryWrapper{
+		StatusHistoryClient: client,
+		server:              server,
+	}
 }
 
 type statusHistoryWrapper struct {
+	StatusHistoryClient
+
 	server StatusHistoryServer
 }
 
@@ -27,8 +33,4 @@ func (w *statusHistoryWrapper) UnwrapServer() StatusHistoryServer {
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *statusHistoryWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *statusHistoryWrapper) ListCurrentStatusHistory(ctx context.Context, req *ListCurrentStatusHistoryRequest, _ ...grpc.CallOption) (*ListCurrentStatusHistoryResponse, error) {
-	return w.server.ListCurrentStatusHistory(ctx, req)
 }

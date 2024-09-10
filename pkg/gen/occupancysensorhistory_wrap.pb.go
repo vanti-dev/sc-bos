@@ -3,16 +3,22 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapOccupancySensorHistory	adapts a OccupancySensorHistoryServer	and presents it as a OccupancySensorHistoryClient
 func WrapOccupancySensorHistory(server OccupancySensorHistoryServer) OccupancySensorHistoryClient {
-	return &occupancySensorHistoryWrapper{server}
+	conn := wrap.ServerToClient(OccupancySensorHistory_ServiceDesc, server)
+	client := NewOccupancySensorHistoryClient(conn)
+	return &occupancySensorHistoryWrapper{
+		OccupancySensorHistoryClient: client,
+		server:                       server,
+	}
 }
 
 type occupancySensorHistoryWrapper struct {
+	OccupancySensorHistoryClient
+
 	server OccupancySensorHistoryServer
 }
 
@@ -27,8 +33,4 @@ func (w *occupancySensorHistoryWrapper) UnwrapServer() OccupancySensorHistorySer
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *occupancySensorHistoryWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *occupancySensorHistoryWrapper) ListOccupancyHistory(ctx context.Context, req *ListOccupancyHistoryRequest, _ ...grpc.CallOption) (*ListOccupancyHistoryResponse, error) {
-	return w.server.ListOccupancyHistory(ctx, req)
 }

@@ -3,17 +3,22 @@
 package gen
 
 import (
-	context "context"
 	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
-	grpc "google.golang.org/grpc"
 )
 
 // WrapButtonApi	adapts a ButtonApiServer	and presents it as a ButtonApiClient
 func WrapButtonApi(server ButtonApiServer) ButtonApiClient {
-	return &buttonApiWrapper{server}
+	conn := wrap.ServerToClient(ButtonApi_ServiceDesc, server)
+	client := NewButtonApiClient(conn)
+	return &buttonApiWrapper{
+		ButtonApiClient: client,
+		server:          server,
+	}
 }
 
 type buttonApiWrapper struct {
+	ButtonApiClient
+
 	server ButtonApiServer
 }
 
@@ -28,43 +33,4 @@ func (w *buttonApiWrapper) UnwrapServer() ButtonApiServer {
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *buttonApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *buttonApiWrapper) GetButtonState(ctx context.Context, req *GetButtonStateRequest, _ ...grpc.CallOption) (*ButtonState, error) {
-	return w.server.GetButtonState(ctx, req)
-}
-
-func (w *buttonApiWrapper) PullButtonState(ctx context.Context, in *PullButtonStateRequest, opts ...grpc.CallOption) (ButtonApi_PullButtonStateClient, error) {
-	stream := wrap.NewClientServerStream(ctx)
-	server := &pullButtonStateButtonApiServerWrapper{stream.Server()}
-	client := &pullButtonStateButtonApiClientWrapper{stream.Client()}
-	go func() {
-		err := w.server.PullButtonState(in, server)
-		stream.Close(err)
-	}()
-	return client, nil
-}
-
-type pullButtonStateButtonApiClientWrapper struct {
-	grpc.ClientStream
-}
-
-func (w *pullButtonStateButtonApiClientWrapper) Recv() (*PullButtonStateResponse, error) {
-	m := new(PullButtonStateResponse)
-	if err := w.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-type pullButtonStateButtonApiServerWrapper struct {
-	grpc.ServerStream
-}
-
-func (s *pullButtonStateButtonApiServerWrapper) Send(response *PullButtonStateResponse) error {
-	return s.ServerStream.SendMsg(response)
-}
-
-func (w *buttonApiWrapper) UpdateButtonState(ctx context.Context, req *UpdateButtonStateRequest, _ ...grpc.CallOption) (*ButtonState, error) {
-	return w.server.UpdateButtonState(ctx, req)
 }

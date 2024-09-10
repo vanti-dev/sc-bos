@@ -3,16 +3,22 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapLightingTestApi	adapts a LightingTestApiServer	and presents it as a LightingTestApiClient
 func WrapLightingTestApi(server LightingTestApiServer) LightingTestApiClient {
-	return &lightingTestApiWrapper{server}
+	conn := wrap.ServerToClient(LightingTestApi_ServiceDesc, server)
+	client := NewLightingTestApiClient(conn)
+	return &lightingTestApiWrapper{
+		LightingTestApiClient: client,
+		server:                server,
+	}
 }
 
 type lightingTestApiWrapper struct {
+	LightingTestApiClient
+
 	server LightingTestApiServer
 }
 
@@ -27,20 +33,4 @@ func (w *lightingTestApiWrapper) UnwrapServer() LightingTestApiServer {
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *lightingTestApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *lightingTestApiWrapper) GetLightHealth(ctx context.Context, req *GetLightHealthRequest, _ ...grpc.CallOption) (*LightHealth, error) {
-	return w.server.GetLightHealth(ctx, req)
-}
-
-func (w *lightingTestApiWrapper) ListLightHealth(ctx context.Context, req *ListLightHealthRequest, _ ...grpc.CallOption) (*ListLightHealthResponse, error) {
-	return w.server.ListLightHealth(ctx, req)
-}
-
-func (w *lightingTestApiWrapper) ListLightEvents(ctx context.Context, req *ListLightEventsRequest, _ ...grpc.CallOption) (*ListLightEventsResponse, error) {
-	return w.server.ListLightEvents(ctx, req)
-}
-
-func (w *lightingTestApiWrapper) GetReportCSV(ctx context.Context, req *GetReportCSVRequest, _ ...grpc.CallOption) (*ReportCSV, error) {
-	return w.server.GetReportCSV(ctx, req)
 }

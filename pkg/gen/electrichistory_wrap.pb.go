@@ -3,16 +3,22 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapElectricHistory	adapts a ElectricHistoryServer	and presents it as a ElectricHistoryClient
 func WrapElectricHistory(server ElectricHistoryServer) ElectricHistoryClient {
-	return &electricHistoryWrapper{server}
+	conn := wrap.ServerToClient(ElectricHistory_ServiceDesc, server)
+	client := NewElectricHistoryClient(conn)
+	return &electricHistoryWrapper{
+		ElectricHistoryClient: client,
+		server:                server,
+	}
 }
 
 type electricHistoryWrapper struct {
+	ElectricHistoryClient
+
 	server ElectricHistoryServer
 }
 
@@ -27,8 +33,4 @@ func (w *electricHistoryWrapper) UnwrapServer() ElectricHistoryServer {
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *electricHistoryWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *electricHistoryWrapper) ListElectricDemandHistory(ctx context.Context, req *ListElectricDemandHistoryRequest, _ ...grpc.CallOption) (*ListElectricDemandHistoryResponse, error) {
-	return w.server.ListElectricDemandHistory(ctx, req)
 }

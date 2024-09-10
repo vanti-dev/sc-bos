@@ -3,16 +3,22 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapAirQualitySensorHistory	adapts a AirQualitySensorHistoryServer	and presents it as a AirQualitySensorHistoryClient
 func WrapAirQualitySensorHistory(server AirQualitySensorHistoryServer) AirQualitySensorHistoryClient {
-	return &airQualitySensorHistoryWrapper{server}
+	conn := wrap.ServerToClient(AirQualitySensorHistory_ServiceDesc, server)
+	client := NewAirQualitySensorHistoryClient(conn)
+	return &airQualitySensorHistoryWrapper{
+		AirQualitySensorHistoryClient: client,
+		server:                        server,
+	}
 }
 
 type airQualitySensorHistoryWrapper struct {
+	AirQualitySensorHistoryClient
+
 	server AirQualitySensorHistoryServer
 }
 
@@ -27,8 +33,4 @@ func (w *airQualitySensorHistoryWrapper) UnwrapServer() AirQualitySensorHistoryS
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *airQualitySensorHistoryWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *airQualitySensorHistoryWrapper) ListAirQualityHistory(ctx context.Context, req *ListAirQualityHistoryRequest, _ ...grpc.CallOption) (*ListAirQualityHistoryResponse, error) {
-	return w.server.ListAirQualityHistory(ctx, req)
 }
