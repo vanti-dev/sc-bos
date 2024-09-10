@@ -1,91 +1,238 @@
 <svg width="982" height="771" viewBox="0 0 982 771" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="floor0-lights">
-<g id="LTF-L00-17">
-<rect id="Rectangle 28" x="161.5" y="51.5" width="7" height="88" transform="rotate(90 161.5 51.5)" fill="#D9D9D9" stroke="#6E6E6E"/>
-<rect id="Rectangle 29" x="161.5" y="103.5" width="7" height="88" transform="rotate(90 161.5 103.5)" fill="#D9D9D9" stroke="#6E6E6E"/>
+<g id="Group 1">
+<g id="Lights-Single-Circle-134:280">
+<rect x="122.36" y="358.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="122.36" y="358.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget" cx="131" cy="367" rx="6" ry="6" transform="rotate(-90 131 367)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
 </g>
-<g id="LTF-L00-16">
-<rect id="Rectangle 20" x="212.5" y="281.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
+<g id="Lights-Single-Circle-134:301">
+<rect x="122.36" y="282.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="122.36" y="282.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_2" cx="131" cy="291" rx="6" ry="6" transform="rotate(-90 131 291)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
 </g>
-<g id="LTF-L00-15">
-<rect id="Rectangle 17" x="379.5" y="375.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 19" x="379.5" y="306.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 18" x="379.5" y="442.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
 </g>
-<g id="LTF-L00-14">
-<rect id="Rectangle 20_2" x="286.5" y="295.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
+<g id="Lights-Single-Circle-134:343">
+<rect x="213.36" y="281.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="213.36" y="281.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_3" cx="222" cy="290" rx="6" ry="6" transform="rotate(-90 222 290)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
 </g>
-<g id="LTF-L00-13">
-<rect id="Rect" x="613.5" y="294.5" width="7" height="152" fill="#D9D9D9" stroke="#6E6E6E"/>
+<g id="Lights-Single-Circle-134:364">
+<rect x="286.36" y="295.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="286.36" y="295.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_4" cx="295" cy="304" rx="6" ry="6" transform="rotate(-90 295 304)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
 </g>
-<g id="LTF-L00-12">
-<rect id="Rectangle 17_2" x="499.5" y="360.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 19_2" x="499.5" y="291.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 18_2" x="499.5" y="427.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 17_3" x="575.5" y="360.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 19_3" x="575.5" y="291.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 18_3" x="575.5" y="427.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
+<g id="Group 11">
+<g id="Lights-Single-Circle-134:637">
+<rect x="842.36" y="557.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="842.36" y="557.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_5" cx="851" cy="566" rx="6" ry="6" transform="rotate(-90 851 566)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
 </g>
-<g id="LTF-L00-11">
-<rect id="Rectangle 20_3" x="730.5" y="315.5" width="7" height="152" fill="#D9D9D9" stroke="#6E6E6E"/>
-<rect id="Rectangle 23" x="730.5" y="98.5" width="7" height="152" fill="#D9D9D9" stroke="#6E6E6E"/>
-<rect id="Rectangle 26" x="616.5" y="99.5" width="7" height="88" transform="rotate(90 616.5 99.5)" fill="#D9D9D9" stroke="#6E6E6E"/>
-<rect id="Rectangle 27" x="616.5" y="151.5" width="7" height="88" transform="rotate(90 616.5 151.5)" fill="#D9D9D9" stroke="#6E6E6E"/>
-<rect id="Rectangle 21" x="804.5" y="316.5" width="7" height="152" fill="#D9D9D9" stroke="#6E6E6E"/>
-<rect id="Rectangle 24" x="804.5" y="99.5" width="7" height="152" fill="#D9D9D9" stroke="#6E6E6E"/>
-<rect id="Rectangle 22" x="878.5" y="316.5" width="7" height="152" fill="#D9D9D9" stroke="#6E6E6E"/>
-<rect id="Rectangle 25" x="878.5" y="99.5" width="7" height="152" fill="#D9D9D9" stroke="#6E6E6E"/>
+<g id="Lights-Single-Circle-134:679">
+<rect x="842.36" y="626.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="842.36" y="626.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_6" cx="851" cy="635" rx="6" ry="6" transform="rotate(-90 851 635)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
 </g>
-<g id="LTF-L00-10">
-<rect id="Rectangle 17_4" x="843.5" y="625.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 19_4" x="843.5" y="556.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 18_4" x="843.5" y="692.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
+<g id="Lights-Single-Circle-134:721">
+<rect x="842.36" y="692.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="842.36" y="692.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_7" cx="851" cy="701" rx="6" ry="6" transform="rotate(-90 851 701)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
 </g>
-<g id="LTF-L00-09">
-<rect id="Rectangle 17_5" x="691.5" y="625.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 19_5" x="691.5" y="556.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 18_5" x="691.5" y="692.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 17_6" x="767.5" y="625.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 19_6" x="767.5" y="556.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 18_6" x="767.5" y="692.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
 </g>
-<g id="LTF-L00-08">
-<rect id="Rectangle 17_7" x="569.5" y="624.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 19_7" x="569.5" y="555.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 18_7" x="569.5" y="691.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
+<g id="Group 3">
+<g id="Lights-Single-Circle-134:1120">
+<rect x="380.36" y="307.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="380.36" y="307.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_8" cx="389" cy="316" rx="6" ry="6" transform="rotate(-90 389 316)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
 </g>
-<g id="LTF-L00-07">
-<rect id="Rectangle 17_8" x="464.5" y="624.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 18_8" x="464.5" y="691.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
+<g id="Lights-Single-Circle-134:1141">
+<rect x="379.36" y="376.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="379.36" y="376.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_9" cx="388" cy="385" rx="6" ry="6" transform="rotate(-90 388 385)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
 </g>
-<g id="LTF-L00-06">
-<rect id="Rectangle 15" x="359.5" y="624.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 16" x="359.5" y="691.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
+<g id="Lights-Single-Circle-134:1162">
+<rect x="378.36" y="443.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="378.36" y="443.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_10" cx="387" cy="452" rx="6" ry="6" transform="rotate(-90 387 452)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
 </g>
-<g id="LTF-L00-05">
-<rect id="Rectangle 11" x="199.5" y="624.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 13" x="199.5" y="691.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 12" x="266.5" y="624.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 14" x="266.5" y="691.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
 </g>
-<g id="LTF-L00-04">
-<rect id="Rectangle 8" x="121.5" y="357.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 9" x="121.5" y="281.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
+<g id="Group 2">
+<g id="Lights-Single-Circle-134:511">
+<rect x="575.36" y="292.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="575.36" y="292.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_11" cx="584" cy="301" rx="6" ry="6" transform="rotate(-90 584 301)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
 </g>
-<g id="LTF-L00-03">
-<rect id="Rectangle 8_2" x="222.5" y="545.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 9_2" x="343.5" y="545.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 10" x="464.5" y="545.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
+<g id="Lights-Single-Circle-134:553">
+<rect x="575.36" y="362.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="575.36" y="362.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_12" cx="584" cy="371" rx="6" ry="6" transform="rotate(-90 584 371)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
 </g>
-<g id="LTF-L00-02">
-<rect id="Rectangle 1" x="222.5" y="392.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 4" x="282.5" y="392.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 3" x="222.5" y="452.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 5" x="282.5" y="452.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
+<g id="Lights-Single-Circle-134:595">
+<rect x="575.36" y="428.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="575.36" y="428.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_13" cx="584" cy="437" rx="6" ry="6" transform="rotate(-90 584 437)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
 </g>
-<g id="LTF-L00-01">
-<rect id="Rectangle 6" x="53.5" y="452.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
-<rect id="Rectangle 7" x="121.5" y="452.5" width="19" height="19" rx="4.5" fill="#DBD53A" stroke="#B0932D"/>
+<g id="Lights-Single-Circle-134:512">
+<rect x="500.36" y="292.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="500.36" y="292.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_14" cx="509" cy="301" rx="6" ry="6" transform="rotate(-90 509 301)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:554">
+<rect x="500.36" y="362.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="500.36" y="362.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_15" cx="509" cy="371" rx="6" ry="6" transform="rotate(-90 509 371)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:596">
+<rect x="500.36" y="428.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="500.36" y="428.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_16" cx="509" cy="437" rx="6" ry="6" transform="rotate(-90 509 437)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+</g>
+<g id="Group 5">
+<g id="Lights-Single-Circle-134:889">
+<rect x="465.36" y="546.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="465.36" y="546.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_17" cx="474" cy="555" rx="6" ry="6" transform="rotate(-90 474 555)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:952">
+<rect x="344.36" y="546.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="344.36" y="546.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_18" cx="353" cy="555" rx="6" ry="6" transform="rotate(-90 353 555)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:1015">
+<rect x="223.36" y="546.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="223.36" y="546.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_19" cx="232" cy="555" rx="6" ry="6" transform="rotate(-90 232 555)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+</g>
+<g id="Group 10">
+<g id="Lights-Single-Circle-134:638">
+<rect x="767.36" y="557.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="767.36" y="557.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_20" cx="776" cy="566" rx="6" ry="6" transform="rotate(-90 776 566)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:763">
+<rect x="692.36" y="557.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="692.36" y="557.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_21" cx="701" cy="566" rx="6" ry="6" transform="rotate(-90 701 566)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:680">
+<rect x="767.36" y="626.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="767.36" y="626.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_22" cx="776" cy="635" rx="6" ry="6" transform="rotate(-90 776 635)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:764">
+<rect x="692.36" y="626.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="692.36" y="626.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_23" cx="701" cy="635" rx="6" ry="6" transform="rotate(-90 701 635)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:722">
+<rect x="767.36" y="692.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="767.36" y="692.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_24" cx="776" cy="701" rx="6" ry="6" transform="rotate(-90 776 701)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:765">
+<rect x="692.36" y="692.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="692.36" y="692.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_25" cx="701" cy="701" rx="6" ry="6" transform="rotate(-90 701 701)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+</g>
+<g id="Group 9">
+<g id="Lights-Single-Circle-134:826">
+<rect x="569.36" y="556.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="569.36" y="556.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_26" cx="578" cy="565" rx="6" ry="6" transform="rotate(-90 578 565)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:827">
+<rect x="569.36" y="625.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="569.36" y="625.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_27" cx="578" cy="634" rx="6" ry="6" transform="rotate(-90 578 634)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:828">
+<rect x="569.36" y="691.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="569.36" y="691.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_28" cx="578" cy="700" rx="6" ry="6" transform="rotate(-90 578 700)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+</g>
+<g id="Group 8">
+<g id="Lights-Single-Circle-134:890">
+<rect x="465.36" y="626.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="465.36" y="626.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_29" cx="474" cy="635" rx="6" ry="6" transform="rotate(-90 474 635)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:891">
+<rect x="465.36" y="692.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="465.36" y="692.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_30" cx="474" cy="701" rx="6" ry="6" transform="rotate(-90 474 701)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+</g>
+<g id="Group 7">
+<g id="Lights-Single-Circle--134:953">
+<rect x="360.36" y="626.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="360.36" y="626.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_31" cx="369" cy="635" rx="6" ry="6" transform="rotate(-90 369 635)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:954">
+<rect x="360.36" y="692.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="360.36" y="692.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_32" cx="369" cy="701" rx="6" ry="6" transform="rotate(-90 369 701)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+</g>
+<g id="Group 6">
+<g id="Lights-Single-Circle-134:1016">
+<rect x="265.36" y="626.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="265.36" y="626.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_33" cx="274" cy="635" rx="6" ry="6" transform="rotate(-90 274 635)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:1078">
+<rect x="199.36" y="626.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="199.36" y="626.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_34" cx="208" cy="635" rx="6" ry="6" transform="rotate(-90 208 635)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:1017">
+<rect x="265.36" y="692.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="265.36" y="692.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_35" cx="274" cy="701" rx="6" ry="6" transform="rotate(-90 274 701)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:1079">
+<rect x="199.36" y="692.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="199.36" y="692.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_36" cx="208" cy="701" rx="6" ry="6" transform="rotate(-90 208 701)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+</g>
+<g id="Group 4">
+<g id="Lights-Single-Circle-134:385">
+<rect x="283.36" y="393.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="283.36" y="393.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_37" cx="292" cy="402" rx="6" ry="6" transform="rotate(-90 292 402)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:427">
+<rect x="283.36" y="452.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="283.36" y="452.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_38" cx="292" cy="461" rx="6" ry="6" transform="rotate(-90 292 461)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:406">
+<rect x="223.36" y="393.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="223.36" y="393.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_39" cx="232" cy="402" rx="6" ry="6" transform="rotate(-90 232 402)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:428">
+<rect x="223.36" y="452.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="223.36" y="452.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_40" cx="232" cy="461" rx="6" ry="6" transform="rotate(-90 232 461)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+</g>
+<g id="Group 12">
+<g id="Lights-Single-Circle-134:469">
+<rect x="122.36" y="453.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="122.36" y="453.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_41" cx="131" cy="462" rx="6" ry="6" transform="rotate(-90 131 462)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
+<g id="Lights-Single-Circle-134:470">
+<rect x="53.36" y="453.36" width="17.28" height="17.28" rx="8.64" fill="#2A3138"/>
+<rect x="53.36" y="453.36" width="17.28" height="17.28" rx="8.64" stroke="#FBBF24" stroke-width="0.72"/>
+<ellipse id="light-widget_42" cx="62" cy="462" rx="6" ry="6" transform="rotate(-90 62 462)" fill="#4A4F55" stroke="#4A4F55" stroke-width="0.559238" stroke-linejoin="round"/>
+</g>
 </g>
 </g>
 </svg>

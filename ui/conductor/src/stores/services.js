@@ -85,7 +85,6 @@ export const useServicesStore = defineStore('services', () => {
   return {
     node,
     getService,
-    refreshMetadata,
-    newServicesCollection
+    refreshMetadata
   };
 });
