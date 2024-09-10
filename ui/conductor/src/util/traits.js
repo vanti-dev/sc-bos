@@ -1,3 +1,4 @@
+import {addRoundedRectPath} from 'chart.js/helpers';
 import deepEqual from 'fast-deep-equal';
 import {toValue, watch} from 'vue';
 
@@ -16,7 +17,7 @@ import {toValue, watch} from 'vue';
  */
 export const toQueryObject = (input) => {
   const inputValue = toValue(input);
-  if (!inputValue) return null;
+  if (inputValue === null || inputValue === undefined) return null;
   if (typeof inputValue === 'string') return {name: inputValue};
   return inputValue;
 };

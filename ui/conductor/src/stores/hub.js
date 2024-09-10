@@ -33,6 +33,8 @@ export const useHubStore = defineStore('hub', () => {
 
   const nodesListCollectionInit = async () => {
     try {
+      await controller.waitForLoad;
+
       // if local gateway hub mode is enabled, the hub node will be the same as the gateway node
       // get systems config, so we can check if the gateway is in local mode
       const systems = await listServices({name: ServiceNames.Systems}, newActionTracker());

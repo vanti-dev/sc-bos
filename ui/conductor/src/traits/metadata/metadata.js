@@ -22,7 +22,7 @@ import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
  */
 
 /**
- * @param {MaybeRefOrGetter<string|PullMetadataRequest.AsObject>} query
+ * @param {MaybeRefOrGetter<string|Partial<PullMetadataRequest.AsObject>>} query
  * @param {MaybeRefOrGetter<boolean>=} paused
  * @return {ToRefs<ResourceValue<Metadata.AsObject, PullMetadataResponse>>}
  */

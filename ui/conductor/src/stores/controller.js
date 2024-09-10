@@ -1,24 +1,29 @@
-import {newActionTracker} from '@/api/resource';
-import {getMetadata} from '@/api/sc/traits/metadata';
-import {defineStore} from 'pinia';
-import {ref} from 'vue';
+import {usePullMetadata} from '@/traits/metadata/metadata.js';
+import {acceptHMRUpdate, defineStore} from 'pinia';
+import {computed, watch} from 'vue';
 
+/**
+ * A store that reports on the server (controller) the ui is directly connected to.
+ */
 export const useControllerStore = defineStore('controller', () => {
-  const controllerName = ref(''); // blank means use the controllers default name
+  // fetch the metadata for the server we're connected to
+  const {value, streamError, loading} = usePullMetadata({});
+  const controllerName = computed(() => value.value?.name);
+  const hasLoaded = computed(() => Boolean(!loading.value && (streamError.value || value.value)));
 
-  /**
-   * @return {Promise<void>}
-   */
-  async function sync() {
-    // we only need to do this once
-    if (controllerName.value === '') {
-      const meta = await getMetadata({}, newActionTracker());
-      controllerName.value = meta.name;
-    }
-  }
+  let notifyLoaded;
+  const waitForLoad = new Promise((resolve) => notifyLoaded = resolve);
+  watch(hasLoaded, (loaded) => {
+    if (loaded) notifyLoaded();
+  }, {immediate: true});
 
   return {
     controllerName,
-    sync
+    hasLoaded,
+    waitForLoad
   };
 });
+
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useControllerStore, import.meta.hot));
+}
