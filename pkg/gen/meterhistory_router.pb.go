@@ -3,13 +3,15 @@
 package gen
 
 import (
-	context "context"
-	fmt "fmt"
-	router "github.com/smart-core-os/sc-golang/pkg/router"
-	grpc "google.golang.org/grpc"
+	"context"
+	"fmt"
+
+	"google.golang.org/grpc"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
 )
 
-// MeterHistoryRouter is a MeterHistoryServer that allows routing named requests to specific MeterHistoryClient
+// MeterHistoryRouter is a gen.MeterHistoryServer that allows routing named requests to specific gen.MeterHistoryClient
 type MeterHistoryRouter struct {
 	UnimplementedMeterHistoryServer
 
@@ -37,10 +39,10 @@ func (r *MeterHistoryRouter) Register(server *grpc.Server) {
 	RegisterMeterHistoryServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type MeterHistoryClient.
+// Add extends Router.Add to panic if client is not of type gen.MeterHistoryClient.
 func (r *MeterHistoryRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a MeterHistoryClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.MeterHistoryClient", client))
 	}
 	return r.Router.Add(name, client)
 }

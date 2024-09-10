@@ -3,13 +3,15 @@
 package gen
 
 import (
-	context "context"
-	fmt "fmt"
-	router "github.com/smart-core-os/sc-golang/pkg/router"
-	grpc "google.golang.org/grpc"
+	"context"
+	"fmt"
+
+	"google.golang.org/grpc"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
 )
 
-// AxiomXaDriverServiceRouter is a AxiomXaDriverServiceServer that allows routing named requests to specific AxiomXaDriverServiceClient
+// AxiomXaDriverServiceRouter is a gen.AxiomXaDriverServiceServer that allows routing named requests to specific gen.AxiomXaDriverServiceClient
 type AxiomXaDriverServiceRouter struct {
 	UnimplementedAxiomXaDriverServiceServer
 
@@ -37,10 +39,10 @@ func (r *AxiomXaDriverServiceRouter) Register(server *grpc.Server) {
 	RegisterAxiomXaDriverServiceServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type AxiomXaDriverServiceClient.
+// Add extends Router.Add to panic if client is not of type gen.AxiomXaDriverServiceClient.
 func (r *AxiomXaDriverServiceRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a AxiomXaDriverServiceClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.AxiomXaDriverServiceClient", client))
 	}
 	return r.Router.Add(name, client)
 }

@@ -3,16 +3,22 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
-// WrapHistoryAdminApi	adapts a HistoryAdminApiServer	and presents it as a HistoryAdminApiClient
+// WrapHistoryAdminApi	adapts a gen.HistoryAdminApiServer	and presents it as a gen.HistoryAdminApiClient
 func WrapHistoryAdminApi(server HistoryAdminApiServer) HistoryAdminApiClient {
-	return &historyAdminApiWrapper{server}
+	conn := wrap.ServerToClient(HistoryAdminApi_ServiceDesc, server)
+	client := NewHistoryAdminApiClient(conn)
+	return &historyAdminApiWrapper{
+		HistoryAdminApiClient: client,
+		server:                server,
+	}
 }
 
 type historyAdminApiWrapper struct {
+	HistoryAdminApiClient
+
 	server HistoryAdminApiServer
 }
 
@@ -27,12 +33,4 @@ func (w *historyAdminApiWrapper) UnwrapServer() HistoryAdminApiServer {
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *historyAdminApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *historyAdminApiWrapper) CreateHistoryRecord(ctx context.Context, req *CreateHistoryRecordRequest, _ ...grpc.CallOption) (*HistoryRecord, error) {
-	return w.server.CreateHistoryRecord(ctx, req)
-}
-
-func (w *historyAdminApiWrapper) ListHistoryRecords(ctx context.Context, req *ListHistoryRecordsRequest, _ ...grpc.CallOption) (*ListHistoryRecordsResponse, error) {
-	return w.server.ListHistoryRecords(ctx, req)
 }

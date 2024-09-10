@@ -3,13 +3,15 @@
 package gen
 
 import (
-	context "context"
-	fmt "fmt"
-	router "github.com/smart-core-os/sc-golang/pkg/router"
-	grpc "google.golang.org/grpc"
+	"context"
+	"fmt"
+
+	"google.golang.org/grpc"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
 )
 
-// AirTemperatureHistoryRouter is a AirTemperatureHistoryServer that allows routing named requests to specific AirTemperatureHistoryClient
+// AirTemperatureHistoryRouter is a gen.AirTemperatureHistoryServer that allows routing named requests to specific gen.AirTemperatureHistoryClient
 type AirTemperatureHistoryRouter struct {
 	UnimplementedAirTemperatureHistoryServer
 
@@ -37,10 +39,10 @@ func (r *AirTemperatureHistoryRouter) Register(server *grpc.Server) {
 	RegisterAirTemperatureHistoryServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type AirTemperatureHistoryClient.
+// Add extends Router.Add to panic if client is not of type gen.AirTemperatureHistoryClient.
 func (r *AirTemperatureHistoryRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a AirTemperatureHistoryClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.AirTemperatureHistoryClient", client))
 	}
 	return r.Router.Add(name, client)
 }

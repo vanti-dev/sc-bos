@@ -3,14 +3,16 @@
 package gen
 
 import (
-	context "context"
-	fmt "fmt"
-	router "github.com/smart-core-os/sc-golang/pkg/router"
-	grpc "google.golang.org/grpc"
-	io "io"
+	"context"
+	"fmt"
+	"io"
+
+	"google.golang.org/grpc"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
 )
 
-// TemperatureApiRouter is a TemperatureApiServer that allows routing named requests to specific TemperatureApiClient
+// TemperatureApiRouter is a gen.TemperatureApiServer that allows routing named requests to specific gen.TemperatureApiClient
 type TemperatureApiRouter struct {
 	UnimplementedTemperatureApiServer
 
@@ -38,10 +40,10 @@ func (r *TemperatureApiRouter) Register(server *grpc.Server) {
 	RegisterTemperatureApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type TemperatureApiClient.
+// Add extends Router.Add to panic if client is not of type gen.TemperatureApiClient.
 func (r *TemperatureApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a TemperatureApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.TemperatureApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

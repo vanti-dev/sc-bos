@@ -3,13 +3,15 @@
 package gen
 
 import (
-	context "context"
-	fmt "fmt"
-	router "github.com/smart-core-os/sc-golang/pkg/router"
-	grpc "google.golang.org/grpc"
+	"context"
+	"fmt"
+
+	"google.golang.org/grpc"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
 )
 
-// ColorInfoRouter is a ColorInfoServer that allows routing named requests to specific ColorInfoClient
+// ColorInfoRouter is a gen.ColorInfoServer that allows routing named requests to specific gen.ColorInfoClient
 type ColorInfoRouter struct {
 	UnimplementedColorInfoServer
 
@@ -37,10 +39,10 @@ func (r *ColorInfoRouter) Register(server *grpc.Server) {
 	RegisterColorInfoServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type ColorInfoClient.
+// Add extends Router.Add to panic if client is not of type gen.ColorInfoClient.
 func (r *ColorInfoRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a ColorInfoClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.ColorInfoClient", client))
 	}
 	return r.Router.Add(name, client)
 }

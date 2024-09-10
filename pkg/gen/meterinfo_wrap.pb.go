@@ -3,16 +3,22 @@
 package gen
 
 import (
-	context "context"
-	grpc "google.golang.org/grpc"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
-// WrapMeterInfo	adapts a MeterInfoServer	and presents it as a MeterInfoClient
+// WrapMeterInfo	adapts a gen.MeterInfoServer	and presents it as a gen.MeterInfoClient
 func WrapMeterInfo(server MeterInfoServer) MeterInfoClient {
-	return &meterInfoWrapper{server}
+	conn := wrap.ServerToClient(MeterInfo_ServiceDesc, server)
+	client := NewMeterInfoClient(conn)
+	return &meterInfoWrapper{
+		MeterInfoClient: client,
+		server:          server,
+	}
 }
 
 type meterInfoWrapper struct {
+	MeterInfoClient
+
 	server MeterInfoServer
 }
 
@@ -27,8 +33,4 @@ func (w *meterInfoWrapper) UnwrapServer() MeterInfoServer {
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *meterInfoWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *meterInfoWrapper) DescribeMeterReading(ctx context.Context, req *DescribeMeterReadingRequest, _ ...grpc.CallOption) (*MeterReadingSupport, error) {
-	return w.server.DescribeMeterReading(ctx, req)
 }

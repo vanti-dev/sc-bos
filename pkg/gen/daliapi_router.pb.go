@@ -3,13 +3,15 @@
 package gen
 
 import (
-	context "context"
-	fmt "fmt"
-	router "github.com/smart-core-os/sc-golang/pkg/router"
-	grpc "google.golang.org/grpc"
+	"context"
+	"fmt"
+
+	"google.golang.org/grpc"
+
+	"github.com/smart-core-os/sc-golang/pkg/router"
 )
 
-// DaliApiRouter is a DaliApiServer that allows routing named requests to specific DaliApiClient
+// DaliApiRouter is a gen.DaliApiServer that allows routing named requests to specific gen.DaliApiClient
 type DaliApiRouter struct {
 	UnimplementedDaliApiServer
 
@@ -37,10 +39,10 @@ func (r *DaliApiRouter) Register(server *grpc.Server) {
 	RegisterDaliApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type DaliApiClient.
+// Add extends Router.Add to panic if client is not of type gen.DaliApiClient.
 func (r *DaliApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a DaliApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.DaliApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

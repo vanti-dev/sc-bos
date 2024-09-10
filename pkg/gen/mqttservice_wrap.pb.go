@@ -3,17 +3,22 @@
 package gen
 
 import (
-	context "context"
-	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
-	grpc "google.golang.org/grpc"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
-// WrapMqttService	adapts a MqttServiceServer	and presents it as a MqttServiceClient
+// WrapMqttService	adapts a gen.MqttServiceServer	and presents it as a gen.MqttServiceClient
 func WrapMqttService(server MqttServiceServer) MqttServiceClient {
-	return &mqttServiceWrapper{server}
+	conn := wrap.ServerToClient(MqttService_ServiceDesc, server)
+	client := NewMqttServiceClient(conn)
+	return &mqttServiceWrapper{
+		MqttServiceClient: client,
+		server:            server,
+	}
 }
 
 type mqttServiceWrapper struct {
+	MqttServiceClient
+
 	server MqttServiceServer
 }
 
@@ -28,35 +33,4 @@ func (w *mqttServiceWrapper) UnwrapServer() MqttServiceServer {
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *mqttServiceWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *mqttServiceWrapper) PullMessages(ctx context.Context, in *PullMessagesRequest, opts ...grpc.CallOption) (MqttService_PullMessagesClient, error) {
-	stream := wrap.NewClientServerStream(ctx)
-	server := &pullMessagesMqttServiceServerWrapper{stream.Server()}
-	client := &pullMessagesMqttServiceClientWrapper{stream.Client()}
-	go func() {
-		err := w.server.PullMessages(in, server)
-		stream.Close(err)
-	}()
-	return client, nil
-}
-
-type pullMessagesMqttServiceClientWrapper struct {
-	grpc.ClientStream
-}
-
-func (w *pullMessagesMqttServiceClientWrapper) Recv() (*PullMessagesResponse, error) {
-	m := new(PullMessagesResponse)
-	if err := w.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-type pullMessagesMqttServiceServerWrapper struct {
-	grpc.ServerStream
-}
-
-func (s *pullMessagesMqttServiceServerWrapper) Send(response *PullMessagesResponse) error {
-	return s.ServerStream.SendMsg(response)
 }
