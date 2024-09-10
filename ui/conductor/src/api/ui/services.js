@@ -1,10 +1,11 @@
-import {fieldMaskFromObject, setProperties} from '@/api/convpb';
+import {fieldMaskFromObject, setProperties, timestampToDate} from '@/api/convpb';
 import {clientOptions} from '@/api/grpcweb';
 import {pullResource, setCollection, trackAction} from '@/api/resource';
 import {ServicesApiPromiseClient} from '@sc-bos/ui-gen/proto/services_grpc_web_pb';
 import {
   ConfigureServiceRequest,
   ListServicesRequest,
+  PullServiceMetadataRequest,
   PullServicesRequest,
   StartServiceRequest,
   StopServiceRequest
@@ -22,7 +23,22 @@ export function getServiceMetadata(request, tracker) {
   if (!name) throw new Error('request.name must be specified');
   return trackAction('Services.GetServiceMetadata', tracker ?? {}, endpoint => {
     const api = apiClient(endpoint);
-    return api.getServiceMetadata(createGetMetadataRequestFromObject(request));
+    return api.getServiceMetadata(getServiceMetadataRequestFromObject(request));
+  });
+}
+
+/**
+ * @param {Partial<PullServiceMetadataRequest.AsObject>} request
+ * @param {ResourceCollection<ServiceMetadata.AsObject, ServiceMetadata>} resource
+ */
+export function pullServiceMetadata(request, resource) {
+  pullResource('Services.PullServiceMetadata', resource, endpoint => {
+    const api = apiClient(endpoint);
+    const stream = api.pullServiceMetadata(pullServiceMetadataRequestFromObject(request));
+    stream.on('data', msg => {
+      setCollection(resource, msg, v => v.id);
+    });
+    return stream;
   });
 }
 
@@ -32,11 +48,9 @@ export function getServiceMetadata(request, tracker) {
  * @return {Promise<ListServicesResponse.AsObject>}
  */
 export function listServices(request, tracker) {
-  const name = String(request.name);
-  if (!name) throw new Error('request.name must be specified');
   return trackAction('Services.ListServices', tracker ?? {}, endpoint => {
     const api = apiClient(endpoint);
-    return api.listServices(createListServicesRequestFromObject(request));
+    return api.listServices(listServicesRequestFromObject(request));
   });
 }
 
@@ -46,7 +60,6 @@ export function listServices(request, tracker) {
  * @param {ResourceCollection<Service.AsObject, Service>} resource
  */
 export function pullServices(request, resource) {
-  if (!request.name) throw new Error('request.name must be specified');
   pullResource('Services.PullServices', resource, endpoint => {
     const api = apiClient(endpoint);
     const stream = api.pullServices(pullServicesRequestFromObject(request));
@@ -66,10 +79,9 @@ export function pullServices(request, resource) {
  * @return {Promise<Service.AsObject>}
  */
 export function configureService(request, tracker) {
-  if (!(request.name && request.id)) throw new Error('request.name and request.id must be specified');
-  return trackAction('Services.ConfigureService', tracker ?? {}, endpoint => {
+  return trackAction('ServicesApi.ConfigureService', tracker ?? {}, endpoint => {
     const api = apiClient(endpoint);
-    return api.configureService(createConfigureServiceRequestFromObject(request));
+    return api.configureService(configureServiceRequestFromObject(request));
   });
 }
 
@@ -79,10 +91,9 @@ export function configureService(request, tracker) {
  * @return {Promise<Service.AsObject>}
  */
 export function startService(request, tracker) {
-  if (!(request.name && request.id)) throw new Error('request.name and request.id must be specified');
-  return trackAction('Services.StartService', tracker ?? {}, endpoint => {
+  return trackAction('ServicesApi.StartService', tracker ?? {}, endpoint => {
     const api = apiClient(endpoint);
-    return api.startService(createStartServiceRequestFromObject(request));
+    return api.startService(startServiceRequestFromObject(request));
   });
 }
 
@@ -92,11 +103,41 @@ export function startService(request, tracker) {
  * @return {Promise<Service.AsObject>}
  */
 export function stopService(request, tracker) {
-  if (!(request.name && request.id)) throw new Error('request.name and request.id must be specified');
-  return trackAction('Services.StopService', tracker ?? {}, endpoint => {
+  return trackAction('ServicesApi.stopService', tracker ?? {}, endpoint => {
     const api = apiClient(endpoint);
-    return api.stopService(createStopServiceRequestFromObject(request));
+    return api.stopService(stopServiceRequestFromObject(request));
   });
+}
+
+/**
+ * @typedef {Service.AsObject & {
+ *   lastInactiveTime: Date,
+ *   lastActiveTime: Date,
+ *   lastLoadingStartTime: Date,
+ *   lastLoadingEndTime: Date,
+ *   lastErrorTime: Date,
+ *   lastConfigTime: Date,
+ *   nextAttemptTime: Date,
+ * }} ServiceAsObject
+ */
+
+/**
+ * @param {Service | Service.AsObject | null | undefined} service
+ * @return {ServiceAsObject}
+ */
+export function serviceToObject(service) {
+  if (!service) return undefined;
+  if (Object.hasOwn(service, 'toObject')) service = service.toObject();
+  const obj = {...service};
+  const dates = [
+    'lastInactiveTime', 'lastActiveTime',
+    'lastLoadingStartTime', 'lastLoadingEndTime',
+    'lastErrorTime', 'lastConfigTime', 'nextAttemptTime'
+  ];
+  for (const key of dates) {
+    if (obj[key]) obj[key] = timestampToDate(obj[key]);
+  }
+  return obj;
 }
 
 /**
@@ -111,10 +152,22 @@ function apiClient(endpoint) {
  * @param {Partial<GetMetadataRequest.AsObject>} obj
  * @return {GetMetadataRequest}
  */
-function createGetMetadataRequestFromObject(obj) {
+function getServiceMetadataRequestFromObject(obj) {
   if (!obj) return undefined;
   const req = new GetMetadataRequest();
-  setProperties(req, obj, 'name');
+  setProperties(req, obj, 'name', 'id');
+  req.setReadMask(fieldMaskFromObject(obj.readMask));
+  return req;
+}
+
+/**
+ * @param {Partial<PullServiceMetadataRequest.AsObject>} obj
+ * @return {PullServicesRequest}
+ */
+function pullServiceMetadataRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const req = new PullServiceMetadataRequest();
+  setProperties(req, obj, 'name', 'id', 'updatesOnly');
   req.setReadMask(fieldMaskFromObject(obj.readMask));
   return req;
 }
@@ -123,10 +176,11 @@ function createGetMetadataRequestFromObject(obj) {
  * @param {Partial<ListServicesRequest.AsObject>} obj
  * @return {ListServicesRequest}
  */
-function createListServicesRequestFromObject(obj) {
+function listServicesRequestFromObject(obj) {
   if (!obj) return undefined;
   const req = new ListServicesRequest();
   setProperties(req, obj, 'name', 'pageToken', 'pageSize');
+  req.setReadMask(fieldMaskFromObject(obj.readMask));
   return req;
 }
 
@@ -146,11 +200,10 @@ function pullServicesRequestFromObject(obj) {
  * @param {Partial<ConfigureServiceRequest.AsObject>} obj
  * @return {ConfigureServiceRequest}
  */
-function createConfigureServiceRequestFromObject(obj) {
+function configureServiceRequestFromObject(obj) {
   if (!obj) return undefined;
   const req = new ConfigureServiceRequest();
-  setProperties(req, obj, 'name', 'id');
-  req.setConfigRaw(obj.configRaw);
+  setProperties(req, obj, 'name', 'id', 'configRaw');
   return req;
 }
 
@@ -158,7 +211,7 @@ function createConfigureServiceRequestFromObject(obj) {
  * @param {Partial<StartServiceRequest.AsObject>} obj
  * @return {StartServiceRequest}
  */
-function createStartServiceRequestFromObject(obj) {
+function startServiceRequestFromObject(obj) {
   if (!obj) return undefined;
   const req = new StartServiceRequest();
   setProperties(req, obj, 'name', 'id', 'allowActive');
@@ -169,7 +222,7 @@ function createStartServiceRequestFromObject(obj) {
  * @param {Partial<StopServiceRequest.AsObject>} obj
  * @return {StopServiceRequest}
  */
-function createStopServiceRequestFromObject(obj) {
+function stopServiceRequestFromObject(obj) {
   if (!obj) return undefined;
   const req = new StopServiceRequest();
   setProperties(req, obj, 'name', 'id', 'allowActive');
