@@ -107,7 +107,7 @@ export default function(props) {
     }
 
     await startService({
-      name: serviceName(await serviceStore.node.commsName, toValue(props.name)),
+      name: serviceName(await serviceStore.node?.commsName, toValue(props.name)),
       id: service.id
     }, startStopTracker);
   }
@@ -125,7 +125,7 @@ export default function(props) {
     }
 
     await stopService({
-      name: serviceName(await serviceStore.node.commsName, toValue(props.name)),
+      name: serviceName(await serviceStore.node?.commsName, toValue(props.name)),
       id: service.id
     }, startStopTracker);
   }
