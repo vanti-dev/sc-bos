@@ -1,4 +1,4 @@
-import {onBeforeUnmount, onMounted, ref, toValue} from 'vue';
+import {onScopeDispose, ref, toValue} from 'vue';
 
 export const MILLISECOND = 1;
 export const SECOND = 1000 * MILLISECOND;
@@ -41,10 +41,8 @@ export function useNow(resolution = MINUTE) {
     }, delay);
   }
 
-  onMounted(() => {
-    updateNowWhenNeeded(now.value);
-  });
-  onBeforeUnmount(() => {
+  updateNowWhenNeeded(now.value);
+  onScopeDispose(() => {
     clearTimeout(handle);
   });
 
