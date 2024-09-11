@@ -73,11 +73,11 @@ export default function useCollection(request, client, options) {
   const pullChanges = ref(/** @type {PullChange<T>[]} */ []);
   watch(() => pullResource.lastResponse, (r) => {
     // most pull responses look like {changesList: [{oldValue, newValue}]}
-    if (r.hasOwnProperty('toObject') && r.hasOwnProperty('getChangesList')) {
+    if (r && typeof r.toObject === 'function' && typeof r.getChangesList === 'function') {
       pullChanges.value.push(...r.getChangesList().map(change => change.toObject()));
       if (!listTracker.loading) processChanges();
     }
-  });
+  }, {flush: 'sync'});
 
 
   const targetListCount = computed(() => toValue(options)?.wantCount ?? 20);
@@ -228,7 +228,10 @@ export default function useCollection(request, client, options) {
 
     loading,
     loadingNextPage,
-    errors
+    errors,
+
+    _listTracker: listTracker,
+    _pullResource: pullResource
   };
 }
 
