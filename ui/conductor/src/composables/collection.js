@@ -25,7 +25,7 @@ import {computed, reactive, ref, toValue, watch} from 'vue';
 /**
  * @typedef {Object} UseCollectionOptions
  * @template T
- * @property {number=} wantCount - how many items to fetch from the server
+ * @property {number=} wantCount - how many items to fetch from the server, -1 for all
  * @property {number=} pageSize - how many items to fetch per request, defaults to cap(missing, 10, 500)
  * @property {boolean=} paused - suspend requests
  * @property {(item: T) => string=} idFn - a function to get the id of an item, defaults to item.id or item.name
@@ -87,8 +87,9 @@ export default function useCollection(request, client, options) {
   const shouldFetch = computed(() => {
     if (toValue(options)?.paused ?? false) return false; // don't fetch if paused
     if (listTracker.loading) return false; // don't fetch if already fetching
-    // otherwise, fetch if we haven't fetched enough items and there are more items to get
-    return items.value.length < targetListCount.value && hasMorePages.value;
+    if (!hasMorePages.value) return false; // don't fetch if there are no more pages
+    // otherwise, fetch if we haven't fetched enough items
+    return targetListCount.value === -1 || items.value.length < targetListCount.value;
   });
   // A guess at how many total items there are, either from the server or calculated locally based on fetched items.
   const totalItems = computed(() => lastListResponse.value?.totalSize ?? items.value.length);
