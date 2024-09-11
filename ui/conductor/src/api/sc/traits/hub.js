@@ -26,16 +26,17 @@ export function listHubNodes(tracker) {
 
 /**
  *
+ * @param {Partial<PullHubNodesRequest.AsObject>} req
  * @param {ResourceCollection<HubNode.AsObject, PullHubNodesResponse>} resource
  */
-export function pullHubNodes(resource) {
+export function pullHubNodes(req, resource) {
   pullResource('Hub.pullHubNodes', resource, endpoint => {
     const api = apiClient(endpoint);
-    const stream = api.pullHubNodes(new PullHubNodesRequest());
+    const stream = api.pullHubNodes(pullHubNodesRequestFromObject(req));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
       for (const change of changes) {
-        setCollection(resource, change, v => v.name);
+        setCollection(resource, change, v => v.address);
       }
     });
     return stream;
@@ -176,6 +177,19 @@ function forgetHubNodeRequestFromObject(obj) {
 
   const dst = new ForgetHubNodeRequest();
   setProperties(dst, obj, 'address', 'allowMissing');
+
+  return dst;
+}
+
+/**
+ * @param {Partial<PullHubNodesRequest.AsObject>} obj
+ * @return {undefined|PullHubNodesRequest}
+ */
+function pullHubNodesRequestFromObject(obj) {
+  if (!obj) return undefined;
+
+  const dst = new PullHubNodesRequest();
+  setProperties(dst, obj, 'updatesOnly');
 
   return dst;
 }

@@ -26,7 +26,7 @@ export const useHubStore = defineStore('hub', () => {
     closeResource(nodesListCollection);
 
     if (config?.hub) {
-      pullHubNodes(nodesListCollection);
+      pullHubNodes({}, nodesListCollection);
       await nodesListCollectionInit();
     }
   }, {immediate: true});
