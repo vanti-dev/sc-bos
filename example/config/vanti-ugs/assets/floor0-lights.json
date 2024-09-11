@@ -1,22 +1,42 @@
 {
   "templates": {
     "stripGroup": {
-      "selector": "#{{id}} rect",
-      "sidebar": {"name": "van/uk/brum/ugs/devices/{{id}}"},
+      "selector": "g[id='{{el}}'] > [id^='Lights-Strip'],g[id^='Lights-Strip'][id='{{el}}']",
+      "sidebar": {"name": "van/uk/brum/ugs/devices/{{sc}}"},
       "sources": {
         "light": {
           "trait": "smartcore.traits.Light",
-          "request": {"name": "van/uk/brum/ugs/devices/{{id}}"}
+          "request": {"name": "van/uk/brum/ugs/devices/{{sc}}"}
         }
       },
       "effects": [
         {
-          "type": "fill",
+          "type": "widget",
+          "component": "builtin:lighting/LightIcon",
+          "selector": ":scope > [id^='light-widget']",
+          "props": {
+            "level": {"ref": "light", "property": "levelPercent"}
+          }
+        },
+        {
+          "type": "stroke",
           "source": {"ref": "light", "property": "levelPercent"},
+          "selector": ":scope > :nth-child(2)",
           "interpolate": {
             "steps": [
-              {"value": 0, "color": "#40464d"},
-              {"value": 100, "color": "#ffaf25"}
+              {"value": 0, "color": "#4A4F55"},
+              {"value": 1, "color": "#FBBF24"}
+            ]
+          }
+        },
+        {
+          "type": "fill",
+          "source": {"ref": "light", "property": "levelPercent"},
+          "selector": ":scope > :nth-child(1)",
+          "interpolate": {
+            "steps": [
+              {"value": 0, "color": "#4A4F55"},
+              {"value": 1, "color": "#FBBF24"}
             ]
           }
         }
@@ -65,12 +85,12 @@
     {"template": {"ref": "spotGroup", "el": "Group 9", "sc": "LTF-L00-08"}},
     {"template": {"ref": "spotGroup", "el": "Group 10", "sc": "LTF-L00-09"}},
     {"template": {"ref": "spotGroup", "el": "Group 11", "sc": "LTF-L00-10"}},
-    {"template": {"ref": "stripGroup", "id": "LTF-L00-11"}},
+    {"template": {"ref": "stripGroup", "el": "Group 13", "sc": "LTF-L00-11"}},
     {"template": {"ref": "spotGroup", "el": "Group 2", "sc": "LTF-L00-12"}},
-    {"template": {"ref": "stripGroup", "id": "LTF-L00-13"}},
+    {"template": {"ref": "stripGroup", "el": "Lights-Strip", "sc": "LTF-L00-13"}},
     {"template": {"ref": "spotGroup", "el": "364", "sc": "LTF-L00-14"}},
     {"template": {"ref": "spotGroup", "el": "Group 3", "sc": "LTF-L00-15"}},
     {"template": {"ref": "spotGroup", "el": "343", "sc": "LTF-L00-16"}},
-    {"template": {"ref": "stripGroup", "id": "LTF-L00-17"}}
+    {"template": {"ref": "stripGroup", "el": "Group 14", "sc": "LTF-L00-17"}}
   ]
 }
