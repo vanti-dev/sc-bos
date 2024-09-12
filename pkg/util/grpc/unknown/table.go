@@ -69,7 +69,7 @@ type Method struct {
 // Resolver resolves a *grpc.ClientConn from an incoming message.
 // Resolvers Resolve method must be safe to be called from multiple goroutines.
 type Resolver interface {
-	Resolve(mr MsgRecver) (*grpc.ClientConn, error)
+	Resolve(mr MsgRecver) (grpc.ClientConnInterface, error)
 }
 
 // MsgRecver is the interface for [grpc.ServerStream.RecvMsg]
@@ -78,15 +78,15 @@ type MsgRecver interface {
 }
 
 // ResolverFunc is a Resolver that resolves a *grpc.ClientConn using a function.
-type ResolverFunc func(mr MsgRecver) (*grpc.ClientConn, error)
+type ResolverFunc func(mr MsgRecver) (grpc.ClientConnInterface, error)
 
-func (rf ResolverFunc) Resolve(mr MsgRecver) (*grpc.ClientConn, error) {
+func (rf ResolverFunc) Resolve(mr MsgRecver) (grpc.ClientConnInterface, error) {
 	return rf(mr)
 }
 
 // NewFixedResolver returns a Resolver that always returns the same *grpc.ClientConn.
-func NewFixedResolver(cc *grpc.ClientConn) Resolver {
-	return ResolverFunc(func(_ MsgRecver) (*grpc.ClientConn, error) {
+func NewFixedResolver(cc grpc.ClientConnInterface) Resolver {
+	return ResolverFunc(func(_ MsgRecver) (grpc.ClientConnInterface, error) {
 		return cc, nil
 	})
 }
@@ -96,19 +96,19 @@ type KeyFunc func(MsgRecver) (string, error)
 
 // NewKeyResolver returns a *KeyResolver that resolves a *grpc.ClientConn based on a key extracted from the incoming message.
 func NewKeyResolver(key KeyFunc) *KeyResolver {
-	return &KeyResolver{key: key, byKey: make(map[string]*grpc.ClientConn)}
+	return &KeyResolver{key: key, byKey: make(map[string]grpc.ClientConnInterface)}
 }
 
 // KeyResolver resolves a *grpc.ClientConn based on a key extracted from the incoming message.
 // KeyResolver is safe for concurrent use iff the KeyFunc is safe for concurrent use.
 type KeyResolver struct {
 	mu    sync.RWMutex // guards byKey
-	byKey map[string]*grpc.ClientConn
+	byKey map[string]grpc.ClientConnInterface
 	key   KeyFunc
 }
 
 // Set registers a *grpc.ClientConn with the given key, replacing any existing value.
-func (k *KeyResolver) Set(key string, cc *grpc.ClientConn) {
+func (k *KeyResolver) Set(key string, cc grpc.ClientConnInterface) {
 	k.mu.Lock()
 	defer k.mu.Unlock()
 	k.byKey[key] = cc
@@ -125,7 +125,7 @@ func (k *KeyResolver) Delete(key string) bool {
 	return ok
 }
 
-func (k *KeyResolver) Resolve(mr MsgRecver) (*grpc.ClientConn, error) {
+func (k *KeyResolver) Resolve(mr MsgRecver) (grpc.ClientConnInterface, error) {
 	key, err := k.key(mr)
 	if err != nil {
 		return nil, err
