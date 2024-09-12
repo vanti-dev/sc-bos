@@ -460,7 +460,7 @@ func routedMethod(method protoreflect.MethodDescriptor, keyFunc unknown.KeyFunc,
 			ServerStreams: method.IsStreamingServer(),
 			ClientStreams: method.IsStreamingClient(),
 		},
-		Resolver: unknown.ResolverFunc(func(mr unknown.MsgRecver) (*grpc.ClientConn, error) {
+		Resolver: unknown.ResolverFunc(func(mr unknown.MsgRecver) (grpc.ClientConnInterface, error) {
 			key, err := keyFunc(mr)
 			if err != nil {
 				return nil, err
