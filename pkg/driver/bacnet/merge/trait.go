@@ -16,6 +16,8 @@ import (
 func IntoTrait(client *gobacnet.Client, devices known.Context, statuses *statuspb.Map, traitConfig config.RawTrait, logger *zap.Logger) (node.SelfAnnouncer, error) {
 	// todo: implement some traits that pull data from different bacnet devices.
 	switch traitConfig.Kind {
+	case trait.AirQualitySensor:
+		return newAirQualitySensor(client, devices, statuses, traitConfig, logger)
 	case trait.AirTemperature:
 		return newAirTemperature(client, devices, statuses, traitConfig, logger)
 	case trait.Electric:
