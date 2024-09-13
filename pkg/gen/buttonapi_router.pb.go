@@ -36,7 +36,7 @@ func WithButtonApiClientFactory(f func(name string) (ButtonApiClient, error)) ro
 	})
 }
 
-func (r *ButtonApiRouter) Register(server *grpc.Server) {
+func (r *ButtonApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterButtonApiServer(server, r)
 }
 

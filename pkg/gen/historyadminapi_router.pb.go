@@ -35,7 +35,7 @@ func WithHistoryAdminApiClientFactory(f func(name string) (HistoryAdminApiClient
 	})
 }
 
-func (r *HistoryAdminApiRouter) Register(server *grpc.Server) {
+func (r *HistoryAdminApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterHistoryAdminApiServer(server, r)
 }
 
