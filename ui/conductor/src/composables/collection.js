@@ -154,7 +154,6 @@ export default function useCollection(request, client, options) {
     const pageResponse = await client.listFn(_request, listTracker);
     lastListResponse.value = pageResponse;
 
-    // todo: we need to check that a pull didn't beat us to adding the items to the list
     unprocessedChanges.value.push(...pageResponse.items.map(v => ({newValue: v})));
   }
 
