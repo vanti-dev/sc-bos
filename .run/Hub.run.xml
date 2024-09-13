@@ -9,4 +9,12 @@
     <filePath value="$PROJECT_DIR$/pkg/system/proxy/internal/test/hub/cmd/cmd.go" />
     <method v="2" />
   </configuration>
+  <configuration default="false" name="Hub" type="CompoundRunConfigurationType">
+    <toRun name="AC-01 [23301,8301]" type="GoApplicationRunConfiguration" />
+    <toRun name="AC-02 [23302,8302]" type="GoApplicationRunConfiguration" />
+    <toRun name="BC-01 [23101,8101]" type="GoApplicationRunConfiguration" />
+    <toRun name="EG-01 [23201,8201]" type="GoApplicationRunConfiguration" />
+    <toRun name="EG-02 [23202,8202]" type="GoApplicationRunConfiguration" />
+    <method v="2" />
+  </configuration>
 </component>
