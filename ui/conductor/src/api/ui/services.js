@@ -29,14 +29,17 @@ export function getServiceMetadata(request, tracker) {
 
 /**
  * @param {Partial<PullServiceMetadataRequest.AsObject>} request
- * @param {ResourceCollection<ServiceMetadata.AsObject, ServiceMetadata>} resource
+ * @param {ResourceValue<ServiceMetadata.AsObject, ServiceMetadata>} resource
  */
 export function pullServiceMetadata(request, resource) {
   pullResource('Services.PullServiceMetadata', resource, endpoint => {
     const api = apiClient(endpoint);
     const stream = api.pullServiceMetadata(pullServiceMetadataRequestFromObject(request));
     stream.on('data', msg => {
-      setCollection(resource, msg, v => v.id);
+      const changes = msg.getChangesList();
+      for (const change of changes) {
+        setValue(resource, change.getMetadata().toObject());
+      }
     });
     return stream;
   });
