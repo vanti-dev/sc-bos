@@ -35,7 +35,7 @@ func WithMeterHistoryClientFactory(f func(name string) (MeterHistoryClient, erro
 	})
 }
 
-func (r *MeterHistoryRouter) Register(server *grpc.Server) {
+func (r *MeterHistoryRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterMeterHistoryServer(server, r)
 }
 

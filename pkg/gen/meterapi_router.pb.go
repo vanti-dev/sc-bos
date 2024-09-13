@@ -36,7 +36,7 @@ func WithMeterApiClientFactory(f func(name string) (MeterApiClient, error)) rout
 	})
 }
 
-func (r *MeterApiRouter) Register(server *grpc.Server) {
+func (r *MeterApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterMeterApiServer(server, r)
 }
 

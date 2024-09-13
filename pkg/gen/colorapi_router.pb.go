@@ -36,7 +36,7 @@ func WithColorApiClientFactory(f func(name string) (ColorApiClient, error)) rout
 	})
 }
 
-func (r *ColorApiRouter) Register(server *grpc.Server) {
+func (r *ColorApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterColorApiServer(server, r)
 }
 

@@ -35,7 +35,7 @@ func WithOccupancySensorHistoryClientFactory(f func(name string) (OccupancySenso
 	})
 }
 
-func (r *OccupancySensorHistoryRouter) Register(server *grpc.Server) {
+func (r *OccupancySensorHistoryRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterOccupancySensorHistoryServer(server, r)
 }
 
