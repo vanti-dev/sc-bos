@@ -1,20 +1,15 @@
-import {newActionTracker} from '@/api/resource';
-import {getServiceMetadata, listServices, pullServices} from '@/api/ui/services';
+import {listServices, pullServices} from '@/api/ui/services';
 import {serviceName} from '@/util/gateway';
 import {Collection} from '@/util/query';
 import {defineStore} from 'pinia';
 import {reactive, ref} from 'vue';
 
 export const useServicesStore = defineStore('services', () => {
-  const metadataTrackers =
-      reactive(/** @type {Map<string, ActionTracker<ServiceMetadata.AsObject>>} */{});
   const servicesCollections =
       reactive(/** @type {Map<string, Collection>} */{});
 
-
   /**
    * @typedef {Object} Service
-   * @property {ActionTracker<ServiceMetadata.AsObject>} metadataTracker
    * @property {Collection} servicesCollection
    */
   /**
@@ -24,32 +19,14 @@ export const useServicesStore = defineStore('services', () => {
    * @return {Service}
    */
   function getService(service, address = '', controllerName = '') {
-    if (!metadataTrackers.hasOwnProperty(address)) metadataTrackers[address] = {};
     if (!servicesCollections.hasOwnProperty(address)) servicesCollections[address] = {};
     const _serviceName = serviceName(controllerName, service);
-    if (!metadataTrackers[address].hasOwnProperty(_serviceName)) {
-      metadataTrackers[address][_serviceName] = newActionTracker();
-    }
     if (!servicesCollections[address].hasOwnProperty(_serviceName)) {
       servicesCollections[address][_serviceName] = newServicesCollection(controllerName);
     }
     return {
-      metadataTracker: metadataTrackers[address][_serviceName],
       servicesCollection: servicesCollections[address][_serviceName]
     };
-  }
-
-  /**
-   * @param {string} service
-   * @param {string} address
-   * @param {string} controllerName
-   * @return {Promise<ServiceMetadata.AsObject>}
-   */
-  function refreshMetadata(service, address = '', controllerName = '') {
-    return getServiceMetadata(
-        {name: serviceName(controllerName, service)},
-        getService(service, address, controllerName).metadataTracker
-    );
   }
 
   /**
@@ -84,7 +61,6 @@ export const useServicesStore = defineStore('services', () => {
 
   return {
     node,
-    getService,
-    refreshMetadata
+    getService
   };
 });
