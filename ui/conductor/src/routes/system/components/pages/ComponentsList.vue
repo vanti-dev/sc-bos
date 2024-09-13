@@ -20,86 +20,32 @@
     </v-row>
 
     <div class="d-flex flex-wrap ml-n2">
-      <v-card v-for="node in nodesList" :key="node.name" width="300px" class="ma-2">
-        <v-card-title
-            class="text-body-large font-weight-bold d-flex align-center text-wrap"
-            style="word-break: break-all">
-          {{ node.name }}
-          <v-spacer/>
-          <v-menu min-width="175px">
-            <template #activator="{ props }">
-              <v-btn
-                  icon="mdi-dots-vertical"
-                  variant="text"
-                  size="small"
-                  v-bind="props">
-                <v-icon size="24"/>
-              </v-btn>
-            </template>
-            <v-list class="py-0">
-              <v-list-item link @click="onShowCertificates(node.address)">
-                <v-list-item-title>
-                  View Certificate
-                </v-list-item-title>
-              </v-list-item>
-              <v-list-item v-if="allowForget(node.name)" link @click="onForgetNode(node.address)">
-                <v-list-item-title class="text-error">
-                  Forget Node
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </v-card-title>
-        <v-card-subtitle v-if="node.description !== ''">{{ node.description }}</v-card-subtitle>
-
-        <v-card-text>
-          <v-list density="compact">
-            <v-list-item
-                class="pa-0"
-                style="min-height: 20px">
-              {{ node.address }}
-            </v-list-item>
-            <v-list-item
-                :class="[{'text-red': trackers.metadataTracker.error}, 'pa-0 ma-0']"
-                style="min-height: 20px"
-                v-for="(trackers, service) in nodeDetails[node.name]"
-                :key="service">
-              <span class="mr-1">{{ service }}: {{ trackers.metadataTracker?.response?.totalCount }}</span>
-              <status-alert :resource="trackers.metadataTracker?.error"/>
-            </v-list-item>
-          </v-list>
-          <div>
-            <v-chip v-if="isGateway(node.name)" color="accent" size="small" variant="flat">gateway</v-chip>
-            <v-chip v-if="isHub(node.name) && !isGateway(node.name)" color="primary" size="small" variant="flat">
-              hub
-            </v-chip>
-          </div>
-        </v-card-text>
-      </v-card>
+      <cohort-node-card
+          v-for="node in cohortNodes"
+          :key="node.address"
+          :node="node"
+          @click:show-certificates="onShowCertificates"
+          @click:forget-node="onForgetNode"/>
     </div>
 
     <!-- Modal -->
     <enroll-hub-node-modal
         v-model:show-modal="showModal"
         v-model:node-query="nodeQuery"
-        :list-items="nodesList"/>
+        :list-items="cohortNodes"/>
   </div>
 </template>
 
 <script setup>
-import StatusAlert from '@/components/StatusAlert.vue';
-import useSystemComponents from '@/composables/useSystemComponents';
+import CohortNodeCard from '@/routes/system/components/CohortNodeCard.vue';
 import EnrollHubNodeModal from '@/routes/system/components/EnrollHubNodeModal.vue';
+import {useCohortStore} from '@/stores/cohort.js';
+import {storeToRefs} from 'pinia';
 import {ref, watch} from 'vue';
 
 const showModal = ref(false);
-const {
-  nodeDetails,
-  nodesList,
-  isGateway,
-  isHub,
-  allowForget
-} = useSystemComponents();
+
+const {cohortNodes} = storeToRefs(useCohortStore());
 
 const nodeQuery = ref({
   address: null,
