@@ -1,17 +1,48 @@
 import {fieldMaskFromObject, setProperties, timestampToDate} from '@/api/convpb';
 import {clientOptions} from '@/api/grpcweb';
-import {pullResource, setCollection, trackAction} from '@/api/resource';
+import {pullResource, setCollection, setValue, trackAction} from '@/api/resource';
 import {ServicesApiPromiseClient} from '@sc-bos/ui-gen/proto/services_grpc_web_pb';
 import {
   ConfigureServiceRequest,
+  GetServiceRequest,
   ListServicesRequest,
   PullServiceMetadataRequest,
+  PullServiceRequest,
   PullServicesRequest,
   StartServiceRequest,
   StopServiceRequest
 } from '@sc-bos/ui-gen/proto/services_pb';
 import {GetMetadataRequest} from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb';
 
+/**
+ * @param {Partial<GetServiceRequest.AsObject>} request
+ * @param {ActionTracker<Service.AsObject>?} tracker
+ * @return {Promise<Service.AsObject>}
+ */
+export function getService(request, tracker) {
+  return trackAction('ServicesApi.GetService', tracker ?? {}, endpoint => {
+    const api = apiClient(endpoint);
+    return api.getService(getServiceRequestFromObject(request));
+  });
+}
+
+/**
+ * @param {Partial<PullServiceRequest.AsObject>} request - must have an id, should have a name
+ * @param {ResourceValue<Service.AsObject, PullServiceResponse>} resource
+ */
+export function pullService(request, resource) {
+  pullResource('Services.PullService', resource, endpoint => {
+    const api = apiClient(endpoint);
+    const stream = api.pullService(pullServiceRequestFromObject(request));
+    stream.on('data', msg => {
+      const changes = msg.getChangesList();
+      changes.forEach(change => {
+        setValue(resource, change.getService().toObject());
+      });
+    });
+    return stream;
+  });
+}
 
 /**
  * @param {Partial<GetMetadataRequest.AsObject>} request
@@ -149,6 +180,30 @@ export function serviceToObject(service) {
  */
 function apiClient(endpoint) {
   return new ServicesApiPromiseClient(endpoint, null, clientOptions());
+}
+
+/**
+ * @param {Partial<GetServiceRequest.AsObject>} obj
+ * @return {GetServiceRequest|undefined}
+ */
+function getServiceRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const req = new GetServiceRequest();
+  setProperties(req, obj, 'name', 'id');
+  req.setReadMask(fieldMaskFromObject(obj.readMask));
+  return req;
+}
+
+/**
+ * @param {Partial<PullServicesRequest.AsObject>} obj
+ * @return {PullServicesRequest|undefined}
+ */
+function pullServiceRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const req = new PullServiceRequest();
+  setProperties(req, obj, 'name', 'id', 'updatesOnly');
+  req.setReadMask(fieldMaskFromObject(obj.readMask));
+  return req;
 }
 
 /**
