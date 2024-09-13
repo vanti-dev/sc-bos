@@ -1,4 +1,3 @@
-import {addRoundedRectPath} from 'chart.js/helpers';
 import deepEqual from 'fast-deep-equal';
 import {toValue, watch} from 'vue';
 
