@@ -6,9 +6,10 @@ import (
 	"io"
 	"time"
 
-	"github.com/go-jose/go-jose/v3"
-	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/go-jose/go-jose/v4"
+	"github.com/go-jose/go-jose/v4/jwt"
 
+	"github.com/vanti-dev/sc-bos/internal/auth/keycloak"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 )
 
@@ -51,11 +52,11 @@ func (ts *TokenSource) GenerateAccessToken(data SecretData, validity time.Durati
 	return jwt.Signed(signer).
 		Claims(jwtClaims).
 		Claims(customClaims).
-		CompactSerialize()
+		Serialize()
 }
 
 func (ts *TokenSource) ValidateAccessToken(_ context.Context, tokenStr string) (*token.Claims, error) {
-	tok, err := jwt.ParseSigned(tokenStr)
+	tok, err := jwt.ParseSigned(tokenStr, keycloak.PermittedSignatureAlgorithms)
 	if err != nil {
 		return nil, err
 	}
@@ -66,8 +67,8 @@ func (ts *TokenSource) ValidateAccessToken(_ context.Context, tokenStr string) (
 		return nil, err
 	}
 	err = jwtClaims.Validate(jwt.Expected{
-		Audience: jwt.Audience{ts.Issuer},
-		Issuer:   ts.Issuer,
+		AnyAudience: jwt.Audience{ts.Issuer},
+		Issuer:      ts.Issuer,
 	})
 	if err != nil {
 		return nil, err

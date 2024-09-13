@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/go-jose/go-jose/v4/jwt"
 
 	"github.com/vanti-dev/sc-bos/pkg/auth"
 	"github.com/vanti-dev/sc-bos/pkg/auth/jwks"
@@ -77,7 +77,7 @@ func NewOIDCTokenValidator(cfg Config) token.Validator {
 			if err != nil {
 				return nil, fmt.Errorf("oidc fetch: %w", err)
 			}
-			keySet := jwks.NewRemoteKeySet(ctx, authUrls.JWKSURI)
+			keySet := jwks.NewRemoteKeySet(ctx, authUrls.JWKSURI, PermittedSignatureAlgorithms)
 			v = NewTokenValidator(&cfg, keySet)
 			underlying = v
 		}

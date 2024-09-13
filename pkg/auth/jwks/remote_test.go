@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v4"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -30,7 +30,7 @@ func TestRemoteKeySet_VerifySignature(t *testing.T) {
 	}))
 	defer server.Close()
 
-	remoteKeySet := NewRemoteKeySet(context.Background(), server.URL)
+	remoteKeySet := NewRemoteKeySet(context.Background(), server.URL, []jose.SignatureAlgorithm{jose.RS256})
 	// sign a test message using the key we will use
 	inputPayload := []byte("TestRemoteKeySet_VerifySignature")
 	sig := signJWS(t, testJWK1, inputPayload)
