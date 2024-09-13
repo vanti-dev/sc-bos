@@ -3,7 +3,7 @@
     <v-toolbar flat dense color="transparent" class="mb-3">
       <v-combobox
           v-if="configStore.config?.hub"
-          v-model="servicesStore.node"
+          v-model="userConfig.node"
           :items="cohort.cohortNodes"
           label="System Component"
           item-title="name"
@@ -41,14 +41,14 @@ import useAuthSetup from '@/composables/useAuthSetup';
 import DeviceTable from '@/routes/devices/components/DeviceTable.vue';
 import {Zone} from '@/routes/site/zone/zone';
 import {useCohortStore} from '@/stores/cohort.js';
-import {useServicesStore} from '@/stores/services';
+import {useUserConfig} from '@/stores/userConfig.js';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {Service} from '@sc-bos/ui-gen/proto/services_pb';
 import {computed, ref} from 'vue';
 
 const {blockActions} = useAuthSetup();
 
-const servicesStore = useServicesStore();
+const userConfig = useUserConfig();
 const configStore = useUiConfigStore();
 const cohort = useCohortStore();
 
@@ -60,13 +60,13 @@ const props = defineProps({
 });
 
 const {value: zoneRes} = usePullService(computed(() => {
-  if (!servicesStore.node || !props.zone) return null;
+  if (!userConfig.node || !props.zone) return null;
   return {
-    name: servicesStore.node?.name + '/' + ServiceNames.Zones,
+    name: userConfig.node?.name + '/' + ServiceNames.Zones,
     id: props.zone
   };
 }), computed(() => ({
-  paused: !servicesStore.node
+  paused: !userConfig.node
 })));
 const zoneObj = computed(() => {
   const z = zoneRes.value ?? new Service().toObject();

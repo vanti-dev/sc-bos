@@ -19,7 +19,7 @@ import {useErrorStore} from '@/components/ui-error/error';
 import useAuthSetup from '@/composables/useAuthSetup';
 import LightsConfigCard from '@/routes/automations/components/config-cards/LightsConfigCard.vue';
 import EditConfigCard from '@/routes/system/components/service-cards/EditConfigCard.vue';
-import {useServicesStore} from '@/stores/services.js';
+import {useUserConfig} from '@/stores/userConfig.js';
 import {useSidebarStore} from '@/stores/sidebar';
 import {serviceName} from '@/util/gateway';
 import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
@@ -27,7 +27,7 @@ import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 const {blockActions} = useAuthSetup();
 
 const sidebar = useSidebarStore();
-const servicesStore = useServicesStore();
+const userConfig = useUserConfig();
 
 const saveTracker = reactive(/** @type {ActionTracker<Service.AsObject>} */ newActionTracker());
 const saveConfirm = ref(false);
@@ -37,7 +37,7 @@ const automationType = computed(() => {
 });
 
 const nodeName = computed(() => {
-  return servicesStore.node?.name;
+  return userConfig.node?.name;
 });
 
 // UI error handling

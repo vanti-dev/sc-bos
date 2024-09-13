@@ -21,13 +21,13 @@
 import {ServiceNames} from '@/api/ui/services';
 import {usePullServiceMetadata} from '@/composables/services.js';
 import useAuthSetup from '@/composables/useAuthSetup';
-import {useServicesStore} from '@/stores/services';
+import {useUserConfig} from '@/stores/userConfig.js';
 import {computed, ref} from 'vue';
 
 const {hasNoAccess} = useAuthSetup();
 
-const serviceStore = useServicesStore();
-const serviceName = computed(() => serviceStore.node?.name + '/' + ServiceNames.Automations);
+const userConfig = useUserConfig();
+const serviceName = computed(() => userConfig.node?.name + '/' + ServiceNames.Automations);
 const {value: serviceMd} = usePullServiceMetadata(serviceName);
 
 // filter out automations that have no instances, and map to {type, number} obj

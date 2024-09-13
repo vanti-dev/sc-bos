@@ -2,7 +2,7 @@
   <content-card>
     <v-row class="pa-4" v-if="configStore.config?.hub">
       <v-combobox
-          v-model="servicesStore.node"
+          v-model="userConfig.node"
           :items="nodesListValues"
           label="System Component"
           item-title="name"
@@ -55,7 +55,7 @@ import useAuthSetup from '@/composables/useAuthSetup';
 import useServices from '@/composables/useServices';
 import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
 import {useCohortStore} from '@/stores/cohort.js';
-import {useServicesStore} from '@/stores/services.js';
+import {useUserConfig} from '@/stores/userConfig.js';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {computed} from 'vue';
 
@@ -84,7 +84,7 @@ const {
   _startService,
   _stopService
 } = useServices(props);
-const servicesStore = useServicesStore();
+const userConfig = useUserConfig();
 const cohort = useCohortStore();
 
 const headers = computed(() => {

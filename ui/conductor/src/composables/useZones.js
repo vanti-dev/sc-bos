@@ -1,6 +1,6 @@
 import {ServiceNames} from '@/api/ui/services';
 import {useServicesCollection} from '@/composables/services.js';
-import {useServicesStore} from '@/stores/services';
+import {useUserConfig} from '@/stores/userConfig.js';
 import {computed} from 'vue';
 
 /**
@@ -10,10 +10,10 @@ import {computed} from 'vue';
  * }}
  */
 export default function() {
-  const servicesStore = useServicesStore();
-  const serviceName = computed(() => `${servicesStore.node?.name}/${ServiceNames.Zones}`);
+  const userConfig = useUserConfig();
+  const serviceName = computed(() => `${userConfig.node?.name}/${ServiceNames.Zones}`);
   const zoneCollection = useServicesCollection(serviceName, computed(() => ({
-    paused: !servicesStore.node?.name,
+    paused: !userConfig.node?.name,
     wantCount: -1 // there's no server search features, so we have to get them all and do it client side
   })));
 

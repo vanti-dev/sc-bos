@@ -3,7 +3,7 @@ import {startService, stopService} from '@/api/ui/services';
 import {useErrorStore} from '@/components/ui-error/error';
 import {useServicesCollection} from '@/composables/services.js';
 import {useCohortStore} from '@/stores/cohort.js';
-import {useServicesStore} from '@/stores/services';
+import {useUserConfig} from '@/stores/userConfig.js';
 import {useSidebarStore} from '@/stores/sidebar';
 import {computed, onMounted, onUnmounted, reactive, ref, toValue, watch, watchEffect} from 'vue';
 
@@ -38,10 +38,10 @@ export default function(props) {
   // query fields
   const search = ref('');
 
-  const servicesStore = useServicesStore();
-  const serviceName = computed(() => `${servicesStore.node?.name}/${props.name}`);
+  const userConfig = useUserConfig();
+  const serviceName = computed(() => `${userConfig.node?.name}/${props.name}`);
   const serviceCollection = useServicesCollection(serviceName, computed(() => ({
-    paused: !servicesStore.node?.name,
+    paused: !userConfig.node?.name,
     wantCount: -1 // there's no server search features, so we have to get them all and do it client side
   })));
 
@@ -58,9 +58,9 @@ export default function(props) {
 
   // Make sure there's a node selected
   watchEffect(() => {
-    if (!servicesStore.node?.name) {
+    if (!userConfig.node?.name) {
       if (nodesListValues.value.length > 0) {
-        servicesStore.node = nodesListValues.value[0];
+        userConfig.node = nodesListValues.value[0];
       }
     }
   });
