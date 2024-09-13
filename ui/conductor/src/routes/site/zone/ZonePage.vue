@@ -3,13 +3,13 @@
     <v-toolbar flat dense color="transparent" class="mb-3">
       <v-combobox
           v-if="configStore.config?.hub"
-          v-model="node"
-          :items="Object.values(hubStore.nodesList)"
+          v-model="servicesStore.node"
+          :items="cohort.cohortNodes"
           label="System Component"
           item-title="name"
           item-value="name"
           hide-details="auto"
-          :loading="hubStore.nodesListCollection.loading ?? true"
+          :loading="cohort.loading"
           variant="outlined"/>
       <v-spacer/>
       <v-btn class="ml-6" v-if="editMode" @click="save" color="accent" :disabled="blockActions">
@@ -36,21 +36,21 @@
 <script setup>
 import {newActionTracker} from '@/api/resource';
 import {ServiceNames} from '@/api/ui/services';
+import {usePullService} from '@/composables/services.js';
 import useAuthSetup from '@/composables/useAuthSetup';
 import DeviceTable from '@/routes/devices/components/DeviceTable.vue';
 import {Zone} from '@/routes/site/zone/zone';
-import {useHubStore} from '@/stores/hub';
+import {useCohortStore} from '@/stores/cohort.js';
 import {useServicesStore} from '@/stores/services';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {Service} from '@sc-bos/ui-gen/proto/services_pb';
-import {computed, ref, watch} from 'vue';
+import {computed, ref} from 'vue';
 
 const {blockActions} = useAuthSetup();
 
 const servicesStore = useServicesStore();
 const configStore = useUiConfigStore();
-const hubStore = useHubStore();
-const zoneCollection = ref();
+const cohort = useCohortStore();
 
 const props = defineProps({
   zone: {
@@ -59,24 +59,17 @@ const props = defineProps({
   }
 });
 
-const node = computed({
-  get() {
-    return servicesStore.node;
-  },
-  set(val) {
-    servicesStore.node = val;
-  }
-});
-
-watch(node, async () => {
-  zoneCollection.value = servicesStore.getService(
-      ServiceNames.Zones,
-      await servicesStore.node?.commsAddress,
-      await servicesStore.node?.commsName).servicesCollection;
-}, {immediate: true});
-
+const {value: zoneRes} = usePullService(computed(() => {
+  if (!servicesStore.node || !props.zone) return null;
+  return {
+    name: servicesStore.node?.name + '/' + ServiceNames.Zones,
+    id: props.zone
+  };
+}), computed(() => ({
+  paused: !servicesStore.node
+})));
 const zoneObj = computed(() => {
-  const z = zoneCollection?.value?.resources?.value[props.zone] ?? (new Service()).toObject();
+  const z = zoneRes.value ?? new Service().toObject();
   return new Zone(z);
 });
 

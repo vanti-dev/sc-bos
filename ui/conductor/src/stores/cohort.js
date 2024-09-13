@@ -206,6 +206,10 @@ export const useCohortStore = defineStore('cohort', () => {
     hubNode,
     cohortNodes,
 
+    loading: computed(() => {
+      return enrollmentTracker.loading || hubNodesLoading.value;
+    }),
+
     enrollmentTracker,
     hubNodes,
     hubNodesErrors,

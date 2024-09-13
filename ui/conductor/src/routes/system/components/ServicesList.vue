@@ -8,7 +8,7 @@
           item-title="name"
           item-value="name"
           hide-details="auto"
-          :loading="hubStore.nodesListCollection.loading ?? true"
+          :loading="cohort.loading"
           variant="outlined"/>
       <v-spacer/>
     </v-row>
@@ -54,7 +54,7 @@ import ContentCard from '@/components/ContentCard.vue';
 import useAuthSetup from '@/composables/useAuthSetup';
 import useServices from '@/composables/useServices';
 import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
-import {useHubStore} from '@/stores/hub';
+import {useCohortStore} from '@/stores/cohort.js';
 import {useServicesStore} from '@/stores/services.js';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {computed} from 'vue';
@@ -62,7 +62,6 @@ import {computed} from 'vue';
 const {blockActions} = useAuthSetup();
 
 const configStore = useUiConfigStore();
-const hubStore = useHubStore();
 
 const props = defineProps({
   name: {
@@ -86,6 +85,7 @@ const {
   _stopService
 } = useServices(props);
 const servicesStore = useServicesStore();
+const cohort = useCohortStore();
 
 const headers = computed(() => {
   if (props.name === 'drivers') {
