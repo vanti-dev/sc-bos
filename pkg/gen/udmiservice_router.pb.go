@@ -36,7 +36,7 @@ func WithUdmiServiceClientFactory(f func(name string) (UdmiServiceClient, error)
 	})
 }
 
-func (r *UdmiServiceRouter) Register(server *grpc.Server) {
+func (r *UdmiServiceRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterUdmiServiceServer(server, r)
 }
 

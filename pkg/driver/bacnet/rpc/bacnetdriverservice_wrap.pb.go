@@ -3,17 +3,22 @@
 package rpc
 
 import (
-	"context"
-
-	"google.golang.org/grpc"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapBacnetDriverService	adapts a rpc.BacnetDriverServiceServer	and presents it as a rpc.BacnetDriverServiceClient
 func WrapBacnetDriverService(server BacnetDriverServiceServer) BacnetDriverServiceClient {
-	return &bacnetDriverServiceWrapper{server}
+	conn := wrap.ServerToClient(BacnetDriverService_ServiceDesc, server)
+	client := NewBacnetDriverServiceClient(conn)
+	return &bacnetDriverServiceWrapper{
+		BacnetDriverServiceClient: client,
+		server:                    server,
+	}
 }
 
 type bacnetDriverServiceWrapper struct {
+	BacnetDriverServiceClient
+
 	server BacnetDriverServiceServer
 }
 
@@ -28,24 +33,4 @@ func (w *bacnetDriverServiceWrapper) UnwrapServer() BacnetDriverServiceServer {
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
 func (w *bacnetDriverServiceWrapper) Unwrap() any {
 	return w.UnwrapServer()
-}
-
-func (w *bacnetDriverServiceWrapper) ReadProperty(ctx context.Context, req *ReadPropertyRequest, _ ...grpc.CallOption) (*ReadPropertyResponse, error) {
-	return w.server.ReadProperty(ctx, req)
-}
-
-func (w *bacnetDriverServiceWrapper) ReadPropertyMultiple(ctx context.Context, req *ReadPropertyMultipleRequest, _ ...grpc.CallOption) (*ReadPropertyMultipleResponse, error) {
-	return w.server.ReadPropertyMultiple(ctx, req)
-}
-
-func (w *bacnetDriverServiceWrapper) WriteProperty(ctx context.Context, req *WritePropertyRequest, _ ...grpc.CallOption) (*WritePropertyResponse, error) {
-	return w.server.WriteProperty(ctx, req)
-}
-
-func (w *bacnetDriverServiceWrapper) WritePropertyMultiple(ctx context.Context, req *WritePropertyMultipleRequest, _ ...grpc.CallOption) (*WritePropertyMultipleResponse, error) {
-	return w.server.WritePropertyMultiple(ctx, req)
-}
-
-func (w *bacnetDriverServiceWrapper) ListObjects(ctx context.Context, req *ListObjectsRequest, _ ...grpc.CallOption) (*ListObjectsResponse, error) {
-	return w.server.ListObjects(ctx, req)
 }

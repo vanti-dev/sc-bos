@@ -36,7 +36,7 @@ func WithStatusApiClientFactory(f func(name string) (StatusApiClient, error)) ro
 	})
 }
 
-func (r *StatusApiRouter) Register(server *grpc.Server) {
+func (r *StatusApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterStatusApiServer(server, r)
 }
 

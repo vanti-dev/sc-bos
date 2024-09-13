@@ -35,7 +35,7 @@ func WithAirTemperatureHistoryClientFactory(f func(name string) (AirTemperatureH
 	})
 }
 
-func (r *AirTemperatureHistoryRouter) Register(server *grpc.Server) {
+func (r *AirTemperatureHistoryRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterAirTemperatureHistoryServer(server, r)
 }
 

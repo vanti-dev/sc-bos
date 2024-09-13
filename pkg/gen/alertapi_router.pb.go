@@ -36,7 +36,7 @@ func WithAlertApiClientFactory(f func(name string) (AlertApiClient, error)) rout
 	})
 }
 
-func (r *AlertApiRouter) Register(server *grpc.Server) {
+func (r *AlertApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterAlertApiServer(server, r)
 }
 
