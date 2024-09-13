@@ -1,3 +1,5 @@
+import {StatusCode} from 'grpc-web';
+
 /**
  *
  * @param {string} message
@@ -29,6 +31,18 @@ export function formatErrorMessage(message) {
 
   // Formatting the message into a more structured and readable sentence
   return `${specificError}.`;
+}
+
+/**
+ * Return whether the given error looks like it's caused by a network error.
+ *
+ * @param {ResourceError | RpcError | any} err
+ * @return {boolean}
+ */
+export function isNetworkError(err) {
+  if (!err) return false;
+  if (err.error) err = err.error;
+  return err?.code === StatusCode.UNKNOWN;
 }
 
 
