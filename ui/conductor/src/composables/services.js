@@ -17,6 +17,7 @@ export function useServicesCollection(request, options) {
       ...optArg
     };
   });
+  const normRequest = computed(() => toQueryObject(request));
   const client = {
     async listFn(req, tracker) {
       const res = await listServices(req, tracker);
@@ -30,7 +31,7 @@ export function useServicesCollection(request, options) {
       pullServices(req, resource);
     }
   };
-  return useCollection(request, client, normOptions);
+  return useCollection(normRequest, client, normOptions);
 }
 
 

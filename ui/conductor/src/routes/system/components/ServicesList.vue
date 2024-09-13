@@ -17,7 +17,7 @@
         :items="serviceList"
         item-key="id"
         :search="search"
-        :loading="serviceCollection.loading"
+        :loading="loading"
         @click:row="(_, s) => showService(s.item)">
       <template #item.active="{item}">
         <service-status :service="item"/>
@@ -77,9 +77,9 @@ const props = defineProps({
 });
 
 const {
-  serviceCollection,
   search,
   serviceList,
+  loading,
   nodesListValues,
   showService,
   _startService,
