@@ -99,7 +99,7 @@ const hasFilters = computed(() => filterCtx.filters.value.length > 0);
 // pagination
 const wantCount = ref(20); // same as initial itemsPerPage
 
-const useDevicesOpts = computed(() => {
+const _useDevicesOpts = computed(() => {
   return {
     filter: props.filter,
     search: search.value,
@@ -107,7 +107,7 @@ const useDevicesOpts = computed(() => {
     wantCount: wantCount.value
   };
 });
-const devices = useDevices(useDevicesOpts);
+const devices = useDevices(_useDevicesOpts);
 const tableAttrs = useDataTableCollection(wantCount, devices);
 const {items} = devices;
 
