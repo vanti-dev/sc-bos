@@ -77,7 +77,7 @@ func NewOIDCTokenValidator(cfg Config) token.Validator {
 			if err != nil {
 				return nil, fmt.Errorf("oidc fetch: %w", err)
 			}
-			keySet := jwks.NewRemoteKeySet(ctx, authUrls.JWKSURI, PermittedSignatureAlgorithms)
+			keySet := jwks.NewRemoteKeySet(ctx, authUrls.JWKSURI, DefaultPermittedSignatureAlgorithms)
 			v = NewTokenValidator(&cfg, keySet)
 			underlying = v
 		}

@@ -11,6 +11,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/internal/auth"
 	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 )
@@ -25,6 +26,8 @@ type TokenServer struct {
 	passwordVerifier Verifier
 	passwordValidity time.Duration
 }
+
+var _ auth.TokenSink = (*TokenServer)(nil)
 
 func NewTokenServer(name string, opts ...TokenServerOption) (*TokenServer, error) {
 	key, err := generateKey()
@@ -44,6 +47,8 @@ func NewTokenServer(name string, opts ...TokenServerOption) (*TokenServer, error
 
 	return s, nil
 }
+
+type tokenSinkOption func(ts auth.TokenSink)
 
 type TokenServerOption func(ts *TokenServer)
 
@@ -65,6 +70,16 @@ func WithPasswordFlow(v Verifier, validity time.Duration) TokenServerOption {
 		ts.passwordVerifier = v
 		ts.passwordValidity = validity
 	}
+}
+
+func WithPermittedSignatureAlgorithms(applyTo tokenSinkOption) TokenServerOption {
+	return func(ts *TokenServer) {
+		applyTo(ts)
+	}
+}
+
+func (s *TokenServer) GetSignedToken() auth.SignedToken {
+	return s.tokens
 }
 
 func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
