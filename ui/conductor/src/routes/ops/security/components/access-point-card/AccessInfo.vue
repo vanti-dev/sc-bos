@@ -53,12 +53,11 @@
 import {closeResource} from '@/api/resource';
 import {grantNamesByID} from '@/api/sc/traits/access';
 import AcknowledgementBtn from '@/routes/ops/notifications/AcknowledgementBtn.vue';
-import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
 import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import StatusBar from '@/routes/ops/security/components/access-point-card/StatusBar.vue';
 import {useStatus} from '@/routes/ops/security/components/access-point-card/useStatus';
-import {useHubStore} from '@/stores/hub';
+import {useCohortStore} from '@/stores/cohort.js';
 import {computed, onBeforeUnmount, reactive} from 'vue';
 
 const props = defineProps({
@@ -94,7 +93,6 @@ const props = defineProps({
 const notifications = useNotifications();
 const emit = defineEmits(['click:close']);
 
-const {alertMetadata} = useAlertMetadata();
 const {color} = useStatus(
     () => props.accessAttempt,
     () => props.statusLog
@@ -131,8 +129,8 @@ const formatString = (str) => {
 };
 
 // ----------------- Alerts ----------------- //
-const hubStore = useHubStore();
-const hubName = computed(() => hubStore.hubNode?.name ?? '');
+const cohort = useCohortStore();
+const hubName = computed(() => cohort.hubNode?.name ?? '');
 const query = reactive({
   createdNotBefore: undefined,
   createdNotAfter: undefined,
@@ -182,7 +180,6 @@ const user = computed(() => {
 });
 
 onBeforeUnmount(() => {
-  closeResource(alertMetadata.value);
   closeResource(props.accessAttempt);
   closeResource(props.statusLog);
   closeResource(alerts.listPageTracker);

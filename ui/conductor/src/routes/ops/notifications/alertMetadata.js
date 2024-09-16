@@ -1,61 +1,31 @@
-import {newResourceValue} from '@/api/resource';
-import {pullAlertMetadata} from '@/api/ui/alerts';
-import {useHubStore} from '@/stores/hub';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {usePullAlertMetadata} from '@/composables/alerts.js';
+import {useCohortStore} from '@/stores/cohort.js';
 import {convertProtoMap} from '@/util/proto';
 import {defineStore} from 'pinia';
-import {computed, reactive} from 'vue';
+import {computed} from 'vue';
 
 /** @typedef {import('@sc-bos/ui-gen/proto/alerts_pb').AlertMetadata} AlertMetadata */
 
-export const useAlertMetadata = defineStore('alertMetadata', () => {
-  const alertMetadata = reactive(
-      /** @type {ResourceValue<AlertMetadata.AsObject, AlertMetadata>} */ newResourceValue()
-  );
-  const uiConfig = useUiConfigStore();
-  const hubStore = useHubStore();
+export const useAlertMetadataStore = defineStore('alertMetadata', () => {
+  const cohort = useCohortStore();
+  const name = computed(() => cohort.hubNode?.name ?? '');
+  const {value: md, streamError: alertError} = usePullAlertMetadata(name);
 
-  /**
-   * @return {Promise}
-   */
-  function init() {
-    // wait for config to load
-    return uiConfig.configPromise.then((config) => {
-      if (config.gateway) {
-        // wait for hub info to load
-        hubStore.hubPromise
-            .then((hub) => {
-              pullAlertMetadata({name: hub.name, updatesOnly: false}, alertMetadata);
-            })
-            .catch(() => {
-              pullAlertMetadata({name: '', updatesOnly: false}, alertMetadata);
-            });
-      } else {
-        pullAlertMetadata({name: '', updatesOnly: false}, alertMetadata);
-      }
-    });
-  }
-
-  const acknowledgedCountMap = computed(() => convertProtoMap(alertMetadata.value?.acknowledgedCountsMap));
-  const resolvedCountMap = computed(() => convertProtoMap(alertMetadata.value?.resolvedCountsMap));
-  const floorCountsMap = computed(() => convertProtoMap(alertMetadata.value?.floorCountsMap));
-  const zoneCountsMap = computed(() => convertProtoMap(alertMetadata.value?.zoneCountsMap));
-  const subsystemCountsMap = computed(() => convertProtoMap(alertMetadata.value?.subsystemCountsMap));
-  const severityCountsMap = computed(() => convertProtoMap(alertMetadata.value?.severityCountsMap));
-  const needsAttentionCountsMap = computed(() => convertProtoMap(alertMetadata.value?.needsAttentionCountsMap));
+  // Return 0 when the total count is not known
+  const totalCount = computed(() => (md.value?.totalCount ?? 0));
+  const acknowledgedCountMap = computed(() => convertProtoMap(md.value?.acknowledgedCountsMap));
+  const resolvedCountMap = computed(() => convertProtoMap(md.value?.resolvedCountsMap));
+  const floorCountsMap = computed(() => convertProtoMap(md.value?.floorCountsMap));
+  const zoneCountsMap = computed(() => convertProtoMap(md.value?.zoneCountsMap));
+  const subsystemCountsMap = computed(() => convertProtoMap(md.value?.subsystemCountsMap));
+  const severityCountsMap = computed(() => convertProtoMap(md.value?.severityCountsMap));
+  const needsAttentionCountsMap = computed(() => convertProtoMap(md.value?.needsAttentionCountsMap));
 
   const badgeCount = computed(() => needsAttentionCountsMap.value['nack_unresolved']);
   const unacknowledgedAlertCount = computed(() => acknowledgedCountMap.value[false]);
 
-  const alertError = computed(() => alertMetadata.streamError);
-
   return {
-    alertMetadata,
-
-    init,
-
-    // Return 0 when the total count is not known
-    totalCount: computed(() => (alertMetadata.value?.totalCount ?? 0)),
+    totalCount,
     acknowledgedCountMap,
     resolvedCountMap,
     floorCountsMap,

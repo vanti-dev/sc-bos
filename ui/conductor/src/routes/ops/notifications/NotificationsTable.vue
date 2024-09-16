@@ -174,10 +174,10 @@ import FilterChoiceChips from '@/components/filter/FilterChoiceChips.vue';
 import useFilterCtx from '@/components/filter/filterCtx.js';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import AcknowledgementBtn from '@/routes/ops/notifications/AcknowledgementBtn.vue';
-import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
+import {useAlertMetadataStore} from '@/routes/ops/notifications/alertMetadata';
 import {severityData, useNotifications} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
-import {useHubStore} from '@/stores/hub';
+import {useCohortStore} from '@/stores/cohort.js';
 import {useSidebarStore} from '@/stores/sidebar';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
 import deepEqual from 'fast-deep-equal';
@@ -203,8 +203,7 @@ const btnStyles = ref({
 });
 
 const notifications = useNotifications();
-const alertMetadata = useAlertMetadata();
-const hubStore = useHubStore();
+const alertMetadata = useAlertMetadataStore();
 const sidebar = useSidebarStore();
 
 const manualEntryValue = reactive(newActionTracker());
@@ -363,7 +362,8 @@ const query = computed(() => {
   return {...nonFilterableQueryFields.value, ...queryFields.value};
 });
 
-const name = computed(() => hubStore.hubNode?.name ?? '');
+const cohort = useCohortStore();
+const name = computed(() => cohort.hubNode?.name ?? '');
 const alerts = reactive(useAlertsApi(name, query));
 watch(
     [dataTablePage, dataTableItemsPerPage],
@@ -537,7 +537,7 @@ onUnmounted(() => {
 
 .hide-pagination {
   :deep(.v-data-table-footer__info),
-  :deep(.v-pagination__last){
+  :deep(.v-pagination__last) {
     display: none;
   }
 
