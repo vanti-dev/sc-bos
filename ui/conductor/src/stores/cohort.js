@@ -7,6 +7,7 @@ import {usePoll} from '@/composables/poll.js';
 import {useIsGateway} from '@/composables/services.js';
 import {useControllerStore} from '@/stores/controller.js';
 import {isNetworkError} from '@/util/error.js';
+import deepEqual from 'fast-deep-equal';
 import {StatusCode} from 'grpc-web';
 import {acceptHMRUpdate, defineStore, storeToRefs} from 'pinia';
 import {computed, effectScope, reactive, ref, watch} from 'vue';
@@ -264,7 +265,8 @@ export const useCohortHealthStore = defineStore('cohortHealth', () => {
 
   const {lastPoll, nextPoll, pollNow, isPolling} = usePoll(checkHealth);
 
-  watch(() => cohort.cohortNodes, () => {
+  watch(() => cohort.cohortNodes, (n, o) => {
+    if (deepEqual(n, o)) return; // avoid unnecessary polling
     pollNow(true);
   }, {immediate: true, deep: true});
 
