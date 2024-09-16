@@ -37,6 +37,7 @@ export const NodeRole = {
  * @property {string?} grpcAddress
  * @property {string?} grpcWebAddress
  * @property {boolean?} isServer - is this the server we are communicating with
+ * @property {RpcError?} error - any error encountered fetching information about the node
  */
 
 // A store that reports on the hub and enrolled nodes for the server the ui is connected to.
@@ -57,9 +58,14 @@ export const useCohortStore = defineStore('cohort', () => {
 
   // being enrolled is not binary, we can be enrolled or not enrolled, and we can be unsure.
   // We are unsure if either we haven't asked or our queries are failing with network errors.
+  const enrollmentErr = computed(() => {
+    const err = enrollmentTracker.error?.error;
+    if (err) err.from = 'useCohortStore.enrollmentTracker';
+    return err;
+  });
   const enrollmentStatusKnown = computed(() => {
     if (enrollmentTracker.response) return true;
-    const err = enrollmentTracker.error?.error;
+    const err = enrollmentErr.value;
     if (!err) return false; // no response or err means we're still waiting
     return !isNetworkError(err);
   });
@@ -73,8 +79,9 @@ export const useCohortStore = defineStore('cohort', () => {
   const hubApiStatus = computed(() => {
     if (hubNodes.value.length > 0) return HubApiStatus.AVAILABLE;
     if (hubNodesErrors.value.length > 0) {
-      return hubNodesErrors.value.every(e => isNetworkError(e.error)) ?
-          HubApiStatus.UNKNOWN : HubApiStatus.UNAVAILABLE;
+      if (hubNodesErrors.value.every(e => isNetworkError(e.error))) return HubApiStatus.UNKNOWN;
+      if (hubNodesErrors.value.every(e => e.error?.code === StatusCode.FAILED_PRECONDITION)) return HubApiStatus.UNAVAILABLE;
+      return HubApiStatus.AVAILABLE;
     }
     return hubNodesLoading.value ? HubApiStatus.UNKNOWN : HubApiStatus.UNAVAILABLE;
   });
@@ -131,19 +138,29 @@ export const useCohortStore = defineStore('cohort', () => {
     return NodeRole.INDEPENDENT;
   });
 
-  const {controllerName: serverName, hasLoaded: serverNameLoaded} = storeToRefs(useControllerStore());
+  const {
+    controllerName: serverName,
+    hasLoaded: serverNameLoaded,
+    controllerNameError: serverNameError
+  } = storeToRefs(useControllerStore());
   const serverAddress = ref(/** @type {string | null} */ null);
   grpcWebEndpoint()
       .then((address) => serverAddress.value = new URL(address).host);
   // a CohortNode that represents the server we are communicating with
   const serverNode = computed(() => {
-    return /** @type {CohortNode} */ {
+    const node = /** @type {CohortNode} */ {
       role: serverRole.value,
       isServer: true,
       grpcWebAddress: serverAddress.value,
       grpcAddress: enrollmentTracker.response?.targetAddress,
-      name: serverName.value
+      name: serverName.value,
+      error: serverNameError.value
     };
+    if (!node.error && node.role === NodeRole.NODE || node.role === NodeRole.GATEWAY) {
+      // we don't care about enrollment errors if the node is independent or a hub
+      node.error = enrollmentErr.value;
+    }
+    return node;
   });
   // a CohortNode that represents the hub we are enrolled with, if any.
   const hubNode = computed(() => {
@@ -161,7 +178,8 @@ export const useCohortStore = defineStore('cohort', () => {
     if (!serverNameLoaded.value) return res; // technically, not universally needed, but makes the code cleaner
     switch (serverRole.value) {
       case NodeRole.UNKNOWN:
-        return res; // do nothing, we can't answer the question yet
+        res.push(serverNode.value);
+        break;
       case NodeRole.INDEPENDENT:
         res.push(serverNode.value);
         break;
@@ -245,19 +263,32 @@ export const useCohortHealthStore = defineStore('cohortHealth', () => {
       // we perform different check depending on the relationship between the node and this ui
       if (node.isServer) {
         // we know that if we got here then comms with the server are fine, so report it as healthy
-        resultsByName[node.name] = {pending: false};
+        resultsByName[node.name] = {pending: false, error: node.error};
       } else if (node.role === NodeRole.HUB) {
         const tracker = reactive(newActionTracker());
         resultsByName[node.name] = {
           pending: computed(() => tracker.loading),
-          error: computed(() => tracker.error?.error ?? tracker.error)
+          error: computed(() => {
+            const commErr = node.error ?? tracker.error?.error ?? tracker.error;
+            if (commErr) return commErr;
+            const res = tracker.response;
+            if (!res) return null; // still working
+            // the testEnrollment api returns a successful code, but a payload with an error if the hub is down
+            if (res.code !== StatusCode.OK) {
+              return {
+                code: res.code,
+                message: res.error
+              };
+            }
+            return null;
+          })
         };
         tasks.push(testEnrollment(tracker));
       } else {
         const tracker = reactive(newActionTracker());
         resultsByName[node.name] = {
           pending: computed(() => tracker.loading),
-          error: computed(() => tracker.error?.error ?? tracker.error)
+          error: computed(() => node.error ?? tracker.error?.error ?? tracker.error)
         };
         tasks.push(testHubNode({address: node.grpcAddress}, tracker));
       }
