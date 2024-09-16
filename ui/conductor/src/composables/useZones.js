@@ -5,7 +5,7 @@ import {computed} from 'vue';
 
 /**
  * @return {{
- * zoneCollection: Collection,
+ * zoneCollection: UseCollectionResponse,
  * zoneList: string[]
  * }}
  */
