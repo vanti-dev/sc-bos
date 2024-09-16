@@ -14,7 +14,7 @@ import {computed, ref, toValue, watch} from 'vue';
  * }}
  */
 export function usePoll(fn, period = 30 * SECOND) {
-  const {now} = useNow(period);
+  const {now} = useNow(() => Math.min(SECOND, toValue(period)));
   const lastPoll = ref(/** @type {Date | null} */ null);
   const nextPoll = computed(() => new Date(lastPoll.value?.getTime() + toValue(period)));
   const isPolling = ref(false);
@@ -23,7 +23,7 @@ export function usePoll(fn, period = 30 * SECOND) {
     if (isPolling.value) return false;
     if (lastPoll.value === null) return true; // poll if we've never polled before
     if (triggerPoll.value > 0) return true; // explicitly asked to poll
-    return (now.value.getTime() - lastPoll.value.getTime()) > toValue(period);
+    return (now.value >= nextPoll.value);
   });
 
   // Trigger polling now without waiting for the poll period to elapse
@@ -45,7 +45,7 @@ export function usePoll(fn, period = 30 * SECOND) {
         // eslint-disable-next-line no-console
         console.debug('polling error:', e.message ?? e);
       } finally {
-        lastPoll.value = now.value;
+        lastPoll.value = new Date();
         isPolling.value = false;
         // force the poll to run again if we were already running when pollNow was called.
         triggerPoll.value = Math.max(0, triggerPoll.value - 1);
