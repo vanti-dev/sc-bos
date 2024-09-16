@@ -195,8 +195,10 @@ export const useCohortStore = defineStore('cohort', () => {
   });
 
   // The enrollment api doesn't support pull, so setup a polling schedule
-  const {nextPoll} = usePoll(() => {
-    return getEnrollment(enrollmentTracker);
+  const {nextPoll, pollNow} = usePoll(() => {
+    return getEnrollment(enrollmentTracker)
+        // the tracker will handle errors
+        .catch(() => {});
   });
 
   return {
@@ -216,6 +218,7 @@ export const useCohortStore = defineStore('cohort', () => {
     hubNodesErrors,
 
     nextPoll,
+    pollNow,
 
     _hubListTracker,
     _hubPullResource
@@ -260,7 +263,11 @@ export const useCohortHealthStore = defineStore('cohortHealth', () => {
       }
     }
 
-    await Promise.all(tasks);
+    try {
+      await Promise.all(tasks);
+    } catch {
+      // errors are not important, the tracker will capture them
+    }
   };
 
   const {lastPoll, nextPoll, pollNow, isPolling} = usePoll(checkHealth);
