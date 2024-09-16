@@ -43,7 +43,7 @@ export function formatTimeAgo(date, now, MINUTE, HOUR, DAY) {
   let diffInSeconds = (now - date) / 1000;
 
   // Adding a small buffer to account for minimal future time differences
-  const bufferInSeconds = 5;
+  const bufferInSeconds = 1;
   if (diffInSeconds < 0 && Math.abs(diffInSeconds) < bufferInSeconds) {
     diffInSeconds = 0;
   }
