@@ -20,8 +20,10 @@ jobs:
             echo "YARN_LOCK_CLEANED=true" >> $GITHUB_ENV
             sed -i -e 's/nexus\.vanti\.co\.uk\/repository\/npm-public/registry\.npmjs\.org/g' ui/yarn.lock
             echo "Checking integrity of yarn.lock edits"
+            pushd ui/
             yarn install --immutable --immutable-cache --check-cache
             echo "Integrity check passed."
+            popd
           else
             echo "No private URLs found."
           fi
