@@ -45,7 +45,7 @@ import DeviceFlowLogin from '@/routes/login/DeviceFlowLogin.vue';
 import LocalLogin from '@/routes/login/LocalLogin.vue';
 import LoginChoice from '@/routes/login/LoginChoice.vue';
 import {useAccountStore} from '@/stores/account.js';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {storeToRefs} from 'pinia';
 import {computed, ref} from 'vue';
 

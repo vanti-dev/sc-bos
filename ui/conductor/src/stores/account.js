@@ -1,7 +1,7 @@
 import useDeviceFlow, {useUiConfig as deviceFlowUseUiConfig} from '@/composables/authentication/useDeviceFlow';
 import useKeyCloak from '@/composables/authentication/useKeyCloak';
 import useLocal from '@/composables/authentication/useLocal';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {loadFromBrowserStorage} from '@/util/browserStorage';
 import {defineStore} from 'pinia';
 import {computed, ref} from 'vue';

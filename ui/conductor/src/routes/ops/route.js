@@ -1,7 +1,7 @@
 import SidebarPage from '@/components/page-layout/SidebarPage.vue';
 import notifications from '@/routes/ops/notifications/route.js';
 import overview from '@/routes/ops/overview/route.js';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 
 import {route} from '@/util/router.js';
 

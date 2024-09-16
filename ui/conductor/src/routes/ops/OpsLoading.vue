@@ -17,7 +17,7 @@
 
 <script setup>
 import router from '@/routes/router.js';
-import {useUiConfigStore} from '@/stores/ui-config.js';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {onUpdated, ref} from 'vue';
 import {useRoute} from 'vue-router';
 

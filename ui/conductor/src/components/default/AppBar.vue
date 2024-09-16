@@ -26,7 +26,7 @@ import BrandLogo from '@/components/BrandLogo.vue';
 import {usePage} from '@/components/page';
 import SmartCoreStatusCard from '@/components/smartCoreStatus/SmartCoreStatusCard.vue';
 import {useAccountStore} from '@/stores/account';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {storeToRefs} from 'pinia';
 
 import {computed} from 'vue';

@@ -1,4 +1,4 @@
-import {useUiConfigStore} from '@/stores/ui-config.js';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {subPath} from '@/util/path.js';
 
 /**

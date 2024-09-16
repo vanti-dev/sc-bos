@@ -56,7 +56,7 @@ import useServices from '@/composables/useServices';
 import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
 import {useCohortStore} from '@/stores/cohort.js';
 import {useUserConfig} from '@/stores/userConfig.js';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {computed} from 'vue';
 
 const {blockActions} = useAuthSetup();

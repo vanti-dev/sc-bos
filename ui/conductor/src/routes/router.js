@@ -6,7 +6,7 @@ import site from '@/routes/site/route.js';
 import system from '@/routes/system/route.js';
 import {useAccountStore} from '@/stores/account';
 import {useSidebarStore} from '@/stores/sidebar';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {route, routeTitle} from '@/util/router.js';
 
 import {nextTick} from 'vue';

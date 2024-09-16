@@ -42,7 +42,7 @@ import DeviceTable from '@/routes/devices/components/DeviceTable.vue';
 import {Zone} from '@/routes/site/zone/zone';
 import {useCohortStore} from '@/stores/cohort.js';
 import {useUserConfig} from '@/stores/userConfig.js';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {Service} from '@sc-bos/ui-gen/proto/services_pb';
 import {computed, ref} from 'vue';
 

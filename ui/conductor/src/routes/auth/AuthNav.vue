@@ -14,7 +14,7 @@
 
 <script setup>
 import useAuthSetup from '@/composables/useAuthSetup';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {computed} from 'vue';
 
 const {hasNoAccess} = useAuthSetup();
