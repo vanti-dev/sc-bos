@@ -9,6 +9,11 @@ export const useControllerStore = defineStore('controller', () => {
   // fetch the metadata for the server we're connected to
   const {value, streamError, loading} = usePullMetadata({});
   const controllerName = computed(() => value.value?.name);
+  const controllerNameError = computed(() => {
+    const error = streamError.value?.error;
+    if (error) error.from = 'useControllerStore';
+    return error;
+  });
   const hasLoaded = computed(() => Boolean(!loading.value && (streamError.value || value.value)));
 
   let notifyLoaded;
@@ -20,6 +25,7 @@ export const useControllerStore = defineStore('controller', () => {
   return {
     controllerName,
     hasLoaded,
+    controllerNameError,
     waitForLoad
   };
 });
