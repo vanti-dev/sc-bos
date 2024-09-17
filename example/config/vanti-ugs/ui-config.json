@@ -14,6 +14,7 @@
     },
     "site": false,
     "automations": true,
+    "automation": true,
     "system": {
       "drivers": true,
       "features": true,
