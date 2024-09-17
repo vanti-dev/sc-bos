@@ -18,7 +18,7 @@ func TestTokenSource_createAndVerify(t *testing.T) {
 		Now:    time.Now,
 	}
 
-	ts.SetPermittedSignatureAlgorithms([]jose.SignatureAlgorithm{jose.HS256})
+	ts.SignatureAlgorithms = []string{string(jose.HS256)}
 
 	token, err := ts.GenerateAccessToken(SecretData{TenantID: "Foo"}, 10*time.Minute)
 	if err != nil {

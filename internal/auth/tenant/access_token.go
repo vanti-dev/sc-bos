@@ -3,13 +3,13 @@ package tenant
 import (
 	"context"
 	"crypto/rand"
+	jose_utils "github.com/vanti-dev/sc-bos/internal/util/jose"
 	"io"
 	"time"
 
 	"github.com/go-jose/go-jose/v4"
 	"github.com/go-jose/go-jose/v4/jwt"
 
-	"github.com/vanti-dev/sc-bos/internal/auth"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 )
 
@@ -20,16 +20,10 @@ type tokenClaims struct {
 }
 
 type TokenSource struct {
-	Key                          jose.SigningKey
-	Issuer                       string
-	Now                          func() time.Time
-	PermittedSignatureAlgorithms []jose.SignatureAlgorithm
-}
-
-var _ auth.SignedToken = (*TokenSource)(nil)
-
-func (ts *TokenSource) SetPermittedSignatureAlgorithms(permittedAlgorithms []jose.SignatureAlgorithm) {
-	ts.PermittedSignatureAlgorithms = permittedAlgorithms
+	Key                 jose.SigningKey
+	Issuer              string
+	Now                 func() time.Time
+	SignatureAlgorithms []string
 }
 
 func (ts *TokenSource) GenerateAccessToken(data SecretData, validity time.Duration) (token string, err error) {
@@ -63,7 +57,7 @@ func (ts *TokenSource) GenerateAccessToken(data SecretData, validity time.Durati
 }
 
 func (ts *TokenSource) ValidateAccessToken(_ context.Context, tokenStr string) (*token.Claims, error) {
-	tok, err := jwt.ParseSigned(tokenStr, ts.PermittedSignatureAlgorithms)
+	tok, err := jwt.ParseSigned(tokenStr, jose_utils.ConvertToNativeJose(ts.SignatureAlgorithms))
 	if err != nil {
 		return nil, err
 	}

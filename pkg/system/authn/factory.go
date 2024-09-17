@@ -71,7 +71,7 @@ func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
 	var serveTokenEndpoint bool
 	tokenServerOpts := []tenant.TokenServerOption{
 		tenant.WithLogger(s.logger.Named("server")),
-		tenant.WithPermittedSignatureAlgorithms(keycloak.UsePermittedSignatureAlgorithms(keycloak.DefaultPermittedSignatureAlgorithms)),
+		tenant.WithPermittedSignatureAlgorithms(keycloak.DefaultPermittedSignatureAlgorithms),
 	}
 
 	if cfg.System != nil {

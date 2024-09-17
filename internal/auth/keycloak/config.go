@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	"github.com/go-jose/go-jose/v4"
-
-	"github.com/vanti-dev/sc-bos/internal/auth"
 )
 
 type Config struct {
@@ -21,21 +19,15 @@ func (c *Config) Issuer() string {
 // DefaultPermittedSignatureAlgorithms
 // TODO: reduce the number of permitted signature algorithms for all keycloak installations
 // KeyCloak will select "a reasonable default" cipher suite if none is specified by the installation
-var DefaultPermittedSignatureAlgorithms = []jose.SignatureAlgorithm{
-	jose.RS256,
-	jose.RS384,
-	jose.RS512,
-	jose.ES256,
-	jose.ES384,
-	jose.ES512,
-	jose.PS256,
-	jose.PS384,
-	jose.PS512,
-	jose.HS256,
-}
-
-func UsePermittedSignatureAlgorithms(permittedSignatureAlgorithms []jose.SignatureAlgorithm) func(ts auth.TokenSink) {
-	return func(ts auth.TokenSink) {
-		ts.GetSignedToken().SetPermittedSignatureAlgorithms(permittedSignatureAlgorithms)
-	}
+var DefaultPermittedSignatureAlgorithms = []string{
+	string(jose.RS256),
+	string(jose.RS384),
+	string(jose.RS512),
+	string(jose.ES256),
+	string(jose.ES384),
+	string(jose.ES512),
+	string(jose.PS256),
+	string(jose.PS384),
+	string(jose.PS512),
+	string(jose.HS256),
 }
