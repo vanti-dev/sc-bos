@@ -1,4 +1,4 @@
-import SidebarPage from '@/components/page-layout/SidebarPage.vue';
+import SidebarPage from '@/components/pages/SidebarPage.vue';
 import thirdParty from '@/routes/auth/third-party/route.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {route} from '@/util/router.js';
