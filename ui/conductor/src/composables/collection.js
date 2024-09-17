@@ -105,8 +105,13 @@ export default function useCollection(request, client, options) {
       .filter(e => e));
 
   // data fetching
+  const pullRequest = computed(() => {
+    const _req = {...toValue(request)};
+    _req.updatesOnly = true; // list will get the existing values
+    return _req;
+  });
   watchResource(
-      () => toValue(request),
+      pullRequest,
       () => toValue(options)?.paused,
       (req) => {
         client.pullFn(req, pullResource);
@@ -241,7 +246,10 @@ export default function useCollection(request, client, options) {
       for (let i = 0; i < _items.length; i++) {
         index.set(getId(_items[i], idFn), i);
       }
-      getIndex = (id) => index.get(id);
+      getIndex = (id) => {
+        if (index.has(id)) return index.get(id);
+        return -1;
+      };
     }
 
     // delay mutating the items until later so the indexes remain accurate
