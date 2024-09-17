@@ -1,5 +1,8 @@
 <template>
   <side-bar>
+    <template #actions>
+      <v-btn :to="editLink" icon="mdi-pencil" variant="plain" size="small"/>
+    </template>
     <lights-config-card v-if="automationType === 'lights'"/>
     <edit-config-card/>
     <v-card-actions class="justify-end px-4 pt-0" v-if="false">
@@ -19,8 +22,8 @@ import {useErrorStore} from '@/components/ui-error/error';
 import useAuthSetup from '@/composables/useAuthSetup';
 import LightsConfigCard from '@/routes/automations/components/config-cards/LightsConfigCard.vue';
 import EditConfigCard from '@/routes/system/components/service-cards/EditConfigCard.vue';
-import {useUserConfig} from '@/stores/userConfig.js';
 import {useSidebarStore} from '@/stores/sidebar';
+import {useUserConfig} from '@/stores/userConfig.js';
 import {serviceName} from '@/util/gateway';
 import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 
@@ -57,7 +60,7 @@ onUnmounted(() => {
 async function saveConfig() {
   const req = {
     name: serviceName(nodeName.value, ServiceTypes.Automations),
-    id: sidebar.data.id,
+    id: sidebar.data?.service?.id,
     configRaw: JSON.stringify(sidebar.data.config, null, 2)
   };
 
@@ -65,6 +68,15 @@ async function saveConfig() {
   sidebar.data = {service, config: JSON.parse(service.configRaw ?? {})};
   saveConfirm.value = true;
 }
+
+const editLink = computed(() => {
+  if (!sidebar.data?.service?.id) return undefined;
+  if (nodeName.value) {
+    return {name: 'automation-name-id', params: {name: nodeName.value, id: sidebar.data.service.id}};
+  } else {
+    return {name: 'automation-id', params: {id: sidebar.data.service.id}};
+  }
+});
 
 </script>
 

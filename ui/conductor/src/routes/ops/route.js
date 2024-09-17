@@ -1,4 +1,4 @@
-import SidebarPage from '@/components/page-layout/SidebarPage.vue';
+import SidebarPage from '@/components/pages/SidebarPage.vue';
 import notifications from '@/routes/ops/notifications/route.js';
 import overview from '@/routes/ops/overview/route.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';

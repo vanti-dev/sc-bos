@@ -1,4 +1,4 @@
-import SidebarPage from '@/components/page-layout/SidebarPage.vue';
+import SidebarPage from '@/components/pages/SidebarPage.vue';
 
 export default {
   name: 'devices',

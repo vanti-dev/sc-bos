@@ -1,7 +1,9 @@
-import SidebarPage from '@/components/page-layout/SidebarPage.vue';
+import {ServiceNames} from '@/api/ui/services.js';
+import SidebarPage from '@/components/pages/SidebarPage.vue';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
+import {serviceName} from '@/util/gateway.js';
 
-export default {
+export default [{
   name: 'system',
   path: '/system',
   components: {
@@ -16,6 +18,7 @@ export default {
         sidebar: () => import('./components/ServicesSideBar.vue')
       },
       meta: {
+        editRoutePrefix: 'driver',
         authentication: {
           rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
         }
@@ -63,4 +66,35 @@ export default {
       next();
     }
   }
-};
+}, {
+  name: 'driver',
+  path: '/system/driver',
+  children: [{
+    name: 'driver-name-id',
+    path: ':name/:id',
+    component: () => import('@/components/pages/ServiceJsonEditor.vue'),
+    props: route => {
+      return {
+        name: serviceName(route.params.name, ServiceNames.Drivers),
+        id: route.params.id
+      };
+    }
+  }, {
+    name: 'driver-id',
+    path: ':id',
+    component: () => import('@/components/pages/ServiceJsonEditor.vue'),
+    props: route => {
+      return {
+        name: ServiceNames.Drivers,
+        id: route.params.id
+      };
+    }
+  }],
+  meta: {
+    authentication: {
+      rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+    },
+    title: 'Driver'
+  }
+}
+];
