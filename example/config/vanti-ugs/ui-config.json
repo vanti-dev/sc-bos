@@ -1,25 +1,15 @@
 {
   "features": {
     "auth": {
-      "users": true,
       "third-party": true
     },
+    "device": true,
     "devices": true,
-    "ops": {
-      "overview": true,
-      "notifications": true,
-      "air-quality": true,
-      "emergency-lighting": true,
-      "security": true
-    },
+    "ops": true,
     "site": false,
     "automations": true,
     "automation": true,
-    "system": {
-      "drivers": true,
-      "features": true,
-      "components": true
-    }
+    "system": true
   },
   "config": {
     "home": "/ops",
