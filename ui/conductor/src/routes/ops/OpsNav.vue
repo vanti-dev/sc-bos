@@ -29,14 +29,13 @@
 
 
 <script setup>
-import {closeResource} from '@/api/resource.js';
 import useAuthSetup from '@/composables/useAuthSetup';
 import {useAlertMetadataStore} from '@/routes/ops/notifications/alertMetadata';
 import OpsNavListItems from '@/routes/ops/overview/OpsNavListItems.vue';
 import {useNavStore} from '@/stores/nav';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {storeToRefs} from 'pinia';
-import {computed, onMounted, onUnmounted, reactive} from 'vue';
+import {computed, reactive} from 'vue';
 
 const {miniVariant} = storeToRefs(useNavStore());
 
