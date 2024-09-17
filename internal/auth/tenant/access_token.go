@@ -3,13 +3,13 @@ package tenant
 import (
 	"context"
 	"crypto/rand"
-	jose_utils "github.com/vanti-dev/sc-bos/internal/util/jose"
 	"io"
 	"time"
 
 	"github.com/go-jose/go-jose/v4"
 	"github.com/go-jose/go-jose/v4/jwt"
 
+	jose_utils "github.com/vanti-dev/sc-bos/internal/util/jose"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 )
 
