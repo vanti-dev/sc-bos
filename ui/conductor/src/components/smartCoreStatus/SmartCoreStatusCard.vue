@@ -224,6 +224,9 @@ const overallStatus = computed(() => {
   } else if (issueCount.value > 1) {
     res.color = 'warning';
     res.text = `${issueCount.value} issues`;
+  } else if (cohort.loading || cohortHealth.isPolling) {
+    res.color = 'info';
+    res.text = 'Checking';
   }
 
   return res;
