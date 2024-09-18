@@ -2,7 +2,7 @@
   <configuration default="false" name="AC-01 [23301,8301]" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="Hub">
     <module name="sc-bos" />
     <working_directory value="$PROJECT_DIR$" />
-    <parameters value="--policy-mode=off --sysconf example/config/hub/ac-01/system.json --appconf example/config/hub/ac-01/app.conf.json --data .data/hub/ac-01" />
+    <parameters value="--policy-mode=check --sysconf example/config/hub/ac-01/system.json --appconf example/config/hub/ac-01/app.conf.json --data .data/hub/ac-01" />
     <kind value="PACKAGE" />
     <package value="github.com/vanti-dev/sc-bos/cmd/bos" />
     <directory value="$PROJECT_DIR$" />
