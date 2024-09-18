@@ -6,6 +6,9 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
+	"github.com/vanti-dev/sc-bos/pkg/block"
+	"github.com/vanti-dev/sc-bos/pkg/block/mdblock"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -42,15 +45,51 @@ var Factory = FactoryWithFeatures(DefaultFeatures...)
 
 // FactoryWithFeatures returns an area with the given features.
 func FactoryWithFeatures(features ...zone.Factory) zone.Factory {
-	return zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
-		services.Logger = services.Logger.Named("area")
-		f := &Area{
-			services: services,
-			features: features,
+	return factory{features: features}
+}
+
+type factory struct {
+	features []zone.Factory
+}
+
+func (f factory) New(services zone.Services) service.Lifecycle {
+	services.Logger = services.Logger.Named("area")
+	a := &Area{
+		services: services,
+		features: f.features,
+	}
+	a.Service = service.New(service.MonoApply(a.applyConfig))
+	return a
+}
+
+// ConfigBlocks implements sysconf.BlockSource2 supporting blocks from the nested services the zone is hosting.
+func (f factory) ConfigBlocks(cfg *sysconf.Config) []block.Block {
+	// todo: a lot of this logic is shared with sysconf, figure out if there's a way to share it
+
+	defaultBlocks := []block.Block{
+		{Path: []string{"disabled"}},
+	}
+	blocks := []block.Block{
+		{Path: []string{"metadata"}, Blocks: mdblock.Categories},
+		{
+			Path:         []string{"drivers"},
+			Key:          "name",
+			TypeKey:      "type",
+			BlocksByType: cfg.DriverConfigBlocks(),
+			Blocks:       defaultBlocks,
+		},
+	}
+
+	for _, feature := range f.features {
+		switch source := any(feature).(type) {
+		case sysconf.BlockSource:
+			blocks = append(blocks, source.ConfigBlocks()...)
+		case sysconf.BlockSource2:
+			blocks = append(blocks, source.ConfigBlocks(cfg)...)
 		}
-		f.Service = service.New(service.MonoApply(f.applyConfig))
-		return f
-	})
+	}
+
+	return blocks
 }
 
 type Area struct {
