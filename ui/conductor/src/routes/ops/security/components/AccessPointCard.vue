@@ -3,7 +3,7 @@
       color="#40464D"
       elevation="0"
       theme="dark"
-      min-width="420px"
+      width="420px"
       height="100%"
       min-height="240px"
       max-height="240px">

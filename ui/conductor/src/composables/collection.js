@@ -283,6 +283,7 @@ export default function useCollection(request, client, options) {
     if (cmp) {
       for (const item of toAddItems) {
         let i = 0;
+        // todo: replace with a binary search
         while (i < _items.length && cmp(item, _items[i]) > 0) i++;
         _items.splice(i, 0, item);
       }

@@ -40,8 +40,9 @@
 
 <script setup>
 import {timestampToDate} from '@/api/convpb';
+import {alertToObject} from '@/api/ui/alerts.js';
+import {useAlertsCollection} from '@/composables/alerts.js';
 import {severityData} from '@/composables/notifications.js';
-import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useSidebarStore} from '@/stores/sidebar';
 import {computed} from 'vue';
 
@@ -53,10 +54,15 @@ const item = computed(() => sidebar.data?.notification?.item);
 const hasSource = computed(() => Boolean(item.value?.source));
 // todo: don't fetch data if we don't have a source
 const query = computed(() => ({source: item.value?.source}));
-const {pageItems, pageSize, targetItemCount, loading} = useAlertsApi(name, query);
-pageSize.value = 10;
-targetItemCount.value = 10;
-
+const alertRequest = computed(() => ({
+  name: name.value,
+  query: query.value
+}));
+const alertOptions = computed(() => ({
+  wantCount: 10
+}));
+const {items, loading} = useAlertsCollection(alertRequest, alertOptions);
+const pageItems = computed(() => items.value.map(i => alertToObject(i)) || []);
 
 const icons = {
   info: 'mdi-information-outline',

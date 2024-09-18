@@ -9,56 +9,53 @@
         @click:close="emit('click:close')"/>
 
     <!-- Grant area -->
-    <div class="d-flex flex-column justify-space-between">
-      <v-card-text class="text-h6 text-white font-weight-regular d-flex flex-row pa-0 px-4 pt-4">
-        <span>Last access:</span>
-        <span :class="[`text-${color}`, 'ml-auto font-weight-bold']">
-          {{ formatString(grantStates) }}
-        </span>
-      </v-card-text>
-      <v-card-text class="text-h6 text-white d-flex flex-column pt-1" style="max-width: 350px">
-        <span class="text-subtitle-1"> {{ user.name }} {{ user.cardId }} </span>
-      </v-card-text>
+    <v-card-text class="text-h6 text-white font-weight-regular d-flex flex-row pt-4 pb-0">
+      <span>Last access:</span>
+      <span :class="[`text-${color}`, 'ml-auto font-weight-bold']">
+        {{ formatString(grantStates) }}
+      </span>
+    </v-card-text>
+    <v-card-text class="text-h6 text-white d-flex flex-column pt-1" style="max-width: 350px">
+      <span class="text-subtitle-1"> {{ user.name }} {{ user.cardId }} </span>
+    </v-card-text>
 
-      <!-- Alert/Acknowledge area -->
-      <v-card-actions v-if="alert.length" class="mt-4">
-        <v-col class="mx-0 px-0" cols="align-self" style="max-width: 370px">
-          <v-list-item class="px-2">
-            <v-tooltip location="bottom">
-              <template #activator="{ props: _props }">
-                <v-list-item-title class="text-uppercase" v-bind="_props">
-                  {{ alert.description }}
-                </v-list-item-title>
-              </template>
+    <!-- Alert/Acknowledge area -->
+    <v-card-text v-if="alert" class="mt-4 px-0">
+      <v-list-item lines="two">
+        <v-tooltip location="bottom">
+          <template #activator="{ props: _props }">
+            <v-list-item-title class="text-uppercase flex-shrink-1" v-bind="_props">
               {{ alert.description }}
-            </v-tooltip>
-            <v-list-item-subtitle>
-              {{ alert.createTime }}
-            </v-list-item-subtitle>
-          </v-list-item>
-        </v-col>
-        <v-spacer/>
-        <v-col class="mx-0 px-0" cols="1">
+            </v-list-item-title>
+          </template>
+          {{ alert.description }}
+        </v-tooltip>
+        <v-list-item-subtitle>
+          {{ alert.createTime }}
+        </v-list-item-subtitle>
+        <template #append>
           <acknowledgement-btn
               :ack="alert.acknowledgement"
               @acknowledge="setAcknowledged(true, alert, hubName)"
               @unacknowledge="setAcknowledged(false, alert, hubName)"/>
-        </v-col>
-      </v-card-actions>
-    </div>
+        </template>
+      </v-list-item>
+    </v-card-text>
   </div>
 </template>
 
 <script setup>
+import {timestampToDate} from '@/api/convpb.js';
 import {closeResource} from '@/api/resource';
 import {grantNamesByID} from '@/api/sc/traits/access';
-import AcknowledgementBtn from '@/routes/ops/notifications/AcknowledgementBtn.vue';
+import {alertToObject} from '@/api/ui/alerts.js';
+import {useAlertsCollection} from '@/composables/alerts.js';
 import {useAcknowledgement} from '@/composables/notifications.js';
-import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
+import AcknowledgementBtn from '@/routes/ops/notifications/AcknowledgementBtn.vue';
 import StatusBar from '@/routes/ops/security/components/access-point-card/StatusBar.vue';
 import {useStatus} from '@/routes/ops/security/components/access-point-card/useStatus';
 import {useCohortStore} from '@/stores/cohort.js';
-import {computed, onBeforeUnmount, reactive} from 'vue';
+import {computed, onBeforeUnmount} from 'vue';
 
 const props = defineProps({
   accessAttempt: {
@@ -131,7 +128,7 @@ const formatString = (str) => {
 // ----------------- Alerts ----------------- //
 const cohort = useCohortStore();
 const hubName = computed(() => cohort.hubNode?.name ?? '');
-const query = reactive({
+const query = computed(() => ({
   createdNotBefore: undefined,
   createdNotAfter: undefined,
   severityNotAbove: undefined,
@@ -144,26 +141,21 @@ const query = reactive({
   resolved: false,
   resolvedNotBefore: undefined,
   resolvedNotAfter: undefined
-});
+}));
 
-const alerts = reactive(useAlertsApi(hubName, query));
-alerts.pageSize = 1;
-
+const alertsRequest = computed(() => ({
+  name: hubName.value,
+  query: query.value
+}));
+const alertsOptions = computed(() => ({
+  wantCount: 1
+}));
+const alertsCollection = useAlertsCollection(alertsRequest, alertsOptions);
 const alert = computed(() => {
-  if (!alerts.allItems) {
+  if (alertsCollection.items.value.length === 0) {
     return {};
   }
-
-  const alertData = alerts.allItems[0];
-
-  if (!alertData) {
-    return {};
-  }
-
-  return {
-    ...alertData,
-    createTime: alertData.createTime
-  };
+  return alertToObject(alertsCollection.items.value[0]) ?? {};
 });
 
 const user = computed(() => {
