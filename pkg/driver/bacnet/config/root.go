@@ -12,6 +12,8 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	bactypes "github.com/vanti-dev/gobacnet/types"
+	"github.com/vanti-dev/sc-bos/pkg/block"
+	"github.com/vanti-dev/sc-bos/pkg/block/mdblock"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 )
@@ -155,4 +157,29 @@ func (d DestinationAddress) Bytes() ([]byte, error) {
 		addr = append(addr, byte(value))
 	}
 	return addr, nil
+}
+
+var Blocks = []block.Block{
+	{Path: []string{"metadata"}, Blocks: mdblock.Categories},
+	{
+		Path: []string{"devices"},
+		Key:  "id",
+		Blocks: []block.Block{
+			{Path: []string{"metadata"}, Blocks: mdblock.Categories},
+			{
+				Path: []string{"objects"},
+				Key:  "id",
+				Blocks: []block.Block{
+					{Path: []string{"metadata"}, Blocks: mdblock.Categories},
+				},
+			},
+		},
+	},
+	{
+		Path: []string{"traits"},
+		Key:  "name",
+		Blocks: []block.Block{
+			{Path: []string{"metadata"}, Blocks: mdblock.Categories},
+		},
+	},
 }
