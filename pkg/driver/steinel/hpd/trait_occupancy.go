@@ -2,7 +2,6 @@ package hpd
 
 import (
 	"context"
-	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -17,55 +16,29 @@ type Occupancy struct {
 	traits.UnimplementedOccupancySensorApiServer
 	gen.UnimplementedUdmiServiceServer
 
-	logger       *zap.Logger
-	pollInterval time.Duration
+	logger *zap.Logger
 
 	client *Client
 
 	OccupancyValue *resource.Value
 }
 
-func NewOccupancySensor(client *Client, logger *zap.Logger, pollInterval time.Duration) *Occupancy {
-	if pollInterval <= 0 {
-		pollInterval = time.Second * 60
-	}
+var _ sensor = (*Occupancy)(nil)
 
+func NewOccupancySensor(client *Client, logger *zap.Logger) *Occupancy {
 	return &Occupancy{
 		client:         client,
 		logger:         logger,
-		pollInterval:   pollInterval,
 		OccupancyValue: resource.NewValue(resource.WithInitialValue(&traits.Occupancy{}), resource.WithNoDuplicates()),
 	}
 }
 
-// StartPollingForData starts a loop which fetches data from the sensor at a set interval
-func (o *Occupancy) StartPollingForData() {
-	go func() {
-		_ = o.startPoll(context.Background())
-	}()
-}
-
-func (o *Occupancy) startPoll(ctx context.Context) error {
-	ticker := time.NewTicker(o.pollInterval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-
-		case <-ticker.C:
-			err := o.GetUpdate()
-			if err != nil {
-				o.logger.Error("error refreshing Occupancy data", zap.Error(err))
-			}
-		}
-	}
-}
-
 func (o *Occupancy) GetOccupancy(_ context.Context, _ *traits.GetOccupancyRequest) (*traits.Occupancy, error) {
-	err := o.GetUpdate()
-	if err != nil {
+	response := SensorResponse{}
+	if err := doGetRequest(o.client, &response, "sensor"); err != nil {
+		return nil, err
+	}
+	if err := o.GetUpdate(&response); err != nil {
 		return nil, err
 	}
 	return o.OccupancyValue.Get().(*traits.Occupancy), nil
@@ -93,13 +66,7 @@ func (o *Occupancy) PullOccupancy(request *traits.PullOccupancyRequest, server t
 	return nil
 }
 
-func (o *Occupancy) GetUpdate() error {
-	response := SensorResponse{}
-	err := doGetRequest(o.client, &response, "sensor")
-	if err != nil {
-		return err
-	}
-
+func (o *Occupancy) GetUpdate(response *SensorResponse) error {
 	peopleCount := 0
 
 	state := traits.Occupancy_STATE_UNSPECIFIED
@@ -114,10 +81,17 @@ func (o *Occupancy) GetUpdate() error {
 		peopleCount = response.ZonePeople0
 	}
 
-	o.OccupancyValue.Set(&traits.Occupancy{
+	_, err := o.OccupancyValue.Set(&traits.Occupancy{
 		State:       state,
 		PeopleCount: int32(peopleCount),
 	})
+	if err != nil {
+		return err
+	}
 
 	return nil
+}
+
+func (o *Occupancy) GetName() string {
+	return "Occupancy"
 }

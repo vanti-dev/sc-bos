@@ -64,32 +64,21 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	}
 	d.client = NewInsecureClient(cfg.IpAddress, p)
 
-	d.airQualitySensor = NewAirQualitySensor(d.client, d.logger.Named("AirQualityValue").With(zap.String("ipAddress", cfg.IpAddress)), 0)
-	d.airQualitySensor.StartPollingForData()
-	if err != nil {
-		d.logger.Error("d.airQualitySensor failed to start polling data")
-		return err
-	}
+	d.airQualitySensor = NewAirQualitySensor(d.client, d.logger.Named("AirQualityValue").With(zap.String("ipAddress", cfg.IpAddress)))
 	announcer.Announce(cfg.Name, node.HasTrait(trait.AirQualitySensor, node.WithClients(airqualitysensor.WrapApi(d.airQualitySensor))))
 
-	d.occupancy = NewOccupancySensor(d.client, d.logger.Named("Occupancy").With(zap.String("ipAddress", cfg.IpAddress)), 0)
-	d.occupancy.StartPollingForData()
-	if err != nil {
-		d.logger.Error("d.occupancy failed to start polling data")
-		return err
-	}
+	d.occupancy = NewOccupancySensor(d.client, d.logger.Named("Occupancy").With(zap.String("ipAddress", cfg.IpAddress)))
 	announcer.Announce(cfg.Name, node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensor.WrapApi(d.occupancy))))
 
-	d.temperature = NewTemperatureSensor(d.client, d.logger.Named("Temperature").With(zap.String("ipAddress", cfg.IpAddress)), 0)
-	d.temperature.StartPollingForData()
-	if err != nil {
-		d.logger.Error("d.temperature failed to start polling data")
-		return err
-	}
+	d.temperature = NewTemperatureSensor(d.client, d.logger.Named("Temperature").With(zap.String("ipAddress", cfg.IpAddress)))
 	announcer.Announce(cfg.Name, node.HasTrait(trait.AirTemperature, node.WithClients(airtemperature.WrapApi(d.temperature))))
 
 	d.udmiServiceServer = NewUdmiServiceServer(d.logger.Named("UdmiServiceServer"), d.airQualitySensor.AirQualityValue, d.occupancy.OccupancyValue, d.temperature.TemperatureValue, cfg.UDMITopicPrefix)
 	announcer.Announce(cfg.Name, node.HasTrait(udmipb.TraitName, node.WithClients(gen.WrapUdmiService(d.udmiServiceServer))))
+
+	poller := NewPoller(d.client, 0, d.logger.Named("SteinelPoller").With(zap.String("ipAddress", cfg.IpAddress)), d.airQualitySensor, d.occupancy, d.temperature)
+
+	go poller.startPoll(ctx)
 
 	return nil
 }
