@@ -25,6 +25,19 @@ export default [{
       }
     },
     {
+      path: 'zones',
+      components: {
+        default: () => import('./components/pages/ZonesList.vue'),
+        sidebar: () => import('./components/ServicesSideBar.vue')
+      },
+      meta: {
+        editRoutePrefix: 'zone',
+        authentication: {
+          rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+        }
+      }
+    },
+    {
       path: 'features',
       components: {
         default: () => import('./components/pages/FeaturesList.vue'),
@@ -86,6 +99,36 @@ export default [{
     props: route => {
       return {
         name: ServiceNames.Drivers,
+        id: route.params.id
+      };
+    }
+  }],
+  meta: {
+    authentication: {
+      rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+    },
+    title: 'Driver'
+  }
+}, {
+  name: 'system-zone',
+  path: '/system/zone',
+  children: [{
+    name: 'zone-name-id',
+    path: ':name/:id',
+    component: () => import('@/components/pages/ServiceJsonEditor.vue'),
+    props: route => {
+      return {
+        name: serviceName(route.params.name, ServiceNames.Zones),
+        id: route.params.id
+      };
+    }
+  }, {
+    name: 'zone-id',
+    path: ':id',
+    component: () => import('@/components/pages/ServiceJsonEditor.vue'),
+    props: route => {
+      return {
+        name: ServiceNames.Zones,
         id: route.params.id
       };
     }
