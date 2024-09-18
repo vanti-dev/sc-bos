@@ -1,6 +1,6 @@
 <template>
   <div class="text-body-large font-weight-bold sidebar-title pl-4 pr-2 py-2 bg-neutral-lighten-1 d-flex">
-    <span class="sidebar-title-text my-auto mr-auto">
+    <span class="sidebar-title-text my-auto mr-auto text-break">
       {{ sidebar.title }}
     </span>
     <slot name="actions"/>
