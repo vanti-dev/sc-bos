@@ -1,4 +1,3 @@
-import {grpcWebEndpoint} from '@/api/config.js';
 import {newActionTracker} from '@/api/resource.js';
 import {getEnrollment, testEnrollment} from '@/api/sc/traits/enrollment.js';
 import {testHubNode} from '@/api/sc/traits/hub.js';
@@ -10,7 +9,7 @@ import {isNetworkError} from '@/util/error.js';
 import deepEqual from 'fast-deep-equal';
 import {StatusCode} from 'grpc-web';
 import {acceptHMRUpdate, defineStore, storeToRefs} from 'pinia';
-import {computed, effectScope, reactive, ref, watch} from 'vue';
+import {computed, effectScope, reactive, watch} from 'vue';
 
 export const EnrollmentStatus = {
   UNKNOWN: 'unknown',
@@ -141,11 +140,9 @@ export const useCohortStore = defineStore('cohort', () => {
   const {
     controllerName: serverName,
     hasLoaded: serverNameLoaded,
-    controllerNameError: serverNameError
+    controllerNameError: serverNameError,
+    host: serverAddress
   } = storeToRefs(useControllerStore());
-  const serverAddress = ref(/** @type {string | null} */ null);
-  grpcWebEndpoint()
-      .then((address) => serverAddress.value = new URL(address).host);
   // a CohortNode that represents the server we are communicating with
   const serverNode = computed(() => {
     const node = /** @type {CohortNode} */ {

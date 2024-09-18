@@ -1,6 +1,7 @@
+import {grpcWebEndpoint} from '@/api/config.js';
 import {usePullMetadata} from '@/traits/metadata/metadata.js';
 import {acceptHMRUpdate, defineStore} from 'pinia';
-import {computed, watch} from 'vue';
+import {computed, ref, watch} from 'vue';
 
 /**
  * A store that reports on the server (controller) the ui is directly connected to.
@@ -22,11 +23,27 @@ export const useControllerStore = defineStore('controller', () => {
     if (loaded) notifyLoaded();
   }, {immediate: true});
 
+  const host = ref(null);
+  grpcWebEndpoint()
+      .then((endpoint) => {
+        if (endpoint.startsWith('//')) {
+          endpoint = 'https:' + endpoint;
+        }
+        try {
+          const url = new URL(endpoint);
+          host.value = url.host;
+        } catch (e) {
+          console.warn('failed to parse grpcWebEndpoint as URL', e);
+          host.value = endpoint;
+        }
+      });
+
   return {
     controllerName,
     hasLoaded,
     controllerNameError,
-    waitForLoad
+    waitForLoad,
+    host
   };
 });
 
