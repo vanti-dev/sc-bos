@@ -16,6 +16,7 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/gobacnet/types/objecttype"
+	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
@@ -39,6 +40,10 @@ type factory struct{}
 
 func (_ factory) New(services driver.Services) service.Lifecycle {
 	return NewDriver(services)
+}
+
+func (_ factory) ConfigBlocks() []block.Block {
+	return config.Blocks
 }
 
 func (_ factory) AddSupport(supporter node.Supporter) {
