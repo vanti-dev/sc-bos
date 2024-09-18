@@ -392,8 +392,10 @@ function calculateQueryMetadataCount(query) {
    */
   function getSeverityTotal() {
     let total = 0;
+    const severityMax = query.severityNotAbove ?? Infinity;
+    const severityMin = query.severityNotBelow ?? -Infinity;
     for (const [level, count] of Object.entries(alertMetadata.severityCountsMap)) {
-      if (level <= query.severityNotAbove && level >= query.severityNotBelow) total += count;
+      if (severityMin <= level && level <= severityMax) total += count;
     }
     return total;
   }
