@@ -13,6 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto"
+	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
@@ -260,3 +261,14 @@ const DefaultEmailBody = `<html lang="en">
 </body>
 </html>
 `
+
+var Blocks = []block.Block{
+	{
+		Path: []string{"destination"},
+		Blocks: []block.Block{
+			{Path: []string{"to"}},
+			{Path: []string{"sendTime"}},
+		},
+	},
+	{Path: []string{"templateArgs"}},
+}

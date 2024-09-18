@@ -16,6 +16,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/meteremail/config"
+	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -38,6 +39,10 @@ func (f factory) New(services auto.Services) service.Lifecycle {
 	a.Service = service.New(service.MonoApply(a.applyConfig), service.WithParser(config.ReadBytes))
 	a.Logger = a.Logger.Named(AutoName)
 	return a
+}
+
+func (_ factory) ConfigBlocks() []block.Block {
+	return config.Blocks
 }
 
 // getMeterReadingAndSource gets the meter reading for the given meter and also the location metadata for the meter
