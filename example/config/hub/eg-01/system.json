@@ -4,7 +4,14 @@
   "listenHttps": ":8201",
   "systems": {
     "authn": {
-      "user": {"fileAccounts": true},
+      "user": {
+        "fileAccounts": true,
+        "keycloakAccounts": {
+          "url": "http://localhost:8888",
+          "realm": "Smart_Core",
+          "clientId": "sc-opsui"
+        }
+      },
       "system": {"cohortAccounts": true}
     },
     "hub": {"storage": {"type": "proxy"}},
