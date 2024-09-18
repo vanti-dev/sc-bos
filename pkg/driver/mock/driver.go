@@ -26,6 +26,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
+	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/config"
@@ -49,6 +50,10 @@ type factory struct{}
 
 func (_ factory) New(services driver.Services) service.Lifecycle {
 	return NewDriver(services)
+}
+
+func (_ factory) ConfigBlocks() []block.Block {
+	return config.Blocks
 }
 
 func NewDriver(services driver.Services) *Driver {
