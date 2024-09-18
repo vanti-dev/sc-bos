@@ -3,34 +3,41 @@
 package gen
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapButtonApi	adapts a gen.ButtonApiServer	and presents it as a gen.ButtonApiClient
-func WrapButtonApi(server ButtonApiServer) ButtonApiClient {
+func WrapButtonApi(server ButtonApiServer) *ButtonApiWrapper {
 	conn := wrap.ServerToClient(ButtonApi_ServiceDesc, server)
 	client := NewButtonApiClient(conn)
-	return &buttonApiWrapper{
+	return &ButtonApiWrapper{
 		ButtonApiClient: client,
 		server:          server,
+		conn:            conn,
+		desc:            ButtonApi_ServiceDesc,
 	}
 }
 
-type buttonApiWrapper struct {
+type ButtonApiWrapper struct {
 	ButtonApiClient
 
 	server ButtonApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
 
-// compile time check that we implement the interface we need
-var _ ButtonApiClient = (*buttonApiWrapper)(nil)
-
 // UnwrapServer returns the underlying server instance.
-func (w *buttonApiWrapper) UnwrapServer() ButtonApiServer {
+func (w *ButtonApiWrapper) UnwrapServer() ButtonApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *buttonApiWrapper) Unwrap() any {
+func (w *ButtonApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
+}
+
+func (w *ButtonApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

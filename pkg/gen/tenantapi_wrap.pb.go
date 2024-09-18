@@ -3,34 +3,41 @@
 package gen
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapTenantApi	adapts a gen.TenantApiServer	and presents it as a gen.TenantApiClient
-func WrapTenantApi(server TenantApiServer) TenantApiClient {
+func WrapTenantApi(server TenantApiServer) *TenantApiWrapper {
 	conn := wrap.ServerToClient(TenantApi_ServiceDesc, server)
 	client := NewTenantApiClient(conn)
-	return &tenantApiWrapper{
+	return &TenantApiWrapper{
 		TenantApiClient: client,
 		server:          server,
+		conn:            conn,
+		desc:            TenantApi_ServiceDesc,
 	}
 }
 
-type tenantApiWrapper struct {
+type TenantApiWrapper struct {
 	TenantApiClient
 
 	server TenantApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
 
-// compile time check that we implement the interface we need
-var _ TenantApiClient = (*tenantApiWrapper)(nil)
-
 // UnwrapServer returns the underlying server instance.
-func (w *tenantApiWrapper) UnwrapServer() TenantApiServer {
+func (w *TenantApiWrapper) UnwrapServer() TenantApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *tenantApiWrapper) Unwrap() any {
+func (w *TenantApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
+}
+
+func (w *TenantApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

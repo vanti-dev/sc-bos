@@ -3,34 +3,41 @@
 package gen
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapDaliApi	adapts a gen.DaliApiServer	and presents it as a gen.DaliApiClient
-func WrapDaliApi(server DaliApiServer) DaliApiClient {
+func WrapDaliApi(server DaliApiServer) *DaliApiWrapper {
 	conn := wrap.ServerToClient(DaliApi_ServiceDesc, server)
 	client := NewDaliApiClient(conn)
-	return &daliApiWrapper{
+	return &DaliApiWrapper{
 		DaliApiClient: client,
 		server:        server,
+		conn:          conn,
+		desc:          DaliApi_ServiceDesc,
 	}
 }
 
-type daliApiWrapper struct {
+type DaliApiWrapper struct {
 	DaliApiClient
 
 	server DaliApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
 
-// compile time check that we implement the interface we need
-var _ DaliApiClient = (*daliApiWrapper)(nil)
-
 // UnwrapServer returns the underlying server instance.
-func (w *daliApiWrapper) UnwrapServer() DaliApiServer {
+func (w *DaliApiWrapper) UnwrapServer() DaliApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *daliApiWrapper) Unwrap() any {
+func (w *DaliApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
+}
+
+func (w *DaliApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

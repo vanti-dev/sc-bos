@@ -169,29 +169,7 @@ func (p *proxy) AnnounceChildren(ctx context.Context) error {
 
 func (p *proxy) announceExplicitChildren(children []config.Child) {
 	for _, c := range children {
-		for _, tn := range c.Traits {
-			client := alltraits.APIClient(p.conn, tn)
-			if client == nil {
-				p.logger.Warn("tried to proxy unknown trait", zap.String("trait", tn.String()))
-				continue
-			}
-			withClients := []node.TraitOption{node.WithClients(client)}
-
-			infoClient := alltraits.InfoClient(p.conn, tn)
-			if infoClient == nil {
-				p.logger.Warn(fmt.Sprintf("remote child implements unknown info trait %s", tn))
-			} else {
-				withClients = append(withClients, node.WithClients(infoClient))
-			}
-
-			historyClient := alltraits.HistoryClient(p.conn, tn)
-			if historyClient == nil {
-				p.logger.Warn(fmt.Sprintf("remote child implements unknown history trait %s", tn))
-			} else {
-				withClients = append(withClients, node.WithClients(historyClient))
-			}
-			p.announcer.Announce(c.Name, node.HasTrait(tn, withClients...))
-		}
+		p.announceTraits(nil, c.Name, c.Traits)
 	}
 }
 
@@ -206,38 +184,28 @@ func (p *proxy) announceChanges(changes <-chan *traits.PullChildrenResponse_Chan
 func (p *proxy) announceChange(announced announcedTraits, change *traits.PullChildrenResponse_Change) {
 	needAnnouncing := announced.updateChild(change.OldValue, change.NewValue)
 	childName := change.GetNewValue().GetName() // nil safe way to get the name
-	for _, tn := range needAnnouncing {
-		client := alltraits.APIClient(p.conn, tn)
-		if client == nil {
+	p.announceTraits(announced, childName, needAnnouncing)
+}
+
+// Announces traitNames for a childName.
+// If announced is non-nil, the undo functions for the announcements are stored in it.
+func (p *proxy) announceTraits(announced announcedTraits, childName string, traitNames []trait.Name) {
+	for _, tn := range traitNames {
+		services := alltraits.ServiceDesc(tn)
+		if len(services) == 0 {
 			p.logger.Warn(fmt.Sprintf("remote child implements unknown trait %s", tn))
 			continue
 		}
-		hasClients := []node.Feature{node.HasClient(client)}
-		withClients := []node.TraitOption{node.WithClients(client)}
 
-		infoClient := alltraits.InfoClient(p.conn, tn)
-		if infoClient == nil {
-			p.logger.Warn(fmt.Sprintf("remote child implements unknown info trait %s", tn))
-		} else {
-			hasClients = append(hasClients, node.HasClient(infoClient))
-			withClients = append(withClients, node.WithClients(infoClient))
+		features := []node.Feature{node.HasClientConn(p.conn, services...)}
+		if !p.skipChild {
+			features = append(features, node.HasTrait(tn))
 		}
 
-		historyClient := alltraits.HistoryClient(p.conn, tn)
-		if historyClient == nil {
-			p.logger.Warn(fmt.Sprintf("remote child implements unknown history trait %s", tn))
-		} else {
-			hasClients = append(hasClients, node.HasClient(historyClient))
-			withClients = append(withClients, node.WithClients(historyClient))
+		undo := p.announcer.Announce(childName, features...)
+		if announced != nil {
+			announced.add(childName, tn, undo)
 		}
-
-		var undo node.Undo
-		if p.skipChild {
-			undo = p.announcer.Announce(childName, hasClients...)
-		} else {
-			undo = p.announcer.Announce(childName, node.HasTrait(tn, withClients...))
-		}
-		announced.add(childName, tn, undo)
 	}
 }
 

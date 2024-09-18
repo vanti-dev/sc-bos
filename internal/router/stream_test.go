@@ -1,4 +1,4 @@
-package unknown
+package router
 
 import (
 	"context"
@@ -14,6 +14,8 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
 	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -34,10 +36,8 @@ func TestStreamHandler(t *testing.T) {
 		t.Fatalf("newNode(n2) = %v", err)
 	}
 
-	reg := NewMethodTable()
-	registerMethod(reg, traits.OnOffApi_GetOnOff_FullMethodName, grpc.StreamDesc{}, &traits.GetOnOffRequest{}, n1Client, n2Client)
-	registerMethod(reg, traits.OnOffApi_UpdateOnOff_FullMethodName, grpc.StreamDesc{}, &traits.UpdateOnOffRequest{}, n1Client, n2Client)
-	registerMethod(reg, traits.OnOffApi_PullOnOff_FullMethodName, grpc.StreamDesc{ServerStreams: true}, &traits.PullOnOffRequest{}, n1Client, n2Client)
+	reg := New()
+	registerService(reg, traits.OnOffApi_ServiceDesc.ServiceName, n1Client, n2Client)
 
 	proxyServer := grpc.NewServer(grpc.UnknownServiceHandler(StreamHandler(reg)))
 	proxyLis := bufconn.Listen(1024 * 1024)
@@ -142,15 +142,16 @@ func nameKey[T namedMessage](m T) KeyFunc {
 	}
 }
 
-func registerMethod[T namedMessage](reg *MethodTable, method string, streamDesc grpc.StreamDesc, req T, clients ...*grpc.ClientConn) {
-	table := NewKeyResolver(nameKey(req))
+func registerService(reg *Router, service string, clients ...*grpc.ClientConn) {
+	reg.SupportService(NewUnroutedService(serviceDescriptor(service)))
+
 	for i, client := range clients {
-		table.Set(fmt.Sprintf("n%d", i+1), client)
+		name := fmt.Sprintf("n%d", i+1)
+		err := reg.AddRoute(service, name, client)
+		if err != nil {
+			panic(err)
+		}
 	}
-	reg.Set(method, Method{
-		StreamDesc: streamDesc,
-		Resolver:   table,
-	})
 }
 
 func newNode(t *testing.T, ctx context.Context, name string) (*grpc.ClientConn, error) {
@@ -186,4 +187,16 @@ func bufConn(ctx context.Context, buf *bufconn.Listener) (*grpc.ClientConn, erro
 		}),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
+}
+
+func serviceDescriptor(name string) protoreflect.ServiceDescriptor {
+	desc, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(name))
+	if err != nil {
+		panic(err)
+	}
+	sd, ok := desc.(protoreflect.ServiceDescriptor)
+	if !ok {
+		panic("not a service descriptor")
+	}
+	return sd
 }

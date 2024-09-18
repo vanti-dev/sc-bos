@@ -3,34 +3,41 @@
 package gen
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapColorApi	adapts a gen.ColorApiServer	and presents it as a gen.ColorApiClient
-func WrapColorApi(server ColorApiServer) ColorApiClient {
+func WrapColorApi(server ColorApiServer) *ColorApiWrapper {
 	conn := wrap.ServerToClient(ColorApi_ServiceDesc, server)
 	client := NewColorApiClient(conn)
-	return &colorApiWrapper{
+	return &ColorApiWrapper{
 		ColorApiClient: client,
 		server:         server,
+		conn:           conn,
+		desc:           ColorApi_ServiceDesc,
 	}
 }
 
-type colorApiWrapper struct {
+type ColorApiWrapper struct {
 	ColorApiClient
 
 	server ColorApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
 
-// compile time check that we implement the interface we need
-var _ ColorApiClient = (*colorApiWrapper)(nil)
-
 // UnwrapServer returns the underlying server instance.
-func (w *colorApiWrapper) UnwrapServer() ColorApiServer {
+func (w *ColorApiWrapper) UnwrapServer() ColorApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *colorApiWrapper) Unwrap() any {
+func (w *ColorApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
+}
+
+func (w *ColorApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }
