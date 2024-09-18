@@ -9,49 +9,6 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 )
 
-func TestClient(t *testing.T) {
-	t.Run("get client", func(t *testing.T) {
-		n := New("Test")
-		n.Support(Clients(traits.NewOnOffApiClient(nil)))
-
-		var client traits.OnOffApiClient
-		var err error
-		client, err = Client[traits.OnOffApiClient](n)
-		if err != nil {
-			t.Fatalf("Got error %v", err)
-		}
-		_ = client
-	})
-	t.Run("no type", func(t *testing.T) {
-		n := New("Test")
-		client, err := Client[traits.OnOffApiClient](n)
-		if err == nil {
-			t.Fatalf("Expecting error, got client %v", client)
-		}
-	})
-}
-
-func TestFindClient(t *testing.T) {
-	t.Run("get client", func(t *testing.T) {
-		n := New("Test")
-		n.Support(Clients(traits.NewOnOffApiClient(nil)))
-
-		var client traits.OnOffApiClient
-		FindClient(n, &client)
-		if client == nil {
-			t.Fatalf("Expecting client but got none")
-		}
-	})
-	t.Run("no client", func(t *testing.T) {
-		n := New("Test")
-		var client traits.OnOffApiClient
-		FindClient(n, &client)
-		if client != nil {
-			t.Fatalf("Expecting no client, got %v", client)
-		}
-	})
-}
-
 func TestNode_Client(t *testing.T) {
 	t.Run("get client", func(t *testing.T) {
 		n := New("Test")

@@ -3,34 +3,41 @@
 package gen
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapHubApi	adapts a gen.HubApiServer	and presents it as a gen.HubApiClient
-func WrapHubApi(server HubApiServer) HubApiClient {
+func WrapHubApi(server HubApiServer) *HubApiWrapper {
 	conn := wrap.ServerToClient(HubApi_ServiceDesc, server)
 	client := NewHubApiClient(conn)
-	return &hubApiWrapper{
+	return &HubApiWrapper{
 		HubApiClient: client,
 		server:       server,
+		conn:         conn,
+		desc:         HubApi_ServiceDesc,
 	}
 }
 
-type hubApiWrapper struct {
+type HubApiWrapper struct {
 	HubApiClient
 
 	server HubApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
 
-// compile time check that we implement the interface we need
-var _ HubApiClient = (*hubApiWrapper)(nil)
-
 // UnwrapServer returns the underlying server instance.
-func (w *hubApiWrapper) UnwrapServer() HubApiServer {
+func (w *HubApiWrapper) UnwrapServer() HubApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *hubApiWrapper) Unwrap() any {
+func (w *HubApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
+}
+
+func (w *HubApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

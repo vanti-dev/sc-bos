@@ -3,34 +3,41 @@
 package gen
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapDevicesApi	adapts a gen.DevicesApiServer	and presents it as a gen.DevicesApiClient
-func WrapDevicesApi(server DevicesApiServer) DevicesApiClient {
+func WrapDevicesApi(server DevicesApiServer) *DevicesApiWrapper {
 	conn := wrap.ServerToClient(DevicesApi_ServiceDesc, server)
 	client := NewDevicesApiClient(conn)
-	return &devicesApiWrapper{
+	return &DevicesApiWrapper{
 		DevicesApiClient: client,
 		server:           server,
+		conn:             conn,
+		desc:             DevicesApi_ServiceDesc,
 	}
 }
 
-type devicesApiWrapper struct {
+type DevicesApiWrapper struct {
 	DevicesApiClient
 
 	server DevicesApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
 
-// compile time check that we implement the interface we need
-var _ DevicesApiClient = (*devicesApiWrapper)(nil)
-
 // UnwrapServer returns the underlying server instance.
-func (w *devicesApiWrapper) UnwrapServer() DevicesApiServer {
+func (w *DevicesApiWrapper) UnwrapServer() DevicesApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *devicesApiWrapper) Unwrap() any {
+func (w *DevicesApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
+}
+
+func (w *DevicesApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

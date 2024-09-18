@@ -3,34 +3,41 @@
 package gen
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapLightingTestApi	adapts a gen.LightingTestApiServer	and presents it as a gen.LightingTestApiClient
-func WrapLightingTestApi(server LightingTestApiServer) LightingTestApiClient {
+func WrapLightingTestApi(server LightingTestApiServer) *LightingTestApiWrapper {
 	conn := wrap.ServerToClient(LightingTestApi_ServiceDesc, server)
 	client := NewLightingTestApiClient(conn)
-	return &lightingTestApiWrapper{
+	return &LightingTestApiWrapper{
 		LightingTestApiClient: client,
 		server:                server,
+		conn:                  conn,
+		desc:                  LightingTestApi_ServiceDesc,
 	}
 }
 
-type lightingTestApiWrapper struct {
+type LightingTestApiWrapper struct {
 	LightingTestApiClient
 
 	server LightingTestApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
 
-// compile time check that we implement the interface we need
-var _ LightingTestApiClient = (*lightingTestApiWrapper)(nil)
-
 // UnwrapServer returns the underlying server instance.
-func (w *lightingTestApiWrapper) UnwrapServer() LightingTestApiServer {
+func (w *LightingTestApiWrapper) UnwrapServer() LightingTestApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *lightingTestApiWrapper) Unwrap() any {
+func (w *LightingTestApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
+}
+
+func (w *LightingTestApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

@@ -3,34 +3,41 @@
 package gen
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapAlertAdminApi	adapts a gen.AlertAdminApiServer	and presents it as a gen.AlertAdminApiClient
-func WrapAlertAdminApi(server AlertAdminApiServer) AlertAdminApiClient {
+func WrapAlertAdminApi(server AlertAdminApiServer) *AlertAdminApiWrapper {
 	conn := wrap.ServerToClient(AlertAdminApi_ServiceDesc, server)
 	client := NewAlertAdminApiClient(conn)
-	return &alertAdminApiWrapper{
+	return &AlertAdminApiWrapper{
 		AlertAdminApiClient: client,
 		server:              server,
+		conn:                conn,
+		desc:                AlertAdminApi_ServiceDesc,
 	}
 }
 
-type alertAdminApiWrapper struct {
+type AlertAdminApiWrapper struct {
 	AlertAdminApiClient
 
 	server AlertAdminApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
 
-// compile time check that we implement the interface we need
-var _ AlertAdminApiClient = (*alertAdminApiWrapper)(nil)
-
 // UnwrapServer returns the underlying server instance.
-func (w *alertAdminApiWrapper) UnwrapServer() AlertAdminApiServer {
+func (w *AlertAdminApiWrapper) UnwrapServer() AlertAdminApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *alertAdminApiWrapper) Unwrap() any {
+func (w *AlertAdminApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
+}
+
+func (w *AlertAdminApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

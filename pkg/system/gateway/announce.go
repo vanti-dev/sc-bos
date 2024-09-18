@@ -13,12 +13,12 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/vanti-dev/sc-bos/internal/router"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/servicepb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/rx"
-	"github.com/vanti-dev/sc-bos/pkg/util/grpc/unknown"
 	"github.com/vanti-dev/sc-bos/pkg/util/slices"
 )
 
@@ -235,7 +235,7 @@ func (a *announcer) announceName(d remoteDesc) node.Undo {
 		return node.NilUndo
 	}
 
-	features := []node.Feature{node.HasMetadata(d.md)}
+	var services []grpc.ServiceDesc
 	for _, t := range d.md.GetTraits() {
 		traitName := trait.Name(t.Name)
 
@@ -244,27 +244,9 @@ func (a *announcer) announceName(d remoteDesc) node.Undo {
 			continue
 		}
 
-		var clients []any
-		if c := alltraits.APIClient(a.node.conn, traitName); c != nil {
-			clients = append(clients, c)
-		}
-		if c := alltraits.HistoryClient(a.node.conn, traitName); c != nil {
-			clients = append(clients, c)
-		}
-		if c := alltraits.InfoClient(a.node.conn, traitName); c != nil {
-			clients = append(clients, c)
-		}
-
-		if len(clients) == 0 {
-			// fall back to dynamic routing for these advertised traits
-			features = append(features, node.HasTrait(traitName))
-		} else {
-			features = append(features, node.HasTrait(traitName, node.WithOptClients(clients...)))
-		}
+		services = append(services, alltraits.ServiceDesc(traitName)...)
 	}
 
-	var undos []node.Undo
-	undos = append(undos, a.Announce(d.name, features...))
 	if old, replaced := a.table.conns.Set(d.name, a.node.conn); replaced {
 		if old != a.node.conn {
 			a.logger.Warn("name already registered by another party, it has been replaced",
@@ -273,7 +255,10 @@ func (a *announcer) announceName(d remoteDesc) node.Undo {
 	}
 
 	return node.UndoAll(
-		a.Announce(d.name, features...),
+		a.Announce(d.name,
+			node.HasMetadata(d.md),
+			node.HasClientConn(a.node.conn, services...),
+		),
 		func() { a.table.conns.Del(d.name) },
 	)
 }
@@ -319,9 +304,9 @@ func (a *announcer) announceRemoteServices(seq seq2[int, remoteService]) tasks {
 }
 
 func (a *announcer) announceRemoteServiceApis(rs remoteService) node.Undo {
-	var keyFuncs []unknown.KeyFunc
+	var keyFuncs []router.KeyFunc
 	for _, method := range rs.methods {
-		keyFunc, err := unknown.NameKey(method.Input())
+		keyFunc, err := router.NameKey(method.Input())
 		if err != nil {
 			continue // we don't care about err, just that this method doesn't have a name key
 		}
@@ -329,16 +314,16 @@ func (a *announcer) announceRemoteServiceApis(rs remoteService) node.Undo {
 	}
 
 	// which type of proxying should each method use?
-	var newMethod func(int, protoreflect.MethodDescriptor) unknown.Method
+	var newMethod func(int, protoreflect.MethodDescriptor) router.Method
 	switch {
 	case len(keyFuncs) == len(rs.methods):
 		// all methods have a key func, we can enable routing for this service as a whole
-		newMethod = func(i int, method protoreflect.MethodDescriptor) unknown.Method {
+		newMethod = func(i int, method protoreflect.MethodDescriptor) router.Method {
 			return routedMethod(method, keyFuncs[i], a.table.conns)
 		}
 	case a.node.isHub:
 		// route everything else to the hub
-		newMethod = func(_ int, method protoreflect.MethodDescriptor) unknown.Method {
+		newMethod = func(_ int, method protoreflect.MethodDescriptor) router.Method {
 			return fixedMethod(method, a.node.conn)
 		}
 	default:
@@ -443,24 +428,24 @@ func (r *counts) Dec(k string) int {
 }
 
 // fixedMethod returns an unknown.Method that resolves to the given conn.
-func fixedMethod(method protoreflect.MethodDescriptor, conn *grpc.ClientConn) unknown.Method {
-	return unknown.Method{
+func fixedMethod(method protoreflect.MethodDescriptor, conn *grpc.ClientConn) router.Method {
+	return router.Method{
 		StreamDesc: grpc.StreamDesc{
 			ServerStreams: method.IsStreamingServer(),
 			ClientStreams: method.IsStreamingClient(),
 		},
-		Resolver: unknown.NewFixedResolver(conn),
+		Resolver: router.NewFixedResolver(conn),
 	}
 }
 
 // routedMethod returns an unknown.Method that resolves to a conn based on the keyFunc and given table.
-func routedMethod(method protoreflect.MethodDescriptor, keyFunc unknown.KeyFunc, table *syncMap[*grpc.ClientConn]) unknown.Method {
-	return unknown.Method{
+func routedMethod(method protoreflect.MethodDescriptor, keyFunc router.KeyFunc, table *syncMap[*grpc.ClientConn]) router.Method {
+	return router.Method{
 		StreamDesc: grpc.StreamDesc{
 			ServerStreams: method.IsStreamingServer(),
 			ClientStreams: method.IsStreamingClient(),
 		},
-		Resolver: unknown.ResolverFunc(func(mr unknown.MsgRecver) (grpc.ClientConnInterface, error) {
+		Resolver: router.ResolverFunc(func(mr router.MsgRecver) (grpc.ClientConnInterface, error) {
 			key, err := keyFunc(mr)
 			if err != nil {
 				return nil, err
