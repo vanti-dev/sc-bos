@@ -9,6 +9,8 @@ import (
 	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/sc-bos/pkg/block"
+	"github.com/vanti-dev/sc-bos/pkg/block/mdblock"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
@@ -123,4 +125,20 @@ func (c ClientSecret) Read() (string, error) {
 		return "", fmt.Errorf("%w: %q", err, c.ClientSecretFile)
 	}
 	return strings.TrimSpace(string(bs)), nil
+}
+
+var Blocks = []block.Block{
+	{
+		Path: []string{"locations"},
+		Key:  "id",
+		Blocks: []block.Block{
+			{
+				Path: []string{"devices"},
+				Key:  "id",
+				Blocks: []block.Block{
+					{Path: []string{"metadata"}, Blocks: mdblock.Categories},
+				},
+			},
+		},
+	},
 }
