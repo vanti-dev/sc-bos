@@ -41,8 +41,8 @@
         <v-col class="mx-0 px-0" cols="1">
           <acknowledgement-btn
               :ack="alert.acknowledgement"
-              @acknowledge="notifications.setAcknowledged(true, alert, hubName)"
-              @unacknowledge="notifications.setAcknowledged(false, alert, hubName)"/>
+              @acknowledge="setAcknowledged(true, alert, hubName)"
+              @unacknowledge="setAcknowledged(false, alert, hubName)"/>
         </v-col>
       </v-card-actions>
     </div>
@@ -53,7 +53,7 @@
 import {closeResource} from '@/api/resource';
 import {grantNamesByID} from '@/api/sc/traits/access';
 import AcknowledgementBtn from '@/routes/ops/notifications/AcknowledgementBtn.vue';
-import {useNotifications} from '@/routes/ops/notifications/notifications.js';
+import {useAcknowledgement} from '@/composables/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import StatusBar from '@/routes/ops/security/components/access-point-card/StatusBar.vue';
 import {useStatus} from '@/routes/ops/security/components/access-point-card/useStatus';
@@ -90,7 +90,7 @@ const props = defineProps({
     default: false
   }
 });
-const notifications = useNotifications();
+const {setAcknowledged} = useAcknowledgement();
 const emit = defineEmits(['click:close']);
 
 const {color} = useStatus(

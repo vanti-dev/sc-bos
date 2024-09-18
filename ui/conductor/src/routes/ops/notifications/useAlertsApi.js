@@ -7,7 +7,7 @@
 import {timestampToDate} from '@/api/convpb';
 import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource';
 import {listAlerts, pullAlerts} from '@/api/ui/alerts';
-import {severityData} from '@/routes/ops/notifications/notifications.js';
+import {severityData} from '@/composables/notifications.js';
 import {csvDownload} from '@/util/downloadCSV';
 import deepEqual from 'fast-deep-equal';
 import {computed, onBeforeUnmount, onMounted, reactive, ref, toValue, watch} from 'vue';

@@ -40,7 +40,7 @@
 
 <script setup>
 import {timestampToDate} from '@/api/convpb';
-import {severityData} from '@/routes/ops/notifications/notifications.js';
+import {severityData} from '@/composables/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useSidebarStore} from '@/stores/sidebar';
 import {computed} from 'vue';

@@ -158,8 +158,8 @@
         <template #item.acknowledged="{ item }">
           <acknowledgement-btn
               :ack="item.acknowledgement"
-              @acknowledge="notifications.setAcknowledged(true, item, name)"
-              @unacknowledge="notifications.setAcknowledged(false, item, name)"/>
+              @acknowledge="setAcknowledged(true, item, name)"
+              @unacknowledge="setAcknowledged(false, item, name)"/>
         </template>
       </v-data-table-server>
     </content-card>
@@ -175,7 +175,7 @@ import useFilterCtx from '@/components/filter/filterCtx.js';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import AcknowledgementBtn from '@/routes/ops/notifications/AcknowledgementBtn.vue';
 import {useAlertMetadataStore} from '@/routes/ops/notifications/alertMetadata';
-import {severityData, useNotifications} from '@/routes/ops/notifications/notifications.js';
+import {severityData, useAcknowledgement} from '@/composables/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useCohortStore} from '@/stores/cohort.js';
 import {useSidebarStore} from '@/stores/sidebar';
@@ -202,7 +202,7 @@ const btnStyles = ref({
   'variant': 'text'
 });
 
-const notifications = useNotifications();
+const {setAcknowledged} = useAcknowledgement();
 const alertMetadata = useAlertMetadataStore();
 const sidebar = useSidebarStore();
 
