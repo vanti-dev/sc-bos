@@ -4,10 +4,12 @@ import (
 	"context"
 	"sync"
 
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // Announcer defines the Announce method.
@@ -97,8 +99,8 @@ func AnnounceFeatures(a Announcer, moreFeatures ...Feature) Announcer {
 
 type announcement struct {
 	name           string
+	services       []service
 	traits         []traitFeature
-	clients        []client
 	metadata       []*traits.Metadata
 	noAutoMetadata bool
 	undo           []Undo
@@ -106,15 +108,10 @@ type announcement struct {
 
 type traitFeature struct {
 	name     trait.Name
-	clients  []client
+	services []service
 	metadata map[string]string
 
 	noAddChildTrait bool
-}
-
-type client struct {
-	impl             any
-	allowUnsupported bool // don't log when clients of this type are not supported
 }
 
 // Feature describes some aspect of a named device.
@@ -137,19 +134,35 @@ func (f featureFunc) apply(a *announcement) {
 // HasClient indicates that the name implements non-trait apis as defined by these clients.
 // The clients are still added to routers and all requests on the clients should accept a Name.
 // If the node does not support routing for the API the client is for a message will be logged during announce.
-func HasClient(clients ...any) Feature {
+func HasClient(clients ...wrap.ServiceUnwrapper) Feature {
 	return featureFunc(func(a *announcement) {
-		for _, impl := range clients {
-			a.clients = append(a.clients, client{impl: impl})
+		for _, c := range clients {
+			conn, desc := c.UnwrapService()
+			a.services = append(a.services, service{desc: desc, conn: conn})
 		}
 	})
 }
 
 // HasOptClient is like HasClient without logging when the client is not supported.
-func HasOptClient(clients ...any) Feature {
+func HasOptClient(clients ...wrap.ServiceUnwrapper) Feature {
+	// we no longer require pre-registration of service types
+	return HasClient(clients...)
+}
+
+func HasServer[S any](register func(registrar grpc.ServiceRegistrar, srv S), srv S) Feature {
 	return featureFunc(func(a *announcement) {
-		for _, impl := range clients {
-			a.clients = append(a.clients, client{impl: impl, allowUnsupported: true})
+		// capture the descriptor of the registered service
+		var registrar capturingRegistrar
+		register(&registrar, srv)
+
+		a.services = append(a.services, service{desc: *registrar.desc, conn: wrap.ServerToClient(*registrar.desc, srv)})
+	})
+}
+
+func HasClientConn(conn grpc.ClientConnInterface, services ...grpc.ServiceDesc) Feature {
+	return featureFunc(func(a *announcement) {
+		for _, s := range services {
+			a.services = append(a.services, service{desc: s, conn: conn})
 		}
 	})
 }
@@ -198,21 +211,18 @@ type TraitOption func(t *traitFeature)
 // WithClients indicates that the trait is implemented by these client instances.
 // The clients will be added to the relevant routers when the trait is announced.
 // If the node does not support routing for the API the client is for a message will be logged during announce.
-func WithClients(clients ...any) TraitOption {
+func WithClients(clients ...wrap.ServiceUnwrapper) TraitOption {
 	return func(t *traitFeature) {
-		for _, impl := range clients {
-			t.clients = append(t.clients, client{impl: impl})
+		for _, c := range clients {
+			conn, desc := c.UnwrapService()
+			t.services = append(t.services, service{desc: desc, conn: conn})
 		}
 	}
 }
 
 // WithOptClients is like WithClients without logging when the client is not supported.
-func WithOptClients(clients ...any) TraitOption {
-	return func(t *traitFeature) {
-		for _, impl := range clients {
-			t.clients = append(t.clients, client{impl: impl, allowUnsupported: true})
-		}
-	}
+func WithOptClients(clients ...wrap.ServiceUnwrapper) TraitOption {
+	return WithClients(clients...)
 }
 
 // NoAddChildTrait instructs the Node not to add the trait to the nodes parent.Model.
@@ -220,4 +230,19 @@ func NoAddChildTrait() TraitOption {
 	return func(t *traitFeature) {
 		t.noAddChildTrait = true
 	}
+}
+
+type capturingRegistrar struct {
+	desc *grpc.ServiceDesc
+	impl any
+}
+
+func (r *capturingRegistrar) RegisterService(desc *grpc.ServiceDesc, impl any) {
+	r.desc = desc
+	r.impl = impl
+}
+
+type service struct {
+	desc grpc.ServiceDesc
+	conn grpc.ClientConnInterface
 }

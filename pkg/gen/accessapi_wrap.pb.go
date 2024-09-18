@@ -3,34 +3,41 @@
 package gen
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapAccessApi	adapts a gen.AccessApiServer	and presents it as a gen.AccessApiClient
-func WrapAccessApi(server AccessApiServer) AccessApiClient {
+func WrapAccessApi(server AccessApiServer) *AccessApiWrapper {
 	conn := wrap.ServerToClient(AccessApi_ServiceDesc, server)
 	client := NewAccessApiClient(conn)
-	return &accessApiWrapper{
+	return &AccessApiWrapper{
 		AccessApiClient: client,
 		server:          server,
+		conn:            conn,
+		desc:            AccessApi_ServiceDesc,
 	}
 }
 
-type accessApiWrapper struct {
+type AccessApiWrapper struct {
 	AccessApiClient
 
 	server AccessApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
 
-// compile time check that we implement the interface we need
-var _ AccessApiClient = (*accessApiWrapper)(nil)
-
 // UnwrapServer returns the underlying server instance.
-func (w *accessApiWrapper) UnwrapServer() AccessApiServer {
+func (w *AccessApiWrapper) UnwrapServer() AccessApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *accessApiWrapper) Unwrap() any {
+func (w *AccessApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
+}
+
+func (w *AccessApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

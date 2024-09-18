@@ -3,34 +3,41 @@
 package gen
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapTemperatureApi	adapts a gen.TemperatureApiServer	and presents it as a gen.TemperatureApiClient
-func WrapTemperatureApi(server TemperatureApiServer) TemperatureApiClient {
+func WrapTemperatureApi(server TemperatureApiServer) *TemperatureApiWrapper {
 	conn := wrap.ServerToClient(TemperatureApi_ServiceDesc, server)
 	client := NewTemperatureApiClient(conn)
-	return &temperatureApiWrapper{
+	return &TemperatureApiWrapper{
 		TemperatureApiClient: client,
 		server:               server,
+		conn:                 conn,
+		desc:                 TemperatureApi_ServiceDesc,
 	}
 }
 
-type temperatureApiWrapper struct {
+type TemperatureApiWrapper struct {
 	TemperatureApiClient
 
 	server TemperatureApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
 
-// compile time check that we implement the interface we need
-var _ TemperatureApiClient = (*temperatureApiWrapper)(nil)
-
 // UnwrapServer returns the underlying server instance.
-func (w *temperatureApiWrapper) UnwrapServer() TemperatureApiServer {
+func (w *TemperatureApiWrapper) UnwrapServer() TemperatureApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *temperatureApiWrapper) Unwrap() any {
+func (w *TemperatureApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
+}
+
+func (w *TemperatureApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

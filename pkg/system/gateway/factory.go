@@ -44,6 +44,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/internal/router"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/lighttest"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -52,7 +53,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/util/grpc/reflectionapi"
-	"github.com/vanti-dev/sc-bos/pkg/util/grpc/unknown"
 )
 
 const (
@@ -89,7 +89,7 @@ type System struct {
 	hub        node.Remote
 	ignore     []string
 	tlsConfig  *tls.Config
-	methods    *unknown.MethodTable
+	methods    *router.ServiceTable
 	reflection *reflectionapi.Server
 	announcer  node.Announcer
 	logger     *zap.Logger

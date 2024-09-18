@@ -1,4 +1,4 @@
-package unknown
+package router
 
 import (
 	"context"
@@ -14,8 +14,12 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+type MethodResolver interface {
+	ResolveMethod(fullName string) (Method, bool)
+}
+
 // StreamHandler returns a grpc.StreamHandler that routes incoming message to the appropriate downstream target.
-func StreamHandler(r *MethodTable) grpc.StreamHandler {
+func StreamHandler(r MethodResolver) grpc.StreamHandler {
 	return func(_ any, serverStream grpc.ServerStream) error {
 		method, ok := grpc.Method(serverStream.Context())
 		if !ok {
@@ -23,7 +27,7 @@ func StreamHandler(r *MethodTable) grpc.StreamHandler {
 			// The code is the same though.
 			return status.Errorf(codes.Unimplemented, "unknown service method %v", method)
 		}
-		target, ok := r.Get(method)
+		target, ok := r.ResolveMethod(method)
 		if !ok {
 			return status.Errorf(codes.Unimplemented, "unknown service method %v", method)
 		}

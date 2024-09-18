@@ -3,34 +3,41 @@
 package gen
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapHistoryAdminApi	adapts a gen.HistoryAdminApiServer	and presents it as a gen.HistoryAdminApiClient
-func WrapHistoryAdminApi(server HistoryAdminApiServer) HistoryAdminApiClient {
+func WrapHistoryAdminApi(server HistoryAdminApiServer) *HistoryAdminApiWrapper {
 	conn := wrap.ServerToClient(HistoryAdminApi_ServiceDesc, server)
 	client := NewHistoryAdminApiClient(conn)
-	return &historyAdminApiWrapper{
+	return &HistoryAdminApiWrapper{
 		HistoryAdminApiClient: client,
 		server:                server,
+		conn:                  conn,
+		desc:                  HistoryAdminApi_ServiceDesc,
 	}
 }
 
-type historyAdminApiWrapper struct {
+type HistoryAdminApiWrapper struct {
 	HistoryAdminApiClient
 
 	server HistoryAdminApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
 
-// compile time check that we implement the interface we need
-var _ HistoryAdminApiClient = (*historyAdminApiWrapper)(nil)
-
 // UnwrapServer returns the underlying server instance.
-func (w *historyAdminApiWrapper) UnwrapServer() HistoryAdminApiServer {
+func (w *HistoryAdminApiWrapper) UnwrapServer() HistoryAdminApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *historyAdminApiWrapper) Unwrap() any {
+func (w *HistoryAdminApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
+}
+
+func (w *HistoryAdminApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

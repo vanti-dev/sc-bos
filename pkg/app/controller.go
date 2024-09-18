@@ -23,6 +23,7 @@ import (
 
 	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
+	"github.com/vanti-dev/sc-bos/internal/router"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
@@ -36,7 +37,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/util/grpc/reflectionapi"
-	"github.com/vanti-dev/sc-bos/pkg/util/grpc/unknown"
 )
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
@@ -213,8 +213,8 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	}
 
 	// here we set up our support for runtime added RPCs.
-	unknownMethodTable := unknown.NewMethodTable()
-	grpcOpts = append(grpcOpts, grpc.UnknownServiceHandler(unknown.StreamHandler(unknownMethodTable)))
+	unknownMethodTable := router.NewServiceTable()
+	grpcOpts = append(grpcOpts, grpc.UnknownServiceHandler(router.StreamHandler(unknownMethodTable)))
 
 	grpcServer := grpc.NewServer(grpcOpts...)
 
@@ -352,7 +352,7 @@ type Controller struct {
 
 	// Support for runtime changes to served and reflected RPCs.
 	// Most services should use Node.Support between Bootstrap and Run to add their services to the controller.
-	MethodTable      *unknown.MethodTable
+	MethodTable      *router.ServiceTable
 	ReflectionServer *reflectionapi.Server
 
 	Mux  *http.ServeMux

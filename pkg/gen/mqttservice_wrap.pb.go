@@ -3,34 +3,41 @@
 package gen
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 // WrapMqttService	adapts a gen.MqttServiceServer	and presents it as a gen.MqttServiceClient
-func WrapMqttService(server MqttServiceServer) MqttServiceClient {
+func WrapMqttService(server MqttServiceServer) *MqttServiceWrapper {
 	conn := wrap.ServerToClient(MqttService_ServiceDesc, server)
 	client := NewMqttServiceClient(conn)
-	return &mqttServiceWrapper{
+	return &MqttServiceWrapper{
 		MqttServiceClient: client,
 		server:            server,
+		conn:              conn,
+		desc:              MqttService_ServiceDesc,
 	}
 }
 
-type mqttServiceWrapper struct {
+type MqttServiceWrapper struct {
 	MqttServiceClient
 
 	server MqttServiceServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
 
-// compile time check that we implement the interface we need
-var _ MqttServiceClient = (*mqttServiceWrapper)(nil)
-
 // UnwrapServer returns the underlying server instance.
-func (w *mqttServiceWrapper) UnwrapServer() MqttServiceServer {
+func (w *MqttServiceWrapper) UnwrapServer() MqttServiceServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *mqttServiceWrapper) Unwrap() any {
+func (w *MqttServiceWrapper) Unwrap() any {
 	return w.UnwrapServer()
+}
+
+func (w *MqttServiceWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }
