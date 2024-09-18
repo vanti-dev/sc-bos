@@ -7,10 +7,10 @@
 import {timestampToDate} from '@/api/convpb';
 import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource';
 import {listAlerts, pullAlerts} from '@/api/ui/alerts';
+import {severityData} from '@/routes/ops/notifications/notifications.js';
 import {csvDownload} from '@/util/downloadCSV';
-import {computed, onBeforeUnmount, onMounted, reactive, ref, toValue, watch} from 'vue';
-import {useNotifications} from '@/routes/ops/notifications/notifications.js';
 import deepEqual from 'fast-deep-equal';
+import {computed, onBeforeUnmount, onMounted, reactive, ref, toValue, watch} from 'vue';
 
 /**
  * @param {MaybeRefOrGetter<string>} name
@@ -209,7 +209,6 @@ export default function(name, query) {
   });
 
   // --------- Export data as CSV --------- //
-  const notifications = useNotifications();
   const downloadListPageTracker = reactive(
       /** @type {ActionTracker<ListAlertsResponse.AsObject>} */
       newActionTracker()
@@ -267,7 +266,7 @@ export default function(name, query) {
           source: item.source,
           floor: item.floor,
           zone: item.zone,
-          severity: notifications.severityData(item.severity).text,
+          severity: severityData(item.severity).text,
           description: item.description,
           resolveTime: resolveTimeString,
           acknowledged: item.acknowledgement ? 'Yes' : 'No',

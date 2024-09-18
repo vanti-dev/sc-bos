@@ -66,7 +66,6 @@ export const useNotifications = defineStore('notifications', () => {
   }
 
   return {
-    severityData,
     setAcknowledged
   };
 });

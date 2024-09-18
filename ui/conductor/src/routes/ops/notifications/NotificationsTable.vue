@@ -147,12 +147,12 @@
               <span v-bind="_props">RESOLVED</span>
             </template>
             Was:
-            <span :class="notifications.severityData(item.severity).color">
-              {{ notifications.severityData(item.severity).text }}
+            <span :class="severityData(item.severity).color">
+              {{ severityData(item.severity).text }}
             </span>
           </v-tooltip>
-          <span v-else :class="notifications.severityData(item.severity).color">
-            {{ notifications.severityData(item.severity).text }}
+          <span v-else :class="severityData(item.severity).color">
+            {{ severityData(item.severity).text }}
           </span>
         </template>
         <template #item.acknowledged="{ item }">

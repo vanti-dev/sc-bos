@@ -40,14 +40,13 @@
 
 <script setup>
 import {timestampToDate} from '@/api/convpb';
-import {useNotifications} from '@/routes/ops/notifications/notifications.js';
+import {severityData} from '@/routes/ops/notifications/notifications.js';
 import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
 import {useSidebarStore} from '@/stores/sidebar';
 import {computed} from 'vue';
 
 
 const sidebar = useSidebarStore();
-const notification = useNotifications();
 
 const name = computed(() => sidebar.data?.notification?.name);
 const item = computed(() => sidebar.data?.notification?.item);
@@ -69,10 +68,10 @@ const notificationSidebar = computed(() => {
   if (pageItems.value.length === 0) return [];
 
   return pageItems.value.map(item => {
-    const icon = icons[notification.severityData(item.severity).text.toLowerCase()];
+    const icon = icons[severityData(item.severity).text.toLowerCase()];
     const color = item.resolveTime ?
         'text-grey' :
-        notification.severityData(item.severity).color;
+        severityData(item.severity).color;
     return {
       ...item,
       severity: {icon, color},
