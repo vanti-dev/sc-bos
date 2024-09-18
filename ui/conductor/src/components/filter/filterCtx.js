@@ -150,8 +150,8 @@ export default function useFilterCtx(opts) {
         } else if (f.type === 'range') {
           // for ranges, we maintain the choice if the new filter includes the ranges from and to
           const range = /** @type {ChoiceRange} */ choice.value;
-          const hasFrom = f.items.some(i => range.from === undefined || range.from === i);
-          const hasTo = f.items.some(i => range.to === undefined || range.to === i);
+          const hasFrom = f.items.some(i => range.from === undefined || deepEqual(range.from, i));
+          const hasTo = f.items.some(i => range.to === undefined || deepEqual(range.to, i));
           if (!(hasFrom && hasTo)) {
             // part of the range is now invalid, replace
             toRemove.add(f.key);
