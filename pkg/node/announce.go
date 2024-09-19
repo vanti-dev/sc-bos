@@ -155,14 +155,18 @@ func HasServer[S any](register func(registrar grpc.ServiceRegistrar, srv S), srv
 		var registrar capturingRegistrar
 		register(&registrar, srv)
 
-		a.services = append(a.services, service{desc: *registrar.desc, conn: wrap.ServerToClient(*registrar.desc, srv)})
+		a.services = append(a.services, service{
+			desc:        *registrar.desc,
+			conn:        wrap.ServerToClient(*registrar.desc, srv),
+			nameRouting: true,
+		})
 	})
 }
 
 func HasClientConn(conn grpc.ClientConnInterface, services ...grpc.ServiceDesc) Feature {
 	return featureFunc(func(a *announcement) {
 		for _, s := range services {
-			a.services = append(a.services, service{desc: s, conn: conn})
+			a.services = append(a.services, service{desc: s, conn: conn, nameRouting: true})
 		}
 	})
 }
@@ -215,7 +219,7 @@ func WithClients(clients ...wrap.ServiceUnwrapper) TraitOption {
 	return func(t *traitFeature) {
 		for _, c := range clients {
 			conn, desc := c.UnwrapService()
-			t.services = append(t.services, service{desc: desc, conn: conn})
+			t.services = append(t.services, service{desc: desc, conn: conn, nameRouting: true})
 		}
 	}
 }
@@ -243,6 +247,7 @@ func (r *capturingRegistrar) RegisterService(desc *grpc.ServiceDesc, impl any) {
 }
 
 type service struct {
-	desc grpc.ServiceDesc
-	conn grpc.ClientConnInterface
+	desc        grpc.ServiceDesc
+	conn        grpc.ClientConnInterface
+	nameRouting bool
 }

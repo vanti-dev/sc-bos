@@ -2,17 +2,22 @@ package node
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/internal/router"
 )
 
@@ -34,7 +39,7 @@ type Node struct {
 
 	// allMetadata allows users of the node to be notified of any metadata changes via Announce or when
 	// that announcement is undone.
-	allMetadata *resource.Collection // of *traits.Metadata
+	allMetadata *metadata.Collection
 
 	Logger *zap.Logger
 }
@@ -45,8 +50,10 @@ func New(name string) *Node {
 		name:        name,
 		router:      router.New(),
 		Logger:      zap.NewNop(),
-		allMetadata: resource.NewCollection(),
+		allMetadata: metadata.NewCollection(),
 	}
+	// metadata should be supported by default
+	traits.RegisterMetadataApiServer(node, metadata.NewCollectionServer(node.allMetadata))
 	node.parentLocked()
 	return node
 }
@@ -71,6 +78,7 @@ func (n *Node) Announce(name string, features ...Feature) Undo {
 }
 
 func (n *Node) announceLocked(name string, features ...Feature) Undo {
+	log := n.Logger.Sugar()
 	a := &announcement{name: name}
 	for _, feature := range features {
 		feature.apply(a)
@@ -86,10 +94,14 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 		services = append(services, t.services...)
 	}
 	for _, s := range services {
-		undo = append(undo, registerService(n.router, name, s))
+		undoRoute, err := registerDeviceRoute(n.router, name, s)
+		if err != nil {
+			log.Errorf("cannot register %s route for %q: %v", s.desc.ServiceName, name, err)
+		} else {
+			undo = append(undo, undoRoute)
+		}
 	}
 
-	log := n.Logger.Sugar()
 	for _, t := range a.traits {
 		log.Debugf("%v now implements %v", name, t.name)
 		undo = append(undo, func() {
@@ -133,6 +145,26 @@ func (n *Node) Support(functions ...Function) {
 	}
 }
 
+// RegisterService registers a server implementation as the default route for that service.
+//
+// If the service is not already supported by the node's router, it is added as an unrouted service.
+func (n *Node) RegisterService(desc *grpc.ServiceDesc, impl any) {
+	err := ensureServiceSupported(n.router, service{
+		desc:        *desc,
+		nameRouting: false,
+	})
+	if err != nil {
+		n.Logger.Error("failed to register unrouted service", zap.Error(err), zap.String("service", desc.ServiceName))
+		return
+	}
+
+	conn := wrap.ServerToClient(*desc, impl)
+	err = n.router.AddDefaultRoute(desc.ServiceName, conn)
+	if err != nil {
+		n.Logger.Error("failed to register default route for service", zap.Error(err), zap.String("service", desc.ServiceName))
+	}
+}
+
 func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
 	retryConcurrentOp(func() {
 		n.parentLocked().AddChildTrait(name, traitName...)
@@ -163,8 +195,10 @@ func (n *Node) parentLocked() *parent.Model {
 	if n.children == nil {
 		// add this model as a device
 		n.children = parent.NewModel()
-		client := parent.WrapApi(parent.NewModelServer(n.children))
-		n.announceLocked(n.name, HasTrait(trait.Parent, WithClients(client)))
+		n.announceLocked(n.name,
+			HasServer(traits.RegisterParentApiServer, traits.ParentApiServer(parent.NewModelServer(n.children))),
+			HasTrait(trait.Parent),
+		)
 	}
 	return n.children
 }
@@ -210,9 +244,50 @@ func isConcurrentUpdateDetectedError(err error) bool {
 	return s.Code() == codes.Aborted && strings.Contains(s.Message(), "concurrent update detected")
 }
 
-func registerService(r *router.Router, deviceName string, s service) Undo {
+func registerDeviceRoute(r *router.Router, name string, s service) (Undo, error) {
+	err := ensureServiceSupported(r, s)
+	if err != nil {
+		return NilUndo, err
+	}
+
+	err = r.AddRoute(s.desc.ServiceName, name, s.conn)
+	if err != nil {
+		return NilUndo, err
+	}
 
 	return func() {
-		_ = r.DeleteRoute(s.desc.ServiceName, deviceName)
+		_ = r.DeleteRoute(s.desc.ServiceName, name)
+	}, nil
+}
+
+func ensureServiceSupported(r *router.Router, s service) error {
+	if r.SupportsService(s.desc.ServiceName) {
+		// already supported, nothing to do
+		return nil
 	}
+
+	desc, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(s.desc.ServiceName))
+	if err != nil {
+		return fmt.Errorf("descriptor for service %q not in registry: %w", s.desc.ServiceName, err)
+	}
+	servDesc, ok := desc.(protoreflect.ServiceDescriptor)
+	if !ok {
+		return fmt.Errorf("%q is not a service", s.desc.ServiceName)
+	}
+
+	var routerService *router.Service
+	if s.nameRouting {
+		// smart core traits use the name field to route requests to the right device
+		routerService, err = router.NewRoutedService(servDesc, "name")
+		if err != nil {
+			return fmt.Errorf("service %q is not routable by name: %w", s.desc.ServiceName, err)
+		}
+	} else {
+		routerService = router.NewUnroutedService(servDesc)
+	}
+
+	// SupportService might return true if another goroutine added support after the SupportsService check above
+	// this is a bit of wasted work but is safe
+	_ = r.SupportService(routerService)
+	return nil
 }
