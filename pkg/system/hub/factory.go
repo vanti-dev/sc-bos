@@ -65,10 +65,6 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 	return s
 }
 
-func (f *factory) AddSupport(supporter node.Supporter) {
-	supporter.Support(node.Api(f.server), node.Clients(gen.WrapHubApi(f.server)))
-}
-
 type System struct {
 	*service.Service[config.Root]
 

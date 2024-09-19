@@ -29,24 +29,28 @@ func (rf ResolverFunc) Resolve(mr MsgRecver) (grpc.ClientConnInterface, error) {
 
 type KeyFunc func(mr MsgRecver) (string, error)
 
-// NameKey returns a KeyFunc that extracts "name" keys from messages that are described by msgDesc.
+// NameFieldKey returns a KeyFunc that extracts "name" keys from messages that are described by msgDesc.
 // "name" keys have the following properties:
 //
 //   - The property is named "name".
 //   - The property is of type string.
 //   - The property is not repeated.
 //
-// NameKey is safe for concurrent use.
-func NameKey(msgDesc protoreflect.MessageDescriptor) (KeyFunc, error) {
-	nameFieldDesc := msgDesc.Fields().ByName("name")
+// NameFieldKey is safe for concurrent use.
+func NameFieldKey(msgDesc protoreflect.MessageDescriptor) (KeyFunc, error) {
+	return FieldKey(msgDesc, "name")
+}
+
+func FieldKey(msgDesc protoreflect.MessageDescriptor, field string) (KeyFunc, error) {
+	nameFieldDesc := msgDesc.Fields().ByName(protoreflect.Name(field))
 	if nameFieldDesc == nil {
-		return nil, fmt.Errorf("no name field found in %q", msgDesc.FullName())
+		return nil, fmt.Errorf("no %s field found in %q", field, msgDesc.FullName())
 	}
 	if nameFieldDesc.Kind() != protoreflect.StringKind {
-		return nil, fmt.Errorf("name field in %q is not a string", msgDesc.FullName())
+		return nil, fmt.Errorf("%s field in %q is not a string", field, msgDesc.FullName())
 	}
 	if nameFieldDesc.Cardinality() == protoreflect.Repeated {
-		return nil, fmt.Errorf("name field in %q is repeated", msgDesc.FullName())
+		return nil, fmt.Errorf("%s name field in %q is repeated", field, msgDesc.FullName())
 	}
 	return func(mr MsgRecver) (string, error) {
 		m := dynamicpb.NewMessage(msgDesc)

@@ -98,7 +98,6 @@ func (c *Controller) startSystems() (*service.Map, error) {
 		Database:         c.Database,
 		HTTPMux:          c.Mux,
 		TokenValidators:  c.TokenValidators,
-		MethodTable:      c.MethodTable,
 		ReflectionServer: c.ReflectionServer,
 		GRPCCerts:        c.GRPCCerts,
 		PrivateKey:       c.PrivateKey,

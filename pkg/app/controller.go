@@ -23,7 +23,6 @@ import (
 
 	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
-	"github.com/vanti-dev/sc-bos/internal/router"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
@@ -213,8 +212,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	}
 
 	// here we set up our support for runtime added RPCs.
-	unknownMethodTable := router.NewServiceTable()
-	grpcOpts = append(grpcOpts, grpc.UnknownServiceHandler(router.StreamHandler(unknownMethodTable)))
+	grpcOpts = append(grpcOpts, grpc.UnknownServiceHandler(rootNode.ServerHandler()))
 
 	grpcServer := grpc.NewServer(grpcOpts...)
 
@@ -223,9 +221,6 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
 	devices.NewServer(rootNode).Register(grpcServer)
-	// support the services api for managing drivers, automations, and systems
-	serviceRouter := gen.NewServicesApiRouter()
-	rootNode.Support(node.Routing(serviceRouter), node.Clients(gen.WrapServicesApi(serviceRouter)))
 
 	grpcWebServer := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
 		return true
@@ -278,7 +273,6 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		Database:         db,
 		TokenValidators:  tokenValidator,
 		GRPCCerts:        systemSource,
-		MethodTable:      unknownMethodTable,
 		ReflectionServer: reflectionServer,
 		PrivateKey:       key,
 		Mux:              mux,
@@ -350,9 +344,6 @@ type Controller struct {
 	TokenValidators *token.ValidatorSet
 	GRPCCerts       *pki.SourceSet
 
-	// Support for runtime changes to served and reflected RPCs.
-	// Most services should use Node.Support between Bootstrap and Run to add their services to the controller.
-	MethodTable      *router.ServiceTable
 	ReflectionServer *reflectionapi.Server
 
 	Mux  *http.ServeMux
@@ -385,9 +376,6 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	addFactorySupport(c.Node, c.SystemConfig.AutoFactories)
 	addFactorySupport(c.Node, c.SystemConfig.SystemFactories)
 
-	// we delay registering the node servers until now, so that the caller can call c.Node.Support in between
-	// Bootstrap and Run and have all these added correctly.
-	c.Node.Register(c.GRPC)
 	// metadata associated with the node itself
 	// we don't support changing metadata while running
 	c.Node.Announce(c.Node.Name(), node.HasMetadata(initialConfig.Metadata))

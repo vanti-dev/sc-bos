@@ -44,7 +44,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/internal/router"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/lighttest"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -76,7 +75,6 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 		hub:        services.CohortManager,
 		ignore:     []string{services.GRPCEndpoint}, // avoid infinite recursion
 		tlsConfig:  services.ClientTLSConfig,
-		methods:    services.MethodTable,
 		reflection: services.ReflectionServer,
 		announcer:  services.Node,
 		logger:     services.Logger.Named(Name),
@@ -89,7 +87,6 @@ type System struct {
 	hub        node.Remote
 	ignore     []string
 	tlsConfig  *tls.Config
-	methods    *router.ServiceTable
 	reflection *reflectionapi.Server
 	announcer  node.Announcer
 	logger     *zap.Logger
