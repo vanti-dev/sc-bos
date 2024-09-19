@@ -5,7 +5,8 @@
 export function routeTitle(route) {
   for (let i = route.matched.length - 1; i >= 0; i--) {
     const r = route.matched[i];
-    const title = r.meta?.['title'];
+    let title = r.meta?.['title'];
+    if (typeof title === 'function') title = title();
     if (title) return title;
   }
 }
