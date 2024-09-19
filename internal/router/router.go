@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 
@@ -202,11 +203,20 @@ func NewUnroutedService(desc protoreflect.ServiceDescriptor) *Service {
 	return &Service{descriptor: desc}
 }
 
-func NewRoutedService(desc protoreflect.ServiceDescriptor, keyField string) *Service {
+func NewRoutedService(desc protoreflect.ServiceDescriptor, keyField string) (*Service, error) {
+	keys := make(map[string]KeyFunc)
+	for i := 0; i < desc.Methods().Len(); i++ {
+		method := desc.Methods().Get(i)
+		keyFunc, err := FieldKey(method.Input(), keyField)
+		if err != nil {
+			return nil, fmt.Errorf("method %s is not routable: %w", method.Name(), err)
+		}
+		keys[string(method.Name())] = keyFunc
+	}
 	return &Service{
 		descriptor: desc,
-		keys:       make(map[string]KeyFunc),
-	}
+		keys:       keys,
+	}, nil
 }
 
 func (s *Service) Name() string {

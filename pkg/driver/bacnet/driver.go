@@ -23,7 +23,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/ctxerr"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/merge"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/status"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
@@ -44,19 +43,6 @@ func (_ factory) New(services driver.Services) service.Lifecycle {
 
 func (_ factory) ConfigBlocks() []block.Block {
 	return config.Blocks
-}
-
-func (_ factory) AddSupport(supporter node.Supporter) {
-	Register(supporter)
-}
-
-// Register makes sure this driver and its device apis are available in the given node.
-func Register(supporter node.Supporter) {
-	r := rpc.NewBacnetDriverServiceRouter()
-	supporter.Support(
-		node.Routing(r),
-		node.Clients(rpc.WrapBacnetDriverService(r)),
-	)
 }
 
 // Driver brings BACnet devices into Smart Core.

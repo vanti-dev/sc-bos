@@ -22,7 +22,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
 	"github.com/vanti-dev/sc-bos/pkg/history/memstore"
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 )
 
 func main() {
@@ -31,7 +30,6 @@ func main() {
 		panic(err)
 	}
 	root := node.New("test")
-	alltraits.AddSupport(root)
 
 	now, _ := time.Parse(time.DateTime, "2023-11-15 11:36:00")
 	now = now.Round(time.Second) // get rid of millis, etc

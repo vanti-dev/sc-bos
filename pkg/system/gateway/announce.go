@@ -306,7 +306,7 @@ func (a *announcer) announceRemoteServices(seq seq2[int, remoteService]) tasks {
 func (a *announcer) announceRemoteServiceApis(rs remoteService) node.Undo {
 	var keyFuncs []router.KeyFunc
 	for _, method := range rs.methods {
-		keyFunc, err := router.NameKey(method.Input())
+		keyFunc, err := router.NameFieldKey(method.Input())
 		if err != nil {
 			continue // we don't care about err, just that this method doesn't have a name key
 		}

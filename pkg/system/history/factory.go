@@ -29,10 +29,6 @@ func (_ factory) New(services system.Services) service.Lifecycle {
 	return NewSystem(services)
 }
 
-func (_ factory) AddSupport(supporter node.Supporter) {
-	Register(supporter)
-}
-
 func NewSystem(services system.Services) *System {
 	logger := services.Logger.Named("history")
 	s := &System{
@@ -48,12 +44,6 @@ func NewSystem(services system.Services) *System {
 		})),
 	)
 	return s
-}
-func Register(supporter node.Supporter) {
-	historyAdminApiRouter := gen.NewHistoryAdminApiRouter()
-	supporter.Support(
-		node.Routing(historyAdminApiRouter), node.Clients(gen.WrapHistoryAdminApi(historyAdminApiRouter)),
-	)
 }
 
 type System struct {

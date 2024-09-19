@@ -16,12 +16,10 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/azureiot"
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 )
 
 func main() {
 	root := node.New("example-azureiot")
-	alltraits.AddSupport(root)
 
 	model := airqualitysensor.NewModel(airqualitysensor.WithInitialAirQuality(iaq()))
 	root.Announce("IAQ-001", node.HasTrait(trait.AirQualitySensor, node.WithClients(

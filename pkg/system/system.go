@@ -8,7 +8,6 @@ import (
 	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/internal/router"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -27,7 +26,6 @@ type Services struct {
 	HTTPMux         *http.ServeMux      // to allow systems to serve http requests
 	TokenValidators *token.ValidatorSet // to allow systems to contribute towards client validation
 
-	MethodTable      *router.ServiceTable  // to allow addition of dynamic grpc services
 	ReflectionServer *reflectionapi.Server // to allow systems to contribute types towards the reflection api
 
 	// GRPCCerts allows a system to contribute a pki.Source that might be used for outbound or inbound gRPC connections.
