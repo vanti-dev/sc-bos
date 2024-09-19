@@ -1,6 +1,6 @@
 import {ServiceNames} from '@/api/ui/services.js';
 import SidebarPage from '@/components/pages/SidebarPage.vue';
-import {serviceName} from '@/util/gateway.js';
+import {useServiceRoutes} from '@/dynamic/route.js';
 
 export default [{
   name: 'automations',
@@ -21,6 +21,7 @@ export default [{
         default: true
       },
       meta: {
+        editRoutePrefix: ServiceNames.Automations,
         authentication: {
           rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
         }
@@ -36,27 +37,7 @@ export default [{
 }, {
   name: 'automation',
   path: '/automation',
-  children: [{
-    name: 'automation-name-id',
-    path: ':name/:id',
-    component: () => import('@/components/pages/ServiceJsonEditor.vue'),
-    props: route => {
-      return {
-        name: serviceName(route.params.name, ServiceNames.Automations),
-        id: route.params.id
-      };
-    }
-  }, {
-    name: 'automation-id',
-    path: ':id',
-    component: () => import('@/components/pages/ServiceJsonEditor.vue'),
-    props: route => {
-      return {
-        name: ServiceNames.Automations,
-        id: route.params.id
-      };
-    }
-  }],
+  children: useServiceRoutes(ServiceNames.Automations),
   meta: {
     authentication: {
       rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']

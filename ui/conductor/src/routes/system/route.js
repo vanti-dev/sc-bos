@@ -1,7 +1,7 @@
 import {ServiceNames} from '@/api/ui/services.js';
 import SidebarPage from '@/components/pages/SidebarPage.vue';
+import {useServiceRoutes} from '@/dynamic/route.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
-import {serviceName} from '@/util/gateway.js';
 
 export default [{
   name: 'system',
@@ -18,7 +18,7 @@ export default [{
         sidebar: () => import('./components/ServicesSideBar.vue')
       },
       meta: {
-        editRoutePrefix: 'driver',
+        editRoutePrefix: ServiceNames.Drivers,
         authentication: {
           rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
         }
@@ -31,7 +31,7 @@ export default [{
         sidebar: () => import('./components/ServicesSideBar.vue')
       },
       meta: {
-        editRoutePrefix: 'zone',
+        editRoutePrefix: ServiceNames.Zones,
         authentication: {
           rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
         }
@@ -82,27 +82,7 @@ export default [{
 }, {
   name: 'driver',
   path: '/system/driver',
-  children: [{
-    name: 'driver-name-id',
-    path: ':name/:id',
-    component: () => import('@/components/pages/ServiceJsonEditor.vue'),
-    props: route => {
-      return {
-        name: serviceName(route.params.name, ServiceNames.Drivers),
-        id: route.params.id
-      };
-    }
-  }, {
-    name: 'driver-id',
-    path: ':id',
-    component: () => import('@/components/pages/ServiceJsonEditor.vue'),
-    props: route => {
-      return {
-        name: ServiceNames.Drivers,
-        id: route.params.id
-      };
-    }
-  }],
+  children: useServiceRoutes(ServiceNames.Drivers),
   meta: {
     authentication: {
       rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
@@ -112,32 +92,12 @@ export default [{
 }, {
   name: 'system-zone',
   path: '/system/zone',
-  children: [{
-    name: 'zone-name-id',
-    path: ':name/:id',
-    component: () => import('@/components/pages/ServiceJsonEditor.vue'),
-    props: route => {
-      return {
-        name: serviceName(route.params.name, ServiceNames.Zones),
-        id: route.params.id
-      };
-    }
-  }, {
-    name: 'zone-id',
-    path: ':id',
-    component: () => import('@/components/pages/ServiceJsonEditor.vue'),
-    props: route => {
-      return {
-        name: ServiceNames.Zones,
-        id: route.params.id
-      };
-    }
-  }],
+  children: useServiceRoutes(ServiceNames.Zones),
   meta: {
     authentication: {
       rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
     },
-    title: 'Driver'
+    title: 'Zone'
   }
 }
 ];

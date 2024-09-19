@@ -1,6 +1,6 @@
 <template>
   <side-bar>
-    <template #actions>
+    <template v-if="canEdit" #actions>
       <v-btn :to="editLink" icon="mdi-pencil" variant="plain" size="small"/>
     </template>
     <lights-config-card v-if="automationType === 'lights'"/>
@@ -20,6 +20,7 @@ import {configureService, ServiceNames as ServiceTypes} from '@/api/ui/services'
 import SideBar from '@/components/SideBar.vue';
 import {useErrorStore} from '@/components/ui-error/error';
 import useAuthSetup from '@/composables/useAuthSetup';
+import {useSidebarServiceRouterLink} from '@/dynamic/route.js';
 import LightsConfigCard from '@/routes/automations/components/config-cards/LightsConfigCard.vue';
 import EditConfigCard from '@/routes/system/components/service-cards/EditConfigCard.vue';
 import {useSidebarStore} from '@/stores/sidebar';
@@ -69,16 +70,5 @@ async function saveConfig() {
   saveConfirm.value = true;
 }
 
-const editLink = computed(() => {
-  if (!sidebar.data?.service?.id) return undefined;
-  if (nodeName.value) {
-    return {name: 'automation-name-id', params: {name: nodeName.value, id: sidebar.data.service.id}};
-  } else {
-    return {name: 'automation-id', params: {id: sidebar.data.service.id}};
-  }
-});
-
+const {hasLink: canEdit, to: editLink} = useSidebarServiceRouterLink();
 </script>
-
-<style scoped>
-</style>
