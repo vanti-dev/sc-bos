@@ -36,11 +36,11 @@ import {getMetadata} from '@/api/sc/traits/metadata.js';
 import OverlayStack from '@/components/zoom/OverlayStack.vue';
 import PinchZoom from '@/components/zoom/PinchZoom.vue';
 import DeviceSideBar from '@/routes/devices/components/DeviceSideBar.vue';
-import {useSidebarStore} from '@/stores/sidebar';
-import GraphicLayer from '@/widgets/graphic/GraphicLayer.vue';
-import LayeredGraphicSettings from '@/widgets/graphic/LayeredGraphicSettings.vue';
-import {usePathUtils} from '@/widgets/graphic/path.js';
-import {nameFromRequest} from '@/widgets/graphic/traits.js';
+import {useSidebarStore} from '@/stores/sidebar.js';
+import GraphicLayer from '@/dynamic/widgets/graphic/GraphicLayer.vue';
+import LayeredGraphicSettings from '@/dynamic/widgets/graphic/LayeredGraphicSettings.vue';
+import {usePathUtils} from '@/dynamic/widgets/graphic/path.js';
+import {nameFromRequest} from '@/dynamic/widgets/graphic/traits.js';
 import {computed, ref, watch} from 'vue';
 
 const props = defineProps({

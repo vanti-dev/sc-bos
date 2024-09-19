@@ -19,10 +19,10 @@
 <script setup>
 import {closeResource} from '@/api/resource.js';
 import {usePullTrait} from '@/traits/traits.js';
-import {loadConfig} from '@/widgets/graphic/config.js';
-import {usePathUtils} from '@/widgets/graphic/path.js';
-import {useSvgEffects} from '@/widgets/graphic/svg.js';
-import {useWidgetEffects} from '@/widgets/graphic/widgets.js';
+import {loadConfig} from '@/dynamic/widgets/graphic/config.js';
+import {usePathUtils} from '@/dynamic/widgets/graphic/path.js';
+import {useSvgEffects} from '@/dynamic/widgets/graphic/svg.js';
+import {useWidgetEffects} from '@/dynamic/widgets/graphic/widgets.js';
 import {effectScope, nextTick, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({

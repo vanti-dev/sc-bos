@@ -29,8 +29,8 @@
 <script setup>
 import {usePullElectricDemand} from '@/traits/electricDemand/electric.js';
 import {usePullOccupancy} from '@/traits/occupancy/occupancy.js';
-import LabelledUnit from '@/widgets/power-total/LabelledUnit.vue';
-import useValueOrQuery from '@/widgets/power-total/valueOrQuery.js';
+import LabelledUnit from '@/dynamic/widgets/power-total/LabelledUnit.vue';
+import useValueOrQuery from '@/dynamic/widgets/power-total/valueOrQuery.js';
 import {computed, reactive} from 'vue';
 
 const props = defineProps({

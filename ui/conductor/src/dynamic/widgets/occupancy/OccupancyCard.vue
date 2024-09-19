@@ -12,7 +12,7 @@
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
 import {useOccupancy, usePullOccupancy} from '@/traits/occupancy/occupancy.js';
-import OccupancyGraph from '@/widgets/occupancy/OccupancyGraph.vue';
+import OccupancyGraph from '@/dynamic/widgets/occupancy/OccupancyGraph.vue';
 import {computed} from 'vue';
 import OccupancyPeopleCount from './OccupancyPeopleCount.vue';
 

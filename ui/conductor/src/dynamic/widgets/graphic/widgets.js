@@ -1,5 +1,5 @@
 import {elementBounds, svgRootSize} from '@/util/svg.js';
-import {builtinWidgets} from '@/widgets/pallet.js';
+import {builtinWidgets} from '@/dynamic/widgets/pallet.js';
 import {get as _get} from 'lodash';
 import {computed, markRaw, reactive, toValue} from 'vue';
 

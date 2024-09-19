@@ -18,8 +18,8 @@
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
 import {isNullOrUndef} from '@/util/types.js';
-import EnergyGraph from '@/widgets/power-history/PowerHistoryGraph.vue';
-import PowerTotal from '@/widgets/power-total/PowerTotal.vue';
+import EnergyGraph from '@/dynamic/widgets/power-history/PowerHistoryGraph.vue';
+import PowerTotal from '@/dynamic/widgets/power-total/PowerTotal.vue';
 import {computed} from 'vue';
 
 const props = defineProps({
