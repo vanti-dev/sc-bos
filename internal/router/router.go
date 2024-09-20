@@ -1,7 +1,6 @@
 package router
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -26,8 +25,9 @@ type Router struct {
 
 func New() *Router {
 	return &Router{
-		services: make(map[string]*Service),
-		routes:   make(map[routeID]grpc.ClientConnInterface),
+		services:      make(map[string]*Service),
+		routes:        make(map[routeID]grpc.ClientConnInterface),
+		defaultRoutes: make(map[string]grpc.ClientConnInterface),
 	}
 }
 
@@ -76,14 +76,6 @@ func (r *Router) GetServiceInfo() map[string]grpc.ServiceInfo {
 		}
 	}
 	return services
-}
-
-func (r *Router) Invoke(ctx context.Context, method string, args, reply any, opts ...grpc.CallOption) error {
-	panic("not implemented")
-}
-
-func (r *Router) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-	panic("not implemented")
 }
 
 // AddRoute registers a target connection to be used for a specific combination of service and key.
