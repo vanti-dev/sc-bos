@@ -102,6 +102,10 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 		}
 	}
 
+	// unless specifically disabled, all devices support the Metadata trait
+	if !a.noAutoMetadata {
+		a.traits = append(a.traits, traitFeature{name: trait.Metadata})
+	}
 	for _, t := range a.traits {
 		log.Debugf("%v now implements %v", name, t.name)
 		undo = append(undo, func() {
@@ -121,6 +125,8 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 		}
 		mds = append(mds, md)
 	}
+	// always need to set the name of the device in its metadata
+	mds = append(mds, &traits.Metadata{Name: name})
 
 	for _, md := range mds {
 		undoMd, err := n.mergeMetadata(name, md)
