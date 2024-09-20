@@ -2,7 +2,6 @@ package hpd
 
 import (
 	"context"
-	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -15,55 +14,29 @@ import (
 type TemperatureSensor struct {
 	traits.UnimplementedAirTemperatureApiServer
 
-	logger       *zap.Logger
-	pollInterval time.Duration
+	logger *zap.Logger
 
 	client *Client
 
 	TemperatureValue *resource.Value
 }
 
-func NewTemperatureSensor(client *Client, logger *zap.Logger, pollInterval time.Duration) *TemperatureSensor {
-	if pollInterval <= 0 {
-		pollInterval = time.Second * 60
-	}
+var _ sensor = (*TemperatureSensor)(nil)
 
+func NewTemperatureSensor(client *Client, logger *zap.Logger) *TemperatureSensor {
 	return &TemperatureSensor{
 		client:           client,
 		logger:           logger,
-		pollInterval:     pollInterval,
 		TemperatureValue: resource.NewValue(resource.WithInitialValue(&traits.AirTemperature{}), resource.WithNoDuplicates()),
 	}
 }
 
-// StartPollingForData starts a loop which fetches data from the sensor at a set interval
-func (a *TemperatureSensor) StartPollingForData() {
-	go func() {
-		_ = a.startPoll(context.Background())
-	}()
-}
-
-func (a *TemperatureSensor) startPoll(ctx context.Context) error {
-	ticker := time.NewTicker(a.pollInterval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-
-		case <-ticker.C:
-			err := a.GetUpdate()
-			if err != nil {
-				a.logger.Error("error refreshing thermostat data", zap.Error(err))
-			}
-		}
-	}
-}
-
 func (a *TemperatureSensor) GetAirTemperature(_ context.Context, _ *traits.GetAirTemperatureRequest) (*traits.AirTemperature, error) {
-	err := a.GetUpdate()
-	if err != nil {
+	response := SensorResponse{}
+	if err := doGetRequest(a.client, &response, "sensor"); err != nil {
+		return nil, err
+	}
+	if err := a.GetUpdate(&response); err != nil {
 		return nil, err
 	}
 	return a.TemperatureValue.Get().(*traits.AirTemperature), nil
@@ -91,22 +64,23 @@ func (a *TemperatureSensor) PullAirTemperature(request *traits.PullAirTemperatur
 	return nil
 }
 
-func (a *TemperatureSensor) GetUpdate() error {
-	response := SensorResponse{}
-	err := doGetRequest(a.client, &response, "sensor")
-	if err != nil {
-		return err
-	}
-
+func (a *TemperatureSensor) GetUpdate(response *SensorResponse) error {
 	humidity := float32(response.Humidity)
 
-	a.TemperatureValue.Set(&traits.AirTemperature{
+	_, err := a.TemperatureValue.Set(&traits.AirTemperature{
 		Mode:               0,
 		TemperatureGoal:    nil,
 		AmbientTemperature: &types.Temperature{ValueCelsius: response.Temperature},
 		AmbientHumidity:    &humidity,
 		DewPoint:           nil,
 	})
+	if err != nil {
+		return err
+	}
 
 	return nil
+}
+
+func (a *TemperatureSensor) GetName() string {
+	return "Temperature-Humidity"
 }
