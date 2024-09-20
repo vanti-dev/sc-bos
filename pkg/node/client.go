@@ -13,7 +13,7 @@ import (
 //
 // Deprecated: Use ClientConn() to acquire a connection and construct clients directly.
 func (n *Node) Client(p any) error {
-	if !alltraits.NewClient(p, n.router) {
+	if !alltraits.NewClient(p, n.ClientConn()) {
 		return fmt.Errorf("no client of type %T", p)
 	}
 	return nil
@@ -21,7 +21,7 @@ func (n *Node) Client(p any) error {
 
 // ClientConn returns a connection to the Node's router.
 func (n *Node) ClientConn() grpc.ClientConnInterface {
-	return n.router
+	return router.NewLoopback(n.router)
 }
 
 func (n *Node) ServerHandler() grpc.StreamHandler {
