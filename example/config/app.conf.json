@@ -139,6 +139,7 @@
     {
       "name":     "wordpress-test",
       "type":     "wordpress",
+      "disabled": true,
       "base_url": "http://localhost/dummy_wp",
       "site":     "abc-test1",
       "authentication": {
