@@ -81,6 +81,6 @@ export default [
       }
     }
   },
-  useServiceRoute(ServiceNames.Drivers, '/system/'),
-  useServiceRoute(ServiceNames.Zones, '/system/')
+  useServiceRoute(ServiceNames.Drivers, '/system/', {path: '/system/drivers'}),
+  useServiceRoute(ServiceNames.Zones, '/system/', {path: '/system/zones'})
 ];

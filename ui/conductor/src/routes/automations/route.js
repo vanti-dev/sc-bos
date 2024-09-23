@@ -36,4 +36,4 @@ export default [
       title: 'Automations'
     }
   },
-  useServiceRoute(ServiceNames.Automations)];
+  useServiceRoute(ServiceNames.Automations, undefined, {name: 'automations'})];
