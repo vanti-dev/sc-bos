@@ -16,18 +16,30 @@ type MsgRecver interface {
 	RecvMsg(into any) error
 }
 
+// Router implements MethodResolver and can route requests to a grpc.ClientConnInterface based on a combination
+// of service name and a key which can be extracted from the request.
+//
+// Router only supports services which are registered using SupportService. Key-based routes need the registered
+// service to support routing by key (such as services constructed with NewRoutedService). If a key-based route is
+// registered for a service that does not support routing by key, it will never match.
+//
+// Router supports four kinds of routes:
+//  1. Service-and-key routes: Matches when both the service and key extracted from the request match.
+//  2. Key-only route: Matches any key-routable service when the key extracted from the request matches.
+//  3. Service-only route: Matches any method for a specific service. The service does not need to be key-routable.
+//  4. Default route: Matches when no other route matches.
+//
+// The list above is in order of precedence.
 type Router struct {
-	m             sync.RWMutex
-	services      map[string]*Service
-	routes        map[routeID]grpc.ClientConnInterface
-	defaultRoutes map[string]grpc.ClientConnInterface // map of service name to default conn
+	m        sync.RWMutex
+	services map[string]*Service
+	routes   map[routeID]grpc.ClientConnInterface
 }
 
 func New() *Router {
 	return &Router{
-		services:      make(map[string]*Service),
-		routes:        make(map[routeID]grpc.ClientConnInterface),
-		defaultRoutes: make(map[string]grpc.ClientConnInterface),
+		services: make(map[string]*Service),
+		routes:   make(map[routeID]grpc.ClientConnInterface),
 	}
 }
 
@@ -78,15 +90,25 @@ func (r *Router) GetServiceInfo() map[string]grpc.ServiceInfo {
 	return services
 }
 
-// AddRoute registers a target connection to be used for a specific combination of service and key.
-// This route can only be matched if the corresponding service supplied to SupportService supports routing by key.
+// AddRoute registers a target connection to be used when matching a specified route.
+//
+// The four kinds of routes are supported:
+// 1. Service-and-key routes: both service and key are non-empty; the registered service must be key-routable.
+// 2. Key-only route: service is empty, key is non-empty; the registered service must be key-routable.
+// 3. Service-only route: service is non-empty, key is empty; the registered service does not need to be key-routable.
+// 4. Default route: both service and key are empty.
+//
+// Returns ErrUnknownService if a service is specified but not registered.
+// Returns ErrRouteExists if the same route is already registered.
 func (r *Router) AddRoute(service, key string, target grpc.ClientConnInterface) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
 	// don't allow routes for services that we don't know about
-	if _, exists := r.services[service]; !exists {
-		return ErrUnknownService
+	if service != "" {
+		if _, exists := r.services[service]; !exists {
+			return ErrUnknownService
+		}
 	}
 
 	id := routeID{Service: service, Key: key}
@@ -97,6 +119,10 @@ func (r *Router) AddRoute(service, key string, target grpc.ClientConnInterface) 
 	return nil
 }
 
+// DeleteRoute removes a route.
+// The service and key paremeters are intepreted the same way as in AddRoute.
+//
+// Returns true if the route existed and was removed.
 func (r *Router) DeleteRoute(service, key string) (exists bool) {
 	r.m.Lock()
 	defer r.m.Unlock()
@@ -105,32 +131,6 @@ func (r *Router) DeleteRoute(service, key string) (exists bool) {
 	_, exists = r.routes[id]
 	if exists {
 		delete(r.routes, id)
-	}
-	return exists
-}
-
-func (r *Router) AddDefaultRoute(service string, target grpc.ClientConnInterface) error {
-	r.m.Lock()
-	defer r.m.Unlock()
-
-	if _, exists := r.services[service]; !exists {
-		return ErrUnknownService
-	}
-	_, exists := r.defaultRoutes[service]
-	if exists {
-		return ErrRouteExists
-	}
-	r.defaultRoutes[service] = target
-	return nil
-}
-
-func (r *Router) DeleteDefaultRoute(service string) (exists bool) {
-	r.m.Lock()
-	defer r.m.Unlock()
-
-	_, exists = r.defaultRoutes[service]
-	if exists {
-		delete(r.defaultRoutes, service)
 	}
 	return exists
 }
@@ -154,23 +154,34 @@ func (r *Router) ResolveMethod(fullName string) (Method, bool) {
 	}
 
 	connResolver := ResolverFunc(func(mr MsgRecver) (grpc.ClientConnInterface, error) {
-		// first try to route based on key
-		keyFunc, exists := service.keys[methodName]
-		if exists {
+		var candidates []routeID // what routes should we try to match?
+
+		if keyFunc, exists := service.keys[methodName]; exists {
+			// we can route by key
 			key, err := keyFunc(mr)
 			if err != nil {
 				return nil, err
 			}
-			id := routeID{Service: serviceName, Key: key}
-			if conn, exists := r.routes[id]; exists {
-				return conn, nil
+			candidates = []routeID{
+				{Service: serviceName, Key: key},
+				{Service: "", Key: key},
+				{Service: serviceName, Key: ""},
+				{Service: "", Key: ""},
+			}
+		} else {
+			// can't route by key, we can only try routes that don't involve a key
+			candidates = []routeID{
+				{Service: serviceName, Key: ""},
+				{Service: "", Key: ""},
 			}
 		}
 
-		// if we cannot route by key, then try routing to the default conn for the service
-		conn, exists := r.defaultRoutes[serviceName]
-		if exists {
-			return conn, nil
+		r.m.RLock()
+		defer r.m.RUnlock()
+		for _, candidate := range candidates {
+			if conn, exists := r.routes[candidate]; exists {
+				return conn, nil
+			}
 		}
 
 		return nil, status.Error(codes.NotFound, "no route found")
@@ -224,6 +235,8 @@ var (
 	ErrUnknownService = errors.New("unknown service")
 )
 
+// used as a map key for storing and looking up routes
+// an empty field is interpreted as a wildcard
 type routeID struct {
 	Key     string
 	Service string
