@@ -404,8 +404,14 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 		s.Support(node.Routing(r), node.Clients(gen.WrapUdmiService(r)))
 	},
 	wastepb.TraitName: func(s node.Supporter) {
-		r := gen.NewWasteApiRouter()
-		s.Support(node.Routing(r), node.Clients(gen.WrapWasteApi(r)))
+		{
+			r := gen.NewWasteApiRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapWasteApi(r)))
+		}
+		{
+			r := gen.NewWasteInfoRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapWasteInfo(r)))
+		}
 	},
 }
 
