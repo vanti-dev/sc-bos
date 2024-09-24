@@ -26,10 +26,10 @@ export class WasteRecord extends jspb.Message {
   getArea(): string;
   setArea(value: string): WasteRecord;
 
-  getWastecreateddate(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setWastecreateddate(value?: google_protobuf_timestamp_pb.Timestamp): WasteRecord;
-  hasWastecreateddate(): boolean;
-  clearWastecreateddate(): WasteRecord;
+  getWastecreatedtime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setWastecreatedtime(value?: google_protobuf_timestamp_pb.Timestamp): WasteRecord;
+  hasWastecreatedtime(): boolean;
+  clearWastecreatedtime(): WasteRecord;
 
   getStream(): string;
   setStream(value: string): WasteRecord;
@@ -50,7 +50,7 @@ export namespace WasteRecord {
     system: string,
     recycled: boolean,
     area: string,
-    wastecreateddate?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    wastecreatedtime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     stream: string,
   }
 }

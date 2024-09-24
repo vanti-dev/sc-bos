@@ -241,7 +241,7 @@ weight: jspb.Message.getFloatingPointFieldWithDefault(msg, 3, 0.0),
 system: jspb.Message.getFieldWithDefault(msg, 4, ""),
 recycled: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
 area: jspb.Message.getFieldWithDefault(msg, 6, ""),
-wastecreateddate: (f = msg.getWastecreateddate()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+wastecreatedtime: (f = msg.getWastecreatedtime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
 stream: jspb.Message.getFieldWithDefault(msg, 8, "")
   };
 
@@ -307,7 +307,7 @@ proto.smartcore.bos.WasteRecord.deserializeBinaryFromReader = function(msg, read
     case 7:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-      msg.setWastecreateddate(value);
+      msg.setWastecreatedtime(value);
       break;
     case 8:
       var value = /** @type {string} */ (reader.readString());
@@ -385,7 +385,7 @@ proto.smartcore.bos.WasteRecord.serializeBinaryToWriter = function(message, writ
       f
     );
   }
-  f = message.getWastecreateddate();
+  f = message.getWastecreatedtime();
   if (f != null) {
     writer.writeMessage(
       7,
@@ -531,10 +531,10 @@ proto.smartcore.bos.WasteRecord.prototype.setArea = function(value) {
 
 
 /**
- * optional google.protobuf.Timestamp wasteCreatedDate = 7;
+ * optional google.protobuf.Timestamp wasteCreatedTime = 7;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.smartcore.bos.WasteRecord.prototype.getWastecreateddate = function() {
+proto.smartcore.bos.WasteRecord.prototype.getWastecreatedtime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
     jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 7));
 };
@@ -544,7 +544,7 @@ proto.smartcore.bos.WasteRecord.prototype.getWastecreateddate = function() {
  * @param {?proto.google.protobuf.Timestamp|undefined} value
  * @return {!proto.smartcore.bos.WasteRecord} returns this
 */
-proto.smartcore.bos.WasteRecord.prototype.setWastecreateddate = function(value) {
+proto.smartcore.bos.WasteRecord.prototype.setWastecreatedtime = function(value) {
   return jspb.Message.setWrapperField(this, 7, value);
 };
 
@@ -553,8 +553,8 @@ proto.smartcore.bos.WasteRecord.prototype.setWastecreateddate = function(value) 
  * Clears the message field making it undefined.
  * @return {!proto.smartcore.bos.WasteRecord} returns this
  */
-proto.smartcore.bos.WasteRecord.prototype.clearWastecreateddate = function() {
-  return this.setWastecreateddate(undefined);
+proto.smartcore.bos.WasteRecord.prototype.clearWastecreatedtime = function() {
+  return this.setWastecreatedtime(undefined);
 };
 
 
@@ -562,7 +562,7 @@ proto.smartcore.bos.WasteRecord.prototype.clearWastecreateddate = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.smartcore.bos.WasteRecord.prototype.hasWastecreateddate = function() {
+proto.smartcore.bos.WasteRecord.prototype.hasWastecreatedtime = function() {
   return jspb.Message.getField(this, 7) != null;
 };
 
