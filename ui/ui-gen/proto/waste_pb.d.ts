@@ -2,6 +2,7 @@ import * as jspb from 'google-protobuf'
 
 import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb'; // proto import: "google/protobuf/field_mask.proto"
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
+import * as types_info_pb from '@smart-core-os/sc-api-grpc-web/types/info_pb'; // proto import: "types/info.proto"
 
 
 export class WasteRecord extends jspb.Message {
@@ -177,5 +178,47 @@ export namespace PullWasteRecordsResponse {
     }
   }
 
+}
+
+export class DescribeWasteRecordRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): DescribeWasteRecordRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DescribeWasteRecordRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: DescribeWasteRecordRequest): DescribeWasteRecordRequest.AsObject;
+  static serializeBinaryToWriter(message: DescribeWasteRecordRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DescribeWasteRecordRequest;
+  static deserializeBinaryFromReader(message: DescribeWasteRecordRequest, reader: jspb.BinaryReader): DescribeWasteRecordRequest;
+}
+
+export namespace DescribeWasteRecordRequest {
+  export type AsObject = {
+    name: string,
+  }
+}
+
+export class WasteRecordSupport extends jspb.Message {
+  getResourceSupport(): types_info_pb.ResourceSupport | undefined;
+  setResourceSupport(value?: types_info_pb.ResourceSupport): WasteRecordSupport;
+  hasResourceSupport(): boolean;
+  clearResourceSupport(): WasteRecordSupport;
+
+  getUnit(): string;
+  setUnit(value: string): WasteRecordSupport;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): WasteRecordSupport.AsObject;
+  static toObject(includeInstance: boolean, msg: WasteRecordSupport): WasteRecordSupport.AsObject;
+  static serializeBinaryToWriter(message: WasteRecordSupport, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): WasteRecordSupport;
+  static deserializeBinaryFromReader(message: WasteRecordSupport, reader: jspb.BinaryReader): WasteRecordSupport;
+}
+
+export namespace WasteRecordSupport {
+  export type AsObject = {
+    resourceSupport?: types_info_pb.ResourceSupport.AsObject,
+    unit: string,
+  }
 }
 

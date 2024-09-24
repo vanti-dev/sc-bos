@@ -22,6 +22,20 @@ export class WasteApiClient {
 
 }
 
+export class WasteInfoClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  describeWasteRecord(
+    request: waste_pb.DescribeWasteRecordRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: waste_pb.WasteRecordSupport) => void
+  ): grpcWeb.ClientReadableStream<waste_pb.WasteRecordSupport>;
+
+}
+
 export class WasteApiPromiseClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
@@ -36,6 +50,18 @@ export class WasteApiPromiseClient {
     request: waste_pb.PullWasteRecordsRequest,
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<waste_pb.PullWasteRecordsResponse>;
+
+}
+
+export class WasteInfoPromiseClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  describeWasteRecord(
+    request: waste_pb.DescribeWasteRecordRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<waste_pb.WasteRecordSupport>;
 
 }
 
