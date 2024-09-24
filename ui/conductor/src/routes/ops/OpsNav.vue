@@ -29,19 +29,18 @@
 
 
 <script setup>
-import {closeResource} from '@/api/resource.js';
 import useAuthSetup from '@/composables/useAuthSetup';
-import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
+import {useAlertMetadataStore} from '@/routes/ops/notifications/alertMetadata';
 import OpsNavListItems from '@/routes/ops/overview/OpsNavListItems.vue';
 import {useNavStore} from '@/stores/nav';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {storeToRefs} from 'pinia';
-import {computed, onMounted, onUnmounted, reactive} from 'vue';
+import {computed, reactive} from 'vue';
 
 const {miniVariant} = storeToRefs(useNavStore());
 
 const {hasNoAccess} = useAuthSetup();
-const alertMetadata = useAlertMetadata();
+const alertMetadata = useAlertMetadataStore();
 const uiConfig = useUiConfigStore();
 
 /**
@@ -152,17 +151,6 @@ const enabledMenuItems = computed(() => menuItems.value.filter((item) => uiConfi
  * @type {import('vue').ComputedRef<boolean>}
  */
 const notificationEnabled = computed(() => uiConfig.pathEnabled('/ops/notifications'));
-
-onMounted(() => {
-  if (notificationEnabled.value) {
-    closeResource(alertMetadata.alertMetadata);
-    alertMetadata.init();
-  }
-});
-
-onUnmounted(() => {
-  closeResource(alertMetadata.alertMetadata);
-});
 </script>
 
 <style scoped>

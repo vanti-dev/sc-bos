@@ -64,6 +64,15 @@ type Lifecycle interface {
 	StateAndChanges(ctx context.Context) (State, <-chan State)
 }
 
+// ConfigUpdater is provided to a service to allow it to update its own configuration entry in the
+// app config.
+type ConfigUpdater interface {
+	// UpdateConfig stores an updated configuration for the current service.
+	// This does not automatically call Configure on the service - it is up to the service to apply the changes to
+	// itself if that is required.
+	UpdateConfig(ctx context.Context, data []byte) error
+}
+
 // ApplyFunc is called each time an active service has its config updated.
 // The func should block for as long as config is being read but no longer.
 // Background tasks, like opening connections to other network devices, should not block.

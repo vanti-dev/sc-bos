@@ -260,6 +260,7 @@ export async function trackAction(logPrefix, tracker, action) {
     const msg = await action(endpoint);
     const value = msg.toObject();
     tracker.response = value;
+    tracker.error = null;
     return value;
   } catch (err) {
     const rErr = /** @type {RemoteError} */ {

@@ -39,11 +39,10 @@
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
 
-import useDevices, {useDeviceFloorList} from '@/composables/useDevices';
-import {usePullDevicesMetadata} from '@/devices/devices.js';
+import {useDevices, useDeviceFloorList} from '@/composables/devices';
 import ListView from '@/routes/ops/security/components/ListView.vue';
 import MapView from '@/routes/ops/security/components/MapView.vue';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {storeToRefs} from 'pinia';
 import {computed, ref, watch} from 'vue';
 

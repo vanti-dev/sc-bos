@@ -4,7 +4,12 @@
     "authn": {
       "disabled": false,
       "user": {
-        "fileAccounts": true
+        "fileAccounts": true,
+        "keycloakAccounts": {
+          "url": "http://localhost:8888",
+          "realm": "Smart_Core",
+          "clientId": "sc-opsui"
+        }
       },
       "system": {
         "fileAccounts": true

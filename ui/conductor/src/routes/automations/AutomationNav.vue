@@ -19,21 +19,22 @@
 
 <script setup>
 import {ServiceNames} from '@/api/ui/services';
+import {usePullServiceMetadata} from '@/composables/services.js';
 import useAuthSetup from '@/composables/useAuthSetup';
-import {useServicesStore} from '@/stores/services';
-import {computed, ref, watch} from 'vue';
+import {useUserConfig} from '@/stores/userConfig.js';
+import {computed, ref} from 'vue';
 
 const {hasNoAccess} = useAuthSetup();
 
-const serviceStore = useServicesStore();
-
-const metadataTracker = ref({});
+const userConfig = useUserConfig();
+const serviceName = computed(() => userConfig.node?.name + '/' + ServiceNames.Automations);
+const {value: serviceMd} = usePullServiceMetadata(serviceName);
 
 // filter out automations that have no instances, and map to {type, number} obj
 const automationTypeList = computed(() => {
-  if (!metadataTracker.value.response) return [];
+  if (!serviceMd.value) return [];
   const list = [];
-  metadataTracker.value.response.typeCountsMap.forEach(([type, number]) => {
+  serviceMd.value.typeCountsMap.forEach(([type, number]) => {
     if (number > 0) {
       list.push({type, number});
     }
@@ -106,23 +107,6 @@ const mapIconKey = (name) => {
   // Default mapping (no changes)
   return name;
 };
-
-watch(
-    () => serviceStore.node,
-    async () => {
-      metadataTracker.value = serviceStore.getService(
-          ServiceNames.Automations,
-          await serviceStore.node?.commsAddress,
-          await serviceStore.node?.commsName
-      ).metadataTracker;
-      await serviceStore.refreshMetadata(
-          ServiceNames.Automations,
-          await serviceStore.node?.commsAddress,
-          await serviceStore.node?.commsName
-      );
-    },
-    {immediate: true}
-);
 </script>
 
 <style scoped>

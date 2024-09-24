@@ -1,55 +1,33 @@
 import {ServiceNames} from '@/api/ui/services';
-import {useServicesStore} from '@/stores/services';
-import {computed, onUnmounted, ref, watch} from 'vue';
+import {useServicesCollection} from '@/composables/services.js';
+import {useUserConfig} from '@/stores/userConfig.js';
+import {computed} from 'vue';
 
 /**
  * @return {{
- * zoneCollection: Collection,
+ * zoneCollection: UseCollectionResponse,
  * zoneList: string[]
  * }}
  */
 export default function() {
-  const servicesStore = useServicesStore();
-
-  const zoneCollection = ref({});
+  const userConfig = useUserConfig();
+  const serviceName = computed(() => `${userConfig.node?.name}/${ServiceNames.Zones}`);
+  const zoneCollection = useServicesCollection(serviceName, computed(() => ({
+    paused: !userConfig.node?.name,
+    wantCount: -1 // there's no server search features, so we have to get them all and do it client side
+  })));
 
   const zoneListWithDetails = computed(() => {
     return Object.values(zoneCollection.value?.resources?.value ?? []);
   });
 
   const zoneList = computed(() => {
-    return Object.values(zoneCollection.value?.resources?.value ?? [])
+    return Object.values(zoneCollection.items.value)
         .map((zone) => {
           return zone.id;
         })
         .sort();
   });
-
-  // Watch for changes to the sidebar node
-  watch(
-      () => servicesStore.node,
-      async () => {
-        zoneCollection.value = servicesStore.getService(
-            ServiceNames.Zones,
-            await servicesStore.node?.commsAddress,
-            await servicesStore.node?.commsName
-        ).servicesCollection;
-
-        // todo: this causes us to load all pages, connect with paging logic instead
-        // - although we might want it in this case
-        zoneCollection.value.needsMorePages = true;
-      },
-      {immediate: true}
-  );
-
-
-  // Watch for changes to the zone collection
-  watch(zoneCollection, () => {
-    zoneCollection.value.query(ServiceNames.Zones);
-  });
-
-  // Clear the collection when the component is unmounted
-  onUnmounted(() => zoneCollection.value.reset());
 
   return {
     zoneCollection,

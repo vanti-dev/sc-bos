@@ -1,11 +1,7 @@
-import {closeResource, newActionTracker} from '@/api/resource';
-import {enrollHubNode, forgetHubNode, inspectHubNode, testHubNode} from '@/api/sc/traits/hub';
-import {ServiceNames} from '@/api/ui/services';
-import {useHubStore} from '@/stores/hub';
-import {useServicesStore} from '@/stores/services';
+import {newActionTracker} from '@/api/resource';
+import {enrollHubNode, forgetHubNode, inspectHubNode} from '@/api/sc/traits/hub';
 import {parseCertificate} from '@/util/certificates';
-import {isGatewayId} from '@/util/gateway';
-import {computed, onUnmounted, reactive, ref, watchEffect} from 'vue';
+import {computed, reactive, ref, watchEffect} from 'vue';
 
 /**
  * @typedef {import('@/api/ui/services').ServiceTracker} ServiceTracker
@@ -40,22 +36,10 @@ import {computed, onUnmounted, reactive, ref, watchEffect} from 'vue';
  *     }
  *   }[]>,
  *   resetCertificates: () => void,
- *   readMetadata: import('vue').ComputedRef<MetadataResponse.AsObject>,
- *   nodeDetails: Record<string, {
- *     automations: ServiceTracker,
- *     drivers: ServiceTracker,
- *     systems: ServiceTracker
- *   }>,
- *   nodesList: import('vue').ComputedRef<HubNode.AsObject[]>,
- *   isProxy: (nodeName: string) => boolean,
- *   isHub: (nodeName: string) => boolean
+ *   readMetadata: import('vue').ComputedRef<MetadataResponse.AsObject>
  * }}
  */
 export default function() {
-  const hubStore = useHubStore();
-  const servicesStore = useServicesStore();
-
-
   // --------------------------- //
   // Manage Hub Nodes
   const testHubNodeValue = reactive(
@@ -70,21 +54,6 @@ export default function() {
   const inspectHubNodeValue = reactive(
       /** @type {ActionTracker<HubNode.AsObject>} */ newActionTracker()
   );
-
-  /**
-   *
-   * @param {string} address
-   * @return {Promise<void>|undefined}
-   */
-  async function testHubNodeAction(address) {
-    if (!address) return;
-
-    const request = {
-      address
-    };
-
-    await testHubNode(request, testHubNodeValue);
-  }
 
   /**
    * @param {string} address
@@ -102,9 +71,6 @@ export default function() {
 
     // Enroll the node
     await enrollHubNode(request, enrollHubNodeValue);
-
-    // Refresh the list of nodes
-    await hubStore.listHubNodesAction();
   }
 
   /**
@@ -121,8 +87,6 @@ export default function() {
     };
 
     await forgetHubNode(request, forgetHubNodeValue);
-
-    await hubStore.listHubNodesAction();
   }
 
   /**
@@ -179,109 +143,18 @@ export default function() {
 
     return metadata;
   });
-  // --------------------------- //
-  // List and Track Hub Nodes
-  const nodeDetails = reactive({});
-  const nodesList = ref([]);
-  let unwatchTrackers = [];
-
-  const processNodes = () => {
-    const nodes = Object.values(hubStore.nodesList);
-    nodesList.value = [];
-
-    nodesList.value = nodes.map(node => {
-      // Using an immediately-invoked async function to handle asynchronous operations
-      (async () => {
-        try {
-          const [address, name] = await Promise.all([node.commsAddress, node.commsName]);
-
-          nodeDetails[node.name] = {
-            automations: servicesStore.getService(ServiceNames.Automations, address, name),
-            drivers: servicesStore.getService(ServiceNames.Drivers, address, name),
-            systems: servicesStore.getService(ServiceNames.Systems, address, name)
-          };
-
-          unwatchTrackers.push(nodeDetails[node.name].automations.metadataTracker);
-          unwatchTrackers.push(nodeDetails[node.name].drivers.metadataTracker);
-          unwatchTrackers.push(nodeDetails[node.name].systems.metadataTracker);
-
-          await Promise.all([
-            servicesStore.refreshMetadata(ServiceNames.Automations, address, name),
-            servicesStore.refreshMetadata(ServiceNames.Drivers, address, name),
-            servicesStore.refreshMetadata(ServiceNames.Systems, address, name)
-          ]);
-        } catch (e) {
-          console.error('Error processing node:', e);
-        }
-      })();
-
-      return {
-        ...node
-      };
-    });
-  };
-
-  watchEffect(() => {
-    processNodes();
-  });
-
-  /**
-   * Check if the node has a gateway system service configured
-   *
-   * @param {string} nodeName
-   * @return {boolean}
-   */
-  function isGateway(nodeName) {
-    return nodeDetails[nodeName]?.systems.metadataTracker?.response?.typeCountsMap?.some(
-        ([name, count]) => isGatewayId(name) && count > 0
-    );
-  }
-
-  /**
-   * Check if the node has a hub system service configured
-   *
-   * @param {string} nodeName
-   * @return {boolean}
-   */
-  function isHub(nodeName) {
-    return nodeDetails[nodeName]?.systems.metadataTracker?.response?.typeCountsMap?.some(
-        ([name, count]) => name === 'hub' && count > 0
-    );
-  }
-
-  const allowForget = (name) => {
-    return !!hubStore.listedHubNodes.find(node => node === name);
-  };
-
-  // Clean up on unmount
-  onUnmounted(() => {
-    unwatchTrackers = [];
-    closeResource(enrollHubNodeValue);
-    closeResource(forgetHubNodeValue);
-    closeResource(inspectHubNodeValue);
-    closeResource(testHubNodeValue);
-  });
 
   return {
     testHubNodeValue,
     enrollHubNodeValue,
     forgetHubNodeValue,
     inspectHubNodeValue,
-    testHubNodeAction,
     enrollHubNodeAction,
     forgetHubNodeAction,
     inspectHubNodeAction,
     resetInspectHubNodeValue,
     readCertificates,
     resetCertificates,
-    readMetadata,
-
-    nodeDetails,
-    nodesList,
-    processNodes,
-    isGateway,
-    isHub,
-    allowForget
-
+    readMetadata
   };
 }

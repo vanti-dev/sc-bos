@@ -17,6 +17,7 @@ type Services struct {
 	Devices         *Devices
 	ClientTLSConfig *tls.Config // for connecting to other smartcore nodes
 	HTTPMux         *http.ServeMux
+	Config          service.ConfigUpdater
 
 	DriverFactories map[string]driver.Factory
 }

@@ -6,9 +6,10 @@ import (
 	"io"
 	"time"
 
-	"github.com/go-jose/go-jose/v3"
-	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/go-jose/go-jose/v4"
+	"github.com/go-jose/go-jose/v4/jwt"
 
+	jose_utils "github.com/vanti-dev/sc-bos/internal/util/jose"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 )
 
@@ -19,9 +20,10 @@ type tokenClaims struct {
 }
 
 type TokenSource struct {
-	Key    jose.SigningKey
-	Issuer string
-	Now    func() time.Time
+	Key                 jose.SigningKey
+	Issuer              string
+	Now                 func() time.Time
+	SignatureAlgorithms []string
 }
 
 func (ts *TokenSource) GenerateAccessToken(data SecretData, validity time.Duration) (token string, err error) {
@@ -51,11 +53,11 @@ func (ts *TokenSource) GenerateAccessToken(data SecretData, validity time.Durati
 	return jwt.Signed(signer).
 		Claims(jwtClaims).
 		Claims(customClaims).
-		CompactSerialize()
+		Serialize()
 }
 
 func (ts *TokenSource) ValidateAccessToken(_ context.Context, tokenStr string) (*token.Claims, error) {
-	tok, err := jwt.ParseSigned(tokenStr)
+	tok, err := jwt.ParseSigned(tokenStr, jose_utils.ConvertToNativeJose(ts.SignatureAlgorithms))
 	if err != nil {
 		return nil, err
 	}
@@ -66,8 +68,8 @@ func (ts *TokenSource) ValidateAccessToken(_ context.Context, tokenStr string) (
 		return nil, err
 	}
 	err = jwtClaims.Validate(jwt.Expected{
-		Audience: jwt.Audience{ts.Issuer},
-		Issuer:   ts.Issuer,
+		AnyAudience: jwt.Audience{ts.Issuer},
+		Issuer:      ts.Issuer,
 	})
 	if err != nil {
 		return nil, err

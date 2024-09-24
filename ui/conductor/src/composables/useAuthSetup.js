@@ -1,6 +1,6 @@
 import {roleToPermissions} from '@/assets/roleToPermissions';
 import {useAccountStore} from '@/stores/account';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
 

@@ -1,4 +1,33 @@
 /**
+ * Compares two dates in ascending order.
+ * Null values are compared after non-null values.
+ *
+ * @param {Date | null | undefined} a
+ * @param {Date | null | undefined} b
+ * @return {number}
+ */
+export function cmpAsc(a, b) {
+  if (!a) return 1;
+  if (!b) return -1;
+  return a.getTime() - b.getTime();
+}
+
+/**
+ * Compares two dates in descending order.
+ * Null values are compared after non-null values.
+ *
+ * @param {Date | null | undefined} a
+ * @param {Date | null | undefined} b
+ * @return {number}
+ */
+export function cmpDesc(a, b) {
+  if (!a && !b) return 0;
+  if (!a) return 1;
+  if (!b) return -1;
+  return b.getTime() - a.getTime();
+}
+
+/**
  * Truncates the given date to the nearest round.
  * A date of 12:34 rounded down with 15minutes will return 12:30.
  *
@@ -43,7 +72,7 @@ export function formatTimeAgo(date, now, MINUTE, HOUR, DAY) {
   let diffInSeconds = (now - date) / 1000;
 
   // Adding a small buffer to account for minimal future time differences
-  const bufferInSeconds = 5;
+  const bufferInSeconds = 1;
   if (diffInSeconds < 0 && Math.abs(diffInSeconds) < bufferInSeconds) {
     diffInSeconds = 0;
   }

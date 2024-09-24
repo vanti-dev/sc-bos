@@ -9,8 +9,10 @@
           variant="filled"
           max-width="600px"
           class="flex-fill mr-auto"/>
-      <filter-choice-chips :ctx="filterCtx" class="mx-2"/>
-      <filter-btn :ctx="filterCtx"/>
+      <template v-if="hasFilters">
+        <filter-choice-chips :ctx="filterCtx" class="mx-2"/>
+        <filter-btn :ctx="filterCtx"/>
+      </template>
     </v-toolbar>
     <v-data-table-server
         v-model="selectedDevicesComp"
@@ -52,8 +54,8 @@ import FilterBtn from '@/components/filter/FilterBtn.vue';
 import FilterChoiceChips from '@/components/filter/FilterChoiceChips.vue';
 import HotPoint from '@/components/HotPoint.vue';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
+import {useDeviceFilters, useDevices} from '@/composables/devices';
 import {useDataTableCollection} from '@/composables/table.js';
-import useDevices, {useDeviceFilters} from '@/composables/useDevices';
 import {useSidebarStore} from '@/stores/sidebar';
 import {computed, ref} from 'vue';
 import DeviceCell from './DeviceCell.vue';
@@ -92,11 +94,12 @@ const forcedFilters = computed(() => {
   return res;
 });
 const {filterCtx, forcedConditions, filterConditions} = useDeviceFilters(forcedFilters);
+const hasFilters = computed(() => filterCtx.filters.value.length > 0);
 
 // pagination
 const wantCount = ref(20); // same as initial itemsPerPage
 
-const useDevicesOpts = computed(() => {
+const _useDevicesOpts = computed(() => {
   return {
     filter: props.filter,
     search: search.value,
@@ -104,7 +107,7 @@ const useDevicesOpts = computed(() => {
     wantCount: wantCount.value
   };
 });
-const devices = useDevices(useDevicesOpts);
+const devices = useDevices(_useDevicesOpts);
 const tableAttrs = useDataTableCollection(wantCount, devices);
 const {items} = devices;
 

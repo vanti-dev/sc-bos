@@ -1,4 +1,4 @@
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import Keycloak from 'keycloak-js';
 
 /**

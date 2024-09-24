@@ -1,7 +1,13 @@
-import {convertProperties, fieldMaskFromObject, setProperties, timestampFromObject} from '@/api/convpb.js';
+import {
+  convertProperties,
+  fieldMaskFromObject,
+  setProperties,
+  timestampFromObject,
+  timestampToDate
+} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setCollection, setValue, trackAction} from '@/api/resource';
-import {AlertApiPromiseClient, AlertAdminApiPromiseClient} from '@sc-bos/ui-gen/proto/alerts_grpc_web_pb';
+import {AlertAdminApiPromiseClient, AlertApiPromiseClient} from '@sc-bos/ui-gen/proto/alerts_grpc_web_pb';
 import {
   AcknowledgeAlertRequest,
   Alert,
@@ -106,6 +112,22 @@ export function createAlert(request, tracker) {
     const api = adminClient(endpoint);
     return api.createAlert(createAlertRequestFromObject(request));
   });
+}
+
+/**
+ * @param {Alert | Alert.AsObject} obj
+ * @return {Alert.AsObject & {createTime: Date, updateTime: Date, acknowledgement?: {acknowledgeTime: Date}}|undefined}
+ */
+export function alertToObject(obj) {
+  if (!obj) return undefined;
+  if (typeof obj.toObject === 'function') obj = obj.toObject();
+
+  if (obj.createTime) obj.createTime = timestampToDate(obj.createTime);
+  if (obj.resolveTime) obj.resolveTime = timestampToDate(obj.resolveTime);
+  if (obj.acknowledgement) {
+    if (obj.acknowledgement.acknowledgeTime) obj.acknowledgement.acknowledgeTime = timestampToDate(obj.acknowledgement.acknowledgeTime);
+  }
+  return obj;
 }
 
 /**

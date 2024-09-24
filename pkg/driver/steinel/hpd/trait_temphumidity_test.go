@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
-	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -42,7 +41,7 @@ func TestTemperatureSensor_GetAirTemperature(t *testing.T) {
 		Client:   server.Client(),
 		Password: password,
 	}
-	tempSensor := NewTemperatureSensor(client, nil, 100*time.Millisecond)
+	tempSensor := NewTemperatureSensor(client, nil)
 
 	res, err := tempSensor.GetAirTemperature(context.Background(), &traits.GetAirTemperatureRequest{})
 	if err != nil {

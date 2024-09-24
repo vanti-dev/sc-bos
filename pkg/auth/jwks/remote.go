@@ -6,17 +6,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v4"
 
 	"github.com/vanti-dev/sc-bos/internal/util/fetch"
 )
 
 const minimumUpdateInterval = time.Minute
 
-func NewRemoteKeySet(background context.Context, url string) *RemoteKeySet {
+func NewRemoteKeySet(background context.Context, url string, permittedSignatureAlgorithms []jose.SignatureAlgorithm) *RemoteKeySet {
 	return &RemoteKeySet{
-		url:        url,
-		background: background,
+		url:                          url,
+		background:                   background,
+		permittedSignatureAlgorithms: permittedSignatureAlgorithms,
 	}
 }
 
@@ -31,6 +32,8 @@ type RemoteKeySet struct {
 	cache           jose.JSONWebKeySet
 	pending         *keySetFetchJob
 	noUpdatesBefore time.Time
+
+	permittedSignatureAlgorithms []jose.SignatureAlgorithm
 }
 
 // VerifySignature will check that the provided JWS has a valid signature from a key included in this
@@ -39,7 +42,7 @@ type RemoteKeySet struct {
 // cannot verify the token.
 // It verifies only the signature - it does not verify any claims in the payload, or inspect the payload in any way!
 func (ks *RemoteKeySet) VerifySignature(ctx context.Context, jws string) (payload []byte, err error) {
-	sig, err := jose.ParseSigned(jws)
+	sig, err := jose.ParseSigned(jws, ks.permittedSignatureAlgorithms)
 	if err != nil {
 		return nil, err
 	}

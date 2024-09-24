@@ -1,5 +1,5 @@
 import {builtinLayouts} from '@/layout/pallet.js';
-import {useUiConfigStore} from '@/stores/ui-config.js';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {isNullOrUndef} from '@/util/types.js';
 import {builtinWidgets} from '@/widgets/pallet.js';
 import {computed, markRaw, ref, toValue} from 'vue';

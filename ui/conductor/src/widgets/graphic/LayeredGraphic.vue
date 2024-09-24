@@ -1,10 +1,13 @@
 <template>
   <v-card :height="props.height" class="overflow-hidden pa-3 d-flex flex-column">
-    <v-card-title v-if="props.title" class="text-h4 mb-0">{{ props.title }}</v-card-title>
+    <v-card-title v-if="showTitle" class="text-h4 ma-0 pa-0 d-flex" style="z-index: 1">
+      <span class="mr-auto">{{ props.title }}</span>
+      <v-btn v-if="!props.fixed" icon="mdi-cog" variant="flat" @click="toggleSettings"/>
+    </v-card-title>
     <overlay-stack v-if="props.fixed">
       <img v-if="bgSrc" :src="bgSrc" alt="Background for other layers">
       <graphic-layer
-          v-for="(layer, i) in props.layers"
+          v-for="(layer, i) in visibleLayers"
           :key="layer.title ?? i"
           :layer="layer"
           @click:element="onElementClick(layer, $event.element, $event.event)"
@@ -16,7 +19,7 @@
         <overlay-stack>
           <img v-if="bgSrc" :src="bgSrc" alt="Background for other layers">
           <graphic-layer
-              v-for="(layer, i) in props.layers"
+              v-for="(layer, i) in visibleLayers"
               :key="layer.title ?? i"
               :layer="layer"
               @click:element="onElementClick(layer, $event.element, $event.event)"
@@ -35,6 +38,7 @@ import PinchZoom from '@/components/zoom/PinchZoom.vue';
 import DeviceSideBar from '@/routes/devices/components/DeviceSideBar.vue';
 import {useSidebarStore} from '@/stores/sidebar';
 import GraphicLayer from '@/widgets/graphic/GraphicLayer.vue';
+import LayeredGraphicSettings from '@/widgets/graphic/LayeredGraphicSettings.vue';
 import {usePathUtils} from '@/widgets/graphic/path.js';
 import {nameFromRequest} from '@/widgets/graphic/traits.js';
 import {computed, ref, watch} from 'vue';
@@ -69,7 +73,40 @@ const props = defineProps({
 const {toPath} = usePathUtils();
 const bgSrc = computed(() => toPath(props.background?.svgPath));
 
+const showTitle = computed(() => Boolean(props.title || !props.fixed));
+
 const sidebar = useSidebarStore();
+
+// options/settings for adjusting what we show in the graphic
+const optLayerList = computed(() => {
+  return props.layers.map((l) => {
+    return {title: l.title, value: l.title};
+  });
+});
+const optVisibleLayers = ref(/** @type {string[]} */ []);
+watch(optLayerList, (l) => {
+  // todo: remember which layers are selected when this changes
+  optVisibleLayers.value = l.map(v => v.value);
+}, {immediate: true});
+
+const toggleSettings = () => {
+  if (sidebar.component === LayeredGraphicSettings) {
+    sidebar.closeSidebar();
+    return;
+  }
+  sidebar.title = 'Graphic Settings';
+  sidebar.data = {
+    layerList: optLayerList,
+    visibleLayers: optVisibleLayers
+  };
+  sidebar.component = LayeredGraphicSettings;
+  sidebar.visible = true;
+};
+
+const visibleLayers = computed(() => {
+  return props.layers.filter((l) => optVisibleLayers.value.includes(l.title));
+});
+
 const selectionCtx = ref(null);
 const onElementClick = async (layer, element, event) => {
   selectionCtx.value = {layer, element};

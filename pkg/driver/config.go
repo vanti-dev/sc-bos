@@ -2,6 +2,8 @@ package driver
 
 import (
 	"encoding/json"
+
+	"github.com/vanti-dev/sc-bos/internal/util/jsonutil"
 )
 
 type BaseConfig struct {
@@ -16,7 +18,8 @@ type RawConfig struct {
 }
 
 func (c *RawConfig) MarshalJSON() ([]byte, error) {
-	return c.Raw, nil
+	// override "name", "type" and "disabled" from BaseConfig
+	return jsonutil.MarshalObjects(c.Raw, c.BaseConfig)
 }
 
 func (c *RawConfig) UnmarshalJSON(buf []byte) error {

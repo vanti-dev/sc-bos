@@ -65,6 +65,9 @@ func (s *Server) ListDevices(_ context.Context, request *gen.ListDevicesRequest)
 	allMetadata := s.node.ListAllMetadata(
 		resource.WithReadMask(subMask(request.ReadMask, "metadata")),
 		resource.WithInclude(func(id string, item proto.Message) bool {
+			if item == nil {
+				return false
+			}
 			device := &gen.Device{
 				Name:     id,
 				Metadata: item.(*traits.Metadata),
@@ -117,6 +120,9 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 		resource.WithUpdatesOnly(request.UpdatesOnly),
 		resource.WithReadMask(subMask(request.ReadMask, "metadata")),
 		resource.WithInclude(func(id string, item proto.Message) bool {
+			if item == nil {
+				return false
+			}
 			device := &gen.Device{
 				Name:     id,
 				Metadata: item.(*traits.Metadata),

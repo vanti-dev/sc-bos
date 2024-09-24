@@ -92,7 +92,7 @@ import HotPoint from '@/components/HotPoint.vue';
 import OverlayStack from '@/components/zoom/OverlayStack.vue';
 import PinchZoom from '@/components/zoom/PinchZoom.vue';
 import DoorColor from '@/routes/ops/security/components/DoorColor.vue';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import WithAccess from '@/traits/access/WithAccess.vue';
 import WithOpenClose from '@/traits/openClose/WithOpenClose.vue';
 import WithStatus from '@/traits/status/WithStatus.vue';

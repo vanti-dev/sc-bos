@@ -2,7 +2,6 @@ package hpd
 
 import (
 	"context"
-	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -18,55 +17,29 @@ type AirQualitySensor struct {
 	gen.UnimplementedMqttServiceServer
 	gen.UnimplementedUdmiServiceServer
 
-	logger       *zap.Logger
-	pollInterval time.Duration
+	logger *zap.Logger
 
 	client *Client
 
 	AirQualityValue *resource.Value
 }
 
-func NewAirQualitySensor(client *Client, logger *zap.Logger, pollInterval time.Duration) *AirQualitySensor {
-	if pollInterval <= 0 {
-		pollInterval = time.Second * 60
-	}
+var _ sensor = (*AirQualitySensor)(nil)
 
+func NewAirQualitySensor(client *Client, logger *zap.Logger) *AirQualitySensor {
 	return &AirQualitySensor{
 		client:          client,
 		logger:          logger,
-		pollInterval:    pollInterval,
 		AirQualityValue: resource.NewValue(resource.WithInitialValue(&traits.AirQuality{}), resource.WithNoDuplicates()),
 	}
 }
 
-// StartPollingForData starts a loop which fetches data from the sensor at a set interval
-func (a *AirQualitySensor) StartPollingForData() {
-	go func() {
-		_ = a.startPoll(context.Background())
-	}()
-}
-
-func (a *AirQualitySensor) startPoll(ctx context.Context) error {
-	ticker := time.NewTicker(a.pollInterval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-
-		case <-ticker.C:
-			err := a.GetUpdate()
-			if err != nil {
-				a.logger.Error("error refreshing AirQualityValue data", zap.Error(err))
-			}
-		}
-	}
-}
-
 func (a *AirQualitySensor) GetAirQuality(_ context.Context, _ *traits.GetAirQualityRequest) (*traits.AirQuality, error) {
-	err := a.GetUpdate()
-	if err != nil {
+	response := SensorResponse{}
+	if err := doGetRequest(a.client, &response, "sensor"); err != nil {
+		return nil, err
+	}
+	if err := a.GetUpdate(&response); err != nil {
 		return nil, err
 	}
 	return a.AirQualityValue.Get().(*traits.AirQuality), nil
@@ -94,13 +67,7 @@ func (a *AirQualitySensor) PullAirQuality(request *traits.PullAirQualityRequest,
 	return nil
 }
 
-func (a *AirQualitySensor) GetUpdate() error {
-	response := SensorResponse{}
-	err := doGetRequest(a.client, &response, "sensor")
-	if err != nil {
-		return err
-	}
-
+func (a *AirQualitySensor) GetUpdate(response *SensorResponse) error {
 	co2 := float32(response.CO2)
 	// voc is exposed as ppb, we need to convert to ppm
 	voc := float32(response.VOC) / 1000
@@ -132,7 +99,14 @@ func (a *AirQualitySensor) GetUpdate() error {
 		q.Score = &fscore
 	}
 
-	a.AirQualityValue.Set(q)
+	_, err := a.AirQualityValue.Set(q)
+	if err != nil {
+		return err
+	}
 
 	return nil
+}
+
+func (a *AirQualitySensor) GetName() string {
+	return "Air Quality"
 }

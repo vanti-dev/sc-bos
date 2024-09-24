@@ -2,13 +2,13 @@
   <content-card>
     <v-row class="pa-4" v-if="configStore.config?.hub">
       <v-combobox
-          v-model="servicesStore.node"
+          v-model="userConfig.node"
           :items="nodesListValues"
           label="System Component"
           item-title="name"
           item-value="name"
           hide-details="auto"
-          :loading="hubStore.nodesListCollection.loading ?? true"
+          :loading="cohort.loading"
           variant="outlined"/>
       <v-spacer/>
     </v-row>
@@ -17,7 +17,7 @@
         :items="serviceList"
         item-key="id"
         :search="search"
-        :loading="serviceCollection.loading"
+        :loading="loading"
         @click:row="(_, s) => showService(s.item)">
       <template #item.active="{item}">
         <service-status :service="item"/>
@@ -54,15 +54,14 @@ import ContentCard from '@/components/ContentCard.vue';
 import useAuthSetup from '@/composables/useAuthSetup';
 import useServices from '@/composables/useServices';
 import ServiceStatus from '@/routes/system/components/ServiceStatus.vue';
-import {useHubStore} from '@/stores/hub';
-import {useServicesStore} from '@/stores/services.js';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useCohortStore} from '@/stores/cohort.js';
+import {useUserConfig} from '@/stores/userConfig.js';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {computed} from 'vue';
 
 const {blockActions} = useAuthSetup();
 
 const configStore = useUiConfigStore();
-const hubStore = useHubStore();
 
 const props = defineProps({
   name: {
@@ -77,15 +76,16 @@ const props = defineProps({
 });
 
 const {
-  serviceCollection,
   search,
   serviceList,
+  loading,
   nodesListValues,
   showService,
   _startService,
   _stopService
 } = useServices(props);
-const servicesStore = useServicesStore();
+const userConfig = useUserConfig();
+const cohort = useCohortStore();
 
 const headers = computed(() => {
   if (props.name === 'drivers') {

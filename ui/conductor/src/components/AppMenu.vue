@@ -30,7 +30,7 @@
 <script setup>
 import MenuIcon from '@/components/MenuIcon.vue';
 import useAuthSetup from '@/composables/useAuthSetup';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {computed, ref} from 'vue';
 
 const {hasNoAccess} = useAuthSetup();

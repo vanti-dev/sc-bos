@@ -40,24 +40,29 @@
 
 <script setup>
 import {timestampToDate} from '@/api/convpb';
-import {useNotifications} from '@/routes/ops/notifications/notifications.js';
-import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
+import {alertToObject} from '@/api/ui/alerts.js';
+import {useAlertsCollection} from '@/composables/alerts.js';
+import {severityData} from '@/composables/notifications.js';
 import {useSidebarStore} from '@/stores/sidebar';
 import {computed} from 'vue';
 
 
 const sidebar = useSidebarStore();
-const notification = useNotifications();
 
 const name = computed(() => sidebar.data?.notification?.name);
 const item = computed(() => sidebar.data?.notification?.item);
 const hasSource = computed(() => Boolean(item.value?.source));
 // todo: don't fetch data if we don't have a source
 const query = computed(() => ({source: item.value?.source}));
-const {pageItems, pageSize, targetItemCount, loading} = useAlertsApi(name, query);
-pageSize.value = 10;
-targetItemCount.value = 10;
-
+const alertRequest = computed(() => ({
+  name: name.value,
+  query: query.value
+}));
+const alertOptions = computed(() => ({
+  wantCount: 10
+}));
+const {items, loading} = useAlertsCollection(alertRequest, alertOptions);
+const pageItems = computed(() => items.value.map(i => alertToObject(i)) || []);
 
 const icons = {
   info: 'mdi-information-outline',
@@ -69,10 +74,10 @@ const notificationSidebar = computed(() => {
   if (pageItems.value.length === 0) return [];
 
   return pageItems.value.map(item => {
-    const icon = icons[notification.severityData(item.severity).text.toLowerCase()];
+    const icon = icons[severityData(item.severity).text.toLowerCase()];
     const color = item.resolveTime ?
         'text-grey' :
-        notification.severityData(item.severity).color;
+        severityData(item.severity).color;
     return {
       ...item,
       severity: {icon, color},

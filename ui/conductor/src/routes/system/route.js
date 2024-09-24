@@ -1,5 +1,5 @@
 import SidebarPage from '@/components/page-layout/SidebarPage.vue';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 
 export default {
   name: 'system',

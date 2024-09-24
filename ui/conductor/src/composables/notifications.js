@@ -1,7 +1,6 @@
 import {acknowledgeAlert, unacknowledgeAlert} from '@/api/ui/alerts.js';
-import {useAccountStore} from '@/stores/account';
+import {useAccountStore} from '@/stores/account.js';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
-import {acceptHMRUpdate, defineStore} from 'pinia';
 
 export const SeverityStrings = {
   [Alert.Severity.INFO]: 'INFO',
@@ -34,14 +33,14 @@ export function severityData(severity) {
   return {text: 'unspecified', color: 'text-gray', background: 'gray'};
 }
 
-export const useNotifications = defineStore('notifications', () => {
+export const useAcknowledgement = () => {
   const account = useAccountStore();
 
   /**
    *
-   * @param {boolean} e
-   * @param {Alert.AsObject} alert
-   * @param {string} name
+   * @param {boolean} e - true to acknowledge, false to unacknowledge
+   * @param {Alert.AsObject} alert - the alert to acknowledge or unacknowledge, must have an id
+   * @param {string} name - the device that holds the alert data
    */
   function setAcknowledged(e, alert, name = '') {
     if (e) {
@@ -66,12 +65,6 @@ export const useNotifications = defineStore('notifications', () => {
   }
 
   return {
-    severityData,
     setAcknowledged
   };
-});
-
-// enable hot reload for this store
-if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useNotifications, import.meta.hot));
-}
+};

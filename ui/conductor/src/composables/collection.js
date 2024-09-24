@@ -19,13 +19,13 @@ import {computed, reactive, ref, toValue, watch} from 'vue';
 /**
  * @typedef {Object} PullChange
  * @template T
- * @property {T} oldValue
- * @property {T} newValue
+ * @property {T?} oldValue
+ * @property {T?} newValue
  */
 /**
  * @typedef {Object} UseCollectionOptions
  * @template T
- * @property {number=} wantCount - how many items to fetch from the server
+ * @property {number=} wantCount - how many items to fetch from the server, -1 for all
  * @property {number=} pageSize - how many items to fetch per request, defaults to cap(missing, 10, 500)
  * @property {boolean=} paused - suspend requests
  * @property {(item: T) => string=} idFn - a function to get the id of an item, defaults to item.id or item.name
@@ -67,17 +67,20 @@ export default function useCollection(request, client, options) {
   const listTracker = reactive(/** @type {ActionTracker<T>} */ newActionTracker());
   const lastListResponse = ref(/** @type {ListResponse<T>} */ null);
 
+  // changes to items that have yet to be applied.
+  // Populated by both list and pull.
+  // Processed and cleared by processChanges.
+  const unprocessedChanges = ref(/** @type {PullChange<T>[]} */ []);
+
   // related to calls to client.pullFn
   const pullResource = reactive(/** @type {ResourceCollection<T, any>} */ newResourceCollection());
-  // changes we pulled while client.listFn was fetching, they will be applied once listFn is done
-  const pullChanges = ref(/** @type {PullChange<T>[]} */ []);
   watch(() => pullResource.lastResponse, (r) => {
     // most pull responses look like {changesList: [{oldValue, newValue}]}
-    if (r.hasOwnProperty('toObject') && r.hasOwnProperty('getChangesList')) {
-      pullChanges.value.push(...r.getChangesList().map(change => change.toObject()));
-      if (!listTracker.loading) processChanges();
+    if (r && typeof r.toObject === 'function' && typeof r.getChangesList === 'function') {
+      unprocessedChanges.value.push(...r.getChangesList().map(change => change.toObject()));
+      processChanges();
     }
-  });
+  }, {flush: 'sync'});
 
 
   const targetListCount = computed(() => toValue(options)?.wantCount ?? 20);
@@ -87,8 +90,9 @@ export default function useCollection(request, client, options) {
   const shouldFetch = computed(() => {
     if (toValue(options)?.paused ?? false) return false; // don't fetch if paused
     if (listTracker.loading) return false; // don't fetch if already fetching
-    // otherwise, fetch if we haven't fetched enough items and there are more items to get
-    return items.value.length < targetListCount.value && hasMorePages.value;
+    if (!hasMorePages.value) return false; // don't fetch if there are no more pages
+    // otherwise, fetch if we haven't fetched enough items
+    return targetListCount.value === -1 || items.value.length < targetListCount.value;
   });
   // A guess at how many total items there are, either from the server or calculated locally based on fetched items.
   const totalItems = computed(() => lastListResponse.value?.totalSize ?? items.value.length);
@@ -101,8 +105,13 @@ export default function useCollection(request, client, options) {
       .filter(e => e));
 
   // data fetching
+  const pullRequest = computed(() => {
+    const _req = {...toValue(request)};
+    _req.updatesOnly = true; // list will get the existing values
+    return _req;
+  });
   watchResource(
-      () => toValue(request),
+      pullRequest,
       () => toValue(options)?.paused,
       (req) => {
         client.pullFn(req, pullResource);
@@ -131,7 +140,7 @@ export default function useCollection(request, client, options) {
     lastListResponse.value = null;
     // the change in request will also cause the pull watcher to trigger,
     // but there's no way in there to know if we were paused or the request changed.
-    pullChanges.value = [];
+    unprocessedChanges.value = [];
   }, {deep: true});
 
   /**
@@ -150,39 +159,105 @@ export default function useCollection(request, client, options) {
     const pageResponse = await client.listFn(_request, listTracker);
     lastListResponse.value = pageResponse;
 
-    const transform = toValue(options)?.transform ?? (v => v);
-    items.value.push(...pageResponse.items.map(transform));
+    unprocessedChanges.value.push(...pageResponse.items.map(v => ({newValue: v})));
   }
 
   /**
+   * Removes duplicate changes from the list, returning the deduplicated changes.
+   * Items are compared based on the idFn of the options.
+   * Changes later in the list override earlier changes.
+   *
+   * The rules are as follows:
+   * - If two adds for the same item are found, only the second is kept.
+   * - If an add is followed by an update, the update is converted to an add and kept.
+   * - Two updates keep the second update.
+   * - Anything followed by a delete will become a delete.
+   *
+   * @param {PullChange<T>[]} changes
+   * @param {(T) => string} idFn
+   * @return {PullChange<T>[]}
+   */
+  const removeDuplicateChanges = (changes, idFn) => {
+    const seen = /** @type {Map<string, {indexes: number[], change: PullChange<T>}>} */ new Map();
+    for (let i = 0; i < changes.length; i++) {
+      const change = changes[i];
+      const id = getId(change.newValue ?? change.oldValue, idFn);
+      if (!id) continue; // no id, skip
+      const existing = seen.get(id);
+      if (!existing) {
+        seen.set(id, {indexes: [i], change});
+        continue;
+      }
+
+      // process duplicates
+      // a=add, u=update, d=delete
+      // o=old, n=new
+      // o1=set oldValue to existing, nd=set newValue to null
+      //
+      //    1 | existing               |
+      // 2    |  a     |  u    |  d    |
+      // -----+--------+-------+-------+
+      // n  a | n2     | n2    | n2 od |
+      // e  u | od n2  | n2    | n2    |
+      // w  d | o2 nd  | o2 nd |       |
+      const isAdd = change.newValue && !change.oldValue;
+      const isUpdate = change.newValue && change.oldValue;
+      const wasAdd = existing.change.newValue && !existing.change.oldValue;
+      const wasDelete = !existing.change.newValue && existing.change.oldValue;
+      if (isAdd || isUpdate) {
+        existing.change.newValue = change.newValue;
+        if (wasDelete && isAdd) existing.change.oldValue = null;
+        if (wasAdd && isUpdate) existing.change.oldValue = null;
+      } else {
+        // isDelete
+        existing.change.oldValue = change.oldValue;
+        existing.change.newValue = null;
+      }
+      existing.indexes.push(i);
+    }
+
+    const newChanges = [];
+    const changesSortedByLowestIndex = Array.from(seen.values()).sort((a, b) => a.indexes[0] - b.indexes[0]);
+    for (const {change} of changesSortedByLowestIndex) {
+      newChanges.push(change);
+    }
+    return newChanges;
+  };
+
+  /**
    * Processes changes we received from a pull against those we received from a list.
-   * pullChanges will be empty after this call.
+   * unprocessedChanges will be empty after this call.
    *
    * If options.cmp is not defined, items created via pull will not be added to the list.
    */
   function processChanges() {
     const _items = items.value;
-    const _changes = pullChanges.value;
+    const _changes = unprocessedChanges.value;
     if (!_changes.length) return; // no changes, nothing to do
-    const transform = toValue(options)?.transform ?? (v => v);
+    const opts = toValue(options);
+    const transform = opts?.transform ?? (v => v);
+    const idFn = opts?.idFn;
 
     // optimise the lookup of items by id if we're going to do it a bunch
-    let getIndex = (id) => _items.findIndex(v => getId(v) === id);
+    let getIndex = (id) => _items.findIndex(v => getId(v, idFn) === id);
     if (_changes.length > 10) {
       // compute an index for the items
       const index = new Map();
       for (let i = 0; i < _items.length; i++) {
-        index.set(getId(_items[i]), i);
+        index.set(getId(_items[i], idFn), i);
       }
-      getIndex = (id) => index.get(id);
+      getIndex = (id) => {
+        if (index.has(id)) return index.get(id);
+        return -1;
+      };
     }
 
     // delay mutating the items until later so the indexes remain accurate
     const toDeleteIndexes = [];
     const toAddItems = [];
-
-    for (const change of pullChanges.value) {
-      const index = getIndex(getId(change.newValue ?? change.oldValue));
+    const changes = removeDuplicateChanges(unprocessedChanges.value, idFn);
+    for (const change of changes) {
+      const index = getIndex(getId(change.newValue ?? change.oldValue, idFn));
       if (change.oldValue && !change.newValue) {
         // deletion
         if (index !== -1) toDeleteIndexes.push(index);
@@ -208,6 +283,7 @@ export default function useCollection(request, client, options) {
     if (cmp) {
       for (const item of toAddItems) {
         let i = 0;
+        // todo: replace with a binary search
         while (i < _items.length && cmp(item, _items[i]) > 0) i++;
         _items.splice(i, 0, item);
       }
@@ -216,7 +292,7 @@ export default function useCollection(request, client, options) {
     }
 
     items.value = _items;
-    pullChanges.value = [];
+    unprocessedChanges.value = [];
   }
 
   return {
@@ -227,7 +303,10 @@ export default function useCollection(request, client, options) {
 
     loading,
     loadingNextPage,
-    errors
+    errors,
+
+    _listTracker: listTracker,
+    _pullResource: pullResource
   };
 }
 

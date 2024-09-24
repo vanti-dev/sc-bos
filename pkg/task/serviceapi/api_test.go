@@ -112,7 +112,7 @@ func receiveWithin[T any](c <-chan T, wait time.Duration) (T, error) {
 	}
 }
 
-var createTestLifecycle = func(kind string) (service.Lifecycle, error) {
+var createTestLifecycle = func(id, kind string) (service.Lifecycle, error) {
 	return newTestLifecycle(), nil
 }
 

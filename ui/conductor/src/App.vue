@@ -12,13 +12,11 @@
 import AppBar from '@/components/default/AppBar.vue';
 import NavigationDrawer from '@/components/default/NavigationDrawer.vue';
 import ErrorView from '@/components/ui-error/ErrorView.vue';
-import {useControllerStore} from '@/stores/controller';
-import {useUiConfigStore} from '@/stores/ui-config';
+import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {storeToRefs} from 'pinia';
-import {onBeforeMount, onMounted} from 'vue';
+import {onBeforeMount} from 'vue';
 import {useTheme} from 'vuetify';
 
-const controller = useControllerStore();
 const uiConfig = useUiConfigStore();
 const {appBranding} = storeToRefs(uiConfig);
 const theme = useTheme();
@@ -56,9 +54,6 @@ onBeforeMount(async () => {
       }
     }
   }
-});
-onMounted(() => {
-  controller.sync();
 });
 
 </script>

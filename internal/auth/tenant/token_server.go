@@ -67,6 +67,12 @@ func WithPasswordFlow(v Verifier, validity time.Duration) TokenServerOption {
 	}
 }
 
+func WithPermittedSignatureAlgorithms(algs []string) TokenServerOption {
+	return func(ts *TokenServer) {
+		ts.tokens.SignatureAlgorithms = algs
+	}
+}
+
 func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// time out operations after one minute
 	ctx, cancel := context.WithTimeout(request.Context(), time.Minute)

@@ -8,7 +8,6 @@ import (
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/app/files"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -29,7 +28,7 @@ func addFactorySupport[M ~map[K]F, K comparable, F any](s node.Supporter, m M) {
 	}
 }
 
-func (c *Controller) startDrivers() (*service.Map, error) {
+func (c *Controller) startDrivers(configs []driver.RawConfig) (*service.Map, error) {
 	ctxServices := driver.Services{
 		Logger:          c.Logger.Named("driver"),
 		Node:            c.Node,
@@ -37,7 +36,10 @@ func (c *Controller) startDrivers() (*service.Map, error) {
 		HTTPMux:         c.Mux,
 	}
 
-	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
+		driverServices := ctxServices
+		driverServices.Config = &serviceConfigStore{store: c.ControllerConfig.Drivers(), id: id}
+
 		f, ok := c.SystemConfig.DriverFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported driver type %v", kind)
@@ -46,14 +48,14 @@ func (c *Controller) startDrivers() (*service.Map, error) {
 	}, service.IdIsRequired)
 
 	var allErrs error
-	for _, cfg := range c.ControllerConfig.Drivers {
+	for _, cfg := range configs {
 		_, _, err := m.Create(cfg.Name, cfg.Type, service.State{Active: !cfg.Disabled, Config: cfg.Raw})
 		allErrs = multierr.Append(allErrs, err)
 	}
 	return m, allErrs
 }
 
-func (c *Controller) startAutomations() (*service.Map, error) {
+func (c *Controller) startAutomations(configs []auto.RawConfig) (*service.Map, error) {
 	ctxServices := auto.Services{
 		Logger:          c.Logger.Named("auto"),
 		Node:            c.Node,
@@ -63,7 +65,10 @@ func (c *Controller) startAutomations() (*service.Map, error) {
 		ClientTLSConfig: c.ClientTLSConfig,
 	}
 
-	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
+		autoServices := ctxServices
+		autoServices.Config = &serviceConfigStore{store: c.ControllerConfig.Automations(), id: id}
+
 		f, ok := c.SystemConfig.AutoFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported automation type %v", kind)
@@ -72,7 +77,7 @@ func (c *Controller) startAutomations() (*service.Map, error) {
 	}, service.IdIsRequired)
 
 	var allErrs error
-	for _, cfg := range c.ControllerConfig.Automation {
+	for _, cfg := range configs {
 		_, _, err := m.Create(cfg.Name, cfg.Type, service.State{Active: !cfg.Disabled, Config: cfg.Raw})
 		allErrs = multierr.Append(allErrs, err)
 	}
@@ -98,7 +103,7 @@ func (c *Controller) startSystems() (*service.Map, error) {
 		CohortManager:   c.ManagerConn,
 		ClientTLSConfig: c.ClientTLSConfig,
 	}
-	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+	m := service.NewMap(func(_, kind string) (service.Lifecycle, error) {
 		f, ok := c.SystemConfig.SystemFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported system type %v", kind)
@@ -114,7 +119,7 @@ func (c *Controller) startSystems() (*service.Map, error) {
 	return m, allErrs
 }
 
-func (c *Controller) startZones() (*service.Map, error) {
+func (c *Controller) startZones(configs []zone.RawConfig) (*service.Map, error) {
 	ctxServices := zone.Services{
 		Logger:          c.Logger.Named("zone"),
 		Node:            c.Node,
@@ -123,7 +128,10 @@ func (c *Controller) startZones() (*service.Map, error) {
 		DriverFactories: c.SystemConfig.DriverFactories,
 	}
 
-	m := service.NewMap(func(kind string) (service.Lifecycle, error) {
+	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
+		zoneServices := ctxServices
+		zoneServices.Config = &serviceConfigStore{store: c.ControllerConfig.Zones(), id: id}
+
 		f, ok := c.SystemConfig.ZoneFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported zone type %v", kind)
@@ -132,7 +140,7 @@ func (c *Controller) startZones() (*service.Map, error) {
 	}, service.IdIsRequired)
 
 	var allErrs error
-	for _, cfg := range c.ControllerConfig.Zones {
+	for _, cfg := range configs {
 		_, _, err := m.Create(cfg.Name, cfg.Type, service.State{Active: !cfg.Disabled, Config: cfg.Raw})
 		allErrs = multierr.Append(allErrs, err)
 	}
@@ -183,13 +191,11 @@ func logServiceRecordChange(logger *zap.Logger, oldVal, newVal *service.StateRec
 	}
 }
 
-func announceServices[M ~map[string]T, T any](c *Controller, name string, services *service.Map, factories M) node.Undo {
+func announceServices[M ~map[string]T, T any](c *Controller, name string, services *service.Map, factories M, store serviceapi.Store) node.Undo {
 	client := gen.WrapServicesApi(serviceapi.NewApi(services,
 		serviceapi.WithKnownTypesFromMapKeys(factories),
 		serviceapi.WithLogger(c.Logger.Named("serviceapi")),
-		// results in .data/config/user/{name}/my-service.json
-		serviceapi.WithStore(serviceapi.StoreDir(files.Path(c.SystemConfig.DataDir, filepath.Join("config/user", name)))),
-		serviceapi.WithMarshaller(serviceapi.MarshalArrayConfig(name)),
+		serviceapi.WithStore(store),
 	))
 	return node.UndoAll(
 		c.Node.Announce(name, node.HasClient(client)),
@@ -202,9 +208,7 @@ func announceAutoServices[M ~map[string]T, T any](c *Controller, services *servi
 	client := gen.WrapServicesApi(serviceapi.NewApi(services,
 		serviceapi.WithKnownTypesFromMapKeys(factories),
 		serviceapi.WithLogger(c.Logger.Named("serviceapi")),
-		// results in .data/config/user/{name}/my-service.json
-		serviceapi.WithStore(serviceapi.StoreDir(files.Path(c.SystemConfig.DataDir, filepath.Join("config/user", "automations")))),
-		serviceapi.WithMarshaller(serviceapi.MarshalArrayConfig("automation")),
+		serviceapi.WithStore(c.ControllerConfig.Automations()),
 	))
 	return node.UndoAll(
 		c.Node.Announce("automations", node.HasClient(client)),
@@ -223,4 +227,13 @@ func announceSystemServices[M ~map[string]T, T any](c *Controller, services *ser
 		c.Node.Announce("systems", node.HasClient(client)),
 		c.Node.Announce(filepath.Join(c.Node.Name(), "systems"), node.HasClient(client)),
 	)
+}
+
+type serviceConfigStore struct {
+	store serviceapi.Store
+	id    string
+}
+
+func (s *serviceConfigStore) UpdateConfig(ctx context.Context, data []byte) error {
+	return s.store.SaveConfig(ctx, s.id, "", data)
 }

@@ -16,7 +16,7 @@ import {toValue, watch} from 'vue';
  */
 export const toQueryObject = (input) => {
   const inputValue = toValue(input);
-  if (!inputValue) return null;
+  if (inputValue === null || inputValue === undefined) return null;
   if (typeof inputValue === 'string') return {name: inputValue};
   return inputValue;
 };

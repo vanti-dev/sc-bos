@@ -18,22 +18,21 @@
 </template>
 
 <script setup>
-import {newActionTracker} from '@/api/resource';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
+import {useDevicesMetadataField, usePullDevicesMetadata} from '@/composables/devices.js';
 import useAuthSetup from '@/composables/useAuthSetup';
-import {computed, reactive} from 'vue';
-import {useDevicesStore} from './store';
+import {computed} from 'vue';
 
 const {hasNoAccess} = useAuthSetup();
-const deviceStore = useDevicesStore();
-const tracker = reactive(newActionTracker());
+const {value: md} = usePullDevicesMetadata('metadata.membership.subsystem');
+const {keys} = useDevicesMetadataField(md, 'metadata.membership.subsystem');
 
 // computed
 //
 // Generating the Devices nav options
 const availableSubSystems = computed(() => {
   // Pinia store value
-  const subSystems = deviceStore.subSystems.subs;
+  const subSystems = keys.value;
 
   const navigationItemLabels = {
     acs: 'Access Control',
@@ -49,9 +48,9 @@ const availableSubSystems = computed(() => {
   // if we have the Pinia store value
   if (subSystems) {
     // then loop through this value
-    for (const subSystem in subSystems) {
+    for (const subSystem of subSystems) {
       // ignore noType key/value pair
-      if (subSystem !== 'noType') {
+      if (subSystem !== '') {
         // and reconstruct the object according to the template needs
         const listItem = {
           // to: '/devices/' + subSystem,
@@ -70,9 +69,6 @@ const availableSubSystems = computed(() => {
   // finally return the array of objects
   return navigationItems;
 });
-
-// onCreate
-deviceStore.fetchDeviceSubsystemCounts(tracker);
 </script>
 
 <style scoped>

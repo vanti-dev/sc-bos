@@ -5,15 +5,12 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"encoding/json"
 	"errors"
 	"net"
 	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 
-	"github.com/google/renameio/v2/maybe"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/rs/cors"
@@ -26,7 +23,6 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
-	"github.com/vanti-dev/sc-bos/internal/confmerge"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
@@ -36,7 +32,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
-	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -71,24 +66,20 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		// successfully loaded the config
 		logger.Debug("loaded external config", zap.Strings("paths", config.AppConfig), zap.Strings("includes", externalConf.Includes), zap.Strings("filesLoaded", filesLoaded))
 	}
-	// resolve the app config we will use by merging the external config into the active config
-	configDir := filepath.Join(config.DataDir, configDirName)
-	activeConfig, configPatches, err := confmerge.Merge(
-		externalConf, confmerge.NewDirStore(configDir),
-		appconf.Blocks(config.DriverConfigBlocks(), config.AutoConfigBlocks(), config.ZoneConfigBlocks()),
-	)
+	confStore, err := appconf.LoadStore(externalConf, appconf.Schema{
+		Drivers:     config.DriverConfigBlocks(),
+		Automations: config.AutoConfigBlocks(),
+		Zones:       config.ZoneConfigBlocks(),
+	}, files.Path(config.DataDir, configDirName), logger)
 	if err != nil {
 		return nil, err
 	}
-	err = saveConfigPatches(configPatches, filepath.Join(configDir, configPatchDirName), logger)
-	if err != nil {
-		return nil, err
-	}
+	initialConfig := confStore.Active()
 
 	// rootNode grants both local (in process) and networked (via grpc.Server) access to controller apis.
 	// If you have a device you want expose via a Smart Core API, rootNode is where you'd do that via Announce.
 	// If you need to know the brightness of another controller device, rootNode.Clients is how you'd do that.
-	cName := activeConfig.Name
+	cName := initialConfig.Name
 	if cName == "" {
 		cName = config.Name
 	}
@@ -271,7 +262,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	c := &Controller{
 		SystemConfig:     config,
-		ControllerConfig: activeConfig,
+		ControllerConfig: confStore,
 		Enrollment:       enrollServer,
 		Logger:           logger,
 		Node:             rootNode,
@@ -302,32 +293,6 @@ func logPolicyMode(mode sysconf.PolicyMode, logger *zap.Logger) {
 		// this shouldn't happen as unknown modes are caught in the config parsing
 		logger.Warn("unknown policy mode", zap.String("mode", string(mode)))
 	}
-}
-
-func saveConfigPatches(patches []block.Patch, dir string, logger *zap.Logger) error {
-	if len(patches) == 0 {
-		return nil
-	}
-
-	err := os.MkdirAll(dir, 0755)
-	if err != nil {
-		return err
-	}
-	filename := filepath.Join(dir, "patch-"+time.Now().UTC().Format("20060102-150405")+".json")
-	raw, err := json.MarshalIndent(patches, "", "  ")
-	if err != nil {
-		return err
-	}
-	err = maybe.WriteFile(filename, raw, 0644)
-	if err != nil {
-		return err
-	}
-
-	logger.Info("applied patches based on external config",
-		zap.Int("count", len(patches)),
-		zap.String("patchLogFile", filename),
-	)
-	return nil
 }
 
 // configPolicy converts the given config into a policy.Policy.
@@ -364,7 +329,7 @@ func configPolicy(config sysconf.Config) policy.Policy {
 
 type Controller struct {
 	SystemConfig     sysconf.Config
-	ControllerConfig appconf.Config
+	ControllerConfig *appconf.Store
 	Enrollment       *enrollment.Server
 
 	// services for drivers/automations
@@ -394,6 +359,7 @@ func (c *Controller) Defer(d Deferred) {
 }
 
 func (c *Controller) Run(ctx context.Context) (err error) {
+	initialConfig := c.ControllerConfig.Active()
 	defer func() {
 		for _, d := range c.deferred {
 			err = multierr.Append(err, d())
@@ -408,7 +374,8 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	// Bootstrap and Run and have all these added correctly.
 	c.Node.Register(c.GRPC)
 	// metadata associated with the node itself
-	c.Node.Announce(c.Node.Name(), node.HasMetadata(c.ControllerConfig.Metadata))
+	// we don't support changing metadata while running
+	c.Node.Announce(c.Node.Name(), node.HasMetadata(initialConfig.Metadata))
 
 	group, ctx := errgroup.WithContext(ctx)
 	if c.Enrollment != nil {
@@ -435,25 +402,25 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 	announceSystemServices(c, systemServices, c.SystemConfig.SystemFactories)
 	go logServiceMapChanges(ctx, c.Logger.Named("system"), systemServices)
 	// load and start the drivers
-	driverServices, err := c.startDrivers()
+	driverServices, err := c.startDrivers(initialConfig.Drivers)
 	if err != nil {
 		return err
 	}
-	announceServices(c, "drivers", driverServices, c.SystemConfig.DriverFactories)
+	announceServices(c, "drivers", driverServices, c.SystemConfig.DriverFactories, c.ControllerConfig.Drivers())
 	go logServiceMapChanges(ctx, c.Logger.Named("driver"), driverServices)
 	// load and start the automations
-	autoServices, err := c.startAutomations()
+	autoServices, err := c.startAutomations(initialConfig.Automation)
 	if err != nil {
 		return err
 	}
 	announceAutoServices(c, autoServices, c.SystemConfig.AutoFactories)
 	go logServiceMapChanges(ctx, c.Logger.Named("auto"), autoServices)
 	// load and start the zones
-	zoneServices, err := c.startZones()
+	zoneServices, err := c.startZones(initialConfig.Zones)
 	if err != nil {
 		return err
 	}
-	announceServices(c, "zones", zoneServices, c.SystemConfig.ZoneFactories)
+	announceServices(c, "zones", zoneServices, c.SystemConfig.ZoneFactories, c.ControllerConfig.Zones())
 	go logServiceMapChanges(ctx, c.Logger.Named("zone"), zoneServices)
 
 	err = multierr.Append(err, group.Wait())
@@ -480,7 +447,4 @@ func (c *Controller) httpEndpoint() (string, error) {
 	return net.JoinHostPort(addr, p), nil
 }
 
-const (
-	configDirName      = "config"
-	configPatchDirName = "patches"
-)
+const configDirName = "config"

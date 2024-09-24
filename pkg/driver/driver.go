@@ -15,9 +15,7 @@ type Services struct {
 	Node            *node.Node  // for advertising devices
 	ClientTLSConfig *tls.Config // for connecting to other smartcore nodes
 	HTTPMux         *http.ServeMux
-}
-
-type Driver interface {
+	Config          service.ConfigUpdater
 }
 
 type Factory interface {

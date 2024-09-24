@@ -3,7 +3,7 @@
     <v-row v-if="!props.overviewPage" class="mt-0 ml-0 pl-0">
       <h3 class="text-h3 pt-2 pb-6">Notifications</h3>
       <v-spacer/>
-      <v-btn class="mt-2 mr-3" color="neutral" @click="alerts.exportData('Notifications')">
+      <v-btn class="mt-2 mr-3" color="neutral" @click="doDownloadCSV()">
         Export CSV...
       </v-btn>
     </v-row>
@@ -11,16 +11,10 @@
     <content-card :class="['px-8', {'mt-8 px-4': !props.overviewPage}]">
       <v-data-table-server
           :headers="headers"
-          :items="alerts.pageItems"
+          v-bind="tableAttrs"
           disable-sort
           :items-length="queryTotalCount"
           :row-props="rowProps"
-          v-model:page="dataTablePage"
-          v-model:items-per-page="dataTableItemsPerPage"
-          :items-per-page-options="itemsPerPageOptions"
-          show-current-page
-          :show-first-last-page="false"
-          :loading="alerts.loading"
           class="pt-4"
           :class="{ 'hide-pagination': modifyFooter }"
           @click:row="showNotification">
@@ -44,7 +38,7 @@
                 <v-btn
                     v-if="props.overviewPage"
                     v-bind="{..._props, ...btnStyles}"
-                    @click="alerts.exportData('Notifications')">
+                    @click="doDownloadCSV()">
                   <v-icon size="24">mdi-file-download</v-icon>
                 </v-btn>
               </template>
@@ -128,7 +122,7 @@
           </v-row>
         </template>
         <template #item.createTime="{ item }">
-          {{ item.createTime.toLocaleString() }}
+          {{ timestampToDate(item.createTime).toLocaleString() }}
         </template>
         <template #item.subsystem="{ item }">
           <subsystem-icon size="20px" :subsystem="item.subsystem" no-default/>
@@ -147,25 +141,26 @@
               <span v-bind="_props">RESOLVED</span>
             </template>
             Was:
-            <span :class="notifications.severityData(item.severity).color">
-              {{ notifications.severityData(item.severity).text }}
+            <span :class="severityData(item.severity).color">
+              {{ severityData(item.severity).text }}
             </span>
           </v-tooltip>
-          <span v-else :class="notifications.severityData(item.severity).color">
-            {{ notifications.severityData(item.severity).text }}
+          <span v-else :class="severityData(item.severity).color">
+            {{ severityData(item.severity).text }}
           </span>
         </template>
         <template #item.acknowledged="{ item }">
           <acknowledgement-btn
               :ack="item.acknowledgement"
-              @acknowledge="notifications.setAcknowledged(true, item, name)"
-              @unacknowledge="notifications.setAcknowledged(false, item, name)"/>
+              @acknowledge="setAcknowledged(true, item, name)"
+              @unacknowledge="setAcknowledged(false, item, name)"/>
         </template>
       </v-data-table-server>
     </content-card>
   </div>
 </template>
 <script setup>
+import {timestampToDate} from '@/api/convpb';
 import {newActionTracker} from '@/api/resource.js';
 import {createAlert} from '@/api/ui/alerts.js';
 import ContentCard from '@/components/ContentCard.vue';
@@ -173,15 +168,17 @@ import FilterBtn from '@/components/filter/FilterBtn.vue';
 import FilterChoiceChips from '@/components/filter/FilterChoiceChips.vue';
 import useFilterCtx from '@/components/filter/filterCtx.js';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
+import {useAlertsCollection} from '@/composables/alerts.js';
+import {severityData, useAcknowledgement} from '@/composables/notifications.js';
+import {useDataTableCollection} from '@/composables/table.js';
 import AcknowledgementBtn from '@/routes/ops/notifications/AcknowledgementBtn.vue';
-import {useAlertMetadata} from '@/routes/ops/notifications/alertMetadata';
-import {severityData, useNotifications} from '@/routes/ops/notifications/notifications.js';
-import useAlertsApi from '@/routes/ops/notifications/useAlertsApi';
-import {useHubStore} from '@/stores/hub';
+import {useAlertMetadataStore} from '@/routes/ops/notifications/alertMetadata';
+import {downloadCSV} from '@/routes/ops/notifications/export.js';
+import {useCohortStore} from '@/stores/cohort.js';
 import {useSidebarStore} from '@/stores/sidebar';
+import {isNullOrUndef} from '@/util/types.js';
 import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
-import deepEqual from 'fast-deep-equal';
-import {computed, onUnmounted, reactive, ref, watch} from 'vue';
+import {computed, onUnmounted, reactive, ref} from 'vue';
 
 const props = defineProps({
   overviewPage: {
@@ -202,9 +199,8 @@ const btnStyles = ref({
   'variant': 'text'
 });
 
-const notifications = useNotifications();
-const alertMetadata = useAlertMetadata();
-const hubStore = useHubStore();
+const {setAcknowledged} = useAcknowledgement();
+const alertMetadata = useAlertMetadataStore();
 const sidebar = useSidebarStore();
 
 const manualEntryValue = reactive(newActionTracker());
@@ -233,9 +229,6 @@ const addManualEntry = async () => {
   };
 };
 
-const dataTablePage = ref(1);
-const dataTableItemsPerPage = ref(20);
-const itemsPerPageOptions = [20, 50, 100].map(n => ({title: String(n), value: n}));
 const modifyFooter = computed(() => queryMetadataCount.value === undefined);
 
 const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
@@ -329,7 +322,7 @@ const nonFilterableQueryFields = computed(() => {
 const queryFields = computed(() => {
   const res = /** @type {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} */ {};
   for (const choice of filterCtx.sortedChoices.value) {
-    if (choice.value === undefined || choice.value === null) continue;
+    if (isNullOrUndef(choice?.value)) continue;
     switch (choice.filter) {
       case 'acknowledged':
         res.acknowledged = choice.value;
@@ -363,18 +356,25 @@ const query = computed(() => {
   return {...nonFilterableQueryFields.value, ...queryFields.value};
 });
 
-const name = computed(() => hubStore.hubNode?.name ?? '');
-const alerts = reactive(useAlertsApi(name, query));
-watch(
-    [dataTablePage, dataTableItemsPerPage],
-    () => {
-      alerts.pageSize = dataTableItemsPerPage.value;
-      alerts.pageIndex = dataTablePage.value - 1;
-    },
-    {deep: true, immediate: true}
-);
+const cohort = useCohortStore();
+const name = computed(() => cohort.hubNode?.name ?? '');
+
+const alertsRequest = computed(() => ({
+  name: name.value,
+  query: query.value
+}));
+const wantCount = ref(20);
+const alertsOptions = computed(() => ({
+  wantCount: wantCount.value
+}));
+const alertsCollection = useAlertsCollection(alertsRequest, alertsOptions);
+const tableAttrs = useDataTableCollection(wantCount, alertsCollection);
 
 const queryFieldCount = computed(() => Object.values(query.value).filter((value) => value !== undefined).length);
+
+const doDownloadCSV = () => {
+  downloadCSV(alertsRequest.value);
+};
 
 /**
  *  Calculate the total number of items in the query
@@ -392,8 +392,10 @@ function calculateQueryMetadataCount(query) {
    */
   function getSeverityTotal() {
     let total = 0;
+    const severityMax = query.severityNotAbove ?? Infinity;
+    const severityMin = query.severityNotBelow ?? -Infinity;
     for (const [level, count] of Object.entries(alertMetadata.severityCountsMap)) {
-      if (level <= query.severityNotAbove && level >= query.severityNotBelow) total += count;
+      if (severityMin <= level && level <= severityMax) total += count;
     }
     return total;
   }
@@ -458,21 +460,10 @@ const queryTotalCount = computed(() => {
   // If the query metadata count is defined, then we can use it
   if (totalCount >= 0) return totalCount;
   // If there is a next page token, then we know there are more pages available.
-  else if (alerts.nextPageToken) return alerts.allItems.length + 1;
+  else if (alertsCollection.hasMorePages.value) return alertsCollection.items.value.length + 1;
   // If there is no next page token, then we know there are no more pages available.
-  else return alerts.allItems.length;
+  else return alertsCollection.items.value.length;
 });
-
-// Watch the query object for changes
-watch(
-    query,
-    (oldQuery, newQuery) => {
-      if (deepEqual(oldQuery, newQuery)) return; // avoid reactivity churn
-      // Reset the page to 1
-      dataTablePage.value = 1;
-    },
-    {immediate: true, deep: true}
-);
 
 const allHeaders = [
   {title: 'Timestamp', value: 'createTime', width: '15em'},
@@ -537,7 +528,7 @@ onUnmounted(() => {
 
 .hide-pagination {
   :deep(.v-data-table-footer__info),
-  :deep(.v-pagination__last){
+  :deep(.v-pagination__last) {
     display: none;
   }
 

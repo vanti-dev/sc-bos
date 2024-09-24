@@ -129,3 +129,33 @@ export const csvDownload = async (params) => {
 
   await download();
 };
+
+/**
+ * Causes the browser to download a CSV file containing the given row data.
+ *
+ * @param {string} filename
+ * @param {string[][]} data
+ */
+export function downloadCSVRows(filename, data) {
+  // todo: escape ',' and '"' in data
+  const csvContent = data.map(e => e.join(',')).join('\n') + '\n';
+  download(filename, csvContent, 'text/csv;charset=utf-8;');
+}
+
+/**
+ * @param {string} filename
+ * @param {string} text
+ * @param {string} mime
+ */
+function download(filename, text, mime) {
+  const element = document.createElement('a');
+  element.setAttribute('href', 'data:' + mime + ',' + encodeURIComponent(text));
+  element.setAttribute('download', filename);
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}

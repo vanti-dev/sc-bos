@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v4"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -19,7 +19,7 @@ func TestLocalKeySet_VerifySignature(t *testing.T) {
 
 	// verify the first signature using the JWKS, which should succeed
 	jwks := jose.JSONWebKeySet{Keys: []jose.JSONWebKey{testJWK1.Public()}}
-	localKeySet := NewLocalKeySet(jwks)
+	localKeySet := NewLocalKeySet(jwks, []jose.SignatureAlgorithm{jose.RS256})
 	outputPayload, err := localKeySet.VerifySignature(context.Background(), sig1)
 	if err != nil {
 		t.Fatal(err)

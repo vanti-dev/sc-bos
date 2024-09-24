@@ -8,7 +8,8 @@ import {
   DevicesMetadata,
   GetDevicesMetadataRequest,
   ListDevicesRequest,
-  PullDevicesMetadataRequest
+  PullDevicesMetadataRequest,
+  PullDevicesRequest
 } from '@sc-bos/ui-gen/proto/devices_pb';
 
 /**
@@ -30,7 +31,7 @@ export function listDevices(request, tracker) {
 export function pullDevices(request, resource) {
   pullResource('Devices.pullDevices', resource, endpoint => {
     const api = apiClient(endpoint);
-    const stream = api.pullDevices(listDevicesRequestFromObject(request));
+    const stream = api.pullDevices(pullDevicesRequestFromObject(request));
     stream.on('data', msg => {
       const changes = msg.getChangesList();
       for (const change of changes) {
@@ -88,6 +89,19 @@ function listDevicesRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new ListDevicesRequest();
   setProperties(dst, obj, 'pageToken', 'pageSize');
+  dst.setQuery(deviceQueryFromObject(obj.query));
+  return dst;
+}
+
+/**
+ * @param {Partial<PullDevicesRequest.AsObject>} obj
+ * @return {undefined|PullDevicesRequest}
+ */
+function pullDevicesRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new PullDevicesRequest();
+  setProperties(dst, obj, 'updatesOnly');
+  dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setQuery(deviceQueryFromObject(obj.query));
   return dst;
 }

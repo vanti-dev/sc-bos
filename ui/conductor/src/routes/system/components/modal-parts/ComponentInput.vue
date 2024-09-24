@@ -90,7 +90,7 @@ const props = defineProps({
     default: () => ({})
   },
   listItems: {
-    type: Array,
+    type: /** @type {(typeof CohortNode)[]} */ Array,
     default: () => []
   },
   nodeQuery: {
@@ -154,7 +154,7 @@ watch(_address, (newAddress, oldAddress) => {
   }
 
   // If the address is not empty, check if it is enrolled
-  const matchAddress = props.listItems.find(node => node.address === newAddress);
+  const matchAddress = props.listItems.find(node => node.grpcAddress === newAddress);
 
   // If the address is enrolled, enable the forget button
   if (matchAddress) {
