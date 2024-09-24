@@ -11,42 +11,23 @@
       },
       "effects": [
         {
-          "type": "fill",
-          "selector": "path",
-          "source": {"ref": "airTemperature", "property": "ambientTemperature.valueCelsius"},
-          "interpolate": {
-            "steps": [
-              {"value": 14, "color": "#00aad9"},
-              {"value": 22.5, "color": "#11b139"},
-              {"value": 30, "color": "#d74c19"}
-            ]
+          "type": "widget",
+          "component": "builtin:environmental/AirTemperatureChip",
+          "props": {
+            "layout": "{{layout}}",
+            "size": "20",
+            "variant": "outlined-filled",
+            "set-point": {"ref": "airTemperature", "property": "temperatureSetPoint.valueCelsius"},
+            "current-temp": {"ref": "airTemperature", "property": "ambientTemperature.valueCelsius"}
           }
-        },
-        {
-          "type": "stroke",
-          "selector": "path",
-          "source": {"ref": "airTemperature", "property": "ambientTemperature.valueCelsius"},
-          "interpolate": {
-            "steps": [
-              {"value": 14, "color": "#007faa"},
-              {"value": 22.5, "color": "#008700"},
-              {"value": 30, "color": "#ad1f00"}
-            ]
-          }
-        },
-        {
-          "type": "text",
-          "selector": "text tspan",
-          "source": {"ref": "airTemperature"},
-          "template": "{[toFixed ambientTemperature.valueCelsius 1]}°C"
         }
       ]
     }
   },
   "elements": [
-    {"template": {"ref": "fcu", "id": "FCU-L00-01"}},
-    {"template": {"ref": "fcu", "id": "FCU-L00-02"}},
-    {"template": {"ref": "fcu", "id": "FCU-L00-03"}},
-    {"template": {"ref": "fcu", "id": "FCU-L00-04"}}
+    {"template": {"ref": "fcu", "id": "FCU-L00-01", "layout": "top"}},
+    {"template": {"ref": "fcu", "id": "FCU-L00-02", "layout": "left"}},
+    {"template": {"ref": "fcu", "id": "FCU-L00-03", "layout": "left"}},
+    {"template": {"ref": "fcu", "id": "FCU-L00-04", "layout": "left"}}
   ]
 }
