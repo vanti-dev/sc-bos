@@ -165,7 +165,8 @@ func (n *Node) RegisterService(desc *grpc.ServiceDesc, impl any) {
 	}
 
 	conn := wrap.ServerToClient(*desc, impl)
-	err = n.router.AddDefaultRoute(desc.ServiceName, conn)
+	// add a service-only route
+	err = n.router.AddRoute(desc.ServiceName, "", conn)
 	if err != nil {
 		n.Logger.Error("failed to register default route for service", zap.Error(err), zap.String("service", desc.ServiceName))
 	}

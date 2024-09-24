@@ -20,6 +20,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 func TestStreamHandler(t *testing.T) {
@@ -143,8 +144,7 @@ func nameKey[T namedMessage](m T) KeyFunc {
 }
 
 func registerService(reg *Router, service string, clients ...*grpc.ClientConn) {
-	reg.SupportService(NewUnroutedService(serviceDescriptor(service)))
-
+	supportService(reg, service)
 	for i, client := range clients {
 		name := fmt.Sprintf("n%d", i+1)
 		err := reg.AddRoute(service, name, client)
@@ -152,6 +152,19 @@ func registerService(reg *Router, service string, clients ...*grpc.ClientConn) {
 			panic(err)
 		}
 	}
+}
+
+func supportService(reg *Router, service string) {
+	if reg.SupportsService(service) {
+		return
+	}
+	desc := serviceDescriptor(service)
+	s, err := NewRoutedService(desc, "name")
+	if err != nil {
+		// register as unrouted instead
+		s = NewUnroutedService(desc)
+	}
+	reg.SupportService(s)
 }
 
 func newNode(t *testing.T, ctx context.Context, name string) (*grpc.ClientConn, error) {
@@ -172,12 +185,14 @@ func newNode(t *testing.T, ctx context.Context, name string) (*grpc.ClientConn, 
 
 // nodeServer returns a *grpc.Server that implements the OnOffApi service that responds to the given name.
 func nodeServer(name string) *grpc.Server {
-	s := grpc.NewServer()
-	r := onoff.NewApiRouter() // use a router to force NOT_FOUND for unknown names
+	r := New() // use a router to force NOT_FOUND for unknown names
+	supportService(r, traits.OnOffApi_ServiceDesc.ServiceName)
 	m := onoff.NewModel(onoff.WithInitialOnOff(&traits.OnOff{State: traits.OnOff_OFF}))
-	r.Add(name, onoff.WrapApi(onoff.NewModelServer(m)))
-	traits.RegisterOnOffApiServer(s, r)
-	return s
+	err := r.AddRoute("", name, wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoff.NewModelServer(m)))
+	if err != nil {
+		panic(err)
+	}
+	return grpc.NewServer(grpc.UnknownServiceHandler(StreamHandler(r)))
 }
 
 func bufConn(ctx context.Context, buf *bufconn.Listener) (*grpc.ClientConn, error) {
