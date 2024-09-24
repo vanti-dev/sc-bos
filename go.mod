@@ -14,7 +14,6 @@ require (
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgx/v4 v4.18.2
 	github.com/mwitkow/grpc-proxy v0.0.0-20230212185441-f345521cb9c9
-	github.com/natefinch/atomic v1.0.1
 	github.com/olebedev/emitter v0.0.0-20190110104742-e8d1457e6aee
 	github.com/open-policy-agent/opa v0.44.0
 	github.com/pborman/uuid v1.2.0
@@ -23,7 +22,7 @@ require (
 	github.com/rs/cors v1.8.3
 	github.com/sirupsen/logrus v1.9.0
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.45
-	github.com/smart-core-os/sc-golang v0.0.0-20240919145009-a73f410d7426
+	github.com/smart-core-os/sc-golang v0.0.0-20240924150805-4b8132e536d5
 	github.com/timshannon/bolthold v0.0.0-20210913165410-232392fc8a6a
 	github.com/vanti-dev/gobacnet v0.0.0-20231102122752-32b0b38bcc53
 	go.etcd.io/bbolt v1.3.6
