@@ -11,7 +11,12 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          registry-url: https://npm.pkg.github.com
       - name: Clean yarn.lock private dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Checking for private yarn.lock dependencies"
           if grep -E "nexus\.vanti\.co\.uk/repository/npm-public/" ui/yarn.lock; then
