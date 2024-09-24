@@ -27,7 +27,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WasteApiClient interface {
-	ListWasteRecords(ctx context.Context, in *GetWasteRecordsRequest, opts ...grpc.CallOption) (*ListWasteRecordsResponse, error)
+	ListWasteRecords(ctx context.Context, in *ListWasteRecordsRequest, opts ...grpc.CallOption) (*ListWasteRecordsResponse, error)
 	PullWasteRecords(ctx context.Context, in *PullWasteRecordsRequest, opts ...grpc.CallOption) (WasteApi_PullWasteRecordsClient, error)
 }
 
@@ -39,7 +39,7 @@ func NewWasteApiClient(cc grpc.ClientConnInterface) WasteApiClient {
 	return &wasteApiClient{cc}
 }
 
-func (c *wasteApiClient) ListWasteRecords(ctx context.Context, in *GetWasteRecordsRequest, opts ...grpc.CallOption) (*ListWasteRecordsResponse, error) {
+func (c *wasteApiClient) ListWasteRecords(ctx context.Context, in *ListWasteRecordsRequest, opts ...grpc.CallOption) (*ListWasteRecordsResponse, error) {
 	out := new(ListWasteRecordsResponse)
 	err := c.cc.Invoke(ctx, WasteApi_ListWasteRecords_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -84,7 +84,7 @@ func (x *wasteApiPullWasteRecordsClient) Recv() (*PullWasteRecordsResponse, erro
 // All implementations must embed UnimplementedWasteApiServer
 // for forward compatibility
 type WasteApiServer interface {
-	ListWasteRecords(context.Context, *GetWasteRecordsRequest) (*ListWasteRecordsResponse, error)
+	ListWasteRecords(context.Context, *ListWasteRecordsRequest) (*ListWasteRecordsResponse, error)
 	PullWasteRecords(*PullWasteRecordsRequest, WasteApi_PullWasteRecordsServer) error
 	mustEmbedUnimplementedWasteApiServer()
 }
@@ -93,7 +93,7 @@ type WasteApiServer interface {
 type UnimplementedWasteApiServer struct {
 }
 
-func (UnimplementedWasteApiServer) ListWasteRecords(context.Context, *GetWasteRecordsRequest) (*ListWasteRecordsResponse, error) {
+func (UnimplementedWasteApiServer) ListWasteRecords(context.Context, *ListWasteRecordsRequest) (*ListWasteRecordsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListWasteRecords not implemented")
 }
 func (UnimplementedWasteApiServer) PullWasteRecords(*PullWasteRecordsRequest, WasteApi_PullWasteRecordsServer) error {
@@ -113,7 +113,7 @@ func RegisterWasteApiServer(s grpc.ServiceRegistrar, srv WasteApiServer) {
 }
 
 func _WasteApi_ListWasteRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetWasteRecordsRequest)
+	in := new(ListWasteRecordsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func _WasteApi_ListWasteRecords_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: WasteApi_ListWasteRecords_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WasteApiServer).ListWasteRecords(ctx, req.(*GetWasteRecordsRequest))
+		return srv.(WasteApiServer).ListWasteRecords(ctx, req.(*ListWasteRecordsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

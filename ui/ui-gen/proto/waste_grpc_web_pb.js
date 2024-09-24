@@ -82,16 +82,16 @@ proto.smartcore.bos.WasteApiPromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.smartcore.bos.GetWasteRecordsRequest,
+ *   !proto.smartcore.bos.ListWasteRecordsRequest,
  *   !proto.smartcore.bos.ListWasteRecordsResponse>}
  */
 const methodDescriptor_WasteApi_ListWasteRecords = new grpc.web.MethodDescriptor(
   '/smartcore.bos.WasteApi/ListWasteRecords',
   grpc.web.MethodType.UNARY,
-  proto.smartcore.bos.GetWasteRecordsRequest,
+  proto.smartcore.bos.ListWasteRecordsRequest,
   proto.smartcore.bos.ListWasteRecordsResponse,
   /**
-   * @param {!proto.smartcore.bos.GetWasteRecordsRequest} request
+   * @param {!proto.smartcore.bos.ListWasteRecordsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
@@ -102,7 +102,7 @@ const methodDescriptor_WasteApi_ListWasteRecords = new grpc.web.MethodDescriptor
 
 
 /**
- * @param {!proto.smartcore.bos.GetWasteRecordsRequest} request The
+ * @param {!proto.smartcore.bos.ListWasteRecordsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
@@ -123,7 +123,7 @@ proto.smartcore.bos.WasteApiClient.prototype.listWasteRecords =
 
 
 /**
- * @param {!proto.smartcore.bos.GetWasteRecordsRequest} request The
+ * @param {!proto.smartcore.bos.ListWasteRecordsRequest} request The
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata

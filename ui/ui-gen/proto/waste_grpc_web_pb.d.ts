@@ -9,7 +9,7 @@ export class WasteApiClient {
                options?: null | { [index: string]: any; });
 
   listWasteRecords(
-    request: waste_pb.GetWasteRecordsRequest,
+    request: waste_pb.ListWasteRecordsRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
                response: waste_pb.ListWasteRecordsResponse) => void
@@ -28,7 +28,7 @@ export class WasteApiPromiseClient {
                options?: null | { [index: string]: any; });
 
   listWasteRecords(
-    request: waste_pb.GetWasteRecordsRequest,
+    request: waste_pb.ListWasteRecordsRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<waste_pb.ListWasteRecordsResponse>;
 

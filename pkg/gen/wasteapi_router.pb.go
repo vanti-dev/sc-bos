@@ -78,7 +78,7 @@ func (r *WasteApiRouter) GetWasteApiClient(name string) (WasteApiClient, error) 
 	return res.(WasteApiClient), nil
 }
 
-func (r *WasteApiRouter) ListWasteRecords(ctx context.Context, request *GetWasteRecordsRequest) (*ListWasteRecordsResponse, error) {
+func (r *WasteApiRouter) ListWasteRecords(ctx context.Context, request *ListWasteRecordsRequest) (*ListWasteRecordsResponse, error) {
 	child, err := r.GetWasteApiClient(request.Name)
 	if err != nil {
 		return nil, err

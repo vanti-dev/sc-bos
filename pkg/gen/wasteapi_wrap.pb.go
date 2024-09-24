@@ -30,7 +30,7 @@ func (w *wasteApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *wasteApiWrapper) ListWasteRecords(ctx context.Context, req *GetWasteRecordsRequest, _ ...grpc.CallOption) (*ListWasteRecordsResponse, error) {
+func (w *wasteApiWrapper) ListWasteRecords(ctx context.Context, req *ListWasteRecordsRequest, _ ...grpc.CallOption) (*ListWasteRecordsResponse, error) {
 	return w.server.ListWasteRecords(ctx, req)
 }
 

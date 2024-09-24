@@ -9,7 +9,7 @@ import "google/protobuf/timestamp.proto";
 
 // WasteApi exposes details about units of waste that have been produced by the building
 service WasteApi {
-  rpc ListWasteRecords(GetWasteRecordsRequest) returns (ListWasteRecordsResponse);
+  rpc ListWasteRecords(ListWasteRecordsRequest) returns (ListWasteRecordsResponse);
   rpc PullWasteRecords(PullWasteRecordsRequest) returns (stream PullWasteRecordsResponse);
 }
 
@@ -43,7 +43,7 @@ message ListWasteRecordsResponse {
   int32 total_size = 3;
 }
 
-message GetWasteRecordsRequest {
+message ListWasteRecordsRequest {
   string name = 1;
   google.protobuf.FieldMask read_mask = 2;
 }

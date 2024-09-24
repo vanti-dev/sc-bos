@@ -82,24 +82,24 @@ export namespace ListWasteRecordsResponse {
   }
 }
 
-export class GetWasteRecordsRequest extends jspb.Message {
+export class ListWasteRecordsRequest extends jspb.Message {
   getName(): string;
-  setName(value: string): GetWasteRecordsRequest;
+  setName(value: string): ListWasteRecordsRequest;
 
   getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
-  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): GetWasteRecordsRequest;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): ListWasteRecordsRequest;
   hasReadMask(): boolean;
-  clearReadMask(): GetWasteRecordsRequest;
+  clearReadMask(): ListWasteRecordsRequest;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetWasteRecordsRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetWasteRecordsRequest): GetWasteRecordsRequest.AsObject;
-  static serializeBinaryToWriter(message: GetWasteRecordsRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetWasteRecordsRequest;
-  static deserializeBinaryFromReader(message: GetWasteRecordsRequest, reader: jspb.BinaryReader): GetWasteRecordsRequest;
+  toObject(includeInstance?: boolean): ListWasteRecordsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListWasteRecordsRequest): ListWasteRecordsRequest.AsObject;
+  static serializeBinaryToWriter(message: ListWasteRecordsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListWasteRecordsRequest;
+  static deserializeBinaryFromReader(message: ListWasteRecordsRequest, reader: jspb.BinaryReader): ListWasteRecordsRequest;
 }
 
-export namespace GetWasteRecordsRequest {
+export namespace ListWasteRecordsRequest {
   export type AsObject = {
     name: string,
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
