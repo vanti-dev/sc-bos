@@ -140,7 +140,7 @@
       "name":     "wordpress-test",
       "type":     "wordpress",
       "disabled": true,
-      "base_url": "http://localhost/dummy_wp",
+      "base_url": "https://vanti-plugin-test-com.stackstaging.com/wp-json/recording/v1/create",
       "site":     "abc-test1",
       "authentication": {
         "type":       "Authorization Bearer",

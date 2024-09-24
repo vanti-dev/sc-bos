@@ -47,5 +47,5 @@ type AverageCo2 struct {
 
 type WaterConsumption struct {
 	Meta
-	TodaysWaterConsumption Float32Measure `json:"todaysWaterConsumption"`
+	TodaysWaterConsumption IntMeasure `json:"todaysWaterConsumption"`
 }

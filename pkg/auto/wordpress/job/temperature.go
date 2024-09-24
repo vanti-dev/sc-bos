@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 )
 
@@ -15,7 +17,7 @@ type TemperatureJob struct {
 	Sensors []string
 }
 
-func (b *TemperatureJob) GetName() string {
+func (t *TemperatureJob) GetName() string {
 	return "temperature"
 }
 
@@ -24,23 +26,22 @@ func (t *TemperatureJob) GetClients() []any {
 }
 
 func (t *TemperatureJob) Do(ctx context.Context, sendFn sender) error {
-	if len(t.Sensors) < 1 {
-		return nil
-	}
-
 	sum := .0
+	count := 0
 
 	for _, sensor := range t.Sensors {
 		resp, err := t.client.GetAirTemperature(ctx, &traits.GetAirTemperatureRequest{Name: sensor})
 
 		if err != nil {
-			return err
+			t.Logger.Error("getting air temperature", zap.String("sensor", sensor), zap.Error(err))
+			continue
 		}
+		count++
 
 		sum += resp.GetAmbientTemperature().GetValueCelsius()
 	}
 
-	average := sum / float64(len(t.Sensors))
+	average := sum / float64(count)
 
 	body := &AverageTemperature{
 		Meta: Meta{

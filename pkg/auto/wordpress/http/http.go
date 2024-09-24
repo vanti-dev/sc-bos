@@ -29,6 +29,7 @@ func New(opts ...Option) *Client {
 		client: httpClient,
 		headers: http.Header{
 			"Content-Type": []string{"application/json"},
+			"User-Agent":   []string{"sc-bos"},
 		},
 	}
 
@@ -41,9 +42,7 @@ func New(opts ...Option) *Client {
 
 func WithAuthorizationBearer(token string) Option {
 	return func(cli *Client) {
-		cli.headers = http.Header{
-			"Authorization": []string{fmt.Sprintf("Bearer %s", token)},
-		}
+		cli.headers.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 	}
 }
 
@@ -51,9 +50,10 @@ func WithLogger(noop bool, loggers ...*zap.Logger) Option {
 	return func(cli *Client) {
 		if noop || len(loggers) < 1 {
 			cli.client.Logger = nil
-		} else {
-			cli.client.Logger = &logWrapper{Logger: loggers[0]}
+			return
 		}
+		cli.logger = loggers[0]
+		cli.client.Logger = &logWrapper{Logger: loggers[0]}
 	}
 }
 

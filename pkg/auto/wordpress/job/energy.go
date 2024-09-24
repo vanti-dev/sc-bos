@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -31,10 +33,6 @@ func (e *EnergyJob) GetInterval() time.Duration {
 }
 
 func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
-	if len(e.Meters) < 1 {
-		return nil
-	}
-
 	consumption := float32(.0)
 
 	now := time.Now()
@@ -43,13 +41,15 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 		multiplier, err := e.getUnitMultiplier(ctx, meter)
 
 		if err != nil {
-			return err
+			e.Logger.Error("getting unit multiplier", zap.String("meter", meter), zap.Error(err))
+			continue
 		}
 
 		records, err := getAllRecords(ctx, e.client.ListMeterReadingHistory, meter, now, e.GetInterval())
 
 		if err != nil {
-			return err
+			e.Logger.Error("getting all records", zap.String("meter", meter), zap.Error(err))
+			continue
 		}
 
 		consumption += processMeterRecords(multiplier, records)

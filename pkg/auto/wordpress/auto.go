@@ -10,7 +10,6 @@ package wordpress
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"go.uber.org/zap"
 
@@ -42,70 +41,7 @@ func (f factory) New(services auto.Services) service.Lifecycle {
 func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	logger := a.Logger.Named(cfg.Name).With(zap.String("baseUrl", cfg.BaseUrl))
 
-	var jobs []job.Job
-
-	if cfg.Sources.Occupancy != nil {
-		occ := &job.OccupancyJob{
-			BaseJob: job.BaseJob{
-				Site:   cfg.Site,
-				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Occupancy.Path),
-				Ticker: time.NewTicker(cfg.Sources.Occupancy.Duration),
-			},
-			Sensors: cfg.Sources.Occupancy.Sensors,
-		}
-
-		jobs = append(jobs, occ)
-	}
-	if cfg.Sources.Temperature != nil {
-		temperature := &job.TemperatureJob{
-			BaseJob: job.BaseJob{
-				Site:   cfg.Site,
-				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Temperature.Path),
-				Ticker: time.NewTicker(cfg.Sources.Temperature.Duration),
-			},
-			Sensors: cfg.Sources.Temperature.Sensors,
-		}
-
-		jobs = append(jobs, temperature)
-	}
-	if cfg.Sources.Energy != nil {
-		energy := &job.EnergyJob{
-			BaseJob: job.BaseJob{
-				Site:   cfg.Site,
-				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Energy.Path),
-				Ticker: time.NewTicker(cfg.Sources.Energy.Duration),
-			},
-			Meters:   cfg.Sources.Energy.Meters,
-			Interval: cfg.Sources.Energy.Duration,
-		}
-
-		jobs = append(jobs, energy)
-	}
-	if cfg.Sources.AirQuality != nil {
-		air := &job.AirQualityJob{
-			BaseJob: job.BaseJob{
-				Site:   cfg.Site,
-				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.AirQuality.Path),
-				Ticker: time.NewTicker(cfg.Sources.AirQuality.Duration),
-			},
-			Sensors: cfg.Sources.AirQuality.Sensors,
-		}
-
-		jobs = append(jobs, air)
-	}
-	if cfg.Sources.Water != nil {
-		water := &job.WaterJob{
-			BaseJob: job.BaseJob{
-				Site:   cfg.Site,
-				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Water.Path),
-				Ticker: time.NewTicker(cfg.Sources.Water.Duration),
-			},
-			Meters:   cfg.Sources.Energy.Meters,
-			Interval: cfg.Sources.Energy.Duration,
-		}
-
-		jobs = append(jobs, water)
-	}
+	jobs := job.FromConfig(cfg, logger)
 
 	if len(jobs) < 1 {
 		return nil

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/smart-core-os/sc-api/go/traits"
 )
 
@@ -15,7 +17,7 @@ type OccupancyJob struct {
 	Sensors []string
 }
 
-func (b *OccupancyJob) GetName() string {
+func (o *OccupancyJob) GetName() string {
 	return "occupancy"
 }
 
@@ -24,17 +26,14 @@ func (o *OccupancyJob) GetClients() []any {
 }
 
 func (o *OccupancyJob) Do(ctx context.Context, sendFn sender) error {
-	if len(o.Sensors) < 1 {
-		return nil
-	}
-
 	sum := int32(0)
 
 	for _, sensor := range o.Sensors {
 		resp, err := o.client.GetOccupancy(ctx, &traits.GetOccupancyRequest{Name: sensor})
 
 		if err != nil {
-			return err
+			o.Logger.Error("getting occupancy", zap.String("sensor", sensor), zap.Error(err))
+			continue
 		}
 
 		sum += resp.PeopleCount

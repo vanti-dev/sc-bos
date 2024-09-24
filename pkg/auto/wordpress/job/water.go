@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -30,11 +32,6 @@ func (w *WaterJob) GetInterval() time.Duration {
 }
 
 func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
-
-	if len(w.Meters) < 1 {
-		return nil
-	}
-
 	consumption := float32(.0)
 
 	now := time.Now()
@@ -42,10 +39,16 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 	for _, meter := range w.Meters {
 		multiplier, err := w.getUnitMultiplier(ctx, meter)
 
+		if err != nil {
+			w.Logger.Error("getting unit multiplier", zap.String("meter", meter), zap.Error(err))
+			continue
+		}
+
 		records, err := getAllRecords(ctx, w.client.ListMeterReadingHistory, meter, now, w.GetInterval())
 
 		if err != nil {
-			return err
+			w.Logger.Error("getting all records", zap.String("meter", meter), zap.Error(err))
+			continue
 		}
 
 		consumption += processMeterRecords(multiplier, records)
@@ -57,8 +60,8 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 			Timestamp: now,
 			Site:      w.GetSite(),
 		},
-		TodaysWaterConsumption: Float32Measure{
-			Value: consumption,
+		TodaysWaterConsumption: IntMeasure{
+			Value: int32(consumption),
 			Units: "litres",
 		},
 	}

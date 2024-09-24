@@ -2,7 +2,12 @@ package job
 
 import (
 	"context"
+	"fmt"
 	"time"
+
+	"go.uber.org/zap"
+
+	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/config"
 )
 
 var (
@@ -14,7 +19,7 @@ var (
 	_ Job = (*WaterJob)(nil)
 )
 
-// Job represents a wordpress automation task that executes Do to send a POST request
+// Job represents a WordPress automation task that executes Do to send a POST request
 type Job interface {
 	GetName() string
 	GetUrl() string
@@ -64,6 +69,7 @@ type BaseJob struct {
 	Url    string
 	Ticker *time.Ticker
 	Site   string
+	Logger *zap.Logger
 }
 
 func (b *BaseJob) GetUrl() string {
@@ -76,4 +82,78 @@ func (b *BaseJob) GetTicker() *time.Ticker {
 
 func (b *BaseJob) GetSite() string {
 	return b.Site
+}
+
+func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
+	var jobs []Job
+
+	if cfg.Sources.Occupancy != nil && len(cfg.Sources.Occupancy.Sensors) > 0 {
+		occ := &OccupancyJob{
+			BaseJob: BaseJob{
+				Site:   cfg.Site,
+				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Occupancy.Path),
+				Ticker: time.NewTicker(cfg.Sources.Occupancy.Duration),
+				Logger: logger,
+			},
+			Sensors: cfg.Sources.Occupancy.Sensors,
+		}
+
+		jobs = append(jobs, occ)
+	}
+	if cfg.Sources.Temperature != nil && len(cfg.Sources.Temperature.Sensors) > 0 {
+		temperature := &TemperatureJob{
+			BaseJob: BaseJob{
+				Site:   cfg.Site,
+				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Temperature.Path),
+				Ticker: time.NewTicker(cfg.Sources.Temperature.Duration),
+				Logger: logger,
+			},
+			Sensors: cfg.Sources.Temperature.Sensors,
+		}
+
+		jobs = append(jobs, temperature)
+	}
+	if cfg.Sources.Energy != nil && len(cfg.Sources.Energy.Meters) > 0 {
+		energy := &EnergyJob{
+			BaseJob: BaseJob{
+				Site:   cfg.Site,
+				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Energy.Path),
+				Ticker: time.NewTicker(cfg.Sources.Energy.Duration),
+				Logger: logger,
+			},
+			Meters:   cfg.Sources.Energy.Meters,
+			Interval: cfg.Sources.Energy.Duration,
+		}
+
+		jobs = append(jobs, energy)
+	}
+	if cfg.Sources.AirQuality != nil && len(cfg.Sources.AirQuality.Sensors) > 0 {
+		air := &AirQualityJob{
+			BaseJob: BaseJob{
+				Site:   cfg.Site,
+				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.AirQuality.Path),
+				Ticker: time.NewTicker(cfg.Sources.AirQuality.Duration),
+				Logger: logger,
+			},
+			Sensors: cfg.Sources.AirQuality.Sensors,
+		}
+
+		jobs = append(jobs, air)
+	}
+	if cfg.Sources.Water != nil && len(cfg.Sources.Water.Meters) > 0 {
+		water := &WaterJob{
+			BaseJob: BaseJob{
+				Site:   cfg.Site,
+				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Water.Path),
+				Ticker: time.NewTicker(cfg.Sources.Water.Duration),
+				Logger: logger,
+			},
+			Meters:   cfg.Sources.Energy.Meters,
+			Interval: cfg.Sources.Energy.Duration,
+		}
+
+		jobs = append(jobs, water)
+	}
+
+	return jobs
 }
