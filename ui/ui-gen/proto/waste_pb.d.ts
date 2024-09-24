@@ -54,6 +54,34 @@ export namespace WasteRecord {
   }
 }
 
+export class ListWasteRecordsResponse extends jspb.Message {
+  getWasterecordsList(): Array<WasteRecord>;
+  setWasterecordsList(value: Array<WasteRecord>): ListWasteRecordsResponse;
+  clearWasterecordsList(): ListWasteRecordsResponse;
+  addWasterecords(value?: WasteRecord, index?: number): WasteRecord;
+
+  getNextPageToken(): string;
+  setNextPageToken(value: string): ListWasteRecordsResponse;
+
+  getTotalSize(): number;
+  setTotalSize(value: number): ListWasteRecordsResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListWasteRecordsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListWasteRecordsResponse): ListWasteRecordsResponse.AsObject;
+  static serializeBinaryToWriter(message: ListWasteRecordsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListWasteRecordsResponse;
+  static deserializeBinaryFromReader(message: ListWasteRecordsResponse, reader: jspb.BinaryReader): ListWasteRecordsResponse;
+}
+
+export namespace ListWasteRecordsResponse {
+  export type AsObject = {
+    wasterecordsList: Array<WasteRecord.AsObject>,
+    nextPageToken: string,
+    totalSize: number,
+  }
+}
+
 export class GetWasteRecordsRequest extends jspb.Message {
   getName(): string;
   setName(value: string): GetWasteRecordsRequest;

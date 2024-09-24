@@ -8,12 +8,12 @@ export class WasteApiClient {
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });
 
-  getWasteRecords(
+  listWasteRecords(
     request: waste_pb.GetWasteRecordsRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: waste_pb.WasteRecord) => void
-  ): grpcWeb.ClientReadableStream<waste_pb.WasteRecord>;
+               response: waste_pb.ListWasteRecordsResponse) => void
+  ): grpcWeb.ClientReadableStream<waste_pb.ListWasteRecordsResponse>;
 
   pullWasteRecords(
     request: waste_pb.PullWasteRecordsRequest,
@@ -27,10 +27,10 @@ export class WasteApiPromiseClient {
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });
 
-  getWasteRecords(
+  listWasteRecords(
     request: waste_pb.GetWasteRecordsRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<waste_pb.WasteRecord>;
+  ): Promise<waste_pb.ListWasteRecordsResponse>;
 
   pullWasteRecords(
     request: waste_pb.PullWasteRecordsRequest,

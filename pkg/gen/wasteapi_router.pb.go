@@ -78,13 +78,13 @@ func (r *WasteApiRouter) GetWasteApiClient(name string) (WasteApiClient, error) 
 	return res.(WasteApiClient), nil
 }
 
-func (r *WasteApiRouter) GetWasteRecords(ctx context.Context, request *GetWasteRecordsRequest) (*WasteRecord, error) {
+func (r *WasteApiRouter) ListWasteRecords(ctx context.Context, request *GetWasteRecordsRequest) (*ListWasteRecordsResponse, error) {
 	child, err := r.GetWasteApiClient(request.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	return child.GetWasteRecords(ctx, request)
+	return child.ListWasteRecords(ctx, request)
 }
 
 func (r *WasteApiRouter) PullWasteRecords(request *PullWasteRecordsRequest, server WasteApi_PullWasteRecordsServer) error {

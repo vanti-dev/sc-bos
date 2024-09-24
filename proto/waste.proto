@@ -9,7 +9,7 @@ import "google/protobuf/timestamp.proto";
 
 // WasteApi exposes details about units of waste that have been produced by the building
 service WasteApi {
-  rpc GetWasteRecords(GetWasteRecordsRequest) returns (WasteRecord);
+  rpc ListWasteRecords(GetWasteRecordsRequest) returns (ListWasteRecordsResponse);
   rpc PullWasteRecords(PullWasteRecordsRequest) returns (stream PullWasteRecordsResponse);
 }
 
@@ -30,6 +30,17 @@ message WasteRecord {
   google.protobuf.Timestamp wasteCreatedDate = 7;
   // The stream the waste was collected from. For example, general waste, mixed recycling etc.
   string stream = 8;
+}
+
+message ListWasteRecordsResponse {
+  repeated WasteRecord wasteRecords = 1;
+
+  // A token, which can be sent as `page_token` to retrieve the next page.
+  // If this field is omitted, there are no subsequent pages.
+  string next_page_token = 2;
+  // If non-zero this is the total number of alerts after filtering is applied.
+  // This may be an estimate.
+  int32 total_size = 3;
 }
 
 message GetWasteRecordsRequest {

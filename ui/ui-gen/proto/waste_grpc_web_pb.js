@@ -83,13 +83,13 @@ proto.smartcore.bos.WasteApiPromiseClient =
  * @const
  * @type {!grpc.web.MethodDescriptor<
  *   !proto.smartcore.bos.GetWasteRecordsRequest,
- *   !proto.smartcore.bos.WasteRecord>}
+ *   !proto.smartcore.bos.ListWasteRecordsResponse>}
  */
-const methodDescriptor_WasteApi_GetWasteRecords = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.WasteApi/GetWasteRecords',
+const methodDescriptor_WasteApi_ListWasteRecords = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.WasteApi/ListWasteRecords',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.GetWasteRecordsRequest,
-  proto.smartcore.bos.WasteRecord,
+  proto.smartcore.bos.ListWasteRecordsResponse,
   /**
    * @param {!proto.smartcore.bos.GetWasteRecordsRequest} request
    * @return {!Uint8Array}
@@ -97,7 +97,7 @@ const methodDescriptor_WasteApi_GetWasteRecords = new grpc.web.MethodDescriptor(
   function(request) {
     return request.serializeBinary();
   },
-  proto.smartcore.bos.WasteRecord.deserializeBinary
+  proto.smartcore.bos.ListWasteRecordsResponse.deserializeBinary
 );
 
 
@@ -106,18 +106,18 @@ const methodDescriptor_WasteApi_GetWasteRecords = new grpc.web.MethodDescriptor(
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.WasteRecord)}
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ListWasteRecordsResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.WasteRecord>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListWasteRecordsResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.WasteApiClient.prototype.getWasteRecords =
+proto.smartcore.bos.WasteApiClient.prototype.listWasteRecords =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.WasteApi/GetWasteRecords',
+      '/smartcore.bos.WasteApi/ListWasteRecords',
       request,
       metadata || {},
-      methodDescriptor_WasteApi_GetWasteRecords,
+      methodDescriptor_WasteApi_ListWasteRecords,
       callback);
 };
 
@@ -127,16 +127,16 @@ proto.smartcore.bos.WasteApiClient.prototype.getWasteRecords =
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.smartcore.bos.WasteRecord>}
+ * @return {!Promise<!proto.smartcore.bos.ListWasteRecordsResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.WasteApiPromiseClient.prototype.getWasteRecords =
+proto.smartcore.bos.WasteApiPromiseClient.prototype.listWasteRecords =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.WasteApi/GetWasteRecords',
+      '/smartcore.bos.WasteApi/ListWasteRecords',
       request,
       metadata || {},
-      methodDescriptor_WasteApi_GetWasteRecords);
+      methodDescriptor_WasteApi_ListWasteRecords);
 };
 
 
