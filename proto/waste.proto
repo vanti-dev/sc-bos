@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+// WasteApi exposes details about units of waste that have been produced by the building
+service WasteApi {
+  rpc GetWasteRecords(GetWasteRecordsRequest) returns (WasteRecord);
+  rpc PullWasteRecords(PullWasteRecordsRequest) returns (stream PullWasteRecordsResponse);
+}
+
+message WasteRecord {
+  // The id of the waste record assigned by the external waste management system
+  string id = 1;
+  // The time the record was created, this is not the time the waste was created
+  google.protobuf.Timestamp recordCreatedTime = 2;
+  // The weight of the waste in kilograms
+  float weight = 3;
+  // The system the waste was collected from
+  string system = 4;
+  // True if the waste was recycled
+  bool recycled = 5;
+  // Area the waste was collected from
+  string area = 6;
+  // The date the waste was created
+  google.protobuf.Timestamp wasteCreatedDate = 7;
+  // The stream the waste was collected from. For example, general waste, mixed recycling etc.
+  string stream = 8;
+}
+
+message GetWasteRecordsRequest {
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+}
+
+message PullWasteRecordsRequest {
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+  bool updates_only = 3;
+}
+
+message PullWasteRecordsResponse {
+  repeated Change changes = 1;
+
+  message Change {
+    string name = 1;
+    google.protobuf.Timestamp change_time = 2;
+  }
+}
