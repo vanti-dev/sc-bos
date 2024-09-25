@@ -6,6 +6,8 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
@@ -100,6 +102,7 @@ func AnnounceFeatures(a Announcer, moreFeatures ...Feature) Announcer {
 type announcement struct {
 	name           string
 	services       []service
+	proxyTo        grpc.ClientConnInterface
 	traits         []traitFeature
 	metadata       []*traits.Metadata
 	noAutoMetadata bool
@@ -134,40 +137,83 @@ func (f featureFunc) apply(a *announcement) {
 // HasClient indicates that the name implements non-trait apis as defined by these clients.
 // The clients are still added to routers and all requests on the clients should accept a Name.
 // If the node does not support routing for the API the client is for a message will be logged during announce.
+//
+// Panics if the service is not registered with the protobuf global registry.
 func HasClient(clients ...wrap.ServiceUnwrapper) Feature {
 	return featureFunc(func(a *announcement) {
 		for _, c := range clients {
 			conn, desc := c.UnwrapService()
-			a.services = append(a.services, service{desc: desc, conn: conn})
+			reflectDesc, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(desc.ServiceName))
+			if err != nil {
+				panic(err)
+			}
+			reflectServiceDesc := reflectDesc.(protoreflect.ServiceDescriptor)
+
+			a.services = append(a.services, service{desc: reflectServiceDesc, conn: conn})
 		}
 	})
 }
 
 // HasOptClient is like HasClient without logging when the client is not supported.
+//
+// Deprecated: Use HasClient instead, which behaves identically.
 func HasOptClient(clients ...wrap.ServiceUnwrapper) Feature {
-	// we no longer require pre-registration of service types
 	return HasClient(clients...)
 }
 
+// HasServer registers a gRPC server type as routable for this announcement's name.
+//
+// Panics if the service is not registered with the protobuf global registry.
 func HasServer[S any](register func(registrar grpc.ServiceRegistrar, srv S), srv S) Feature {
 	return featureFunc(func(a *announcement) {
 		// capture the descriptor of the registered service
 		var registrar capturingRegistrar
 		register(&registrar, srv)
 
+		reflectDesc, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(registrar.desc.ServiceName))
+		if err != nil {
+			panic(err)
+		}
+		reflectServiceDesc := reflectDesc.(protoreflect.ServiceDescriptor)
+
 		a.services = append(a.services, service{
-			desc:        *registrar.desc,
+			desc:        reflectServiceDesc,
 			conn:        wrap.ServerToClient(*registrar.desc, srv),
 			nameRouting: true,
 		})
 	})
 }
 
+// HasServices indicates that conn serves the provided name-routable services, and that the name of this announcement
+// is a valid name to use with each service.
+//
+// Panics if any of the provided services is not registered with the protobuf global registry.
 func HasServices(conn grpc.ClientConnInterface, services ...grpc.ServiceDesc) Feature {
+	var reflectedServices []protoreflect.ServiceDescriptor
+	for _, s := range services {
+		desc, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(s.ServiceName))
+		if err != nil {
+			// this should never happen as the service desc is created by the user
+			panic(err)
+		}
+		reflectedServices = append(reflectedServices, desc.(protoreflect.ServiceDescriptor))
+	}
+	return HasReflectedServices(conn, reflectedServices...)
+}
+
+// HasReflectedServices indicates that conn serves the provided name-routable services, and that the name of this announcement
+// is a valid name to use with each service.
+func HasReflectedServices(conn grpc.ClientConnInterface, services ...protoreflect.ServiceDescriptor) Feature {
 	return featureFunc(func(a *announcement) {
 		for _, s := range services {
 			a.services = append(a.services, service{desc: s, conn: conn, nameRouting: true})
 		}
+	})
+}
+
+func HasProxy(conn grpc.ClientConnInterface) Feature {
+	return featureFunc(func(a *announcement) {
+		a.proxyTo = conn
 	})
 }
 
@@ -215,11 +261,18 @@ type TraitOption func(t *traitFeature)
 // WithClients indicates that the trait is implemented by these client instances.
 // The clients will be added to the relevant routers when the trait is announced.
 // If the node does not support routing for the API the client is for a message will be logged during announce.
+//
+// Panics if the service is not registered with the protobuf global registry.
 func WithClients(clients ...wrap.ServiceUnwrapper) TraitOption {
 	return func(t *traitFeature) {
 		for _, c := range clients {
 			conn, desc := c.UnwrapService()
-			t.services = append(t.services, service{desc: desc, conn: conn, nameRouting: true})
+			reflectDesc, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(desc.ServiceName))
+			if err != nil {
+				panic(err)
+			}
+			reflectServiceDesc := reflectDesc.(protoreflect.ServiceDescriptor)
+			t.services = append(t.services, service{desc: reflectServiceDesc, conn: conn, nameRouting: true})
 		}
 	}
 }
@@ -247,7 +300,7 @@ func (r *capturingRegistrar) RegisterService(desc *grpc.ServiceDesc, impl any) {
 }
 
 type service struct {
-	desc        grpc.ServiceDesc
+	desc        protoreflect.ServiceDescriptor
 	conn        grpc.ClientConnInterface
 	nameRouting bool
 }

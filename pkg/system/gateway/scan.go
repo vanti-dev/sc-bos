@@ -294,7 +294,7 @@ func (s *System) reflectNode(ctx context.Context, node *remoteNode) error {
 		return fmt.Errorf("create file set: %w", err)
 	}
 
-	remoteServices := make([]remoteService, 0, len(services))
+	remoteServices := make([]protoreflect.ServiceDescriptor, 0, len(services))
 	for _, svc := range services {
 		desc, err := files.FindDescriptorByName(protoreflect.FullName(svc.Name))
 		if err != nil {
@@ -307,12 +307,7 @@ func (s *System) reflectNode(ctx context.Context, node *remoteNode) error {
 			return fmt.Errorf("descriptor %q is not a service, got %T", desc.FullName(), desc)
 		}
 
-		rs := remoteService{name: svc.Name}
-		methods := serviceDesc.Methods()
-		for i := 0; i < methods.Len(); i++ {
-			rs.methods = append(rs.methods, methods.Get(i))
-		}
-		remoteServices = append(remoteServices, rs)
+		remoteServices = append(remoteServices, serviceDesc)
 	}
 
 	// we now can fully describe the remote service
