@@ -163,7 +163,7 @@ func HasServer[S any](register func(registrar grpc.ServiceRegistrar, srv S), srv
 	})
 }
 
-func HasClientConn(conn grpc.ClientConnInterface, services ...grpc.ServiceDesc) Feature {
+func HasServices(conn grpc.ClientConnInterface, services ...grpc.ServiceDesc) Feature {
 	return featureFunc(func(a *announcement) {
 		for _, s := range services {
 			a.services = append(a.services, service{desc: s, conn: conn, nameRouting: true})

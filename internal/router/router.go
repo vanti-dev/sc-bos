@@ -19,7 +19,7 @@ type MsgRecver interface {
 // Router implements MethodResolver and can route requests to a grpc.ClientConnInterface based on a combination
 // of service name and a key which can be extracted from the request.
 //
-// Router only supports services which are registered using SupportService. Key-based routes need the registered
+// Router only supports services which are registered using AddService. Key-based routes need the registered
 // service to support routing by key (such as services constructed with NewRoutedService). If a key-based route is
 // registered for a service that does not support routing by key, it will never match.
 //
@@ -43,28 +43,43 @@ func New() *Router {
 	}
 }
 
-// SupportService registers the service with the router.
+// AddService adds support for the service with the router.
 // This allows the router to handle requests for this service.
-// If a service with the same fully qualified name already exists, it is not added again, and true is returned.
+// If a service with the same fully qualified name already exists, it is not added again, and ErrServiceExists is returned.
 //
-// SupportService does not add any routes for the service, so by default all methods are unimplemented.
-func (r *Router) SupportService(s *Service) (exists bool) {
+// AddService does not add any routes for the service, so by default all methods are unimplemented.
+func (r *Router) AddService(s *Service) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
 	name := s.Name()
 	if _, exists := r.services[name]; exists {
-		return true
+		return ErrServiceExists
 	}
 	r.services[name] = s
-	return false
+	return nil
 }
 
-func (r *Router) SupportsService(name string) bool {
+// DeleteService removes support for the service with the given fully qualified name from the router.
+//
+// It does not delete routes that name this service, but those routes will no longer match.
+func (r *Router) DeleteService(name string) (exists bool) {
+	r.m.Lock()
+	defer r.m.Unlock()
+
+	_, exists = r.services[name]
+	if exists {
+		delete(r.services, name)
+	}
+	return exists
+}
+
+// GetService returns the service registered with the given name.
+// Returns nil if no service is registered with the given name.
+func (r *Router) GetService(name string) *Service {
 	r.m.RLock()
 	defer r.m.RUnlock()
-	_, exists := r.services[name]
-	return exists
+	return r.services[name]
 }
 
 func (r *Router) GetServiceInfo() map[string]grpc.ServiceInfo {
@@ -230,8 +245,14 @@ func (s *Service) Descriptor() protoreflect.ServiceDescriptor {
 	return s.descriptor
 }
 
+// KeyRoutable returns true if the service supports routing by key.
+func (s *Service) KeyRoutable() bool {
+	return len(s.keys) > 0
+}
+
 var (
-	ErrRouteExists    = errors.New("route already exists")
+	ErrRouteExists    = errors.New("route already exists in router")
+	ErrServiceExists  = errors.New("service already exists in router")
 	ErrUnknownService = errors.New("unknown service")
 )
 

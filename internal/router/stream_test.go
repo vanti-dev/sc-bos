@@ -155,7 +155,7 @@ func registerService(reg *Router, service string, clients ...*grpc.ClientConn) {
 }
 
 func supportService(reg *Router, service string) {
-	if reg.SupportsService(service) {
+	if reg.GetService(service) != nil {
 		return
 	}
 	desc := serviceDescriptor(service)
@@ -164,7 +164,7 @@ func supportService(reg *Router, service string) {
 		// register as unrouted instead
 		s = NewUnroutedService(desc)
 	}
-	reg.SupportService(s)
+	_ = reg.AddService(s)
 }
 
 func newNode(t *testing.T, ctx context.Context, name string) (*grpc.ClientConn, error) {

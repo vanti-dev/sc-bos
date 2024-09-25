@@ -268,7 +268,7 @@ func registerDeviceRoute(r *router.Router, name string, s service) (Undo, error)
 }
 
 func ensureServiceSupported(r *router.Router, s service) error {
-	if r.SupportsService(s.desc.ServiceName) {
+	if r.GetService(s.desc.ServiceName) != nil {
 		// already supported, nothing to do
 		return nil
 	}
@@ -293,8 +293,8 @@ func ensureServiceSupported(r *router.Router, s service) error {
 		routerService = router.NewUnroutedService(servDesc)
 	}
 
-	// SupportService might return true if another goroutine added support after the SupportsService check above
-	// this is a bit of wasted work but is safe
-	_ = r.SupportService(routerService)
+	// AddService might return an error if another goroutine added support after the GetService check above
+	// this is a bit of wasted work but is safe because the service added will be the same
+	_ = r.AddService(routerService)
 	return nil
 }
