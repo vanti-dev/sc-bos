@@ -95,7 +95,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 			BaseJob: BaseJob{
 				Site:   cfg.Site,
 				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Occupancy.Path),
-				Ticker: time.NewTicker(cfg.Sources.Occupancy.Duration),
+				Ticker: time.NewTicker(cfg.Sources.Occupancy.Interval.Duration),
 				Logger: logger,
 			},
 			Sensors: cfg.Sources.Occupancy.Sensors,
@@ -108,7 +108,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 			BaseJob: BaseJob{
 				Site:   cfg.Site,
 				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Temperature.Path),
-				Ticker: time.NewTicker(cfg.Sources.Temperature.Duration),
+				Ticker: time.NewTicker(cfg.Sources.Temperature.Interval.Duration),
 				Logger: logger,
 			},
 			Sensors: cfg.Sources.Temperature.Sensors,
@@ -121,11 +121,11 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 			BaseJob: BaseJob{
 				Site:   cfg.Site,
 				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Energy.Path),
-				Ticker: time.NewTicker(cfg.Sources.Energy.Duration),
+				Ticker: time.NewTicker(cfg.Sources.Energy.Interval.Duration),
 				Logger: logger,
 			},
 			Meters:   cfg.Sources.Energy.Meters,
-			Interval: cfg.Sources.Energy.Duration,
+			Interval: cfg.Sources.Energy.Interval.Duration,
 		}
 
 		jobs = append(jobs, energy)
@@ -135,7 +135,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 			BaseJob: BaseJob{
 				Site:   cfg.Site,
 				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.AirQuality.Path),
-				Ticker: time.NewTicker(cfg.Sources.AirQuality.Duration),
+				Ticker: time.NewTicker(cfg.Sources.AirQuality.Interval.Duration),
 				Logger: logger,
 			},
 			Sensors: cfg.Sources.AirQuality.Sensors,
@@ -148,11 +148,11 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 			BaseJob: BaseJob{
 				Site:   cfg.Site,
 				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Water.Path),
-				Ticker: time.NewTicker(cfg.Sources.Water.Duration),
+				Ticker: time.NewTicker(cfg.Sources.Water.Interval.Duration),
 				Logger: logger,
 			},
 			Meters:   cfg.Sources.Energy.Meters,
-			Interval: cfg.Sources.Energy.Duration,
+			Interval: cfg.Sources.Energy.Interval.Duration,
 		}
 
 		jobs = append(jobs, water)

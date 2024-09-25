@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 type Root struct {
@@ -32,9 +32,8 @@ type Authentication struct {
 }
 
 type Source struct {
-	Path     string        `json:"path"`
-	Interval string        `json:"interval"`
-	Duration time.Duration `json:"-"` // actual parsed interval
+	Path     string             `json:"path"`
+	Interval jsontypes.Duration `json:"interval"`
 }
 
 type Occupancy struct {
@@ -86,36 +85,5 @@ func ReadBytes(data []byte) (cfg Root, err error) {
 		return
 	}
 
-	if cfg.Sources.Occupancy != nil {
-		cfg.Sources.Occupancy.Duration, err = time.ParseDuration(cfg.Sources.Occupancy.Interval)
-		if err != nil {
-			return
-		}
-	}
-	if cfg.Sources.Temperature != nil {
-		cfg.Sources.Temperature.Duration, err = time.ParseDuration(cfg.Sources.Temperature.Interval)
-		if err != nil {
-			return
-		}
-	}
-	if cfg.Sources.Energy != nil {
-		cfg.Sources.Energy.Duration, err = time.ParseDuration(cfg.Sources.Energy.Interval)
-		if err != nil {
-			return
-		}
-	}
-	if cfg.Sources.AirQuality != nil {
-		cfg.Sources.AirQuality.Duration, err = time.ParseDuration(cfg.Sources.AirQuality.Interval)
-		if err != nil {
-			return
-		}
-	}
-
-	if cfg.Sources.Water != nil {
-		cfg.Sources.Water.Duration, err = time.ParseDuration(cfg.Sources.Water.Interval)
-		if err != nil {
-			return
-		}
-	}
 	return
 }
