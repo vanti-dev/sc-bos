@@ -197,7 +197,7 @@ func (p *proxy) announceTraits(announced announcedTraits, childName string, trai
 			continue
 		}
 
-		features := []node.Feature{node.HasClientConn(p.conn, services...)}
+		features := []node.Feature{node.HasServices(p.conn, services...)}
 		if !p.skipChild {
 			features = append(features, node.HasTrait(tn))
 		}
