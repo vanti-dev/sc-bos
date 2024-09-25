@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -39,6 +40,10 @@ func (t *TemperatureJob) Do(ctx context.Context, sendFn sender) error {
 		count++
 
 		sum += resp.GetAmbientTemperature().GetValueCelsius()
+	}
+
+	if count == 0 {
+		return errors.Wrap(errNoSensorsRetrieved, "getting air temperature")
 	}
 
 	average := sum / float64(count)

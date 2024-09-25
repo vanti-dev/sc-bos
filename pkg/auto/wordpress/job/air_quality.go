@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -27,7 +28,6 @@ func (a *AirQualityJob) GetClients() []any {
 
 func (a *AirQualityJob) Do(ctx context.Context, sendFn sender) error {
 	sum := float32(0)
-
 	count := 0
 
 	for _, sensor := range a.Sensors {
@@ -40,6 +40,10 @@ func (a *AirQualityJob) Do(ctx context.Context, sendFn sender) error {
 
 		count++
 		sum += *resp.CarbonDioxideLevel
+	}
+
+	if count == 0 {
+		return errors.Wrap(errNoSensorsRetrieved, "getting air quality")
 	}
 
 	average := sum / float32(count)

@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -17,6 +18,8 @@ var (
 	_ Job = (*EnergyJob)(nil)
 	_ Job = (*AirQualityJob)(nil)
 	_ Job = (*WaterJob)(nil)
+
+	errNoSensorsRetrieved = errors.New("no sensors retrieved")
 )
 
 // Job represents a WordPress automation task that executes Do to send a POST request
