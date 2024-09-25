@@ -7,17 +7,11 @@ import (
 	"sync"
 
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/sc-bos/internal/router"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/servicepb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/rx"
 	"github.com/vanti-dev/sc-bos/pkg/util/slices"
 )
@@ -30,7 +24,6 @@ func (s *System) announceCohort(ctx context.Context, c *cohort) {
 	defer tasks.callAll()
 
 	table := &table{
-		conns:       newSyncMap[*grpc.ClientConn](),
 		services:    &counts{m: make(map[string]int)},
 		serviceUndo: newSyncMap[node.Undo](),
 	}
@@ -101,13 +94,13 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 
 	// The services we proxy are dependent on whether the remote node is a proxy or not.
 	// These track and update our advertised services when the proxy status changes.
-	var serviceChanges <-chan rx.Change[remoteService]
+	var serviceChanges <-chan rx.Change[protoreflect.ServiceDescriptor]
 	var stopServiceSub context.CancelFunc
 	var undoServices tasks
 	setupServiceSub := func() {
 		var serviceCtx context.Context
 		serviceCtx, stopServiceSub = context.WithCancel(ctx)
-		var services *slices.Sorted[remoteService]
+		var services *slices.Sorted[protoreflect.ServiceDescriptor]
 		services, serviceChanges = a.node.Services.Sub(serviceCtx)
 		undoServices = a.announceRemoteServices(services.All)
 	}
@@ -184,10 +177,10 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 				continue // we stopped watching
 			}
 			if c.Type != rx.Add {
-				undoServices.remove(c.Old.name)
+				undoServices.remove(string(c.Old.FullName()))
 			}
 			if c.Type != rx.Remove {
-				undoServices[c.New.name] = a.announceRemoteService(c.New)
+				undoServices[string(c.New.FullName())] = a.announceRemoteService(c.New)
 			}
 		case systems = <-systemChanges:
 			isProxy := isProxy()
@@ -220,10 +213,11 @@ func (a *announcer) announceServiceApi(name string) node.Undo {
 		}
 		return n
 	})
-	servicesClient := gen.WrapServicesApi(servicesApi)
 	var undos []node.Undo
 	for _, bucket := range []string{"automations", "drivers", "systems", "zones"} {
-		undos = append(undos, a.Announce(name+"/"+bucket, node.HasClient(servicesClient)))
+		undos = append(undos, a.Announce(name+"/"+bucket,
+			node.HasServer(gen.RegisterServicesApiServer, servicesApi),
+		))
 	}
 	return node.UndoAll(undos...)
 }
@@ -235,31 +229,9 @@ func (a *announcer) announceName(d remoteDesc) node.Undo {
 		return node.NilUndo
 	}
 
-	var services []grpc.ServiceDesc
-	for _, t := range d.md.GetTraits() {
-		traitName := trait.Name(t.Name)
-
-		if traitName == trait.Metadata {
-			// skip, the node will handle the implementation of this for us
-			continue
-		}
-
-		services = append(services, alltraits.ServiceDesc(traitName)...)
-	}
-
-	if old, replaced := a.table.conns.Set(d.name, a.node.conn); replaced {
-		if old != a.node.conn {
-			a.logger.Warn("name already registered by another party, it has been replaced",
-				zap.String("name", d.name), zap.String("old", old.Target()), zap.String("new", a.node.addr))
-		}
-	}
-
-	return node.UndoAll(
-		a.Announce(d.name,
-			node.HasMetadata(d.md),
-			node.HasClientConn(a.node.conn, services...),
-		),
-		func() { a.table.conns.Del(d.name) },
+	return a.Announce(d.name,
+		node.HasMetadata(d.md),
+		node.HasProxy(a.node.conn),
 	)
 }
 
@@ -274,18 +246,19 @@ func (a *announcer) announceMetadataTraitsSet(seq seq2[int, remoteDesc]) tasks {
 }
 
 // announceRemoteService updates this node to respond to requests for the given remoteService.
-func (a *announcer) announceRemoteService(rs remoteService) node.Undo {
-	if a.table.services.Inc(rs.name) == 1 {
+func (a *announcer) announceRemoteService(rs protoreflect.ServiceDescriptor) node.Undo {
+	name := string(rs.FullName())
+	if a.table.services.Inc(name) == 1 {
 		undo := a.announceRemoteServiceApis(rs)
 		if undo != nil { // can be nil if there's nothing to undo
-			a.table.serviceUndo.Set(rs.name, undo)
+			a.table.serviceUndo.Set(name, undo)
 		}
 	}
 
 	return func() {
-		if a.table.services.Dec(rs.name) == 0 {
+		if a.table.services.Dec(name) == 0 {
 			// we were the last to remove the service, clean everything up
-			undo, ok := a.table.serviceUndo.Del(rs.name)
+			undo, ok := a.table.serviceUndo.Del(name)
 			if ok {
 				undo()
 			}
@@ -294,63 +267,45 @@ func (a *announcer) announceRemoteService(rs remoteService) node.Undo {
 }
 
 // announceRemoteServices updates this node to respond to requests for each remoteService in seq.
-func (a *announcer) announceRemoteServices(seq seq2[int, remoteService]) tasks {
+func (a *announcer) announceRemoteServices(seq seq2[int, protoreflect.ServiceDescriptor]) tasks {
 	dst := tasks{}
-	seq(func(_ int, rs remoteService) bool {
-		dst[rs.name] = a.announceRemoteService(rs)
+	seq(func(_ int, rs protoreflect.ServiceDescriptor) bool {
+		name := string(rs.FullName())
+		dst[name] = a.announceRemoteService(rs)
 		return true
 	})
 	return dst
 }
 
-func (a *announcer) announceRemoteServiceApis(rs remoteService) node.Undo {
-	var keyFuncs []router.KeyFunc
-	for _, method := range rs.methods {
-		keyFunc, err := router.NameFieldKey(method.Input())
-		if err != nil {
-			continue // we don't care about err, just that this method doesn't have a name key
-		}
-		keyFuncs = append(keyFuncs, keyFunc)
-	}
+func (a *announcer) announceRemoteServiceApis(rs protoreflect.ServiceDescriptor) node.Undo {
+	srv := node.RemoteService(rs, a.node.conn)
+	var undos []node.Undo
 
 	// which type of proxying should each method use?
-	var newMethod func(int, protoreflect.MethodDescriptor) router.Method
 	switch {
-	case len(keyFuncs) == len(rs.methods):
-		// all methods have a key func, we can enable routing for this service as a whole
-		newMethod = func(i int, method protoreflect.MethodDescriptor) router.Method {
-			return routedMethod(method, keyFuncs[i], a.table.conns)
+	case srv.NameRoutable():
+		// routes will be added by device announcements as this service is routable by name
+		err := a.self.SupportService(srv)
+		if err != nil {
+			a.logger.Warn("cannot support service, will not be available",
+				zap.String("service", string(rs.FullName())),
+				zap.Error(err),
+			)
 		}
 	case a.node.isHub:
-		// route everything else to the hub
-		newMethod = func(_ int, method protoreflect.MethodDescriptor) router.Method {
-			return fixedMethod(method, a.node.conn)
+		// route everything to the hub
+		undo, err := a.self.AnnounceService(srv)
+		undos = append(undos, undo)
+		if err != nil {
+			a.logger.Warn("cannot announce service, will not be available",
+				zap.String("service", string(rs.FullName())),
+				zap.Error(err),
+			)
 		}
 	default:
 		// Found a non-routable service on a non-hub node.
 		// We didn't think we had any of these so log it to remind us.
-		a.logger.Warn("non-routable service on non-hub node", zap.String("service", rs.name))
-		return nil
-	}
-
-	var undos []node.Undo
-	for i, method := range rs.methods {
-		name := fullNameToRpcPath(method.FullName())
-		if a.System.methods.Add(name, newMethod(i, method)) {
-			undos = append(undos, func() {
-				a.System.methods.Delete(name)
-			})
-		}
-	}
-
-	// check if someone else has registered the service methods before us, and let them
-	if len(undos) < len(rs.methods) {
-		for _, undo := range undos {
-			undo()
-		}
-		undos = nil
-		a.logger.Warn("service already registered by another party", zap.String("service", rs.name))
-		// note: we don't register with a.table.serviceUndo as we've already undone everything
+		a.logger.Warn("non-routable service on non-hub node", zap.String("service", string(rs.FullName())))
 		return nil
 	}
 
@@ -359,9 +314,8 @@ func (a *announcer) announceRemoteServiceApis(rs remoteService) node.Undo {
 
 // table tracks state across all remote nodes.
 type table struct {
-	conns       *syncMap[*grpc.ClientConn] // keyed by rpc method path
-	services    *counts                    // keyed by service full name, counts how many times we've seen services across all remote nodes
-	serviceUndo *syncMap[node.Undo]        // keyed by service full name
+	services    *counts             // keyed by service full name, counts how many times we've seen services across all remote nodes
+	serviceUndo *syncMap[node.Undo] // keyed by service full name
 }
 
 // syncMap is a simple synchronised map with string keys.
@@ -425,38 +379,6 @@ func (r *counts) Dec(k string) int {
 		delete(r.m, k)
 	}
 	return r.m[k]
-}
-
-// fixedMethod returns an unknown.Method that resolves to the given conn.
-func fixedMethod(method protoreflect.MethodDescriptor, conn *grpc.ClientConn) router.Method {
-	return router.Method{
-		StreamDesc: grpc.StreamDesc{
-			ServerStreams: method.IsStreamingServer(),
-			ClientStreams: method.IsStreamingClient(),
-		},
-		Resolver: router.NewFixedResolver(conn),
-	}
-}
-
-// routedMethod returns an unknown.Method that resolves to a conn based on the keyFunc and given table.
-func routedMethod(method protoreflect.MethodDescriptor, keyFunc router.KeyFunc, table *syncMap[*grpc.ClientConn]) router.Method {
-	return router.Method{
-		StreamDesc: grpc.StreamDesc{
-			ServerStreams: method.IsStreamingServer(),
-			ClientStreams: method.IsStreamingClient(),
-		},
-		Resolver: router.ResolverFunc(func(mr router.MsgRecver) (grpc.ClientConnInterface, error) {
-			key, err := keyFunc(mr)
-			if err != nil {
-				return nil, err
-			}
-			conn, ok := table.Get(key)
-			if !ok {
-				return nil, status.Errorf(codes.NotFound, "name not known: %q", key)
-			}
-			return conn, nil
-		}),
-	}
 }
 
 // fullNameToRpcPath maps proto full names (package.Service.Method) to rpc paths (/package.Service/Method).

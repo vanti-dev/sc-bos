@@ -38,7 +38,7 @@ type remoteNode struct {
 
 	Self     *rx.Val[remoteDesc]
 	Systems  *rx.Val[remoteSystems]
-	Services *rx.Set[remoteService]
+	Services *rx.Set[protoreflect.ServiceDescriptor]
 	Children *rx.Set[remoteDesc]
 }
 
@@ -48,8 +48,8 @@ func newRemoteNode(addr string, conn *grpc.ClientConn) *remoteNode {
 		addr:    addr,
 		Self:    rx.NewVal(remoteDesc{}),
 		Systems: rx.NewVal(remoteSystems{}),
-		Services: rx.NewSet(slices.NewSortedFunc[remoteService](func(a, b remoteService) int {
-			return strings.Compare(a.name, b.name)
+		Services: rx.NewSet(slices.NewSortedFunc[protoreflect.ServiceDescriptor](func(a, b protoreflect.ServiceDescriptor) int {
+			return strings.Compare(string(a.FullName()), string(b.FullName()))
 		})),
 		Children: rx.NewSet(slices.NewSortedFunc[remoteDesc](func(a, b remoteDesc) int {
 			return strings.Compare(a.name, b.name)
@@ -61,12 +61,6 @@ func newRemoteNode(addr string, conn *grpc.ClientConn) *remoteNode {
 type remoteDesc struct {
 	name string           // the announced name, this is the routing key
 	md   *traits.Metadata // used to support the DevicesApi locally
-}
-
-// remoteService describes the gRPC services a remote node implements.
-type remoteService struct {
-	name    string // the fully qualified service name (e.g., "smartcore.traits.OnOffApi")
-	methods []protoreflect.MethodDescriptor
 }
 
 // remoteSystems describes relevant systems a remote node has.

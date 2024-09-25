@@ -100,6 +100,7 @@ func TestServer_ListDevices(t *testing.T) {
 			Membership: &traits.Metadata_Membership{Subsystem: "Lighting"},
 			Traits: []*traits.TraitMetadata{
 				{Name: trait.Light.String()},
+				{Name: trait.Metadata.String()},
 			},
 		}
 	}
