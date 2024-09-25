@@ -278,13 +278,17 @@ func (a *announcer) announceRemoteServices(seq seq2[int, protoreflect.ServiceDes
 }
 
 func (a *announcer) announceRemoteServiceApis(rs protoreflect.ServiceDescriptor) node.Undo {
-	srv := node.RemoteService(rs, a.node.conn)
+	srv := node.ReflectedConnService(rs, a.node.conn)
 	var undos []node.Undo
 
 	// which type of proxying should each method use?
 	switch {
 	case srv.NameRoutable():
 		// routes will be added by device announcements as this service is routable by name
+		a.logger.Debug("remote supports routable service",
+			zap.String("service", string(rs.FullName())),
+			zap.String("remote", a.node.addr),
+		)
 		err := a.self.SupportService(srv)
 		if err != nil {
 			a.logger.Warn("cannot support service, will not be available",
@@ -294,6 +298,10 @@ func (a *announcer) announceRemoteServiceApis(rs protoreflect.ServiceDescriptor)
 		}
 	case a.node.isHub:
 		// route everything to the hub
+		a.logger.Debug("remote is a hub supporting non-routable service",
+			zap.String("service", string(rs.FullName())),
+			zap.String("remote", a.node.addr),
+		)
 		undo, err := a.self.AnnounceService(srv)
 		undos = append(undos, undo)
 		if err != nil {

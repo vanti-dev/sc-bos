@@ -10,6 +10,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
+
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
 type MsgRecver interface {
@@ -80,6 +83,32 @@ func (r *Router) GetService(name string) *Service {
 	r.m.RLock()
 	defer r.m.RUnlock()
 	return r.services[name]
+}
+
+// RegisterService is a convenience implementation of grpc.ServiceRegistrar.
+//
+// It adds the service to the router (if not already present) as an unrouted service, and adds a service-only route
+// backed by the given implementation.
+// The service must be present in the global protobuf registry, or RegisterService will panic.
+// It will also panic if a service-only route already exists for the service.
+func (r *Router) RegisterService(desc *grpc.ServiceDesc, impl any) {
+	reflectDesc, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(desc.ServiceName))
+	if err != nil {
+		panic(err)
+	}
+	reflectSrvDesc := reflectDesc.(protoreflect.ServiceDescriptor)
+
+	err = r.AddService(NewUnroutedService(reflectSrvDesc))
+	if err != nil && !errors.Is(err, ErrServiceExists) {
+		panic(err)
+	}
+
+	conn := wrap.ServerToClient(*desc, impl)
+
+	err = r.AddRoute(desc.ServiceName, "", conn)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (r *Router) GetServiceInfo() map[string]grpc.ServiceInfo {

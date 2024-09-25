@@ -8,11 +8,11 @@ import (
 	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
-	"github.com/vanti-dev/sc-bos/pkg/util/grpc/reflectionapi"
 )
 
 type Services struct {

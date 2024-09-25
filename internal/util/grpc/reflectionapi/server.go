@@ -20,9 +20,9 @@ import (
 )
 
 // NewServer creates a *Server configured to use s and the global protoregistry types for reflection.
-func NewServer(s *grpc.Server) *Server {
+func NewServer(s ...reflection.ServiceInfoProvider) *Server {
 	return &Server{
-		infoProvider: newServiceInfoProviderSet(s),
+		infoProvider: newServiceInfoProviderSet(s...),
 		descResolver: newDescResolverSet(protoregistry.GlobalFiles),
 	}
 }
@@ -47,7 +47,7 @@ type record struct {
 }
 
 // Register registers the v1 and v1alpha reflection services on srv.
-func (s *Server) Register(srv *grpc.Server) {
+func (s *Server) Register(srv grpc.ServiceRegistrar) {
 	gwrOps := reflection.ServerOptions{
 		Services:           s.infoProvider,
 		DescriptorResolver: s.descResolver,

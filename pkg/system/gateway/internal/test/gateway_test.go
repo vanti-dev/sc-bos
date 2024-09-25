@@ -26,10 +26,9 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/shared"
-	"github.com/vanti-dev/sc-bos/pkg/util/grpc/reflectionapi"
-
 	// make sure that test caching updates based on changes to these files too
 	_ "github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/ac"
 	_ "github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/gw"
