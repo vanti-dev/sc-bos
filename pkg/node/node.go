@@ -51,13 +51,7 @@ func New(name string) *Node {
 	}
 
 	// metadata should be supported by default
-	metadataService, err := LocalService(traits.MetadataApi_ServiceDesc, metadata.NewCollectionServer(node.allMetadata))
-	if err != nil {
-		// should be impossible because the metadata ServiceDesc is valid
-		panic("metadata service not valid")
-	}
-	// can't error because there's no services/routes to conflict with
-	_, _ = node.AnnounceService(metadataService)
+	traits.RegisterMetadataApiServer(node.router, metadata.NewCollectionServer(node.allMetadata))
 
 	node.parentLocked()
 	return node
