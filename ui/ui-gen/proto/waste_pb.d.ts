@@ -163,6 +163,11 @@ export namespace PullWasteRecordsResponse {
     hasChangeTime(): boolean;
     clearChangeTime(): Change;
 
+    getWasteRecord(): WasteRecord | undefined;
+    setWasteRecord(value?: WasteRecord): Change;
+    hasWasteRecord(): boolean;
+    clearWasteRecord(): Change;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Change.AsObject;
     static toObject(includeInstance: boolean, msg: Change): Change.AsObject;
@@ -175,6 +180,7 @@ export namespace PullWasteRecordsResponse {
     export type AsObject = {
       name: string,
       changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+      wasteRecord?: WasteRecord.AsObject,
     }
   }
 
