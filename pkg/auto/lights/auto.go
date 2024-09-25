@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/olebedev/emitter"
+	"go.uber.org/atomic"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
@@ -14,12 +15,15 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
-const refreshEvery = 1 * time.Minute
-
 // BrightnessAutomation implements turning lights on or off based on occupancy readings from PIRs and other devices.
 type BrightnessAutomation struct {
 	logger  *zap.Logger
 	clients node.Clienter // clients are not got until Start
+
+	refreshEvery      atomic.Duration
+	retries           int
+	maxRetries        int
+	backoffMultiplier time.Duration
 
 	// bus emits "stop" and "config" events triggered by Stop and Configure.
 	bus *emitter.Emitter
@@ -153,7 +157,7 @@ func (b *BrightnessAutomation) Stop() error {
 }
 
 // processStateChanges reads ReadState from a channel and analyses each entry deciding if light levels should be changed.
-// This function backs off to processState which has the actual logic for what to do given a certain state,
+// This function backs off to processState which has the actual logic for what to do, given a certain state,
 // this function handles the channel management, retry logic, TTL on decisions, and all that type of thing.
 func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStates <-chan *ReadState, actions actions) error {
 	// the below are the innards of time.Timer, but expanded so we can stop/select on them even if
@@ -181,8 +185,8 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			}
 
 			// if the context remains live, schedule another update soon
-			// TODO: make this delay configurable, or add backoff etc.
-			after := 5 * time.Second
+			b.retries++
+			after := time.Duration(b.retries) * b.backoffMultiplier
 			b.logger.Error("processState failed; scheduling retry",
 				zap.Error(err),
 				zap.Duration("retryAfter", after),
@@ -190,16 +194,23 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			ttl = after
 		}
 
-		if ttl < 0 {
-			b.logger.Warn("ttl < 0; using refreshEvery instead")
+		if err == nil || b.retries > b.maxRetries {
+			b.retries = 0
 		}
+
 		// ensure it's not too long before we wake up, so the lights are refreshed regularly
 		// so external changes don't stick around forever
-		if ttl <= 0 || ttl > refreshEvery {
+		if ttl < 0 {
+			b.logger.Warn("ttl < 0; using refreshEvery instead")
+			ttl = b.refreshEvery.Load()
+		}
+		if ttl > b.refreshEvery.Load() {
+			b.logger.Warn("ttl > refreshEvery; using refreshEvery instead")
 			// b.logger.Debug("waking up sooner to ensure lights aren't stale",
 			// 	zap.Duration("after", refreshEvery))
-			ttl = refreshEvery
+			ttl = b.refreshEvery.Load()
 		}
+
 		// Setup ttl for the transformed model.
 		// After this time it should be recalculated.
 		ttlExpired, cancelTtlTimer = b.newTimer(ttl)

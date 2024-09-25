@@ -22,6 +22,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
+var errFailedBrightnessUpdate = errors.New("failed to update brightness this time")
+
 func TestPirsTurnLightsOn(t *testing.T) {
 	// we update this to send messages to the automation
 	pir01 := occupancysensor.NewModel()
@@ -77,9 +79,9 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	}
 
 	processComplete := automation.bus.On("process-complete", emitter.Sync)
-	waitForState := func(test func(state *ReadState) bool) (time.Duration, error) {
+	waitForState := func(wait time.Duration, test func(state *ReadState) bool) (time.Duration, error) {
 		t.Helper()
-		timeout := time.NewTimer(500 * time.Millisecond)
+		timeout := time.NewTimer(wait)
 		for {
 			select {
 			case <-timeout.C:
@@ -101,7 +103,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
 	// DEAR FUTURE DEV, if you get test failures here it's probably because you're missing a case in the
 	// clients switch statement above
-	ttl, err := waitForState(func(state *ReadState) bool {
+	ttl, err := waitForState(time.Millisecond*500, func(state *ReadState) bool {
 		o, ok := state.Occupancy["pir01"]
 		if !ok {
 			return false
@@ -125,7 +127,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 
 	// check that setting occupied on the other PIR does nothing
 	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
-	ttl, err = waitForState(func(state *ReadState) bool {
+	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
 		o, ok := state.Occupancy["pir02"]
 		if !ok {
 			return false
@@ -138,7 +140,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	// check that making both PIRs unoccupied doesn't do anything, but then does
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(now.Add(-3 * time.Minute))})
 	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(now.Add(-8 * time.Minute))})
-	ttl, err = waitForState(func(state *ReadState) bool {
+	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		o02, ok02 := state.Occupancy["pir02"]
 		if !ok01 || !ok02 {
@@ -155,7 +157,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	// trigger the timer
 	now = now.Add(7 * time.Minute)
 	tickChan <- now
-	ttl, err = waitForState(func(state *ReadState) bool {
+	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
 		return true // no state change, only time change
 	})
 	assertNoErrAndTtl(t, ttl, err, 0)
@@ -169,6 +171,36 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		Name: "light02",
 		Brightness: &traits.Brightness{
 			LevelPercent: 0,
+		},
+	})
+
+	automation.backoffMultiplier = time.Second * 2
+	testActions.err = errFailedBrightnessUpdate
+	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
+	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
+		o01, ok01 := state.Occupancy["pir01"]
+		if !ok01 {
+			return false
+		}
+		return o01.State == traits.Occupancy_OCCUPIED
+	})
+	assertErrorAndTtl(t, ttl, err, 0, errFailedBrightnessUpdate)
+	// wait for the state to get replayed (should take backoffMultiplier duration long)
+	// I adjusted the time to take *slightly* longer because GoLang ...
+	// since automation.newTimer has been overridden, we have to set the ttl ourselves
+	tickChan <- now.Add(time.Second * 2)
+	ttl, err = waitForState(time.Millisecond*2_001, func(state *ReadState) bool {
+		o01, ok01 := state.Occupancy["pir01"]
+		if !ok01 {
+			return false
+		}
+		return o01.State == traits.Occupancy_OCCUPIED
+	})
+	// it works after the retry
+	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
+		Name: "light01",
+		Brightness: &traits.Brightness{
+			LevelPercent: 100,
 		},
 	})
 }

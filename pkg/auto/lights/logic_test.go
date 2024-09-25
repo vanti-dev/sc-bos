@@ -2,6 +2,7 @@ package lights
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"testing"
@@ -972,6 +973,18 @@ func assertNoErrAndTtl(t *testing.T, ttl time.Duration, err error, targetTtl tim
 	}
 }
 
+func assertErrorAndTtl(t *testing.T, ttl time.Duration, err error, targetTtl time.Duration, targetErr error) {
+	{
+		if ttl != targetTtl {
+			t.Fatalf("TTL want %v, got %v", targetTtl, ttl)
+		}
+
+		if !errors.Is(err, targetErr) {
+			t.Fatalf("Error want %v, got %v", targetErr, err)
+		}
+	}
+}
+
 func newTestActions(t *testing.T) *testActions {
 	return &testActions{t: t}
 }
@@ -982,6 +995,8 @@ type testActions struct {
 	m        sync.Mutex
 	calls    []any
 	nextCall int // updated via assertNextCall
+
+	err error // intercept this to force return an error
 
 	brightnessCalls []*traits.UpdateBrightnessRequest
 }
@@ -1025,6 +1040,14 @@ func (ta *testActions) UpdateBrightness(ctx context.Context, now time.Time, req 
 		WriteTime:  now,
 		Brightness: req.Brightness,
 	}
+	var err error
+	if ta.err != nil {
+		err = ta.err
+		ta.err = nil
+
+		return err
+	}
+
 	return nil
 }
 

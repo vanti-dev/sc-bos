@@ -32,8 +32,20 @@ type Root struct {
 	OffButtons    []string `json:"offButtons,omitempty"`
 	ToggleButtons []string `json:"toggleButtons,omitempty"`
 
+	// RefreshEvery guarantees the last read state will eventually be processed if no event happens for this long
+	RefreshEvery jsontypes.Duration `json:"refreshEvery,omitempty"`
+
+	OnProcessError OnProcessError `json:"onProcessError,omitempty"`
+
 	// Now returns the current time. It's configurable for testing purposes, typically for testing the logic.
 	Now func() time.Time `json:"-"`
+}
+
+// OnProcessError if error is encountered during processing of a state, we set ttl to these defaults with option for backOff
+type OnProcessError struct {
+	// BackOffMultiplier is the wait duration multiplier for each iteration
+	BackOffMultiplier jsontypes.Duration `json:"backOffMultiplier,omitempty"`
+	MaxRetries        int                `json:"maxRetries,omitempty"`
 }
 
 type DaylightDimming struct {
@@ -41,7 +53,7 @@ type DaylightDimming struct {
 	// if Thresholds has any values, this will be ignored
 	Segments *ThresholdSegments `json:"segments,omitempty"`
 	// Thresholds configures a mapping between measured lux levels and output brightness of lights.
-	// With Thresholds you can say "below 300 lux set brightness to 80%, below 700 lux set to 50%".
+	// With Thresholds, you can say "below 300 lux set brightness to 80%, below 700 lux set to 50%".
 	// The threshold with the highest BelowLux value below the measured lux level will be selected.
 	Thresholds []LevelThreshold `json:"thresholds,omitempty"`
 	// PercentageTowardsGoal configures how quickly we reach our goal. If set to 50 then we calculate the desired level
@@ -171,6 +183,11 @@ func Default() Root {
 		Now: time.Now,
 		Mode: Mode{
 			UnoccupiedOffDelay: jsontypes.Duration{Duration: 10 * time.Minute},
+		},
+		RefreshEvery: jsontypes.Duration{Duration: time.Minute},
+		OnProcessError: OnProcessError{
+			BackOffMultiplier: jsontypes.Duration{Duration: time.Millisecond * 500},
+			MaxRetries:        2,
 		},
 	}
 }
