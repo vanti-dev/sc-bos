@@ -18,18 +18,22 @@ func (s *Service) NameRoutable() bool {
 	return s.routerService.KeyRoutable()
 }
 
-// RemoteService returns a Service that routes requests to a ClientConn.
-func RemoteService(desc protoreflect.ServiceDescriptor, conn grpc.ClientConnInterface) *Service {
+// ReflectedConnService returns a Service that routes requests to a ClientConn.
+func ReflectedConnService(desc protoreflect.ServiceDescriptor, conn grpc.ClientConnInterface) *Service {
 	return &Service{
 		routerService: maybeNameRoutedService(desc),
 		conn:          conn,
 	}
 }
 
-// LocalService returns a Service that routes requests to a local server implementation srv.
+// RegistryService returns a Service that routes requests to a local server implementation srv.
 //
 // The service described by desc must exist in the global protobuf registry, or an error will be returned.
-func LocalService(desc grpc.ServiceDesc, srv any) (*Service, error) {
+func RegistryService(desc grpc.ServiceDesc, srv any) (*Service, error) {
+	return RegistryConnService(desc, wrap.ServerToClient(desc, srv))
+}
+
+func RegistryConnService(desc grpc.ServiceDesc, conn grpc.ClientConnInterface) (*Service, error) {
 	reflectDesc, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(desc.ServiceName))
 	if err != nil {
 		return nil, err
@@ -38,7 +42,6 @@ func LocalService(desc grpc.ServiceDesc, srv any) (*Service, error) {
 	if !ok {
 		return nil, err
 	}
-	conn := wrap.ServerToClient(desc, srv)
 
 	return &Service{
 		routerService: maybeNameRoutedService(reflectSrvDesc),
@@ -80,6 +83,12 @@ func (n *Node) SupportService(srv *Service) error {
 		}
 	}
 	return nil
+}
+
+// GetServiceInfo implements the grpc.ServiceRegistrar interface, reporting all the services supported
+// by the node's router.
+func (n *Node) GetServiceInfo() map[string]grpc.ServiceInfo {
+	return n.router.GetServiceInfo()
 }
 
 func maybeNameRoutedService(desc protoreflect.ServiceDescriptor) *router.Service {

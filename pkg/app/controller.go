@@ -23,6 +23,7 @@ import (
 
 	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
+	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
@@ -35,7 +36,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
-	"github.com/vanti-dev/sc-bos/pkg/util/grpc/reflectionapi"
 )
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
@@ -216,7 +216,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	grpcServer := grpc.NewServer(grpcOpts...)
 
-	reflectionServer := reflectionapi.NewServer(grpcServer)
+	reflectionServer := reflectionapi.NewServer(grpcServer, rootNode)
 	reflectionServer.Register(grpcServer)
 
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)

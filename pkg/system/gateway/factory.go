@@ -44,13 +44,13 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/config"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
-	"github.com/vanti-dev/sc-bos/pkg/util/grpc/reflectionapi"
 )
 
 const (
