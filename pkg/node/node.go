@@ -10,14 +10,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/reflect/protoregistry"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
-	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/internal/router"
 )
 
@@ -52,8 +49,16 @@ func New(name string) *Node {
 		Logger:      zap.NewNop(),
 		allMetadata: metadata.NewCollection(),
 	}
+
 	// metadata should be supported by default
-	traits.RegisterMetadataApiServer(node, metadata.NewCollectionServer(node.allMetadata))
+	metadataService, err := LocalService(traits.MetadataApi_ServiceDesc, metadata.NewCollectionServer(node.allMetadata))
+	if err != nil {
+		// should be impossible because the metadata ServiceDesc is valid
+		panic("metadata service not valid")
+	}
+	// can't error because there's no services/routes to conflict with
+	_, _ = node.AnnounceService(metadataService)
+
 	node.parentLocked()
 	return node
 }
@@ -96,9 +101,17 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 	for _, s := range services {
 		undoRoute, err := registerDeviceRoute(n.router, name, s)
 		if err != nil {
-			log.Errorf("cannot register %s route for %q: %v", s.desc.ServiceName, name, err)
+			log.Errorf("cannot register %s route for %q: %v", s.desc.FullName(), name, err)
 		} else {
 			undo = append(undo, undoRoute)
+		}
+	}
+	if a.proxyTo != nil {
+		undoProxy, err := registerProxyRoute(n.router, name, a.proxyTo)
+		if err != nil {
+			log.Errorf("cannot register proxy route for %q: %v", name, err)
+		} else {
+			undo = append(undo, undoProxy)
 		}
 	}
 
@@ -148,27 +161,6 @@ func (n *Node) Support(functions ...Function) {
 	defer n.mu.Unlock()
 	for _, function := range functions {
 		function.apply(n)
-	}
-}
-
-// RegisterService registers a server implementation as the default route for that service.
-//
-// If the service is not already supported by the node's router, it is added as an unrouted service.
-func (n *Node) RegisterService(desc *grpc.ServiceDesc, impl any) {
-	err := ensureServiceSupported(n.router, service{
-		desc:        *desc,
-		nameRouting: false,
-	})
-	if err != nil {
-		n.Logger.Error("failed to register unrouted service", zap.Error(err), zap.String("service", desc.ServiceName))
-		return
-	}
-
-	conn := wrap.ServerToClient(*desc, impl)
-	// add a service-only route
-	err = n.router.AddRoute(desc.ServiceName, "", conn)
-	if err != nil {
-		n.Logger.Error("failed to register default route for service", zap.Error(err), zap.String("service", desc.ServiceName))
 	}
 }
 
@@ -257,40 +249,49 @@ func registerDeviceRoute(r *router.Router, name string, s service) (Undo, error)
 		return NilUndo, err
 	}
 
-	err = r.AddRoute(s.desc.ServiceName, name, s.conn)
+	serviceName := string(s.desc.FullName())
+	err = r.AddRoute(serviceName, name, s.conn)
 	if err != nil {
 		return NilUndo, err
 	}
 
 	return func() {
-		_ = r.DeleteRoute(s.desc.ServiceName, name)
+		_ = r.DeleteRoute(serviceName, name)
+	}, nil
+}
+
+func registerProxyRoute(r *router.Router, name string, conn grpc.ClientConnInterface) (Undo, error) {
+	err := r.AddRoute("", name, conn)
+	if err != nil {
+		return NilUndo, err
+	}
+
+	return func() {
+		_ = r.DeleteRoute("", name)
 	}, nil
 }
 
 func ensureServiceSupported(r *router.Router, s service) error {
-	if r.GetService(s.desc.ServiceName) != nil {
+	serviceName := string(s.desc.FullName())
+	if existing := r.GetService(serviceName); existing != nil {
+		if s.nameRouting && !existing.KeyRoutable() {
+			// existing service does not support name routing!
+			return fmt.Errorf("service %q already exists but does not support name routing", serviceName)
+		}
 		// already supported, nothing to do
 		return nil
-	}
-
-	desc, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(s.desc.ServiceName))
-	if err != nil {
-		return fmt.Errorf("descriptor for service %q not in registry: %w", s.desc.ServiceName, err)
-	}
-	servDesc, ok := desc.(protoreflect.ServiceDescriptor)
-	if !ok {
-		return fmt.Errorf("%q is not a service", s.desc.ServiceName)
 	}
 
 	var routerService *router.Service
 	if s.nameRouting {
 		// smart core traits use the name field to route requests to the right device
-		routerService, err = router.NewRoutedService(servDesc, "name")
+		var err error
+		routerService, err = router.NewRoutedService(s.desc, "name")
 		if err != nil {
-			return fmt.Errorf("service %q is not routable by name: %w", s.desc.ServiceName, err)
+			return fmt.Errorf("service %q is not routable by name: %w", serviceName, err)
 		}
 	} else {
-		routerService = router.NewUnroutedService(servDesc)
+		routerService = router.NewUnroutedService(s.desc)
 	}
 
 	// AddService might return an error if another goroutine added support after the GetService check above

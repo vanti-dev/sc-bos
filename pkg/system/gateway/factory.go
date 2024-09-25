@@ -45,7 +45,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/lighttest"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/config"
@@ -59,15 +58,11 @@ const (
 	LegacyName = "proxy"
 )
 
-func Factory(holder *lighttest.Holder) system.Factory {
-	return &factory{
-		server: holder,
-	}
+func Factory() system.Factory {
+	return &factory{}
 }
 
-type factory struct {
-	server *lighttest.Holder
-}
+type factory struct{}
 
 func (f *factory) New(services system.Services) service.Lifecycle {
 	s := &System{

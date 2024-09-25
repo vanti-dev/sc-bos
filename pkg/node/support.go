@@ -1,10 +1,5 @@
 package node
 
-import (
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
-)
-
 // Supporter is a type that can have its supported functions changed at runtime.
 type Supporter interface {
 	Support(functions ...Function)
@@ -33,28 +28,4 @@ type functionFunc func(node *Node)
 
 func (f functionFunc) apply(node *Node) {
 	f(node)
-}
-
-func UnroutedService(desc grpc.ServiceDesc) Function {
-	return functionFunc(func(node *Node) {
-		err := ensureServiceSupported(node.router, service{
-			desc:        desc,
-			nameRouting: false,
-		})
-		if err != nil {
-			node.Logger.Error("cannot support unrouted service", zap.Error(err), zap.String("service", desc.ServiceName))
-		}
-	})
-}
-
-func RoutedService(desc grpc.ServiceDesc) Function {
-	return functionFunc(func(node *Node) {
-		err := ensureServiceSupported(node.router, service{
-			desc:        desc,
-			nameRouting: true,
-		})
-		if err != nil {
-			node.Logger.Error("cannot support routed service", zap.Error(err), zap.String("service", desc.ServiceName))
-		}
-	})
 }
