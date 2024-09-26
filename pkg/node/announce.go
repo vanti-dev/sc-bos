@@ -149,7 +149,7 @@ func HasClient(clients ...wrap.ServiceUnwrapper) Feature {
 			}
 			reflectServiceDesc := reflectDesc.(protoreflect.ServiceDescriptor)
 
-			a.services = append(a.services, service{desc: reflectServiceDesc, conn: conn})
+			a.services = append(a.services, service{desc: reflectServiceDesc, conn: conn, nameRouting: true})
 		}
 	})
 }
@@ -301,6 +301,6 @@ func (r *capturingRegistrar) RegisterService(desc *grpc.ServiceDesc, impl any) {
 
 type service struct {
 	desc        protoreflect.ServiceDescriptor
-	conn        grpc.ClientConnInterface
+	conn        grpc.ClientConnInterface // if nil, just ensure the service is registered but don't add any routes
 	nameRouting bool
 }
