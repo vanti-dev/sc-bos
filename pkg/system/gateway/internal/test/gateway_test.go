@@ -367,7 +367,6 @@ func testReflection(t *testing.T, ctx context.Context, conn *grpc.ClientConn) {
 		{Name: "smartcore.bos.EnrollmentApi"},
 		{Name: "smartcore.bos.HubApi"},
 		{Name: "smartcore.bos.ServicesApi"},
-		{Name: "smartcore.bos.tenants.TenantApi"},
 		{Name: "smartcore.traits.MetadataApi"},
 		{Name: "smartcore.traits.MetadataInfo"},
 		{Name: "smartcore.traits.OnOffApi"},
@@ -422,15 +421,6 @@ func testHubApis(t *testing.T, ctx context.Context, conn *grpc.ClientConn) {
 		}
 	})
 
-	t.Run("TenantApi", func(t *testing.T) {
-		client := gen.NewTenantApiClient(conn)
-		_, err := client.ListTenants(ctx, &gen.ListTenantsRequest{})
-		// Even though the hub's tenant api isn't enabled, we can tell it's being proxied because the error
-		// for absent APIs is codes.Unimplemented, but as the gw has the api enabled we get
-		if err, ok := status.FromError(err); !ok || err.Code() != codes.FailedPrecondition || err.Message() != "not enabled" {
-			t.Fatalf("list tenants: %v", err)
-		}
-	})
 }
 
 func newCtx(t *testing.T) (context.Context, context.CancelFunc) {

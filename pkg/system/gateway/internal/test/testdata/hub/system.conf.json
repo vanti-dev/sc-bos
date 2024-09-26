@@ -3,7 +3,6 @@
   "grpcAddr": "localhost",
   "logger": {"initialFields": {"proc": "hub"}},
   "systems": {
-    "hub": {"storage": {"type": "bolt"}},
-    "tenants": {"enabled": false}
+    "hub": {"storage": {"type": "bolt"}}
   }
 }
