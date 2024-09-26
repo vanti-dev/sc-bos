@@ -35,6 +35,12 @@ func Test_isMessageValueStringFunc(t *testing.T) {
 		{"trailing .", "id.", "1234", &traits.Metadata{Id: &traits.Metadata_ID{More: map[string]string{"foo": "1234"}}}, false},
 		{"leading .", ".id", "1234", &traits.Metadata{Id: &traits.Metadata_ID{More: map[string]string{"foo": "1234"}}}, false},
 		{"property of scalar", "name.foo", "1234", &traits.Metadata{Name: "1234"}, false},
+		{"match in array", "traits.name", "foo", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "foo"}}}, true},
+		{"match in array with index", "traits.[0].name", "foo", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "foo"}}}, true},
+		{"match in array doesn't exist", "traits.[1].name", "foo", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "foo"}}}, false},
+		{"match in array negative", "traits.[-1].name", "foo", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "foo"}}}, false},
+		{"match any in array", "traits.name", "foo", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "bar"}, {Name: "foo"}}}, true},
+		{"match any in array - no matches", "traits.name", "baz", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "bar"}, {Name: "foo"}}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
