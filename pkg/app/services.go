@@ -3,11 +3,12 @@ package app
 import (
 	"context"
 	"fmt"
-	"path/filepath"
+	"path"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -198,10 +199,7 @@ func announceServices[M ~map[string]T, T any](c *Controller, name string, servic
 		serviceapi.WithLogger(c.Logger.Named("serviceapi")),
 		serviceapi.WithStore(store),
 	))
-	return node.UndoAll(
-		c.Node.Announce(name, node.HasClient(client)),
-		c.Node.Announce(filepath.Join(c.Node.Name(), name), node.HasClient(client)),
-	)
+	return announceNodeClient(c.Node, name, client)
 }
 
 func announceAutoServices[M ~map[string]T, T any](c *Controller, services *service.Map, factories M) node.Undo {
@@ -211,10 +209,7 @@ func announceAutoServices[M ~map[string]T, T any](c *Controller, services *servi
 		serviceapi.WithLogger(c.Logger.Named("serviceapi")),
 		serviceapi.WithStore(c.ControllerConfig.Automations()),
 	))
-	return node.UndoAll(
-		c.Node.Announce("automations", node.HasClient(client)),
-		c.Node.Announce(filepath.Join(c.Node.Name(), "automations"), node.HasClient(client)),
-	)
+	return announceNodeClient(c.Node, "automations", client)
 }
 
 func announceSystemServices[M ~map[string]T, T any](c *Controller, services *service.Map, factories M) node.Undo {
@@ -224,10 +219,16 @@ func announceSystemServices[M ~map[string]T, T any](c *Controller, services *ser
 		serviceapi.WithKnownTypesFromMapKeys(factories),
 		serviceapi.WithLogger(c.Logger.Named("serviceapi")),
 	))
-	return node.UndoAll(
-		c.Node.Announce("systems", node.HasClient(client)),
-		c.Node.Announce(filepath.Join(c.Node.Name(), "systems"), node.HasClient(client)),
-	)
+	return announceNodeClient(c.Node, "systems", client)
+}
+
+func announceNodeClient(n *node.Node, base string, client wrap.ServiceUnwrapper) node.Undo {
+	var undos []node.Undo
+	undos = append(undos, n.Announce(base, node.HasClient(client)))
+	if n.Name() != "" {
+		undos = append(undos, n.Announce(path.Join(n.Name(), base), node.HasClient(client)))
+	}
+	return node.UndoAll(undos...)
 }
 
 type serviceConfigStore struct {

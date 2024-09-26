@@ -34,16 +34,22 @@ type MsgRecver interface {
 //
 // The list above is in order of precedence.
 type Router struct {
+	keyInterceptor KeyInterceptor
+
 	m        sync.RWMutex
 	services map[string]*Service
 	routes   map[routeID]grpc.ClientConnInterface
 }
 
-func New() *Router {
-	return &Router{
+func New(opts ...Option) *Router {
+	r := &Router{
 		services: make(map[string]*Service),
 		routes:   make(map[routeID]grpc.ClientConnInterface),
 	}
+	for _, opt := range opts {
+		opt(r)
+	}
+	return r
 }
 
 // AddService adds support for the service with the router.
@@ -206,6 +212,12 @@ func (r *Router) ResolveMethod(fullName string) (Method, bool) {
 			if err != nil {
 				return nil, err
 			}
+			if r.keyInterceptor != nil {
+				key, err = r.keyInterceptor(key)
+				if err != nil {
+					return nil, err
+				}
+			}
 			candidates = []routeID{
 				{Service: serviceName, Key: key},
 				{Service: "", Key: key},
@@ -319,3 +331,13 @@ func parseMethod(fullMethod string) (service, method string, ok bool) {
 	}
 	return service, method, true
 }
+
+type Option func(router *Router)
+
+func WithKeyInterceptor(interceptor KeyInterceptor) Option {
+	return func(router *Router) {
+		router.keyInterceptor = interceptor
+	}
+}
+
+type KeyInterceptor func(key string) (mappedKey string, err error)

@@ -21,7 +21,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
@@ -201,13 +200,6 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		grpcOpts = append(grpcOpts,
 			grpc.ChainUnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
 			grpc.ChainStreamInterceptor(interceptor.GRPCStreamingInterceptor()),
-		)
-	}
-
-	if rootNode.Name() != "" {
-		grpcOpts = append(grpcOpts,
-			grpc.ChainUnaryInterceptor(name.IfAbsentUnaryInterceptor(rootNode.Name())),
-			grpc.ChainStreamInterceptor(name.IfAbsentStreamInterceptor(rootNode.Name())),
 		)
 	}
 
