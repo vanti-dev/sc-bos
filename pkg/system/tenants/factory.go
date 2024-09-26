@@ -12,18 +12,13 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants/config"
-	"github.com/vanti-dev/sc-bos/pkg/system/tenants/hold"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants/pgxtenants"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
-var Factory = factory{
-	server: &hold.Server{}, // shared by all grpc servers
-}
+var Factory = factory{}
 
-type factory struct {
-	server *hold.Server
-}
+type factory struct{}
 
 func (f factory) New(services system.Services) service.Lifecycle {
 	return NewSystem(services)
@@ -31,6 +26,7 @@ func (f factory) New(services system.Services) service.Lifecycle {
 
 func NewSystem(services system.Services) *System {
 	s := &System{
+		node:    services.Node,
 		hubNode: services.CohortManager,
 		logger:  services.Logger.Named("tenants"),
 	}
@@ -45,21 +41,34 @@ func NewSystem(services system.Services) *System {
 
 type System struct {
 	*service.Service[config.Root]
+	undos   []node.Undo
+	node    *node.Node
 	hubNode node.Remote
 	logger  *zap.Logger
 }
 
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
+	// clear out announcements from previous runs
+	for _, u := range s.undos {
+		u()
+	}
+	s.undos = nil
+
 	if cfg.Storage == nil {
 		return errors.New("no storage")
 	}
+	var srv *node.Service
 	switch cfg.Storage.Type {
 	case config.StorageTypeProxy:
 		conn, err := s.hubNode.Connect(ctx)
 		if err != nil {
 			return err
 		}
-		Factory.server.Fill(gen.NewTenantApiClient(conn))
+
+		srv, err = node.RegistryConnService(gen.TenantApi_ServiceDesc, conn)
+		if err != nil {
+			return fmt.Errorf("can't create proxied TenantApi service: %w", err)
+		}
 	case config.StorageTypePostgres:
 		pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
 		if err != nil {
@@ -71,10 +80,18 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 			return fmt.Errorf("init: %w", err)
 		}
 
-		// There's only one tenant api, each time we run we make sure to take over control of it.
-		Factory.server.Fill(gen.WrapTenantApi(server))
+		srv, err = node.RegistryService(gen.TenantApi_ServiceDesc, server)
+		if err != nil {
+			return fmt.Errorf("can't create local TenantApi service: %w", err)
+		}
 	default:
 		return fmt.Errorf("unsuported storage type %s", cfg.Storage.Type)
+	}
+
+	undo, err := s.node.AnnounceService(srv)
+	s.undos = append(s.undos, undo)
+	if err != nil {
+		return fmt.Errorf("can't announce TenantApi service: %w", err)
 	}
 
 	return nil
