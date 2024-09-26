@@ -17,6 +17,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/vanti-dev/sc-bos/internal/router"
+	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 )
 
 // Node represents a smart core node.
@@ -63,6 +64,7 @@ func New(name string) *Node {
 
 	// metadata should be supported by default
 	traits.RegisterMetadataApiServer(node.router, metadata.NewCollectionServer(node.allMetadata))
+	_ = node.Announce(name, HasTrait(trait.Metadata))
 
 	node.parentLocked()
 	return node
@@ -102,13 +104,19 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 	services = append(services, a.services...)
 	for _, t := range a.traits {
 		services = append(services, t.services...)
+		traitSvcs, err := traitServices(t.name)
+		if err != nil {
+			log.Errorf("cannot determine services to support for trait %s: %v", t.name, err)
+		} else {
+			services = append(services, traitSvcs...)
+		}
 	}
 	log.Debugf("announcing %q with %d services (proxy=%v)", name, len(services), a.proxyTo != nil)
 	for _, s := range services {
 		serviceName := s.desc.FullName()
 		undoRoute, err := registerDeviceRoute(n.router, name, s)
 		if err != nil {
-			log.Errorf("cannot register %s route for %q: %v", serviceName, name, err)
+			log.Errorf("cannot register service %s for %q: %v", serviceName, name, err)
 		} else {
 			undo = append(undo, undoRoute)
 		}
@@ -116,7 +124,7 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 	if a.proxyTo != nil {
 		undoProxy, err := registerProxyRoute(n.router, name, a.proxyTo)
 		if err != nil {
-			log.Errorf("cannot register proxy route for %q: %v", name, err)
+			log.Errorf("cannot register proxy for %q: %v", name, err)
 		} else {
 			undo = append(undo, undoProxy)
 		}
@@ -250,10 +258,16 @@ func isConcurrentUpdateDetectedError(err error) bool {
 	return s.Code() == codes.Aborted && strings.Contains(s.Message(), "concurrent update detected")
 }
 
+// Supports s on the router.
+// If s has a conn, adds a route for it.
 func registerDeviceRoute(r *router.Router, name string, s service) (Undo, error) {
 	err := ensureServiceSupported(r, s)
 	if err != nil {
 		return NilUndo, err
+	}
+	if s.conn == nil {
+		// service just needs to be supported by the router, but don't need to add a route
+		return NilUndo, nil
 	}
 
 	serviceName := string(s.desc.FullName())
@@ -305,4 +319,25 @@ func ensureServiceSupported(r *router.Router, s service) error {
 	// this is a bit of wasted work but is safe because the service added will be the same
 	_ = r.AddService(routerService)
 	return nil
+}
+
+// returns services that should be supported by the node for the given trait
+// (returned services do not contain connections, they are just descriptors)
+func traitServices(name trait.Name) ([]service, error) {
+	serviceDescs := alltraits.ServiceDesc(name)
+	if len(serviceDescs) == 0 {
+		return nil, fmt.Errorf("trait %s not recognised", name)
+	}
+
+	var services []service
+	for _, serviceDesc := range serviceDescs {
+		desc, err := registryDescriptor(serviceDesc.ServiceName)
+		if err != nil {
+			return nil, err
+		}
+
+		services = append(services, service{desc: desc, nameRouting: true})
+	}
+
+	return services, nil
 }
