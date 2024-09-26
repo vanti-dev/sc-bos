@@ -1,6 +1,8 @@
 package node
 
 import (
+	"fmt"
+
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"
@@ -34,15 +36,10 @@ func RegistryService(desc grpc.ServiceDesc, srv any) (*Service, error) {
 }
 
 func RegistryConnService(desc grpc.ServiceDesc, conn grpc.ClientConnInterface) (*Service, error) {
-	reflectDesc, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(desc.ServiceName))
+	reflectSrvDesc, err := registryDescriptor(desc.ServiceName)
 	if err != nil {
 		return nil, err
 	}
-	reflectSrvDesc, ok := reflectDesc.(protoreflect.ServiceDescriptor)
-	if !ok {
-		return nil, err
-	}
-
 	return &Service{
 		routerService: maybeNameRoutedService(reflectSrvDesc),
 		conn:          conn,
@@ -97,4 +94,16 @@ func maybeNameRoutedService(desc protoreflect.ServiceDescriptor) *router.Service
 		return srv
 	}
 	return router.NewUnroutedService(desc)
+}
+
+func registryDescriptor(serviceName string) (protoreflect.ServiceDescriptor, error) {
+	reflectDesc, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(serviceName))
+	if err != nil {
+		return nil, err
+	}
+	reflectSrvDesc, ok := reflectDesc.(protoreflect.ServiceDescriptor)
+	if !ok {
+		return nil, fmt.Errorf("%q is not a service descriptor (actually %T)", serviceName, reflectDesc)
+	}
+	return reflectSrvDesc, nil
 }

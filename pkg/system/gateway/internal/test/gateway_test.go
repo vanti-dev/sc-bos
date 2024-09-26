@@ -181,6 +181,9 @@ func waitForNode(t *testing.T, ctx context.Context, addr string) {
 	client := traits.NewMetadataApiClient(conn)
 	err = backoff.Retry(func() error {
 		_, err := client.GetMetadata(ctx, &traits.GetMetadataRequest{})
+		if err != nil {
+			t.Logf("failed to poll node %q for liveness: %v", addr, err)
+		}
 		return err
 	}, backoff.WithContext(backoff.NewExponentialBackOff(), ctx))
 	if err != nil {
