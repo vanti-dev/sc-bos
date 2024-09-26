@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -163,6 +164,28 @@ func routedRegistryService(t *testing.T, serviceName, keyName string) *Service {
 		t.Fatalf("failed to create routed service: %v", err)
 	}
 	return s
+}
+
+func TestWithKeyInterceptor(t *testing.T) {
+	r := New(WithKeyInterceptor(func(key string) (mappedKey string, err error) {
+		return strings.ToLower(key), nil
+	}))
+
+	check(t, r.AddService(routedRegistryService(t, traits.OnOffApi_ServiceDesc.ServiceName, "name")))
+	model := onoff.NewModel(resource.WithInitialValue(&traits.OnOff{State: traits.OnOff_OFF}))
+	check(t, r.AddRoute("", "foo", wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoff.NewModelServer(model))))
+
+	// interceptor should map the request to "FOO" to the handler for "foo"
+	conn := NewLoopback(r)
+	client := traits.NewOnOffApiClient(conn)
+	res, err := client.GetOnOff(context.Background(), &traits.GetOnOffRequest{Name: "FOO"})
+	if err != nil {
+		t.Errorf("failed to get onoff for FOO: %v", err)
+	}
+	expect := &traits.OnOff{State: traits.OnOff_OFF}
+	if diff := cmp.Diff(expect, res, protocmp.Transform()); diff != "" {
+		t.Errorf("unexpected response (-want +got):\n%s", diff)
+	}
 }
 
 func check(t *testing.T, err error) {

@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
@@ -43,11 +44,21 @@ type Node struct {
 
 // New creates a new Node with the given name.
 func New(name string) *Node {
+	mapID := func(requestName string) string {
+		if requestName == "" {
+			return name
+		} else {
+			return requestName
+		}
+	}
+
 	node := &Node{
-		name:        name,
-		router:      router.New(),
+		name: name,
+		router: router.New(router.WithKeyInterceptor(func(key string) (mappedKey string, err error) {
+			return mapID(key), nil
+		})),
 		Logger:      zap.NewNop(),
-		allMetadata: metadata.NewCollection(),
+		allMetadata: metadata.NewCollection(resource.WithIDInterceptor(mapID)),
 	}
 
 	// metadata should be supported by default
@@ -92,10 +103,12 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 	for _, t := range a.traits {
 		services = append(services, t.services...)
 	}
+	log.Debugf("announcing %q with %d services (proxy=%v)", name, len(services), a.proxyTo != nil)
 	for _, s := range services {
+		serviceName := s.desc.FullName()
 		undoRoute, err := registerDeviceRoute(n.router, name, s)
 		if err != nil {
-			log.Errorf("cannot register %s route for %q: %v", s.desc.FullName(), name, err)
+			log.Errorf("cannot register %s route for %q: %v", serviceName, name, err)
 		} else {
 			undo = append(undo, undoRoute)
 		}
