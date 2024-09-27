@@ -79,6 +79,108 @@ func TestStreamHandler(t *testing.T) {
 	})
 }
 
+// tests that grpc server interceptors work properly with the stream handler
+func TestStreamHandler_Interceptors(t *testing.T) {
+	deviceName := "foobar"
+	model := onoff.NewModel(onoff.WithInitialOnOff(&traits.OnOff{State: traits.OnOff_OFF}))
+	modelServer := onoff.NewModelServer(model)
+	modelServerConn := wrap.ServerToClient(traits.OnOffApi_ServiceDesc, modelServer)
+	srvDesc := serviceDescriptor(traits.OnOffApi_ServiceDesc.ServiceName)
+
+	// a StreamHandler that always directs to modelServerConn
+	handler := StreamHandler(methodResolverFunc(func(fullName string) (Method, bool) {
+		_, methodName, ok := parseMethod(fullName)
+		if !ok {
+			return Method{}, false
+		}
+		method := srvDesc.Methods().ByName(protoreflect.Name(methodName))
+		if method == nil {
+			return Method{}, false
+		}
+
+		return Method{
+			Desc: method,
+			Resolver: ConnResolverFunc(func(mr MsgRecver) (grpc.ClientConnInterface, error) {
+				return modelServerConn, nil
+			}),
+		}, true
+	}))
+
+	// interceptors that expect the requests to have descriptors matching the right types
+	// also check that we can extract the device name from the request
+	// (because all request go to the UnknownServiceHandler, they are all treated as streams so we don't need a
+	// unary interceptor)
+	var expectDesc protoreflect.Descriptor
+	streamInterceptor := func(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		cb := func(msg any) error {
+			reflectReq := msg.(proto.Message).ProtoReflect()
+			reqDesc := reflectReq.Descriptor()
+			if reqDesc != expectDesc {
+				t.Errorf("unaryInterceptor: got message with desc %s, want %s", reqDesc.FullName(), expectDesc.FullName())
+			}
+			if name, ok := extractStringField(reflectReq, "name"); !ok || name != deviceName {
+				t.Errorf("unaryInterceptor: got name %q, want %q", name, deviceName)
+			}
+			return nil
+		}
+		return handler(srv, &streamRequestInterceptor{ServerStream: ss, cb: cb})
+	}
+
+	server := grpc.NewServer(
+		grpc.UnknownServiceHandler(handler),
+		grpc.StreamInterceptor(streamInterceptor),
+	)
+	defer server.Stop()
+	lis := bufconn.Listen(1024 * 1024)
+	go func() {
+		if err := server.Serve(lis); err != nil {
+			t.Errorf("server.Serve() = %v", err)
+		}
+	}()
+	conn, err := bufConn(context.Background(), lis)
+	if err != nil {
+		t.Fatalf("bufConn error %v", err)
+	}
+	client := traits.NewOnOffApiClient(conn)
+
+	expectDesc = (&traits.GetOnOffRequest{}).ProtoReflect().Descriptor()
+	_, err = client.GetOnOff(context.Background(), &traits.GetOnOffRequest{Name: deviceName})
+	if err != nil {
+		t.Errorf("client.GetOnOff() = %v", err)
+	}
+
+	expectDesc = (&traits.PullOnOffRequest{}).ProtoReflect().Descriptor()
+	ctx, cancel := context.WithCancel(context.Background())
+	stream, err := client.PullOnOff(ctx, &traits.PullOnOffRequest{Name: deviceName})
+	if err != nil {
+		t.Errorf("client.PullOnOff() = %v", err)
+	}
+	_, err = stream.Recv()
+	if err != nil {
+		t.Errorf("stream.Recv() = %v", err)
+	}
+	cancel()
+}
+
+type methodResolverFunc func(fullName string) (Method, bool)
+
+func (f methodResolverFunc) ResolveMethod(fullName string) (Method, bool) {
+	return f(fullName)
+}
+
+type streamRequestInterceptor struct {
+	grpc.ServerStream
+	cb func(msg any) error
+}
+
+func (s *streamRequestInterceptor) RecvMsg(m any) error {
+	err := s.ServerStream.RecvMsg(m)
+	if err != nil {
+		return err
+	}
+	return s.cb(m)
+}
+
 func testDownstream(t *testing.T, ctx context.Context, client traits.OnOffApiClient, name string) {
 	t.Helper()
 
@@ -125,21 +227,6 @@ func testDownstream(t *testing.T, ctx context.Context, client traits.OnOffApiCli
 	}}
 	if diff := cmp.Diff(event, wantEvent, protocmp.Transform()); diff != "" {
 		t.Fatalf("stream.Recv(%s) mismatch (-want +got):\n%s", name, diff)
-	}
-}
-
-type namedMessage interface {
-	proto.Message
-	GetName() string
-}
-
-func nameKey[T namedMessage](m T) KeyFunc {
-	return func(mr MsgRecver) (string, error) {
-		req := m.ProtoReflect().New().Interface().(T) // new instance of T
-		if err := mr.RecvMsg(req); err != nil {
-			return "", err
-		}
-		return req.GetName(), nil
 	}
 }
 
@@ -214,4 +301,12 @@ func serviceDescriptor(name string) protoreflect.ServiceDescriptor {
 		panic("not a service descriptor")
 	}
 	return sd
+}
+
+func extractStringField(msg protoreflect.Message, field string) (string, bool) {
+	fd := msg.Descriptor().Fields().ByName(protoreflect.Name(field))
+	if fd == nil || fd.Kind() != protoreflect.StringKind {
+		return "", false
+	}
+	return msg.Get(fd).String(), true
 }

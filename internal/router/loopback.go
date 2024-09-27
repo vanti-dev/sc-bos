@@ -34,7 +34,7 @@ func (l *Loopback) Invoke(ctx context.Context, fullMethodName string, args any, 
 		return ErrUnknownMethod
 	}
 
-	conn, err := method.Resolver.Resolve(messageCopyRecver{msg: argsProto})
+	conn, err := method.Resolver.ResolveConn(messageCopyRecver{msg: argsProto})
 	if err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ func (d *deferredClientStream) SendMsg(m any) error {
 		d.err = err
 		return err
 	}
-	client, err := d.resolvedMethod.Resolver.Resolve(copyRecver{from: mProto})
+	client, err := d.resolvedMethod.Resolver.ResolveConn(copyRecver{from: mProto})
 	if err != nil {
 		d.err = err
 		return err
