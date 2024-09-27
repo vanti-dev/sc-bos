@@ -203,7 +203,7 @@ func (r *Router) ResolveMethod(fullName string) (Method, bool) {
 		return Method{}, false
 	}
 
-	connResolver := ResolverFunc(func(mr MsgRecver) (grpc.ClientConnInterface, error) {
+	connResolver := ConnResolverFunc(func(mr MsgRecver) (grpc.ClientConnInterface, error) {
 		var candidates []routeID // what routes should we try to match?
 
 		if keyFunc, exists := service.keys[methodName]; exists {
@@ -244,8 +244,8 @@ func (r *Router) ResolveMethod(fullName string) (Method, bool) {
 	})
 
 	return Method{
-		StreamDesc: descriptorToStreamDesc(methodDesc),
-		Resolver:   connResolver,
+		Desc:     methodDesc,
+		Resolver: connResolver,
 	}, true
 }
 
@@ -302,14 +302,6 @@ var (
 type routeID struct {
 	Key     string
 	Service string
-}
-
-func descriptorToStreamDesc(desc protoreflect.MethodDescriptor) grpc.StreamDesc {
-	return grpc.StreamDesc{
-		StreamName:    string(desc.Name()),
-		ClientStreams: desc.IsStreamingClient(),
-		ServerStreams: desc.IsStreamingServer(),
-	}
 }
 
 func parseMethod(fullMethod string) (service, method string, ok bool) {

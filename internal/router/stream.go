@@ -11,7 +11,8 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/dynamicpb"
 )
 
 type MethodResolver interface {
@@ -48,16 +49,16 @@ func StreamHandler(r MethodResolver) grpc.StreamHandler {
 		// set up (potentially) delayed client stream resolution
 		clientStream := &clientStream{notify: make(chan struct{})}
 		resolver := func(mr MsgRecver) (grpc.ClientStream, error) {
-			cc, err := target.Resolver.Resolve(mr)
+			cc, err := target.Resolver.ResolveConn(mr)
 			if err != nil {
 				return nil, err
 			}
-			return cc.NewStream(clientCtx, &target.StreamDesc, method)
+			return cc.NewStream(clientCtx, descriptorToStreamDesc(target.Desc), method)
 		}
 
 		c2sErr, s2cErr := make(chan error, 1), make(chan error, 1) // buffered so we don't leak the following go routines
-		go func() { c2sErr <- streamClientToServer(serverStream, clientStream) }()
-		go func() { s2cErr <- streamServerToClient(clientStream, serverStream, resolver) }()
+		go func() { c2sErr <- streamClientToServer(serverStream, clientStream, target.Desc.Output()) }()
+		go func() { s2cErr <- streamServerToClient(clientStream, serverStream, resolver, target.Desc.Input()) }()
 
 		for i := 0; i < 2; i++ {
 			select {
@@ -86,7 +87,7 @@ func StreamHandler(r MethodResolver) grpc.StreamHandler {
 }
 
 // streamClientToServer forwards messages (and headers) from src to dst.
-func streamClientToServer(dst grpc.ServerStream, src *clientStream) error {
+func streamClientToServer(dst grpc.ServerStream, src *clientStream, msgDesc protoreflect.MessageDescriptor) error {
 	client, err := src.Get(dst.Context())
 	if err != nil {
 		return err
@@ -94,7 +95,7 @@ func streamClientToServer(dst grpc.ServerStream, src *clientStream) error {
 	for first := true; ; first = false {
 		// We need a new msg for each loop because it is unsafe to modify m after passing to dst.SendMsg.
 		// See the docs for [grpc.ServerStream.SendMsg].
-		m := &emptypb.Empty{} // we utilise the UnknownFields feature to capture all properties
+		m := dynamicpb.NewMessage(msgDesc)
 		if err := client.RecvMsg(m); err != nil {
 			return err
 		}
@@ -115,12 +116,12 @@ func streamClientToServer(dst grpc.ServerStream, src *clientStream) error {
 	}
 }
 
-// streamResolver is like a Resolver but resolves to a grpc.ClientStream.
+// streamResolver is like a ConnResolver but resolves to a grpc.ClientStream.
 type streamResolver func(MsgRecver) (grpc.ClientStream, error)
 
 // streamServerToClient forwards messages from src to dst.
 // The first message we receive from src is used to determine which client to forward to via resolver.
-func streamServerToClient(dst *clientStream, src grpc.ServerStream, resolver streamResolver) error {
+func streamServerToClient(dst *clientStream, src grpc.ServerStream, resolver streamResolver, msgDesc protoreflect.MessageDescriptor) error {
 	// these are filled via resolver after we've received the first message from src.
 	var (
 		m      proto.Message
@@ -140,7 +141,7 @@ func streamServerToClient(dst *clientStream, src grpc.ServerStream, resolver str
 				m = msg
 			} else if msgCap.msg == nil {
 				// this case means no message was read, so we need to do it ourselves
-				m = &emptypb.Empty{}
+				m = dynamicpb.NewMessage(msgDesc)
 				if err := src.RecvMsg(m); err != nil {
 					return err
 				}
@@ -204,4 +205,12 @@ func (cc *clientStream) CloseSend(ctx context.Context) error {
 		return err
 	}
 	return cs.CloseSend()
+}
+
+func descriptorToStreamDesc(desc protoreflect.MethodDescriptor) *grpc.StreamDesc {
+	return &grpc.StreamDesc{
+		StreamName:    string(desc.Name()),
+		ClientStreams: desc.IsStreamingClient(),
+		ServerStreams: desc.IsStreamingServer(),
+	}
 }
