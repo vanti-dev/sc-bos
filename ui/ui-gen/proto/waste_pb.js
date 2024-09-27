@@ -27,7 +27,10 @@ var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/time
 goog.object.extend(proto, google_protobuf_timestamp_pb);
 var types_info_pb = require('@smart-core-os/sc-api-grpc-web/types/info_pb.js');
 goog.object.extend(proto, types_info_pb);
+var types_change_pb = require('@smart-core-os/sc-api-grpc-web/types/change_pb.js');
+goog.object.extend(proto, types_change_pb);
 goog.exportSymbol('proto.smartcore.bos.DescribeWasteRecordRequest', null, global);
+goog.exportSymbol('proto.smartcore.bos.DisposalMethod', null, global);
 goog.exportSymbol('proto.smartcore.bos.ListWasteRecordsRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.ListWasteRecordsResponse', null, global);
 goog.exportSymbol('proto.smartcore.bos.PullWasteRecordsRequest', null, global);
@@ -236,12 +239,12 @@ proto.smartcore.bos.WasteRecord.prototype.toObject = function(opt_includeInstanc
 proto.smartcore.bos.WasteRecord.toObject = function(includeInstance, msg) {
   var f, obj = {
 id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-recordcreatedtime: (f = msg.getRecordcreatedtime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+recordCreateTime: (f = msg.getRecordCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
 weight: jspb.Message.getFloatingPointFieldWithDefault(msg, 3, 0.0),
 system: jspb.Message.getFieldWithDefault(msg, 4, ""),
-recycled: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
+disposalMethod: jspb.Message.getFieldWithDefault(msg, 5, 0),
 area: jspb.Message.getFieldWithDefault(msg, 6, ""),
-wastecreatedtime: (f = msg.getWastecreatedtime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+wasteCreateTime: (f = msg.getWasteCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
 stream: jspb.Message.getFieldWithDefault(msg, 8, "")
   };
 
@@ -286,7 +289,7 @@ proto.smartcore.bos.WasteRecord.deserializeBinaryFromReader = function(msg, read
     case 2:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-      msg.setRecordcreatedtime(value);
+      msg.setRecordCreateTime(value);
       break;
     case 3:
       var value = /** @type {number} */ (reader.readFloat());
@@ -297,8 +300,8 @@ proto.smartcore.bos.WasteRecord.deserializeBinaryFromReader = function(msg, read
       msg.setSystem(value);
       break;
     case 5:
-      var value = /** @type {boolean} */ (reader.readBool());
-      msg.setRecycled(value);
+      var value = /** @type {!proto.smartcore.bos.DisposalMethod} */ (reader.readEnum());
+      msg.setDisposalMethod(value);
       break;
     case 6:
       var value = /** @type {string} */ (reader.readString());
@@ -307,7 +310,7 @@ proto.smartcore.bos.WasteRecord.deserializeBinaryFromReader = function(msg, read
     case 7:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-      msg.setWastecreatedtime(value);
+      msg.setWasteCreateTime(value);
       break;
     case 8:
       var value = /** @type {string} */ (reader.readString());
@@ -349,7 +352,7 @@ proto.smartcore.bos.WasteRecord.serializeBinaryToWriter = function(message, writ
       f
     );
   }
-  f = message.getRecordcreatedtime();
+  f = message.getRecordCreateTime();
   if (f != null) {
     writer.writeMessage(
       2,
@@ -371,9 +374,9 @@ proto.smartcore.bos.WasteRecord.serializeBinaryToWriter = function(message, writ
       f
     );
   }
-  f = message.getRecycled();
-  if (f) {
-    writer.writeBool(
+  f = message.getDisposalMethod();
+  if (f !== 0.0) {
+    writer.writeEnum(
       5,
       f
     );
@@ -385,7 +388,7 @@ proto.smartcore.bos.WasteRecord.serializeBinaryToWriter = function(message, writ
       f
     );
   }
-  f = message.getWastecreatedtime();
+  f = message.getWasteCreateTime();
   if (f != null) {
     writer.writeMessage(
       7,
@@ -422,10 +425,10 @@ proto.smartcore.bos.WasteRecord.prototype.setId = function(value) {
 
 
 /**
- * optional google.protobuf.Timestamp recordCreatedTime = 2;
+ * optional google.protobuf.Timestamp record_create_time = 2;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.smartcore.bos.WasteRecord.prototype.getRecordcreatedtime = function() {
+proto.smartcore.bos.WasteRecord.prototype.getRecordCreateTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
     jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 2));
 };
@@ -435,7 +438,7 @@ proto.smartcore.bos.WasteRecord.prototype.getRecordcreatedtime = function() {
  * @param {?proto.google.protobuf.Timestamp|undefined} value
  * @return {!proto.smartcore.bos.WasteRecord} returns this
 */
-proto.smartcore.bos.WasteRecord.prototype.setRecordcreatedtime = function(value) {
+proto.smartcore.bos.WasteRecord.prototype.setRecordCreateTime = function(value) {
   return jspb.Message.setWrapperField(this, 2, value);
 };
 
@@ -444,8 +447,8 @@ proto.smartcore.bos.WasteRecord.prototype.setRecordcreatedtime = function(value)
  * Clears the message field making it undefined.
  * @return {!proto.smartcore.bos.WasteRecord} returns this
  */
-proto.smartcore.bos.WasteRecord.prototype.clearRecordcreatedtime = function() {
-  return this.setRecordcreatedtime(undefined);
+proto.smartcore.bos.WasteRecord.prototype.clearRecordCreateTime = function() {
+  return this.setRecordCreateTime(undefined);
 };
 
 
@@ -453,7 +456,7 @@ proto.smartcore.bos.WasteRecord.prototype.clearRecordcreatedtime = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.smartcore.bos.WasteRecord.prototype.hasRecordcreatedtime = function() {
+proto.smartcore.bos.WasteRecord.prototype.hasRecordCreateTime = function() {
   return jspb.Message.getField(this, 2) != null;
 };
 
@@ -495,20 +498,20 @@ proto.smartcore.bos.WasteRecord.prototype.setSystem = function(value) {
 
 
 /**
- * optional bool recycled = 5;
- * @return {boolean}
+ * optional DisposalMethod disposal_method = 5;
+ * @return {!proto.smartcore.bos.DisposalMethod}
  */
-proto.smartcore.bos.WasteRecord.prototype.getRecycled = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 5, false));
+proto.smartcore.bos.WasteRecord.prototype.getDisposalMethod = function() {
+  return /** @type {!proto.smartcore.bos.DisposalMethod} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
 };
 
 
 /**
- * @param {boolean} value
+ * @param {!proto.smartcore.bos.DisposalMethod} value
  * @return {!proto.smartcore.bos.WasteRecord} returns this
  */
-proto.smartcore.bos.WasteRecord.prototype.setRecycled = function(value) {
-  return jspb.Message.setProto3BooleanField(this, 5, value);
+proto.smartcore.bos.WasteRecord.prototype.setDisposalMethod = function(value) {
+  return jspb.Message.setProto3EnumField(this, 5, value);
 };
 
 
@@ -531,10 +534,10 @@ proto.smartcore.bos.WasteRecord.prototype.setArea = function(value) {
 
 
 /**
- * optional google.protobuf.Timestamp wasteCreatedTime = 7;
+ * optional google.protobuf.Timestamp waste_create_time = 7;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.smartcore.bos.WasteRecord.prototype.getWastecreatedtime = function() {
+proto.smartcore.bos.WasteRecord.prototype.getWasteCreateTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
     jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 7));
 };
@@ -544,7 +547,7 @@ proto.smartcore.bos.WasteRecord.prototype.getWastecreatedtime = function() {
  * @param {?proto.google.protobuf.Timestamp|undefined} value
  * @return {!proto.smartcore.bos.WasteRecord} returns this
 */
-proto.smartcore.bos.WasteRecord.prototype.setWastecreatedtime = function(value) {
+proto.smartcore.bos.WasteRecord.prototype.setWasteCreateTime = function(value) {
   return jspb.Message.setWrapperField(this, 7, value);
 };
 
@@ -553,8 +556,8 @@ proto.smartcore.bos.WasteRecord.prototype.setWastecreatedtime = function(value) 
  * Clears the message field making it undefined.
  * @return {!proto.smartcore.bos.WasteRecord} returns this
  */
-proto.smartcore.bos.WasteRecord.prototype.clearWastecreatedtime = function() {
-  return this.setWastecreatedtime(undefined);
+proto.smartcore.bos.WasteRecord.prototype.clearWasteCreateTime = function() {
+  return this.setWasteCreateTime(undefined);
 };
 
 
@@ -562,7 +565,7 @@ proto.smartcore.bos.WasteRecord.prototype.clearWastecreatedtime = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.smartcore.bos.WasteRecord.prototype.hasWastecreatedtime = function() {
+proto.smartcore.bos.WasteRecord.prototype.hasWasteCreateTime = function() {
   return jspb.Message.getField(this, 7) != null;
 };
 
@@ -838,7 +841,9 @@ proto.smartcore.bos.ListWasteRecordsRequest.prototype.toObject = function(opt_in
 proto.smartcore.bos.ListWasteRecordsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
 name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+pageSize: jspb.Message.getFieldWithDefault(msg, 3, 0),
+pageToken: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -884,6 +889,14 @@ proto.smartcore.bos.ListWasteRecordsRequest.deserializeBinaryFromReader = functi
       reader.readMessage(value,google_protobuf_field_mask_pb.FieldMask.deserializeBinaryFromReader);
       msg.setReadMask(value);
       break;
+    case 3:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setPageSize(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPageToken(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -926,6 +939,20 @@ proto.smartcore.bos.ListWasteRecordsRequest.serializeBinaryToWriter = function(m
       2,
       f,
       google_protobuf_field_mask_pb.FieldMask.serializeBinaryToWriter
+    );
+  }
+  f = message.getPageSize();
+  if (f !== 0) {
+    writer.writeInt32(
+      3,
+      f
+    );
+  }
+  f = message.getPageToken();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
+      f
     );
   }
 };
@@ -983,6 +1010,42 @@ proto.smartcore.bos.ListWasteRecordsRequest.prototype.clearReadMask = function()
  */
 proto.smartcore.bos.ListWasteRecordsRequest.prototype.hasReadMask = function() {
   return jspb.Message.getField(this, 2) != null;
+};
+
+
+/**
+ * optional int32 page_size = 3;
+ * @return {number}
+ */
+proto.smartcore.bos.ListWasteRecordsRequest.prototype.getPageSize = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.smartcore.bos.ListWasteRecordsRequest} returns this
+ */
+proto.smartcore.bos.ListWasteRecordsRequest.prototype.setPageSize = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
+};
+
+
+/**
+ * optional string page_token = 4;
+ * @return {string}
+ */
+proto.smartcore.bos.ListWasteRecordsRequest.prototype.getPageToken = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.ListWasteRecordsRequest} returns this
+ */
+proto.smartcore.bos.ListWasteRecordsRequest.prototype.setPageToken = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
@@ -1353,7 +1416,9 @@ proto.smartcore.bos.PullWasteRecordsResponse.Change.toObject = function(includeI
   var f, obj = {
 name: jspb.Message.getFieldWithDefault(msg, 1, ""),
 changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-wasteRecord: (f = msg.getWasteRecord()) && proto.smartcore.bos.WasteRecord.toObject(includeInstance, f)
+newValue: (f = msg.getNewValue()) && proto.smartcore.bos.WasteRecord.toObject(includeInstance, f),
+oldValue: (f = msg.getOldValue()) && proto.smartcore.bos.WasteRecord.toObject(includeInstance, f),
+type: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -1402,7 +1467,16 @@ proto.smartcore.bos.PullWasteRecordsResponse.Change.deserializeBinaryFromReader 
     case 3:
       var value = new proto.smartcore.bos.WasteRecord;
       reader.readMessage(value,proto.smartcore.bos.WasteRecord.deserializeBinaryFromReader);
-      msg.setWasteRecord(value);
+      msg.setNewValue(value);
+      break;
+    case 4:
+      var value = new proto.smartcore.bos.WasteRecord;
+      reader.readMessage(value,proto.smartcore.bos.WasteRecord.deserializeBinaryFromReader);
+      msg.setOldValue(value);
+      break;
+    case 5:
+      var value = /** @type {!proto.smartcore.types.ChangeType} */ (reader.readEnum());
+      msg.setType(value);
       break;
     default:
       reader.skipField();
@@ -1448,12 +1522,27 @@ proto.smartcore.bos.PullWasteRecordsResponse.Change.serializeBinaryToWriter = fu
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
-  f = message.getWasteRecord();
+  f = message.getNewValue();
   if (f != null) {
     writer.writeMessage(
       3,
       f,
       proto.smartcore.bos.WasteRecord.serializeBinaryToWriter
+    );
+  }
+  f = message.getOldValue();
+  if (f != null) {
+    writer.writeMessage(
+      4,
+      f,
+      proto.smartcore.bos.WasteRecord.serializeBinaryToWriter
+    );
+  }
+  f = message.getType();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      5,
+      f
     );
   }
 };
@@ -1515,10 +1604,10 @@ proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.hasChangeTime = fu
 
 
 /**
- * optional WasteRecord waste_record = 3;
+ * optional WasteRecord new_value = 3;
  * @return {?proto.smartcore.bos.WasteRecord}
  */
-proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.getWasteRecord = function() {
+proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.getNewValue = function() {
   return /** @type{?proto.smartcore.bos.WasteRecord} */ (
     jspb.Message.getWrapperField(this, proto.smartcore.bos.WasteRecord, 3));
 };
@@ -1528,7 +1617,7 @@ proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.getWasteRecord = f
  * @param {?proto.smartcore.bos.WasteRecord|undefined} value
  * @return {!proto.smartcore.bos.PullWasteRecordsResponse.Change} returns this
 */
-proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.setWasteRecord = function(value) {
+proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.setNewValue = function(value) {
   return jspb.Message.setWrapperField(this, 3, value);
 };
 
@@ -1537,8 +1626,8 @@ proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.setWasteRecord = f
  * Clears the message field making it undefined.
  * @return {!proto.smartcore.bos.PullWasteRecordsResponse.Change} returns this
  */
-proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.clearWasteRecord = function() {
-  return this.setWasteRecord(undefined);
+proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.clearNewValue = function() {
+  return this.setNewValue(undefined);
 };
 
 
@@ -1546,8 +1635,63 @@ proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.clearWasteRecord =
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.hasWasteRecord = function() {
+proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.hasNewValue = function() {
   return jspb.Message.getField(this, 3) != null;
+};
+
+
+/**
+ * optional WasteRecord old_value = 4;
+ * @return {?proto.smartcore.bos.WasteRecord}
+ */
+proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.getOldValue = function() {
+  return /** @type{?proto.smartcore.bos.WasteRecord} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.WasteRecord, 4));
+};
+
+
+/**
+ * @param {?proto.smartcore.bos.WasteRecord|undefined} value
+ * @return {!proto.smartcore.bos.PullWasteRecordsResponse.Change} returns this
+*/
+proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.setOldValue = function(value) {
+  return jspb.Message.setWrapperField(this, 4, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.PullWasteRecordsResponse.Change} returns this
+ */
+proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.clearOldValue = function() {
+  return this.setOldValue(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.hasOldValue = function() {
+  return jspb.Message.getField(this, 4) != null;
+};
+
+
+/**
+ * optional smartcore.types.ChangeType type = 5;
+ * @return {!proto.smartcore.types.ChangeType}
+ */
+proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.getType = function() {
+  return /** @type {!proto.smartcore.types.ChangeType} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/**
+ * @param {!proto.smartcore.types.ChangeType} value
+ * @return {!proto.smartcore.bos.PullWasteRecordsResponse.Change} returns this
+ */
+proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.setType = function(value) {
+  return jspb.Message.setProto3EnumField(this, 5, value);
 };
 
 
@@ -1899,5 +2043,14 @@ proto.smartcore.bos.WasteRecordSupport.prototype.setUnit = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
+
+/**
+ * @enum {number}
+ */
+proto.smartcore.bos.DisposalMethod = {
+  DISPOSAL_UNSPECIFIED: 0,
+  GENERAL_WASTE: 1,
+  MIXED_RECYCLING: 2
+};
 
 goog.object.extend(exports, proto.smartcore.bos);

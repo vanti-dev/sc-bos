@@ -3,16 +3,17 @@ import * as jspb from 'google-protobuf'
 import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb'; // proto import: "google/protobuf/field_mask.proto"
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
 import * as types_info_pb from '@smart-core-os/sc-api-grpc-web/types/info_pb'; // proto import: "types/info.proto"
+import * as types_change_pb from '@smart-core-os/sc-api-grpc-web/types/change_pb'; // proto import: "types/change.proto"
 
 
 export class WasteRecord extends jspb.Message {
   getId(): string;
   setId(value: string): WasteRecord;
 
-  getRecordcreatedtime(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setRecordcreatedtime(value?: google_protobuf_timestamp_pb.Timestamp): WasteRecord;
-  hasRecordcreatedtime(): boolean;
-  clearRecordcreatedtime(): WasteRecord;
+  getRecordCreateTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setRecordCreateTime(value?: google_protobuf_timestamp_pb.Timestamp): WasteRecord;
+  hasRecordCreateTime(): boolean;
+  clearRecordCreateTime(): WasteRecord;
 
   getWeight(): number;
   setWeight(value: number): WasteRecord;
@@ -20,16 +21,16 @@ export class WasteRecord extends jspb.Message {
   getSystem(): string;
   setSystem(value: string): WasteRecord;
 
-  getRecycled(): boolean;
-  setRecycled(value: boolean): WasteRecord;
+  getDisposalMethod(): DisposalMethod;
+  setDisposalMethod(value: DisposalMethod): WasteRecord;
 
   getArea(): string;
   setArea(value: string): WasteRecord;
 
-  getWastecreatedtime(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setWastecreatedtime(value?: google_protobuf_timestamp_pb.Timestamp): WasteRecord;
-  hasWastecreatedtime(): boolean;
-  clearWastecreatedtime(): WasteRecord;
+  getWasteCreateTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setWasteCreateTime(value?: google_protobuf_timestamp_pb.Timestamp): WasteRecord;
+  hasWasteCreateTime(): boolean;
+  clearWasteCreateTime(): WasteRecord;
 
   getStream(): string;
   setStream(value: string): WasteRecord;
@@ -45,12 +46,12 @@ export class WasteRecord extends jspb.Message {
 export namespace WasteRecord {
   export type AsObject = {
     id: string,
-    recordcreatedtime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    recordCreateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     weight: number,
     system: string,
-    recycled: boolean,
+    disposalMethod: DisposalMethod,
     area: string,
-    wastecreatedtime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    wasteCreateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     stream: string,
   }
 }
@@ -92,6 +93,12 @@ export class ListWasteRecordsRequest extends jspb.Message {
   hasReadMask(): boolean;
   clearReadMask(): ListWasteRecordsRequest;
 
+  getPageSize(): number;
+  setPageSize(value: number): ListWasteRecordsRequest;
+
+  getPageToken(): string;
+  setPageToken(value: string): ListWasteRecordsRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListWasteRecordsRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListWasteRecordsRequest): ListWasteRecordsRequest.AsObject;
@@ -104,6 +111,8 @@ export namespace ListWasteRecordsRequest {
   export type AsObject = {
     name: string,
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    pageSize: number,
+    pageToken: string,
   }
 }
 
@@ -163,10 +172,18 @@ export namespace PullWasteRecordsResponse {
     hasChangeTime(): boolean;
     clearChangeTime(): Change;
 
-    getWasteRecord(): WasteRecord | undefined;
-    setWasteRecord(value?: WasteRecord): Change;
-    hasWasteRecord(): boolean;
-    clearWasteRecord(): Change;
+    getNewValue(): WasteRecord | undefined;
+    setNewValue(value?: WasteRecord): Change;
+    hasNewValue(): boolean;
+    clearNewValue(): Change;
+
+    getOldValue(): WasteRecord | undefined;
+    setOldValue(value?: WasteRecord): Change;
+    hasOldValue(): boolean;
+    clearOldValue(): Change;
+
+    getType(): types_change_pb.ChangeType;
+    setType(value: types_change_pb.ChangeType): Change;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Change.AsObject;
@@ -180,7 +197,9 @@ export namespace PullWasteRecordsResponse {
     export type AsObject = {
       name: string,
       changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      wasteRecord?: WasteRecord.AsObject,
+      newValue?: WasteRecord.AsObject,
+      oldValue?: WasteRecord.AsObject,
+      type: types_change_pb.ChangeType,
     }
   }
 
@@ -228,3 +247,8 @@ export namespace WasteRecordSupport {
   }
 }
 
+export enum DisposalMethod { 
+  DISPOSAL_UNSPECIFIED = 0,
+  GENERAL_WASTE = 1,
+  MIXED_RECYCLING = 2,
+}
