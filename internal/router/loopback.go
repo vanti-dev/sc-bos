@@ -54,6 +54,7 @@ func (l *Loopback) NewStream(ctx context.Context, desc *grpc.StreamDesc, fullMet
 		fullMethodName: fullMethodName,
 		opts:           opts,
 		resolvedMethod: method,
+		ready:          make(chan struct{}),
 	}, nil
 }
 
