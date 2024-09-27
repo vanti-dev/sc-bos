@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
+	"github.com/vanti-dev/sc-bos/internal/util/grpc/interceptors"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
@@ -183,7 +184,10 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsGRPCClientConfig)))
 
 	var grpcOpts []grpc.ServerOption
-	grpcOpts = append(grpcOpts, grpc.Creds(credentials.NewTLS(tlsGRPCServerConfig)))
+	grpcOpts = append(grpcOpts,
+		grpc.Creds(credentials.NewTLS(tlsGRPCServerConfig)),
+		grpc.ChainStreamInterceptor(interceptors.CorrectStreamInfo(rootNode)),
+	)
 
 	// tokenValidator validates access tokens as part of the authorisation of requests to our APIs.
 	// Claims associated with the token are presented along with other information when processing policy files.
