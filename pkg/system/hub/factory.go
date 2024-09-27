@@ -89,6 +89,7 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	var hubConn grpc.ClientConnInterface
 	switch cfg.Storage.Type {
 	case config.StorageTypeProxy:
+		s.logger.Warn("proxy storage type is deprecated - use gateway to route requests to the hub instead")
 		conn, err := s.hubNode.Connect(ctx)
 		if err != nil {
 			return err
