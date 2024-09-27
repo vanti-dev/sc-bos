@@ -140,6 +140,35 @@ func (r *Router) GetServiceInfo() map[string]grpc.ServiceInfo {
 	return services
 }
 
+// StreamServerInfo returns a ServerStreamInfo for a given fully-qualified method name.
+// The service containing the method must be registered with the router.
+//
+// Returns false if the service or method is not registered.
+//
+// This can be used to determine the streaming behavior of a method.
+func (r *Router) StreamServerInfo(fullMethod string) (grpc.StreamServerInfo, bool) {
+	serviceName, methodName, ok := parseMethod(fullMethod)
+	if !ok {
+		return grpc.StreamServerInfo{}, false
+	}
+
+	r.m.RLock()
+	service := r.services[serviceName]
+	r.m.RUnlock()
+	if service == nil {
+		return grpc.StreamServerInfo{}, false
+	}
+	methodDesc := service.descriptor.Methods().ByName(protoreflect.Name(methodName))
+	if methodDesc == nil {
+		return grpc.StreamServerInfo{}, false
+	}
+	return grpc.StreamServerInfo{
+		FullMethod:     fullMethod,
+		IsClientStream: methodDesc.IsStreamingClient(),
+		IsServerStream: methodDesc.IsStreamingServer(),
+	}, true
+}
+
 // AddRoute registers a target connection to be used when matching a specified route.
 //
 // The four kinds of routes are supported:

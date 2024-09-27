@@ -88,6 +88,10 @@ func (n *Node) GetServiceInfo() map[string]grpc.ServiceInfo {
 	return n.router.GetServiceInfo()
 }
 
+func (n *Node) StreamServerInfo(method string) (grpc.StreamServerInfo, bool) {
+	return n.router.StreamServerInfo(method)
+}
+
 func maybeNameRoutedService(desc protoreflect.ServiceDescriptor) *router.Service {
 	srv, err := router.NewRoutedService(desc, "name")
 	if err == nil {
