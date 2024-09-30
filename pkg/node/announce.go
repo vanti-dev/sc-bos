@@ -277,7 +277,11 @@ func WithClients(clients ...wrap.ServiceUnwrapper) TraitOption {
 	}
 }
 
-// WithOptClients is like WithClients without logging when the client is not supported.
+// WithOptClients is the same as WithClients. It is retained for backwards compatibility, from when WithClients
+// could fail because the trait was not supported by the node.
+//
+// Deprecated: Use WithClients instead. Services no longer have to be pre-supported by the node, so any correct
+// ServiceUnwrapper will succeed.
 func WithOptClients(clients ...wrap.ServiceUnwrapper) TraitOption {
 	return WithClients(clients...)
 }

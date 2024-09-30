@@ -80,7 +80,10 @@ func (n *Node) Name() string {
 
 // Announce adds a new name with the given features to this node.
 // You may call Announce multiple times with the same name to add additional features, for example new traits.
-// Executing the returned Undo will undo any direct changes made.
+// You must not Announce the same features on the same name multiple times, until the original announcement of
+// those features has been undone.
+// Executing the returned Undo will undo any direct changes made, but will not remove support for any services
+// from the router.
 //
 // # A note on undoing
 //
@@ -114,7 +117,9 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 			services = append(services, traitSvcs...)
 		}
 	}
-	log.Debugf("announcing %q with %d services (proxy=%v)", name, len(services), a.proxyTo != nil)
+	if len(services) > 0 || a.proxyTo != nil {
+		log.Debugf("announcing %q with %d services (proxy=%v)", name, len(services), a.proxyTo != nil)
+	}
 	for _, s := range services {
 		serviceName := s.desc.FullName()
 		undoRoute, err := registerDeviceRoute(n.router, name, s)
@@ -300,9 +305,12 @@ func ensureServiceSupported(r *router.Router, s service) error {
 		routerService = router.NewUnroutedService(s.desc)
 	}
 
-	// AddService might return an error if another goroutine added support after the GetService check above
+	// AddService might return ErrServiceExists if another goroutine added support after the GetService check above
 	// this is a bit of wasted work but is safe because the service added will be the same
-	_ = r.AddService(routerService)
+	err := r.AddService(routerService)
+	if err != nil && !errors.Is(err, router.ErrServiceExists) {
+		return err
+	}
 	return nil
 }
 
