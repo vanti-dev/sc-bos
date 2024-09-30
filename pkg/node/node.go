@@ -178,15 +178,6 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 	return UndoAll(undo...)
 }
 
-// Support adds new supported functions to this node.
-func (n *Node) Support(functions ...Function) {
-	n.mu.Lock()
-	defer n.mu.Unlock()
-	for _, function := range functions {
-		function.apply(n)
-	}
-}
-
 func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
 	retryConcurrentOp(func() {
 		n.children.AddChildTrait(name, traitName...)
