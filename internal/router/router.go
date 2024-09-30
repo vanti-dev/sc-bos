@@ -34,9 +34,10 @@ type MsgRecver interface {
 //
 // The list above is in order of precedence.
 type Router struct {
-	keyInterceptor KeyInterceptor
+	keyInterceptor KeyInterceptor // immutable
 
-	m        sync.RWMutex
+	m sync.RWMutex
+	// mutable fields below guarded by m
 	services map[string]*Service
 	routes   map[routeID]grpc.ClientConnInterface
 }
@@ -172,10 +173,10 @@ func (r *Router) StreamServerInfo(fullMethod string) (grpc.StreamServerInfo, boo
 // AddRoute registers a target connection to be used when matching a specified route.
 //
 // The four kinds of routes are supported:
-// 1. Service-and-key routes: both service and key are non-empty; the registered service must be key-routable.
-// 2. Key-only route: service is empty, key is non-empty; the registered service must be key-routable.
-// 3. Service-only route: service is non-empty, key is empty; the registered service does not need to be key-routable.
-// 4. Default route: both service and key are empty.
+//  1. Service-and-key routes: both service and key are non-empty; the registered service must be key-routable.
+//  2. Key-only route: service is empty, key is non-empty; the registered service must be key-routable.
+//  3. Service-only route: service is non-empty, key is empty; the registered service does not need to be key-routable.
+//  4. Default route: both service and key are empty.
 //
 // Returns ErrUnknownService if a service is specified but not registered.
 // Returns ErrRouteExists if the same route is already registered.
@@ -199,7 +200,7 @@ func (r *Router) AddRoute(service, key string, target grpc.ClientConnInterface) 
 }
 
 // DeleteRoute removes a route.
-// The service and key paremeters are intepreted the same way as in AddRoute.
+// The service and key parameters are interpreted the same way as in AddRoute.
 //
 // Returns true if the route existed and was removed.
 func (r *Router) DeleteRoute(service, key string) (exists bool) {
@@ -278,6 +279,12 @@ func (r *Router) ResolveMethod(fullName string) (Method, bool) {
 	}, true
 }
 
+// Service describes how Router routes requests to a single gRPC service.
+//
+// A service constructed with NewRoutedService supports routing by key.
+// A service constructed with NewUnroutedService does not support routing by key, and will never match a key-based route.
+//
+// Immutable after creation.
 type Service struct {
 	// immutable after creation
 	descriptor protoreflect.ServiceDescriptor
@@ -361,4 +368,11 @@ func WithKeyInterceptor(interceptor KeyInterceptor) Option {
 	}
 }
 
+// KeyInterceptor is a function that can modify a key before it is used to look up a route.
+// To use a KeyInterceptor, pass it to New with the WithKeyInterceptor option.
+//
+// When Router handles a request for a key-routable service, it will extract the key from the request message.
+// Parameter key is the value extracted from the key field of the incoming request. Return value mappedKey is the
+// value used for looking up the route.
+// If an error is returned, processing the request will be aborted and the error will be returned to the client.
 type KeyInterceptor func(key string) (mappedKey string, err error)

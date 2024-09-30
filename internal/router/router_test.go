@@ -31,23 +31,14 @@ func TestRouter(t *testing.T) {
 	occupancyModel := occupancysensor.NewModel(resource.WithInitialValue(&traits.Occupancy{State: traits.Occupancy_OCCUPIED}))
 
 	// register a specific route for "foo"
-	err := r.AddRoute("", "foo",
-		wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoff.NewModelServer(fooModel)))
-	if err != nil {
-		t.Fatalf("failed to add route: %v", err)
-	}
+	check(t, r.AddRoute("", "foo",
+		wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoff.NewModelServer(fooModel))))
 	// register a specific route for "foo" for the occupancy service - this should have higher priority
-	err = r.AddRoute(traits.OccupancySensorApi_ServiceDesc.ServiceName, "foo",
-		wrap.ServerToClient(traits.OccupancySensorApi_ServiceDesc, occupancysensor.NewModelServer(occupancyModel)))
-	if err != nil {
-		t.Fatalf("failed to add route: %v", err)
-	}
+	check(t, r.AddRoute(traits.OccupancySensorApi_ServiceDesc.ServiceName, "foo",
+		wrap.ServerToClient(traits.OccupancySensorApi_ServiceDesc, occupancysensor.NewModelServer(occupancyModel))))
 	// add a catch-all for all OnOffApi requests that are not to "foo"
-	err = r.AddRoute(traits.OnOffApi_ServiceDesc.ServiceName, "",
-		wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoff.NewModelServer(defaultModel)))
-	if err != nil {
-		t.Fatalf("failed to add route: %v", err)
-	}
+	check(t, r.AddRoute(traits.OnOffApi_ServiceDesc.ServiceName, "",
+		wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoff.NewModelServer(defaultModel))))
 
 	conn := NewLoopback(r)
 	onOffClient := traits.NewOnOffApiClient(conn)
@@ -77,19 +68,19 @@ func TestRouter(t *testing.T) {
 	}
 	// "bar" for the occupancy service should fail to resolve
 	_, err = occupancyClient.GetOccupancy(context.Background(), &traits.GetOccupancyRequest{Name: "bar"})
-	if statusErr, _ := status.FromError(err); statusErr.Code() != codes.NotFound {
-		t.Errorf("expected NotFound for bar, got %v", statusErr)
+	if status.Code(err) != codes.NotFound {
+		t.Errorf("expected NotFound for bar, got %v", err)
 	}
 	// there are no matching routes registered for the air quality service on device "bar", so it should fail to resolve
 	_, err = airQualityClient.GetAirQuality(context.Background(), &traits.GetAirQualityRequest{Name: "bar"})
-	if statusErr, _ := status.FromError(err); statusErr.Code() != codes.NotFound {
-		t.Errorf("expected NotFound for air quality, got %v", statusErr)
+	if status.Code(err) != codes.NotFound {
+		t.Errorf("expected NotFound for air quality, got %v", err)
 	}
 	// the mode service isn't registered on the router so this should fail, even though there is an all-service route
 	// for "foo"
 	_, err = modeClient.GetModeValues(context.Background(), &traits.GetModeValuesRequest{Name: "foo"})
-	if statusErr, _ := status.FromError(err); statusErr.Code() != codes.Unimplemented {
-		t.Errorf("expected Unimplemented for mode, got %v", statusErr)
+	if status.Code(err) != codes.Unimplemented {
+		t.Errorf("expected Unimplemented for mode, got %v", err)
 	}
 
 }
