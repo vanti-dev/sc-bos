@@ -58,6 +58,7 @@ func New(name string) *Node {
 		router: router.New(router.WithKeyInterceptor(func(key string) (mappedKey string, err error) {
 			return mapID(key), nil
 		})),
+		children:    parent.NewModel(),
 		Logger:      zap.NewNop(),
 		allMetadata: metadata.NewCollection(resource.WithIDInterceptor(mapID)),
 	}
@@ -65,8 +66,10 @@ func New(name string) *Node {
 	// metadata should be supported by default
 	traits.RegisterMetadataApiServer(node.router, metadata.NewCollectionServer(node.allMetadata))
 	_ = node.Announce(name, HasTrait(trait.Metadata))
-
-	node.parentLocked()
+	node.announceLocked(name,
+		HasServer(traits.RegisterParentApiServer, traits.ParentApiServer(parent.NewModelServer(node.children))),
+		HasTrait(trait.Parent),
+	)
 	return node
 }
 
@@ -181,11 +184,11 @@ func (n *Node) Support(functions ...Function) {
 
 func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
 	retryConcurrentOp(func() {
-		n.parentLocked().AddChildTrait(name, traitName...)
+		n.children.AddChildTrait(name, traitName...)
 	})
 	return func() {
 		var child *traits.Child
-		parentModel := n.parent()
+		parentModel := n.children
 		retryConcurrentOp(func() {
 			child = parentModel.RemoveChildTrait(name, traitName...)
 		})
@@ -197,24 +200,6 @@ func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
 			})
 		}
 	}
-}
-
-func (n *Node) parent() *parent.Model {
-	n.mu.Lock()
-	defer n.mu.Unlock()
-	return n.parentLocked()
-}
-
-func (n *Node) parentLocked() *parent.Model {
-	if n.children == nil {
-		// add this model as a device
-		n.children = parent.NewModel()
-		n.announceLocked(n.name,
-			HasServer(traits.RegisterParentApiServer, traits.ParentApiServer(parent.NewModelServer(n.children))),
-			HasTrait(trait.Parent),
-		)
-	}
-	return n.children
 }
 
 // retryConcurrentOp runs fn retrying up to 5 times when any panics that isConcurrentUpdateDetectedPanic returns true for.
