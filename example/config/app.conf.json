@@ -137,44 +137,6 @@
       "type": "history"
     },
     {
-      "name":     "wordpress-test",
-      "type":     "wordpress",
-      "disabled": true,
-      "base_url": "https://vanti-plugin-test-com.stackstaging.com/wp-json/recording/v1/create",
-      "site":     "abc-test1",
-      "authentication": {
-        "type":       "Authorization Bearer",
-        "secretFile": "./.data/secrets/wordpress"
-      },
-      "sources": {
-        "occupancy":    {
-          "path": "occupancy",
-          "interval": "10s",
-          "sensors":  ["pir/01","pir/02","pir/03"]
-        },
-        "temperature": {
-          "path": "temperature",
-          "interval": "11s",
-          "sensors": ["FCU/01","FCU/02"]
-        },
-        "energy":       {
-          "path": "energy",
-          "interval": "1m",
-          "meters": ["smart-core/meters/01"]
-        },
-        "air_quality":  {
-          "path": "air_quality",
-          "interval": "10s",
-          "sensors": ["smart-core/iaq/01"]
-        },
-        "water": {
-          "path": "water",
-          "interval": "10s",
-          "meters" : ["smart-core/meters/03"]
-        }
-      }
-    },
-    {
       "name": "udmi-test", "type": "udmi",
       "sources": [
         "smart-core/doors/reader/1"
