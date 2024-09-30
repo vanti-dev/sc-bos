@@ -2,7 +2,6 @@ package gateway
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"sync"
 
@@ -387,11 +386,6 @@ func (r *counts) Dec(k string) int {
 		delete(r.m, k)
 	}
 	return r.m[k]
-}
-
-// fullNameToRpcPath maps proto full names (package.Service.Method) to rpc paths (/package.Service/Method).
-func fullNameToRpcPath(fullName protoreflect.FullName) string {
-	return fmt.Sprintf("/%s/%s", fullName.Parent(), fullName.Name())
 }
 
 // seq2 is like iter.Seq2 but before we've updated to go1.22.
