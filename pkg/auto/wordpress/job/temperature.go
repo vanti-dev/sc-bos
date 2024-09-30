@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/types"
 )
 
 // TemperatureJob gets average air temperature at current point in time
@@ -48,12 +49,12 @@ func (t *TemperatureJob) Do(ctx context.Context, sendFn sender) error {
 
 	average := sum / float64(count)
 
-	body := &AverageTemperature{
-		Meta: Meta{
+	body := &types.AverageTemperature{
+		Meta: types.Meta{
 			Site:      t.GetSite(),
 			Timestamp: time.Now(),
 		},
-		AverageTemperature: Float64Measure{
+		AverageTemperature: types.Float64Measure{
 			Value: average,
 			Units: "°C",
 		},

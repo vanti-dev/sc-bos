@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/types"
 )
 
 // AirQualityJob gets average Co2 at current point in time
@@ -48,12 +49,12 @@ func (a *AirQualityJob) Do(ctx context.Context, sendFn sender) error {
 
 	average := sum / float32(count)
 
-	body := &AverageCo2{
-		Meta: Meta{
+	body := &types.AverageCo2{
+		Meta: types.Meta{
 			Site:      a.GetSite(),
 			Timestamp: time.Now(),
 		},
-		AverageCo2: Float32Measure{
+		AverageCo2: types.Float32Measure{
 			Value: average,
 			Units: "ppm",
 		},

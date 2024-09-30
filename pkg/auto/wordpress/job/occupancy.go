@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/types"
 )
 
 // OccupancyJob gets occupancy at current point in time
@@ -39,12 +40,12 @@ func (o *OccupancyJob) Do(ctx context.Context, sendFn sender) error {
 		sum += resp.PeopleCount
 	}
 
-	body := &TotalOccupancy{
-		Meta: Meta{
+	body := &types.TotalOccupancy{
+		Meta: types.Meta{
 			Site:      o.GetSite(),
 			Timestamp: time.Now(),
 		},
-		TotalOccupancy: IntMeasure{
+		TotalOccupancy: types.IntMeasure{
 			Value: sum,
 			Units: "People",
 		},

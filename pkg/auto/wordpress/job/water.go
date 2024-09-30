@@ -7,6 +7,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/types"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -44,10 +45,10 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 			continue
 		}
 
-		records, err := getAllRecords(ctx, w.client.ListMeterReadingHistory, meter, now, w.GetInterval())
+		records, err := getRecordsByTime(ctx, w.client.ListMeterReadingHistory, meter, now, w.GetInterval())
 
 		if err != nil {
-			w.Logger.Error("getting all records", zap.String("meter", meter), zap.Error(err))
+			w.Logger.Error("getting records by time", zap.String("meter", meter), zap.Error(err))
 			continue
 		}
 
@@ -55,12 +56,12 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 
 	}
 
-	body := &WaterConsumption{
-		Meta: Meta{
+	body := &types.WaterConsumption{
+		Meta: types.Meta{
 			Timestamp: now,
 			Site:      w.GetSite(),
 		},
-		TodaysWaterConsumption: IntMeasure{
+		TodaysWaterConsumption: types.IntMeasure{
 			Value: int32(consumption),
 			Units: "litres",
 		},

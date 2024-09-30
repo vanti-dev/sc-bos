@@ -2,7 +2,6 @@ package job
 
 import (
 	"context"
-	"slices"
 	"time"
 
 	"google.golang.org/grpc"
@@ -15,10 +14,11 @@ import (
 
 type listMeterReadingFn func(ctx context.Context, in *gen.ListMeterReadingHistoryRequest, opts ...grpc.CallOption) (*gen.ListMeterReadingHistoryResponse, error)
 
-func getAllRecords(ctx context.Context, historyFn listMeterReadingFn, meter string, now time.Time, filterTime time.Duration) ([]*gen.MeterReadingRecord, error) {
+func getRecordsByTime(ctx context.Context, historyFn listMeterReadingFn, meter string, now time.Time, filterTime time.Duration) ([2]*gen.MeterReadingRecord, error) {
 	var (
 		pageToken string
-		records   []*gen.MeterReadingRecord
+		latest    = &gen.MeterReadingRecord{RecordTime: timestamppb.New(time.Time{})}
+		earliest  = &gen.MeterReadingRecord{RecordTime: timestamppb.New(now)}
 	)
 
 	for {
@@ -32,43 +32,32 @@ func getAllRecords(ctx context.Context, historyFn listMeterReadingFn, meter stri
 		})
 
 		if err != nil {
-			return nil, err
+			return [2]*gen.MeterReadingRecord{}, err
 		}
 
-		records = append(records, resp.GetMeterReadingRecords()...)
+		for _, record := range resp.GetMeterReadingRecords() {
+			if record.GetRecordTime().AsTime().Before(earliest.GetRecordTime().AsTime()) {
+				earliest = record
+			}
+
+			if record.GetRecordTime().AsTime().After(latest.GetRecordTime().AsTime()) {
+				latest = record
+			}
+		}
 
 		if resp.GetNextPageToken() == "" {
 			break
 		}
 
 		pageToken = resp.GetNextPageToken()
-
 	}
 
-	return records, nil
+	return [2]*gen.MeterReadingRecord{earliest, latest}, nil
 }
 
-func processMeterRecords(multiplier float32, records []*gen.MeterReadingRecord) float32 {
-	if len(records) < 2 {
-		return 0
-	}
-
-	slices.SortFunc(records, func(i, j *gen.MeterReadingRecord) int {
-		timeI := i.GetRecordTime().AsTime()
-		timeJ := j.GetRecordTime().AsTime()
-
-		if timeI.Before(timeJ) {
-			return 1
-		}
-		if timeI.After(timeJ) {
-			return -1
-		}
-		return 0 // If times are equal
-	})
-
-	latest := records[0]
-	earliest := records[len(records)-1]
+func processMeterRecords(multiplier float32, records [2]*gen.MeterReadingRecord) float32 {
+	latest := records[1]
+	earliest := records[0]
 
 	return multiplier * (latest.GetMeterReading().GetUsage() - earliest.GetMeterReading().GetUsage())
-
 }

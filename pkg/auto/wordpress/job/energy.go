@@ -8,6 +8,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/types"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -45,10 +46,10 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 			continue
 		}
 
-		records, err := getAllRecords(ctx, e.client.ListMeterReadingHistory, meter, now, e.GetInterval())
+		records, err := getRecordsByTime(ctx, e.client.ListMeterReadingHistory, meter, now, e.GetInterval())
 
 		if err != nil {
-			e.Logger.Error("getting all records", zap.String("meter", meter), zap.Error(err))
+			e.Logger.Error("getting records by time", zap.String("meter", meter), zap.Error(err))
 			continue
 		}
 
@@ -56,12 +57,12 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 
 	}
 
-	body := &EnergyConsumption{
-		Meta: Meta{
+	body := &types.EnergyConsumption{
+		Meta: types.Meta{
 			Timestamp: now,
 			Site:      e.GetSite(),
 		},
-		TodaysEnergyConsumption: Float32Measure{
+		TodaysEnergyConsumption: types.Float32Measure{
 			Value: consumption,
 			Units: "kWh",
 		},

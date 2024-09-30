@@ -15,7 +15,7 @@ import (
 
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/config"
-	postman_http "github.com/vanti-dev/sc-bos/pkg/auto/wordpress/http"
+	wordpressHttp "github.com/vanti-dev/sc-bos/pkg/auto/wordpress/http"
 	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/job"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
@@ -58,11 +58,11 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 	}
 
-	var client *postman_http.Client
+	var client *wordpressHttp.Client
 
 	switch cfg.Auth.Type {
-	case "Authorization Bearer":
-		client = postman_http.New(postman_http.WithAuthorizationBearer(cfg.Auth.Token), postman_http.WithLogger(cfg.Logs, logger))
+	case config.AuthenticationBearer:
+		client = wordpressHttp.New(wordpressHttp.WithAuthorizationBearer(cfg.Auth.Token), wordpressHttp.WithLogger(cfg.Logs, logger))
 	default:
 		return fmt.Errorf("authentication type %s not supported", cfg.Auth.Type)
 	}
@@ -73,9 +73,9 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 		// tear down
 		defer func() {
 			for _, jb := range jobs {
-				jb.GetTicker().Stop()
+				jb.Stop()
 			}
-			close(mulpx.Done)
+			mulpx.WaitForDone()
 		}()
 
 		// run

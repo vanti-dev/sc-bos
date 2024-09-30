@@ -9,10 +9,12 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
+const AuthenticationBearer = "Bearer"
+
 type Root struct {
 	auto.Config
 
-	BaseUrl string         `json:"base_url"`
+	BaseUrl string         `json:"baseUrl"`
 	Site    string         `json:"site"`
 	Auth    Authentication `json:"authentication"`
 	Logs    bool           `json:"logs"`
@@ -20,14 +22,14 @@ type Root struct {
 		Occupancy   *Occupancy   `json:"occupancy,omitempty"`
 		Temperature *Temperature `json:"temperature,omitempty"`
 		Energy      *Energy      `json:"energy,omitempty"`
-		AirQuality  *AirQuality  `json:"air_quality,omitempty"`
+		AirQuality  *AirQuality  `json:"airQuality,omitempty"`
 		Water       *Water       `json:"water,omitempty"`
 	} `json:"sources"`
 }
 
 type Authentication struct {
 	Type       string `json:"type"`
-	SecretPath string `json:"secretFile"`
+	SecretFile string `json:"secretFile"`
 	Token      string `json:"-"`
 }
 
@@ -73,9 +75,9 @@ func ReadBytes(data []byte) (cfg Root, err error) {
 	}
 
 	switch cfg.Auth.Type {
-	case "Authorization Bearer":
+	case AuthenticationBearer:
 		var tok []byte
-		tok, err = os.ReadFile(cfg.Auth.SecretPath)
+		tok, err = os.ReadFile(cfg.Auth.SecretFile)
 		if err != nil {
 			return
 		}

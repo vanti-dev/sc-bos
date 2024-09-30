@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 	"time"
 
 	"go.uber.org/zap"
@@ -31,38 +32,43 @@ type Job interface {
 	GetClients() []any
 
 	Do(ctx context.Context, sendFn sender) error
+	Stop()
 }
 
 type sender func(ctx context.Context, url string, body []byte) error
 
 // Mulpx for multiple Job easy chan fan-in
 type Mulpx struct {
-	C    chan Job
-	Done chan struct{}
+	C     chan Job
+	group errgroup.Group
+}
+
+func (m *Mulpx) WaitForDone() {
+	// no errors are returned from any of the group.Go() calls
+	_ = m.group.Wait()
+	close(m.C)
 }
 
 // Multiplex receives multiple jobs and fans all the jobs into a single chan
 func Multiplex(jobs ...Job) *Mulpx {
 	out := &Mulpx{
-		C:    make(chan Job),
-		Done: make(chan struct{}),
+		C: make(chan Job),
+		// no need to listen to parent thread's context
+		// as there should already be a listener for context.Done in the parent
+		group: errgroup.Group{},
 	}
 
 	for _, job := range jobs {
 		j := job
 
-		go func() {
+		out.group.Go(func() error {
 			for range j.GetTicker().C {
 				out.C <- j
 			}
-		}()
-	}
 
-	// clean up
-	go func() {
-		defer close(out.C)
-		<-out.Done
-	}()
+			return nil
+		})
+	}
 
 	return out
 }
@@ -87,6 +93,10 @@ func (b *BaseJob) GetSite() string {
 	return b.Site
 }
 
+func (b *BaseJob) Stop() {
+	b.Ticker.Stop()
+}
+
 func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 	var jobs []Job
 
@@ -95,7 +105,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 			BaseJob: BaseJob{
 				Site:   cfg.Site,
 				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Occupancy.Path),
-				Ticker: time.NewTicker(cfg.Sources.Occupancy.Interval.Duration),
+				Ticker: time.NewTicker(cfg.Sources.Occupancy.Interval.Or(time.Minute)),
 				Logger: logger,
 			},
 			Sensors: cfg.Sources.Occupancy.Sensors,
@@ -108,7 +118,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 			BaseJob: BaseJob{
 				Site:   cfg.Site,
 				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Temperature.Path),
-				Ticker: time.NewTicker(cfg.Sources.Temperature.Interval.Duration),
+				Ticker: time.NewTicker(cfg.Sources.Temperature.Interval.Or(time.Minute)),
 				Logger: logger,
 			},
 			Sensors: cfg.Sources.Temperature.Sensors,
@@ -117,15 +127,16 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 		jobs = append(jobs, temperature)
 	}
 	if cfg.Sources.Energy != nil && len(cfg.Sources.Energy.Meters) > 0 {
+		interval := cfg.Sources.Energy.Interval.Or(24 * time.Hour)
 		energy := &EnergyJob{
 			BaseJob: BaseJob{
 				Site:   cfg.Site,
 				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Energy.Path),
-				Ticker: time.NewTicker(cfg.Sources.Energy.Interval.Duration),
+				Ticker: time.NewTicker(interval),
 				Logger: logger,
 			},
 			Meters:   cfg.Sources.Energy.Meters,
-			Interval: cfg.Sources.Energy.Interval.Duration,
+			Interval: interval,
 		}
 
 		jobs = append(jobs, energy)
@@ -135,7 +146,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 			BaseJob: BaseJob{
 				Site:   cfg.Site,
 				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.AirQuality.Path),
-				Ticker: time.NewTicker(cfg.Sources.AirQuality.Interval.Duration),
+				Ticker: time.NewTicker(cfg.Sources.AirQuality.Interval.Or(time.Minute)),
 				Logger: logger,
 			},
 			Sensors: cfg.Sources.AirQuality.Sensors,
@@ -144,15 +155,16 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 		jobs = append(jobs, air)
 	}
 	if cfg.Sources.Water != nil && len(cfg.Sources.Water.Meters) > 0 {
+		interval := cfg.Sources.Water.Interval.Or(24 * time.Hour)
 		water := &WaterJob{
 			BaseJob: BaseJob{
 				Site:   cfg.Site,
 				Url:    fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Water.Path),
-				Ticker: time.NewTicker(cfg.Sources.Water.Interval.Duration),
+				Ticker: time.NewTicker(interval),
 				Logger: logger,
 			},
 			Meters:   cfg.Sources.Energy.Meters,
-			Interval: cfg.Sources.Energy.Interval.Duration,
+			Interval: interval,
 		}
 
 		jobs = append(jobs, water)
