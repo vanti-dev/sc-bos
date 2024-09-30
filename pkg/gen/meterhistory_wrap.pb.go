@@ -3,9 +3,8 @@
 package gen
 
 import (
-	"google.golang.org/grpc"
-
-	"github.com/smart-core-os/sc-golang/pkg/wrap"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
+	grpc "google.golang.org/grpc"
 )
 
 // WrapMeterHistory	adapts a gen.MeterHistoryServer	and presents it as a gen.MeterHistoryClient

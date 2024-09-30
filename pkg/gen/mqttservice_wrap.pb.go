@@ -3,9 +3,8 @@
 package gen
 
 import (
-	"google.golang.org/grpc"
-
-	"github.com/smart-core-os/sc-golang/pkg/wrap"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
+	grpc "google.golang.org/grpc"
 )
 
 // WrapMqttService	adapts a gen.MqttServiceServer	and presents it as a gen.MqttServiceClient
