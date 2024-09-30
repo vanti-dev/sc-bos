@@ -88,14 +88,14 @@ func TestStreamHandler_Interceptors(t *testing.T) {
 	srvDesc := serviceDescriptor(traits.OnOffApi_ServiceDesc.ServiceName)
 
 	// a StreamHandler that always directs to modelServerConn
-	handler := StreamHandler(methodResolverFunc(func(fullName string) (Method, bool) {
+	handler := StreamHandler(methodResolverFunc(func(fullName string) (Method, error) {
 		_, methodName, ok := parseMethod(fullName)
 		if !ok {
-			return Method{}, false
+			return Method{}, ErrMissingMethod
 		}
 		method := srvDesc.Methods().ByName(protoreflect.Name(methodName))
 		if method == nil {
-			return Method{}, false
+			return Method{}, ErrUnknownService
 		}
 
 		return Method{
@@ -103,7 +103,7 @@ func TestStreamHandler_Interceptors(t *testing.T) {
 			Resolver: ConnResolverFunc(func(mr MsgRecver) (grpc.ClientConnInterface, error) {
 				return modelServerConn, nil
 			}),
-		}, true
+		}, nil
 	}))
 
 	// interceptors that expect the requests to have descriptors matching the right types
@@ -162,9 +162,9 @@ func TestStreamHandler_Interceptors(t *testing.T) {
 	cancel()
 }
 
-type methodResolverFunc func(fullName string) (Method, bool)
+type methodResolverFunc func(fullName string) (Method, error)
 
-func (f methodResolverFunc) ResolveMethod(fullName string) (Method, bool) {
+func (f methodResolverFunc) ResolveMethod(fullName string) (Method, error) {
 	return f(fullName)
 }
 
