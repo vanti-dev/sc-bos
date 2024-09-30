@@ -21,8 +21,6 @@ service DevicesApi {
 message Device {
   string name = 1;
   smartcore.traits.Metadata metadata = 2;
-  // The name of the node that this device is announced from.
-  string node = 3;
 
   message Query {
     message Condition {
