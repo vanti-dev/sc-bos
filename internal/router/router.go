@@ -215,22 +215,22 @@ func (r *Router) DeleteRoute(service, key string) (exists bool) {
 	return exists
 }
 
-func (r *Router) ResolveMethod(fullName string) (Method, bool) {
+func (r *Router) ResolveMethod(fullName string) (Method, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
 
 	serviceName, methodName, ok := parseMethod(fullName)
 	if !ok {
-		return Method{}, false
+		return Method{}, ErrMissingMethod
 	}
 	// if the service is not registered then we certainly can't resolve the method
 	service, exists := r.services[serviceName]
 	if !exists {
-		return Method{}, false
+		return Method{}, ErrUnknownService
 	}
 	methodDesc := service.descriptor.Methods().ByName(protoreflect.Name(methodName))
 	if methodDesc == nil {
-		return Method{}, false
+		return Method{}, ErrUnknownMethod
 	}
 
 	connResolver := ConnResolverFunc(func(mr MsgRecver) (grpc.ClientConnInterface, error) {
@@ -276,7 +276,7 @@ func (r *Router) ResolveMethod(fullName string) (Method, bool) {
 	return Method{
 		Desc:     methodDesc,
 		Resolver: connResolver,
-	}, true
+	}, nil
 }
 
 // Service describes how Router routes requests to a single gRPC service.
@@ -330,7 +330,9 @@ func (s *Service) KeyRoutable() bool {
 var (
 	ErrRouteExists    = errors.New("route already exists in router")
 	ErrServiceExists  = errors.New("service already exists in router")
-	ErrUnknownService = errors.New("unknown service")
+	ErrUnknownService = status.Error(codes.Unimplemented, "unknown service")
+	ErrUnknownMethod  = status.Error(codes.Unimplemented, "unknown service method")
+	ErrMissingMethod  = status.Error(codes.InvalidArgument, "request does not contain a valid service method")
 )
 
 // used as a map key for storing and looking up routes

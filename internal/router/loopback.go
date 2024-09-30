@@ -29,9 +29,9 @@ func (l *Loopback) Invoke(ctx context.Context, fullMethodName string, args any, 
 		return ErrNonProtoMessage
 	}
 
-	method, ok := l.mr.ResolveMethod(fullMethodName)
-	if !ok {
-		return ErrUnknownMethod
+	method, err := l.mr.ResolveMethod(fullMethodName)
+	if err != nil {
+		return err
 	}
 
 	conn, err := method.Resolver.ResolveConn(copyRecver{from: argsProto})
@@ -43,9 +43,9 @@ func (l *Loopback) Invoke(ctx context.Context, fullMethodName string, args any, 
 }
 
 func (l *Loopback) NewStream(ctx context.Context, desc *grpc.StreamDesc, fullMethodName string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-	method, ok := l.mr.ResolveMethod(fullMethodName)
-	if !ok {
-		return nil, ErrUnknownMethod
+	method, err := l.mr.ResolveMethod(fullMethodName)
+	if err != nil {
+		return nil, err
 	}
 
 	return &deferredClientStream{
@@ -60,7 +60,6 @@ func (l *Loopback) NewStream(ctx context.Context, desc *grpc.StreamDesc, fullMet
 
 var (
 	ErrNonProtoMessage = status.Error(codes.Internal, "non-protobuf messages not supported")
-	ErrUnknownMethod   = status.Error(codes.Unimplemented, "unknown service method")
 )
 
 // deferredClientStream is a grpc.ClientStream that uses a Method to resolve the real connection when the first message

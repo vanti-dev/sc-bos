@@ -16,7 +16,7 @@ import (
 )
 
 type MethodResolver interface {
-	ResolveMethod(fullName string) (Method, bool)
+	ResolveMethod(fullName string) (Method, error)
 }
 
 // StreamHandler returns a grpc.StreamHandler that routes incoming message to the appropriate downstream target.
@@ -24,13 +24,11 @@ func StreamHandler(r MethodResolver) grpc.StreamHandler {
 	return func(_ any, serverStream grpc.ServerStream) error {
 		method, ok := grpc.Method(serverStream.Context())
 		if !ok {
-			// This error message is similar but not identical to those grpc returns for unknown method.
-			// The code is the same though.
-			return status.Errorf(codes.Unimplemented, "unknown service method %v", method)
+			return ErrMissingMethod
 		}
-		target, ok := r.ResolveMethod(method)
-		if !ok {
-			return status.Errorf(codes.Unimplemented, "unknown service method %v", method)
+		target, err := r.ResolveMethod(method)
+		if err != nil {
+			return err
 		}
 
 		md, _ := metadata.FromIncomingContext(serverStream.Context())
