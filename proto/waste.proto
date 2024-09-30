@@ -19,11 +19,7 @@ service WasteInfo {
   rpc DescribeWasteRecord(DescribeWasteRecordRequest) returns (WasteRecordSupport);
 }
 
-enum DisposalMethod {
-  DISPOSAL_UNSPECIFIED = 0;
-  GENERAL_WASTE = 1;
-  MIXED_RECYCLING = 2;
-}
+
 
 // WasteRecord is a record of a unit of waste produced by the building
 message WasteRecord {
@@ -36,6 +32,11 @@ message WasteRecord {
   // The system the waste was collected from. Used for presentation not to identify the waste
   string system = 4;
   // Describes the disposal method of the waste. Recycled, general
+  enum DisposalMethod {
+    DISPOSAL_METHOD_UNSPECIFIED = 0;
+    GENERAL_WASTE = 1;
+    MIXED_RECYCLING = 2;
+  }
   DisposalMethod disposal_method = 5;
   // Area the waste was collected from, e.g. tenant x, common area. Used for presentation not to identify the waste
   string area = 6;
@@ -60,7 +61,7 @@ message ListWasteRecordsResponse {
 message ListWasteRecordsRequest {
   string name = 1;
   google.protobuf.FieldMask read_mask = 2;
-  // The maximum number of modes to return.
+  // The maximum number of WasteRecords to return.
   // The service may return fewer than this value.
   // If unspecified, at most 50 items will be returned.
   // The maximum value is 1000; values above 1000 will be coerced to 1000.

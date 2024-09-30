@@ -21,8 +21,8 @@ export class WasteRecord extends jspb.Message {
   getSystem(): string;
   setSystem(value: string): WasteRecord;
 
-  getDisposalMethod(): DisposalMethod;
-  setDisposalMethod(value: DisposalMethod): WasteRecord;
+  getDisposalMethod(): WasteRecord.DisposalMethod;
+  setDisposalMethod(value: WasteRecord.DisposalMethod): WasteRecord;
 
   getArea(): string;
   setArea(value: string): WasteRecord;
@@ -49,10 +49,16 @@ export namespace WasteRecord {
     recordCreateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     weight: number,
     system: string,
-    disposalMethod: DisposalMethod,
+    disposalMethod: WasteRecord.DisposalMethod,
     area: string,
     wasteCreateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     stream: string,
+  }
+
+  export enum DisposalMethod { 
+    DISPOSAL_METHOD_UNSPECIFIED = 0,
+    GENERAL_WASTE = 1,
+    MIXED_RECYCLING = 2,
   }
 }
 
@@ -247,8 +253,3 @@ export namespace WasteRecordSupport {
   }
 }
 
-export enum DisposalMethod { 
-  DISPOSAL_UNSPECIFIED = 0,
-  GENERAL_WASTE = 1,
-  MIXED_RECYCLING = 2,
-}
