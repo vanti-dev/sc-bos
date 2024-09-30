@@ -34,7 +34,7 @@ func (l *Loopback) Invoke(ctx context.Context, fullMethodName string, args any, 
 		return ErrUnknownMethod
 	}
 
-	conn, err := method.Resolver.ResolveConn(messageCopyRecver{msg: argsProto})
+	conn, err := method.Resolver.ResolveConn(copyRecver{from: argsProto})
 	if err != nil {
 		return err
 	}
@@ -58,36 +58,24 @@ func (l *Loopback) NewStream(ctx context.Context, desc *grpc.StreamDesc, fullMet
 	}, nil
 }
 
-// messageCopyRecver is a MsgRecver that copies a known proto.Message into the message provided by the caller of RecvMsg.
-type messageCopyRecver struct {
-	msg proto.Message
-}
-
-func (m messageCopyRecver) RecvMsg(msg any) error {
-	msgProto, ok := msg.(proto.Message)
-	if !ok {
-		return ErrNonProtoMessage
-	}
-	proto.Merge(msgProto, m.msg)
-	return nil
-}
-
 var (
 	ErrNonProtoMessage = status.Error(codes.Internal, "non-protobuf messages not supported")
 	ErrUnknownMethod   = status.Error(codes.Unimplemented, "unknown service method")
 )
 
+// deferredClientStream is a grpc.ClientStream that uses a Method to resolve the real connection when the first message
+// is sent using SendMsg, at which point the real stream is opened. After this, calls pass through to the real stream.
+// An error resolving the connection from the Method is permanent.
 type deferredClientStream struct {
-	// NewStream arguments
+	// NewStream arguments - used to create the real stream
 	ctx            context.Context
 	desc           *grpc.StreamDesc
 	fullMethodName string
 	opts           []grpc.CallOption
-
-	// source of the deferred client stream
+	// source of the deferred client connection used to create the real stream
 	resolvedMethod Method
 
-	// client stream
+	// client stream - filled after SendMsg is called
 	ready  chan struct{}
 	stream grpc.ClientStream
 	err    error
@@ -199,6 +187,7 @@ func (d *deferredClientStream) RecvMsg(m any) error {
 	}
 }
 
+// copyRecver is a MsgRecver that copies a known proto.Message into the message provided by the caller of RecvMsg.
 type copyRecver struct {
 	from proto.Message
 }

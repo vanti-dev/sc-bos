@@ -37,7 +37,7 @@ type KeyFunc func(mr MsgRecver) (string, error)
 //   - The property is of type string.
 //   - The property is not repeated.
 //
-// Safe for concurrent use.
+// The returned KeyFunc is safe for concurrent use.
 func FieldKey(msgDesc protoreflect.MessageDescriptor, field string) (KeyFunc, error) {
 	nameFieldDesc := msgDesc.Fields().ByName(protoreflect.Name(field))
 	if nameFieldDesc == nil {
