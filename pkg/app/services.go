@@ -19,16 +19,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/zone"
 )
 
-// addFactorySupport is used to register factories with a node to expose custom factory APIs.
-// This checks each value in m and if that value has an API, via node.SelfSupporter, then it is registered with s.
-func addFactorySupport[M ~map[K]F, K comparable, F any](s node.Supporter, m M) {
-	for _, factory := range m {
-		if api, ok := any(factory).(node.SelfSupporter); ok {
-			api.AddSupport(s)
-		}
-	}
-}
-
 func (c *Controller) startDrivers(configs []driver.RawConfig) (*service.Map, error) {
 	ctxServices := driver.Services{
 		Logger:          c.Logger.Named("driver"),

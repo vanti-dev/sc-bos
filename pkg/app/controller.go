@@ -368,10 +368,6 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 		}
 	}()
 
-	addFactorySupport(c.Node, c.SystemConfig.DriverFactories)
-	addFactorySupport(c.Node, c.SystemConfig.AutoFactories)
-	addFactorySupport(c.Node, c.SystemConfig.SystemFactories)
-
 	// metadata associated with the node itself
 	// we don't support changing metadata while running
 	c.Node.Announce(c.Node.Name(), node.HasMetadata(initialConfig.Metadata))
