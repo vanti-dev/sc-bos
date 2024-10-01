@@ -395,6 +395,20 @@
               "layout": "builtin:LayoutMainSide",
               "main": [
                 {
+                  "component": "builtin:graphic/LayeredGraphic",
+                  "props": {
+                    "height": "max(70vh, 700px)",
+                    "background": {"svgPath": "./assets/floor1-bg.svg"},
+                    "layers": [
+                      {
+                        "title": "Lighting",
+                        "svgPath": "./assets/floor1-lights.svg",
+                        "configPath": "./assets/floor1-lights.json"
+                      }
+                    ]
+                  }
+                },
+                {
                   "component": "builtin:notifications/ZoneNotifications",
                   "props": {
                     "forceQuery": {"floor": "First Floor"}
