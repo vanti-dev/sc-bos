@@ -225,6 +225,7 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 		case <-ctx.Done():
 			return ctx.Err()
 		case readState := <-readStates:
+			b.retries = 0 // reset retries as new valid state received
 			lastReadState = readState
 			err := processStateFn(readState)
 			if err != nil {
