@@ -14,7 +14,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
-// announceElectricMeter with events in order
+// announceMeter with events in order
 func announceMeter(root node.Announcer, name, unit string, events []float32) error {
 
 	model := meter.NewModel()
