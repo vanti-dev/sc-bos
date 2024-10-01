@@ -196,6 +196,7 @@
                   "props": {
                     "height": "max(70vh, 700px)",
                     "background": {"svgPath": "./assets/floor0-bg.svg"},
+                    "pixelsPerMeter": 25,
                     "layers": [
                       {
                         "title": "Zones",
@@ -399,6 +400,7 @@
                   "props": {
                     "height": "max(70vh, 700px)",
                     "background": {"svgPath": "./assets/floor1-bg.svg"},
+                    "pixelsPerMeter": 32,
                     "layers": [
                       {
                         "title": "Lighting",
