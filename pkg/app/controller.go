@@ -218,9 +218,13 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
 	devices.NewServer(rootNode).Register(grpcServer)
 
-	grpcWebServer := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
-		return true
-	}))
+	grpcWebServer := grpcweb.WrapServer(grpcServer,
+		grpcweb.WithOriginFunc(func(origin string) bool {
+			return true
+		}),
+		// services are dynamic, the grpc.Server doesn't know about them all
+		grpcweb.WithCorsForRegisteredEndpointsOnly(false),
+	)
 
 	// HTTP endpoint setup
 	mux := http.NewServeMux()
