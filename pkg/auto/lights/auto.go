@@ -21,7 +21,6 @@ type BrightnessAutomation struct {
 	clients node.Clienter // clients are not got until Start
 
 	refreshEvery      atomic.Duration
-	retries           int
 	maxRetries        int
 	backoffMultiplier time.Duration
 
@@ -163,6 +162,8 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 	// the below are the innards of time.Timer, but expanded so we can stop/select on them even if
 	// we don't have a timer active right now
 
+	retryCounter := 0
+
 	var ttlExpired <-chan time.Time
 	cancelTtlTimer := func() bool { return false }
 
@@ -185,8 +186,8 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			}
 
 			// if the context remains live, schedule another update soon
-			b.retries++
-			after := time.Duration(b.retries) * b.backoffMultiplier
+			retryCounter++
+			after := time.Duration(retryCounter) * b.backoffMultiplier
 			b.logger.Error("processState failed; scheduling retry",
 				zap.Error(err),
 				zap.Duration("retryAfter", after),
@@ -194,8 +195,8 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			ttl = after
 		}
 
-		if err == nil || b.retries > b.maxRetries {
-			b.retries = 0
+		if err == nil || retryCounter > b.maxRetries {
+			retryCounter = 0
 		}
 
 		// ensure it's not too long before we wake up, so the lights are refreshed regularly
@@ -225,7 +226,7 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 		case <-ctx.Done():
 			return ctx.Err()
 		case readState := <-readStates:
-			b.retries = 0 // reset retries as new valid state received
+			retryCounter = 0 // reset retries as new valid state received
 			lastReadState = readState
 			err := processStateFn(readState)
 			if err != nil {
