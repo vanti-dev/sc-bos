@@ -36,6 +36,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/mqttpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/wastepb"
 
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/color"
@@ -401,6 +402,16 @@ var traitSupport = map[trait.Name]func(s node.Supporter){
 	udmipb.TraitName: func(s node.Supporter) {
 		r := gen.NewUdmiServiceRouter()
 		s.Support(node.Routing(r), node.Clients(gen.WrapUdmiService(r)))
+	},
+	wastepb.TraitName: func(s node.Supporter) {
+		{
+			r := gen.NewWasteApiRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapWasteApi(r)))
+		}
+		{
+			r := gen.NewWasteInfoRouter()
+			s.Support(node.Routing(r), node.Clients(gen.WrapWasteInfo(r)))
+		}
 	},
 }
 
