@@ -79,7 +79,11 @@ export const useCohortStore = defineStore('cohort', () => {
     if (hubNodes.value.length > 0) return HubApiStatus.AVAILABLE;
     if (hubNodesErrors.value.length > 0) {
       if (hubNodesErrors.value.every(e => isNetworkError(e.error))) return HubApiStatus.UNKNOWN;
-      if (hubNodesErrors.value.every(e => e.error?.code === StatusCode.FAILED_PRECONDITION)) return HubApiStatus.UNAVAILABLE;
+      const notAHubError = (e) => {
+        const code = e.error?.code;
+        return code === StatusCode.FAILED_PRECONDITION || code === StatusCode.UNIMPLEMENTED;
+      };
+      if (hubNodesErrors.value.every(notAHubError)) return HubApiStatus.UNAVAILABLE;
       return HubApiStatus.AVAILABLE;
     }
     return hubNodesLoading.value ? HubApiStatus.UNKNOWN : HubApiStatus.UNAVAILABLE;
