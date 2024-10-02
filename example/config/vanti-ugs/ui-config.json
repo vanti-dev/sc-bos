@@ -62,6 +62,21 @@
               "layout": "builtin:LayoutMainSide",
               "main": [
                 {
+                  "component": "builtin:graphic/LayeredGraphic",
+                  "props": {
+                    "height": "max(70vh, 700px)",
+                    "background": {"svgPath": "./assets/floorn1-bg.svg"},
+                    "pixelsPerMeter": 60,
+                    "layers": [
+                      {
+                        "title": "Lighting",
+                        "svgPath": "./assets/floorn1-lights.svg",
+                        "configPath": "./assets/floorn1-lights.json"
+                      }
+                    ]
+                  }
+                },
+                {
                   "component": "builtin:power-history/PowerHistoryCard",
                   "props": {
                     "demand": "van/uk/brum/ugs/zones/floors/basement",
@@ -196,7 +211,7 @@
                   "props": {
                     "height": "max(70vh, 700px)",
                     "background": {"svgPath": "./assets/floor0-bg.svg"},
-                    "pixelsPerMeter": 25,
+                    "pixelsPerMeter": 35,
                     "layers": [
                       {
                         "title": "Zones",
