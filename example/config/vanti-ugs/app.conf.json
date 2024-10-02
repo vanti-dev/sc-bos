@@ -1242,6 +1242,26 @@
         "uri": "postgres://postgres@localhost:5432/smart_core",
         "passwordFile": "./.data/secrets/postgres-password"
       }
+    },
+    {
+      "name": "van/uk/brum/ugs/devices/LTF-LN1-01",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/LTF-LN1-01", "trait": "smartcore.traits.AirQualitySensor"},
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost5432/smart_core",
+        "passwordFile": "./.data/secrets/postgres-password"
+    }
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-L00-05",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L00-05", "trait":  "smartcore.traits.AirQualitySensor"},
+    "storage": {
+      "type": "postgres",
+      "uri": "postgres://postgres@localhost5432/smart_core",
+      "passwordFile": "./.data/secrets/postgres-password"
+    }
     }
   ]
 }
