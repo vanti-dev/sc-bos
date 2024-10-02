@@ -423,6 +423,11 @@
                     "pixelsPerMeter": 32,
                     "layers": [
                       {
+                        "title": "BMS",
+                        "svgPath": "./assets/floor1-bms.svg",
+                        "configPath": "./assets/floor1-bms.json"
+                      },
+                      {
                         "title": "Lighting",
                         "svgPath": "./assets/floor1-lights.svg",
                         "configPath": "./assets/floor1-lights.json"
