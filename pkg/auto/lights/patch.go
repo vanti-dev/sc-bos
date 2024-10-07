@@ -158,6 +158,10 @@ type source struct {
 func (b *BrightnessAutomation) processConfig(ctx context.Context, cfg config.Root, sources []*source, changes chan<- Patcher) (sourceCount int) {
 	logger := b.logger.With(zap.String("auto", cfg.Name))
 
+	if cfg.OnProcessError.BackOffMultiplier.Duration.Nanoseconds() <= 0 {
+		cfg.OnProcessError.BackOffMultiplier.Duration = config.DefaultBackOffMultiplier
+	}
+
 	for _, source := range sources {
 		names := source.names(cfg)
 		if source.runningSources == nil && len(names) > 0 {

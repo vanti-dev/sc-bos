@@ -11,6 +11,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
+const DefaultBackOffMultiplier = time.Millisecond * 500
+
 // Root represent the configuration parameters available for the lighting automation.
 // This should be convertable to/from json.
 type Root struct {
@@ -186,7 +188,7 @@ func Default() Root {
 		},
 		RefreshEvery: jsontypes.Duration{Duration: time.Minute},
 		OnProcessError: OnProcessError{
-			BackOffMultiplier: jsontypes.Duration{Duration: time.Millisecond * 500},
+			BackOffMultiplier: jsontypes.Duration{Duration: DefaultBackOffMultiplier},
 			MaxRetries:        2,
 		},
 	}
