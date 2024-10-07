@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware/util/backoffutils"
 	"github.com/olebedev/emitter"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -183,7 +184,8 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 
 			// if the context remains live, schedule another update soon
 			retryCounter++
-			after = time.Duration(retryCounter) * readState.Config.OnProcessError.BackOffMultiplier.Duration
+			after = backoffutils.JitterUp(time.Duration(retryCounter)*readState.Config.OnProcessError.BackOffMultiplier.Duration, 0.2)
+
 			b.logger.Error("processState failed; scheduling retry",
 				zap.Error(err),
 				zap.Duration("retryAfter", after),
