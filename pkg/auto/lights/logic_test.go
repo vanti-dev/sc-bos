@@ -965,6 +965,7 @@ func Test_processState(t *testing.T) {
 }
 
 func assertNoErrAndTtl(t *testing.T, ttl time.Duration, err error, targetTtl time.Duration) {
+	t.Helper()
 	if ttl != targetTtl {
 		t.Fatalf("TTL want %v, got %v", targetTtl, ttl)
 	}
@@ -974,15 +975,15 @@ func assertNoErrAndTtl(t *testing.T, ttl time.Duration, err error, targetTtl tim
 }
 
 func assertErrorAndTtl(t *testing.T, ttl time.Duration, err error, targetTtl time.Duration, targetErr error) {
-	{
-		if ttl != targetTtl {
-			t.Fatalf("TTL want %v, got %v", targetTtl, ttl)
-		}
-
-		if !errors.Is(err, targetErr) {
-			t.Fatalf("Error want %v, got %v", targetErr, err)
-		}
+	t.Helper()
+	if ttl != targetTtl {
+		t.Fatalf("TTL want %v, got %v", targetTtl, ttl)
 	}
+
+	if !errors.Is(err, targetErr) {
+		t.Fatalf("Error want %v, got %v", targetErr, err)
+	}
+
 }
 
 func newTestActions(t *testing.T) *testActions {

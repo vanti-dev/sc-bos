@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/olebedev/emitter"
-	"go.uber.org/atomic"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
@@ -19,10 +18,6 @@ import (
 type BrightnessAutomation struct {
 	logger  *zap.Logger
 	clients node.Clienter // clients are not got until Start
-
-	refreshEvery      atomic.Duration
-	maxRetries        int
-	backoffMultiplier time.Duration
 
 	// bus emits "stop" and "config" events triggered by Stop and Configure.
 	bus *emitter.Emitter
@@ -177,8 +172,9 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 		cancelTtlTimer()
 		cancelRetryTimer()
 
+		var after time.Duration
+
 		ttl, err := processState(ctx, readState, writeState, actions, b.logger.Named("Process State"))
-		b.bus.Emit("process-complete", ttl, err, readState, writeState) // used only for testing, notify that processing has completed
 		if err != nil {
 			// if the context has been cancelled, stop
 			if ctx.Err() != nil {
@@ -187,30 +183,33 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 
 			// if the context remains live, schedule another update soon
 			retryCounter++
-			after := time.Duration(retryCounter) * b.backoffMultiplier
+			after = time.Duration(retryCounter) * readState.Config.OnProcessError.BackOffMultiplier.Duration
 			b.logger.Error("processState failed; scheduling retry",
 				zap.Error(err),
 				zap.Duration("retryAfter", after),
 			)
-			ttl = after
-		}
 
-		if err == nil || retryCounter > b.maxRetries {
-			retryCounter = 0
+			if retryCounter > readState.Config.OnProcessError.MaxRetries {
+				retryCounter = 0
+			} else {
+				ttl = after
+			}
 		}
 
 		// ensure it's not too long before we wake up, so the lights are refreshed regularly
 		// so external changes don't stick around forever
 		if ttl < 0 {
 			b.logger.Warn("ttl < 0; using refreshEvery instead")
-			ttl = b.refreshEvery.Load()
+			ttl = readState.Config.RefreshEvery.Duration
 		}
-		if ttl > b.refreshEvery.Load() {
+		if ttl > readState.Config.RefreshEvery.Duration {
 			b.logger.Warn("ttl > refreshEvery; using refreshEvery instead")
 			// b.logger.Debug("waking up sooner to ensure lights aren't stale",
 			// 	zap.Duration("after", refreshEvery))
-			ttl = b.refreshEvery.Load()
+			ttl = readState.Config.RefreshEvery.Duration
 		}
+
+		b.bus.Emit("process-complete", ttl, err, readState, writeState) // used only for testing, notify that processing has completed
 
 		// Setup ttl for the transformed model.
 		// After this time it should be recalculated.
@@ -226,7 +225,12 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 		case <-ctx.Done():
 			return ctx.Err()
 		case readState := <-readStates:
-			retryCounter = 0 // reset retries as new valid state received
+			// reset retries as new valid state received
+			if !cancelTtlTimer() {
+				<-ttlExpired
+			}
+			retryCounter = 0
+
 			lastReadState = readState
 			err := processStateFn(readState)
 			if err != nil {

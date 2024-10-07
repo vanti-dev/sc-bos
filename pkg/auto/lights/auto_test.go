@@ -15,7 +15,6 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
-
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -63,12 +62,11 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	cfg.OccupancySensors = []string{"pir01", "pir02"}
 	cfg.Lights = []string{"light01", "light02"}
 	cfg.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
+	cfg.RefreshEvery = jsontypes.Duration{Duration: 9 * time.Minute}
 
 	tickChan := make(chan time.Time, 1)
 	automation.newTimer = func(d time.Duration) (<-chan time.Time, func() bool) {
-		return tickChan, func() bool {
-			return false
-		}
+		return tickChan, func() bool { return false }
 	}
 	if err := automation.Start(context.Background()); err != nil {
 		t.Fatalf("Start: %v", err)
@@ -174,7 +172,6 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		},
 	})
 
-	automation.backoffMultiplier = time.Second * 2
 	testActions.err = errFailedBrightnessUpdate
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
 	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
@@ -184,18 +181,16 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		}
 		return o01.State == traits.Occupancy_OCCUPIED
 	})
-	assertErrorAndTtl(t, ttl, err, 0, errFailedBrightnessUpdate)
-	// wait for the state to get replayed (should take backoffMultiplier duration long)
-	// I adjusted the time to take *slightly* longer because GoLang ...
-	// since automation.newTimer has been overridden, we have to set the ttl ourselves
-	tickChan <- now.Add(time.Second * 2)
-	ttl, err = waitForState(time.Millisecond*2_001, func(state *ReadState) bool {
+	assertErrorAndTtl(t, ttl, err, time.Millisecond*500, errFailedBrightnessUpdate)
+	tickChan <- now.Add(time.Millisecond * 500)
+	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
 			return false
 		}
 		return o01.State == traits.Occupancy_OCCUPIED
 	})
+	assertNoErrAndTtl(t, ttl, err, 0)
 	// it works after the retry
 	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
 		Name: "light01",
