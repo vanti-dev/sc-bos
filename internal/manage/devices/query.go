@@ -241,6 +241,15 @@ func getListValue(path string, entryDesc protoreflect.FieldDescriptor, l protore
 
 	val := l.Get(int(ind))
 
+	switch entryDesc.Kind() {
+	case protoreflect.StringKind:
+		return entryDesc, val, f(val.String())
+	case protoreflect.MessageKind:
+		break
+	default: // we don't support other primitives in f func
+		return nil, protoreflect.Value{}, false
+	}
+
 	if !val.Message().IsValid() {
 		return nil, protoreflect.Value{}, false
 	}
