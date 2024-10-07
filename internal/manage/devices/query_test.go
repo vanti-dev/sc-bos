@@ -41,6 +41,8 @@ func Test_isMessageValueStringFunc(t *testing.T) {
 		{"match in array negative", "traits.[-1].name", "foo", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "foo"}}}, false},
 		{"match any in array", "traits.name", "foo", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "bar"}, {Name: "foo"}}}, true},
 		{"match any in array - no matches", "traits.name", "baz", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "bar"}, {Name: "foo"}}}, false},
+		{"match nested in array", "traits.more.units", "cats", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "bar"}, {Name: "foo", More: map[string]string{"units": "cats"}}}}, true},
+		{"match nested in array with other proto", "dns.[0]", "bar", &traits.Metadata_NIC{Dns: []string{"bar"}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

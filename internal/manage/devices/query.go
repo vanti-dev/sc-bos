@@ -14,7 +14,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-var numericReg = regexp.MustCompile("\\[([0-9]+)]")
+var numericReg = regexp.MustCompile("\\[(-?[0-9]+)]")
 
 func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
 	if query == nil {
@@ -176,14 +176,35 @@ func getMapValue(path string, keyDesc, valueDesc protoreflect.FieldDescriptor, m
 	return nextValue(rest, valueDesc, value, f)
 }
 
+func compareNestedElement(restPath string, desc protoreflect.FieldDescriptor, val protoreflect.Value, f func(v string) bool) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
+	if val.IsValid() {
+		switch desc.Kind() {
+		case protoreflect.StringKind:
+			if f(val.Message().Get(desc).String()) {
+				return desc, val.Message().Get(desc), true
+			}
+		default:
+			descriptor, value, found := nextValue(restPath, desc, val.Message().Get(desc), f)
+
+			if found {
+				if _, rest, found := strings.Cut(restPath, "."); found {
+					return compareNestedElement(rest, descriptor, value, f)
+				}
+
+				return descriptor, value, true
+			}
+		}
+	}
+
+	return nil, protoreflect.Value{}, false
+}
+
 // getListValue returns the protoreflect.Value identified by path in the list l.
 // Returns false if the path can't be resolved.
 func getListValue(path string, entryDesc protoreflect.FieldDescriptor, l protoreflect.List, f func(v string) bool) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
-	prop, rest, found := strings.Cut(path, ".")
+	prop, rest, _ := strings.Cut(path, ".")
 
-	// if we don't find a subsequent path after "."
-	// just try with the first matching element of the list
-	if !found {
+	if !numericReg.MatchString(prop) {
 		for i := 0; i < l.Len(); i++ {
 			val := l.Get(i)
 
@@ -191,14 +212,15 @@ func getListValue(path string, entryDesc protoreflect.FieldDescriptor, l protore
 				continue
 			}
 
-			desc := val.Message().Descriptor().Fields().ByName(protoreflect.Name(path))
+			desc := val.Message().Descriptor().Fields().ByName(protoreflect.Name(prop))
 
-			if f(val.Message().Get(desc).String()) {
-				return getMessageValue(path, val.Message(), f)
+			if descriptor, value, found := compareNestedElement(rest, desc, val, f); found {
+				return descriptor, value, true
 			}
 		}
 
 		return nil, protoreflect.Value{}, false
+
 	}
 
 	index := numericReg.FindStringIndex(prop)
@@ -213,7 +235,7 @@ func getListValue(path string, entryDesc protoreflect.FieldDescriptor, l protore
 	numeric := prop[index[0]+1 : index[1]-1]
 	ind, err := strconv.ParseInt(numeric, 10, 32)
 
-	if err != nil || int(ind) >= l.Len() {
+	if err != nil || ind < 0 || int(ind) >= l.Len() {
 		return nil, protoreflect.Value{}, false
 	}
 
@@ -223,7 +245,13 @@ func getListValue(path string, entryDesc protoreflect.FieldDescriptor, l protore
 		return nil, protoreflect.Value{}, false
 	}
 
-	return getMessageValue(rest, val.Message(), f)
+	desc := val.Message().Descriptor().Fields().ByName(protoreflect.Name(rest))
+
+	if _, _, found := compareNestedElement(rest, desc, val, f); found {
+		return desc, val.Message().Get(desc), true
+	}
+
+	return nextValue(rest, desc, val, f)
 }
 
 // nextValue calls the correct getXxxValue func for the given field descriptor.
