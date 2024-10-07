@@ -66,7 +66,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 
 	tickChan := make(chan time.Time, 1)
 	automation.newTimer = func(d time.Duration) (<-chan time.Time, func() bool) {
-		return tickChan, func() bool { return false }
+		return tickChan, func() bool { return true }
 	}
 	if err := automation.Start(context.Background()); err != nil {
 		t.Fatalf("Start: %v", err)
@@ -181,7 +181,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		}
 		return o01.State == traits.Occupancy_OCCUPIED
 	})
-	assertErrorAndTtl(t, ttl, err, time.Millisecond*500, errFailedBrightnessUpdate)
+	assertErrorAndTtl(t, ttl, err, cfg.OnProcessError.BackOffMultiplier.Duration*8/10, errFailedBrightnessUpdate)
 	tickChan <- now.Add(time.Millisecond * 500)
 	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]

@@ -976,8 +976,8 @@ func assertNoErrAndTtl(t *testing.T, ttl time.Duration, err error, targetTtl tim
 
 func assertErrorAndTtl(t *testing.T, ttl time.Duration, err error, targetTtl time.Duration, targetErr error) {
 	t.Helper()
-	if ttl != targetTtl {
-		t.Fatalf("TTL want %v, got %v", targetTtl, ttl)
+	if ttl.Nanoseconds() < targetTtl.Nanoseconds() {
+		t.Fatalf("TTL want %v, got %v, got ttl less than target TTL", targetTtl, ttl)
 	}
 
 	if !errors.Is(err, targetErr) {

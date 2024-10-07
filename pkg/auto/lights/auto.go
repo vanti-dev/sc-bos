@@ -161,10 +161,10 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 	retryCounter := 0
 
 	var ttlExpired <-chan time.Time
-	cancelTtlTimer := func() bool { return false }
+	cancelTtlTimer := func() bool { return true }
 
 	var retryFailedProcessing <-chan time.Time
-	cancelRetryTimer := func() bool { return false }
+	cancelRetryTimer := func() bool { return true }
 
 	// writeState is only accessed from this go routine.
 	writeState := NewWriteState(time.Now())
