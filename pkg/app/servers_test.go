@@ -53,6 +53,10 @@ func TestServeHTTPS(t *testing.T) {
 		serveErr <- err
 	}()
 
+	// N.B.: in some cases, the client issues a GET request before the server is listening on the port.
+	// without explicit TLS timeout configurations, the TLS handshake hangs forever
+	time.Sleep(10 * time.Millisecond)
+
 	go func() {
 		client := &http.Client{
 			Transport: &http.Transport{TLSClientConfig: &tls.Config{

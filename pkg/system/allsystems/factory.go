@@ -1,7 +1,6 @@
 package allsystems
 
 import (
-	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/alerts"
 	"github.com/vanti-dev/sc-bos/pkg/system/authn"
@@ -14,7 +13,7 @@ import (
 
 // Factories returns a new map containing all known system factories.
 func Factories() map[string]system.Factory {
-	gatewayFactory := gateway.Factory(alltraits.LightingTestHolder)
+	gatewayFactory := gateway.Factory()
 	return map[string]system.Factory{
 		"alerts":           alerts.Factory,
 		"authn":            authn.Factory(),

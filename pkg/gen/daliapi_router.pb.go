@@ -9,7 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// DaliApiRouter is a DaliApiServer that allows routing named requests to specific DaliApiClient
+// DaliApiRouter is a gen.DaliApiServer that allows routing named requests to specific gen.DaliApiClient
 type DaliApiRouter struct {
 	UnimplementedDaliApiServer
 
@@ -33,14 +33,14 @@ func WithDaliApiClientFactory(f func(name string) (DaliApiClient, error)) router
 	})
 }
 
-func (r *DaliApiRouter) Register(server *grpc.Server) {
+func (r *DaliApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterDaliApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type DaliApiClient.
+// Add extends Router.Add to panic if client is not of type gen.DaliApiClient.
 func (r *DaliApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a DaliApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.DaliApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

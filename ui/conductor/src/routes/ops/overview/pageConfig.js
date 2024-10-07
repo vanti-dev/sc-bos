@@ -1,9 +1,9 @@
-import {builtinLayouts} from '@/layout/pallet.js';
+import {builtinLayouts} from '@/dynamic/layout/pallet.js';
 import useBuildingConfig from '@/routes/ops/overview/pages/buildingConfig.js';
 import useDashPage from '@/routes/ops/overview/pages/dashPage.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {findActiveItem} from '@/util/router.js';
-import {builtinWidgets} from '@/widgets/pallet.js';
+import {builtinWidgets} from '@/dynamic/widgets/pallet.js';
 import {computed, markRaw, reactive, toValue} from 'vue';
 
 /**

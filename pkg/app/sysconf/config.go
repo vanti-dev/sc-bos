@@ -79,28 +79,31 @@ type Config struct {
 // It scans DriverFactories for factories that implement the BlockSource interface.
 // Drivers that do not implement BlockSource are not included in the output.
 func (c *Config) DriverConfigBlocks() map[string][]block.Block {
-	return extractConfigBlocks(c.DriverFactories)
+	return extractConfigBlocks(c, c.DriverFactories)
 }
 
 // AutoConfigBlocks returns a map of automation type to a block list that describes the config for that automation.
 // It scans AutoFactories for factories that implement the BlockSource interface.
 // Automations that do not implement BlockSource are not included in the output.
 func (c *Config) AutoConfigBlocks() map[string][]block.Block {
-	return extractConfigBlocks(c.AutoFactories)
+	return extractConfigBlocks(c, c.AutoFactories)
 }
 
 // ZoneConfigBlocks returns a map of zone type to a block list that describes the config for that zone.
 // It scans ZoneFactories for factories that implement the BlockSource interface.
 // Zone types that do not implement BlockSource are not included in the output.
 func (c *Config) ZoneConfigBlocks() map[string][]block.Block {
-	return extractConfigBlocks(c.ZoneFactories)
+	return extractConfigBlocks(c, c.ZoneFactories)
 }
 
-func extractConfigBlocks[Factory any](factories map[string]Factory) map[string][]block.Block {
+func extractConfigBlocks[Factory any](c *Config, factories map[string]Factory) map[string][]block.Block {
 	blocks := make(map[string][]block.Block)
 	for name, factory := range factories {
-		if source, ok := any(factory).(BlockSource); ok {
+		switch source := any(factory).(type) {
+		case BlockSource:
 			blocks[name] = source.ConfigBlocks()
+		case BlockSource2:
+			blocks[name] = source.ConfigBlocks(c)
 		}
 	}
 	return blocks
@@ -187,4 +190,9 @@ func (c *Certs) FillDefaults() *Certs {
 // This is used to produce granular diffs for config changes.
 type BlockSource interface {
 	ConfigBlocks() []block.Block
+}
+
+// BlockSource2 is like BlockSource but allows the factory to receive the config as an argument.
+type BlockSource2 interface {
+	ConfigBlocks(cfg *Config) []block.Block
 }

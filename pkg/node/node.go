@@ -13,11 +13,11 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/smart-core-os/sc-golang/pkg/router"
-	"github.com/smart-core-os/sc-golang/pkg/server"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
+	"github.com/vanti-dev/sc-bos/internal/router"
+	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 )
 
 // Node represents a smart core node.
@@ -28,37 +28,49 @@ import (
 // Call Support to add new features to the Node.
 // Calling Support after Register will not have any effect on the served apis.
 type Node struct {
-	name string
-	mu   sync.Mutex // protects all fields below, typically Announce, Support, and methods that rely on that data
+	name   string
+	router *router.Router
+	mu     sync.Mutex // protects all fields below, typically Announce, Support, and methods that rely on that data
 
 	// children keeps track of all the names that have been announced to this node.
 	// Lazy, initialised when addChildTrait via Announce(HasTrait) or Register are called.
 	children *parent.Model
-	// routers holds all the APIs this node supports.
-	// Populated via Support(Routing).
-	routers []router.Router
-	// clients holds instances of service clients returned by Client.
-	// Typically, they are wrappers around each router instance.
-	// Populated via Support(Clients).
-	clients []any
-	// apis holds each of the APIs that this node registers with a grpc.Server.
-	// Populated via Support(Api) explicitly, or Support(Routing) if the router implements server.GrpcApi.
-	apis []server.GrpcApi
 
 	// allMetadata allows users of the node to be notified of any metadata changes via Announce or when
 	// that announcement is undone.
-	allMetadata *resource.Collection // of *traits.Metadata
+	allMetadata *metadata.Collection
 
 	Logger *zap.Logger
 }
 
 // New creates a new Node with the given name.
 func New(name string) *Node {
-	return &Node{
-		name:        name,
-		Logger:      zap.NewNop(),
-		allMetadata: resource.NewCollection(),
+	mapID := func(requestName string) string {
+		if requestName == "" {
+			return name
+		} else {
+			return requestName
+		}
 	}
+
+	node := &Node{
+		name: name,
+		router: router.New(router.WithKeyInterceptor(func(key string) (mappedKey string, err error) {
+			return mapID(key), nil
+		})),
+		children:    parent.NewModel(),
+		Logger:      zap.NewNop(),
+		allMetadata: metadata.NewCollection(resource.WithIDInterceptor(mapID)),
+	}
+
+	// metadata should be supported by default
+	traits.RegisterMetadataApiServer(node.router, metadata.NewCollectionServer(node.allMetadata))
+	_ = node.Announce(name, HasTrait(trait.Metadata))
+	node.announceLocked(name,
+		HasServer(traits.RegisterParentApiServer, traits.ParentApiServer(parent.NewModelServer(node.children))),
+		HasTrait(trait.Parent),
+	)
+	return node
 }
 
 // Name returns the device name for this node, how this node refers to itself.
@@ -66,52 +78,12 @@ func (n *Node) Name() string {
 	return n.name
 }
 
-// Register implements server.GrpcApi and registers all supported routers with s.
-func (n *Node) Register(s *grpc.Server) {
-	n.mu.Lock()
-	defer n.mu.Unlock()
-	for _, api := range n.apis {
-		api.Register(s)
-	}
-	n.registerRequiredLocked(s)
-	n.parentLocked() // force the parent api to be initialised
-}
-
-// registerRequiredLocked registers the required APIs with s if they haven't already been registered.
-func (n *Node) registerRequiredLocked(s *grpc.Server) {
-	// Note: we don't use alltraits here to avoid importing and initialising all traits when we only need a few.
-	registeredServices := s.GetServiceInfo()
-	if _, ok := registeredServices["smartcore.traits.MetadataApi"]; !ok {
-		r := metadata.NewApiRouter()
-		registerRouter(n, s, r, metadata.WrapApi(r))
-	}
-	if _, ok := registeredServices["smartcore.traits.MetadataInfo"]; !ok {
-		r := metadata.NewInfoRouter()
-		registerRouter(n, s, r, metadata.WrapInfo(r))
-	}
-	if _, ok := registeredServices["smartcore.traits.ParentApi"]; !ok {
-		r := parent.NewApiRouter()
-		registerRouter(n, s, r, parent.WrapApi(r))
-	}
-	if _, ok := registeredServices["smartcore.traits.ParentInfo"]; !ok {
-		r := parent.NewInfoRouter()
-		registerRouter(n, s, r, parent.WrapInfo(r))
-	}
-}
-
-func registerRouter[R interface {
-	router.Router
-	server.GrpcApi
-}](n *Node, s *grpc.Server, r R, c any) {
-	n.addRouter(r)
-	n.addApi(r)
-	n.addClient(c)
-	r.Register(s)
-}
-
 // Announce adds a new name with the given features to this node.
 // You may call Announce multiple times with the same name to add additional features, for example new traits.
-// Executing the returned Undo will undo any direct changes made.
+// You must not Announce the same features on the same name multiple times, until the original announcement of
+// those features has been undone.
+// Executing the returned Undo will undo any direct changes made, but will not remove support for any services
+// from the router.
 //
 // # A note on undoing
 //
@@ -124,6 +96,7 @@ func (n *Node) Announce(name string, features ...Feature) Undo {
 }
 
 func (n *Node) announceLocked(name string, features ...Feature) Undo {
+	log := n.Logger.Sugar()
 	a := &announcement{name: name}
 	for _, feature := range features {
 		feature.apply(a)
@@ -132,21 +105,49 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 	var undo []Undo
 	undo = append(undo, a.undo...)
 
-	for _, client := range a.clients {
-		undo = append(undo, n.addRoute(name, client))
+	// register all relevant routes with the router
+	var services []service
+	services = append(services, a.services...)
+	for _, t := range a.traits {
+		services = append(services, t.services...)
+		traitSvcs, err := traitServices(t.name)
+		if err != nil {
+			log.Errorf("cannot determine services to support for trait %s: %v", t.name, err)
+		} else {
+			services = append(services, traitSvcs...)
+		}
 	}
-	log := n.Logger.Sugar()
+	if len(services) > 0 || a.proxyTo != nil {
+		log.Debugf("announcing %q with %d services (proxy=%v)", name, len(services), a.proxyTo != nil)
+	}
+	for _, s := range services {
+		serviceName := s.desc.FullName()
+		undoRoute, err := registerDeviceRoute(n.router, name, s)
+		if err != nil {
+			log.Errorf("cannot register service %s for %q: %v", serviceName, name, err)
+		} else {
+			undo = append(undo, undoRoute)
+		}
+	}
+	if a.proxyTo != nil {
+		undoProxy, err := registerProxyRoute(n.router, name, a.proxyTo)
+		if err != nil {
+			log.Errorf("cannot register proxy for %q: %v", name, err)
+		} else {
+			undo = append(undo, undoProxy)
+		}
+	}
+
+	// unless specifically disabled, all devices support the Metadata trait
+	if !a.noAutoMetadata {
+		a.traits = append(a.traits, traitFeature{name: trait.Metadata})
+	}
 	for _, t := range a.traits {
 		log.Debugf("%v now implements %v", name, t.name)
 		undo = append(undo, func() {
 			log.Debugf("%v no longer implements %v", name, t.name)
 		})
 
-		// adding clients must happen before addChildTrait because addChildTrait can call announce and might look
-		// for the metadata client in order to add the Parent trait to it.
-		for _, client := range t.clients {
-			undo = append(undo, n.addRoute(a.name, client))
-		}
 		if !t.noAddChildTrait && name != n.name {
 			undo = append(undo, n.addChildTrait(a.name, t.name))
 		}
@@ -160,6 +161,8 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 		}
 		mds = append(mds, md)
 	}
+	// always need to set the name of the device in its metadata
+	mds = append(mds, &traits.Metadata{Name: name})
 
 	for _, md := range mds {
 		undoMd, err := n.mergeMetadata(name, md)
@@ -175,50 +178,13 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 	return UndoAll(undo...)
 }
 
-// Support adds new supported functions to this node.
-func (n *Node) Support(functions ...Function) {
-	n.mu.Lock()
-	defer n.mu.Unlock()
-	for _, function := range functions {
-		function.apply(n)
-	}
-}
-
-func (n *Node) addRouter(rs ...router.Router) {
-	n.routers = append(n.routers, rs...)
-}
-
-func (n *Node) addApi(apis ...server.GrpcApi) {
-	n.apis = append(n.apis, apis...)
-}
-
-// addRoute adds name->impl as a route to all routers that support the type impl.
-func (n *Node) addRoute(name string, c client) Undo {
-	var undo []Undo
-	var addCount int
-	for _, r := range n.routers {
-		if r.HoldsType(c.impl) {
-			addCount++
-			r.Add(name, c.impl)
-			r := r
-			undo = append(undo, func() {
-				r.Remove(name)
-			})
-		}
-	}
-	if addCount == 0 && !c.allowUnsupported {
-		n.Logger.Warn(fmt.Sprintf("no router for %s typed %T", name, c.impl))
-	}
-	return UndoAll(undo...)
-}
-
 func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
 	retryConcurrentOp(func() {
-		n.parentLocked().AddChildTrait(name, traitName...)
+		n.children.AddChildTrait(name, traitName...)
 	})
 	return func() {
 		var child *traits.Child
-		parentModel := n.parent()
+		parentModel := n.children
 		retryConcurrentOp(func() {
 			child = parentModel.RemoveChildTrait(name, traitName...)
 		})
@@ -230,26 +196,6 @@ func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
 			})
 		}
 	}
-}
-
-func (n *Node) addClient(c ...any) {
-	n.clients = append(n.clients, c...)
-}
-
-func (n *Node) parent() *parent.Model {
-	n.mu.Lock()
-	defer n.mu.Unlock()
-	return n.parentLocked()
-}
-
-func (n *Node) parentLocked() *parent.Model {
-	if n.children == nil {
-		// add this model as a device
-		n.children = parent.NewModel()
-		client := parent.WrapApi(parent.NewModelServer(n.children))
-		n.announceLocked(n.name, HasTrait(trait.Parent, WithClients(client)))
-	}
-	return n.children
 }
 
 // retryConcurrentOp runs fn retrying up to 5 times when any panics that isConcurrentUpdateDetectedPanic returns true for.
@@ -291,4 +237,91 @@ func isConcurrentUpdateDetectedError(err error) bool {
 		return false
 	}
 	return s.Code() == codes.Aborted && strings.Contains(s.Message(), "concurrent update detected")
+}
+
+// Supports s on the router.
+// If s has a conn, adds a route for it.
+func registerDeviceRoute(r *router.Router, name string, s service) (Undo, error) {
+	err := ensureServiceSupported(r, s)
+	if err != nil {
+		return NilUndo, err
+	}
+	if s.conn == nil {
+		// service just needs to be supported by the router, but don't need to add a route
+		return NilUndo, nil
+	}
+
+	serviceName := string(s.desc.FullName())
+	err = r.AddRoute(serviceName, name, s.conn)
+	if err != nil {
+		return NilUndo, err
+	}
+
+	return func() {
+		_ = r.DeleteRoute(serviceName, name)
+	}, nil
+}
+
+func registerProxyRoute(r *router.Router, name string, conn grpc.ClientConnInterface) (Undo, error) {
+	err := r.AddRoute("", name, conn)
+	if err != nil {
+		return NilUndo, err
+	}
+
+	return func() {
+		_ = r.DeleteRoute("", name)
+	}, nil
+}
+
+func ensureServiceSupported(r *router.Router, s service) error {
+	serviceName := string(s.desc.FullName())
+	if existing := r.GetService(serviceName); existing != nil {
+		if s.nameRouting && !existing.KeyRoutable() {
+			// existing service does not support name routing!
+			return fmt.Errorf("service %q already exists but does not support name routing", serviceName)
+		}
+		// already supported, nothing to do
+		return nil
+	}
+
+	var routerService *router.Service
+	if s.nameRouting {
+		// smart core traits use the name field to route requests to the right device
+		var err error
+		routerService, err = router.NewRoutedService(s.desc, "name")
+		if err != nil {
+			return fmt.Errorf("service %q is not routable by name: %w", serviceName, err)
+		}
+	} else {
+		routerService = router.NewUnroutedService(s.desc)
+	}
+
+	// AddService might return ErrServiceExists if another goroutine added support after the GetService check above
+	// this is a bit of wasted work but is safe because the service added will be the same
+	err := r.AddService(routerService)
+	if err != nil && !errors.Is(err, router.ErrServiceExists) {
+		return err
+	}
+	return nil
+}
+
+// returns services that should be supported by the node for the given trait
+// (returned services do not contain connections, they are just descriptors)
+func traitServices(name trait.Name) ([]service, error) {
+	serviceDescs := alltraits.ServiceDesc(name)
+	if len(serviceDescs) == 0 {
+		return nil, fmt.Errorf("trait %s not recognised", name)
+	}
+
+	var services []service
+	for _, serviceDesc := range serviceDescs {
+		desc, err := registryDescriptor(serviceDesc.ServiceName)
+		if err != nil {
+			return nil, err
+		}
+
+		services = append(services, service{desc: desc, nameRouting: true})
+	}
+
+	return services, nil
 }

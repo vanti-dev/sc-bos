@@ -3,32 +3,40 @@
 package gen
 
 import (
-	context "context"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 	grpc "google.golang.org/grpc"
 )
 
-// WrapAxiomXaDriverService	adapts a AxiomXaDriverServiceServer	and presents it as a AxiomXaDriverServiceClient
-func WrapAxiomXaDriverService(server AxiomXaDriverServiceServer) AxiomXaDriverServiceClient {
-	return &axiomXaDriverServiceWrapper{server}
+// WrapAxiomXaDriverService	adapts a gen.AxiomXaDriverServiceServer	and presents it as a gen.AxiomXaDriverServiceClient
+func WrapAxiomXaDriverService(server AxiomXaDriverServiceServer) *AxiomXaDriverServiceWrapper {
+	conn := wrap.ServerToClient(AxiomXaDriverService_ServiceDesc, server)
+	client := NewAxiomXaDriverServiceClient(conn)
+	return &AxiomXaDriverServiceWrapper{
+		AxiomXaDriverServiceClient: client,
+		server:                     server,
+		conn:                       conn,
+		desc:                       AxiomXaDriverService_ServiceDesc,
+	}
 }
 
-type axiomXaDriverServiceWrapper struct {
+type AxiomXaDriverServiceWrapper struct {
+	AxiomXaDriverServiceClient
+
 	server AxiomXaDriverServiceServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
-
-// compile time check that we implement the interface we need
-var _ AxiomXaDriverServiceClient = (*axiomXaDriverServiceWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *axiomXaDriverServiceWrapper) UnwrapServer() AxiomXaDriverServiceServer {
+func (w *AxiomXaDriverServiceWrapper) UnwrapServer() AxiomXaDriverServiceServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *axiomXaDriverServiceWrapper) Unwrap() any {
+func (w *AxiomXaDriverServiceWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *axiomXaDriverServiceWrapper) SaveQRCredential(ctx context.Context, req *SaveQRCredentialRequest, _ ...grpc.CallOption) (*SaveQRCredentialResponse, error) {
-	return w.server.SaveQRCredential(ctx, req)
+func (w *AxiomXaDriverServiceWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

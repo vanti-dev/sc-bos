@@ -1,7 +1,13 @@
 <template>
   <v-card elevation="0" tile>
-    <v-card-subtitle class="text-title-caps-large text-neutral-lighten-3 py-3 opacity-100">
-      Electric
+    <v-card-subtitle class="text-title-caps-large text-neutral-lighten-3 py-3 opacity-100 d-flex align-center">
+      <span class="mr-auto">Electric</span>
+      <v-btn v-if="hasHidden"
+             :icon="showHidden ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+             variant="flat" size="small"
+             class="my-n4"
+             @click="showHidden = !showHidden"
+             v-tooltip="showHidden ? 'Hide more fields' : 'Show more fields'"/>
     </v-card-subtitle>
     <div class="layout mx-4">
       <template v-for="(row, i) in rows" :key="i">
@@ -15,7 +21,7 @@
 </template>
 <script setup>
 import {useElectricDemand} from '@/traits/electricDemand/electric.js';
-import {computed} from 'vue';
+import {computed, ref} from 'vue';
 
 const props = defineProps({
   value: {
@@ -31,34 +37,47 @@ const props = defineProps({
 
 const {
   realPower, realPowerUnit,
-  apparentPower, apparentPowerUnit,
-  reactivePower, reactivePowerUnit,
-  powerFactor
+  apparentPower, apparentPowerUnit, hasApparentPower,
+  reactivePower, reactivePowerUnit, hasReactivePower,
+  powerFactor, hasPowerFactor
 } = useElectricDemand(() => props.value);
 
+const showHidden = ref(false);
+const hasHidden = computed(() => !hasApparentPower.value || !hasReactivePower.value || !hasPowerFactor.value);
+const showApparentPower = computed(() => hasApparentPower.value || showHidden.value);
+const showReactivePower = computed(() => hasReactivePower.value || showHidden.value);
+const showPowerFactor = computed(() => hasPowerFactor.value || showHidden.value);
+
 const rows = computed(() => {
-  return [
+  const result = [
     {
       label: 'Real Power',
       value: realPower.value.toFixed(3),
       unit: realPowerUnit.value
-    },
-    {
+    }
+  ];
+  if (showApparentPower.value) {
+    result.push({
       label: 'Apparent Power',
       value: apparentPower.value.toFixed(3),
       unit: apparentPowerUnit.value
-    },
-    {
+    });
+  }
+  if (showReactivePower.value) {
+    result.push({
       label: 'Reactive Power',
       value: reactivePower.value.toFixed(3),
       unit: reactivePowerUnit.value
-    },
-    {
+    });
+  }
+  if (showPowerFactor.value) {
+    result.push({
       label: 'Power Factor',
       value: powerFactor.value?.toFixed(2),
       unit: undefined
-    }
-  ];
+    });
+  }
+  return result;
 });
 </script>
 

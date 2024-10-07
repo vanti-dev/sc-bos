@@ -16,7 +16,6 @@ import (
 
 // announceMeter with events in order
 func announceMeter(root node.Announcer, name, unit string, events []float32) error {
-
 	model := meter.NewModel()
 
 	modelInfoServer := &meter.InfoServer{
@@ -24,7 +23,7 @@ func announceMeter(root node.Announcer, name, unit string, events []float32) err
 		MeterReading:                 &gen.MeterReadingSupport{Unit: unit},
 	}
 
-	client := node.WithClients(meter.NewModelServer(model), gen.WrapMeterInfo(modelInfoServer))
+	client := node.WithClients(gen.WrapMeterApi(meter.NewModelServer(model)), gen.WrapMeterInfo(modelInfoServer))
 	root.Announce(name, node.HasTrait(meter.TraitName, client))
 
 	store := memstore.New()

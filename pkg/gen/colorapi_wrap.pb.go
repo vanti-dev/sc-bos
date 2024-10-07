@@ -3,68 +3,40 @@
 package gen
 
 import (
-	context "context"
 	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 	grpc "google.golang.org/grpc"
 )
 
-// WrapColorApi	adapts a ColorApiServer	and presents it as a ColorApiClient
-func WrapColorApi(server ColorApiServer) ColorApiClient {
-	return &colorApiWrapper{server}
+// WrapColorApi	adapts a gen.ColorApiServer	and presents it as a gen.ColorApiClient
+func WrapColorApi(server ColorApiServer) *ColorApiWrapper {
+	conn := wrap.ServerToClient(ColorApi_ServiceDesc, server)
+	client := NewColorApiClient(conn)
+	return &ColorApiWrapper{
+		ColorApiClient: client,
+		server:         server,
+		conn:           conn,
+		desc:           ColorApi_ServiceDesc,
+	}
 }
 
-type colorApiWrapper struct {
+type ColorApiWrapper struct {
+	ColorApiClient
+
 	server ColorApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
-
-// compile time check that we implement the interface we need
-var _ ColorApiClient = (*colorApiWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *colorApiWrapper) UnwrapServer() ColorApiServer {
+func (w *ColorApiWrapper) UnwrapServer() ColorApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *colorApiWrapper) Unwrap() any {
+func (w *ColorApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *colorApiWrapper) GetColor(ctx context.Context, req *GetColorRequest, _ ...grpc.CallOption) (*Color, error) {
-	return w.server.GetColor(ctx, req)
-}
-
-func (w *colorApiWrapper) UpdateColor(ctx context.Context, req *UpdateColorRequest, _ ...grpc.CallOption) (*Color, error) {
-	return w.server.UpdateColor(ctx, req)
-}
-
-func (w *colorApiWrapper) PullColor(ctx context.Context, in *PullColorRequest, opts ...grpc.CallOption) (ColorApi_PullColorClient, error) {
-	stream := wrap.NewClientServerStream(ctx)
-	server := &pullColorColorApiServerWrapper{stream.Server()}
-	client := &pullColorColorApiClientWrapper{stream.Client()}
-	go func() {
-		err := w.server.PullColor(in, server)
-		stream.Close(err)
-	}()
-	return client, nil
-}
-
-type pullColorColorApiClientWrapper struct {
-	grpc.ClientStream
-}
-
-func (w *pullColorColorApiClientWrapper) Recv() (*PullColorResponse, error) {
-	m := new(PullColorResponse)
-	if err := w.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-type pullColorColorApiServerWrapper struct {
-	grpc.ServerStream
-}
-
-func (s *pullColorColorApiServerWrapper) Send(response *PullColorResponse) error {
-	return s.ServerStream.SendMsg(response)
+func (w *ColorApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

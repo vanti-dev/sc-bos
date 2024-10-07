@@ -10,7 +10,7 @@ import (
 	io "io"
 )
 
-// StatusApiRouter is a StatusApiServer that allows routing named requests to specific StatusApiClient
+// StatusApiRouter is a gen.StatusApiServer that allows routing named requests to specific gen.StatusApiClient
 type StatusApiRouter struct {
 	UnimplementedStatusApiServer
 
@@ -34,14 +34,14 @@ func WithStatusApiClientFactory(f func(name string) (StatusApiClient, error)) ro
 	})
 }
 
-func (r *StatusApiRouter) Register(server *grpc.Server) {
+func (r *StatusApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterStatusApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type StatusApiClient.
+// Add extends Router.Add to panic if client is not of type gen.StatusApiClient.
 func (r *StatusApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a StatusApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.StatusApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

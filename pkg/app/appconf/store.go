@@ -104,6 +104,10 @@ func updateServiceConfig[T any](services []T, name, typ string, data []byte, ops
 				return services, errors.New("type cannot be changed")
 			}
 		}
+		// when updating an existing service, use the existing type if not provided
+		if typ == "" {
+			_, typ = ops.getMetadata(serviceCfg)
+		}
 		serviceCfg = ops.update(serviceCfg, typ, data)
 		services[idx] = serviceCfg
 	}

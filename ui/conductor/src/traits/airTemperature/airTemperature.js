@@ -6,6 +6,7 @@ import {
   updateAirTemperature
 } from '@/api/sc/traits/air-temperature';
 import {setRequestName, toQueryObject, watchResource} from '@/util/traits';
+import {isNullOrUndef} from '@/util/types.js';
 import {AirTemperature} from '@smart-core-os/sc-api-grpc-web/traits/air_temperature_pb';
 import {computed, onScopeDispose, reactive, ref, toRefs, toValue} from 'vue';
 
@@ -99,16 +100,14 @@ export function useUpdateAirTemperature(name) {
   };
 }
 
+const UNIT = '°C';
+
 /**
  * @param {MaybeRefOrGetter<AirTemperature.AsObject>} value
- * @return {{
+ * @return {UseAirTemperatureValuesReturn & {
  *   temp: ComputedRef<number>,
  *   setPoint: ComputedRef<number>,
- *   hasTemp: ComputedRef<boolean>,
- *   hasSetPoint: ComputedRef<boolean>,
- *   setPointStr: ComputedRef<string>,
  *   airTempData: ComputedRef<{}>,
- *   tempStr: ComputedRef<string>,
  *   tempRange: Ref<{low: number, high: number}>,
  *   tempProgress: ComputedRef<number>,
  *   humidity: ComputedRef<number>
@@ -117,31 +116,18 @@ export function useUpdateAirTemperature(name) {
 export function useAirTemperature(value) {
   const _v = computed(() => toValue(value));
 
-  const UNIT = '°C';
-  const hasSetPoint = computed(() => {
-    return _v.value?.temperatureSetPoint?.valueCelsius !== undefined;
-  });
   const setPoint = computed(() => {
     return _v.value?.temperatureSetPoint?.valueCelsius;
-  });
-  const setPointStr = computed(() => {
-    return setPoint.value?.toFixed(1) + UNIT;
-  });
-
-  const hasTemp = computed(() => {
-    return _v.value?.ambientTemperature?.valueCelsius !== undefined;
   });
   const temp = computed(() => {
     return _v.value?.ambientTemperature?.valueCelsius;
   });
-  const tempStr = computed(() => {
-    const numStr = temp.value?.toFixed(1);
-    if (hasSetPoint.value) {
-      return numStr;
-    } else {
-      return numStr + UNIT;
-    }
-  });
+  const {
+    hasSetPoint,
+    setPointStr,
+    hasTemp,
+    tempStr
+  } = useAirTemperatureValues(temp, setPoint);
 
   const tempRange = ref({
     low: 18.0,
@@ -209,5 +195,46 @@ export function useAirTemperature(value) {
     tempProgress,
     airTempData,
     humidity
+  };
+}
+
+/**
+ * @typedef {Object} UseAirTemperatureValuesReturn
+ * @property {Readonly<Ref<boolean>>} hasTemp
+ * @property {Readonly<Ref<boolean>>} hasSetPoint
+ * @property {Readonly<Ref<string>>} setPointStr
+ * @property {Readonly<Ref<string>>} tempStr
+ */
+/**
+ * @param {MaybeRefOrGetter<number | undefined>} temp
+ * @param {MaybeRefOrGetter<number | undefined>} setPoint
+ * @return {UseAirTemperatureValuesReturn}
+ */
+export function useAirTemperatureValues(temp, setPoint) {
+  const has = (v) => !isNullOrUndef(v) && !isNaN(v);
+  const hasSetPoint = computed(() => {
+    return has(toValue(setPoint));
+  });
+  const setPointStr = computed(() => {
+    return (toValue(setPoint) ?? 0).toFixed(1) + UNIT;
+  });
+
+  const hasTemp = computed(() => {
+    return has(toValue(temp));
+  });
+  const tempStr = computed(() => {
+    const numStr = (toValue(temp) ?? 0).toFixed(1);
+    if (hasSetPoint.value) {
+      return numStr;
+    } else {
+      return numStr + UNIT;
+    }
+  });
+
+  return {
+    hasSetPoint,
+    setPointStr,
+    hasTemp,
+    tempStr
   };
 }

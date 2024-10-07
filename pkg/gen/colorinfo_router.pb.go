@@ -9,7 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// ColorInfoRouter is a ColorInfoServer that allows routing named requests to specific ColorInfoClient
+// ColorInfoRouter is a gen.ColorInfoServer that allows routing named requests to specific gen.ColorInfoClient
 type ColorInfoRouter struct {
 	UnimplementedColorInfoServer
 
@@ -33,14 +33,14 @@ func WithColorInfoClientFactory(f func(name string) (ColorInfoClient, error)) ro
 	})
 }
 
-func (r *ColorInfoRouter) Register(server *grpc.Server) {
+func (r *ColorInfoRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterColorInfoServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type ColorInfoClient.
+// Add extends Router.Add to panic if client is not of type gen.ColorInfoClient.
 func (r *ColorInfoRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a ColorInfoClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.ColorInfoClient", client))
 	}
 	return r.Router.Add(name, client)
 }

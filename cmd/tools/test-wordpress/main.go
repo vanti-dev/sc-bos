@@ -5,13 +5,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/smart-core-os/sc-golang/pkg/trait"
-
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 )
 
 func main() {
@@ -21,47 +17,41 @@ func main() {
 		panic(err)
 	}
 
-	root := node.New("wordpress-test")
+	announcer := node.New("wordpress-test")
 
-	alltraits.AddSupportFor(root, trait.OccupancySensor)
-	err = announceOccupancy(root, "pir/01", 1)
+	err = announceOccupancy(announcer, "pir/01", 8)
 	if err != nil {
 		panic(err)
 	}
-	err = announceOccupancy(root, "pir/02", 2)
+	err = announceOccupancy(announcer, "pir/02", 2)
 	if err != nil {
 		panic(err)
 	}
-	err = announceOccupancy(root, "pir/03", 4)
+	err = announceOccupancy(announcer, "pir/03", 4)
 	if err != nil {
 		panic(err)
 	}
-
-	alltraits.AddSupportFor(root, trait.AirQualitySensor)
-	err = announceAirQuality(root, "smart-core/iaq/01", 112.1)
+	err = announceAirQuality(announcer, "smart-core/iaq/01", 112.1)
 	if err != nil {
 		panic(err)
 	}
 
-	alltraits.AddSupportFor(root, trait.AirTemperature)
-	err = announceTemperature(root, "FCU/01", 19.1)
+	err = announceTemperature(announcer, "FCU/01", 19.1)
 	if err != nil {
 		panic(err)
 	}
-	err = announceTemperature(root, "FCU/02", 21.3)
+	err = announceTemperature(announcer, "FCU/02", 21.3)
 	if err != nil {
 		panic(err)
 	}
 
-	alltraits.AddSupportFor(root, meter.TraitName)
-
-	err = announceMeter(root, "smart-core/meters/01", "mWh", []float32{0, 1, 2, 12, 54, 100, 222, 654, 900, 1122, 1543})
+	err = announceMeter(announcer, "smart-core/meters/01", "mWh", []float32{0, 1, 2, 12, 54, 100, 222, 654, 900, 1122, 1543})
 
 	if err != nil {
 		panic(err)
 	}
 
-	err = announceMeter(root, "smart-core/meters/03", "litres", []float32{0, 1, 11, 111, 222, 433, 566, 888, 1002, 1023, 2000})
+	err = announceMeter(announcer, "smart-core/meters/03", "litres", []float32{0, 1, 11, 111, 222, 433, 566, 888, 1002, 1023, 2000})
 
 	if err != nil {
 		panic(err)
@@ -69,7 +59,7 @@ func main() {
 
 	srv := auto.Services{
 		Logger: logger,
-		Node:   root,
+		Node:   announcer,
 		Now:    func() time.Time { return time.Now() },
 	}
 

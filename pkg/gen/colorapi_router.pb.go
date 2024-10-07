@@ -10,7 +10,7 @@ import (
 	io "io"
 )
 
-// ColorApiRouter is a ColorApiServer that allows routing named requests to specific ColorApiClient
+// ColorApiRouter is a gen.ColorApiServer that allows routing named requests to specific gen.ColorApiClient
 type ColorApiRouter struct {
 	UnimplementedColorApiServer
 
@@ -34,14 +34,14 @@ func WithColorApiClientFactory(f func(name string) (ColorApiClient, error)) rout
 	})
 }
 
-func (r *ColorApiRouter) Register(server *grpc.Server) {
+func (r *ColorApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterColorApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type ColorApiClient.
+// Add extends Router.Add to panic if client is not of type gen.ColorApiClient.
 func (r *ColorApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a ColorApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.ColorApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

@@ -1,26 +1,15 @@
 <template>
   <status-alert v-if="props.streamError" icon="mdi-thermometer-low" :resource="props.streamError"/>
 
-  <span class="text-no-wrap at-cell" v-else-if="(hasTemp || hasSetPoint) && !props.streamError">
-    <v-tooltip location="bottom" v-if="hasTemp" open-delay="1000">
-      <template #activator="{props: _props}">
-        <span v-bind="_props">{{ tempStr }}</span>
-      </template>
-      <span>Current temperature</span>
-    </v-tooltip>
-    <v-icon class="mx-n1" v-if="hasTemp && hasSetPoint" size="20">mdi-menu-right</v-icon>
-    <v-tooltip location="bottom" v-if="hasSetPoint" open-delay="1000">
-      <template #activator="{props: _props}">
-        <span v-bind="_props">{{ setPointStr }}</span>
-      </template>
-      <span>Set point</span>
-    </v-tooltip>
-    <v-icon end size="20">mdi-thermometer</v-icon>
-  </span>
+  <air-temperature-chip
+      v-else-if="(hasTemp || hasSetPoint) && !props.streamError"
+      variant="text" size="30" layout="right"
+      :current-temp="temp" :set-point="setPoint"/>
 </template>
 <script setup>
 import StatusAlert from '@/components/StatusAlert.vue';
 import {useAirTemperature} from '@/traits/airTemperature/airTemperature.js';
+import AirTemperatureChip from '@/traits/airTemperature/AirTemperatureChip.vue';
 
 const props = defineProps({
   value: {
@@ -44,9 +33,9 @@ const props = defineProps({
 
 const {
   hasSetPoint,
-  setPointStr,
   hasTemp,
-  tempStr
+  setPoint,
+  temp
 } = useAirTemperature(() => props.value);
 </script>
 
