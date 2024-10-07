@@ -9,7 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// StatusHistoryRouter is a StatusHistoryServer that allows routing named requests to specific StatusHistoryClient
+// StatusHistoryRouter is a gen.StatusHistoryServer that allows routing named requests to specific gen.StatusHistoryClient
 type StatusHistoryRouter struct {
 	UnimplementedStatusHistoryServer
 
@@ -33,14 +33,14 @@ func WithStatusHistoryClientFactory(f func(name string) (StatusHistoryClient, er
 	})
 }
 
-func (r *StatusHistoryRouter) Register(server *grpc.Server) {
+func (r *StatusHistoryRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterStatusHistoryServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type StatusHistoryClient.
+// Add extends Router.Add to panic if client is not of type gen.StatusHistoryClient.
 func (r *StatusHistoryRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a StatusHistoryClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.StatusHistoryClient", client))
 	}
 	return r.Router.Add(name, client)
 }

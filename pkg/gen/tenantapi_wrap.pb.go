@@ -3,209 +3,40 @@
 package gen
 
 import (
-	context "context"
 	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 	grpc "google.golang.org/grpc"
 )
 
-// WrapTenantApi	adapts a TenantApiServer	and presents it as a TenantApiClient
-func WrapTenantApi(server TenantApiServer) TenantApiClient {
-	return &tenantApiWrapper{server}
+// WrapTenantApi	adapts a gen.TenantApiServer	and presents it as a gen.TenantApiClient
+func WrapTenantApi(server TenantApiServer) *TenantApiWrapper {
+	conn := wrap.ServerToClient(TenantApi_ServiceDesc, server)
+	client := NewTenantApiClient(conn)
+	return &TenantApiWrapper{
+		TenantApiClient: client,
+		server:          server,
+		conn:            conn,
+		desc:            TenantApi_ServiceDesc,
+	}
 }
 
-type tenantApiWrapper struct {
+type TenantApiWrapper struct {
+	TenantApiClient
+
 	server TenantApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
-
-// compile time check that we implement the interface we need
-var _ TenantApiClient = (*tenantApiWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *tenantApiWrapper) UnwrapServer() TenantApiServer {
+func (w *TenantApiWrapper) UnwrapServer() TenantApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *tenantApiWrapper) Unwrap() any {
+func (w *TenantApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *tenantApiWrapper) ListTenants(ctx context.Context, req *ListTenantsRequest, _ ...grpc.CallOption) (*ListTenantsResponse, error) {
-	return w.server.ListTenants(ctx, req)
-}
-
-func (w *tenantApiWrapper) PullTenants(ctx context.Context, in *PullTenantsRequest, opts ...grpc.CallOption) (TenantApi_PullTenantsClient, error) {
-	stream := wrap.NewClientServerStream(ctx)
-	server := &pullTenantsTenantApiServerWrapper{stream.Server()}
-	client := &pullTenantsTenantApiClientWrapper{stream.Client()}
-	go func() {
-		err := w.server.PullTenants(in, server)
-		stream.Close(err)
-	}()
-	return client, nil
-}
-
-type pullTenantsTenantApiClientWrapper struct {
-	grpc.ClientStream
-}
-
-func (w *pullTenantsTenantApiClientWrapper) Recv() (*PullTenantsResponse, error) {
-	m := new(PullTenantsResponse)
-	if err := w.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-type pullTenantsTenantApiServerWrapper struct {
-	grpc.ServerStream
-}
-
-func (s *pullTenantsTenantApiServerWrapper) Send(response *PullTenantsResponse) error {
-	return s.ServerStream.SendMsg(response)
-}
-
-func (w *tenantApiWrapper) CreateTenant(ctx context.Context, req *CreateTenantRequest, _ ...grpc.CallOption) (*Tenant, error) {
-	return w.server.CreateTenant(ctx, req)
-}
-
-func (w *tenantApiWrapper) GetTenant(ctx context.Context, req *GetTenantRequest, _ ...grpc.CallOption) (*Tenant, error) {
-	return w.server.GetTenant(ctx, req)
-}
-
-func (w *tenantApiWrapper) UpdateTenant(ctx context.Context, req *UpdateTenantRequest, _ ...grpc.CallOption) (*Tenant, error) {
-	return w.server.UpdateTenant(ctx, req)
-}
-
-func (w *tenantApiWrapper) DeleteTenant(ctx context.Context, req *DeleteTenantRequest, _ ...grpc.CallOption) (*DeleteTenantResponse, error) {
-	return w.server.DeleteTenant(ctx, req)
-}
-
-func (w *tenantApiWrapper) PullTenant(ctx context.Context, in *PullTenantRequest, opts ...grpc.CallOption) (TenantApi_PullTenantClient, error) {
-	stream := wrap.NewClientServerStream(ctx)
-	server := &pullTenantTenantApiServerWrapper{stream.Server()}
-	client := &pullTenantTenantApiClientWrapper{stream.Client()}
-	go func() {
-		err := w.server.PullTenant(in, server)
-		stream.Close(err)
-	}()
-	return client, nil
-}
-
-type pullTenantTenantApiClientWrapper struct {
-	grpc.ClientStream
-}
-
-func (w *pullTenantTenantApiClientWrapper) Recv() (*PullTenantResponse, error) {
-	m := new(PullTenantResponse)
-	if err := w.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-type pullTenantTenantApiServerWrapper struct {
-	grpc.ServerStream
-}
-
-func (s *pullTenantTenantApiServerWrapper) Send(response *PullTenantResponse) error {
-	return s.ServerStream.SendMsg(response)
-}
-
-func (w *tenantApiWrapper) AddTenantZones(ctx context.Context, req *AddTenantZonesRequest, _ ...grpc.CallOption) (*Tenant, error) {
-	return w.server.AddTenantZones(ctx, req)
-}
-
-func (w *tenantApiWrapper) RemoveTenantZones(ctx context.Context, req *RemoveTenantZonesRequest, _ ...grpc.CallOption) (*Tenant, error) {
-	return w.server.RemoveTenantZones(ctx, req)
-}
-
-func (w *tenantApiWrapper) ListSecrets(ctx context.Context, req *ListSecretsRequest, _ ...grpc.CallOption) (*ListSecretsResponse, error) {
-	return w.server.ListSecrets(ctx, req)
-}
-
-func (w *tenantApiWrapper) PullSecrets(ctx context.Context, in *PullSecretsRequest, opts ...grpc.CallOption) (TenantApi_PullSecretsClient, error) {
-	stream := wrap.NewClientServerStream(ctx)
-	server := &pullSecretsTenantApiServerWrapper{stream.Server()}
-	client := &pullSecretsTenantApiClientWrapper{stream.Client()}
-	go func() {
-		err := w.server.PullSecrets(in, server)
-		stream.Close(err)
-	}()
-	return client, nil
-}
-
-type pullSecretsTenantApiClientWrapper struct {
-	grpc.ClientStream
-}
-
-func (w *pullSecretsTenantApiClientWrapper) Recv() (*PullSecretsResponse, error) {
-	m := new(PullSecretsResponse)
-	if err := w.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-type pullSecretsTenantApiServerWrapper struct {
-	grpc.ServerStream
-}
-
-func (s *pullSecretsTenantApiServerWrapper) Send(response *PullSecretsResponse) error {
-	return s.ServerStream.SendMsg(response)
-}
-
-func (w *tenantApiWrapper) CreateSecret(ctx context.Context, req *CreateSecretRequest, _ ...grpc.CallOption) (*Secret, error) {
-	return w.server.CreateSecret(ctx, req)
-}
-
-func (w *tenantApiWrapper) VerifySecret(ctx context.Context, req *VerifySecretRequest, _ ...grpc.CallOption) (*Secret, error) {
-	return w.server.VerifySecret(ctx, req)
-}
-
-func (w *tenantApiWrapper) GetSecret(ctx context.Context, req *GetSecretRequest, _ ...grpc.CallOption) (*Secret, error) {
-	return w.server.GetSecret(ctx, req)
-}
-
-func (w *tenantApiWrapper) UpdateSecret(ctx context.Context, req *UpdateSecretRequest, _ ...grpc.CallOption) (*Secret, error) {
-	return w.server.UpdateSecret(ctx, req)
-}
-
-func (w *tenantApiWrapper) DeleteSecret(ctx context.Context, req *DeleteSecretRequest, _ ...grpc.CallOption) (*DeleteSecretResponse, error) {
-	return w.server.DeleteSecret(ctx, req)
-}
-
-func (w *tenantApiWrapper) PullSecret(ctx context.Context, in *PullSecretRequest, opts ...grpc.CallOption) (TenantApi_PullSecretClient, error) {
-	stream := wrap.NewClientServerStream(ctx)
-	server := &pullSecretTenantApiServerWrapper{stream.Server()}
-	client := &pullSecretTenantApiClientWrapper{stream.Client()}
-	go func() {
-		err := w.server.PullSecret(in, server)
-		stream.Close(err)
-	}()
-	return client, nil
-}
-
-type pullSecretTenantApiClientWrapper struct {
-	grpc.ClientStream
-}
-
-func (w *pullSecretTenantApiClientWrapper) Recv() (*PullSecretResponse, error) {
-	m := new(PullSecretResponse)
-	if err := w.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-type pullSecretTenantApiServerWrapper struct {
-	grpc.ServerStream
-}
-
-func (s *pullSecretTenantApiServerWrapper) Send(response *PullSecretResponse) error {
-	return s.ServerStream.SendMsg(response)
-}
-
-func (w *tenantApiWrapper) RegenerateSecret(ctx context.Context, req *RegenerateSecretRequest, _ ...grpc.CallOption) (*Secret, error) {
-	return w.server.RegenerateSecret(ctx, req)
+func (w *TenantApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

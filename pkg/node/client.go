@@ -1,52 +1,31 @@
 package node
 
 import (
-	"errors"
 	"fmt"
-	"reflect"
+
+	"google.golang.org/grpc"
+
+	"github.com/vanti-dev/sc-bos/internal/router"
+	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 )
 
-// Client returns a new api client of type C which can be used to interact with the named devices in n.
-func Client[C any](n *Node) (C, error) {
-	for _, client := range n.clients {
-		if t, ok := client.(C); ok {
-			return t, nil
-		}
-	}
-	var c C
-	return c, errors.New("unknown client type")
-}
-
-// FindClient places into c a client backed by the named devices in n.
-func FindClient[C any](n *Node, c *C) {
-	for _, client := range n.clients {
-		if t, ok := client.(C); ok {
-			*c = t
-			return
-		}
-	}
-}
-
-// Client implements Clienter backed by clients configured using Support(Clients).
+// Client implements Clienter backed by the node's router.
+//
+// Deprecated: Use ClientConn() to acquire a connection and construct clients directly.
 func (n *Node) Client(p any) error {
-	v := reflect.ValueOf(p)
-	if v.Kind() != reflect.Pointer {
-		return fmt.Errorf("%T is not a pointer", p)
+	if !alltraits.NewClient(p, n.ClientConn()) {
+		return fmt.Errorf("no client of type %T", p)
 	}
-	elem := v.Elem()
-	et := elem.Type()
-	if !elem.CanSet() {
-		return fmt.Errorf("%T can not be set", p)
-	}
+	return nil
+}
 
-	for _, client := range n.clients {
-		if reflect.TypeOf(client).AssignableTo(et) {
-			elem.Set(reflect.ValueOf(client))
-			return nil
-		}
-	}
+// ClientConn returns a connection to the Node's router.
+func (n *Node) ClientConn() grpc.ClientConnInterface {
+	return router.NewLoopback(n.router)
+}
 
-	return fmt.Errorf("no client of type %v", et)
+func (n *Node) ServerHandler() grpc.StreamHandler {
+	return router.StreamHandler(n.router)
 }
 
 // Clienter represents a type that can respond with an API client.

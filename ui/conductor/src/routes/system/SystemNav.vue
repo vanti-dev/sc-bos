@@ -21,6 +21,11 @@ const {hasNoAccess} = useAuthSetup();
 
 const menuItems = [
   {
+    title: 'Zones',
+    icon: 'mdi-select-all',
+    link: {path: '/system/zones'}
+  },
+  {
     title: 'Drivers',
     icon: 'mdi-arrow-left-right-bold',
     link: {path: '/system/drivers'}

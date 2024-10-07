@@ -3,99 +3,40 @@
 package gen
 
 import (
-	context "context"
 	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 	grpc "google.golang.org/grpc"
 )
 
-// WrapDevicesApi	adapts a DevicesApiServer	and presents it as a DevicesApiClient
-func WrapDevicesApi(server DevicesApiServer) DevicesApiClient {
-	return &devicesApiWrapper{server}
+// WrapDevicesApi	adapts a gen.DevicesApiServer	and presents it as a gen.DevicesApiClient
+func WrapDevicesApi(server DevicesApiServer) *DevicesApiWrapper {
+	conn := wrap.ServerToClient(DevicesApi_ServiceDesc, server)
+	client := NewDevicesApiClient(conn)
+	return &DevicesApiWrapper{
+		DevicesApiClient: client,
+		server:           server,
+		conn:             conn,
+		desc:             DevicesApi_ServiceDesc,
+	}
 }
 
-type devicesApiWrapper struct {
+type DevicesApiWrapper struct {
+	DevicesApiClient
+
 	server DevicesApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
-
-// compile time check that we implement the interface we need
-var _ DevicesApiClient = (*devicesApiWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *devicesApiWrapper) UnwrapServer() DevicesApiServer {
+func (w *DevicesApiWrapper) UnwrapServer() DevicesApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *devicesApiWrapper) Unwrap() any {
+func (w *DevicesApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *devicesApiWrapper) ListDevices(ctx context.Context, req *ListDevicesRequest, _ ...grpc.CallOption) (*ListDevicesResponse, error) {
-	return w.server.ListDevices(ctx, req)
-}
-
-func (w *devicesApiWrapper) PullDevices(ctx context.Context, in *PullDevicesRequest, opts ...grpc.CallOption) (DevicesApi_PullDevicesClient, error) {
-	stream := wrap.NewClientServerStream(ctx)
-	server := &pullDevicesDevicesApiServerWrapper{stream.Server()}
-	client := &pullDevicesDevicesApiClientWrapper{stream.Client()}
-	go func() {
-		err := w.server.PullDevices(in, server)
-		stream.Close(err)
-	}()
-	return client, nil
-}
-
-type pullDevicesDevicesApiClientWrapper struct {
-	grpc.ClientStream
-}
-
-func (w *pullDevicesDevicesApiClientWrapper) Recv() (*PullDevicesResponse, error) {
-	m := new(PullDevicesResponse)
-	if err := w.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-type pullDevicesDevicesApiServerWrapper struct {
-	grpc.ServerStream
-}
-
-func (s *pullDevicesDevicesApiServerWrapper) Send(response *PullDevicesResponse) error {
-	return s.ServerStream.SendMsg(response)
-}
-
-func (w *devicesApiWrapper) GetDevicesMetadata(ctx context.Context, req *GetDevicesMetadataRequest, _ ...grpc.CallOption) (*DevicesMetadata, error) {
-	return w.server.GetDevicesMetadata(ctx, req)
-}
-
-func (w *devicesApiWrapper) PullDevicesMetadata(ctx context.Context, in *PullDevicesMetadataRequest, opts ...grpc.CallOption) (DevicesApi_PullDevicesMetadataClient, error) {
-	stream := wrap.NewClientServerStream(ctx)
-	server := &pullDevicesMetadataDevicesApiServerWrapper{stream.Server()}
-	client := &pullDevicesMetadataDevicesApiClientWrapper{stream.Client()}
-	go func() {
-		err := w.server.PullDevicesMetadata(in, server)
-		stream.Close(err)
-	}()
-	return client, nil
-}
-
-type pullDevicesMetadataDevicesApiClientWrapper struct {
-	grpc.ClientStream
-}
-
-func (w *pullDevicesMetadataDevicesApiClientWrapper) Recv() (*PullDevicesMetadataResponse, error) {
-	m := new(PullDevicesMetadataResponse)
-	if err := w.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-type pullDevicesMetadataDevicesApiServerWrapper struct {
-	grpc.ServerStream
-}
-
-func (s *pullDevicesMetadataDevicesApiServerWrapper) Send(response *PullDevicesMetadataResponse) error {
-	return s.ServerStream.SendMsg(response)
+func (w *DevicesApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

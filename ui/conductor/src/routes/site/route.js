@@ -1,4 +1,4 @@
-import ChildOnlyPage from '@/components/page-layout/ChildOnlyPage.vue';
+import ChildOnlyPage from '@/components/pages/ChildOnlyPage.vue';
 
 export default {
   name: 'site',

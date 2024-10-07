@@ -10,7 +10,7 @@ import (
 	io "io"
 )
 
-// AccessApiRouter is a AccessApiServer that allows routing named requests to specific AccessApiClient
+// AccessApiRouter is a gen.AccessApiServer that allows routing named requests to specific gen.AccessApiClient
 type AccessApiRouter struct {
 	UnimplementedAccessApiServer
 
@@ -34,14 +34,14 @@ func WithAccessApiClientFactory(f func(name string) (AccessApiClient, error)) ro
 	})
 }
 
-func (r *AccessApiRouter) Register(server *grpc.Server) {
+func (r *AccessApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterAccessApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type AccessApiClient.
+// Add extends Router.Add to panic if client is not of type gen.AccessApiClient.
 func (r *AccessApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a AccessApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.AccessApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

@@ -3,32 +3,40 @@
 package gen
 
 import (
-	context "context"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 	grpc "google.golang.org/grpc"
 )
 
-// WrapOccupancySensorHistory	adapts a OccupancySensorHistoryServer	and presents it as a OccupancySensorHistoryClient
-func WrapOccupancySensorHistory(server OccupancySensorHistoryServer) OccupancySensorHistoryClient {
-	return &occupancySensorHistoryWrapper{server}
+// WrapOccupancySensorHistory	adapts a gen.OccupancySensorHistoryServer	and presents it as a gen.OccupancySensorHistoryClient
+func WrapOccupancySensorHistory(server OccupancySensorHistoryServer) *OccupancySensorHistoryWrapper {
+	conn := wrap.ServerToClient(OccupancySensorHistory_ServiceDesc, server)
+	client := NewOccupancySensorHistoryClient(conn)
+	return &OccupancySensorHistoryWrapper{
+		OccupancySensorHistoryClient: client,
+		server:                       server,
+		conn:                         conn,
+		desc:                         OccupancySensorHistory_ServiceDesc,
+	}
 }
 
-type occupancySensorHistoryWrapper struct {
+type OccupancySensorHistoryWrapper struct {
+	OccupancySensorHistoryClient
+
 	server OccupancySensorHistoryServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
-
-// compile time check that we implement the interface we need
-var _ OccupancySensorHistoryClient = (*occupancySensorHistoryWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *occupancySensorHistoryWrapper) UnwrapServer() OccupancySensorHistoryServer {
+func (w *OccupancySensorHistoryWrapper) UnwrapServer() OccupancySensorHistoryServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *occupancySensorHistoryWrapper) Unwrap() any {
+func (w *OccupancySensorHistoryWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *occupancySensorHistoryWrapper) ListOccupancyHistory(ctx context.Context, req *ListOccupancyHistoryRequest, _ ...grpc.CallOption) (*ListOccupancyHistoryResponse, error) {
-	return w.server.ListOccupancyHistory(ctx, req)
+func (w *OccupancySensorHistoryWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

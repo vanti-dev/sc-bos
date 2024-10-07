@@ -9,7 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// ElectricHistoryRouter is a ElectricHistoryServer that allows routing named requests to specific ElectricHistoryClient
+// ElectricHistoryRouter is a gen.ElectricHistoryServer that allows routing named requests to specific gen.ElectricHistoryClient
 type ElectricHistoryRouter struct {
 	UnimplementedElectricHistoryServer
 
@@ -33,14 +33,14 @@ func WithElectricHistoryClientFactory(f func(name string) (ElectricHistoryClient
 	})
 }
 
-func (r *ElectricHistoryRouter) Register(server *grpc.Server) {
+func (r *ElectricHistoryRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterElectricHistoryServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type ElectricHistoryClient.
+// Add extends Router.Add to panic if client is not of type gen.ElectricHistoryClient.
 func (r *ElectricHistoryRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a ElectricHistoryClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.ElectricHistoryClient", client))
 	}
 	return r.Router.Add(name, client)
 }

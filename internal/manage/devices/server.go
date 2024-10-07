@@ -134,7 +134,7 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 		resChange := &gen.PullDevicesResponse_Change{
 			Name:       change.Name,
 			ChangeTime: timestamppb.New(change.ChangeTime),
-			Type:       change.Type,
+			Type:       change.ChangeType,
 		}
 		if change.OldValue != nil {
 			resChange.OldValue = &gen.Device{Name: change.Name, Metadata: change.OldValue}

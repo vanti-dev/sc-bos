@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
@@ -126,4 +127,17 @@ func hostWithDefaultPort(s string, p int) string {
 		return net.JoinHostPort(s, fmt.Sprintf("%d", p))
 	}
 	return s
+}
+
+var Blocks = []block.Block{
+	{
+		Path: []string{"devices"},
+		Key:  "name",
+		Blocks: []block.Block{
+			{Path: []string{"children"}, Key: "name"},
+			{Path: []string{"registrationID"}},
+			{Path: []string{"connectionString"}},
+		},
+	},
+	{Path: []string{"remoteNode"}},
 }

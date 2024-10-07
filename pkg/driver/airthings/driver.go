@@ -17,6 +17,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
+	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/airthings/api"
 	"github.com/vanti-dev/sc-bos/pkg/driver/airthings/local"
@@ -39,6 +40,10 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 	}
 	d.Service = service.New(service.MonoApply(d.applyConfig))
 	return d
+}
+
+func (_ factory) ConfigBlocks() []block.Block {
+	return Blocks
 }
 
 type Driver struct {

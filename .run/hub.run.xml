@@ -1,0 +1,20 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="hub" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="Gateway">
+    <module name="sc-bos" />
+    <working_directory value="$PROJECT_DIR$" />
+    <parameters value="--listen-grpc localhost:50101 --listen-https localhost:50111 --policy-mode off --sysconf pkg/system/gateway/internal/test/testdata/hub/system.conf.json --appconf pkg/system/gateway/internal/test/testdata/hub/app.conf.json --data .data/proxy/hub" />
+    <kind value="FILE" />
+    <package value="github.com/vanti-dev/sc-bos" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/pkg/system/gateway/internal/test/hub/cmd/cmd.go" />
+    <method v="2" />
+  </configuration>
+  <configuration default="false" name="Hub" type="CompoundRunConfigurationType">
+    <toRun name="AC-01 [23301,8301]" type="GoApplicationRunConfiguration" />
+    <toRun name="AC-02 [23302,8302]" type="GoApplicationRunConfiguration" />
+    <toRun name="BC-01 [23101,8101]" type="GoApplicationRunConfiguration" />
+    <toRun name="EG-01 [23201,8201]" type="GoApplicationRunConfiguration" />
+    <toRun name="EG-02 [23202,8202]" type="GoApplicationRunConfiguration" />
+    <method v="2" />
+  </configuration>
+</component>

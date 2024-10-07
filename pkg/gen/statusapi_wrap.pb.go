@@ -3,64 +3,40 @@
 package gen
 
 import (
-	context "context"
 	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 	grpc "google.golang.org/grpc"
 )
 
-// WrapStatusApi	adapts a StatusApiServer	and presents it as a StatusApiClient
-func WrapStatusApi(server StatusApiServer) StatusApiClient {
-	return &statusApiWrapper{server}
+// WrapStatusApi	adapts a gen.StatusApiServer	and presents it as a gen.StatusApiClient
+func WrapStatusApi(server StatusApiServer) *StatusApiWrapper {
+	conn := wrap.ServerToClient(StatusApi_ServiceDesc, server)
+	client := NewStatusApiClient(conn)
+	return &StatusApiWrapper{
+		StatusApiClient: client,
+		server:          server,
+		conn:            conn,
+		desc:            StatusApi_ServiceDesc,
+	}
 }
 
-type statusApiWrapper struct {
+type StatusApiWrapper struct {
+	StatusApiClient
+
 	server StatusApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
-
-// compile time check that we implement the interface we need
-var _ StatusApiClient = (*statusApiWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *statusApiWrapper) UnwrapServer() StatusApiServer {
+func (w *StatusApiWrapper) UnwrapServer() StatusApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *statusApiWrapper) Unwrap() any {
+func (w *StatusApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *statusApiWrapper) GetCurrentStatus(ctx context.Context, req *GetCurrentStatusRequest, _ ...grpc.CallOption) (*StatusLog, error) {
-	return w.server.GetCurrentStatus(ctx, req)
-}
-
-func (w *statusApiWrapper) PullCurrentStatus(ctx context.Context, in *PullCurrentStatusRequest, opts ...grpc.CallOption) (StatusApi_PullCurrentStatusClient, error) {
-	stream := wrap.NewClientServerStream(ctx)
-	server := &pullCurrentStatusStatusApiServerWrapper{stream.Server()}
-	client := &pullCurrentStatusStatusApiClientWrapper{stream.Client()}
-	go func() {
-		err := w.server.PullCurrentStatus(in, server)
-		stream.Close(err)
-	}()
-	return client, nil
-}
-
-type pullCurrentStatusStatusApiClientWrapper struct {
-	grpc.ClientStream
-}
-
-func (w *pullCurrentStatusStatusApiClientWrapper) Recv() (*PullCurrentStatusResponse, error) {
-	m := new(PullCurrentStatusResponse)
-	if err := w.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-type pullCurrentStatusStatusApiServerWrapper struct {
-	grpc.ServerStream
-}
-
-func (s *pullCurrentStatusStatusApiServerWrapper) Send(response *PullCurrentStatusResponse) error {
-	return s.ServerStream.SendMsg(response)
+func (w *StatusApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

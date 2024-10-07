@@ -43,7 +43,7 @@ type DeviceBacnetService struct {
 }
 
 func (d *DeviceBacnetService) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(d.name, node.HasClient(rpc.WrapBacnetDriverService(d)))
+	return a.Announce(d.name, node.HasServer(rpc.RegisterBacnetDriverServiceServer, rpc.BacnetDriverServiceServer(d)))
 }
 
 func (d *DeviceBacnetService) ReadProperty(ctx context.Context, request *rpc.ReadPropertyRequest) (*rpc.ReadPropertyResponse, error) {

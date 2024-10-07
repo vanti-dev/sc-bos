@@ -2,7 +2,7 @@ import vue from '@vitejs/plugin-vue';
 import {execSync} from 'child_process';
 import {globSync} from 'glob';
 import {createRequire} from 'module';
-import {dirname, join, relative} from 'path';
+import {dirname, relative, sep, posix} from 'path';
 import {fileURLToPath, URL} from 'url';
 import {defineConfig, loadEnv} from 'vite';
 import eslintPlugin from 'vite-plugin-eslint';
@@ -20,8 +20,9 @@ const optimizeDepsInclude = [
 for (const dep of ['@sc-bos/ui-gen', '@smart-core-os/sc-api-grpc-web']) {
   // find proto files in projects
   const protoDirRoot = dirname(_require.resolve(dep + '/package.json'));
-  const protoFiles = globSync(join(protoDirRoot, '!(node_modules)/**/*_pb.js'))
-      .map(p => dep + '/' + relative(protoDirRoot, p));
+  const globPattern = posix.join(protoDirRoot, '!(node_modules)/**/*_pb.js');
+  const protoFiles = globSync(globPattern)
+      .map(p => dep + '/' + relative(protoDirRoot, p).replaceAll(sep, posix.sep));
   optimizeDepsInclude.push(...protoFiles);
   // remove the .js extension so import statements without .js still use the bundle
   optimizeDepsInclude.push(...protoFiles.map(f => f.substring(0, f.length - 3)));

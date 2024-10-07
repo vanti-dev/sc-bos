@@ -10,64 +10,53 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
-	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 )
 
 func TestNode_Announce_metadata(t *testing.T) {
 	n := New("test")
-	d1Metadata := metadata.NewModel()
-	d2Metadata := metadata.NewModel()
-
-	r := metadata.NewApiRouter()
-	r.Add("d1", metadata.WrapApi(metadata.NewModelServer(d1Metadata)))
-	r.Add("d2", metadata.WrapApi(metadata.NewModelServer(d2Metadata)))
-
-	n.Support(Routing(r))
+	expectTraits := []*traits.TraitMetadata{{Name: string(trait.Metadata)}}
 
 	n.Announce("d1", HasMetadata(&traits.Metadata{Appearance: &traits.Metadata_Appearance{Title: "D1"}}))
-	got, err := d1Metadata.GetMetadata()
+	got, err := n.allMetadata.GetMetadata("d1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := &traits.Metadata{Appearance: &traits.Metadata_Appearance{Title: "D1"}}
+	want := &traits.Metadata{Name: "d1", Appearance: &traits.Metadata_Appearance{Title: "D1"}, Traits: expectTraits}
 	if diff := cmp.Diff(want, got, protocmp.Transform()); diff != "" {
 		t.Fatalf("D1 Metadata (-want,+got)\n%s", diff)
 	}
 
-	n.Announce("d2", HasMetadata(&traits.Metadata{Appearance: &traits.Metadata_Appearance{Title: "D2"}}))
-	got, err = d2Metadata.GetMetadata()
+	n.Announce("d2", HasMetadata(&traits.Metadata{Appearance: &traits.Metadata_Appearance{Title: "D2"}, Traits: expectTraits}))
+	got, err = n.allMetadata.GetMetadata("d2")
 	if err != nil {
 		t.Fatal(err)
 	}
-	want = &traits.Metadata{Appearance: &traits.Metadata_Appearance{Title: "D2"}}
+	want = &traits.Metadata{Name: "d2", Appearance: &traits.Metadata_Appearance{Title: "D2"}, Traits: expectTraits}
 	if diff := cmp.Diff(want, got, protocmp.Transform()); diff != "" {
 		t.Fatalf("D2 Metadata (-want,+got)\n%s", diff)
 	}
 
 	// announce again with more metadata
-	n.Announce("d2", HasMetadata(&traits.Metadata{Appearance: &traits.Metadata_Appearance{Description: "Device 2"}}))
-	got, err = d2Metadata.GetMetadata()
+	n.Announce("d2", HasMetadata(&traits.Metadata{Appearance: &traits.Metadata_Appearance{Description: "Device 2"}, Traits: expectTraits}))
+	got, err = n.allMetadata.GetMetadata("d2")
 	if err != nil {
 		t.Fatal(err)
 	}
-	want = &traits.Metadata{Appearance: &traits.Metadata_Appearance{Title: "D2", Description: "Device 2"}}
+	want = &traits.Metadata{Name: "d2", Appearance: &traits.Metadata_Appearance{Title: "D2", Description: "Device 2"}, Traits: expectTraits}
 	if diff := cmp.Diff(want, got, protocmp.Transform()); diff != "" {
 		t.Fatalf("D2 Metadata (-want,+got)\n%s", diff)
 	}
 
 	// announce with multiple HasMetadata calls
-	d3Metadata := metadata.NewModel()
-	r.Add("d3", metadata.WrapApi(metadata.NewModelServer(d3Metadata)))
 	n.Announce("d3",
 		HasMetadata(&traits.Metadata{Appearance: &traits.Metadata_Appearance{Description: "Device 3"}}),
 		HasMetadata(&traits.Metadata{Appearance: &traits.Metadata_Appearance{Title: "D3"}}),
 	)
-	got, err = d3Metadata.GetMetadata()
+	got, err = n.allMetadata.GetMetadata("d3")
 	if err != nil {
 		t.Fatal(err)
 	}
-	want = &traits.Metadata{Appearance: &traits.Metadata_Appearance{Title: "D3", Description: "Device 3"}}
+	want = &traits.Metadata{Name: "d3", Appearance: &traits.Metadata_Appearance{Title: "D3", Description: "Device 3"}, Traits: expectTraits}
 	if diff := cmp.Diff(want, got, protocmp.Transform()); diff != "" {
 		t.Fatalf("D3 Metadata (-want,+got)\n%s", diff)
 	}
@@ -81,8 +70,6 @@ func TestNode_ListAllMetadata(t *testing.T) {
 	newNode := func() *Node {
 		n := New("-test") // - means it shows up before other metadata records
 		n.Logger = log
-		n.Support(Routing(metadata.NewApiRouter()))
-		n.Support(Routing(parent.NewApiRouter()))
 		return n
 	}
 
@@ -92,16 +79,21 @@ func TestNode_ListAllMetadata(t *testing.T) {
 	t.Run("no announce", func(t *testing.T) {
 		n := newNode()
 		got := n.ListAllMetadata()
-		var want []*traits.Metadata
+		want := []*traits.Metadata{
+			nodeMd,
+		}
 		if diff := cmp.Diff(want, got, cmpopts.EquateEmpty(), protocmp.Transform()); diff != "" {
 			t.Fatalf("ListAllMetadata (-want,+got)\n%s", diff)
 		}
 	})
-	t.Run("no metadata", func(t *testing.T) {
+	t.Run("default metadata", func(t *testing.T) {
 		n := newNode()
 		n.Announce("d1")
 		got := n.ListAllMetadata()
-		var want []*traits.Metadata
+		want := []*traits.Metadata{
+			nodeMd,
+			{Name: "d1", Traits: []*traits.TraitMetadata{{Name: string(trait.Metadata)}}},
+		}
 		if diff := cmp.Diff(want, got, cmpopts.EquateEmpty(), protocmp.Transform()); diff != "" {
 			t.Fatalf("ListAllMetadata (-want,+got)\n%s", diff)
 		}

@@ -15,7 +15,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 )
 
 func main() {
@@ -24,7 +23,6 @@ func main() {
 		panic(err)
 	}
 	root := node.New("test")
-	alltraits.AddSupport(root)
 
 	var models []*statuspb.Model
 	deviceCount := 100

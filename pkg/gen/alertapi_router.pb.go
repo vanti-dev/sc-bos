@@ -10,7 +10,7 @@ import (
 	io "io"
 )
 
-// AlertApiRouter is a AlertApiServer that allows routing named requests to specific AlertApiClient
+// AlertApiRouter is a gen.AlertApiServer that allows routing named requests to specific gen.AlertApiClient
 type AlertApiRouter struct {
 	UnimplementedAlertApiServer
 
@@ -34,14 +34,14 @@ func WithAlertApiClientFactory(f func(name string) (AlertApiClient, error)) rout
 	})
 }
 
-func (r *AlertApiRouter) Register(server *grpc.Server) {
+func (r *AlertApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterAlertApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type AlertApiClient.
+// Add extends Router.Add to panic if client is not of type gen.AlertApiClient.
 func (r *AlertApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a AlertApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.AlertApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

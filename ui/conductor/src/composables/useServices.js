@@ -72,7 +72,7 @@ export default function(props) {
   function showService(service) {
     sidebar.visible = true;
     sidebar.title = service.id;
-    sidebar.data = {service, config: JSON.parse(service.configRaw)};
+    sidebar.data = {service, config: JSON.parse(service.configRaw), nodeName: userConfig.node?.name};
   }
 
   /**
@@ -83,7 +83,7 @@ export default function(props) {
     // Update the data if the sidebar is open and the service is being started
     if (sidebar.visible && sidebar.data?.service?.id !== service.id) {
       sidebar.title = service.id;
-      sidebar.data = {service, config: JSON.parse(service.configRaw)};
+      sidebar.data = {service, config: JSON.parse(service.configRaw), nodeName: userConfig.node?.name};
     }
 
     await startService({
@@ -100,7 +100,7 @@ export default function(props) {
     // Update the data if the sidebar is open and the service is being stopped
     if (sidebar.visible && sidebar.data?.service?.id !== service.id) {
       sidebar.title = service.id;
-      sidebar.data = {service, config: JSON.parse(service.configRaw)};
+      sidebar.data = {service, config: JSON.parse(service.configRaw), nodeName: userConfig.node?.name};
     }
 
     await stopService({
@@ -131,7 +131,8 @@ export default function(props) {
             // Ensuring to parse the config if it's in a raw JSON string format
             sidebar.data = {
               service: updatedService,
-              config: updatedService.configRaw ? JSON.parse(updatedService.configRaw) : {}
+              config: updatedService.configRaw ? JSON.parse(updatedService.configRaw) : {},
+              nodeName: userConfig.node?.name
             };
           }
         }

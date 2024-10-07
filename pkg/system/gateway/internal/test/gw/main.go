@@ -4,11 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/app"
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/lighttest"
-	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway"
 	"github.com/vanti-dev/sc-bos/pkg/system/hub"
@@ -28,8 +25,6 @@ func Main() {
 		log.Fatal(err)
 	}
 
-	alltraits.AddSupportFor(controller.Node, trait.Parent, trait.Metadata, trait.OnOff)
-
 	err = controller.Run(ctx)
 	if err != nil {
 		log.Fatal(err)
@@ -38,7 +33,7 @@ func Main() {
 
 func loadSystemConfig() (sysconf.Config, error) {
 	systemConfig := sysconf.Default()
-	gwFactory := gateway.Factory(&lighttest.Holder{})
+	gwFactory := gateway.Factory()
 	systemConfig.SystemFactories = map[string]system.Factory{
 		gateway.Name:       gwFactory,
 		gateway.LegacyName: gwFactory,

@@ -62,6 +62,31 @@
               "layout": "builtin:LayoutMainSide",
               "main": [
                 {
+                  "component": "builtin:graphic/LayeredGraphic",
+                  "props": {
+                    "height": "max(70vh, 700px)",
+                    "background": {"svgPath": "./assets/floorn1-bg.svg"},
+                    "pixelsPerMeter": 60,
+                    "layers": [
+                      {
+                        "title": "Zones",
+                        "svgPath": "./assets/floorn1-zones.svg",
+                        "configPath": "./assets/floorn1-zones.json"
+                      },
+                      {
+                        "title": "BMS",
+                        "svgPath": "./assets/floorn1-bms.svg",
+                        "configPath": "./assets/floorn1-bms.json"
+                      },
+                      {
+                        "title": "Lighting",
+                        "svgPath": "./assets/floorn1-lights.svg",
+                        "configPath": "./assets/floorn1-lights.json"
+                      }
+                    ]
+                  }
+                },
+                {
                   "component": "builtin:power-history/PowerHistoryCard",
                   "props": {
                     "demand": "van/uk/brum/ugs/zones/floors/basement",
@@ -196,6 +221,7 @@
                   "props": {
                     "height": "max(70vh, 700px)",
                     "background": {"svgPath": "./assets/floor0-bg.svg"},
+                    "pixelsPerMeter": 35,
                     "layers": [
                       {
                         "title": "Zones",
@@ -394,6 +420,31 @@
               "icon": "mdi-layers-triple-outline",
               "layout": "builtin:LayoutMainSide",
               "main": [
+                {
+                  "component": "builtin:graphic/LayeredGraphic",
+                  "props": {
+                    "height": "max(70vh, 700px)",
+                    "background": {"svgPath": "./assets/floor1-bg.svg"},
+                    "pixelsPerMeter": 32,
+                    "layers": [
+                      {
+                        "title": "Zones",
+                        "svgPath": "./assets/floor1-zones.svg",
+                        "configPath": "./assets/floor1-zones.json"
+                      },
+                      {
+                        "title": "BMS",
+                        "svgPath": "./assets/floor1-bms.svg",
+                        "configPath": "./assets/floor1-bms.json"
+                      },
+                      {
+                        "title": "Lighting",
+                        "svgPath": "./assets/floor1-lights.svg",
+                        "configPath": "./assets/floor1-lights.json"
+                      }
+                    ]
+                  }
+                },
                 {
                   "component": "builtin:notifications/ZoneNotifications",
                   "props": {

@@ -23,10 +23,6 @@ func (_ factory) New(services system.Services) service.Lifecycle {
 	return NewSystem(services)
 }
 
-func (_ factory) AddSupport(supporter node.Supporter) {
-	Register(supporter)
-}
-
 func NewSystem(services system.Services) *System {
 	logger := services.Logger.Named("alerts")
 	s := &System{
@@ -43,15 +39,6 @@ func NewSystem(services system.Services) *System {
 		})),
 	)
 	return s
-}
-
-func Register(supporter node.Supporter) {
-	alertApiRouter := gen.NewAlertApiRouter()
-	alertAdminRouter := gen.NewAlertAdminApiRouter()
-	supporter.Support(
-		node.Routing(alertApiRouter), node.Clients(gen.WrapAlertApi(alertApiRouter)),
-		node.Routing(alertAdminRouter), node.Clients(gen.WrapAlertAdminApi(alertAdminRouter)),
-	)
 }
 
 type System struct {

@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
@@ -142,7 +143,7 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	}
 
 	// work out where we're getting the records from
-	var serverClient any
+	var serverClient wrap.ServiceUnwrapper
 	payloads := make(chan []byte)
 	switch cfg.Source.Trait {
 	case trait.AirQualitySensor:
