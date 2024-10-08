@@ -170,7 +170,6 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 	writeState := NewWriteState(time.Now())
 
 	processStateFn := func(readState *ReadState) error {
-		cancelTtlTimer()
 		cancelRetryTimer()
 
 		ttl, err := processState(ctx, readState, writeState, actions, b.logger.Named("Process State"))
@@ -190,8 +189,8 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			)
 
 			if retryCounter > readState.Config.OnProcessError.MaxRetries {
-				retryCounter = 0
 				// reset retries to prevent too many repeated attempts
+				retryCounter = 0
 				if !cancelTtlTimer() {
 					<-ttlExpired
 				}

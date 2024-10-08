@@ -68,6 +68,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	automation.newTimer = func(d time.Duration) (<-chan time.Time, func() bool) {
 		return tickChan, func() bool { return true }
 	}
+
 	if err := automation.Start(context.Background()); err != nil {
 		t.Fatalf("Start: %v", err)
 	}
@@ -184,9 +185,15 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	})
 	// jitter is set to ±0.2
 	assertErrorAndTtl(t, ttl, err, cfg.OnProcessError.BackOffMultiplier.Duration*8/10, errFailedBrightnessUpdate)
+	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
+		Name: "light01",
+		Brightness: &traits.Brightness{
+			LevelPercent: 100,
+		},
+	})
 	// since newTimer is intercepted by this test, we force a replay here
-	tickChan <- now.Add(time.Millisecond * 500)
-
+	now = now.Add(time.Millisecond * 500)
+	tickChan <- now
 	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
@@ -202,34 +209,95 @@ func TestPirsTurnLightsOn(t *testing.T) {
 			LevelPercent: 100,
 		},
 	})
+	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
+		Name: "light02",
+		Brightness: &traits.Brightness{
+			LevelPercent: 100,
+		},
+	})
 
 	// testing retries getting cancelled after max attempts
-	testActions.err = errFailedBrightnessUpdate
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED})
+	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED})
+	tickChan <- now
+	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
+		o01, ok01 := state.Occupancy["pir01"]
+		o02, ok02 := state.Occupancy["pir02"]
+		if !ok01 || !ok02 {
+			return false
+		}
+		return o01.State == traits.Occupancy_UNOCCUPIED && o02.State == traits.Occupancy_UNOCCUPIED
+	})
+	assertNoErrAndTtl(t, ttl, err, 0)
+	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
+		Name: "light01",
+		Brightness: &traits.Brightness{
+			LevelPercent: 0,
+		},
+	})
+	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
+		Name: "light02",
+		Brightness: &traits.Brightness{
+			LevelPercent: 0,
+		},
+	})
+
+	testActions.err = errFailedBrightnessUpdate
+	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
 	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
 			return false
 		}
-		return o01.State == traits.Occupancy_UNOCCUPIED
+		return o01.State == traits.Occupancy_OCCUPIED
 	})
 	assertErrorAndTtl(t, ttl, err, cfg.OnProcessError.BackOffMultiplier.Duration*8/10, errFailedBrightnessUpdate)
+	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
+		Name: "light01",
+		Brightness: &traits.Brightness{
+			LevelPercent: 100,
+		},
+	})
+
 	// second try
-	testActions.m.Lock()
 	testActions.err = errFailedBrightnessUpdate
-	testActions.m.Unlock()
-
 	// since newTimer is intercepted by this test, we force a replay here
-	tickChan <- now.Add(time.Millisecond * 500)
-
+	now = now.Add(time.Millisecond * 500)
+	tickChan <- now
+	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
+		o01, ok01 := state.Occupancy["pir01"]
+		if !ok01 {
+			return false
+		}
+		return o01.State == traits.Occupancy_OCCUPIED
+	})
 	assertErrorAndTtl(t, ttl, err, 2*cfg.OnProcessError.BackOffMultiplier.Duration*(8/10), errFailedBrightnessUpdate)
+	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
+		Name: "light01",
+		Brightness: &traits.Brightness{
+			LevelPercent: 100,
+		},
+	})
+
 	// third try and is cancelled
-	testActions.m.Lock()
 	testActions.err = errFailedBrightnessUpdate
-	testActions.m.Unlock()
-
 	// since newTimer is intercepted by this test, we force a replay here
-	tickChan <- now.Add(time.Millisecond * 500)
-
+	now = now.Add(time.Millisecond * 500)
+	tickChan <- now
+	ttl, err = waitForState(time.Millisecond*502, func(state *ReadState) bool {
+		o01, ok01 := state.Occupancy["pir01"]
+		if !ok01 {
+			return false
+		}
+		return o01.State == traits.Occupancy_OCCUPIED
+	})
 	assertErrorAndTtl(t, ttl, err, -time.Nanosecond, errFailedBrightnessUpdate)
+	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
+		Name: "light01",
+		Brightness: &traits.Brightness{
+			LevelPercent: 100,
+		},
+	})
+	// ensure we have effectively cancelled reprocessing
+	testActions.assertNoMoreCalls()
 }

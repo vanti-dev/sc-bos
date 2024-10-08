@@ -1037,16 +1037,17 @@ func (ta *testActions) UpdateBrightness(ctx context.Context, now time.Time, req 
 	defer ta.m.Unlock()
 	ta.calls = append(ta.calls, req)
 	ta.brightnessCalls = append(ta.brightnessCalls, req)
-	state.Brightness[req.Name] = BrightnessWriteState{
-		WriteTime:  now,
-		Brightness: req.Brightness,
-	}
 	var err error
 	if ta.err != nil {
 		err = ta.err
 		ta.err = nil
 
 		return err
+	}
+
+	state.Brightness[req.Name] = BrightnessWriteState{
+		WriteTime:  now,
+		Brightness: req.Brightness,
 	}
 
 	return nil
