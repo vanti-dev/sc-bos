@@ -161,6 +161,12 @@ func (b *BrightnessAutomation) processConfig(ctx context.Context, cfg config.Roo
 	if cfg.OnProcessError.BackOffMultiplier.Duration.Nanoseconds() <= 0 {
 		cfg.OnProcessError.BackOffMultiplier.Duration = config.DefaultBackOffMultiplier
 	}
+	if cfg.OnProcessError.MaxRetries < 0 {
+		cfg.OnProcessError.MaxRetries = config.DefaultMaxRetries
+	}
+	if cfg.RefreshEvery.Duration.Nanoseconds() <= 0 {
+		cfg.RefreshEvery.Duration = config.DefaultRefreshEvery
+	}
 
 	for _, source := range sources {
 		names := source.names(cfg)

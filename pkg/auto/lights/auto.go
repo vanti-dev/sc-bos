@@ -173,8 +173,6 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 		cancelTtlTimer()
 		cancelRetryTimer()
 
-		var after time.Duration
-
 		ttl, err := processState(ctx, readState, writeState, actions, b.logger.Named("Process State"))
 		if err != nil {
 			// if the context has been cancelled, stop
@@ -184,7 +182,7 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 
 			// if the context remains live, schedule another update soon
 			retryCounter++
-			after = backoffutils.JitterUp(time.Duration(retryCounter)*readState.Config.OnProcessError.BackOffMultiplier.Duration, 0.2)
+			after := backoffutils.JitterUp(time.Duration(retryCounter)*readState.Config.OnProcessError.BackOffMultiplier.Duration, 0.2)
 
 			b.logger.Error("processState failed; scheduling retry",
 				zap.Error(err),
@@ -193,6 +191,10 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 
 			if retryCounter > readState.Config.OnProcessError.MaxRetries {
 				retryCounter = 0
+				// reset retries as new valid state received
+				if !cancelTtlTimer() {
+					<-ttlExpired
+				}
 			} else {
 				ttl = after
 			}
@@ -201,11 +203,9 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 		// ensure it's not too long before we wake up, so the lights are refreshed regularly
 		// so external changes don't stick around forever
 		if ttl < 0 {
-			b.logger.Warn("ttl < 0; using refreshEvery instead")
 			ttl = readState.Config.RefreshEvery.Duration
 		}
 		if ttl > readState.Config.RefreshEvery.Duration {
-			b.logger.Warn("ttl > refreshEvery; using refreshEvery instead")
 			// b.logger.Debug("waking up sooner to ensure lights aren't stale",
 			// 	zap.Duration("after", refreshEvery))
 			ttl = readState.Config.RefreshEvery.Duration

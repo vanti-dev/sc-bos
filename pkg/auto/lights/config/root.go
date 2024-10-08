@@ -11,7 +11,11 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
-const DefaultBackOffMultiplier = time.Millisecond * 500
+const (
+	DefaultRefreshEvery      = time.Minute
+	DefaultMaxRetries        = 2
+	DefaultBackOffMultiplier = time.Millisecond * 500
+)
 
 // Root represent the configuration parameters available for the lighting automation.
 // This should be convertable to/from json.
@@ -37,6 +41,8 @@ type Root struct {
 	// RefreshEvery guarantees the last read state will eventually be processed if no event happens for this long
 	RefreshEvery jsontypes.Duration `json:"refreshEvery,omitempty"`
 
+	// OnProcessError provides parameters for when updating the brightness fails
+	// based on occupancy sensor outcomes
 	OnProcessError OnProcessError `json:"onProcessError,omitempty"`
 
 	// Now returns the current time. It's configurable for testing purposes, typically for testing the logic.
@@ -46,8 +52,12 @@ type Root struct {
 // OnProcessError if error is encountered during processing of a state, we set ttl to these defaults with option for backOff
 type OnProcessError struct {
 	// BackOffMultiplier is the wait duration multiplier for each iteration
+	// attempt in updating a light's brightness until it succeeds
 	BackOffMultiplier jsontypes.Duration `json:"backOffMultiplier,omitempty"`
-	MaxRetries        int                `json:"maxRetries,omitempty"`
+	// MaxRetries is the number of iteration attempts in updating a light's brightness until it succeeds
+	// Or a newer state is received,
+	// in which case, retries are cancelled and the newer state is processed instead
+	MaxRetries int `json:"maxRetries,omitempty"`
 }
 
 type DaylightDimming struct {
@@ -186,10 +196,10 @@ func Default() Root {
 		Mode: Mode{
 			UnoccupiedOffDelay: jsontypes.Duration{Duration: 10 * time.Minute},
 		},
-		RefreshEvery: jsontypes.Duration{Duration: time.Minute},
+		RefreshEvery: jsontypes.Duration{Duration: DefaultRefreshEvery},
 		OnProcessError: OnProcessError{
 			BackOffMultiplier: jsontypes.Duration{Duration: DefaultBackOffMultiplier},
-			MaxRetries:        2,
+			MaxRetries:        DefaultMaxRetries,
 		},
 	}
 }

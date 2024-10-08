@@ -62,7 +62,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	cfg.OccupancySensors = []string{"pir01", "pir02"}
 	cfg.Lights = []string{"light01", "light02"}
 	cfg.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
-	cfg.RefreshEvery = jsontypes.Duration{Duration: 9 * time.Minute}
+	cfg.RefreshEvery = jsontypes.Duration{Duration: 8 * time.Minute}
 
 	tickChan := make(chan time.Time, 1)
 	automation.newTimer = func(d time.Duration) (<-chan time.Time, func() bool) {
@@ -172,6 +172,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		},
 	})
 
+	// test 1 retry
 	testActions.err = errFailedBrightnessUpdate
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
 	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
@@ -181,8 +182,11 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		}
 		return o01.State == traits.Occupancy_OCCUPIED
 	})
+	// jitter is set to ±0.2
 	assertErrorAndTtl(t, ttl, err, cfg.OnProcessError.BackOffMultiplier.Duration*8/10, errFailedBrightnessUpdate)
+	// since newTimer is intercepted by this test, we force a replay here
 	tickChan <- now.Add(time.Millisecond * 500)
+
 	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
@@ -198,4 +202,34 @@ func TestPirsTurnLightsOn(t *testing.T) {
 			LevelPercent: 100,
 		},
 	})
+
+	// testing retries getting cancelled after max attempts
+	testActions.err = errFailedBrightnessUpdate
+	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED})
+	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
+		o01, ok01 := state.Occupancy["pir01"]
+		if !ok01 {
+			return false
+		}
+		return o01.State == traits.Occupancy_UNOCCUPIED
+	})
+	assertErrorAndTtl(t, ttl, err, cfg.OnProcessError.BackOffMultiplier.Duration*8/10, errFailedBrightnessUpdate)
+	// second try
+	testActions.m.Lock()
+	testActions.err = errFailedBrightnessUpdate
+	testActions.m.Unlock()
+
+	// since newTimer is intercepted by this test, we force a replay here
+	tickChan <- now.Add(time.Millisecond * 500)
+
+	assertErrorAndTtl(t, ttl, err, 2*cfg.OnProcessError.BackOffMultiplier.Duration*(8/10), errFailedBrightnessUpdate)
+	// third try and is cancelled
+	testActions.m.Lock()
+	testActions.err = errFailedBrightnessUpdate
+	testActions.m.Unlock()
+
+	// since newTimer is intercepted by this test, we force a replay here
+	tickChan <- now.Add(time.Millisecond * 500)
+
+	assertErrorAndTtl(t, ttl, err, -time.Nanosecond, errFailedBrightnessUpdate)
 }
