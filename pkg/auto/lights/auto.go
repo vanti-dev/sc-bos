@@ -191,7 +191,7 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 
 			if retryCounter > readState.Config.OnProcessError.MaxRetries {
 				retryCounter = 0
-				// reset retries as new valid state received
+				// reset retries to prevent too many repeated attempts
 				if !cancelTtlTimer() {
 					<-ttlExpired
 				}
