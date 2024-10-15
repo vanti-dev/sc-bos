@@ -14,7 +14,6 @@ Docker installed, the `act` binary, and a file containing the secrets required f
 ```
 GITHUB_TOKEN=<github personal access token, should start `ghp_`>
 GO_MOD_TOKEN=<copy of GITHUB_TOKEN>
-NEXUS_NPM_TOKEN=<nexus npm token - copy from ~/.npmrc, should start `NpmToken.`>
 ```
 
 You can then run the following commands to perform the build of the binaries, UIs, and Docker images:
