@@ -1,4 +1,4 @@
-package meter
+package main
 
 import (
 	"context"
@@ -6,21 +6,26 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
+	"github.com/vanti-dev/sc-bos/pkg/history/pgxstore"
 )
 
-func Seed(ctx context.Context, db *pgxpool.Pool, name string, lookBack time.Duration) error {
+func SeedMeter(ctx context.Context, db *pgxpool.Pool, name string, lookBack time.Duration) error {
 	now := time.Now()
 	current := now.Add(-lookBack)
 
 	source := fmt.Sprintf("%s[%s]", name, meter.TraitName)
 
 	incremental := rand.Float32() * 1_000
+
+	store, err := pgxstore.SetupStoreFromPool(ctx, source, db)
+	if err != nil {
+		return err
+	}
 
 	for current.Before(now) {
 		incremental = incremental + rand.Float32()*1_000
@@ -32,14 +37,10 @@ func Seed(ctx context.Context, db *pgxpool.Pool, name string, lookBack time.Dura
 			return err
 		}
 
-		cmd, err := db.Exec(ctx, "INSERT INTO history (source, create_time, payload) VALUES ($1, $2, $3)", source, current.Format(time.RFC3339Nano), payload)
+		_, _, err = store.Insert(ctx, current, payload)
 
 		if err != nil {
 			return err
-		}
-
-		if cmd.RowsAffected() == 0 {
-			return pgx.ErrNoRows
 		}
 
 		current = current.Add(time.Duration(rand.Intn(60)) * time.Minute)

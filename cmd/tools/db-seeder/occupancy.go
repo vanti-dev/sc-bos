@@ -1,4 +1,4 @@
-package occupancy
+package main
 
 import (
 	"context"
@@ -7,19 +7,24 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/vanti-dev/sc-bos/pkg/history/pgxstore"
 )
 
-func Seed(ctx context.Context, db *pgxpool.Pool, name string, lookBack time.Duration) error {
+func SeedOccupancy(ctx context.Context, db *pgxpool.Pool, name string, lookBack time.Duration) error {
 	current := time.Now()
 	now := current
 
 	source := fmt.Sprintf("%s[%s]", name, trait.OccupancySensor)
+
+	store, err := pgxstore.SetupStoreFromPool(ctx, source, db)
+	if err != nil {
+		return err
+	}
 
 	for current.After(now.Add(-lookBack)) {
 
@@ -33,14 +38,10 @@ func Seed(ctx context.Context, db *pgxpool.Pool, name string, lookBack time.Dura
 			return err
 		}
 
-		cmd, err := db.Exec(ctx, "INSERT INTO history (source, create_time, payload) VALUES ($1, $2, $3)", source, current.Format(time.RFC3339Nano), payload)
+		_, _, err = store.Insert(ctx, current, payload)
 
 		if err != nil {
 			return err
-		}
-
-		if cmd.RowsAffected() == 0 {
-			return pgx.ErrNoRows
 		}
 
 		current = current.Add(-time.Duration(rand.Intn(60)) * time.Minute)

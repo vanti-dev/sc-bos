@@ -9,21 +9,19 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-	"sc-bos-db-seeder/pkg/seeder/air_quality"
-	"sc-bos-db-seeder/pkg/seeder/meter"
-	"sc-bos-db-seeder/pkg/seeder/occupancy"
+	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/driver/alldrivers"
-	mockConfig "github.com/vanti-dev/sc-bos/pkg/driver/mock/config"
-	airqualityConfig "github.com/vanti-dev/sc-bos/pkg/zone/feature/airquality/config"
-	occupancyConfig "github.com/vanti-dev/sc-bos/pkg/zone/feature/occupancy/config"
+	mockcfg "github.com/vanti-dev/sc-bos/pkg/driver/mock/config"
+	"github.com/vanti-dev/sc-bos/pkg/history/pgxstore"
+	airqualitycfg "github.com/vanti-dev/sc-bos/pkg/zone/feature/airquality/config"
+	occupancycfg "github.com/vanti-dev/sc-bos/pkg/zone/feature/occupancy/config"
 
 	"github.com/vanti-dev/sc-bos/pkg/zone/allzones"
-	metersConfig "github.com/vanti-dev/sc-bos/pkg/zone/feature/meter/config"
+	meterscfg "github.com/vanti-dev/sc-bos/pkg/zone/feature/meter/config"
 )
 
 var (
@@ -69,8 +67,15 @@ func main() {
 	conf.MaxConns = 4
 	conf.MinConns = 1
 
-	db, err := pgxpool.NewWithConfig(ctx, conf)
+	db, err := pgxpool.ConnectConfig(ctx, conf)
 	defer db.Close()
+
+	// before running the seeding tasks in parallel, make sure the DB exists to avoid error on first run:
+	// CREATE TABLE IF NOT EXISTS duplicate key value violates unique constraint
+	_, err = pgxstore.SetupStoreFromPool(ctx, "dummy", db)
+	if err != nil {
+		panic(err)
+	}
 
 	wg := &sync.WaitGroup{}
 
@@ -79,7 +84,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 		for _, aq := range aqs {
-			err = air_quality.Seed(ctx, db, aq.Name, lookBack)
+			err = SeedAirQuality(ctx, db, aq.Name, lookBack)
 			if err != nil {
 				panic(err)
 			}
@@ -90,18 +95,18 @@ func main() {
 	go func() {
 		defer wg.Done()
 		for _, occ := range occs {
-			err = occupancy.Seed(ctx, db, occ.Name, lookBack)
+			err = SeedOccupancy(ctx, db, occ.Name, lookBack)
 			if err != nil {
 				panic(err)
 			}
-			fmt.Printf("seeded occupancy zone %s\n", occ.Name)
+			fmt.Printf("seeded occupancycfg zone %s\n", occ.Name)
 		}
 	}()
 
 	go func() {
 		defer wg.Done()
 		for _, mtr := range meters {
-			err = meter.Seed(ctx, db, mtr.Name, lookBack)
+			err = SeedMeter(ctx, db, mtr.Name, lookBack)
 			if err != nil {
 				panic(err)
 			}
@@ -112,7 +117,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 		for _, d := range devices {
-			err = air_quality.Seed(ctx, db, d, lookBack)
+			err = SeedAirQuality(ctx, db, d, lookBack)
 			if err != nil {
 				panic(err)
 			}
@@ -133,18 +138,18 @@ func loadSystemConfig() (sysconf.Config, error) {
 	return systemConfig, err
 }
 
-func parseZoneConfig(appConf *appconf.Config) ([]*airqualityConfig.Root, []*occupancyConfig.Root, []*metersConfig.Root, error) {
-	var aqs []*airqualityConfig.Root
-	var occs []*occupancyConfig.Root
-	var meters []*metersConfig.Root
+func parseZoneConfig(appConf *appconf.Config) ([]*airqualitycfg.Root, []*occupancycfg.Root, []*meterscfg.Root, error) {
+	var aqs []*airqualitycfg.Root
+	var occs []*occupancycfg.Root
+	var meters []*meterscfg.Root
 
 	for _, conf := range appConf.Zones {
 		if conf.Type != "area" {
 			continue
 		}
-		aq := airqualityConfig.Root{}
-		occ := occupancyConfig.Root{}
-		mtr := metersConfig.Root{}
+		aq := airqualitycfg.Root{}
+		occ := occupancycfg.Root{}
+		mtr := meterscfg.Root{}
 
 		buf, err := conf.MarshalJSON()
 		if err != nil {
@@ -186,7 +191,7 @@ func parseDeviceConfig(appConf *appconf.Config) ([]string, error) {
 			return nil, err
 		}
 
-		var devices mockConfig.Root
+		var devices mockcfg.Root
 		err = json.Unmarshal(buf, &devices)
 		if err != nil {
 			return nil, err
