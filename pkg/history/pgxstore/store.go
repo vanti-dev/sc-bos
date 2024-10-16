@@ -73,14 +73,13 @@ type Store struct {
 }
 
 func (s *Store) Insert(ctx context.Context, at time.Time, payload []byte) (history.Record, int64, error) {
-	now := s.now()
 	r := history.Record{
 		CreateTime: at,
 		Payload:    payload,
 	}
 
 	row := s.pool.QueryRow(ctx, "INSERT INTO history (source, create_time, payload) VALUES ($1, $2, $3) RETURNING id",
-		s.source, now, payload)
+		s.source, at, payload)
 
 	var id int64
 	err := row.Scan(&id)
