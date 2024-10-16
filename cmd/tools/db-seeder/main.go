@@ -27,21 +27,19 @@ import (
 var (
 	lookBack time.Duration
 	dbUrl    string
+	app      string
 )
 
 func init() {
 	flag.DurationVar(&lookBack, "look-back", time.Hour*24*30*2, "amount of time to populate database history for starting from now, going backwards")
 	flag.StringVar(&dbUrl, "db-url", "postgres://postgres:postgres@localhost:5432/smart_core", "database url")
+	flag.StringVar(&app, "appconf", "app.conf.json", "app configuration file")
 }
 
 func main() {
-	sysConf, err := loadSystemConfig()
+	flag.Parse()
 
-	if err != nil {
-		panic(err)
-	}
-
-	appConf, err := appconf.LoadLocalConfig(path.Dir(sysConf.AppConfig[0]), path.Base(sysConf.AppConfig[0]))
+	appConf, err := appconf.LoadLocalConfig(path.Dir(app), path.Base(app))
 	if err != nil {
 		panic(err)
 	}
@@ -68,6 +66,9 @@ func main() {
 	conf.MinConns = 1
 
 	db, err := pgxpool.ConnectConfig(ctx, conf)
+	if err != nil {
+		panic(err)
+	}
 	defer db.Close()
 
 	// before running the seeding tasks in parallel, make sure the DB exists to avoid error on first run:
