@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+// Priority defines how different parties cooperate when writing to the same value.
+// Priority levels are represented as integers, with lower values representing higher priorities.
+// Level 1 is the highest priority level available, level 255 is the lowest.
+//
+// The Priority Algorithm
+//
+// The algorithm can be summarised as: Apply the highest available priority write to the underlying device.
+//
+// The device maintains a priority array of writes, when a client writes a value at a particular priority level that
+// write is at in the priority array at the index corresponding to that priority level.
+// After each modification of the priority array the device re-checks the array looking for the lowest index that has
+// a present value, that value is applied to the underlying store or device and becomes the 'real' value.
+// If no values are present in the priority array then no write is performed.
+//
+// Where possible devices and clients should use the priority level most suited for their desired outcome to help with
+// interoperability, however these are just suggestions and are not enforced by the protocol.
+// Priority levels other than those named below are also supported and follow the same priority algorithm rules, for
+// example a write using Level 65 has a priority greater than USER but less than OPERATOR.
+//
+// Reads
+//
+// If a priority level is not specified, the value returned will be the value that has been applied to the
+// store or device, usually the outcome of the priority algorithm.
+// If a priority level is set then the returned value will represent the written value at that exact
+// priority level, potentially returning an empty object if no such value exists.
+//
+// Reads may return a PriorityLevel header whose value is the lowest index in the priority array that contains a value,
+// as a decimal encoded string: "PriorityLevel: 100". A header value of "0" means no value exists in the priority array.
+//
+// Writes
+//
+// If a priority level is set then the value will be written at that exact priority level.
+// If no priority is set during write, the value will be written at the DEFAULT priority level.
+// Specifying a priority level and providing an unset value will clear the value at that priority level.
+// After each write the priority algorithm will be invoked.
+//
+// If a write is a delta-write, the delta is converted to an absolute value by combining it with the real value of the
+// device then stored in the priority array just like any other write.
+//
+// Responses to writes represent the real value written to the device, after the priority algorithm has been applied.
+// A PriorityLevel header may be returned whose value is the lowest index in the priority array that contains a value,
+// as a decimal encoded string: "PriorityLevel: 100".
+message Priority {
+  // Level defines suggested priority levels for different purposes when writing to a device.
+  enum Level {
+    LEVEL_UNSPECIFIED = 0;
+    // Used by operators to write values that affect life-safety matters and should override all other priorities.
+    MANUAL_LIFE_SAFETY = 10;
+    // Used by systems to write values that affect life-safety matters.
+    AUTOMATIC_LIFE_SAFETY = 20;
+    // Bypass device safety systems and force this value to be written.
+    CRITICAL_OVERRIDE = 30;
+    // Read-only, device priority used for debouncing purposes.
+    // A device that has limited write throughput or operational limitations when changing state - say minimum on/off times -
+    // may store a write at this priority to maintain the priority algorithm while not affecting writes at lower priority levels.
+    // Once the debounce has elapsed this value will be cleared.
+    DEBOUNCE = 40;
+    // A write by a manual or automatic supervisor process.
+    SUPERVISOR = 50;
+    // A write by a manual or automatic operator process.
+    OPERATOR = 60;
+    // A write by a manual or automatic user process.
+    USER = 70;
+    // A write by an automated system or process.
+    AUTOMATION = 100;
+    // The default priority level, used when no other priority is specified.
+    DEFAULT = 150;
+    // The minimum priority level. Any value at this priority will be used only if no other priority write is present.
+    // The device is encouraged to supply a value at this level itself.
+    MINIMUM = 255;
+  }
+
+  // Title is the official human readable name for the priority level.
+  string title = 1;
+  // Level is the integer value of the priority level and can be used for comparisons.
+  Level level = 2;
+}
