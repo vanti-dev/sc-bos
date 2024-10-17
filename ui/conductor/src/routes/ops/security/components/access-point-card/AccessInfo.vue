@@ -45,7 +45,6 @@
 </template>
 
 <script setup>
-import {timestampToDate} from '@/api/convpb.js';
 import {closeResource} from '@/api/resource';
 import {grantNamesByID} from '@/api/sc/traits/access';
 import {alertToObject} from '@/api/ui/alerts.js';

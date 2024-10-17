@@ -3,32 +3,40 @@
 package gen
 
 import (
-	context "context"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 	grpc "google.golang.org/grpc"
 )
 
-// WrapWasteInfo	adapts a WasteInfoServer	and presents it as a WasteInfoClient
-func WrapWasteInfo(server WasteInfoServer) WasteInfoClient {
-	return &wasteInfoWrapper{server}
+// WrapWasteInfo	adapts a gen.WasteInfoServer	and presents it as a gen.WasteInfoClient
+func WrapWasteInfo(server WasteInfoServer) *WasteInfoWrapper {
+	conn := wrap.ServerToClient(WasteInfo_ServiceDesc, server)
+	client := NewWasteInfoClient(conn)
+	return &WasteInfoWrapper{
+		WasteInfoClient: client,
+		server:          server,
+		conn:            conn,
+		desc:            WasteInfo_ServiceDesc,
+	}
 }
 
-type wasteInfoWrapper struct {
+type WasteInfoWrapper struct {
+	WasteInfoClient
+
 	server WasteInfoServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
-
-// compile time check that we implement the interface we need
-var _ WasteInfoClient = (*wasteInfoWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *wasteInfoWrapper) UnwrapServer() WasteInfoServer {
+func (w *WasteInfoWrapper) UnwrapServer() WasteInfoServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *wasteInfoWrapper) Unwrap() any {
+func (w *WasteInfoWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *wasteInfoWrapper) DescribeWasteRecord(ctx context.Context, req *DescribeWasteRecordRequest, _ ...grpc.CallOption) (*WasteRecordSupport, error) {
-	return w.server.DescribeWasteRecord(ctx, req)
+func (w *WasteInfoWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }
