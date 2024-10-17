@@ -98,11 +98,44 @@
           "membership": {"subsystem": "metering"},
           "appearance": {"title": "PV Array"},
           "location": {"title": "Roof", "floor": "Roof"}
+        },
+        {
+          "name": "smart-core/meters/03",
+          "traits": [{"name": "smartcore.bos.Meter", "more": {"unit":  "litres"}}],
+          "membership": {"subsystem": "metering"},
+          "appearance": {"title": "Water Meter"},
+          "location":   {"title": "Ground Floor", "floor":"Ground"}
         }
       ]
     }
   ],
   "automation": [
+    {
+      "name": "smart-core/meters/01/meter-history",
+      "source": {
+        "name": "smart-core/meters/01",
+        "trait": "smartcore.bos.Meter"
+      },
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": ".data/secrets/postgres-password"
+      },
+      "type": "history"
+    },
+    {
+      "name": "smart-core/meters/03/meter-history",
+      "source": {
+        "name": "smart-core/meters/03",
+        "trait": "smartcore.bos.Meter"
+      },
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": ".data/secrets/postgres-password"
+      },
+      "type": "history"
+    },
     {
       "name": "udmi-test", "type": "udmi",
       "sources": [
