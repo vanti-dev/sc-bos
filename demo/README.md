@@ -11,9 +11,11 @@ running that specific example. This only needs to be done on first run and if th
 The images are then pushed to a Docker registry, so they can be accessed from anywhere the demo needs to be set up.  
 For example, to build the `vanti-ugs` images, run these commands from the repo root dir:
 
-`docker build --tag "smartcoredemo.azurecr.io/sc-ugs" -f .\demo\vanti-ugs\Dockerfile-Ugs .`
-`docker build --tag "smartcoredemo.azurecr.io/seed-db" -f demo/vanti-ugs/Dockerfile-SeedDb .`
+`docker build --platform linux/amd64,linux/arm64 --tag "smartcoredemo.azurecr.io/sc-ugs" -f .\demo\vanti-ugs\Dockerfile-Ugs .`
+`docker build --platform linux/amd64,linux/arm64 --tag "smartcoredemo.azurecr.io/seed-db" -f demo/vanti-ugs/Dockerfile-SeedDb .`
 
+These are built for multiple platforms, to enable this in Docker Desktop, 
+Settings -> General -> Use containerd for pulling and storing images -> Enable.
 Then they need to be pushed to a Docker registry, at the moment this is on Azure (which requires the Azure CLI tool to log in). 
 
 `az acr login --name smartcoredemo`
