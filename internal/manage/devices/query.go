@@ -2,6 +2,7 @@ package devices
 
 import (
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -12,6 +13,8 @@ import (
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
+
+var numericReg = regexp.MustCompile("\\[(-?[0-9]+)]")
 
 func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
 	if query == nil {
@@ -65,7 +68,7 @@ func isMessageValueStringFunc(path string, msg proto.Message, f func(v string) b
 	if msg == nil {
 		return false
 	}
-	fd, v, ok := getMessageValue(path, msg.ProtoReflect())
+	fd, v, ok := getMessageValue(path, msg.ProtoReflect(), f)
 	if !ok {
 		return false
 	}
@@ -122,7 +125,9 @@ func getMessageString(path string, msg proto.Message) (string, bool) {
 	if msg == nil {
 		return "", false
 	}
-	fd, v, ok := getMessageValue(path, msg.ProtoReflect())
+	fd, v, ok := getMessageValue(path, msg.ProtoReflect(), func(v string) bool {
+		return true
+	})
 	if !ok {
 		return "", false
 	}
@@ -136,7 +141,7 @@ func getMessageString(path string, msg proto.Message) (string, bool) {
 
 // getMessageValue returns the protoreflect.Value identified by path in msg.
 // Returns false if the path can't be resolved.
-func getMessageValue(path string, msg protoreflect.Message) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
+func getMessageValue(path string, msg protoreflect.Message, f func(v string) bool) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
 	prop, rest, found := strings.Cut(path, ".")
 	fieldDesc := msg.Descriptor().Fields().ByName(protoreflect.Name(prop))
 	if fieldDesc == nil {
@@ -148,12 +153,12 @@ func getMessageValue(path string, msg protoreflect.Message) (protoreflect.FieldD
 		return fieldDesc, val, true
 	}
 
-	return nextValue(rest, fieldDesc, val)
+	return nextValue(rest, fieldDesc, val, f)
 }
 
 // getMapValue returns the protoreflect.Value identified by path in the map m.
 // Returns false if the path can't be resolved.
-func getMapValue(path string, keyDesc, valueDesc protoreflect.FieldDescriptor, m protoreflect.Map) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
+func getMapValue(path string, keyDesc, valueDesc protoreflect.FieldDescriptor, m protoreflect.Map, f func(v string) bool) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
 	prop, rest, found := strings.Cut(path, ".")
 	key, ok := parseMapKey(prop, keyDesc)
 	if !ok {
@@ -168,28 +173,105 @@ func getMapValue(path string, keyDesc, valueDesc protoreflect.FieldDescriptor, m
 		return valueDesc, value, true
 	}
 
-	return nextValue(rest, valueDesc, value)
+	return nextValue(rest, valueDesc, value, f)
+}
+
+func compareNestedElement(restPath string, desc protoreflect.FieldDescriptor, val protoreflect.Value, f func(v string) bool) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
+	if val.IsValid() {
+		switch desc.Kind() {
+		case protoreflect.StringKind:
+			if f(val.Message().Get(desc).String()) {
+				return desc, val.Message().Get(desc), true
+			}
+		default:
+			descriptor, value, found := nextValue(restPath, desc, val.Message().Get(desc), f)
+
+			if found {
+				if _, rest, found := strings.Cut(restPath, "."); found {
+					return compareNestedElement(rest, descriptor, value, f)
+				}
+
+				return descriptor, value, true
+			}
+		}
+	}
+
+	return nil, protoreflect.Value{}, false
 }
 
 // getListValue returns the protoreflect.Value identified by path in the list l.
 // Returns false if the path can't be resolved.
-func getListValue(path string, entryDesc protoreflect.FieldDescriptor, l protoreflect.List) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
-	// todo: support list values
-	// I guess it'd be nice to support "any in list match" but also "index in list matches" semantics.
-	// In the first case we'd need to refactor this whole things to combine value lookup and condition checking.
-	// In the second case we'd need to make our path parsing logic more capable/complicated.
-	return nil, protoreflect.Value{}, false
+func getListValue(path string, entryDesc protoreflect.FieldDescriptor, l protoreflect.List, f func(v string) bool) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
+	prop, rest, _ := strings.Cut(path, ".")
+
+	if !numericReg.MatchString(prop) {
+		for i := 0; i < l.Len(); i++ {
+			val := l.Get(i)
+
+			if !val.Message().IsValid() {
+				continue
+			}
+
+			desc := val.Message().Descriptor().Fields().ByName(protoreflect.Name(prop))
+
+			if descriptor, value, found := compareNestedElement(rest, desc, val, f); found {
+				return descriptor, value, true
+			}
+		}
+
+		return nil, protoreflect.Value{}, false
+
+	}
+
+	index := numericReg.FindStringIndex(prop)
+
+	// no index in path
+	// malformed path
+	// this fails for non-positive or non-integers too
+	if index == nil {
+		return nil, protoreflect.Value{}, false
+	}
+
+	numeric := prop[index[0]+1 : index[1]-1]
+	ind, err := strconv.ParseInt(numeric, 10, 32)
+
+	if err != nil || ind < 0 || int(ind) >= l.Len() {
+		return nil, protoreflect.Value{}, false
+	}
+
+	val := l.Get(int(ind))
+
+	switch entryDesc.Kind() {
+	case protoreflect.StringKind:
+		return entryDesc, val, f(val.String())
+	case protoreflect.MessageKind:
+		break
+	default: // we don't support other primitives in f func
+		return nil, protoreflect.Value{}, false
+	}
+
+	if !val.Message().IsValid() {
+		return nil, protoreflect.Value{}, false
+	}
+
+	desc := val.Message().Descriptor().Fields().ByName(protoreflect.Name(rest))
+
+	if _, _, found := compareNestedElement(rest, desc, val, f); found {
+		return desc, val.Message().Get(desc), true
+	}
+
+	return nextValue(rest, desc, val, f)
 }
 
 // nextValue calls the correct getXxxValue func for the given field descriptor.
-func nextValue(rest string, fieldDesc protoreflect.FieldDescriptor, val protoreflect.Value) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
+func nextValue(rest string, fieldDesc protoreflect.FieldDescriptor, val protoreflect.Value, f func(v string) bool) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
 	switch {
 	case fieldDesc.IsMap():
-		return getMapValue(rest, fieldDesc.MapKey(), fieldDesc.MapValue(), val.Map())
+		return getMapValue(rest, fieldDesc.MapKey(), fieldDesc.MapValue(), val.Map(), f)
 	case fieldDesc.IsList():
-		return getListValue(rest, fieldDesc, val.List())
+		return getListValue(rest, fieldDesc, val.List(), f)
 	case fieldDesc.Message() != nil: // note this is true for map types, so check that first
-		return getMessageValue(rest, val.Message())
+		return getMessageValue(rest, val.Message(), f)
 	default:
 		return fieldDesc, val, false // there's more to the path but the value has no properties
 	}
