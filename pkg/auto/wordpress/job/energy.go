@@ -46,14 +46,14 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 			continue
 		}
 
-		records, err := getRecordsByTime(ctx, e.client.ListMeterReadingHistory, meter, now, e.GetInterval())
+		earliest, latest, err := getRecordsByTime(ctx, e.client.ListMeterReadingHistory, meter, now, e.GetInterval())
 
 		if err != nil {
 			e.Logger.Error("getting records by time", zap.String("meter", meter), zap.Error(err))
 			continue
 		}
 
-		consumption += processMeterRecords(multiplier, records)
+		consumption += processMeterRecords(multiplier, earliest, latest)
 
 	}
 

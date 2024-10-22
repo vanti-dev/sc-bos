@@ -24,11 +24,12 @@ func Test_processMeter(t *testing.T) {
 	start := time.Time{}.Add(time.Nanosecond)
 
 	tests := []struct {
-		name        string
-		args        args
-		want        [2]*gen.MeterReadingRecord
-		wantErr     error
-		consumption float32
+		name         string
+		args         args
+		wantEarliest *gen.MeterReadingRecord
+		wantLatest   *gen.MeterReadingRecord
+		wantErr      error
+		consumption  float32
 	}{
 		{
 			name: "happy path",
@@ -38,23 +39,22 @@ func Test_processMeter(t *testing.T) {
 				},
 				now: time.Now(),
 			},
-			want: [2]*gen.MeterReadingRecord{
-				{
-					MeterReading: &gen.MeterReading{
-						Usage:     0,
-						StartTime: timestamppb.New(start),
-						EndTime:   timestamppb.New(start.Add(time.Minute)),
-					},
-					RecordTime: timestamppb.New(start.Add(time.Minute)),
+			wantEarliest: &gen.MeterReadingRecord{
+
+				MeterReading: &gen.MeterReading{
+					Usage:     0,
+					StartTime: timestamppb.New(start),
+					EndTime:   timestamppb.New(start.Add(time.Minute)),
 				},
-				{
-					MeterReading: &gen.MeterReading{
-						Usage:     45,
-						StartTime: timestamppb.New(start.Add(18 * time.Minute)),
-						EndTime:   timestamppb.New(start.Add(30 * time.Minute)),
-					},
-					RecordTime: timestamppb.New(start.Add(30 * time.Minute)),
+				RecordTime: timestamppb.New(start.Add(time.Minute)),
+			},
+			wantLatest: &gen.MeterReadingRecord{
+				MeterReading: &gen.MeterReading{
+					Usage:     45,
+					StartTime: timestamppb.New(start.Add(18 * time.Minute)),
+					EndTime:   timestamppb.New(start.Add(30 * time.Minute)),
 				},
+				RecordTime: timestamppb.New(start.Add(30 * time.Minute)),
 			},
 			wantErr:     nil,
 			consumption: 45,
@@ -66,19 +66,21 @@ func Test_processMeter(t *testing.T) {
 					return nil, fmt.Errorf("some error")
 				},
 			},
-			want:    [2]*gen.MeterReadingRecord{},
-			wantErr: fmt.Errorf("some error"),
+			wantEarliest: nil,
+			wantLatest:   nil,
+			wantErr:      fmt.Errorf("some error"),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getRecordsByTime(context.Background(), tt.args.historyFn, tt.args.meter, tt.args.now, tt.args.filterTime)
+			earliest, latest, err := getRecordsByTime(context.Background(), tt.args.historyFn, tt.args.meter, tt.args.now, tt.args.filterTime)
 
-			assert.Equal(t, tt.want, got, tt.name)
+			assert.Equal(t, tt.wantEarliest, earliest, tt.name)
+			assert.Equal(t, tt.wantLatest, latest, tt.name)
 			assert.Equal(t, tt.wantErr, err, tt.name)
 
-			gotConsumption := processMeterRecords(1, got)
+			gotConsumption := processMeterRecords(1, earliest, latest)
 
 			assert.Equal(t, tt.consumption, gotConsumption, tt.name)
 		})
@@ -146,5 +148,4 @@ func twoMeterReadingPages(_ context.Context, start time.Time, in *gen.ListMeterR
 		},
 		NextPageToken: "abc",
 	}, nil
-
 }

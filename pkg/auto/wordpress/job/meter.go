@@ -14,7 +14,7 @@ import (
 
 type listMeterReadingFn func(ctx context.Context, in *gen.ListMeterReadingHistoryRequest, opts ...grpc.CallOption) (*gen.ListMeterReadingHistoryResponse, error)
 
-func getRecordsByTime(ctx context.Context, historyFn listMeterReadingFn, meter string, now time.Time, filterTime time.Duration) ([2]*gen.MeterReadingRecord, error) {
+func getRecordsByTime(ctx context.Context, historyFn listMeterReadingFn, meter string, now time.Time, filterTime time.Duration) (*gen.MeterReadingRecord, *gen.MeterReadingRecord, error) {
 	var (
 		pageToken string
 		latest    = &gen.MeterReadingRecord{RecordTime: timestamppb.New(time.Time{})}
@@ -32,7 +32,7 @@ func getRecordsByTime(ctx context.Context, historyFn listMeterReadingFn, meter s
 		})
 
 		if err != nil {
-			return [2]*gen.MeterReadingRecord{}, err
+			return nil, nil, err
 		}
 
 		for _, record := range resp.GetMeterReadingRecords() {
@@ -52,12 +52,9 @@ func getRecordsByTime(ctx context.Context, historyFn listMeterReadingFn, meter s
 		pageToken = resp.GetNextPageToken()
 	}
 
-	return [2]*gen.MeterReadingRecord{earliest, latest}, nil
+	return earliest, latest, nil
 }
 
-func processMeterRecords(multiplier float32, records [2]*gen.MeterReadingRecord) float32 {
-	latest := records[1]
-	earliest := records[0]
-
+func processMeterRecords(multiplier float32, earliest, latest *gen.MeterReadingRecord) float32 {
 	return multiplier * (latest.GetMeterReading().GetUsage() - earliest.GetMeterReading().GetUsage())
 }

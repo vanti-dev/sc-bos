@@ -45,14 +45,14 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 			continue
 		}
 
-		records, err := getRecordsByTime(ctx, w.client.ListMeterReadingHistory, meter, now, w.GetInterval())
+		earliest, latest, err := getRecordsByTime(ctx, w.client.ListMeterReadingHistory, meter, now, w.GetInterval())
 
 		if err != nil {
 			w.Logger.Error("getting records by time", zap.String("meter", meter), zap.Error(err))
 			continue
 		}
 
-		consumption += processMeterRecords(multiplier, records)
+		consumption += processMeterRecords(multiplier, earliest, latest)
 
 	}
 
