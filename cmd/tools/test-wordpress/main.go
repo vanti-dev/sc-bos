@@ -82,7 +82,7 @@ func main() {
 		}
 	}()
 
-	// wait for all automations for wordpress to finish
+	// wait for all automations for WordPress to finish
 	time.Sleep(15 * time.Second)
 }
 

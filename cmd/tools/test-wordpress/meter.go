@@ -1,11 +1,7 @@
 package main
 
 import (
-	"math/rand"
-	"time"
-
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
@@ -28,14 +24,9 @@ func announceMeter(root node.Announcer, name, unit string, events []float32) err
 
 	store := memstore.New()
 
-	now := time.Now()
-
-	for idx, event := range events {
-		randomInt := rand.Int() + idx
+	for _, event := range events {
 		rec, err := proto.Marshal(&gen.MeterReading{
-			Usage:     event,
-			StartTime: timestamppb.New(now.Add(-time.Duration(randomInt) * time.Minute)),
-			EndTime:   timestamppb.New(now.Add(-time.Duration(randomInt) * time.Duration(rand.Int()) * time.Minute)),
+			Usage: event,
 		})
 		if err != nil {
 			return err
