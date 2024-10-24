@@ -14,15 +14,17 @@ import (
 
 type listMeterReadingFn func(ctx context.Context, in *gen.ListMeterReadingHistoryRequest, opts ...grpc.CallOption) (*gen.ListMeterReadingHistoryResponse, error)
 
-func getRecordsByTime(ctx context.Context, historyFn listMeterReadingFn, meter string, now time.Time, filterTime time.Duration) (*gen.MeterReadingRecord, *gen.MeterReadingRecord, error) {
+func getRecordsByTime(ctx context.Context, historyFn listMeterReadingFn, meter string, now time.Time, filterTime time.Duration) (earliest, latest *gen.MeterReadingRecord, err error) {
 	var (
 		pageToken string
-		latest    = &gen.MeterReadingRecord{RecordTime: timestamppb.New(time.Time{})}
-		earliest  = &gen.MeterReadingRecord{RecordTime: timestamppb.New(now)}
+		resp      *gen.ListMeterReadingHistoryResponse
 	)
 
+	latest = &gen.MeterReadingRecord{RecordTime: timestamppb.New(time.Time{})}
+	earliest = &gen.MeterReadingRecord{RecordTime: timestamppb.New(now)}
+
 	for {
-		resp, err := historyFn(ctx, &gen.ListMeterReadingHistoryRequest{
+		resp, err = historyFn(ctx, &gen.ListMeterReadingHistoryRequest{
 			Name: meter,
 			Period: &sctime.Period{
 				StartTime: timestamppb.New(now.Add(-filterTime - time.Second)),
