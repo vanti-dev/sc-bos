@@ -113,7 +113,7 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 			}
 
 			if _, ok := d.known[dt]; !ok {
-				clients, slc := newMockClient(dt.trait, device.Name, d.logger)
+				clients, slc := newMockClient(traitMd, device.Name, d.logger)
 				if len(clients) == 0 {
 					d.logger.Sugar().Warnf("Cannot create mock client %s::%s", dt.name, dt.trait)
 				} else {
@@ -149,8 +149,8 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 	return nil
 }
 
-func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) ([]any, service.Lifecycle) {
-	switch traitName {
+func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap.Logger) ([]any, service.Lifecycle) {
+	switch trait.Name(traitMd.Name) {
 	case trait.AirQualitySensor:
 		model := airqualitysensor.NewModel(airqualitysensor.WithInitialAirQuality(auto.GetAirQualityState()))
 		return []any{airqualitysensor.WrapApi(airqualitysensor.NewModelServer(model))}, auto.AirQualitySensorAuto(model)
@@ -258,6 +258,14 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 	case button.TraitName:
 		return []any{gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED)))}, nil
 	case meter.TraitName:
+		var (
+			unit string
+			ok   bool
+		)
+		if unit, ok = traitMd.GetMore()["unit"]; !ok {
+			unit = "kWh"
+		}
+
 		model := meter.NewModel()
 		info := &meter.InfoServer{MeterReading: &gen.MeterReadingSupport{
 			ResourceSupport: &types.ResourceSupport{
@@ -265,7 +273,7 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 				Writable:   true,
 				Observable: true,
 			},
-			Unit: "kWh",
+			Unit: unit,
 		}}
 		return []any{gen.WrapMeterApi(meter.NewModelServer(model)), gen.WrapMeterInfo(info)}, auto.MeterAuto(model)
 	case statuspb.TraitName:
