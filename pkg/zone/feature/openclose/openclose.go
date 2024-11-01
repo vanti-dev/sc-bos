@@ -20,7 +20,7 @@ import (
 )
 
 var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
-	services.Logger = services.Logger.Named("meter")
+	services.Logger = services.Logger.Named("openclose")
 	f := &feature{
 		announce: services.Node,
 		devices:  services.Devices,
