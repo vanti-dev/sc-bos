@@ -22,11 +22,11 @@ import (
 )
 
 // AlarmConfig allows configuring a specific bacnet point to become an Emergency if the
-// value read from that point matches the ActivePolarity.
+// value read from that point matches the OkValue.
 type AlarmConfig struct {
 	config.ValueSource
-	ActivePolarity int    `json:"activePolarity"` // e.g. 1 if the alarm is active high, 0 if the alarm is active low
-	AlarmReason    string `json:"alarmReason"`    // the reason of the alarm
+	OkValue     int    `json:"okValue"`     // what we expect to read from the point when it is ok, any other value is an emergency
+	AlarmReason string `json:"alarmReason"` // the reason of the alarm
 }
 
 type emergencyConfig struct {
@@ -146,7 +146,7 @@ func (t *emergencyImpl) pollPeer(ctx context.Context) (*traits.Emergency, error)
 				return comm.ErrReadProperty{Prop: "alarmConfig", Cause: err}
 			}
 
-			if t.config.AlarmConfig.ActivePolarity == int(enum) {
+			if t.config.AlarmConfig.OkValue != int(enum) {
 				data.Reason = t.config.AlarmConfig.AlarmReason
 				data.Level = traits.Emergency_EMERGENCY
 			} else {
