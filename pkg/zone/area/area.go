@@ -24,6 +24,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/meter"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/mode"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/occupancy"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/openclose"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/status"
 )
 
@@ -36,6 +37,7 @@ var DefaultFeatures = []zone.Factory{
 	meter.Feature,
 	mode.Feature,
 	occupancy.Feature,
+	openclose.Feature,
 	status.Feature,
 	airquality.Feature,
 }
