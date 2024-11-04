@@ -8,6 +8,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress"
 	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 )
 
 func main() {
@@ -18,6 +19,8 @@ func main() {
 	}
 
 	announcer := node.New("wordpress-test")
+
+	alltraits.AddSupport(announcer)
 
 	err = announceOccupancy(announcer, "pir/01", 8)
 	if err != nil {
