@@ -99,15 +99,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - name: Authenticate with private NPM registry (Nexus)
-        run: |
-          echo "always-auth=true" > ~/.npmrc
-          echo "registry=https://nexus.vanti.co.uk/repository/npm-public/" >> ~/.npmrc
-          echo "//nexus.vanti.co.uk/repository/npm-public/:_authToken=${{ secrets.NEXUS_NPM_TOKEN }}" >> ~/.npmrc
-          echo "//nexus.vanti.co.uk/repository/npm-releases/:_authToken=${{ secrets.NEXUS_NPM_TOKEN }}" >> ~/.npmrc
-          echo "@vanti:registry=https://nexus.vanti.co.uk/repository/npm-releases/" >> ~/.npmrc
-          echo "@smart-core-os:registry=https://nexus.vanti.co.uk/repository/npm-releases/" >> ~/.npmrc
-
       - name: Install dependencies
         run: yarn install --frozen-lockfile --check-files
         working-directory: ./ui/conductor

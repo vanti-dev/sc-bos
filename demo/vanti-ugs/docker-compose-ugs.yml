@@ -1,0 +1,82 @@
+services:
+  db:
+    image: docker.io/library/postgres:14
+    restart: always
+    environment:
+      POSTGRES_USERNAME: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: smart_core
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./scripts/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d smart_core" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  pgadmin:
+    image: docker.io/dpage/pgadmin4:6
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@example.com"
+      PGADMIN_DEFAULT_PASSWORD: "postgres"
+    ports:
+      - "8881:80"
+
+  sc-ugs:
+    image: smartcoredemo.azurecr.io/sc-ugs
+    restart: always
+    ports:
+      - "8443:8443"
+      - "23557:23557"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  seed-db:
+    image: smartcoredemo.azurecr.io/seed-db
+    restart: no
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+
+#  keycloak:
+#    image: quay.io/keycloak/keycloak:21.0.1
+#    restart: always
+#    ports:
+#      - "8888:8080"
+#    environment:
+#      KEYCLOAK_ADMIN: admin
+#      KEYCLOAK_ADMIN_PASSWORD: admin
+#      KC_DB: postgres
+#      KC_DB_URL: "jdbc:postgresql://db/keycloak"
+#      KC_DB_USERNAME: postgres
+#      KC_DB_PASSWORD: postgres
+#    volumes:
+#      - ./manifests/keycloak/realm-smart-core.json:/opt/keycloak/data/import/realm-smart-core.json
+#      - ./manifests/keycloak/themes/smartcore:/opt/keycloak/themes/smartcore
+#    command: "start-dev --import-realm"
+
+
+
+# Podman doesn't support profiles as of Oct 2023 - when they do we can uncomment this
+#  keycloak-export:
+#    profiles:
+#      - manual
+#    image: quay.io/keycloak/keycloak:21.0.1
+#    restart: always
+#    ports:
+#      - "8888:8080"
+#    environment:
+#      KEYCLOAK_ADMIN: admin
+#      KEYCLOAK_ADMIN_PASSWORD: admin
+#      KC_DB: postgres
+#      KC_DB_URL: "jdbc:postgresql://db/keycloak"
+#      KC_DB_USERNAME: postgres
+#      KC_DB_PASSWORD: postgres
+#    entrypoint: sh
+#    command: -c "/opt/keycloak/bin/kc.sh build && /opt/keycloak/bin/kc.sh export --dir /opt/keycloak/exports/ --realm Smart_Core --users realm_file && cat /opt/keycloak/exports/Smart_Core-realm.json"

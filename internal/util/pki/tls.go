@@ -6,11 +6,20 @@ import (
 	"errors"
 )
 
+// ALPN protocol IDs
+// https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml#alpn-protocol-ids
+const (
+	alpnHTTP1 = "http/1.1"
+	alpnHTTP2 = "h2"
+)
+
 // TLSServerConfig returns a *tls.Config for use by a server using source to provide the server cert.
 // If the returned tls.Config requires validation of client certificates then sources roots will be used to validate
 // the client certificates.
 func TLSServerConfig(source Source) *tls.Config {
 	cfg := &tls.Config{}
+	// accept both HTTP2 and HTTP1.1, preferring HTTP2
+	cfg.NextProtos = []string{alpnHTTP2, alpnHTTP1}
 	cfg.ClientAuth = tls.VerifyClientCertIfGiven
 	cfg.GetCertificate = func(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
 		// This shouldn't be necessary, however http.ServeTLS attempts to load ssl key/cert from disk.
