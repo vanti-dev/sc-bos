@@ -170,7 +170,8 @@ func (s *System) poll(ctx context.Context, t func(context.Context) error, logFie
 		task.WithPollAttemptCallback(func(state task.PollState, err error) bool {
 			defer func() { lastState = state }()
 			if err == nil {
-				if lastState.NextDelay == 0 && state.SuccessesSinceError == 1 {
+				// only print success if the last attempt succeeded after an error
+				if lastState.NextDelay == 0 && state.SuccessesSinceError == 1 && lastState.ErrorsSinceSuccess > 0 {
 					logger.Debug("poll task is now succeeding", zap.Int("attempts", lastState.ErrorsSinceSuccess))
 				}
 				return false
