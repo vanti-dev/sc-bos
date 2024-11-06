@@ -141,12 +141,12 @@ func (t *emergencyImpl) pollPeer(ctx context.Context) (*traits.Emergency, error)
 		requestNames = append(requestNames, "alarmConfig")
 		readValues = append(readValues, t.config.AlarmConfig.ValueSource)
 		resProcessors = append(resProcessors, func(response any) error {
-			enum, err := comm.EnumValue(response)
+			value, err := comm.IntValue(response)
 			if err != nil {
 				return comm.ErrReadProperty{Prop: "alarmConfig", Cause: err}
 			}
 
-			if t.config.AlarmConfig.OkValue != int(enum) {
+			if int64(t.config.AlarmConfig.OkValue) != value {
 				data.Reason = t.config.AlarmConfig.AlarmReason
 				data.Level = traits.Emergency_EMERGENCY
 			} else {
