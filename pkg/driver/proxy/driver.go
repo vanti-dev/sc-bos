@@ -200,6 +200,8 @@ func (p *proxy) announceTraits(announced announcedTraits, childName string, trai
 		features := []node.Feature{node.HasServices(p.conn, services...)}
 		if !p.skipChild {
 			features = append(features, node.HasTrait(tn))
+		} else {
+			features = append(features, node.HasNoAutoMetadata())
 		}
 
 		undo := p.announcer.Announce(childName, features...)
