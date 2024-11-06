@@ -24,7 +24,11 @@ import (
 // This blocks until ctx is done.
 func (s *System) scanRemoteHub(ctx context.Context, c *cohort, hubConn *grpc.ClientConn) {
 	hubClient := gen.NewHubApiClient(hubConn)
-	hubNode := newRemoteNode(hubConn.Target(), hubConn)
+	hubAddr := hubConn.Target()
+	if hubAddr == "dialchan:ignored" {
+		hubAddr = s.hub.Target()
+	}
+	hubNode := newRemoteNode(hubAddr, hubConn)
 	hubNode.isHub = true
 	c.Nodes.Set(hubNode)
 
