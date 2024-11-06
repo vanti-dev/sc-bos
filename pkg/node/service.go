@@ -73,6 +73,8 @@ func (n *Node) AnnounceService(srv *Service) (Undo, error) {
 // No routes are added, so by default all requests will fail.
 func (n *Node) SupportService(srv *Service) error {
 	serviceName := srv.routerService.Name()
+	n.mu.Lock()
+	defer n.mu.Unlock()
 	if n.router.GetService(serviceName) == nil {
 		err := n.router.AddService(srv.routerService)
 		if err != nil {
