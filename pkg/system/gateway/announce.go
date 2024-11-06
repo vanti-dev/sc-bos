@@ -6,6 +6,8 @@ import (
 	"sync"
 
 	"go.uber.org/zap"
+	reflectionpb "google.golang.org/grpc/reflection/grpc_reflection_v1"
+	reflectionv1alphapb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -216,6 +218,7 @@ func (a *announcer) announceServiceApi(name string) node.Undo {
 	for _, bucket := range []string{"automations", "drivers", "systems", "zones"} {
 		undos = append(undos, a.Announce(name+"/"+bucket,
 			node.HasServer(gen.RegisterServicesApiServer, servicesApi),
+			node.HasNoAutoMetadata(),
 		))
 	}
 	return node.UndoAll(undos...)
@@ -246,6 +249,9 @@ func (a *announcer) announceMetadataTraitsSet(seq seq2[int, remoteDesc]) tasks {
 
 // announceRemoteService updates this node to respond to requests for the given remoteService.
 func (a *announcer) announceRemoteService(rs protoreflect.ServiceDescriptor) node.Undo {
+	if a.ignoreRemoteService(rs) {
+		return node.NilUndo
+	}
 	name := string(rs.FullName())
 	if a.table.services.Inc(name) == 1 {
 		undo := a.announceRemoteServiceApis(rs)
@@ -317,6 +323,23 @@ func (a *announcer) announceRemoteServiceApis(rs protoreflect.ServiceDescriptor)
 	}
 
 	return node.UndoAll(undos...)
+}
+
+// ignoreRemoteService returns true for service descriptors that we shouldn't proxy automatically.
+// All services that return true are proxied in some other way.
+func (a *announcer) ignoreRemoteService(rs protoreflect.ServiceDescriptor) bool {
+	name := string(rs.FullName())
+	switch name {
+	// services that are handled explicitly via other mechanisms
+	case
+		gen.DevicesApi_ServiceDesc.ServiceName,                // handled by the node outside the gateway service
+		gen.EnrollmentApi_ServiceDesc.ServiceName,             // handled by the app controller during boot
+		gen.ServicesApi_ServiceDesc.ServiceName,               // see announceServiceApi
+		reflectionpb.ServerReflection_ServiceDesc.ServiceName, // see setup/closeReflection in announceRemoteNode
+		reflectionv1alphapb.ServerReflection_ServiceDesc.ServiceName:
+		return true
+	}
+	return false
 }
 
 // table tracks state across all remote nodes.
