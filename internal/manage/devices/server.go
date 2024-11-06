@@ -153,7 +153,7 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 func (s *Server) GetDevicesMetadata(_ context.Context, request *gen.GetDevicesMetadataRequest) (*gen.DevicesMetadata, error) {
 	mds := s.node.ListAllMetadata()
 	var res *gen.DevicesMetadata
-	col := newMetadataCollector(request.Includes.Fields...)
+	col := newMetadataCollector(request.GetIncludes().GetFields()...)
 	for _, md := range mds {
 		res = col.add(&gen.Device{
 			Name:     md.Name,
