@@ -29,8 +29,8 @@ import (
 // Calling Support after Register will not have any effect on the served apis.
 type Node struct {
 	name   string
-	router *router.Router
 	mu     sync.Mutex // protects all fields below, typically Announce, Support, and methods that rely on that data
+	router *router.Router
 
 	// children keeps track of all the names that have been announced to this node.
 	// Lazy, initialised when addChildTrait via Announce(HasTrait) or Register are called.
