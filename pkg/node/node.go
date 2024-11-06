@@ -161,10 +161,10 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 		}
 		mds = append(mds, md)
 	}
-	// always need to set the name of the device in its metadata
-	mds = append(mds, &traits.Metadata{Name: name})
 
 	for _, md := range mds {
+		// always need to set the name of the device in its metadata
+		md.Name = name
 		undoMd, err := n.mergeMetadata(name, md)
 		if err != nil {
 			if errors.Is(err, MetadataTraitNotSupported) {
