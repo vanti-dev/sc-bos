@@ -152,6 +152,48 @@
           "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Basement", "zone": "Bar"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-LN1-01",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Cotswold Door Privacy"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Basement", "zone": "Cotswold Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-LN1-02",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Cotswold Door Blackout"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Basement", "zone": "Cotswold Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-LN1-03",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Copper Door Privacy"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Basement", "zone": "Copper Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-LN1-04",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Copper Door Blackout"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Basement", "zone": "Copper Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-LN1-05",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Kaolin Door Privacy"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Basement", "zone": "Kaolin Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-LN1-06",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Kaolin Door Blackout"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Basement", "zone": "Kaolin Room"}
         }
       ]
     },
@@ -434,6 +476,69 @@
           "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "Ground Floor", "zone": "Lab"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-L00-01",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Main Door Privacy"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Ground Floor", "zone": "Reception"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-L00-02",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Teal Door Privacy"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Ground Floor", "zone": "Teal Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-L00-03",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Teal Door Blackout"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Ground Floor", "zone": "Teal Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-L00-04",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Green Door Privacy"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Ground Floor", "zone": "Green Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-L00-05",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Green Door Blackout"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Ground Floor", "zone": "Green Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-L00-06",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Yellow Door Privacy"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Ground Floor", "zone": "Yellow Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-L00-07",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Yellow Door Blackout"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Ground Floor", "zone": "Yellow Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-L00-08",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Project Door Privacy"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Ground Floor", "zone": "Project Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-L00-09",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Project Door Blackout"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "Ground Floor", "zone": "Project Room"}
         }
       ]
     },
@@ -540,6 +645,34 @@
           "traits": [{"name": "smartcore.traits.AirQualitySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
           "location": {"floor": "First Floor", "zone": "Service"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-L01-01",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Open Plan Window 1"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Left to right"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-L01-02",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Open Plan Window 2"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Left to right"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-L01-03",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Open Plan Window 3"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Left to right"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SHD-L01-04",
+          "traits": [{"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "appearance": {"title": "Open Plan Window 4"},
+          "membership": {"subsystem": "shades"},
+          "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Left to right"}
         }
       ]
     },
@@ -745,6 +878,10 @@
         "membership": {"subsystem": "zones"}
       },
       "lights": ["van/uk/brum/ugs/devices/LTF-LN1-04", "van/uk/brum/ugs/devices/LTF-LN1-05"],
+      "openCloseGroups": {
+        "privacy": ["van/uk/brum/ugs/devices/SHD-LN1-01"],
+        "blackout": ["van/uk/brum/ugs/devices/SHD-LN1-02"]
+      },
       "thermostats": ["van/uk/brum/ugs/devices/FCU-LN1-02"],
       "occupancySensors": ["van/uk/brum/ugs/devices/PIR-LN1-02"],
       "airQualitySensors": ["van/uk/brum/ugs/devices/IAQ-LN1-01"]
@@ -758,6 +895,10 @@
         "membership": {"subsystem": "zones"}
       },
       "lights": ["van/uk/brum/ugs/devices/LTF-LN1-06", "van/uk/brum/ugs/devices/LTF-LN1-07"],
+      "openCloseGroups": {
+        "privacy": ["van/uk/brum/ugs/devices/SHD-LN1-03"],
+        "blackout": ["van/uk/brum/ugs/devices/SHD-LN1-04"]
+      },
       "thermostats": ["van/uk/brum/ugs/devices/FCU-LN1-03"],
       "occupancySensors": ["van/uk/brum/ugs/devices/PIR-LN1-03"],
       "airQualitySensors": ["van/uk/brum/ugs/devices/IAQ-LN1-02"]
@@ -771,6 +912,10 @@
         "membership": {"subsystem": "zones"}
       },
       "lights": ["van/uk/brum/ugs/devices/LTF-LN1-08", "van/uk/brum/ugs/devices/LTF-LN1-09"],
+      "openCloseGroups": {
+        "privacy": ["van/uk/brum/ugs/devices/SHD-LN1-05"],
+        "blackout": ["van/uk/brum/ugs/devices/SHD-LN1-06"]
+      },
       "thermostats": ["van/uk/brum/ugs/devices/FCU-LN1-04"],
       "occupancySensors": ["van/uk/brum/ugs/devices/PIR-LN1-04"],
       "airQualitySensors": ["van/uk/brum/ugs/devices/IAQ-LN1-03"]
@@ -784,6 +929,10 @@
         "membership": {"subsystem": "zones"}
       },
       "lights": ["van/uk/brum/ugs/devices/LTF-L00-05"],
+      "openCloseGroups": {
+        "privacy": ["van/uk/brum/ugs/devices/SHD-L00-02"],
+        "blackout": ["van/uk/brum/ugs/devices/SHD-L00-03"]
+      },
       "thermostats": ["van/uk/brum/ugs/devices/FCU-L00-02"],
       "occupancySensors": ["van/uk/brum/ugs/devices/PIR-L00-02"],
       "airQualitySensors": ["van/uk/brum/ugs/devices/IAQ-L00-01"]
@@ -797,6 +946,10 @@
         "membership": {"subsystem": "zones"}
       },
       "lights": ["van/uk/brum/ugs/devices/LTF-L00-06"],
+      "openCloseGroups": {
+        "privacy": ["van/uk/brum/ugs/devices/SHD-L00-04"],
+        "blackout": ["van/uk/brum/ugs/devices/SHD-L00-05"]
+      },
       "thermostats": ["van/uk/brum/ugs/devices/FCU-L00-03"],
       "occupancySensors": ["van/uk/brum/ugs/devices/PIR-L00-03"],
       "airQualitySensors": ["van/uk/brum/ugs/devices/IAQ-L00-02"]
@@ -810,6 +963,10 @@
         "membership": {"subsystem": "zones"}
       },
       "lights": ["van/uk/brum/ugs/devices/LTF-L00-07"],
+      "openCloseGroups": {
+        "privacy": ["van/uk/brum/ugs/devices/SHD-L00-06"],
+        "blackout": ["van/uk/brum/ugs/devices/SHD-L00-07"]
+      },
       "thermostats": ["van/uk/brum/ugs/devices/FCU-L00-04"],
       "occupancySensors": ["van/uk/brum/ugs/devices/PIR-L00-04"],
       "airQualitySensors": ["van/uk/brum/ugs/devices/IAQ-L00-03"]
@@ -823,7 +980,11 @@
         "membership": {"subsystem": "zones"}
       },
       "lights": ["van/uk/brum/ugs/devices/LTF-L00-08"],
-      "thermostats": ["van/uk/brum/ugs/devices/FCU-L00-05"],
+      "openCloseGroups": {
+        "privacy": ["van/uk/brum/ugs/devices/SHD-L00-08"],
+        "blackout": ["van/uk/brum/ugs/devices/SHD-L00-09"]
+      },
+      "thermostats": ["van/uk/brum/ugs/devices/FCU-L00-05b"],
       "occupancySensors": ["van/uk/brum/ugs/devices/PIR-L00-05"]
     },
     {
@@ -966,6 +1127,12 @@
       "lights": [
         "van/uk/brum/ugs/devices/LTF-L01-03"
       ],
+      "openCloseGroups": {
+        "window1": ["van/uk/brum/ugs/devices/SHD-L01-01"],
+        "window2": ["van/uk/brum/ugs/devices/SHD-L01-02"],
+        "window3": ["van/uk/brum/ugs/devices/SHD-L01-03"],
+        "window4": ["van/uk/brum/ugs/devices/SHD-L01-04"]
+      },
       "thermostats": [
         "van/uk/brum/ugs/devices/FCU-L01-02",
         "van/uk/brum/ugs/devices/FCU-L01-03"
