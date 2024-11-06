@@ -276,7 +276,11 @@ func registerProxyRoute(r *router.Router, name string, conn grpc.ClientConnInter
 func ensureServiceSupported(r *router.Router, s service) error {
 	serviceName := string(s.desc.FullName())
 	if existing := r.GetService(serviceName); existing != nil {
-		if s.nameRouting && !existing.KeyRoutable() {
+		switch {
+		case serviceName == traits.MetadataApi_ServiceDesc.ServiceName:
+		case serviceName == traits.MetadataInfo_ServiceDesc.ServiceName:
+			// skip, we support metadata specially
+		case s.nameRouting && !existing.KeyRoutable():
 			// existing service does not support name routing!
 			return fmt.Errorf("service %q already exists but does not support name routing", serviceName)
 		}
