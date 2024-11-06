@@ -284,35 +284,35 @@ func (a *announcer) announceRemoteServiceApis(rs protoreflect.ServiceDescriptor)
 	switch {
 	case srv.NameRoutable():
 		// routes will be added by device announcements as this service is routable by name
-		a.logger.Debug("remote supports routable service",
-			zap.String("service", string(rs.FullName())),
-			zap.String("remote", a.node.addr),
-		)
 		err := a.self.SupportService(srv)
 		if err != nil {
-			a.logger.Warn("cannot support service, will not be available",
+			a.logger.Warn("failed to announce routable service",
 				zap.String("service", string(rs.FullName())),
 				zap.Error(err),
 			)
+			break
 		}
+		a.logger.Debug("routable service announced",
+			zap.String("service", string(rs.FullName())),
+		)
 	case a.node.isHub:
 		// route everything to the hub
-		a.logger.Debug("remote is a hub supporting non-routable service",
-			zap.String("service", string(rs.FullName())),
-			zap.String("remote", a.node.addr),
-		)
 		undo, err := a.self.AnnounceService(srv)
-		undos = append(undos, undo)
 		if err != nil {
-			a.logger.Warn("cannot announce service, will not be available",
+			a.logger.Warn("failed to announce non-routable hub service",
 				zap.String("service", string(rs.FullName())),
 				zap.Error(err),
 			)
+			break
 		}
+		a.logger.Debug("non-routable hub service announced",
+			zap.String("service", string(rs.FullName())),
+		)
+		undos = append(undos, undo)
 	default:
 		// Found a non-routable service on a non-hub node.
 		// We didn't think we had any of these so log it to remind us.
-		a.logger.Warn("non-routable service on non-hub node", zap.String("service", string(rs.FullName())))
+		a.logger.Warn("unable to announce non-routable service on non-hub node", zap.String("service", string(rs.FullName())))
 		return nil
 	}
 
