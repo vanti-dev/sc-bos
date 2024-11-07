@@ -246,6 +246,27 @@ func BoolValue(data any) (bool, error) {
 	return false, fmt.Errorf("unsupported conversion %T -> bool for val %v", data, data)
 }
 
+func IntValue(data any) (int64, error) {
+	switch v := data.(type) {
+	case error:
+		return 0, v
+	case uint8:
+		return int64(v), nil
+	case uint16:
+		return int64(v), nil
+	case uint32:
+		return int64(v), nil
+	case int8:
+		return int64(v), nil
+	case int16:
+		return int64(v), nil
+	case int32:
+		return int64(v), nil
+	}
+
+	return 0, fmt.Errorf("unsupported conversion %T -> int for val %v", data, data)
+}
+
 func EnumValue(data any) (bactypes.Enumerated, error) {
 	switch v := data.(type) {
 	case error:
