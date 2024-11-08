@@ -54,6 +54,11 @@ func Test_mergeOpenClosePositions(t *testing.T) {
 		{"[{10% held},{10% held}]", []value{val(pos(10).Held()), val(pos(10).Held())}, ocp(pos(10).Held()), false},
 		// combine it all together
 		{"[{10% up slow,90% down},{30% up,70% down held}]", []value{val(up(10).Slow(), down(90)), val(up(30), down(70).Held())}, ocp(up(20).Slow(), down(80).Held()), false},
+		// preset tests
+		{"[{open}]", []value{valPres("open")}, ocpPres("open"), false},
+		{"[{nil },{open},{nil }]", []value{valPres(""), valPres("open"), valPres("")}, ocpPres("open"), false},
+		{"[{open},{open},{open}]", []value{valPres(""), valPres("open"), valPres("")}, ocpPres("open"), false},
+		{"[{shut},{open},{nil }]", []value{valPres("closed"), valPres("open"), valPres("")}, ocpPres(""), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -91,6 +96,18 @@ func ocp(p ...*position) *traits.OpenClosePositions {
 
 func val(p ...*position) value {
 	return value{val: ocp(p...)}
+}
+
+func valPres(name string) value {
+	return value{val: ocpPres(name)}
+}
+
+func ocpPres(name string) *traits.OpenClosePositions {
+	var preset *traits.OpenClosePositions_Preset
+	if name != "" {
+		preset = &traits.OpenClosePositions_Preset{Name: name}
+	}
+	return &traits.OpenClosePositions{Preset: preset}
 }
 
 type position struct {
