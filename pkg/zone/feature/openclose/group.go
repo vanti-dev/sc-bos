@@ -224,10 +224,6 @@ func mergeOpenClosePositions(all []value) (*traits.OpenClosePositions, error) {
 				positionsByDirection[state.Direction] = append(positionsByDirection[state.Direction], state)
 			}
 		}
-		if len(positionsByDirection) == 0 {
-			// this could be an error, but if all devices also return this then we'll respect this
-			return &traits.OpenClosePositions{}, nil
-		}
 
 		out := &traits.OpenClosePositions{}
 		for _, pos := range positionsByDirection {
@@ -237,6 +233,21 @@ func mergeOpenClosePositions(all []value) (*traits.OpenClosePositions, error) {
 		slices.SortFunc(out.States, func(a, b *traits.OpenClosePosition) int {
 			return int(a.Direction) - int(b.Direction)
 		})
+
+		// presets are set only if all present presets match by name
+	loop:
+		for _, v := range all {
+			p := v.val.GetPreset()
+			switch {
+			case out.Preset == nil:
+				out.Preset = p // first come, first win
+			case p == nil: // skip unset inputs
+			case p.Name != out.Preset.Name: // different presets means we don't know, so clear the preset
+				out.Preset = nil
+				break loop
+			}
+		}
+
 		return out, nil
 	}
 }
