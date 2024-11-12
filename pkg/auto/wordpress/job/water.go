@@ -38,15 +38,19 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 	now := time.Now()
 
 	for _, meter := range w.Meters {
-		multiplier, err := w.getUnitMultiplier(ctx, meter)
+		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+
+		multiplier, err := w.getUnitMultiplier(cctx, meter)
 
 		if err != nil {
 			w.Logger.Error("getting unit multiplier", zap.String("meter", meter), zap.Error(err))
+			cancel()
 			continue
 		}
 
-		earliest, latest, err := getRecordsByTime(ctx, w.client.ListMeterReadingHistory, meter, now, w.GetInterval())
+		earliest, latest, err := getRecordsByTime(cctx, w.client.ListMeterReadingHistory, meter, now, w.GetInterval())
 
+		cancel()
 		if err != nil {
 			w.Logger.Error("getting records by time", zap.String("meter", meter), zap.Error(err))
 			continue

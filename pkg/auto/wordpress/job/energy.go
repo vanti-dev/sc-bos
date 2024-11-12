@@ -39,14 +39,19 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 	now := time.Now()
 
 	for _, meter := range e.Meters {
-		multiplier, err := e.getUnitMultiplier(ctx, meter)
+		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+
+		multiplier, err := e.getUnitMultiplier(cctx, meter)
 
 		if err != nil {
 			e.Logger.Error("getting unit multiplier", zap.String("meter", meter), zap.Error(err))
+			cancel()
 			continue
 		}
 
-		earliest, latest, err := getRecordsByTime(ctx, e.client.ListMeterReadingHistory, meter, now, e.GetInterval())
+		earliest, latest, err := getRecordsByTime(cctx, e.client.ListMeterReadingHistory, meter, now, e.GetInterval())
+
+		cancel()
 
 		if err != nil {
 			e.Logger.Error("getting records by time", zap.String("meter", meter), zap.Error(err))
