@@ -57,8 +57,8 @@ func Test_mergeOpenClosePositions(t *testing.T) {
 		// preset tests
 		{"[{open}]", []value{valPres("open")}, ocpPres("open"), false},
 		{"[{nil },{open},{nil }]", []value{valPres(""), valPres("open"), valPres("")}, ocpPres("open"), false},
-		{"[{open},{open},{open}]", []value{valPres(""), valPres("open"), valPres("")}, ocpPres("open"), false},
-		{"[{shut},{open},{nil }]", []value{valPres("closed"), valPres("open"), valPres("")}, ocpPres(""), false},
+		{"[{open},{open},{open}]", []value{valPres("open"), valPres("open"), valPres("open")}, ocpPres("open"), false},
+		{"[{shut},{open},{nil }]", []value{valPres("shut"), valPres("open"), valPres("")}, ocpPres(""), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
