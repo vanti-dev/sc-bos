@@ -14,7 +14,7 @@
   "dependencies": {
     "@sc-bos/panzoom-package": "1.0.1-vanti.0",
     "@sc-bos/ui-gen": "1.0.0-beta.17",
-    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.46",
+    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.48",
     "binary-search": "^1.3.6",
     "change-case": "^5.4.4",
     "chart.js": "^4.4.2",
