@@ -32,7 +32,10 @@ func (t *TemperatureJob) Do(ctx context.Context, sendFn sender) error {
 	count := 0
 
 	for _, sensor := range t.Sensors {
-		resp, err := t.client.GetAirTemperature(ctx, &traits.GetAirTemperatureRequest{Name: sensor})
+		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+
+		resp, err := t.client.GetAirTemperature(cctx, &traits.GetAirTemperatureRequest{Name: sensor})
+		cancel()
 
 		if err != nil {
 			t.Logger.Error("getting air temperature", zap.String("sensor", sensor), zap.Error(err))

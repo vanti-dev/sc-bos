@@ -30,7 +30,10 @@ func (o *OccupancyJob) Do(ctx context.Context, sendFn sender) error {
 	sum := int32(0)
 
 	for _, sensor := range o.Sensors {
-		resp, err := o.client.GetOccupancy(ctx, &traits.GetOccupancyRequest{Name: sensor})
+		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+
+		resp, err := o.client.GetOccupancy(cctx, &traits.GetOccupancyRequest{Name: sensor})
+		cancel()
 
 		if err != nil {
 			o.Logger.Error("getting occupancy", zap.String("sensor", sensor), zap.Error(err))

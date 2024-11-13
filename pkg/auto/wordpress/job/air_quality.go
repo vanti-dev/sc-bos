@@ -32,8 +32,11 @@ func (a *AirQualityJob) Do(ctx context.Context, sendFn sender) error {
 	count := 0
 
 	for _, sensor := range a.Sensors {
-		resp, err := a.client.GetAirQuality(ctx, &traits.GetAirQualityRequest{Name: sensor})
+		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 
+		resp, err := a.client.GetAirQuality(cctx, &traits.GetAirQualityRequest{Name: sensor})
+
+		cancel()
 		if err != nil {
 			a.Logger.Error("getting air quality", zap.String("sensor", sensor), zap.Error(err))
 			continue
