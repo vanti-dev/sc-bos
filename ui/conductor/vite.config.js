@@ -62,6 +62,16 @@ export default defineConfig(({mode}) => {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url))
       }
+    },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: 'modern'
+        },
+        sass: {
+          api: 'modern'
+        }
+      }
     }
   };
 });
