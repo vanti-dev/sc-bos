@@ -43,22 +43,24 @@ const props = defineProps({
   }
 });
 
-const isHeating = computed(() => props.currentTemp < props.setPoint);
-const isCooling = computed(() => props.currentTemp > props.setPoint);
-const iconStr = computed(() => {
-  if (isHeating.value) return 'mdi-fire';
-  if (isCooling.value) return 'mdi-snowflake';
-  return 'mdi-stop-circle';
-});
-
-const currentTempNum = computed(() => +props.currentTemp);
-const setPointNum = computed(() => +props.setPoint);
+const currentTempNum = computed(() => props.currentTemp);
+const setPointNum = computed(() => props.setPoint);
 const {
   hasTemp,
   tempStr,
   hasSetPoint,
   setPointStr
 } = useAirTemperatureValues(currentTempNum, setPointNum);
+const canTellDirection = computed(() => hasTemp.value && hasSetPoint.value);
+
+const isHeating = computed(() => props.currentTemp < props.setPoint);
+const isCooling = computed(() => props.currentTemp > props.setPoint);
+const iconStr = computed(() => {
+  if (!canTellDirection.value) return 'mdi-thermometer';
+  if (isHeating.value) return 'mdi-fire';
+  if (isCooling.value) return 'mdi-snowflake';
+  return 'mdi-stop-circle';
+});
 
 // layout and sizing for the chip
 const chipSize = computed(() => {
