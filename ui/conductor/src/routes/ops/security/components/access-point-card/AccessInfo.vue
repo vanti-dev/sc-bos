@@ -173,8 +173,6 @@ const user = computed(() => {
 onBeforeUnmount(() => {
   closeResource(props.accessAttempt);
   closeResource(props.statusLog);
-  closeResource(alerts.listPageTracker);
-  closeResource(alerts.pullResource);
 });
 </script>
 <style lang="scss" scoped>
