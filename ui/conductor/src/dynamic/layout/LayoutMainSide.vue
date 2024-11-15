@@ -3,21 +3,23 @@
     <header>
       <h3 class="text-h3">{{ title }}</h3>
     </header>
-    <section v-if="showSectionMain" class="section-main">
-      <component
-          v-for="(widget, index) in main"
-          :key="widget.id ?? index"
-          :is="widget.component"
-          v-bind="widget.props"
-          :style="mainWidgetStyle"/>
-    </section>
-    <section v-if="showSectionAfter" class="section-after" :style="afterStyle">
-      <component
-          v-for="(widget, index) in after"
-          :key="widget.id ?? index"
-          :is="widget.component"
-          v-bind="widget.props"/>
-    </section>
+    <div class="sections">
+      <section v-if="showSectionMain" class="section-main">
+        <component
+            v-for="(widget, index) in main"
+            :key="widget.id ?? index"
+            :is="widget.component"
+            v-bind="widget.props"
+            :style="mainWidgetStyle"/>
+      </section>
+      <section v-if="showSectionAfter" class="section-after" :style="afterStyle">
+        <component
+            v-for="(widget, index) in after"
+            :key="widget.id ?? index"
+            :is="widget.component"
+            v-bind="widget.props"/>
+      </section>
+    </div>
   </div>
 </template>
 
@@ -67,13 +69,16 @@ const mainWidgetStyle = computed(() => {
 </script>
 
 <style scoped>
-.layout-main-side {
-  display: grid;
-  grid-template-columns: 1fr 260px;
-  grid-template-rows: auto  1fr;
+.sections {
+  display: flex;
   gap: 24px;
   width: 100%;
   align-items: stretch;
+  margin-top: 24px;
+}
+
+.section-main {
+  flex: 1;
 }
 
 .section-main, .section-after {
