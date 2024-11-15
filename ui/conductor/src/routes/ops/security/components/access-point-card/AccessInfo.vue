@@ -20,7 +20,7 @@
     </v-card-text>
 
     <!-- Alert/Acknowledge area -->
-    <v-card-text v-if="alert" class="mt-4 px-0">
+    <v-card-text v-if="hasAlerts" class="mt-4 px-0">
       <v-list-item lines="two">
         <v-tooltip location="bottom">
           <template #activator="{ props: _props }">
@@ -150,6 +150,7 @@ const alertsOptions = computed(() => ({
   wantCount: 1
 }));
 const alertsCollection = useAlertsCollection(alertsRequest, alertsOptions);
+const hasAlerts = computed(() => alertsCollection.items.value.length > 0);
 const alert = computed(() => {
   if (alertsCollection.items.value.length === 0) {
     return {};
