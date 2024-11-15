@@ -2,7 +2,7 @@ import {closeResource, newActionTracker, newResourceCollection} from '@/api/reso
 import {cap} from '@/util/number.js';
 import {watchResource} from '@/util/traits.js';
 import deepEqual from 'fast-deep-equal';
-import {computed, reactive, ref, toValue, watch} from 'vue';
+import {computed, onScopeDispose, reactive, ref, toValue, watch} from 'vue';
 
 /**
  * @typedef {Object} ListResponse
@@ -110,14 +110,17 @@ export default function useCollection(request, client, options) {
     _req.updatesOnly = true; // list will get the existing values
     return _req;
   });
+  const stopPull = () => closeResource(pullResource);
   watchResource(
       pullRequest,
       () => toValue(options)?.paused,
       (req) => {
         client.pullFn(req, pullResource);
-        return () => closeResource(pullResource);
+        return () => stopPull();
       }
   );
+  onScopeDispose(() => stopPull());
+
   const shouldFetchWatcherRunning = ref(false);
   watch(shouldFetch, async () => {
     if (shouldFetchWatcherRunning.value) return;
