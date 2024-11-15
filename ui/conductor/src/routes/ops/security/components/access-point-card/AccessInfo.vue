@@ -147,6 +147,7 @@ const alertsRequest = computed(() => ({
   query: query.value
 }));
 const alertsOptions = computed(() => ({
+  paused: props.paused,
   wantCount: 1
 }));
 const alertsCollection = useAlertsCollection(alertsRequest, alertsOptions);
