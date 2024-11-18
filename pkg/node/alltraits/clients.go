@@ -67,6 +67,8 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = traits.NewSpeakerApiClient(conn)
 	case *traits.VendingApiClient:
 		*ptr = traits.NewVendingApiClient(conn)
+	case *gen.AlertApiClient:
+		*ptr = gen.NewAlertApiClient(conn)
 	case *gen.ButtonApiClient:
 		*ptr = gen.NewButtonApiClient(conn)
 	case *gen.ColorApiClient:
