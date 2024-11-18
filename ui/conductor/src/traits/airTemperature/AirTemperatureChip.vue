@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex align-center justify-center overlap" :class="[layoutClass, variantClass]">
-    <v-chip v-bind="chipAttrs">
+    <v-chip v-if="hasTemp || hasSetPoint" v-bind="chipAttrs">
       <span v-if="hasTemp" v-tooltip="'Current temperature'">{{ tempStr }}</span>
       <v-icon class="" v-if="hasTemp && hasSetPoint">mdi-chevron-right</v-icon>
       <span v-if="hasSetPoint" v-tooltip="'Target temperature (set point)'">{{ setPointStr }}</span>
