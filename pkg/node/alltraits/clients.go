@@ -67,6 +67,8 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = traits.NewSpeakerApiClient(conn)
 	case *traits.VendingApiClient:
 		*ptr = traits.NewVendingApiClient(conn)
+	case *gen.AlertApiClient:
+		*ptr = gen.NewAlertApiClient(conn)
 	case *gen.ButtonApiClient:
 		*ptr = gen.NewButtonApiClient(conn)
 	case *gen.ColorApiClient:
@@ -151,6 +153,9 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = gen.NewMeterHistoryClient(conn)
 	case *gen.StatusHistoryClient:
 		*ptr = gen.NewStatusHistoryClient(conn)
+
+	case *gen.HistoryAdminApiClient:
+		*ptr = gen.NewHistoryAdminApiClient(conn)
 
 	default:
 		return false
