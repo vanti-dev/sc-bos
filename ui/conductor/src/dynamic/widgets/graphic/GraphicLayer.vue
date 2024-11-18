@@ -18,12 +18,12 @@
 
 <script setup>
 import {closeResource} from '@/api/resource.js';
-import {usePullTrait} from '@/traits/traits.js';
 import {loadConfig} from '@/dynamic/widgets/graphic/config.js';
 import {usePathUtils} from '@/dynamic/widgets/graphic/path.js';
 import {useSvgEffects} from '@/dynamic/widgets/graphic/svg.js';
 import {useWidgetEffects} from '@/dynamic/widgets/graphic/widgets.js';
-import {effectScope, nextTick, onUnmounted, reactive, ref, watch} from 'vue';
+import {usePullTrait} from '@/traits/traits.js';
+import {effectScope, nextTick, onBeforeUnmount, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
   layer: {
@@ -161,6 +161,20 @@ watch([svgContainerEl, svgRaw], ([containerEl, svgRaw]) => {
   });
 });
 
+// check for when the svg element gets some size
+const svgElReady = ref(false);
+// should only ever have one observed element
+const svgElObserver = new ResizeObserver(([svgEl]) => {
+  const {blockSize, inlineSize} = svgEl.contentBoxSize[0];
+  svgElReady.value = blockSize > 0 && inlineSize > 0;
+});
+watch(svgEl, (el, oldEl) => {
+  if (oldEl) svgElObserver.unobserve(oldEl);
+  if (!el) return;
+  svgElObserver.observe(el);
+});
+onBeforeUnmount(() => svgElObserver.disconnect());
+
 const annotateSvgDom = (svgEl, config) => {
   svgEl.removeAttribute('width');
   svgEl.removeAttribute('height');
@@ -204,9 +218,9 @@ onUnmounted(() => {
   closeAll();
 });
 
-watch([svgEl, config], ([svgEl, config]) => {
+watch([svgEl, svgElReady, config], ([svgEl, svgElReady, config]) => {
   closeAll();
-  if (!svgEl || !config) return; // do nothing, not ready yet
+  if (!svgEl || !svgElReady || !config) return; // do nothing, not ready yet
 
   const scope = effectScope();
   scope.run(() => {
