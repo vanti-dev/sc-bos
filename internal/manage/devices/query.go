@@ -191,7 +191,7 @@ func compareListValue(path string, entryDesc protoreflect.FieldDescriptor, l pro
 	prop, rest, found, index := depath(path)
 
 	if index < 0 {
-		// no index specified ( none found )
+		// don't permit negative index
 		if found {
 			return nil, protoreflect.Value{}, false
 		}
@@ -365,7 +365,7 @@ func depath(path string) (before, after string, found bool, index int) {
 			}
 			if matchedIndices[0] == 0 {
 				// An index is found at the start of path
-				// return after only
+				// return before,after only
 				return before, after, true, int(index)
 			}
 			return arrIndexRegx.ReplaceAllString(before, ""), fmt.Sprintf("[%d].%s", index, after), true, int(index)
