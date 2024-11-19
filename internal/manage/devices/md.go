@@ -28,7 +28,7 @@ func (m *metadataCollector) add(d *gen.Device) *gen.DevicesMetadata {
 			m.seenFields[field] = seen
 			m.md.FieldCounts = append(m.md.FieldCounts, seen)
 		}
-		val, ok := getMessageString(field, d)
+		val, ok := compareMessageString(field, d, func(v string) bool { return true })
 		if !ok {
 			continue
 		}
@@ -44,7 +44,7 @@ func (m *metadataCollector) remove(d *gen.Device) *gen.DevicesMetadata {
 		if !ok {
 			continue
 		}
-		val, ok := getMessageString(field, d)
+		val, ok := compareMessageString(field, d, func(v string) bool { return true })
 		if !ok {
 			continue
 		}
