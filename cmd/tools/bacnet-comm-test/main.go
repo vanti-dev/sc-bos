@@ -17,19 +17,30 @@ import (
 func main() {
 	args := os.Args
 	if l := len(args); l < 3 || l > 4 {
-		log.Fatalf("Usage: <cmd> nic server[:port] [device]")
+		log.Fatalf("Usage: <cmd> nic[:port] server[:port] [device]")
 	}
-	nic, serverPort := args[1], args[2]
+	nicPort, serverPort := args[1], args[2]
 	deviceStr := "4194303"
 	if len(args) == 4 {
 		deviceStr = args[3]
 	}
+
+	localPort := 0 // defaults to 47808
+	nic, localPortStr, _ := net.SplitHostPort(nicPort)
+	if localPortStr != "" {
+		var err error
+		localPort, err = strconv.Atoi(localPortStr)
+		if err != nil {
+			log.Fatal("bad local port", localPortStr, err)
+		}
+	}
+
 	deviceNum, err := strconv.ParseInt(deviceStr, 10, 32)
 	if err != nil {
 		log.Fatal("bad device", deviceStr, err)
 	}
 
-	client, err := gobacnet.NewClient(nic, 0)
+	client, err := gobacnet.NewClient(nic, localPort)
 	if err != nil {
 		log.Fatal(err)
 	}
