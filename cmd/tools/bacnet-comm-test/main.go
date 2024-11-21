@@ -70,5 +70,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error reading device info! %v", err)
 	}
-	log.Printf("Success! {devices=%v}", devices)
+	log.Printf("Success! {devices=%+v}", devices)
 }
