@@ -16,10 +16,14 @@ import (
 
 func main() {
 	args := os.Args
-	if len(args) != 4 {
-		log.Fatalf("Usage: <cmd> nic server[:port] device")
+	if l := len(args); l < 3 || l > 4 {
+		log.Fatalf("Usage: <cmd> nic server[:port] [device]")
 	}
-	nic, serverPort, deviceStr := args[1], args[2], args[3]
+	nic, serverPort := args[1], args[2]
+	deviceStr := "4194303"
+	if len(args) == 4 {
+		deviceStr = args[3]
+	}
 	deviceNum, err := strconv.ParseInt(deviceStr, 10, 32)
 	if err != nil {
 		log.Fatal("bad device", deviceStr, err)
