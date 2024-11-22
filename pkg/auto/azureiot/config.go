@@ -39,8 +39,16 @@ type DeviceConfig struct {
 	// todo: DiscoverDevices bool // if true, discover devices from Smart Core and use them as the Children list
 
 	// Azure IoT Hub connection details, one of these must be provided
-	RegistrationID   string `json:"registrationID,omitempty"`   // Device Provisioning Service registration ID - usually becomes the device name in the cloud
-	ConnectionString string `json:"connectionString,omitempty"` // Use a connection string to directly connect to IoT Hub, bypassing Device Provisioning Service
+	RegistrationID       string `json:"registrationID,omitempty"`       // Device Provisioning Service registration ID - usually becomes the device name in the cloud
+	ConnectionString     string `json:"connectionString,omitempty"`     // Use a connection string to directly connect to IoT Hub, bypassing Device Provisioning Service
+	ConnectionStringFile string `json:"connectionStringFile,omitempty"` // Filesystem path to a file containing the connection string
+}
+
+// UsesConnectionString returns if the device will connect directly using a Connection String, bypassing DPS.
+//
+// This is true if either ConnectionString or ConnectionStringFile is non-empty.
+func (dc *DeviceConfig) UsesConnectionString() bool {
+	return dc.ConnectionString != "" || dc.ConnectionStringFile != ""
 }
 
 // SCDeviceConfig represents a Smart Core device information will be pulled from.
@@ -92,13 +100,16 @@ func ParseConfig(jsonBytes []byte) (Config, error) {
 	}
 
 	for i, deviceCfg := range cfg.Devices {
-		if deviceCfg.ConnectionString == "" {
+		if !deviceCfg.UsesConnectionString() {
 			// 	needsGroupKey = true
 
 			// if the group key is used, then an ID scope is also mandatory
 			if cfg.IDScope == "" {
 				return cfg, fmt.Errorf("id scope is required when using group keys")
 			}
+		}
+		if deviceCfg.ConnectionString != "" && deviceCfg.ConnectionStringFile != "" {
+			return cfg, fmt.Errorf("device %q has connectionString and connectionStringFile - only one is permitted", deviceCfg.Name)
 		}
 
 		setSCDefaults(&deviceCfg.SCDeviceConfig)

@@ -3,6 +3,8 @@ package azureiot
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/vanti-dev/sc-bos/internal/iothub"
 	"github.com/vanti-dev/sc-bos/internal/iothub/auth"
@@ -14,9 +16,18 @@ type dialler interface {
 }
 
 func diallerFromConfig(devCfg DeviceConfig, idScope string, grpKey auth.SASKey) (dialler, error) {
-	if devCfg.ConnectionString != "" {
+	if devCfg.UsesConnectionString() {
+		connectionString := devCfg.ConnectionString
+		if devCfg.ConnectionStringFile != "" {
+			contents, err := os.ReadFile(devCfg.ConnectionStringFile)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read connection string file for device %q: %w", devCfg.Name, err)
+			}
+			connectionString = strings.TrimSpace(string(contents))
+		}
+
 		// the device specifies its own connection string, no need to use the DPS
-		params, err := iothub.ParseConnectionString(devCfg.ConnectionString)
+		params, err := iothub.ParseConnectionString(connectionString)
 		if err != nil {
 			return nil, fmt.Errorf("invalid connection string for device %q: %w", devCfg.Name, err)
 		}
