@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"time"
 
 	"github.com/pkg/errors"
@@ -58,7 +59,7 @@ func (t *TemperatureJob) Do(ctx context.Context, sendFn sender) error {
 			Timestamp: time.Now(),
 		},
 		AverageTemperature: types.Float64Measure{
-			Value: average,
+			Value: math.Round(average*10) / 10,
 			Units: "°C",
 		},
 	}
