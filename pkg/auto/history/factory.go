@@ -145,25 +145,26 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	// work out where we're getting the records from
 	var serverClient wrap.ServiceUnwrapper
 	payloads := make(chan []byte)
+	var collect func(context.Context, config.Source, chan<- []byte)
 	switch cfg.Source.Trait {
 	case trait.AirQualitySensor:
 		serverClient = gen.WrapAirQualitySensorHistory(historypb.NewAirQualitySensorServer(store))
-		go a.collectAirQualityChanges(ctx, *cfg.Source, payloads)
+		collect = a.collectAirQualityChanges
 	case trait.AirTemperature:
 		serverClient = gen.WrapAirTemperatureHistory(historypb.NewAirTemperatureServer(store))
-		go a.collectAirTemperatureChanges(ctx, *cfg.Source, payloads)
+		collect = a.collectAirTemperatureChanges
 	case trait.Electric:
 		serverClient = gen.WrapElectricHistory(historypb.NewElectricServer(store))
-		go a.collectElectricDemandChanges(ctx, *cfg.Source, payloads)
+		collect = a.collectElectricDemandChanges
 	case meter.TraitName:
 		serverClient = gen.WrapMeterHistory(historypb.NewMeterServer(store))
-		go a.collectMeterReadingChanges(ctx, *cfg.Source, payloads)
+		collect = a.collectMeterReadingChanges
 	case trait.OccupancySensor:
 		serverClient = gen.WrapOccupancySensorHistory(historypb.NewOccupancySensorServer(store))
-		go a.collectOccupancyChanges(ctx, *cfg.Source, payloads)
+		collect = a.collectOccupancyChanges
 	case statuspb.TraitName:
 		serverClient = gen.WrapStatusHistory(historypb.NewStatusServer(store))
-		go a.collectCurrentStatusChanges(ctx, *cfg.Source, payloads)
+		collect = a.collectCurrentStatusChanges
 	default:
 		return fmt.Errorf("unsupported trait %s", cfg.Source.Trait)
 	}
@@ -185,8 +186,10 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	}()
 
 	announce := node.AnnounceContext(ctx, a.announce)
-	// we could technically announce this as a trait client, but there's no real need for that
-	announce.Announce(cfg.Source.Name, node.HasClient(serverClient))
+	// announce the trait too to ensure its services get added to the router before the collect routine starts
+	announce.Announce(cfg.Source.Name, node.HasClient(serverClient), node.HasTrait(cfg.Source.Trait))
+
+	go collect(ctx, *cfg.Source, payloads)
 
 	return nil
 }
