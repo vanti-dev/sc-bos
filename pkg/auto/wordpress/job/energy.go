@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"strings"
 	"time"
 
@@ -68,7 +69,7 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 			Site:      e.GetSite(),
 		},
 		TodaysEnergyConsumption: types.Float32Measure{
-			Value: consumption,
+			Value: float32(math.Floor(float64(consumption))),
 			Units: "kWh",
 		},
 	}
