@@ -8,7 +8,7 @@ import {
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setValue} from '@/api/resource';
 import {trackAction} from '@/api/resource.js';
-import {TenantApiPromiseClient} from '@sc-bos/ui-gen/proto/tenants_grpc_web_pb';
+import {TenantApiPromiseClient} from '@vanti-dev/sc-bos-ui-gen/proto/tenants_grpc_web_pb';
 import {
   AddTenantZonesRequest,
   CreateSecretRequest,
@@ -23,7 +23,7 @@ import {
   Secret,
   Tenant,
   UpdateTenantRequest
-} from '@sc-bos/ui-gen/proto/tenants_pb';
+} from '@vanti-dev/sc-bos-ui-gen/proto/tenants_pb';
 
 /**
  * @param {Partial<ListTenantsRequest.AsObject>} request

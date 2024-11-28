@@ -1,13 +1,13 @@
 import {closeResource, newResourceValue} from '@/api/resource';
 import {pullCurrentStatus} from '@/api/sc/traits/status';
 import {toQueryObject, watchResource} from '@/util/traits.js';
-import {StatusLog} from '@sc-bos/ui-gen/proto/status_pb';
+import {StatusLog} from '@vanti-dev/sc-bos-ui-gen/proto/status_pb';
 import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
 /**
- * @typedef {import('@sc-bos/ui-gen/proto/status_pb').StatusLog} StatusLog
- * @typedef {import('@sc-bos/ui-gen/proto/status_pb').PullCurrentStatusRequest} PullCurrentStatusRequest
- * @typedef {import('@sc-bos/ui-gen/proto/status_pb').PullCurrentStatusResponse} PullCurrentStatusResponse
+ * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/status_pb').StatusLog} StatusLog
+ * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/status_pb').PullCurrentStatusRequest} PullCurrentStatusRequest
+ * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/status_pb').PullCurrentStatusResponse} PullCurrentStatusResponse
  * @typedef {import('vue').Ref} Ref
  * @typedef {import('vue').ToRefs} ToRefs
  * @typedef {import('vue').ComputedRef} ComputedRef

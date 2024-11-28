@@ -1,5 +1,5 @@
 import {grantNamesByID} from '@/api/sc/traits/access';
-import {StatusLog} from '@sc-bos/ui-gen/proto/status_pb';
+import {StatusLog} from '@vanti-dev/sc-bos-ui-gen/proto/status_pb';
 import {computed, toValue} from 'vue';
 
 /**

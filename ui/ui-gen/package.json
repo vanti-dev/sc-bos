@@ -1,6 +1,6 @@
 {
-  "name": "@sc-bos/ui-gen",
-  "version": "1.0.0-beta.17",
+  "name": "@vanti-dev/sc-bos-ui-gen",
+  "version": "1.0.0-beta.18",
   "type": "commonjs",
   "scripts": {
     "gen": "node gen.mjs"
@@ -12,5 +12,9 @@
   },
   "devDependencies": {
     "replace-in-file": "^8.1.0"
+  },
+  "repository": "https://github.com/vanti-dev/sc-bos",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

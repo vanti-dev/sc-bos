@@ -1,8 +1,8 @@
 import {fieldMaskFromObject, setProperties} from '@/api/convpb';
 import {clientOptions} from '@/api/grpcweb';
 import {pullResource, setValue, trackAction} from '@/api/resource';
-import {StatusApiPromiseClient} from '@sc-bos/ui-gen/proto/status_grpc_web_pb';
-import {GetCurrentStatusRequest, PullCurrentStatusRequest} from '@sc-bos/ui-gen/proto/status_pb';
+import {StatusApiPromiseClient} from '@vanti-dev/sc-bos-ui-gen/proto/status_grpc_web_pb';
+import {GetCurrentStatusRequest, PullCurrentStatusRequest} from '@vanti-dev/sc-bos-ui-gen/proto/status_pb';
 
 
 /**
