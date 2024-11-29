@@ -57,6 +57,8 @@ type Config struct {
 	GRPCAddr string `json:"grpcAddr,omitempty"`
 	HTTPAddr string `json:"httpAddr,omitempty"`
 
+	SANs []string `json:"sans,omitempty"` // Subject Alternative Names for the self-signed cert
+
 	AppConfig []string `json:"appConfig,omitempty"` // defaults to [".conf/app.conf.json"]
 	DataDir   string   `json:"dataDir,omitempty"`   // defaults to .data/
 

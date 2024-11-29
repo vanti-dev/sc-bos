@@ -36,6 +36,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
+	"github.com/vanti-dev/sc-bos/pkg/util/netutil"
 )
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
@@ -133,13 +134,23 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	if ssCommonName == "" {
 		ssCommonName = "localhost"
 	}
+	selfSignedOpts := []pki.CSROption{
+		pki.WithExpireAfter(30 * 24 * time.Hour),
+		pki.WithIfaces(),
+	}
+	if config.GRPCAddr != "" {
+		selfSignedOpts = append(selfSignedOpts, pki.WithSAN(netutil.StripPort(config.GRPCAddr)))
+	}
+	for _, s := range config.SANs {
+		selfSignedOpts = append(selfSignedOpts, pki.WithSAN(netutil.StripPort(s)))
+	}
 	selfSignedSource := pki.CacheSource(
 		pki.SelfSignedSourceT(key, &x509.Certificate{
 			Subject:               pkix.Name{CommonName: ssCommonName, Organization: []string{"Smart Core BOS"}},
 			KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
 			BasicConstraintsValid: true,
-		}, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()),
+		}, selfSignedOpts...),
 		expire.AfterProgress(0.5),
 		pki.WithFSCache(files.Path(config.DataDir, "grpc-self-signed.cert.pem"), "", key),
 	)
