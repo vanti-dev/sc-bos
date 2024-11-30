@@ -44,16 +44,8 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	destName := cfg.Destination
 	logger = logger.With(zap.String("destination", destName))
 
-	var alertAdminClient gen.AlertAdminApiClient
-	err := a.Node.Client(&alertAdminClient)
-	if err != nil {
-		return err
-	}
-	var statusClient gen.StatusApiClient
-	err = a.Node.Client(&statusClient)
-	if err != nil {
-		return err
-	}
+	alertAdminClient := gen.NewAlertAdminApiClient(a.Node.ClientConn())
+	statusClient := gen.NewStatusApiClient(a.Node.ClientConn())
 
 	if cfg.DelayStart != nil {
 		time.Sleep(cfg.DelayStart.Duration)
