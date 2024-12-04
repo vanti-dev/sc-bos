@@ -217,8 +217,8 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	})
 
 	// testing retries getting cancelled after max attempts
-	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED})
-	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED})
+	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(time.Unix(0, 0).Add(-3 * time.Minute))})
+	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(time.Unix(0, 0).Add(-3 * time.Minute))})
 	tickChan <- now
 	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
