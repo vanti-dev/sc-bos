@@ -3,6 +3,7 @@ import * as jspb from 'google-protobuf'
 import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb'; // proto import: "google/protobuf/field_mask.proto"
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
 import * as types_unit_pb from '@smart-core-os/sc-api-grpc-web/types/unit_pb'; // proto import: "types/unit.proto"
+import * as priority_pb from './priority_pb'; // proto import: "priority.proto"
 
 
 export class Temperature extends jspb.Message {
@@ -40,6 +41,9 @@ export class GetTemperatureRequest extends jspb.Message {
   hasReadMask(): boolean;
   clearReadMask(): GetTemperatureRequest;
 
+  getPriority(): priority_pb.Priority.Level;
+  setPriority(value: priority_pb.Priority.Level): GetTemperatureRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetTemperatureRequest.AsObject;
   static toObject(includeInstance: boolean, msg: GetTemperatureRequest): GetTemperatureRequest.AsObject;
@@ -52,6 +56,7 @@ export namespace GetTemperatureRequest {
   export type AsObject = {
     name: string,
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    priority: priority_pb.Priority.Level,
   }
 }
 
@@ -151,6 +156,9 @@ export class UpdateTemperatureRequest extends jspb.Message {
   getDelta(): boolean;
   setDelta(value: boolean): UpdateTemperatureRequest;
 
+  getPriority(): priority_pb.Priority.Level;
+  setPriority(value: priority_pb.Priority.Level): UpdateTemperatureRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UpdateTemperatureRequest.AsObject;
   static toObject(includeInstance: boolean, msg: UpdateTemperatureRequest): UpdateTemperatureRequest.AsObject;
@@ -165,6 +173,7 @@ export namespace UpdateTemperatureRequest {
     temperature?: Temperature.AsObject,
     updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
     delta: boolean,
+    priority: priority_pb.Priority.Level,
   }
 }
 
