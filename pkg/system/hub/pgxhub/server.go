@@ -294,7 +294,7 @@ func (n *Server) TestHubNode(ctx context.Context, request *gen.TestHubNodeReques
 	_, err = client.GetMetadata(ctx, &traits.GetMetadataRequest{})
 	if err != nil {
 		logger.Debug("failed api request", zap.Error(err))
-		return nil, status.Error(codes.Unavailable, fmt.Errorf("failed api request: %w", err).Error())
+		return nil, status.Errorf(codes.Unavailable, "failed api request: %v", err)
 	}
 
 	return &gen.TestHubNodeResponse{}, nil
