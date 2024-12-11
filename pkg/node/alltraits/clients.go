@@ -156,6 +156,8 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 
 	case *gen.HistoryAdminApiClient:
 		*ptr = gen.NewHistoryAdminApiClient(conn)
+	case *gen.HubApiClient:
+		*ptr = gen.NewHubApiClient(conn)
 
 	default:
 		return false
