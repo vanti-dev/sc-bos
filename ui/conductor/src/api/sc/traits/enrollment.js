@@ -1,7 +1,7 @@
 import {clientOptions} from '@/api/grpcweb';
 import {trackAction} from '@/api/resource';
-import {EnrollmentApiPromiseClient} from '@sc-bos/ui-gen/proto/enrollment_grpc_web_pb';
-import {GetEnrollmentRequest, TestEnrollmentRequest} from '@sc-bos/ui-gen/proto/enrollment_pb';
+import {EnrollmentApiPromiseClient} from '@vanti-dev/sc-bos-ui-gen/proto/enrollment_grpc_web_pb';
+import {GetEnrollmentRequest, TestEnrollmentRequest} from '@vanti-dev/sc-bos-ui-gen/proto/enrollment_pb';
 
 /**
  *

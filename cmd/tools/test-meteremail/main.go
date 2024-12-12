@@ -11,7 +11,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 )
 
 var sampleNow = time.Date(2024, 01, 19, 0, 0, 0, 0, time.Local)
@@ -34,7 +33,6 @@ func main() {
 		panic(err)
 	}
 	root := node.New("test")
-	alltraits.AddSupport(root)
 	addDummyMeters(root)
 
 	now, _ := time.Parse(time.DateTime, "2023-11-15 11:36:00")

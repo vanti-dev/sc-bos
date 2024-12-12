@@ -26,10 +26,9 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/shared"
-	"github.com/vanti-dev/sc-bos/pkg/util/grpc/reflectionapi"
-
 	// make sure that test caching updates based on changes to these files too
 	_ "github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/ac"
 	_ "github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/gw"
@@ -182,6 +181,9 @@ func waitForNode(t *testing.T, ctx context.Context, addr string) {
 	client := traits.NewMetadataApiClient(conn)
 	err = backoff.Retry(func() error {
 		_, err := client.GetMetadata(ctx, &traits.GetMetadataRequest{})
+		if err != nil {
+			t.Logf("failed to poll node %q for liveness: %v", addr, err)
+		}
 		return err
 	}, backoff.WithContext(backoff.NewExponentialBackOff(), ctx))
 	if err != nil {
@@ -365,7 +367,6 @@ func testReflection(t *testing.T, ctx context.Context, conn *grpc.ClientConn) {
 		{Name: "smartcore.bos.EnrollmentApi"},
 		{Name: "smartcore.bos.HubApi"},
 		{Name: "smartcore.bos.ServicesApi"},
-		{Name: "smartcore.bos.tenants.TenantApi"},
 		{Name: "smartcore.traits.MetadataApi"},
 		{Name: "smartcore.traits.MetadataInfo"},
 		{Name: "smartcore.traits.OnOffApi"},
@@ -420,15 +421,6 @@ func testHubApis(t *testing.T, ctx context.Context, conn *grpc.ClientConn) {
 		}
 	})
 
-	t.Run("TenantApi", func(t *testing.T) {
-		client := gen.NewTenantApiClient(conn)
-		_, err := client.ListTenants(ctx, &gen.ListTenantsRequest{})
-		// Even though the hub's tenant api isn't enabled, we can tell it's being proxied because the error
-		// for absent APIs is codes.Unimplemented, but as the gw has the api enabled we get
-		if err, ok := status.FromError(err); !ok || err.Code() != codes.FailedPrecondition || err.Message() != "not enabled" {
-			t.Fatalf("list tenants: %v", err)
-		}
-	})
 }
 
 func newCtx(t *testing.T) (context.Context, context.CancelFunc) {

@@ -1,7 +1,7 @@
-import {builtinLayouts} from '@/layout/pallet.js';
+import {builtinLayouts} from '@/dynamic/layout/pallet.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {isNullOrUndef} from '@/util/types.js';
-import {builtinWidgets} from '@/widgets/pallet.js';
+import {builtinWidgets} from '@/dynamic/widgets/pallet.js';
 import {computed, markRaw, ref, toValue} from 'vue';
 
 /**

@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -21,7 +22,10 @@ func Test_automation_collectOccupancyChanges(t *testing.T) {
 	model := occupancysensor.NewModel()
 	// n is used as the clienter and announcer in the automation
 	n := node.New("test")
-	n.Support(node.Clients(occupancysensor.WrapApi(occupancysensor.NewModelServer(model))))
+	n.Announce("device",
+		node.HasTrait(trait.OccupancySensor),
+		node.HasServer(traits.RegisterOccupancySensorApiServer, traits.OccupancySensorApiServer(occupancysensor.NewModelServer(model))),
+	)
 
 	collector := &automation{
 		clients:  n,
@@ -33,7 +37,7 @@ func Test_automation_collectOccupancyChanges(t *testing.T) {
 	ctx, stop := context.WithCancel(context.Background())
 	t.Cleanup(stop)
 	go func() {
-		collector.collectOccupancyChanges(ctx, config.Source{Name: "anything"}, payloads)
+		collector.collectOccupancyChanges(ctx, config.Source{Name: "device"}, payloads)
 	}()
 
 	if err := chans.IsEmptyWithin(payloads, time.Second); err != nil {

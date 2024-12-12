@@ -10,7 +10,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/auto/allautos"
 	"github.com/vanti-dev/sc-bos/pkg/driver/alldrivers"
-	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system/allsystems"
 	"github.com/vanti-dev/sc-bos/pkg/zone/allzones"
 )
@@ -29,8 +28,6 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
-	alltraits.AddSupport(controller.Node)
 
 	return controller.Run(ctx)
 }

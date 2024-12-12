@@ -177,7 +177,7 @@ import {downloadCSV} from '@/routes/ops/notifications/export.js';
 import {useCohortStore} from '@/stores/cohort.js';
 import {useSidebarStore} from '@/stores/sidebar';
 import {isNullOrUndef} from '@/util/types.js';
-import {Alert} from '@sc-bos/ui-gen/proto/alerts_pb';
+import {Alert} from '@vanti-dev/sc-bos-ui-gen/proto/alerts_pb';
 import {computed, onUnmounted, reactive, ref} from 'vue';
 
 const props = defineProps({
@@ -186,7 +186,7 @@ const props = defineProps({
     default: false
   },
   forceQuery: {
-    type: Object, /** @type {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} */
+    type: Object, /** @type {import('@vanti-dev/sc-bos-ui-gen/proto/alerts_pb').Alert.Query.AsObject} */
     default: null
   }
 });
@@ -317,10 +317,10 @@ const filterOpts = computed(() => {
 const filterCtx = useFilterCtx(filterOpts);
 
 const nonFilterableQueryFields = computed(() => {
-  return /** @type {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} */ props.forceQuery ?? {};
+  return /** @type {import('@vanti-dev/sc-bos-ui-gen/proto/alerts_pb').Alert.Query.AsObject} */ props.forceQuery ?? {};
 });
 const queryFields = computed(() => {
-  const res = /** @type {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} */ {};
+  const res = /** @type {import('@vanti-dev/sc-bos-ui-gen/proto/alerts_pb').Alert.Query.AsObject} */ {};
   for (const choice of filterCtx.sortedChoices.value) {
     if (isNullOrUndef(choice?.value)) continue;
     switch (choice.filter) {
@@ -379,7 +379,7 @@ const doDownloadCSV = () => {
 /**
  *  Calculate the total number of items in the query
  *
- * @param {import('@sc-bos/ui-gen/proto/alerts_pb').Alert.Query.AsObject} query
+ * @param {import('@vanti-dev/sc-bos-ui-gen/proto/alerts_pb').Alert.Query.AsObject} query
  * @return {number|undefined}
  */
 function calculateQueryMetadataCount(query) {

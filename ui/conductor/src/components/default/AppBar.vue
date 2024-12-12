@@ -42,8 +42,8 @@ const {pageTitle, hasSections} = usePage();
 const appBarHeadingWithBrand = computed(() => {
   const brandName = config.value.theme?.appBranding.brandName ?? 'Smart Core';
 
-
-  return brandName + (accountStore.isLoggedIn ? ' | ' + pageTitle.value : '');
+  const hasPageTitle = Boolean(pageTitle.value) && accountStore.isLoggedIn;
+  return brandName + (hasPageTitle ? ' | ' + pageTitle.value : '');
 });
 
 const isLoginPage = computed(() => route.path === '/login');

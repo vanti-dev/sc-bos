@@ -52,9 +52,9 @@ type slice struct {
 	source   string
 	from, to history.Record
 
-	totalSize        int
-	totalSizeErr     error
-	getTotalSizeOnce sync.Once
+	totalSizeMu sync.Mutex
+	totalSize   int
+	totalSizeOk bool // true if we've successfully read totalSize from client
 }
 
 func (s *slice) Slice(from, to history.Record) history.Slice {
@@ -77,9 +77,10 @@ func (s *slice) Read(ctx context.Context, into []history.Record) (int, error) {
 			return 0, err
 		}
 
-		s.getTotalSizeOnce.Do(func() {
-			s.totalSize = int(res.TotalSize)
-		})
+		s.totalSizeMu.Lock()
+		s.totalSize = int(res.TotalSize)
+		s.totalSizeOk = true
+		s.totalSizeMu.Unlock()
 
 		for _, record := range res.Records {
 			if i >= len(into) {
@@ -115,18 +116,18 @@ func (s *slice) newListRequest(pageSize int32) *gen.ListHistoryRecordsRequest {
 }
 
 func (s *slice) Len(ctx context.Context) (int, error) {
-	s.getTotalSizeOnce.Do(func() {
-		// not the most efficient things we've done!
+	s.totalSizeMu.Lock()
+	defer s.totalSizeMu.Unlock()
+	if !s.totalSizeOk {
 		req := s.newListRequest(1)
 		res, err := s.client.ListHistoryRecords(ctx, req)
 		if err != nil {
-			s.totalSizeErr = err
-			s.getTotalSizeOnce = sync.Once{} // retry next time
-			return
+			return 0, err
 		}
+		s.totalSizeOk = true
 		s.totalSize = int(res.TotalSize)
-	})
-	return s.totalSize, s.totalSizeErr
+	}
+	return s.totalSize, nil
 }
 
 func protoRecordToStoreRecord(r *gen.HistoryRecord) (string, history.Record) {

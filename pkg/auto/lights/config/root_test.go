@@ -105,7 +105,7 @@ func TestRoot_MarshalJSON(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		want := `{"name":"test","type":"lights","unoccupiedOffDelay":"0s","daylightDimming":{}}`
+		want := `{"name":"test","type":"lights","unoccupiedOffDelay":"0s","daylightDimming":{},"refreshEvery":"0s","onProcessError":{"backOffMultiplier":"0s"}}`
 		if string(bin) != want {
 			t.Fatalf("got %q, want %q", string(bin), want)
 		}

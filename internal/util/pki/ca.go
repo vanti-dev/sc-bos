@@ -10,6 +10,10 @@ import (
 	"io"
 	"net"
 	"time"
+
+	"golang.org/x/exp/slices"
+
+	"github.com/vanti-dev/sc-bos/pkg/util/netutil"
 )
 
 // CreateCertificateChain creates a new x509.Certificate using id and pub signed by the leaf and private key of authority.
@@ -78,7 +82,14 @@ func WithValidSince(validSince time.Duration) CSROption {
 // authority can have a port which will be stripped before use
 func WithAuthority(authority string) CSROption {
 	return csrOptionFunc(func(csr *csr) {
-		csr.authority = authority
+		csr.authority = netutil.StripPort(authority)
+	})
+}
+
+// WithSAN adds the given host or IP to the certificates Subject Alternative Names list.
+func WithSAN(hostOrIP string) CSROption {
+	return csrOptionFunc(func(csr *csr) {
+		csr.sans = append(csr.sans, hostOrIP)
 	})
 }
 
@@ -124,6 +135,7 @@ func (c csrOptionFunc) apply(csr *csr) {
 type csr struct {
 	discoverInterfaces func(p net.Interface) bool
 	localhost          bool
+	sans               []string
 
 	authority string
 
@@ -189,16 +201,20 @@ func hydrateTemplate(template *x509.Certificate, csr csr) (*x509.Certificate, er
 		ipAddresses []net.IP
 	)
 
-	if csr.authority != "" {
-		hostOrIP, _, err := net.SplitHostPort(csr.authority)
-		if err != nil {
-			return nil, err
+	addHostOrIP := func(s string) {
+		if s == "" {
+			return
 		}
-		if ip := net.ParseIP(hostOrIP); ip != nil {
+		if ip := net.ParseIP(s); ip != nil {
 			ipAddresses = append(ipAddresses, ip)
 		} else {
-			dnsNames = append(dnsNames, hostOrIP)
+			dnsNames = append(dnsNames, s)
 		}
+	}
+
+	addHostOrIP(csr.authority)
+	for _, san := range csr.sans {
+		addHostOrIP(san)
 	}
 
 	if csr.discoverInterfaces != nil {
@@ -213,10 +229,19 @@ func hydrateTemplate(template *x509.Certificate, csr csr) (*x509.Certificate, er
 	}
 
 	if len(dnsNames) > 0 {
+		// remove dupes
 		cert.DNSNames = append(dnsNames, cert.DNSNames...)
+		slices.Sort(cert.DNSNames)
+		cert.DNSNames = slices.Compact(cert.DNSNames)
 	}
 	if len(ipAddresses) > 0 {
 		cert.IPAddresses = append(ipAddresses, cert.IPAddresses...)
+		slices.SortFunc(cert.IPAddresses, func(a, b net.IP) int {
+			return slices.Compare(a, b)
+		})
+		cert.IPAddresses = slices.CompactFunc(cert.IPAddresses, func(a, b net.IP) bool {
+			return a.Equal(b)
+		})
 	}
 
 	return cert, nil

@@ -67,7 +67,8 @@ const useDevicesOpts = computed(() => {
   return {
     subsystem: props.subsystem,
     floor: selectedFloor.value,
-    filter: props.filter
+    filter: props.filter,
+    wantCount: -1
   };
 });
 const {items: devicesData} = useDevices(useDevicesOpts);

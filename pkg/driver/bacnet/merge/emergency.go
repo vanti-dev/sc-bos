@@ -21,9 +21,18 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
+// AlarmConfig allows configuring a specific bacnet point to raise an Emergency if the
+// value read from that point is anything other than OkValue
+type AlarmConfig struct {
+	config.ValueSource
+	OkValue     int    `json:"okValue"`     // what we expect to read from the point when it is ok, any other value is an emergency
+	AlarmReason string `json:"alarmReason"` // the reason of the alarm
+}
+
 type emergencyConfig struct {
 	config.Trait
-	Level *config.ValueSource `json:"level,omitempty"`
+	Level       *config.ValueSource `json:"level,omitempty"`
+	AlarmConfig *AlarmConfig        `json:"alarmConfig,omitempty"`
 }
 
 func readEmergencyConfig(raw []byte) (cfg emergencyConfig, err error) {
@@ -122,6 +131,26 @@ func (t *emergencyImpl) pollPeer(ctx context.Context) (*traits.Emergency, error)
 				data.Drill = true
 			default:
 				data.Drill = false
+			}
+
+			return nil
+		})
+	}
+
+	if t.config.AlarmConfig != nil {
+		requestNames = append(requestNames, "alarmConfig")
+		readValues = append(readValues, t.config.AlarmConfig.ValueSource)
+		resProcessors = append(resProcessors, func(response any) error {
+			value, err := comm.IntValue(response)
+			if err != nil {
+				return comm.ErrReadProperty{Prop: "alarmConfig", Cause: err}
+			}
+
+			if int64(t.config.AlarmConfig.OkValue) != value {
+				data.Reason = t.config.AlarmConfig.AlarmReason
+				data.Level = traits.Emergency_EMERGENCY
+			} else {
+				data.Level = traits.Emergency_OK
 			}
 
 			return nil

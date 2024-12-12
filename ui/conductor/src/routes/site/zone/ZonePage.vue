@@ -43,7 +43,7 @@ import {Zone} from '@/routes/site/zone/zone';
 import {useCohortStore} from '@/stores/cohort.js';
 import {useUserConfig} from '@/stores/userConfig.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
-import {Service} from '@sc-bos/ui-gen/proto/services_pb';
+import {Service} from '@vanti-dev/sc-bos-ui-gen/proto/services_pb';
 import {computed, ref} from 'vue';
 
 const {blockActions} = useAuthSetup();

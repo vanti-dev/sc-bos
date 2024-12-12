@@ -4,11 +4,11 @@ import {toQueryObject, watchResource} from '@/util/traits.js';
 import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
 /**
- * @typedef {import('@sc-bos/ui-gen/proto/meter_pb').MeterReading} MeterReading
- * @typedef {import('@sc-bos/ui-gen/proto/meter_pb').MeterReadingSupport} MeterReadingSupport
- * @typedef {import('@sc-bos/ui-gen/proto/meter_pb').PullMeterReadingsRequest} PullMeterReadingsRequest
- * @typedef {import('@sc-bos/ui-gen/proto/meter_pb').PullMeterReadingsResponse} PullMeterReadingsResponse
- * @typedef {import('@sc-bos/ui-gen/proto/meter_pb').DescribeMeterReadingRequest} DescribeMeterReadingRequest
+ * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/meter_pb').MeterReading} MeterReading
+ * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/meter_pb').MeterReadingSupport} MeterReadingSupport
+ * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/meter_pb').PullMeterReadingsRequest} PullMeterReadingsRequest
+ * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/meter_pb').PullMeterReadingsResponse} PullMeterReadingsResponse
+ * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/meter_pb').DescribeMeterReadingRequest} DescribeMeterReadingRequest
  * @typedef {import('vue').ComputedRef} ComputedRef
  * @typedef {import('vue').Ref} Ref
  * @typedef {import('vue').ToRefs} ToRefs

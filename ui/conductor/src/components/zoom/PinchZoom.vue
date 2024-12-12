@@ -325,7 +325,7 @@ export default {
   align-items: center;
 }
 
-.pinch-zoom.center .zoomable >>> > * {
+.pinch-zoom.center .zoomable :deep(> *) {
   flex-shrink: 0;
 }
 

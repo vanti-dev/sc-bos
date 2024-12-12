@@ -59,19 +59,14 @@ func main() {
 		panic(err)
 	}
 	root := node.New("testdevice01")
+
 	m := alert.NewModel()
 	// run this test in January to capture the edge case of previous month
 	testTime := time.Date(
 		2024, 01, 01, 00, 00, 00, 651387237, time.UTC)
 	addDummyAlerts(m, &testTime)
-	client := gen.WrapAlertApi(alert.NewModelServer(m))
-	root.Announce(root.Name(), node.HasClient(client))
-	alertApiRouter := gen.NewAlertApiRouter()
-	alertApiRouter.AddAlertApiClient("testdevice01", client)
-
-	root.Support(
-		node.Routing(alertApiRouter), node.Clients(client),
-	)
+	server := alert.NewModelServer(m)
+	root.Announce(root.Name(), node.HasServer(gen.RegisterAlertApiServer, gen.AlertApiServer(server)))
 
 	now, _ := time.Parse(time.DateTime, "2023-11-15 11:36:00")
 	now = now.Round(time.Second) // get rid of millis, etc

@@ -134,7 +134,7 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 		resChange := &gen.PullDevicesResponse_Change{
 			Name:       change.Name,
 			ChangeTime: timestamppb.New(change.ChangeTime),
-			Type:       change.Type,
+			Type:       change.ChangeType,
 		}
 		if change.OldValue != nil {
 			resChange.OldValue = &gen.Device{Name: change.Name, Metadata: change.OldValue}
@@ -153,7 +153,7 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 func (s *Server) GetDevicesMetadata(_ context.Context, request *gen.GetDevicesMetadataRequest) (*gen.DevicesMetadata, error) {
 	mds := s.node.ListAllMetadata()
 	var res *gen.DevicesMetadata
-	col := newMetadataCollector(request.Includes.Fields...)
+	col := newMetadataCollector(request.GetIncludes().GetFields()...)
 	for _, md := range mds {
 		res = col.add(&gen.Device{
 			Name:     md.Name,

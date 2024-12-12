@@ -15,7 +15,9 @@ import (
 
 	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
@@ -24,27 +26,22 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/hub/bolthub"
 	"github.com/vanti-dev/sc-bos/pkg/system/hub/config"
-	"github.com/vanti-dev/sc-bos/pkg/system/hub/hold"
 	"github.com/vanti-dev/sc-bos/pkg/system/hub/pgxhub"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/util/netutil"
 )
 
 func Factory() system.Factory {
-	return &factory{
-		server: &hold.Server{},
-	}
+	return &factory{}
 }
 
-type factory struct {
-	server *hold.Server
-}
+type factory struct{}
 
 func (f *factory) New(services system.Services) service.Lifecycle {
 	s := &System{
-		holder:          f.server,
 		hubNode:         services.CohortManager,
 		name:            services.Node.Name(),
+		node:            services.Node,
 		endpoint:        services.GRPCEndpoint,
 		dataDir:         services.DataDir,
 		sharedKey:       services.PrivateKey,
@@ -55,9 +52,6 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 	}
 	s.Service = service.New(
 		service.MonoApply(s.applyConfig),
-		service.WithOnStop[config.Root](func() {
-			s.Clear()
-		}),
 		service.WithRetry[config.Root](service.RetryWithLogger(func(logContext service.RetryContext) {
 			logContext.LogTo("applyConfig", s.logger)
 		})),
@@ -65,17 +59,13 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 	return s
 }
 
-func (f *factory) AddSupport(supporter node.Supporter) {
-	supporter.Support(node.Api(f.server), node.Clients(gen.WrapHubApi(f.server)))
-}
-
 type System struct {
 	*service.Service[config.Root]
 
-	holder  *hold.Server
 	hubNode node.Remote
 
 	name            string
+	node            *node.Node
 	endpoint        string
 	dataDir         string
 	sharedKey       pki.PrivateKey
@@ -85,22 +75,26 @@ type System struct {
 
 	certs   *pki.SourceSet
 	sources []pki.Source
+	undos   []node.Undo
 }
 
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
+	s.undoAll()
 	s.deleteSources()
 
 	// todo: move this validation to the config parse function
 	if cfg.Storage == nil {
 		return errors.New("no storage")
 	}
+	var hubConn grpc.ClientConnInterface
 	switch cfg.Storage.Type {
 	case config.StorageTypeProxy:
+		s.logger.Warn("proxy storage type is deprecated - use gateway to route requests to the hub instead")
 		conn, err := s.hubNode.Connect(ctx)
 		if err != nil {
 			return err
 		}
-		s.holder.Fill(gen.NewHubApiClient(conn))
+		hubConn = conn
 	case config.StorageTypePostgres:
 		pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
 		if err != nil {
@@ -141,7 +135,7 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 
 		s.sources = append(s.sources, grpcSource)
 		s.certs.Append(grpcSource)
-		s.holder.Fill(gen.WrapHubApi(server))
+		hubConn = wrap.ServerToClient(gen.HubApi_ServiceDesc, server)
 	case config.StorageTypeBolt:
 		server := bolthub.NewServerFromBolthold(s.boltDb, s.logger)
 
@@ -170,17 +164,19 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 
 		s.sources = append(s.sources, grpcSource)
 		s.certs.Append(grpcSource)
-		s.holder.Fill(gen.WrapHubApi(server))
+		hubConn = wrap.ServerToClient(gen.HubApi_ServiceDesc, server)
 	default:
 		return fmt.Errorf("unsuported storage type %s", cfg.Storage.Type)
 	}
 
-	return nil
-}
+	srv, err := node.RegistryConnService(gen.HubApi_ServiceDesc, hubConn)
+	if err != nil {
+		return err
+	}
+	undo, err := s.node.AnnounceService(srv)
+	s.undos = append(s.undos, undo)
 
-func (s *System) Clear() {
-	s.holder.Empty()
-	s.deleteSources()
+	return err
 }
 
 func (s *System) deleteSources() {
@@ -188,6 +184,13 @@ func (s *System) deleteSources() {
 		s.certs.Delete(source)
 	}
 	s.sources = nil
+}
+
+func (s *System) undoAll() {
+	for _, u := range s.undos {
+		u()
+	}
+	s.undos = nil
 }
 
 func (s *System) newCA(cfg config.Root) pki.Source {

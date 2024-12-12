@@ -27,7 +27,7 @@ func SetupDB(ctx context.Context, pool *pgxpool.Pool) error {
 	})
 }
 
-func New(ctx context.Context, source, connStr string, opts ...Option) (history.Store, error) {
+func New(ctx context.Context, source, connStr string, opts ...Option) (*Store, error) {
 	pool, err := pgxpool.Connect(ctx, connStr)
 	if err != nil {
 		return nil, fmt.Errorf("connect %w", err)
@@ -36,7 +36,7 @@ func New(ctx context.Context, source, connStr string, opts ...Option) (history.S
 	return SetupStoreFromPool(ctx, source, pool, opts...)
 }
 
-func SetupStoreFromPool(ctx context.Context, source string, pool *pgxpool.Pool, opts ...Option) (history.Store, error) {
+func SetupStoreFromPool(ctx context.Context, source string, pool *pgxpool.Pool, opts ...Option) (*Store, error) {
 	err := SetupDB(ctx, pool)
 	if err != nil {
 		return nil, fmt.Errorf("setup %w", err)
@@ -47,7 +47,7 @@ func SetupStoreFromPool(ctx context.Context, source string, pool *pgxpool.Pool, 
 
 const LargeMaxCount = 1e7
 
-func NewStoreFromPool(source string, pool *pgxpool.Pool, opts ...Option) history.Store {
+func NewStoreFromPool(source string, pool *pgxpool.Pool, opts ...Option) *Store {
 	s := &Store{
 		slice:  slice{pool: pool, source: source},
 		now:    time.Now,
@@ -72,6 +72,24 @@ type Store struct {
 	maxCount int64
 }
 
+func (s *Store) Insert(ctx context.Context, at time.Time, payload []byte) (history.Record, int64, error) {
+	r := history.Record{
+		CreateTime: at,
+		Payload:    payload,
+	}
+
+	row := s.pool.QueryRow(ctx, "INSERT INTO history (source, create_time, payload) VALUES ($1, $2, $3) RETURNING id",
+		s.source, at, payload)
+
+	var id int64
+	err := row.Scan(&id)
+	if err != nil {
+		return history.Record{}, -1, err
+	}
+
+	return r, id, nil
+}
+
 func (s *Store) Append(ctx context.Context, payload []byte) (history.Record, error) {
 	now := s.now()
 	r := history.Record{
@@ -79,11 +97,7 @@ func (s *Store) Append(ctx context.Context, payload []byte) (history.Record, err
 		Payload:    payload,
 	}
 
-	row := s.pool.QueryRow(ctx, "INSERT INTO history (source, create_time, payload) VALUES ($1, $2, $3) RETURNING id",
-		s.source, now, payload)
-
-	var id int64
-	err := row.Scan(&id)
+	r, id, err := s.Insert(ctx, now, payload)
 	if err != nil {
 		return history.Record{}, err
 	}

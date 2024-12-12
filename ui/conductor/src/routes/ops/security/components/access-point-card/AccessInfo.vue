@@ -20,7 +20,7 @@
     </v-card-text>
 
     <!-- Alert/Acknowledge area -->
-    <v-card-text v-if="alert" class="mt-4 px-0">
+    <v-card-text v-if="hasAlerts" class="mt-4 px-0">
       <v-list-item lines="two">
         <v-tooltip location="bottom">
           <template #activator="{ props: _props }">
@@ -45,7 +45,6 @@
 </template>
 
 <script setup>
-import {timestampToDate} from '@/api/convpb.js';
 import {closeResource} from '@/api/resource';
 import {grantNamesByID} from '@/api/sc/traits/access';
 import {alertToObject} from '@/api/ui/alerts.js';
@@ -148,9 +147,11 @@ const alertsRequest = computed(() => ({
   query: query.value
 }));
 const alertsOptions = computed(() => ({
+  paused: props.paused,
   wantCount: 1
 }));
 const alertsCollection = useAlertsCollection(alertsRequest, alertsOptions);
+const hasAlerts = computed(() => alertsCollection.items.value.length > 0);
 const alert = computed(() => {
   if (alertsCollection.items.value.length === 0) {
     return {};
@@ -174,8 +175,6 @@ const user = computed(() => {
 onBeforeUnmount(() => {
   closeResource(props.accessAttempt);
   closeResource(props.statusLog);
-  closeResource(alerts.listPageTracker);
-  closeResource(alerts.pullResource);
 });
 </script>
 <style lang="scss" scoped>

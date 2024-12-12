@@ -31,7 +31,7 @@
           Smart Core &copy; {{ new Date().getFullYear() }}
         </p>
         <p :title="appVersion" class="mt-0" style="cursor: default">
-          {{ appVersion.split('-')[0] }}
+          {{ displayVersion }}
         </p>
       </div>
     </template>
@@ -55,6 +55,14 @@ const appVersion = computed(() => {
     return GIT_VERSION.substring(3);
   }
   return GIT_VERSION;
+});
+const displayVersion = computed(() => {
+  if (import.meta.env.MODE !== 'production') {
+    // fake version for screen shots, etc
+    const now = new Date(); // not reactive, but we only care about year and month, and we're local
+    return `${now.getFullYear()}.${now.getMonth() + 1}`;
+  }
+  return appVersion.value.split('-')[0];
 });
 </script>
 

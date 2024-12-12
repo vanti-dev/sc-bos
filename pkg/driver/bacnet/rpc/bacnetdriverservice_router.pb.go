@@ -35,7 +35,7 @@ func WithBacnetDriverServiceClientFactory(f func(name string) (BacnetDriverServi
 	})
 }
 
-func (r *BacnetDriverServiceRouter) Register(server *grpc.Server) {
+func (r *BacnetDriverServiceRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterBacnetDriverServiceServer(server, r)
 }
 

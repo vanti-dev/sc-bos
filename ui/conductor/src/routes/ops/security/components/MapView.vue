@@ -247,6 +247,9 @@ const findDevice = (needle) => {
  */
 const handleClick = (event) => {
   const clickedElement = event.target.closest('[id]');
+  if (!clickedElement) {
+    return;
+  }
 
   // Find the parent group of the clicked element
   const parentGroup = clickedElement.closest('g[id^="doors_"]');
