@@ -1,6 +1,6 @@
 module github.com/vanti-dev/sc-bos
 
-go 1.22
+go 1.23
 
 require (
 	github.com/cenkalti/backoff/v4 v4.1.3
