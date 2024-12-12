@@ -10,7 +10,7 @@ import (
 	io "io"
 )
 
-// MqttServiceRouter is a gen.MqttServiceServer that allows routing named requests to specific gen.MqttServiceClient
+// MqttServiceRouter is a MqttServiceServer that allows routing named requests to specific MqttServiceClient
 type MqttServiceRouter struct {
 	UnimplementedMqttServiceServer
 
@@ -34,14 +34,14 @@ func WithMqttServiceClientFactory(f func(name string) (MqttServiceClient, error)
 	})
 }
 
-func (r *MqttServiceRouter) Register(server grpc.ServiceRegistrar) {
+func (r *MqttServiceRouter) Register(server *grpc.Server) {
 	RegisterMqttServiceServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.MqttServiceClient.
+// Add extends Router.Add to panic if client is not of type MqttServiceClient.
 func (r *MqttServiceRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.MqttServiceClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a MqttServiceClient", client))
 	}
 	return r.Router.Add(name, client)
 }

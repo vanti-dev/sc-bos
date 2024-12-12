@@ -9,7 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// HistoryAdminApiRouter is a gen.HistoryAdminApiServer that allows routing named requests to specific gen.HistoryAdminApiClient
+// HistoryAdminApiRouter is a HistoryAdminApiServer that allows routing named requests to specific HistoryAdminApiClient
 type HistoryAdminApiRouter struct {
 	UnimplementedHistoryAdminApiServer
 
@@ -33,14 +33,14 @@ func WithHistoryAdminApiClientFactory(f func(name string) (HistoryAdminApiClient
 	})
 }
 
-func (r *HistoryAdminApiRouter) Register(server grpc.ServiceRegistrar) {
+func (r *HistoryAdminApiRouter) Register(server *grpc.Server) {
 	RegisterHistoryAdminApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.HistoryAdminApiClient.
+// Add extends Router.Add to panic if client is not of type HistoryAdminApiClient.
 func (r *HistoryAdminApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.HistoryAdminApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a HistoryAdminApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

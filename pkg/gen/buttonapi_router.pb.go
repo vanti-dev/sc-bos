@@ -10,7 +10,7 @@ import (
 	io "io"
 )
 
-// ButtonApiRouter is a gen.ButtonApiServer that allows routing named requests to specific gen.ButtonApiClient
+// ButtonApiRouter is a ButtonApiServer that allows routing named requests to specific ButtonApiClient
 type ButtonApiRouter struct {
 	UnimplementedButtonApiServer
 
@@ -34,14 +34,14 @@ func WithButtonApiClientFactory(f func(name string) (ButtonApiClient, error)) ro
 	})
 }
 
-func (r *ButtonApiRouter) Register(server grpc.ServiceRegistrar) {
+func (r *ButtonApiRouter) Register(server *grpc.Server) {
 	RegisterButtonApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.ButtonApiClient.
+// Add extends Router.Add to panic if client is not of type ButtonApiClient.
 func (r *ButtonApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.ButtonApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a ButtonApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

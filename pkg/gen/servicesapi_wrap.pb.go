@@ -3,40 +3,154 @@
 package gen
 
 import (
+	context "context"
 	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 	grpc "google.golang.org/grpc"
 )
 
-// WrapServicesApi	adapts a gen.ServicesApiServer	and presents it as a gen.ServicesApiClient
-func WrapServicesApi(server ServicesApiServer) *ServicesApiWrapper {
-	conn := wrap.ServerToClient(ServicesApi_ServiceDesc, server)
-	client := NewServicesApiClient(conn)
-	return &ServicesApiWrapper{
-		ServicesApiClient: client,
-		server:            server,
-		conn:              conn,
-		desc:              ServicesApi_ServiceDesc,
-	}
+// WrapServicesApi	adapts a ServicesApiServer	and presents it as a ServicesApiClient
+func WrapServicesApi(server ServicesApiServer) ServicesApiClient {
+	return &servicesApiWrapper{server}
 }
 
-type ServicesApiWrapper struct {
-	ServicesApiClient
-
+type servicesApiWrapper struct {
 	server ServicesApiServer
-	conn   grpc.ClientConnInterface
-	desc   grpc.ServiceDesc
 }
+
+// compile time check that we implement the interface we need
+var _ ServicesApiClient = (*servicesApiWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *ServicesApiWrapper) UnwrapServer() ServicesApiServer {
+func (w *servicesApiWrapper) UnwrapServer() ServicesApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *ServicesApiWrapper) Unwrap() any {
+func (w *servicesApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *ServicesApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
-	return w.conn, w.desc
+func (w *servicesApiWrapper) GetService(ctx context.Context, req *GetServiceRequest, _ ...grpc.CallOption) (*Service, error) {
+	return w.server.GetService(ctx, req)
+}
+
+func (w *servicesApiWrapper) PullService(ctx context.Context, in *PullServiceRequest, opts ...grpc.CallOption) (ServicesApi_PullServiceClient, error) {
+	stream := wrap.NewClientServerStream(ctx)
+	server := &pullServiceServicesApiServerWrapper{stream.Server()}
+	client := &pullServiceServicesApiClientWrapper{stream.Client()}
+	go func() {
+		err := w.server.PullService(in, server)
+		stream.Close(err)
+	}()
+	return client, nil
+}
+
+type pullServiceServicesApiClientWrapper struct {
+	grpc.ClientStream
+}
+
+func (w *pullServiceServicesApiClientWrapper) Recv() (*PullServiceResponse, error) {
+	m := new(PullServiceResponse)
+	if err := w.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+type pullServiceServicesApiServerWrapper struct {
+	grpc.ServerStream
+}
+
+func (s *pullServiceServicesApiServerWrapper) Send(response *PullServiceResponse) error {
+	return s.ServerStream.SendMsg(response)
+}
+
+func (w *servicesApiWrapper) CreateService(ctx context.Context, req *CreateServiceRequest, _ ...grpc.CallOption) (*Service, error) {
+	return w.server.CreateService(ctx, req)
+}
+
+func (w *servicesApiWrapper) DeleteService(ctx context.Context, req *DeleteServiceRequest, _ ...grpc.CallOption) (*Service, error) {
+	return w.server.DeleteService(ctx, req)
+}
+
+func (w *servicesApiWrapper) ListServices(ctx context.Context, req *ListServicesRequest, _ ...grpc.CallOption) (*ListServicesResponse, error) {
+	return w.server.ListServices(ctx, req)
+}
+
+func (w *servicesApiWrapper) PullServices(ctx context.Context, in *PullServicesRequest, opts ...grpc.CallOption) (ServicesApi_PullServicesClient, error) {
+	stream := wrap.NewClientServerStream(ctx)
+	server := &pullServicesServicesApiServerWrapper{stream.Server()}
+	client := &pullServicesServicesApiClientWrapper{stream.Client()}
+	go func() {
+		err := w.server.PullServices(in, server)
+		stream.Close(err)
+	}()
+	return client, nil
+}
+
+type pullServicesServicesApiClientWrapper struct {
+	grpc.ClientStream
+}
+
+func (w *pullServicesServicesApiClientWrapper) Recv() (*PullServicesResponse, error) {
+	m := new(PullServicesResponse)
+	if err := w.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+type pullServicesServicesApiServerWrapper struct {
+	grpc.ServerStream
+}
+
+func (s *pullServicesServicesApiServerWrapper) Send(response *PullServicesResponse) error {
+	return s.ServerStream.SendMsg(response)
+}
+
+func (w *servicesApiWrapper) StartService(ctx context.Context, req *StartServiceRequest, _ ...grpc.CallOption) (*Service, error) {
+	return w.server.StartService(ctx, req)
+}
+
+func (w *servicesApiWrapper) ConfigureService(ctx context.Context, req *ConfigureServiceRequest, _ ...grpc.CallOption) (*Service, error) {
+	return w.server.ConfigureService(ctx, req)
+}
+
+func (w *servicesApiWrapper) StopService(ctx context.Context, req *StopServiceRequest, _ ...grpc.CallOption) (*Service, error) {
+	return w.server.StopService(ctx, req)
+}
+
+func (w *servicesApiWrapper) GetServiceMetadata(ctx context.Context, req *GetServiceMetadataRequest, _ ...grpc.CallOption) (*ServiceMetadata, error) {
+	return w.server.GetServiceMetadata(ctx, req)
+}
+
+func (w *servicesApiWrapper) PullServiceMetadata(ctx context.Context, in *PullServiceMetadataRequest, opts ...grpc.CallOption) (ServicesApi_PullServiceMetadataClient, error) {
+	stream := wrap.NewClientServerStream(ctx)
+	server := &pullServiceMetadataServicesApiServerWrapper{stream.Server()}
+	client := &pullServiceMetadataServicesApiClientWrapper{stream.Client()}
+	go func() {
+		err := w.server.PullServiceMetadata(in, server)
+		stream.Close(err)
+	}()
+	return client, nil
+}
+
+type pullServiceMetadataServicesApiClientWrapper struct {
+	grpc.ClientStream
+}
+
+func (w *pullServiceMetadataServicesApiClientWrapper) Recv() (*PullServiceMetadataResponse, error) {
+	m := new(PullServiceMetadataResponse)
+	if err := w.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+type pullServiceMetadataServicesApiServerWrapper struct {
+	grpc.ServerStream
+}
+
+func (s *pullServiceMetadataServicesApiServerWrapper) Send(response *PullServiceMetadataResponse) error {
+	return s.ServerStream.SendMsg(response)
 }

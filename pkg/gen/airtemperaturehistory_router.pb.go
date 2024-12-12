@@ -9,7 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// AirTemperatureHistoryRouter is a gen.AirTemperatureHistoryServer that allows routing named requests to specific gen.AirTemperatureHistoryClient
+// AirTemperatureHistoryRouter is a AirTemperatureHistoryServer that allows routing named requests to specific AirTemperatureHistoryClient
 type AirTemperatureHistoryRouter struct {
 	UnimplementedAirTemperatureHistoryServer
 
@@ -33,14 +33,14 @@ func WithAirTemperatureHistoryClientFactory(f func(name string) (AirTemperatureH
 	})
 }
 
-func (r *AirTemperatureHistoryRouter) Register(server grpc.ServiceRegistrar) {
+func (r *AirTemperatureHistoryRouter) Register(server *grpc.Server) {
 	RegisterAirTemperatureHistoryServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.AirTemperatureHistoryClient.
+// Add extends Router.Add to panic if client is not of type AirTemperatureHistoryClient.
 func (r *AirTemperatureHistoryRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.AirTemperatureHistoryClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a AirTemperatureHistoryClient", client))
 	}
 	return r.Router.Add(name, client)
 }

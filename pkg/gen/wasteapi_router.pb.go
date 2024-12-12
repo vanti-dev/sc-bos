@@ -10,7 +10,7 @@ import (
 	io "io"
 )
 
-// WasteApiRouter is a gen.WasteApiServer that allows routing named requests to specific gen.WasteApiClient
+// WasteApiRouter is a WasteApiServer that allows routing named requests to specific WasteApiClient
 type WasteApiRouter struct {
 	UnimplementedWasteApiServer
 
@@ -34,14 +34,14 @@ func WithWasteApiClientFactory(f func(name string) (WasteApiClient, error)) rout
 	})
 }
 
-func (r *WasteApiRouter) Register(server grpc.ServiceRegistrar) {
+func (r *WasteApiRouter) Register(server *grpc.Server) {
 	RegisterWasteApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.WasteApiClient.
+// Add extends Router.Add to panic if client is not of type WasteApiClient.
 func (r *WasteApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.WasteApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a WasteApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

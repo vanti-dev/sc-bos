@@ -9,7 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// OccupancySensorHistoryRouter is a gen.OccupancySensorHistoryServer that allows routing named requests to specific gen.OccupancySensorHistoryClient
+// OccupancySensorHistoryRouter is a OccupancySensorHistoryServer that allows routing named requests to specific OccupancySensorHistoryClient
 type OccupancySensorHistoryRouter struct {
 	UnimplementedOccupancySensorHistoryServer
 
@@ -33,14 +33,14 @@ func WithOccupancySensorHistoryClientFactory(f func(name string) (OccupancySenso
 	})
 }
 
-func (r *OccupancySensorHistoryRouter) Register(server grpc.ServiceRegistrar) {
+func (r *OccupancySensorHistoryRouter) Register(server *grpc.Server) {
 	RegisterOccupancySensorHistoryServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.OccupancySensorHistoryClient.
+// Add extends Router.Add to panic if client is not of type OccupancySensorHistoryClient.
 func (r *OccupancySensorHistoryRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.OccupancySensorHistoryClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a OccupancySensorHistoryClient", client))
 	}
 	return r.Router.Add(name, client)
 }

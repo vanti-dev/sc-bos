@@ -9,7 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// MeterInfoRouter is a gen.MeterInfoServer that allows routing named requests to specific gen.MeterInfoClient
+// MeterInfoRouter is a MeterInfoServer that allows routing named requests to specific MeterInfoClient
 type MeterInfoRouter struct {
 	UnimplementedMeterInfoServer
 
@@ -33,14 +33,14 @@ func WithMeterInfoClientFactory(f func(name string) (MeterInfoClient, error)) ro
 	})
 }
 
-func (r *MeterInfoRouter) Register(server grpc.ServiceRegistrar) {
+func (r *MeterInfoRouter) Register(server *grpc.Server) {
 	RegisterMeterInfoServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.MeterInfoClient.
+// Add extends Router.Add to panic if client is not of type MeterInfoClient.
 func (r *MeterInfoRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.MeterInfoClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a MeterInfoClient", client))
 	}
 	return r.Router.Add(name, client)
 }

@@ -238,14 +238,14 @@ proto.smartcore.bos.WasteRecord.prototype.toObject = function(opt_includeInstanc
  */
 proto.smartcore.bos.WasteRecord.toObject = function(includeInstance, msg) {
   var f, obj = {
-id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-recordCreateTime: (f = msg.getRecordCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-weight: jspb.Message.getFloatingPointFieldWithDefault(msg, 3, 0.0),
-system: jspb.Message.getFieldWithDefault(msg, 4, ""),
-disposalMethod: jspb.Message.getFieldWithDefault(msg, 5, 0),
-area: jspb.Message.getFieldWithDefault(msg, 6, ""),
-wasteCreateTime: (f = msg.getWasteCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-stream: jspb.Message.getFieldWithDefault(msg, 8, "")
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    recordCreateTime: (f = msg.getRecordCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    weight: jspb.Message.getFloatingPointFieldWithDefault(msg, 3, 0.0),
+    system: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    disposalMethod: jspb.Message.getFieldWithDefault(msg, 5, 0),
+    area: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    wasteCreateTime: (f = msg.getWasteCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    stream: jspb.Message.getFieldWithDefault(msg, 8, "")
   };
 
   if (includeInstance) {
@@ -636,10 +636,10 @@ proto.smartcore.bos.ListWasteRecordsResponse.prototype.toObject = function(opt_i
  */
 proto.smartcore.bos.ListWasteRecordsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-wasterecordsList: jspb.Message.toObjectList(msg.getWasterecordsList(),
+    wasterecordsList: jspb.Message.toObjectList(msg.getWasterecordsList(),
     proto.smartcore.bos.WasteRecord.toObject, includeInstance),
-nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
-totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
+    nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -849,10 +849,10 @@ proto.smartcore.bos.ListWasteRecordsRequest.prototype.toObject = function(opt_in
  */
 proto.smartcore.bos.ListWasteRecordsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-pageSize: jspb.Message.getFieldWithDefault(msg, 3, 0),
-pageToken: jspb.Message.getFieldWithDefault(msg, 4, "")
+    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+    pageSize: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    pageToken: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -1090,9 +1090,9 @@ proto.smartcore.bos.PullWasteRecordsRequest.prototype.toObject = function(opt_in
  */
 proto.smartcore.bos.PullWasteRecordsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -1308,7 +1308,7 @@ proto.smartcore.bos.PullWasteRecordsResponse.prototype.toObject = function(opt_i
  */
 proto.smartcore.bos.PullWasteRecordsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-changesList: jspb.Message.toObjectList(msg.getChangesList(),
+    changesList: jspb.Message.toObjectList(msg.getChangesList(),
     proto.smartcore.bos.PullWasteRecordsResponse.Change.toObject, includeInstance)
   };
 
@@ -1423,11 +1423,11 @@ proto.smartcore.bos.PullWasteRecordsResponse.Change.prototype.toObject = functio
  */
 proto.smartcore.bos.PullWasteRecordsResponse.Change.toObject = function(includeInstance, msg) {
   var f, obj = {
-name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-newValue: (f = msg.getNewValue()) && proto.smartcore.bos.WasteRecord.toObject(includeInstance, f),
-oldValue: (f = msg.getOldValue()) && proto.smartcore.bos.WasteRecord.toObject(includeInstance, f),
-type: jspb.Message.getFieldWithDefault(msg, 5, 0)
+    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    newValue: (f = msg.getNewValue()) && proto.smartcore.bos.WasteRecord.toObject(includeInstance, f),
+    oldValue: (f = msg.getOldValue()) && proto.smartcore.bos.WasteRecord.toObject(includeInstance, f),
+    type: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -1774,7 +1774,7 @@ proto.smartcore.bos.DescribeWasteRecordRequest.prototype.toObject = function(opt
  */
 proto.smartcore.bos.DescribeWasteRecordRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-name: jspb.Message.getFieldWithDefault(msg, 1, "")
+    name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -1904,8 +1904,8 @@ proto.smartcore.bos.WasteRecordSupport.prototype.toObject = function(opt_include
  */
 proto.smartcore.bos.WasteRecordSupport.toObject = function(includeInstance, msg) {
   var f, obj = {
-resourceSupport: (f = msg.getResourceSupport()) && types_info_pb.ResourceSupport.toObject(includeInstance, f),
-unit: jspb.Message.getFieldWithDefault(msg, 2, "")
+    resourceSupport: (f = msg.getResourceSupport()) && types_info_pb.ResourceSupport.toObject(includeInstance, f),
+    unit: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {

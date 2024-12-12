@@ -9,7 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// MeterHistoryRouter is a gen.MeterHistoryServer that allows routing named requests to specific gen.MeterHistoryClient
+// MeterHistoryRouter is a MeterHistoryServer that allows routing named requests to specific MeterHistoryClient
 type MeterHistoryRouter struct {
 	UnimplementedMeterHistoryServer
 
@@ -33,14 +33,14 @@ func WithMeterHistoryClientFactory(f func(name string) (MeterHistoryClient, erro
 	})
 }
 
-func (r *MeterHistoryRouter) Register(server grpc.ServiceRegistrar) {
+func (r *MeterHistoryRouter) Register(server *grpc.Server) {
 	RegisterMeterHistoryServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.MeterHistoryClient.
+// Add extends Router.Add to panic if client is not of type MeterHistoryClient.
 func (r *MeterHistoryRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.MeterHistoryClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a MeterHistoryClient", client))
 	}
 	return r.Router.Add(name, client)
 }

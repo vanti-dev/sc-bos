@@ -9,7 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// WasteInfoRouter is a gen.WasteInfoServer that allows routing named requests to specific gen.WasteInfoClient
+// WasteInfoRouter is a WasteInfoServer that allows routing named requests to specific WasteInfoClient
 type WasteInfoRouter struct {
 	UnimplementedWasteInfoServer
 
@@ -33,14 +33,14 @@ func WithWasteInfoClientFactory(f func(name string) (WasteInfoClient, error)) ro
 	})
 }
 
-func (r *WasteInfoRouter) Register(server grpc.ServiceRegistrar) {
+func (r *WasteInfoRouter) Register(server *grpc.Server) {
 	RegisterWasteInfoServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.WasteInfoClient.
+// Add extends Router.Add to panic if client is not of type WasteInfoClient.
 func (r *WasteInfoRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.WasteInfoClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a WasteInfoClient", client))
 	}
 	return r.Router.Add(name, client)
 }

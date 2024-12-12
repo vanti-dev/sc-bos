@@ -9,7 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// AlertAdminApiRouter is a gen.AlertAdminApiServer that allows routing named requests to specific gen.AlertAdminApiClient
+// AlertAdminApiRouter is a AlertAdminApiServer that allows routing named requests to specific AlertAdminApiClient
 type AlertAdminApiRouter struct {
 	UnimplementedAlertAdminApiServer
 
@@ -33,14 +33,14 @@ func WithAlertAdminApiClientFactory(f func(name string) (AlertAdminApiClient, er
 	})
 }
 
-func (r *AlertAdminApiRouter) Register(server grpc.ServiceRegistrar) {
+func (r *AlertAdminApiRouter) Register(server *grpc.Server) {
 	RegisterAlertAdminApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.AlertAdminApiClient.
+// Add extends Router.Add to panic if client is not of type AlertAdminApiClient.
 func (r *AlertAdminApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.AlertAdminApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a AlertAdminApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

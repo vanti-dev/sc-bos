@@ -10,7 +10,7 @@ import (
 	io "io"
 )
 
-// TemperatureApiRouter is a gen.TemperatureApiServer that allows routing named requests to specific gen.TemperatureApiClient
+// TemperatureApiRouter is a TemperatureApiServer that allows routing named requests to specific TemperatureApiClient
 type TemperatureApiRouter struct {
 	UnimplementedTemperatureApiServer
 
@@ -34,14 +34,14 @@ func WithTemperatureApiClientFactory(f func(name string) (TemperatureApiClient, 
 	})
 }
 
-func (r *TemperatureApiRouter) Register(server grpc.ServiceRegistrar) {
+func (r *TemperatureApiRouter) Register(server *grpc.Server) {
 	RegisterTemperatureApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.TemperatureApiClient.
+// Add extends Router.Add to panic if client is not of type TemperatureApiClient.
 func (r *TemperatureApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.TemperatureApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a TemperatureApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

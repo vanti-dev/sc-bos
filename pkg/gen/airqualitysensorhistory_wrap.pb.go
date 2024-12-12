@@ -3,40 +3,32 @@
 package gen
 
 import (
-	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
+	context "context"
 	grpc "google.golang.org/grpc"
 )
 
-// WrapAirQualitySensorHistory	adapts a gen.AirQualitySensorHistoryServer	and presents it as a gen.AirQualitySensorHistoryClient
-func WrapAirQualitySensorHistory(server AirQualitySensorHistoryServer) *AirQualitySensorHistoryWrapper {
-	conn := wrap.ServerToClient(AirQualitySensorHistory_ServiceDesc, server)
-	client := NewAirQualitySensorHistoryClient(conn)
-	return &AirQualitySensorHistoryWrapper{
-		AirQualitySensorHistoryClient: client,
-		server:                        server,
-		conn:                          conn,
-		desc:                          AirQualitySensorHistory_ServiceDesc,
-	}
+// WrapAirQualitySensorHistory	adapts a AirQualitySensorHistoryServer	and presents it as a AirQualitySensorHistoryClient
+func WrapAirQualitySensorHistory(server AirQualitySensorHistoryServer) AirQualitySensorHistoryClient {
+	return &airQualitySensorHistoryWrapper{server}
 }
 
-type AirQualitySensorHistoryWrapper struct {
-	AirQualitySensorHistoryClient
-
+type airQualitySensorHistoryWrapper struct {
 	server AirQualitySensorHistoryServer
-	conn   grpc.ClientConnInterface
-	desc   grpc.ServiceDesc
 }
+
+// compile time check that we implement the interface we need
+var _ AirQualitySensorHistoryClient = (*airQualitySensorHistoryWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *AirQualitySensorHistoryWrapper) UnwrapServer() AirQualitySensorHistoryServer {
+func (w *airQualitySensorHistoryWrapper) UnwrapServer() AirQualitySensorHistoryServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *AirQualitySensorHistoryWrapper) Unwrap() any {
+func (w *airQualitySensorHistoryWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *AirQualitySensorHistoryWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
-	return w.conn, w.desc
+func (w *airQualitySensorHistoryWrapper) ListAirQualityHistory(ctx context.Context, req *ListAirQualityHistoryRequest, _ ...grpc.CallOption) (*ListAirQualityHistoryResponse, error) {
+	return w.server.ListAirQualityHistory(ctx, req)
 }

@@ -10,7 +10,7 @@ import (
 	io "io"
 )
 
-// MeterApiRouter is a gen.MeterApiServer that allows routing named requests to specific gen.MeterApiClient
+// MeterApiRouter is a MeterApiServer that allows routing named requests to specific MeterApiClient
 type MeterApiRouter struct {
 	UnimplementedMeterApiServer
 
@@ -34,14 +34,14 @@ func WithMeterApiClientFactory(f func(name string) (MeterApiClient, error)) rout
 	})
 }
 
-func (r *MeterApiRouter) Register(server grpc.ServiceRegistrar) {
+func (r *MeterApiRouter) Register(server *grpc.Server) {
 	RegisterMeterApiServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.MeterApiClient.
+// Add extends Router.Add to panic if client is not of type MeterApiClient.
 func (r *MeterApiRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.MeterApiClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a MeterApiClient", client))
 	}
 	return r.Router.Add(name, client)
 }

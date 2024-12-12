@@ -9,7 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// AirQualitySensorHistoryRouter is a gen.AirQualitySensorHistoryServer that allows routing named requests to specific gen.AirQualitySensorHistoryClient
+// AirQualitySensorHistoryRouter is a AirQualitySensorHistoryServer that allows routing named requests to specific AirQualitySensorHistoryClient
 type AirQualitySensorHistoryRouter struct {
 	UnimplementedAirQualitySensorHistoryServer
 
@@ -33,14 +33,14 @@ func WithAirQualitySensorHistoryClientFactory(f func(name string) (AirQualitySen
 	})
 }
 
-func (r *AirQualitySensorHistoryRouter) Register(server grpc.ServiceRegistrar) {
+func (r *AirQualitySensorHistoryRouter) Register(server *grpc.Server) {
 	RegisterAirQualitySensorHistoryServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.AirQualitySensorHistoryClient.
+// Add extends Router.Add to panic if client is not of type AirQualitySensorHistoryClient.
 func (r *AirQualitySensorHistoryRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.AirQualitySensorHistoryClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a AirQualitySensorHistoryClient", client))
 	}
 	return r.Router.Add(name, client)
 }

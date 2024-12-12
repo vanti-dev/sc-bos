@@ -3,40 +3,32 @@
 package gen
 
 import (
-	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
+	context "context"
 	grpc "google.golang.org/grpc"
 )
 
-// WrapAirTemperatureHistory	adapts a gen.AirTemperatureHistoryServer	and presents it as a gen.AirTemperatureHistoryClient
-func WrapAirTemperatureHistory(server AirTemperatureHistoryServer) *AirTemperatureHistoryWrapper {
-	conn := wrap.ServerToClient(AirTemperatureHistory_ServiceDesc, server)
-	client := NewAirTemperatureHistoryClient(conn)
-	return &AirTemperatureHistoryWrapper{
-		AirTemperatureHistoryClient: client,
-		server:                      server,
-		conn:                        conn,
-		desc:                        AirTemperatureHistory_ServiceDesc,
-	}
+// WrapAirTemperatureHistory	adapts a AirTemperatureHistoryServer	and presents it as a AirTemperatureHistoryClient
+func WrapAirTemperatureHistory(server AirTemperatureHistoryServer) AirTemperatureHistoryClient {
+	return &airTemperatureHistoryWrapper{server}
 }
 
-type AirTemperatureHistoryWrapper struct {
-	AirTemperatureHistoryClient
-
+type airTemperatureHistoryWrapper struct {
 	server AirTemperatureHistoryServer
-	conn   grpc.ClientConnInterface
-	desc   grpc.ServiceDesc
 }
+
+// compile time check that we implement the interface we need
+var _ AirTemperatureHistoryClient = (*airTemperatureHistoryWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *AirTemperatureHistoryWrapper) UnwrapServer() AirTemperatureHistoryServer {
+func (w *airTemperatureHistoryWrapper) UnwrapServer() AirTemperatureHistoryServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *AirTemperatureHistoryWrapper) Unwrap() any {
+func (w *airTemperatureHistoryWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *AirTemperatureHistoryWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
-	return w.conn, w.desc
+func (w *airTemperatureHistoryWrapper) ListAirTemperatureHistory(ctx context.Context, req *ListAirTemperatureHistoryRequest, _ ...grpc.CallOption) (*ListAirTemperatureHistoryResponse, error) {
+	return w.server.ListAirTemperatureHistory(ctx, req)
 }
