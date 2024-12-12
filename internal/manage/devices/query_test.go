@@ -90,7 +90,7 @@ func Test_messageHasValueStringFunc(t *testing.T) {
 		{"nested string absent message", "1234", &traits.Metadata{}, false},
 		{"nested map", "1234", &traits.Metadata{Id: &traits.Metadata_ID{More: map[string]string{"foo": "1234"}}}, true},
 		{"list property", "1234", &traits.Metadata{Nics: []*traits.Metadata_NIC{{DisplayName: "1234"}}}, true},
-		// There was a bug caused by incorrectly serialising messages to string Before comparing,
+		// There was a bug caused by incorrectly serialising messages to string before comparing,
 		// i.e. comparing against `{ "foo" [] [] 0x9872000020 }`, which caused false matches
 		{"special char", "{", &traits.Metadata{Name: "{foo}"}, true},
 		{"bad string prop", "{", &traits.Metadata{Id: &traits.Metadata_ID{Bacnet: "1234"}}, false},

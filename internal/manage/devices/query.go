@@ -115,9 +115,7 @@ func messageHasValueStringFunc(msg proto.Message, f func(v string) bool) bool {
 	return match
 }
 
-// getMessageString returns the property identified by path from msg as a string.
-// Returns false if the path does not match any property, or that property cannot be represented as a string,
-// or if the comparator func parameter doesn't equate the string value Found
+// getMessageString returns the property identified by path from msg as a yield func.
 // See valueString for details of string conversion.
 func getMessageString(path string, msg proto.Message) iter.Seq[string] {
 	if msg == nil {
@@ -126,8 +124,7 @@ func getMessageString(path string, msg proto.Message) iter.Seq[string] {
 	return getMessageValue(path, msg.ProtoReflect())
 }
 
-// getMessageValue returns the protoreflect.Value identified by path in msg.
-// Returns false if the path can't be resolved, or if the comparator func parameter doesn't equate the value Found
+// getMessageValue returns the yield func identified by path in msg.
 func getMessageValue(path string, msg protoreflect.Message) iter.Seq[string] {
 	deconstructedPath := depath(path)
 	fieldDesc := msg.Descriptor().Fields().ByName(protoreflect.Name(deconstructedPath.Before))
@@ -152,8 +149,7 @@ func getMessageValue(path string, msg protoreflect.Message) iter.Seq[string] {
 	return nextValue(deconstructedPath.After, fieldDesc, val)
 }
 
-// getMapValue returns the protoreflect.Value identified by path in the map m.
-// Returns false if the path can't be resolved, or if the comparator func parameter doesn't equate the value Found
+// getMapValue returns the yield func identified by path in the map m.
 func getMapValue(path string, keyDesc, valueDesc protoreflect.FieldDescriptor, m protoreflect.Map) iter.Seq[string] {
 	prop, rest, found := strings.Cut(path, ".")
 	key, ok := parseMapKey(prop, keyDesc)
@@ -178,8 +174,7 @@ func getMapValue(path string, keyDesc, valueDesc protoreflect.FieldDescriptor, m
 	return nextValue(rest, valueDesc, value)
 }
 
-// getListValue returns the protoreflect.Value identified by path in the list l.
-// Returns false if the path can't be resolved, or if the comparator func parameter doesn't equate the value Found
+// getListValue returns the yield func identified by path in the list l.
 func getListValue(path string, entryDesc protoreflect.FieldDescriptor, l protoreflect.List) iter.Seq[string] {
 	deconstructedPath := depath(path)
 	if deconstructedPath.Index < 0 {
