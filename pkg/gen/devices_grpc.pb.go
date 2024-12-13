@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DevicesApi_ListDevices_FullMethodName         = "/smartcore.bos.DevicesApi/ListDevices"
-	DevicesApi_PullDevices_FullMethodName         = "/smartcore.bos.DevicesApi/PullDevices"
-	DevicesApi_GetDevicesMetadata_FullMethodName  = "/smartcore.bos.DevicesApi/GetDevicesMetadata"
-	DevicesApi_PullDevicesMetadata_FullMethodName = "/smartcore.bos.DevicesApi/PullDevicesMetadata"
+	DevicesApi_ListDevices_FullMethodName           = "/smartcore.bos.DevicesApi/ListDevices"
+	DevicesApi_PullDevices_FullMethodName           = "/smartcore.bos.DevicesApi/PullDevices"
+	DevicesApi_GetDevicesMetadata_FullMethodName    = "/smartcore.bos.DevicesApi/GetDevicesMetadata"
+	DevicesApi_PullDevicesMetadata_FullMethodName   = "/smartcore.bos.DevicesApi/PullDevicesMetadata"
+	DevicesApi_GetDownloadDevicesUrl_FullMethodName = "/smartcore.bos.DevicesApi/GetDownloadDevicesUrl"
 )
 
 // DevicesApiClient is the client API for DevicesApi service.
@@ -35,6 +36,7 @@ type DevicesApiClient interface {
 	PullDevices(ctx context.Context, in *PullDevicesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PullDevicesResponse], error)
 	GetDevicesMetadata(ctx context.Context, in *GetDevicesMetadataRequest, opts ...grpc.CallOption) (*DevicesMetadata, error)
 	PullDevicesMetadata(ctx context.Context, in *PullDevicesMetadataRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PullDevicesMetadataResponse], error)
+	GetDownloadDevicesUrl(ctx context.Context, in *GetDownloadDevicesUrlRequest, opts ...grpc.CallOption) (*DownloadDevicesUrl, error)
 }
 
 type devicesApiClient struct {
@@ -103,6 +105,16 @@ func (c *devicesApiClient) PullDevicesMetadata(ctx context.Context, in *PullDevi
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type DevicesApi_PullDevicesMetadataClient = grpc.ServerStreamingClient[PullDevicesMetadataResponse]
 
+func (c *devicesApiClient) GetDownloadDevicesUrl(ctx context.Context, in *GetDownloadDevicesUrlRequest, opts ...grpc.CallOption) (*DownloadDevicesUrl, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DownloadDevicesUrl)
+	err := c.cc.Invoke(ctx, DevicesApi_GetDownloadDevicesUrl_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DevicesApiServer is the server API for DevicesApi service.
 // All implementations must embed UnimplementedDevicesApiServer
 // for forward compatibility.
@@ -113,6 +125,7 @@ type DevicesApiServer interface {
 	PullDevices(*PullDevicesRequest, grpc.ServerStreamingServer[PullDevicesResponse]) error
 	GetDevicesMetadata(context.Context, *GetDevicesMetadataRequest) (*DevicesMetadata, error)
 	PullDevicesMetadata(*PullDevicesMetadataRequest, grpc.ServerStreamingServer[PullDevicesMetadataResponse]) error
+	GetDownloadDevicesUrl(context.Context, *GetDownloadDevicesUrlRequest) (*DownloadDevicesUrl, error)
 	mustEmbedUnimplementedDevicesApiServer()
 }
 
@@ -134,6 +147,9 @@ func (UnimplementedDevicesApiServer) GetDevicesMetadata(context.Context, *GetDev
 }
 func (UnimplementedDevicesApiServer) PullDevicesMetadata(*PullDevicesMetadataRequest, grpc.ServerStreamingServer[PullDevicesMetadataResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method PullDevicesMetadata not implemented")
+}
+func (UnimplementedDevicesApiServer) GetDownloadDevicesUrl(context.Context, *GetDownloadDevicesUrlRequest) (*DownloadDevicesUrl, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDownloadDevicesUrl not implemented")
 }
 func (UnimplementedDevicesApiServer) mustEmbedUnimplementedDevicesApiServer() {}
 func (UnimplementedDevicesApiServer) testEmbeddedByValue()                    {}
@@ -214,6 +230,24 @@ func _DevicesApi_PullDevicesMetadata_Handler(srv interface{}, stream grpc.Server
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type DevicesApi_PullDevicesMetadataServer = grpc.ServerStreamingServer[PullDevicesMetadataResponse]
 
+func _DevicesApi_GetDownloadDevicesUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDownloadDevicesUrlRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DevicesApiServer).GetDownloadDevicesUrl(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DevicesApi_GetDownloadDevicesUrl_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DevicesApiServer).GetDownloadDevicesUrl(ctx, req.(*GetDownloadDevicesUrlRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DevicesApi_ServiceDesc is the grpc.ServiceDesc for DevicesApi service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +262,10 @@ var DevicesApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDevicesMetadata",
 			Handler:    _DevicesApi_GetDevicesMetadata_Handler,
+		},
+		{
+			MethodName: "GetDownloadDevicesUrl",
+			Handler:    _DevicesApi_GetDownloadDevicesUrl_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
