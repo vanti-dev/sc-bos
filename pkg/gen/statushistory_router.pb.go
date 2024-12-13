@@ -33,7 +33,7 @@ func WithStatusHistoryClientFactory(f func(name string) (StatusHistoryClient, er
 	})
 }
 
-func (r *StatusHistoryRouter) Register(server *grpc.Server) {
+func (r *StatusHistoryRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterStatusHistoryServer(server, r)
 }
 

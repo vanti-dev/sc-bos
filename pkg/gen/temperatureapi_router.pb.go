@@ -34,7 +34,7 @@ func WithTemperatureApiClientFactory(f func(name string) (TemperatureApiClient, 
 	})
 }
 
-func (r *TemperatureApiRouter) Register(server *grpc.Server) {
+func (r *TemperatureApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterTemperatureApiServer(server, r)
 }
 

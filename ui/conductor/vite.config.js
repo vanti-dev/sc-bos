@@ -12,7 +12,7 @@ const _require = createRequire(import.meta.url);
 
 // Any import that resolves to a local filesystem dependency that isn't an ESM dependency needs to be in this list.
 const optimizeDepsInclude = [
-  '@sc-bos/panzoom-package' // cjs imports that use the yarn workspace also need to be in this list
+  '@vanti-dev/sc-bos-panzoom-package' // cjs imports that use the yarn workspace also need to be in this list
 ];
 // Typically that includes local proto files that are referenced via either `file:../` dependencies in package.json
 // or via yarn/npm linking the generated sources into this project (or both).

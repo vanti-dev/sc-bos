@@ -33,7 +33,7 @@ func WithDaliApiClientFactory(f func(name string) (DaliApiClient, error)) router
 	})
 }
 
-func (r *DaliApiRouter) Register(server *grpc.Server) {
+func (r *DaliApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterDaliApiServer(server, r)
 }
 

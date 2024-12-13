@@ -3,32 +3,40 @@
 package gen
 
 import (
-	context "context"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 	grpc "google.golang.org/grpc"
 )
 
 // WrapAirQualitySensorHistory	adapts a AirQualitySensorHistoryServer	and presents it as a AirQualitySensorHistoryClient
-func WrapAirQualitySensorHistory(server AirQualitySensorHistoryServer) AirQualitySensorHistoryClient {
-	return &airQualitySensorHistoryWrapper{server}
+func WrapAirQualitySensorHistory(server AirQualitySensorHistoryServer) *AirQualitySensorHistoryWrapper {
+	conn := wrap.ServerToClient(AirQualitySensorHistory_ServiceDesc, server)
+	client := NewAirQualitySensorHistoryClient(conn)
+	return &AirQualitySensorHistoryWrapper{
+		AirQualitySensorHistoryClient: client,
+		server:                        server,
+		conn:                          conn,
+		desc:                          AirQualitySensorHistory_ServiceDesc,
+	}
 }
 
-type airQualitySensorHistoryWrapper struct {
+type AirQualitySensorHistoryWrapper struct {
+	AirQualitySensorHistoryClient
+
 	server AirQualitySensorHistoryServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
-
-// compile time check that we implement the interface we need
-var _ AirQualitySensorHistoryClient = (*airQualitySensorHistoryWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *airQualitySensorHistoryWrapper) UnwrapServer() AirQualitySensorHistoryServer {
+func (w *AirQualitySensorHistoryWrapper) UnwrapServer() AirQualitySensorHistoryServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *airQualitySensorHistoryWrapper) Unwrap() any {
+func (w *AirQualitySensorHistoryWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *airQualitySensorHistoryWrapper) ListAirQualityHistory(ctx context.Context, req *ListAirQualityHistoryRequest, _ ...grpc.CallOption) (*ListAirQualityHistoryResponse, error) {
-	return w.server.ListAirQualityHistory(ctx, req)
+func (w *AirQualitySensorHistoryWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

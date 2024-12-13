@@ -34,7 +34,7 @@ func WithWasteApiClientFactory(f func(name string) (WasteApiClient, error)) rout
 	})
 }
 
-func (r *WasteApiRouter) Register(server *grpc.Server) {
+func (r *WasteApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterWasteApiServer(server, r)
 }
 

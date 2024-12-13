@@ -3,60 +3,40 @@
 package gen
 
 import (
-	context "context"
 	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 	grpc "google.golang.org/grpc"
 )
 
 // WrapMqttService	adapts a MqttServiceServer	and presents it as a MqttServiceClient
-func WrapMqttService(server MqttServiceServer) MqttServiceClient {
-	return &mqttServiceWrapper{server}
+func WrapMqttService(server MqttServiceServer) *MqttServiceWrapper {
+	conn := wrap.ServerToClient(MqttService_ServiceDesc, server)
+	client := NewMqttServiceClient(conn)
+	return &MqttServiceWrapper{
+		MqttServiceClient: client,
+		server:            server,
+		conn:              conn,
+		desc:              MqttService_ServiceDesc,
+	}
 }
 
-type mqttServiceWrapper struct {
+type MqttServiceWrapper struct {
+	MqttServiceClient
+
 	server MqttServiceServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
-
-// compile time check that we implement the interface we need
-var _ MqttServiceClient = (*mqttServiceWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *mqttServiceWrapper) UnwrapServer() MqttServiceServer {
+func (w *MqttServiceWrapper) UnwrapServer() MqttServiceServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *mqttServiceWrapper) Unwrap() any {
+func (w *MqttServiceWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *mqttServiceWrapper) PullMessages(ctx context.Context, in *PullMessagesRequest, opts ...grpc.CallOption) (MqttService_PullMessagesClient, error) {
-	stream := wrap.NewClientServerStream(ctx)
-	server := &pullMessagesMqttServiceServerWrapper{stream.Server()}
-	client := &pullMessagesMqttServiceClientWrapper{stream.Client()}
-	go func() {
-		err := w.server.PullMessages(in, server)
-		stream.Close(err)
-	}()
-	return client, nil
-}
-
-type pullMessagesMqttServiceClientWrapper struct {
-	grpc.ClientStream
-}
-
-func (w *pullMessagesMqttServiceClientWrapper) Recv() (*PullMessagesResponse, error) {
-	m := new(PullMessagesResponse)
-	if err := w.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-type pullMessagesMqttServiceServerWrapper struct {
-	grpc.ServerStream
-}
-
-func (s *pullMessagesMqttServiceServerWrapper) Send(response *PullMessagesResponse) error {
-	return s.ServerStream.SendMsg(response)
+func (w *MqttServiceWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }
