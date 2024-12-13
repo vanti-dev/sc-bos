@@ -13,6 +13,9 @@
         <filter-choice-chips :ctx="filterCtx" class="mx-2"/>
         <filter-btn :ctx="filterCtx"/>
       </template>
+      <v-btn icon="true" v-bind="downloadBtnProps" v-tooltip="'Download table as CSV file...'">
+        <v-icon size="24">mdi-file-download</v-icon>
+      </v-btn>
     </v-toolbar>
     <v-data-table-server
         v-model="selectedDevicesComp"
@@ -56,6 +59,7 @@ import HotPoint from '@/components/HotPoint.vue';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import {useDeviceFilters, useDevices} from '@/composables/devices';
 import {useDataTableCollection} from '@/composables/table.js';
+import {useDownloadLink} from '@/routes/devices/components/download.js';
 import {useSidebarStore} from '@/stores/sidebar';
 import {computed, ref} from 'vue';
 import DeviceCell from './DeviceCell.vue';
@@ -158,6 +162,7 @@ function rowProps({item}) {
   return {};
 }
 
+const {downloadBtnProps} = useDownloadLink(() => devices.query.value);
 </script>
 
 <style lang="scss" scoped>
