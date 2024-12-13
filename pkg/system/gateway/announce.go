@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"iter"
 	"strings"
 	"sync"
 
@@ -238,12 +239,11 @@ func (a *announcer) announceName(d remoteDesc) node.Undo {
 }
 
 // announceMetadataTraitsSet announces the metadata traits for each remoteDesc in seq.
-func (a *announcer) announceMetadataTraitsSet(seq seq2[int, remoteDesc]) tasks {
+func (a *announcer) announceMetadataTraitsSet(seq iter.Seq2[int, remoteDesc]) tasks {
 	dst := tasks{}
-	seq(func(_ int, d remoteDesc) bool {
+	for _, d := range seq {
 		dst[d.name] = a.announceName(d)
-		return true
-	})
+	}
 	return dst
 }
 
@@ -272,13 +272,12 @@ func (a *announcer) announceRemoteService(rs protoreflect.ServiceDescriptor) nod
 }
 
 // announceRemoteServices updates this node to respond to requests for each remoteService in seq.
-func (a *announcer) announceRemoteServices(seq seq2[int, protoreflect.ServiceDescriptor]) tasks {
+func (a *announcer) announceRemoteServices(seq iter.Seq2[int, protoreflect.ServiceDescriptor]) tasks {
 	dst := tasks{}
-	seq(func(_ int, rs protoreflect.ServiceDescriptor) bool {
+	for _, rs := range seq {
 		name := string(rs.FullName())
 		dst[name] = a.announceRemoteService(rs)
-		return true
-	})
+	}
 	return dst
 }
 
@@ -410,6 +409,3 @@ func (r *counts) Dec(k string) int {
 	}
 	return r.m[k]
 }
-
-// seq2 is like iter.Seq2 but before we've updated to go1.22.
-type seq2[T1, T2 any] func(yield func(T1, T2) bool)
