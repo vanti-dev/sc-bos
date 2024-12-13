@@ -824,9 +824,8 @@
         "van/uk/brum/ugs/zones/rooms/green",
         "van/uk/brum/ugs/zones/rooms/yellow"
       ],
-      "enterLeaveSensors": [
+      "openClose": [
         "van/uk/brum/ugs/devices/ACR-L00-01",
-        "van/uk/brum/ugs/devices/ACR-L00-02",
         "van/uk/brum/ugs/devices/DOR-L00-01",
         "van/uk/brum/ugs/devices/DOR-L00-02"
       ],
@@ -984,7 +983,7 @@
         "privacy": ["van/uk/brum/ugs/devices/SHD-L00-08"],
         "blackout": ["van/uk/brum/ugs/devices/SHD-L00-09"]
       },
-      "thermostats": ["van/uk/brum/ugs/devices/FCU-L00-05b"],
+      "thermostats": ["van/uk/brum/ugs/devices/FCU-L00-05"],
       "occupancySensors": ["van/uk/brum/ugs/devices/PIR-L00-05"]
     },
     {
@@ -1051,8 +1050,7 @@
         "location": {"floor": "Ground Floor", "zone": "Secure Store"},
         "membership": {"subsystem": "zones"}
       },
-      "lights": ["van/uk/brum/ugs/devices/LTF-L00-14"],
-      "enterLeaveSensors": ["van/uk/brum/ugs/devices/ACR-L00-02"]
+      "lights": ["van/uk/brum/ugs/devices/LTF-L00-14"]
     },
     {
       "name": "van/uk/brum/ugs/zones/areas/comms-room",
@@ -1081,7 +1079,7 @@
       ],
       "thermostats": ["van/uk/brum/ugs/devices/FCU-L00-01"],
       "occupancySensors": ["van/uk/brum/ugs/devices/PIR-L00-01"],
-      "enterLeaveSensors": ["van/uk/brum/ugs/devices/ACR-L00-01"]
+      "openClose": ["van/uk/brum/ugs/devices/ACR-L00-01"]
     },
     {
       "name": "van/uk/brum/ugs/zones/areas/l00-wc",
@@ -1101,7 +1099,7 @@
         "membership": {"subsystem": "zones"}
       },
       "lights": ["van/uk/brum/ugs/devices/LTF-L00-17"],
-      "enterLeaveSensors": ["van/uk/brum/ugs/devices/DOR-L00-01"]
+      "openClose": ["van/uk/brum/ugs/devices/DOR-L00-01"]
     },
     {
       "name": "van/uk/brum/ugs/zones/rooms/bank",
@@ -1229,6 +1227,17 @@
       }
     },
     {
+      "name": "van/uk/brum/ugs/automation/meter-history/comms-room",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/areas/comms-room", "trait": "smartcore.bos.Meter"},
+      "storage": {
+        "type": "postgres",
+        "uri": "postgres://postgres@localhost:5432/smart_core",
+        "passwordFile": "./.data/secrets/postgres-password"
+      }
+    },
+
+    {
       "name": "van/uk/brum/ugs/automation/air-quality-history/lab",
       "type": "history",
       "source": {"name": "van/uk/brum/ugs/zones/areas/lab", "trait": "smartcore.traits.AirQualitySensor"},
@@ -1312,16 +1321,6 @@
       "name": "van/uk/brum/ugs/automation/air-quality-history/rooms/bank",
       "type": "history",
       "source": {"name": "van/uk/brum/ugs/zones/rooms/bank", "trait": "smartcore.traits.AirQualitySensor"},
-      "storage": {
-        "type": "postgres",
-        "uri": "postgres://postgres@localhost:5432/smart_core",
-        "passwordFile": "./.data/secrets/postgres-password"
-      }
-    },
-    {
-      "name": "van/uk/brum/ugs/automation/meter-history/comms-room",
-      "type": "history",
-      "source": {"name": "van/uk/brum/ugs/zones/areas/comms-room", "trait": "smartcore.bos.Meter"},
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
@@ -1494,26 +1493,6 @@
       "name": "van/uk/brum/ugs/automation/air-quality-history/workshop",
       "type": "history",
       "source": {"name": "van/uk/brum/ugs/zones/areas/workshop", "trait": "smartcore.traits.AirQualitySensor"},
-      "storage": {
-        "type": "postgres",
-        "uri": "postgres://postgres@localhost:5432/smart_core",
-        "passwordFile": "./.data/secrets/postgres-password"
-      }
-    },
-    {
-      "name": "van/uk/brum/ugs/automation/air-quality-history/LTF-LN1-01",
-      "type": "history",
-      "source": {"name": "van/uk/brum/ugs/devices/LTF-LN1-01", "trait": "smartcore.traits.AirQualitySensor"},
-      "storage": {
-        "type": "postgres",
-        "uri": "postgres://postgres@localhost:5432/smart_core",
-        "passwordFile": "./.data/secrets/postgres-password"
-    }
-    },
-    {
-      "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-L00-05",
-      "type": "history",
-      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L00-05", "trait": "smartcore.traits.AirQualitySensor"},
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
