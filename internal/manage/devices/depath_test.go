@@ -18,6 +18,7 @@ func Test_depath(t *testing.T) {
 				After:  "[0].",
 				Found:  true,
 				Index:  0,
+				Next:   "",
 			},
 		}, {
 			path: "something[10].else",
@@ -26,6 +27,7 @@ func Test_depath(t *testing.T) {
 				After:  "[10].else",
 				Found:  true,
 				Index:  10,
+				Next:   "else",
 			},
 		}, {
 			path: "something[-1].else",
@@ -34,6 +36,7 @@ func Test_depath(t *testing.T) {
 				After:  "else",
 				Found:  true,
 				Index:  -1,
+				Next:   "else",
 			},
 		}, {
 			path: "something[x20].else",
@@ -42,6 +45,16 @@ func Test_depath(t *testing.T) {
 				After:  "else",
 				Found:  false,
 				Index:  -1,
+				Next:   "else",
+			},
+		}, {
+			path: "real[0].life",
+			deconstructedPath: dePath{
+				Before: "real",
+				After:  "[0].life",
+				Found:  true,
+				Index:  0,
+				Next:   "life",
 			},
 		},
 	}

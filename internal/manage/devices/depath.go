@@ -2,12 +2,9 @@ package devices
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 )
-
-var arrIndexRegx = regexp.MustCompile("\\[(-?[0-9]+)]")
 
 // dePath represents a deconstructed path used to extract an array Index if present
 type dePath struct {
@@ -15,6 +12,7 @@ type dePath struct {
 	After  string
 	Found  bool
 	Index  int
+	Next   string
 }
 
 // depath deconstructs a path to extract an array Index if present
@@ -22,60 +20,85 @@ type dePath struct {
 func depath(path string) dePath {
 	before, after, _ := strings.Cut(path, ".")
 
-	if arrIndexRegx.MatchString(path) {
-		matches := arrIndexRegx.FindStringSubmatch(path)
-
-		if len(matches) < 2 {
-			return dePath{
-				Before: before,
-				After:  after,
-				Found:  true,
-				Index:  -1,
+	indexStr := strings.Builder{}
+	buildIndex := false
+	foundIndex := false
+	outPath := strings.Builder{}
+	addToOutPath := true
+	indexOfNum := -1
+	for idx, char := range before {
+		if char == '[' {
+			buildIndex = true
+			addToOutPath = false
+			indexOfNum = idx + 1
+		} else if buildIndex {
+			if char == '-' || (char >= '0' && char <= '9') {
+				indexStr.WriteRune(char)
+			} else if char == ']' {
+				buildIndex = false
+				foundIndex = true
+				break
+			} else {
+				foundIndex = false
+				buildIndex = false
 			}
 		}
 
-		index, err := strconv.ParseInt(matches[1], 10, 32)
-		if err == nil && index > -1 {
-			matchedIndices := arrIndexRegx.FindStringIndex(path)
-
-			if matchedIndices == nil || len(matchedIndices) < 2 {
-				return dePath{
-					Before: before,
-					After:  after,
-					Found:  true,
-					Index:  -1,
-				}
-			}
-			if matchedIndices[0] == 0 {
-				// An Index is Found at the start of path
-				// return Before,After only
-				return dePath{
-					Before: before,
-					After:  after,
-					Found:  true,
-					Index:  int(index),
-				}
-			}
-			return dePath{
-				Before: arrIndexRegx.ReplaceAllString(before, ""),
-				After:  fmt.Sprintf("[%d].%s", index, after),
-				Found:  true,
-				Index:  int(index),
-			}
+		if addToOutPath {
+			outPath.WriteRune(char)
 		}
+	}
 
+	if !foundIndex {
 		return dePath{
-			Before: arrIndexRegx.ReplaceAllString(before, ""),
+			Before: before,
 			After:  after,
-			Found:  true,
+			Found:  false,
 			Index:  -1,
+			Next:   after,
+		}
+	}
+
+	iStr := indexStr.String()
+	index, err := strconv.Atoi(iStr)
+
+	if err != nil || index < 0 {
+		return dePath{
+			Before: outPath.String(),
+			After:  after,
+			Found:  foundIndex,
+			Index:  -1,
+			Next:   after,
+		}
+	}
+
+	if indexOfNum >= 1 {
+		return dePath{
+			Before: outPath.String(),
+			After:  fmt.Sprintf("[%d].%s", index, after),
+			Found:  foundIndex,
+			Index:  index,
+			Next:   after,
+		}
+	}
+
+	// An Index is Found at the start of path
+	// return Before,After only
+	if after != "" {
+		return dePath{
+			Before: outPath.String(),
+			After:  after,
+			Found:  foundIndex,
+			Index:  -1,
+			Next:   after,
 		}
 	}
 
 	return dePath{
 		Before: before,
 		After:  after,
-		Found:  false,
+		Found:  foundIndex,
 		Index:  -1,
+		Next:   after,
 	}
 }

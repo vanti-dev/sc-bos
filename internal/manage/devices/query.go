@@ -243,7 +243,7 @@ func getListValue(path string, entryDesc protoreflect.FieldDescriptor, l protore
 		return func(yield func(string) bool) {}
 	}
 
-	desc := val.Message().Descriptor().Fields().ByName(protoreflect.Name(deconstructedPath.After))
+	desc := val.Message().Descriptor().Fields().ByName(protoreflect.Name(deconstructedPath.Next))
 
 	if desc == nil {
 		return func(yield func(string) bool) {}
