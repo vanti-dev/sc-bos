@@ -33,7 +33,7 @@ func WithAirQualitySensorHistoryClientFactory(f func(name string) (AirQualitySen
 	})
 }
 
-func (r *AirQualitySensorHistoryRouter) Register(server *grpc.Server) {
+func (r *AirQualitySensorHistoryRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterAirQualitySensorHistoryServer(server, r)
 }
 

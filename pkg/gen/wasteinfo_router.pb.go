@@ -33,7 +33,7 @@ func WithWasteInfoClientFactory(f func(name string) (WasteInfoClient, error)) ro
 	})
 }
 
-func (r *WasteInfoRouter) Register(server *grpc.Server) {
+func (r *WasteInfoRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterWasteInfoServer(server, r)
 }
 

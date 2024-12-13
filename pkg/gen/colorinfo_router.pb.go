@@ -33,7 +33,7 @@ func WithColorInfoClientFactory(f func(name string) (ColorInfoClient, error)) ro
 	})
 }
 
-func (r *ColorInfoRouter) Register(server *grpc.Server) {
+func (r *ColorInfoRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterColorInfoServer(server, r)
 }
 

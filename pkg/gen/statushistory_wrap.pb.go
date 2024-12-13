@@ -3,32 +3,40 @@
 package gen
 
 import (
-	context "context"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 	grpc "google.golang.org/grpc"
 )
 
 // WrapStatusHistory	adapts a StatusHistoryServer	and presents it as a StatusHistoryClient
-func WrapStatusHistory(server StatusHistoryServer) StatusHistoryClient {
-	return &statusHistoryWrapper{server}
+func WrapStatusHistory(server StatusHistoryServer) *StatusHistoryWrapper {
+	conn := wrap.ServerToClient(StatusHistory_ServiceDesc, server)
+	client := NewStatusHistoryClient(conn)
+	return &StatusHistoryWrapper{
+		StatusHistoryClient: client,
+		server:              server,
+		conn:                conn,
+		desc:                StatusHistory_ServiceDesc,
+	}
 }
 
-type statusHistoryWrapper struct {
+type StatusHistoryWrapper struct {
+	StatusHistoryClient
+
 	server StatusHistoryServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
-
-// compile time check that we implement the interface we need
-var _ StatusHistoryClient = (*statusHistoryWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *statusHistoryWrapper) UnwrapServer() StatusHistoryServer {
+func (w *StatusHistoryWrapper) UnwrapServer() StatusHistoryServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *statusHistoryWrapper) Unwrap() any {
+func (w *StatusHistoryWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *statusHistoryWrapper) ListCurrentStatusHistory(ctx context.Context, req *ListCurrentStatusHistoryRequest, _ ...grpc.CallOption) (*ListCurrentStatusHistoryResponse, error) {
-	return w.server.ListCurrentStatusHistory(ctx, req)
+func (w *StatusHistoryWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

@@ -33,7 +33,7 @@ func WithMeterInfoClientFactory(f func(name string) (MeterInfoClient, error)) ro
 	})
 }
 
-func (r *MeterInfoRouter) Register(server *grpc.Server) {
+func (r *MeterInfoRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterMeterInfoServer(server, r)
 }
 

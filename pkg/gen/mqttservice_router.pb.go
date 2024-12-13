@@ -34,7 +34,7 @@ func WithMqttServiceClientFactory(f func(name string) (MqttServiceClient, error)
 	})
 }
 
-func (r *MqttServiceRouter) Register(server *grpc.Server) {
+func (r *MqttServiceRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterMqttServiceServer(server, r)
 }
 

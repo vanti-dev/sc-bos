@@ -3,44 +3,40 @@
 package gen
 
 import (
-	context "context"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
 	grpc "google.golang.org/grpc"
 )
 
 // WrapLightingTestApi	adapts a LightingTestApiServer	and presents it as a LightingTestApiClient
-func WrapLightingTestApi(server LightingTestApiServer) LightingTestApiClient {
-	return &lightingTestApiWrapper{server}
+func WrapLightingTestApi(server LightingTestApiServer) *LightingTestApiWrapper {
+	conn := wrap.ServerToClient(LightingTestApi_ServiceDesc, server)
+	client := NewLightingTestApiClient(conn)
+	return &LightingTestApiWrapper{
+		LightingTestApiClient: client,
+		server:                server,
+		conn:                  conn,
+		desc:                  LightingTestApi_ServiceDesc,
+	}
 }
 
-type lightingTestApiWrapper struct {
+type LightingTestApiWrapper struct {
+	LightingTestApiClient
+
 	server LightingTestApiServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
-
-// compile time check that we implement the interface we need
-var _ LightingTestApiClient = (*lightingTestApiWrapper)(nil)
 
 // UnwrapServer returns the underlying server instance.
-func (w *lightingTestApiWrapper) UnwrapServer() LightingTestApiServer {
+func (w *LightingTestApiWrapper) UnwrapServer() LightingTestApiServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *lightingTestApiWrapper) Unwrap() any {
+func (w *LightingTestApiWrapper) Unwrap() any {
 	return w.UnwrapServer()
 }
 
-func (w *lightingTestApiWrapper) GetLightHealth(ctx context.Context, req *GetLightHealthRequest, _ ...grpc.CallOption) (*LightHealth, error) {
-	return w.server.GetLightHealth(ctx, req)
-}
-
-func (w *lightingTestApiWrapper) ListLightHealth(ctx context.Context, req *ListLightHealthRequest, _ ...grpc.CallOption) (*ListLightHealthResponse, error) {
-	return w.server.ListLightHealth(ctx, req)
-}
-
-func (w *lightingTestApiWrapper) ListLightEvents(ctx context.Context, req *ListLightEventsRequest, _ ...grpc.CallOption) (*ListLightEventsResponse, error) {
-	return w.server.ListLightEvents(ctx, req)
-}
-
-func (w *lightingTestApiWrapper) GetReportCSV(ctx context.Context, req *GetReportCSVRequest, _ ...grpc.CallOption) (*ReportCSV, error) {
-	return w.server.GetReportCSV(ctx, req)
+func (w *LightingTestApiWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }
