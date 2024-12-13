@@ -8,6 +8,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -227,7 +228,27 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	reflectionServer.Register(grpcServer)
 
 	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
-	devices.NewServer(rootNode).Register(grpcServer)
+
+	// DevicesApi
+	var devicesApiOpts []devices.Option
+	// work out the url download links should be using for targeting this controller
+	lisHost, lisPort, _ := net.SplitHostPort(config.ListenHTTPS)
+	if lisHost == "" {
+		lisHost = config.HTTPAddr // populated via network interface scanning or config
+	}
+	if lisHost != "" {
+		hostAndPort := lisHost
+		if lisPort != "" {
+			hostAndPort = net.JoinHostPort(lisHost, lisPort)
+		}
+		devicesApiOpts = append(devicesApiOpts, devices.WithDownloadUrlBase(url.URL{
+			Scheme: "https",
+			Host:   hostAndPort,
+			Path:   "/dl/devices",
+		}))
+	}
+	devicesApi := devices.NewServer(rootNode, devicesApiOpts...)
+	devicesApi.Register(grpcServer)
 
 	grpcWebServer := grpcweb.WrapServer(grpcServer,
 		grpcweb.WithOriginFunc(func(origin string) bool {
@@ -239,6 +260,9 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	// HTTP endpoint setup
 	mux := http.NewServeMux()
+	// Devices API aux routes
+	devicesApi.RegisterHTTPMux(mux)
+
 	// Static site hosting
 	for _, site := range config.StaticHosting {
 		handler := http2.NewStaticHandler(site.FilePath)

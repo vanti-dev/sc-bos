@@ -13,6 +13,9 @@
         <filter-choice-chips :ctx="filterCtx" class="mx-2"/>
         <filter-btn :ctx="filterCtx"/>
       </template>
+      <v-btn icon="true" v-bind="downloadBtnProps" v-tooltip="'Download table as CSV file...'">
+        <v-icon size="24">mdi-download</v-icon>
+      </v-btn>
     </v-toolbar>
     <v-data-table-server
         v-model="selectedDevicesComp"
@@ -49,6 +52,7 @@
 </template>
 
 <script setup>
+import {getDownloadDevicesUrl} from '@/api/ui/devices.js';
 import ContentCard from '@/components/ContentCard.vue';
 import FilterBtn from '@/components/filter/FilterBtn.vue';
 import FilterChoiceChips from '@/components/filter/FilterChoiceChips.vue';
@@ -57,7 +61,7 @@ import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import {useDeviceFilters, useDevices} from '@/composables/devices';
 import {useDataTableCollection} from '@/composables/table.js';
 import {useSidebarStore} from '@/stores/sidebar';
-import {computed, ref} from 'vue';
+import {computed, ref, watch} from 'vue';
 import DeviceCell from './DeviceCell.vue';
 
 const props = defineProps({
@@ -158,6 +162,32 @@ function rowProps({item}) {
   return {};
 }
 
+const tableDownloadUrl = ref(null);
+const getDownloadDevicesUrlRequest = computed(() => {
+  return {query: devices.query.value};
+});
+watch(getDownloadDevicesUrlRequest, async (request) => {
+  tableDownloadUrl.value = null;
+  if (!request) return;
+  try {
+    tableDownloadUrl.value = await getDownloadDevicesUrl(request);
+  } catch (e) {
+    console.warn('Failed to get download devices URL', e);
+    // todo: remove fake download url
+    tableDownloadUrl.value = {url: '/eg-config.json', filename: 'some-file.json'};
+  }
+});
+const downloadBtnProps = computed(() => {
+  const props = {};
+  const url = tableDownloadUrl.value;
+  if (url) {
+    props.href = url.url;
+    props.download = url.filename;
+  }
+  props.disabled = !url;
+
+  return props;
+});
 </script>
 
 <style lang="scss" scoped>
