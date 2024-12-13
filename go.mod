@@ -1,13 +1,12 @@
 module github.com/vanti-dev/sc-bos
 
-go 1.22
+go 1.23
 
 require (
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/go-jose/go-jose/v4 v4.0.4
-	github.com/golang/protobuf v1.5.4
 	github.com/google/go-cmp v0.6.0
 	github.com/google/renameio/v2 v2.0.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
