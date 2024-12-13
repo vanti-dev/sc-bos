@@ -82,8 +82,6 @@ func depath(path string) dePath {
 		}
 	}
 
-	// An Index is Found at the start of path
-	// return Before,After only
 	if after != "" {
 		return dePath{
 			Before: outPath.String(),
