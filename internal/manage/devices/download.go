@@ -3,6 +3,7 @@ package devices
 import (
 	"context"
 	"encoding/base64"
+	"encoding/csv"
 	"fmt"
 	"iter"
 	"maps"
@@ -169,7 +170,9 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 	// 3. start collecting the data and streaming it to the client
 	w.Header().Set("Content-Disposition", "attachment; filename=devices.csv")
 	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
-	if _, err := fmt.Fprintln(w, strings.Join(headers, ",")); err != nil {
+
+	csvOut := csv.NewWriter(w)
+	if err := csvOut.Write(headers); err != nil {
 		return
 	}
 
@@ -194,13 +197,11 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 				row[index] = v
 			}
 		}
-		for i, v := range row {
-			row[i] = encodeCsvField(v)
-		}
-		if _, err := fmt.Fprintln(w, strings.Join(row, ",")); err != nil {
+		if err := csvOut.Write(row); err != nil {
 			return
 		}
 	}
+	csvOut.Flush()
 }
 
 func captureMDValues(md *traits.Metadata, headerIndex map[string]int, row []string) {
@@ -268,13 +269,6 @@ func protoPathToHeader(p protopath.Path) string {
 		}
 	}
 	return strings.Join(parts, ".")
-}
-
-func encodeCsvField(s string) string {
-	if strings.ContainsAny(s, ",\"\n") {
-		return `"` + strings.ReplaceAll(s, `"`, `""`) + `"`
-	}
-	return s
 }
 
 func (s *Server) RegisterHTTPMux(mux *http.ServeMux) {
