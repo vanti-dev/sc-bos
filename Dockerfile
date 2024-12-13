@@ -28,7 +28,7 @@ ENV GIT_VERSION=$GIT_VERSION
 WORKDIR conductor
 RUN yarn run build
 
-FROM --platform=$BUILDPLATFORM golang:1.22-alpine3.20 AS build_go
+FROM --platform=$BUILDPLATFORM golang:1.23-alpine3.20 AS build_go
 
 RUN apk add --no-cache git
 
