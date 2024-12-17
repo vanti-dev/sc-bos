@@ -85,6 +85,9 @@ message AccessAttempt {
   // Actor describes the entity attempting to gain access.
   // Optional.
   Actor actor = 3;
+
+  // The time the access attempt was made
+  google.protobuf.Timestamp access_attempt_time = 4;
 }
 
 message GetLastAccessAttemptRequest {
