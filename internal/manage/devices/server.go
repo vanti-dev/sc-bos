@@ -31,9 +31,9 @@ type Server struct {
 	node *node.Node
 	now  func() time.Time
 
-	downloadUrlBase    url.URL // defaults to /dl/devices
-	downloadUrlEncoder DownloadUrlEncoder
-	downloadUrlDecoder DownloadUrlDecoder
+	downloadUrlBase     url.URL // defaults to /dl/devices
+	downloadTokenWriter DownloadTokenWriter
+	downloadTokenReader DownloadTokenReader
 }
 
 func NewServer(n *node.Node, opts ...Option) *Server {

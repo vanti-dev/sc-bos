@@ -39,12 +39,12 @@ func (s *Server) GetDownloadDevicesUrl(_ context.Context, request *gen.GetDownlo
 	tokenData := &DownloadToken{
 		Request: request,
 	}
-	tokenStr, err := encodeDownloadToken(tokenData)
+	tokenStr, err := downloadTokenToString(tokenData)
 	if err != nil {
 		return nil, err
 	}
 	u := s.downloadUrlBase
-	if err := s.encodeDownloadUrlToken(&u, tokenStr); err != nil {
+	if err := s.writeDownloadToken(&u, tokenStr); err != nil {
 		return nil, err
 	}
 	return &gen.DownloadDevicesUrl{
@@ -55,12 +55,12 @@ func (s *Server) GetDownloadDevicesUrl(_ context.Context, request *gen.GetDownlo
 // DownloadDevicesHTTPHandler responds to HTTP request urls returned by GetDownloadDevicesUrl.
 func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Request) {
 	// 1. parse and validate the request
-	tokenStr, err := s.decodeDownloadUrlToken(r)
+	tokenStr, err := s.readDownloadToken(r)
 	if err != nil {
 		http.Error(w, "invalid download token", http.StatusBadRequest)
 		return
 	}
-	token, err := decodeDownloadToken(tokenStr)
+	token, err := downloadTokenFromString(tokenStr)
 	if err != nil {
 		http.Error(w, "corrupted download token", http.StatusBadRequest)
 		return
@@ -268,13 +268,13 @@ func (s *Server) RegisterHTTPMux(mux *http.ServeMux) {
 	mux.HandleFunc(s.downloadUrlBase.Path, s.DownloadDevicesHTTPHandler)
 }
 
-type DownloadUrlEncoder func(dst *url.URL, token string) error
-type DownloadUrlDecoder func(*http.Request) (string, error)
+type DownloadTokenWriter func(dst *url.URL, token string) error
+type DownloadTokenReader func(*http.Request) (string, error)
 
-func WithDownloadUrlCodec(urlEncoder DownloadUrlEncoder, urlDecoder DownloadUrlDecoder) Option {
+func WithDownloadTokenCodec(w DownloadTokenWriter, r DownloadTokenReader) Option {
 	return func(s *Server) {
-		s.downloadUrlEncoder = urlEncoder
-		s.downloadUrlDecoder = urlDecoder
+		s.downloadTokenWriter = w
+		s.downloadTokenReader = r
 	}
 }
 
@@ -284,32 +284,32 @@ func WithDownloadUrlBase(base url.URL) Option {
 	}
 }
 
-func DecodeDownloadUrlToken(r *http.Request) (string, error) {
+func ReadDownloadToken(r *http.Request) (string, error) {
 	return r.URL.Query().Get("ddt"), nil
 }
 
-func (s *Server) decodeDownloadUrlToken(r *http.Request) (string, error) {
-	if s.downloadUrlDecoder == nil {
-		return DecodeDownloadUrlToken(r)
+func (s *Server) readDownloadToken(r *http.Request) (string, error) {
+	if s.downloadTokenReader == nil {
+		return ReadDownloadToken(r)
 	}
-	return s.downloadUrlDecoder(r)
+	return s.downloadTokenReader(r)
 }
 
-func EncodeDownloadUrlToken(dst *url.URL, token string) error {
+func WriteDownloadToken(dst *url.URL, token string) error {
 	q := dst.Query()
 	q.Set("ddt", token)
 	dst.RawQuery = q.Encode()
 	return nil
 }
 
-func (s *Server) encodeDownloadUrlToken(dst *url.URL, token string) error {
-	if s.downloadUrlEncoder == nil {
-		return EncodeDownloadUrlToken(dst, token)
+func (s *Server) writeDownloadToken(dst *url.URL, token string) error {
+	if s.downloadTokenWriter == nil {
+		return WriteDownloadToken(dst, token)
 	}
-	return s.downloadUrlEncoder(dst, token)
+	return s.downloadTokenWriter(dst, token)
 }
 
-func encodeDownloadToken(token *DownloadToken) (string, error) {
+func downloadTokenToString(token *DownloadToken) (string, error) {
 	data, err := proto.Marshal(token)
 	if err != nil {
 		return "", err
@@ -317,7 +317,7 @@ func encodeDownloadToken(token *DownloadToken) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(data), nil
 }
 
-func decodeDownloadToken(token string) (*DownloadToken, error) {
+func downloadTokenFromString(token string) (*DownloadToken, error) {
 	data, err := base64.RawURLEncoding.DecodeString(token)
 	if err != nil {
 		return nil, err
