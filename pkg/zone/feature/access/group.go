@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
@@ -112,6 +113,9 @@ func (g *Group) PullAccessAttempts(request *gen.PullAccessAttemptsRequest, serve
 		}
 		values := make([]*gen.AccessAttempt, len(g.names))
 
+		var last []*gen.AccessAttempt
+		filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
+
 		for {
 			select {
 			case <-ctx.Done():
@@ -122,6 +126,15 @@ func (g *Group) PullAccessAttempts(request *gen.PullAccessAttemptsRequest, serve
 					return status.Errorf(codes.FailedPrecondition, "zone has no access implementor names")
 				}
 
+				for _, v := range values {
+					filter.Filter(v)
+				}
+
+				if equal(last, values) {
+					continue
+				}
+
+				last = values
 				var accessAttemptChanges []*gen.PullAccessAttemptsResponse_Change
 				for _, accessAttempt := range values {
 					accessAttemptChanges = append(accessAttemptChanges, &gen.PullAccessAttemptsResponse_Change{
@@ -139,4 +152,26 @@ func (g *Group) PullAccessAttempts(request *gen.PullAccessAttemptsRequest, serve
 		}
 	})
 	return group.Wait()
+}
+
+func equal(as, bs []*gen.AccessAttempt) bool {
+
+	if len(as) != len(bs) {
+		return false
+	}
+
+	for i, a := range as {
+		b := bs[i]
+		if a == nil || b == nil {
+			return false
+		}
+
+		if !(a.AccessAttemptTime.AsTime().Equal(b.AccessAttemptTime.AsTime()) &&
+			a.Grant == b.Grant &&
+			a.Actor == b.Actor &&
+			a.Reason == b.Reason) {
+			return false
+		}
+	}
+	return true
 }
