@@ -35,7 +35,7 @@ func Load(dst *Config) error {
 	}
 
 	// do any post processing
-	dst.CertConfig = dst.CertConfig.FillDefaults()
+	dst.Normalize()
 
 	return nil
 }
@@ -52,10 +52,11 @@ type Config struct {
 	Logger      *zap.Config `json:"logger,omitempty"`
 	ListenGRPC  string      `json:"listenGrpc,omitempty"`
 	ListenHTTPS string      `json:"listenHttps,omitempty"`
-	// FooAddr are preferred IP/host others use to connect to us.
-	// Defaults to netutil.PublicAddress
-	GRPCAddr string `json:"grpcAddr,omitempty"`
-	HTTPAddr string `json:"httpAddr,omitempty"`
+	// Preferred IP/host others use to connect to us.
+	// Typically used when the controller constructs and shares its own address with others,
+	// for example during enrollment or when producing download links.
+	GRPCAddr string `json:"grpcAddr,omitempty"` // Defaults to netutil.OutboundAddr
+	HTTPAddr string `json:"httpAddr,omitempty"` // Defaults to GRPCAddr
 
 	SANs []string `json:"sans,omitempty"` // Subject Alternative Names for the self-signed cert
 
@@ -163,12 +164,22 @@ func Default() Config {
 	}
 	config.Logger.DisableStacktrace = true // because it's annoying
 
-	if localIP, err := netutil.OutboundAddr(); err == nil {
-		config.GRPCAddr = localIP.String()
-		config.HTTPAddr = localIP.String()
+	return config
+}
+
+// Normalize adjusts c to apply defaults that are based on the values of other fields.
+// Normalize should be called explicitly if not using Load.
+func (c *Config) Normalize() {
+	if c.GRPCAddr == "" {
+		if addr, err := netutil.OutboundAddr(); err == nil {
+			c.GRPCAddr = addr.String()
+		}
+	}
+	if c.HTTPAddr == "" {
+		c.HTTPAddr = c.GRPCAddr
 	}
 
-	return config
+	c.CertConfig = c.CertConfig.FillDefaults()
 }
 
 func (c *Certs) FillDefaults() *Certs {
@@ -184,6 +195,7 @@ func (c *Certs) FillDefaults() *Certs {
 	}
 	or(&c.HTTPKeyFile, "https.key.pem")
 	or(&c.HTTPCertFile, "https.cert.pem")
+
 	return c
 }
 
