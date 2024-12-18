@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/csv"
 	"fmt"
-	"iter"
 	"maps"
 	"net/http"
 	"net/url"
@@ -73,32 +72,26 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 			if item == nil {
 				return false
 			}
+			md := item.(*traits.Metadata)
 			device := &gen.Device{
 				Name:     id,
-				Metadata: item.(*traits.Metadata),
+				Metadata: md,
+			}
+			if len(md.Traits) == 0 {
+				return false
+			}
+			// Skip boring devices, aka those that have no metadata or other trait data.
+			// They'd just show up as name=md.Name and a bunch of empty columns anyway.
+			if proto.Equal(md, &traits.Metadata{Name: md.Name, Traits: []*traits.TraitMetadata{{Name: string(trait.Metadata)}}}) {
+				return false
 			}
 			return deviceMatchesQuery(token.Request.Query, device)
 		}),
 	)
-	usefulDevices := func() iter.Seq[*traits.Metadata] {
-		return func(yield func(*traits.Metadata) bool) {
-			for _, d := range deviceList {
-				if len(d.Traits) == 0 {
-					continue
-				}
-				if proto.Equal(d, &traits.Metadata{Name: d.Name, Traits: []*traits.TraitMetadata{{Name: string(trait.Metadata)}}}) {
-					continue // skip boring devices
-				}
-				if !yield(d) {
-					return
-				}
-			}
-		}
-	}
 
 	headerSet := make(map[string]struct{})
 	// collect headers for all populated metadata fields
-	for d := range usefulDevices() {
+	for _, d := range deviceList {
 		err := protorange.Range(d.ProtoReflect(), func(values protopath.Values) error {
 			p := values.Path
 			leafStep := p.Index(-1)
@@ -144,7 +137,7 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 
 	// capture trait headers
 	traitNameSet := make(map[string]struct{})
-	for d := range usefulDevices() {
+	for _, d := range deviceList {
 		for _, t := range d.Traits {
 			traitNameSet[t.Name] = struct{}{}
 		}
@@ -176,7 +169,7 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	for d := range usefulDevices() {
+	for _, d := range deviceList {
 		row := make([]string, len(headers))
 		captureMDValues(d, headerIndex, row)
 		for _, t := range d.Traits {
