@@ -287,7 +287,10 @@ func protoPathToHeader(p protopath.Path) string {
 		case protopath.AnyExpandStep:
 		}
 	}
-	return strings.Join(parts, ".")
+	if len(parts) == 0 {
+		return ""
+	}
+	return "md." + strings.Join(parts, ".")
 }
 
 func (s *Server) RegisterHTTPMux(mux *http.ServeMux) {
