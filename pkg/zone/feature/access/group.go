@@ -18,6 +18,7 @@ import (
 
 type Group struct {
 	gen.UnimplementedAccessApiServer
+
 	client gen.AccessApiClient
 	names  []string
 
