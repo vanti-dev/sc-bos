@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"maps"
 	"net/http"
@@ -66,8 +67,63 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// 2. collect header related information
-	deviceList := s.node.ListAllMetadata(
+	// 2. work out which devices to return and collect data headers
+	traitInfo := s.getTraitInfo()
+	deviceList, headers, err := s.listDevicesAndHeaders(token, traitInfo)
+	if err != nil {
+		var httpErr httpError
+		if !errors.As(err, &httpErr) {
+			http.Error(w, httpErr.msg, httpErr.code)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	headerIndex := make(map[string]int)
+	for i, h := range headers {
+		headerIndex[h] = i
+	}
+
+	// 3. start collecting the data and streaming it to the client
+	// note: we only set the headers here (rather than earlier) to allow bad status codes to be returned if needed
+	w.Header().Set("Content-Disposition", "attachment; filename=devices.csv")
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+
+	csvOut := csv.NewWriter(w)
+	if err := csvOut.Write(headers); err != nil {
+		return
+	}
+
+	for _, d := range deviceList {
+		row := make([]string, len(headers))
+		captureMDValues(d, headerIndex, row)
+		for _, t := range d.Traits {
+			info, ok := traitInfo[t.Name]
+			if !ok {
+				continue
+			}
+			values, err := info.get(r.Context(), d.Name)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("failed to get trait info: %q %q %v", d.Name, t.Name, err), http.StatusInternalServerError)
+				continue
+			}
+			for h, v := range values {
+				index, ok := headerIndex[h]
+				if !ok {
+					continue
+				}
+				row[index] = v
+			}
+		}
+		if err := csvOut.Write(row); err != nil {
+			return
+		}
+	}
+	csvOut.Flush()
+}
+
+func (s *Server) listDevicesAndHeaders(token *DownloadToken, traitInfo map[string]traitInfo) (devices []*traits.Metadata, headers []string, err error) {
+	devices = s.node.ListAllMetadata(
 		resource.WithInclude(func(id string, item proto.Message) bool {
 			if item == nil {
 				return false
@@ -90,6 +146,17 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 	)
 
 	headerSet := make(map[string]struct{})
+	if err := collectMetadataHeaders(headerSet, devices); err != nil {
+		return nil, nil, err
+	}
+
+	collectTraitHeaders(headerSet, devices, traitInfo)
+
+	headers = slices.Sorted(maps.Keys(headerSet))
+	return devices, headers, nil
+}
+
+func collectMetadataHeaders(dst map[string]struct{}, deviceList []*traits.Metadata) error {
 	// collect headers for all populated metadata fields
 	for _, d := range deviceList {
 		err := protorange.Range(d.ProtoReflect(), func(values protopath.Values) error {
@@ -125,16 +192,18 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 			if header == "" {
 				return nil
 			}
-			headerSet[header] = struct{}{}
+			dst[header] = struct{}{}
 			return nil
 		})
 		if err != nil {
-			http.Error(w, "failed to collect headers", http.StatusInternalServerError)
-			return
+			return httpError{http.StatusInternalServerError, "failed to collect headers"}
 		}
 	}
-	delete(headerSet, "traits.name") // we process these separately
+	delete(dst, "traits.name") // we process these separately
+	return nil
+}
 
+func collectTraitHeaders(dst map[string]struct{}, deviceList []*traits.Metadata, traitInfo map[string]traitInfo) {
 	// capture trait headers
 	traitNameSet := make(map[string]struct{})
 	for _, d := range deviceList {
@@ -143,58 +212,15 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
-	traitInfo := s.getTraitInfo()
 	for traitName := range traitNameSet {
 		info, ok := traitInfo[traitName]
 		if !ok {
 			continue
 		}
 		for _, header := range info.headers {
-			headerSet[header] = struct{}{}
+			dst[header] = struct{}{}
 		}
 	}
-
-	headers := slices.Sorted(maps.Keys(headerSet))
-	headerIndex := make(map[string]int)
-	for i, h := range headers {
-		headerIndex[h] = i
-	}
-
-	// 3. start collecting the data and streaming it to the client
-	w.Header().Set("Content-Disposition", "attachment; filename=devices.csv")
-	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
-
-	csvOut := csv.NewWriter(w)
-	if err := csvOut.Write(headers); err != nil {
-		return
-	}
-
-	for _, d := range deviceList {
-		row := make([]string, len(headers))
-		captureMDValues(d, headerIndex, row)
-		for _, t := range d.Traits {
-			info, ok := traitInfo[t.Name]
-			if !ok {
-				continue
-			}
-			values, err := info.get(r.Context(), d.Name)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("failed to get trait info: %q %q %v", d.Name, t.Name, err), http.StatusInternalServerError)
-				continue
-			}
-			for h, v := range values {
-				index, ok := headerIndex[h]
-				if !ok {
-					continue
-				}
-				row[index] = v
-			}
-		}
-		if err := csvOut.Write(row); err != nil {
-			return
-		}
-	}
-	csvOut.Flush()
 }
 
 func captureMDValues(md *traits.Metadata, headerIndex map[string]int, row []string) {
@@ -327,4 +353,13 @@ func downloadTokenFromString(token string) (*DownloadToken, error) {
 		return nil, err
 	}
 	return &dt, nil
+}
+
+type httpError struct {
+	code int
+	msg  string
+}
+
+func (h httpError) Error() string {
+	return http.StatusText(h.code) + ": " + h.msg
 }
