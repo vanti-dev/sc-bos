@@ -93,7 +93,7 @@ func (s *Server) ListDevices(_ context.Context, request *gen.ListDevicesRequest)
 			Metadata: md,
 		}
 		if len(devices) == pageSize {
-			// we found another device but we don't want to include it in the response,
+			// we found another device, but we don't want to include it in the response,
 			// we'll use the info to know whether to populate the next page token
 			pageToken.LastName = devices[len(devices)-1].Name
 			break

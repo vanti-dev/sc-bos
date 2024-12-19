@@ -11,7 +11,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-func Test_isMessageValueStringFunc(t *testing.T) {
+func Test_getMessageString(t *testing.T) {
 	tests := []struct {
 		name  string
 		path  string
@@ -35,13 +35,36 @@ func Test_isMessageValueStringFunc(t *testing.T) {
 		{"trailing .", "id.", "1234", &traits.Metadata{Id: &traits.Metadata_ID{More: map[string]string{"foo": "1234"}}}, false},
 		{"leading .", ".id", "1234", &traits.Metadata{Id: &traits.Metadata_ID{More: map[string]string{"foo": "1234"}}}, false},
 		{"property of scalar", "name.foo", "1234", &traits.Metadata{Name: "1234"}, false},
+		{"match in array", "traits.name", "foo", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "foo"}}}, true},
+		{"match in array with Index", "traits[0].name", "foo", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "foo"}}}, true},
+		{"match in array doesn't exist", "traits[1].name", "foo", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "foo"}}}, false},
+		{"match in array negative", "traits[-1].name", "foo", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "foo"}}}, false},
+		{"match any in array", "traits.name", "foo", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "bar"}, {Name: "foo"}}}, true},
+		{"match any in array - no matches", "traits.name", "baz", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "bar"}, {Name: "foo"}}}, false},
+		{"match nested in array", "traits.more.units", "cats", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "bar"}, {Name: "foo", More: map[string]string{"units": "cats"}}}}, true},
+		{"match in array with primitive", "dns[0]", "bar", &traits.Metadata_NIC{Dns: []string{"bar"}}, true},
+		{"match nested in array with wrong Index", "traits[0].more.units", "cats", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "bar"}, {Name: "foo", More: map[string]string{"units": "cats"}}}}, false},
+		{"match in array with primitive and Index - no matches", "dns[0]", "foo", &traits.Metadata_NIC{Dns: []string{"bar"}}, false},
+		{"match nested in array - no matches", "traits.more.units", "dogs", &traits.Metadata{Traits: []*traits.TraitMetadata{{Name: "bar"}, {Name: "foo", More: map[string]string{"units": "cats"}}}}, false},
+		{"match in array with primitive - no matches", "dns[0]", "foo", &traits.Metadata_NIC{Dns: []string{"bar"}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := isMessageValueStringFunc(tt.path, tt.msg, func(v string) bool {
-				return v == tt.value
-			}); got != tt.want {
-				t.Errorf("isMessageValueStringFunc() = %v, want %v", got, tt.want)
+			itr := getMessageString(tt.path, tt.msg)
+
+			found := false
+
+			f := func(v string) bool {
+				if v == tt.value {
+					found = true
+				}
+				return found
+			}
+
+			itr(f)
+
+			if found != tt.want {
+				t.Errorf("getMessageString() = %v, want %v", found, tt.want)
 			}
 		})
 	}
@@ -94,9 +117,17 @@ func Example_isMessageValueStringFunc() {
 		},
 	}
 
-	member := isMessageValueStringFunc("metadata.membership.subsystem", msg, func(v string) bool {
-		return v == "Lighting"
+	itr := getMessageString("metadata.membership.subsystem", msg)
+
+	found := false
+
+	itr(func(v string) bool {
+		if v == "Lighting" {
+			found = true
+		}
+		return found
 	})
-	fmt.Println(member)
+
+	fmt.Println(found)
 	// Output: true
 }
