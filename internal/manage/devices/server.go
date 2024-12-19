@@ -5,6 +5,7 @@ package devices
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"sort"
 	"strings"
 	"time"
@@ -29,14 +30,23 @@ type Server struct {
 
 	node *node.Node
 	now  func() time.Time
+
+	downloadUrlBase     url.URL // defaults to /dl/devices
+	downloadTokenWriter DownloadTokenWriter
+	downloadTokenReader DownloadTokenReader
 }
 
-func NewServer(n *node.Node) *Server {
-	return &Server{
-		parentName: n.Name(),
-		node:       n,
-		now:        time.Now,
+func NewServer(n *node.Node, opts ...Option) *Server {
+	s := &Server{
+		parentName:      n.Name(),
+		node:            n,
+		now:             time.Now,
+		downloadUrlBase: url.URL{Path: "/dl/devices"},
 	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
 }
 
 func (s *Server) Register(server *grpc.Server) {
