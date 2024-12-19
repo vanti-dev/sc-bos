@@ -27,6 +27,8 @@ var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/time
 goog.object.extend(proto, google_protobuf_timestamp_pb);
 var types_unit_pb = require('@smart-core-os/sc-api-grpc-web/types/unit_pb.js');
 goog.object.extend(proto, types_unit_pb);
+var priority_pb = require('./priority_pb.js');
+goog.object.extend(proto, priority_pb);
 goog.exportSymbol('proto.smartcore.bos.GetTemperatureRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.PullTemperatureRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.PullTemperatureResponse', null, global);
@@ -394,7 +396,8 @@ proto.smartcore.bos.GetTemperatureRequest.prototype.toObject = function(opt_incl
 proto.smartcore.bos.GetTemperatureRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
+    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+    priority: jspb.Message.getFieldWithDefault(msg, 4, 0)
   };
 
   if (includeInstance) {
@@ -440,6 +443,10 @@ proto.smartcore.bos.GetTemperatureRequest.deserializeBinaryFromReader = function
       reader.readMessage(value,google_protobuf_field_mask_pb.FieldMask.deserializeBinaryFromReader);
       msg.setReadMask(value);
       break;
+    case 4:
+      var value = /** @type {!proto.smartcore.bos.Priority.Level} */ (reader.readEnum());
+      msg.setPriority(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -482,6 +489,13 @@ proto.smartcore.bos.GetTemperatureRequest.serializeBinaryToWriter = function(mes
       2,
       f,
       google_protobuf_field_mask_pb.FieldMask.serializeBinaryToWriter
+    );
+  }
+  f = message.getPriority();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      4,
+      f
     );
   }
 };
@@ -539,6 +553,24 @@ proto.smartcore.bos.GetTemperatureRequest.prototype.clearReadMask = function() {
  */
 proto.smartcore.bos.GetTemperatureRequest.prototype.hasReadMask = function() {
   return jspb.Message.getField(this, 2) != null;
+};
+
+
+/**
+ * optional Priority.Level priority = 4;
+ * @return {!proto.smartcore.bos.Priority.Level}
+ */
+proto.smartcore.bos.GetTemperatureRequest.prototype.getPriority = function() {
+  return /** @type {!proto.smartcore.bos.Priority.Level} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.Priority.Level} value
+ * @return {!proto.smartcore.bos.GetTemperatureRequest} returns this
+ */
+proto.smartcore.bos.GetTemperatureRequest.prototype.setPriority = function(value) {
+  return jspb.Message.setProto3EnumField(this, 4, value);
 };
 
 
@@ -1180,7 +1212,8 @@ proto.smartcore.bos.UpdateTemperatureRequest.toObject = function(includeInstance
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
     temperature: (f = msg.getTemperature()) && proto.smartcore.bos.Temperature.toObject(includeInstance, f),
     updateMask: (f = msg.getUpdateMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    delta: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
+    delta: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
+    priority: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -1234,6 +1267,10 @@ proto.smartcore.bos.UpdateTemperatureRequest.deserializeBinaryFromReader = funct
     case 4:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setDelta(value);
+      break;
+    case 5:
+      var value = /** @type {!proto.smartcore.bos.Priority.Level} */ (reader.readEnum());
+      msg.setPriority(value);
       break;
     default:
       reader.skipField();
@@ -1291,6 +1328,13 @@ proto.smartcore.bos.UpdateTemperatureRequest.serializeBinaryToWriter = function(
   if (f) {
     writer.writeBool(
       4,
+      f
+    );
+  }
+  f = message.getPriority();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      5,
       f
     );
   }
@@ -1404,6 +1448,24 @@ proto.smartcore.bos.UpdateTemperatureRequest.prototype.getDelta = function() {
  */
 proto.smartcore.bos.UpdateTemperatureRequest.prototype.setDelta = function(value) {
   return jspb.Message.setProto3BooleanField(this, 4, value);
+};
+
+
+/**
+ * optional Priority.Level priority = 5;
+ * @return {!proto.smartcore.bos.Priority.Level}
+ */
+proto.smartcore.bos.UpdateTemperatureRequest.prototype.getPriority = function() {
+  return /** @type {!proto.smartcore.bos.Priority.Level} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.Priority.Level} value
+ * @return {!proto.smartcore.bos.UpdateTemperatureRequest} returns this
+ */
+proto.smartcore.bos.UpdateTemperatureRequest.prototype.setPriority = function(value) {
+  return jspb.Message.setProto3EnumField(this, 5, value);
 };
 
 

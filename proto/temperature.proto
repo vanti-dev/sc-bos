@@ -7,6 +7,7 @@ option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "types/unit.proto";
+import "priority.proto";
 
 // Trait for devices that have or measure temperature like an oven or shower,
 // distinct from the AirTemperature trait (HVAC, thermostats).
@@ -27,12 +28,17 @@ message Temperature {
 message GetTemperatureRequest {
   string name = 1;
   google.protobuf.FieldMask read_mask = 2;
+  // When set, returns the value at this priority.
+  smartcore.bos.Priority.Level priority = 4;
 }
 
 message PullTemperatureRequest {
   string name = 1;
   google.protobuf.FieldMask read_mask = 2;
   bool updates_only = 3;
+  // todo: work out if this is something we need right now?
+  // When set, only changes to the written value at this priority will be returned.
+  //  smartcore.bos.Priority.Level priority = 4;
 }
 
 message PullTemperatureResponse {
@@ -51,4 +57,8 @@ message UpdateTemperatureRequest {
   google.protobuf.FieldMask update_mask = 3;
   // When true, temperature is a change to the devices current value.
   bool delta = 4;
+  // Specifies a priority for this write.
+  // If priority is specified and temperature is unset, acts to clear the value at the specified priority.
+  // The response to updates will always be the result of applying the priority algorithm.
+  smartcore.bos.Priority.Level priority = 5;
 }
