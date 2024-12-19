@@ -7,6 +7,7 @@ import {
   Device,
   DevicesMetadata,
   GetDevicesMetadataRequest,
+  GetDownloadDevicesUrlRequest,
   ListDevicesRequest,
   PullDevicesMetadataRequest,
   PullDevicesRequest
@@ -70,6 +71,18 @@ export function pullDevicesMetadata(request, resource) {
       }
     });
     return stream;
+  });
+}
+
+/**
+ * @param {Partial<GetDownloadDevicesUrlRequest.AsObject>} request
+ * @param {ActionTracker<DownloadDevicesUrl.AsObject>} [tracker]
+ * @return {Promise<DownloadDevicesUrl.AsObject>}
+ */
+export function getDownloadDevicesUrl(request, tracker) {
+  return trackAction('Devices.getDownloadDevicesUrl', tracker ?? {}, endpoint => {
+    const api = apiClient(endpoint);
+    return api.getDownloadDevicesUrl(getDownloadDevicesUrlRequestFromObject(request));
   });
 }
 
@@ -160,5 +173,17 @@ function pullDevicesMetadataRequestFromObject(obj) {
   setProperties(dst, obj, 'updatesOnly');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setIncludes(devicesMetadataIncludeFromObject(obj.includes));
+  return dst;
+}
+
+/**
+ * @param {Partial<GetDownloadDevicesUrlRequest.AsObject>} obj
+ * @return {GetDownloadDevicesUrlRequest|undefined}
+ */
+function getDownloadDevicesUrlRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new GetDownloadDevicesUrlRequest();
+  setProperties(dst, obj, 'mediaType');
+  dst.setQuery(deviceQueryFromObject(obj.query));
   return dst;
 }
