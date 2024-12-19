@@ -455,6 +455,14 @@ export class DownloadDevicesUrl extends jspb.Message {
   getFilename(): string;
   setFilename(value: string): DownloadDevicesUrl;
 
+  getMediaType(): string;
+  setMediaType(value: string): DownloadDevicesUrl;
+
+  getExpireAfterTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setExpireAfterTime(value?: google_protobuf_timestamp_pb.Timestamp): DownloadDevicesUrl;
+  hasExpireAfterTime(): boolean;
+  clearExpireAfterTime(): DownloadDevicesUrl;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DownloadDevicesUrl.AsObject;
   static toObject(includeInstance: boolean, msg: DownloadDevicesUrl): DownloadDevicesUrl.AsObject;
@@ -467,6 +475,8 @@ export namespace DownloadDevicesUrl {
   export type AsObject = {
     url: string,
     filename: string,
+    mediaType: string,
+    expireAfterTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
   }
 }
 

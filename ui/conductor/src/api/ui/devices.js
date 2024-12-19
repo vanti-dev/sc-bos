@@ -76,7 +76,7 @@ export function pullDevicesMetadata(request, resource) {
 
 /**
  * @param {Partial<GetDownloadDevicesUrlRequest.AsObject>} request
- * @param {ActionTracker<DownloadDevicesUrl.AsObject>} tracker
+ * @param {ActionTracker<DownloadDevicesUrl.AsObject>} [tracker]
  * @return {Promise<DownloadDevicesUrl.AsObject>}
  */
 export function getDownloadDevicesUrl(request, tracker) {

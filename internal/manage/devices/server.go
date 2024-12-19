@@ -34,6 +34,8 @@ type Server struct {
 	downloadUrlBase     url.URL // defaults to /dl/devices
 	downloadTokenWriter DownloadTokenWriter
 	downloadTokenReader DownloadTokenReader
+	downloadKey         func() ([]byte, error)
+	downloadExpiry      time.Duration // defaults to 1 hour
 }
 
 func NewServer(n *node.Node, opts ...Option) *Server {
@@ -42,6 +44,8 @@ func NewServer(n *node.Node, opts ...Option) *Server {
 		node:            n,
 		now:             time.Now,
 		downloadUrlBase: url.URL{Path: "/dl/devices"},
+		downloadExpiry:  time.Hour,
+		downloadKey:     newHMACKeyGen(64), // todo: replace with something that works between nodes
 	}
 	for _, opt := range opts {
 		opt(s)

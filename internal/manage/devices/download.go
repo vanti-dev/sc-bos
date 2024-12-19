@@ -2,6 +2,7 @@ package devices
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/csv"
 	"errors"
@@ -11,13 +12,17 @@ import (
 	"net/url"
 	"slices"
 	"strings"
+	"time"
 
+	"github.com/go-jose/go-jose/v4"
+	"github.com/go-jose/go-jose/v4/jwt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protopath"
 	"google.golang.org/protobuf/reflect/protorange"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
@@ -26,6 +31,10 @@ import (
 )
 
 //go:generate protomod protoc -- -I . -I ../../../proto --go_out=paths=source_relative:. download.proto
+
+type tokenClaims struct {
+	Body string `json:"b"`
+}
 
 func (s *Server) GetDownloadDevicesUrl(_ context.Context, request *gen.GetDownloadDevicesUrlRequest) (*gen.DownloadDevicesUrl, error) {
 	// validate
@@ -37,19 +46,20 @@ func (s *Server) GetDownloadDevicesUrl(_ context.Context, request *gen.GetDownlo
 		return nil, status.Errorf(codes.InvalidArgument, "unsupported media type %q", request.MediaType)
 	}
 
-	tokenData := &DownloadToken{
-		Request: request,
-	}
-	tokenStr, err := downloadTokenToString(tokenData)
+	expireAfter := s.now().Add(s.downloadExpiry)
+	tokenStr, err := s.signAndSerializeDownloadToken(&DownloadToken{Request: request}, expireAfter)
 	if err != nil {
 		return nil, err
 	}
+
 	u := s.downloadUrlBase
 	if err := s.writeDownloadToken(&u, tokenStr); err != nil {
 		return nil, err
 	}
 	return &gen.DownloadDevicesUrl{
-		Url: u.String(),
+		Url:             u.String(),
+		MediaType:       request.MediaType,
+		ExpireAfterTime: timestamppb.New(expireAfter),
 	}, nil
 }
 
@@ -58,12 +68,22 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 	// 1. parse and validate the request
 	tokenStr, err := s.readDownloadToken(r)
 	if err != nil {
-		http.Error(w, "invalid download token", http.StatusBadRequest)
+		http.Error(w, "invalid download token", http.StatusUnauthorized)
 		return
 	}
-	token, err := downloadTokenFromString(tokenStr)
+
+	writeErr := func(err error) {
+		var httpErr httpError
+		if !errors.As(err, &httpErr) {
+			http.Error(w, httpErr.msg, httpErr.code)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	token, err := s.parseAndValidateDownloadToken(tokenStr)
 	if err != nil {
-		http.Error(w, "corrupted download token", http.StatusBadRequest)
+		writeErr(err)
 		return
 	}
 
@@ -71,12 +91,8 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 	traitInfo := s.getTraitInfo()
 	deviceList, headers, err := s.listDevicesAndHeaders(token, traitInfo)
 	if err != nil {
-		var httpErr httpError
-		if !errors.As(err, &httpErr) {
-			http.Error(w, httpErr.msg, httpErr.code)
-			return
-		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeErr(err)
+		return
 	}
 
 	headerIndex := make(map[string]int)
@@ -120,6 +136,58 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 		}
 	}
 	csvOut.Flush()
+}
+
+func (s *Server) signAndSerializeDownloadToken(tokenBody *DownloadToken, expireAfter time.Time) (string, error) {
+	tokenBodyStr, err := downloadTokenToString(tokenBody)
+	if err != nil {
+		return "", status.Errorf(codes.Unavailable, "token body creation error: %v", err)
+	}
+
+	key, err := s.downloadKey()
+	if err != nil {
+		return "", status.Errorf(codes.Unavailable, "token key creation error: %v", err)
+	}
+
+	// using JWT/JOSE here for the signing/key gen means we can also use it later for validation
+	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.HS256, Key: key}, (&jose.SignerOptions{}).WithType("JWT"))
+	if err != nil {
+		return "", status.Errorf(codes.Unavailable, "token signer creation error: %v", err)
+	}
+
+	jwtClaims := &jwt.Claims{Expiry: jwt.NewNumericDate(expireAfter)}
+	tokenClaims := tokenClaims{Body: tokenBodyStr}
+	tokenStr, err := jwt.Signed(signer).Claims(tokenClaims).Claims(jwtClaims).Serialize()
+	if err != nil {
+		return "", status.Errorf(codes.Unavailable, "token serialization error: %v", err)
+	}
+	return tokenStr, nil
+}
+
+func (s *Server) parseAndValidateDownloadToken(tokenStr string) (*DownloadToken, error) {
+	key, err := s.downloadKey()
+	if err != nil {
+		return nil, httpError{code: http.StatusInternalServerError, msg: "failed to read signing key"}
+	}
+
+	jwtToken, err := jwt.ParseSigned(tokenStr, []jose.SignatureAlgorithm{jose.HS256})
+	if err != nil {
+		return nil, httpError{code: http.StatusUnauthorized, msg: "invalid token"}
+	}
+	jwtClaims := &jwt.Claims{}
+	var tokenClaims tokenClaims
+	if err := jwtToken.Claims(key, jwtClaims, &tokenClaims); err != nil {
+		return nil, httpError{code: http.StatusUnauthorized, msg: "untrusted token"}
+	}
+	if err := jwtClaims.Validate(jwt.Expected{Time: s.now()}); err != nil {
+		return nil, httpError{code: http.StatusUnauthorized, msg: "token expired"}
+	}
+
+	token, err := downloadTokenFromString(tokenClaims.Body)
+	if err != nil {
+		return nil, httpError{code: http.StatusUnauthorized, msg: "corrupted download token"}
+	}
+	return token, nil
 }
 
 func (s *Server) listDevicesAndHeaders(token *DownloadToken, traitInfo map[string]traitInfo) (devices []*traits.Metadata, headers []string, err error) {
@@ -295,6 +363,17 @@ func protoPathToHeader(p protopath.Path) string {
 
 func (s *Server) RegisterHTTPMux(mux *http.ServeMux) {
 	mux.HandleFunc(s.downloadUrlBase.Path, s.DownloadDevicesHTTPHandler)
+}
+
+func newHMACKeyGen(size int) func() ([]byte, error) {
+	// todo: support key rotation that doesn't invalidate unexpired tokens,
+	//  I expect the sig will need to change to func(string)(string, []byte, error)
+	key := make([]byte, size)
+	var err error
+	_, err = rand.Read(key)
+	return func() ([]byte, error) {
+		return key, err
+	}
 }
 
 type DownloadTokenWriter func(dst *url.URL, token string) error

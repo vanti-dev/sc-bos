@@ -3832,7 +3832,9 @@ proto.smartcore.bos.DownloadDevicesUrl.prototype.toObject = function(opt_include
 proto.smartcore.bos.DownloadDevicesUrl.toObject = function(includeInstance, msg) {
   var f, obj = {
     url: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    filename: jspb.Message.getFieldWithDefault(msg, 2, "")
+    filename: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    mediaType: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    expireAfterTime: (f = msg.getExpireAfterTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3877,6 +3879,15 @@ proto.smartcore.bos.DownloadDevicesUrl.deserializeBinaryFromReader = function(ms
       var value = /** @type {string} */ (reader.readString());
       msg.setFilename(value);
       break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setMediaType(value);
+      break;
+    case 4:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setExpireAfterTime(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3920,6 +3931,21 @@ proto.smartcore.bos.DownloadDevicesUrl.serializeBinaryToWriter = function(messag
       f
     );
   }
+  f = message.getMediaType();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
+  f = message.getExpireAfterTime();
+  if (f != null) {
+    writer.writeMessage(
+      4,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
 };
 
 
@@ -3956,6 +3982,61 @@ proto.smartcore.bos.DownloadDevicesUrl.prototype.getFilename = function() {
  */
 proto.smartcore.bos.DownloadDevicesUrl.prototype.setFilename = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string media_type = 3;
+ * @return {string}
+ */
+proto.smartcore.bos.DownloadDevicesUrl.prototype.getMediaType = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.DownloadDevicesUrl} returns this
+ */
+proto.smartcore.bos.DownloadDevicesUrl.prototype.setMediaType = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * optional google.protobuf.Timestamp expire_after_time = 4;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.DownloadDevicesUrl.prototype.getExpireAfterTime = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 4));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.DownloadDevicesUrl} returns this
+*/
+proto.smartcore.bos.DownloadDevicesUrl.prototype.setExpireAfterTime = function(value) {
+  return jspb.Message.setWrapperField(this, 4, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.DownloadDevicesUrl} returns this
+ */
+proto.smartcore.bos.DownloadDevicesUrl.prototype.clearExpireAfterTime = function() {
+  return this.setExpireAfterTime(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.DownloadDevicesUrl.prototype.hasExpireAfterTime = function() {
+  return jspb.Message.getField(this, 4) != null;
 };
 
 

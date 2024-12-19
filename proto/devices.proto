@@ -174,4 +174,8 @@ message GetDownloadDevicesUrlRequest {
 message DownloadDevicesUrl {
   string url = 1;
   string filename = 2;
+  // The negotiated media type.
+  string media_type = 3;
+  // The latest time the url will be valid for, you will not be able to use the url after this time.
+  google.protobuf.Timestamp expire_after_time = 4;
 }
