@@ -8,7 +8,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/color"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/dalipb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
@@ -22,6 +21,7 @@ var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
 	trait.Booking:          {traits.BookingApi_ServiceDesc, traits.BookingInfo_ServiceDesc},
 	trait.BrightnessSensor: {traits.BrightnessSensorApi_ServiceDesc, traits.BrightnessSensorInfo_ServiceDesc},
 	trait.Channel:          {traits.ChannelApi_ServiceDesc, traits.ChannelInfo_ServiceDesc},
+	trait.Color:            {traits.ColorApi_ServiceDesc, traits.ColorInfo_ServiceDesc},
 	trait.Count:            {traits.CountApi_ServiceDesc, traits.CountInfo_ServiceDesc},
 	trait.Electric:         {traits.ElectricApi_ServiceDesc, traits.ElectricInfo_ServiceDesc, gen.ElectricHistory_ServiceDesc},
 	trait.Emergency:        {traits.EmergencyApi_ServiceDesc, traits.EmergencyInfo_ServiceDesc},
@@ -45,11 +45,11 @@ var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
 	trait.Ptz:              {traits.PtzApi_ServiceDesc, traits.PtzInfo_ServiceDesc},
 	trait.Speaker:          {traits.SpeakerApi_ServiceDesc, traits.SpeakerInfo_ServiceDesc},
 	trait.Vending:          {traits.VendingApi_ServiceDesc, traits.VendingInfo_ServiceDesc},
+	trait.Waste:            {traits.WasteApi_ServiceDesc, traits.WasteInfo_ServiceDesc},
 
 	// sc-bos private traits
 	accesspb.TraitName:       {gen.AccessApi_ServiceDesc},
 	button.TraitName:         {gen.ButtonApi_ServiceDesc},
-	color.TraitName:          {gen.ColorApi_ServiceDesc, gen.ColorInfo_ServiceDesc},
 	dalipb.TraitName:         {gen.DaliApi_ServiceDesc},
 	emergencylight.TraitName: {gen.DaliApi_ServiceDesc},
 	meter.TraitName:          {gen.MeterApi_ServiceDesc, gen.MeterInfo_ServiceDesc, gen.MeterHistory_ServiceDesc},
