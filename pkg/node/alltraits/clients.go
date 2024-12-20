@@ -21,6 +21,8 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = traits.NewBrightnessSensorApiClient(conn)
 	case *traits.ChannelApiClient:
 		*ptr = traits.NewChannelApiClient(conn)
+	case *traits.ColorApiClient:
+		*ptr = traits.NewColorApiClient(conn)
 	case *traits.CountApiClient:
 		*ptr = traits.NewCountApiClient(conn)
 	case *traits.ElectricApiClient:
@@ -67,12 +69,12 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = traits.NewSpeakerApiClient(conn)
 	case *traits.VendingApiClient:
 		*ptr = traits.NewVendingApiClient(conn)
+	case *traits.WasteApiClient:
+		*ptr = traits.NewWasteApiClient(conn)
 	case *gen.AlertApiClient:
 		*ptr = gen.NewAlertApiClient(conn)
 	case *gen.ButtonApiClient:
 		*ptr = gen.NewButtonApiClient(conn)
-	case *gen.ColorApiClient:
-		*ptr = gen.NewColorApiClient(conn)
 	case *gen.DaliApiClient:
 		*ptr = gen.NewDaliApiClient(conn)
 	case *gen.MeterApiClient:
@@ -94,6 +96,8 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = traits.NewBrightnessSensorInfoClient(conn)
 	case *traits.ChannelInfoClient:
 		*ptr = traits.NewChannelInfoClient(conn)
+	case *traits.ColorInfoClient:
+		*ptr = traits.NewColorInfoClient(conn)
 	case *traits.CountInfoClient:
 		*ptr = traits.NewCountInfoClient(conn)
 	case *traits.ElectricInfoClient:
@@ -136,8 +140,8 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = traits.NewSpeakerInfoClient(conn)
 	case *traits.VendingInfoClient:
 		*ptr = traits.NewVendingInfoClient(conn)
-	case *gen.ColorInfoClient:
-		*ptr = gen.NewColorInfoClient(conn)
+	case *traits.WasteInfoClient:
+		*ptr = traits.NewWasteInfoClient(conn)
 	case *gen.MeterInfoClient:
 		*ptr = gen.NewMeterInfoClient(conn)
 
