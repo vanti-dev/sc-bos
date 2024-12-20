@@ -7,6 +7,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
+	"iter"
 	"maps"
 	"net/http"
 	"net/url"
@@ -220,7 +221,7 @@ func (s *Server) listDevicesAndHeaders(token *DownloadToken, traitInfo map[strin
 
 	collectTraitHeaders(headerSet, devices, traitInfo)
 
-	headers = slices.Sorted(maps.Keys(headerSet))
+	headers = sortHeaders(maps.Keys(headerSet))
 	return devices, headers, nil
 }
 
@@ -331,6 +332,34 @@ func captureMDValues(md *traits.Metadata, headerIndex map[string]int, row []stri
 		}
 		row[index] = values.Values[len(values.Values)-1].String()
 		return nil
+	})
+}
+
+func sortHeaders(headers iter.Seq[string]) []string {
+	return slices.SortedFunc(headers, func(a string, b string) int {
+		// sort metadata fields first
+		aIsMD := strings.HasPrefix(a, "md.")
+		bIsMD := strings.HasPrefix(b, "md.")
+		switch {
+		case aIsMD && !bIsMD:
+			return -1
+		case !aIsMD && bIsMD:
+			return 1
+		case aIsMD && bIsMD:
+			// make sure md.name is first
+			switch {
+			case a == "md.name" && b == "md.name":
+				return 0
+			case a == "md.name":
+				return -1
+			case b == "md.name":
+				return 1
+			default:
+				return strings.Compare(a, b)
+			}
+		default:
+			return strings.Compare(a, b)
+		}
 	})
 }
 
