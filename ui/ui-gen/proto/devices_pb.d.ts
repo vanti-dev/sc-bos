@@ -424,3 +424,59 @@ export namespace PullDevicesMetadataResponse {
 
 }
 
+export class GetDownloadDevicesUrlRequest extends jspb.Message {
+  getQuery(): Device.Query | undefined;
+  setQuery(value?: Device.Query): GetDownloadDevicesUrlRequest;
+  hasQuery(): boolean;
+  clearQuery(): GetDownloadDevicesUrlRequest;
+
+  getMediaType(): string;
+  setMediaType(value: string): GetDownloadDevicesUrlRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetDownloadDevicesUrlRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetDownloadDevicesUrlRequest): GetDownloadDevicesUrlRequest.AsObject;
+  static serializeBinaryToWriter(message: GetDownloadDevicesUrlRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetDownloadDevicesUrlRequest;
+  static deserializeBinaryFromReader(message: GetDownloadDevicesUrlRequest, reader: jspb.BinaryReader): GetDownloadDevicesUrlRequest;
+}
+
+export namespace GetDownloadDevicesUrlRequest {
+  export type AsObject = {
+    query?: Device.Query.AsObject,
+    mediaType: string,
+  }
+}
+
+export class DownloadDevicesUrl extends jspb.Message {
+  getUrl(): string;
+  setUrl(value: string): DownloadDevicesUrl;
+
+  getFilename(): string;
+  setFilename(value: string): DownloadDevicesUrl;
+
+  getMediaType(): string;
+  setMediaType(value: string): DownloadDevicesUrl;
+
+  getExpireAfterTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setExpireAfterTime(value?: google_protobuf_timestamp_pb.Timestamp): DownloadDevicesUrl;
+  hasExpireAfterTime(): boolean;
+  clearExpireAfterTime(): DownloadDevicesUrl;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DownloadDevicesUrl.AsObject;
+  static toObject(includeInstance: boolean, msg: DownloadDevicesUrl): DownloadDevicesUrl.AsObject;
+  static serializeBinaryToWriter(message: DownloadDevicesUrl, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DownloadDevicesUrl;
+  static deserializeBinaryFromReader(message: DownloadDevicesUrl, reader: jspb.BinaryReader): DownloadDevicesUrl;
+}
+
+export namespace DownloadDevicesUrl {
+  export type AsObject = {
+    url: string,
+    filename: string,
+    mediaType: string,
+    expireAfterTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+  }
+}
+

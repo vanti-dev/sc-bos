@@ -29,6 +29,7 @@ func TestLoad(t *testing.T) {
 		want.ConfigDirs = []string{"testdata"}
 		want.ConfigFiles = []string{"conf.json"}
 		want.ListenGRPC = ":2222"
+		want.Normalize()
 
 		if diff := cmp.Diff(want, dst, cmpopts.IgnoreTypes(zap.Config{}, Certs{})); diff != "" {
 			t.Errorf("Load() mismatch (-want +got):\n%s", diff)
