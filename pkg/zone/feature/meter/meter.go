@@ -6,8 +6,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/smart-core-os/sc-golang/pkg/trait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
@@ -38,8 +39,8 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := node.AnnounceContext(ctx, f.announce)
 	logger := f.logger
 
-	var apiClient gen.MeterApiClient
-	var infoClient gen.MeterInfoClient
+	var apiClient traits.MeterApiClient
+	var infoClient traits.MeterInfoClient
 	if len(cfg.Meters) > 0 || len(cfg.MeterGroups) > 0 {
 		if err := f.clients.Client(&apiClient); err != nil {
 			return err
@@ -60,7 +61,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 			logger:     logger,
 		}
 		f.devices.Add(devices...)
-		announce.Announce(name, node.HasTrait(meter.TraitName, node.WithClients(gen.WrapMeterApi(group), gen.WrapMeterInfo(group))))
+		announce.Announce(name, node.HasTrait(trait.Meter, node.WithClients(meter.WrapApi(group), meter.WrapInfo(group))))
 	}
 
 	announceGroup(cfg.Name, cfg.Meters)

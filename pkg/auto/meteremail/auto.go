@@ -17,7 +17,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/meteremail/config"
 	"github.com/vanti-dev/sc-bos/pkg/block"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
@@ -47,13 +46,13 @@ func (_ factory) ConfigBlocks() []block.Block {
 
 // getMeterReadingAndSource gets the meter reading for the given meter and also the location metadata for the meter
 func (a *autoImpl) getMeterReadingAndSource(ctx context.Context, meterName string, meterType MeterType,
-	meterClient gen.MeterApiClient, metadataClient traits.MetadataApiClient, timing *config.Timing) (*config.Source, *MeterReading, error) {
+	meterClient traits.MeterApiClient, metadataClient traits.MetadataApiClient, timing *config.Timing) (*config.Source, *MeterReading, error) {
 
-	meterReq := &gen.GetMeterReadingRequest{
+	meterReq := &traits.GetMeterReadingRequest{
 		Name: meterName,
 	}
 
-	meterRes, err := retryT(ctx, timing, func(ctx context.Context) (*gen.MeterReading, error) {
+	meterRes, err := retryT(ctx, timing, func(ctx context.Context) (*traits.MeterReading, error) {
 		withTimeoutCtx, cancel := context.WithTimeout(ctx, timing.Timeout.Duration)
 		defer cancel()
 		return meterClient.GetMeterReading(withTimeoutCtx, meterReq)
@@ -211,7 +210,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	logger = logger.With(zap.String("snmp.addr", cfg.Destination.Addr()))
 	applyDefaults(&cfg.Timing)
 
-	var meterClient gen.MeterApiClient
+	var meterClient traits.MeterApiClient
 	if err := a.Node.Client(&meterClient); err != nil {
 		a.Logger.Warn("failed to create gen.MeterApiClient", zap.Error(err))
 		return err

@@ -9,8 +9,8 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/history/pgxstore"
 )
 
@@ -18,7 +18,7 @@ func SeedMeter(ctx context.Context, db *pgxpool.Pool, name string, lookBack time
 	now := time.Now()
 	current := now.Add(-lookBack)
 
-	source := fmt.Sprintf("%s[%s]", name, meter.TraitName)
+	source := fmt.Sprintf("%s[%s]", name, trait.Meter)
 
 	incremental := rand.Float32() * 1_000
 
@@ -29,7 +29,7 @@ func SeedMeter(ctx context.Context, db *pgxpool.Pool, name string, lookBack time
 
 	for current.Before(now) {
 		incremental = incremental + rand.Float32()*1_000
-		payload, err := proto.Marshal(&gen.MeterReading{
+		payload, err := proto.Marshal(&traits.MeterReading{
 			Usage: incremental,
 		})
 

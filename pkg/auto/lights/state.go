@@ -7,7 +7,6 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 // ReadState models everything we have read from the system.
@@ -19,7 +18,7 @@ type ReadState struct {
 	Occupancy     map[string]*traits.Occupancy
 	// used for daylight dimming
 	AmbientBrightness map[string]*traits.AmbientBrightness
-	Buttons           map[string]*gen.ButtonState
+	Buttons           map[string]*traits.PressedState
 	// used for selecting the run modes, aka "modes" config property
 	Modes *traits.ModeValues
 }
@@ -29,7 +28,7 @@ func NewReadState(t time.Time) *ReadState {
 		AutoStartTime:     t,
 		Occupancy:         make(map[string]*traits.Occupancy),
 		AmbientBrightness: make(map[string]*traits.AmbientBrightness),
-		Buttons:           make(map[string]*gen.ButtonState),
+		Buttons:           make(map[string]*traits.PressedState),
 	}
 }
 

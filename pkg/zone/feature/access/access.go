@@ -5,8 +5,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/smart-core-os/sc-golang/pkg/trait/access"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
@@ -38,7 +39,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	logger := f.logger
 
 	if len(cfg.AccessPoints) > 0 {
-		var client gen.AccessApiClient
+		var client traits.AccessApiClient
 		if err := f.clients.Client(&client); err != nil {
 			return err
 		}
@@ -50,7 +51,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 
 		f.devices.Add(cfg.AccessPoints...)
-		announce.Announce(cfg.Name, node.HasTrait(accesspb.TraitName, node.WithClients(gen.WrapAccessApi(group))))
+		announce.Announce(cfg.Name, node.HasTrait(trait.Access, node.WithClients(access.WrapApi(group))))
 	}
 
 	return nil

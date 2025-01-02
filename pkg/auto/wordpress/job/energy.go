@@ -9,6 +9,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/types"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
@@ -17,7 +18,7 @@ import (
 type EnergyJob struct {
 	BaseJob
 	client     gen.MeterHistoryClient
-	infoClient gen.MeterInfoClient
+	infoClient traits.MeterInfoClient
 	Meters     []string
 	Interval   time.Duration
 }
@@ -84,7 +85,7 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 }
 
 func (e *EnergyJob) getUnitMultiplier(ctx context.Context, meter string) (float32, error) {
-	infoResp, err := e.infoClient.DescribeMeterReading(ctx, &gen.DescribeMeterReadingRequest{Name: meter})
+	infoResp, err := e.infoClient.DescribeMeterReading(ctx, &traits.DescribeMeterReadingRequest{Name: meter})
 
 	if err != nil {
 		return 1, err

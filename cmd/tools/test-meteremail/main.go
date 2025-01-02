@@ -6,10 +6,10 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/smart-core-os/sc-golang/pkg/trait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/meteremail"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
@@ -22,8 +22,8 @@ func addDummyMeters(root *node.Node) {
 		m := meter.NewModel()
 		m.RecordReading(123.45)
 		models = append(models, m)
-		client := node.WithClients(gen.WrapMeterApi(meter.NewModelServer(m)))
-		root.Announce(meterName, node.HasTrait(meter.TraitName, client))
+		client := node.WithClients(meter.WrapApi(meter.NewModelServer(m)))
+		root.Announce(meterName, node.HasTrait(trait.Meter, client))
 	}
 }
 

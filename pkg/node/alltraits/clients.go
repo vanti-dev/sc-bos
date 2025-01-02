@@ -11,6 +11,8 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 	// yes, this is ugly and terrible but we need it to support the legacy node package API
 	// This should be binned off as soon as all users have been migrated to the new API
 	switch ptr := ptr.(type) {
+	case *traits.AccessApiClient:
+		*ptr = traits.NewAccessApiClient(conn)
 	case *traits.AirQualitySensorApiClient:
 		*ptr = traits.NewAirQualitySensorApiClient(conn)
 	case *traits.AirTemperatureApiClient:
@@ -47,6 +49,8 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = traits.NewLockUnlockApiClient(conn)
 	case *traits.MetadataApiClient:
 		*ptr = traits.NewMetadataApiClient(conn)
+	case *traits.MeterApiClient:
+		*ptr = traits.NewMeterApiClient(conn)
 	case *traits.MicrophoneApiClient:
 		*ptr = traits.NewMicrophoneApiClient(conn)
 	case *traits.ModeApiClient:
@@ -61,24 +65,24 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = traits.NewOpenCloseApiClient(conn)
 	case *traits.ParentApiClient:
 		*ptr = traits.NewParentApiClient(conn)
+	case *traits.PressApiClient:
+		*ptr = traits.NewPressApiClient(conn)
 	case *traits.PublicationApiClient:
 		*ptr = traits.NewPublicationApiClient(conn)
 	case *traits.PtzApiClient:
 		*ptr = traits.NewPtzApiClient(conn)
 	case *traits.SpeakerApiClient:
 		*ptr = traits.NewSpeakerApiClient(conn)
+	case *traits.TemperatureApiClient:
+		*ptr = traits.NewTemperatureApiClient(conn)
 	case *traits.VendingApiClient:
 		*ptr = traits.NewVendingApiClient(conn)
 	case *traits.WasteApiClient:
 		*ptr = traits.NewWasteApiClient(conn)
 	case *gen.AlertApiClient:
 		*ptr = gen.NewAlertApiClient(conn)
-	case *gen.ButtonApiClient:
-		*ptr = gen.NewButtonApiClient(conn)
 	case *gen.DaliApiClient:
 		*ptr = gen.NewDaliApiClient(conn)
-	case *gen.MeterApiClient:
-		*ptr = gen.NewMeterApiClient(conn)
 	case *gen.MqttServiceClient:
 		*ptr = gen.NewMqttServiceClient(conn)
 	case *gen.StatusApiClient:
@@ -122,6 +126,8 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = traits.NewLockUnlockInfoClient(conn)
 	case *traits.MetadataInfoClient:
 		*ptr = traits.NewMetadataInfoClient(conn)
+	case *traits.MeterInfoClient:
+		*ptr = traits.NewMeterInfoClient(conn)
 	case *traits.MicrophoneInfoClient:
 		*ptr = traits.NewMicrophoneInfoClient(conn)
 	case *traits.ModeInfoClient:
@@ -142,8 +148,6 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = traits.NewVendingInfoClient(conn)
 	case *traits.WasteInfoClient:
 		*ptr = traits.NewWasteInfoClient(conn)
-	case *gen.MeterInfoClient:
-		*ptr = gen.NewMeterInfoClient(conn)
 
 	case *gen.AirTemperatureHistoryClient:
 		*ptr = gen.NewAirTemperatureHistoryClient(conn)

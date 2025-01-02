@@ -5,7 +5,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-api/go/traits"
 )
 
 // captureButtonActions consumes button clicks returning the intended actions.
@@ -86,7 +86,7 @@ func getButtonType(state *ReadState, buttonName string) ButtonType {
 	return buttonType
 }
 
-func getMostRecentButtonPress(readState *ReadState) (name string, state *gen.ButtonState, ok bool) {
+func getMostRecentButtonPress(readState *ReadState) (name string, state *traits.PressedState, ok bool) {
 	mostRecentTime := time.Time{}
 	for n, button := range readState.Buttons {
 		if button.StateChangeTime.AsTime().After(mostRecentTime) {
@@ -99,8 +99,8 @@ func getMostRecentButtonPress(readState *ReadState) (name string, state *gen.But
 }
 
 // isButtonActionRequired returns true if state is unpressed and change time is more recent than last button action
-func isButtonActionRequired(button *gen.ButtonState, writeState *WriteState) bool {
-	if button.State == gen.ButtonState_UNPRESSED && button.StateChangeTime.AsTime().After(writeState.LastButtonAction) {
+func isButtonActionRequired(button *traits.PressedState, writeState *WriteState) bool {
+	if button.State == traits.PressedState_UNPRESSED && button.StateChangeTime.AsTime().After(writeState.LastButtonAction) {
 		return true
 	}
 	return false

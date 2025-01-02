@@ -7,20 +7,20 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 )
 
 func (a *automation) collectMeterReadingChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
-	var client gen.MeterApiClient
+	var client traits.MeterApiClient
 	if err := a.clients.Client(&client); err != nil {
 		a.logger.Error("collection aborted", zap.Error(err))
 		return
 	}
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
-		stream, err := client.PullMeterReadings(ctx, &gen.PullMeterReadingsRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})
+		stream, err := client.PullMeterReadings(ctx, &traits.PullMeterReadingsRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}
@@ -43,7 +43,7 @@ func (a *automation) collectMeterReadingChanges(ctx context.Context, source conf
 		}
 	}
 	pollFn := func(ctx context.Context, changes chan<- []byte) error {
-		demand, err := client.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
+		demand, err := client.GetMeterReading(ctx, &traits.GetMeterReadingRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}

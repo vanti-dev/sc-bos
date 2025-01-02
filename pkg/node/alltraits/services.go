@@ -6,16 +6,14 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/dalipb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/mqttpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 )
 
 var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
+	trait.Access:           {traits.AccessApi_ServiceDesc},
 	trait.AirQualitySensor: {traits.AirQualitySensorApi_ServiceDesc, traits.AirQualitySensorInfo_ServiceDesc, gen.AirQualitySensorHistory_ServiceDesc},
 	trait.AirTemperature:   {traits.AirTemperatureApi_ServiceDesc, traits.AirTemperatureInfo_ServiceDesc, gen.AirTemperatureHistory_ServiceDesc},
 	trait.Booking:          {traits.BookingApi_ServiceDesc, traits.BookingInfo_ServiceDesc},
@@ -34,6 +32,7 @@ var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
 	trait.Light:            {traits.LightApi_ServiceDesc, traits.LightInfo_ServiceDesc},
 	trait.LockUnlock:       {traits.LockUnlockApi_ServiceDesc, traits.LockUnlockInfo_ServiceDesc},
 	trait.Metadata:         {traits.MetadataApi_ServiceDesc, traits.MetadataInfo_ServiceDesc},
+	trait.Meter:            {traits.MeterApi_ServiceDesc, traits.MeterInfo_ServiceDesc, gen.MeterHistory_ServiceDesc},
 	trait.Microphone:       {traits.MicrophoneApi_ServiceDesc, traits.MicrophoneInfo_ServiceDesc},
 	trait.Mode:             {traits.ModeApi_ServiceDesc, traits.ModeInfo_ServiceDesc},
 	trait.MotionSensor:     {traits.MotionSensorApi_ServiceDesc},
@@ -41,18 +40,17 @@ var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
 	trait.OnOff:            {traits.OnOffApi_ServiceDesc, traits.OnOffInfo_ServiceDesc},
 	trait.OpenClose:        {traits.OpenCloseApi_ServiceDesc, traits.OpenCloseInfo_ServiceDesc},
 	trait.Parent:           {traits.ParentApi_ServiceDesc, traits.ParentInfo_ServiceDesc},
+	trait.Press:            {traits.PressApi_ServiceDesc},
 	trait.Publication:      {traits.PublicationApi_ServiceDesc},
 	trait.Ptz:              {traits.PtzApi_ServiceDesc, traits.PtzInfo_ServiceDesc},
 	trait.Speaker:          {traits.SpeakerApi_ServiceDesc, traits.SpeakerInfo_ServiceDesc},
+	trait.Temperature:      {traits.TemperatureApi_ServiceDesc},
 	trait.Vending:          {traits.VendingApi_ServiceDesc, traits.VendingInfo_ServiceDesc},
 	trait.Waste:            {traits.WasteApi_ServiceDesc, traits.WasteInfo_ServiceDesc},
 
 	// sc-bos private traits
-	accesspb.TraitName:       {gen.AccessApi_ServiceDesc},
-	button.TraitName:         {gen.ButtonApi_ServiceDesc},
 	dalipb.TraitName:         {gen.DaliApi_ServiceDesc},
 	emergencylight.TraitName: {gen.DaliApi_ServiceDesc},
-	meter.TraitName:          {gen.MeterApi_ServiceDesc, gen.MeterInfo_ServiceDesc, gen.MeterHistory_ServiceDesc},
 	mqttpb.TraitName:         {gen.MqttService_ServiceDesc},
 	statusTraitName:          {gen.StatusApi_ServiceDesc, gen.StatusHistory_ServiceDesc},
 	udmipb.TraitName:         {gen.UdmiService_ServiceDesc},

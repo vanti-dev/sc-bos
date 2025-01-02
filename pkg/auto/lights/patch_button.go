@@ -5,13 +5,13 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 )
 
 type ButtonPatches struct {
 	name   string
-	client gen.ButtonApiClient
+	client traits.PressApiClient
 	logger *zap.Logger
 }
 
@@ -23,7 +23,7 @@ func (p *ButtonPatches) Subscribe(ctx context.Context, changes chan<- Patcher) e
 }
 
 func (p *ButtonPatches) Pull(ctx context.Context, changes chan<- Patcher) error {
-	stream, err := p.client.PullButtonState(ctx, &gen.PullButtonStateRequest{Name: p.name})
+	stream, err := p.client.PullPressedState(ctx, &traits.PullPressedStateRequest{Name: p.name})
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func (p *ButtonPatches) Pull(ctx context.Context, changes chan<- Patcher) error 
 }
 
 func (p *ButtonPatches) Poll(ctx context.Context, changes chan<- Patcher) error {
-	res, err := p.client.GetButtonState(ctx, &gen.GetButtonStateRequest{Name: p.name})
+	res, err := p.client.GetPressedState(ctx, &traits.GetPressedStateRequest{Name: p.name})
 	if err != nil {
 		return err
 	}
@@ -62,18 +62,18 @@ func (p *ButtonPatches) Poll(ctx context.Context, changes chan<- Patcher) error 
 }
 
 type pullButtonStatePatcher struct {
-	response *gen.PullButtonStateResponse
+	response *traits.PullPressedStateResponse
 }
 
 func (p pullButtonStatePatcher) Patch(state *ReadState) {
 	for _, change := range p.response.Changes {
-		state.Buttons[change.Name] = change.ButtonState
+		state.Buttons[change.Name] = change.PressedState
 	}
 }
 
 type getButtonStatePatcher struct {
 	name        string
-	buttonState *gen.ButtonState
+	buttonState *traits.PressedState
 }
 
 func (p getButtonStatePatcher) Patch(state *ReadState) {

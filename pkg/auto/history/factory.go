@@ -17,7 +17,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/history"
 	"github.com/vanti-dev/sc-bos/pkg/history/apistore"
@@ -156,7 +155,7 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	case trait.Electric:
 		serverClient = gen.WrapElectricHistory(historypb.NewElectricServer(store))
 		collect = a.collectElectricDemandChanges
-	case meter.TraitName:
+	case trait.Meter:
 		serverClient = gen.WrapMeterHistory(historypb.NewMeterServer(store))
 		collect = a.collectMeterReadingChanges
 	case trait.OccupancySensor:

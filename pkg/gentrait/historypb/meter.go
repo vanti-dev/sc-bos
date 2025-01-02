@@ -7,6 +7,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/history"
 )
@@ -29,7 +30,7 @@ func (m *MeterServer) Unwrap() any {
 }
 
 var meterReadingPager = newPageReader(func(r history.Record) (*gen.MeterReadingRecord, error) {
-	v := &gen.MeterReading{}
+	v := &traits.MeterReading{}
 	err := proto.Unmarshal(r.Payload, v)
 	if err != nil {
 		return nil, err
