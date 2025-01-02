@@ -67,6 +67,64 @@ func Test_deviceMatchesQuery(t *testing.T) {
 			t.Fatalf("deviceMatchesQuery want false, got true")
 		}
 	})
+
+	t.Run("matches trait", func(t *testing.T) {
+		query := &gen.Device_Query{
+			Conditions: []*gen.Device_Query_Condition{
+				{Field: "metadata.traits.name", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "smartcore.traits.OnOff"}},
+				{Field: "metadata.location.more.floor", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "4"}},
+			},
+		}
+		device := &gen.Device{
+			Name: "Light on floor 4",
+			Metadata: &traits.Metadata{
+				Membership: &traits.Metadata_Membership{
+					Subsystem: "Lighting",
+				},
+				Location: &traits.Metadata_Location{
+					More: map[string]string{
+						"floor": "4",
+					},
+				},
+				Traits: []*traits.TraitMetadata{
+					{Name: "smartcore.traits.OnOff"},
+				},
+			},
+		}
+		got := deviceMatchesQuery(query, device)
+		if !got {
+			t.Fatalf("deviceMatchesQuery want true, got false")
+		}
+	})
+
+	t.Run("matches trait name", func(t *testing.T) {
+		query := &gen.Device_Query{
+			Conditions: []*gen.Device_Query_Condition{
+				{Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "smartcore.traits.OnOff"}},
+				{Field: "metadata.location.more.floor", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "4"}},
+			},
+		}
+		device := &gen.Device{
+			Name: "Light on floor 4",
+			Metadata: &traits.Metadata{
+				Membership: &traits.Metadata_Membership{
+					Subsystem: "Lighting",
+				},
+				Location: &traits.Metadata_Location{
+					More: map[string]string{
+						"floor": "4",
+					},
+				},
+				Traits: []*traits.TraitMetadata{
+					{Name: "smartcore.traits.OnOff"},
+				},
+			},
+		}
+		got := deviceMatchesQuery(query, device)
+		if !got {
+			t.Fatalf("deviceMatchesQuery want true, got false")
+		}
+	})
 }
 
 func TestServer_ListDevices(t *testing.T) {

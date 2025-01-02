@@ -31,36 +31,23 @@ func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
 func conditionMatches(cond *gen.Device_Query_Condition, device *gen.Device) bool {
 	// everything is a string comparison, for now. Can rework this later if that no longer is the case
 	var cmp func(v string) bool
-	found := false
 	switch c := cond.Value.(type) {
 	case *gen.Device_Query_Condition_StringEqual:
 		cmp = func(v string) bool {
-			if v == c.StringEqual {
-				found = true
-			}
-			return found
+			return v == c.StringEqual
 		}
 	case *gen.Device_Query_Condition_StringEqualFold:
 		cmp = func(v string) bool {
-			if strings.EqualFold(v, c.StringEqualFold) {
-				found = true
-			}
-			return found
+			return strings.EqualFold(v, c.StringEqualFold)
 		}
 	case *gen.Device_Query_Condition_StringContains:
 		cmp = func(v string) bool {
-			if strings.Contains(v, c.StringContains) {
-				found = true
-			}
-			return found
+			return strings.Contains(v, c.StringContains)
 		}
 	case *gen.Device_Query_Condition_StringContainsFold:
 		ls := strings.ToLower(c.StringContainsFold)
 		cmp = func(v string) bool {
-			if strings.Contains(strings.ToLower(v), ls) {
-				found = true
-			}
-			return found
+			return strings.Contains(strings.ToLower(v), ls)
 		}
 	default:
 		return false
@@ -70,11 +57,13 @@ func conditionMatches(cond *gen.Device_Query_Condition, device *gen.Device) bool
 		// any field
 		return messageHasValueStringFunc(device, cmp)
 	}
-	itr := getMessageString(cond.Field, device)
 
-	itr(cmp)
-
-	return found
+	for val := range getMessageString(cond.Field, device) {
+		if cmp(val) {
+			return true
+		}
+	}
+	return false
 }
 
 // messageHasValueStringFunc returns whether any value in msg returns true when converted to a string and passed to f.
@@ -121,38 +110,44 @@ func getMessageString(path string, msg proto.Message) iter.Seq[string] {
 	if msg == nil {
 		return func(yield func(string) bool) {}
 	}
-	return getMessageValue(path, msg.ProtoReflect())
+	segments, err := parsePath(path)
+	if err != nil || len(segments) == 0 {
+		return func(yield func(string) bool) {}
+	}
+	return getMessageValue(segments, msg.ProtoReflect())
 }
 
 // getMessageValue returns the yield func identified by path in msg.
-func getMessageValue(path string, msg protoreflect.Message) iter.Seq[string] {
-	deconstructedPath := depath(path)
-	fieldDesc := msg.Descriptor().Fields().ByName(protoreflect.Name(deconstructedPath.Before))
+func getMessageValue(path []pathSegment, msg protoreflect.Message) iter.Seq[string] {
+	head := path[0]
+	fieldDesc := msg.Descriptor().Fields().ByName(protoreflect.Name(head.Name))
 	if fieldDesc == nil {
 		return func(yield func(string) bool) {}
 	}
 
-	if deconstructedPath.Found && deconstructedPath.Index < 0 {
+	if head.IsIndex {
 		return func(yield func(string) bool) {}
 	}
 	val := msg.Get(fieldDesc)
-	if deconstructedPath.After == "" {
-		str, got := valueString(fieldDesc, val)
+	if len(path) == 1 {
 		// end of the path
+		if fieldDesc.IsList() {
+			return getListValue(path, fieldDesc, val.List())
+		}
 		return func(yield func(string) bool) {
-			if !(got && yield(str)) {
-				return
+			if str, got := valueString(fieldDesc, val); got && str != "" {
+				yield(str)
 			}
 		}
 	}
 
-	return nextValue(deconstructedPath.After, fieldDesc, val)
+	return nextValue(path[1:], fieldDesc, val)
 }
 
 // getMapValue returns the yield func identified by path in the map m.
-func getMapValue(path string, keyDesc, valueDesc protoreflect.FieldDescriptor, m protoreflect.Map) iter.Seq[string] {
-	prop, rest, found := strings.Cut(path, ".")
-	key, ok := parseMapKey(prop, keyDesc)
+func getMapValue(path []pathSegment, keyDesc, valueDesc protoreflect.FieldDescriptor, m protoreflect.Map) iter.Seq[string] {
+	head := path[0]
+	key, ok := parseMapKey(head.Name, keyDesc)
 	if !ok {
 		return func(yield func(string) bool) {}
 	}
@@ -161,116 +156,79 @@ func getMapValue(path string, keyDesc, valueDesc protoreflect.FieldDescriptor, m
 		return func(yield func(string) bool) {}
 	}
 
-	if !found {
+	if len(path) == 1 {
 		return func(yield func(string) bool) {
-			str, got := valueString(valueDesc, value)
-
-			if !(got && yield(str)) {
-				return
+			if str, got := valueString(valueDesc, value); got && str != "" {
+				yield(str)
 			}
 		}
 	}
 
-	return nextValue(rest, valueDesc, value)
+	return nextValue(path[1:], valueDesc, value)
 }
 
 // getListValue returns the yield func identified by path in the list l.
-func getListValue(path string, entryDesc protoreflect.FieldDescriptor, l protoreflect.List) iter.Seq[string] {
-	deconstructedPath := depath(path)
-	if deconstructedPath.Index < 0 {
-		// don't permit negative Index
-		if deconstructedPath.Found {
+func getListValue(path []pathSegment, entryDesc protoreflect.FieldDescriptor, l protoreflect.List) iter.Seq[string] {
+	head := path[0]
+	if head.IsIndex {
+		// search for a specific element
+		idx := head.Index
+		if idx < 0 {
+			// [-1] is the last element
+			idx = l.Len() + idx
+		}
+		if idx < 0 || idx >= l.Len() {
+			// index out of range
 			return func(yield func(string) bool) {}
 		}
-
-		var itr []iter.Seq[string]
-		// search all elements
+		item := l.Get(idx)
+		return func(yield func(string) bool) {
+			if str, got := valueString(entryDesc, item); got {
+				if str != "" {
+					yield(str)
+				}
+				return
+			}
+			for v := range getMessageValue(path[1:], item.Message()) {
+				if !yield(v) {
+					return
+				}
+			}
+		}
+	}
+	// search all elements
+	return func(yield func(string) bool) {
 		for i := 0; i < l.Len(); i++ {
-			val := l.Get(i)
-
-			if !val.Message().IsValid() {
-				continue
-			}
-
-			desc := val.Message().Descriptor().Fields().ByName(protoreflect.Name(deconstructedPath.Before))
-
-			if desc == nil {
-				return func(yield func(string) bool) {}
-			}
-
-			var it iter.Seq[string]
-			switch {
-			case desc.IsMap(), desc.IsList(), desc.Message() != nil:
-				it = nextValue(deconstructedPath.After, desc, val.Message().Get(desc))
-			default:
-				str, got := valueString(desc, val.Message().Get(desc))
-
-				it = func(yield func(string) bool) {
-					if !(got && yield(str)) {
+			item := l.Get(i)
+			// this handles all scalars
+			if str, got := valueString(entryDesc, item); got {
+				if str != "" {
+					if !yield(str) {
 						return
 					}
 				}
+				continue
 			}
-
-			itr = append(itr, it)
-
-		}
-
-		return func(yield func(string) bool) {
-			for _, it := range itr {
-				it(yield)
+			// this deals with groups/messages
+			for v := range getMessageValue(path, item.Message()) {
+				if !yield(v) {
+					return
+				}
 			}
 		}
 	}
 
-	if deconstructedPath.Index >= l.Len() {
-		return func(yield func(string) bool) {}
-	}
-
-	val := l.Get(deconstructedPath.Index)
-
-	str, got := valueString(entryDesc, val)
-
-	if got {
-		return func(yield func(string) bool) {
-			if yield(str) {
-				return
-			}
-		}
-	}
-
-	if !val.Message().IsValid() {
-		return func(yield func(string) bool) {}
-	}
-
-	desc := val.Message().Descriptor().Fields().ByName(protoreflect.Name(deconstructedPath.Next))
-
-	if desc == nil {
-		return func(yield func(string) bool) {}
-	}
-
-	str, got = valueString(desc, val.Message().Get(desc))
-
-	if got {
-		return func(yield func(string) bool) {
-			if yield(str) {
-				return
-			}
-		}
-	}
-
-	return nextValue(deconstructedPath.After, desc, val.Message().Get(desc))
 }
 
 // nextValue calls the correct getXxxValue func for the given field descriptor.
-func nextValue(rest string, fieldDesc protoreflect.FieldDescriptor, val protoreflect.Value) iter.Seq[string] {
+func nextValue(path []pathSegment, fieldDesc protoreflect.FieldDescriptor, val protoreflect.Value) iter.Seq[string] {
 	switch {
 	case fieldDesc.IsMap():
-		return getMapValue(rest, fieldDesc.MapKey(), fieldDesc.MapValue(), val.Map())
+		return getMapValue(path, fieldDesc.MapKey(), fieldDesc.MapValue(), val.Map())
 	case fieldDesc.IsList():
-		return getListValue(rest, fieldDesc, val.List())
+		return getListValue(path, fieldDesc, val.List())
 	case fieldDesc.Message() != nil: // note this is true for map types, so check that first
-		return getMessageValue(rest, val.Message())
+		return getMessageValue(path, val.Message())
 	default:
 		return func(yield func(string) bool) {} // there's more to the path but the value has no properties
 	}
