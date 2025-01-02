@@ -7,8 +7,8 @@ import (
 	"golang.org/x/exp/rand"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
@@ -24,7 +24,7 @@ func MeterAuto(model *meter.Model) *service.Service[string] {
 					return
 				case <-timer.C:
 					value += rand.Float32() * 100
-					state := gen.MeterReading{
+					state := traits.MeterReading{
 						Usage:     value,
 						StartTime: start,
 						EndTime:   timestamppb.Now(),

@@ -9,6 +9,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/smart-core-os/sc-golang/pkg/trait/access"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
 	"github.com/smart-core-os/sc-golang/pkg/trait/booking"
@@ -19,10 +20,12 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/hail"
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
+	"github.com/smart-core-os/sc-golang/pkg/trait/meter"
 	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
+	"github.com/smart-core-os/sc-golang/pkg/trait/press"
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
@@ -31,9 +34,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/modepb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
@@ -151,6 +151,9 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 
 func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap.Logger) ([]wrap.ServiceUnwrapper, service.Lifecycle) {
 	switch trait.Name(traitMd.Name) {
+	case trait.Access:
+		model := access.NewModel()
+		return []wrap.ServiceUnwrapper{access.WrapApi(access.NewModelServer(model))}, auto.Access(model)
 	case trait.AirQualitySensor:
 		model := airqualitysensor.NewModel(airqualitysensor.WithInitialAirQuality(auto.GetAirQualityState()))
 		return []wrap.ServiceUnwrapper{airqualitysensor.WrapApi(airqualitysensor.NewModelServer(model))}, auto.AirQualitySensorAuto(model)
@@ -220,6 +223,26 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		return nil, nil
 	case trait.Metadata:
 		return []wrap.ServiceUnwrapper{metadata.WrapApi(metadata.NewModelServer(metadata.NewModel()))}, nil
+	case trait.Meter:
+		var (
+			unit string
+			ok   bool
+		)
+		if unit, ok = traitMd.GetMore()["unit"]; !ok {
+			unit = "kWh"
+		}
+
+		model := meter.NewModel()
+
+		info := &meter.InfoServer{MeterReading: &traits.MeterReadingSupport{
+			ResourceSupport: &types.ResourceSupport{
+				Readable:   true,
+				Writable:   true,
+				Observable: true,
+			},
+			Unit: unit,
+		}}
+		return []wrap.ServiceUnwrapper{meter.WrapApi(meter.NewModelServer(model)), meter.WrapInfo(info)}, auto.MeterAuto(model)
 	case trait.Microphone:
 		// todo: return []any{microphone.WrapApi(microphone.NewModelServer(microphone.NewModel()))}, nil
 		return nil, nil
@@ -240,6 +263,8 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		return mockOpenClose(traitMd, deviceName, logger)
 	case trait.Parent:
 		return []wrap.ServiceUnwrapper{parent.WrapApi(parent.NewModelServer(parent.NewModel()))}, nil
+	case trait.Press:
+		return []wrap.ServiceUnwrapper{press.WrapApi(press.NewModelServer(press.NewModel(traits.PressedState_UNPRESSED)))}, nil
 	case trait.Publication:
 		return []wrap.ServiceUnwrapper{publication.WrapApi(publication.NewModelServer(publication.NewModel()))}, nil
 	case trait.Ptz:
@@ -251,30 +276,6 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 	case trait.Vending:
 		return []wrap.ServiceUnwrapper{vending.WrapApi(vending.NewModelServer(vending.NewModel()))}, nil
 
-	case accesspb.TraitName:
-		model := accesspb.NewModel()
-		return []wrap.ServiceUnwrapper{gen.WrapAccessApi(accesspb.NewModelServer(model))}, auto.Access(model)
-	case button.TraitName:
-		return []wrap.ServiceUnwrapper{gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED)))}, nil
-	case meter.TraitName:
-		var (
-			unit string
-			ok   bool
-		)
-		if unit, ok = traitMd.GetMore()["unit"]; !ok {
-			unit = "kWh"
-		}
-
-		model := meter.NewModel()
-		info := &meter.InfoServer{MeterReading: &gen.MeterReadingSupport{
-			ResourceSupport: &types.ResourceSupport{
-				Readable:   true,
-				Writable:   true,
-				Observable: true,
-			},
-			Unit: unit,
-		}}
-		return []wrap.ServiceUnwrapper{gen.WrapMeterApi(meter.NewModelServer(model)), gen.WrapMeterInfo(info)}, auto.MeterAuto(model)
 	case statuspb.TraitName:
 		model := statuspb.NewModel()
 		// set an initial value or Pull methods can hang

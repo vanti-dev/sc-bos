@@ -11,7 +11,7 @@ import "traits/air_temperature.proto";
 import "traits/electric.proto";
 import "traits/occupancy_sensor.proto";
 import "traits/air_quality_sensor.proto";
-import "meter.proto";
+import "traits/meter.proto";
 
 // HistoryAdminApi provides remote access to the history store.
 service HistoryAdminApi {
@@ -115,7 +115,7 @@ service MeterHistory {
 }
 
 message MeterReadingRecord {
-  smartcore.bos.MeterReading meter_reading = 1;
+  smartcore.traits.MeterReading meter_reading = 1;
   google.protobuf.Timestamp record_time = 2;
 }
 

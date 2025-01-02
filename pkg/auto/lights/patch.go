@@ -12,7 +12,6 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 // Patcher represents a single patch that adjusts ReadState.
@@ -45,7 +44,7 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 	if err := b.clients.Client(&brightnessSensorClient); err != nil {
 		return fmt.Errorf("%w traits.BrightnessSensorApiClient", err)
 	}
-	var buttonClient gen.ButtonApiClient
+	var buttonClient traits.PressApiClient
 	if err := b.clients.Client(&buttonClient); err != nil {
 		return fmt.Errorf("%w gen.ButtonApiClient", err)
 	}

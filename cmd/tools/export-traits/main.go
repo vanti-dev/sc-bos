@@ -19,7 +19,6 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/util/client"
 )
 
@@ -53,9 +52,9 @@ func init() {
 }
 
 var getter = map[trait.Name]func(context.Context, grpc.ClientConnInterface, *gen.Device, *report) error{
-	meter.TraitName: func(ctx context.Context, conn grpc.ClientConnInterface, device *gen.Device, r *report) error {
-		apiClient := gen.NewMeterApiClient(conn)
-		res, err := apiClient.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: device.Name})
+	trait.Meter: func(ctx context.Context, conn grpc.ClientConnInterface, device *gen.Device, r *report) error {
+		apiClient := traits.NewMeterApiClient(conn)
+		res, err := apiClient.GetMeterReading(ctx, &traits.GetMeterReadingRequest{Name: device.Name})
 		if err != nil {
 			return err
 		}
