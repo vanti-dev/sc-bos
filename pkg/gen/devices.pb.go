@@ -580,7 +580,7 @@ type GetDownloadDevicesUrlRequest struct {
 	Query *Device_Query `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
 	// Specifies the media type (or MIME type) of the file to be downloaded.
 	// Defaults to text/csv.
-	// Supported values are text/csv (currently).
+	// Supported values are text/csv.
 	MediaType string `protobuf:"bytes,2,opt,name=media_type,json=mediaType,proto3" json:"media_type,omitempty"`
 }
 

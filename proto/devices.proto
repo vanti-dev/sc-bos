@@ -167,7 +167,7 @@ message GetDownloadDevicesUrlRequest {
   Device.Query query = 1;
   // Specifies the media type (or MIME type) of the file to be downloaded.
   // Defaults to text/csv.
-  // Supported values are text/csv (currently).
+  // Supported values are text/csv.
   string media_type = 2;
 }
 
