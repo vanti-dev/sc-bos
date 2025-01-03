@@ -30,10 +30,10 @@ test the build locally, so the manual steps to build the Docker image are as fol
 
 ```shell
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o .build/sc-bos github.com/vanti-dev/sc-bos/cmd/bos
-cd ui/conductor
+cd ui/ops
 yarn install && yarn run build
 cd ../..
-mv ui/conductor/dist .build/ops-ui
+mv ui/ops/dist .build/ops-ui
 docker build -t ghcr.io/vanti-dev/sc-bos:vTest .
 ```
 

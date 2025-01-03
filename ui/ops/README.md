@@ -1,4 +1,4 @@
-# Smart Core Conductor (for now)
+# Smart Core Ops UI
 
 This ui allows you to setup and manage smart core nodes (area controllers, app servers, edge gateways, etc). This is the
 default ui you get when you visit any of these boxes IPs.
@@ -32,7 +32,7 @@ The different features of the UI require different capabilities from the server,
 
 To connect the UI to a local area controller, create a `.env.local` file in this directory with the following:
 ```properties
-VITE_GRPC_ENDPOINT=http://localhost:23557
+VITE_GRPC_ENDPOINT=https://localhost:23557
 ```
 
 When testing device or system pages it can be easier to point the UI at

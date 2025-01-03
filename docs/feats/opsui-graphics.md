@@ -224,7 +224,7 @@ We've seen the `fill` effect in the previous examples, this effect adjusts the `
 based on an interpolation between colour steps. Another similar effect is the `stroke` effect, which changes the stroke
 colour.
 
-All available effects are listed in [effects array](../../ui/conductor/src/widgets/graphic/svg.js) in the js source.
+All available effects are listed in [effects array](../../ui/ops/src/widgets/graphic/svg.js) in the js source.
 
 ### Sidebar Interaction
 

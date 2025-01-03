@@ -46,7 +46,7 @@
   },
   "staticHosting": [
     {
-      "filePath": "./ui/conductor/dist",
+      "filePath": "./ui/ops/dist",
       "path": "/"
     }
   ]
