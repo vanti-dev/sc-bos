@@ -65,6 +65,15 @@ func (s *Server) GetDownloadDevicesUrl(_ context.Context, request *gen.GetDownlo
 }
 
 // DownloadDevicesHTTPHandler responds to HTTP request urls returned by GetDownloadDevicesUrl.
+// Requests must include a valid download token.
+//
+// CSV responses will include a header as the first row, for which columns are sorted alphabetically and grouped by md.name then md.* then *.
+// For metadata columns each device is inspected to find all non-empty fields, each of which is included as a column in the md.* group.
+// For trait values the supported traits and included columns is defined by the traitInfo map, see [Server.getTraitInfo] for details.
+// Trait columns are fixed based on the advertised traits a device supports via its metadata.
+// Typical column names are dot separated property paths, e.g. md.location.floor, access.grant, or meter.usage.
+//
+// Devices that have no traits or metadata (excluding their name and that they implement the metadata trait) are excluded from the response.
 func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Request) {
 	// 1. parse and validate the request
 	tokenStr, err := s.readDownloadToken(r)
@@ -405,8 +414,11 @@ func newHMACKeyGen(size int) func() ([]byte, error) {
 	}
 }
 
-type DownloadTokenWriter func(dst *url.URL, token string) error
-type DownloadTokenReader func(*http.Request) (string, error)
+// DownloadTokenWriter is a function that writes a download token to a URL.
+type DownloadTokenWriter = func(dst *url.URL, token string) error
+
+// DownloadTokenReader is a function that reads a download token from a URL.
+type DownloadTokenReader = func(*http.Request) (string, error)
 
 func WithDownloadTokenCodec(w DownloadTokenWriter, r DownloadTokenReader) Option {
 	return func(s *Server) {
@@ -421,18 +433,20 @@ func WithDownloadUrlBase(base url.URL) Option {
 	}
 }
 
-func ReadDownloadToken(r *http.Request) (string, error) {
+// readDownloadToken is the default implementation of DownloadTokenReader.
+func readDownloadToken(r *http.Request) (string, error) {
 	return r.URL.Query().Get("ddt"), nil
 }
 
 func (s *Server) readDownloadToken(r *http.Request) (string, error) {
 	if s.downloadTokenReader == nil {
-		return ReadDownloadToken(r)
+		return readDownloadToken(r)
 	}
 	return s.downloadTokenReader(r)
 }
 
-func WriteDownloadToken(dst *url.URL, token string) error {
+// writeDownloadToken is the default implementation of DownloadTokenWriter.
+func writeDownloadToken(dst *url.URL, token string) error {
 	q := dst.Query()
 	q.Set("ddt", token)
 	dst.RawQuery = q.Encode()
@@ -441,7 +455,7 @@ func WriteDownloadToken(dst *url.URL, token string) error {
 
 func (s *Server) writeDownloadToken(dst *url.URL, token string) error {
 	if s.downloadTokenWriter == nil {
-		return WriteDownloadToken(dst, token)
+		return writeDownloadToken(dst, token)
 	}
 	return s.downloadTokenWriter(dst, token)
 }
