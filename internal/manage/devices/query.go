@@ -104,7 +104,7 @@ func messageHasValueStringFunc(msg proto.Message, f func(v string) bool) bool {
 	return match
 }
 
-// getMessageString returns the property identified by path from msg as a yield func.
+// getMessageString returns an iterator over the string values identified by path from msg.
 // See valueString for details of string conversion.
 func getMessageString(path string, msg proto.Message) iter.Seq[string] {
 	if msg == nil {
@@ -117,7 +117,8 @@ func getMessageString(path string, msg proto.Message) iter.Seq[string] {
 	return getMessageValue(segments, msg.ProtoReflect())
 }
 
-// getMessageValue returns the yield func identified by path in msg.
+// getMessageValue returns an iterator over the string values identified by path.
+// The first path segment should refer to a field in msg.
 func getMessageValue(path []pathSegment, msg protoreflect.Message) iter.Seq[string] {
 	head := path[0]
 	fieldDesc := msg.Descriptor().Fields().ByName(protoreflect.Name(head.Name))
@@ -144,7 +145,8 @@ func getMessageValue(path []pathSegment, msg protoreflect.Message) iter.Seq[stri
 	return nextValue(path[1:], fieldDesc, val)
 }
 
-// getMapValue returns the yield func identified by path in the map m.
+// getMapValue returns an iterator over the string values identified by path in the map m.
+// The first path segment should refer to a key in the map.
 func getMapValue(path []pathSegment, keyDesc, valueDesc protoreflect.FieldDescriptor, m protoreflect.Map) iter.Seq[string] {
 	head := path[0]
 	key, ok := parseMapKey(head.Name, keyDesc)
@@ -167,7 +169,9 @@ func getMapValue(path []pathSegment, keyDesc, valueDesc protoreflect.FieldDescri
 	return nextValue(path[1:], valueDesc, value)
 }
 
-// getListValue returns the yield func identified by path in the list l.
+// getListValue returns an iterator over the string values identified by path in the list l.
+// The first path segment can either be an index segment, in which case it refers to a specific element in the list,
+// or a non-index segment in which case it is ignored and all elements in the list are matched.
 func getListValue(path []pathSegment, entryDesc protoreflect.FieldDescriptor, l protoreflect.List) iter.Seq[string] {
 	head := path[0]
 	if head.IsIndex {
