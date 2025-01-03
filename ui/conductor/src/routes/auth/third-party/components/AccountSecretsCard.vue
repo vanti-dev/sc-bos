@@ -65,7 +65,8 @@
 </template>
 
 <script setup>
-import {newActionTracker} from '@/api/resource';import {deleteSecret, listSecrets, secretToObject} from '@/api/ui/tenant';
+import {newActionTracker} from '@/api/resource';
+import {deleteSecret, listSecrets, secretToObject} from '@/api/ui/tenant';
 import {HOUR, useNow} from '@/components/now.js';
 import {useErrorStore} from '@/components/ui-error/error';
 import useAuthSetup from '@/composables/useAuthSetup';
@@ -122,6 +123,7 @@ function refreshSecrets() {
 }
 
 const {now: day} = useNow(HOUR);
+
 /**
  * @param {Date} date
  * @return {string}
