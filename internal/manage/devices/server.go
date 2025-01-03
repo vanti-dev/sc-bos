@@ -31,21 +31,23 @@ type Server struct {
 	node *node.Node
 	now  func() time.Time
 
-	downloadUrlBase     url.URL // defaults to /dl/devices
-	downloadTokenWriter DownloadTokenWriter
-	downloadTokenReader DownloadTokenReader
-	downloadKey         func() ([]byte, error)
-	downloadExpiry      time.Duration // defaults to 1 hour
+	downloadUrlBase      url.URL // defaults to /dl/devices
+	downloadTokenWriter  DownloadTokenWriter
+	downloadTokenReader  DownloadTokenReader
+	downloadKey          func() ([]byte, error)
+	downloadExpiry       time.Duration // defaults to 1 hour
+	downloadExpiryLeeway time.Duration // defaults to 1 minute
 }
 
 func NewServer(n *node.Node, opts ...Option) *Server {
 	s := &Server{
-		parentName:      n.Name(),
-		node:            n,
-		now:             time.Now,
-		downloadUrlBase: url.URL{Path: "/dl/devices"},
-		downloadExpiry:  time.Hour,
-		downloadKey:     newHMACKeyGen(64), // todo: replace with something that works between nodes
+		parentName:           n.Name(),
+		node:                 n,
+		now:                  time.Now,
+		downloadUrlBase:      url.URL{Path: "/dl/devices"},
+		downloadExpiry:       time.Hour,
+		downloadExpiryLeeway: time.Minute,
+		downloadKey:          newHMACKeyGen(64), // todo: replace with something that works between nodes
 	}
 	for _, opt := range opts {
 		opt(s)

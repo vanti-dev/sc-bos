@@ -84,7 +84,7 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 
 	writeErr := func(err error) {
 		var httpErr httpError
-		if !errors.As(err, &httpErr) {
+		if errors.As(err, &httpErr) {
 			http.Error(w, httpErr.msg, httpErr.code)
 			return
 		}
@@ -189,7 +189,7 @@ func (s *Server) parseAndValidateDownloadToken(tokenStr string) (*DownloadToken,
 	if err := jwtToken.Claims(key, jwtClaims, &tokenClaims); err != nil {
 		return nil, httpError{code: http.StatusUnauthorized, msg: "untrusted token"}
 	}
-	if err := jwtClaims.Validate(jwt.Expected{Time: s.now()}); err != nil {
+	if err := jwtClaims.ValidateWithLeeway(jwt.Expected{Time: s.now()}, s.downloadExpiryLeeway); err != nil {
 		return nil, httpError{code: http.StatusUnauthorized, msg: "token expired"}
 	}
 
