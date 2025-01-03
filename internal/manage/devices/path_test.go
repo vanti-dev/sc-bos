@@ -50,6 +50,11 @@ func Test_parsePath(t *testing.T) {
 		{"a[1][2]", []pathSegment{n("a"), i(1), i(2)}, false},
 		{"a[1][2].b", []pathSegment{n("a"), i(1), i(2), n("b")}, false},
 		{"a[1].b[2].c", []pathSegment{n("a"), i(1), n("b"), i(2), n("c")}, false},
+		{"[1]b", []pathSegment{i(1)}, true},
+		{"a[1]b", []pathSegment{n("a"), i(1)}, true},
+		{"a[1]b[2]", []pathSegment{n("a"), i(1)}, true},
+		{"a.[1]", []pathSegment{n("a")}, true},
+		{"a[1].[2]", []pathSegment{n("a"), i(1)}, true},
 	}
 	for _, test := range tests {
 		t.Run(test.path, func(t *testing.T) {
