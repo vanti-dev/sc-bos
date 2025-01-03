@@ -2,7 +2,6 @@ import auth from '@/routes/auth/route.js';
 import automations from '@/routes/automations/route.js';
 import devices from '@/routes/devices/route.js';
 import ops from '@/routes/ops/route.js';
-import site from '@/routes/site/route.js';
 import system from '@/routes/system/route.js';
 import {useAccountStore} from '@/stores/account';
 import {useSidebarStore} from '@/stores/sidebar';
@@ -25,7 +24,6 @@ const router = createRouter({
     ...route(devices),
     ...route(ops),
     ...route(automations),
-    ...route(site),
     ...route(system)
   ]
 });

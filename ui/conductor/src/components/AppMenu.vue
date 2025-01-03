@@ -65,12 +65,6 @@ const menuItems = [
     link: {name: 'automations'}
   },
   {
-    title: 'Site Configuration',
-    subtitle: 'Configure site-specific settings and edit zones',
-    icon: 'mdi-office-building-cog',
-    link: {name: 'site'}
-  },
-  {
     title: 'System',
     subtitle: 'Status & settings for the underlying Building Operating System',
     icon: 'mdi-cogs',
