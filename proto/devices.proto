@@ -16,6 +16,8 @@ service DevicesApi {
 
   rpc GetDevicesMetadata(GetDevicesMetadataRequest) returns (DevicesMetadata);
   rpc PullDevicesMetadata(PullDevicesMetadataRequest) returns (stream PullDevicesMetadataResponse);
+
+  rpc GetDownloadDevicesUrl(GetDownloadDevicesUrlRequest) returns (DownloadDevicesUrl);
 }
 
 message Device {
@@ -158,4 +160,22 @@ message PullDevicesMetadataResponse {
     // When the change occurred
     google.protobuf.Timestamp change_time = 3;
   }
+}
+
+message GetDownloadDevicesUrlRequest {
+  // A query for filtering the devices that will be returned
+  Device.Query query = 1;
+  // Specifies the media type (or MIME type) of the file to be downloaded.
+  // Defaults to text/csv.
+  // Supported values are text/csv.
+  string media_type = 2;
+}
+
+message DownloadDevicesUrl {
+  string url = 1;
+  string filename = 2;
+  // The negotiated media type.
+  string media_type = 3;
+  // The latest time the url will be valid for, you will not be able to use the url after this time.
+  google.protobuf.Timestamp expire_after_time = 4;
 }
