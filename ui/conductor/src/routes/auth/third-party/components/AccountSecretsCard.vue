@@ -65,20 +65,14 @@
 </template>
 
 <script setup>
-import {newActionTracker} from '@/api/resource';
-import {deleteSecret, listSecrets, secretToObject} from '@/api/ui/tenant';
+import {newActionTracker} from '@/api/resource';import {deleteSecret, listSecrets, secretToObject} from '@/api/ui/tenant';
+import {HOUR, useNow} from '@/components/now.js';
 import {useErrorStore} from '@/components/ui-error/error';
 import useAuthSetup from '@/composables/useAuthSetup';
 import DeleteConfirmationDialog from '@/routes/auth/third-party/components/DeleteConfirmationDialog.vue';
-import {compareDesc} from 'date-fns';
-import dayjs from 'dayjs';
-import duration from 'dayjs/plugin/duration';
-import relativeTime from 'dayjs/plugin/relativeTime';
+import {compareDesc, formatDistance} from 'date-fns';
 import {computed, onMounted, onUnmounted, reactive, watch} from 'vue';
 import NewSecretForm from './NewSecretForm.vue';
-
-dayjs.extend(duration);
-dayjs.extend(relativeTime);
 
 const secretsTracker = reactive(/** @type {ActionTracker<ListSecretsResponse.AsObject>} */ newActionTracker());
 const deleteSecretTracker = reactive(/** @type {ActionTracker<DeleteSecretResponse.AsObject>} */ newActionTracker());
@@ -127,12 +121,17 @@ function refreshSecrets() {
   listSecrets({tenantId: props.account.id}, secretsTracker).catch((err) => console.error(err));
 }
 
+const {now: day} = useNow(HOUR);
 /**
  * @param {Date} date
  * @return {string}
  */
 function humanizeDate(date) {
-  return dayjs(date).from(dayjs());
+  if (date > day.value) {
+    return `in ${formatDistance(date, day.value)}`;
+  } else {
+    return `${formatDistance(day.value, date)} ago`;
+  }
 }
 
 /**
