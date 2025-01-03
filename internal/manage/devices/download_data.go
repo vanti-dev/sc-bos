@@ -15,7 +15,7 @@ import (
 // getTraitInfo returns the data we support exporting via the DevicesApi download endpoint.
 func (s *Server) getTraitInfo() map[string]traitInfo {
 	// Note: I want this to be dynamic, however, there are a few issues preventing this:
-	// 1. The protoregistry.Files and Types does not include gateway discovered types so we can use that
+	// 1. The protoregistry.Files and Types does not include gateway discovered types so we can't use that
 	// 2. Not all data for traits is useful, so we need to filter out the useful data
 	// 3. Property names aren't that useful to users so some transformation is needed
 	// 4. Not all traits include the relevant info in their Api aspect. Check the meter one for where the unit comes from.
