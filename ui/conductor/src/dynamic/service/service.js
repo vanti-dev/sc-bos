@@ -23,7 +23,7 @@ import {computed, inject, reactive, ref} from 'vue';
  *   loading: Ref<boolean>,
  *   remoteModel: Ref<T>,
  *   configModel: Ref<T>,
- *   readonly: Ref<boolean>,
+ *   'readonly': Ref<boolean>,
  *   serviceID: Ref<string | undefined>,
  *   serviceType: Ref<string | undefined>,
  *   serviceDisabled: Ref<boolean>
