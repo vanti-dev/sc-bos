@@ -201,7 +201,7 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 
 		// ensure it's not too long before we wake up, so the lights are refreshed regularly
 		// so external changes don't stick around forever
-		if ttl < 0 {
+		if ttl <= 0 {
 			ttl = readState.Config.RefreshEvery.Duration
 		}
 		if ttl > readState.Config.RefreshEvery.Duration {
