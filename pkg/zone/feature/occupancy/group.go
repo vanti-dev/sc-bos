@@ -35,14 +35,14 @@ func (g *Group) GetOccupancy(ctx context.Context, request *traits.GetOccupancyRe
 	for i, name := range g.names {
 		request := proto.Clone(request).(*traits.GetOccupancyRequest)
 		request.Name = name
-		fns[i] = func() (*traits.Occupancy, error) {
+		fns[i] = run.TagError(name, func() (*traits.Occupancy, error) {
 			return g.client.GetOccupancy(ctx, request)
-		}
+		})
 	}
 	for i, client := range g.clients {
-		fns[i+len(g.names)] = func() (*traits.Occupancy, error) {
+		fns[i+len(g.names)] = run.TagError("client", func() (*traits.Occupancy, error) {
 			return client.GetOccupancy(ctx, request)
-		}
+		})
 	}
 	allRes, allErrs := run.Collect(ctx, run.DefaultConcurrency, fns...)
 

@@ -3,6 +3,8 @@ package occupancy
 import (
 	"context"
 
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,6 +16,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/vanti-dev/sc-bos/pkg/util/math2"
 	"github.com/vanti-dev/sc-bos/pkg/util/pull"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
 )
 
 type enterLeave struct {
@@ -22,18 +25,26 @@ type enterLeave struct {
 	names  []string
 
 	model *occupancysensor.Model
+
+	logger *zap.Logger
 }
 
 func (e *enterLeave) GetOccupancy(ctx context.Context, request *traits.GetOccupancyRequest) (*traits.Occupancy, error) {
-	all := make([]*traits.EnterLeaveEvent, len(e.names))
-	for i, name := range e.names {
-		event, err := e.client.GetEnterLeaveEvent(ctx, &traits.GetEnterLeaveEventRequest{
-			Name: name,
-		})
-		if err != nil {
-			return nil, err
+	fns := make([]func() (*traits.EnterLeaveEvent, error), 0, len(e.names))
+	for _, name := range e.names {
+		name := name
+		fns = append(fns, run.TagError(name, func() (*traits.EnterLeaveEvent, error) {
+			return e.client.GetEnterLeaveEvent(ctx, &traits.GetEnterLeaveEventRequest{Name: name})
+		}))
+	}
+	all, errs := run.Collect(ctx, run.DefaultConcurrency, fns...)
+	if len(errs) == len(e.names) {
+		return nil, multierr.Combine(errs...)
+	}
+	if len(errs) > 0 {
+		if e.logger != nil {
+			e.logger.Warn("some enter leave occupancy sensors failed to get", zap.Errors("errors", multierr.Errors(multierr.Combine(errs...))))
 		}
-		all[i] = event
 	}
 	return e.update(all)
 }

@@ -48,8 +48,9 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 		if len(cfg.EnterLeaveOccupancySensors) > 0 {
 			elServer := &enterLeave{
-				model: occupancysensor.NewModel(),
-				names: cfg.EnterLeaveOccupancySensors,
+				model:  occupancysensor.NewModel(),
+				names:  cfg.EnterLeaveOccupancySensors,
+				logger: logger,
 			}
 			if err := f.clients.Client(&elServer.client); err != nil {
 				return err
