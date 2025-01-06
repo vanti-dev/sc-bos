@@ -1,6 +1,6 @@
 <template>
   <content-card>
-    <v-toolbar color="transparent" class="pl-4 py-2">
+    <v-toolbar color="transparent" class="pl-2 py-2">
       <v-text-field
           v-model="search"
           append-inner-icon="mdi-magnify"
@@ -59,6 +59,7 @@ import HotPoint from '@/components/HotPoint.vue';
 import SubsystemIcon from '@/components/SubsystemIcon.vue';
 import {useDeviceFilters, useDevices} from '@/composables/devices';
 import {useDataTableCollection} from '@/composables/table.js';
+import DeviceSideBar from '@/routes/devices/components/DeviceSideBar.vue';
 import {useDownloadLink} from '@/routes/devices/components/download.js';
 import {useSidebarStore} from '@/stores/sidebar';
 import {computed, ref} from 'vue';
@@ -67,7 +68,7 @@ import DeviceCell from './DeviceCell.vue';
 const props = defineProps({
   subsystem: {
     type: String,
-    default: 'all'
+    default: undefined
   },
   showSelect: {
     type: Boolean,
@@ -84,6 +85,10 @@ const props = defineProps({
   filter: {
     type: Function,
     default: () => true
+  },
+  forceQuery: {
+    type: Object, // keys are condition properties, values are stringEqualFold values
+    default: () => ({})
   }
 });
 const emit = defineEmits(['update:selectedDevices']);
@@ -94,7 +99,10 @@ const sidebar = useSidebarStore();
 const search = ref('');
 const forcedFilters = computed(() => {
   const res = {};
-  if (props.subsystem && props.subsystem !== 'all') res.subsystem = props.subsystem;
+  Object.assign(res, props.forceQuery ?? {}); // default values, explicit props override this
+  if (props.subsystem) {
+    res['metadata.membership.subsystem'] = props.subsystem === 'all' ? undefined : props.subsystem;
+  }
   return res;
 });
 const {filterCtx, forcedConditions, filterConditions} = useDeviceFilters(forcedFilters);
@@ -149,6 +157,7 @@ function showDevice(e, {item}) {
   sidebar.visible = true;
   sidebar.title = item.metadata.appearance ? item.metadata.appearance.title : item.name;
   sidebar.data = item;
+  sidebar.component = DeviceSideBar; // this line must be after the .data one!
 }
 
 /**
