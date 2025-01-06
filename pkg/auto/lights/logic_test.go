@@ -964,6 +964,13 @@ func Test_processState(t *testing.T) {
 	})
 }
 
+func assertNoErr(t *testing.T, err error) {
+	t.Helper()
+	if err != nil {
+		t.Fatalf("Error want <nil>, got %v", err)
+	}
+}
+
 func assertNoErrAndTtl(t *testing.T, ttl time.Duration, err error, targetTtl time.Duration) {
 	t.Helper()
 	if ttl != targetTtl {

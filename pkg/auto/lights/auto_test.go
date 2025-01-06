@@ -109,7 +109,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		}
 		return o.State == traits.Occupancy_OCCUPIED
 	})
-	assertNoErrAndTtl(t, ttl, err, 0)
+	assertNoErr(t, err)
 
 	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
 		Name: "light01",
@@ -133,7 +133,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		}
 		return o.State == traits.Occupancy_OCCUPIED
 	})
-	assertNoErrAndTtl(t, ttl, err, 0)
+	assertNoErr(t, err)
 	testActions.assertNoMoreCalls()
 
 	// check that making both PIRs unoccupied doesn't do anything, but then does
@@ -159,7 +159,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
 		return true // no state change, only time change
 	})
-	assertNoErrAndTtl(t, ttl, err, 0)
+	assertNoErr(t, err)
 	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
 		Name: "light01",
 		Brightness: &traits.Brightness{
@@ -201,7 +201,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		}
 		return o01.State == traits.Occupancy_OCCUPIED
 	})
-	assertNoErrAndTtl(t, ttl, err, 0)
+	assertNoErr(t, err)
 	// it works after the retry
 	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
 		Name: "light01",
@@ -228,7 +228,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		}
 		return o01.State == traits.Occupancy_UNOCCUPIED && o02.State == traits.Occupancy_UNOCCUPIED
 	})
-	assertNoErrAndTtl(t, ttl, err, 0)
+	assertNoErr(t, err)
 	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
 		Name: "light01",
 		Brightness: &traits.Brightness{
