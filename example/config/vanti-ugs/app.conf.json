@@ -735,9 +735,6 @@
         "van/uk/brum/ugs/zones/floors/ground",
         "van/uk/brum/ugs/zones/floors/first"
       ],
-      "enterLeaveOccupancySensors": [
-        "van/uk/brum/ugs/devices/ACR-L00-01"
-      ],
       "airQualitySensors": [
         "van/uk/brum/ugs/zones/floors/basement",
         "van/uk/brum/ugs/zones/floors/ground",
