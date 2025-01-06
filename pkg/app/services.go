@@ -30,6 +30,7 @@ func (c *Controller) startDrivers(configs []driver.RawConfig) (*service.Map, err
 	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
 		driverServices := ctxServices
 		driverServices.Config = &serviceConfigStore{store: c.ControllerConfig.Drivers(), id: id}
+		driverServices.Logger = driverServices.Logger.With(zap.String("service.id", id), zap.String("service.kind", kind))
 
 		f, ok := c.SystemConfig.DriverFactories[kind]
 		if !ok {
@@ -59,6 +60,7 @@ func (c *Controller) startAutomations(configs []auto.RawConfig) (*service.Map, e
 	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
 		autoServices := ctxServices
 		autoServices.Config = &serviceConfigStore{store: c.ControllerConfig.Automations(), id: id}
+		autoServices.Logger = autoServices.Logger.With(zap.String("service.id", id), zap.String("service.kind", kind))
 
 		f, ok := c.SystemConfig.AutoFactories[kind]
 		if !ok {
@@ -123,6 +125,7 @@ func (c *Controller) startZones(configs []zone.RawConfig) (*service.Map, error) 
 	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
 		zoneServices := ctxServices
 		zoneServices.Config = &serviceConfigStore{store: c.ControllerConfig.Zones(), id: id}
+		zoneServices.Logger = zoneServices.Logger.With(zap.String("service.id", id), zap.String("service.kind", kind))
 
 		f, ok := c.SystemConfig.ZoneFactories[kind]
 		if !ok {
