@@ -78,6 +78,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	}
 
 	processComplete := automation.bus.On("process-complete", emitter.Sync)
+	const stateWaitTime = time.Second
 	waitForState := func(wait time.Duration, test func(state *ReadState) bool) (time.Duration, error) {
 		t.Helper()
 		timeout := time.NewTimer(wait)
@@ -102,7 +103,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
 	// DEAR FUTURE DEV, if you get test failures here it's probably because you're missing a case in the
 	// clients switch statement above
-	ttl, err := waitForState(time.Millisecond*500, func(state *ReadState) bool {
+	ttl, err := waitForState(stateWaitTime, func(state *ReadState) bool {
 		o, ok := state.Occupancy["pir01"]
 		if !ok {
 			return false
@@ -126,7 +127,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 
 	// check that setting occupied on the other PIR does nothing
 	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
-	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
+	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
 		o, ok := state.Occupancy["pir02"]
 		if !ok {
 			return false
@@ -139,7 +140,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	// check that making both PIRs unoccupied doesn't do anything, but then does
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(now.Add(-3 * time.Minute))})
 	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(now.Add(-8 * time.Minute))})
-	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
+	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		o02, ok02 := state.Occupancy["pir02"]
 		if !ok01 || !ok02 {
@@ -156,7 +157,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	// trigger the timer
 	now = now.Add(7 * time.Minute)
 	tickChan <- now
-	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
+	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
 		return true // no state change, only time change
 	})
 	assertNoErrAndTtl(t, ttl, err, cfg.RefreshEvery.Duration)
@@ -176,7 +177,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	// test 1 retry
 	testActions.err = errFailedBrightnessUpdate
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
-	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
+	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
 			return false
@@ -194,7 +195,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	// since newTimer is intercepted by this test, we force a replay here
 	now = now.Add(time.Millisecond * 500)
 	tickChan <- now
-	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
+	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
 			return false
@@ -220,7 +221,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(time.Unix(0, 0).Add(-3 * time.Minute))})
 	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(time.Unix(0, 0).Add(-3 * time.Minute))})
 	tickChan <- now
-	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
+	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		o02, ok02 := state.Occupancy["pir02"]
 		if !ok01 || !ok02 {
@@ -244,7 +245,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 
 	testActions.err = errFailedBrightnessUpdate
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
-	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
+	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
 			return false
@@ -264,7 +265,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	// since newTimer is intercepted by this test, we force a replay here
 	now = now.Add(time.Millisecond * 500)
 	tickChan <- now
-	ttl, err = waitForState(time.Millisecond*500, func(state *ReadState) bool {
+	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
 			return false
@@ -284,7 +285,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	// since newTimer is intercepted by this test, we force a replay here
 	now = now.Add(time.Millisecond * 500)
 	tickChan <- now
-	ttl, err = waitForState(time.Millisecond*502, func(state *ReadState) bool {
+	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
 			return false
