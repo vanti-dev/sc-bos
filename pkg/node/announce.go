@@ -50,43 +50,96 @@ func AnnounceWithNamePrefix(prefix string, a Announcer) Announcer {
 
 // AnnounceContext returns a new Announcer that undoes any announcements when ctx is Done.
 // This leaks a go routine if ctx is never done.
+//
+// Deprecated: AnnounceContext does not allow synchronising with the undos, which is usually necessary.
+// Use AnnounceScope instead, or a ReplaceAnnouncer if multiple generations are required.
 func AnnounceContext(ctx context.Context, a Announcer) Announcer {
-	mu := sync.Mutex{}
-	var undos []Undo
-	undone := make(chan struct{})
-	go func() {
-		defer close(undone)
-		<-ctx.Done()
-		mu.Lock()
-		defer mu.Unlock()
-		for _, undo := range undos {
-			undo()
-		}
-		undos = nil
-	}()
-	return AnnouncerFunc(func(name string, features ...Feature) Undo {
-		select {
-		case <-ctx.Done():
-			return NilUndo
-		default:
-		}
+	scoped, undo := AnnounceScope(a)
+	_ = context.AfterFunc(ctx, undo)
+	return scoped
+}
 
-		undo := a.Announce(name, features...)
-		mu.Lock()
-		defer mu.Unlock()
+// AnnounceScope returns a new scoped Announcer that will undo all announcements made to it when the returned Undo is called.
+// The Undo will block until all undos are complete.
+// Once the Undo is called, the Announcer is no longer valid and any further calls to Announce will do nothing.
+//
+// It is safe to call the Undo more than once - calls after the first will do nothing.
+// It is safe to call the Undo returned by an individual Announce call, which will undo that announcement as normal,
+// but it is not necessary to do so before calling the scope's Undo.
+func AnnounceScope(parent Announcer) (Announcer, Undo) {
+	s := &scope{
+		parent: parent,
+	}
+	return s, s.undoAll
+}
 
-		select {
-		case <-undone:
-			// undos have been called already, we missed the boat
-			undo()
-			return NilUndo
-		default:
-		}
+// scope wraps an Announcer to allow undoing all announcements at once.
+type scope struct {
+	parent Announcer
 
-		undo = UndoOnce(undo)
-		undos = append(undos, undo)
-		return undo
-	})
+	mu    sync.Mutex
+	done  bool
+	undos []Undo
+}
+
+func (s *scope) Announce(name string, features ...Feature) Undo {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.done {
+		return NilUndo
+	}
+
+	undo := s.parent.Announce(name, features...)
+
+	undo = UndoOnce(undo)
+	s.undos = append(s.undos, undo)
+	return undo
+}
+
+// undoAll will undo all announcements made to this scope, blocking until all undos are complete.
+// This method is idempotent and safe to call concurrently.
+func (s *scope) undoAll() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.done {
+		return
+	}
+	for _, undo := range s.undos {
+		undo()
+	}
+	s.done = true
+	s.undos = nil
+}
+
+// ReplaceAnnouncer wraps an Announcer to allow replacing a set of announcements safely.
+type ReplaceAnnouncer struct {
+	parent      Announcer
+	current     Announcer
+	undoCurrent Undo
+	mu          sync.Mutex
+}
+
+func NewReplaceAnnouncer(parent Announcer) *ReplaceAnnouncer {
+	return &ReplaceAnnouncer{parent: parent}
+}
+
+// Replace will return a new Announcer that supercedes all previous Announcers returned by this ReplaceAnnouncer.
+//
+// Announcements made to the returned Announcer will be undone when ctx is cancelled.
+// The announcer from the previous call to Replace has all its announcements undone - Replace blocks until this is
+// complete.
+func (r *ReplaceAnnouncer) Replace(ctx context.Context) Announcer {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.current != nil {
+		r.undoCurrent()
+	}
+	created, undo := AnnounceScope(r.parent)
+	_ = context.AfterFunc(ctx, undo)
+	r.current = created
+	r.undoCurrent = undo
+	return created
 }
 
 // AnnounceFeatures returns an Announcer that acts like `Announce(name, [moreFeatures..., features...])`

@@ -9,10 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestAnnounceContext(t *testing.T) {
-	ctx, stop := context.WithCancel(context.Background())
-	defer stop()
-
+func TestAnnounceScope(t *testing.T) {
 	var names []string
 	var m sync.Mutex
 	an := AnnouncerFunc(func(name string, features ...Feature) Undo {
@@ -26,50 +23,94 @@ func TestAnnounceContext(t *testing.T) {
 			m.Unlock()
 		}
 	})
+	check := func(want ...string) {
+		t.Helper()
+		m.Lock()
+		defer m.Unlock()
+		if diff := cmp.Diff(want, names); diff != "" {
+			t.Errorf("unexpected names (-want +got):\n%s", diff)
+		}
+	}
 
-	a := AnnounceContext(ctx, an)
+	a, undo := AnnounceScope(an)
 	a.Announce("a")
 	ub := a.Announce("b")
 	a.Announce("c")
 
-	m.Lock()
-	if diff := cmp.Diff(names, []string{"a", "b", "c"}); diff != "" {
-		t.Errorf("unexpected names (-want +got):\n%s", diff)
-	}
-	m.Unlock()
+	check("a", "b", "c")
 
 	ub()
-	m.Lock()
-	if diff := cmp.Diff(names, []string{"a", "b:undo", "c"}); diff != "" {
-		t.Errorf("unexpected names (-want +got):\n%s", diff)
-	}
-	m.Unlock()
+	check("a", "b:undo", "c")
 
 	a.Announce("d")
-	m.Lock()
-	if diff := cmp.Diff(names, []string{"a", "b:undo", "c", "d"}); diff != "" {
-		t.Errorf("unexpected names (-want +got):\n%s", diff)
-	}
-	m.Unlock()
+	check("a", "b:undo", "c", "d")
 
-	stop()
-	cont := make(chan struct{})
-	go func() {
-		<-ctx.Done()
-		time.Sleep(100 * time.Millisecond)
-		close(cont)
-	}()
-	<-cont
-	m.Lock()
-	if diff := cmp.Diff(names, []string{"a:undo", "b:undo", "c:undo", "d:undo"}); diff != "" {
-		t.Errorf("unexpected names (-want +got):\n%s", diff)
-	}
-	m.Unlock()
+	undo()
+	check("a:undo", "b:undo", "c:undo", "d:undo")
 
+	// new name should not be announced once the scope is finished
 	a.Announce("e")
-	m.Lock()
-	if diff := cmp.Diff(names, []string{"a:undo", "b:undo", "c:undo", "d:undo"}); diff != "" {
-		t.Errorf("unexpected names (-want +got):\n%s", diff)
+	check("a:undo", "b:undo", "c:undo", "d:undo")
+}
+
+func TestReplaceAnnouncer(t *testing.T) {
+	var names []string
+	var m sync.Mutex
+	an := AnnouncerFunc(func(name string, features ...Feature) Undo {
+		m.Lock()
+		i := len(names)
+		names = append(names, name)
+		m.Unlock()
+		return func() {
+			m.Lock()
+			names[i] += ":undo"
+			m.Unlock()
+		}
+	})
+	check := func(want ...string) {
+		t.Helper()
+		m.Lock()
+		defer m.Unlock()
+		if diff := cmp.Diff(want, names); diff != "" {
+			t.Errorf("unexpected names (-want +got):\n%s", diff)
+		}
 	}
-	m.Unlock()
+
+	ra := NewReplaceAnnouncer(an)
+
+	ctx1, cancel1 := context.WithCancel(context.Background())
+	a1 := ra.Replace(ctx1)
+	a1.Announce("a")
+	ub := a1.Announce("b")
+	a1.Announce("c")
+
+	check("a", "b", "c")
+
+	ub()
+	check("a", "b:undo", "c")
+
+	a1.Announce("d")
+	check("a", "b:undo", "c", "d")
+
+	// cancelling the context should undo all the announcements asynchronously
+	cancel1()
+	time.Sleep(50 * time.Millisecond)
+
+	check("a:undo", "b:undo", "c:undo", "d:undo")
+
+	// new name should not be announced once the context has been cancelled
+	a1.Announce("e")
+	check("a:undo", "b:undo", "c:undo", "d:undo")
+
+	a2 := ra.Replace(context.Background())
+	a2.Announce("f")
+
+	check("a:undo", "b:undo", "c:undo", "d:undo", "f")
+
+	a3 := ra.Replace(context.Background())
+	// should have undone everything announced by a2
+	check("a:undo", "b:undo", "c:undo", "d:undo", "f:undo")
+
+	a3.Announce("g")
+	check("a:undo", "b:undo", "c:undo", "d:undo", "f:undo", "g")
 }
