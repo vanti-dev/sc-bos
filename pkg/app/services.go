@@ -30,13 +30,13 @@ func (c *Controller) startDrivers(configs []driver.RawConfig) (*service.Map, err
 	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
 		driverServices := ctxServices
 		driverServices.Config = &serviceConfigStore{store: c.ControllerConfig.Drivers(), id: id}
-		driverServices.Logger = driverServices.Logger.With(zap.String("service.id", id), zap.String("service.kind", kind))
+		driverServices.Logger = loggerWithServiceInfo(driverServices.Logger, id, kind)
 
 		f, ok := c.SystemConfig.DriverFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported driver type %v", kind)
 		}
-		return f.New(ctxServices), nil
+		return f.New(driverServices), nil
 	}, service.IdIsRequired)
 
 	var allErrs error
@@ -60,13 +60,13 @@ func (c *Controller) startAutomations(configs []auto.RawConfig) (*service.Map, e
 	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
 		autoServices := ctxServices
 		autoServices.Config = &serviceConfigStore{store: c.ControllerConfig.Automations(), id: id}
-		autoServices.Logger = autoServices.Logger.With(zap.String("service.id", id), zap.String("service.kind", kind))
+		autoServices.Logger = loggerWithServiceInfo(autoServices.Logger, id, kind)
 
 		f, ok := c.SystemConfig.AutoFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported automation type %v", kind)
 		}
-		return f.New(ctxServices), nil
+		return f.New(autoServices), nil
 	}, service.IdIsRequired)
 
 	var allErrs error
@@ -125,13 +125,13 @@ func (c *Controller) startZones(configs []zone.RawConfig) (*service.Map, error) 
 	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
 		zoneServices := ctxServices
 		zoneServices.Config = &serviceConfigStore{store: c.ControllerConfig.Zones(), id: id}
-		zoneServices.Logger = zoneServices.Logger.With(zap.String("service.id", id), zap.String("service.kind", kind))
+		zoneServices.Logger = loggerWithServiceInfo(zoneServices.Logger, id, kind)
 
 		f, ok := c.SystemConfig.ZoneFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported zone type %v", kind)
 		}
-		return f.New(ctxServices), nil
+		return f.New(zoneServices), nil
 	}, service.IdIsRequired)
 
 	var allErrs error
@@ -155,9 +155,10 @@ func logServiceMapChanges(ctx context.Context, logger *zap.Logger, m *service.Ma
 func logServiceRecordChange(logger *zap.Logger, oldVal, newVal *service.StateRecord) {
 	switch {
 	case newVal != nil:
-		logger = logger.With(zap.String("id", newVal.Id), zap.String("kind", newVal.Kind))
+		// the vars match the same fields passed to the services in startFoo
+		logger = loggerWithServiceInfo(logger, newVal.Id, newVal.Kind)
 	case oldVal != nil:
-		logger = logger.With(zap.String("id", oldVal.Id), zap.String("kind", oldVal.Kind))
+		logger = loggerWithServiceInfo(logger, oldVal.Id, oldVal.Kind)
 	}
 	switch {
 	case oldVal == nil && newVal != nil: // do nothing
@@ -184,6 +185,10 @@ func logServiceRecordChange(logger *zap.Logger, oldVal, newVal *service.StateRec
 		newState := state{Active: newVal.State.Active, Loading: newVal.State.Loading, Error: newVal.State.Err}
 		logger.Debug("Updated", zap.Any("old", oldState), zap.Any("new", newState))
 	}
+}
+
+func loggerWithServiceInfo(logger *zap.Logger, id, kind string) *zap.Logger {
+	return logger.With(zap.String("service.id", id), zap.String("service.kind", kind))
 }
 
 func announceServices[M ~map[string]T, T any](c *Controller, name string, services *service.Map, factories M, store serviceapi.Store) node.Undo {
