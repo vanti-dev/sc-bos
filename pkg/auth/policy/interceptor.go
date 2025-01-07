@@ -5,6 +5,8 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"log"
+	"net/http"
+	"strings"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"go.uber.org/zap"
@@ -34,6 +36,24 @@ func NewInterceptor(policy Policy, opts ...InterceptorOption) *Interceptor {
 		o(interceptor)
 	}
 	return interceptor
+}
+
+func (i *Interceptor) HTTPInterceptor(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := i.checkPolicyHTTP(r)
+		if err != nil {
+			switch status.Code(err) {
+			case codes.Unauthenticated:
+				http.Error(w, err.Error(), http.StatusUnauthorized)
+			case codes.PermissionDenied:
+				http.Error(w, err.Error(), http.StatusForbidden)
+			default:
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			return
+		}
+		handler.ServeHTTP(w, r)
+	})
 }
 
 func (i *Interceptor) GRPCUnaryInterceptor() grpc.UnaryServerInterceptor {
@@ -122,6 +142,7 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 	}
 
 	input := Attributes{
+		Protocol:           ProtocolGRPC,
 		Service:            service,
 		Method:             method,
 		Stream:             stream,
@@ -158,6 +179,53 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 	if p, ok := peer.FromContext(ctx); ok {
 		addr = p.Addr.String()
 	}
+	if err != nil {
+		i.logger.Debug("request blocked by policy",
+			zap.Any("attributes", input),
+			zap.String("addr", addr),
+			zap.Strings("queries", queries),
+		)
+	}
+	return creds, err
+}
+
+func (i *Interceptor) checkPolicyHTTP(r *http.Request) (*verifiedCreds, error) {
+	hdr := r.Header.Get("Authorization")
+	creds := &verifiedCreds{}
+	if hdr != "" {
+		tkn, err := splitBearer(hdr)
+		if err != nil {
+			return nil, err
+		}
+		if i.verifier != nil {
+			claims, err := i.verifier.ValidateAccessToken(r.Context(), tkn)
+			if err != nil {
+				i.logger.Error("token failed verification", zap.Error(err))
+				return nil, err
+			}
+			creds.token = tkn
+			creds.tokenClaims = claims
+		}
+	}
+	if cert := httpPeerCert(r); cert != nil {
+		creds.cert = cert
+		creds.certValid = true
+	}
+
+	input := Attributes{
+		Protocol:           ProtocolHTTP,
+		Method:             r.Method,
+		Path:               r.URL.Path,
+		CertificatePresent: creds.cert != nil,
+		CertificateValid:   creds.certValid,
+		Certificate:        creds.cert,
+		TokenPresent:       creds.token != "",
+		TokenValid:         creds.tokenClaims != nil,
+		TokenClaims:        creds.tokenClaims,
+	}
+
+	queries, err := Validate(r.Context(), i.policy, input)
+	addr := r.RemoteAddr
 	if err != nil {
 		i.logger.Debug("request blocked by policy",
 			zap.Any("attributes", input),
@@ -206,4 +274,23 @@ func (ss *serverStreamInterceptor) RecvMsg(m any) error {
 	}
 
 	return ss.cb(m)
+}
+
+func splitBearer(header string) (bearer string, err error) {
+	tokenType, tokenValue, found := strings.Cut(header, " ")
+	if !found {
+		return "", status.Error(codes.Unauthenticated, "bad authorization header")
+	}
+	if !strings.EqualFold(tokenType, "bearer") {
+		return "", status.Error(codes.Unauthenticated, "authorization header must be a bearer token")
+	}
+
+	return tokenValue, nil
+}
+
+func httpPeerCert(r *http.Request) *x509.Certificate {
+	if r.TLS == nil || len(r.TLS.VerifiedChains) == 0 {
+		return nil
+	}
+	return r.TLS.VerifiedChains[0][0]
 }

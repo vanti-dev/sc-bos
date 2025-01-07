@@ -208,6 +208,9 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	// configure request authorisation, here we setup grpc interceptors that decide if a request is denied or not.
 	logPolicyMode(config.PolicyMode, logger)
+	httpAuth := func(next http.Handler) http.Handler {
+		return next
+	}
 	if pol := configPolicy(config); pol != nil {
 		interceptor := policy.NewInterceptor(pol,
 			policy.WithLogger(logger.Named("policy")),
@@ -217,6 +220,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 			grpc.ChainUnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
 			grpc.ChainStreamInterceptor(interceptor.GRPCStreamingInterceptor()),
 		)
+		httpAuth = interceptor.HTTPInterceptor
 	}
 
 	// here we set up our support for runtime added RPCs.
@@ -272,9 +276,9 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 
 	// Well known APIs
 	// Allow getting/updating the log level at run time
-	mux.Handle("/__/log/level", config.Logger.Level)
+	mux.Handle("/__/log/level", httpAuth(config.Logger.Level))
 	// Get version information about this binary
-	mux.Handle("/__/version", Version)
+	mux.Handle("/__/version", httpAuth(Version))
 
 	// configure CORS setup
 	co := cors.New(cors.Options{

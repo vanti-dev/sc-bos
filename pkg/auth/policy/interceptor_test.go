@@ -3,6 +3,8 @@ package policy
 import (
 	"context"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/open-policy-agent/opa/ast"
@@ -16,7 +18,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 )
 
-func TestInterceptor(t *testing.T) {
+func TestInterceptor_GRPC(t *testing.T) {
 	lis := bufconn.Listen(1024 * 1024)
 
 	compiler, err := ast.CompileModules(regoFiles)
@@ -82,6 +84,42 @@ func TestInterceptor(t *testing.T) {
 	}
 }
 
+func TestInterceptor_HTTP(t *testing.T) {
+	compiler, err := ast.CompileModules(regoFiles)
+	if err != nil {
+		t.Fatal(err)
+	}
+	interceptor := NewInterceptor(&static{compiler: compiler})
+
+	server := httptest.NewTLSServer(interceptor.HTTPInterceptor(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		// this handler should be called only for requests that are allowed by the policy
+		writer.WriteHeader(http.StatusOK)
+	})))
+	defer server.Close()
+	client := server.Client()
+
+	check := func(method, path string, expectedStatus int) {
+		req, err := http.NewRequest(method, server.URL+path, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if resp.StatusCode != expectedStatus {
+			t.Errorf("expected status %d, got %d", expectedStatus, resp.StatusCode)
+		}
+	}
+
+	// all GET requests are allowed
+	check(http.MethodGet, "/foo", http.StatusOK)
+	check(http.MethodGet, "/bar", http.StatusOK)
+	// POST requests are only allowed for /foo
+	check(http.MethodPost, "/foo", http.StatusOK)
+	check(http.MethodPost, "/bar", http.StatusForbidden)
+}
+
 var regoFiles = map[string]string{
 	"smartcore.rego": `package smartcore
 
@@ -97,5 +135,10 @@ allow {
 	input.method == "UpdateOnOff"
 	input.request.onOff.state == "ON"
 }
+`,
+	"http.rego": `package http
+
+allow { input.method == "GET" }
+allow { input.path == "/foo" }
 `,
 }

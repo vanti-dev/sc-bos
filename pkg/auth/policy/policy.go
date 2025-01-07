@@ -14,11 +14,20 @@ import (
 
 var ErrPermissionDenied = status.Error(codes.PermissionDenied, "you are not authorized to perform this operation")
 
+type Protocol string
+
+const (
+	ProtocolGRPC Protocol = "grpc"
+	ProtocolHTTP Protocol = "http"
+)
+
 // Attributes is a collection of metadata which can be used by policies to decide whether to accept or reject
 // a protected operation.
 type Attributes struct {
-	Service string `json:"service"` // gRPC service name, fully qualified
-	Method  string `json:"method"`  // gRPC method name
+	Protocol Protocol `json:"protocol"`
+	Service  string   `json:"service"` // gRPC service name, fully qualified (gRPC requests only)
+	Method   string   `json:"method"`  // gRPC / HTTP method name
+	Path     string   `json:"path"`    // HTTP path (HTTP requests only)
 	// Metadata about streams, for streaming calls. For unary calls, both IsServerStream and IsClientStream
 	// will be false.
 	Stream StreamAttributes `json:"stream"`
@@ -80,7 +89,7 @@ func (f Func) EvalPolicy(ctx context.Context, query string, input Attributes) (r
 //   - data.foo.allow
 //   - data.grpc_default.allow
 func Validate(ctx context.Context, policy Policy, attr Attributes) (tried []string, err error) {
-	queries := queryHierarchy(attr.Service)
+	queries := queryHierarchy(attr.Protocol, attr.Service)
 	for i, query := range queries {
 		result, err := policy.EvalPolicy(ctx, query, attr)
 		if err != nil {
@@ -98,14 +107,23 @@ func Validate(ctx context.Context, policy Policy, attr Attributes) (tried []stri
 	return queries, ErrPermissionDenied
 }
 
-func queryHierarchy(service string) (queries []string) {
-	components := strings.Split(service, ".")
-	for len(components) > 0 {
-		query := fmt.Sprintf("data.%s.allow", strings.Join(components, "."))
-		queries = append(queries, query)
+func queryHierarchy(protocol Protocol, service string) (queries []string) {
+	switch protocol {
+	case ProtocolGRPC:
+		components := strings.Split(service, ".")
+		for len(components) > 0 {
+			query := fmt.Sprintf("data.%s.allow", strings.Join(components, "."))
+			queries = append(queries, query)
 
-		components = components[:len(components)-1]
+			components = components[:len(components)-1]
+		}
+		queries = append(queries, "data.grpc_default.allow")
+		return queries
+
+	case ProtocolHTTP:
+		return []string{"data.http.allow"}
+
+	default:
+		panic("unknown protocol")
 	}
-	queries = append(queries, "data.grpc_default.allow")
-	return
 }

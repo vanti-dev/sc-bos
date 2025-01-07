@@ -40,7 +40,10 @@ func TestValidate(t *testing.T) {
 
 	cases := map[string]testCase{
 		"Hierarchy": {
-			attr:      Attributes{Service: "foo.bar.baz"},
+			attr: Attributes{
+				Protocol: ProtocolGRPC,
+				Service:  "foo.bar.baz",
+			},
 			expectErr: ErrPermissionDenied,
 			expectQueries: []string{
 				"data.foo.bar.baz.allow",
@@ -50,7 +53,10 @@ func TestValidate(t *testing.T) {
 			},
 		},
 		"ShortCircuit_Positive": {
-			attr: Attributes{Service: "foo.bar.baz"},
+			attr: Attributes{
+				Protocol: ProtocolGRPC,
+				Service:  "foo.bar.baz",
+			},
 			responses: map[string]rego.ResultSet{
 				"data.foo.bar.baz.allow": empty,
 				"data.foo.bar.allow":     allow,
@@ -63,7 +69,10 @@ func TestValidate(t *testing.T) {
 			},
 		},
 		"ShortCircuit_Negative": {
-			attr: Attributes{Service: "foo.bar.baz"},
+			attr: Attributes{
+				Protocol: ProtocolGRPC,
+				Service:  "foo.bar.baz",
+			},
 			responses: map[string]rego.ResultSet{
 				"data.foo.bar.baz.allow": empty,
 				"data.foo.bar.allow":     deny,
@@ -116,11 +125,17 @@ func TestValidate_Integration(t *testing.T) {
 	}
 	cases := map[string]testCase{
 		"foo.bar": {
-			attr:      Attributes{Service: "foo.bar"},
+			attr: Attributes{
+				Protocol: ProtocolGRPC,
+				Service:  "foo.bar",
+			},
 			expectErr: ErrPermissionDenied,
 		},
 		"foo.baz": {
-			attr:      Attributes{Service: "foo.baz"},
+			attr: Attributes{
+				Protocol: ProtocolGRPC,
+				Service:  "foo.baz",
+			},
 			expectErr: nil,
 		},
 	}
