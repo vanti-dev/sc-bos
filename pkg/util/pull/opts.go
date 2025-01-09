@@ -3,6 +3,7 @@ package pull
 import (
 	"time"
 
+	"github.com/jonboulle/clockwork"
 	"go.uber.org/zap"
 )
 
@@ -27,10 +28,23 @@ func WithPollDelay(delay time.Duration) Option {
 	}
 }
 
+func withClock(clock clockwork.Clock) Option {
+	return func(opts *changeOpts) {
+		opts.clock = clock
+	}
+}
+
+const (
+	DefaultPollDelay = time.Second
+	DefaultRetryInit = 100 * time.Millisecond
+	DefaultRetryMax  = 10 * time.Second
+)
+
 var defaultChangeOpts = []Option{
+	withClock(clockwork.NewRealClock()),
 	WithLogger(zap.NewNop()),
-	WithPullFallback(100*time.Millisecond, 10*time.Second),
-	WithPollDelay(time.Second),
+	WithPullFallback(DefaultRetryInit, DefaultRetryMax),
+	WithPollDelay(DefaultPollDelay),
 }
 
 type changeOpts struct {
@@ -39,6 +53,8 @@ type changeOpts struct {
 
 	fallbackInitialDelay time.Duration
 	fallbackMaxDelay     time.Duration
+
+	clock clockwork.Clock
 }
 
 func calcOpts(opts ...Option) changeOpts {
