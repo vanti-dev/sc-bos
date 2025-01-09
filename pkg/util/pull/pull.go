@@ -72,7 +72,7 @@ func runPull(ctx context.Context, pull Getter, conf changeOpts) error {
 	return runBlocking(ctx, "pulls", pull, conf, isUnimplemented)
 }
 
-// runPoll blocks repeatedly calling get after some delay until context is cancelled or get returns an error that is not codes.Unimplemented.
+// runPoll blocks repeatedly calling get after some delay until context is cancelled or get returns an error that has codes.Unimplemented.
 // runPoll never returns a nil error.
 func runPoll(ctx context.Context, err error, get Getter, conf changeOpts) error {
 	pollDelay := conf.pollDelay
