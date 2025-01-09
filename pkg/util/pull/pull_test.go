@@ -36,7 +36,7 @@ func TestOrPoll(t *testing.T) {
 	})
 
 	t.Run("get", func(t *testing.T) {
-		ctx, stop := context.WithTimeout(context.Background(), 10000*time.Second)
+		ctx, stop := context.WithTimeout(context.Background(), 10*time.Second)
 		t.Cleanup(stop)
 
 		clock := clockwork.NewFakeClock()
@@ -44,7 +44,7 @@ func TestOrPoll(t *testing.T) {
 
 		res := make(chan error, 1)
 		go func() {
-			res <- OrPoll(ctx, pull.Getter, get.Getter, withClock(clock))
+			res <- OrPoll(ctx, pull.Getter, get.Getter, withClock(clock), WithPullFallbackJitter(0))
 		}()
 
 		pull.Return(status.Error(codes.Unimplemented, "not implemented"))
@@ -73,7 +73,7 @@ func TestOrPoll(t *testing.T) {
 
 		res := make(chan error, 1)
 		go func() {
-			res <- OrPoll(ctx, pull.Getter, get.Getter, withClock(clock))
+			res <- OrPoll(ctx, pull.Getter, get.Getter, withClock(clock), WithPullFallbackJitter(0))
 		}()
 
 		pull.Return(status.Error(codes.NotFound, "not found"))
@@ -94,7 +94,7 @@ func TestOrPoll(t *testing.T) {
 
 		res := make(chan error, 1)
 		go func() {
-			res <- OrPoll(ctx, pull.Getter, get.Getter, withClock(clock))
+			res <- OrPoll(ctx, pull.Getter, get.Getter, withClock(clock), WithPullFallbackJitter(0))
 		}()
 
 		pull.Return(status.Error(codes.Unimplemented, "not implemented"))
@@ -120,7 +120,7 @@ func TestOrPoll(t *testing.T) {
 
 		res := make(chan error, 1)
 		go func() {
-			res <- OrPoll(ctx, pull.Getter, get.Getter, withClock(clock))
+			res <- OrPoll(ctx, pull.Getter, get.Getter, withClock(clock), WithPullFallbackJitter(0))
 		}()
 
 		pull.Return(status.Error(codes.Unimplemented, "not implemented"))
@@ -144,7 +144,7 @@ func TestOrPoll(t *testing.T) {
 
 		res := make(chan error, 1)
 		go func() {
-			res <- OrPoll(ctx, pull.Getter, get.Getter, withClock(clock))
+			res <- OrPoll(ctx, pull.Getter, get.Getter, withClock(clock), WithPullFallbackJitter(0))
 		}()
 
 		pull.Return(status.Error(codes.Unimplemented, "not implemented"))

@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -76,16 +77,14 @@ func runPull(ctx context.Context, pull Getter, conf changeOpts) error {
 // runPoll never returns a nil error.
 func runPoll(ctx context.Context, err error, get Getter, conf changeOpts) error {
 	pollDelay := conf.pollDelay
+	retry := conf.backoff(backoff.WithInitialInterval(pollDelay + pollDelay/5)) // pollDelay * 1.2 (without casting)
 	errCount := 0
-	ticker := conf.clock.NewTicker(conf.pollDelay)
+	ticker := conf.clock.NewTicker(pollDelay)
 	defer ticker.Stop()
 
 	incErr := func() {
 		errCount++
-		pollDelay = time.Duration(float64(pollDelay) * 1.2)
-		if pollDelay > conf.fallbackMaxDelay {
-			pollDelay = conf.fallbackMaxDelay
-		}
+		pollDelay = retry.NextBackOff()
 		ticker.Reset(pollDelay)
 		if errCount == 5 {
 			conf.logger.Warn("poll is failing, will try keep retrying", zap.Error(err))
@@ -114,6 +113,7 @@ func runPoll(ctx context.Context, err error, get Getter, conf changeOpts) error 
 			// get worked, reset the poll delay back to the configured one (if we have to)
 			if pollDelay != conf.pollDelay {
 				pollDelay = conf.pollDelay
+				retry.Reset()
 				ticker.Reset(conf.pollDelay)
 			}
 		}
@@ -123,14 +123,14 @@ func runPoll(ctx context.Context, err error, get Getter, conf changeOpts) error 
 // runBlocking reties task until ctx is cancelled or fatal returns true for returned errors.
 func runBlocking(ctx context.Context, name string, task Getter, conf changeOpts, fatal func(error) bool) error {
 	var mu sync.Mutex
-	var delay time.Duration
+	retry := conf.backoff()
 	var errCount int
 	resetErr := func() int {
 		mu.Lock()
 		defer mu.Unlock()
 		old := errCount
 		errCount = 0
-		delay = 0
+		retry.Reset()
 		return old
 	}
 	incErr := func() int {
@@ -139,17 +139,10 @@ func runBlocking(ctx context.Context, name string, task Getter, conf changeOpts,
 		errCount++
 		return errCount
 	}
-	incDelay := func() {
+	incDelay := func() time.Duration {
 		mu.Lock()
 		defer mu.Unlock()
-		if delay == 0 {
-			delay = conf.fallbackInitialDelay
-		} else {
-			delay = time.Duration(float64(delay) * 1.2)
-			if delay > conf.fallbackMaxDelay {
-				delay = conf.fallbackMaxDelay
-			}
-		}
+		return retry.NextBackOff()
 	}
 
 	// These are used to track successful pulls.
@@ -188,7 +181,7 @@ func runBlocking(ctx context.Context, name string, task Getter, conf changeOpts,
 			continue // skip the wait
 		}
 
-		incDelay()
+		delay := incDelay()
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
