@@ -20,7 +20,7 @@ func Access(model *accesspb.Model) service.Lifecycle {
 		"",
 		"Card expired",
 	}
-	actors := []*gen.AccessAttempt_Actor{
+	actors := []*gen.Actor{
 		nil,
 		{DisplayName: "Scott Lang", Ids: map[string]string{"card": "1234567890"}},
 		{DisplayName: "Hope Van Dyne", Ids: map[string]string{"card": "0987654321"}},
