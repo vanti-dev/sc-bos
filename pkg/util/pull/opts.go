@@ -3,6 +3,8 @@ package pull
 import (
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
+	"github.com/jonboulle/clockwork"
 	"go.uber.org/zap"
 )
 
@@ -21,16 +23,36 @@ func WithPullFallback(initial, max time.Duration) Option {
 	}
 }
 
+func WithPullFallbackJitter(jitter float64) Option {
+	return func(opts *changeOpts) {
+		opts.fallbackJitter = jitter
+	}
+}
+
 func WithPollDelay(delay time.Duration) Option {
 	return func(opts *changeOpts) {
 		opts.pollDelay = delay
 	}
 }
 
+func withClock(clock clockwork.Clock) Option {
+	return func(opts *changeOpts) {
+		opts.clock = clock
+	}
+}
+
+const (
+	DefaultPollDelay = time.Second
+	DefaultRetryInit = 100 * time.Millisecond
+	DefaultRetryMax  = 10 * time.Second
+)
+
 var defaultChangeOpts = []Option{
+	withClock(clockwork.NewRealClock()),
 	WithLogger(zap.NewNop()),
-	WithPullFallback(100*time.Millisecond, 10*time.Second),
-	WithPollDelay(time.Second),
+	WithPullFallback(DefaultRetryInit, DefaultRetryMax),
+	WithPullFallbackJitter(backoff.DefaultRandomizationFactor),
+	WithPollDelay(DefaultPollDelay),
 }
 
 type changeOpts struct {
@@ -39,6 +61,9 @@ type changeOpts struct {
 
 	fallbackInitialDelay time.Duration
 	fallbackMaxDelay     time.Duration
+	fallbackJitter       float64
+
+	clock clockwork.Clock
 }
 
 func calcOpts(opts ...Option) changeOpts {
@@ -50,4 +75,15 @@ func calcOpts(opts ...Option) changeOpts {
 		opt(out)
 	}
 	return *out
+}
+
+func (co changeOpts) backoff(opts ...backoff.ExponentialBackOffOpts) *backoff.ExponentialBackOff {
+	opts = append([]backoff.ExponentialBackOffOpts{
+		backoff.WithClockProvider(co.clock),
+		backoff.WithInitialInterval(co.fallbackInitialDelay),
+		backoff.WithMaxInterval(co.fallbackMaxDelay),
+		backoff.WithRandomizationFactor(co.fallbackJitter),
+		backoff.WithMaxElapsedTime(0), // no max time
+	}, opts...)
+	return backoff.NewExponentialBackOff(opts...)
 }

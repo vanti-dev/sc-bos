@@ -14,6 +14,7 @@ require (
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgx/v4 v4.18.2
+	github.com/jonboulle/clockwork v0.5.0
 	github.com/mwitkow/grpc-proxy v0.0.0-20230212185441-f345521cb9c9
 	github.com/olebedev/emitter v0.0.0-20190110104742-e8d1457e6aee
 	github.com/open-policy-agent/opa v0.68.0
