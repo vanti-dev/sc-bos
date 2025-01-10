@@ -1,20 +1,20 @@
 {
-  "name": "@sc-bos/ui-gen",
-  "version": "1.0.0-beta.17",
+  "name": "@vanti-dev/sc-bos-ui-gen",
+  "version": "1.0.0-beta.19",
   "type": "commonjs",
   "scripts": {
-    "gen": "node gen.mjs",
-    "deploy:nexus": "yarn publish --prerelease --preid beta --no-git-tag-version"
-  },
-  "publishConfig": {
-    "registry": "https://nexus.vanti.co.uk/repository/npm-releases/"
+    "gen": "node gen.mjs"
   },
   "dependencies": {
-    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.46",
+    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.48",
     "google-protobuf": "^3.21.2",
     "grpc-web": "^1.4.2"
   },
   "devDependencies": {
     "replace-in-file": "^8.1.0"
+  },
+  "repository": "https://github.com/vanti-dev/sc-bos",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

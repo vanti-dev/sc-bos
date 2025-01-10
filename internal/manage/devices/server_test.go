@@ -9,10 +9,7 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
-	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
@@ -74,18 +71,7 @@ func Test_deviceMatchesQuery(t *testing.T) {
 
 func TestServer_ListDevices(t *testing.T) {
 	n := node.New("test")
-	{
-		r := parent.NewApiRouter()
-		n.Support(node.Routing(r), node.Clients(parent.WrapApi(r)))
-	}
-	{
-		r := metadata.NewApiRouter(metadata.WithMetadataApiClientFactory(func(name string) (traits.MetadataApiClient, error) {
-			return metadata.WrapApi(metadata.NewModelServer(metadata.NewModel(resource.WithInitialValue(&traits.Metadata{
-				Name: name,
-			})))), nil
-		}))
-		n.Support(node.Routing(r), node.Clients(metadata.WrapApi(r)))
-	}
+
 	// create 40 devices, half are lights, half are hvac,
 	// they're created interleaved to try and avoid page 1 being all lights and page 2 being all hvac
 	for i := 0; i < 20; i++ {
@@ -114,6 +100,7 @@ func TestServer_ListDevices(t *testing.T) {
 			Membership: &traits.Metadata_Membership{Subsystem: "Lighting"},
 			Traits: []*traits.TraitMetadata{
 				{Name: trait.Light.String()},
+				{Name: trait.Metadata.String()},
 			},
 		}
 	}

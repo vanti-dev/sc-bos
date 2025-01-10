@@ -4,12 +4,10 @@ import (
 	"context"
 	"log"
 
-	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/app"
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock"
-	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/hub"
 	"github.com/vanti-dev/sc-bos/pkg/system/tenants"
@@ -27,8 +25,6 @@ func Main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	alltraits.AddSupportFor(controller.Node, trait.Parent, trait.Metadata, trait.OnOff)
 
 	err = controller.Run(ctx)
 	if err != nil {

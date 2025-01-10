@@ -32,6 +32,13 @@ export class DevicesApiClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<devices_pb.PullDevicesMetadataResponse>;
 
+  getDownloadDevicesUrl(
+    request: devices_pb.GetDownloadDevicesUrlRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: devices_pb.DownloadDevicesUrl) => void
+  ): grpcWeb.ClientReadableStream<devices_pb.DownloadDevicesUrl>;
+
 }
 
 export class DevicesApiPromiseClient {
@@ -58,6 +65,11 @@ export class DevicesApiPromiseClient {
     request: devices_pb.PullDevicesMetadataRequest,
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<devices_pb.PullDevicesMetadataResponse>;
+
+  getDownloadDevicesUrl(
+    request: devices_pb.GetDownloadDevicesUrlRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<devices_pb.DownloadDevicesUrl>;
 
 }
 

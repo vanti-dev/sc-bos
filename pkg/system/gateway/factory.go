@@ -13,41 +13,44 @@
 //
 // Routed APIs are handled in a generic way, using node metadata to construct the routing table and general trait patterns
 // to decide how to route the request.
-// The gateway can only route APIs that it knows about, specifically APIs mentioned in [alltraits].
+// The gateway can route any API that the remote node advertises via the gRPC reflection API.
+//
+// A special case for routed APIs is the ServiceApi.
+// This API is typically advertised using common names: "drivers", "automations", etc.
+// as such we can't blindly route "drivers" to any specific node as the names collide.
+// To solve this the gateway advertises them using modified names of the form `{node name}/{original name}`.
 //
 // ## Node APIs
 //
 // These typically do not include a name, instead targeting the node itself as the party to respond to the request.
 // The hub is generally the primary source of these APIs though other nodes can also implement them.
+// If more than one remote node advertises a node API, the gateway will route all requests to the first node it sees.
 // Some examples of this kind of API are the services API, the history admin API, and the tenant API.
 //
-// Each node API is handled in a special way, with specific logic to handle the routing of the request.
-// Most node APIs are assumed to target the hub node, but some, like the services API, require special processing to
-// correctly route requests to the correct node.
+// Node APIs are handled generically using gRPC reflection to discover available APIs.
+// Any node API this node implements via non-proxy mechanisms will take precedence over the proxy, for example the DevicesApi.
+//
+// # Cohorts with Multiple Gateways
+//
+// If the gateway discovers that a remote node is also a gateway then it will avoid re-announcing any routed or node APIs
+// instead relying on discovery of these APIs from the original remote node.
 package gateway
 
 import (
 	"context"
 	"crypto/tls"
-	"strings"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 
-	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/lighttest"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/servicepb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/config"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
-	"github.com/vanti-dev/sc-bos/pkg/util/slices"
 )
 
 const (
@@ -55,37 +58,33 @@ const (
 	LegacyName = "proxy"
 )
 
-func Factory(holder *lighttest.Holder) system.Factory {
-	return &factory{
-		server: holder,
-	}
+func Factory() system.Factory {
+	return &factory{}
 }
 
-type factory struct {
-	server *lighttest.Holder
-}
+type factory struct{}
 
 func (f *factory) New(services system.Services) service.Lifecycle {
 	s := &System{
-		holder:    f.server,
-		self:      services.Node,
-		hub:       services.CohortManager,
-		ignore:    []string{services.GRPCEndpoint}, // avoid infinite recursion
-		tlsConfig: services.ClientTLSConfig,
-		announcer: services.Node,
-		logger:    services.Logger.Named("gateway"),
+		self:       services.Node,
+		hub:        services.CohortManager,
+		ignore:     []string{services.GRPCEndpoint}, // avoid infinite recursion
+		tlsConfig:  services.ClientTLSConfig,
+		reflection: services.ReflectionServer,
+		announcer:  services.Node,
+		logger:     services.Logger.Named(Name),
 	}
 	return service.New(service.MonoApply(s.applyConfig))
 }
 
 type System struct {
-	self      *node.Node
-	hub       node.Remote
-	ignore    []string
-	tlsConfig *tls.Config
-	announcer node.Announcer
-	logger    *zap.Logger
-	holder    *lighttest.Holder
+	self       *node.Node
+	hub        node.Remote
+	ignore     []string
+	tlsConfig  *tls.Config
+	reflection *reflectionapi.Server
+	announcer  node.Announcer
+	logger     *zap.Logger
 }
 
 // applyConfig runs this system based on the given config.
@@ -100,433 +99,27 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	if cfg.HubMode == "" {
 		cfg.HubMode = config.HubModeRemote
 	}
+
+	c := newCohort(ignore...)
+
 	switch cfg.HubMode {
 	case config.HubModeRemote:
 		hubConn, err := s.hub.Connect(ctx)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to initialise client connection to the hub: %w", err)
 		}
-
-		go s.retry(ctx, "announceHub", func(ctx context.Context) (task.Next, error) {
-			return s.announceHub(ctx, hubConn)
-		})
-
-		go s.retry(ctx, "announceNodes", func(ctx context.Context) (task.Next, error) {
-			return s.announceNodes(ctx, hubConn, ignore...)
-		})
-
-		s.holder.Fill(gen.NewLightingTestApiClient(hubConn))
+		go s.scanRemoteHub(ctx, c, hubConn)
 	case config.HubModeLocal:
-		go s.retry(ctx, "announceNodes", func(ctx context.Context) (task.Next, error) {
-			return s.announceLocalNodes(ctx, ignore...)
-		})
-
-		var lightTest gen.LightingTestApiClient
-		if err := s.self.Client(&lightTest); err != nil {
-			s.logger.Warn("no LightingTestApiClient available", zap.Error(err))
-		} else {
-			s.holder.Fill(lightTest)
+		var hubClient gen.HubApiClient
+		if err := s.self.Client(&hubClient); err != nil {
+			return fmt.Errorf("local hub proxying not available, the node does not support the hub api: %w", err)
 		}
+		go s.scanLocalHub(ctx, c, hubClient)
 	}
+
+	go s.announceCohort(ctx, c)
 
 	return nil
-
-}
-
-// announceHub adds any routed apis to this node that should be forwarded on to the hub.
-// After this you should be able to ask this node to, for example, list alerts on the hub.
-func (s *System) announceHub(ctx context.Context, hubConn *grpc.ClientConn) (task.Next, error) {
-	// ctx is cancelled when this function returns - i.e. on error
-	// this makes sure we're forgetting any announcements in that case.
-	// The function will be retried if possible.
-	announcer := node.AnnounceContext(ctx, s.announcer)
-
-	// announce any children the hub has
-	go s.retry(ctx, "proxyHubChildren", func(ctx context.Context) (task.Next, error) {
-		return s.announceNodeChildren(ctx, hubConn)
-	})
-
-	// ask the hub what it's name is, and use that for any announcements
-	mdClient := traits.NewMetadataApiClient(hubConn)
-	stream, err := mdClient.PullMetadata(ctx, &traits.PullMetadataRequest{})
-	if err != nil {
-		return task.Normal, err
-	}
-
-	undo := node.NilUndo // called if the hubName changes to un-announce previous apis
-	success := false
-	for {
-		msg, err := stream.Recv()
-		if err != nil {
-			if success {
-				// at least one request worked so try again immediately
-				return task.ResetBackoff, err
-			}
-			return task.Normal, err
-		}
-		success = true
-		if len(msg.Changes) == 0 {
-			continue
-		}
-
-		undo()
-		lastChange := msg.Changes[len(msg.Changes)-1]
-		hubName := lastChange.Metadata.Name
-
-		var undos []node.Undo
-
-		// non-trait routed apis
-		undos = append(undos, announcer.Announce(hubName, node.HasMetadata(lastChange.Metadata), node.HasClient(
-			gen.NewAlertApiClient(hubConn),
-			gen.NewAlertAdminApiClient(hubConn), // Don't do this, we don't want external control of this // SC-469
-		)))
-
-		// this is the same logic that you find in announceNodeApis
-		undos = append(undos, s.announceServiceApi(announcer, hubConn, hubName))
-
-		// hub traits
-		for _, tm := range lastChange.Metadata.Traits {
-			traitName := trait.Name(tm.Name)
-			if traitName == trait.Metadata {
-				continue
-			}
-
-			undos = append(undos, s.announceTrait(announcer, hubConn, hubName, traitName))
-		}
-
-		undo = node.UndoAll(undos...)
-	}
-}
-
-// announceNodes sets up proxies for all nodes enrolled with the hub hubConn is a connection for.
-func (s *System) announceNodes(ctx context.Context, hubConn *grpc.ClientConn, ignore ...string) (task.Next, error) {
-	hubClient := gen.NewHubApiClient(hubConn)
-	return s.announceHubNodes(ctx, hubClient, ignore...)
-}
-
-// announceLocalNodes sets up proxies for all nodes enrolled with this node, which should be a hub.
-func (s *System) announceLocalNodes(ctx context.Context, ignore ...string) (task.Next, error) {
-	var hubClient gen.HubApiClient
-	if err := s.self.Client(&hubClient); err != nil {
-		s.logger.Error("no HubClient available", zap.Error(err))
-		return task.Normal, err
-	}
-	return s.announceHubNodes(ctx, hubClient, ignore...)
-}
-
-// announceHubNodes sets up proxies for all nodes enrolled with hubClient.
-func (s *System) announceHubNodes(ctx context.Context, hubClient gen.HubApiClient, ignore ...string) (task.Next, error) {
-	stream, err := hubClient.PullHubNodes(ctx, &gen.PullHubNodesRequest{})
-	if err != nil {
-		return task.Normal, err
-	}
-	knownNodes := make(map[string]context.CancelFunc)
-	success := false
-	for {
-		nodeChanges, err := stream.Recv()
-		if err != nil {
-			if success {
-				return task.ResetBackoff, err
-			}
-			return task.Normal, err
-		}
-		success = true
-
-		for _, change := range nodeChanges.Changes {
-			// todo: this could be more efficient but I'm low on time right now
-			if change.OldValue != nil {
-				if stop, ok := knownNodes[change.OldValue.Address]; ok {
-					stop()
-					delete(knownNodes, change.OldValue.Address)
-				}
-			}
-			if change.NewValue != nil {
-				hubNode := change.NewValue
-				if hubNode.Name == s.self.Name() {
-					continue // don't do anything for our own node
-				}
-				if slices.Contains(hubNode.Address, ignore) {
-					continue
-				}
-
-				nodeCtx, stopNode := context.WithCancel(ctx)
-				knownNodes[hubNode.Address] = stopNode
-				nodeConn, err := grpc.DialContext(nodeCtx, hubNode.Address, grpc.WithTransportCredentials(credentials.NewTLS(s.tlsConfig)))
-				if err != nil {
-					return task.Normal, err
-				}
-
-				go s.retry(nodeCtx, "announceNode", func(ctx context.Context) (task.Next, error) {
-					return s.announceNode(ctx, hubNode, nodeConn)
-				})
-			}
-		}
-	}
-}
-
-// announceNode sets up proxying for nodeConn, which is enrolled with hubNode.
-func (s *System) announceNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) (task.Next, error) {
-	isGatewayNode, err := s.isGateway(ctx, nodeConn)
-	if err != nil {
-		return task.Normal, err
-	}
-
-	s.logger.Debug("Proxying node", zap.String("name", hubNode.Name), zap.String("node", hubNode.Address), zap.Bool("isGateway", isGatewayNode))
-	switch {
-	case isGatewayNode:
-		s.announceProxyNode(ctx, hubNode, nodeConn)
-	default:
-		s.announceControllerNode(ctx, hubNode, nodeConn)
-	}
-
-	<-ctx.Done()
-	return task.ResetBackoff, ctx.Err()
-}
-
-// announceControllerNode sets up proxying for all the APIs of a standard controller node.
-// A controller node is one that is neither a hub nor a gateway.
-// We proxy trait and non-trait APIs and set up the routing table for any discovered names the node has.
-func (s *System) announceControllerNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) {
-	go s.retry(ctx, "proxyNodeParent", func(ctx context.Context) (task.Next, error) {
-		return s.announceNodeParent(ctx, nodeConn, hubNode.Name)
-	})
-	// proxy any advertised children and child traits
-	go s.retry(ctx, "proxyNodeChildren", func(ctx context.Context) (task.Next, error) {
-		return s.announceNodeChildren(ctx, nodeConn)
-	})
-
-	// proxy any non-trait apis that also use routing
-	go s.retry(ctx, "proxyNodeApis", func(ctx context.Context) (task.Next, error) {
-		return s.announceNodeApis(ctx, hubNode, nodeConn)
-	})
-}
-
-// announceProxyNode sets up proxying for a node that is also a gateway.
-// This is similar to [announceControllerNode] but we skip updating the routing table as we assume all gateways have the same table and
-// including the other gateways' table in ours would be redundant (and possible cause infinite routing loops).
-func (s *System) announceProxyNode(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) {
-	go s.retry(ctx, "proxyNodeParent", func(ctx context.Context) (task.Next, error) {
-		return s.announceNodeParent(ctx, nodeConn, hubNode.Name)
-	})
-	// explicitly don't fetch gateway children as they will have the same children as us anyway
-
-	// proxy any non-trait apis that also use routing
-	go s.retry(ctx, "proxyNodeApis", func(ctx context.Context) (task.Next, error) {
-		return s.announceNodeApis(ctx, hubNode, nodeConn)
-	})
-}
-
-// isGateway discovers if nodeConn is a gateway node, a node that has an enabled gateway system.
-func (s *System) isGateway(ctx context.Context, nodeConn *grpc.ClientConn) (bool, error) {
-	client := gen.NewServicesApiClient(nodeConn)
-	req := &gen.ListServicesRequest{Name: "systems"}
-	for {
-		systems, err := client.ListServices(ctx, req)
-		if err != nil {
-			return false, err
-		}
-		for _, sys := range systems.Services {
-			if sys.Type == Name || sys.Type == LegacyName {
-				return true, nil
-			}
-		}
-
-		req.PageToken = systems.NextPageToken
-		if req.PageToken == "" {
-			return false, nil
-		}
-	}
-}
-
-// announceNodeParent sets up proxying for trait-based APIs nodeConn implements directly.
-func (s *System) announceNodeParent(ctx context.Context, nodeConn *grpc.ClientConn, name string) (task.Next, error) {
-	announcer := node.AnnounceContext(ctx, s.announcer)
-
-	mdClient := traits.NewMetadataApiClient(nodeConn)
-	mdStream, err := mdClient.PullMetadata(ctx, &traits.PullMetadataRequest{Name: name})
-	if err != nil {
-		return task.Normal, err
-	}
-
-	undo := func() {}
-	success := false
-	for {
-		mdUpdate, err := mdStream.Recv()
-		if err != nil {
-			if success {
-				return task.ResetBackoff, err // it's an error, but we did succeed with at least one request
-			}
-			return task.Normal, err
-		}
-		success = true
-		if len(mdUpdate.Changes) == 0 {
-			continue
-		}
-
-		undo()
-		change := mdUpdate.Changes[len(mdUpdate.Changes)-1]
-
-		var undos []node.Undo
-		undos = append(undos, announcer.Announce(name, node.HasMetadata(change.Metadata)))
-		for _, tm := range change.Metadata.Traits {
-			traitName := trait.Name(tm.Name)
-			if traitName == trait.Metadata {
-				continue
-			}
-			undos = append(undos, s.announceTrait(announcer, nodeConn, name, traitName))
-		}
-		undo = node.UndoAll(undos...)
-	}
-}
-
-// announceNodeChildren sets up proxying for all trait-based APIs via nodeConn's announced children.
-// This uses the ParentAPI trait to discover the list of children nodeConn has.
-func (s *System) announceNodeChildren(ctx context.Context, nodeConn *grpc.ClientConn) (task.Next, error) {
-	// ctx is cancelled when this function returns - i.e. on error
-	// this makes sure we're forgetting any announcements in that case.
-	// The function will be retried if possible.
-	announcer := node.AnnounceContext(ctx, s.announcer)
-
-	parentClient := traits.NewParentApiClient(nodeConn)
-	childStream, err := parentClient.PullChildren(ctx, &traits.PullChildrenRequest{})
-	if err != nil {
-		return task.Normal, err
-	}
-
-	announcedChildren := make(map[string]node.Undo)
-	success := false
-	for {
-		childUpdate, err := childStream.Recv()
-		if err != nil {
-			if success {
-				return task.ResetBackoff, err // it's an error, but we did succeed with at least one request
-			}
-			return task.Normal, err
-		}
-		success = true
-		for _, change := range childUpdate.Changes {
-			if change.OldValue != nil {
-				if undo, ok := announcedChildren[change.OldValue.Name]; ok {
-					delete(announcedChildren, change.OldValue.Name)
-					undo()
-				}
-			}
-			if change.NewValue == nil {
-				continue
-			}
-
-			child := change.NewValue
-			var undos []node.Undo
-			for _, childTrait := range child.Traits {
-				traitName := trait.Name(childTrait.Name)
-				if traitName == trait.Metadata {
-					// treat metadata differently to other traits, we want to proactively get it so the devices api works
-					mdCtx, stopMdCtx := context.WithCancel(ctx)
-					undos = append(undos, func() {
-						stopMdCtx()
-					})
-					go s.retry(mdCtx, "watchMetadata", func(ctx context.Context) (task.Next, error) {
-						return s.announceMetadata(mdCtx, nodeConn, child.Name)
-					})
-					continue
-				}
-				undos = append(undos, s.announceTrait(announcer, nodeConn, child.Name, traitName))
-			}
-
-			if len(undos) == 0 {
-				// force the child to exist, even if they don't have any traits
-				undos = append(undos, announcer.Announce(child.Name))
-			}
-			announcedChildren[child.Name] = node.UndoAll(undos...)
-		}
-	}
-}
-
-// announceMetadata pulls the metadata from conn (named name) and updates our nodes local cache of this metadata.
-// This makes sure our devices api works locally without having to query all hub nodes.
-func (s *System) announceMetadata(ctx context.Context, conn *grpc.ClientConn, name string) (task.Next, error) {
-	mdClient := traits.NewMetadataApiClient(conn)
-	stream, err := mdClient.PullMetadata(ctx, &traits.PullMetadataRequest{Name: name})
-	if err != nil {
-		return task.Normal, err
-	}
-	// we aren't using node.AnnounceContext here because we want to undo both when ctx is done and if the md is updated.
-	lastAnnounce := node.NilUndo
-	go func() {
-		<-ctx.Done()
-		lastAnnounce()
-	}()
-	success := false
-	for {
-		msg, err := stream.Recv()
-		if err != nil {
-			if success {
-				return task.ResetBackoff, err
-			}
-			return task.Normal, err
-		}
-		success = true
-		for _, change := range msg.Changes {
-			lastAnnounce()
-			md := change.Metadata
-			lastAnnounce = s.announcer.Announce(name, node.HasMetadata(md))
-		}
-	}
-}
-
-// announceNodeApis announces any non-trait based apis that should be routed to a specific node.
-// If naming conflicts would occur, name conversion will be performed. For example the services api typically routes
-// `drivers`, `automations`, etc which will conflict with each other if we expose them all as is, so we rename to
-// `AC-01/drivers`, `AC-01/automations` instead.
-func (s *System) announceNodeApis(ctx context.Context, hubNode *gen.HubNode, nodeConn *grpc.ClientConn) (task.Next, error) {
-	// ctx is cancelled when this function returns - i.e. on error
-	// this makes sure we're forgetting any announcements in that case.
-	// The function will be retried if possible.
-	announcer := node.AnnounceContext(ctx, s.announcer)
-
-	// service api does name conversion when proxying
-	// devices on node AC-01 becomes AC-01/devices on this node
-	s.announceServiceApi(announcer, nodeConn, hubNode.Name)
-
-	<-ctx.Done()
-	return task.ResetBackoff, ctx.Err()
-}
-
-// announceServiceApi adds proxying for the ServicesApi to conn.
-// As services are typically named `drivers`, `automations`, etc, we rename them to `name/drivers`, `name/automations`, etc.
-func (s *System) announceServiceApi(announcer node.Announcer, conn *grpc.ClientConn, name string) node.Undo {
-	servicesApi := servicepb.RenameApi(gen.NewServicesApiClient(conn), func(n string) string {
-		if strings.HasPrefix(n, name+"/") {
-			return n[len(name+"/"):]
-		}
-		return n
-	})
-	servicesClient := gen.WrapServicesApi(servicesApi)
-	var undos []node.Undo
-	for _, bucket := range []string{"automations", "drivers", "systems", "zones"} {
-		undos = append(undos, announcer.Announce(name+"/"+bucket, node.HasClient(servicesClient)))
-	}
-	return node.UndoAll(undos...)
-}
-
-// announceTrait adds records to our routing table for name -> nodeConn for all known aspects of traitName.
-func (s *System) announceTrait(announcer node.Announcer, nodeConn *grpc.ClientConn, name string, traitName trait.Name) node.Undo {
-	var clients []any
-	if c := alltraits.APIClient(nodeConn, traitName); c != nil {
-		clients = append(clients, c)
-	}
-	if c := alltraits.HistoryClient(nodeConn, traitName); c != nil {
-		clients = append(clients, c)
-	}
-	if c := alltraits.InfoClient(nodeConn, traitName); c != nil {
-		clients = append(clients, c)
-	}
-	if len(clients) == 0 {
-		s.logger.Warn("unable to proxy unknown trait on child",
-			zap.String("target", nodeConn.Target()), zap.String("name", name), zap.Stringer("trait", traitName))
-	}
-
-	return announcer.Announce(name, node.HasTrait(traitName, node.WithClients(clients...)))
 }
 
 func (s *System) retry(ctx context.Context, name string, t task.Task, logFields ...zap.Field) error {
@@ -562,4 +155,40 @@ func (s *System) retry(ctx context.Context, name string, t task.Task, logFields 
 
 		return next, err
 	}, task.WithRetry(task.RetryUnlimited), task.WithBackoff(10*time.Millisecond, 30*time.Second))
+}
+
+// poll calls t every 10 seconds until ctx is done.
+// If t returns an error an exponential backoff mode will be entered scaling from 10ms to 30s.
+// Logging is performed on the 1sh, 5th, and every 10th attempt that fails,
+// as well as the first attempt that succeeds after an error.
+func (s *System) poll(ctx context.Context, t func(context.Context) error, logFields ...zap.Field) error {
+	logger := s.logger.With(logFields...)
+	var lastState task.PollState
+	return task.PollErr(t,
+		task.WithPollInterval(10*time.Second),
+		task.WithPollErrBackoff(10*time.Millisecond, 30*time.Second, 1.5),
+		task.WithPollAttemptCallback(func(state task.PollState, err error) bool {
+			defer func() { lastState = state }()
+			if err == nil {
+				// only print success if the last attempt succeeded after an error
+				if lastState.NextDelay == 0 && state.SuccessesSinceError == 1 && lastState.ErrorsSinceSuccess > 0 {
+					logger.Debug("poll task is now succeeding", zap.Int("attempts", lastState.ErrorsSinceSuccess))
+				}
+				return false
+			}
+
+			// similar logic to the retry code above
+			attempt := state.ErrorsSinceSuccess
+			switch {
+			case attempt == 1:
+				logger.Warn("failed to run poll task, will retry", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
+			case attempt == 5:
+				logger.Warn("failed to run poll task, reducing logging", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
+			case attempt%10 == 0:
+				logger.Debug("failed to run poll task", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
+			}
+
+			return false
+		}),
+	).Attach(ctx)
 }

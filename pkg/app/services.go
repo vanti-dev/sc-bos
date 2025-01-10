@@ -3,11 +3,12 @@ package app
 import (
 	"context"
 	"fmt"
-	"path/filepath"
+	"path"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -17,16 +18,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task/serviceapi"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
 )
-
-// addFactorySupport is used to register factories with a node to expose custom factory APIs.
-// This checks each value in m and if that value has an API, via node.SelfSupporter, then it is registered with s.
-func addFactorySupport[M ~map[K]F, K comparable, F any](s node.Supporter, m M) {
-	for _, factory := range m {
-		if api, ok := any(factory).(node.SelfSupporter); ok {
-			api.AddSupport(s)
-		}
-	}
-}
 
 func (c *Controller) startDrivers(configs []driver.RawConfig) (*service.Map, error) {
 	ctxServices := driver.Services{
@@ -39,12 +30,13 @@ func (c *Controller) startDrivers(configs []driver.RawConfig) (*service.Map, err
 	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
 		driverServices := ctxServices
 		driverServices.Config = &serviceConfigStore{store: c.ControllerConfig.Drivers(), id: id}
+		driverServices.Logger = loggerWithServiceInfo(driverServices.Logger, id, kind)
 
 		f, ok := c.SystemConfig.DriverFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported driver type %v", kind)
 		}
-		return f.New(ctxServices), nil
+		return f.New(driverServices), nil
 	}, service.IdIsRequired)
 
 	var allErrs error
@@ -68,12 +60,13 @@ func (c *Controller) startAutomations(configs []auto.RawConfig) (*service.Map, e
 	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
 		autoServices := ctxServices
 		autoServices.Config = &serviceConfigStore{store: c.ControllerConfig.Automations(), id: id}
+		autoServices.Logger = loggerWithServiceInfo(autoServices.Logger, id, kind)
 
 		f, ok := c.SystemConfig.AutoFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported automation type %v", kind)
 		}
-		return f.New(ctxServices), nil
+		return f.New(autoServices), nil
 	}, service.IdIsRequired)
 
 	var allErrs error
@@ -90,18 +83,19 @@ func (c *Controller) startSystems() (*service.Map, error) {
 		return nil, err
 	}
 	ctxServices := system.Services{
-		ConfigDirs:      c.SystemConfig.ConfigDirs,
-		DataDir:         c.SystemConfig.DataDir,
-		Logger:          c.Logger.Named("system"),
-		Node:            c.Node,
-		GRPCEndpoint:    grpcEndpoint,
-		Database:        c.Database,
-		HTTPMux:         c.Mux,
-		TokenValidators: c.TokenValidators,
-		GRPCCerts:       c.GRPCCerts,
-		PrivateKey:      c.PrivateKey,
-		CohortManager:   c.ManagerConn,
-		ClientTLSConfig: c.ClientTLSConfig,
+		ConfigDirs:       c.SystemConfig.ConfigDirs,
+		DataDir:          c.SystemConfig.DataDir,
+		Logger:           c.Logger.Named("system"),
+		Node:             c.Node,
+		GRPCEndpoint:     grpcEndpoint,
+		Database:         c.Database,
+		HTTPMux:          c.Mux,
+		TokenValidators:  c.TokenValidators,
+		ReflectionServer: c.ReflectionServer,
+		GRPCCerts:        c.GRPCCerts,
+		PrivateKey:       c.PrivateKey,
+		CohortManager:    c.ManagerConn,
+		ClientTLSConfig:  c.ClientTLSConfig,
 	}
 	m := service.NewMap(func(_, kind string) (service.Lifecycle, error) {
 		f, ok := c.SystemConfig.SystemFactories[kind]
@@ -131,12 +125,13 @@ func (c *Controller) startZones(configs []zone.RawConfig) (*service.Map, error) 
 	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
 		zoneServices := ctxServices
 		zoneServices.Config = &serviceConfigStore{store: c.ControllerConfig.Zones(), id: id}
+		zoneServices.Logger = loggerWithServiceInfo(zoneServices.Logger, id, kind)
 
 		f, ok := c.SystemConfig.ZoneFactories[kind]
 		if !ok {
 			return nil, fmt.Errorf("unsupported zone type %v", kind)
 		}
-		return f.New(ctxServices), nil
+		return f.New(zoneServices), nil
 	}, service.IdIsRequired)
 
 	var allErrs error
@@ -160,9 +155,10 @@ func logServiceMapChanges(ctx context.Context, logger *zap.Logger, m *service.Ma
 func logServiceRecordChange(logger *zap.Logger, oldVal, newVal *service.StateRecord) {
 	switch {
 	case newVal != nil:
-		logger = logger.With(zap.String("id", newVal.Id), zap.String("kind", newVal.Kind))
+		// the vars match the same fields passed to the services in startFoo
+		logger = loggerWithServiceInfo(logger, newVal.Id, newVal.Kind)
 	case oldVal != nil:
-		logger = logger.With(zap.String("id", oldVal.Id), zap.String("kind", oldVal.Kind))
+		logger = loggerWithServiceInfo(logger, oldVal.Id, oldVal.Kind)
 	}
 	switch {
 	case oldVal == nil && newVal != nil: // do nothing
@@ -191,16 +187,17 @@ func logServiceRecordChange(logger *zap.Logger, oldVal, newVal *service.StateRec
 	}
 }
 
+func loggerWithServiceInfo(logger *zap.Logger, id, kind string) *zap.Logger {
+	return logger.With(zap.String("service.id", id), zap.String("service.kind", kind))
+}
+
 func announceServices[M ~map[string]T, T any](c *Controller, name string, services *service.Map, factories M, store serviceapi.Store) node.Undo {
 	client := gen.WrapServicesApi(serviceapi.NewApi(services,
 		serviceapi.WithKnownTypesFromMapKeys(factories),
 		serviceapi.WithLogger(c.Logger.Named("serviceapi")),
 		serviceapi.WithStore(store),
 	))
-	return node.UndoAll(
-		c.Node.Announce(name, node.HasClient(client)),
-		c.Node.Announce(filepath.Join(c.Node.Name(), name), node.HasClient(client)),
-	)
+	return announceNodeClient(c.Node, name, client)
 }
 
 func announceAutoServices[M ~map[string]T, T any](c *Controller, services *service.Map, factories M) node.Undo {
@@ -210,10 +207,7 @@ func announceAutoServices[M ~map[string]T, T any](c *Controller, services *servi
 		serviceapi.WithLogger(c.Logger.Named("serviceapi")),
 		serviceapi.WithStore(c.ControllerConfig.Automations()),
 	))
-	return node.UndoAll(
-		c.Node.Announce("automations", node.HasClient(client)),
-		c.Node.Announce(filepath.Join(c.Node.Name(), "automations"), node.HasClient(client)),
-	)
+	return announceNodeClient(c.Node, "automations", client)
 }
 
 func announceSystemServices[M ~map[string]T, T any](c *Controller, services *service.Map, factories M) node.Undo {
@@ -223,10 +217,16 @@ func announceSystemServices[M ~map[string]T, T any](c *Controller, services *ser
 		serviceapi.WithKnownTypesFromMapKeys(factories),
 		serviceapi.WithLogger(c.Logger.Named("serviceapi")),
 	))
-	return node.UndoAll(
-		c.Node.Announce("systems", node.HasClient(client)),
-		c.Node.Announce(filepath.Join(c.Node.Name(), "systems"), node.HasClient(client)),
-	)
+	return announceNodeClient(c.Node, "systems", client)
+}
+
+func announceNodeClient(n *node.Node, base string, client wrap.ServiceUnwrapper) node.Undo {
+	var undos []node.Undo
+	undos = append(undos, n.Announce(base, node.HasClient(client)))
+	if n.Name() != "" {
+		undos = append(undos, n.Announce(path.Join(n.Name(), base), node.HasClient(client)))
+	}
+	return node.UndoAll(undos...)
 }
 
 type serviceConfigStore struct {

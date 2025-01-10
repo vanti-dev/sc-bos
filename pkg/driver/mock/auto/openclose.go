@@ -18,11 +18,17 @@ func OpenClose(model *openclose.Model) service.Lifecycle {
 		go func() {
 			timer := time.NewTimer((30 * time.Second) + time.Duration(rand.Float32())*time.Minute)
 			for {
-				state := &traits.OpenClosePosition{
-					OpenPercent: float32(rand.Intn(100 + 1)),
-					Resistance:  traits.OpenClosePosition_Resistance(resistances[rand.Intn(len(resistances))]),
+				presets := model.ListPresets()
+				if len(presets) > 0 {
+					preset := oneOf(presets...)
+					_, _ = model.UpdatePositions(&traits.OpenClosePositions{Preset: preset})
+				} else {
+					state := &traits.OpenClosePosition{
+						OpenPercent: float32(rand.Intn(100 + 1)),
+						Resistance:  traits.OpenClosePosition_Resistance(resistances[rand.Intn(len(resistances))]),
+					}
+					_, _ = model.UpdatePosition(state, resource.WithCreateIfAbsent())
 				}
-				_, _ = model.UpdatePosition(state, resource.WithCreateIfAbsent())
 
 				select {
 				case <-ctx.Done():

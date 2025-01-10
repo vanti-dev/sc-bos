@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware/util/backoffutils"
 	"github.com/olebedev/emitter"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -13,8 +14,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
-
-const refreshEvery = 1 * time.Minute
 
 // BrightnessAutomation implements turning lights on or off based on occupancy readings from PIRs and other devices.
 type BrightnessAutomation struct {
@@ -153,27 +152,27 @@ func (b *BrightnessAutomation) Stop() error {
 }
 
 // processStateChanges reads ReadState from a channel and analyses each entry deciding if light levels should be changed.
-// This function backs off to processState which has the actual logic for what to do given a certain state,
+// This function backs off to processState which has the actual logic for what to do, given a certain state,
 // this function handles the channel management, retry logic, TTL on decisions, and all that type of thing.
 func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStates <-chan *ReadState, actions actions) error {
 	// the below are the innards of time.Timer, but expanded so we can stop/select on them even if
 	// we don't have a timer active right now
 
+	retryCounter := 0
+
 	var ttlExpired <-chan time.Time
-	cancelTtlTimer := func() bool { return false }
+	cancelTtlTimer := func() bool { return true }
 
 	var retryFailedProcessing <-chan time.Time
-	cancelRetryTimer := func() bool { return false }
+	cancelRetryTimer := func() bool { return true }
 
 	// writeState is only accessed from this go routine.
 	writeState := NewWriteState(time.Now())
 
 	processStateFn := func(readState *ReadState) error {
-		cancelTtlTimer()
 		cancelRetryTimer()
 
 		ttl, err := processState(ctx, readState, writeState, actions, b.logger.Named("Process State"))
-		b.bus.Emit("process-complete", ttl, err, readState, writeState) // used only for testing, notify that processing has completed
 		if err != nil {
 			// if the context has been cancelled, stop
 			if ctx.Err() != nil {
@@ -181,25 +180,38 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			}
 
 			// if the context remains live, schedule another update soon
-			// TODO: make this delay configurable, or add backoff etc.
-			after := 5 * time.Second
+			retryCounter++
+			after := backoffutils.JitterUp(time.Duration(retryCounter)*readState.Config.OnProcessError.BackOffMultiplier.Duration, 0.2)
+
 			b.logger.Error("processState failed; scheduling retry",
 				zap.Error(err),
 				zap.Duration("retryAfter", after),
 			)
-			ttl = after
+
+			if retryCounter > readState.Config.OnProcessError.MaxRetries {
+				// reset retries to prevent too many repeated attempts
+				retryCounter = 0
+				if !cancelTtlTimer() {
+					<-ttlExpired
+				}
+			} else {
+				ttl = after
+			}
 		}
 
-		if ttl < 0 {
-			b.logger.Warn("ttl < 0; using refreshEvery instead")
-		}
 		// ensure it's not too long before we wake up, so the lights are refreshed regularly
 		// so external changes don't stick around forever
-		if ttl <= 0 || ttl > refreshEvery {
+		if ttl <= 0 {
+			ttl = readState.Config.RefreshEvery.Duration
+		}
+		if ttl > readState.Config.RefreshEvery.Duration {
 			// b.logger.Debug("waking up sooner to ensure lights aren't stale",
 			// 	zap.Duration("after", refreshEvery))
-			ttl = refreshEvery
+			ttl = readState.Config.RefreshEvery.Duration
 		}
+
+		b.bus.Emit("process-complete", ttl, err, readState, writeState) // used only for testing, notify that processing has completed
+
 		// Setup ttl for the transformed model.
 		// After this time it should be recalculated.
 		ttlExpired, cancelTtlTimer = b.newTimer(ttl)
@@ -214,6 +226,12 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 		case <-ctx.Done():
 			return ctx.Err()
 		case readState := <-readStates:
+			// reset retries as new valid state received
+			if !cancelTtlTimer() {
+				<-ttlExpired
+			}
+			retryCounter = 0
+
 			lastReadState = readState
 			err := processStateFn(readState)
 			if err != nil {

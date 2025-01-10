@@ -33,7 +33,7 @@ func WithAlertAdminApiClientFactory(f func(name string) (AlertAdminApiClient, er
 	})
 }
 
-func (r *AlertAdminApiRouter) Register(server *grpc.Server) {
+func (r *AlertAdminApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterAlertAdminApiServer(server, r)
 }
 

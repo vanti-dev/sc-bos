@@ -23,15 +23,11 @@ func (_ factory) New(services system.Services) service.Lifecycle {
 	return NewSystem(services)
 }
 
-func (_ factory) AddSupport(supporter node.Supporter) {
-	Register(supporter)
-}
-
 func NewSystem(services system.Services) *System {
 	logger := services.Logger.Named("alerts")
 	s := &System{
 		name:      services.Node.Name(),
-		announcer: services.Node,
+		announcer: node.NewReplaceAnnouncer(services.Node),
 
 		cohortManagerName: "", // use the default
 		cohortManager:     services.CohortManager,
@@ -45,20 +41,11 @@ func NewSystem(services system.Services) *System {
 	return s
 }
 
-func Register(supporter node.Supporter) {
-	alertApiRouter := gen.NewAlertApiRouter()
-	alertAdminRouter := gen.NewAlertAdminApiRouter()
-	supporter.Support(
-		node.Routing(alertApiRouter), node.Clients(gen.WrapAlertApi(alertApiRouter)),
-		node.Routing(alertAdminRouter), node.Clients(gen.WrapAlertAdminApi(alertAdminRouter)),
-	)
-}
-
 type System struct {
 	*service.Service[config.Root]
 
 	name      string
-	announcer node.Announcer
+	announcer *node.ReplaceAnnouncer
 
 	cohortManagerName string
 	cohortManager     node.Remote
@@ -66,7 +53,7 @@ type System struct {
 
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	// using AnnounceContext only makes when using MonoApply, which we are in NewSystem
-	announcer := node.AnnounceContext(ctx, s.announcer)
+	announcer := s.announcer.Replace(ctx)
 
 	if cfg.Storage == nil {
 		return errors.New("no storage")

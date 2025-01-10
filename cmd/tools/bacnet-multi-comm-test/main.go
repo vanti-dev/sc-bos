@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
@@ -49,6 +50,8 @@ var objectProperties = []property.ID{
 	// property.EventEnable,
 }
 var deviceProperties = objectProperties[:2] // must be a strict prefix for the CSV to work
+// Populated during scanning, includes properties that come from the configuration file.
+var additionalProperties []property.ID
 
 func main() {
 	flag.Parse()
@@ -191,9 +194,15 @@ func run() error {
 func readAllObjectProps(ctx context.Context, client *gobacnet.Client, dev bactypes.Device, baseResult *result, key string, cfgObjects []config.Object, results map[string][]*result) {
 	worker := func(jobs <-chan config.Object, results chan<- *result) {
 		for obj := range jobs {
+			// read both the hard coded props (in objectProperties) and any props defined in the config
+			allProps := make([]property.ID, 0, len(objectProperties)+len(obj.Properties))
+			allProps = append(allProps, objectProperties...)
+			for _, prop := range obj.Properties {
+				allProps = append(allProps, property.ID(prop.ID))
+			}
 			objRes := baseResult.child(obj.Name, obj.ID.String())
 			ctx, cancel := context.WithTimeout(ctx, *timeout)
-			readObjectProps(ctx, client, dev, obj.ID, objRes, objectProperties...)
+			readObjectProps(ctx, client, dev, obj.ID, objRes, allProps...)
 			cancel()
 			results <- objRes
 		}
@@ -222,7 +231,7 @@ func readAllObjectProps(ctx context.Context, client *gobacnet.Client, dev bactyp
 }
 
 func readObjectProps(ctx context.Context, client *gobacnet.Client, dev bactypes.Device, objId config.ObjectID, res *result, props ...property.ID) {
-	values, err := readProps(ctx, client, dev, objId, objectProperties...)
+	values, err := readProps(ctx, client, dev, objId, props...)
 	if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
 		log.Printf("ERR: unable to read properties %v %v : %v", objId, props, err)
 	}
@@ -313,9 +322,28 @@ func readProps(ctx context.Context, client *gobacnet.Client, device bactypes.Dev
 func writeResults(fileName string, results map[string][]*result) error {
 	var rows [][]string
 	header := []string{"Name", "Address", "Network", "MAC", "BACnet ID", "Responding"}
+	seen := make(map[property.ID]struct{})
 	for _, objectProperty := range objectProperties {
 		header = append(header, objectProperty.String())
+		seen[objectProperty] = struct{}{}
 	}
+
+	// calculate additional properties
+	for _, keyedResults := range results {
+		for _, result := range keyedResults {
+			for id := range result.properties {
+				if _, ok := seen[id]; !ok {
+					seen[id] = struct{}{}
+					additionalProperties = append(additionalProperties, id)
+				}
+			}
+		}
+	}
+	slices.Sort(additionalProperties)
+	for _, additionalProperty := range additionalProperties {
+		header = append(header, additionalProperty.String())
+	}
+
 	rows = append(rows, header)
 	for _, res := range results {
 		for _, re := range res {
@@ -372,6 +400,9 @@ func (r *result) child(name, id string) *result {
 func (r *result) toRow() []string {
 	row := []string{r.name, r.address, netString(r.network), r.mac, r.objectId, boolYesNo(r.responding)}
 	for _, key := range objectProperties {
+		row = append(row, anyToString(r.properties[key]))
+	}
+	for _, key := range additionalProperties {
 		row = append(row, anyToString(r.properties[key]))
 	}
 	return row

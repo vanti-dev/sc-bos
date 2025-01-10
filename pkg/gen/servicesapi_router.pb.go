@@ -34,7 +34,7 @@ func WithServicesApiClientFactory(f func(name string) (ServicesApiClient, error)
 	})
 }
 
-func (r *ServicesApiRouter) Register(server *grpc.Server) {
+func (r *ServicesApiRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterServicesApiServer(server, r)
 }
 

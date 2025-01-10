@@ -1,0 +1,19 @@
+# Dockerfile for an image which seeds the database
+#
+
+FROM golang:1.23-alpine
+
+RUN mkdir /cfg
+COPY demo/vanti-ugs/app.conf.json /cfg
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download -x
+
+COPY cmd ./cmd/
+COPY internal ./internal/
+COPY pkg ./pkg/
+RUN mkdir -p /data/secrets
+RUN echo "" >> /data/secrets/postgres-password
+RUN go build -o /app/db-seeder ./cmd/tools/db-seeder
+
+ENTRYPOINT ["/app/db-seeder", "--look-back=744h", "--db-url=postgres://postgres@host.docker.internal:5432/smart_core", "--appconf=/cfg/app.conf.json"]

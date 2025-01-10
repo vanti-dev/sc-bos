@@ -1,8 +1,8 @@
 {
   "private": true,
   "workspaces": [
-    "conductor",
     "keycloak-login-prototype",
+    "ops",
     "panzoom-package",
     "ui-gen"
   ]

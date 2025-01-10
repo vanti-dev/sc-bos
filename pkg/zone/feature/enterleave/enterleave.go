@@ -23,7 +23,7 @@ type enterLeave struct {
 }
 
 func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
-	announce := node.AnnounceContext(ctx, f.announce)
+	announce := f.announcer.Replace(ctx)
 	logger := f.logger
 
 	if len(cfg.EnterLeaveSensors) > 0 {

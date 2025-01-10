@@ -23,9 +23,10 @@ type factory struct{}
 
 func (f factory) New(services driver.Services) service.Lifecycle {
 	d := &Driver{
-		services: services,
-		clients:  services.Node,
-		logger:   services.Logger.Named("settings"),
+		services:  services,
+		clients:   services.Node,
+		announcer: node.NewReplaceAnnouncer(services.Node),
+		logger:    services.Logger.Named("settings"),
 	}
 	d.Service = service.New(service.MonoApply(d.applyConfig))
 	return d
@@ -33,14 +34,15 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 
 type Driver struct {
 	*service.Service[config.Root]
-	services driver.Services
-	clients  node.Clienter
+	services  driver.Services
+	clients   node.Clienter
+	announcer *node.ReplaceAnnouncer
 
 	logger *zap.Logger
 }
 
 func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
-	announcer := node.AnnounceContext(ctx, d.services.Node)
+	announcer := d.announcer.Replace(ctx)
 
 	modes := &traits.Modes{}
 	collectModes(modes, "lighting.mode", cfg.LightingModes...)

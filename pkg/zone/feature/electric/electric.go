@@ -18,10 +18,10 @@ import (
 var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
 	services.Logger = services.Logger.Named("electric")
 	f := &feature{
-		announce: services.Node,
-		devices:  services.Devices,
-		clients:  services.Node,
-		logger:   services.Logger,
+		announcer: node.NewReplaceAnnouncer(services.Node),
+		devices:   services.Devices,
+		clients:   services.Node,
+		logger:    services.Logger,
 	}
 	f.Service = service.New(service.MonoApply(f.applyConfig))
 	return f
@@ -29,10 +29,10 @@ var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
 
 type feature struct {
 	*service.Service[config.Root]
-	announce node.Announcer
-	devices  *zone.Devices
-	clients  node.Clienter
-	logger   *zap.Logger
+	announcer *node.ReplaceAnnouncer
+	devices   *zone.Devices
+	clients   node.Clienter
+	logger    *zap.Logger
 }
 
 func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
@@ -44,7 +44,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		return err
 	}
 
-	announce := node.AnnounceContext(ctx, f.announce)
+	announce := f.announcer.Replace(ctx)
 	logger := f.logger
 
 	announceGroup := func(name string, devices []string) {

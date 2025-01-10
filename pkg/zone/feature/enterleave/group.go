@@ -31,19 +31,19 @@ type Group struct {
 
 type feature struct {
 	*service.Service[config.Root]
-	announce node.Announcer
-	devices  *zone.Devices
-	clients  node.Clienter
-	logger   *zap.Logger
+	announcer *node.ReplaceAnnouncer
+	devices   *zone.Devices
+	clients   node.Clienter
+	logger    *zap.Logger
 }
 
 var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
 	services.Logger = services.Logger.Named("enterleave")
 	f := &feature{
-		announce: services.Node,
-		devices:  services.Devices,
-		clients:  services.Node,
-		logger:   services.Logger,
+		announcer: node.NewReplaceAnnouncer(services.Node),
+		devices:   services.Devices,
+		clients:   services.Node,
+		logger:    services.Logger,
 	}
 	f.Service = service.New(service.MonoApply(f.applyConfig))
 	return f

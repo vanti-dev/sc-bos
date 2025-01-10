@@ -21,7 +21,7 @@ type factory struct{}
 
 func (f factory) New(services driver.Services) service.Lifecycle {
 	d := &Driver{
-		announcer: services.Node,
+		announcer: node.NewReplaceAnnouncer(services.Node),
 	}
 	d.Service = service.New(service.MonoApply(d.applyConfig))
 	d.logger = services.Logger.Named(DriverName)
@@ -31,13 +31,13 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 type Driver struct {
 	*service.Service[config.Root]
 	logger    *zap.Logger
-	announcer node.Announcer
+	announcer *node.ReplaceAnnouncer
 
 	devices []*TRV
 }
 
 func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
-	announcer := node.AnnounceContext(ctx, d.announcer)
+	announcer := d.announcer.Replace(ctx)
 
 	for _, device := range cfg.Devices {
 		logger := d.logger.Named(device.Name)

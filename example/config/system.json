@@ -6,7 +6,7 @@
     "corsOrigins": ["https://localhost:8443"]
   },
   "staticHosting": [{
-    "filePath": "./ui/conductor/dist",
+    "filePath": "./ui/ops/dist",
     "path": "/"
   }],
   "systems": {

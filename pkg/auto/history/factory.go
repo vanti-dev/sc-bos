@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
@@ -31,9 +32,9 @@ var Factory = auto.FactoryFunc(NewAutomation)
 
 func NewAutomation(services auto.Services) service.Lifecycle {
 	a := &automation{
-		clients:  services.Node,
-		announce: services.Node,
-		logger:   services.Logger.Named("history"),
+		clients:   services.Node,
+		announcer: node.NewReplaceAnnouncer(services.Node),
+		logger:    services.Logger.Named("history"),
 
 		db: services.Database,
 
@@ -51,9 +52,9 @@ func NewAutomation(services auto.Services) service.Lifecycle {
 
 type automation struct {
 	*service.Service[config.Root]
-	clients  node.Clienter
-	announce node.Announcer
-	logger   *zap.Logger
+	clients   node.Clienter
+	announcer *node.ReplaceAnnouncer
+	logger    *zap.Logger
 
 	db *bolthold.Store
 
@@ -142,27 +143,28 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	}
 
 	// work out where we're getting the records from
-	var serverClient any
+	var serverClient wrap.ServiceUnwrapper
 	payloads := make(chan []byte)
+	var collect func(context.Context, config.Source, chan<- []byte)
 	switch cfg.Source.Trait {
 	case trait.AirQualitySensor:
 		serverClient = gen.WrapAirQualitySensorHistory(historypb.NewAirQualitySensorServer(store))
-		go a.collectAirQualityChanges(ctx, *cfg.Source, payloads)
+		collect = a.collectAirQualityChanges
 	case trait.AirTemperature:
 		serverClient = gen.WrapAirTemperatureHistory(historypb.NewAirTemperatureServer(store))
-		go a.collectAirTemperatureChanges(ctx, *cfg.Source, payloads)
+		collect = a.collectAirTemperatureChanges
 	case trait.Electric:
 		serverClient = gen.WrapElectricHistory(historypb.NewElectricServer(store))
-		go a.collectElectricDemandChanges(ctx, *cfg.Source, payloads)
+		collect = a.collectElectricDemandChanges
 	case meter.TraitName:
 		serverClient = gen.WrapMeterHistory(historypb.NewMeterServer(store))
-		go a.collectMeterReadingChanges(ctx, *cfg.Source, payloads)
+		collect = a.collectMeterReadingChanges
 	case trait.OccupancySensor:
 		serverClient = gen.WrapOccupancySensorHistory(historypb.NewOccupancySensorServer(store))
-		go a.collectOccupancyChanges(ctx, *cfg.Source, payloads)
+		collect = a.collectOccupancyChanges
 	case statuspb.TraitName:
 		serverClient = gen.WrapStatusHistory(historypb.NewStatusServer(store))
-		go a.collectCurrentStatusChanges(ctx, *cfg.Source, payloads)
+		collect = a.collectCurrentStatusChanges
 	default:
 		return fmt.Errorf("unsupported trait %s", cfg.Source.Trait)
 	}
@@ -183,9 +185,11 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 	}()
 
-	announce := node.AnnounceContext(ctx, a.announce)
-	// we could technically announce this as a trait client, but there's no real need for that
-	announce.Announce(cfg.Source.Name, node.HasClient(serverClient))
+	announce := a.announcer.Replace(ctx)
+	// announce the trait too to ensure its services get added to the router before the collect routine starts
+	announce.Announce(cfg.Source.Name, node.HasClient(serverClient), node.HasTrait(cfg.Source.Trait))
+
+	go collect(ctx, *cfg.Source, payloads)
 
 	return nil
 }

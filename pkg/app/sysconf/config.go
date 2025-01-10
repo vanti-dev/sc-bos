@@ -35,7 +35,7 @@ func Load(dst *Config) error {
 	}
 
 	// do any post processing
-	dst.CertConfig = dst.CertConfig.FillDefaults()
+	dst.Normalize()
 
 	return nil
 }
@@ -52,10 +52,13 @@ type Config struct {
 	Logger      *zap.Config `json:"logger,omitempty"`
 	ListenGRPC  string      `json:"listenGrpc,omitempty"`
 	ListenHTTPS string      `json:"listenHttps,omitempty"`
-	// FooAddr are preferred IP/host others use to connect to us.
-	// Defaults to netutil.PublicAddress
-	GRPCAddr string `json:"grpcAddr,omitempty"`
-	HTTPAddr string `json:"httpAddr,omitempty"`
+	// Preferred IP/host others use to connect to us.
+	// Typically used when the controller constructs and shares its own address with others,
+	// for example during enrollment or when producing download links.
+	GRPCAddr string `json:"grpcAddr,omitempty"` // Defaults to netutil.OutboundAddr
+	HTTPAddr string `json:"httpAddr,omitempty"` // Defaults to GRPCAddr
+
+	SANs []string `json:"sans,omitempty"` // Subject Alternative Names for the self-signed cert
 
 	AppConfig []string `json:"appConfig,omitempty"` // defaults to [".conf/app.conf.json"]
 	DataDir   string   `json:"dataDir,omitempty"`   // defaults to .data/
@@ -79,28 +82,31 @@ type Config struct {
 // It scans DriverFactories for factories that implement the BlockSource interface.
 // Drivers that do not implement BlockSource are not included in the output.
 func (c *Config) DriverConfigBlocks() map[string][]block.Block {
-	return extractConfigBlocks(c.DriverFactories)
+	return extractConfigBlocks(c, c.DriverFactories)
 }
 
 // AutoConfigBlocks returns a map of automation type to a block list that describes the config for that automation.
 // It scans AutoFactories for factories that implement the BlockSource interface.
 // Automations that do not implement BlockSource are not included in the output.
 func (c *Config) AutoConfigBlocks() map[string][]block.Block {
-	return extractConfigBlocks(c.AutoFactories)
+	return extractConfigBlocks(c, c.AutoFactories)
 }
 
 // ZoneConfigBlocks returns a map of zone type to a block list that describes the config for that zone.
 // It scans ZoneFactories for factories that implement the BlockSource interface.
 // Zone types that do not implement BlockSource are not included in the output.
 func (c *Config) ZoneConfigBlocks() map[string][]block.Block {
-	return extractConfigBlocks(c.ZoneFactories)
+	return extractConfigBlocks(c, c.ZoneFactories)
 }
 
-func extractConfigBlocks[Factory any](factories map[string]Factory) map[string][]block.Block {
+func extractConfigBlocks[Factory any](c *Config, factories map[string]Factory) map[string][]block.Block {
 	blocks := make(map[string][]block.Block)
 	for name, factory := range factories {
-		if source, ok := any(factory).(BlockSource); ok {
+		switch source := any(factory).(type) {
+		case BlockSource:
 			blocks[name] = source.ConfigBlocks()
+		case BlockSource2:
+			blocks[name] = source.ConfigBlocks(c)
 		}
 	}
 	return blocks
@@ -158,12 +164,22 @@ func Default() Config {
 	}
 	config.Logger.DisableStacktrace = true // because it's annoying
 
-	if localIP, err := netutil.OutboundAddr(); err == nil {
-		config.GRPCAddr = localIP.String()
-		config.HTTPAddr = localIP.String()
+	return config
+}
+
+// Normalize adjusts c to apply defaults that are based on the values of other fields.
+// Normalize should be called explicitly if not using Load.
+func (c *Config) Normalize() {
+	if c.GRPCAddr == "" {
+		if addr, err := netutil.OutboundAddr(); err == nil {
+			c.GRPCAddr = addr.String()
+		}
+	}
+	if c.HTTPAddr == "" {
+		c.HTTPAddr = c.GRPCAddr
 	}
 
-	return config
+	c.CertConfig = c.CertConfig.FillDefaults()
 }
 
 func (c *Certs) FillDefaults() *Certs {
@@ -179,6 +195,7 @@ func (c *Certs) FillDefaults() *Certs {
 	}
 	or(&c.HTTPKeyFile, "https.key.pem")
 	or(&c.HTTPCertFile, "https.cert.pem")
+
 	return c
 }
 
@@ -187,4 +204,9 @@ func (c *Certs) FillDefaults() *Certs {
 // This is used to produce granular diffs for config changes.
 type BlockSource interface {
 	ConfigBlocks() []block.Block
+}
+
+// BlockSource2 is like BlockSource but allows the factory to receive the config as an argument.
+type BlockSource2 interface {
+	ConfigBlocks(cfg *Config) []block.Block
 }

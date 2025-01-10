@@ -8,6 +8,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -20,10 +21,10 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/reflection"
 
-	"github.com/smart-core-os/sc-golang/pkg/middleware/name"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
+	"github.com/vanti-dev/sc-bos/internal/util/grpc/interceptors"
+	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
@@ -36,6 +37,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
+	"github.com/vanti-dev/sc-bos/pkg/util/netutil"
 )
 
 // Bootstrap will obtain a Controller in a ready-to-run state.
@@ -133,13 +135,23 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	if ssCommonName == "" {
 		ssCommonName = "localhost"
 	}
+	selfSignedOpts := []pki.CSROption{
+		pki.WithExpireAfter(30 * 24 * time.Hour),
+		pki.WithIfaces(),
+	}
+	if config.GRPCAddr != "" {
+		selfSignedOpts = append(selfSignedOpts, pki.WithSAN(netutil.StripPort(config.GRPCAddr)))
+	}
+	for _, s := range config.SANs {
+		selfSignedOpts = append(selfSignedOpts, pki.WithSAN(netutil.StripPort(s)))
+	}
 	selfSignedSource := pki.CacheSource(
 		pki.SelfSignedSourceT(key, &x509.Certificate{
 			Subject:               pkix.Name{CommonName: ssCommonName, Organization: []string{"Smart Core BOS"}},
 			KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 			ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
 			BasicConstraintsValid: true,
-		}, pki.WithExpireAfter(30*24*time.Hour), pki.WithIfaces()),
+		}, selfSignedOpts...),
 		expire.AfterProgress(0.5),
 		pki.WithFSCache(files.Path(config.DataDir, "grpc-self-signed.cert.pem"), "", key),
 	)
@@ -184,7 +196,10 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsGRPCClientConfig)))
 
 	var grpcOpts []grpc.ServerOption
-	grpcOpts = append(grpcOpts, grpc.Creds(credentials.NewTLS(tlsGRPCServerConfig)))
+	grpcOpts = append(grpcOpts,
+		grpc.Creds(credentials.NewTLS(tlsGRPCServerConfig)),
+		grpc.ChainStreamInterceptor(interceptors.CorrectStreamInfo(rootNode)),
+	)
 
 	// tokenValidator validates access tokens as part of the authorisation of requests to our APIs.
 	// Claims associated with the token are presented along with other information when processing policy files.
@@ -204,27 +219,50 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		)
 	}
 
-	if rootNode.Name() != "" {
-		grpcOpts = append(grpcOpts,
-			grpc.ChainUnaryInterceptor(name.IfAbsentUnaryInterceptor(rootNode.Name())),
-			grpc.ChainStreamInterceptor(name.IfAbsentStreamInterceptor(rootNode.Name())),
-		)
-	}
+	// here we set up our support for runtime added RPCs.
+	grpcOpts = append(grpcOpts, grpc.UnknownServiceHandler(rootNode.ServerHandler()))
 
 	grpcServer := grpc.NewServer(grpcOpts...)
-	reflection.Register(grpcServer)
-	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
-	devices.NewServer(rootNode).Register(grpcServer)
-	// support the services api for managing drivers, automations, and systems
-	serviceRouter := gen.NewServicesApiRouter()
-	rootNode.Support(node.Routing(serviceRouter), node.Clients(gen.WrapServicesApi(serviceRouter)))
 
-	grpcWebServer := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
-		return true
-	}))
+	reflectionServer := reflectionapi.NewServer(grpcServer, rootNode)
+	reflectionServer.Register(grpcServer)
+
+	gen.RegisterEnrollmentApiServer(grpcServer, enrollServer)
+
+	// DevicesApi
+	var devicesApiOpts []devices.Option
+	// work out the url download links should be using for targeting this controller
+	lisHost, lisPort, _ := net.SplitHostPort(config.ListenHTTPS)
+	if lisHost == "" {
+		lisHost = config.HTTPAddr // populated via network interface scanning or config
+	}
+	if lisHost != "" {
+		hostAndPort := lisHost
+		if lisPort != "" {
+			hostAndPort = net.JoinHostPort(lisHost, lisPort)
+		}
+		devicesApiOpts = append(devicesApiOpts, devices.WithDownloadUrlBase(url.URL{
+			Scheme: "https",
+			Host:   hostAndPort,
+			Path:   "/dl/devices",
+		}))
+	}
+	devicesApi := devices.NewServer(rootNode, devicesApiOpts...)
+	devicesApi.Register(grpcServer)
+
+	grpcWebServer := grpcweb.WrapServer(grpcServer,
+		grpcweb.WithOriginFunc(func(origin string) bool {
+			return true
+		}),
+		// services are dynamic, the grpc.Server doesn't know about them all
+		grpcweb.WithCorsForRegisteredEndpointsOnly(false),
+	)
 
 	// HTTP endpoint setup
 	mux := http.NewServeMux()
+	// Devices API aux routes
+	devicesApi.RegisterHTTPMux(mux)
+
 	// Static site hosting
 	for _, site := range config.StaticHosting {
 		handler := http2.NewStaticHandler(site.FilePath)
@@ -270,6 +308,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		Database:         db,
 		TokenValidators:  tokenValidator,
 		GRPCCerts:        systemSource,
+		ReflectionServer: reflectionServer,
 		PrivateKey:       key,
 		Mux:              mux,
 		GRPC:             grpcServer,
@@ -340,6 +379,8 @@ type Controller struct {
 	TokenValidators *token.ValidatorSet
 	GRPCCerts       *pki.SourceSet
 
+	ReflectionServer *reflectionapi.Server
+
 	Mux  *http.ServeMux
 	GRPC *grpc.Server
 	HTTP *http.Server
@@ -366,13 +407,6 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 		}
 	}()
 
-	addFactorySupport(c.Node, c.SystemConfig.DriverFactories)
-	addFactorySupport(c.Node, c.SystemConfig.AutoFactories)
-	addFactorySupport(c.Node, c.SystemConfig.SystemFactories)
-
-	// we delay registering the node servers until now, so that the caller can call c.Node.Support in between
-	// Bootstrap and Run and have all these added correctly.
-	c.Node.Register(c.GRPC)
 	// metadata associated with the node itself
 	// we don't support changing metadata while running
 	c.Node.Announce(c.Node.Name(), node.HasMetadata(initialConfig.Metadata))

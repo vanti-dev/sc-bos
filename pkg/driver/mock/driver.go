@@ -22,10 +22,11 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
-	"github.com/smart-core-os/sc-golang/pkg/trait/openclose"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
+	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/config"
@@ -49,6 +50,10 @@ type factory struct{}
 
 func (_ factory) New(services driver.Services) service.Lifecycle {
 	return NewDriver(services)
+}
+
+func (_ factory) ConfigBlocks() []block.Block {
+	return config.Blocks
 }
 
 func NewDriver(services driver.Services) *Driver {
@@ -108,7 +113,7 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 			}
 
 			if _, ok := d.known[dt]; !ok {
-				clients, slc := newMockClient(dt.trait, device.Name, d.logger)
+				clients, slc := newMockClient(traitMd, device.Name, d.logger)
 				if len(clients) == 0 {
 					d.logger.Sugar().Warnf("Cannot create mock client %s::%s", dt.name, dt.trait)
 				} else {
@@ -144,11 +149,11 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 	return nil
 }
 
-func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) ([]any, service.Lifecycle) {
-	switch traitName {
+func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap.Logger) ([]wrap.ServiceUnwrapper, service.Lifecycle) {
+	switch trait.Name(traitMd.Name) {
 	case trait.AirQualitySensor:
 		model := airqualitysensor.NewModel(airqualitysensor.WithInitialAirQuality(auto.GetAirQualityState()))
-		return []any{airqualitysensor.WrapApi(airqualitysensor.NewModelServer(model))}, auto.AirQualitySensorAuto(model)
+		return []wrap.ServiceUnwrapper{airqualitysensor.WrapApi(airqualitysensor.NewModelServer(model))}, auto.AirQualitySensorAuto(model)
 	case trait.AirTemperature:
 		h := rand.Float32() * 100
 		t := 15 + (rand.Float64() * 10)
@@ -161,9 +166,9 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 			},
 		}
 		model := airtemperature.NewModel(airtemperature.WithInitialAirTemperature(&initial))
-		return []any{airtemperature.WrapApi(airtemperature.NewModelServer(model))}, nil
+		return []wrap.ServiceUnwrapper{airtemperature.WrapApi(airtemperature.NewModelServer(model))}, nil
 	case trait.Booking:
-		return []any{booking.WrapApi(booking.NewModelServer(booking.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{booking.WrapApi(booking.NewModelServer(booking.NewModel()))}, nil
 	case trait.BrightnessSensor:
 		// todo: return []any{brightnesssensor.WrapApi(brightnesssensor.NewModelServer(brightnesssensor.NewModel()))}, nil
 		return nil, nil
@@ -175,14 +180,14 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 		return nil, nil
 	case trait.Electric:
 		model := electric.NewModel()
-		return []any{electric.WrapApi(electric.NewModelServer(model))}, auto.Electric(model)
+		return []wrap.ServiceUnwrapper{electric.WrapApi(electric.NewModelServer(model))}, auto.Electric(model)
 	case trait.Emergency:
 		// todo: return []any{emergency.WrapApi(emergency.NewModelServer(emergency.NewModel()))}, nil
 		return nil, nil
 	case trait.EnergyStorage:
-		return []any{energystorage.WrapApi(energystorage.NewModelServer(energystorage.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{energystorage.WrapApi(energystorage.NewModelServer(energystorage.NewModel()))}, nil
 	case trait.EnterLeaveSensor:
-		return []any{enterleavesensor.WrapApi(enterleavesensor.NewModelServer(enterleavesensor.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{enterleavesensor.WrapApi(enterleavesensor.NewModelServer(enterleavesensor.NewModel()))}, nil
 	case trait.ExtendRetract:
 		// todo: return []any{extendretract.WrapApi(extendretract.NewModelServer(extendretract.NewModel()))}, nil
 		return nil, nil
@@ -195,9 +200,9 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 			{Name: "full", Percentage: 100},
 		}
 		model := fanspeed.NewModel(fanspeed.WithPresets(presets...))
-		return []any{fanspeed.WrapApi(fanspeed.NewModelServer(model))}, auto.FanSpeed(model, presets...)
+		return []wrap.ServiceUnwrapper{fanspeed.WrapApi(fanspeed.NewModelServer(model))}, auto.FanSpeed(model, presets...)
 	case trait.Hail:
-		return []any{hail.WrapApi(hail.NewModelServer(hail.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{hail.WrapApi(hail.NewModelServer(hail.NewModel()))}, nil
 	case trait.InputSelect:
 		// todo: return []any{inputselect.WrapApi(inputselect.NewModelServer(inputselect.NewModel()))}, nil
 		return nil, nil
@@ -209,12 +214,12 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 			light.WithPreset(80, &traits.LightPreset{Name: "high", Title: "High"}),
 			light.WithPreset(100, &traits.LightPreset{Name: "full", Title: "Full"}),
 		))
-		return []any{light.WrapApi(server), light.WrapInfo(server)}, nil
+		return []wrap.ServiceUnwrapper{light.WrapApi(server), light.WrapInfo(server)}, nil
 	case trait.LockUnlock:
 		// todo: return []any{lockunlock.WrapApi(lockunlock.NewModelServer(lockunlock.NewModel()))}, nil
 		return nil, nil
 	case trait.Metadata:
-		return []any{metadata.WrapApi(metadata.NewModelServer(metadata.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{metadata.WrapApi(metadata.NewModelServer(metadata.NewModel()))}, nil
 	case trait.Microphone:
 		// todo: return []any{microphone.WrapApi(microphone.NewModelServer(microphone.NewModel()))}, nil
 		return nil, nil
@@ -222,22 +227,21 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 		model := mode.NewModel()
 		modes := model.Modes()
 		infoServer := &modepb.InfoServer{Modes: &traits.ModesSupport{AvailableModes: modes}}
-		return []any{mode.WrapApi(mode.NewModelServer(model)), mode.WrapInfo(infoServer)}, nil
+		return []wrap.ServiceUnwrapper{mode.WrapApi(mode.NewModelServer(model)), mode.WrapInfo(infoServer)}, nil
 	case trait.MotionSensor:
 		// todo: return []any{motionsensor.WrapApi(motionsensor.NewModelServer(motionsensor.NewModel()))}, nil
 		return nil, nil
 	case trait.OccupancySensor:
 		model := occupancysensor.NewModel()
-		return []any{occupancysensor.WrapApi(occupancysensor.NewModelServer(model))}, auto.OccupancySensorAuto(model)
+		return []wrap.ServiceUnwrapper{occupancysensor.WrapApi(occupancysensor.NewModelServer(model))}, auto.OccupancySensorAuto(model)
 	case trait.OnOff:
-		return []any{onoff.WrapApi(onoff.NewModelServer(onoff.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{onoff.WrapApi(onoff.NewModelServer(onoff.NewModel()))}, nil
 	case trait.OpenClose:
-		model := openclose.NewModel()
-		return []any{openclose.WrapApi(openclose.NewModelServer(model))}, auto.OpenClose(model)
+		return mockOpenClose(traitMd, deviceName, logger)
 	case trait.Parent:
-		return []any{parent.WrapApi(parent.NewModelServer(parent.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{parent.WrapApi(parent.NewModelServer(parent.NewModel()))}, nil
 	case trait.Publication:
-		return []any{publication.WrapApi(publication.NewModelServer(publication.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{publication.WrapApi(publication.NewModelServer(publication.NewModel()))}, nil
 	case trait.Ptz:
 		// todo: return []any{ptz.WrapApi(ptz.NewModelServer(ptz.NewModel()))}, nil
 		return nil, nil
@@ -245,14 +249,22 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 		// todo: return []any{speaker.WrapApi(speaker.NewModelServer(speaker.NewModel())), nil
 		return nil, nil
 	case trait.Vending:
-		return []any{vending.WrapApi(vending.NewModelServer(vending.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{vending.WrapApi(vending.NewModelServer(vending.NewModel()))}, nil
 
 	case accesspb.TraitName:
 		model := accesspb.NewModel()
-		return []any{gen.WrapAccessApi(accesspb.NewModelServer(model))}, auto.Access(model)
+		return []wrap.ServiceUnwrapper{gen.WrapAccessApi(accesspb.NewModelServer(model))}, auto.Access(model)
 	case button.TraitName:
-		return []any{gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED)))}, nil
+		return []wrap.ServiceUnwrapper{gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED)))}, nil
 	case meter.TraitName:
+		var (
+			unit string
+			ok   bool
+		)
+		if unit, ok = traitMd.GetMore()["unit"]; !ok {
+			unit = "kWh"
+		}
+
 		model := meter.NewModel()
 		info := &meter.InfoServer{MeterReading: &gen.MeterReadingSupport{
 			ResourceSupport: &types.ResourceSupport{
@@ -260,16 +272,16 @@ func newMockClient(traitName trait.Name, deviceName string, logger *zap.Logger) 
 				Writable:   true,
 				Observable: true,
 			},
-			Unit: "kWh",
+			Unit: unit,
 		}}
-		return []any{gen.WrapMeterApi(meter.NewModelServer(model)), gen.WrapMeterInfo(info)}, auto.MeterAuto(model)
+		return []wrap.ServiceUnwrapper{gen.WrapMeterApi(meter.NewModelServer(model)), gen.WrapMeterInfo(info)}, auto.MeterAuto(model)
 	case statuspb.TraitName:
 		model := statuspb.NewModel()
 		// set an initial value or Pull methods can hang
 		_, _ = model.UpdateProblem(&gen.StatusLog_Problem{Name: deviceName, Level: gen.StatusLog_NOMINAL})
-		return []any{gen.WrapStatusApi(statuspb.NewModelServer(model))}, auto.Status(model, deviceName)
+		return []wrap.ServiceUnwrapper{gen.WrapStatusApi(statuspb.NewModelServer(model))}, auto.Status(model, deviceName)
 	case udmipb.TraitName:
-		return []any{gen.WrapUdmiService(auto.NewUdmiServer(logger, deviceName))}, nil
+		return []wrap.ServiceUnwrapper{gen.WrapUdmiService(auto.NewUdmiServer(logger, deviceName))}, nil
 	}
 
 	return nil, nil

@@ -33,7 +33,7 @@ func WithAxiomXaDriverServiceClientFactory(f func(name string) (AxiomXaDriverSer
 	})
 }
 
-func (r *AxiomXaDriverServiceRouter) Register(server *grpc.Server) {
+func (r *AxiomXaDriverServiceRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterAxiomXaDriverServiceServer(server, r)
 }
 

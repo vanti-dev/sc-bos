@@ -29,15 +29,11 @@ func (_ factory) New(services system.Services) service.Lifecycle {
 	return NewSystem(services)
 }
 
-func (_ factory) AddSupport(supporter node.Supporter) {
-	Register(supporter)
-}
-
 func NewSystem(services system.Services) *System {
 	logger := services.Logger.Named("history")
 	s := &System{
 		name:      services.Node.Name(),
-		announcer: services.Node,
+		announcer: node.NewReplaceAnnouncer(services.Node),
 		db:        services.Database,
 		logger:    logger,
 	}
@@ -49,17 +45,11 @@ func NewSystem(services system.Services) *System {
 	)
 	return s
 }
-func Register(supporter node.Supporter) {
-	historyAdminApiRouter := gen.NewHistoryAdminApiRouter()
-	supporter.Support(
-		node.Routing(historyAdminApiRouter), node.Clients(gen.WrapHistoryAdminApi(historyAdminApiRouter)),
-	)
-}
 
 type System struct {
 	*service.Service[config.Root]
 	name      string
-	announcer node.Announcer
+	announcer *node.ReplaceAnnouncer
 	db        *bolthold.Store
 
 	logger *zap.Logger
@@ -67,7 +57,7 @@ type System struct {
 
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	// using AnnounceContext only makes when using MonoApply, which we are in NewSystem
-	announcer := node.AnnounceContext(ctx, s.announcer)
+	announcer := s.announcer.Replace(ctx)
 
 	if cfg.Storage == nil {
 		return errors.New("no storage")

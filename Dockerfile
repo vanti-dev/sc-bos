@@ -13,22 +13,22 @@ ENV YARN_CACHE_FOLDER=/yarn-cache
 
 # All we need to run the install command
 COPY ui/package.json ui/yarn.lock ui/.npmrc ./
-COPY ui/conductor/package.json ./conductor/
+COPY ui/ops/package.json ./ops/
 COPY ui/panzoom-package/package.json ./panzoom-package/
 COPY ui/ui-gen/package.json ./ui-gen/
 RUN --mount=type=cache,target=/yarn-cache \
     --mount=type=secret,id=npmrc,target=/root/.npmrc \
     yarn install --frozen-lockfile --check-files
 
-COPY ui/conductor ./conductor/
+COPY ui/ops ./ops/
 COPY ui/panzoom-package ./panzoom-package/
 COPY ui/ui-gen ./ui-gen/
 ARG GIT_VERSION="(unknown)"
 ENV GIT_VERSION=$GIT_VERSION
-WORKDIR conductor
+WORKDIR ops
 RUN yarn run build
 
-FROM --platform=$BUILDPLATFORM golang:1.22-alpine3.20 AS build_go
+FROM --platform=$BUILDPLATFORM golang:1.23-alpine3.20 AS build_go
 
 RUN apk add --no-cache git
 
@@ -54,7 +54,7 @@ FROM alpine:3.20
 LABEL vendor="Vanti Ltd"
 
 COPY --from=build_go /src/sc-bos /app/
-COPY --from=build_ui /src/conductor/dist /app/ops-ui/
+COPY --from=build_ui /src/ops/dist /app/ops-ui/
 COPY default/cfg/ /cfg/
 COPY default/ui-config/ /app/ui-config/
 

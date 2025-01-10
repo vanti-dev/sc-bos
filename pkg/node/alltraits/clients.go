@@ -4,266 +4,167 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/dalipb"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/mqttpb"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
-
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/color"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 )
 
-type ClientFactory func(conn grpc.ClientConnInterface) any
+func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
+	// yes, this is ugly and terrible but we need it to support the legacy node package API
+	// This should be binned off as soon as all users have been migrated to the new API
+	switch ptr := ptr.(type) {
+	case *traits.AirQualitySensorApiClient:
+		*ptr = traits.NewAirQualitySensorApiClient(conn)
+	case *traits.AirTemperatureApiClient:
+		*ptr = traits.NewAirTemperatureApiClient(conn)
+	case *traits.BookingApiClient:
+		*ptr = traits.NewBookingApiClient(conn)
+	case *traits.BrightnessSensorApiClient:
+		*ptr = traits.NewBrightnessSensorApiClient(conn)
+	case *traits.ChannelApiClient:
+		*ptr = traits.NewChannelApiClient(conn)
+	case *traits.ColorApiClient:
+		*ptr = traits.NewColorApiClient(conn)
+	case *traits.CountApiClient:
+		*ptr = traits.NewCountApiClient(conn)
+	case *traits.ElectricApiClient:
+		*ptr = traits.NewElectricApiClient(conn)
+	case *traits.EmergencyApiClient:
+		*ptr = traits.NewEmergencyApiClient(conn)
+	case *traits.EnergyStorageApiClient:
+		*ptr = traits.NewEnergyStorageApiClient(conn)
+	case *traits.EnterLeaveSensorApiClient:
+		*ptr = traits.NewEnterLeaveSensorApiClient(conn)
+	case *traits.ExtendRetractApiClient:
+		*ptr = traits.NewExtendRetractApiClient(conn)
+	case *traits.FanSpeedApiClient:
+		*ptr = traits.NewFanSpeedApiClient(conn)
+	case *traits.HailApiClient:
+		*ptr = traits.NewHailApiClient(conn)
+	case *traits.InputSelectApiClient:
+		*ptr = traits.NewInputSelectApiClient(conn)
+	case *traits.LightApiClient:
+		*ptr = traits.NewLightApiClient(conn)
+	case *traits.LockUnlockApiClient:
+		*ptr = traits.NewLockUnlockApiClient(conn)
+	case *traits.MetadataApiClient:
+		*ptr = traits.NewMetadataApiClient(conn)
+	case *traits.MicrophoneApiClient:
+		*ptr = traits.NewMicrophoneApiClient(conn)
+	case *traits.ModeApiClient:
+		*ptr = traits.NewModeApiClient(conn)
+	case *traits.MotionSensorApiClient:
+		*ptr = traits.NewMotionSensorApiClient(conn)
+	case *traits.OccupancySensorApiClient:
+		*ptr = traits.NewOccupancySensorApiClient(conn)
+	case *traits.OnOffApiClient:
+		*ptr = traits.NewOnOffApiClient(conn)
+	case *traits.OpenCloseApiClient:
+		*ptr = traits.NewOpenCloseApiClient(conn)
+	case *traits.ParentApiClient:
+		*ptr = traits.NewParentApiClient(conn)
+	case *traits.PublicationApiClient:
+		*ptr = traits.NewPublicationApiClient(conn)
+	case *traits.PtzApiClient:
+		*ptr = traits.NewPtzApiClient(conn)
+	case *traits.SpeakerApiClient:
+		*ptr = traits.NewSpeakerApiClient(conn)
+	case *traits.VendingApiClient:
+		*ptr = traits.NewVendingApiClient(conn)
+	case *traits.WasteApiClient:
+		*ptr = traits.NewWasteApiClient(conn)
+	case *gen.AlertApiClient:
+		*ptr = gen.NewAlertApiClient(conn)
+	case *gen.ButtonApiClient:
+		*ptr = gen.NewButtonApiClient(conn)
+	case *gen.DaliApiClient:
+		*ptr = gen.NewDaliApiClient(conn)
+	case *gen.MeterApiClient:
+		*ptr = gen.NewMeterApiClient(conn)
+	case *gen.MqttServiceClient:
+		*ptr = gen.NewMqttServiceClient(conn)
+	case *gen.StatusApiClient:
+		*ptr = gen.NewStatusApiClient(conn)
+	case *gen.UdmiServiceClient:
+		*ptr = gen.NewUdmiServiceClient(conn)
 
-var apiClientFactories map[trait.Name]ClientFactory
+	case *traits.AirQualitySensorInfoClient:
+		*ptr = traits.NewAirQualitySensorInfoClient(conn)
+	case *traits.AirTemperatureInfoClient:
+		*ptr = traits.NewAirTemperatureInfoClient(conn)
+	case *traits.BookingInfoClient:
+		*ptr = traits.NewBookingInfoClient(conn)
+	case *traits.BrightnessSensorInfoClient:
+		*ptr = traits.NewBrightnessSensorInfoClient(conn)
+	case *traits.ChannelInfoClient:
+		*ptr = traits.NewChannelInfoClient(conn)
+	case *traits.ColorInfoClient:
+		*ptr = traits.NewColorInfoClient(conn)
+	case *traits.CountInfoClient:
+		*ptr = traits.NewCountInfoClient(conn)
+	case *traits.ElectricInfoClient:
+		*ptr = traits.NewElectricInfoClient(conn)
+	case *traits.EmergencyInfoClient:
+		*ptr = traits.NewEmergencyInfoClient(conn)
+	case *traits.EnergyStorageInfoClient:
+		*ptr = traits.NewEnergyStorageInfoClient(conn)
+	case *traits.EnterLeaveSensorInfoClient:
+		*ptr = traits.NewEnterLeaveSensorInfoClient(conn)
+	case *traits.ExtendRetractInfoClient:
+		*ptr = traits.NewExtendRetractInfoClient(conn)
+	case *traits.FanSpeedInfoClient:
+		*ptr = traits.NewFanSpeedInfoClient(conn)
+	case *traits.HailInfoClient:
+		*ptr = traits.NewHailInfoClient(conn)
+	case *traits.InputSelectInfoClient:
+		*ptr = traits.NewInputSelectInfoClient(conn)
+	case *traits.LightInfoClient:
+		*ptr = traits.NewLightInfoClient(conn)
+	case *traits.LockUnlockInfoClient:
+		*ptr = traits.NewLockUnlockInfoClient(conn)
+	case *traits.MetadataInfoClient:
+		*ptr = traits.NewMetadataInfoClient(conn)
+	case *traits.MicrophoneInfoClient:
+		*ptr = traits.NewMicrophoneInfoClient(conn)
+	case *traits.ModeInfoClient:
+		*ptr = traits.NewModeInfoClient(conn)
+	case *traits.OccupancySensorInfoClient:
+		*ptr = traits.NewOccupancySensorInfoClient(conn)
+	case *traits.OnOffInfoClient:
+		*ptr = traits.NewOnOffInfoClient(conn)
+	case *traits.OpenCloseInfoClient:
+		*ptr = traits.NewOpenCloseInfoClient(conn)
+	case *traits.ParentInfoClient:
+		*ptr = traits.NewParentInfoClient(conn)
+	case *traits.PtzInfoClient:
+		*ptr = traits.NewPtzInfoClient(conn)
+	case *traits.SpeakerInfoClient:
+		*ptr = traits.NewSpeakerInfoClient(conn)
+	case *traits.VendingInfoClient:
+		*ptr = traits.NewVendingInfoClient(conn)
+	case *traits.WasteInfoClient:
+		*ptr = traits.NewWasteInfoClient(conn)
+	case *gen.MeterInfoClient:
+		*ptr = gen.NewMeterInfoClient(conn)
 
-// RegisterAPIClientFactory registers a {trait}ApiClient factory for the named trait.
-// This factory will take president over the default generated factory.
-// Should be called before any call to APIClient, typically in init().
-func RegisterAPIClientFactory(t trait.Name, f ClientFactory) {
-	if apiClientFactories == nil {
-		apiClientFactories = make(map[trait.Name]ClientFactory)
-	}
-	apiClientFactories[t] = f
-}
+	case *gen.AirTemperatureHistoryClient:
+		*ptr = gen.NewAirTemperatureHistoryClient(conn)
+	case *gen.ElectricHistoryClient:
+		*ptr = gen.NewElectricHistoryClient(conn)
+	case *gen.OccupancySensorHistoryClient:
+		*ptr = gen.NewOccupancySensorHistoryClient(conn)
+	case *gen.AirQualitySensorHistoryClient:
+		*ptr = gen.NewAirQualitySensorHistoryClient(conn)
+	case *gen.MeterHistoryClient:
+		*ptr = gen.NewMeterHistoryClient(conn)
+	case *gen.StatusHistoryClient:
+		*ptr = gen.NewStatusHistoryClient(conn)
 
-// APIClient returns the {trait}ApiClient implementation for the named trait.
-// For example passing trait.OnOff would return traits.NewOnOffApiClient.
-// Returns nil if the trait is not known.
-func APIClient(conn grpc.ClientConnInterface, t trait.Name) any {
-	// todo: I feel this should really live in sc-golang somewhere
-	if d, ok := apiClientFactories[t]; ok {
-		return d(conn)
-	}
+	case *gen.HistoryAdminApiClient:
+		*ptr = gen.NewHistoryAdminApiClient(conn)
+	case *gen.HubApiClient:
+		*ptr = gen.NewHubApiClient(conn)
 
-	switch t {
-	case trait.AirQualitySensor:
-		return traits.NewAirQualitySensorApiClient(conn)
-	case trait.AirTemperature:
-		return traits.NewAirTemperatureApiClient(conn)
-	case trait.Booking:
-		return traits.NewBookingApiClient(conn)
-	case trait.BrightnessSensor:
-		return traits.NewBrightnessSensorApiClient(conn)
-	case trait.Channel:
-		return traits.NewChannelApiClient(conn)
-	case trait.Count:
-		return traits.NewCountApiClient(conn)
-	case trait.Electric:
-		return traits.NewElectricApiClient(conn)
-	case trait.Emergency:
-		return traits.NewEmergencyApiClient(conn)
-	case trait.EnergyStorage:
-		return traits.NewEnergyStorageApiClient(conn)
-	case trait.EnterLeaveSensor:
-		return traits.NewEnterLeaveSensorApiClient(conn)
-	case trait.ExtendRetract:
-		return traits.NewExtendRetractApiClient(conn)
-	case trait.FanSpeed:
-		return traits.NewFanSpeedApiClient(conn)
-	case trait.Hail:
-		return traits.NewHailApiClient(conn)
-	case trait.InputSelect:
-		return traits.NewInputSelectApiClient(conn)
-	case trait.Light:
-		return traits.NewLightApiClient(conn)
-	case trait.LockUnlock:
-		return traits.NewLockUnlockApiClient(conn)
-	case trait.Metadata:
-		return traits.NewMetadataApiClient(conn)
-	case trait.Microphone:
-		return traits.NewMicrophoneApiClient(conn)
-	case trait.Mode:
-		return traits.NewModeApiClient(conn)
-	case trait.MotionSensor:
-		return traits.NewMotionSensorApiClient(conn)
-	case trait.OccupancySensor:
-		return traits.NewOccupancySensorApiClient(conn)
-	case trait.OnOff:
-		return traits.NewOnOffApiClient(conn)
-	case trait.OpenClose:
-		return traits.NewOpenCloseApiClient(conn)
-	case trait.Parent:
-		return traits.NewParentApiClient(conn)
-	case trait.Publication:
-		return traits.NewPublicationApiClient(conn)
-	case trait.Ptz:
-		return traits.NewPtzApiClient(conn)
-	case trait.Speaker:
-		return traits.NewSpeakerApiClient(conn)
-	case trait.Vending:
-		return traits.NewVendingApiClient(conn)
-
-	// sc-bos private traits
-	case accesspb.TraitName:
-		return gen.NewAccessApiClient(conn)
-	case button.TraitName:
-		return gen.NewButtonApiClient(conn)
-	case color.TraitName:
-		return gen.NewColorApiClient(conn)
-	case dalipb.TraitName:
-		return gen.NewDaliApiClient(conn)
-	case emergencylight.TraitName:
-		return gen.NewDaliApiClient(conn)
-	case meter.TraitName:
-		return gen.NewMeterApiClient(conn)
-	case mqttpb.TraitName:
-		return gen.NewMqttServiceClient(conn)
-	case statuspb.TraitName:
-		return gen.NewStatusApiClient(conn)
-	case udmipb.TraitName:
-		return gen.NewUdmiServiceClient(conn)
-	}
-	return nil
-}
-
-var historyClientFactories map[trait.Name]ClientFactory
-
-// RegisterHistoryClientFactory registers a {trait}HistoryClient factory for the named trait.
-// This factory will take president over the default generated factory.
-// Should be called before any call to HistoryClient, typically in init().
-func RegisterHistoryClientFactory(t trait.Name, f ClientFactory) {
-	if historyClientFactories == nil {
-		historyClientFactories = make(map[trait.Name]ClientFactory)
-	}
-	historyClientFactories[t] = f
-}
-
-// HistoryClient returns the {trait}HistoryClient implementation for the named trait.
-// For example passing trait.Meter would return traits.NewMeterHistoryClient.
-// Returns nil if the trait is not known.
-func HistoryClient(conn grpc.ClientConnInterface, t trait.Name) any {
-	if d, ok := historyClientFactories[t]; ok {
-		return d(conn)
-	}
-
-	switch t {
-	// Smart Core traits
-	case trait.AirTemperature:
-		return gen.NewAirTemperatureHistoryClient(conn)
-	case trait.Electric:
-		return gen.NewElectricHistoryClient(conn)
-	case trait.OccupancySensor:
-		return gen.NewOccupancySensorHistoryClient(conn)
-	case trait.AirQualitySensor:
-		return gen.NewAirQualitySensorHistoryClient(conn)
-
-		// (not yet) Smart Core traits
-	case meter.TraitName:
-		return gen.NewMeterHistoryClient(conn)
-	case statuspb.TraitName:
-		return gen.NewStatusHistoryClient(conn)
 	default:
-		return nil
+		return false
 	}
-}
-
-var infoClientFactories map[trait.Name]ClientFactory
-
-// RegisterInfoClientFactory registers a {trait}InfoClient factory for the named trait.
-// This factory will take president over the default generated factory.
-// Should be called before any call to InfoClient, typically in init().
-func RegisterInfoClientFactory(t trait.Name, f ClientFactory) {
-	if infoClientFactories == nil {
-		infoClientFactories = make(map[trait.Name]ClientFactory)
-	}
-	infoClientFactories[t] = f
-}
-
-// InfoClient returns the {trait}InfoClient implementation for the named trait.
-// For example passing trait.Meter would return traits.NewMeterInfoClient.
-// Returns nil if the trait is not known or has no info aspect.
-func InfoClient(conn grpc.ClientConnInterface, t trait.Name) any {
-	// todo: I feel this should really live in sc-golang somewhere
-	if d, ok := infoClientFactories[t]; ok {
-		return d(conn)
-	}
-
-	switch t {
-	case trait.AirQualitySensor:
-		return traits.NewAirQualitySensorInfoClient(conn)
-	case trait.AirTemperature:
-		return traits.NewAirTemperatureInfoClient(conn)
-	case trait.Booking:
-		return traits.NewBookingInfoClient(conn)
-	case trait.BrightnessSensor:
-		return traits.NewBrightnessSensorInfoClient(conn)
-	case trait.Channel:
-		return traits.NewChannelInfoClient(conn)
-	case trait.Count:
-		return traits.NewCountInfoClient(conn)
-	case trait.Electric:
-		return traits.NewElectricInfoClient(conn)
-	case trait.Emergency:
-		return traits.NewEmergencyInfoClient(conn)
-	case trait.EnergyStorage:
-		return traits.NewEnergyStorageInfoClient(conn)
-	case trait.EnterLeaveSensor:
-		return traits.NewEnterLeaveSensorInfoClient(conn)
-	case trait.ExtendRetract:
-		return traits.NewExtendRetractInfoClient(conn)
-	case trait.FanSpeed:
-		return traits.NewFanSpeedInfoClient(conn)
-	case trait.Hail:
-		return traits.NewHailInfoClient(conn)
-	case trait.InputSelect:
-		return traits.NewInputSelectInfoClient(conn)
-	case trait.Light:
-		return traits.NewLightInfoClient(conn)
-	case trait.LockUnlock:
-		return traits.NewLockUnlockInfoClient(conn)
-	case trait.Metadata:
-		return traits.NewMetadataInfoClient(conn)
-	case trait.Microphone:
-		return traits.NewMicrophoneInfoClient(conn)
-	case trait.Mode:
-		return traits.NewModeInfoClient(conn)
-	case trait.MotionSensor:
-		// return traits.NewMotionSensorInfoClient(conn)
-		return nil
-	case trait.OccupancySensor:
-		return traits.NewOccupancySensorInfoClient(conn)
-	case trait.OnOff:
-		return traits.NewOnOffInfoClient(conn)
-	case trait.OpenClose:
-		return traits.NewOpenCloseInfoClient(conn)
-	case trait.Parent:
-		return traits.NewParentInfoClient(conn)
-	case trait.Publication:
-		// return traits.NewPublicationInfoClient(conn)
-		return nil
-	case trait.Ptz:
-		return traits.NewPtzInfoClient(conn)
-	case trait.Speaker:
-		return traits.NewSpeakerInfoClient(conn)
-	case trait.Vending:
-		return traits.NewVendingInfoClient(conn)
-
-		// sc-bos private traits
-	case button.TraitName:
-		// return gen.NewButtonInfoClient(conn)
-		return nil
-	case color.TraitName:
-		return gen.NewColorInfoClient(conn)
-	case emergencylight.TraitName:
-		// return gen.NewDaliInfoClient(conn)
-		return nil
-	case meter.TraitName:
-		return gen.NewMeterInfoClient(conn)
-	case mqttpb.TraitName:
-		// return gen.NewMqttInfoClient(conn)
-		return nil
-	case statuspb.TraitName:
-		// return gen.NewStatusInfoClient(conn)
-		return nil
-	case udmipb.TraitName:
-		// return gen.NewUdmiInfoClient(conn)
-		return nil
-	}
-	return nil
+	return true
 }

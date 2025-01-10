@@ -29,7 +29,7 @@ func NewSystem(services system.Services) *System {
 	s := &System{
 		logger:    services.Logger.Named("publications"),
 		name:      services.Node.Name(),
-		announcer: services.Node,
+		announcer: node.NewReplaceAnnouncer(services.Node),
 	}
 	s.Service = service.New(
 		service.MonoApply(s.applyConfig),
@@ -45,7 +45,7 @@ type System struct {
 	logger *zap.Logger
 
 	name      string
-	announcer node.Announcer
+	announcer *node.ReplaceAnnouncer
 }
 
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
@@ -65,7 +65,7 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 
 		// Note, ctx in cancelled each time config is updated (and on stop) because we use MonoApply in NewSystem
-		announcer := node.AnnounceContext(ctx, s.announcer)
+		announcer := s.announcer.Replace(ctx)
 		announcer.Announce(s.name, node.HasTrait(trait.Publication, node.WithClients(publication.WrapApi(server))))
 	default:
 		return fmt.Errorf("unsuported storage type %s", cfg.Storage.Type)

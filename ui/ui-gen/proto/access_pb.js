@@ -194,7 +194,8 @@ proto.smartcore.bos.AccessAttempt.toObject = function(includeInstance, msg) {
   var f, obj = {
 grant: jspb.Message.getFieldWithDefault(msg, 1, 0),
 reason: jspb.Message.getFieldWithDefault(msg, 2, ""),
-actor: (f = msg.getActor()) && proto.smartcore.bos.AccessAttempt.Actor.toObject(includeInstance, f)
+actor: (f = msg.getActor()) && proto.smartcore.bos.AccessAttempt.Actor.toObject(includeInstance, f),
+accessAttemptTime: (f = msg.getAccessAttemptTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -243,6 +244,11 @@ proto.smartcore.bos.AccessAttempt.deserializeBinaryFromReader = function(msg, re
       var value = new proto.smartcore.bos.AccessAttempt.Actor;
       reader.readMessage(value,proto.smartcore.bos.AccessAttempt.Actor.deserializeBinaryFromReader);
       msg.setActor(value);
+      break;
+    case 4:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setAccessAttemptTime(value);
       break;
     default:
       reader.skipField();
@@ -293,6 +299,14 @@ proto.smartcore.bos.AccessAttempt.serializeBinaryToWriter = function(message, wr
       3,
       f,
       proto.smartcore.bos.AccessAttempt.Actor.serializeBinaryToWriter
+    );
+  }
+  f = message.getAccessAttemptTime();
+  if (f != null) {
+    writer.writeMessage(
+      4,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
 };
@@ -832,6 +846,43 @@ proto.smartcore.bos.AccessAttempt.prototype.clearActor = function() {
  */
 proto.smartcore.bos.AccessAttempt.prototype.hasActor = function() {
   return jspb.Message.getField(this, 3) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp access_attempt_time = 4;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.AccessAttempt.prototype.getAccessAttemptTime = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 4));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.AccessAttempt} returns this
+*/
+proto.smartcore.bos.AccessAttempt.prototype.setAccessAttemptTime = function(value) {
+  return jspb.Message.setWrapperField(this, 4, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.AccessAttempt} returns this
+ */
+proto.smartcore.bos.AccessAttempt.prototype.clearAccessAttemptTime = function() {
+  return this.setAccessAttemptTime(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.AccessAttempt.prototype.hasAccessAttemptTime = function() {
+  return jspb.Message.getField(this, 4) != null;
 };
 
 

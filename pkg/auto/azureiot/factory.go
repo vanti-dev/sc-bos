@@ -16,6 +16,7 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/iothub"
 	"github.com/vanti-dev/sc-bos/internal/iothub/auth"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
+	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
@@ -30,6 +31,10 @@ func (f factory) New(services auto.Services) service.Lifecycle {
 	a := &Auto{services: services}
 	a.Service = service.New(service.MonoApply(a.applyConfig), service.WithParser(ParseConfig))
 	return a
+}
+
+func (f factory) ConfigBlocks() []block.Block {
+	return Blocks
 }
 
 type Auto struct {
@@ -56,7 +61,7 @@ func (a *Auto) applyConfig(ctx context.Context, cfg Config) error {
 	// load the group key from string or disk, but only if a device will need it
 	var needsGroupKey bool // group key is required if a device lacks a connection string
 	for _, deviceCfg := range cfg.Devices {
-		if deviceCfg.ConnectionString == "" {
+		if !deviceCfg.UsesConnectionString() {
 			needsGroupKey = true
 		}
 	}
