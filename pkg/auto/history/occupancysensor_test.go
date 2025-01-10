@@ -28,9 +28,9 @@ func Test_automation_collectOccupancyChanges(t *testing.T) {
 	)
 
 	collector := &automation{
-		clients:  n,
-		announce: n,
-		logger:   zap.NewNop(),
+		clients:   n,
+		announcer: node.NewReplaceAnnouncer(n),
+		logger:    zap.NewNop(),
 	}
 
 	payloads := make(chan []byte, 5)

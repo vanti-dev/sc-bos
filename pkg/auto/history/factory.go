@@ -32,9 +32,9 @@ var Factory = auto.FactoryFunc(NewAutomation)
 
 func NewAutomation(services auto.Services) service.Lifecycle {
 	a := &automation{
-		clients:  services.Node,
-		announce: services.Node,
-		logger:   services.Logger.Named("history"),
+		clients:   services.Node,
+		announcer: node.NewReplaceAnnouncer(services.Node),
+		logger:    services.Logger.Named("history"),
 
 		db: services.Database,
 
@@ -52,9 +52,9 @@ func NewAutomation(services auto.Services) service.Lifecycle {
 
 type automation struct {
 	*service.Service[config.Root]
-	clients  node.Clienter
-	announce node.Announcer
-	logger   *zap.Logger
+	clients   node.Clienter
+	announcer *node.ReplaceAnnouncer
+	logger    *zap.Logger
 
 	db *bolthold.Store
 
@@ -185,7 +185,7 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 	}()
 
-	announce := node.AnnounceContext(ctx, a.announce)
+	announce := a.announcer.Replace(ctx)
 	// announce the trait too to ensure its services get added to the router before the collect routine starts
 	announce.Announce(cfg.Source.Name, node.HasClient(serverClient), node.HasTrait(cfg.Source.Trait))
 

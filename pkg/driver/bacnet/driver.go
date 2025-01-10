@@ -47,7 +47,7 @@ func (_ factory) ConfigBlocks() []block.Block {
 
 // Driver brings BACnet devices into Smart Core.
 type Driver struct {
-	announcer node.Announcer // Any device we setup gets announced here
+	announcer *node.ReplaceAnnouncer // Any device we setup gets announced here
 	logger    *zap.Logger
 
 	*service.Service[config.Root]
@@ -59,7 +59,7 @@ type Driver struct {
 
 func NewDriver(services driver.Services) *Driver {
 	d := &Driver{
-		announcer: services.Node,
+		announcer: node.NewReplaceAnnouncer(services.Node),
 		devices:   known.NewMap(),
 		logger:    services.Logger.Named("bacnet"),
 	}
@@ -71,7 +71,7 @@ func NewDriver(services driver.Services) *Driver {
 
 func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	// AnnounceContext only makes sense if using MonoApply, which we are in NewDriver
-	rootAnnouncer := node.AnnounceContext(ctx, d.announcer)
+	rootAnnouncer := d.announcer.Replace(ctx)
 	if cfg.Metadata != nil {
 		rootAnnouncer = node.AnnounceFeatures(rootAnnouncer, node.HasMetadata(cfg.Metadata))
 	}
@@ -114,6 +114,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			// We don't want this to happen as any announced names should live past the lifetime of the task.
 			// To avoid this we have to split the cleanup of names from the cancellation of the task.
 			cfgCtx := ctx
+			cfgAnnouncer := node.NewReplaceAnnouncer(rootAnnouncer)
 			cleanupLastAttempt := func() {}
 
 			taskOpts := []task.Option{
@@ -131,7 +132,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				// make sure we can clean up announced names if the task is retried or the enclosing Service is stopped or reconfigured.
 				var announceCtx context.Context
 				announceCtx, cleanupLastAttempt = context.WithCancel(cfgCtx)
-				announcer := node.AnnounceContext(announceCtx, rootAnnouncer)
+				announcer := cfgAnnouncer.Replace(announceCtx)
 
 				// It's ok for configureDevices to receive the task context here as ctx is only used for queries
 				err := d.configureDevice(ctx, announcer, cfg, device, devices, statuses, logger)

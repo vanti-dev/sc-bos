@@ -31,7 +31,12 @@ func (s *System) announceCohort(ctx context.Context, c *cohort) {
 	}
 
 	runAnnouncer := func(n *remoteNode) {
-		nodeCtx, stop := context.WithCancel(ctx)
+		nodeCtx, stopCtx := context.WithCancel(ctx)
+		scope, stopScope := node.AnnounceScope(s.announcer)
+		stop := func() {
+			stopCtx()
+			stopScope()
+		}
 		tasks[n.addr] = stop
 		a := &announcer{
 			System: s,
@@ -40,7 +45,7 @@ func (s *System) announceCohort(ctx context.Context, c *cohort) {
 				zap.Bool("isHub", n.isHub),
 			),
 			node:      n,
-			Announcer: node.AnnounceContext(nodeCtx, s.announcer),
+			Announcer: scope,
 			table:     table,
 		}
 		go a.announceRemoteNode(nodeCtx)

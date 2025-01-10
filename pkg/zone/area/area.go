@@ -57,9 +57,9 @@ type factory struct {
 func (f factory) New(services zone.Services) service.Lifecycle {
 	services.Logger = services.Logger.Named("area")
 	a := &Area{
-		services:      services,
-		features:      f.features,
-		announcements: node.NewReplaceAnnouncer(services.Node),
+		services:  services,
+		features:  f.features,
+		announcer: node.NewReplaceAnnouncer(services.Node),
 	}
 	a.Service = service.New(service.MonoApply(a.applyConfig))
 	return a
@@ -97,13 +97,13 @@ func (f factory) ConfigBlocks(cfg *sysconf.Config) []block.Block {
 
 type Area struct {
 	*service.Service[config.Root]
-	services      zone.Services
-	features      []zone.Factory
-	announcements *node.ReplaceAnnouncer
+	services  zone.Services
+	features  []zone.Factory
+	announcer *node.ReplaceAnnouncer
 }
 
 func (a *Area) applyConfig(ctx context.Context, cfg config.Root) error {
-	announce := a.announcements.Replace(ctx)
+	announce := a.announcer.Replace(ctx)
 	if cfg.Metadata != nil {
 		announce.Announce(cfg.Name, node.HasMetadata(cfg.Metadata))
 	}

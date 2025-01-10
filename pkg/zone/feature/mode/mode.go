@@ -17,10 +17,10 @@ import (
 var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
 	services.Logger = services.Logger.Named("mode")
 	f := &feature{
-		announce: services.Node,
-		devices:  services.Devices,
-		clients:  services.Node,
-		logger:   services.Logger,
+		announcer: node.NewReplaceAnnouncer(services.Node),
+		devices:   services.Devices,
+		clients:   services.Node,
+		logger:    services.Logger,
 	}
 	f.Service = service.New(service.MonoApply(f.applyConfig), service.WithParser(config.ReadConfigBytes))
 	return f
@@ -28,17 +28,17 @@ var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
 
 type feature struct {
 	*service.Service[config.Root]
-	announce node.Announcer
-	devices  *zone.Devices
-	clients  node.Clienter
-	logger   *zap.Logger
+	announcer *node.ReplaceAnnouncer
+	devices   *zone.Devices
+	clients   node.Clienter
+	logger    *zap.Logger
 }
 
 func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	if len(cfg.Modes) == 0 {
 		return nil
 	}
-	announce := node.AnnounceContext(ctx, f.announce)
+	announce := f.announcer.Replace(ctx)
 	logger := f.logger
 
 	var api traits.ModeApiClient

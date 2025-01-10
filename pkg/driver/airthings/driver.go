@@ -36,7 +36,8 @@ type factory struct{}
 func (f factory) New(services driver.Services) service.Lifecycle {
 	services.Logger = services.Logger.Named(DriverName)
 	d := &Driver{
-		Services: services,
+		Services:  services,
+		announcer: node.NewReplaceAnnouncer(services.Node),
 	}
 	d.Service = service.New(service.MonoApply(d.applyConfig))
 	return d
@@ -49,6 +50,7 @@ func (_ factory) ConfigBlocks() []block.Block {
 type Driver struct {
 	*service.Service[Config]
 	driver.Services
+	announcer *node.ReplaceAnnouncer
 
 	cfg    Config
 	client *http.Client
@@ -59,7 +61,7 @@ type Driver struct {
 }
 
 func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
-	announcer := node.AnnounceContext(ctx, d.Node)
+	announcer := d.announcer.Replace(ctx)
 	d.listLocationsOnce = sync.Once{}
 	d.cfg = cfg
 

@@ -25,7 +25,8 @@ type factory struct{}
 
 func (f factory) New(services driver.Services) service.Lifecycle {
 	d := &Driver{
-		Services: services,
+		Services:  services,
+		announcer: node.NewReplaceAnnouncer(services.Node),
 	}
 	d.Service = service.New(
 		service.MonoApply(d.applyConfig),
@@ -40,7 +41,8 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 type Driver struct {
 	*service.Service[Config]
 	driver.Services
-	logger *zap.Logger
+	announcer *node.ReplaceAnnouncer
+	logger    *zap.Logger
 
 	cfg             Config
 	client          *Client
@@ -49,7 +51,7 @@ type Driver struct {
 }
 
 func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
-	announcer := node.AnnounceContext(ctx, d.Node)
+	announcer := d.announcer.Replace(ctx)
 	d.cfg = cfg
 
 	// create a new client to communicate with the Wiser controller
