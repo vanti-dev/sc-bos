@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"iter"
 	"log"
 	"strconv"
 	"strings"
@@ -56,25 +57,13 @@ func conditionMatches(cond *gen.Device_Query_Condition, device *gen.Device) bool
 		// any field
 		return messageHasValueStringFunc(device, cmp)
 	}
-	return isMessageValueStringFunc(cond.Field, device, cmp)
-}
 
-// isMessageValueStringFunc returns whether the value identified by path in msg returns true when passed to f.
-// The path argument looks like `some.prop.path` and navigates the message fields.
-func isMessageValueStringFunc(path string, msg proto.Message, f func(v string) bool) bool {
-	if msg == nil {
-		return false
+	for val := range getMessageString(cond.Field, device) {
+		if cmp(val) {
+			return true
+		}
 	}
-	fd, v, ok := getMessageValue(path, msg.ProtoReflect())
-	if !ok {
-		return false
-	}
-	vs, ok := valueString(fd, v)
-	if !ok {
-		return false
-	}
-
-	return f(vs)
+	return false
 }
 
 // messageHasValueStringFunc returns whether any value in msg returns true when converted to a string and passed to f.
@@ -115,83 +104,137 @@ func messageHasValueStringFunc(msg proto.Message, f func(v string) bool) bool {
 	return match
 }
 
-// getMessageString returns the property identified by path from msg as a string.
-// Returns false if the path does not match any property, or that property cannot be represented as a string.
+// getMessageString returns an iterator over the string values identified by path from msg.
 // See valueString for details of string conversion.
-func getMessageString(path string, msg proto.Message) (string, bool) {
+func getMessageString(path string, msg proto.Message) iter.Seq[string] {
 	if msg == nil {
-		return "", false
+		return func(yield func(string) bool) {}
 	}
-	fd, v, ok := getMessageValue(path, msg.ProtoReflect())
-	if !ok {
-		return "", false
+	segments, err := parsePath(path)
+	if err != nil || len(segments) == 0 {
+		return func(yield func(string) bool) {}
 	}
-	vs, ok := valueString(fd, v)
-	if !ok {
-		return "", false
-	}
-
-	return vs, true
+	return getMessageValue(segments, msg.ProtoReflect())
 }
 
-// getMessageValue returns the protoreflect.Value identified by path in msg.
-// Returns false if the path can't be resolved.
-func getMessageValue(path string, msg protoreflect.Message) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
-	prop, rest, found := strings.Cut(path, ".")
-	fieldDesc := msg.Descriptor().Fields().ByName(protoreflect.Name(prop))
+// getMessageValue returns an iterator over the string values identified by path.
+// The first path segment should refer to a field in msg.
+func getMessageValue(path []pathSegment, msg protoreflect.Message) iter.Seq[string] {
+	head := path[0]
+	fieldDesc := msg.Descriptor().Fields().ByName(protoreflect.Name(head.Name))
 	if fieldDesc == nil {
-		return fieldDesc, protoreflect.ValueOf(nil), false
+		return func(yield func(string) bool) {}
+	}
+
+	if head.IsIndex {
+		return func(yield func(string) bool) {}
 	}
 	val := msg.Get(fieldDesc)
-	if !found {
+	if len(path) == 1 {
 		// end of the path
-		return fieldDesc, val, true
+		if fieldDesc.IsList() {
+			return getListValue(path, fieldDesc, val.List())
+		}
+		return func(yield func(string) bool) {
+			if str, got := valueString(fieldDesc, val); got && str != "" {
+				yield(str)
+			}
+		}
 	}
 
-	return nextValue(rest, fieldDesc, val)
+	return nextValue(path[1:], fieldDesc, val)
 }
 
-// getMapValue returns the protoreflect.Value identified by path in the map m.
-// Returns false if the path can't be resolved.
-func getMapValue(path string, keyDesc, valueDesc protoreflect.FieldDescriptor, m protoreflect.Map) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
-	prop, rest, found := strings.Cut(path, ".")
-	key, ok := parseMapKey(prop, keyDesc)
+// getMapValue returns an iterator over the string values identified by path in the map m.
+// The first path segment should refer to a key in the map.
+func getMapValue(path []pathSegment, keyDesc, valueDesc protoreflect.FieldDescriptor, m protoreflect.Map) iter.Seq[string] {
+	head := path[0]
+	key, ok := parseMapKey(head.Name, keyDesc)
 	if !ok {
-		return nil, protoreflect.Value{}, false
+		return func(yield func(string) bool) {}
 	}
 	value := m.Get(key)
 	if !value.IsValid() { // means the key doesn't exist in the map
-		return nil, protoreflect.Value{}, false
+		return func(yield func(string) bool) {}
 	}
 
-	if !found {
-		return valueDesc, value, true
+	if len(path) == 1 {
+		return func(yield func(string) bool) {
+			if str, got := valueString(valueDesc, value); got && str != "" {
+				yield(str)
+			}
+		}
 	}
 
-	return nextValue(rest, valueDesc, value)
+	return nextValue(path[1:], valueDesc, value)
 }
 
-// getListValue returns the protoreflect.Value identified by path in the list l.
-// Returns false if the path can't be resolved.
-func getListValue(path string, entryDesc protoreflect.FieldDescriptor, l protoreflect.List) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
-	// todo: support list values
-	// I guess it'd be nice to support "any in list match" but also "index in list matches" semantics.
-	// In the first case we'd need to refactor this whole things to combine value lookup and condition checking.
-	// In the second case we'd need to make our path parsing logic more capable/complicated.
-	return nil, protoreflect.Value{}, false
+// getListValue returns an iterator over the string values identified by path in the list l.
+// The first path segment can either be an index segment, in which case it refers to a specific element in the list,
+// or a non-index segment in which case it is ignored and all elements in the list are matched.
+func getListValue(path []pathSegment, entryDesc protoreflect.FieldDescriptor, l protoreflect.List) iter.Seq[string] {
+	head := path[0]
+	if head.IsIndex {
+		// search for a specific element
+		idx := head.Index
+		if idx < 0 {
+			// [-1] is the last element
+			idx = l.Len() + idx
+		}
+		if idx < 0 || idx >= l.Len() {
+			// index out of range
+			return func(yield func(string) bool) {}
+		}
+		item := l.Get(idx)
+		return func(yield func(string) bool) {
+			if str, got := valueString(entryDesc, item); got {
+				if str != "" {
+					yield(str)
+				}
+				return
+			}
+			for v := range getMessageValue(path[1:], item.Message()) {
+				if !yield(v) {
+					return
+				}
+			}
+		}
+	}
+	// search all elements
+	return func(yield func(string) bool) {
+		for i := 0; i < l.Len(); i++ {
+			item := l.Get(i)
+			// this handles all scalars
+			if str, got := valueString(entryDesc, item); got {
+				if str != "" {
+					if !yield(str) {
+						return
+					}
+				}
+				continue
+			}
+			// this deals with groups/messages
+			for v := range getMessageValue(path, item.Message()) {
+				if !yield(v) {
+					return
+				}
+			}
+		}
+	}
+
 }
 
 // nextValue calls the correct getXxxValue func for the given field descriptor.
-func nextValue(rest string, fieldDesc protoreflect.FieldDescriptor, val protoreflect.Value) (protoreflect.FieldDescriptor, protoreflect.Value, bool) {
+func nextValue(path []pathSegment, fieldDesc protoreflect.FieldDescriptor, val protoreflect.Value) iter.Seq[string] {
 	switch {
 	case fieldDesc.IsMap():
-		return getMapValue(rest, fieldDesc.MapKey(), fieldDesc.MapValue(), val.Map())
+		return getMapValue(path, fieldDesc.MapKey(), fieldDesc.MapValue(), val.Map())
 	case fieldDesc.IsList():
-		return getListValue(rest, fieldDesc, val.List())
+		return getListValue(path, fieldDesc, val.List())
 	case fieldDesc.Message() != nil: // note this is true for map types, so check that first
-		return getMessageValue(rest, val.Message())
+		return getMessageValue(path, val.Message())
 	default:
-		return fieldDesc, val, false // there's more to the path but the value has no properties
+		return func(yield func(string) bool) {} // there's more to the path but the value has no properties
 	}
 }
 
