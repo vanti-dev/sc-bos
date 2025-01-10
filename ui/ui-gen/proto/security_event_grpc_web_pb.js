@@ -8,7 +8,7 @@
 // versions:
 // 	protoc-gen-grpc-web v1.5.0
 // 	protoc              v5.28.3
-// source: access.proto
+// source: security_event.proto
 
 
 /* eslint-disable */
@@ -24,10 +24,12 @@ var google_protobuf_field_mask_pb = require('google-protobuf/google/protobuf/fie
 
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js')
 
+var types_change_pb = require('@smart-core-os/sc-api-grpc-web/types/change_pb.js')
+
 var actor_pb = require('./actor_pb.js')
 const proto = {};
 proto.smartcore = {};
-proto.smartcore.bos = require('./access_pb.js');
+proto.smartcore.bos = require('./security_event_pb.js');
 
 /**
  * @param {string} hostname
@@ -37,7 +39,7 @@ proto.smartcore.bos = require('./access_pb.js');
  * @struct
  * @final
  */
-proto.smartcore.bos.AccessApiClient =
+proto.smartcore.bos.SecurityEventApiClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options.format = 'text';
@@ -63,7 +65,7 @@ proto.smartcore.bos.AccessApiClient =
  * @struct
  * @final
  */
-proto.smartcore.bos.AccessApiPromiseClient =
+proto.smartcore.bos.SecurityEventApiPromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options.format = 'text';
@@ -84,117 +86,117 @@ proto.smartcore.bos.AccessApiPromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.smartcore.bos.GetLastAccessAttemptRequest,
- *   !proto.smartcore.bos.AccessAttempt>}
+ *   !proto.smartcore.bos.ListSecurityEventsRequest,
+ *   !proto.smartcore.bos.ListSecurityEventsResponse>}
  */
-const methodDescriptor_AccessApi_GetLastAccessAttempt = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccessApi/GetLastAccessAttempt',
+const methodDescriptor_SecurityEventApi_ListSecurityEvents = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.SecurityEventApi/ListSecurityEvents',
   grpc.web.MethodType.UNARY,
-  proto.smartcore.bos.GetLastAccessAttemptRequest,
-  proto.smartcore.bos.AccessAttempt,
+  proto.smartcore.bos.ListSecurityEventsRequest,
+  proto.smartcore.bos.ListSecurityEventsResponse,
   /**
-   * @param {!proto.smartcore.bos.GetLastAccessAttemptRequest} request
+   * @param {!proto.smartcore.bos.ListSecurityEventsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.smartcore.bos.AccessAttempt.deserializeBinary
+  proto.smartcore.bos.ListSecurityEventsResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.smartcore.bos.GetLastAccessAttemptRequest} request The
+ * @param {!proto.smartcore.bos.ListSecurityEventsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.AccessAttempt)}
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ListSecurityEventsResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.AccessAttempt>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListSecurityEventsResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccessApiClient.prototype.getLastAccessAttempt =
+proto.smartcore.bos.SecurityEventApiClient.prototype.listSecurityEvents =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccessApi/GetLastAccessAttempt',
+      '/smartcore.bos.SecurityEventApi/ListSecurityEvents',
       request,
       metadata || {},
-      methodDescriptor_AccessApi_GetLastAccessAttempt,
+      methodDescriptor_SecurityEventApi_ListSecurityEvents,
       callback);
 };
 
 
 /**
- * @param {!proto.smartcore.bos.GetLastAccessAttemptRequest} request The
+ * @param {!proto.smartcore.bos.ListSecurityEventsRequest} request The
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.smartcore.bos.AccessAttempt>}
+ * @return {!Promise<!proto.smartcore.bos.ListSecurityEventsResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccessApiPromiseClient.prototype.getLastAccessAttempt =
+proto.smartcore.bos.SecurityEventApiPromiseClient.prototype.listSecurityEvents =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccessApi/GetLastAccessAttempt',
+      '/smartcore.bos.SecurityEventApi/ListSecurityEvents',
       request,
       metadata || {},
-      methodDescriptor_AccessApi_GetLastAccessAttempt);
+      methodDescriptor_SecurityEventApi_ListSecurityEvents);
 };
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.smartcore.bos.PullAccessAttemptsRequest,
- *   !proto.smartcore.bos.PullAccessAttemptsResponse>}
+ *   !proto.smartcore.bos.PullSecurityEventsRequest,
+ *   !proto.smartcore.bos.PullSecurityEventsResponse>}
  */
-const methodDescriptor_AccessApi_PullAccessAttempts = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccessApi/PullAccessAttempts',
+const methodDescriptor_SecurityEventApi_PullSecurityEvents = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.SecurityEventApi/PullSecurityEvents',
   grpc.web.MethodType.SERVER_STREAMING,
-  proto.smartcore.bos.PullAccessAttemptsRequest,
-  proto.smartcore.bos.PullAccessAttemptsResponse,
+  proto.smartcore.bos.PullSecurityEventsRequest,
+  proto.smartcore.bos.PullSecurityEventsResponse,
   /**
-   * @param {!proto.smartcore.bos.PullAccessAttemptsRequest} request
+   * @param {!proto.smartcore.bos.PullSecurityEventsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.smartcore.bos.PullAccessAttemptsResponse.deserializeBinary
+  proto.smartcore.bos.PullSecurityEventsResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.smartcore.bos.PullAccessAttemptsRequest} request The request proto
+ * @param {!proto.smartcore.bos.PullSecurityEventsRequest} request The request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullAccessAttemptsResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullSecurityEventsResponse>}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccessApiClient.prototype.pullAccessAttempts =
+proto.smartcore.bos.SecurityEventApiClient.prototype.pullSecurityEvents =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/smartcore.bos.AccessApi/PullAccessAttempts',
+      '/smartcore.bos.SecurityEventApi/PullSecurityEvents',
       request,
       metadata || {},
-      methodDescriptor_AccessApi_PullAccessAttempts);
+      methodDescriptor_SecurityEventApi_PullSecurityEvents);
 };
 
 
 /**
- * @param {!proto.smartcore.bos.PullAccessAttemptsRequest} request The request proto
+ * @param {!proto.smartcore.bos.PullSecurityEventsRequest} request The request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullAccessAttemptsResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullSecurityEventsResponse>}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccessApiPromiseClient.prototype.pullAccessAttempts =
+proto.smartcore.bos.SecurityEventApiPromiseClient.prototype.pullSecurityEvents =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/smartcore.bos.AccessApi/PullAccessAttempts',
+      '/smartcore.bos.SecurityEventApi/PullSecurityEvents',
       request,
       metadata || {},
-      methodDescriptor_AccessApi_PullAccessAttempts);
+      methodDescriptor_SecurityEventApi_PullSecurityEvents);
 };
 
 
