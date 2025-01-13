@@ -3,6 +3,7 @@
     <app-menu v-if="accountStore.isLoggedIn"/>
     <brand-logo :theme="config.theme" outline="white" style="height: 35px" class="ml-4 mr-2"/>
     <span class="heading">{{ appBarHeadingWithBrand }}</span>
+    <sc-btn>SC Button</sc-btn>
 
     <v-divider vertical v-if="hasSections" class="mx-8 section-divider" inset/>
 
@@ -27,6 +28,7 @@ import {usePage} from '@/components/page';
 import SmartCoreStatusCard from '@/components/smartCoreStatus/SmartCoreStatusCard.vue';
 import {useAccountStore} from '@/stores/account';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
+import {ScBtn} from '@vanti-dev/sc-bos-ui-lib';
 import {storeToRefs} from 'pinia';
 
 import {computed} from 'vue';

@@ -56,11 +56,16 @@ export default defineConfig(({mode}) => {
           configFile: 'src/sass/settings.scss'
         }
       }),
-      eslintPlugin()
+      eslintPlugin({
+        exclude: ['**/node_modules/**', '**/ui-lib/**']
+      })
     ],
     resolve: {
       alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url))
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+        '@vanti-dev/sc-bos-ui-lib': process.env.NODE_ENV === 'production' ?
+            '@vanti-dev/sc-bos-ui-lib' :
+            '@vanti-dev/sc-bos-ui-lib/index.js'
       }
     }
   };
