@@ -319,12 +319,19 @@ func traitServices(name trait.Name) ([]service, error) {
 
 	var services []service
 	for _, serviceDesc := range serviceDescs {
+		if len(serviceDesc.Methods) == 0 {
+			continue // avoid ERROR logs for services without methods, which would act as non-routable
+		}
 		desc, err := registryDescriptor(serviceDesc.ServiceName)
 		if err != nil {
 			return nil, err
 		}
 
 		services = append(services, service{desc: desc, nameRouting: true})
+	}
+
+	if len(services) == 0 {
+		return nil, fmt.Errorf("trait %s apis have no rpc methods", name)
 	}
 
 	return services, nil
