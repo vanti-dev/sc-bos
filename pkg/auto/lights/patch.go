@@ -156,8 +156,6 @@ type source struct {
 }
 
 func (b *BrightnessAutomation) processConfig(ctx context.Context, cfg config.Root, sources []*source, changes chan<- Patcher) (sourceCount int) {
-	logger := b.logger.With(zap.String("auto", cfg.Name))
-
 	if cfg.OnProcessError.BackOffMultiplier.Duration.Nanoseconds() <= 0 {
 		cfg.OnProcessError.BackOffMultiplier.Duration = config.DefaultBackOffMultiplier
 	}
@@ -176,7 +174,7 @@ func (b *BrightnessAutomation) processConfig(ctx context.Context, cfg config.Roo
 		sourcesToStop := shallowCopyMap(source.runningSources)
 		for _, name := range names {
 			sourceCount++
-			logger := logger.With(zap.String("source", name))
+			logger := b.logger.With(zap.String("source", name))
 
 			// are we already watching this name?
 			if _, ok := sourcesToStop[name]; ok {
