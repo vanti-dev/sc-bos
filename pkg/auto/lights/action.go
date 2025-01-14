@@ -21,8 +21,8 @@ type actions interface {
 	UpdateBrightness(ctx context.Context, now time.Time, req *traits.UpdateBrightnessRequest, state *WriteState) error
 }
 
-// newActions creates an actions backed by node.Clienter clients.
-func newActions(clients node.Clienter) (actions, error) {
+// newClientActions creates an actions backed by node.Clienter clients.
+func newClientActions(clients node.Clienter) (actions, error) {
 	res := &clientActions{}
 	if err := clients.Client(&res.lightClient); err != nil {
 		return nil, fmt.Errorf("%w traits.LightApiClient", err)

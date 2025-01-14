@@ -33,7 +33,7 @@ func PirsTurnLightsOn(clients node.Clienter, logger *zap.Logger) *BrightnessAuto
 	return &BrightnessAutomation{
 		logger:      logger,
 		clients:     clients,
-		makeActions: newActions,
+		makeActions: newClientActions,
 		newTimer: func(duration time.Duration) (<-chan time.Time, func() bool) {
 			t := time.NewTimer(duration)
 			return t.C, t.Stop
