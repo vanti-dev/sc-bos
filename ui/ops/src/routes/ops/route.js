@@ -1,5 +1,6 @@
 import SidebarPage from '@/components/pages/SidebarPage.vue';
 import notifications from '@/routes/ops/notifications/route.js';
+import securityEvents from '@/routes/ops/security-events/route.js';
 import overview from '@/routes/ops/overview/route.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
 
@@ -20,6 +21,8 @@ export default {
       return '/ops/emergency-lighting';
     } else if (uiConfig.pathEnabled('/ops/security')) {
       return '/ops/security';
+    } else if (uiConfig.pathEnabled('/ops/security-events')) {
+      return '/ops/security-events';
     }
     return '/ops/loading';
   },
@@ -60,7 +63,8 @@ export default {
         }
       }
     },
-    ...route(notifications)
+    ...route(notifications),
+    ...route(securityEvents)
   ],
   meta: {
     authentication: {
@@ -82,6 +86,8 @@ export default {
         next('/ops/emergency-lighting');
       } else if (appConfig.pathEnabled('/ops/security')) {
         next('/ops/security');
+      } else if (appConfig.pathEnabled('/ops/security-events')) {
+        return '/ops/security-events';
       }
     } else {
       next();
