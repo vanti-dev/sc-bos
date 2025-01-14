@@ -3,60 +3,52 @@ package lights
 import (
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 // captureButtonActions consumes button clicks returning the intended actions.
 // This will modify writeState to record the last time a button was pressed to avoid an old button press triggering multiple times.
-func captureButtonActions(readState *ReadState, writeState *WriteState, logger *zap.Logger) (onButtonClicked bool, offButtonClicked bool) {
-	mostRecentButtonName, mostRecentButtonState, buttonActionRequired := getMostRecentButtonPress(readState)
-
-	if buttonActionRequired {
-		buttonActionRequired = isButtonActionRequired(mostRecentButtonState, writeState)
-
-		logger.Debug("Checking if button action required for button",
-			zap.String("button", mostRecentButtonName),
-			zap.Bool("action required", buttonActionRequired),
-			zap.Time("state change time", mostRecentButtonState.StateChangeTime.AsTime()),
-			zap.Time("last action time", writeState.LastButtonAction),
-			zap.Stringer("button state", mostRecentButtonState.State),
-			zap.Stringer("last gesture", mostRecentButtonState.GetMostRecentGesture().GetKind()),
-		)
+func captureButtonActions(readState *ReadState, writeState *WriteState) (onButtonClicked bool, offButtonClicked bool) {
+	mostRecentButtonName, mostRecentButtonState, buttonsFound := getMostRecentButtonPress(readState)
+	if !buttonsFound {
+		return false, false
 	}
 
-	if buttonActionRequired {
-		// Either onButtonClicked or offButtonClicked should be set
-		buttonType := getButtonType(readState, mostRecentButtonName)
-		switch buttonType {
-		case OnButton:
+	if !isButtonActionRequired(mostRecentButtonState, writeState) {
+		writeState.AddReasonf("button action not required")
+		return false, false
+	}
+
+	// Either onButtonClicked or offButtonClicked should be set
+	buttonType := getButtonType(readState, mostRecentButtonName)
+	switch buttonType {
+	case OnButton:
+		writeState.AddReason("on button clicked")
+		onButtonClicked = true
+	case OffButton:
+		writeState.AddReason("off button clicked")
+		offButtonClicked = true
+	case ToggleButton:
+		// decide if the toggle button should be treated as an on or off button based on updates we've written
+		if brightnessAllOff(writeState) {
+			writeState.AddReason("toggle button clicked")
+			writeState.AddReason("all lights off")
 			onButtonClicked = true
-		case OffButton:
+		} else {
+			writeState.AddReason("toggle button clicked")
+			writeState.AddReason("some lights are on")
 			offButtonClicked = true
-		case ToggleButton:
-			// decide if the toggle button should be treated as an on or off button based on updates we've written
-			if brightnessAllOff(writeState) {
-				onButtonClicked = true
-			} else {
-				offButtonClicked = true
-			}
 		}
-		buttonClickTime := mostRecentButtonState.StateChangeTime.AsTime()
-		logger.Debug("Button action required",
-			zap.Stringer("Button type", buttonType),
-			zap.Bool("onButtonClicked", onButtonClicked),
-			zap.Bool("offButtonClicked", offButtonClicked),
-			zap.Time("buttonClickTime", buttonClickTime),
-			zap.Time("last button action", writeState.LastButtonAction),
-		)
-
-		// Update the last time a button action happened
-		if onButtonClicked {
-			writeState.LastButtonOnTime = buttonClickTime
-		}
-		writeState.LastButtonAction = buttonClickTime
+	default:
+		writeState.AddReason("unknown button type")
+		return false, false
 	}
+	buttonClickTime := mostRecentButtonState.StateChangeTime.AsTime()
+	// Update the last time a button action happened
+	if onButtonClicked {
+		writeState.LastButtonOnTime = buttonClickTime
+	}
+	writeState.LastButtonAction = buttonClickTime
 	return onButtonClicked, offButtonClicked
 }
 

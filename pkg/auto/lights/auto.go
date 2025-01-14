@@ -166,8 +166,32 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 	// writeState is only accessed from this go routine.
 	writeState := NewWriteState(time.Now())
 
-	processStateFn := func(readState *ReadState) error {
-		ttl, err := processState(ctx, readState, writeState, actions, b.logger.Named("Process State"))
+	var lastProcessedState *ReadState
+	var retryReason string
+	processStateFn := func(readState *ReadState, reasons ...string) error {
+		cancelRetry()
+		retryReason = ""
+
+		if readState.Config.LogTriggers {
+			logProcessStart(b.logger, lastProcessedState, readState, reasons...)
+			lastProcessedState = readState
+		}
+
+		actions := actions
+		if readState.Config.DryRun {
+			actions = nilActions{}
+		}
+		if readState.Config.LogWrites {
+			actions = newLogActions(actions, b.logger)
+		}
+		actions, actionCounts := newCountActions(actions)
+
+		t0 := readState.Now()
+		writeState.Before()
+		ttl, err := processState(ctx, readState, writeState, actions)
+		writeState.After()
+		duration := readState.Now().Sub(t0)
+
 		if err != nil {
 			// if the context has been cancelled, stop
 			if ctx.Err() != nil {
@@ -193,19 +217,22 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 					zap.Error(err),
 					zap.Duration("retryAfter", after),
 				)
+				retryReason = "error retry"
 				ttl = after
 			}
 		}
 
 		// ensure it's not too long before we wake up, so the lights are refreshed regularly
 		// so external changes don't stick around forever
-		if ttl <= 0 {
+		switch {
+		case ttl <= 0:
+			retryReason = "refresh"
 			ttl = readState.Config.RefreshEvery.Duration
-		}
-		if ttl > readState.Config.RefreshEvery.Duration {
-			// b.logger.Debug("waking up sooner to ensure lights aren't stale",
-			// 	zap.Duration("after", refreshEvery))
+		case ttl > readState.Config.RefreshEvery.Duration:
+			retryReason = "early refresh"
 			ttl = readState.Config.RefreshEvery.Duration
+		case ttl > 0 && retryReason == "":
+			retryReason = "ttl"
 		}
 
 		b.bus.Emit("process-complete", ttl, err, readState, writeState) // used only for testing, notify that processing has completed
@@ -213,6 +240,9 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 		// Setup ttl for the transformed model.
 		// After this time it should be recalculated.
 		retry, cancelRetry = b.newTimer(ttl)
+
+		// log side effects and why they were made
+		logProcessComplete(b.logger, readState, writeState, actionCounts, duration, ttl, err)
 
 		return nil
 	}
@@ -236,7 +266,7 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 				return err
 			}
 		case <-retry:
-			err := processStateFn(lastReadState)
+			err := processStateFn(lastReadState, retryReason)
 			if err != nil {
 				return err
 			}

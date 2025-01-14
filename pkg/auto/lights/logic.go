@@ -6,21 +6,19 @@ import (
 	"sort"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/smart-core-os/sc-api/go/traits"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 )
 
-// processState executes clientActions based on both read and write states.
+// processState executes actions based on both read and write states.
 // Here is where the logic that says "when PIRs report occupied, turn lights on" lives.
 //
 // Returning a non-zero duration indicates that processing should be rerun after this delay even if ReadState doesn't
 // change.
-func processState(ctx context.Context, readState *ReadState, writeState *WriteState, actions actions, logger *zap.Logger) (time.Duration, error) {
+func processState(ctx context.Context, readState *ReadState, writeState *WriteState, actions actions) (time.Duration, error) {
 	now := readState.Now()
-	switchOn, switchOff, mode, rerunAfter := decideAction(now, readState, writeState, logger)
+	switchOn, switchOff, mode, rerunAfter := decideAction(now, readState, writeState)
 
 	// ActiveMode is the mode which was most recently asserted on the lights
 	// this is used in the logic next time to detect when a mode has changed.
@@ -36,25 +34,27 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 		level, ok := computeOnLevelPercent(mode, readState, writeState)
 		// logger.Debug("Setting level.", zap.Float32("level", level))
 		if !ok {
-			logger.Debug("Not enough read information for daylight dimming calculations")
+			writeState.AddReason("daylight dimming lacks data")
 			// todo: here we are in a position where daylight dimming is supposed to be enabled but we don't have enough
 			//  info to actually choose the output light level. We should probably not make any changes and wait for
 			//  more data to come in, but we'll leave that to future us as part of snagging.
 		}
-		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, level, logger, readState.Config.Lights...)
+		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, level, readState.Config.Lights...)
 	} else if switchOff {
 		offLevel := computeOffLevelPercent(mode)
-		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, offLevel, logger, readState.Config.Lights...)
+		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, offLevel, readState.Config.Lights...)
 	} else {
-		return rerunAfter, refreshBrightnessLevel(ctx, now, writeState, actions, logger, readState.Config.Lights...)
+		writeState.AddReason("refreshing")
+		return rerunAfter, refreshBrightnessLevel(ctx, now, writeState, actions, readState.Config.Lights...)
 	}
 }
 
-func decideAction(now time.Time, readState *ReadState, writeState *WriteState, logger *zap.Logger) (switchOn, switchOff bool, mode config.ModeOption, rerunAfter time.Duration) {
+func decideAction(now time.Time, readState *ReadState, writeState *WriteState) (switchOn, switchOff bool, mode config.ModeOption, rerunAfter time.Duration) {
 	// Work out what we need to do to apply the given writeState and make those changes for as long as ctx is valid
 	mode, rerunAfter = activeMode(now, readState)
-	logger = logger.With(zap.String("mode", mode.Name))
+	writeState.AddReasonf("mode:%s", mode.Name)
 	if mode.DisableAuto {
+		writeState.AddReason("disabled")
 		return false, false, mode, 0
 	}
 
@@ -65,10 +65,10 @@ func decideAction(now time.Time, readState *ReadState, writeState *WriteState, l
 		modeChanged = true
 	}
 
-	onButtonClicked, offButtonClicked := captureButtonActions(readState, writeState, logger)
+	onButtonClicked, offButtonClicked := captureButtonActions(readState, writeState)
 
 	if offButtonClicked {
-		logger.Debug("Switched off by button press")
+		writeState.AddReason("button off")
 		switchOff = true
 		return
 	}
@@ -82,7 +82,11 @@ func decideAction(now time.Time, readState *ReadState, writeState *WriteState, l
 				rerunAfter = wake
 			}
 		}
-
+		if anyOccupied {
+			writeState.AddReason("occupied")
+		} else {
+			writeState.AddReason("button on")
+		}
 		switchOn = true
 		return
 	}
@@ -101,11 +105,10 @@ func decideAction(now time.Time, readState *ReadState, writeState *WriteState, l
 		// we don't know when the lights were last switched on, but we know it must have been before the automation
 		// started, so we can use this time
 		becameUnoccupied = readState.AutoStartTime
-		logger.Debug("Both time last unoccupied and last button press are zero; assuming start time",
-			zap.Time("becameUnoccupied", becameUnoccupied))
+		writeState.AddReason("no occupancy signals, using auto start time")
 	}
 	if becameUnoccupied.After(now) {
-		logger.Warn("last recorded occupancy time is in the future")
+		writeState.AddReason("last recorded occupancy time is in the future")
 	}
 
 	sinceUnoccupied := now.Sub(becameUnoccupied)
@@ -113,14 +116,15 @@ func decideAction(now time.Time, readState *ReadState, writeState *WriteState, l
 
 	if sinceUnoccupied >= unoccupiedDelayBeforeDarkness {
 		// we've been unoccupied for long enough, turn things off now
-		logger.Debug("Occupancy expired. Switching off")
+		writeState.AddReasonf("unoccupied for %v", formatDuration(sinceUnoccupied))
 		switchOff = true
 		return
 	} else {
+		writeState.AddReasonf("unoccupied %v<%v ago", formatDuration(sinceUnoccupied), formatDuration(unoccupiedDelayBeforeDarkness))
 		// when the mode changes, we always want to re-assert the lighting state, so that the new mode will
 		// apply
 		if modeChanged {
-			logger.Debug("switching zone on because it's occupied and the mode changed")
+			writeState.AddReason("mode changed")
 			switchOn = true
 		}
 
