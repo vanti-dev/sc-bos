@@ -155,23 +155,18 @@ func (b *BrightnessAutomation) Stop() error {
 // This function backs off to processState which has the actual logic for what to do, given a certain state,
 // this function handles the channel management, retry logic, TTL on decisions, and all that type of thing.
 func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStates <-chan *ReadState, actions actions) error {
-	// the below are the innards of time.Timer, but expanded so we can stop/select on them even if
-	// we don't have a timer active right now
-
+	// retries can happen for a few reasons:
+	// - because we periodically wake up to ensure things are still good
+	// - because something went wrong, and we want to retry after a delay
+	// - because the logic asked us to retry after some ttl
 	retryCounter := 0
-
-	var ttlExpired <-chan time.Time
-	cancelTtlTimer := func() bool { return true }
-
-	var retryFailedProcessing <-chan time.Time
-	cancelRetryTimer := func() bool { return true }
+	var retry <-chan time.Time                 // like time.Timer.C
+	cancelRetry := func() bool { return true } // like time.Timer.Stop
 
 	// writeState is only accessed from this go routine.
 	writeState := NewWriteState(time.Now())
 
 	processStateFn := func(readState *ReadState) error {
-		cancelRetryTimer()
-
 		ttl, err := processState(ctx, readState, writeState, actions, b.logger.Named("Process State"))
 		if err != nil {
 			// if the context has been cancelled, stop
@@ -190,8 +185,8 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 				)
 				// reset retries to prevent too many repeated attempts
 				retryCounter = 0
-				if !cancelTtlTimer() {
-					<-ttlExpired
+				if !cancelRetry() {
+					<-retry
 				}
 			} else {
 				b.logger.Error("processState failed; scheduling retry",
@@ -217,7 +212,7 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 
 		// Setup ttl for the transformed model.
 		// After this time it should be recalculated.
-		ttlExpired, cancelTtlTimer = b.newTimer(ttl)
+		retry, cancelRetry = b.newTimer(ttl)
 
 		return nil
 	}
@@ -230,8 +225,8 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			return ctx.Err()
 		case readState := <-readStates:
 			// reset retries as new valid state received
-			if !cancelTtlTimer() {
-				<-ttlExpired
+			if !cancelRetry() {
+				<-retry
 			}
 			retryCounter = 0
 
@@ -240,12 +235,7 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			if err != nil {
 				return err
 			}
-		case <-ttlExpired:
-			err := processStateFn(lastReadState)
-			if err != nil {
-				return err
-			}
-		case <-retryFailedProcessing:
+		case <-retry:
 			err := processStateFn(lastReadState)
 			if err != nil {
 				return err
