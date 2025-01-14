@@ -183,18 +183,21 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			retryCounter++
 			after := backoffutils.JitterUp(time.Duration(retryCounter)*readState.Config.OnProcessError.BackOffMultiplier.Duration, 0.2)
 
-			b.logger.Error("processState failed; scheduling retry",
-				zap.Error(err),
-				zap.Duration("retryAfter", after),
-			)
-
 			if retryCounter > readState.Config.OnProcessError.MaxRetries {
+				b.logger.Error("processState failed; too many failures, aborting retires",
+					zap.Error(err),
+					zap.Int("retryCounter", retryCounter),
+				)
 				// reset retries to prevent too many repeated attempts
 				retryCounter = 0
 				if !cancelTtlTimer() {
 					<-ttlExpired
 				}
 			} else {
+				b.logger.Error("processState failed; scheduling retry",
+					zap.Error(err),
+					zap.Duration("retryAfter", after),
+				)
 				ttl = after
 			}
 		}
