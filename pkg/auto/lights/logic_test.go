@@ -202,9 +202,9 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = BrightnessWriteState{
-			WriteTime:  now,
-			Brightness: &traits.Brightness{LevelPercent: 100},
+		writeState.Brightness["light01"] = Value[*traits.Brightness]{
+			At: now,
+			V:  &traits.Brightness{LevelPercent: 100},
 		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
@@ -243,13 +243,13 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = BrightnessWriteState{
-			WriteTime:  now,
-			Brightness: &traits.Brightness{LevelPercent: 0},
+		writeState.Brightness["light01"] = Value[*traits.Brightness]{
+			At: now,
+			V:  &traits.Brightness{LevelPercent: 0},
 		}
-		writeState.Brightness["light02"] = BrightnessWriteState{
-			WriteTime:  now,
-			Brightness: &traits.Brightness{LevelPercent: 50},
+		writeState.Brightness["light02"] = Value[*traits.Brightness]{
+			At: now,
+			V:  &traits.Brightness{LevelPercent: 50},
 		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
@@ -288,9 +288,9 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = BrightnessWriteState{
-			WriteTime:  now,
-			Brightness: &traits.Brightness{LevelPercent: 0},
+		writeState.Brightness["light01"] = Value[*traits.Brightness]{
+			At: now,
+			V:  &traits.Brightness{LevelPercent: 0},
 		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
@@ -328,9 +328,9 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = BrightnessWriteState{
-			WriteTime:  now,
-			Brightness: &traits.Brightness{LevelPercent: 0},
+		writeState.Brightness["light01"] = Value[*traits.Brightness]{
+			At: now,
+			V:  &traits.Brightness{LevelPercent: 0},
 		}
 		writeState.LastButtonAction = now.Add(-time.Minute)
 
@@ -357,9 +357,9 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = BrightnessWriteState{
-			WriteTime:  now,
-			Brightness: &traits.Brightness{LevelPercent: 0},
+		writeState.Brightness["light01"] = Value[*traits.Brightness]{
+			At: now,
+			V:  &traits.Brightness{LevelPercent: 0},
 		}
 		writeState.LastButtonAction = now
 
@@ -386,9 +386,9 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = BrightnessWriteState{
-			WriteTime:  now,
-			Brightness: &traits.Brightness{LevelPercent: 0},
+		writeState.Brightness["light01"] = Value[*traits.Brightness]{
+			At: now,
+			V:  &traits.Brightness{LevelPercent: 0},
 		}
 		writeState.LastButtonAction = now
 
@@ -416,9 +416,9 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = BrightnessWriteState{
-			WriteTime:  now,
-			Brightness: &traits.Brightness{LevelPercent: 0},
+		writeState.Brightness["light01"] = Value[*traits.Brightness]{
+			At: now,
+			V:  &traits.Brightness{LevelPercent: 0},
 		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
@@ -457,9 +457,9 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = BrightnessWriteState{
-			WriteTime:  now,
-			Brightness: &traits.Brightness{LevelPercent: 0},
+		writeState.Brightness["light01"] = Value[*traits.Brightness]{
+			At: now,
+			V:  &traits.Brightness{LevelPercent: 0},
 		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
@@ -498,9 +498,9 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = BrightnessWriteState{
-			WriteTime:  now,
-			Brightness: &traits.Brightness{LevelPercent: 100},
+		writeState.Brightness["light01"] = Value[*traits.Brightness]{
+			At: now,
+			V:  &traits.Brightness{LevelPercent: 100},
 		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
@@ -533,9 +533,9 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = BrightnessWriteState{
-			WriteTime:  now,
-			Brightness: &traits.Brightness{LevelPercent: 100},
+		writeState.Brightness["light01"] = Value[*traits.Brightness]{
+			At: now,
+			V:  &traits.Brightness{LevelPercent: 100},
 		}
 		writeState.LastButtonAction = now.Add(-5 * time.Minute)
 
@@ -568,9 +568,9 @@ func Test_processState(t *testing.T) {
 			MostRecentGesture: &gen.ButtonState_Gesture{Kind: gen.ButtonState_Gesture_CLICK},
 		}
 
-		writeState.Brightness["light01"] = BrightnessWriteState{
-			WriteTime:  now,
-			Brightness: &traits.Brightness{LevelPercent: 0},
+		writeState.Brightness["light01"] = Value[*traits.Brightness]{
+			At: now,
+			V:  &traits.Brightness{LevelPercent: 0},
 		}
 
 		logger, _ := zap.NewDevelopment()
@@ -1045,9 +1045,9 @@ func (ta *testActions) UpdateBrightness(ctx context.Context, now time.Time, req 
 		return err
 	}
 
-	state.Brightness[req.Name] = BrightnessWriteState{
-		WriteTime:  now,
-		Brightness: req.Brightness,
+	state.Brightness[req.Name] = Value[*traits.Brightness]{
+		At: now,
+		V:  req.Brightness,
 	}
 
 	return nil

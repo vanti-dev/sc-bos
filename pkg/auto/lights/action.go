@@ -36,24 +36,22 @@ type clientActions struct {
 
 func (a *clientActions) UpdateBrightness(ctx context.Context, now time.Time, req *traits.UpdateBrightnessRequest, state *WriteState) error {
 	got, err := a.lightClient.UpdateBrightness(ctx, req)
-	if err != nil {
-		return err
+	state.Brightness[req.Name] = Value[*traits.Brightness]{
+		V:   got,
+		At:  now,
+		Err: err,
 	}
-	state.Brightness[req.Name] = BrightnessWriteState{
-		WriteTime:  now,
-		Brightness: got,
-	}
-	return nil
+	return err
 }
 
 // updateBrightnessLevelIfNeeded sets all the names devices brightness levels to level and stores successful responses in state.
 // This does not send requests if state already has a named brightness level equal to level.
 func updateBrightnessLevelIfNeeded(ctx context.Context, now time.Time, state *WriteState, actions actions, level float32, logger *zap.Logger, names ...string) error {
 	for _, name := range names {
-		if val, ok := state.Brightness[name]; ok {
-			expired := now.After(val.WriteTime.Add(brightnessCacheValidity))
+		if val, ok := state.Brightness[name]; ok && val.V != nil {
+			expired := now.After(val.At.Add(brightnessCacheValidity))
 			// don't do requests that won't change the write state unless the entry is expired
-			if val.Brightness.LevelPercent == level && !expired {
+			if val.V.LevelPercent == level && !expired {
 				continue
 			}
 		}
@@ -75,10 +73,10 @@ func updateBrightnessLevelIfNeeded(ctx context.Context, now time.Time, state *Wr
 func refreshBrightnessLevel(ctx context.Context, now time.Time, state *WriteState, actions actions, logger *zap.Logger, names ...string) error {
 	for _, name := range names {
 		val, ok := state.Brightness[name]
-		if !ok {
+		if !ok || val.V == nil {
 			continue
 		}
-		expired := now.After(val.WriteTime.Add(brightnessCacheValidity))
+		expired := now.After(val.At.Add(brightnessCacheValidity))
 		if !expired {
 			// don't need to refresh if recently written
 			continue
@@ -86,11 +84,11 @@ func refreshBrightnessLevel(ctx context.Context, now time.Time, state *WriteStat
 
 		logger.Debug("refreshing brightness for light fitting",
 			zap.String("fitting name", name),
-			zap.Float32("level", val.Brightness.LevelPercent),
+			zap.Float32("level", val.V.LevelPercent),
 		)
 		err := actions.UpdateBrightness(ctx, now, &traits.UpdateBrightnessRequest{
 			Name:       name,
-			Brightness: val.Brightness,
+			Brightness: val.V,
 		}, state)
 		if err != nil {
 			return err

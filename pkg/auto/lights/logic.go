@@ -220,7 +220,7 @@ func readStateMode(state *ReadState) (config.ModeOption, bool) {
 // Note is len(brightness) == 0, this will return true.
 func brightnessAllOff(state *WriteState) bool {
 	for _, brightness := range state.Brightness {
-		if brightness.Brightness.LevelPercent > 0 {
+		if brightness.V.GetLevelPercent() > 0 {
 			return false
 		}
 	}
@@ -320,7 +320,10 @@ func getAverageLevel(state *WriteState) (float32, error) {
 	sum := float32(0)
 	n := 0
 	for _, brightness := range state.Brightness {
-		sum += brightness.Brightness.LevelPercent
+		if brightness.V == nil {
+			continue
+		}
+		sum += brightness.V.LevelPercent
 		n++
 	}
 	if n == 0 {

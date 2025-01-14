@@ -60,20 +60,27 @@ func (s *ReadState) Now() time.Time {
 // WriteState models the state of the system based on the changes we've made to it.
 // For example if we UpdateBrightness, then the response to that call is recorded in this state.
 type WriteState struct {
-	Brightness       map[string]BrightnessWriteState
+	Brightness       map[string]Value[*traits.Brightness]
 	LastButtonAction time.Time // used for button press deduplication, the last time we did anything due to a button press
 	LastButtonOnTime time.Time // used for occupancy related darkness, the last time lights were turned on due to button press
 	ActiveMode       string
 }
 
-type BrightnessWriteState struct {
-	WriteTime  time.Time
-	Brightness *traits.Brightness
+type Value[V any] struct {
+	V   V
+	At  time.Time
+	Err error
+}
+
+func (v *Value[V]) set(at time.Time, value V) {
+	v.V = value
+	v.At = at
+	v.Err = nil
 }
 
 func NewWriteState(startTime time.Time) *WriteState {
 	return &WriteState{
-		Brightness: make(map[string]BrightnessWriteState),
+		Brightness: make(map[string]Value[*traits.Brightness]),
 		// This causes all button presses before we boot to be ignored for action purposes - i.e. they don't directly turn lights on or off.
 		// This doesn't affect occupancy timeouts, so if a button was pressed 2 mins ago it still counts towards unoccupied darkness.
 		LastButtonAction: startTime,
@@ -82,7 +89,7 @@ func NewWriteState(startTime time.Time) *WriteState {
 
 func (s *WriteState) MergeFrom(other *WriteState) {
 	for name, brightness := range other.Brightness {
-		if brightness.Brightness == nil {
+		if brightness.V == nil {
 			delete(s.Brightness, name)
 		} else {
 			s.Brightness[name] = brightness
