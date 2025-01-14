@@ -228,7 +228,7 @@ func brightnessAllOff(state *WriteState) bool {
 }
 
 // areAnyOccupied returns true if any occupancy sensors in the list are occupied
-func areAnyOccupied(sensorsPresent []string, occupancyStates map[string]*traits.Occupancy) bool {
+func areAnyOccupied(sensorsPresent []deviceName, occupancyStates map[deviceName]*traits.Occupancy) bool {
 	var ret = false
 	for _, name := range sensorsPresent {
 		if o, ok := occupancyStates[name]; ok {
@@ -332,7 +332,7 @@ func getAverageLevel(state *WriteState) (float32, error) {
 	return sum / float32(n), nil
 }
 
-func combinedLuxLevel(brightness map[string]*traits.AmbientBrightness) float32 {
+func combinedLuxLevel(brightness map[deviceName]*traits.AmbientBrightness) float32 {
 	var n, v float32
 	n, v = float32(len(brightness)), 0
 	for _, ambientBrightness := range brightness {

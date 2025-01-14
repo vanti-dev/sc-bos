@@ -46,7 +46,7 @@ func (a *clientActions) UpdateBrightness(ctx context.Context, now time.Time, req
 
 // updateBrightnessLevelIfNeeded sets all the names devices brightness levels to level and stores successful responses in state.
 // This does not send requests if state already has a named brightness level equal to level.
-func updateBrightnessLevelIfNeeded(ctx context.Context, now time.Time, state *WriteState, actions actions, level float32, logger *zap.Logger, names ...string) error {
+func updateBrightnessLevelIfNeeded(ctx context.Context, now time.Time, state *WriteState, actions actions, level float32, logger *zap.Logger, names ...deviceName) error {
 	for _, name := range names {
 		if val, ok := state.Brightness[name]; ok && val.V != nil {
 			expired := now.After(val.At.Add(brightnessCacheValidity))
@@ -70,7 +70,7 @@ func updateBrightnessLevelIfNeeded(ctx context.Context, now time.Time, state *Wr
 	return nil
 }
 
-func refreshBrightnessLevel(ctx context.Context, now time.Time, state *WriteState, actions actions, logger *zap.Logger, names ...string) error {
+func refreshBrightnessLevel(ctx context.Context, now time.Time, state *WriteState, actions actions, logger *zap.Logger, names ...deviceName) error {
 	for _, name := range names {
 		val, ok := state.Brightness[name]
 		if !ok || val.V == nil {

@@ -57,22 +57,22 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 	// Setup the sources that we can pull patches from.
 	sources := []*source{
 		{
-			names: func(cfg config.Root) []string { return cfg.OccupancySensors },
-			new: func(name string, logger *zap.Logger) subscriber {
+			names: func(cfg config.Root) []deviceName { return cfg.OccupancySensors },
+			new: func(name deviceName, logger *zap.Logger) subscriber {
 				return &OccupancySensorPatches{name: name, client: occupancySensorClient, logger: logger}
 			},
 		},
 		{
-			names: func(cfg config.Root) []string { return cfg.BrightnessSensors },
-			new: func(name string, logger *zap.Logger) subscriber {
+			names: func(cfg config.Root) []deviceName { return cfg.BrightnessSensors },
+			new: func(name deviceName, logger *zap.Logger) subscriber {
 				return &BrightnessSensorPatches{name: name, client: brightnessSensorClient, logger: logger}
 			},
 		},
 		{
-			names: func(cfg config.Root) (names []string) {
+			names: func(cfg config.Root) (names []deviceName) {
 				return cfg.OnButtons
 			},
-			new: func(name string, logger *zap.Logger) subscriber {
+			new: func(name deviceName, logger *zap.Logger) subscriber {
 				return &ButtonPatches{
 					name:   name,
 					client: buttonClient,
@@ -81,10 +81,10 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 			},
 		},
 		{
-			names: func(cfg config.Root) (names []string) {
+			names: func(cfg config.Root) (names []deviceName) {
 				return cfg.OffButtons
 			},
-			new: func(name string, logger *zap.Logger) subscriber {
+			new: func(name deviceName, logger *zap.Logger) subscriber {
 				return &ButtonPatches{
 					name:   name,
 					client: buttonClient,
@@ -93,10 +93,10 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 			},
 		},
 		{
-			names: func(cfg config.Root) (names []string) {
+			names: func(cfg config.Root) (names []deviceName) {
 				return cfg.ToggleButtons
 			},
-			new: func(name string, logger *zap.Logger) subscriber {
+			new: func(name deviceName, logger *zap.Logger) subscriber {
 				return &ButtonPatches{
 					name:   name,
 					client: buttonClient,
@@ -105,13 +105,13 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 			},
 		},
 		{
-			names: func(cfg config.Root) (names []string) {
+			names: func(cfg config.Root) (names []deviceName) {
 				if cfg.ModeSource == "" {
 					return names
 				}
-				return []string{cfg.ModeSource}
+				return []deviceName{cfg.ModeSource}
 			},
-			new: func(name string, logger *zap.Logger) subscriber {
+			new: func(name deviceName, logger *zap.Logger) subscriber {
 				return &ModePatches{
 					name:   name,
 					client: modeClient,
@@ -148,11 +148,11 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 }
 
 type source struct {
-	new   func(name string, logger *zap.Logger) subscriber
-	names func(cfg config.Root) []string
+	new   func(name deviceName, logger *zap.Logger) subscriber
+	names func(cfg config.Root) []deviceName
 	// runningSources, keyed by device name, tracks which sources are currently running.
 	// The value can be called to cancel the context used to start that source.
-	runningSources map[string]context.CancelFunc
+	runningSources map[deviceName]context.CancelFunc
 }
 
 func (b *BrightnessAutomation) processConfig(ctx context.Context, cfg config.Root, sources []*source, changes chan<- Patcher) (sourceCount int) {
@@ -169,7 +169,7 @@ func (b *BrightnessAutomation) processConfig(ctx context.Context, cfg config.Roo
 	for _, source := range sources {
 		names := source.names(cfg)
 		if source.runningSources == nil && len(names) > 0 {
-			source.runningSources = make(map[string]context.CancelFunc, len(names))
+			source.runningSources = make(map[deviceName]context.CancelFunc, len(names))
 		}
 		sourcesToStop := shallowCopyMap(source.runningSources)
 		for _, name := range names {

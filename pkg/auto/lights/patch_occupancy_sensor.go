@@ -11,7 +11,7 @@ import (
 
 // OccupancySensorPatches contributes patches for changing the state based on occupancy sensor readings.
 type OccupancySensorPatches struct {
-	name   string
+	name   deviceName
 	client traits.OccupancySensorApiClient
 	logger *zap.Logger
 }
@@ -67,7 +67,7 @@ func (o *pullOccupancyTransition) Patch(s *ReadState) {
 }
 
 type getOccupancyPatcher struct {
-	name string
+	name deviceName
 	res  *traits.Occupancy
 }
 

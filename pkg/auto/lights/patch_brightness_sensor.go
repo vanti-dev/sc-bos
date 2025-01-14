@@ -11,7 +11,7 @@ import (
 
 // BrightnessSensorPatches contributes patches for changing the state based on brightness sensor readings.
 type BrightnessSensorPatches struct {
-	name   string
+	name   deviceName
 	client traits.BrightnessSensorApiClient
 	logger *zap.Logger
 }
@@ -67,7 +67,7 @@ func (o *pullAmbientBrightnessTransition) Patch(s *ReadState) {
 }
 
 type getAmbientBrightnessPatcher struct {
-	name string
+	name deviceName
 	res  *traits.AmbientBrightness
 }
 

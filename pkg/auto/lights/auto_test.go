@@ -59,8 +59,8 @@ func TestPirsTurnLightsOn(t *testing.T) {
 
 	cfg := config.Default()
 	cfg.Now = func() time.Time { return now }
-	cfg.OccupancySensors = []string{"pir01", "pir02"}
-	cfg.Lights = []string{"light01", "light02"}
+	cfg.OccupancySensors = []deviceName{"pir01", "pir02"}
+	cfg.Lights = []deviceName{"light01", "light02"}
 	cfg.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
 	cfg.RefreshEvery = jsontypes.Duration{Duration: 8 * time.Minute}
 

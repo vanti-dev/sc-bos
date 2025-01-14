@@ -10,7 +10,7 @@ import (
 )
 
 type ButtonPatches struct {
-	name   string
+	name   deviceName
 	client gen.ButtonApiClient
 	logger *zap.Logger
 }
@@ -72,7 +72,7 @@ func (p pullButtonStatePatcher) Patch(state *ReadState) {
 }
 
 type getButtonStatePatcher struct {
-	name        string
+	name        deviceName
 	buttonState *gen.ButtonState
 }
 

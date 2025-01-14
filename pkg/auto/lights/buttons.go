@@ -61,7 +61,7 @@ func captureButtonActions(readState *ReadState, writeState *WriteState, logger *
 }
 
 // getButtonType returns the type of button based on where it appeared in the config
-func getButtonType(state *ReadState, buttonName string) ButtonType {
+func getButtonType(state *ReadState, buttonName deviceName) ButtonType {
 	nFound := 0
 	buttonType := UndefinedButton
 	for _, name := range state.Config.OnButtons {
@@ -86,7 +86,7 @@ func getButtonType(state *ReadState, buttonName string) ButtonType {
 	return buttonType
 }
 
-func getMostRecentButtonPress(readState *ReadState) (name string, state *gen.ButtonState, ok bool) {
+func getMostRecentButtonPress(readState *ReadState) (name deviceName, state *gen.ButtonState, ok bool) {
 	mostRecentTime := time.Time{}
 	for n, button := range readState.Buttons {
 		if button.StateChangeTime.AsTime().After(mostRecentTime) {
