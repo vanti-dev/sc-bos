@@ -15,6 +15,7 @@ const (
 	DefaultRefreshEvery      = time.Minute
 	DefaultMaxRetries        = 2
 	DefaultBackOffMultiplier = time.Millisecond * 500
+	DefaultWriteCacheExpiry  = 45 * time.Second
 )
 
 // Root represent the configuration parameters available for the lighting automation.
@@ -47,6 +48,9 @@ type Root struct {
 
 	// RefreshEvery guarantees the last read state will eventually be processed if no event happens for this long
 	RefreshEvery jsontypes.Duration `json:"refreshEvery,omitempty"`
+	// WriteCacheExpiry controls how old a past write must be before it stops affecting future writes.
+	// A value of 0 means no expiry, a value <0 means no caching, see DefaultWriteCacheExpiry.
+	WriteCacheExpiry *jsontypes.Duration `json:"writeCacheExpiry,omitempty"`
 
 	// OnProcessError provides parameters for when updating the brightness fails
 	// based on occupancy sensor outcomes

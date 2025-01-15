@@ -12,8 +12,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
-const brightnessCacheValidity = 45 * time.Second
-
 // actions defines the only side effects the automation can have.
 // This is intended to allow easier testing of the business logic, a bit like a DAO would for database access.
 type actions interface {
@@ -42,6 +40,44 @@ func (a *clientActions) UpdateBrightness(ctx context.Context, now time.Time, req
 		Err: err,
 	}
 	return err
+}
+
+// newCachedActions caches responses for a duration.
+// Invoking actions with significantly different arguments (e.g. different brightness levels) will not use the cache.
+func newCachedActions(a actions, expiry time.Duration) actions {
+	if expiry < 0 {
+		return a // no caching
+	}
+	return cachedActions{actions: a, expiry: expiry}
+}
+
+type cachedActions struct {
+	actions
+	expiry time.Duration
+}
+
+func (a cachedActions) UpdateBrightness(ctx context.Context, now time.Time, req *traits.UpdateBrightnessRequest, state *WriteState) error {
+	if old, hasOld := state.Brightness[req.Name]; hasOld {
+		if cacheValid(old, now, a.expiry, func(v *traits.Brightness) bool {
+			return v.LevelPercent == req.Brightness.LevelPercent
+		}) {
+			old.hit()
+			return old.Err
+		}
+	}
+	return a.actions.UpdateBrightness(ctx, now, req, state)
+}
+
+// cacheValid returns true when a cache value exists, is in date, and hasn't changed according to eq.
+func cacheValid[T any](oldWrite Value[T], now time.Time, cacheExpiry time.Duration, eq func(v T) bool) bool {
+	if !eq(oldWrite.V) {
+		return false
+	}
+	if cacheExpiry > 0 && now.Sub(oldWrite.At) > cacheExpiry {
+		return false
+	}
+	// here is where logic that would have different cache expiry for error writes
+	return true
 }
 
 type actionCounts struct {
@@ -118,18 +154,9 @@ func (a *logActions) UpdateBrightness(ctx context.Context, now time.Time, req *t
 	return err
 }
 
-// updateBrightnessLevelIfNeeded sets all the names devices brightness levels to level and stores successful responses in state.
-// This does not send requests if state already has a named brightness level equal to level.
-func updateBrightnessLevelIfNeeded(ctx context.Context, now time.Time, state *WriteState, actions actions, level float32, names ...deviceName) error {
+// updateBrightnessLevel invokes actions.UpdateBrightness for each name with the given level.
+func updateBrightnessLevel(ctx context.Context, now time.Time, state *WriteState, actions actions, level float32, names ...deviceName) error {
 	for _, name := range names {
-		if val, ok := state.Brightness[name]; ok && val.V != nil {
-			expired := now.After(val.At.Add(brightnessCacheValidity))
-			// don't do requests that won't change the write state unless the entry is expired
-			if val.V.LevelPercent == level && !expired {
-				continue
-			}
-		}
-
 		err := actions.UpdateBrightness(ctx, now, &traits.UpdateBrightnessRequest{
 			Name: name,
 			Brightness: &traits.Brightness{
@@ -143,18 +170,13 @@ func updateBrightnessLevelIfNeeded(ctx context.Context, now time.Time, state *Wr
 	return nil
 }
 
+// refreshBrightnessLevel invokes actions.UpdateBrightness for each name with the last written level.
 func refreshBrightnessLevel(ctx context.Context, now time.Time, state *WriteState, actions actions, names ...deviceName) error {
 	for _, name := range names {
 		val, ok := state.Brightness[name]
 		if !ok || val.V == nil {
 			continue
 		}
-		expired := now.After(val.At.Add(brightnessCacheValidity))
-		if !expired {
-			// don't need to refresh if recently written
-			continue
-		}
-
 		err := actions.UpdateBrightness(ctx, now, &traits.UpdateBrightnessRequest{
 			Name:       name,
 			Brightness: val.V,

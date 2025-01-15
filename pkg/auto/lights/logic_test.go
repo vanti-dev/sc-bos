@@ -254,10 +254,12 @@ func Test_processState(t *testing.T) {
 		}
 
 		actions.assertNextCall(&traits.UpdateBrightnessRequest{
-			Name: "light02",
-			Brightness: &traits.Brightness{
-				LevelPercent: 0,
-			},
+			Name:       "light01",
+			Brightness: &traits.Brightness{LevelPercent: 0},
+		})
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name:       "light02",
+			Brightness: &traits.Brightness{LevelPercent: 0},
 		})
 		actions.assertNoMoreCalls()
 	})
@@ -327,6 +329,10 @@ func Test_processState(t *testing.T) {
 		ttl, err := processState(context.Background(), readState, writeState, actions)
 		assertNoErrAndTtl(t, ttl, err, 0)
 
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name:       "light01",
+			Brightness: &traits.Brightness{LevelPercent: 0},
+		})
 		actions.assertNoMoreCalls()
 	})
 
@@ -355,6 +361,10 @@ func Test_processState(t *testing.T) {
 		ttl, err := processState(context.Background(), readState, writeState, actions)
 		assertNoErrAndTtl(t, ttl, err, 0)
 
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name:       "light01",
+			Brightness: &traits.Brightness{LevelPercent: 0},
+		})
 		actions.assertNoMoreCalls()
 	})
 
@@ -383,6 +393,10 @@ func Test_processState(t *testing.T) {
 		ttl, err := processState(context.Background(), readState, writeState, actions)
 		assertNoErrAndTtl(t, ttl, err, 0)
 
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name:       "light01",
+			Brightness: &traits.Brightness{LevelPercent: 0},
+		})
 		actions.assertNoMoreCalls()
 	})
 
@@ -497,6 +511,10 @@ func Test_processState(t *testing.T) {
 			t.Fatalf("Error want <nil>, got %v", err)
 		}
 
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name:       "light01",
+			Brightness: &traits.Brightness{LevelPercent: 100},
+		})
 		actions.assertNoMoreCalls()
 	})
 
@@ -559,6 +577,10 @@ func Test_processState(t *testing.T) {
 		ttl, err := processState(context.Background(), readState, writeState, actions)
 		assertNoErrAndTtl(t, ttl, err, 0)
 
+		actions.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name:       "light01",
+			Brightness: &traits.Brightness{LevelPercent: 0},
+		})
 		actions.assertNoMoreCalls()
 	})
 

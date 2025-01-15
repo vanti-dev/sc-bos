@@ -39,10 +39,10 @@ func processState(ctx context.Context, readState *ReadState, writeState *WriteSt
 			//  info to actually choose the output light level. We should probably not make any changes and wait for
 			//  more data to come in, but we'll leave that to future us as part of snagging.
 		}
-		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, level, readState.Config.Lights...)
+		return rerunAfter, updateBrightnessLevel(ctx, now, writeState, actions, level, readState.Config.Lights...)
 	} else if switchOff {
 		offLevel := computeOffLevelPercent(mode)
-		return rerunAfter, updateBrightnessLevelIfNeeded(ctx, now, writeState, actions, offLevel, readState.Config.Lights...)
+		return rerunAfter, updateBrightnessLevel(ctx, now, writeState, actions, offLevel, readState.Config.Lights...)
 	} else {
 		writeState.AddReason("refreshing")
 		return rerunAfter, refreshBrightnessLevel(ctx, now, writeState, actions, readState.Config.Lights...)

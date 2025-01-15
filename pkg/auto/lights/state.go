@@ -144,12 +144,18 @@ type Value[V any] struct {
 	V   V
 	At  time.Time
 	Err error
+	Hit int // cache hits
 }
 
 func (v *Value[V]) set(at time.Time, value V) {
 	v.V = value
 	v.At = at
 	v.Err = nil
+	v.Hit = 0
+}
+
+func (v *Value[V]) hit() {
+	v.Hit++
 }
 
 func NewWriteState(startTime time.Time) *WriteState {

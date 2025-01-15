@@ -185,6 +185,7 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			actions = newLogActions(actions, b.logger)
 		}
 		actions, actionCounts := newCountActions(actions)
+		actions = newCachedActions(actions, readState.Config.WriteCacheExpiry.Or(config.DefaultWriteCacheExpiry))
 
 		t0 := readState.Now()
 		writeState.Before()
