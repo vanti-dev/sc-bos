@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -156,6 +157,7 @@ func (a *logActions) UpdateBrightness(ctx context.Context, now time.Time, req *t
 
 // updateBrightnessLevel invokes actions.UpdateBrightness for each name with the given level.
 func updateBrightnessLevel(ctx context.Context, now time.Time, state *WriteState, actions actions, level float32, names ...deviceName) error {
+	var errs error
 	for _, name := range names {
 		err := actions.UpdateBrightness(ctx, now, &traits.UpdateBrightnessRequest{
 			Name: name,
@@ -163,15 +165,14 @@ func updateBrightnessLevel(ctx context.Context, now time.Time, state *WriteState
 				LevelPercent: level,
 			},
 		}, state)
-		if err != nil {
-			return err
-		}
+		errs = multierr.Append(errs, err)
 	}
-	return nil
+	return errs
 }
 
 // refreshBrightnessLevel invokes actions.UpdateBrightness for each name with the last written level.
 func refreshBrightnessLevel(ctx context.Context, now time.Time, state *WriteState, actions actions, names ...deviceName) error {
+	var errs error
 	for _, name := range names {
 		val, ok := state.Brightness[name]
 		if !ok || val.V == nil {
@@ -181,9 +182,7 @@ func refreshBrightnessLevel(ctx context.Context, now time.Time, state *WriteStat
 			Name:       name,
 			Brightness: val.V,
 		}, state)
-		if err != nil {
-			return err
-		}
+		errs = multierr.Append(errs, err)
 	}
-	return nil
+	return errs
 }

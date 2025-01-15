@@ -192,6 +192,13 @@ func TestPirsTurnLightsOn(t *testing.T) {
 			LevelPercent: 100,
 		},
 	})
+	// should be called even when the first light call failed
+	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
+		Name: "light02",
+		Brightness: &traits.Brightness{
+			LevelPercent: 100,
+		},
+	})
 	// since newTimer is intercepted by this test, we force a replay here
 	now = now.Add(time.Millisecond * 500)
 	tickChan <- now
@@ -210,12 +217,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 			LevelPercent: 100,
 		},
 	})
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light02",
-		Brightness: &traits.Brightness{
-			LevelPercent: 100,
-		},
-	})
+	// setting light02 was caught by the cache
 
 	// testing retries getting cancelled after max attempts
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(time.Unix(0, 0).Add(-3 * time.Minute))})
@@ -259,6 +261,13 @@ func TestPirsTurnLightsOn(t *testing.T) {
 			LevelPercent: 100,
 		},
 	})
+	// should be called even when light01 errors
+	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
+		Name: "light02",
+		Brightness: &traits.Brightness{
+			LevelPercent: 100,
+		},
+	})
 
 	// second try
 	testActions.err = errFailedBrightnessUpdate
@@ -279,6 +288,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 			LevelPercent: 100,
 		},
 	})
+	// light02 was caught by the cache
 
 	// third try and is cancelled
 	testActions.err = errFailedBrightnessUpdate
