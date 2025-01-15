@@ -188,6 +188,9 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 
 		t0 := readState.Now()
 		writeState.Before()
+		for _, reason := range reasons {
+			writeState.AddReason(reason) // record why we're running in the completion log
+		}
 		ttl, err := processState(ctx, readState, writeState, actions)
 		writeState.After()
 		duration := readState.Now().Sub(t0)
@@ -227,9 +230,11 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 		switch {
 		case ttl <= 0:
 			retryReason = "refresh"
+			writeState.AddReason("refreshEvery:0")
 			ttl = readState.Config.RefreshEvery.Duration
 		case ttl > readState.Config.RefreshEvery.Duration:
-			retryReason = "early refresh"
+			retryReason = fmt.Sprintf("early refresh:%v->%v", formatDuration(ttl), formatDuration(readState.Config.RefreshEvery.Duration))
+			writeState.AddReasonf("refreshEvery:%v->%v", formatDuration(ttl), formatDuration(readState.Config.RefreshEvery.Duration))
 			ttl = readState.Config.RefreshEvery.Duration
 		case ttl > 0 && retryReason == "":
 			retryReason = "ttl"
