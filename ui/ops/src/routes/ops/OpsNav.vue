@@ -133,6 +133,12 @@ const menuItems = computed(() => [
     icon: 'mdi-shield-key',
     link: {path: '/ops/security'},
     badgeType: null
+  },
+  {
+    title: 'Security Events',
+    icon: 'mdi-shield-key',
+    link: {path: '/ops/security-events'},
+    badgeType: null
   }
 ]);
 
