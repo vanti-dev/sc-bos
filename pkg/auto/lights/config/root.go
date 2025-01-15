@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	DefaultRefreshEvery      = time.Minute
+	DefaultRefreshEvery      = 15 * time.Minute
 	DefaultMaxRetries        = 2
 	DefaultBackOffMultiplier = time.Millisecond * 500
-	DefaultWriteCacheExpiry  = 45 * time.Second
+	DefaultWriteCacheExpiry  = 10 * time.Minute
 )
 
 // Root represent the configuration parameters available for the lighting automation.
