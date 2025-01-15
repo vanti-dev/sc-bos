@@ -187,7 +187,9 @@ export function useDeviceFloorList() {
   const {value: md} = usePullDevicesMetadata('metadata.location.floor');
   const {keys: listOfFloors} = useDevicesMetadataField(md, 'metadata.location.floor');
   const floorList = computed(() => {
-    return ['All', ...listOfFloors.value.map(v => v === '' ? NO_FLOOR : v)];
+    return ['All', ...listOfFloors.value
+        .sort((a, b) => a.localeCompare(b, undefined, {numeric: true}))
+        .map(v => v === '' ? NO_FLOOR : v)];
   });
   return {floorList};
 }
@@ -215,7 +217,9 @@ export function useDeviceFilters(forcedFilters) {
     const forced = toValue(forcedFilters) ?? {};
 
     if (!Object.hasOwn(forced, 'floor')) {
-      const floors = floorKeys.value.map(f => f === '' ? NO_FLOOR : f);
+      const floors = [...floorKeys.value]
+          .sort((a, b) => a.localeCompare(b, undefined, {numeric: true}))
+          .map(f => f === '' ? NO_FLOOR : f);
       if (floors.length > 1) {
         filters.push({
           key: 'floor',

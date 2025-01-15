@@ -231,7 +231,8 @@ const addManualEntry = async () => {
 
 const modifyFooter = computed(() => queryMetadataCount.value === undefined);
 
-const floors = computed(() => Object.keys(alertMetadata.floorCountsMap).sort());
+const floors = computed(() => Object.keys(alertMetadata.floorCountsMap)
+    .sort((a, b) => a.localeCompare(b, undefined, {numeric: true})));
 const zones = computed(() => Object.keys(alertMetadata.zoneCountsMap).sort());
 const subsystems = computed(() => Object.keys(alertMetadata.subsystemCountsMap).sort());
 
