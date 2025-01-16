@@ -1,5 +1,6 @@
+import {timestampToDate} from '@/api/convpb.js';
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
-import {describeMeterReading, pullMeterReading} from '@/api/sc/traits/meter';
+import {describeMeterReading, listMeterReadingHistory, pullMeterReading} from '@/api/sc/traits/meter';
 import {toQueryObject, watchResource} from '@/util/traits.js';
 import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
@@ -116,4 +117,28 @@ export function useMeterReading(value, support = null) {
     usageAndUnit,
     table
   };
+}
+
+/**
+ * @param {MaybeRefOrGetter<string|ListMeterReadingHistoryRequest.AsObject>} req - The request
+ * @param {MaybeRefOrGetter<boolean>=} paused - Whether to pause the data stream
+ * @return {Promise<ListMeterReadingHistoryResponse.AsObject>}
+ */
+export function useListMeterReadingHistory(req, paused = false) {
+  const tracker = reactive(
+      /** @type {ActionTracker<MeterReadingRecord.AsObject>} */
+      newActionTracker()
+  );
+  return listMeterReadingHistory(req, tracker);
+}
+
+/**
+ * @param {MeterReadingRecord | MeterReadingRecord.AsObject} obj
+ * @return {MeterReadingRecord.AsObject & {recordTime: Date|undefined}}
+ */
+export function meterReadingRecordToObject(obj) {
+  if (!obj) return undefined;
+  if (typeof obj.toObject === 'function') obj = obj.toObject();
+  if (obj.recordTime) obj.recordTime = timestampToDate(obj.recordTime);
+  return obj;
 }

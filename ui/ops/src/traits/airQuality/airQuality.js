@@ -1,5 +1,6 @@
-import {closeResource, newResourceValue} from '@/api/resource.js';
-import {pullAirQualitySensor} from '@/api/sc/traits/air-quality-sensor';
+import {timestampToDate} from '@/api/convpb.js';
+import {closeResource, newActionTracker, newResourceValue} from '@/api/resource.js';
+import {listAirQualitySensorHistory, pullAirQualitySensor} from '@/api/sc/traits/air-quality-sensor';
 import {camelToSentence} from '@/util/string.js';
 import {toQueryObject, watchResource} from '@/util/traits.js';
 import {AirQuality} from '@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb';
@@ -149,4 +150,28 @@ export function useAirQuality(value) {
     scoreColor,
     tableData
   };
+}
+
+/**
+ * @param {MaybeRefOrGetter<string|ListAirQualityHistoryRequest.AsObject>} req - The request
+ * @param {MaybeRefOrGetter<boolean>=} paused - Whether to pause the data stream
+ * @return {Promise<ListAirQualityHistoryResponse.AsObject>}
+ */
+export function useListAirQualityHistory(req, paused = false) {
+  const tracker = reactive(
+      /** @type {ActionTracker<AirQualityRecord.AsObject>} */
+      newActionTracker()
+  );
+  return listAirQualitySensorHistory(req, tracker);
+}
+
+/**
+ * @param {AirQualityRecord | AirQualityRecord.AsObject} obj
+ * @return {AirQualityRecord.AsObject & {recordTime: Date|undefined}}
+ */
+export function airQualityRecordToObject(obj) {
+  if (!obj) return undefined;
+  if (typeof obj.toObject === 'function') obj = obj.toObject();
+  if (obj.recordTime) obj.recordTime = timestampToDate(obj.recordTime);
+  return obj;
 }

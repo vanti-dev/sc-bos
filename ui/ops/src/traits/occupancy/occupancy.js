@@ -1,6 +1,6 @@
 import {timestampToDate} from '@/api/convpb.js';
-import {closeResource, newResourceValue} from '@/api/resource';
-import {occupancyStateToString, pullOccupancy} from '@/api/sc/traits/occupancy';
+import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
+import {listOccupancySensorHistory, occupancyStateToString, pullOccupancy} from '@/api/sc/traits/occupancy';
 import {toQueryObject, watchResource} from '@/util/traits';
 import {Occupancy} from '@smart-core-os/sc-api-grpc-web/traits/occupancy_sensor_pb';
 import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
@@ -214,4 +214,28 @@ export default function(query, paused) {
     error,
     loading
   };
+}
+
+/**
+ * @param {MaybeRefOrGetter<string|ListOccupancyHistoryRequest.AsObject>} req - The request
+ * @param {MaybeRefOrGetter<boolean>=} paused - Whether to pause the data stream
+ * @return {Promise<ListOccupancyHistoryResponse.AsObject>}
+ */
+export function useListOccupancyHistory(req, paused = false) {
+  const tracker = reactive(
+      /** @type {ActionTracker<OccupancyRecord.AsObject>} */
+      newActionTracker()
+  );
+  return listOccupancySensorHistory(req, tracker);
+}
+
+/**
+ * @param {OccupancyRecord | OccupancyRecord.AsObject} obj
+ * @return {OccupancyRecord.AsObject & {recordTime: Date|undefined}}
+ */
+export function occupancyRecordToObject(obj) {
+  if (!obj) return undefined;
+  if (typeof obj.toObject === 'function') obj = obj.toObject();
+  if (obj.recordTime) obj.recordTime = timestampToDate(obj.recordTime);
+  return obj;
 }
