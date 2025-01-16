@@ -1,15 +1,20 @@
-<script setup>
-import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css';
-</script>
-
 <template>
   <v-card class="history-card">
-    <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Air Quality History</v-list-subheader>
-    <v-list-subheader class="text-title-caps-small text-white">Start Date</v-list-subheader>
-    <VueDatePicker class="date-picker" v-model="startDate" :teleport="true" :format="format"/>
-    <v-list-subheader class="text-title-caps-small text-white">End Date</v-list-subheader>
-    <VueDatePicker class="date-picker" v-model="endDate" :teleport="true" :format="format"/>
+    <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Download History</v-list-subheader>
+    <v-container>
+      <v-list-subheader class="text-title-caps-small text-white">From</v-list-subheader>
+      <v-text-field
+          v-model="startDate"
+          label="DATE"
+          type="date"
+          class="date-picker"></v-text-field>
+      <v-list-subheader class="text-title-caps-small text-white">To</v-list-subheader>
+      <v-text-field
+          v-model="endDate"
+          label="DATE"
+          type="date"
+          class="date-picker"></v-text-field>
+    </v-container>
     <v-container class="d-flex align-center justify-center">
       <v-container v-if="fetchingHistory">
         <v-row class="d-flex align-center justify-center">
@@ -26,23 +31,14 @@ import '@vuepic/vue-datepicker/dist/main.css';
   </v-card>
 </template>
 
-<script>
+<script setup>
 import {airQualityRecordToObject, useListAirQualityHistory} from '@/traits/airQuality/airQuality.js';
 import {downloadCSVRows} from '@/util/downloadCSV.js';
 import {ref} from 'vue';
 
-const format = (date) => {
-  const day = date.getDate();
-  const month = date.getMonth() + 1;
-  const year = date.getFullYear();
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-
-  return `${day}/${month}/${year} ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-};
-
 const startDate = ref();
 const endDate = ref();
+const fetchingHistory = ref(false);
 
 const dateTimeProp = (obj) => {
   return `${obj.toLocaleDateString()} ${obj.toLocaleTimeString()}`;
@@ -54,51 +50,49 @@ const historyHeaders = [
   {title: 'VOC', val: (a) => a.airQuality.volatileOrganicCompounds}
 ];
 
-export default {
-  props: {
-    name: {
-      type: String,
-      required: true
-    }
-  },
-  data() {
-    return {
-      fetchingHistory: false
-    };
-  },
-  methods: {
-    async downloadHistory(n) {
-      this.fetchingHistory = true;
-      const baseRequest = /** @type {ListAirQualityHistoryRequest.AsObject} */ {
-        name: n,
-        period: {
-          startTime: startDate.value,
-          endTime: endDate.value
-        },
-        pageSize: 1000
-      };
-
-      const csvRows =
-          /** @type {string[][]} */
-          [historyHeaders.map(h => h.title)];
-      while (true) {
-        const response = await useListAirQualityHistory(baseRequest);
-        for (let record of response.airQualityRecordsList) {
-          record = airQualityRecordToObject(record);
-          csvRows.push(historyHeaders.map(h => h.val(record)));
-        }
-
-        if (!response.nextPageToken) {
-          break;
-        }
-        baseRequest.pageToken = response.nextPageToken;
-      }
-      const filename = `${n}_airquality_history.csv`;
-      downloadCSVRows(filename, csvRows);
-      this.fetchingHistory = false;
-    }
+defineProps({
+  name: {
+    type: String,
+    required: true
   }
-};
+});
+
+function addDay(date) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + 1);
+  return result;
+}
+
+async function downloadHistory(n) {
+  fetchingHistory.value = true;
+  const baseRequest = /** @type {ListAirQualityHistoryRequest.AsObject} */ {
+    name: n,
+    period: {
+      startTime: startDate.value,
+      endTime: addDay(endDate.value)
+    },
+    pageSize: 1000
+  };
+
+  const csvRows =
+      /** @type {string[][]} */
+      [historyHeaders.map(h => h.title)];
+  while (true) {
+    const response = await useListAirQualityHistory(baseRequest);
+    for (let record of response.airQualityRecordsList) {
+      record = airQualityRecordToObject(record);
+      csvRows.push(historyHeaders.map(h => h.val(record)));
+    }
+
+    if (!response.nextPageToken) {
+      break;
+    }
+    baseRequest.pageToken = response.nextPageToken;
+  }
+  const filename = `${n}_airquality_history.csv`;
+  downloadCSVRows(filename, csvRows);
+  fetchingHistory.value = false;
+}
 </script>
 
 <style scoped>
