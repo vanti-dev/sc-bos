@@ -25,8 +25,9 @@ import (
 // value read from that point is anything other than OkValue
 type AlarmConfig struct {
 	config.ValueSource
-	OkValue     int    `json:"okValue"`     // what we expect to read from the point when it is ok, any other value is an emergency
-	AlarmReason string `json:"alarmReason"` // the reason of the alarm
+	OkValue            int    `json:"okValue"`            // what we expect to read from the point when it is ok, any other value is an emergency
+	GreaterThanOkValue int    `json:"greaterThanOkValue"` // we expect the point to be greater than this value, if it isn't we have an emergency
+	AlarmReason        string `json:"alarmReason"`        // the reason of the alarm
 }
 
 type emergencyConfig struct {
@@ -146,7 +147,8 @@ func (t *emergencyImpl) pollPeer(ctx context.Context) (*traits.Emergency, error)
 				return comm.ErrReadProperty{Prop: "alarmConfig", Cause: err}
 			}
 
-			if int64(t.config.AlarmConfig.OkValue) != value {
+			if value != int64(t.config.AlarmConfig.OkValue) ||
+				value < int64(t.config.AlarmConfig.GreaterThanOkValue) {
 				data.Reason = t.config.AlarmConfig.AlarmReason
 				data.Level = traits.Emergency_EMERGENCY
 			} else {
