@@ -26,9 +26,10 @@ import (
 // - value read from that point is less than GreaterThanOkValue
 type AlarmConfig struct {
 	config.ValueSource
-	OkValue            int    `json:"okValue"`            // what we expect to read from the point when it is ok, any other value is an emergency
+	OkValue            int    `json:"okValue"`            // what we expect to read from the point when it is ok, any other value is an emergency. Not supported for float values.
 	GreaterThanOkValue int    `json:"greaterThanOkValue"` // we expect the point to be greater than this value, if it isn't we have an emergency
 	AlarmReason        string `json:"alarmReason"`        // the reason of the alarm
+	ValueType          string `json:"valueType"`          // the type of the value we are expecting to read, int, float etc.
 }
 
 type emergencyConfig struct {
@@ -102,6 +103,41 @@ func (t *emergencyImpl) PullEmergency(request *traits.PullEmergencyRequest, serv
 	return t.EmergencyApiServer.PullEmergency(request, server)
 }
 
+func (t *emergencyImpl) checkIntValueForEmergency(response any) (*traits.Emergency, error) {
+	data := &traits.Emergency{}
+
+	value, err := comm.IntValue(response)
+	if err != nil {
+		return nil, comm.ErrReadProperty{Prop: "alarmConfig", Cause: err}
+	}
+
+	if value != int64(t.config.AlarmConfig.OkValue) ||
+		value < int64(t.config.AlarmConfig.GreaterThanOkValue) {
+		data.Reason = t.config.AlarmConfig.AlarmReason
+		data.Level = traits.Emergency_EMERGENCY
+	} else {
+		data.Level = traits.Emergency_OK
+	}
+	return data, nil
+}
+
+func (t *emergencyImpl) checkFloatValueForEmergency(response any) (*traits.Emergency, error) {
+	data := &traits.Emergency{}
+
+	value, err := comm.Float64Value(response)
+	if err != nil {
+		return nil, comm.ErrReadProperty{Prop: "alarmConfig", Cause: err}
+	}
+
+	if value < float64(t.config.AlarmConfig.GreaterThanOkValue) {
+		data.Reason = t.config.AlarmConfig.AlarmReason
+		data.Level = traits.Emergency_EMERGENCY
+	} else {
+		data.Level = traits.Emergency_OK
+	}
+	return data, nil
+}
+
 // pollPeer fetches data from the peer device and saves the data locally.
 func (t *emergencyImpl) pollPeer(ctx context.Context) (*traits.Emergency, error) {
 	data := &traits.Emergency{}
@@ -143,19 +179,18 @@ func (t *emergencyImpl) pollPeer(ctx context.Context) (*traits.Emergency, error)
 		requestNames = append(requestNames, "alarmConfig")
 		readValues = append(readValues, t.config.AlarmConfig.ValueSource)
 		resProcessors = append(resProcessors, func(response any) error {
-			value, err := comm.IntValue(response)
-			if err != nil {
-				return comm.ErrReadProperty{Prop: "alarmConfig", Cause: err}
+			switch t.config.AlarmConfig.ValueType {
+			case "int":
+				if e, err := t.checkIntValueForEmergency(response); err == nil {
+					data = e
+				}
+			case "float":
+				if e, err := t.checkFloatValueForEmergency(response); err == nil {
+					data = e
+				}
+			default:
+				t.logger.Warn("alarmConfig unknown value type", zap.String("type", t.config.AlarmConfig.ValueType))
 			}
-
-			if value != int64(t.config.AlarmConfig.OkValue) ||
-				value < int64(t.config.AlarmConfig.GreaterThanOkValue) {
-				data.Reason = t.config.AlarmConfig.AlarmReason
-				data.Level = traits.Emergency_EMERGENCY
-			} else {
-				data.Level = traits.Emergency_OK
-			}
-
 			return nil
 		})
 	}
