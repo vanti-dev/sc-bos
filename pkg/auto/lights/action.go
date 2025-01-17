@@ -60,7 +60,7 @@ type cachedActions struct {
 func (a cachedActions) UpdateBrightness(ctx context.Context, now time.Time, req *traits.UpdateBrightnessRequest, state *WriteState) error {
 	if old, hasOld := state.Brightness[req.Name]; hasOld {
 		if cacheValid(old, now, a.expiry, func(v *traits.Brightness) bool {
-			return v.LevelPercent == req.Brightness.LevelPercent
+			return v.LevelPercent == req.GetBrightness().GetLevelPercent()
 		}) {
 			old.hit()
 			return old.Err
@@ -71,6 +71,9 @@ func (a cachedActions) UpdateBrightness(ctx context.Context, now time.Time, req 
 
 // cacheValid returns true when a cache value exists, is in date, and hasn't changed according to eq.
 func cacheValid[T any](oldWrite Value[T], now time.Time, cacheExpiry time.Duration, eq func(v T) bool) bool {
+	if oldWrite.V == nil {
+		return false
+	}
 	if !eq(oldWrite.V) {
 		return false
 	}
