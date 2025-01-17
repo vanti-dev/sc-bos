@@ -21,8 +21,9 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
-// AlarmConfig allows configuring a specific bacnet point to raise an Emergency if the
-// value read from that point is anything other than OkValue
+// AlarmConfig allows configuring a specific bacnet point to raise an Emergency if either:
+// - value read from that point is anything other than OkValue
+// - value read from that point is less than GreaterThanOkValue
 type AlarmConfig struct {
 	config.ValueSource
 	OkValue            int    `json:"okValue"`            // what we expect to read from the point when it is ok, any other value is an emergency
