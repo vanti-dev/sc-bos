@@ -40,7 +40,6 @@
 
 <script setup>
 import AirQualityCard from '@/traits/airQuality/AirQualityCard.vue';
-import AirQualityHistoryCard from '@/traits/airQuality/AirQualityHistoryCard.vue';
 import WithAirQuality from '@/traits/airQuality/WithAirQuality.vue';
 import AirTemperatureCard from '@/traits/airTemperature/AirTemperatureCard.vue';
 import WithAirTemperature from '@/traits/airTemperature/WithAirTemperature.vue';
@@ -50,11 +49,9 @@ import EmergencyLight from '@/traits/emergency/EmergencyLight.vue';
 import LightCard from '@/traits/light/LightCard.vue';
 import MetadataCard from '@/traits/metadata/MetadataCard.vue';
 import MeterCard from '@/traits/meter/MeterCard.vue';
-import MeterHistoryCard from '@/traits/meter/MeterHistoryCard.vue';
 import WithMeter from '@/traits/meter/WithMeter.vue';
 import ModeCard from '@/traits/mode/ModeCard.vue';
 import OccupancyCard from '@/traits/occupancy/OccupancyCard.vue';
-import OccupancyHistoryCard from '@/traits/occupancy/OccupancyHistoryCard.vue';
 import WithOccupancy from '@/traits/occupancy/WithOccupancy.vue';
 import StatusLogCard from '@/traits/status/StatusLogCard.vue';
 import WithStatus from '@/traits/status/WithStatus.vue';
