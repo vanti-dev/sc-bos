@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
@@ -106,20 +107,7 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 	undo = append(undo, a.undo...)
 
 	// register all relevant routes with the router
-	var services []service
-	services = append(services, a.services...)
-	for _, t := range a.traits {
-		services = append(services, t.services...)
-		traitSvcs, err := traitServices(t.name)
-		if err != nil {
-			log.Errorf("cannot determine services to support for trait %s: %v", t.name, err)
-		} else {
-			services = append(services, traitSvcs...)
-		}
-	}
-	if len(services) > 0 || a.proxyTo != nil {
-		log.Debugf("announcing %q with %d services (proxy=%v)", name, len(services), a.proxyTo != nil)
-	}
+	services := allServices(a, n.Logger)
 	for _, s := range services {
 		serviceName := s.desc.FullName()
 		undoRoute, err := registerDeviceRoute(n.router, name, s)
@@ -139,24 +127,20 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 	}
 
 	// unless specifically disabled, all devices support the Metadata trait
+	ts := a.traits
 	if !a.noAutoMetadata {
-		a.traits = append(a.traits, traitFeature{name: trait.Metadata})
+		ts = append(ts, traitFeature{name: trait.Metadata})
 	}
-	for _, t := range a.traits {
-		log.Debugf("%v now implements %v", name, t.name)
-		undo = append(undo, func() {
-			log.Debugf("%v no longer implements %v", name, t.name)
-		})
-
+	for _, t := range ts {
 		if !t.noAddChildTrait && name != n.name {
 			undo = append(undo, n.addChildTrait(a.name, t.name))
 		}
 	}
 
 	mds := a.metadata
-	if !a.noAutoMetadata && len(a.traits) > 0 {
+	if !a.noAutoMetadata && len(ts) > 0 {
 		md := &traits.Metadata{}
-		for _, t := range a.traits {
+		for _, t := range ts {
 			md.Traits = append(md.Traits, &traits.TraitMetadata{Name: string(t.name)})
 		}
 		mds = append(mds, md)
@@ -175,7 +159,48 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 		undo = append(undo, undoMd)
 	}
 
+	undo = append(undo, n.logAnnouncement(a, services))
+
 	return UndoAll(undo...)
+}
+
+func (n *Node) logAnnouncement(a *announcement, services []service) Undo {
+	serviceString := make([]string, 0, len(services))
+	for _, s := range services {
+		serviceString = append(serviceString, string(s.desc.Name()))
+	}
+	traitsString := make([]string, 0, len(a.traits))
+	for _, t := range a.traits {
+		n := t.name.Local()
+		if t.noAddChildTrait {
+			n = "-" + n
+		}
+		traitsString = append(traitsString, n)
+	}
+	var flags []string
+	if len(a.metadata) > 0 {
+		flags = append(flags, "md")
+	}
+	if a.noAutoMetadata {
+		flags = append(flags, "noAutoMetadata")
+	}
+	if a.proxyTo != nil {
+		flags = append(flags, "proxy")
+	}
+
+	log := func(msg string) {
+		n.Logger.Debug(msg,
+			zap.String("name", a.name),
+			zap.Strings("services", serviceString),
+			zap.Strings("traits", traitsString),
+			zap.Strings("flags", flags),
+		)
+	}
+
+	log("name announced")
+	return func() {
+		log("name unannounced")
+	}
 }
 
 func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
@@ -307,6 +332,41 @@ func ensureServiceSupported(r *router.Router, s service) error {
 		return err
 	}
 	return nil
+}
+
+// allServices returns all unique services from a and the traits registered with a.
+func allServices(a *announcement, logger *zap.Logger) []service {
+	seen := make(map[protoreflect.FullName]struct{})
+	var services []service
+	for _, s := range a.services {
+		if _, ok := seen[s.desc.FullName()]; ok {
+			continue
+		}
+		seen[s.desc.FullName()] = struct{}{}
+		services = append(services, s)
+	}
+	for _, t := range a.traits {
+		for _, s := range t.services {
+			if _, ok := seen[s.desc.FullName()]; ok {
+				continue
+			}
+			seen[s.desc.FullName()] = struct{}{}
+			services = append(services, s)
+		}
+		tss, err := traitServices(t.name)
+		if err != nil {
+			logger.Warn("cannot determine services to support for trait", zap.String("trait", string(t.name)), zap.Error(err))
+			continue
+		}
+		for _, s := range tss {
+			if _, ok := seen[s.desc.FullName()]; ok {
+				continue
+			}
+			seen[s.desc.FullName()] = struct{}{}
+			services = append(services, s)
+		}
+	}
+	return services
 }
 
 // returns services that should be supported by the node for the given trait
