@@ -10,8 +10,9 @@ import (
 // test the emergencyImpl alarmConfig for int values
 //   - ok value good
 //   - ok value bad
-//   - okAbove good
-//   - okAbove bad
+//   - okAtOrAbove good
+//   - okAtOrAbove equal to value
+//   - okAtOrAbove bad
 func Test_emergency_int(t *testing.T) {
 	impl := &emergencyImpl{}
 	okValue := int64(234)
@@ -49,9 +50,9 @@ func Test_emergency_int(t *testing.T) {
 			wantErr:    false,
 		},
 		{
-			name: "okAbove good",
+			name: "okAtOrAbove good",
 			alarmConf: AlarmConfig{
-				OkAbove: &okValue,
+				OkAtOrAbove: &okValue,
 			},
 			checkFunc:  impl.checkIntValueForEmergency,
 			pointValue: int32(235),
@@ -60,9 +61,20 @@ func Test_emergency_int(t *testing.T) {
 			wantErr:    false,
 		},
 		{
-			name: "okAbove bad",
+			name: "okAtOrAbove equal to",
 			alarmConf: AlarmConfig{
-				OkAbove:     &okValue,
+				OkAtOrAbove: &okValue,
+			},
+			checkFunc:  impl.checkIntValueForEmergency,
+			pointValue: int32(234),
+			wantLevel:  traits.Emergency_OK,
+			wantReason: "",
+			wantErr:    false,
+		},
+		{
+			name: "okAtOrAbove bad",
+			alarmConf: AlarmConfig{
+				OkAtOrAbove: &okValue,
 				AlarmReason: "Sensor is not reading the expected value",
 			},
 			checkFunc:  impl.checkIntValueForEmergency,
@@ -92,8 +104,9 @@ func Test_emergency_int(t *testing.T) {
 }
 
 // test the emergencyImpl alarmConfig for float values
-//   - okAbove good
-//   - okAbove bad
+//   - okAtOrAbove good
+//   - okAtOrAbove equal to value
+//   - okAtOrAbove bad
 func Test_emergency_float(t *testing.T) {
 	impl := &emergencyImpl{}
 	okValue := int64(234)
@@ -108,9 +121,9 @@ func Test_emergency_float(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name: "okAbove good",
+			name: "okAtOrAbove good",
 			alarmConf: AlarmConfig{
-				OkAbove: &okValue,
+				OkAtOrAbove: &okValue,
 			},
 			checkFunc:  impl.checkFloatValueForEmergency,
 			pointValue: float32(235),
@@ -119,9 +132,20 @@ func Test_emergency_float(t *testing.T) {
 			wantErr:    false,
 		},
 		{
-			name: "okAbove bad",
+			name: "okAtOrAbove equal to",
 			alarmConf: AlarmConfig{
-				OkAbove:     &okValue,
+				OkAtOrAbove: &okValue,
+			},
+			checkFunc:  impl.checkFloatValueForEmergency,
+			pointValue: float32(235),
+			wantLevel:  traits.Emergency_OK,
+			wantReason: "",
+			wantErr:    false,
+		},
+		{
+			name: "okAtOrAbove bad",
+			alarmConf: AlarmConfig{
+				OkAtOrAbove: &okValue,
 				AlarmReason: "Sensor is not reading the expected value",
 			},
 			checkFunc:  impl.checkFloatValueForEmergency,
@@ -150,15 +174,15 @@ func Test_emergency_float(t *testing.T) {
 	}
 }
 
-// test create a new emergencyImpl with both okValue and okAbove set
+// test create a new emergencyImpl with both okValue and okAtOrAbove set
 func Test_emergency_both(t *testing.T) {
 	okValue := int64(234)
-	okAbove := int64(235)
+	okAtOrAbove := int64(235)
 
 	emergencyCfg := emergencyConfig{
 		AlarmConfig: &AlarmConfig{
-			OkValue: &okValue,
-			OkAbove: &okAbove,
+			OkValue:     &okValue,
+			OkAtOrAbove: &okAtOrAbove,
 		},
 	}
 
@@ -169,8 +193,8 @@ func Test_emergency_both(t *testing.T) {
 
 	_, err = readEmergencyConfig(bytes)
 	if err != nil {
-		if err.Error() != "cannot set both okValue and okAbove" {
-			t.Errorf("cannot set both okValue and okAbove: %v", err)
+		if err.Error() != "cannot set both okValue and okAtOrAbove" {
+			t.Errorf("cannot set both okValue and okAtOrAbove: %v", err)
 		}
 	}
 }

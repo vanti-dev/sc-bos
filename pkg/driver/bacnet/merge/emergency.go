@@ -25,13 +25,13 @@ import (
 
 // AlarmConfig allows configuring a specific bacnet point to raise an Emergency if either:
 //   - value read from that point is anything other than OkValue
-//   - value read from that point is less than OkAbove
+//   - value read from that point is less than OkAtOrAbove
 type AlarmConfig struct {
 	config.ValueSource
 	// Only one of the below OK values can be configured.
-	OkValue     *int64 `json:"okValue,omitempty"` // what we expect to read from the point when it is ok, any other value is an emergency. Not supported for float values.
-	OkAbove     *int64 `json:"okAbove,omitempty"` // the point is OK if it is equal to or greater than this value, if it isn't we have an emergency
-	AlarmReason string `json:"alarmReason"`       // the reason of the alarm
+	OkValue     *int64 `json:"okValue,omitempty"`     // what we expect to read from the point when it is ok, any other value is an emergency. Not supported for float values.
+	OkAtOrAbove *int64 `json:"okAtOrAbove,omitempty"` // the point is OK if it is equal to or greater than this value, if it isn't we have an emergency
+	AlarmReason string `json:"alarmReason"`           // the reason of the alarm
 }
 
 type emergencyConfig struct {
@@ -47,8 +47,8 @@ func readEmergencyConfig(raw []byte) (cfg emergencyConfig, err error) {
 	}
 
 	if cfg.AlarmConfig != nil {
-		if cfg.AlarmConfig.OkValue != nil && cfg.AlarmConfig.OkAbove != nil {
-			return cfg, multierr.Combine(err, errors.New("cannot set both okValue and okAbove"))
+		if cfg.AlarmConfig.OkValue != nil && cfg.AlarmConfig.OkAtOrAbove != nil {
+			return cfg, multierr.Combine(err, errors.New("cannot set both okValue and okAtOrAbove"))
 		}
 	}
 	return
@@ -131,8 +131,8 @@ func (t *emergencyImpl) checkIntValueForEmergency(response any) (*traits.Emergen
 		}
 	}
 
-	if t.config.AlarmConfig.OkAbove != nil {
-		if value < *t.config.AlarmConfig.OkAbove {
+	if t.config.AlarmConfig.OkAtOrAbove != nil {
+		if value < *t.config.AlarmConfig.OkAtOrAbove {
 			data.Reason = t.config.AlarmConfig.AlarmReason
 			data.Level = traits.Emergency_EMERGENCY
 		} else {
@@ -151,8 +151,8 @@ func (t *emergencyImpl) checkFloatValueForEmergency(response any) (*traits.Emerg
 		return nil, comm.ErrReadProperty{Prop: "alarmConfig", Cause: err}
 	}
 
-	if t.config.AlarmConfig.OkAbove != nil {
-		if value < float64(*t.config.AlarmConfig.OkAbove) {
+	if t.config.AlarmConfig.OkAtOrAbove != nil {
+		if value < float64(*t.config.AlarmConfig.OkAtOrAbove) {
 			data.Reason = t.config.AlarmConfig.AlarmReason
 			data.Level = traits.Emergency_EMERGENCY
 		} else {
