@@ -2,6 +2,7 @@ package merge
 
 import (
 	"encoding/json"
+	"math"
 	"testing"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -15,7 +16,8 @@ import (
 //   - okAtOrAbove bad
 func Test_emergency_int(t *testing.T) {
 	impl := &emergencyImpl{}
-	okValue := int64(234)
+	okLowerBound := 233.9999
+	okUpperBound := 234.0001
 
 	tests := []struct {
 		name       string
@@ -27,58 +29,58 @@ func Test_emergency_int(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name: "ok value good",
+			name: "value below lower bound",
 			alarmConf: AlarmConfig{
-				OkValue: &okValue,
+				OkLowerBound: &okLowerBound,
+				OkUpperBound: &okUpperBound,
+				AlarmReason:  "Sensor is not reading the expected value",
 			},
-			checkFunc:  impl.checkIntValueForEmergency,
-			pointValue: int32(234),
-			wantLevel:  traits.Emergency_OK,
-			wantReason: "",
-			wantErr:    false,
-		},
-		{
-			name: "ok value bad",
-			alarmConf: AlarmConfig{
-				OkValue:     &okValue,
-				AlarmReason: "Sensor is not reading the expected value",
-			},
-			checkFunc:  impl.checkIntValueForEmergency,
-			pointValue: int32(777),
+			pointValue: 233.9998,
 			wantLevel:  traits.Emergency_EMERGENCY,
 			wantReason: "Sensor is not reading the expected value",
 			wantErr:    false,
 		},
 		{
-			name: "okAtOrAbove good",
+			name: "value on lower bound",
 			alarmConf: AlarmConfig{
-				OkAtOrAbove: &okValue,
+				OkLowerBound: &okLowerBound,
+				OkUpperBound: &okUpperBound,
 			},
-			checkFunc:  impl.checkIntValueForEmergency,
-			pointValue: int32(235),
+			pointValue: 233.9999,
 			wantLevel:  traits.Emergency_OK,
 			wantReason: "",
 			wantErr:    false,
 		},
 		{
-			name: "okAtOrAbove equal to",
+			name: "value ~equal",
 			alarmConf: AlarmConfig{
-				OkAtOrAbove: &okValue,
+				OkLowerBound: &okLowerBound,
+				OkUpperBound: &okUpperBound,
 			},
-			checkFunc:  impl.checkIntValueForEmergency,
-			pointValue: int32(234),
+			pointValue: 234.0,
 			wantLevel:  traits.Emergency_OK,
 			wantReason: "",
 			wantErr:    false,
 		},
 		{
-			name: "okAtOrAbove bad",
+			name: "value on upper bound",
 			alarmConf: AlarmConfig{
-				OkAtOrAbove: &okValue,
-				AlarmReason: "Sensor is not reading the expected value",
+				OkLowerBound: &okLowerBound,
+				OkUpperBound: &okUpperBound,
 			},
-			checkFunc:  impl.checkIntValueForEmergency,
-			pointValue: int32(233),
+			pointValue: 234.0001,
+			wantLevel:  traits.Emergency_OK,
+			wantReason: "",
+			wantErr:    false,
+		},
+		{
+			name: "value above upper bound",
+			alarmConf: AlarmConfig{
+				OkLowerBound: &okLowerBound,
+				OkUpperBound: &okUpperBound,
+				AlarmReason:  "Sensor is not reading the expected value",
+			},
+			pointValue: 234.0002,
 			wantLevel:  traits.Emergency_EMERGENCY,
 			wantReason: "Sensor is not reading the expected value",
 			wantErr:    false,
@@ -88,7 +90,7 @@ func Test_emergency_int(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			impl.config.AlarmConfig = &tt.alarmConf
-			emergency, err := tt.checkFunc(tt.pointValue)
+			emergency, err := impl.checkValueForEmergency(tt.pointValue)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("%s: error = %v, wantErr %v", tt.name, err, tt.wantErr)
 				return
@@ -103,86 +105,12 @@ func Test_emergency_int(t *testing.T) {
 	}
 }
 
-// test the emergencyImpl alarmConfig for float values
-//   - okAtOrAbove good
-//   - okAtOrAbove equal to value
-//   - okAtOrAbove bad
-func Test_emergency_float(t *testing.T) {
-	impl := &emergencyImpl{}
-	okValue := int64(234)
-
-	tests := []struct {
-		name       string
-		alarmConf  AlarmConfig
-		checkFunc  func(any) (*traits.Emergency, error)
-		pointValue any
-		wantLevel  traits.Emergency_Level
-		wantReason string
-		wantErr    bool
-	}{
-		{
-			name: "okAtOrAbove good",
-			alarmConf: AlarmConfig{
-				OkAtOrAbove: &okValue,
-			},
-			checkFunc:  impl.checkFloatValueForEmergency,
-			pointValue: float32(235),
-			wantLevel:  traits.Emergency_OK,
-			wantReason: "",
-			wantErr:    false,
-		},
-		{
-			name: "okAtOrAbove equal to",
-			alarmConf: AlarmConfig{
-				OkAtOrAbove: &okValue,
-			},
-			checkFunc:  impl.checkFloatValueForEmergency,
-			pointValue: float32(235),
-			wantLevel:  traits.Emergency_OK,
-			wantReason: "",
-			wantErr:    false,
-		},
-		{
-			name: "okAtOrAbove bad",
-			alarmConf: AlarmConfig{
-				OkAtOrAbove: &okValue,
-				AlarmReason: "Sensor is not reading the expected value",
-			},
-			checkFunc:  impl.checkFloatValueForEmergency,
-			pointValue: float32(233),
-			wantLevel:  traits.Emergency_EMERGENCY,
-			wantReason: "Sensor is not reading the expected value",
-			wantErr:    false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			impl.config.AlarmConfig = &tt.alarmConf
-			emergency, err := tt.checkFunc(tt.pointValue)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("%s: error = %v, wantErr %v", tt.name, err, tt.wantErr)
-				return
-			}
-			if emergency.Level != tt.wantLevel {
-				t.Errorf("%s: got = %v, want %v", tt.name, emergency.Level, tt.wantLevel)
-			}
-			if emergency.Reason != tt.wantReason {
-				t.Errorf("%s: got = %v, want %v", tt.name, emergency.Reason, tt.wantReason)
-			}
-		})
-	}
-}
-
-// test create a new emergencyImpl with both okValue and okAtOrAbove set
-func Test_emergency_both(t *testing.T) {
-	okValue := int64(234)
-	okAtOrAbove := int64(235)
+func Test_emergency_default_inf(t *testing.T) {
 
 	emergencyCfg := emergencyConfig{
 		AlarmConfig: &AlarmConfig{
-			OkValue:     &okValue,
-			OkAtOrAbove: &okAtOrAbove,
+			OkLowerBound: nil,
+			OkUpperBound: nil,
 		},
 	}
 
@@ -191,10 +119,13 @@ func Test_emergency_both(t *testing.T) {
 		t.Errorf("error marshalling emergencyCfg: %v", err)
 	}
 
-	_, err = readEmergencyConfig(bytes)
+	cfg, err := readEmergencyConfig(bytes)
 	if err != nil {
-		if err.Error() != "cannot set both okValue and okAtOrAbove" {
-			t.Errorf("cannot set both okValue and okAtOrAbove: %v", err)
-		}
+		t.Errorf("error reading config: %v", err)
+	}
+
+	if *cfg.AlarmConfig.OkLowerBound != math.Inf(-1) ||
+		*cfg.AlarmConfig.OkUpperBound != math.Inf(1) {
+		t.Errorf("Ok Lower or Upper Bound not set")
 	}
 }

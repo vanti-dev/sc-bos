@@ -3,8 +3,7 @@ package merge
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"reflect"
+	"math"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -23,15 +22,15 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
-// AlarmConfig allows configuring a specific bacnet point to raise an Emergency if either:
-//   - value read from that point is anything other than OkValue
-//   - value read from that point is less than OkAtOrAbove
+// AlarmConfig allows configuring a specific bacnet point to raise an Emergency if the
+// value of the point read is outside the defined upper and lower bounds.
 type AlarmConfig struct {
 	config.ValueSource
-	// Only one of the below OK values can be configured.
-	OkValue     *int64 `json:"okValue,omitempty"`     // what we expect to read from the point when it is ok, any other value is an emergency. Not supported for float values.
-	OkAtOrAbove *int64 `json:"okAtOrAbove,omitempty"` // the point is OK if it is equal to or greater than this value, if it isn't we have an emergency
-	AlarmReason string `json:"alarmReason"`           // the reason of the alarm
+	// If lower or upper bound is not defined, is defaults to -inf and +inf respectively.
+	// You want to set at least 1 of these values, else an emergency will never get raised.
+	OkLowerBound *float64 `json:"okLowerBound,omitempty"` // if the point is equal to or greater than this value, it is ok.
+	OkUpperBound *float64 `json:"okUpperBound,omitempty"` // if the point is equal to or less than this value, it is ok.
+	AlarmReason  string   `json:"alarmReason"`            // the reason of the alarm
 }
 
 type emergencyConfig struct {
@@ -47,8 +46,13 @@ func readEmergencyConfig(raw []byte) (cfg emergencyConfig, err error) {
 	}
 
 	if cfg.AlarmConfig != nil {
-		if cfg.AlarmConfig.OkValue != nil && cfg.AlarmConfig.OkAtOrAbove != nil {
-			return cfg, multierr.Combine(err, errors.New("cannot set both okValue and okAtOrAbove"))
+		if cfg.AlarmConfig.OkLowerBound == nil {
+			lowerInf := math.Inf(-1)
+			cfg.AlarmConfig.OkLowerBound = &lowerInf
+		}
+		if cfg.AlarmConfig.OkUpperBound == nil {
+			upperInf := math.Inf(1)
+			cfg.AlarmConfig.OkUpperBound = &upperInf
 		}
 	}
 	return
@@ -114,36 +118,7 @@ func (t *emergencyImpl) PullEmergency(request *traits.PullEmergencyRequest, serv
 	return t.EmergencyApiServer.PullEmergency(request, server)
 }
 
-func (t *emergencyImpl) checkIntValueForEmergency(response any) (*traits.Emergency, error) {
-	data := &traits.Emergency{}
-
-	value, err := comm.IntValue(response)
-	if err != nil {
-		return nil, comm.ErrReadProperty{Prop: "alarmConfig", Cause: err}
-	}
-
-	if t.config.AlarmConfig.OkValue != nil {
-		if value != *t.config.AlarmConfig.OkValue {
-			data.Reason = t.config.AlarmConfig.AlarmReason
-			data.Level = traits.Emergency_EMERGENCY
-		} else {
-			data.Level = traits.Emergency_OK
-		}
-	}
-
-	if t.config.AlarmConfig.OkAtOrAbove != nil {
-		if value < *t.config.AlarmConfig.OkAtOrAbove {
-			data.Reason = t.config.AlarmConfig.AlarmReason
-			data.Level = traits.Emergency_EMERGENCY
-		} else {
-			data.Level = traits.Emergency_OK
-		}
-	}
-
-	return data, nil
-}
-
-func (t *emergencyImpl) checkFloatValueForEmergency(response any) (*traits.Emergency, error) {
+func (t *emergencyImpl) checkValueForEmergency(response any) (*traits.Emergency, error) {
 	data := &traits.Emergency{}
 
 	value, err := comm.Float64Value(response)
@@ -151,14 +126,13 @@ func (t *emergencyImpl) checkFloatValueForEmergency(response any) (*traits.Emerg
 		return nil, comm.ErrReadProperty{Prop: "alarmConfig", Cause: err}
 	}
 
-	if t.config.AlarmConfig.OkAtOrAbove != nil {
-		if value < float64(*t.config.AlarmConfig.OkAtOrAbove) {
-			data.Reason = t.config.AlarmConfig.AlarmReason
-			data.Level = traits.Emergency_EMERGENCY
-		} else {
-			data.Level = traits.Emergency_OK
-		}
+	if value < *t.config.AlarmConfig.OkLowerBound ||
+		value > *t.config.AlarmConfig.OkUpperBound {
+		data.Reason = t.config.AlarmConfig.AlarmReason
+		data.Level = traits.Emergency_EMERGENCY
 		return data, nil
+	} else {
+		data.Level = traits.Emergency_OK
 	}
 	return data, nil
 }
@@ -204,17 +178,8 @@ func (t *emergencyImpl) pollPeer(ctx context.Context) (*traits.Emergency, error)
 		requestNames = append(requestNames, "alarmConfig")
 		readValues = append(readValues, t.config.AlarmConfig.ValueSource)
 		resProcessors = append(resProcessors, func(response any) error {
-			switch response.(type) {
-			case int32, int16, int8, uint32, uint16, uint8:
-				if e, err := t.checkIntValueForEmergency(response); err == nil {
-					data = e
-				}
-			case float32, float64:
-				if e, err := t.checkFloatValueForEmergency(response); err == nil {
-					data = e
-				}
-			default:
-				t.logger.Warn("alarmConfig unknown value type", zap.String("type", reflect.TypeOf(response).String()))
+			if e, err := t.checkValueForEmergency(response); err == nil {
+				data = e
 			}
 			return nil
 		})
