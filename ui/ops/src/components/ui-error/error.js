@@ -51,7 +51,7 @@ export const useErrorStore = defineStore('error', () => {
    * @return {WatchStopHandle}
    */
   function registerTracker(actionTracker) {
-    if (actionTracker.hasOwnProperty('error')) {
+    if (Object.hasOwn(actionTracker, 'error')) {
       return watch(() => actionTracker.error, (error) => {
         if (error && error.code !== StatusCode.OK) {
           addError(actionTracker, error);
@@ -86,7 +86,7 @@ export const useErrorStore = defineStore('error', () => {
    * @return {WatchStopHandle}
    */
   function registerCollection(collection) {
-    if (collection.hasOwnProperty('streamError')) {
+    if (Object.hasOwn(collection, 'streamError')) {
       return watch(() => collection.streamError, (error) => {
         if (error && error.code !== StatusCode.OK) {
           addError(collection, error);

@@ -33,13 +33,13 @@ const _items = computed(() => props.items.map(item => {
 }));
 const isSelectedItem = (item) => {
   if (item === null || item === undefined) return props.value === null || props.value === undefined;
-  if (item.hasOwnProperty('_src')) return props.value === item._src;
-  if (item.hasOwnProperty('value') && props.value?.hasOwnProperty('value')) return props.value.value === item.value;
+  if (Object.hasOwn(item, '_src')) return props.value === item._src;
+  if (Object.hasOwn(item, 'value') && Object.hasOwn(props.value ?? {}, 'value')) return props.value.value === item.value;
   return props.value === item;
 };
 const onClick = (item) => {
   if (item === null || item === undefined) emit('input', null);
-  else if (item.hasOwnProperty('_src')) emit('input', item._src);
+  else if (Object.hasOwn(item, '_src')) emit('input', item._src);
   else emit('input', item);
 };
 </script>
