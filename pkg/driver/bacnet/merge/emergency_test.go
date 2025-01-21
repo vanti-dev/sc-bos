@@ -2,19 +2,15 @@ package merge
 
 import (
 	"encoding/json"
+	"errors"
 	"math"
 	"testing"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 )
 
-// test the emergencyImpl alarmConfig for int values
-//   - ok value good
-//   - ok value bad
-//   - okAtOrAbove good
-//   - okAtOrAbove equal to value
-//   - okAtOrAbove bad
-func Test_emergency_int(t *testing.T) {
+// test the emergencyImpl alarmConfig for various bounds & error input
+func Test_emergency(t *testing.T) {
 	impl := &emergencyImpl{}
 	okLowerBound := 233.9999
 	okUpperBound := 234.0001
@@ -85,6 +81,18 @@ func Test_emergency_int(t *testing.T) {
 			wantReason: "Sensor is not reading the expected value",
 			wantErr:    false,
 		},
+		{
+			name: "value is error",
+			alarmConf: AlarmConfig{
+				OkLowerBound: &okLowerBound,
+				OkUpperBound: &okUpperBound,
+				AlarmReason:  "",
+			},
+			pointValue: errors.New("error"),
+			wantLevel:  traits.Emergency_EMERGENCY,
+			wantReason: "",
+			wantErr:    true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -93,6 +101,15 @@ func Test_emergency_int(t *testing.T) {
 			emergency, err := impl.checkValueForEmergency(tt.pointValue)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("%s: error = %v, wantErr %v", tt.name, err, tt.wantErr)
+				return
+			}
+			if emergency == nil && err == nil {
+				t.Errorf("expect emergency when no error")
+				return
+			}
+			if err != nil {
+				// we have checked the error conditions are met
+				// don't bother continuing and checking the emergency as it will be nil
 				return
 			}
 			if emergency.Level != tt.wantLevel {
