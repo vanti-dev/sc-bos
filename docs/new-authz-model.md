@@ -38,6 +38,23 @@ They have some properties, all optional, that can be used to filter them:
 - Subsystem
 - Federation - the name of the node that raised the alert
 
+### Account
+*Account*: a principal that is managed by Smart Core BOS.
+
+- User Account - stored in the Smart Core BOS database
+  - Has a unique user ID which is the same for the lifetime of the account
+  - Has a username which can be changed (might be an email address)
+  - Has a password, which is used to log in
+  - Has role assignments
+- Service Account - used for API access
+  - Has a unique client ID which is the same for the lifetime of the account
+  - Has one or two client secrets, which is used to authenticate
+    - Second secret slot allows for seamless secret rotation
+  - Has role assignments
+
+Note: federated principals (login by OpenID Connect) are not stored in Smart Core BOS. Tokens are issued directly without
+storing the federated principal in the database.
+
 ## Permissions
 Permission: an action (or set of related actions) that a principal is allowed to perform on a resource.
 
