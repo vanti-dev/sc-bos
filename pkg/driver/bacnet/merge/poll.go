@@ -38,17 +38,17 @@ func startPoll(init context.Context, name string, pollDelay, pollTimeout time.Du
 //
 //  1. ctx is done
 //  2. pollPeer returns an error
-//  3. defaultDelay has passed if the ctx doesn't have a non-zero ctx.Deadline assigned
-//     or time.Now() + defaultDelay is earlier than the deadline assigned to ctx
+//  3. timeout has passed if the ctx doesn't have a non-zero ctx.Deadline assigned
+//     or time.Now() + timeout is earlier than the deadline assigned to ctx
 //
 // An backoff delay will be added between each call to pollPeer
-func pollUntil[T any](ctx context.Context, defaultDelay time.Duration, poll func(context.Context) (T, error), test func(T) bool) (T, error) {
+func pollUntil[T any](ctx context.Context, timeout time.Duration, poll func(context.Context) (T, error), test func(T) bool) (T, error) {
 	fail := func(err error) (T, error) {
 		var zero T
 		return zero, err
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, defaultDelay)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	var delay time.Duration
