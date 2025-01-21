@@ -166,7 +166,7 @@ export function airTemperatureModeToString(mode) {
  * @return {string}
  */
 export function temperatureToString(value) {
-  if (value.hasOwnProperty('valueCelsius')) {
+  if (Object.hasOwn(value, 'valueCelsius')) {
     return value.valueCelsius.toFixed(1) + '°C';
   }
   return '-';

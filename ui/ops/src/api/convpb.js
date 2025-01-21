@@ -32,7 +32,7 @@ export function setProperties(dst, src, ...props) {
  */
 export function convertProperties(dst, src, conv, ...props) {
   for (const prop of props) {
-    if (src.hasOwnProperty(prop)) {
+    if (Object.hasOwn(src, prop)) {
       dst['set' + prop[0].toUpperCase() + prop.substring(1)](conv(src[prop]));
     }
   }
@@ -61,7 +61,7 @@ export function timestampFromObject(obj) {
 export function timestampToDate(ts) {
   if (!ts) return undefined;
   if (ts instanceof Timestamp) return ts.toDate();
-  if (ts.hasOwnProperty('nanos') && ts.hasOwnProperty('seconds')) {
+  if (Object.hasOwn(ts, 'nanos') && Object.hasOwn(ts, 'seconds')) {
     return timestampToDate(new Timestamp().setSeconds(ts.seconds).setNanos(ts.seconds));
   }
 

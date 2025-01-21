@@ -240,8 +240,9 @@ const filterOpts = computed(() => {
   // we only add filters that can affect the output, i.e. no floor filter if nothing has a floor.
   const filters = [];
   const defaults = [];
+  const forceQuery = props.forceQuery ?? {};
   // Acknowledged
-  if (!props.forceQuery?.hasOwnProperty('acknowledged')) {
+  if (!Object.hasOwn(forceQuery, 'acknowledged')) {
     filters.push({
       key: 'acknowledged',
       icon: 'mdi-checkbox-marked-circle-outline', title: 'Acknowledgement', type: 'boolean',
@@ -258,7 +259,7 @@ const filterOpts = computed(() => {
     });
   }
   // Floor
-  if (!props.forceQuery?.hasOwnProperty('floor')) {
+  if (!Object.hasOwn(forceQuery, 'floor')) {
     const items = floors.value
         // we can't query for empty strings anyway.
         .filter(s => Boolean(s));
@@ -267,8 +268,8 @@ const filterOpts = computed(() => {
     }
   }
   // Severity
-  if (!props.forceQuery?.hasOwnProperty('severityNotAbove') &&
-      !props.forceQuery?.hasOwnProperty('severityNotBelow')) {
+  if (!Object.hasOwn(forceQuery, 'severityNotAbove') &&
+      !Object.hasOwn(forceQuery, 'severityNotBelow')) {
     filters.push({
       key: 'severity', // maps to severityNotBelow and severityNotAbove
       icon: 'mdi-alert-box-outline', title: 'Severity', type: 'range',
@@ -278,7 +279,7 @@ const filterOpts = computed(() => {
     });
   }
   // Subsystem
-  if (!props.forceQuery?.hasOwnProperty('subsystem')) {
+  if (!Object.hasOwn(forceQuery, 'subsystem')) {
     const items = subsystems.value
         // we can't query for empty strings anyway.
         .filter(s => Boolean(s));
@@ -287,7 +288,7 @@ const filterOpts = computed(() => {
     }
   }
   // Zone
-  if (!props.forceQuery?.hasOwnProperty('zone')) {
+  if (!Object.hasOwn(forceQuery, 'zone')) {
     const items = zones.value
         // we can't query for empty strings anyway.
         .filter(s => Boolean(s));
@@ -296,7 +297,7 @@ const filterOpts = computed(() => {
     }
   }
 
-  if (!props.forceQuery?.hasOwnProperty('resolved')) {
+  if (!Object.hasOwn(forceQuery, 'resolved')) {
     filters.push({
       key: 'resolved',
       icon: 'mdi-checkbox-marked-circle-outline', title: 'Resolution', type: 'boolean',

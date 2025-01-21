@@ -32,10 +32,10 @@ export const toQueryObject = (input) => {
 export const setRequestName = (req, name) => {
   const nameValue = toValue(name);
   const needsName = nameValue === null || nameValue === undefined;
-  if (needsName && !req.hasOwnProperty('name')) {
+  if (needsName && !Object.hasOwn(req, 'name')) {
     throw new Error('name is required as part of request');
   }
-  if (!req.hasOwnProperty('name')) {
+  if (!Object.hasOwn(req, 'name')) {
     req.name = nameValue;
   }
   return req;

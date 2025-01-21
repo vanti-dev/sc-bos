@@ -96,7 +96,7 @@ export default function usePageConfig(path) {
   const filterProps = {'layout': true, 'children': true};
   const filteredConfig = computed(() => Object.entries(configObj.value)
       .reduce((acc, [k, v]) => {
-        if (filterProps.hasOwnProperty(k)) return acc;
+        if (Object.hasOwn(filterProps, k)) return acc;
         acc[k] = v;
         return acc;
       }, {}));

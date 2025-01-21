@@ -96,7 +96,7 @@ export function useUpdateBrightness(name) {
         updateMask: {pathsList: ['level_percent']}
       };
     }
-    if (!req.hasOwnProperty('brightness')) {
+    if (!Object.hasOwn(req, 'brightness')) {
       req = {brightness: req};
     }
     return setRequestName(req, name);

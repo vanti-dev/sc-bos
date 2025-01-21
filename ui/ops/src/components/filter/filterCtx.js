@@ -128,7 +128,7 @@ export default function useFilterCtx(opts) {
     for (const f of newFilters) {
       toRemove.delete(f.key);
 
-      if (!choices.hasOwnProperty(f.key)) {
+      if (!Object.hasOwn(choices, f.key)) {
         toAdd.push(f);
       } else {
         // check if the option and the existing choice are still compatible
@@ -172,7 +172,7 @@ export default function useFilterCtx(opts) {
    * @return {boolean} - if the value changed
    */
   const choose = (key, value) => {
-    if (!choices.hasOwnProperty(key)) {
+    if (!Object.hasOwn(choices, key)) {
       throw new Error(`No filter with key ${key}`);
     }
     if (value === undefined || value === null) {
