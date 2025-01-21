@@ -21,7 +21,12 @@ jobs:
         run: |
           git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/smart-core-os".insteadOf "https://github.com/smart-core-os"
           git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/vanti-dev".insteadOf "https://github.com/vanti-dev"
-      - name: Test
-        run: go test ./...
+
+      - name: Test (cachable)
+        run: go test -skip '_e2e$' ./...
+
+      - name: Test (uncachable)
+        run: go test -count=1 -run '_e2e$' ./...
+
       - name: Test short tests under race detector
         run: go test -short -race ./...
