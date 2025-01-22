@@ -6,8 +6,7 @@
       <v-icon
           icon="mdi-dots-vertical"
           v-bind="props"
-          @click="hideSnackbar()">
-      </v-icon>
+          @click="hideSnackbar()"/>
     </template>
     <v-card class="history-card">
       <v-container>
@@ -16,13 +15,13 @@
             v-model="startDate"
             label="DATE"
             type="date"
-            class="date-picker"></v-text-field>
+            class="date-picker"/>
         <v-list-subheader class="text-title-caps-small text-white">To</v-list-subheader>
         <v-text-field
             v-model="endDate"
             label="DATE"
             type="date"
-            class="date-picker"></v-text-field>
+            class="date-picker"/>
       </v-container>
       <v-container class="d-flex align-center justify-center">
         <v-container v-if="fetchingHistory">
@@ -72,16 +71,31 @@ defineProps({
   }
 });
 
+/**
+ * Adds a day to the given date.
+ *
+ * @param {Date} date
+ * @return {Date}
+ */
 function addDay(date) {
   const result = new Date(date);
   result.setDate(result.getDate() + 1);
   return result;
 }
 
+/**
+ * Hides the snackbar.
+ */
 function hideSnackbar() {
   snackbar.value = false;
 }
 
+/**
+ * Downloads the history of the air quality sensor and saves it as a CSV file.
+ *
+ * @param {string} n
+ * @return {Promise<void>}
+ */
 async function downloadHistory(n) {
   fetchingHistory.value = true;
   const baseRequest = /** @type {ListAirQualityHistoryRequest.AsObject} */ {

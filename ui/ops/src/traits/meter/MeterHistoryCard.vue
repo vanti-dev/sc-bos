@@ -6,8 +6,7 @@
       <v-icon
           icon="mdi-dots-vertical"
           v-bind="props"
-          @click="hideSnackbar()">
-      </v-icon>
+          @click="hideSnackbar()"/>
     </template>
     <v-card class="history-card">
       <v-container>
@@ -71,16 +70,31 @@ defineProps({
   }
 });
 
+/**
+ * Adds a day to the given date.
+ *
+ * @param {Date} date
+ * @return {Date}
+ */
 function addDay(date) {
   const result = new Date(date);
   result.setDate(result.getDate() + 1);
   return result;
 }
 
+/**
+ * Hides the snackbar.
+ */
 function hideSnackbar() {
   snackbar.value = false;
 }
 
+/**
+ * Downloads the history of the meter and saves it as a CSV file.
+ *
+ * @param {string} n
+ * @return {Promise<void>}
+ */
 async function downloadHistory(n) {
   fetchingHistory.value = true;
   const baseRequest = /** @type {ListMeterReadingHistoryRequest.AsObject} */ {
