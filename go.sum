@@ -520,8 +520,8 @@ github.com/ugorji/go v1.1.7/go.mod h1:kZn38zHttfInRq0xu/PH0az30d+z6vm202qpg1oXVM
 github.com/ugorji/go/codec v1.1.7/go.mod h1:Ax+UKWsSmolVDwsd+7N3ZtXu+yMGCf907BLYF3GoBXY=
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
-github.com/vanti-dev/gobacnet v0.0.0-20231102122752-32b0b38bcc53 h1:NyyrWnms6DU/01gG7KqiVOKdL/W4K1HzF0FqZBAyXuU=
-github.com/vanti-dev/gobacnet v0.0.0-20231102122752-32b0b38bcc53/go.mod h1:iqax38QEyUZ8cVgKXJpK4Qd2CIB6Rd3muRGQ/r89lyE=
+github.com/vanti-dev/gobacnet v0.0.0-20250122134204-5b55cc2d13fe h1:q64WrqS1Wqc1ohqHmfXVw9bPYRutcvBDnSkWGJhTwIo=
+github.com/vanti-dev/gobacnet v0.0.0-20250122134204-5b55cc2d13fe/go.mod h1:iqax38QEyUZ8cVgKXJpK4Qd2CIB6Rd3muRGQ/r89lyE=
 github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb h1:zGWFAtiMcyryUHoUjUJX0/lt1H2+i2Ka2n+D3DImSNo=
 github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
 github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 h1:EzJWgHovont7NscjpAxXsDA8S8BMYve8Y5+7cuRE7R0=

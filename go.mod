@@ -28,7 +28,7 @@ require (
 	github.com/smart-core-os/sc-golang v0.0.0-20241220144351-884672945826
 	github.com/stretchr/testify v1.9.0
 	github.com/timshannon/bolthold v0.0.0-20210913165410-232392fc8a6a
-	github.com/vanti-dev/gobacnet v0.0.0-20231102122752-32b0b38bcc53
+	github.com/vanti-dev/gobacnet v0.0.0-20250122134204-5b55cc2d13fe
 	go.etcd.io/bbolt v1.3.10
 	go.uber.org/multierr v1.9.0
 	go.uber.org/zap v1.21.0
