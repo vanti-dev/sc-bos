@@ -332,7 +332,7 @@ const queryFields = computed(() => {
       case 'floor':
         res.floor = choice.value?.value ?? choice.value;
         break;
-      case 'severity':
+      case 'severity': {
         const {from, to} = choice.value;
         if (from) {
           res.severityNotBelow = from.value;
@@ -341,6 +341,7 @@ const queryFields = computed(() => {
           res.severityNotAbove = to.value;
         }
         break;
+      }
       case 'subsystem':
         res.subsystem = choice.value?.value ?? choice.value;
         break;

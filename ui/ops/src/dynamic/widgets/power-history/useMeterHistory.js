@@ -420,7 +420,7 @@ async function listAllPeriods(name, periods, records) {
       case 'set':
         records.value = newRecords;
         break;
-      case 'unshift':
+      case 'unshift': {
         // remove duplicates
         let i = newRecords.length - 1;
         const firstRecordTime = records.value[0].recordTime;
@@ -441,6 +441,7 @@ async function listAllPeriods(name, periods, records) {
         }
         records.value.unshift(...newRecords);
         break;
+      }
       case 'push':
         if (newRecords.length === 0) {
           break;
