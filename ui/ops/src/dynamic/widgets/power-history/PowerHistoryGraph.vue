@@ -9,7 +9,7 @@
       <power-history-graph-options-menu
           v-model:duration-option="durationOption"
           v-model:show-conversion="showConversion"
-          @exportCSV="demandExportData('Meter Readings')"/>
+          @export-csv="demandExportData('Meter Readings')"/>
     </template>
   </line-chart>
 </template>

@@ -42,7 +42,7 @@
                       :access-attempt="accessResource.value"
                       :status-log="statusResource.value"
                       class="door-status-tracker__item"
-                      @updateFill="setDoorFill"/>
+                      @update-fill="setDoorFill"/>
                 </with-status>
               </with-access>
               <!-- If door has no Access data reading and has OpenClose reading -->
@@ -57,7 +57,7 @@
                       :open-close="openCloseResource.value"
                       :status-log="statusResource.value"
                       class="door-status-tracker__item"
-                      @updateStroke="setDoorStroke"/>
+                      @update-stroke="setDoorStroke"/>
                 </with-status>
               </with-open-close>
               <!-- If door has Access data reading and has OpenClose reading -->
@@ -74,8 +74,8 @@
                         :open-close="openCloseResource.value"
                         :status-log="statusResource.value"
                         class="door-status-tracker__item"
-                        @updateFill="setDoorFill"
-                        @updateStroke="setDoorStroke"/>
+                        @update-fill="setDoorFill"
+                        @update-stroke="setDoorStroke"/>
                   </with-status>
                 </with-open-close>
               </with-access>

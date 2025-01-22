@@ -38,6 +38,7 @@ export default {
       }
     }
   },
+  emits: ['init', ...names],
   data() {
     return {
       pz: null,
@@ -74,7 +75,7 @@ export default {
       this.$emit('init', this.pz);
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.pz) {
       this.pz.destroy();
       this.pz = null;

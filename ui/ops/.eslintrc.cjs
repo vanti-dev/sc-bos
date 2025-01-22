@@ -15,7 +15,7 @@ module.exports = {
   // https://github.com/feross/standard/blob/master/RULES.md#javascript-standard-style
   extends: [
     'google',
-    'plugin:vue/recommended',
+    'plugin:vue/vue3-recommended',
     'plugin:vuetify/recommended',
     'plugin:jsdoc/recommended'
   ],
@@ -47,14 +47,6 @@ module.exports = {
     'vue/max-attributes-per-line': [2, {'singleline': 10, 'multiline': 10}],
     // let us call things single words
     'vue/multi-word-component-names': 0,
-    // This rule is in conflict with the vue/no-v-for-template-key-on-child rule, which should be used instead.
-    // This rule seems to be enabled by default, even though we're using vue 3, not sure why.
-    'vue/no-v-for-template-key': 0,
-    // allow custom v-models
-    'vue/no-v-model-argument': 0,
-    'vue/no-multiple-template-root': 0, // vue 3 has no problems with this
-    // 'turn on' script-setup-uses-vars to allow declaration of vars in <script setup> tags
-    'vue/script-setup-uses-vars': 'error',
     'vue/singleline-html-element-content-newline': ['off'],
 
     'vuetify/no-deprecated-colors': ['error', {

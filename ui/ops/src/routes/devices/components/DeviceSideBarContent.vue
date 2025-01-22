@@ -7,7 +7,7 @@
     </with-status>
     <with-air-temperature v-if="traits['smartcore.traits.AirTemperature']" :name="deviceId" v-slot="{resource, update}">
       <v-divider class="mt-4 mb-1"/>
-      <air-temperature-card v-bind="resource" @updateAirTemperature="update"/>
+      <air-temperature-card v-bind="resource" @update-air-temperature="update"/>
     </with-air-temperature>
     <with-air-quality v-if="traits['smartcore.traits.AirQualitySensor']" :name="deviceId" v-slot="{resource}">
       <v-divider class="mt-4 mb-1"/>

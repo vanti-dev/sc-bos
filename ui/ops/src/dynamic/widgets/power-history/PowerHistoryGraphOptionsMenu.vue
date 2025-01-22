@@ -61,7 +61,7 @@
               </template>
             </v-list-item>
 
-            <v-list-item @click="emits('exportCSV')">
+            <v-list-item @click="emits('exportCsv')">
               <v-list-item-title class="">Export CSV...</v-list-item-title>
             </v-list-item>
           </v-list>
@@ -104,7 +104,7 @@ export const durationOptions = [
 ];
 </script>
 <script setup>
-const emits = defineEmits(['exportCSV']);
+const emits = defineEmits(['exportCsv']);
 
 // Computed property to toggle between kW and CO2
 // Syncs with the parent component
