@@ -2,13 +2,13 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"io/fs"
 	"log"
 	"os"
@@ -45,7 +45,7 @@ const concurrency = 10
 var objectProperties = []property.ID{
 	property.ObjectName,
 	property.Description,
-	property.PresentValue,
+	// property.PresentValue,
 	// property.NotificationClass,
 	// property.EventEnable,
 }
@@ -91,12 +91,11 @@ func run() error {
 		if *localPort > 0 {
 			port = *localPort
 		}
-		client, err := gobacnet.NewClient(cfg.LocalInterface, port)
+		client, err := gobacnet.NewClient(cfg.LocalInterface, port, gobacnet.WithLogLevel(logrus.InfoLevel))
 		if err != nil {
 			return err
 		}
-		client.Log.Out = &bytes.Buffer{} // else client.Close() will close os.Stderr
-		client.Log.SetLevel(logrus.InfoLevel)
+		client.Log.Out = writer{client.Log.Out} // else client.Close() will close os.Stderr
 		address, err := client.LocalUDPAddress()
 		if err == nil {
 			log.Printf("bacnet client configured: local=%s, localInterface=%s, localPort:%d", address, cfg.LocalInterface, cfg.LocalPort)
@@ -196,10 +195,14 @@ func readAllObjectProps(ctx context.Context, client *gobacnet.Client, dev bactyp
 		for obj := range jobs {
 			// read both the hard coded props (in objectProperties) and any props defined in the config
 			allProps := make([]property.ID, 0, len(objectProperties)+len(obj.Properties))
-			allProps = append(allProps, objectProperties...)
+			if len(obj.Properties) == 0 {
+				allProps = append(allProps, objectProperties...)
+				allProps = append(allProps, property.PresentValue)
+			}
 			for _, prop := range obj.Properties {
 				allProps = append(allProps, property.ID(prop.ID))
 			}
+
 			objRes := baseResult.child(obj.Name, obj.ID.String())
 			ctx, cancel := context.WithTimeout(ctx, *timeout)
 			readObjectProps(ctx, client, dev, obj.ID, objRes, allProps...)
@@ -434,4 +437,9 @@ func boolYesNo(b bool) string {
 		return "Yes"
 	}
 	return "No"
+}
+
+// writer wraps an io.Writer to remove any non-Writer methods.
+type writer struct {
+	io.Writer
 }
