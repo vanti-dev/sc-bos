@@ -69,4 +69,4 @@ function matrixTransformRect(rect, matrix) {
   const maxy = Math.max(tl.y, tr.y, bl.y, br.y);
 
   return new DOMRect(minx, miny, maxx - minx, maxy - miny);
-};
+}

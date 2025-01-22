@@ -397,7 +397,7 @@ export default function(name, periodStart, periodEnd, spanSize) {
     shouldFetch,
     exportData
   };
-};
+}
 
 /**
  * @param {string} name
