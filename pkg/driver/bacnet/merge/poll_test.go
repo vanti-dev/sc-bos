@@ -12,9 +12,9 @@ import (
 func Test_pollUntil(t *testing.T) {
 	type B bool
 	type args struct {
-		ctx          func() context.Context
-		defaultDelay time.Duration
-		test         func() func(B) bool
+		ctx     func() context.Context
+		timeout time.Duration
+		test    func() func(B) bool
 	}
 
 	poll := func(_ context.Context) (B, error) {
@@ -33,7 +33,7 @@ func Test_pollUntil(t *testing.T) {
 				ctx: func() context.Context {
 					return context.Background()
 				},
-				defaultDelay: 10 * time.Millisecond,
+				timeout: 10 * time.Millisecond,
 				test: func() func(t B) bool {
 					count := 0
 					return func(t B) bool {
@@ -56,7 +56,7 @@ func Test_pollUntil(t *testing.T) {
 				ctx: func() context.Context {
 					return context.Background()
 				},
-				defaultDelay: 10 * time.Millisecond,
+				timeout: 10 * time.Millisecond,
 				test: func() func(t B) bool {
 					return func(t B) bool {
 						// succeed straight away
@@ -68,13 +68,13 @@ func Test_pollUntil(t *testing.T) {
 			want:    true,
 		},
 		{
-			name: "deadline before defaultDelay - test succeeds after deadline",
+			name: "deadline before timeout - test succeeds after deadline",
 			args: args{
 				ctx: func() context.Context {
 					ctx, _ := context.WithTimeout(context.Background(), 5*time.Millisecond)
 					return ctx
 				},
-				defaultDelay: 10 * time.Millisecond,
+				timeout: 10 * time.Millisecond,
 				test: func() func(t B) bool {
 					count := 0
 					return func(t B) bool {
@@ -90,13 +90,13 @@ func Test_pollUntil(t *testing.T) {
 			want:    false,
 		},
 		{
-			name: "deadline before defaultDelay - test succeeds before deadline",
+			name: "deadline before timeout - test succeeds before deadline",
 			args: args{
 				ctx: func() context.Context {
 					ctx, _ := context.WithTimeout(context.Background(), 5*time.Millisecond)
 					return ctx
 				},
-				defaultDelay: 10 * time.Millisecond,
+				timeout: 10 * time.Millisecond,
 				test: func() func(t B) bool {
 					return func(t B) bool {
 						return true
@@ -107,13 +107,13 @@ func Test_pollUntil(t *testing.T) {
 			want:    true,
 		},
 		{
-			name: "deadline after defaultDelay - test succeeds after deadline",
+			name: "deadline after timeout - test succeeds after deadline",
 			args: args{
 				ctx: func() context.Context {
 					ctx, _ := context.WithTimeout(context.Background(), 50*time.Millisecond)
 					return ctx
 				},
-				defaultDelay: 10 * time.Millisecond,
+				timeout: 10 * time.Millisecond,
 				test: func() func(t B) bool {
 					count := 0
 					return func(t B) bool {
@@ -129,13 +129,13 @@ func Test_pollUntil(t *testing.T) {
 			want:    false,
 		},
 		{
-			name: "deadline after defaultDelay - test succeeds before deadline",
+			name: "deadline after timeout - test succeeds before deadline",
 			args: args{
 				ctx: func() context.Context {
 					ctx, _ := context.WithTimeout(context.Background(), 50*time.Millisecond)
 					return ctx
 				},
-				defaultDelay: 10 * time.Millisecond,
+				timeout: 10 * time.Millisecond,
 				test: func() func(t B) bool {
 					return func(t B) bool {
 						return true
@@ -149,7 +149,7 @@ func Test_pollUntil(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := pollUntil[B](tt.args.ctx(), tt.args.defaultDelay, poll, tt.args.test())
+			res, err := pollUntil[B](tt.args.ctx(), tt.args.timeout, poll, tt.args.test())
 
 			if diff := cmp.Diff(res, tt.want); diff != "" {
 				t.Errorf("pollUntil(): (-got +want)\n%s", diff)
