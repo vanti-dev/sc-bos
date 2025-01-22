@@ -14,29 +14,14 @@ module.exports = {
   },
   // https://github.com/feross/standard/blob/master/RULES.md#javascript-standard-style
   extends: [
-    'google',
+    'eslint:recommended',
     'plugin:vue/vue3-recommended',
     'plugin:vuetify/recommended',
     'plugin:jsdoc/recommended'
   ],
   rules: {
-    // allow paren-less arrow functions
-    'arrow-parens': 0,
-    // we don't like trailing commas
-    'comma-dangle': ['error', 'never'],
-    // allow async-await
-    'generator-star-spacing': 0,
-    'linebreak-style': 0,
-    // we have modern monitors these days
-    'max-len': ['off'],
-    // allow errors and warnings to console
-    'no-console': ['warn', {allow: ['warn', 'error']}],
-    // allow console debugger during development
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-    'no-unused-vars': 'warn',
-    // we use the jsdoc plugin instead
-    'require-jsdoc': 'off',
-    'valid-jsdoc': 'off',
+    // remove when we update to eslint 9.* which has allExceptWhileTrue as a default
+    'no-constant-condition': ['error', {'checkLoops': false}],
 
     'vue/attributes-order': 0,
     // Arrange your attributes in any order you like
