@@ -16,6 +16,7 @@ require (
 	github.com/jackc/pgx/v4 v4.18.2
 	github.com/jonboulle/clockwork v0.5.0
 	github.com/mwitkow/grpc-proxy v0.0.0-20230212185441-f345521cb9c9
+	github.com/ncruces/go-sqlite3 v0.22.0
 	github.com/olebedev/emitter v0.0.0-20190110104742-e8d1457e6aee
 	github.com/open-policy-agent/opa v0.68.0
 	github.com/pborman/uuid v1.2.0
@@ -69,6 +70,7 @@ require (
 	github.com/jackc/puddle v1.3.0 // indirect
 	github.com/mennanov/fmutils v0.1.1 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/ncruces/julianday v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.20.2 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
@@ -77,6 +79,7 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0 // indirect
 	github.com/tanema/gween v0.0.0-20200427131925-c89ae23cc63c // indirect
 	github.com/tchap/go-patricia/v2 v2.3.1 // indirect
+	github.com/tetratelabs/wazero v1.8.2 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/yashtewari/glob-intersection v0.2.0 // indirect
