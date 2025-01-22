@@ -132,7 +132,7 @@ const visibleLayers = computed(() => {
 });
 
 const selectionCtx = ref(null);
-const onElementClick = async (layer, element, event) => {
+const onElementClick = async (layer, element) => {
   selectionCtx.value = {layer, element};
   // Find the name of the device we should be showing in the sidebar.
   // First we check if it's configured explicitly via the sidebar property.

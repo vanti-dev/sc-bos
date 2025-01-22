@@ -48,10 +48,9 @@ export function usePullBrightness(query, paused = false) {
 
 /**
  * @param {MaybeRefOrGetter<string|DescribeBrightnessRequest.AsObject>} query
- * @param {MaybeRefOrGetter<number>=} pollInterval
  * @return {ToRefs<ActionTracker<BrightnessSupport.AsObject>>}
  */
-export function useDescribeBrightness(query, pollInterval = 0) {
+export function useDescribeBrightness(query) {
   const tracker = reactive(
       /** @type {ActionTracker<BrightnessSupport.AsObject>} */
       newActionTracker()

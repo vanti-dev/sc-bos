@@ -19,7 +19,7 @@ export function usePlugin(desc) {
     if (!n || deepEqual(n, o)) return;
     loaded.value = false;
     const run = ++runCount;
-    trackAction('PluginApi.GetPlugin', tracker, async (_) => {
+    trackAction('PluginApi.GetPlugin', tracker, async () => {
       const plugin = await getPlugin(desc.name, n.category, n.type);
       // make the response look like it came from a gRPC call
       return {

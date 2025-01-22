@@ -41,7 +41,7 @@ const seriesMap = reactive({
 // Computed
 // Formatting the data for the bar chart
 const series = computed(() => {
-  return Object.entries(seriesMap).map(([seriesName, seriesData]) => {
+  return Object.entries(seriesMap).map(([seriesName]) => {
     const data = seriesMap[seriesName].data;
 
     if (data && data.length > 0) {
