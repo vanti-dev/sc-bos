@@ -8,6 +8,10 @@ module.exports = {
   env: {
     browser: true
   },
+  globals: {
+    'GIT_VERSION': 'readonly',
+    'process': 'readonly',
+  },
   // https://github.com/feross/standard/blob/master/RULES.md#javascript-standard-style
   extends: [
     'google',
