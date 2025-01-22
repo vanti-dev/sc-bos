@@ -94,7 +94,7 @@ export default function() {
         await clearStorage();
         return Promise.reject(new Error('Failed to sign in, please try again.'));
       }
-    } catch (err) {
+    } catch {
       existingLocalAuth.value = null;
       await clearStorage();
       return Promise.reject(new Error('Failed to sign in, please try again.'));

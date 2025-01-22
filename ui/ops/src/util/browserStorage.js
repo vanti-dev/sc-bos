@@ -80,7 +80,7 @@ export const loadFromBrowserStorage = (sources, keys, defaults) => {
       // Parse the value if it's JSON, otherwise return it as is
       try {
         return JSON.parse(storedValue);
-      } catch (e) {
+      } catch {
         return storedValue;
       }
     });
