@@ -4,7 +4,8 @@ Smart Core BOS permissions model
 ## Principals
 *Principal*: an entity requesting access to a resources 
 
-- User Account - a principal that is a human user. Authenticates using a username/password or OpenID Connect.
+- User Account - a human user logging in using Smart Core's own authentication system.
+- Federated User - access granted via OpenID connect
 - Service Account - a principal that is an unattended machine, acting on its own behalf.
   Authenticates using a client ID and secret.
   - Touch Panel Account - a service account for a user interface that people use anonymously
