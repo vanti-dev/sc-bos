@@ -4,6 +4,7 @@
     "keycloak-login-prototype",
     "ops",
     "panzoom-package",
+    "space",
     "ui-gen"
   ]
 }

@@ -1,0 +1,66 @@
+@use 'sass/main';
+@use 'vuetify/settings' as v;
+
+code,
+kbd,
+pre,
+samp {
+  font-family: main.$mono-font-family; /* Specify the font family of code elements */
+}
+
+p {
+  margin-bottom: 16px;
+}
+
+.v-icon.v-icon {
+  // fix that min-width is configured as $icon-size but not overridden by <v-icon size>
+  min-width: initial;
+}
+
+// custom v-sliders - larger with pre/append icons inside the slider
+.v-slider.v-input--horizontal {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  margin-inline: 0;
+
+  .v-slider__container {
+    height: 100%;
+    min-height: 48px;
+    border-radius: 15px;
+    overflow: hidden;
+  }
+
+  .v-slider-thumb {
+    display: none;
+  }
+
+  .v-slider-track {
+    --v-slider-track-size: 100% !important;
+  }
+
+  .v-slider-track__fill {
+    border-radius: 0;
+    height: var(--v-slider-track-size);
+  }
+
+  .v-input__prepend {
+    z-index: 1;
+    margin-left: 9px;
+    pointer-events: none; // this limits the click action, remove if function assigned
+
+    .v-icon {
+      color: var(--v-primary-base);
+    }
+  }
+
+  .v-input__control {
+    grid-area: 1 / 1 / span 1 / 4;
+  }
+
+  .v-input__append {
+    z-index: 1;
+    margin-right: 9px;
+    pointer-events: none; // this limits the click action, remove if function assigned
+  }
+}
