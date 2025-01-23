@@ -98,7 +98,7 @@ func (t *fanSpeed) UpdateFanSpeed(ctx context.Context, request *traits.UpdateFan
 	}
 
 	// todo: not strictly correct as we're not paying attention to the require customisation properties that ModelServer would give us
-	return pollUntil(ctx, t.config.DefaultRWConsistencyTimeoutDuration(), t.pollPeer, func(data *traits.FanSpeed) bool {
+	return pollUntil(ctx, 5, t.pollPeer, func(data *traits.FanSpeed) bool {
 		return data.GetPercentage() == newFanSpeed
 	})
 }

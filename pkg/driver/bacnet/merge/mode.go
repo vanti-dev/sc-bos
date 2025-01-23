@@ -156,7 +156,7 @@ func (t *mode) UpdateModeValues(ctx context.Context, request *traits.UpdateModeV
 		return nil, status.Errorf(codes.Internal, "failed to write mode values: %v", multierr.Combine(errs...))
 	}
 
-	return pollUntil(ctx, t.config.DefaultRWConsistencyTimeoutDuration(), t.pollPeer, func(values *traits.ModeValues) bool {
+	return pollUntil(ctx, 5, t.pollPeer, func(values *traits.ModeValues) bool {
 		for _, e := range allExpected {
 			if values.Values[e.name] != e.value {
 				return false

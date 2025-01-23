@@ -30,9 +30,6 @@ type Trait struct {
 	PollPeriod *Duration `json:"pollPeriod,omitempty"`
 	// how long to wait when running a poll for it to respond. Defaults to PollPeriod.
 	PollTimeout *Duration `json:"pollTimeout,omitempty"`
-	// after a write update, how long to wait by default before giving up on reads becoming consistent with the written value.
-	// defaults to 1m
-	DefaultRWConsistencyTimeout *Duration `json:"defaultRWConsistencyTimeout,omitempty"`
 	// When reading multiple properties, split the properties into chunks of this size and execute in parallel.
 	// 0 means do not chunk.
 	ChunkSize int `json:"chunkSize,omitempty"`
@@ -50,13 +47,6 @@ func (t *Trait) PollTimeoutDuration() time.Duration {
 		return t.PollTimeout.Duration
 	}
 	return t.PollPeriodDuration()
-}
-
-func (t *Trait) DefaultRWConsistencyTimeoutDuration() time.Duration {
-	if t.DefaultRWConsistencyTimeout != nil && t.DefaultRWConsistencyTimeout.Duration != 0 {
-		return t.DefaultRWConsistencyTimeout.Duration
-	}
-	return time.Minute
 }
 
 type RawTrait struct {

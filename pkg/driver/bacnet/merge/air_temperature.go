@@ -116,8 +116,9 @@ func (t *airTemperature) UpdateAirTemperature(ctx context.Context, request *trai
 	if err != nil {
 		return nil, err
 	}
+
 	// todo: not strictly correct as we're not paying attention to the require customisation properties that ModelServer would give us
-	return pollUntil(ctx, t.config.DefaultRWConsistencyTimeoutDuration(), t.pollPeer, func(temperature *traits.AirTemperature) bool {
+	return pollUntil(ctx, 5, t.pollPeer, func(temperature *traits.AirTemperature) bool {
 		return temperature.GetTemperatureSetPoint().ValueCelsius == float64(newSetPoint)
 	})
 }
