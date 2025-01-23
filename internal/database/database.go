@@ -118,7 +118,7 @@ func openURI(ctx context.Context, readerURI, writerURI string, o *opts) (_ *Data
 	}
 	if o.expectedAppID != 0 {
 		// check the application ID
-		// - for a fresh DB (appID=0, version=0), set the application ID to the expected value
+		// - for a fresh DB (withAppID=0, version=0), set the application ID to the expected value
 		// - for an existing DB, check the application ID matches the expected value
 		err = db.WriteTx(ctx, func(tx *sql.Tx) error {
 			appID, err := getApplicationID(ctx, tx)
@@ -133,7 +133,7 @@ func openURI(ctx context.Context, readerURI, writerURI string, o *opts) (_ *Data
 			if appID == 0 && version == 0 {
 				err = setApplicationID(ctx, tx, o.expectedAppID)
 			} else if appID != o.expectedAppID {
-				err = fmt.Errorf("database application ID mismatch: expected %d, got %d", o.expectedAppID, appID)
+				err = fmt.Errorf("%w: expected %d, got %d", ErrApplicationIDMismatch, o.expectedAppID, appID)
 			}
 			return err
 		})
@@ -196,48 +196,35 @@ func (db *Database) ReadTx(ctx context.Context, f func(tx *sql.Tx) error) (err e
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err != nil {
-			rollbackErr := tx.Rollback()
-			if rollbackErr != nil {
-				db.logger.Error("failed to rollback read transaction (!)", zap.Error(rollbackErr),
-					zap.NamedError("originalErr", err))
-				err = errors.Join(err, rollbackErr)
-			}
-		} else {
-			err = tx.Commit()
-		}
-	}()
-
-	err = f(tx)
-	return
+	return db.runTX(tx, f)
 }
 
 func (db *Database) WriteTx(ctx context.Context, f func(tx *sql.Tx) error) (err error) {
 	tx, err := db.writer.BeginTx(ctx, &sql.TxOptions{
-		Isolation: sql.LevelSerializable,
+		Isolation: sql.LevelSerializable, // uses an IMMEDIATE transaction lock
 	})
 	if err != nil {
 		return err
 	}
+	return db.runTX(tx, f)
+}
+
+func (db *Database) runTX(tx *sql.Tx, f func(tx *sql.Tx) error) (err error) {
 	defer func() {
 		if err != nil {
 			rollbackErr := tx.Rollback()
 			if rollbackErr != nil {
-				db.logger.Error("failed to rollback write transaction", zap.Error(rollbackErr),
+				db.logger.Error("failed to rollback transaction", zap.Error(rollbackErr),
 					zap.NamedError("originalErr", err))
 				err = errors.Join(err, rollbackErr)
 			}
-		} else {
-			err = tx.Commit()
 		}
 	}()
-
 	err = f(tx)
-	return
+	return tx.Commit()
 }
 
-func (db *Database) Migrate(ctx context.Context, schema *Schema) error {
+func (db *Database) Migrate(ctx context.Context, schema Schema) error {
 	err := schema.validate()
 	if err != nil {
 		return err
@@ -288,6 +275,8 @@ func IsForeignKeyError(err error) bool {
 
 	return errors.Is(sqlErr.ExtendedCode(), sqlite3.CONSTRAINT_FOREIGNKEY)
 }
+
+var ErrApplicationIDMismatch = errors.New("database application ID mismatch")
 
 type Timestamp time.Time
 

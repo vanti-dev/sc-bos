@@ -107,13 +107,15 @@ func (s *Schema) validate() error {
 	if len(s.migrations) == 0 {
 		return ErrNoMigrations
 	}
+	// check that s.migrations is contiguous and starts at version 1
 	lastVersion := uint32(0)
 	for _, m := range s.migrations {
 		if m.Version == 0 {
-			return errors.New("invalid migration version number 0")
+			return fmt.Errorf("%w: %d", ErrVersionRange, m.Version)
 		} else if m.Version != lastVersion+1 {
-			return fmt.Errorf("no migration from version %d to %d", lastVersion, lastVersion+1)
+			return fmt.Errorf("%w %d", ErrMissingVersion, lastVersion+1)
 		}
+		lastVersion = m.Version
 	}
 	return nil
 }
@@ -128,7 +130,11 @@ func (s *Schema) find(version uint32) (Migration, bool) {
 	return s.migrations[i], true
 }
 
-var ErrNoMigrations = errors.New("no migrations found")
+var (
+	ErrNoMigrations   = errors.New("no migrations found")
+	ErrVersionRange   = errors.New("migration version out of range")
+	ErrMissingVersion = errors.New("missing migration for version")
+)
 
 var migrationFilenameRegexp = regexp.MustCompile(`^(\d+)(_.*)?\.sql$`)
 
