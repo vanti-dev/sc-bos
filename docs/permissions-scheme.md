@@ -1,6 +1,8 @@
 Smart Core Permissions
 ======================
 
+*TODO*: this document has not been updated to reflect the new authentication model
+
 ## Attribute-based Access Control using Open Policy Agent
 Smart Core APIs can be protected by [Open Policy Agent](https://www.openpolicyagent.org/).
 OPA runs in-process, as a library. 

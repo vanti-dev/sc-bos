@@ -1,6 +1,8 @@
 Authentication and Authorization Use Cases
 ==========================================
 
+*TODO*: this document has not been updated to reflect the new authentication model
+
 ## Types of Smart Core users and their requirements
 
 ### Landlord Employees
@@ -48,7 +50,3 @@ Authentication and Authorization Use Cases
   - As few requirements/dependencies as possible
   - Should be easy and fast to set up
   - Not handling real data
-
-## Open Questions
-
-  1. 

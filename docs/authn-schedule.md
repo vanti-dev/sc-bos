@@ -1,6 +1,8 @@
 Authentication Schedule
 =====================================
 
+*TODO*: this document has not been updated to reflect the new authentication model
+
 This document presents several authentication flows that can be used to identify an entity who wants to access Smart
 Core. It enumerates the following properties
 
