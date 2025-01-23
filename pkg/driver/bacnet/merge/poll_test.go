@@ -151,8 +151,8 @@ func Test_pollUntil(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := pollUntil[B](tt.args.ctx(), tt.args.timeout, poll, tt.args.test())
 
-			if diff := cmp.Diff(res, tt.want); diff != "" {
-				t.Errorf("pollUntil(): (-got +want)\n%s", diff)
+			if diff := cmp.Diff(tt.want, res); diff != "" {
+				t.Errorf("pollUntil(): (-want +got)\n%s", diff)
 			}
 
 			if !errors.Is(err, tt.wantErr) {
