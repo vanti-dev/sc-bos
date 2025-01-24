@@ -87,7 +87,7 @@ export const useAccountStore = defineStore('accountStore', () => {
       {
         name: 'keyCloakAuth',
         init: keyCloak.init,
-        enabled: () => Boolean(uiConfig.config?.keycloak)
+        enabled: () => Boolean(uiConfig.auth.keycloak)
       },
       {
         name: 'deviceFlow',

@@ -8,6 +8,7 @@
         <v-btn
             @click="emit('choose', 'keyCloakAuth')"
             color="primary"
+            variant="flat"
             block
             size="large"
             class="text-body-1 font-weight-bold">

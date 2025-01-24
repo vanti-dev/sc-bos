@@ -53,7 +53,7 @@ if (window) {
       }
     };
     const intercept = (dst) => {
-      if (to.path !== dst) {
+      if (to.path !== dst && to.path !== '/login') {
         // Store the current path to redirect back after login
         window.sessionStorage.setItem('redirect', to.fullPath);
       }

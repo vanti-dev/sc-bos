@@ -18,7 +18,7 @@
         <div v-intersect="handleIntersect"/>
       </template>
     </v-card>
-    <v-btn v-if="!disableAuthentication" block class="mt-12" variant="text" @click="logout">Logout</v-btn>
+    <v-btn v-if="!disableAuthentication" block class="mt-12" variant="text" @click="accountStore.logout">Logout</v-btn>
   </div>
 </template>
 
@@ -36,7 +36,8 @@ const emits = defineEmits(['shouldAutoLogout']);
 
 const router = useRouter();
 const {zoneCollection, loadNextPage} = useZoneCollection();
-const {zones, logout, isInitialized} = storeToRefs(useAccountStore());
+const accountStore = useAccountStore();
+const {zones, isInitialized} = storeToRefs(accountStore);
 const uiConfig = useUiConfigStore();
 const disableAuthentication = computed(() => uiConfig.auth.disabled);
 const configStore = useConfigStore();

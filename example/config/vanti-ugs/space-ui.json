@@ -5,12 +5,14 @@
   "config": {
     "home": "/home",
     "auth": {
-      "disabled": true,
+      "disabled": false,
       "keycloak": {
         "realm": "Smart_Core",
         "url": "http://localhost:8888/",
         "clientId": "scos-opsui"
-      }
+      },
+      "providers": ["localAuth", "deviceFlow", "keyCloakAuth"],
+      "deviceFlow": true
     },
     "theme": {
       "appBranding": {
