@@ -1,0 +1,25 @@
+{
+  "features": {
+    "*": true
+  },
+  "config": {
+    "home": "/home",
+    "auth": {
+      "disabled": true,
+      "keycloak": {
+        "realm": "Smart_Core",
+        "url": "http://localhost:8888/",
+        "clientId": "scos-opsui"
+      }
+    },
+    "theme": {
+      "appBranding": {
+        "brandName": "Smart Core",
+        "brandLogo": {
+          "altText": "Smart Core logo - representing nodes and connections",
+          "src": ""
+        }
+      }
+    }
+  }
+}
