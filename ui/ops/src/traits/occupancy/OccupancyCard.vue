@@ -1,7 +1,11 @@
 <template>
   <v-card elevation="0" tile>
+    <v-card-title class="d-flex text-title-caps-large text-neutral-lighten-3">
+      <span>Occupancy Sensor</span>
+      <v-spacer/>
+      <occupancy-history-card end :name="name"/>
+    </v-card-title>
     <v-list tile class="ma-0 pa-0">
-      <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Occupancy Sensor</v-list-subheader>
       <v-list-item class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">State</v-list-item-title>
         <template #append>
@@ -25,6 +29,7 @@
 
 <script setup>
 import {useOccupancy} from '@/traits/occupancy/occupancy.js';
+import OccupancyHistoryCard from '@/traits/occupancy/OccupancyHistoryCard.vue';
 
 const props = defineProps({
   value: {
@@ -35,6 +40,10 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  name: {
+    type: String,
+    required: true
   }
 });
 

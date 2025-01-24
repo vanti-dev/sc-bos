@@ -1,4 +1,4 @@
-import {fieldMaskFromObject, setProperties} from '@/api/convpb';
+import {fieldMaskFromObject, setProperties, timestampToDate} from '@/api/convpb';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setValue, trackAction} from '@/api/resource.js';
 import {periodFromObject} from '@/api/sc/types/period';
@@ -36,6 +36,17 @@ export function listAirQualitySensorHistory(request, tracker) {
     const api = historyClient(endpoint);
     return api.listAirQualityHistory(listAirQualitySensorHistoryRequestFromObject(request));
   });
+}
+
+/**
+ * @param {AirQualityRecord | AirQualityRecord.AsObject} obj
+ * @return {AirQualityRecord.AsObject & {recordTime: Date|undefined}}
+ */
+export function airQualityRecordToObject(obj) {
+  if (!obj) return undefined;
+  if (typeof obj.toObject === 'function') obj = obj.toObject();
+  if (obj.recordTime) obj.recordTime = timestampToDate(obj.recordTime);
+  return obj;
 }
 
 /**

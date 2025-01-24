@@ -1,7 +1,11 @@
 <template>
   <v-card elevation="0" tile>
+    <v-card-title class="d-flex text-title-caps-large text-neutral-lighten-3">
+      <span>Air Quality</span>
+      <v-spacer/>
+      <air-quality-history-card end :name="name"/>
+    </v-card-title>
     <v-list tile class="ma-0 pa-0">
-      <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Air Quality</v-list-subheader>
       <v-list-item v-for="(val, key) of tableData" :key="key" class="py-1">
         <v-list-item-title class="text-body-small">{{ key }}</v-list-item-title>
         <template #append>
@@ -22,6 +26,7 @@
 
 <script setup>
 import {useAirQuality} from '@/traits/airQuality/airQuality.js';
+import AirQualityHistoryCard from '@/traits/airQuality/AirQualityHistoryCard.vue';
 
 const props = defineProps({
   value: {
@@ -31,6 +36,10 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  name: {
+    type: String,
+    required: true
   }
 });
 
