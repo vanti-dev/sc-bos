@@ -1,44 +1,26 @@
 <template>
-  <v-menu
-      v-model="menu"
-      :close-on-content-click="false">
+  <v-menu :close-on-content-click="false">
     <template #activator="{ props }">
-      <v-icon
-          icon="mdi-dots-vertical"
-          v-bind="props"
-          @click="hideSnackbar()"/>
+      <v-btn :icon="true" elevation="0" size="x-small" @click="resetMenu" v-bind="props" class="mt-n1 mr-n1">
+        <v-icon size="20">mdi-dots-vertical</v-icon>
+      </v-btn>
     </template>
-    <v-card class="history-card">
-      <v-container>
-        <v-list-subheader class="text-title-caps-small text-white">From</v-list-subheader>
-        <v-text-field
-            v-model="startDate"
-            label="DATE"
-            type="date"
-            class="date-picker"/>
-        <v-list-subheader class="text-title-caps-small text-white">To</v-list-subheader>
-        <v-text-field
-            v-model="endDate"
-            label="DATE"
-            type="date"
-            class="date-picker"/>
-      </v-container>
-      <v-container class="d-flex align-center justify-center">
-        <v-container v-if="fetchingHistory">
-          <v-row class="d-flex align-center justify-center">
-            <v-progress-circular color="primary" indeterminate/>
-          </v-row>
-          <v-row class="d-flex align-center justify-center">
-            <v-label>Downloading, please wait...</v-label>
-          </v-row>
-        </v-container>
-        <v-btn v-else id="download-history" class="mt-2 mr-4 elevation-0" @click="downloadHistory(name)">
-          Download History
-        </v-btn>
-        <v-snackbar v-model="snackbar">
-          No history found.
-        </v-snackbar>
-      </v-container>
+    <v-card class="history-card" min-width="420">
+      <v-card-text>
+        <div class="d-flex align-start">
+          <v-date-input
+              v-model="dateRange" multiple="range" :readonly="fetchingHistory"
+              label="Download History" placeholder="from - to" persistent-placeholder prepend-icon=""
+              hint="Select a date range to download historical data." persistent-hint
+              :error-messages="downloadError"/>
+          <div v-tooltip="downloadBtnDisabled || 'Download CSV...'">
+            <v-btn
+                @click="downloadHistory(name)"
+                icon="mdi-file-download" elevation="0" class="ml-2 mr-n2 mt-1"
+                :loading="fetchingHistory" :disabled="!!downloadBtnDisabled"/>
+          </div>
+        </div>
+      </v-card-text>
     </v-card>
   </v-menu>
 </template>
@@ -46,22 +28,9 @@
 <script setup>
 import {listOccupancySensorHistory, occupancyRecordToObject} from '@/api/sc/traits/occupancy.js';
 import {downloadCSVRows} from '@/util/downloadCSV.js';
-import {ref} from 'vue';
-
-const startDate = ref();
-const endDate = ref();
-const fetchingHistory = ref(false);
-const menu = ref(false);
-const snackbar = ref(false);
-
-const dateTimeProp = (obj) => {
-  return `${obj.toLocaleDateString()} ${obj.toLocaleTimeString()}`;
-};
-
-const historyHeaders = [
-  {title: 'Record Time', val: (a) => dateTimeProp(a.recordTime)},
-  {title: 'People Count', val: (a) => a.occupancy.peopleCount}
-];
+import {addDays, startOfDay} from 'date-fns';
+import {computed, ref} from 'vue';
+import {VDateInput} from 'vuetify/labs/components';
 
 defineProps({
   name: {
@@ -70,24 +39,33 @@ defineProps({
   }
 });
 
-/**
- * Adds a day to the given date.
- *
- * @param {Date} date
- * @return {Date}
- */
-function addDay(date) {
-  const result = new Date(date);
-  result.setDate(result.getDate() + 1);
-  return result;
-}
+const dateRange = ref([]);
+const startDate = computed(() => dateRange.value[0]);
+const endDate = computed(() => dateRange.value[dateRange.value.length - 1]);
+const downloadBtnDisabled = computed(() => {
+  if (dateRange.value.length === 0) {
+    return 'No date range selected';
+  }
+  return '';
+});
+const fetchingHistory = ref(false);
+const downloadError = ref('');
 
 /**
- * Hides the snackbar.
+ * Resets the menu to its initial state.
  */
-function hideSnackbar() {
-  snackbar.value = false;
+function resetMenu() {
+  dateRange.value = [];
+  downloadError.value = '';
 }
+const dateTimeProp = (obj) => {
+  return `${obj.toLocaleDateString()} ${obj.toLocaleTimeString()}`;
+};
+
+const historyHeaders = [
+  {title: 'Record Time', val: (a) => dateTimeProp(a.recordTime)},
+  {title: 'People Count', val: (a) => a.occupancy.peopleCount}
+];
 
 /**
  * Downloads the history of the occupancy sensor and saves it as a CSV file.
@@ -100,8 +78,8 @@ async function downloadHistory(n) {
   const baseRequest = /** @type {ListOccupancyHistoryRequest.AsObject} */ {
     name: n,
     period: {
-      startTime: startDate.value,
-      endTime: addDay(endDate.value)
+      startTime: startOfDay(startDate.value),
+      endTime: startOfDay(addDays(endDate.value, 1))
     },
     pageSize: 1000
   };
@@ -121,8 +99,7 @@ async function downloadHistory(n) {
       }
       baseRequest.pageToken = response.nextPageToken;
     } catch (error) {
-      snackbar.value = true;
-      console.error(error);
+      downloadError.value = error.message;
       break;
     }
   }
@@ -130,21 +107,9 @@ async function downloadHistory(n) {
     const filename = `${n}_occupancy_history.csv`;
     downloadCSVRows(filename, csvRows);
   } else {
-    snackbar.value = true;
+    downloadError.value = 'No historical records found for these dates';
   }
   fetchingHistory.value = false;
 }
 
 </script>
-
-<style scoped>
-
-.date-picker {
-  padding-left: 15px;
-  padding-right: 15px;
-}
-
-#download-history {
-  justify-self: center;
-}
-</style>
