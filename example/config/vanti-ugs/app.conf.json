@@ -70,31 +70,45 @@
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-LN1-01",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Basement"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-LN1-02",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Basement", "zone": "Copper Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-LN1-03",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Basement", "zone": "Cotswold Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-LN1-04",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Basement", "zone": "Kaolin Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/EMT-LN1-01",
-          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}
+          ],
           "appearance": {"title": "DN1-001"},
           "membership": {"subsystem": "metering"},
           "location": {"floor": "Basement", "description": "In the riser room"}
@@ -322,57 +336,81 @@
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-01",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Reception"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-02",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Teal Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-03",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Green Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-04",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Yellow Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-05",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Project Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L00-06",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Ground Floor", "zone": "Lab"}
         },
         {
           "name": "van/uk/brum/ugs/devices/EMT-L00-01",
-          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}
+          ],
           "appearance": {"title": "D00-001", "description": "Incomer"},
           "membership": {"subsystem": "metering"},
           "location": {"floor": "Ground Floor", "zone": "Loading Bay"}
         },
         {
           "name": "van/uk/brum/ugs/devices/EMT-L00-02",
-          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}
+          ],
           "appearance": {"title": "D00-002"},
           "membership": {"subsystem": "metering"},
           "location": {"floor": "Ground Floor", "zone": "Comms Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/EMT-L00-03",
-          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}
+          ],
           "appearance": {"title": "D00-003"},
           "membership": {"subsystem": "metering"},
           "location": {"floor": "Ground Floor", "zone": "Lab"}
@@ -421,7 +459,9 @@
         },
         {
           "name": "van/uk/brum/ugs/devices/ACR-L00-01",
-          "traits": [{"name": "smartcore.bos.Access"}, {"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.bos.Access"}, {"name": "smartcore.traits.OpenClose"}, {"name": "smartcore.bos.Status"}
+          ],
           "appearance": {"title": "Main Door"},
           "membership": {"subsystem": "acs"},
           "location": {"floor": "Ground Floor", "zone": "Reception"}
@@ -576,25 +616,37 @@
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L01-01",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "First Floor", "zone": "The Bank"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L01-02",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Near the toilets"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L01-03",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Near the back stairs"}
         },
         {
           "name": "van/uk/brum/ugs/devices/FCU-L01-04",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "First Floor", "zone": "Service"}
         },
@@ -682,14 +734,19 @@
       "devices": [
         {
           "name": "van/uk/brum/ugs/devices/PV-L02-01",
-          "traits": [{"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.bos.Meter"}, {"name": "smartcore.traits.Electric"}, {"name": "smartcore.bos.Status"}
+          ],
           "appearance": {"title": "Solar PV"},
           "membership": {"subsystem": "metering"},
           "location": {"floor": "Roof"}
         },
         {
           "name": "van/uk/brum/ugs/devices/TMP-L02-01",
-          "traits": [{"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"}, {"name": "smartcore.bos.Status"}],
+          "traits": [
+            {"name": "smartcore.traits.AirTemperature"}, {"name": "smartcore.traits.FanSpeed"},
+            {"name": "smartcore.bos.Status"}
+          ],
           "appearance": {"title": "Outside Air Temperature"},
           "membership": {"subsystem": "hvac"},
           "location": {"floor": "Roof"}
@@ -981,7 +1038,24 @@
         "blackout": ["van/uk/brum/ugs/devices/SHD-L00-09"]
       },
       "thermostats": ["van/uk/brum/ugs/devices/FCU-L00-05"],
-      "occupancySensors": ["van/uk/brum/ugs/devices/PIR-L00-05"]
+      "occupancySensors": ["van/uk/brum/ugs/devices/PIR-L00-05"],
+      "drivers": [
+        {
+          "type": "mock", "name": "van/uk/brum/ugs/zones/areas/project/driver-mock",
+          "devices": [
+            {
+              "name": "van/uk/brum/ugs/zones/areas/project", "traits": [
+              {
+                "name": "smartcore.traits.Mode",
+                "more": {
+                  "modes": "{\"modes\": [{\"name\":\"lighting.mode\",\"values\":[{\"name\":\"auto\"},{\"name\":\"manual\"}]},{\"name\":\"hvac.mode\",\"values\":[{\"name\":\"auto\"},{\"name\":\"manual\"}]}]}"
+                }
+              }
+            ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "van/uk/brum/ugs/zones/areas/lab",
@@ -1233,7 +1307,6 @@
         "passwordFile": "./.data/secrets/postgres-password"
       }
     },
-
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/lab",
       "type": "history",
@@ -1324,7 +1397,6 @@
         "passwordFile": "./.data/secrets/postgres-password"
       }
     },
-
     {
       "name": "van/uk/brum/ugs/automation/occupancy-history/building",
       "type": "history",
@@ -1415,7 +1487,6 @@
         "passwordFile": "./.data/secrets/postgres-password"
       }
     },
-
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/building",
       "type": "history",
@@ -1496,17 +1567,16 @@
         "passwordFile": "./.data/secrets/postgres-password"
       }
     },
-
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-LN1-01",
       "type": "history",
-      "source": {"name": "van/uk/brum/ugs/devices/IAQ-LN1-01", "trait":  "smartcore.traits.AirQualitySensor"},
+      "source": {"name": "van/uk/brum/ugs/devices/IAQ-LN1-01", "trait": "smartcore.traits.AirQualitySensor"},
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
         "passwordFile": "./.data/secrets/postgres-password"
       }
-      },
+    },
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-LN1-02",
       "type": "history",
@@ -1530,18 +1600,17 @@
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-LN1-04",
       "type": "history",
-      "source": {"name": "van/uk/brum/ugs/devices/IAQ-LN1-04", "trait":  "smartcore.traits.AirQualitySensor"},
+      "source": {"name": "van/uk/brum/ugs/devices/IAQ-LN1-04", "trait": "smartcore.traits.AirQualitySensor"},
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
         "passwordFile": "./.data/secrets/postgres-password"
       }
     },
-
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-L00-01",
       "type": "history",
-      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L00-01", "trait":  "smartcore.traits.AirQualitySensor"},
+      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L00-01", "trait": "smartcore.traits.AirQualitySensor"},
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
@@ -1551,7 +1620,7 @@
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-L00-02",
       "type": "history",
-      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L00-02", "trait":  "smartcore.traits.AirQualitySensor"},
+      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L00-02", "trait": "smartcore.traits.AirQualitySensor"},
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
@@ -1561,7 +1630,7 @@
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-L00-03",
       "type": "history",
-      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L00-03", "trait":  "smartcore.traits.AirQualitySensor"},
+      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L00-03", "trait": "smartcore.traits.AirQualitySensor"},
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
@@ -1571,7 +1640,7 @@
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-L00-04",
       "type": "history",
-      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L00-04", "trait":  "smartcore.traits.AirQualitySensor"},
+      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L00-04", "trait": "smartcore.traits.AirQualitySensor"},
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
@@ -1581,18 +1650,17 @@
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-L00-05",
       "type": "history",
-      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L00-05", "trait":  "smartcore.traits.AirQualitySensor"},
+      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L00-05", "trait": "smartcore.traits.AirQualitySensor"},
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
         "passwordFile": "./.data/secrets/postgres-password"
       }
     },
-
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-L01-01",
       "type": "history",
-      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L01-01", "trait":  "smartcore.traits.AirQualitySensor"},
+      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L01-01", "trait": "smartcore.traits.AirQualitySensor"},
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
@@ -1602,7 +1670,7 @@
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-L01-02",
       "type": "history",
-      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L01-02", "trait":  "smartcore.traits.AirQualitySensor"},
+      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L01-02", "trait": "smartcore.traits.AirQualitySensor"},
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
@@ -1612,7 +1680,7 @@
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-L01-03",
       "type": "history",
-      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L01-03", "trait":  "smartcore.traits.AirQualitySensor"},
+      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L01-03", "trait": "smartcore.traits.AirQualitySensor"},
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
@@ -1622,7 +1690,7 @@
     {
       "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-L01-04",
       "type": "history",
-      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L01-04", "trait":  "smartcore.traits.AirQualitySensor"},
+      "source": {"name": "van/uk/brum/ugs/devices/IAQ-L01-04", "trait": "smartcore.traits.AirQualitySensor"},
       "storage": {
         "type": "postgres",
         "uri": "postgres://postgres@localhost:5432/smart_core",
