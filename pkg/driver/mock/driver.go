@@ -19,7 +19,6 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/hail"
 	"github.com/smart-core-os/sc-golang/pkg/trait/light"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
-	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
@@ -34,7 +33,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/modepb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -224,10 +222,7 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		// todo: return []any{microphone.WrapApi(microphone.NewModelServer(microphone.NewModel()))}, nil
 		return nil, nil
 	case trait.Mode:
-		model := mode.NewModel()
-		modes := model.Modes()
-		infoServer := &modepb.InfoServer{Modes: &traits.ModesSupport{AvailableModes: modes}}
-		return []wrap.ServiceUnwrapper{mode.WrapApi(mode.NewModelServer(model)), mode.WrapInfo(infoServer)}, nil
+		return mockMode(traitMd, deviceName, logger)
 	case trait.MotionSensor:
 		// todo: return []any{motionsensor.WrapApi(motionsensor.NewModelServer(motionsensor.NewModel()))}, nil
 		return nil, nil
