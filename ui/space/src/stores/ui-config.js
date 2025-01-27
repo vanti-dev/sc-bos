@@ -69,7 +69,7 @@ export const useUiConfigStore = defineStore('uiConfig', () => {
     defaultConfig: _defaultConfig,
     getOrDefault,
     ...useSiteMap(_config),
-    ...useTheme(_config),
+    theme: useTheme(_config),
     auth: useAuth(_config)
   };
 });
@@ -155,7 +155,8 @@ export function useSiteMap(config) {
 /**
  * @param {MaybeRefOrGetter<Object>} config
  * @return {{
- *   appBranding: ComputedRef<Object>
+ *   appBranding: import('vue').ComputedRef<Object>
+ *   logoUrl: import('vue').ComputedRef<string>
  * }}
  */
 export function useTheme(config) {
@@ -168,8 +169,12 @@ export function useTheme(config) {
       ...(_config?.config?.theme ?? {})
     };
   });
+
+  const logoUrl = computed(() => appBranding.value.logoUrl);
+
   return {
-    appBranding
+    appBranding,
+    logoUrl,
   };
 }
 
@@ -221,5 +226,8 @@ const _defaultConfig = {
   },
   config: {
     'home': '/home',
+    theme: {
+      logoUrl: import.meta.env.BASE_URL + 'img/sc-fav.svg',
+    }
   }
 };

@@ -4,7 +4,7 @@
     <v-spacer/>
     <light-card :name="zoneId"/>
     <air-temperature-card :name="zoneId" class="mt-6"/>
-    <img src="/img/sc-fav.svg" height="115" class="pt-14 pr-3 align-self-end" alt="Smart Core logo">
+    <img :src="uiConfigStore.theme.logoUrl" class="logo pt-14 pr-3 align-self-end" alt="Smart Core logo">
     <NotificationToast :show-alert="alertMessage.show" :message="alertMessage.message"/>
   </div>
 </template>
@@ -15,10 +15,13 @@ import AirTemperatureCard from '@/routes/components/AirTemperatureCard.vue';
 import GlanceWidget from '@/routes/components/GlanceWidget.vue';
 import LightCard from '@/routes/components/LightCard.vue';
 import {useConfigStore} from '@/stores/config';
+import {useUiConfigStore} from '@/stores/ui-config.js';
 import {computed, ref} from 'vue';
 
 const configStore = useConfigStore();
 const zoneId = computed(() => configStore.zoneId);
+
+const uiConfigStore = useUiConfigStore();
 
 
 // ----------------- 10 click safety feature ----------------- //
@@ -51,3 +54,10 @@ const handle10Click = () => {
   }, 1000);
 };
 </script>
+
+<style>
+.logo {
+  max-width: 50%;
+  max-height: 115px;
+}
+</style>
