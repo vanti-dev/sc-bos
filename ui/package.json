@@ -4,6 +4,7 @@
     "keycloak-login-prototype",
     "ops",
     "panzoom-package",
-    "ui-gen"
+    "ui-gen",
+    "ui-lib"
   ]
 }

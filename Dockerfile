@@ -16,17 +16,28 @@ COPY ui/package.json ui/yarn.lock ui/.npmrc ./
 COPY ui/ops/package.json ./ops/
 COPY ui/panzoom-package/package.json ./panzoom-package/
 COPY ui/ui-gen/package.json ./ui-gen/
+COPY ui/ui-lib/package.json ./ui-lib/
 RUN --mount=type=cache,target=/yarn-cache \
     --mount=type=secret,id=npmrc,target=/root/.npmrc \
     yarn install --frozen-lockfile --check-files
 
-COPY ui/ops ./ops/
+# Copy linked sources
 COPY ui/panzoom-package ./panzoom-package/
 COPY ui/ui-gen ./ui-gen/
+
+# Build shared libraries
+WORKDIR ui-lib
+COPY ui/ui-lib .
+RUN yarn run build
+WORKDIR ..
+
+# Build applications
+WORKDIR ops
+COPY ui/ops .
 ARG GIT_VERSION="(unknown)"
 ENV GIT_VERSION=$GIT_VERSION
-WORKDIR ops
 RUN yarn run build
+WORKDIR ..
 
 FROM --platform=$BUILDPLATFORM golang:1.23-alpine3.20 AS build_go
 

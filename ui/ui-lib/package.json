@@ -1,0 +1,45 @@
+{
+  "name": "@vanti-dev/sc-bos-ui-lib",
+  "version": "1.0.0-beta.1",
+  "type": "module",
+  "main": "dist/sc-bos-ui-lib.umd.cjs",
+  "module": "dist/sc-bos-ui-lib.js",
+  "exports": {
+    ".": {
+      "import": "./dist/sc-bos-ui-lib.js",
+      "require": "./dist/sc-bos-ui-lib.umd.cjs"
+    },
+    "./*": "./*"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:watch": "vite build --watch",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .vue,.js --fix",
+    "lint:nofix": "eslint . --ext .vue,.js",
+    "lint:nibble": "eslint-nibble . --ext .vue,.js"
+  },
+  "dependencies": {
+    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.48",
+    "@vanti-dev/sc-bos-ui-gen": "^1.0.0-beta.19",
+    "google-protobuf": "^3.21.2",
+    "grpc-web": "^1.4.2",
+    "vue": "^3.5.13"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-plugin-jsdoc": "^50.2.1",
+    "eslint-plugin-vue": "^9.28.0",
+    "replace-in-file": "^8.1.0",
+    "vite": "^6.0.7",
+    "vite-plugin-eslint": "^1.8.1"
+  },
+  "repository": "https://github.com/vanti-dev/sc-bos",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}
