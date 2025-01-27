@@ -7,7 +7,7 @@ import {events, keycloak} from '@/api/keycloak.js';
  * @return {AuthenticationProvider & {
  *  kcp: Promise<import('keycloak-js').KeycloakInstance>,
  *  kcEvents: import('keycloak-js').KeycloakEventEmitter,
- *  login: (function(string[]?): Promise<AuthenticationDetails>),
+ *  login: (function(import('keycloak-js').KeycloakLoginOptions?): Promise<AuthenticationDetails>),
  * }}
  */
 export default function() {
@@ -47,14 +47,14 @@ export default function() {
   /**
    * Login to Keycloak with the given scopes
    *
-   * @param {string[]} [scopes]
+   * @param {import('keycloak-js').KeycloakLoginOptions} [options]
    * @return {Promise<AuthenticationDetails>}
    */
-  const loginKeyCloak = async (scopes) => {
+  const loginKeyCloak = async (options) => {
     const kc = await kcp;
-    kc.login({scope: scopes.join(' ')});
+    await kc.login(options);
     // not needed as login will redirect the page, but helpful for js type checking
-    return kcToAuthDetails(kc);
+    return undefined;
   };
 
   /**

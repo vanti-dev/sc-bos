@@ -10,22 +10,13 @@
 </template>
 
 <script setup>
-import {computed, onMounted, ref} from 'vue';
-
-import LightCard from '@/routes/components/LightCard.vue';
+import NotificationToast from '@/components/NotificationToast.vue';
 import AirTemperatureCard from '@/routes/components/AirTemperatureCard.vue';
 import GlanceWidget from '@/routes/components/GlanceWidget.vue';
-import NotificationToast from '@/components/NotificationToast.vue';
-
-import {useAccountStore} from '@/stores/account';
-import {useUiConfigStore} from '@/stores/ui-config';
+import LightCard from '@/routes/components/LightCard.vue';
 import {useConfigStore} from '@/stores/config';
-import {storeToRefs} from 'pinia';
-import {useRouter} from 'vue-router';
+import {computed, ref} from 'vue';
 
-const router = useRouter();
-const uiConfig = useUiConfigStore();
-const accountStore = storeToRefs(useAccountStore());
 const configStore = useConfigStore();
 const zoneId = computed(() => configStore.zoneId);
 
@@ -49,16 +40,7 @@ const handle10Click = () => {
   clickCount.value += 1; // Increment the click count on each click
 
   if (clickCount.value === 10) {
-    accountStore.adminView.value = true;
-
-    // If auth disabled go to setup page, otherwise go to login page
-    const disableAuthentication = uiConfig.auth.disabled;
-    if (disableAuthentication) {
-      router.push({name: 'setup'}).catch(() => {});
-    } else {
-      router.push({name: 'login'}).catch(() => {});
-    }
-
+    configStore.reconfigure();
     // Reset the click count
     clickCount.value = 0;
   }
@@ -68,6 +50,4 @@ const handle10Click = () => {
     clickCount.value = 0;
   }, 1000);
 };
-
-onMounted(() => accountStore.adminView.value = false);
 </script>

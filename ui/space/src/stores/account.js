@@ -2,10 +2,9 @@ import useDeviceFlow, {useUiConfig as deviceFlowUseUiConfig} from '@/composables
 import useKeyCloak from '@/composables/authentication/useKeyCloak';
 import useLocal from '@/composables/authentication/useLocal';
 import {useUiConfigStore} from '@/stores/ui-config';
-import {loadFromBrowserStorage} from '@/util/browserStorage';
 import {defineStore} from 'pinia';
-import {computed, ref} from 'vue';
-import {useRouter} from 'vue-router';
+import {computed, ref, watch} from 'vue';
+import {useRoute, useRouter} from 'vue-router';
 
 /**
  * @typedef AuthenticationDetails
@@ -29,7 +28,10 @@ export const useAccountStore = defineStore('accountStore', () => {
   const keyCloak = useKeyCloak();
   const localAuth = useLocal();
   const deviceFlow = useDeviceFlow(deviceFlowUseUiConfig());
+
+  const forceLogIn = ref(false); // true when login is required even when already logged in
   const router = useRouter();
+  const route = useRoute();
 
   // initComplete is resolved (or rejected) the first time initialise is called.
   // Functions can `await initComplete` to make sure that any authenticationDetails -
@@ -55,7 +57,6 @@ export const useAccountStore = defineStore('accountStore', () => {
     message: 'Failed to sign in, please try again',
     visible: false
   });
-  const adminView = ref(false);
 
 
   /**
@@ -141,6 +142,7 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @return {Promise<void>}
    */
   const initialise = async (providerNames) => {
+    if (isInitialized.value) return;
     try {
       await _initialise(providerNames);
       initResolved();
@@ -150,6 +152,7 @@ export const useAccountStore = defineStore('accountStore', () => {
       isInitialized.value = true;
     }
   };
+
   //
   // ----------------------------------- //
   //
@@ -159,7 +162,7 @@ export const useAccountStore = defineStore('accountStore', () => {
    * @type {import('vue').ComputedRef<boolean>}
    */
   const isAuthenticationDisabled = computed(() => {
-    return uiConfig.config?.disableAuthentication || false;
+    return uiConfig.auth.disabled;
   });
 
   /**
@@ -231,6 +234,7 @@ export const useAccountStore = defineStore('accountStore', () => {
     const details = await fn();
     if (details) {
       authenticationDetails.value = {...details, authProvider};
+      forceLogIn.value = false;
       await redirectAfterLogin();
     }
   };
@@ -246,13 +250,16 @@ export const useAccountStore = defineStore('accountStore', () => {
   };
 
   /**
-   * Log in with KeyCloak using the given scopes
+   * Log in with KeyCloak using the given options.
    *
-   * @param {string[]} scopes
+   * @param {import('keycloak-js').KeycloakLoginOptions} [options]
    * @return {Promise<void>}
    */
-  const loginWithKeyCloak = async (scopes) => {
-    return doLogin('keyCloakAuth', () => keyCloak.login(scopes));
+  const loginWithKeyCloak = async (options) => {
+    if (forceLogIn.value) {
+      options.prompt = 'login';
+    }
+    return doLogin('keyCloakAuth', () => keyCloak.login(options));
   };
 
   /**
@@ -286,25 +293,13 @@ export const useAccountStore = defineStore('accountStore', () => {
   };
 
   /**
-   * Redirect to the last page the user was on, or the home page if not set.
+   * Redirect to the home page after a login.
+   * The router interceptor will deal with the actual routing if there are redirects or reconfiguration events happening.
    *
    * @return {Promise<void>}
    */
   const redirectAfterLogin = async () => {
-    if (adminView.value) {
-      await router.push('/setup');
-      return;
-    }
-    // If there is a redirect in the session storage, redirect to that page
-    const redirect = loadFromBrowserStorage('session', 'redirect', '')[0];
-    if (redirect !== '') {
-      window.sessionStorage.removeItem('redirect');
-      await router.push(redirect);
-
-      // Otherwise, redirect to the home page
-    } else {
-      await router.push(uiConfig.homePath);
-    }
+    await router.push(uiConfig.homePath);
   };
 
   /**
@@ -363,13 +358,23 @@ export const useAccountStore = defineStore('accountStore', () => {
     }
   };
 
+  const shouldRedirect = computed(() => {
+    return isLoggedIn.value && route.name === 'login' && !forceLogIn.value;
+  });
+  watch(shouldRedirect, (should) => {
+    if (!should) return;
+    redirectAfterLogin().catch(() => {});
+  }, {immediate: true});
+
   return {
     initialise,
     isInitialized,
     authenticationDetails,
     snackbar,
-    adminView,
     resetStoreToDefaults,
+
+    forceLogIn,
+    shouldRedirect,
 
     isAuthenticationDisabled,
     availableAuthProviders,

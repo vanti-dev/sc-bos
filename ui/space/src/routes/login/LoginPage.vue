@@ -10,11 +10,11 @@
       </v-card-actions>
     </v-card>
     <v-btn
-        v-if="uiConfig.auth.disabled || accountStore.adminView"
+        v-if="uiConfig.auth.disabled || configStore.isReconfiguring"
         class="mt-4"
         color="neutral"
         elevation="0"
-        to="/">
+        @click="configStore.abortReconfigure()">
       <v-icon class="ml-n2">mdi-chevron-left</v-icon>
       Return to home
     </v-btn>
@@ -35,11 +35,13 @@ import DeviceFlowLogin from '@/routes/login/DeviceFlowLogin.vue';
 import LocalLogin from '@/routes/login/LocalLogin.vue';
 import LoginChoice from '@/routes/login/LoginChoice.vue';
 import {useAccountStore} from '@/stores/account.js';
+import {useConfigStore} from '@/stores/config.js';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {storeToRefs} from 'pinia';
 import {computed, ref} from 'vue';
 
 const uiConfig = useUiConfigStore();
+const configStore = useConfigStore();
 const accountStore = useAccountStore();
 const {snackbar} = storeToRefs(accountStore);
 const scopes = ref(['offline_access']);
@@ -75,10 +77,15 @@ const chooseProvider = (p) => {
     case 'deviceFlow':
       manualDisplayDeviceLogin.value = true;
       break;
-    case 'keyCloakAuth':
+    case 'keyCloakAuth': {
       // no page to display, redirect instead
-      accountStore.loginWithKeyCloak(scopes.value);
+      const opts = /** @type {import('keycloak-js').KeycloakLoginOptions } */ {};
+      if (scopes.value.length > 0) {
+        opts.scope = scopes.value.join(' ');
+      }
+      accountStore.loginWithKeyCloak(opts);
       break;
+    }
   }
 };
 

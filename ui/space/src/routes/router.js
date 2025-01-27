@@ -4,32 +4,31 @@ import {useConfigStore} from '@/stores/config';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {createRouter, createWebHistory} from 'vue-router';
 
-const routes = [
-  {
-    path: '/home',
-    name: 'home',
-    component: HomePage
-  },
-  {
-    path: '/login',
-    name: 'login',
-    component: () => import('@/routes/login/LoginPage.vue')
-  },
-  {
-    path: '/setup',
-    name: 'setup',
-    component: () => import('@/routes/setup/SetupPage.vue')
-  },
-  // everything else to redirect to the home page
-  {
-    path: '/:pathMatch(.*)*',
-    redirect: '/home'
-  }
-];
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
+  routes: [
+    {
+      path: '/home',
+      name: 'home',
+      component: HomePage
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/routes/login/LoginPage.vue'),
+      props: true
+    },
+    {
+      path: '/setup',
+      name: 'setup',
+      component: () => import('@/routes/setup/SetupPage.vue')
+    },
+    // everything else to redirect to the home page
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/home'
+    }
+  ]
 });
 
 if (window) {
@@ -62,14 +61,15 @@ if (window) {
 
     const authDisabled = uiConfig.auth.disabled;
     const isAuthenticated = accountStore.isLoggedIn;
-    const isConfigured = configStore.isConfigured;
-
-    if (!authDisabled && !isAuthenticated) {
+    const forceLogIn = accountStore.forceLogIn;
+    if (!authDisabled && !isAuthenticated || forceLogIn) {
       intercept('/login');
       return;
     }
 
-    if (!isConfigured) {
+    const configured = configStore.isConfigured;
+    const reconfiguring = configStore.isReconfiguring;
+    if (!configured || reconfiguring) {
       intercept('/setup');
       return;
     }
