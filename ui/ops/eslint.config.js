@@ -4,6 +4,7 @@ import pluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 
 export default [
+  {ignorePatterns: ['**/dist/**']},
   {files: ['vite.config.js'], languageOptions: {globals: globals.node}},
   {files: ['src/**/*.vue'], languageOptions: {globals: {'GIT_VERSION': 'readonly'}}},
   {files: ['**/*.cjs'], languageOptions: {globals: globals.commonjs, sourceType: 'script'}},
