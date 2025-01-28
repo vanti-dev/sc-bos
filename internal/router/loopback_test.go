@@ -1,24 +1,33 @@
 package router
 
 import (
+	"bytes"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/reflect/protoregistry"
-	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/dynamicpb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 )
 
 func TestCopyRecver_RecvMsg(t *testing.T) {
-	msg := func(s string) proto.Message {
-		return &traits.Metadata{Name: s}
+	moreMap := func(more ...string) map[string]string {
+		if len(more) == 0 {
+			return nil
+		}
+		m := make(map[string]string, len(more)/2)
+		for i := 0; i < len(more); i += 2 {
+			m[more[i]] = more[i+1]
+		}
+		return m
 	}
-	msg2 := func(s string) proto.Message {
-		return &traits.TraitMetadata{Name: s}
+	msg := func(s string, more ...string) proto.Message {
+		return &traits.Metadata{Name: s, More: moreMap(more...)}
+	}
+	msg2 := func(s string, more ...string) proto.Message {
+		return &traits.TraitMetadata{Name: s, More: moreMap(more...)}
 	}
 	// simulate descriptors from the reflection package
 	mkDynamic := func(m proto.Message) proto.Message {
@@ -50,10 +59,11 @@ func TestCopyRecver_RecvMsg(t *testing.T) {
 		src, dst, want     proto.Message
 		wantErr, wantPanic bool
 	}{
-		{"msg,msg", msg("a"), msg("b"), msg("a"), false, false},
-		{"msg,dynamic", msg("a"), mkDynamic(msg("b")), msg("a"), false, false},
-		{"dynamic,msg", mkDynamic(msg("a")), msg("b"), msg("a"), false, false},
-		{"dynamic,dynamic", mkDynamic(msg("a")), mkDynamic(msg("b")), msg("a"), false, false},
+		{"msg,msg", msg("a"), msg("b", "k", "v"), msg("a", "k", "v"), false, false},
+		{"msg,dynamic", msg("a"), mkDynamic(msg("b", "k", "v")), msg("a", "k", "v"), false, false},
+		{"dynamic,msg", mkDynamic(msg("a")), msg("b", "k", "v"), msg("a", "k", "v"), false, false},
+		{"dynamic,msg", mkDynamic(msg("a")), msg("b", "k", "v"), msg("a", "k", "v"), false, false},
+		{"dynamic,dynamic", mkDynamic(msg("a")), mkDynamic(msg("b", "k", "v")), msg("a", "k", "v"), false, false},
 		{"msg1,msg2", msg("1"), msg2("2"), msg2("2"), false, true},
 		{"msg2,msg1", msg2("2"), msg("1"), msg("1"), false, true},
 		{"msg1,dynamic2", msg("1"), mkDynamic(msg2("2")), msg2("2"), false, true},
@@ -78,8 +88,10 @@ func TestCopyRecver_RecvMsg(t *testing.T) {
 			}
 
 			// proto.Equal doesn't work for messages with different descriptors
-			if diff := cmp.Diff(tt.want, tt.dst, protocmp.Transform()); diff != "" {
-				t.Errorf("RecvMsg() (-want,+got)\n%s", diff)
+			wantBytes, _ := proto.MarshalOptions{Deterministic: true}.Marshal(tt.want)
+			gotBytes, _ := proto.MarshalOptions{Deterministic: true}.Marshal(tt.dst)
+			if !bytes.Equal(wantBytes, gotBytes) {
+				t.Errorf("RecvMsg() = %v, want %v", tt.dst, tt.want)
 			}
 		})
 	}

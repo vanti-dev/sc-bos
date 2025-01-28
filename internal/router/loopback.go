@@ -220,11 +220,12 @@ func safeProtoMerge(dst, src proto.Message) {
 	if want, got := dst.ProtoReflect().Descriptor().FullName(), src.ProtoReflect().Descriptor().FullName(); want != got {
 		panic(fmt.Sprintf("descriptor mismatch: %v != %v", got, want))
 	}
-	data, err := proto.Marshal(src)
+	data, err := proto.MarshalOptions{AllowPartial: true}.Marshal(src)
 	if err != nil {
 		panic(fmt.Sprintf("src marshal: %v", err))
 	}
-	if err := proto.Unmarshal(data, dst); err != nil {
+	err = proto.UnmarshalOptions{AllowPartial: true, Merge: true}.Unmarshal(data, dst)
+	if err != nil {
 		panic(fmt.Sprintf("dst unmarshal: %v", err))
 	}
 }
