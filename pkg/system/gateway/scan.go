@@ -4,9 +4,9 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"slices"
 
 	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	reflectionpb "google.golang.org/grpc/reflection/grpc_reflection_v1"
