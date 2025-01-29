@@ -6,12 +6,14 @@ import (
 	"fmt"
 
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	reflectionpb "google.golang.org/grpc/reflection/grpc_reflection_v1"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
 	"google.golang.org/protobuf/types/descriptorpb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -269,6 +271,22 @@ func (s *System) reflectNode(ctx context.Context, node *remoteNode) error {
 		return err
 	}
 
+	remoteServices := make([]protoreflect.ServiceDescriptor, 0, len(services))
+
+	// reuse our own descriptor of the service if we have it
+	services = slices.DeleteFunc(services, func(svc *reflectionpb.ServiceResponse) bool {
+		desc, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(svc.Name))
+		if err != nil {
+			return false
+		}
+		serviceDesc, ok := desc.(protoreflect.ServiceDescriptor)
+		if !ok {
+			return false
+		}
+		remoteServices = append(remoteServices, serviceDesc)
+		return true
+	})
+
 	// collect all the type information for the services the node implements
 	seenFiles := make(map[string]struct{})
 	fileSet := &descriptorpb.FileDescriptorSet{}
@@ -297,8 +315,6 @@ func (s *System) reflectNode(ctx context.Context, node *remoteNode) error {
 	if err != nil {
 		return fmt.Errorf("create file set: %w", err)
 	}
-
-	remoteServices := make([]protoreflect.ServiceDescriptor, 0, len(services))
 	for _, svc := range services {
 		desc, err := files.FindDescriptorByName(protoreflect.FullName(svc.Name))
 		if err != nil {
