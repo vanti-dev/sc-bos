@@ -316,9 +316,21 @@ func (s *Server) listDevicesAndHeaders(token *DownloadToken, traitInfo map[strin
 
 	collectTraitHeaders(headerSet, devices, traitInfo)
 
+	if token.Request.History != nil {
+		// delete headers for traits that don't support history
+		for _, info := range traitInfo {
+			if info.history == nil {
+				for _, header := range info.headers {
+					delete(headerSet, header)
+				}
+			}
+		}
+	}
+
 	headers = sortHeaders(maps.Keys(headerSet))
 
 	if token.Request.History != nil {
+		// timestamp should be the first column
 		headers = append([]string{"timestamp"}, headers...)
 	}
 
