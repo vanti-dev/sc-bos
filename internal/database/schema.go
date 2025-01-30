@@ -73,7 +73,16 @@ func LoadVersionedSchema(source fs.FS) (Schema, error) {
 }
 
 // MustLoadVersionedSchema is like LoadVersionedSchema but panics on error.
-func MustLoadVersionedSchema(source fs.FS) Schema {
+// dir is the subdirectory in the FS to load migrations from. Uses the root if empty.
+func MustLoadVersionedSchema(source fs.FS, dir string) Schema {
+	var err error
+	if dir != "" {
+		source, err = fs.Sub(source, dir)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	schema, err := LoadVersionedSchema(source)
 	if err != nil {
 		panic(err)

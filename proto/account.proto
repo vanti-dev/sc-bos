@@ -1,0 +1,199 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+service AccountApiService {
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
+
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse);
+  rpc UpdateAccount(UpdateAccountRequest) returns (UpdateAccountResponse);
+  rpc UpdateAccountPassword(UpdateAccountPasswordRequest) returns (UpdateAccountPasswordResponse);
+
+  rpc CreateServiceCredential(CreateServiceCredentialRequest) returns (CreateServiceCredentialResponse);
+  rpc DeleteServiceCredential(DeleteServiceCredentialRequest) returns (DeleteServiceCredentialResponse);
+}
+
+message GetAccountRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  string id = 2;
+  google.protobuf.FieldMask read_mask = 3;
+}
+
+message GetAccountResponse {
+  Account account = 1;
+  google.protobuf.FieldMask read_mask = 2;
+}
+
+message CreateAccountRequest {
+  // The account to create.
+  Account account = 1;
+  // For user accounts, the initial password to set.
+  // If absent, the account will be created without a password. The password must then be set with UpdateAccountPassword
+  // before the account can be used.
+  string password = 2;
+}
+
+message CreateAccountResponse {
+  Account account = 1;
+}
+
+message ListAccountsRequest {
+  // The name of the node to list accounts for. (do we need this?)
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+
+  // The maximum number of accounts to return in a single response.
+  // If there are more results available, the response will contain a next_page_token to get them.
+  int32 page_size = 3;
+  // Token from previous ListAccounts response, to get the next page of results.
+  string page_token = 4;
+}
+
+message ListAccountsResponse {
+  repeated Account accounts = 1;
+  // Opaque value which can be provided to ListAccounts to get the next page of results.
+  // Absent if there are no more results.
+  string next_page_token = 2;
+}
+
+message UpdateAccountRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The updated account data.
+  // The account to update is identified by account.id, which must be present.
+  Account account = 2;
+
+  google.protobuf.FieldMask update_mask = 3;
+}
+
+message UpdateAccountResponse {
+  Account account = 1;
+}
+
+message UpdateAccountPasswordRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the account to update the password for.
+  string id = 2;
+
+  // The new password to set.
+  string new_password = 3;
+  // The old password to verify. Required unless you have 'account:admin' permission.
+  string old_password = 4;
+}
+
+message UpdateAccountPasswordResponse {
+
+}
+
+message CreateServiceCredentialRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  ServiceCredential service_credential = 2;
+}
+
+message CreateServiceCredentialResponse {
+  ServiceCredential service_credential = 1;
+}
+
+message DeleteServiceCredentialRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the service credential to delete.
+  string id = 2;
+}
+
+message DeleteServiceCredentialResponse {
+
+}
+
+message Account {
+  // Unique identifier for this account. Consistent for the life of the account.
+  // Generated automatically on account creation. Output only.
+  // For service accounts, this is the OAuth2 Client ID for authenticating.
+  string id = 1;
+  // The time this account was created. Output only.
+  google.protobuf.Timestamp create_time = 2;
+  // Describes which kind of account this is, which changes how authentication is handled.
+  // Required for account creation. After the account is created, this field is output-only.
+  Kind kind = 3;
+
+  string display_name = 4;
+
+  // For user accounts, the username to use for authentication.
+  string username = 5;
+
+  // Output-only. Use CreateServiceCredential and DeleteServiceCredential to manipulate service credentials.
+  repeated ServiceCredential service_credentials = 6;
+
+  // An opaque value that changes whenever the account is updated; used to avoid read-modify-write conflicts.
+  // On update, if this field is set, the server etag will be checked against the client-provided etag, and
+  // the request will fail if they do not match.
+  string etag = 9;
+
+  repeated RoleAssignment role_assignments = 8;
+
+  enum Kind {
+    ACCOUNT_KIND_UNSPECIFIED = 0;
+    USER_ACCOUNT = 1;
+    SERVICE_ACCOUNT = 2;
+  }
+}
+
+message Role {
+  string id = 1;
+  string title = 2;
+  repeated string permissions = 3;
+  string etag = 4;
+}
+
+message RoleAssignment {
+  string role = 1;
+  ResourceKind scope_resource_kind = 2;
+  string scope_resource = 3;
+
+  enum ResourceKind {
+    RESOURCE_KIND_UNSPECIFIED = 0;
+    NAMED_RESOURCE = 1;
+    NAMED_RESOURCE_PATH_PREFIX = 2;
+    NODE = 3;
+    SUBSYSTEM = 4;
+    ZONE = 5;
+  }
+}
+
+message ServiceCredential {
+  // Auto-generated unique identifier for this service credential.
+  string id = 1;
+  // The account this service credential is associated with.
+  // At creation, must be set to the ID of a service account.
+  string account_id = 2;
+  // Must be present on creation.
+  // A human-readable short description of the service credential, so that users can identify it.
+  string title = 3;
+  // Output only. Only returned on creation.
+  string secret = 4;
+  // Output only. Set automatically on creation.
+  google.protobuf.Timestamp create_time = 5;
+  // As an input to CreateServiceCredential, this is the time the credential will expire.
+  // Optional - if absent, the credential will not expire.
+  // Must be in the future at the time of creation.
+  google.protobuf.Timestamp expire_time = 6;
+}

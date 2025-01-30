@@ -221,6 +221,10 @@ func (db *Database) runTX(tx *sql.Tx, f func(tx *sql.Tx) error) (err error) {
 		}
 	}()
 	err = f(tx)
+	if err != nil {
+		// f failed, automatic rollback in the defer above
+		return
+	}
 	return tx.Commit()
 }
 
