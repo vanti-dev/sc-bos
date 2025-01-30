@@ -120,7 +120,7 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 	if err := csvOut.Write(headers); err != nil {
 		return
 	}
-	out := &csvWriter{csvOut, headerIndex}
+	out := newCSVWriter(csvOut, headerIndex)
 
 	if token.Request.History == nil {
 		s.writeLiveData(r.Context(), out, deviceList, traitInfo)
@@ -134,21 +134,26 @@ type writer interface {
 	Write(row map[string]string)
 }
 
+func newCSVWriter(out *csv.Writer, headerIndex map[string]int) *csvWriter {
+	return &csvWriter{out, headerIndex, make([]string, len(headerIndex))}
+}
+
 type csvWriter struct {
 	out         *csv.Writer
 	headerIndex map[string]int
+	rowBuf      []string
 }
 
 func (c *csvWriter) Write(row map[string]string) {
-	csvRow := make([]string, len(c.headerIndex))
 	for h, v := range row {
 		index, ok := c.headerIndex[h]
 		if !ok {
 			continue
 		}
-		csvRow[index] = v
+		c.rowBuf[index] = v
 	}
-	_ = c.out.Write(csvRow)
+	_ = c.out.Write(c.rowBuf)
+	clear(c.rowBuf)
 }
 
 func (s *Server) writeLiveData(ctx context.Context, out writer, devices []*traits.Metadata, traitInfo map[string]traitInfo) {
