@@ -84,6 +84,7 @@ func (m *ModelServer) PullSecurityEvents(request *gen.PullSecurityEventsRequest,
 				Type:       types.ChangeType_ADD,
 			}
 			if err := server.Send(&gen.PullSecurityEventsResponse{Changes: []*gen.PullSecurityEventsResponse_Change{change}}); err != nil {
+				m.model.mu.Unlock()
 				return err
 			}
 		}
