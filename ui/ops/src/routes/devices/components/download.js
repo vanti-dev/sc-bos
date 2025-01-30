@@ -5,14 +5,15 @@ import {computed, onScopeDispose, ref, toValue, watch} from 'vue';
 
 /**
  * @param {import('vue').MaybeRefOrGetter<Partial<Device.Query.AsObject>>} query
+ * @param {import('vue').MaybeRefOrGetter<Partial<Period.AsObject|undefined|null>>} [history]
  * @return {{
  *   downloadBtnProps: ComputedRef<Record<string,any>>
  * }}
  */
-export function useDownloadLink(query) {
+export function useDownloadLink(query, history = null) {
   const tableDownloadUrl = ref(/** @type {DownloadDevicesUrl.AsObject | null} */ null);
   const getDownloadDevicesUrlRequest = computed(() => {
-    return {query: toValue(query)};
+    return {query: toValue(query), history: toValue(history)};
   });
 
   const leeway = 1 * MINUTE;

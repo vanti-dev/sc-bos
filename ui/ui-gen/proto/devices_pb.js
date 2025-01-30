@@ -29,6 +29,8 @@ var traits_metadata_pb = require('@smart-core-os/sc-api-grpc-web/traits/metadata
 goog.object.extend(proto, traits_metadata_pb);
 var types_change_pb = require('@smart-core-os/sc-api-grpc-web/types/change_pb.js');
 goog.object.extend(proto, types_change_pb);
+var types_time_period_pb = require('@smart-core-os/sc-api-grpc-web/types/time/period_pb.js');
+goog.object.extend(proto, types_time_period_pb);
 goog.exportSymbol('proto.smartcore.bos.Device', null, global);
 goog.exportSymbol('proto.smartcore.bos.Device.Query', null, global);
 goog.exportSymbol('proto.smartcore.bos.Device.Query.Condition', null, global);
@@ -3651,7 +3653,8 @@ proto.smartcore.bos.GetDownloadDevicesUrlRequest.prototype.toObject = function(o
 proto.smartcore.bos.GetDownloadDevicesUrlRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     query: (f = msg.getQuery()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f),
-    mediaType: jspb.Message.getFieldWithDefault(msg, 2, "")
+    mediaType: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    history: (f = msg.getHistory()) && types_time_period_pb.Period.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3697,6 +3700,11 @@ proto.smartcore.bos.GetDownloadDevicesUrlRequest.deserializeBinaryFromReader = f
       var value = /** @type {string} */ (reader.readString());
       msg.setMediaType(value);
       break;
+    case 3:
+      var value = new types_time_period_pb.Period;
+      reader.readMessage(value,types_time_period_pb.Period.deserializeBinaryFromReader);
+      msg.setHistory(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3739,6 +3747,14 @@ proto.smartcore.bos.GetDownloadDevicesUrlRequest.serializeBinaryToWriter = funct
     writer.writeString(
       2,
       f
+    );
+  }
+  f = message.getHistory();
+  if (f != null) {
+    writer.writeMessage(
+      3,
+      f,
+      types_time_period_pb.Period.serializeBinaryToWriter
     );
   }
 };
@@ -3796,6 +3812,43 @@ proto.smartcore.bos.GetDownloadDevicesUrlRequest.prototype.getMediaType = functi
  */
 proto.smartcore.bos.GetDownloadDevicesUrlRequest.prototype.setMediaType = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional smartcore.types.time.Period history = 3;
+ * @return {?proto.smartcore.types.time.Period}
+ */
+proto.smartcore.bos.GetDownloadDevicesUrlRequest.prototype.getHistory = function() {
+  return /** @type{?proto.smartcore.types.time.Period} */ (
+    jspb.Message.getWrapperField(this, types_time_period_pb.Period, 3));
+};
+
+
+/**
+ * @param {?proto.smartcore.types.time.Period|undefined} value
+ * @return {!proto.smartcore.bos.GetDownloadDevicesUrlRequest} returns this
+*/
+proto.smartcore.bos.GetDownloadDevicesUrlRequest.prototype.setHistory = function(value) {
+  return jspb.Message.setWrapperField(this, 3, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.GetDownloadDevicesUrlRequest} returns this
+ */
+proto.smartcore.bos.GetDownloadDevicesUrlRequest.prototype.clearHistory = function() {
+  return this.setHistory(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.GetDownloadDevicesUrlRequest.prototype.hasHistory = function() {
+  return jspb.Message.getField(this, 3) != null;
 };
 
 

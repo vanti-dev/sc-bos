@@ -27,6 +27,8 @@ var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/time
 var traits_metadata_pb = require('@smart-core-os/sc-api-grpc-web/traits/metadata_pb.js')
 
 var types_change_pb = require('@smart-core-os/sc-api-grpc-web/types/change_pb.js')
+
+var types_time_period_pb = require('@smart-core-os/sc-api-grpc-web/types/time/period_pb.js')
 const proto = {};
 proto.smartcore = {};
 proto.smartcore.bos = require('./devices_pb.js');
