@@ -3,10 +3,12 @@ package securityevent
 import (
 	"context"
 	"strconv"
+	"sync"
 	"time"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
@@ -16,9 +18,8 @@ var subSystems = [2]string{"access control", "cctv"}
 type Model struct {
 	lastSecurityEvent *resource.Value // of *gen.SecurityEvent
 	allSecurityEvents []*gen.SecurityEvent
-	ticker            *time.Ticker
-	ctx               context.Context
 	genId             int
+	mu                sync.Mutex
 }
 
 func NewModel(opts ...resource.Option) *Model {
@@ -45,6 +46,8 @@ func (m *Model) AddSecurityEvent(se *gen.SecurityEvent, opts ...resource.WriteOp
 	if err != nil {
 		return nil, err
 	}
+	m.mu.Lock()
+	m.mu.Unlock()
 	m.allSecurityEvents = append(m.allSecurityEvents, se)
 	return v.(*gen.SecurityEvent), nil
 }
@@ -66,15 +69,16 @@ func (m *Model) GenerateSecurityEvent(time *timestamppb.Timestamp) (*gen.Securit
 
 func (m *Model) PullSecurityEvents(ctx context.Context, opts ...resource.ReadOption) <-chan *gen.PullSecurityEventsResponse_Change {
 	send := make(chan *gen.PullSecurityEventsResponse_Change)
-
 	recv := m.lastSecurityEvent.Pull(ctx, opts...)
 	go func() {
 		defer close(send)
 		for change := range recv {
 			value := change.Value.(*gen.SecurityEvent)
 			send <- &gen.PullSecurityEventsResponse_Change{
-				OldValue: nil,
-				NewValue: value, // the mock driver only generates new security events and does not delete them
+				OldValue:   nil,
+				NewValue:   value, // the mock driver only generates new security events and does not delete them
+				ChangeTime: value.SecurityEventTime,
+				Type:       types.ChangeType_ADD,
 			}
 		}
 	}()

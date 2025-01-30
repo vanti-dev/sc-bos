@@ -6,6 +6,7 @@ import (
 
 	"google.golang.org/grpc"
 
+	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
@@ -30,7 +31,11 @@ func (m *ModelServer) Unwrap() any {
 func (m *ModelServer) ListSecurityEvents(_ context.Context, req *gen.ListSecurityEventsRequest) (*gen.ListSecurityEventsResponse, error) {
 
 	// page token is just the index of where we left off (if any)
+	// this works with the current basic implementation because we only support a list of all events without filtering/sorting
+	// and the events are stored in ascending chronological order. If this either of these things change, this will need to be rethought
 	pageToken := req.GetPageToken()
+	m.model.mu.Lock()
+	defer m.model.mu.Unlock()
 	startIndex := len(m.model.allSecurityEvents)
 	if pageToken != "" {
 		_, err := strconv.Atoi(req.GetPageToken())
@@ -47,7 +52,7 @@ func (m *ModelServer) ListSecurityEvents(_ context.Context, req *gen.ListSecurit
 		count = 1000
 	}
 
-	var resp gen.ListSecurityEventsResponse
+	resp := &gen.ListSecurityEventsResponse{}
 
 	// reverse to retrieve the latest events first
 	for i := startIndex - 1; i >= 0; i-- {
@@ -58,10 +63,32 @@ func (m *ModelServer) ListSecurityEvents(_ context.Context, req *gen.ListSecurit
 		}
 	}
 	resp.TotalSize = int32(len(m.model.allSecurityEvents))
-	return &resp, nil
+	return resp, nil
 }
 
+// PullSecurityEvents returns a channel of security events
+// If updatesOnly is false, only the previous 50 events will be sent before any new events
+// For historical events use ListSecurityEvents
 func (m *ModelServer) PullSecurityEvents(request *gen.PullSecurityEventsRequest, server gen.SecurityEventApi_PullSecurityEventsServer) error {
+	if !request.UpdatesOnly {
+		m.model.mu.Lock()
+		i := len(m.model.allSecurityEvents) - 50
+		if i < 0 {
+			i = 0
+		}
+		for ; i < len(m.model.allSecurityEvents)-1; i++ {
+			change := &gen.PullSecurityEventsResponse_Change{
+				Name:       request.Name,
+				NewValue:   m.model.allSecurityEvents[i],
+				ChangeTime: m.model.allSecurityEvents[i].SecurityEventTime,
+				Type:       types.ChangeType_ADD,
+			}
+			if err := server.Send(&gen.PullSecurityEventsResponse{Changes: []*gen.PullSecurityEventsResponse_Change{change}}); err != nil {
+				return err
+			}
+		}
+		m.model.mu.Unlock()
+	}
 	for change := range m.model.PullSecurityEvents(server.Context(), resource.WithReadMask(request.ReadMask), resource.WithUpdatesOnly(request.UpdatesOnly)) {
 		var msg gen.PullSecurityEventsResponse
 		msg.Changes = append(msg.Changes, change)
