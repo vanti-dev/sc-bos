@@ -176,12 +176,21 @@ func (s *Server) writeLiveData(ctx context.Context, out writer, devices []*trait
 	}
 }
 
+type source struct {
+	device *traits.Metadata
+	cursor *historyCursor
+	skip   bool
+}
+
 func (s *Server) writeHistoricalData(ctx context.Context, out writer, devices []*traits.Metadata, traitInfo map[string]traitInfo, period *timepb.Period) {
-	type source struct {
-		device *traits.Metadata
-		cursor *historyCursor
-		skip   bool
-	}
+	// we might want to allow the user to specify the order in the future
+	const (
+		pageSize = 100
+		order    = "source"
+		// pageSize = 10 // time order reads from all sources at once, limit memory use
+		// order = "time"
+	)
+
 	var sources []*source
 	for _, d := range devices {
 		for _, t := range d.Traits {
@@ -189,7 +198,7 @@ func (s *Server) writeHistoricalData(ctx context.Context, out writer, devices []
 			if !ok || info.history == nil {
 				continue
 			}
-			cursor := info.history(d.Name, period, 5)
+			cursor := info.history(d.Name, period, pageSize)
 			if cursor == nil {
 				continue
 			}
@@ -197,40 +206,83 @@ func (s *Server) writeHistoricalData(ctx context.Context, out writer, devices []
 		}
 	}
 
+	switch order {
+	case "source":
+		writeHistoryDataBySource(ctx, out, sources)
+	case "time":
+		writeHistoryDataByTime(ctx, out, sources)
+	}
+}
+
+// writeHistoryDataBySource writes history data ordered by source, then time.
+// This means each devices trait records are written together.
+func writeHistoryDataBySource(ctx context.Context, out writer, sources []*source) {
+	for _, source := range sources {
+		mdVals := make(map[string]string)
+		captureMDValues(source.device, mdVals)
+		for {
+			head, err := source.cursor.Head(ctx)
+			if err != nil {
+				break
+			}
+			head.use()
+			vals := head.vals
+			maps.Copy(vals, mdVals)
+			vals["timestamp"] = head.at.Format(time.DateTime)
+			out.Write(vals)
+		}
+	}
+}
+
+// writeHistoryDataByTime writes history data ordered by time.
+// This means device trait records are interleaved in time order.
+func writeHistoryDataByTime(ctx context.Context, out writer, sources []*source) {
+	// cache of metadata values we can reuse during the main loop
+	mds := make(map[string]map[string]string, len(sources))
+	for _, source := range sources {
+		mdVals := make(map[string]string)
+		captureMDValues(source.device, mdVals)
+		mds[source.device.Name] = mdVals
+	}
+
 	for len(sources) > 0 {
 		var (
 			oldestRecord *historyRecord
-			oldestCursor *source
+			oldestSource *source
+			anySkipped   bool
 		)
 		for _, source := range sources {
 			head, err := source.cursor.Head(ctx)
 			if err != nil {
+				anySkipped = true
 				source.skip = true
 				continue
 			}
 			switch {
 			case oldestRecord == nil:
-				oldestRecord, oldestCursor = &head, source
+				oldestRecord, oldestSource = &head, source
 			case head.at.Before(oldestRecord.at):
-				oldestRecord, oldestCursor = &head, source
+				oldestRecord, oldestSource = &head, source
 			}
 		}
 
 		// both checks aren't strictly necessary as both are set at the same time,
 		// however the static checker doesn't know that
-		if oldestRecord == nil || oldestCursor == nil {
+		if oldestRecord == nil || oldestSource == nil {
 			return // no records were processed
 		}
 
 		oldestRecord.use()
 		vals := oldestRecord.vals
 		vals["timestamp"] = oldestRecord.at.Format(time.DateTime)
-		captureMDValues(oldestCursor.device, vals)
+		maps.Copy(vals, mds[oldestSource.device.Name])
 		out.Write(vals)
 
-		sources = slices.DeleteFunc(sources, func(source *source) bool {
-			return source.skip
-		})
+		if anySkipped {
+			sources = slices.DeleteFunc(sources, func(source *source) bool {
+				return source.skip
+			})
+		}
 	}
 }
 
