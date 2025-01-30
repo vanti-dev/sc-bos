@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package smartcore.bos.system.history;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/system/history";
+
+import "history.proto";
+
+message PageToken {
+  smartcore.bos.HistoryRecord record = 1;
+  int32 total_size = 2;
+}

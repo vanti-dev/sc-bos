@@ -40,13 +40,16 @@ func (s *storeServer) ListHistoryRecords(ctx context.Context, request *gen.ListH
 	store := s.store(source)
 	slice := store.Slice(from, to)
 
-	totalCount, _ := slice.Len(ctx) // ignore error, totalCount will be 0
-	res := &gen.ListHistoryRecordsResponse{
-		TotalSize: int32(totalCount),
-	}
+	res := &gen.ListHistoryRecordsResponse{}
 
 	pageSize := normPageSize(request.GetPageSize())
-	pageToken, err := unmarshalPageToken(request.GetPageToken())
+	pageToken, totalCount, err := unmarshalPageToken(request.GetPageToken())
+	if totalCount == 0 {
+		// avoid this potentially expensive step if possible
+		totalCount, _ = slice.Len(ctx) // ignore error, totalCount will be 0
+	}
+	res.TotalSize = int32(totalCount)
+
 	switch {
 	case errors.Is(err, errPageTokenEmpty):
 	case err != nil:
@@ -64,7 +67,7 @@ func (s *storeServer) ListHistoryRecords(ctx context.Context, request *gen.ListH
 		// there's another page
 		last := buf[n-1]
 		buf = buf[:n-1]
-		nextPageToken, err := marshalPageToken(last)
+		nextPageToken, err := marshalPageToken(last, totalCount)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "failed to marshal page token %v", err)
 		}
