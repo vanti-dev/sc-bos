@@ -185,10 +185,12 @@ type source struct {
 func (s *Server) writeHistoricalData(ctx context.Context, out writer, devices []*traits.Metadata, traitInfo map[string]traitInfo, period *timepb.Period) {
 	// we might want to allow the user to specify the order in the future
 	const (
-		pageSize = 100
-		order    = "source"
+		// pageSize = 100
+		// order    = "source"
 		// pageSize = 10 // time order reads from all sources at once, limit memory use
-		// order = "time"
+		// order    = "time"
+		pageSize = 100 // for device order we only keep the traits for a single device in memory at a time
+		order    = "device"
 	)
 
 	var sources []*source
@@ -209,6 +211,8 @@ func (s *Server) writeHistoricalData(ctx context.Context, out writer, devices []
 	switch order {
 	case "source":
 		writeHistoryDataBySource(ctx, out, sources)
+	case "device":
+		writeHistoryDataByDevice(ctx, out, sources)
 	case "time":
 		writeHistoryDataByTime(ctx, out, sources)
 	}
@@ -234,12 +238,27 @@ func writeHistoryDataBySource(ctx context.Context, out writer, sources []*source
 	}
 }
 
+// writeHistoryDataByDevice writes history data ordered by device, then time.
+func writeHistoryDataByDevice(ctx context.Context, out writer, sources []*source) {
+	sourcesByDevice := make(map[string][]*source)
+	for _, source := range sources {
+		sourcesByDevice[source.device.Name] = append(sourcesByDevice[source.device.Name], source)
+	}
+
+	for _, sources := range sourcesByDevice {
+		writeHistoryDataByTime(ctx, out, sources)
+	}
+}
+
 // writeHistoryDataByTime writes history data ordered by time.
 // This means device trait records are interleaved in time order.
 func writeHistoryDataByTime(ctx context.Context, out writer, sources []*source) {
 	// cache of metadata values we can reuse during the main loop
 	mds := make(map[string]map[string]string, len(sources))
 	for _, source := range sources {
+		if _, ok := mds[source.device.Name]; ok {
+			continue
+		}
 		mdVals := make(map[string]string)
 		captureMDValues(source.device, mdVals)
 		mds[source.device.Name] = mdVals
@@ -273,9 +292,9 @@ func writeHistoryDataByTime(ctx context.Context, out writer, sources []*source) 
 		}
 
 		oldestRecord.use()
-		vals := oldestRecord.vals
+		vals := mds[oldestSource.device.Name]
+		maps.Copy(vals, oldestRecord.vals)
 		vals["timestamp"] = oldestRecord.at.Format(time.DateTime)
-		maps.Copy(vals, mds[oldestSource.device.Name])
 		out.Write(vals)
 
 		if anySkipped {
