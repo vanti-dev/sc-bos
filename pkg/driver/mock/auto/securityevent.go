@@ -11,16 +11,16 @@ import (
 )
 
 func SecurityEventAuto(model *securityevent.Model) *service.Service[string] {
+
 	slc := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
+		ticker := time.NewTicker(30 * time.Second)
 		go func() {
-			timer := time.NewTimer(30 * time.Second)
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case <-timer.C:
+				case <-ticker.C:
 					_, _ = model.GenerateSecurityEvent(timestamppb.Now())
-					timer.Reset(30 * time.Second)
 				}
 			}
 		}()
