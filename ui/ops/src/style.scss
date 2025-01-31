@@ -92,3 +92,14 @@ Also center the text when it's small
 .v-table--has-bottom .v-table__wrapper {
   border-radius: initial;
 }
+
+// Expansion panels that use check boxes for their expansion icon need some love
+.v-expansion-panel-title__icon > .v-checkbox {
+  &.v-input--density-default {
+    margin: -8px -2px;
+
+    .v-selection-control--density-default {
+      margin: -8px;
+    }
+  }
+}
