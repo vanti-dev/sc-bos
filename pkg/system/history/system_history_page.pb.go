@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.34.2
 // 	protoc        v5.29.1
-// source: history_system_page.proto
+// source: system_history_page.proto
 
 package history
 
@@ -33,7 +33,7 @@ type PageToken struct {
 func (x *PageToken) Reset() {
 	*x = PageToken{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_history_system_page_proto_msgTypes[0]
+		mi := &file_system_history_page_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -46,7 +46,7 @@ func (x *PageToken) String() string {
 func (*PageToken) ProtoMessage() {}
 
 func (x *PageToken) ProtoReflect() protoreflect.Message {
-	mi := &file_history_system_page_proto_msgTypes[0]
+	mi := &file_system_history_page_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +59,7 @@ func (x *PageToken) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PageToken.ProtoReflect.Descriptor instead.
 func (*PageToken) Descriptor() ([]byte, []int) {
-	return file_history_system_page_proto_rawDescGZIP(), []int{0}
+	return file_system_history_page_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *PageToken) GetRecord() *gen.HistoryRecord {
@@ -76,10 +76,10 @@ func (x *PageToken) GetTotalSize() int32 {
 	return 0
 }
 
-var File_history_system_page_proto protoreflect.FileDescriptor
+var File_system_history_page_proto protoreflect.FileDescriptor
 
-var file_history_system_page_proto_rawDesc = []byte{
-	0x0a, 0x19, 0x68, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x5f, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d,
+var file_system_history_page_proto_rawDesc = []byte{
+	0x0a, 0x19, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x5f, 0x68, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79,
 	0x5f, 0x70, 0x61, 0x67, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x1c, 0x73, 0x6d, 0x61,
 	0x72, 0x74, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x62, 0x6f, 0x73, 0x2e, 0x73, 0x79, 0x73, 0x74, 0x65,
 	0x6d, 0x2e, 0x68, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x1a, 0x0d, 0x68, 0x69, 0x73, 0x74, 0x6f,
@@ -97,23 +97,23 @@ var file_history_system_page_proto_rawDesc = []byte{
 }
 
 var (
-	file_history_system_page_proto_rawDescOnce sync.Once
-	file_history_system_page_proto_rawDescData = file_history_system_page_proto_rawDesc
+	file_system_history_page_proto_rawDescOnce sync.Once
+	file_system_history_page_proto_rawDescData = file_system_history_page_proto_rawDesc
 )
 
-func file_history_system_page_proto_rawDescGZIP() []byte {
-	file_history_system_page_proto_rawDescOnce.Do(func() {
-		file_history_system_page_proto_rawDescData = protoimpl.X.CompressGZIP(file_history_system_page_proto_rawDescData)
+func file_system_history_page_proto_rawDescGZIP() []byte {
+	file_system_history_page_proto_rawDescOnce.Do(func() {
+		file_system_history_page_proto_rawDescData = protoimpl.X.CompressGZIP(file_system_history_page_proto_rawDescData)
 	})
-	return file_history_system_page_proto_rawDescData
+	return file_system_history_page_proto_rawDescData
 }
 
-var file_history_system_page_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_history_system_page_proto_goTypes = []any{
+var file_system_history_page_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_system_history_page_proto_goTypes = []any{
 	(*PageToken)(nil),         // 0: smartcore.bos.system.history.PageToken
 	(*gen.HistoryRecord)(nil), // 1: smartcore.bos.HistoryRecord
 }
-var file_history_system_page_proto_depIdxs = []int32{
+var file_system_history_page_proto_depIdxs = []int32{
 	1, // 0: smartcore.bos.system.history.PageToken.record:type_name -> smartcore.bos.HistoryRecord
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
@@ -122,13 +122,13 @@ var file_history_system_page_proto_depIdxs = []int32{
 	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_history_system_page_proto_init() }
-func file_history_system_page_proto_init() {
-	if File_history_system_page_proto != nil {
+func init() { file_system_history_page_proto_init() }
+func file_system_history_page_proto_init() {
+	if File_system_history_page_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_history_system_page_proto_msgTypes[0].Exporter = func(v any, i int) any {
+		file_system_history_page_proto_msgTypes[0].Exporter = func(v any, i int) any {
 			switch v := v.(*PageToken); i {
 			case 0:
 				return &v.state
@@ -145,18 +145,18 @@ func file_history_system_page_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_history_system_page_proto_rawDesc,
+			RawDescriptor: file_system_history_page_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_history_system_page_proto_goTypes,
-		DependencyIndexes: file_history_system_page_proto_depIdxs,
-		MessageInfos:      file_history_system_page_proto_msgTypes,
+		GoTypes:           file_system_history_page_proto_goTypes,
+		DependencyIndexes: file_system_history_page_proto_depIdxs,
+		MessageInfos:      file_system_history_page_proto_msgTypes,
 	}.Build()
-	File_history_system_page_proto = out.File
-	file_history_system_page_proto_rawDesc = nil
-	file_history_system_page_proto_goTypes = nil
-	file_history_system_page_proto_depIdxs = nil
+	File_system_history_page_proto = out.File
+	file_system_history_page_proto_rawDesc = nil
+	file_system_history_page_proto_goTypes = nil
+	file_system_history_page_proto_depIdxs = nil
 }

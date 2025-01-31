@@ -9,7 +9,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/history"
 )
 
-//go:generate protomod protoc -- -I . -I ../../../proto --go_out=paths=source_relative:. history_system_page.proto
+//go:generate protomod protoc -- -I . -I ../../../proto --go_out=paths=source_relative:. system_history_page.proto
 
 func normPageSize(pageSize int32) int32 {
 	if pageSize < 0 {
