@@ -41,7 +41,7 @@ export function useDownloadLink(query, history = null) {
   watch(getDownloadDevicesUrlRequest, async (request) => {
     tableDownloadUrl.value = null;
     await fetchDownloadUrl(request);
-  }, {immediate: true});
+  }, {immediate: true, deep: true});
 
   const downloadBtnProps = computed(() => {
     const props = {};
