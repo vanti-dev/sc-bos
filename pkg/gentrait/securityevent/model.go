@@ -70,44 +70,26 @@ func (m *Model) GenerateSecurityEvent(time *timestamppb.Timestamp) (*gen.Securit
 	return m.AddSecurityEvent(se)
 }
 
-func (m *Model) ListSecurityEvents(req *gen.ListSecurityEventsRequest) (*gen.ListSecurityEventsResponse, error) {
-	// page token is just the index of where we left off (if any)
-	// this works with the current basic implementation because we only support a list of all events without filtering/sorting
-	// and the events are stored in ascending chronological order. If this either of these things change, this will need to be rethought
-	pageToken := req.GetPageToken()
+func (m *Model) GetSecurityEventCount() int {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	startIndex := len(m.allSecurityEvents)
-	if pageToken != "" {
-		_, err := strconv.Atoi(req.GetPageToken())
-		if err != nil {
-			return nil, err
-		}
-		startIndex, _ = strconv.Atoi(pageToken)
-	}
+	return len(m.allSecurityEvents)
+}
 
-	count := req.PageSize
-	if count == 0 {
-		count = 50
-	} else if count > 1000 {
-		count = 1000
-	}
+func (m *Model) ListSecurityEvents(start, count int) []*gen.SecurityEvent {
 
-	resp := &gen.ListSecurityEventsResponse{}
-
+	var events []*gen.SecurityEvent
 	// reverse to retrieve the latest events first
-	for i := startIndex - 1; i >= 0; i-- {
-		resp.SecurityEvents = append(resp.SecurityEvents, m.allSecurityEvents[i])
-		if len(resp.SecurityEvents) >= int(count) {
-			resp.NextPageToken = strconv.Itoa(i - 1)
+	for i := start - 1; i >= 0; i-- {
+		events = append(events, m.allSecurityEvents[i])
+		if len(events) >= count {
 			break
 		}
 	}
-	resp.TotalSize = int32(len(m.allSecurityEvents))
-	return resp, nil
+	return events
 }
 
-func (m *Model) PullSecurityEventsWrapper(request *gen.PullSecurityEventsRequest, server gen.SecurityEventApi_PullSecurityEventsServer) error {
+func (m *Model) pullSecurityEventsWrapper(request *gen.PullSecurityEventsRequest, server gen.SecurityEventApi_PullSecurityEventsServer) error {
 	if !request.UpdatesOnly {
 		m.mu.Lock()
 		i := len(m.allSecurityEvents) - 50
@@ -155,12 +137,4 @@ func (m *Model) PullSecurityEvents(ctx context.Context, opts ...resource.ReadOpt
 	}()
 
 	return send
-}
-
-func (m *Model) unlock() {
-	m.mu.Unlock()
-}
-
-func (m *Model) lock() {
-	m.mu.Lock()
 }
