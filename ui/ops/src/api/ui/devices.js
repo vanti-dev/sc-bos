@@ -2,6 +2,7 @@ import {fieldMaskFromObject, setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setCollection, setValue} from '@/api/resource';
 import {trackAction} from '@/api/resource.js';
+import {periodFromObject} from '@/api/sc/types/period.js';
 import {DevicesApiPromiseClient} from '@vanti-dev/sc-bos-ui-gen/proto/devices_grpc_web_pb';
 import {
   Device,
@@ -185,5 +186,6 @@ function getDownloadDevicesUrlRequestFromObject(obj) {
   const dst = new GetDownloadDevicesUrlRequest();
   setProperties(dst, obj, 'mediaType');
   dst.setQuery(deviceQueryFromObject(obj.query));
+  dst.setHistory(periodFromObject(obj.history));
   return dst;
 }

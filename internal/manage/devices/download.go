@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/NYTimes/gziphandler"
 	"github.com/go-jose/go-jose/v4"
 	"github.com/go-jose/go-jose/v4/jwt"
 	"google.golang.org/grpc/codes"
@@ -26,6 +27,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	timepb "github.com/smart-core-os/sc-api/go/types/time"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -119,33 +121,189 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 	if err := csvOut.Write(headers); err != nil {
 		return
 	}
+	out := newCSVWriter(csvOut, headerIndex)
 
-	for _, d := range deviceList {
-		row := make([]string, len(headers))
-		captureMDValues(d, headerIndex, row)
+	if token.Request.History == nil {
+		s.writeLiveData(r.Context(), out, deviceList, traitInfo)
+	} else {
+		s.writeHistoricalData(r.Context(), out, deviceList, traitInfo, token.Request.History)
+	}
+	csvOut.Flush()
+}
+
+type writer interface {
+	Write(row map[string]string)
+}
+
+func newCSVWriter(out *csv.Writer, headerIndex map[string]int) *csvWriter {
+	return &csvWriter{out, headerIndex, make([]string, len(headerIndex))}
+}
+
+type csvWriter struct {
+	out         *csv.Writer
+	headerIndex map[string]int
+	rowBuf      []string
+}
+
+func (c *csvWriter) Write(row map[string]string) {
+	for h, v := range row {
+		index, ok := c.headerIndex[h]
+		if !ok {
+			continue
+		}
+		c.rowBuf[index] = v
+	}
+	_ = c.out.Write(c.rowBuf)
+	clear(c.rowBuf)
+}
+
+func (s *Server) writeLiveData(ctx context.Context, out writer, devices []*traits.Metadata, traitInfo map[string]traitInfo) {
+	for _, d := range devices {
+		row := make(map[string]string)
+		captureMDValues(d, row)
 		for _, t := range d.Traits {
 			info, ok := traitInfo[t.Name]
 			if !ok {
 				continue
 			}
-			values, err := info.get(r.Context(), d.Name)
+			values, err := info.get(ctx, d.Name)
 			if err != nil {
-				http.Error(w, fmt.Sprintf("failed to get trait info: %q %q %v", d.Name, t.Name, err), http.StatusInternalServerError)
+				row[info.headers[0]] = fmt.Sprintf("ERR: %v", err)
 				continue
 			}
-			for h, v := range values {
-				index, ok := headerIndex[h]
-				if !ok {
-					continue
-				}
-				row[index] = v
-			}
+			maps.Copy(row, values)
 		}
-		if err := csvOut.Write(row); err != nil {
-			return
+		out.Write(row)
+	}
+}
+
+type source struct {
+	device *traits.Metadata
+	cursor *historyCursor
+	skip   bool
+}
+
+func (s *Server) writeHistoricalData(ctx context.Context, out writer, devices []*traits.Metadata, traitInfo map[string]traitInfo, period *timepb.Period) {
+	// we might want to allow the user to specify the order in the future
+	const (
+		// pageSize = 100
+		// order    = "source"
+		// pageSize = 10 // time order reads from all sources at once, limit memory use
+		// order    = "time"
+		pageSize = 100 // for device order we only keep the traits for a single device in memory at a time
+		order    = "device"
+	)
+
+	var sources []*source
+	for _, d := range devices {
+		for _, t := range d.Traits {
+			info, ok := traitInfo[t.Name]
+			if !ok || info.history == nil {
+				continue
+			}
+			cursor := info.history(d.Name, period, pageSize)
+			if cursor == nil {
+				continue
+			}
+			sources = append(sources, &source{device: d, cursor: cursor})
 		}
 	}
-	csvOut.Flush()
+
+	switch order {
+	case "source":
+		writeHistoryDataBySource(ctx, out, sources)
+	case "device":
+		writeHistoryDataByDevice(ctx, out, sources)
+	case "time":
+		writeHistoryDataByTime(ctx, out, sources)
+	}
+}
+
+// writeHistoryDataBySource writes history data ordered by source, then time.
+// This means each devices trait records are written together.
+func writeHistoryDataBySource(ctx context.Context, out writer, sources []*source) {
+	for _, source := range sources {
+		mdVals := make(map[string]string)
+		captureMDValues(source.device, mdVals)
+		for {
+			head, err := source.cursor.Head(ctx)
+			if err != nil {
+				break
+			}
+			head.use()
+			vals := head.vals
+			maps.Copy(vals, mdVals)
+			vals["timestamp"] = head.at.Format(time.DateTime)
+			out.Write(vals)
+		}
+	}
+}
+
+// writeHistoryDataByDevice writes history data ordered by device, then time.
+func writeHistoryDataByDevice(ctx context.Context, out writer, sources []*source) {
+	sourcesByDevice := make(map[string][]*source)
+	for _, source := range sources {
+		sourcesByDevice[source.device.Name] = append(sourcesByDevice[source.device.Name], source)
+	}
+
+	for _, sources := range sourcesByDevice {
+		writeHistoryDataByTime(ctx, out, sources)
+	}
+}
+
+// writeHistoryDataByTime writes history data ordered by time.
+// This means device trait records are interleaved in time order.
+func writeHistoryDataByTime(ctx context.Context, out writer, sources []*source) {
+	// cache of metadata values we can reuse during the main loop
+	mds := make(map[string]map[string]string, len(sources))
+	for _, source := range sources {
+		if _, ok := mds[source.device.Name]; ok {
+			continue
+		}
+		mdVals := make(map[string]string)
+		captureMDValues(source.device, mdVals)
+		mds[source.device.Name] = mdVals
+	}
+
+	for len(sources) > 0 {
+		var (
+			oldestRecord *historyRecord
+			oldestSource *source
+			anySkipped   bool
+		)
+		for _, source := range sources {
+			head, err := source.cursor.Head(ctx)
+			if err != nil {
+				anySkipped = true
+				source.skip = true
+				continue
+			}
+			switch {
+			case oldestRecord == nil:
+				oldestRecord, oldestSource = &head, source
+			case head.at.Before(oldestRecord.at):
+				oldestRecord, oldestSource = &head, source
+			}
+		}
+
+		// both checks aren't strictly necessary as both are set at the same time,
+		// however the static checker doesn't know that
+		if oldestRecord == nil || oldestSource == nil {
+			return // no records were processed
+		}
+
+		oldestRecord.use()
+		vals := mds[oldestSource.device.Name]
+		maps.Copy(vals, oldestRecord.vals)
+		vals["timestamp"] = oldestRecord.at.Format(time.DateTime)
+		out.Write(vals)
+
+		if anySkipped {
+			sources = slices.DeleteFunc(sources, func(source *source) bool {
+				return source.skip
+			})
+		}
+	}
 }
 
 func (s *Server) signAndSerializeDownloadToken(tokenBody *DownloadToken, expireAfter time.Time) (string, error) {
@@ -230,7 +388,24 @@ func (s *Server) listDevicesAndHeaders(token *DownloadToken, traitInfo map[strin
 
 	collectTraitHeaders(headerSet, devices, traitInfo)
 
+	if token.Request.History != nil {
+		// delete headers for traits that don't support history
+		for _, info := range traitInfo {
+			if info.history == nil {
+				for _, header := range info.headers {
+					delete(headerSet, header)
+				}
+			}
+		}
+	}
+
 	headers = sortHeaders(maps.Keys(headerSet))
+
+	if token.Request.History != nil {
+		// timestamp should be the first column
+		headers = append([]string{"timestamp"}, headers...)
+	}
+
 	return devices, headers, nil
 }
 
@@ -277,7 +452,7 @@ func collectMetadataHeaders(dst map[string]struct{}, deviceList []*traits.Metada
 			return httpError{http.StatusInternalServerError, "failed to collect headers"}
 		}
 	}
-	delete(dst, "traits.name") // we process these separately
+	delete(dst, "md.traits.name") // we process these separately
 	return nil
 }
 
@@ -301,7 +476,7 @@ func collectTraitHeaders(dst map[string]struct{}, deviceList []*traits.Metadata,
 	}
 }
 
-func captureMDValues(md *traits.Metadata, headerIndex map[string]int, row []string) {
+func captureMDValues(md *traits.Metadata, row map[string]string) {
 	_ = protorange.Range(md.ProtoReflect(), func(values protopath.Values) error {
 		p := values.Path
 		leafStep := p.Index(-1)
@@ -335,11 +510,7 @@ func captureMDValues(md *traits.Metadata, headerIndex map[string]int, row []stri
 		if header == "" {
 			return nil
 		}
-		index, ok := headerIndex[header]
-		if !ok {
-			return nil // skip
-		}
-		row[index] = values.Values[len(values.Values)-1].String()
+		row[header] = values.Values[len(values.Values)-1].String()
 		return nil
 	})
 }
@@ -375,6 +546,7 @@ func sortHeaders(headers iter.Seq[string]) []string {
 type traitInfo struct {
 	headers []string
 	get     func(ctx context.Context, name string) (map[string]string, error)
+	history func(name string, period *timepb.Period, pageSize int32) *historyCursor
 }
 
 func protoPathToHeader(p protopath.Path) string {
@@ -400,7 +572,7 @@ func protoPathToHeader(p protopath.Path) string {
 }
 
 func (s *Server) RegisterHTTPMux(mux *http.ServeMux) {
-	mux.HandleFunc(s.downloadUrlBase.Path, s.DownloadDevicesHTTPHandler)
+	mux.Handle(s.downloadUrlBase.Path, gziphandler.GzipHandler(http.HandlerFunc(s.DownloadDevicesHTTPHandler)))
 }
 
 func newHMACKeyGen(size int) func() ([]byte, error) {

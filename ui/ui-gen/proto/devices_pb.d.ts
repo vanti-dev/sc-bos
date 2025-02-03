@@ -4,6 +4,7 @@ import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
 import * as traits_metadata_pb from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb'; // proto import: "traits/metadata.proto"
 import * as types_change_pb from '@smart-core-os/sc-api-grpc-web/types/change_pb'; // proto import: "types/change.proto"
+import * as types_time_period_pb from '@smart-core-os/sc-api-grpc-web/types/time/period_pb'; // proto import: "types/time/period.proto"
 
 
 export class Device extends jspb.Message {
@@ -433,6 +434,11 @@ export class GetDownloadDevicesUrlRequest extends jspb.Message {
   getMediaType(): string;
   setMediaType(value: string): GetDownloadDevicesUrlRequest;
 
+  getHistory(): types_time_period_pb.Period | undefined;
+  setHistory(value?: types_time_period_pb.Period): GetDownloadDevicesUrlRequest;
+  hasHistory(): boolean;
+  clearHistory(): GetDownloadDevicesUrlRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetDownloadDevicesUrlRequest.AsObject;
   static toObject(includeInstance: boolean, msg: GetDownloadDevicesUrlRequest): GetDownloadDevicesUrlRequest.AsObject;
@@ -445,6 +451,7 @@ export namespace GetDownloadDevicesUrlRequest {
   export type AsObject = {
     query?: Device.Query.AsObject,
     mediaType: string,
+    history?: types_time_period_pb.Period.AsObject,
   }
 }
 

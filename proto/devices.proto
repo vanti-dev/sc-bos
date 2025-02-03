@@ -8,6 +8,7 @@ import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "traits/metadata.proto";
 import "types/change.proto";
+import "types/time/period.proto";
 
 // DevicesApi allows you to query for devices by metadata.
 service DevicesApi {
@@ -169,6 +170,10 @@ message GetDownloadDevicesUrlRequest {
   // Defaults to text/csv.
   // Supported values are text/csv.
   string media_type = 2;
+
+  // A query for historical records for matched devices.
+  // When present, GETting the url will return rows for each historical record for each device matched by query.
+  smartcore.types.time.Period history = 3;
 }
 
 message DownloadDevicesUrl {
