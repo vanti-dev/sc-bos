@@ -4,6 +4,7 @@ package history
 
 import (
 	"context"
+	"strings"
 	"time"
 )
 
@@ -18,7 +19,7 @@ type Store interface {
 
 // Slice describes a read-only ordered segment of a Store.
 type Slice interface {
-	// Slice creates a new slice including records >= from and < to.
+	// Slice returns a slice from the records in this slice where the records are also >= from and < to.
 	// If from is zero then it is treated as the first record available,
 	// if to is zero then it is the record immediately after the last record,
 	// just like with go slices.
@@ -26,8 +27,12 @@ type Slice interface {
 	Slice(from, to Record) Slice
 	// Read reads records from the slice starting at the first record available, ending when into is full (according to len).
 	// Read returns the number of records actually read.
-	// The first record read will be places into index 0, the second into index 1, and so on.
+	// The oldest record read will be placed into index 0, the second into index 1, and so on.
 	Read(ctx context.Context, into []Record) (int, error)
+	// ReadDesc reads records from the slice starting at the last record available, ending when into is full (according to len).
+	// ReadDesc returns the number of records actually read.
+	// The newest record read will be placed into index 0, the second into index 1, and so on.
+	ReadDesc(ctx context.Context, into []Record) (int, error)
 	// Len returns the number of records this slice represents.
 	Len(ctx context.Context) (int, error)
 }
@@ -42,4 +47,56 @@ type Record struct {
 // IsZero returns whether r is equivalent to Record{}, the zero record.
 func (r Record) IsZero() bool {
 	return r.ID == "" && r.CreateTime.IsZero() && len(r.Payload) == 0
+}
+
+// CompareFrom compares this record r with b, returning -1 if r is before b, 1 if r is after b, and 0 if they are equal.
+// A zero CreateTime is considered before any non-zero CreateTime, an empty ID is considered before any non-empty ID.
+func (r Record) CompareFrom(b Record) int {
+	// time.Time{} is before any other time.Time
+	i := r.CreateTime.Compare(b.CreateTime)
+	if i != 0 {
+		return i
+	}
+	// "" already compares before other strings
+	return strings.Compare(r.ID, b.ID)
+}
+
+// CompareTo compares this record r with b, returning -1 if r is before b, 1 if r is after b, and 0 if they are equal.
+// A zero CreateTime is considered after any non-zero CreateTime, an empty ID is considered after any non-empty ID.
+func (r Record) CompareTo(b Record) int {
+	if b.CreateTime.IsZero() && !r.CreateTime.IsZero() {
+		return -1
+	}
+	if r.CreateTime.IsZero() && !b.CreateTime.IsZero() {
+		return 1
+	}
+	i := r.CreateTime.Compare(b.CreateTime)
+	if i != 0 {
+		return i
+	}
+
+	if b.ID == "" && r.ID != "" {
+		return -1
+	}
+	if r.ID == "" && b.ID != "" {
+		return 1
+	}
+	return strings.Compare(r.ID, b.ID)
+}
+
+// IntersectRecords returns the smallest [from, to) range that is common to both input ranges.
+// If there is no such range, then from will compare after to.
+// If the range is exactly one record, then from will be equal to to.
+func IntersectRecords(from1, to1, from2, to2 Record) (from, to Record) {
+	if from1.CompareFrom(from2) > 0 {
+		from = from1
+	} else {
+		from = from2
+	}
+	if to1.CompareTo(to2) < 0 {
+		to = to1
+	} else {
+		to = to2
+	}
+	return from, to
 }

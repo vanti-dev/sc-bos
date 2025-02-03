@@ -4,6 +4,7 @@ package memstore
 import (
 	"context"
 	"errors"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -102,6 +103,12 @@ func (rs slice) Slice(from, to history.Record) history.Slice {
 
 func (rs slice) Read(_ context.Context, into []history.Record) (int, error) {
 	return copy(into, rs), nil
+}
+
+func (rs slice) ReadDesc(_ context.Context, into []history.Record) (int, error) {
+	i := copy(into, rs[max(len(rs)-len(into), 0):])
+	slices.Reverse(into[:i])
+	return i, nil
 }
 
 func (rs slice) Len(_ context.Context) (int, error) {
