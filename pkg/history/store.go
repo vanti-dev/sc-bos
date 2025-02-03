@@ -26,8 +26,12 @@ type Slice interface {
 	Slice(from, to Record) Slice
 	// Read reads records from the slice starting at the first record available, ending when into is full (according to len).
 	// Read returns the number of records actually read.
-	// The first record read will be places into index 0, the second into index 1, and so on.
+	// The oldest record read will be placed into index 0, the second into index 1, and so on.
 	Read(ctx context.Context, into []Record) (int, error)
+	// ReadDesc reads records from the slice starting at the last record available, ending when into is full (according to len).
+	// ReadDesc returns the number of records actually read.
+	// The newest record read will be placed into index 0, the second into index 1, and so on.
+	ReadDesc(ctx context.Context, into []Record) (int, error)
 	// Len returns the number of records this slice represents.
 	Len(ctx context.Context) (int, error)
 }

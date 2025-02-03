@@ -116,6 +116,9 @@ export class ListHistoryRecordsRequest extends jspb.Message {
   getPageToken(): string;
   setPageToken(value: string): ListHistoryRecordsRequest;
 
+  getOrderBy(): string;
+  setOrderBy(value: string): ListHistoryRecordsRequest;
+
   getQuery(): HistoryRecord.Query | undefined;
   setQuery(value?: HistoryRecord.Query): ListHistoryRecordsRequest;
   hasQuery(): boolean;
@@ -134,6 +137,7 @@ export namespace ListHistoryRecordsRequest {
     name: string,
     pageSize: number,
     pageToken: string,
+    orderBy: string,
     query?: HistoryRecord.Query.AsObject,
   }
 }
@@ -212,6 +216,9 @@ export class ListAirTemperatureHistoryRequest extends jspb.Message {
   getPageToken(): string;
   setPageToken(value: string): ListAirTemperatureHistoryRequest;
 
+  getOrderBy(): string;
+  setOrderBy(value: string): ListAirTemperatureHistoryRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListAirTemperatureHistoryRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListAirTemperatureHistoryRequest): ListAirTemperatureHistoryRequest.AsObject;
@@ -227,6 +234,7 @@ export namespace ListAirTemperatureHistoryRequest {
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
     pageSize: number,
     pageToken: string,
+    orderBy: string,
   }
 }
 
@@ -304,6 +312,9 @@ export class ListMeterReadingHistoryRequest extends jspb.Message {
   getPageToken(): string;
   setPageToken(value: string): ListMeterReadingHistoryRequest;
 
+  getOrderBy(): string;
+  setOrderBy(value: string): ListMeterReadingHistoryRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListMeterReadingHistoryRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListMeterReadingHistoryRequest): ListMeterReadingHistoryRequest.AsObject;
@@ -319,6 +330,7 @@ export namespace ListMeterReadingHistoryRequest {
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
     pageSize: number,
     pageToken: string,
+    orderBy: string,
   }
 }
 
@@ -396,6 +408,9 @@ export class ListElectricDemandHistoryRequest extends jspb.Message {
   getPageToken(): string;
   setPageToken(value: string): ListElectricDemandHistoryRequest;
 
+  getOrderBy(): string;
+  setOrderBy(value: string): ListElectricDemandHistoryRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListElectricDemandHistoryRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListElectricDemandHistoryRequest): ListElectricDemandHistoryRequest.AsObject;
@@ -411,6 +426,7 @@ export namespace ListElectricDemandHistoryRequest {
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
     pageSize: number,
     pageToken: string,
+    orderBy: string,
   }
 }
 
@@ -488,6 +504,9 @@ export class ListOccupancyHistoryRequest extends jspb.Message {
   getPageToken(): string;
   setPageToken(value: string): ListOccupancyHistoryRequest;
 
+  getOrderBy(): string;
+  setOrderBy(value: string): ListOccupancyHistoryRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListOccupancyHistoryRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListOccupancyHistoryRequest): ListOccupancyHistoryRequest.AsObject;
@@ -503,6 +522,7 @@ export namespace ListOccupancyHistoryRequest {
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
     pageSize: number,
     pageToken: string,
+    orderBy: string,
   }
 }
 
@@ -580,6 +600,9 @@ export class ListAirQualityHistoryRequest extends jspb.Message {
   getPageToken(): string;
   setPageToken(value: string): ListAirQualityHistoryRequest;
 
+  getOrderBy(): string;
+  setOrderBy(value: string): ListAirQualityHistoryRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListAirQualityHistoryRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListAirQualityHistoryRequest): ListAirQualityHistoryRequest.AsObject;
@@ -595,6 +618,7 @@ export namespace ListAirQualityHistoryRequest {
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
     pageSize: number,
     pageToken: string,
+    orderBy: string,
   }
 }
 

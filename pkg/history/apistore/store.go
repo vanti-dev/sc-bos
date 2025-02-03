@@ -68,7 +68,16 @@ func (s *slice) Slice(from, to history.Record) history.Slice {
 }
 
 func (s *slice) Read(ctx context.Context, into []history.Record) (int, error) {
+	return s.read(ctx, into, "")
+}
+
+func (s *slice) ReadDesc(ctx context.Context, into []history.Record) (int, error) {
+	return s.read(ctx, into, "create_time desc")
+}
+
+func (s *slice) read(ctx context.Context, into []history.Record, orderBy string) (int, error) {
 	req := s.newListRequest(int32(len(into)))
+	req.OrderBy = orderBy
 
 	i := 0
 	for {

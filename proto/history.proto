@@ -55,8 +55,14 @@ message ListHistoryRecordsRequest {
   // A page token, received from a previous `ListHistoryRecords` call.
   // Provide this to retrieve the subsequent page.
   string page_token = 3;
+  // Specify the order of the returned records.
+  // The default is `create_time asc` - aka oldest record first.
+  // The format is `field_name [asc|desc]`, with asc being the default.
+  // Only `create_time` is supported.
+  string order_by = 5;
 
   HistoryRecord.Query query = 4;
+
 }
 
 message ListHistoryRecordsResponse {
@@ -95,6 +101,11 @@ message ListAirTemperatureHistoryRequest {
   // A page token, received from a previous `ListAirTemperatureHistoryResponse` call.
   // Provide this to retrieve the subsequent page.
   string page_token = 5;
+  // Specify the order of the returned records.
+  // The default is `record_time asc` - aka oldest record first.
+  // The format is `field_name [asc|desc]`, with asc being the default.
+  // Only `record_time` is supported.
+  string order_by = 6;
 }
 
 message ListAirTemperatureHistoryResponse {
@@ -133,6 +144,11 @@ message ListMeterReadingHistoryRequest {
   // A page token, received from a previous `ListMeterReadingHistoryResponse` call.
   // Provide this to retrieve the subsequent page.
   string page_token = 5;
+  // Specify the order of the returned records.
+  // The default is `record_time asc` - aka oldest record first.
+  // The format is `field_name [asc|desc]`, with asc being the default.
+  // Only `record_time` is supported.
+  string order_by = 6;
 }
 
 message ListMeterReadingHistoryResponse {
@@ -171,6 +187,11 @@ message ListElectricDemandHistoryRequest {
   // A page token, received from a previous `ListElectricDemandHistoryResponse` call.
   // Provide this to retrieve the subsequent page.
   string page_token = 5;
+  // Specify the order of the returned records.
+  // The default is `record_time asc` - aka oldest record first.
+  // The format is `field_name [asc|desc]`, with asc being the default.
+  // Only `record_time` is supported.
+  string order_by = 6;
 }
 
 message ListElectricDemandHistoryResponse {
@@ -209,6 +230,11 @@ message ListOccupancyHistoryRequest {
   // A page token, received from a previous `ListOccupancyHistoryResponse` call.
   // Provide this to retrieve the subsequent page.
   string page_token = 5;
+  // Specify the order of the returned records.
+  // The default is `record_time asc` - aka oldest record first.
+  // The format is `field_name [asc|desc]`, with asc being the default.
+  // Only `record_time` is supported.
+  string order_by = 6;
 }
 
 message ListOccupancyHistoryResponse {
@@ -246,6 +272,11 @@ message ListAirQualityHistoryRequest {
   // A page token, received from a previous `ListAirQualityHistoryResponse` call.
   // Provide this to retrieve the subsequent page.
   string page_token = 5;
+  // Specify the order of the returned records.
+  // The default is `record_time asc` - aka oldest record first.
+  // The format is `field_name [asc|desc]`, with asc being the default.
+  // Only `record_time` is supported.
+  string order_by = 6;
 }
 
 message ListAirQualityHistoryResponse {

@@ -230,6 +230,9 @@ export class ListCurrentStatusHistoryRequest extends jspb.Message {
   getPageToken(): string;
   setPageToken(value: string): ListCurrentStatusHistoryRequest;
 
+  getOrderBy(): string;
+  setOrderBy(value: string): ListCurrentStatusHistoryRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListCurrentStatusHistoryRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListCurrentStatusHistoryRequest): ListCurrentStatusHistoryRequest.AsObject;
@@ -245,6 +248,7 @@ export namespace ListCurrentStatusHistoryRequest {
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
     pageSize: number,
     pageToken: string,
+    orderBy: string,
   }
 }
 

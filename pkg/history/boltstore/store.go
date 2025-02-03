@@ -170,9 +170,23 @@ func (s slice) getQuery() *bolthold.Query {
 	return query.SortBy("CreateTime")
 }
 
-// Read returns up to len(into) records, starting from the oldest record that is newer than from.
-func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
+// Read reads records and places them into dst, with the oldest records at index 0.
+func (s slice) Read(ctx context.Context, dst []history.Record) (int, error) {
+	return s.read(ctx, dst, false)
+}
+
+// ReadDesc reads records and places them into dst, with the newest records at index 0.
+func (s slice) ReadDesc(ctx context.Context, dst []history.Record) (int, error) {
+	return s.read(ctx, dst, true)
+}
+
+// read returns up to len(into) records, between from and to.
+// When reverse is false, record 0 will be the oldest, when true it will be the newest.
+func (s slice) read(ctx context.Context, into []history.Record, reverse bool) (int, error) {
 	query := s.getQuery()
+	if reverse {
+		query = query.Reverse()
+	}
 	maxLen := len(into)
 	query = query.Limit(maxLen)
 

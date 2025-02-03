@@ -111,6 +111,11 @@ message ListCurrentStatusHistoryRequest {
   // A page token, received from a previous `ListCurrentStatusHistoryResponse` call.
   // Provide this to retrieve the subsequent page.
   string page_token = 5;
+  // Specify the order of the returned records.
+  // The default is `create_time asc` - aka oldest record first.
+  // The format is `field_name [asc|desc]`, with asc being the default.
+  // Only `create_time` is supported.
+  string order_by = 6;
 }
 
 message ListCurrentStatusHistoryResponse {
