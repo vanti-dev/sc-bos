@@ -13,7 +13,7 @@
         <filter-choice-chips :ctx="filterCtx" class="mx-2"/>
         <filter-btn :ctx="filterCtx"/>
       </template>
-      <device-download content="icon" :query="devices.query" class="ml-2"/>
+      <device-download content="icon" :query="devices.query.value" class="ml-2"/>
     </v-toolbar>
     <v-data-table-server
         v-model="selectedDevicesComp"
