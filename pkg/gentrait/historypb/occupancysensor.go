@@ -42,7 +42,7 @@ var occupancyPager = newPageReader(func(r history.Record) (*gen.OccupancyRecord,
 })
 
 func (m *OccupancySensorServer) ListOccupancyHistory(ctx context.Context, request *gen.ListOccupancyHistoryRequest) (*gen.ListOccupancyHistoryResponse, error) {
-	page, size, nextToken, err := occupancyPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken)
+	page, size, nextToken, err := occupancyPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
 	if err != nil {
 		return nil, err
 	}

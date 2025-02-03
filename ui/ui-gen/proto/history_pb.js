@@ -1234,6 +1234,7 @@ proto.smartcore.bos.ListHistoryRecordsRequest.toObject = function(includeInstanc
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
     pageSize: jspb.Message.getFieldWithDefault(msg, 2, 0),
     pageToken: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    orderBy: jspb.Message.getFieldWithDefault(msg, 5, ""),
     query: (f = msg.getQuery()) && proto.smartcore.bos.HistoryRecord.Query.toObject(includeInstance, f)
   };
 
@@ -1282,6 +1283,10 @@ proto.smartcore.bos.ListHistoryRecordsRequest.deserializeBinaryFromReader = func
     case 3:
       var value = /** @type {string} */ (reader.readString());
       msg.setPageToken(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setOrderBy(value);
       break;
     case 4:
       var value = new proto.smartcore.bos.HistoryRecord.Query;
@@ -1335,6 +1340,13 @@ proto.smartcore.bos.ListHistoryRecordsRequest.serializeBinaryToWriter = function
   if (f.length > 0) {
     writer.writeString(
       3,
+      f
+    );
+  }
+  f = message.getOrderBy();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
       f
     );
   }
@@ -1400,6 +1412,24 @@ proto.smartcore.bos.ListHistoryRecordsRequest.prototype.getPageToken = function(
  */
 proto.smartcore.bos.ListHistoryRecordsRequest.prototype.setPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * optional string order_by = 5;
+ * @return {string}
+ */
+proto.smartcore.bos.ListHistoryRecordsRequest.prototype.getOrderBy = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.ListHistoryRecordsRequest} returns this
+ */
+proto.smartcore.bos.ListHistoryRecordsRequest.prototype.setOrderBy = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 
@@ -1898,7 +1928,8 @@ proto.smartcore.bos.ListAirTemperatureHistoryRequest.toObject = function(include
     period: (f = msg.getPeriod()) && types_time_period_pb.Period.toObject(includeInstance, f),
     readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
     pageSize: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    pageToken: jspb.Message.getFieldWithDefault(msg, 5, "")
+    pageToken: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    orderBy: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
   if (includeInstance) {
@@ -1956,6 +1987,10 @@ proto.smartcore.bos.ListAirTemperatureHistoryRequest.deserializeBinaryFromReader
     case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.setPageToken(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setOrderBy(value);
       break;
     default:
       reader.skipField();
@@ -2020,6 +2055,13 @@ proto.smartcore.bos.ListAirTemperatureHistoryRequest.serializeBinaryToWriter = f
   if (f.length > 0) {
     writer.writeString(
       5,
+      f
+    );
+  }
+  f = message.getOrderBy();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
       f
     );
   }
@@ -2151,6 +2193,24 @@ proto.smartcore.bos.ListAirTemperatureHistoryRequest.prototype.getPageToken = fu
  */
 proto.smartcore.bos.ListAirTemperatureHistoryRequest.prototype.setPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional string order_by = 6;
+ * @return {string}
+ */
+proto.smartcore.bos.ListAirTemperatureHistoryRequest.prototype.getOrderBy = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.ListAirTemperatureHistoryRequest} returns this
+ */
+proto.smartcore.bos.ListAirTemperatureHistoryRequest.prototype.setOrderBy = function(value) {
+  return jspb.Message.setProto3StringField(this, 6, value);
 };
 
 
@@ -2612,7 +2672,8 @@ proto.smartcore.bos.ListMeterReadingHistoryRequest.toObject = function(includeIn
     period: (f = msg.getPeriod()) && types_time_period_pb.Period.toObject(includeInstance, f),
     readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
     pageSize: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    pageToken: jspb.Message.getFieldWithDefault(msg, 5, "")
+    pageToken: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    orderBy: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
   if (includeInstance) {
@@ -2670,6 +2731,10 @@ proto.smartcore.bos.ListMeterReadingHistoryRequest.deserializeBinaryFromReader =
     case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.setPageToken(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setOrderBy(value);
       break;
     default:
       reader.skipField();
@@ -2734,6 +2799,13 @@ proto.smartcore.bos.ListMeterReadingHistoryRequest.serializeBinaryToWriter = fun
   if (f.length > 0) {
     writer.writeString(
       5,
+      f
+    );
+  }
+  f = message.getOrderBy();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
       f
     );
   }
@@ -2865,6 +2937,24 @@ proto.smartcore.bos.ListMeterReadingHistoryRequest.prototype.getPageToken = func
  */
 proto.smartcore.bos.ListMeterReadingHistoryRequest.prototype.setPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional string order_by = 6;
+ * @return {string}
+ */
+proto.smartcore.bos.ListMeterReadingHistoryRequest.prototype.getOrderBy = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.ListMeterReadingHistoryRequest} returns this
+ */
+proto.smartcore.bos.ListMeterReadingHistoryRequest.prototype.setOrderBy = function(value) {
+  return jspb.Message.setProto3StringField(this, 6, value);
 };
 
 
@@ -3326,7 +3416,8 @@ proto.smartcore.bos.ListElectricDemandHistoryRequest.toObject = function(include
     period: (f = msg.getPeriod()) && types_time_period_pb.Period.toObject(includeInstance, f),
     readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
     pageSize: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    pageToken: jspb.Message.getFieldWithDefault(msg, 5, "")
+    pageToken: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    orderBy: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
   if (includeInstance) {
@@ -3384,6 +3475,10 @@ proto.smartcore.bos.ListElectricDemandHistoryRequest.deserializeBinaryFromReader
     case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.setPageToken(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setOrderBy(value);
       break;
     default:
       reader.skipField();
@@ -3448,6 +3543,13 @@ proto.smartcore.bos.ListElectricDemandHistoryRequest.serializeBinaryToWriter = f
   if (f.length > 0) {
     writer.writeString(
       5,
+      f
+    );
+  }
+  f = message.getOrderBy();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
       f
     );
   }
@@ -3579,6 +3681,24 @@ proto.smartcore.bos.ListElectricDemandHistoryRequest.prototype.getPageToken = fu
  */
 proto.smartcore.bos.ListElectricDemandHistoryRequest.prototype.setPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional string order_by = 6;
+ * @return {string}
+ */
+proto.smartcore.bos.ListElectricDemandHistoryRequest.prototype.getOrderBy = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.ListElectricDemandHistoryRequest} returns this
+ */
+proto.smartcore.bos.ListElectricDemandHistoryRequest.prototype.setOrderBy = function(value) {
+  return jspb.Message.setProto3StringField(this, 6, value);
 };
 
 
@@ -4040,7 +4160,8 @@ proto.smartcore.bos.ListOccupancyHistoryRequest.toObject = function(includeInsta
     period: (f = msg.getPeriod()) && types_time_period_pb.Period.toObject(includeInstance, f),
     readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
     pageSize: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    pageToken: jspb.Message.getFieldWithDefault(msg, 5, "")
+    pageToken: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    orderBy: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
   if (includeInstance) {
@@ -4098,6 +4219,10 @@ proto.smartcore.bos.ListOccupancyHistoryRequest.deserializeBinaryFromReader = fu
     case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.setPageToken(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setOrderBy(value);
       break;
     default:
       reader.skipField();
@@ -4162,6 +4287,13 @@ proto.smartcore.bos.ListOccupancyHistoryRequest.serializeBinaryToWriter = functi
   if (f.length > 0) {
     writer.writeString(
       5,
+      f
+    );
+  }
+  f = message.getOrderBy();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
       f
     );
   }
@@ -4293,6 +4425,24 @@ proto.smartcore.bos.ListOccupancyHistoryRequest.prototype.getPageToken = functio
  */
 proto.smartcore.bos.ListOccupancyHistoryRequest.prototype.setPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional string order_by = 6;
+ * @return {string}
+ */
+proto.smartcore.bos.ListOccupancyHistoryRequest.prototype.getOrderBy = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.ListOccupancyHistoryRequest} returns this
+ */
+proto.smartcore.bos.ListOccupancyHistoryRequest.prototype.setOrderBy = function(value) {
+  return jspb.Message.setProto3StringField(this, 6, value);
 };
 
 
@@ -4754,7 +4904,8 @@ proto.smartcore.bos.ListAirQualityHistoryRequest.toObject = function(includeInst
     period: (f = msg.getPeriod()) && types_time_period_pb.Period.toObject(includeInstance, f),
     readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
     pageSize: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    pageToken: jspb.Message.getFieldWithDefault(msg, 5, "")
+    pageToken: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    orderBy: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
   if (includeInstance) {
@@ -4812,6 +4963,10 @@ proto.smartcore.bos.ListAirQualityHistoryRequest.deserializeBinaryFromReader = f
     case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.setPageToken(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setOrderBy(value);
       break;
     default:
       reader.skipField();
@@ -4876,6 +5031,13 @@ proto.smartcore.bos.ListAirQualityHistoryRequest.serializeBinaryToWriter = funct
   if (f.length > 0) {
     writer.writeString(
       5,
+      f
+    );
+  }
+  f = message.getOrderBy();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
       f
     );
   }
@@ -5007,6 +5169,24 @@ proto.smartcore.bos.ListAirQualityHistoryRequest.prototype.getPageToken = functi
  */
 proto.smartcore.bos.ListAirQualityHistoryRequest.prototype.setPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional string order_by = 6;
+ * @return {string}
+ */
+proto.smartcore.bos.ListAirQualityHistoryRequest.prototype.getOrderBy = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.ListAirQualityHistoryRequest} returns this
+ */
+proto.smartcore.bos.ListAirQualityHistoryRequest.prototype.setOrderBy = function(value) {
+  return jspb.Message.setProto3StringField(this, 6, value);
 };
 
 

@@ -1772,7 +1772,8 @@ proto.smartcore.bos.ListCurrentStatusHistoryRequest.toObject = function(includeI
     period: (f = msg.getPeriod()) && types_time_period_pb.Period.toObject(includeInstance, f),
     readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
     pageSize: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    pageToken: jspb.Message.getFieldWithDefault(msg, 5, "")
+    pageToken: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    orderBy: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
   if (includeInstance) {
@@ -1830,6 +1831,10 @@ proto.smartcore.bos.ListCurrentStatusHistoryRequest.deserializeBinaryFromReader 
     case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.setPageToken(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setOrderBy(value);
       break;
     default:
       reader.skipField();
@@ -1894,6 +1899,13 @@ proto.smartcore.bos.ListCurrentStatusHistoryRequest.serializeBinaryToWriter = fu
   if (f.length > 0) {
     writer.writeString(
       5,
+      f
+    );
+  }
+  f = message.getOrderBy();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
       f
     );
   }
@@ -2025,6 +2037,24 @@ proto.smartcore.bos.ListCurrentStatusHistoryRequest.prototype.getPageToken = fun
  */
 proto.smartcore.bos.ListCurrentStatusHistoryRequest.prototype.setPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional string order_by = 6;
+ * @return {string}
+ */
+proto.smartcore.bos.ListCurrentStatusHistoryRequest.prototype.getOrderBy = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.ListCurrentStatusHistoryRequest} returns this
+ */
+proto.smartcore.bos.ListCurrentStatusHistoryRequest.prototype.setOrderBy = function(value) {
+  return jspb.Message.setProto3StringField(this, 6, value);
 };
 
 

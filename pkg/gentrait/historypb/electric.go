@@ -42,7 +42,7 @@ var electricDemandPager = newPageReader(func(r history.Record) (*gen.ElectricDem
 })
 
 func (m *ElectricServer) ListElectricDemandHistory(ctx context.Context, request *gen.ListElectricDemandHistoryRequest) (*gen.ListElectricDemandHistoryResponse, error) {
-	page, size, nextToken, err := electricDemandPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken)
+	page, size, nextToken, err := electricDemandPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
 	if err != nil {
 		return nil, err
 	}

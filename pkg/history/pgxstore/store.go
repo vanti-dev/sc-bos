@@ -152,6 +152,14 @@ func (s slice) Slice(from, to history.Record) history.Slice {
 }
 
 func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
+	return s.read(ctx, into, false)
+}
+
+func (s slice) ReadDesc(ctx context.Context, into []history.Record) (int, error) {
+	return s.read(ctx, into, true)
+}
+
+func (s slice) read(ctx context.Context, into []history.Record, desc bool) (int, error) {
 	var where []string
 	var args []any
 	where, args = s.sourceClause(where, args)
@@ -160,7 +168,12 @@ func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
 		return 0, err
 	}
 
-	sql := fmt.Sprintf("SELECT id, create_time, payload FROM history WHERE %s ORDER BY id ASC LIMIT %v", strings.Join(where, " AND "), len(into))
+	orderBy := "id ASC"
+	if desc {
+		orderBy = "id DESC"
+	}
+
+	sql := fmt.Sprintf("SELECT id, create_time, payload FROM history WHERE %s ORDER BY %s LIMIT %v", strings.Join(where, " AND "), orderBy, len(into))
 	rows, err := s.pool.Query(ctx, sql, args...)
 	if err != nil {
 		return 0, err

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"strings"
 
 	"go.uber.org/multierr"
 	"google.golang.org/grpc/codes"
@@ -30,7 +31,7 @@ type pageReader[R proto.Message] struct {
 	DecodePayload func(r history.Record) (R, error)
 }
 
-func (pr pageReader[R]) listRecords(ctx context.Context, store history.Store, period *timepb.Period, pageSize int, pageToken string) (page []R, totalSize int, nextPageToken string, err error) {
+func (pr pageReader[R]) listRecords(ctx context.Context, store history.Store, period *timepb.Period, pageSize int, pageToken, orderBy string) (page []R, totalSize int, nextPageToken string, err error) {
 	if pageSize == 0 {
 		pageSize = pr.DefaultPageSize
 	}
@@ -54,13 +55,17 @@ func (pr pageReader[R]) listRecords(ctx context.Context, store history.Store, pe
 		}
 	}
 
+	reader, pager, nexter, err := parseOrderBy(orderBy)
+	if err != nil {
+		return nil, 0, "", err
+	}
+
 	if tokenPb.RecordId != "" {
-		from = history.Record{ID: tokenPb.RecordId}
-		slice = slice.Slice(from, to)
+		slice = pager(slice, history.Record{ID: tokenPb.RecordId})
 	}
 
 	dst := make([]history.Record, pageSize+1) // +1 to know if there's a next page or not
-	read, err := slice.Read(ctx, dst)
+	read, err := reader(slice, ctx, dst)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -85,7 +90,7 @@ func (pr pageReader[R]) listRecords(ctx context.Context, store history.Store, pe
 		return
 	}
 
-	nextPageToken, err = marshalPageToken(&PageToken{RecordId: dst[len(dst)-1].ID, TotalSize: int32(totalSize)})
+	nextPageToken, err = marshalPageToken(&PageToken{RecordId: nexter(dst).ID, TotalSize: int32(totalSize)})
 	return
 }
 
@@ -121,4 +126,54 @@ func marshalPageToken(pb *PageToken) (string, error) {
 		return "", err
 	}
 	return base64.RawStdEncoding.EncodeToString(data), nil
+}
+
+// These encapsulate the differences between ascending and descending order.
+// sliceReadFunc calls Slice.Read or Slice.ReadDesc.
+// slicePagerFunc applies page tokens to the slice, either slice[:i] or slice[i:].
+// sliceNextFunc returns the record that will be used as the next page token, closely related to slicePagerFunc.
+type (
+	sliceReadFunc  = func(slice history.Slice, ctx context.Context, dst []history.Record) (int, error)
+	slicePagerFunc = func(slice history.Slice, token history.Record) history.Slice
+	sliceNextFunc  = func(all []history.Record) history.Record
+)
+
+func parseOrderBy(orderBy string) (sliceReadFunc, slicePagerFunc, sliceNextFunc, error) {
+	// very simple parsing for now as we only support one field
+	orderBy = strings.ToLower(orderBy)
+	orderBy = strings.Join(strings.Fields(orderBy), " ") // normalize spaces
+	switch orderBy {
+	case "", "recordtime", "recordtime asc", "record_time", "record_time asc":
+		return history.Slice.Read, ascPager, ascNext, nil
+	case "recordtime desc", "record_time desc":
+		return history.Slice.ReadDesc, descPager, descNext, nil
+	default:
+		return nil, nil, nil, status.Error(codes.InvalidArgument, "invalid order by")
+	}
+}
+
+func ascPager(slice history.Slice, token history.Record) history.Slice {
+	return slice.Slice(token, history.Record{})
+}
+
+func descPager(slice history.Slice, token history.Record) history.Slice {
+	return slice.Slice(history.Record{}, token)
+}
+
+func ascNext(all []history.Record) history.Record {
+	if len(all) < 1 {
+		return history.Record{}
+	}
+	// The first record of the next page should be the last record read, we read +1 for this purpose
+	return all[len(all)-1]
+}
+
+func descNext(all []history.Record) history.Record {
+	if len(all) < 2 {
+		return history.Record{}
+	}
+	// The first record of the next page should be the last record we return as it will be used as the endTime which
+	// is exclusive. -2 because we've already read 1 past the end of the returned items to see if there will be more
+	// pages.
+	return all[len(all)-2]
 }

@@ -41,7 +41,7 @@ var currentStatusPager = newPageReader(func(r history.Record) (*gen.StatusLogRec
 })
 
 func (m *StatusServer) ListCurrentStatusHistory(ctx context.Context, request *gen.ListCurrentStatusHistoryRequest) (*gen.ListCurrentStatusHistoryResponse, error) {
-	page, size, nextToken, err := currentStatusPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken)
+	page, size, nextToken, err := currentStatusPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
 	if err != nil {
 		return nil, err
 	}
