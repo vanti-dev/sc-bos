@@ -3,6 +3,7 @@ module github.com/vanti-dev/sc-bos
 go 1.23
 
 require (
+	github.com/NYTimes/gziphandler v1.1.1
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/eclipse/paho.mqtt.golang v1.4.2

@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/NYTimes/gziphandler"
 	"github.com/go-jose/go-jose/v4"
 	"github.com/go-jose/go-jose/v4/jwt"
 	"google.golang.org/grpc/codes"
@@ -571,7 +572,7 @@ func protoPathToHeader(p protopath.Path) string {
 }
 
 func (s *Server) RegisterHTTPMux(mux *http.ServeMux) {
-	mux.HandleFunc(s.downloadUrlBase.Path, s.DownloadDevicesHTTPHandler)
+	mux.Handle(s.downloadUrlBase.Path, gziphandler.GzipHandler(http.HandlerFunc(s.DownloadDevicesHTTPHandler)))
 }
 
 func newHMACKeyGen(size int) func() ([]byte, error) {
