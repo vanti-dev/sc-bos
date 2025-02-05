@@ -752,6 +752,21 @@
           "location": {"floor": "Roof"}
         }
       ]
+    },
+    {
+      "name": "van/uk/brum/ugs/eg-bc-01/driver/building",
+      "type": "mock",
+      "devices": [
+        {
+          "name": "van/uk/brum/ugs/devices/security-events",
+          "traits": [
+            {
+              "name" : "smartcore.bos.SecurityEvent"
+            }
+          ],
+          "appearance": {"title": "Security Events"}
+        }
+      ]
     }
   ],
   "zones": [
