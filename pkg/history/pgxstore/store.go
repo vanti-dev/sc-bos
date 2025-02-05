@@ -265,7 +265,7 @@ func (s slice) readRangeClause(clauses []string, args []any) ([]string, []any, e
 		args = append(args, s.to.CreateTime)
 		clauses = append(clauses, fmt.Sprintf(`id <= (
 	select max(id) from history where source = $%[1]d and create_time = (
-		select max(create_time) from history where source = $%[1]d and create_time <= $%[2]d
+		select max(create_time) from history where source = $%[1]d and create_time < $%[2]d
 	)
 )`, sourceIdx, timeIdx))
 	}
