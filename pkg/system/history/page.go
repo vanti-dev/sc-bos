@@ -12,7 +12,7 @@ import (
 //go:generate protomod protoc -- -I . -I ../../../proto --go_out=paths=source_relative:. system_history_page.proto
 
 func normPageSize(pageSize int32) int32 {
-	if pageSize < 0 {
+	if pageSize <= 0 {
 		return 50
 	}
 	if pageSize > 1000 {
