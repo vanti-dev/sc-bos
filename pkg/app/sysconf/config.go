@@ -67,6 +67,8 @@ type Config struct {
 	CertConfig    *Certs                     `json:"certs,omitempty"`
 	Cors          http.CorsConfig            `json:"cors,omitempty"`
 
+	DisablePprof bool `json:"disablePprof"` // don't register net/http/pprof handlers
+
 	Systems map[string]system.RawConfig `json:"systems,omitempty"`
 
 	Policy     policy.Policy `json:"-"` // Override the policy used for RPC calls. Defaults to policy.Default
