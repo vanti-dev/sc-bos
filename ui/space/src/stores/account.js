@@ -122,7 +122,7 @@ export const useAccountStore = defineStore('accountStore', () => {
       } catch (e) {
         console.error(`${provider.name} initialization failed`, e);
         snackbar.value = {
-          message: `${provider.name} initialization failed: ${e.error}`,
+          message: `${provider.name} initialization failed: ${e?.error ?? e}`,
           visible: true
         };
       }
