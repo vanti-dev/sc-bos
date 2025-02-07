@@ -36,3 +36,12 @@ refer to the `listenHTTPS` setting in the relevant system.conf.json)
 You can also use this demo to test against the API, for example, to get the list of children of the root node, 
 run the `client-parent` tool in `cmd/tools` and it will print the devices in `vanti-ugs` 
 set the insecure-skip-verify flag to true as the demo uses a self-signed certificate. 
+
+### Connecting UIs to the sc-bos Backend
+You may need to connect a UI running in the browser to the sc-bos instance(s) running inside docker.
+For this, I have created a script in the vanti-ugs directory (which should really only be executed on MacOS laptops).
+This script will copy the self-signed certificate file from the docker container running the vanti-ugs sc-bos instance.
+It will then add the self-signed certificate file to the MacOS System Keychain (root) and trust it.
+#### Trust the self-signed certificates
+Execute with `sh demo/vanti-ugs/scripts/trust-ugs.sh`.
+Restart your browser, and you should find you can connect to the sc-bos instance via grpc-web.
