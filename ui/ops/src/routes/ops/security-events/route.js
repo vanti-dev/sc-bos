@@ -2,8 +2,8 @@ export default [
   {
     path: 'security-events',
     components: {
-      default: () => import('./SecurityEventsTable.vue'),
-      sidebar: () => import('./SecurityEventsSideBar.vue')
+      default: () => import('./SecurityEventsTable.vue')
+
     },
     props: {
       default: true,
@@ -11,7 +11,7 @@ export default [
     },
     meta: {
       authentication: {
-        rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator', 'viewer']
+        rolesRequired: ['superAdmin', 'admin', 'commissioner', 'operator']
       }
     }
   }
