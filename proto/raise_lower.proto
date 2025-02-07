@@ -1,0 +1,165 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "types/info.proto";
+
+// RaiseLowerApi represents a 'bearer', something capable of bearing a load, which can be raised or lowered
+// The bearer will often be an elevator, but could be a dumbwaiter, winch hook or other device.
+// The load can be people, freight, etc.
+service RaiseLowerApi {
+  rpc GetBearerState(GetBearerStateRequest) returns (BearerState);
+  rpc PullBearerState(PullBearerStateRequest) returns (stream PullBearerStateResponse);
+}
+
+service RaiseLowerInfo {
+  rpc DescribeBearerState(DescribeBearerRequest) returns (BearerStateSupport);
+}
+
+// BearerState describes the current state of the bearer.
+message BearerState {
+    enum Direction {
+      DIRECTION_UNKNOWN = 0;
+      NO_DIRECTION = 1;
+      UP = 2;
+      DOWN = 3;
+    }
+
+    enum DoorStatus {
+      DOOR_STATUS_UNKNOWN = 0;
+      CLOSED = 1;
+      OPEN = 2;
+      OPENING = 3;
+      CLOSING = 4;
+      // The door is safety locked
+      SAFETY_LOCKED = 5;
+      // The door remains in a position that is not fully open or closed.
+      LIMITED_OPENED = 6;
+    }
+
+    enum Mode {
+      MODE_UNKNOWN = 0;
+      NORMAL = 1;
+      // The bearer is in service or inspection control
+      SERVICE_CONTROL = 2;
+      // The bearer is under a firefighter bearer or firefighting bearer mode of control. This usually happens
+      // during a fire alarm when firemen are on the site.
+      FIREFIGHTER_CONTROL = 3;
+      OUT_OF_SERVICE = 4;
+      // The bearer is being operated by emergency power and may be in limited operation.
+      EMERGENCY_POWER = 5;
+      // The bearer will not respond to any instruction until the VIP has reached their destination.
+      VIP_CONTROL = 6;
+      EARTHQUAKE_OPERATION = 7;
+      FIRE_OPERATION = 8;
+      // The bearer is being manually operated by an attendant.
+      ATTENDANT_CONTROL = 9;
+      // The bearer is manually or automatically parked at a predefined floor and will not provide
+      // any further service. This usually happens in a low traffic condition for the purpose of
+      // energy saving.
+      PARKING = 10;
+      // The bearer is returning to its home position, usually the lobby or ground floor.
+      HOMING = 11;
+      // Control of the bearer is performed from a control panel in the control cabinet. The bearer is not
+      // available for normal operation.
+      CABINET_RECALL = 12;
+      // The bearer is under an occupant evacuation mode of control. This usually happens during a
+      // fire alarm when the bearer is used for evacuation of occupants.
+      OCCUPANT_EVACUATION = 13;
+      // The bearer is operational but is reserved for the transportation of goods only.
+      FREIGHT = 14;
+      FAILURE = 15;
+      REDUCED_SPEED = 16;
+      STORM_OPERATION = 17;
+      HIGH_WIND_OPERATION = 18;
+    }
+
+    enum Fault {
+      FAULT_UNKNOWN = 0;
+      CONTROLLER_FAULT = 1;
+      DRIVE_AND_MOTOR_FAULT = 2;
+      MECHANICAL_COMPONENT_FAULT = 3;
+      OVERSPEED_FAULT = 4;
+      POWER_SUPPLY_FAULT = 5;
+      SAFETY_DEVICE_FAULT = 6;
+      CONTROLLER_SUPPLY_FAULT = 7;
+      DRIVE_TEMPERATURE_EXCEEDED = 8;
+      // A comb plate safety switch is activated.
+      COMB_PLATE_FAULT = 9;
+      GENERAL_FAULT = 10;
+      DOOR_FAULT = 11;
+      LEVELLING_FAULT = 12;
+      SAFETY_CIRCUIT_BREAK_FAULT = 13;
+      FAIL_TO_START = 14;
+      ALARM_BUTTON = 15;
+      DOOR_NOT_CLOSING = 16;
+    }
+
+    // The current floor number of the bearer.
+    int32 current_floor = 1;
+    // The next floor number the bearer will stop at.
+    int32 next_stopping_floor = 2;
+    // The direction the bearer is moving.
+    Direction moving_direction = 3;
+    // The amount of load being carried. The units this is measured in is implementation specific. See BearerStateSupport
+    float load = 4;
+    // The status of each the door(s) of the bearer. For multiple doors, use BearerStateSupport to identify multiple doors.
+    repeated DoorStatus door_status = 5;
+    // The mode the bearer is in. This will often be used to describe the mode of lifts.
+    Mode mode = 6;
+    // A list of active fault signals being reported.
+    repeated Fault faults = 7;
+    // True if the passenger alarm has been activated.
+    bool passenger_alarm = 8;
+}
+
+message BearerStateSupport {
+  // How a named device supports read/write/pull apis
+  smartcore.types.ResourceSupport resource_support = 1;
+  // The unit associated with the load value, e.g. kg, % of maximum load.
+  string unit = 2;
+  // Describes the doors of the bearer
+  repeated DoorInfo doors = 3;
+  // The maximum load the bearer can carry, in kg, if known.
+  // This can be used to calculate the current load weight if the load is reported as a percentage of the maximum load.
+  int32 max_load = 4;
+
+  message DoorInfo {
+    // The id of the door. This is used as the index in the doors array in bearerState.
+    int32 id = 1;
+    // Description of the door, front, rear, etc.
+    string description = 2;
+    // If the bearer has multiple decks, this is the deck the door is on. 0 is the lowest deck.
+    int32 deck = 3;
+  }
+}
+
+// GetLoadStateRequest is used to request the current state of the bearer.
+message GetBearerStateRequest {
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+}
+
+message DescribeBearerRequest {
+  string name = 1;
+}
+
+message PullBearerStateRequest {
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+  bool updates_only = 3;
+}
+
+message PullBearerStateResponse {
+  repeated Change changes = 1;
+
+  message Change {
+    string name = 1;
+    google.protobuf.Timestamp change_time = 2;
+    BearerState bearer_state = 3;
+  }
+}

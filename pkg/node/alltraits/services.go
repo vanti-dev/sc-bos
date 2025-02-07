@@ -12,6 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/mqttpb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/raiselower"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/securityevent"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 )
@@ -55,6 +56,7 @@ var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
 	emergencylight.TraitName: {gen.DaliApi_ServiceDesc},
 	meter.TraitName:          {gen.MeterApi_ServiceDesc, gen.MeterInfo_ServiceDesc, gen.MeterHistory_ServiceDesc},
 	mqttpb.TraitName:         {gen.MqttService_ServiceDesc},
+	raiselower.TraitName:     {gen.RaiseLowerApi_ServiceDesc, gen.RaiseLowerInfo_ServiceDesc},
 	securityevent.TraitName:  {gen.SecurityEventApi_ServiceDesc},
 	statusTraitName:          {gen.StatusApi_ServiceDesc, gen.StatusHistory_ServiceDesc},
 	udmipb.TraitName:         {gen.UdmiService_ServiceDesc},
