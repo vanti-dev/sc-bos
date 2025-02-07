@@ -2,7 +2,6 @@ package auto
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"golang.org/x/exp/rand"
@@ -19,7 +18,6 @@ func AirQualitySensorAuto(model *airqualitysensor.Model) *service.Service[string
 			defer ticker.Stop()
 			for {
 				s := GetAirQualityState()
-				log.Printf("AirQuality: %+v", s)
 				_, _ = model.UpdateAirQuality(s)
 				select {
 				case <-ctx.Done():
