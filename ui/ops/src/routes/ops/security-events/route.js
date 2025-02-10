@@ -3,7 +3,6 @@ export default [
     path: 'security-events',
     components: {
       default: () => import('./SecurityEventsTable.vue')
-
     },
     props: {
       default: true,

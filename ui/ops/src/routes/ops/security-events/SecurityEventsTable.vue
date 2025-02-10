@@ -5,7 +5,7 @@
       <v-spacer/>
     </v-row>
 
-    <content-card :class="['px-8', 'mt-8 px-4']">
+    <content-card :class="['px-8 mt-8']">
       <v-data-table-server
           :headers="allHeaders"
           v-bind="tableAttrs"
@@ -17,9 +17,6 @@
               :class="[
                 'd-flex flex-row align-center mb-2 mt-1 ml-0 pl-0 mr-1'
               ]">
-            <h3 class="text-h4">
-              Security Events
-            </h3>
             <v-spacer/>
           </v-row>
         </template>
