@@ -5,21 +5,13 @@
       <v-spacer/>
     </v-row>
 
-    <content-card :class="['px-8 mt-8']">
+    <content-card class="px-8 mt-8">
       <v-data-table-server
           :headers="allHeaders"
           v-bind="tableAttrs"
           disable-sort
           :items-length="queryTotalCount"
           class="pt-4">
-        <template #top>
-          <v-row
-              :class="[
-                'd-flex flex-row align-center mb-2 mt-1 ml-0 pl-0 mr-1'
-              ]">
-            <v-spacer/>
-          </v-row>
-        </template>
         <template #item.createTime="{ item }">
           {{ timestampToDate(item.securityEventTime).toLocaleString() }}
         </template>
