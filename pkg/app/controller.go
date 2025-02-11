@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"net/url"
@@ -22,6 +23,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/vanti-dev/sc-bos/internal/auth/account"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/interceptors"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
@@ -51,6 +53,11 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	err = os.MkdirAll(config.DataDir, 0750)
 	if err != nil {
 		return nil, err
+	}
+
+	accountStore, err := account.OpenStore(ctx, files.Path(config.DataDir, accountsFile), logger)
+	if err != nil {
+		return nil, fmt.Errorf("load accounts: %w", err)
 	}
 
 	// load the external config file if possible
@@ -87,6 +94,9 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	}
 	rootNode := node.New(cName)
 	rootNode.Logger = logger.Named("node")
+	rootNode.Announce(rootNode.Name(),
+		node.HasServer[gen.AccountApiServiceServer](gen.RegisterAccountApiServiceServer, account.NewServer(accountStore)),
+	)
 
 	// Setup a local database for storing non-critical data.
 	// This is made available to automations and systems as a local cache, for example for lighting reports.
@@ -485,4 +495,7 @@ func (c *Controller) httpEndpoint() (string, error) {
 	return net.JoinHostPort(addr, p), nil
 }
 
-const configDirName = "config"
+const (
+	configDirName = "config"
+	accountsFile  = "accounts.sqlite3"
+)

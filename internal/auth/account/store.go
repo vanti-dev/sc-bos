@@ -26,8 +26,8 @@ var migrations = database.MustLoadVersionedSchema(migrationsFS, "migrations")
 const appID = 0x5C0501
 
 var (
-	ErrAccountIDInvalid       = status.Error(codes.NotFound, "account ID invalid")
 	ErrAccountNotFound        = status.Error(codes.NotFound, "account not found")
+	ErrRoleNotFound           = status.Error(codes.NotFound, "role not found")
 	ErrInvalidAccountKind     = status.Error(codes.InvalidArgument, "invalid account kind")
 	ErrMissingUsername        = status.Error(codes.InvalidArgument, "user account requires username")
 	ErrUnexpectedUsername     = status.Error(codes.InvalidArgument, "service account cannot have username")
@@ -210,16 +210,151 @@ func (s *Store) CreateAccount(ctx context.Context, account *gen.Account) (*gen.A
 	}, nil
 }
 
+func (s *Store) GetRole(ctx context.Context, id string) (*gen.Role, error) {
+	parsedID, err := parseRoleID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	const querySelectRole = `
+		SELECT name
+		FROM roles
+		WHERE id = ?;
+	`
+
+	const querySelectPermissions = `
+		SELECT permission
+		FROM role_permissions
+		WHERE role_id = ?
+		ORDER BY permission;
+	`
+
+	var (
+		name  string
+		perms []string
+	)
+	err = s.db.ReadTx(ctx, func(tx *sql.Tx) error {
+		row := tx.QueryRowContext(ctx, querySelectRole, parsedID)
+		err := row.Scan(&name)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return ErrRoleNotFound
+			}
+			return err
+		}
+
+		rows, err := tx.QueryContext(ctx, querySelectPermissions, parsedID)
+		if err != nil {
+			return err
+		}
+		defer func(rows *sql.Rows) {
+			_ = rows.Close()
+		}(rows)
+
+		for rows.Next() {
+			var perm string
+			err = rows.Scan(&perm)
+			if err != nil {
+				return err
+			}
+			perms = append(perms, perm)
+		}
+		if err := rows.Err(); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &gen.Role{
+		Id:          parsedID.String(),
+		Title:       name,
+		Permissions: perms,
+	}, nil
+}
+
+func (s *Store) ListRoles(ctx context.Context, pageToken string, pageSize int64) (roles []*gen.Role, nextPage string, err error) {
+	if pageSize <= 0 {
+		return nil, "", ErrInvalidPageSize
+	}
+
+	var minRoleID roleID
+	if pageToken != "" {
+		idInt, err := parseRoleID(pageToken)
+		if err != nil {
+			return nil, "", err
+		}
+		minRoleID = idInt
+	}
+
+	const queryRoles = `
+		SELECT r.id, r.name, p.permission
+		FROM roles r 
+		LEFT OUTER JOIN role_permissions p ON r.id = p.role_id
+		WHERE r.id > ?
+		ORDER BY r.id
+		LIMIT ?;
+	`
+
+	err = s.db.ReadTx(ctx, func(tx *sql.Tx) error {
+		rows, err := tx.QueryContext(ctx, queryRoles, minRoleID, pageSize)
+		if err != nil {
+			return err
+		}
+		defer func(rows *sql.Rows) {
+			_ = rows.Close()
+		}(rows)
+
+		var current *gen.Role
+		for rows.Next() {
+			var (
+				id         roleID
+				name       string
+				permission sql.NullString
+			)
+			err = rows.Scan(&id, &name, &permission)
+			if err != nil {
+				return err
+			}
+
+			// flush the current role if the rows iterator has moved to a new role
+			if current == nil {
+				current = &gen.Role{Id: id.String(), Title: name}
+			} else if current.Id != id.String() {
+				roles = append(roles, current)
+				current = &gen.Role{Id: id.String(), Title: name}
+			}
+
+			if permission.Valid {
+				current.Permissions = append(current.Permissions, permission.String)
+			}
+		}
+		if current != nil {
+			roles = append(roles, current)
+		}
+		if err := rows.Err(); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, "", err
+	}
+
+	if len(roles) > 0 {
+		nextPage = roles[len(roles)-1].Id
+	}
+
+	return roles, nextPage, nil
+}
+
 func (s *Store) CreateRole(ctx context.Context, role *gen.Role) (*gen.Role, error) {
 	const queryCreateRole = `
 		INSERT INTO roles (name)
 		VALUES (?)
 		RETURNING id;
-	`
-
-	const queryAssignPermissions = `
-		INSERT INTO role_permissions (role_id, permission)
-		VALUES (?, ?);
 	`
 
 	var id int64
@@ -230,17 +365,7 @@ func (s *Store) CreateRole(ctx context.Context, role *gen.Role) (*gen.Role, erro
 			return err
 		}
 
-		stmt, err := tx.PrepareContext(ctx, queryAssignPermissions)
-		if err != nil {
-			return err
-		}
-		for _, perm := range role.Permissions {
-			_, err = stmt.ExecContext(ctx, id, perm)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
+		return replaceRolePermissions(ctx, tx, roleID(id), role.Permissions)
 	})
 	if err != nil {
 		return nil, err
@@ -251,6 +376,47 @@ func (s *Store) CreateRole(ctx context.Context, role *gen.Role) (*gen.Role, erro
 		Title:       role.Title,
 		Permissions: role.Permissions,
 	}, nil
+}
+
+func (s *Store) UpdateRole(ctx context.Context, role *gen.Role) error {
+	parsedID, err := parseRoleID(role.Id)
+	if err != nil {
+		return err
+	}
+
+	return s.db.WriteTx(ctx, func(tx *sql.Tx) error {
+		err := checkRoleExists(ctx, tx, parsedID)
+		if err != nil {
+			return err
+		}
+		err = updateRoleName(ctx, tx, parsedID, role.Title)
+		if err != nil {
+			return err
+		}
+		return replaceRolePermissions(ctx, tx, parsedID, role.Permissions)
+	})
+}
+
+func (s *Store) DeleteRole(ctx context.Context, id string) error {
+	parsedID, err := parseRoleID(id)
+	if err != nil {
+		return err
+	}
+
+	const queryDeleteRole = `
+		DELETE FROM roles
+		WHERE id = ?;
+	`
+
+	return s.db.WriteTx(ctx, func(tx *sql.Tx) error {
+		err := checkRoleExists(ctx, tx, parsedID)
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.ExecContext(ctx, queryDeleteRole, parsedID)
+		return err
+	})
 }
 
 func getAccountOnly(ctx context.Context, tx *sql.Tx, id accountID) (*gen.Account, error) {
@@ -454,8 +620,8 @@ func getAccountRoleAssignments(ctx context.Context, tx *sql.Tx, id accountID) ([
 	for rows.Next() {
 		var (
 			roleID        int64
-			scopeKind     string
-			scopeResource string
+			scopeKind     sql.NullString
+			scopeResource sql.NullString
 		)
 
 		err = rows.Scan(&roleID, &scopeKind, &scopeResource)
@@ -463,11 +629,17 @@ func getAccountRoleAssignments(ctx context.Context, tx *sql.Tx, id accountID) ([
 			return nil, err
 		}
 
+		var scope *gen.RoleAssignment_Scope
+		if scopeKind.Valid {
+			scope = &gen.RoleAssignment_Scope{
+				// default to zero value RESOURCE_KIND_UNSPECIFIED if the value is not recognized
+				ResourceKind: gen.RoleAssignment_ResourceKind(gen.RoleAssignment_ResourceKind_value[scopeKind.String]),
+				Resource:     scopeResource.String,
+			}
+		}
 		ra := &gen.RoleAssignment{
-			Role: strconv.FormatInt(roleID, 10),
-			// default to zero value RESOURCE_KIND_UNSPECIFIED if the value is not recognized
-			ScopeResourceKind: gen.RoleAssignment_ResourceKind(gen.RoleAssignment_ResourceKind_value[scopeKind]),
-			ScopeResource:     scopeResource,
+			Role:  strconv.FormatInt(roleID, 10),
+			Scope: scope,
 		}
 		roleAssignments = append(roleAssignments, ra)
 	}
@@ -498,8 +670,8 @@ func listRoleAssignments(ctx context.Context, tx *sql.Tx, accounts accountRange)
 		var (
 			account       accountID
 			roleID        int64
-			scopeKind     string
-			scopeResource string
+			scopeKind     sql.NullString
+			scopeResource sql.NullString
 		)
 
 		err = rows.Scan(&account, &roleID, &scopeKind, &scopeResource)
@@ -507,11 +679,17 @@ func listRoleAssignments(ctx context.Context, tx *sql.Tx, accounts accountRange)
 			return nil, err
 		}
 
+		var scope *gen.RoleAssignment_Scope
+		if scopeKind.Valid {
+			scope = &gen.RoleAssignment_Scope{
+				// default to zero value RESOURCE_KIND_UNSPECIFIED if the value is not recognized
+				ResourceKind: gen.RoleAssignment_ResourceKind(gen.RoleAssignment_ResourceKind_value[scopeKind.String]),
+				Resource:     scopeResource.String,
+			}
+		}
 		ra := &gen.RoleAssignment{
-			Role: strconv.FormatInt(roleID, 10),
-			// default to zero value RESOURCE_KIND_UNSPECIFIED if the value is not recognized
-			ScopeResourceKind: gen.RoleAssignment_ResourceKind(gen.RoleAssignment_ResourceKind_value[scopeKind]),
-			ScopeResource:     scopeResource,
+			Role:  strconv.FormatInt(roleID, 10),
+			Scope: scope,
 		}
 		accountIDStr := account.String()
 		roleAssignments[accountIDStr] = append(roleAssignments[accountIDStr], ra)
@@ -552,7 +730,69 @@ func updateAccountRoleAssignments(ctx context.Context, tx *sql.Tx, accountID int
 		return err
 	}
 	for _, ra := range roleAssignments {
-		_, err = stmt.ExecContext(ctx, accountID, ra.Role, ra.ScopeResourceKind.String(), ra.ScopeResource)
+		var scopeKind, scopeResource sql.NullString
+		if ra.Scope != nil {
+			scopeKind.String = ra.Scope.ResourceKind.String()
+			scopeKind.Valid = true
+			scopeResource.String = ra.Scope.Resource
+			scopeResource.Valid = true
+		}
+		_, err = stmt.ExecContext(ctx, accountID, ra.Role, scopeKind, scopeResource)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func checkRoleExists(ctx context.Context, tx *sql.Tx, id roleID) error {
+	const query = `
+		SELECT 1
+		FROM roles
+		WHERE id = ?;
+	`
+
+	var unused int
+	err := tx.QueryRowContext(ctx, query, id).Scan(&unused)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrRoleNotFound
+	}
+	return err
+}
+
+func updateRoleName(ctx context.Context, tx *sql.Tx, id roleID, name string) error {
+	const query = `
+		UPDATE roles
+		SET name = ?
+		WHERE id = ?;
+	`
+
+	_, err := tx.ExecContext(ctx, query, name, id)
+	return err
+}
+
+func replaceRolePermissions(ctx context.Context, tx *sql.Tx, id roleID, permissions []string) error {
+	const queryDeletePermissions = `
+		DELETE FROM role_permissions
+		WHERE role_id = ?;
+	`
+
+	_, err := tx.ExecContext(ctx, queryDeletePermissions, id)
+	if err != nil {
+		return err
+	}
+
+	const queryInsertPermission = `
+		INSERT INTO role_permissions (role_id, permission)
+		VALUES (?, ?);
+	`
+
+	stmt, err := tx.PrepareContext(ctx, queryInsertPermission)
+	if err != nil {
+		return err
+	}
+	for _, perm := range permissions {
+		_, err = stmt.ExecContext(ctx, id, perm)
 		if err != nil {
 			return err
 		}
@@ -569,11 +809,29 @@ func (id accountID) String() string {
 func parseAccountID(idStr string) (accountID, error) {
 	idInt, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		return 0, ErrAccountIDInvalid
+		// an account ID must be a valid integer
+		// so any other account ID can't possibly exist in the DB
+		return 0, ErrAccountNotFound
 	}
 	return accountID(idInt), nil
 }
 
 type accountRange struct {
 	Min, Max accountID
+}
+
+type roleID int64
+
+func (id roleID) String() string {
+	return strconv.FormatInt(int64(id), 10)
+}
+
+func parseRoleID(idStr string) (roleID, error) {
+	idInt, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		// a role ID must be a valid integer
+		// so any other role ID can't possibly exist in the DB
+		return 0, ErrRoleNotFound
+	}
+	return roleID(idInt), nil
 }

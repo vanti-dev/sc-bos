@@ -17,6 +17,12 @@ service AccountApiService {
 
   rpc CreateServiceCredential(CreateServiceCredentialRequest) returns (CreateServiceCredentialResponse);
   rpc DeleteServiceCredential(DeleteServiceCredentialRequest) returns (DeleteServiceCredentialResponse);
+
+  rpc GetRole(GetRoleRequest) returns (GetRoleResponse);
+  rpc ListRoles(ListRolesRequest) returns (ListRolesResponse);
+  rpc CreateRole(CreateRoleRequest) returns (CreateRoleResponse);
+  rpc UpdateRole(UpdateRoleRequest) returns (UpdateRoleResponse);
+  rpc DeleteRole(DeleteRoleRequest) returns (DeleteRoleResponse);
 }
 
 message GetAccountRequest {
@@ -34,12 +40,15 @@ message GetAccountResponse {
 }
 
 message CreateAccountRequest {
+  // The name of the node where the account is located.
+  string name = 1;
+
   // The account to create.
-  Account account = 1;
+  Account account = 2;
   // For user accounts, the initial password to set.
   // If absent, the account will be created without a password. The password must then be set with UpdateAccountPassword
   // before the account can be used.
-  string password = 2;
+  string password = 3;
 }
 
 message CreateAccountResponse {
@@ -124,6 +133,78 @@ message DeleteServiceCredentialResponse {
 
 }
 
+message GetRoleRequest {
+  // The name of the node where the role is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the role to get.
+  string id = 2;
+  google.protobuf.FieldMask read_mask = 3;
+}
+
+message GetRoleResponse {
+  Role role = 1;
+}
+
+message ListRolesRequest {
+  // The name of the node to list roles for.
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+
+  // The maximum number of roles to return in a single response.
+  // If there are more results available, the response will contain a next_page_token to get them.
+  int32 page_size = 3;
+  // Token from previous ListRoles response, to get the next page of results.
+  string page_token = 4;
+}
+
+message ListRolesResponse {
+  repeated Role roles = 1;
+  // Opaque value which can be provided to ListRoles to get the next page of results.
+  // Absent if there are no more results.
+  string next_page_token = 2;
+}
+
+message CreateRoleRequest {
+  // The name of the node where the role is located.
+  string name = 1;
+
+  // The role to create.
+  Role role = 2;
+}
+
+message CreateRoleResponse {
+  Role role = 1;
+}
+
+message UpdateRoleRequest {
+  // The name of the node where the role is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The updated role data.
+  // The role to update is identified by role.id, which must be present.
+  Role role = 2;
+
+  google.protobuf.FieldMask update_mask = 3;
+}
+
+message UpdateRoleResponse {
+  Role role = 1;
+}
+
+message DeleteRoleRequest {
+  // The name of the node where the role is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the role to delete.
+  string id = 2;
+}
+
+message DeleteRoleResponse {}
+
 message Account {
   // Unique identifier for this account. Consistent for the life of the account.
   // Generated automatically on account creation. Output only.
@@ -166,8 +247,14 @@ message Role {
 
 message RoleAssignment {
   string role = 1;
-  ResourceKind scope_resource_kind = 2;
-  string scope_resource = 3;
+  // The scope of the role assignment.
+  // If absent, role assignment has no scope restrictions.
+  Scope scope = 2;
+
+  message Scope {
+    ResourceKind resource_kind = 1;
+    string resource = 2;
+  }
 
   enum ResourceKind {
     RESOURCE_KIND_UNSPECIFIED = 0;
