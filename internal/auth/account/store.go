@@ -75,30 +75,57 @@ func (s *Store) Close() error {
 	return s.db.Close()
 }
 
-func (s *Store) GetAccount(ctx context.Context, id string) (*gen.Account, error) {
+type ReadTx struct {
+	readOps
+}
+
+type WriteTx struct {
+	readOps
+	writeOps
+}
+
+type readOps struct {
+	tx *sql.Tx
+}
+
+type writeOps struct {
+	tx *sql.Tx
+}
+
+func (s *Store) Read(ctx context.Context, f func(*ReadTx) error) error {
+	return s.db.ReadTx(ctx, func(tx *sql.Tx) error {
+		readTx := &ReadTx{readOps{tx}}
+		return f(readTx)
+	})
+}
+
+func (s *Store) Write(ctx context.Context, f func(*WriteTx) error) error {
+	return s.db.WriteTx(ctx, func(tx *sql.Tx) error {
+		writeTx := &WriteTx{readOps{tx}, writeOps{tx}}
+		return f(writeTx)
+	})
+}
+
+func (r *readOps) GetAccount(ctx context.Context, id string) (*gen.Account, error) {
 	idInt, err := parseAccountID(id)
 	if err != nil {
 		return nil, err
 	}
 
 	var account *gen.Account
-	err = s.db.ReadTx(ctx, func(tx *sql.Tx) error {
-		var err error
-		account, err = getAccountOnly(ctx, tx, idInt)
-		if errors.Is(err, sql.ErrNoRows) {
-			return ErrAccountNotFound
-		} else if err != nil {
-			return err
-		}
+	account, err = getAccountOnly(ctx, r.tx, idInt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrAccountNotFound
+	} else if err != nil {
+		return nil, err
+	}
 
-		account.ServiceCredentials, err = getAccountServiceCreds(ctx, tx, idInt)
-		if err != nil {
-			return err
-		}
+	account.ServiceCredentials, err = getAccountServiceCreds(ctx, r.tx, idInt)
+	if err != nil {
+		return nil, err
+	}
 
-		account.RoleAssignments, err = getAccountRoleAssignments(ctx, tx, idInt)
-		return err
-	})
+	account.RoleAssignments, err = getAccountRoleAssignments(ctx, r.tx, idInt)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +133,7 @@ func (s *Store) GetAccount(ctx context.Context, id string) (*gen.Account, error)
 	return account, nil
 }
 
-func (s *Store) ListAccounts(ctx context.Context, pageToken string, pageSize int64) (accounts []*gen.Account, nextPage string, err error) {
+func (r *readOps) ListAccounts(ctx context.Context, pageToken string, pageSize int64) (accounts []*gen.Account, nextPage string, err error) {
 	if pageSize <= 0 {
 		return nil, "", ErrInvalidPageSize
 	}
@@ -120,33 +147,25 @@ func (s *Store) ListAccounts(ctx context.Context, pageToken string, pageSize int
 		minAcctID = idInt
 	}
 
-	err = s.db.ReadTx(ctx, func(tx *sql.Tx) error {
-		var err error
-		var foundRange accountRange
-		accounts, foundRange, err = listAccountsOnly(ctx, tx, minAcctID, pageSize)
-		if err != nil {
-			return err
-		}
-
-		creds, err := listAccountServiceCreds(ctx, tx, foundRange)
-		if err != nil {
-			return err
-		}
-
-		roleAssignments, err := listRoleAssignments(ctx, tx, foundRange)
-		if err != nil {
-			return err
-		}
-
-		for _, acct := range accounts {
-			acct.ServiceCredentials = creds[acct.Id]
-			acct.RoleAssignments = roleAssignments[acct.Id]
-		}
-
-		return nil
-	})
+	var foundRange accountRange
+	accounts, foundRange, err = listAccountsOnly(ctx, r.tx, minAcctID, pageSize)
 	if err != nil {
 		return nil, "", err
+	}
+
+	creds, err := listAccountServiceCreds(ctx, r.tx, foundRange)
+	if err != nil {
+		return nil, "", err
+	}
+
+	roleAssignments, err := listRoleAssignments(ctx, r.tx, foundRange)
+	if err != nil {
+		return nil, "", err
+	}
+
+	for _, acct := range accounts {
+		acct.ServiceCredentials = creds[acct.Id]
+		acct.RoleAssignments = roleAssignments[acct.Id]
 	}
 
 	if len(accounts) > 0 {
@@ -156,61 +175,37 @@ func (s *Store) ListAccounts(ctx context.Context, pageToken string, pageSize int
 	return accounts, nextPage, nil
 }
 
-func (s *Store) CreateAccount(ctx context.Context, account *gen.Account) (*gen.Account, error) {
-	// validate account kind
-	switch account.Kind {
-	case gen.Account_USER_ACCOUNT:
-		if account.Username == "" {
-			return nil, ErrMissingUsername
-		}
-		if len(account.ServiceCredentials) != 0 {
-			return nil, ErrUnexpectedServiceCreds
-		}
-	case gen.Account_SERVICE_ACCOUNT:
-		if account.Username != "" {
-			return nil, ErrUnexpectedUsername
-		}
-	default:
-		return nil, ErrInvalidAccountKind
+func (w *writeOps) CreateUserAccount(ctx context.Context, username, displayName string) (*gen.Account, error) {
+	if username == "" {
+		return nil, ErrMissingUsername
 	}
 
-	const query = `
-		INSERT INTO accounts (username, display_name, kind, create_time)
-		VALUES (?, ?, ?, datetime('now', 'subsec'))
-		RETURNING id, create_time;
-    `
-	var (
-		id         int64
-		createTime database.Timestamp
-	)
-	err := s.db.WriteTx(ctx, func(tx *sql.Tx) error {
-		var username *string
-		if account.Username != "" {
-			username = &account.Username
-		}
-		kind := gen.Account_Kind_name[int32(account.Kind)]
-		row := tx.QueryRowContext(ctx, query, username, account.DisplayName, kind)
-		err := row.Scan(&id, &createTime)
-		if err != nil {
-			return err
-		}
-
-		return updateAccountRoleAssignments(ctx, tx, id, false, account.RoleAssignments)
-	})
+	acct, err := createAccount(ctx, w.tx, gen.Account_USER_ACCOUNT, username, displayName)
 	if err != nil {
 		return nil, err
 	}
-	return &gen.Account{
-		Id:              strconv.FormatInt(id, 10),
-		CreateTime:      timestamppb.New(time.Time(createTime)),
-		Kind:            account.Kind,
-		DisplayName:     account.DisplayName,
-		Username:        account.Username,
-		RoleAssignments: account.RoleAssignments,
-	}, nil
+
+	return acct, nil
 }
 
-func (s *Store) GetRole(ctx context.Context, id string) (*gen.Role, error) {
+func (w *writeOps) CreateServiceAccount(ctx context.Context, displayName string) (*gen.Account, error) {
+	acct, err := createAccount(ctx, w.tx, gen.Account_SERVICE_ACCOUNT, "", displayName)
+	if err != nil {
+		return nil, err
+	}
+
+	return acct, nil
+}
+
+func (w *writeOps) UpdateRoleAssignments(ctx context.Context, accountID string, roleAssignments []*gen.RoleAssignment) error {
+	id, err := parseAccountID(accountID)
+	if err != nil {
+		return err
+	}
+	return updateAccountRoleAssignments(ctx, w.tx, int64(id), true, roleAssignments)
+}
+
+func (r *readOps) GetRole(ctx context.Context, id string) (*gen.Role, error) {
 	parsedID, err := parseRoleID(id)
 	if err != nil {
 		return nil, err
@@ -233,37 +228,33 @@ func (s *Store) GetRole(ctx context.Context, id string) (*gen.Role, error) {
 		name  string
 		perms []string
 	)
-	err = s.db.ReadTx(ctx, func(tx *sql.Tx) error {
-		row := tx.QueryRowContext(ctx, querySelectRole, parsedID)
-		err := row.Scan(&name)
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				return ErrRoleNotFound
-			}
-			return err
-		}
+	row := r.tx.QueryRowContext(ctx, querySelectRole, parsedID)
+	err = row.Scan(&name)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrRoleNotFound
+	} else if err != nil {
+		return nil, err
+	}
 
-		rows, err := tx.QueryContext(ctx, querySelectPermissions, parsedID)
-		if err != nil {
-			return err
-		}
-		defer func(rows *sql.Rows) {
-			_ = rows.Close()
-		}(rows)
+	rows, err := r.tx.QueryContext(ctx, querySelectPermissions, parsedID)
+	if err != nil {
+		return nil, err
+	}
+	defer func(rows *sql.Rows) {
+		_ = rows.Close()
+	}(rows)
 
-		for rows.Next() {
-			var perm string
-			err = rows.Scan(&perm)
-			if err != nil {
-				return err
-			}
-			perms = append(perms, perm)
+	for rows.Next() {
+		var perm string
+		err = rows.Scan(&perm)
+		if err != nil {
+			return nil, err
 		}
-		if err := rows.Err(); err != nil {
-			return err
-		}
-		return nil
-	})
+		perms = append(perms, perm)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -275,7 +266,7 @@ func (s *Store) GetRole(ctx context.Context, id string) (*gen.Role, error) {
 	}, nil
 }
 
-func (s *Store) ListRoles(ctx context.Context, pageToken string, pageSize int64) (roles []*gen.Role, nextPage string, err error) {
+func (r *readOps) ListRoles(ctx context.Context, pageToken string, pageSize int64) (roles []*gen.Role, nextPage string, err error) {
 	if pageSize <= 0 {
 		return nil, "", ErrInvalidPageSize
 	}
@@ -298,48 +289,42 @@ func (s *Store) ListRoles(ctx context.Context, pageToken string, pageSize int64)
 		LIMIT ?;
 	`
 
-	err = s.db.ReadTx(ctx, func(tx *sql.Tx) error {
-		rows, err := tx.QueryContext(ctx, queryRoles, minRoleID, pageSize)
-		if err != nil {
-			return err
-		}
-		defer func(rows *sql.Rows) {
-			_ = rows.Close()
-		}(rows)
-
-		var current *gen.Role
-		for rows.Next() {
-			var (
-				id         roleID
-				name       string
-				permission sql.NullString
-			)
-			err = rows.Scan(&id, &name, &permission)
-			if err != nil {
-				return err
-			}
-
-			// flush the current role if the rows iterator has moved to a new role
-			if current == nil {
-				current = &gen.Role{Id: id.String(), Title: name}
-			} else if current.Id != id.String() {
-				roles = append(roles, current)
-				current = &gen.Role{Id: id.String(), Title: name}
-			}
-
-			if permission.Valid {
-				current.Permissions = append(current.Permissions, permission.String)
-			}
-		}
-		if current != nil {
-			roles = append(roles, current)
-		}
-		if err := rows.Err(); err != nil {
-			return err
-		}
-		return nil
-	})
+	rows, err := r.tx.QueryContext(ctx, queryRoles, minRoleID, pageSize)
 	if err != nil {
+		return nil, "", err
+	}
+	defer func(rows *sql.Rows) {
+		_ = rows.Close()
+	}(rows)
+
+	var current *gen.Role
+	for rows.Next() {
+		var (
+			id         roleID
+			name       string
+			permission sql.NullString
+		)
+		err = rows.Scan(&id, &name, &permission)
+		if err != nil {
+			return nil, "", err
+		}
+
+		// flush the current role if the rows iterator has moved to a new role
+		if current == nil {
+			current = &gen.Role{Id: id.String(), Title: name}
+		} else if current.Id != id.String() {
+			roles = append(roles, current)
+			current = &gen.Role{Id: id.String(), Title: name}
+		}
+
+		if permission.Valid {
+			current.Permissions = append(current.Permissions, permission.String)
+		}
+	}
+	if current != nil {
+		roles = append(roles, current)
+	}
+	if err := rows.Err(); err != nil {
 		return nil, "", err
 	}
 
@@ -350,54 +335,53 @@ func (s *Store) ListRoles(ctx context.Context, pageToken string, pageSize int64)
 	return roles, nextPage, nil
 }
 
-func (s *Store) CreateRole(ctx context.Context, role *gen.Role) (*gen.Role, error) {
+func (w *writeOps) CreateRole(ctx context.Context, title string) (*gen.Role, error) {
 	const queryCreateRole = `
 		INSERT INTO roles (name)
 		VALUES (?)
 		RETURNING id;
 	`
 
-	var id int64
-	err := s.db.WriteTx(ctx, func(tx *sql.Tx) error {
-		row := tx.QueryRowContext(ctx, queryCreateRole, role.Title)
-		err := row.Scan(&id)
-		if err != nil {
-			return err
-		}
-
-		return replaceRolePermissions(ctx, tx, roleID(id), role.Permissions)
-	})
+	var id roleID
+	row := w.tx.QueryRowContext(ctx, queryCreateRole, title)
+	err := row.Scan(&id)
 	if err != nil {
 		return nil, err
 	}
 
 	return &gen.Role{
-		Id:          strconv.FormatInt(id, 10),
-		Title:       role.Title,
-		Permissions: role.Permissions,
+		Id:    id.String(),
+		Title: title,
 	}, nil
 }
 
-func (s *Store) UpdateRole(ctx context.Context, role *gen.Role) error {
-	parsedID, err := parseRoleID(role.Id)
+func (w *writeOps) UpdateRoleName(ctx context.Context, id string, name string) error {
+	parsedID, err := parseRoleID(id)
 	if err != nil {
 		return err
 	}
 
-	return s.db.WriteTx(ctx, func(tx *sql.Tx) error {
-		err := checkRoleExists(ctx, tx, parsedID)
-		if err != nil {
-			return err
-		}
-		err = updateRoleName(ctx, tx, parsedID, role.Title)
-		if err != nil {
-			return err
-		}
-		return replaceRolePermissions(ctx, tx, parsedID, role.Permissions)
-	})
+	err = checkRoleExists(ctx, w.tx, parsedID)
+	if err != nil {
+		return err
+	}
+	return updateRoleName(ctx, w.tx, parsedID, name)
 }
 
-func (s *Store) DeleteRole(ctx context.Context, id string) error {
+func (w *writeOps) UpdateRolePermissions(ctx context.Context, id string, permissions []string) error {
+	parsedID, err := parseRoleID(id)
+	if err != nil {
+		return err
+	}
+
+	err = checkRoleExists(ctx, w.tx, parsedID)
+	if err != nil {
+		return err
+	}
+	return replaceRolePermissions(ctx, w.tx, parsedID, permissions)
+}
+
+func (w *writeOps) DeleteRole(ctx context.Context, id string) error {
 	parsedID, err := parseRoleID(id)
 	if err != nil {
 		return err
@@ -408,15 +392,13 @@ func (s *Store) DeleteRole(ctx context.Context, id string) error {
 		WHERE id = ?;
 	`
 
-	return s.db.WriteTx(ctx, func(tx *sql.Tx) error {
-		err := checkRoleExists(ctx, tx, parsedID)
-		if err != nil {
-			return err
-		}
-
-		_, err = tx.ExecContext(ctx, queryDeleteRole, parsedID)
+	err = checkRoleExists(ctx, w.tx, parsedID)
+	if err != nil {
 		return err
-	})
+	}
+
+	_, err = w.tx.ExecContext(ctx, queryDeleteRole, parsedID)
+	return err
 }
 
 func getAccountOnly(ctx context.Context, tx *sql.Tx, id accountID) (*gen.Account, error) {
@@ -504,6 +486,38 @@ func listAccountsOnly(ctx context.Context, tx *sql.Tx, startAfter accountID, lim
 		return nil, accountRange{}, err
 	}
 	return accounts, foundRange, nil
+}
+
+func createAccount(ctx context.Context, tx *sql.Tx, kind gen.Account_Kind, username, displayName string) (*gen.Account, error) {
+	const query = `
+		INSERT INTO accounts (username, display_name, kind, create_time)
+		VALUES (?, ?, ?, datetime('now', 'subsec'))
+		RETURNING id, create_time;
+	`
+
+	var usernameValue sql.NullString
+	if username != "" {
+		usernameValue.String = username
+		usernameValue.Valid = true
+	}
+	kindStr := gen.Account_Kind_name[int32(kind)]
+	row := tx.QueryRowContext(ctx, query, usernameValue, displayName, kindStr)
+
+	var (
+		id      accountID
+		created database.Timestamp
+	)
+	err := row.Scan(&id, &created)
+	if err != nil {
+		return nil, err
+	}
+	return &gen.Account{
+		Id:          id.String(),
+		CreateTime:  timestamppb.New(time.Time(created)),
+		Kind:        kind,
+		DisplayName: displayName,
+		Username:    username,
+	}, nil
 }
 
 func getAccountServiceCreds(ctx context.Context, tx *sql.Tx, id accountID) ([]*gen.ServiceCredential, error) {

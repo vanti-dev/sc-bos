@@ -3,6 +3,9 @@ package account
 import (
 	"context"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -19,11 +22,16 @@ func NewServer(store *Store) *Server {
 //
 // TODO: implement read_mask
 func (s *Server) GetAccount(ctx context.Context, req *gen.GetAccountRequest) (*gen.GetAccountResponse, error) {
-	account, err := s.store.GetAccount(ctx, req.Id)
+	var account *gen.Account
+	err := s.store.Read(ctx, func(tx *ReadTx) error {
+		var err error
+		account, err = tx.GetAccount(ctx, req.Id)
+		return err
+	})
+
 	if err != nil {
 		return nil, err
 	}
-
 	return &gen.GetAccountResponse{Account: account}, nil
 }
 
@@ -37,19 +45,62 @@ func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest)
 		pageSize = maxPageSize
 	}
 
-	accounts, nextPage, err := s.store.ListAccounts(ctx, req.PageToken, int64(pageSize))
+	res := &gen.ListAccountsResponse{}
+	err := s.store.Read(ctx, func(tx *ReadTx) error {
+		var err error
+		res.Accounts, res.NextPageToken, err = tx.ListAccounts(ctx, req.PageToken, int64(pageSize))
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return &gen.ListAccountsResponse{
-		Accounts:      accounts,
-		NextPageToken: nextPage,
-	}, nil
+	return res, nil
 }
 
 func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountRequest) (*gen.CreateAccountResponse, error) {
-	account, err := s.store.CreateAccount(ctx, req.Account)
+	account := req.Account
+	if account == nil {
+		return nil, status.Error(codes.InvalidArgument, "account is required")
+	}
+	switch account.Kind {
+	case gen.Account_USER_ACCOUNT:
+		if account.Username == "" {
+			return nil, ErrMissingUsername
+		}
+	case gen.Account_SERVICE_ACCOUNT:
+		if account.Username != "" {
+			return nil, status.Error(codes.InvalidArgument, "service accounts cannot have a username")
+		}
+	default:
+		return nil, ErrInvalidAccountKind
+	}
+
+	var created *gen.Account
+	err := s.store.Write(ctx, func(tx *WriteTx) error {
+		var err error
+		switch req.Account.Kind {
+		case gen.Account_USER_ACCOUNT:
+			created, err = tx.CreateUserAccount(ctx, account.Username, account.DisplayName)
+		case gen.Account_SERVICE_ACCOUNT:
+			created, err = tx.CreateServiceAccount(ctx, account.DisplayName)
+		default:
+			panic("already validated account kind")
+		}
+		if err != nil {
+			return err
+		}
+
+		if len(account.RoleAssignments) > 0 {
+			err = tx.UpdateRoleAssignments(ctx, created.Id, account.RoleAssignments)
+			if err != nil {
+				return err
+			}
+		}
+
+		created, err = tx.GetAccount(ctx, created.Id)
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +109,12 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 }
 
 func (s *Server) GetRole(ctx context.Context, req *gen.GetRoleRequest) (*gen.GetRoleResponse, error) {
-	role, err := s.store.GetRole(ctx, req.Id)
+	var role *gen.Role
+	err := s.store.Read(ctx, func(tx *ReadTx) error {
+		var err error
+		role, err = tx.GetRole(ctx, req.Id)
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -67,12 +123,32 @@ func (s *Server) GetRole(ctx context.Context, req *gen.GetRoleRequest) (*gen.Get
 }
 
 func (s *Server) CreateRole(ctx context.Context, req *gen.CreateRoleRequest) (*gen.CreateRoleResponse, error) {
-	role, err := s.store.CreateRole(ctx, req.Role)
+	if req.Role == nil {
+		return nil, status.Error(codes.InvalidArgument, "role is required")
+	}
+
+	var created *gen.Role
+	err := s.store.Write(ctx, func(tx *WriteTx) error {
+		var err error
+		created, err = tx.CreateRole(ctx, req.Role.Title)
+		if err != nil {
+			return err
+		}
+
+		if len(req.Role.Permissions) > 0 {
+			err = tx.UpdateRolePermissions(ctx, created.Id, req.Role.Permissions)
+			if err != nil {
+				return err
+			}
+		}
+		created, err = tx.GetRole(ctx, created.Id)
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return &gen.CreateRoleResponse{Role: role}, nil
+	return &gen.CreateRoleResponse{Role: created}, nil
 }
 
 const (
