@@ -14,10 +14,12 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-func TestStore_CreateAccount_GetAccount(t *testing.T) {
+func TestServer(t *testing.T) {
 	store := NewMemoryStore(zap.NewNop())
-	roleFoo := createTestRole(t, store, "foo", "perm1", "perm2")
-	roleBar := createTestRole(t, store, "bar", "perm3", "perm4")
+	server := NewServer(store)
+	roleFoo := createTestRole(t, server, "foo", "perm1", "perm2")
+	roleBar := createTestRole(t, server, "bar", "perm3", "perm4")
+	roleBaz := createTestRole(t, server, "baz", "perm5", "perm6")
 
 	type testCase struct {
 		input        *gen.Account
@@ -38,8 +40,9 @@ func TestStore_CreateAccount_GetAccount(t *testing.T) {
 				Username:    "user_with_roles@example.com",
 				DisplayName: "Foo User with roles",
 				RoleAssignments: []*gen.RoleAssignment{
-					{Role: roleFoo, ScopeResourceKind: gen.RoleAssignment_ZONE, ScopeResource: "Gym"},
-					{Role: roleBar, ScopeResourceKind: gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX, ScopeResource: "floor-01"},
+					{Role: roleFoo, Scope: &gen.RoleAssignment_Scope{ResourceKind: gen.RoleAssignment_ZONE, Resource: "Gym"}},
+					{Role: roleBar, Scope: &gen.RoleAssignment_Scope{ResourceKind: gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX, Resource: "floor-01"}},
+					{Role: roleBaz},
 				},
 			},
 		},
@@ -48,8 +51,9 @@ func TestStore_CreateAccount_GetAccount(t *testing.T) {
 				Kind:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service Account",
 				RoleAssignments: []*gen.RoleAssignment{
-					{Role: roleFoo, ScopeResourceKind: gen.RoleAssignment_ZONE, ScopeResource: "Gym"},
-					{Role: roleBar, ScopeResourceKind: gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX, ScopeResource: "floor-01"},
+					{Role: roleFoo, Scope: &gen.RoleAssignment_Scope{ResourceKind: gen.RoleAssignment_ZONE, Resource: "Gym"}},
+					{Role: roleBar, Scope: &gen.RoleAssignment_Scope{ResourceKind: gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX, Resource: "floor-01"}},
+					{Role: roleBaz},
 				},
 			},
 		},
@@ -58,13 +62,17 @@ func TestStore_CreateAccount_GetAccount(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
-			created, err := store.CreateAccount(ctx, tc.input)
-			checkNilIfErrored(t, created, err)
+			res, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{Account: tc.input})
+			checkNilIfErrored(t, res, err)
 			if code := status.Code(err); code != tc.expectStatus {
 				t.Errorf("expected status %v, got error %v", tc.expectStatus, err)
 			}
 			if err != nil {
 				return
+			}
+			created := res.GetAccount()
+			if created.GetId() == "" {
+				t.Error("CreateAccount returned an empty ID")
 			}
 
 			// ID is assigned by the store so we don't check it
@@ -82,11 +90,12 @@ func TestStore_CreateAccount_GetAccount(t *testing.T) {
 			}
 
 			// Check that the account was actually stored
-			got, err := store.GetAccount(ctx, created.Id)
-			checkNilIfErrored(t, got, err)
+			getRes, err := server.GetAccount(ctx, &gen.GetAccountRequest{Id: created.Id})
+			checkNilIfErrored(t, getRes, err)
 			if err != nil {
 				t.Errorf("error getting account %q: %v", created.Id, err)
 			}
+			got := getRes.GetAccount()
 			expect = proto.Clone(expect).(*gen.Account)
 			expect.Id = created.Id
 			expect.CreateTime = created.CreateTime
@@ -107,15 +116,15 @@ func checkNilIfErrored[V any](t *testing.T, v *V, err error) {
 	}
 }
 
-func createTestRole(t *testing.T, store *Store, title string, permissions ...string) (id string) {
+func createTestRole(t *testing.T, server *Server, title string, permissions ...string) (id string) {
 	t.Helper()
 	role := &gen.Role{
 		Title:       title,
 		Permissions: permissions,
 	}
-	created, err := store.CreateRole(context.Background(), role)
+	res, err := server.CreateRole(context.Background(), &gen.CreateRoleRequest{Role: role})
 	if err != nil {
 		t.Fatalf("failed to create role %q: %v", title, err)
 	}
-	return created.Id
+	return res.Role.Id
 }

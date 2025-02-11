@@ -70,7 +70,7 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		}
 	case gen.Account_SERVICE_ACCOUNT:
 		if account.Username != "" {
-			return nil, status.Error(codes.InvalidArgument, "service accounts cannot have a username")
+			return nil, ErrUnexpectedUsername
 		}
 	default:
 		return nil, ErrInvalidAccountKind
@@ -105,7 +105,7 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		return nil, err
 	}
 
-	return &gen.CreateAccountResponse{Account: account}, nil
+	return &gen.CreateAccountResponse{Account: created}, nil
 }
 
 func (s *Server) GetRole(ctx context.Context, req *gen.GetRoleRequest) (*gen.GetRoleResponse, error) {
