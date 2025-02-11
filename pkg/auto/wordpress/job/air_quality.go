@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"time"
 
 	"github.com/pkg/errors"
@@ -58,7 +59,7 @@ func (a *AirQualityJob) Do(ctx context.Context, sendFn sender) error {
 			Timestamp: time.Now(),
 		},
 		AverageCo2: types.Float32Measure{
-			Value: average,
+			Value: float32(math.Floor(float64(average))),
 			Units: "ppm",
 		},
 	}
