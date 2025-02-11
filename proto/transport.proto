@@ -1,0 +1,178 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "actor.proto";
+import "types/info.proto";
+
+// TransportAPI represents something that can transport something else between places.
+// The transport will often be an elevator, but could be an escalator, conveyor etc.
+service TransportApi {
+  rpc GetTransportState(GetTransportStateRequest) returns (TransportState);
+  rpc PullTransportState(PullTransportStateRequest) returns (stream PullTransportStateResponse);
+}
+
+service TransportInfo {
+  rpc DescribeTransportState(DescribeTransportRequest) returns (TransportSupport);
+}
+
+// TransportState describes the current state of the transport.
+message TransportState {
+    enum Direction {
+      DIRECTION_UNKNOWN = 0;
+      NO_DIRECTION = 1;
+      UP = 2;
+      DOWN = 3;
+      // the transport is moving horizontally, with horizontal strictly meaning parallel to the plane of the horizon.
+      HORIZONTAL = 4;
+    }
+
+    enum DoorStatus {
+      DOOR_STATUS_UNKNOWN = 0;
+      CLOSED = 1;
+      OPEN = 2;
+      OPENING = 3;
+      CLOSING = 4;
+      // The door is safety locked.
+      SAFETY_LOCKED = 5;
+      // The door remains in a position that is not fully open or closed.
+      LIMITED_OPENED = 6;
+    }
+
+    enum Mode {
+      MODE_UNKNOWN = 0;
+      NORMAL = 1;
+      // The transport is in service or inspection control.
+      SERVICE_CONTROL = 2;
+      // The transport is under a firefighter transport or firefighting transport mode of control. This usually happens
+      // during a fire alarm when firemen are on the site.
+      FIREFIGHTER_CONTROL = 3;
+      OUT_OF_SERVICE = 4;
+      // The transport is being operated by emergency power and may be in limited operation.
+      EMERGENCY_POWER = 5;
+      // The transport will not respond to any instruction until the VIP has reached their destination.
+      VIP_CONTROL = 6;
+      EARTHQUAKE_OPERATION = 7;
+      FIRE_OPERATION = 8;
+      // The transport is being manually operated by an attendant.
+      ATTENDANT_CONTROL = 9;
+      // The transport is manually or automatically parked at a predefined floor and will not provide
+      // any further service. This usually happens in a low traffic condition for the purpose of
+      // energy saving.
+      PARKING = 10;
+      // The transport is returning to its home position, usually the lobby or ground floor.
+      HOMING = 11;
+      // Control of the transport is performed from a control panel in the control cabinet. The transport is not
+      // available for normal operation.
+      CABINET_RECALL = 12;
+      // The transport is under an occupant evacuation mode of control. This usually happens during a
+      // fire alarm when the transport is used for evacuation of occupants.
+      OCCUPANT_EVACUATION = 13;
+      // The transport is operational but is reserved for the transportation of goods only.
+      FREIGHT = 14;
+      FAILURE = 15;
+      REDUCED_SPEED = 16;
+      STORM_OPERATION = 17;
+      HIGH_WIND_OPERATION = 18;
+    }
+
+    enum Fault {
+      FAULT_UNKNOWN = 0;
+      CONTROLLER_FAULT = 1;
+      DRIVE_AND_MOTOR_FAULT = 2;
+      MECHANICAL_COMPONENT_FAULT = 3;
+      OVERSPEED_FAULT = 4;
+      POWER_SUPPLY_FAULT = 5;
+      SAFETY_DEVICE_FAULT = 6;
+      CONTROLLER_SUPPLY_FAULT = 7;
+      DRIVE_TEMPERATURE_EXCEEDED = 8;
+      // A comb plate safety switch is activated.
+      COMB_PLATE_FAULT = 9;
+      GENERAL_FAULT = 10;
+      DOOR_FAULT = 11;
+      LEVELLING_FAULT = 12;
+      SAFETY_CIRCUIT_BREAK_FAULT = 13;
+      FAIL_TO_START = 14;
+      ALARM_BUTTON = 15;
+      DOOR_NOT_CLOSING = 16;
+    }
+
+    // Optional. The current location of the transport.
+    string current_location = 1;
+    // Optional. The next destination the transport will stop at.
+    string next_destination = 2;
+    // Optional. The direction the transport is moving.
+    Direction moving_direction = 3;
+    // Optional. The amount of load being carried. The units this is measured in is implementation specific. See TransportSupport
+    float load = 4;
+    // Optional. The status of each the door(s) of the transport. For multiple doors, use TransportSupport to identify multiple doors.
+    repeated DoorStatus door_status = 5;
+    // Optional. The mode the transport is in.
+    Mode mode = 6;
+    // Optional. A list of active fault signals being reported.
+    repeated Fault faults = 7;
+    // Optional. True if the passenger alarm has been activated.
+    bool passenger_alarm = 8;
+    // Optional. The speed of the transport.
+    float speed = 9;
+    // Optional. The destinations that are supported by the transport.
+    repeated int32 supported_destinations = 10;
+    // Optional. True if the transport is currently active. Note this is different to mode,
+    // as the transport can be in an active or idle state in different modes.
+    bool active = 11;
+    // Optional. The actor describes an entity that is using the transport.
+    Actor actor = 12;
+}
+
+message TransportSupport {
+  // How a named device supports read/write/pull apis
+  smartcore.types.ResourceSupport resource_support = 1;
+  // The unit associated with the load value, e.g. kg, % of maximum load.
+  string load_unit = 2;
+  // Describes the doors of the transport, if any.
+  repeated DoorInfo doors = 3;
+  // The maximum load the transport can carry, in kg, if known.
+  // This can be used to calculate the current load weight if the load is reported as a percentage of the maximum load.
+  int32 max_load = 4;
+  // The unit associated with the speed value, e.g. m/s, km/h.
+  string speed_unit = 5;
+
+  message DoorInfo {
+    // The id of the door. This is used as the id of the door in door_status.
+    int32 id = 1;
+    // Description of the door; front, rear, etc.
+    string description = 2;
+    // If the transport has multiple decks, this is the deck the door is on. 0 is the lowest deck.
+    int32 deck = 3;
+  }
+}
+
+// GetTransportStateRequest is used to request the current state of the transport.
+message GetTransportStateRequest {
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+}
+
+message DescribeTransportRequest {
+  string name = 1;
+}
+
+message PullTransportStateRequest {
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+  bool updates_only = 3;
+}
+
+message PullTransportStateResponse {
+  repeated Change changes = 1;
+
+  message Change {
+    string name = 1;
+    google.protobuf.Timestamp change_time = 2;
+    TransportState transport_state = 3;
+  }
+}

@@ -33,6 +33,15 @@ export class Actor extends jspb.Message {
   getLastGrantZone(): string;
   setLastGrantZone(value: string): Actor;
 
+  getJourneySource(): string;
+  setJourneySource(value: string): Actor;
+
+  getJourneyDestination(): string;
+  setJourneyDestination(value: string): Actor;
+
+  getJourneyReason(): string;
+  setJourneyReason(value: string): Actor;
+
   getIdsMap(): jspb.Map<string, string>;
   clearIdsMap(): Actor;
 
@@ -57,6 +66,9 @@ export namespace Actor {
     email: string,
     lastGrantTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     lastGrantZone: string,
+    journeySource: string,
+    journeyDestination: string,
+    journeyReason: string,
     idsMap: Array<[string, string]>,
     moreMap: Array<[string, string]>,
   }
