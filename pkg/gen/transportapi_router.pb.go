@@ -78,16 +78,16 @@ func (r *TransportApiRouter) GetTransportApiClient(name string) (TransportApiCli
 	return res.(TransportApiClient), nil
 }
 
-func (r *TransportApiRouter) GetTransportState(ctx context.Context, request *GetTransportStateRequest) (*TransportState, error) {
+func (r *TransportApiRouter) GetTransport(ctx context.Context, request *GetTransportRequest) (*Transport, error) {
 	child, err := r.GetTransportApiClient(request.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	return child.GetTransportState(ctx, request)
+	return child.GetTransport(ctx, request)
 }
 
-func (r *TransportApiRouter) PullTransportState(request *PullTransportStateRequest, server TransportApi_PullTransportStateServer) error {
+func (r *TransportApiRouter) PullTransport(request *PullTransportRequest, server TransportApi_PullTransportServer) error {
 	child, err := r.GetTransportApiClient(request.Name)
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func (r *TransportApiRouter) PullTransportState(request *PullTransportStateReque
 	// so we can cancel our forwarding request if we can't send responses to our caller
 	reqCtx, reqDone := context.WithCancel(server.Context())
 	// issue the request
-	stream, err := child.PullTransportState(reqCtx, request)
+	stream, err := child.PullTransport(reqCtx, request)
 	if err != nil {
 		return err
 	}
@@ -117,7 +117,7 @@ func (r *TransportApiRouter) PullTransportState(request *PullTransportStateReque
 		// Impl note: we could improve throughput here by issuing the Recv and Send in different goroutines, but we're doing
 		// it synchronously until we have a need to change the behaviour
 
-		var msg *PullTransportStateResponse
+		var msg *PullTransportResponse
 		msg, err = stream.Recv()
 		if err != nil {
 			break

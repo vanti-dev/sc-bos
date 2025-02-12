@@ -8,17 +8,17 @@ export class TransportApiClient {
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });
 
-  getTransportState(
-    request: transport_pb.GetTransportStateRequest,
+  getTransport(
+    request: transport_pb.GetTransportRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: transport_pb.TransportState) => void
-  ): grpcWeb.ClientReadableStream<transport_pb.TransportState>;
+               response: transport_pb.Transport) => void
+  ): grpcWeb.ClientReadableStream<transport_pb.Transport>;
 
-  pullTransportState(
-    request: transport_pb.PullTransportStateRequest,
+  pullTransport(
+    request: transport_pb.PullTransportRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<transport_pb.PullTransportStateResponse>;
+  ): grpcWeb.ClientReadableStream<transport_pb.PullTransportResponse>;
 
 }
 
@@ -27,7 +27,7 @@ export class TransportInfoClient {
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });
 
-  describeTransportState(
+  describeTransport(
     request: transport_pb.DescribeTransportRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
@@ -41,15 +41,15 @@ export class TransportApiPromiseClient {
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });
 
-  getTransportState(
-    request: transport_pb.GetTransportStateRequest,
+  getTransport(
+    request: transport_pb.GetTransportRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<transport_pb.TransportState>;
+  ): Promise<transport_pb.Transport>;
 
-  pullTransportState(
-    request: transport_pb.PullTransportStateRequest,
+  pullTransport(
+    request: transport_pb.PullTransportRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<transport_pb.PullTransportStateResponse>;
+  ): grpcWeb.ClientReadableStream<transport_pb.PullTransportResponse>;
 
 }
 
@@ -58,7 +58,7 @@ export class TransportInfoPromiseClient {
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });
 
-  describeTransportState(
+  describeTransport(
     request: transport_pb.DescribeTransportRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<transport_pb.TransportSupport>;

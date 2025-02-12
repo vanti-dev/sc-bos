@@ -77,11 +77,11 @@ func (r *TransportInfoRouter) GetTransportInfoClient(name string) (TransportInfo
 	return res.(TransportInfoClient), nil
 }
 
-func (r *TransportInfoRouter) DescribeTransportState(ctx context.Context, request *DescribeTransportRequest) (*TransportSupport, error) {
+func (r *TransportInfoRouter) DescribeTransport(ctx context.Context, request *DescribeTransportRequest) (*TransportSupport, error) {
 	child, err := r.GetTransportInfoClient(request.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	return child.DescribeTransportState(ctx, request)
+	return child.DescribeTransport(ctx, request)
 }

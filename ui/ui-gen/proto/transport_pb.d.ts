@@ -2,89 +2,204 @@ import * as jspb from 'google-protobuf'
 
 import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb'; // proto import: "google/protobuf/field_mask.proto"
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
-import * as actor_pb from './actor_pb'; // proto import: "actor.proto"
 import * as types_info_pb from '@smart-core-os/sc-api-grpc-web/types/info_pb'; // proto import: "types/info.proto"
 
 
-export class TransportState extends jspb.Message {
-  getCurrentLocation(): string;
-  setCurrentLocation(value: string): TransportState;
+export class Transport extends jspb.Message {
+  getCurrentLocation(): Transport.Location | undefined;
+  setCurrentLocation(value?: Transport.Location): Transport;
+  hasCurrentLocation(): boolean;
+  clearCurrentLocation(): Transport;
 
-  getNextDestination(): string;
-  setNextDestination(value: string): TransportState;
+  getNextDestinationsList(): Array<Transport.Location>;
+  setNextDestinationsList(value: Array<Transport.Location>): Transport;
+  clearNextDestinationsList(): Transport;
+  addNextDestinations(value?: Transport.Location, index?: number): Transport.Location;
 
-  getMovingDirection(): TransportState.Direction;
-  setMovingDirection(value: TransportState.Direction): TransportState;
+  getMovingDirection(): Transport.Direction;
+  setMovingDirection(value: Transport.Direction): Transport;
 
   getLoad(): number;
-  setLoad(value: number): TransportState;
+  setLoad(value: number): Transport;
 
-  getDoorStatusList(): Array<TransportState.DoorStatus>;
-  setDoorStatusList(value: Array<TransportState.DoorStatus>): TransportState;
-  clearDoorStatusList(): TransportState;
-  addDoorStatus(value: TransportState.DoorStatus, index?: number): TransportState;
+  getDoorStatusList(): Array<Transport.DoorStatus>;
+  setDoorStatusList(value: Array<Transport.DoorStatus>): Transport;
+  clearDoorStatusList(): Transport;
+  addDoorStatus(value: Transport.DoorStatus, index?: number): Transport;
 
-  getMode(): TransportState.Mode;
-  setMode(value: TransportState.Mode): TransportState;
+  getMode(): Transport.Mode;
+  setMode(value: Transport.Mode): Transport;
 
-  getFaultsList(): Array<TransportState.Fault>;
-  setFaultsList(value: Array<TransportState.Fault>): TransportState;
-  clearFaultsList(): TransportState;
-  addFaults(value: TransportState.Fault, index?: number): TransportState;
+  getFaultsList(): Array<Transport.Fault>;
+  setFaultsList(value: Array<Transport.Fault>): Transport;
+  clearFaultsList(): Transport;
+  addFaults(value: Transport.Fault, index?: number): Transport;
 
   getPassengerAlarm(): boolean;
-  setPassengerAlarm(value: boolean): TransportState;
+  setPassengerAlarm(value: boolean): Transport;
 
   getSpeed(): number;
-  setSpeed(value: number): TransportState;
+  setSpeed(value: number): Transport;
 
-  getSupportedDestinationsList(): Array<number>;
-  setSupportedDestinationsList(value: Array<number>): TransportState;
-  clearSupportedDestinationsList(): TransportState;
-  addSupportedDestinations(value: number, index?: number): TransportState;
+  getSupportedDestinationsList(): Array<Transport.Location>;
+  setSupportedDestinationsList(value: Array<Transport.Location>): Transport;
+  clearSupportedDestinationsList(): Transport;
+  addSupportedDestinations(value?: Transport.Location, index?: number): Transport.Location;
 
   getActive(): boolean;
-  setActive(value: boolean): TransportState;
+  setActive(value: boolean): Transport;
 
-  getActor(): actor_pb.Actor | undefined;
-  setActor(value?: actor_pb.Actor): TransportState;
-  hasActor(): boolean;
-  clearActor(): TransportState;
+  getPayloadsList(): Array<Transport.Payload>;
+  setPayloadsList(value: Array<Transport.Payload>): Transport;
+  clearPayloadsList(): Transport;
+  addPayloads(value?: Transport.Payload, index?: number): Transport.Payload;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): TransportState.AsObject;
-  static toObject(includeInstance: boolean, msg: TransportState): TransportState.AsObject;
-  static serializeBinaryToWriter(message: TransportState, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): TransportState;
-  static deserializeBinaryFromReader(message: TransportState, reader: jspb.BinaryReader): TransportState;
+  toObject(includeInstance?: boolean): Transport.AsObject;
+  static toObject(includeInstance: boolean, msg: Transport): Transport.AsObject;
+  static serializeBinaryToWriter(message: Transport, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Transport;
+  static deserializeBinaryFromReader(message: Transport, reader: jspb.BinaryReader): Transport;
 }
 
-export namespace TransportState {
+export namespace Transport {
   export type AsObject = {
-    currentLocation: string,
-    nextDestination: string,
-    movingDirection: TransportState.Direction,
+    currentLocation?: Transport.Location.AsObject,
+    nextDestinationsList: Array<Transport.Location.AsObject>,
+    movingDirection: Transport.Direction,
     load: number,
-    doorStatusList: Array<TransportState.DoorStatus>,
-    mode: TransportState.Mode,
-    faultsList: Array<TransportState.Fault>,
+    doorStatusList: Array<Transport.DoorStatus>,
+    mode: Transport.Mode,
+    faultsList: Array<Transport.Fault>,
     passengerAlarm: boolean,
     speed: number,
-    supportedDestinationsList: Array<number>,
+    supportedDestinationsList: Array<Transport.Location.AsObject>,
     active: boolean,
-    actor?: actor_pb.Actor.AsObject,
+    payloadsList: Array<Transport.Payload.AsObject>,
   }
 
+  export class Location extends jspb.Message {
+    getId(): string;
+    setId(value: string): Location;
+
+    getName(): string;
+    setName(value: string): Location;
+
+    getDescription(): string;
+    setDescription(value: string): Location;
+
+    getFloor(): number;
+    setFloor(value: number): Location;
+
+    getAttributesList(): Array<string>;
+    setAttributesList(value: Array<string>): Location;
+    clearAttributesList(): Location;
+    addAttributes(value: string, index?: number): Location;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Location.AsObject;
+    static toObject(includeInstance: boolean, msg: Location): Location.AsObject;
+    static serializeBinaryToWriter(message: Location, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Location;
+    static deserializeBinaryFromReader(message: Location, reader: jspb.BinaryReader): Location;
+  }
+
+  export namespace Location {
+    export type AsObject = {
+      id: string,
+      name: string,
+      description: string,
+      floor: number,
+      attributesList: Array<string>,
+    }
+  }
+
+
+  export class Journey extends jspb.Message {
+    getStart(): Transport.Location | undefined;
+    setStart(value?: Transport.Location): Journey;
+    hasStart(): boolean;
+    clearStart(): Journey;
+
+    getDestinationsList(): Array<Transport.Location>;
+    setDestinationsList(value: Array<Transport.Location>): Journey;
+    clearDestinationsList(): Journey;
+    addDestinations(value?: Transport.Location, index?: number): Transport.Location;
+
+    getReason(): string;
+    setReason(value: string): Journey;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Journey.AsObject;
+    static toObject(includeInstance: boolean, msg: Journey): Journey.AsObject;
+    static serializeBinaryToWriter(message: Journey, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Journey;
+    static deserializeBinaryFromReader(message: Journey, reader: jspb.BinaryReader): Journey;
+  }
+
+  export namespace Journey {
+    export type AsObject = {
+      start?: Transport.Location.AsObject,
+      destinationsList: Array<Transport.Location.AsObject>,
+      reason: string,
+    }
+  }
+
+
+  export class Payload extends jspb.Message {
+    getId(): string;
+    setId(value: string): Payload;
+
+    getDescription(): string;
+    setDescription(value: string): Payload;
+
+    getIntendedJourney(): Transport.Journey | undefined;
+    setIntendedJourney(value?: Transport.Journey): Payload;
+    hasIntendedJourney(): boolean;
+    clearIntendedJourney(): Payload;
+
+    getActualJourney(): Transport.Journey | undefined;
+    setActualJourney(value?: Transport.Journey): Payload;
+    hasActualJourney(): boolean;
+    clearActualJourney(): Payload;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Payload.AsObject;
+    static toObject(includeInstance: boolean, msg: Payload): Payload.AsObject;
+    static serializeBinaryToWriter(message: Payload, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Payload;
+    static deserializeBinaryFromReader(message: Payload, reader: jspb.BinaryReader): Payload;
+  }
+
+  export namespace Payload {
+    export type AsObject = {
+      id: string,
+      description: string,
+      intendedJourney?: Transport.Journey.AsObject,
+      actualJourney?: Transport.Journey.AsObject,
+    }
+  }
+
+
   export enum Direction { 
-    DIRECTION_UNKNOWN = 0,
+    DIRECTION_UNSPECIFIED = 0,
     NO_DIRECTION = 1,
     UP = 2,
     DOWN = 3,
-    HORIZONTAL = 4,
+    IN = 4,
+    OUT = 5,
+    CLOCKWISE = 6,
+    ANTICLOCKWISE = 7,
+    FORWARD = 8,
+    BACKWARD = 9,
+    EAST = 10,
+    WEST = 11,
+    NORTH = 12,
+    SOUTH = 13,
   }
 
   export enum DoorStatus { 
-    DOOR_STATUS_UNKNOWN = 0,
+    DOOR_STATUS_UNSPECIFIED = 0,
     CLOSED = 1,
     OPEN = 2,
     OPENING = 3,
@@ -94,7 +209,7 @@ export namespace TransportState {
   }
 
   export enum Mode { 
-    MODE_UNKNOWN = 0,
+    MODE_UNSPECIFIED = 0,
     NORMAL = 1,
     SERVICE_CONTROL = 2,
     FIREFIGHTER_CONTROL = 3,
@@ -116,7 +231,7 @@ export namespace TransportState {
   }
 
   export enum Fault { 
-    FAULT_UNKNOWN = 0,
+    FAULT_UNSPECIFIED = 0,
     CONTROLLER_FAULT = 1,
     DRIVE_AND_MOTOR_FAULT = 2,
     MECHANICAL_COMPONENT_FAULT = 3,
@@ -201,24 +316,24 @@ export namespace TransportSupport {
 
 }
 
-export class GetTransportStateRequest extends jspb.Message {
+export class GetTransportRequest extends jspb.Message {
   getName(): string;
-  setName(value: string): GetTransportStateRequest;
+  setName(value: string): GetTransportRequest;
 
   getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
-  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): GetTransportStateRequest;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): GetTransportRequest;
   hasReadMask(): boolean;
-  clearReadMask(): GetTransportStateRequest;
+  clearReadMask(): GetTransportRequest;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetTransportStateRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetTransportStateRequest): GetTransportStateRequest.AsObject;
-  static serializeBinaryToWriter(message: GetTransportStateRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetTransportStateRequest;
-  static deserializeBinaryFromReader(message: GetTransportStateRequest, reader: jspb.BinaryReader): GetTransportStateRequest;
+  toObject(includeInstance?: boolean): GetTransportRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetTransportRequest): GetTransportRequest.AsObject;
+  static serializeBinaryToWriter(message: GetTransportRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetTransportRequest;
+  static deserializeBinaryFromReader(message: GetTransportRequest, reader: jspb.BinaryReader): GetTransportRequest;
 }
 
-export namespace GetTransportStateRequest {
+export namespace GetTransportRequest {
   export type AsObject = {
     name: string,
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
@@ -243,27 +358,27 @@ export namespace DescribeTransportRequest {
   }
 }
 
-export class PullTransportStateRequest extends jspb.Message {
+export class PullTransportRequest extends jspb.Message {
   getName(): string;
-  setName(value: string): PullTransportStateRequest;
+  setName(value: string): PullTransportRequest;
 
   getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
-  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): PullTransportStateRequest;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): PullTransportRequest;
   hasReadMask(): boolean;
-  clearReadMask(): PullTransportStateRequest;
+  clearReadMask(): PullTransportRequest;
 
   getUpdatesOnly(): boolean;
-  setUpdatesOnly(value: boolean): PullTransportStateRequest;
+  setUpdatesOnly(value: boolean): PullTransportRequest;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): PullTransportStateRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: PullTransportStateRequest): PullTransportStateRequest.AsObject;
-  static serializeBinaryToWriter(message: PullTransportStateRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): PullTransportStateRequest;
-  static deserializeBinaryFromReader(message: PullTransportStateRequest, reader: jspb.BinaryReader): PullTransportStateRequest;
+  toObject(includeInstance?: boolean): PullTransportRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: PullTransportRequest): PullTransportRequest.AsObject;
+  static serializeBinaryToWriter(message: PullTransportRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullTransportRequest;
+  static deserializeBinaryFromReader(message: PullTransportRequest, reader: jspb.BinaryReader): PullTransportRequest;
 }
 
-export namespace PullTransportStateRequest {
+export namespace PullTransportRequest {
   export type AsObject = {
     name: string,
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
@@ -271,23 +386,23 @@ export namespace PullTransportStateRequest {
   }
 }
 
-export class PullTransportStateResponse extends jspb.Message {
-  getChangesList(): Array<PullTransportStateResponse.Change>;
-  setChangesList(value: Array<PullTransportStateResponse.Change>): PullTransportStateResponse;
-  clearChangesList(): PullTransportStateResponse;
-  addChanges(value?: PullTransportStateResponse.Change, index?: number): PullTransportStateResponse.Change;
+export class PullTransportResponse extends jspb.Message {
+  getChangesList(): Array<PullTransportResponse.Change>;
+  setChangesList(value: Array<PullTransportResponse.Change>): PullTransportResponse;
+  clearChangesList(): PullTransportResponse;
+  addChanges(value?: PullTransportResponse.Change, index?: number): PullTransportResponse.Change;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): PullTransportStateResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: PullTransportStateResponse): PullTransportStateResponse.AsObject;
-  static serializeBinaryToWriter(message: PullTransportStateResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): PullTransportStateResponse;
-  static deserializeBinaryFromReader(message: PullTransportStateResponse, reader: jspb.BinaryReader): PullTransportStateResponse;
+  toObject(includeInstance?: boolean): PullTransportResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: PullTransportResponse): PullTransportResponse.AsObject;
+  static serializeBinaryToWriter(message: PullTransportResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullTransportResponse;
+  static deserializeBinaryFromReader(message: PullTransportResponse, reader: jspb.BinaryReader): PullTransportResponse;
 }
 
-export namespace PullTransportStateResponse {
+export namespace PullTransportResponse {
   export type AsObject = {
-    changesList: Array<PullTransportStateResponse.Change.AsObject>,
+    changesList: Array<PullTransportResponse.Change.AsObject>,
   }
 
   export class Change extends jspb.Message {
@@ -299,8 +414,8 @@ export namespace PullTransportStateResponse {
     hasChangeTime(): boolean;
     clearChangeTime(): Change;
 
-    getTransportState(): TransportState | undefined;
-    setTransportState(value?: TransportState): Change;
+    getTransportState(): Transport | undefined;
+    setTransportState(value?: Transport): Change;
     hasTransportState(): boolean;
     clearTransportState(): Change;
 
@@ -316,7 +431,7 @@ export namespace PullTransportStateResponse {
     export type AsObject = {
       name: string,
       changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      transportState?: TransportState.AsObject,
+      transportState?: Transport.AsObject,
     }
   }
 

@@ -19,8 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TransportApi_GetTransportState_FullMethodName  = "/smartcore.bos.TransportApi/GetTransportState"
-	TransportApi_PullTransportState_FullMethodName = "/smartcore.bos.TransportApi/PullTransportState"
+	TransportApi_GetTransport_FullMethodName  = "/smartcore.bos.TransportApi/GetTransport"
+	TransportApi_PullTransport_FullMethodName = "/smartcore.bos.TransportApi/PullTransport"
 )
 
 // TransportApiClient is the client API for TransportApi service.
@@ -30,8 +30,8 @@ const (
 // TransportAPI represents something that can transport something else between places.
 // The transport will often be an elevator, but could be an escalator, conveyor etc.
 type TransportApiClient interface {
-	GetTransportState(ctx context.Context, in *GetTransportStateRequest, opts ...grpc.CallOption) (*TransportState, error)
-	PullTransportState(ctx context.Context, in *PullTransportStateRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PullTransportStateResponse], error)
+	GetTransport(ctx context.Context, in *GetTransportRequest, opts ...grpc.CallOption) (*Transport, error)
+	PullTransport(ctx context.Context, in *PullTransportRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PullTransportResponse], error)
 }
 
 type transportApiClient struct {
@@ -42,23 +42,23 @@ func NewTransportApiClient(cc grpc.ClientConnInterface) TransportApiClient {
 	return &transportApiClient{cc}
 }
 
-func (c *transportApiClient) GetTransportState(ctx context.Context, in *GetTransportStateRequest, opts ...grpc.CallOption) (*TransportState, error) {
+func (c *transportApiClient) GetTransport(ctx context.Context, in *GetTransportRequest, opts ...grpc.CallOption) (*Transport, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TransportState)
-	err := c.cc.Invoke(ctx, TransportApi_GetTransportState_FullMethodName, in, out, cOpts...)
+	out := new(Transport)
+	err := c.cc.Invoke(ctx, TransportApi_GetTransport_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *transportApiClient) PullTransportState(ctx context.Context, in *PullTransportStateRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PullTransportStateResponse], error) {
+func (c *transportApiClient) PullTransport(ctx context.Context, in *PullTransportRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PullTransportResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &TransportApi_ServiceDesc.Streams[0], TransportApi_PullTransportState_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &TransportApi_ServiceDesc.Streams[0], TransportApi_PullTransport_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[PullTransportStateRequest, PullTransportStateResponse]{ClientStream: stream}
+	x := &grpc.GenericClientStream[PullTransportRequest, PullTransportResponse]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (c *transportApiClient) PullTransportState(ctx context.Context, in *PullTra
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type TransportApi_PullTransportStateClient = grpc.ServerStreamingClient[PullTransportStateResponse]
+type TransportApi_PullTransportClient = grpc.ServerStreamingClient[PullTransportResponse]
 
 // TransportApiServer is the server API for TransportApi service.
 // All implementations must embed UnimplementedTransportApiServer
@@ -78,8 +78,8 @@ type TransportApi_PullTransportStateClient = grpc.ServerStreamingClient[PullTran
 // TransportAPI represents something that can transport something else between places.
 // The transport will often be an elevator, but could be an escalator, conveyor etc.
 type TransportApiServer interface {
-	GetTransportState(context.Context, *GetTransportStateRequest) (*TransportState, error)
-	PullTransportState(*PullTransportStateRequest, grpc.ServerStreamingServer[PullTransportStateResponse]) error
+	GetTransport(context.Context, *GetTransportRequest) (*Transport, error)
+	PullTransport(*PullTransportRequest, grpc.ServerStreamingServer[PullTransportResponse]) error
 	mustEmbedUnimplementedTransportApiServer()
 }
 
@@ -90,11 +90,11 @@ type TransportApiServer interface {
 // pointer dereference when methods are called.
 type UnimplementedTransportApiServer struct{}
 
-func (UnimplementedTransportApiServer) GetTransportState(context.Context, *GetTransportStateRequest) (*TransportState, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTransportState not implemented")
+func (UnimplementedTransportApiServer) GetTransport(context.Context, *GetTransportRequest) (*Transport, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTransport not implemented")
 }
-func (UnimplementedTransportApiServer) PullTransportState(*PullTransportStateRequest, grpc.ServerStreamingServer[PullTransportStateResponse]) error {
-	return status.Errorf(codes.Unimplemented, "method PullTransportState not implemented")
+func (UnimplementedTransportApiServer) PullTransport(*PullTransportRequest, grpc.ServerStreamingServer[PullTransportResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method PullTransport not implemented")
 }
 func (UnimplementedTransportApiServer) mustEmbedUnimplementedTransportApiServer() {}
 func (UnimplementedTransportApiServer) testEmbeddedByValue()                      {}
@@ -117,34 +117,34 @@ func RegisterTransportApiServer(s grpc.ServiceRegistrar, srv TransportApiServer)
 	s.RegisterService(&TransportApi_ServiceDesc, srv)
 }
 
-func _TransportApi_GetTransportState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetTransportStateRequest)
+func _TransportApi_GetTransport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTransportRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TransportApiServer).GetTransportState(ctx, in)
+		return srv.(TransportApiServer).GetTransport(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TransportApi_GetTransportState_FullMethodName,
+		FullMethod: TransportApi_GetTransport_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TransportApiServer).GetTransportState(ctx, req.(*GetTransportStateRequest))
+		return srv.(TransportApiServer).GetTransport(ctx, req.(*GetTransportRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TransportApi_PullTransportState_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(PullTransportStateRequest)
+func _TransportApi_PullTransport_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(PullTransportRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(TransportApiServer).PullTransportState(m, &grpc.GenericServerStream[PullTransportStateRequest, PullTransportStateResponse]{ServerStream: stream})
+	return srv.(TransportApiServer).PullTransport(m, &grpc.GenericServerStream[PullTransportRequest, PullTransportResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type TransportApi_PullTransportStateServer = grpc.ServerStreamingServer[PullTransportStateResponse]
+type TransportApi_PullTransportServer = grpc.ServerStreamingServer[PullTransportResponse]
 
 // TransportApi_ServiceDesc is the grpc.ServiceDesc for TransportApi service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -154,14 +154,14 @@ var TransportApi_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*TransportApiServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetTransportState",
-			Handler:    _TransportApi_GetTransportState_Handler,
+			MethodName: "GetTransport",
+			Handler:    _TransportApi_GetTransport_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "PullTransportState",
-			Handler:       _TransportApi_PullTransportState_Handler,
+			StreamName:    "PullTransport",
+			Handler:       _TransportApi_PullTransport_Handler,
 			ServerStreams: true,
 		},
 	},
@@ -169,14 +169,14 @@ var TransportApi_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	TransportInfo_DescribeTransportState_FullMethodName = "/smartcore.bos.TransportInfo/DescribeTransportState"
+	TransportInfo_DescribeTransport_FullMethodName = "/smartcore.bos.TransportInfo/DescribeTransport"
 )
 
 // TransportInfoClient is the client API for TransportInfo service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TransportInfoClient interface {
-	DescribeTransportState(ctx context.Context, in *DescribeTransportRequest, opts ...grpc.CallOption) (*TransportSupport, error)
+	DescribeTransport(ctx context.Context, in *DescribeTransportRequest, opts ...grpc.CallOption) (*TransportSupport, error)
 }
 
 type transportInfoClient struct {
@@ -187,10 +187,10 @@ func NewTransportInfoClient(cc grpc.ClientConnInterface) TransportInfoClient {
 	return &transportInfoClient{cc}
 }
 
-func (c *transportInfoClient) DescribeTransportState(ctx context.Context, in *DescribeTransportRequest, opts ...grpc.CallOption) (*TransportSupport, error) {
+func (c *transportInfoClient) DescribeTransport(ctx context.Context, in *DescribeTransportRequest, opts ...grpc.CallOption) (*TransportSupport, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TransportSupport)
-	err := c.cc.Invoke(ctx, TransportInfo_DescribeTransportState_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, TransportInfo_DescribeTransport_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +201,7 @@ func (c *transportInfoClient) DescribeTransportState(ctx context.Context, in *De
 // All implementations must embed UnimplementedTransportInfoServer
 // for forward compatibility.
 type TransportInfoServer interface {
-	DescribeTransportState(context.Context, *DescribeTransportRequest) (*TransportSupport, error)
+	DescribeTransport(context.Context, *DescribeTransportRequest) (*TransportSupport, error)
 	mustEmbedUnimplementedTransportInfoServer()
 }
 
@@ -212,8 +212,8 @@ type TransportInfoServer interface {
 // pointer dereference when methods are called.
 type UnimplementedTransportInfoServer struct{}
 
-func (UnimplementedTransportInfoServer) DescribeTransportState(context.Context, *DescribeTransportRequest) (*TransportSupport, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DescribeTransportState not implemented")
+func (UnimplementedTransportInfoServer) DescribeTransport(context.Context, *DescribeTransportRequest) (*TransportSupport, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DescribeTransport not implemented")
 }
 func (UnimplementedTransportInfoServer) mustEmbedUnimplementedTransportInfoServer() {}
 func (UnimplementedTransportInfoServer) testEmbeddedByValue()                       {}
@@ -236,20 +236,20 @@ func RegisterTransportInfoServer(s grpc.ServiceRegistrar, srv TransportInfoServe
 	s.RegisterService(&TransportInfo_ServiceDesc, srv)
 }
 
-func _TransportInfo_DescribeTransportState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _TransportInfo_DescribeTransport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DescribeTransportRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TransportInfoServer).DescribeTransportState(ctx, in)
+		return srv.(TransportInfoServer).DescribeTransport(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TransportInfo_DescribeTransportState_FullMethodName,
+		FullMethod: TransportInfo_DescribeTransport_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TransportInfoServer).DescribeTransportState(ctx, req.(*DescribeTransportRequest))
+		return srv.(TransportInfoServer).DescribeTransport(ctx, req.(*DescribeTransportRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -262,8 +262,8 @@ var TransportInfo_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*TransportInfoServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "DescribeTransportState",
-			Handler:    _TransportInfo_DescribeTransportState_Handler,
+			MethodName: "DescribeTransport",
+			Handler:    _TransportInfo_DescribeTransport_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -24,8 +24,6 @@ var google_protobuf_field_mask_pb = require('google-protobuf/google/protobuf/fie
 
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js')
 
-var actor_pb = require('./actor_pb.js')
-
 var types_info_pb = require('@smart-core-os/sc-api-grpc-web/types/info_pb.js')
 const proto = {};
 proto.smartcore = {};
@@ -86,117 +84,117 @@ proto.smartcore.bos.TransportApiPromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.smartcore.bos.GetTransportStateRequest,
- *   !proto.smartcore.bos.TransportState>}
+ *   !proto.smartcore.bos.GetTransportRequest,
+ *   !proto.smartcore.bos.Transport>}
  */
-const methodDescriptor_TransportApi_GetTransportState = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.TransportApi/GetTransportState',
+const methodDescriptor_TransportApi_GetTransport = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.TransportApi/GetTransport',
   grpc.web.MethodType.UNARY,
-  proto.smartcore.bos.GetTransportStateRequest,
-  proto.smartcore.bos.TransportState,
+  proto.smartcore.bos.GetTransportRequest,
+  proto.smartcore.bos.Transport,
   /**
-   * @param {!proto.smartcore.bos.GetTransportStateRequest} request
+   * @param {!proto.smartcore.bos.GetTransportRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.smartcore.bos.TransportState.deserializeBinary
+  proto.smartcore.bos.Transport.deserializeBinary
 );
 
 
 /**
- * @param {!proto.smartcore.bos.GetTransportStateRequest} request The
+ * @param {!proto.smartcore.bos.GetTransportRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.TransportState)}
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.Transport)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.TransportState>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Transport>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.TransportApiClient.prototype.getTransportState =
+proto.smartcore.bos.TransportApiClient.prototype.getTransport =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.TransportApi/GetTransportState',
+      '/smartcore.bos.TransportApi/GetTransport',
       request,
       metadata || {},
-      methodDescriptor_TransportApi_GetTransportState,
+      methodDescriptor_TransportApi_GetTransport,
       callback);
 };
 
 
 /**
- * @param {!proto.smartcore.bos.GetTransportStateRequest} request The
+ * @param {!proto.smartcore.bos.GetTransportRequest} request The
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.smartcore.bos.TransportState>}
+ * @return {!Promise<!proto.smartcore.bos.Transport>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.TransportApiPromiseClient.prototype.getTransportState =
+proto.smartcore.bos.TransportApiPromiseClient.prototype.getTransport =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.TransportApi/GetTransportState',
+      '/smartcore.bos.TransportApi/GetTransport',
       request,
       metadata || {},
-      methodDescriptor_TransportApi_GetTransportState);
+      methodDescriptor_TransportApi_GetTransport);
 };
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.smartcore.bos.PullTransportStateRequest,
- *   !proto.smartcore.bos.PullTransportStateResponse>}
+ *   !proto.smartcore.bos.PullTransportRequest,
+ *   !proto.smartcore.bos.PullTransportResponse>}
  */
-const methodDescriptor_TransportApi_PullTransportState = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.TransportApi/PullTransportState',
+const methodDescriptor_TransportApi_PullTransport = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.TransportApi/PullTransport',
   grpc.web.MethodType.SERVER_STREAMING,
-  proto.smartcore.bos.PullTransportStateRequest,
-  proto.smartcore.bos.PullTransportStateResponse,
+  proto.smartcore.bos.PullTransportRequest,
+  proto.smartcore.bos.PullTransportResponse,
   /**
-   * @param {!proto.smartcore.bos.PullTransportStateRequest} request
+   * @param {!proto.smartcore.bos.PullTransportRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.smartcore.bos.PullTransportStateResponse.deserializeBinary
+  proto.smartcore.bos.PullTransportResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.smartcore.bos.PullTransportStateRequest} request The request proto
+ * @param {!proto.smartcore.bos.PullTransportRequest} request The request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullTransportStateResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullTransportResponse>}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.TransportApiClient.prototype.pullTransportState =
+proto.smartcore.bos.TransportApiClient.prototype.pullTransport =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/smartcore.bos.TransportApi/PullTransportState',
+      '/smartcore.bos.TransportApi/PullTransport',
       request,
       metadata || {},
-      methodDescriptor_TransportApi_PullTransportState);
+      methodDescriptor_TransportApi_PullTransport);
 };
 
 
 /**
- * @param {!proto.smartcore.bos.PullTransportStateRequest} request The request proto
+ * @param {!proto.smartcore.bos.PullTransportRequest} request The request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullTransportStateResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullTransportResponse>}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.TransportApiPromiseClient.prototype.pullTransportState =
+proto.smartcore.bos.TransportApiPromiseClient.prototype.pullTransport =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/smartcore.bos.TransportApi/PullTransportState',
+      '/smartcore.bos.TransportApi/PullTransport',
       request,
       metadata || {},
-      methodDescriptor_TransportApi_PullTransportState);
+      methodDescriptor_TransportApi_PullTransport);
 };
 
 
@@ -258,8 +256,8 @@ proto.smartcore.bos.TransportInfoPromiseClient =
  *   !proto.smartcore.bos.DescribeTransportRequest,
  *   !proto.smartcore.bos.TransportSupport>}
  */
-const methodDescriptor_TransportInfo_DescribeTransportState = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.TransportInfo/DescribeTransportState',
+const methodDescriptor_TransportInfo_DescribeTransport = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.TransportInfo/DescribeTransport',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.DescribeTransportRequest,
   proto.smartcore.bos.TransportSupport,
@@ -284,13 +282,13 @@ const methodDescriptor_TransportInfo_DescribeTransportState = new grpc.web.Metho
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.TransportSupport>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.TransportInfoClient.prototype.describeTransportState =
+proto.smartcore.bos.TransportInfoClient.prototype.describeTransport =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.TransportInfo/DescribeTransportState',
+      '/smartcore.bos.TransportInfo/DescribeTransport',
       request,
       metadata || {},
-      methodDescriptor_TransportInfo_DescribeTransportState,
+      methodDescriptor_TransportInfo_DescribeTransport,
       callback);
 };
 
@@ -303,13 +301,13 @@ proto.smartcore.bos.TransportInfoClient.prototype.describeTransportState =
  * @return {!Promise<!proto.smartcore.bos.TransportSupport>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.TransportInfoPromiseClient.prototype.describeTransportState =
+proto.smartcore.bos.TransportInfoPromiseClient.prototype.describeTransport =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.TransportInfo/DescribeTransportState',
+      '/smartcore.bos.TransportInfo/DescribeTransport',
       request,
       metadata || {},
-      methodDescriptor_TransportInfo_DescribeTransportState);
+      methodDescriptor_TransportInfo_DescribeTransport);
 };
 
 

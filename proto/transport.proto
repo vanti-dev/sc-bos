@@ -6,33 +6,41 @@ option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
-import "actor.proto";
 import "types/info.proto";
 
 // TransportAPI represents something that can transport something else between places.
 // The transport will often be an elevator, but could be an escalator, conveyor etc.
 service TransportApi {
-  rpc GetTransportState(GetTransportStateRequest) returns (TransportState);
-  rpc PullTransportState(PullTransportStateRequest) returns (stream PullTransportStateResponse);
+  rpc GetTransport(GetTransportRequest) returns (Transport);
+  rpc PullTransport(PullTransportRequest) returns (stream PullTransportResponse);
 }
 
 service TransportInfo {
-  rpc DescribeTransportState(DescribeTransportRequest) returns (TransportSupport);
+  rpc DescribeTransport(DescribeTransportRequest) returns (TransportSupport);
 }
 
-// TransportState describes the current state of the transport.
-message TransportState {
+// Transport describes the current state of the transport.
+message Transport {
     enum Direction {
-      DIRECTION_UNKNOWN = 0;
+      DIRECTION_UNSPECIFIED = 0;
+      // i.e. the device is stationary and not moving in any direction.
       NO_DIRECTION = 1;
       UP = 2;
       DOWN = 3;
-      // the transport is moving horizontally, with horizontal strictly meaning parallel to the plane of the horizon.
-      HORIZONTAL = 4;
+      IN = 4;
+      OUT = 5;
+      CLOCKWISE = 6;
+      ANTICLOCKWISE = 7;
+      FORWARD = 8;
+      BACKWARD = 9;
+      EAST = 10;
+      WEST = 11;
+      NORTH = 12;
+      SOUTH = 13;
     }
 
     enum DoorStatus {
-      DOOR_STATUS_UNKNOWN = 0;
+      DOOR_STATUS_UNSPECIFIED = 0;
       CLOSED = 1;
       OPEN = 2;
       OPENING = 3;
@@ -44,7 +52,7 @@ message TransportState {
     }
 
     enum Mode {
-      MODE_UNKNOWN = 0;
+      MODE_UNSPECIFIED = 0;
       NORMAL = 1;
       // The transport is in service or inspection control.
       SERVICE_CONTROL = 2;
@@ -81,7 +89,7 @@ message TransportState {
     }
 
     enum Fault {
-      FAULT_UNKNOWN = 0;
+      FAULT_UNSPECIFIED = 0;
       CONTROLLER_FAULT = 1;
       DRIVE_AND_MOTOR_FAULT = 2;
       MECHANICAL_COMPONENT_FAULT = 3;
@@ -101,13 +109,39 @@ message TransportState {
       DOOR_NOT_CLOSING = 16;
     }
 
-    // Optional. The current location of the transport.
-    string current_location = 1;
-    // Optional. The next destination the transport will stop at.
-    string next_destination = 2;
+    // Location describes a place that the transport can stop at.
+    message Location {
+      // The id of the location.
+      string id = 1;
+      // The name of the location. e.g. 'Lobby', 'Floor 1', 'Car Park'.
+      string name = 2;
+      // Optional. Description of the location.
+      string description = 3;
+      // Optional. The floor number of the location.
+      int32 floor = 4;
+      // Optional. The attributes of the location.
+      repeated string attributes = 5;
+    }
+
+    // Journey describes the journey of the transport or payload.
+    // It will have a source and one or more destinations.
+    message Journey {
+      // The starting point of the journey.
+      Location start = 1;
+      // The destinations of the journey.
+      repeated Location destinations = 2;
+      // Optional. The reason for the journey.
+      string reason = 3;
+    }
+
+    // The current location of the transport.
+    Location current_location = 1;
+    // Optional. The next destination(s) the transport will stop at.
+    repeated Location next_destinations = 2;
     // Optional. The direction the transport is moving.
     Direction moving_direction = 3;
-    // Optional. The amount of load being carried. The units this is measured in is implementation specific. See TransportSupport
+    // Optional. The total amount of load being carried.
+    // The units this is measured in is implementation specific. See TransportSupport
     float load = 4;
     // Optional. The status of each the door(s) of the transport. For multiple doors, use TransportSupport to identify multiple doors.
     repeated DoorStatus door_status = 5;
@@ -120,12 +154,24 @@ message TransportState {
     // Optional. The speed of the transport.
     float speed = 9;
     // Optional. The destinations that are supported by the transport.
-    repeated int32 supported_destinations = 10;
+    repeated Location supported_destinations = 10;
     // Optional. True if the transport is currently active. Note this is different to mode,
     // as the transport can be in an active or idle state in different modes.
     bool active = 11;
-    // Optional. The actor describes an entity that is using the transport.
-    Actor actor = 12;
+
+    message Payload {
+        // The id of the payload.
+        string id = 1;
+        // The description of the payload.
+        string description = 2;
+        // The journey the payload is intending to take.
+        Journey intended_journey = 3;
+        // The actual journey the payload has taken.
+        Journey actual_journey = 4;
+    }
+
+    // Optional. Payloads describes the entities that are currently being transported.
+    repeated Payload payloads = 12;
 }
 
 message TransportSupport {
@@ -151,8 +197,8 @@ message TransportSupport {
   }
 }
 
-// GetTransportStateRequest is used to request the current state of the transport.
-message GetTransportStateRequest {
+// GetTransportRequest is used to request the current state of the transport.
+message GetTransportRequest {
   string name = 1;
   google.protobuf.FieldMask read_mask = 2;
 }
@@ -161,18 +207,18 @@ message DescribeTransportRequest {
   string name = 1;
 }
 
-message PullTransportStateRequest {
+message PullTransportRequest {
   string name = 1;
   google.protobuf.FieldMask read_mask = 2;
   bool updates_only = 3;
 }
 
-message PullTransportStateResponse {
+message PullTransportResponse {
   repeated Change changes = 1;
 
   message Change {
     string name = 1;
     google.protobuf.Timestamp change_time = 2;
-    TransportState transport_state = 3;
+    Transport transport_state = 3;
   }
 }
