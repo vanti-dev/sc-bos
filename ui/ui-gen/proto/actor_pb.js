@@ -87,9 +87,6 @@ url: jspb.Message.getFieldWithDefault(msg, 13, ""),
 email: jspb.Message.getFieldWithDefault(msg, 14, ""),
 lastGrantTime: (f = msg.getLastGrantTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
 lastGrantZone: jspb.Message.getFieldWithDefault(msg, 16, ""),
-journeySource: jspb.Message.getFieldWithDefault(msg, 17, ""),
-journeyDestination: jspb.Message.getFieldWithDefault(msg, 18, ""),
-journeyReason: jspb.Message.getFieldWithDefault(msg, 19, ""),
 idsMap: (f = msg.getIdsMap()) ? f.toObject(includeInstance, undefined) : [],
 moreMap: (f = msg.getMoreMap()) ? f.toObject(includeInstance, undefined) : []
   };
@@ -161,18 +158,6 @@ proto.smartcore.bos.Actor.deserializeBinaryFromReader = function(msg, reader) {
     case 16:
       var value = /** @type {string} */ (reader.readString());
       msg.setLastGrantZone(value);
-      break;
-    case 17:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setJourneySource(value);
-      break;
-    case 18:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setJourneyDestination(value);
-      break;
-    case 19:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setJourneyReason(value);
       break;
     case 100:
       var value = msg.getIdsMap();
@@ -270,27 +255,6 @@ proto.smartcore.bos.Actor.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       16,
-      f
-    );
-  }
-  f = message.getJourneySource();
-  if (f.length > 0) {
-    writer.writeString(
-      17,
-      f
-    );
-  }
-  f = message.getJourneyDestination();
-  if (f.length > 0) {
-    writer.writeString(
-      18,
-      f
-    );
-  }
-  f = message.getJourneyReason();
-  if (f.length > 0) {
-    writer.writeString(
-      19,
       f
     );
   }
@@ -484,60 +448,6 @@ proto.smartcore.bos.Actor.prototype.getLastGrantZone = function() {
  */
 proto.smartcore.bos.Actor.prototype.setLastGrantZone = function(value) {
   return jspb.Message.setProto3StringField(this, 16, value);
-};
-
-
-/**
- * optional string journey_source = 17;
- * @return {string}
- */
-proto.smartcore.bos.Actor.prototype.getJourneySource = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 17, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.smartcore.bos.Actor} returns this
- */
-proto.smartcore.bos.Actor.prototype.setJourneySource = function(value) {
-  return jspb.Message.setProto3StringField(this, 17, value);
-};
-
-
-/**
- * optional string journey_destination = 18;
- * @return {string}
- */
-proto.smartcore.bos.Actor.prototype.getJourneyDestination = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 18, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.smartcore.bos.Actor} returns this
- */
-proto.smartcore.bos.Actor.prototype.setJourneyDestination = function(value) {
-  return jspb.Message.setProto3StringField(this, 18, value);
-};
-
-
-/**
- * optional string journey_reason = 19;
- * @return {string}
- */
-proto.smartcore.bos.Actor.prototype.getJourneyReason = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 19, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.smartcore.bos.Actor} returns this
- */
-proto.smartcore.bos.Actor.prototype.setJourneyReason = function(value) {
-  return jspb.Message.setProto3StringField(this, 19, value);
 };
 
 

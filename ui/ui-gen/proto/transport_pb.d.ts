@@ -196,6 +196,9 @@ export namespace Transport {
     WEST = 11,
     NORTH = 12,
     SOUTH = 13,
+    LEFT = 14,
+    RIGHT = 15,
+    SIDEWAYS = 16,
   }
 
   export enum DoorStatus { 
