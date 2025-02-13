@@ -55,7 +55,8 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		return nil, err
 	}
 
-	accountStore, err := account.OpenStore(ctx, files.Path(config.DataDir, accountsFile), logger)
+	accountLogger := logger.Named("account")
+	accountStore, err := account.OpenStore(ctx, files.Path(config.DataDir, accountsFile), accountLogger)
 	if err != nil {
 		return nil, fmt.Errorf("load accounts: %w", err)
 	}
@@ -95,7 +96,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	rootNode := node.New(cName)
 	rootNode.Logger = logger.Named("node")
 	rootNode.Announce(rootNode.Name(),
-		node.HasServer[gen.AccountApiServiceServer](gen.RegisterAccountApiServiceServer, account.NewServer(accountStore)),
+		node.HasServer[gen.AccountApiServiceServer](gen.RegisterAccountApiServiceServer, account.NewServer(accountStore, accountLogger.Named("server"))),
 	)
 
 	// Setup a local database for storing non-critical data.

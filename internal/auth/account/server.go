@@ -21,9 +21,7 @@ func NewServer(store *Store, logger *zap.Logger) *Server {
 }
 
 // GetAccount returns a single account by ID.
-//
-// TODO: implement read_mask
-func (s *Server) GetAccount(ctx context.Context, req *gen.GetAccountRequest) (*gen.GetAccountResponse, error) {
+func (s *Server) GetAccount(ctx context.Context, req *gen.GetAccountRequest) (*gen.Account, error) {
 	var account *gen.Account
 	err := s.store.Read(ctx, func(tx *ReadTx) error {
 		var err error
@@ -34,7 +32,7 @@ func (s *Server) GetAccount(ctx context.Context, req *gen.GetAccountRequest) (*g
 	if err != nil {
 		return nil, err
 	}
-	return &gen.GetAccountResponse{Account: account}, nil
+	return account, nil
 }
 
 func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest) (*gen.ListAccountsResponse, error) {
@@ -47,11 +45,18 @@ func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest)
 		pageSize = maxPageSize
 	}
 
-	res := &gen.ListAccountsResponse{}
+	var res *gen.ListAccountsResponse
 	err := s.store.Read(ctx, func(tx *ReadTx) error {
-		var err error
-		res.Accounts, res.NextPageToken, err = tx.ListAccounts(ctx, req.PageToken, int64(pageSize))
-		return err
+		page, err := tx.ListAccounts(ctx, req.PageToken, int64(pageSize))
+		if err != nil {
+			return err
+		}
+
+		res = &gen.ListAccountsResponse{
+			Accounts:      page.Items,
+			NextPageToken: page.NextPage,
+		}
+		return nil
 	})
 	if err != nil {
 		return nil, err
@@ -60,7 +65,7 @@ func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest)
 	return res, nil
 }
 
-func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountRequest) (*gen.CreateAccountResponse, error) {
+func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountRequest) (*gen.Account, error) {
 	account := req.Account
 	if account == nil {
 		return nil, status.Error(codes.InvalidArgument, "account is required")
@@ -96,13 +101,6 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 			return err
 		}
 
-		if len(account.RoleAssignments) > 0 {
-			err = tx.UpdateRoleAssignments(ctx, created.Id, account.RoleAssignments)
-			if err != nil {
-				return err
-			}
-		}
-
 		if req.Password != "" {
 			err = s.setPassword(ctx, tx, created.Id, req.Password)
 			if err != nil {
@@ -117,10 +115,10 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		return nil, err
 	}
 
-	return &gen.CreateAccountResponse{Account: created}, nil
+	return created, nil
 }
 
-func (s *Server) GetRole(ctx context.Context, req *gen.GetRoleRequest) (*gen.GetRoleResponse, error) {
+func (s *Server) GetRole(ctx context.Context, req *gen.GetRoleRequest) (*gen.Role, error) {
 	var role *gen.Role
 	err := s.store.Read(ctx, func(tx *ReadTx) error {
 		var err error
@@ -131,10 +129,10 @@ func (s *Server) GetRole(ctx context.Context, req *gen.GetRoleRequest) (*gen.Get
 		return nil, err
 	}
 
-	return &gen.GetRoleResponse{Role: role}, nil
+	return role, nil
 }
 
-func (s *Server) CreateRole(ctx context.Context, req *gen.CreateRoleRequest) (*gen.CreateRoleResponse, error) {
+func (s *Server) CreateRole(ctx context.Context, req *gen.CreateRoleRequest) (*gen.Role, error) {
 	if req.Role == nil {
 		return nil, status.Error(codes.InvalidArgument, "role is required")
 	}
@@ -160,7 +158,7 @@ func (s *Server) CreateRole(ctx context.Context, req *gen.CreateRoleRequest) (*g
 		return nil, err
 	}
 
-	return &gen.CreateRoleResponse{Role: created}, nil
+	return created, nil
 }
 
 func (s *Server) setPassword(ctx context.Context, tx *WriteTx, id, password string) error {

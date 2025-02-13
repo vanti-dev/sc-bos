@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"embed"
 	"errors"
-	"math"
+	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -86,6 +87,11 @@ type WriteTx struct {
 	writeOps
 }
 
+type Page[T any] struct {
+	Items    []T
+	NextPage string
+}
+
 type readOps struct {
 	tx *sql.Tx
 }
@@ -114,28 +120,18 @@ func (r *readOps) GetAccount(ctx context.Context, id string) (*gen.Account, erro
 		return nil, err
 	}
 
-	var account *gen.Account
-	account, err = getAccountOnly(ctx, r.tx, idInt)
-	if errors.Is(err, sql.ErrNoRows) {
+	page, err := r.selectAccounts(ctx, filter{mode: matchExact, value: idInt}, 1)
+	if err != nil {
+		return nil, err
+	}
+	if len(page.Items) == 0 {
 		return nil, ErrAccountNotFound
-	} else if err != nil {
-		return nil, err
 	}
-
-	account.ServiceCredentials, err = getAccountServiceCreds(ctx, r.tx, idInt)
-	if err != nil {
-		return nil, err
-	}
-
-	account.RoleAssignments, err = getAccountRoleAssignments(ctx, r.tx, idInt)
-	if err != nil {
-		return nil, err
-	}
-
-	return account, nil
+	return page.Items[0], nil
 }
 
 func (r *readOps) AccountByUsername(ctx context.Context, username string) (*gen.Account, PasswordHash, error) {
+	// TODO: could do all this with a single query instead of fetching the ID first
 	const query = `
 		SELECT a.id, p.password_hash
 		FROM accounts a
@@ -162,46 +158,86 @@ func (r *readOps) AccountByUsername(ctx context.Context, username string) (*gen.
 	return acc, hash, nil
 }
 
-func (r *readOps) ListAccounts(ctx context.Context, pageToken string, pageSize int64) (accounts []*gen.Account, nextPage string, err error) {
+func (r *readOps) ListAccounts(ctx context.Context, pageToken string, pageSize int64) (Page[*gen.Account], error) {
+	empty := Page[*gen.Account]{}
 	if pageSize <= 0 {
-		return nil, "", ErrInvalidPageSize
+		return empty, ErrInvalidPageSize
 	}
 
-	var minAcctID accountID
+	var f filter
 	if pageToken != "" {
 		idInt, err := parseAccountID(pageToken)
 		if err != nil {
-			return nil, "", err
+			return empty, err
 		}
-		minAcctID = idInt
+		f = filter{mode: matchAfter, value: idInt}
 	}
 
-	var foundRange accountRange
-	accounts, foundRange, err = listAccountsOnly(ctx, r.tx, minAcctID, pageSize)
+	return r.selectAccounts(ctx, f, pageSize)
+}
+
+func (r *readOps) selectAccounts(ctx context.Context, filter filter, limit int64) (Page[*gen.Account], error) {
+	empty := Page[*gen.Account]{}
+
+	var whereClause string
+	switch filter.mode {
+	case matchAny:
+		whereClause = ""
+	case matchExact:
+		whereClause = "WHERE id = ?1"
+	case matchAfter:
+		whereClause = "WHERE id > ?1"
+	}
+	query := fmt.Sprintf(`
+		SELECT id, display_name, kind, create_time, username
+		FROM accounts
+		%s
+		ORDER BY id
+		LIMIT ?2;
+    `, whereClause)
+
+	rows, err := r.tx.QueryContext(ctx, query, filter.value, limit)
 	if err != nil {
-		return nil, "", err
+		return empty, err
+	}
+	defer func(rows *sql.Rows) {
+		_ = rows.Close()
+	}(rows)
+
+	var accounts []*gen.Account
+	for rows.Next() {
+		var (
+			id          accountID
+			displayName string
+			kind        string
+			username    sql.NullString
+			createTime  database.Timestamp
+		)
+		err = rows.Scan(&id, &displayName, &kind, &createTime, &username)
+		if err != nil {
+			return empty, err
+		}
+
+		account := &gen.Account{
+			Id:          id.String(),
+			CreateTime:  timestamppb.New(time.Time(createTime)),
+			Kind:        gen.Account_Kind(gen.Account_Kind_value[kind]), // default to zero value ACCOUNT_KIND_UNSPECIFIED
+			DisplayName: displayName,
+		}
+		if username.Valid {
+			account.Username = username.String
+		}
+		accounts = append(accounts, account)
+	}
+	if err := rows.Err(); err != nil {
+		return empty, err
 	}
 
-	creds, err := listAccountServiceCreds(ctx, r.tx, foundRange)
-	if err != nil {
-		return nil, "", err
-	}
-
-	roleAssignments, err := listRoleAssignments(ctx, r.tx, foundRange)
-	if err != nil {
-		return nil, "", err
-	}
-
-	for _, acct := range accounts {
-		acct.ServiceCredentials = creds[acct.Id]
-		acct.RoleAssignments = roleAssignments[acct.Id]
-	}
-
+	var nextPage string
 	if len(accounts) > 0 {
 		nextPage = accounts[len(accounts)-1].Id
 	}
-
-	return accounts, nextPage, nil
+	return Page[*gen.Account]{accounts, nextPage}, nil
 }
 
 func (w *writeOps) CreateUserAccount(ctx context.Context, username, displayName string) (*gen.Account, error) {
@@ -234,142 +270,96 @@ func (w *writeOps) UpdateAccountPasswordHash(ctx context.Context, id string, has
 	return updateAccountPasswordHash(ctx, w.tx, parsedID, hash)
 }
 
-func (w *writeOps) UpdateRoleAssignments(ctx context.Context, accountID string, roleAssignments []*gen.RoleAssignment) error {
-	id, err := parseAccountID(accountID)
-	if err != nil {
-		return err
-	}
-	return updateAccountRoleAssignments(ctx, w.tx, int64(id), true, roleAssignments)
-}
-
 func (r *readOps) GetRole(ctx context.Context, id string) (*gen.Role, error) {
 	parsedID, err := parseRoleID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	const querySelectRole = `
-		SELECT name
-		FROM roles
-		WHERE id = ?;
-	`
-
-	const querySelectPermissions = `
-		SELECT permission
-		FROM role_permissions
-		WHERE role_id = ?
-		ORDER BY permission;
-	`
-
-	var (
-		name  string
-		perms []string
-	)
-	row := r.tx.QueryRowContext(ctx, querySelectRole, parsedID)
-	err = row.Scan(&name)
-	if errors.Is(err, sql.ErrNoRows) {
+	page, err := r.selectRoles(ctx, filter{mode: matchExact, value: parsedID}, 1)
+	if err != nil {
+		return nil, err
+	}
+	if len(page.Items) == 0 {
 		return nil, ErrRoleNotFound
-	} else if err != nil {
-		return nil, err
 	}
-
-	rows, err := r.tx.QueryContext(ctx, querySelectPermissions, parsedID)
-	if err != nil {
-		return nil, err
-	}
-	defer func(rows *sql.Rows) {
-		_ = rows.Close()
-	}(rows)
-
-	for rows.Next() {
-		var perm string
-		err = rows.Scan(&perm)
-		if err != nil {
-			return nil, err
-		}
-		perms = append(perms, perm)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &gen.Role{
-		Id:          parsedID.String(),
-		Title:       name,
-		Permissions: perms,
-	}, nil
+	return page.Items[0], nil
 }
 
-func (r *readOps) ListRoles(ctx context.Context, pageToken string, pageSize int64) (roles []*gen.Role, nextPage string, err error) {
+func (r *readOps) ListRoles(ctx context.Context, pageToken string, pageSize int64) (Page[*gen.Role], error) {
+	empty := Page[*gen.Role]{}
 	if pageSize <= 0 {
-		return nil, "", ErrInvalidPageSize
+		return empty, ErrInvalidPageSize
 	}
 
-	var minRoleID roleID
+	var f filter
 	if pageToken != "" {
 		idInt, err := parseRoleID(pageToken)
 		if err != nil {
-			return nil, "", err
+			return empty, err
 		}
-		minRoleID = idInt
+		f = filter{mode: matchAfter, value: idInt}
 	}
 
-	const queryRoles = `
-		SELECT r.id, r.name, p.permission
-		FROM roles r 
-		LEFT OUTER JOIN role_permissions p ON r.id = p.role_id
-		WHERE r.id > ?
-		ORDER BY r.id
-		LIMIT ?;
-	`
+	return r.selectRoles(ctx, f, pageSize)
+}
 
-	rows, err := r.tx.QueryContext(ctx, queryRoles, minRoleID, pageSize)
+func (r *readOps) selectRoles(ctx context.Context, filter filter, limit int64) (Page[*gen.Role], error) {
+	empty := Page[*gen.Role]{}
+
+	var whereClause string
+	switch filter.mode {
+	case matchAny:
+		whereClause = ""
+	case matchExact:
+		whereClause = "WHERE id = ?1"
+	case matchAfter:
+		whereClause = "WHERE id > ?1"
+	}
+	query := fmt.Sprintf(`
+		SELECT r.id, r.name, coalesce(group_concat(p.permission, x'00'), '')
+		FROM roles r
+		LEFT OUTER JOIN role_permissions p ON r.id = p.role_id	
+		%s
+		GROUP BY r.id
+		ORDER BY r.id
+		LIMIT ?2;
+	`, whereClause)
+
+	rows, err := r.tx.QueryContext(ctx, query, filter.value, limit)
 	if err != nil {
-		return nil, "", err
+		return empty, err
 	}
 	defer func(rows *sql.Rows) {
 		_ = rows.Close()
 	}(rows)
 
-	var current *gen.Role
+	var roles []*gen.Role
 	for rows.Next() {
 		var (
-			id         roleID
-			name       string
-			permission sql.NullString
+			id          roleID
+			name        string
+			permissions string
 		)
-		err = rows.Scan(&id, &name, &permission)
+		err = rows.Scan(&id, &name)
 		if err != nil {
-			return nil, "", err
+			return empty, err
 		}
-
-		// flush the current role if the rows iterator has moved to a new role
-		if current == nil {
-			current = &gen.Role{Id: id.String(), Title: name}
-		} else if current.Id != id.String() {
-			roles = append(roles, current)
-			current = &gen.Role{Id: id.String(), Title: name}
-		}
-
-		if permission.Valid {
-			current.Permissions = append(current.Permissions, permission.String)
-		}
-	}
-	if current != nil {
-		roles = append(roles, current)
+		roles = append(roles, &gen.Role{
+			Id:          id.String(),
+			Title:       name,
+			Permissions: strings.Split(permissions, "\x00"),
+		})
 	}
 	if err := rows.Err(); err != nil {
-		return nil, "", err
+		return empty, err
 	}
 
+	var nextPage string
 	if len(roles) > 0 {
 		nextPage = roles[len(roles)-1].Id
 	}
-
-	return roles, nextPage, nil
+	return Page[*gen.Role]{roles, nextPage}, nil
 }
 
 func (w *writeOps) CreateRole(ctx context.Context, title string) (*gen.Role, error) {
@@ -402,7 +392,14 @@ func (w *writeOps) UpdateRoleName(ctx context.Context, id string, name string) e
 	if err != nil {
 		return err
 	}
-	return updateRoleName(ctx, w.tx, parsedID, name)
+	const query = `
+		UPDATE roles
+		SET name = ?
+		WHERE id = ?;
+	`
+
+	_, err2 := w.tx.ExecContext(ctx, query, name, parsedID)
+	return err2
 }
 
 func (w *writeOps) UpdateRolePermissions(ctx context.Context, id string, permissions []string) error {
@@ -436,93 +433,6 @@ func (w *writeOps) DeleteRole(ctx context.Context, id string) error {
 
 	_, err = w.tx.ExecContext(ctx, queryDeleteRole, parsedID)
 	return err
-}
-
-func getAccountOnly(ctx context.Context, tx *sql.Tx, id accountID) (*gen.Account, error) {
-	const querySelectAccount = `
-		SELECT display_name, kind, create_time, username
-		FROM accounts 
-		WHERE id = ?;
-	`
-
-	var (
-		displayName string
-		kind        string
-		username    sql.NullString
-		createTime  database.Timestamp
-	)
-	row := tx.QueryRowContext(ctx, querySelectAccount, id)
-	err := row.Scan(&displayName, &kind, &createTime, &username)
-	if err != nil {
-		return nil, err
-	}
-
-	account := &gen.Account{
-		Id:          id.String(),
-		CreateTime:  timestamppb.New(time.Time(createTime)),
-		Kind:        gen.Account_Kind(gen.Account_Kind_value[kind]), // default to zero value ACCOUNT_KIND_UNSPECIFIED
-		DisplayName: displayName,
-	}
-	if username.Valid {
-		account.Username = username.String
-	}
-	return account, nil
-}
-
-// lists accounts without populating service credentials or role assignments
-func listAccountsOnly(ctx context.Context, tx *sql.Tx, startAfter accountID, limit int64) ([]*gen.Account, accountRange, error) {
-	const query = `
-		SELECT id, display_name, kind, create_time, username
-		FROM accounts
-		WHERE id > ?
-		ORDER BY id
-		LIMIT ?;
-    `
-
-	rows, err := tx.QueryContext(ctx, query, startAfter, limit)
-	if err != nil {
-		return nil, accountRange{}, err
-	}
-	defer func(rows *sql.Rows) {
-		_ = rows.Close()
-	}(rows)
-
-	var accounts []*gen.Account
-	foundRange := accountRange{Min: math.MaxInt64}
-	for rows.Next() {
-		var (
-			id          accountID
-			displayName string
-			kind        string
-			username    sql.NullString
-			createTime  database.Timestamp
-		)
-		err = rows.Scan(&id, &displayName, &kind, &createTime, &username)
-		if err != nil {
-			return nil, accountRange{}, err
-		}
-		if id < foundRange.Min {
-			foundRange.Min = id
-		}
-		if id > foundRange.Max {
-			foundRange.Max = id
-		}
-
-		account := &gen.Account{
-			Id:          id.String(),
-			CreateTime:  timestamppb.New(time.Time(createTime)),
-			Kind:        gen.Account_Kind(gen.Account_Kind_value[kind]), // default to zero value ACCOUNT_KIND_UNSPECIFIED
-			DisplayName: displayName,
-		}
-		if username.Valid {
-			account.Username = username.String
-		}
-		accounts = append(accounts, account)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, accountRange{}, err
-	}
-	return accounts, foundRange, nil
 }
 
 func createAccount(ctx context.Context, tx *sql.Tx, kind gen.Account_Kind, username, displayName string) (*gen.Account, error) {
@@ -594,245 +504,6 @@ func updateAccountPasswordHash(ctx context.Context, tx *sql.Tx, id accountID, ha
 	return err
 }
 
-func getAccountServiceCreds(ctx context.Context, tx *sql.Tx, id accountID) ([]*gen.ServiceCredential, error) {
-	const querySelectServiceCreds = `
-		SELECT id, title, create_time, expire_time
-		FROM service_credentials
-		WHERE account_id = ?
-		ORDER BY id;
-	`
-
-	var serviceCreds []*gen.ServiceCredential
-	rows, err := tx.QueryContext(ctx, querySelectServiceCreds, id)
-	if err != nil {
-		return nil, err
-	}
-	defer func(rows *sql.Rows) {
-		_ = rows.Close()
-	}(rows)
-
-	for rows.Next() {
-		var (
-			id         int64
-			title      string
-			createTime database.Timestamp
-			expireTime sql.Null[database.Timestamp]
-		)
-
-		err = rows.Scan(&id, &title, &createTime, &expireTime)
-		if err != nil {
-			return nil, err
-		}
-
-		cred := &gen.ServiceCredential{
-			Id:         strconv.FormatInt(id, 10),
-			AccountId:  strconv.FormatInt(id, 10),
-			Title:      title,
-			CreateTime: timestamppb.New(time.Time(createTime)),
-		}
-		if expireTime.Valid {
-			cred.ExpireTime = timestamppb.New(time.Time(expireTime.V))
-		}
-		serviceCreds = append(serviceCreds, cred)
-	}
-	if rows.Err() != nil {
-		return nil, rows.Err()
-	}
-	return serviceCreds, nil
-}
-
-func listAccountServiceCreds(ctx context.Context, tx *sql.Tx, accounts accountRange) (map[string][]*gen.ServiceCredential, error) {
-	const query = `
-		SELECT account_id, id, title, create_time, expire_time
-		FROM service_credentials
-		WHERE account_id >= ? AND account_id <= ?
-		ORDER BY account_id, id;
-    `
-
-	rows, err := tx.QueryContext(ctx, query, accounts.Min, accounts.Max)
-	if err != nil {
-		return nil, err
-	}
-	defer func(rows *sql.Rows) {
-		_ = rows.Close()
-	}(rows)
-
-	creds := make(map[string][]*gen.ServiceCredential)
-	for rows.Next() {
-		var (
-			account    accountID
-			id         int64
-			title      string
-			createTime database.Timestamp
-			expireTime sql.Null[database.Timestamp]
-		)
-		err = rows.Scan(&account, &id, &title, &createTime, &expireTime)
-		if err != nil {
-			return nil, err
-		}
-		accountIDStr := account.String()
-		cred := &gen.ServiceCredential{
-			Id:         strconv.FormatInt(id, 10),
-			AccountId:  accountIDStr,
-			Title:      title,
-			CreateTime: timestamppb.New(time.Time(createTime)),
-		}
-		if expireTime.Valid {
-			cred.ExpireTime = timestamppb.New(time.Time(expireTime.V))
-		}
-		creds[accountIDStr] = append(creds[accountIDStr], cred)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return creds, nil
-}
-
-func getAccountRoleAssignments(ctx context.Context, tx *sql.Tx, id accountID) ([]*gen.RoleAssignment, error) {
-	const queryRoleAssignments = `
-		SELECT role_id, scope_kind, scope_resource
-		FROM role_assignments
-		WHERE account_id = ?
-		ORDER BY role_id;
-	`
-
-	var roleAssignments []*gen.RoleAssignment
-	rows, err := tx.QueryContext(ctx, queryRoleAssignments, id)
-	if err != nil {
-		return nil, err
-	}
-	defer func(rows *sql.Rows) {
-		_ = rows.Close()
-	}(rows)
-
-	for rows.Next() {
-		var (
-			roleID        int64
-			scopeKind     sql.NullString
-			scopeResource sql.NullString
-		)
-
-		err = rows.Scan(&roleID, &scopeKind, &scopeResource)
-		if err != nil {
-			return nil, err
-		}
-
-		var scope *gen.RoleAssignment_Scope
-		if scopeKind.Valid {
-			scope = &gen.RoleAssignment_Scope{
-				// default to zero value RESOURCE_KIND_UNSPECIFIED if the value is not recognized
-				ResourceKind: gen.RoleAssignment_ResourceKind(gen.RoleAssignment_ResourceKind_value[scopeKind.String]),
-				Resource:     scopeResource.String,
-			}
-		}
-		ra := &gen.RoleAssignment{
-			Role:  strconv.FormatInt(roleID, 10),
-			Scope: scope,
-		}
-		roleAssignments = append(roleAssignments, ra)
-	}
-	if rows.Err() != nil {
-		return nil, rows.Err()
-	}
-	return roleAssignments, nil
-}
-
-func listRoleAssignments(ctx context.Context, tx *sql.Tx, accounts accountRange) (map[string][]*gen.RoleAssignment, error) {
-	const query = `
-		SELECT account_id, role_id, scope_kind, scope_resource
-		FROM role_assignments
-		WHERE account_id >= ? AND account_id <= ?
-		ORDER BY account_id, role_id;
-	`
-
-	rows, err := tx.QueryContext(ctx, query, accounts.Min, accounts.Max)
-	if err != nil {
-		return nil, err
-	}
-	defer func(rows *sql.Rows) {
-		_ = rows.Close()
-	}(rows)
-
-	roleAssignments := make(map[string][]*gen.RoleAssignment)
-	for rows.Next() {
-		var (
-			account       accountID
-			roleID        int64
-			scopeKind     sql.NullString
-			scopeResource sql.NullString
-		)
-
-		err = rows.Scan(&account, &roleID, &scopeKind, &scopeResource)
-		if err != nil {
-			return nil, err
-		}
-
-		var scope *gen.RoleAssignment_Scope
-		if scopeKind.Valid {
-			scope = &gen.RoleAssignment_Scope{
-				// default to zero value RESOURCE_KIND_UNSPECIFIED if the value is not recognized
-				ResourceKind: gen.RoleAssignment_ResourceKind(gen.RoleAssignment_ResourceKind_value[scopeKind.String]),
-				Resource:     scopeResource.String,
-			}
-		}
-		ra := &gen.RoleAssignment{
-			Role:  strconv.FormatInt(roleID, 10),
-			Scope: scope,
-		}
-		accountIDStr := account.String()
-		roleAssignments[accountIDStr] = append(roleAssignments[accountIDStr], ra)
-	}
-	if rows.Err() != nil {
-		return nil, rows.Err()
-	}
-	return roleAssignments, nil
-}
-
-// updateAccountRoleAssignments updates the role assignments for an account.
-// If replace is true, all existing role assignments are replaced with the supplied role assignments.
-// Otherwise, the supplied role assignments are merged with the existing role assignments:
-//   - If the account does not have that role ID, a new role assignment is created.
-//   - If the account already has that role ID, that assignment is replaced (with the supplied scope).
-func updateAccountRoleAssignments(ctx context.Context, tx *sql.Tx, accountID int64, replace bool, roleAssignments []*gen.RoleAssignment) error {
-	const queryDeleteRoleAssignments = `
-		DELETE FROM role_assignments
-		WHERE account_id = ?;
-	`
-
-	if replace {
-		_, err := tx.ExecContext(ctx, queryDeleteRoleAssignments, accountID)
-		if err != nil {
-			return err
-		}
-	}
-
-	const queryInsertRoleAssignment = `
-		INSERT INTO role_assignments (account_id, role_id, scope_kind, scope_resource)
-		VALUES (?, ?, ?, ?)
-		ON CONFLICT (account_id, role_id) DO UPDATE
-		SET scope_kind = excluded.scope_kind, scope_resource = excluded.scope_resource;
-	`
-
-	stmt, err := tx.PrepareContext(ctx, queryInsertRoleAssignment)
-	if err != nil {
-		return err
-	}
-	for _, ra := range roleAssignments {
-		var scopeKind, scopeResource sql.NullString
-		if ra.Scope != nil {
-			scopeKind.String = ra.Scope.ResourceKind.String()
-			scopeKind.Valid = true
-			scopeResource.String = ra.Scope.Resource
-			scopeResource.Valid = true
-		}
-		_, err = stmt.ExecContext(ctx, accountID, ra.Role, scopeKind, scopeResource)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func checkRoleExists(ctx context.Context, tx *sql.Tx, id roleID) error {
 	const query = `
 		SELECT 1
@@ -845,17 +516,6 @@ func checkRoleExists(ctx context.Context, tx *sql.Tx, id roleID) error {
 	if errors.Is(err, sql.ErrNoRows) {
 		return ErrRoleNotFound
 	}
-	return err
-}
-
-func updateRoleName(ctx context.Context, tx *sql.Tx, id roleID, name string) error {
-	const query = `
-		UPDATE roles
-		SET name = ?
-		WHERE id = ?;
-	`
-
-	_, err := tx.ExecContext(ctx, query, name, id)
 	return err
 }
 
@@ -904,10 +564,6 @@ func parseAccountID(idStr string) (accountID, error) {
 	return accountID(idInt), nil
 }
 
-type accountRange struct {
-	Min, Max accountID
-}
-
 type roleID int64
 
 func (id roleID) String() string {
@@ -923,3 +579,16 @@ func parseRoleID(idStr string) (roleID, error) {
 	}
 	return roleID(idInt), nil
 }
+
+type filter struct {
+	mode  matchMode
+	value any
+}
+
+type matchMode int
+
+const (
+	matchAny   matchMode = iota // matches everything, ignoring the match value
+	matchExact                  // matches the exact value
+	matchAfter                  // matches values that sort after the given value
+)

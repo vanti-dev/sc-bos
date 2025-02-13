@@ -24,6 +24,7 @@ const (
 	AccountApiService_CreateAccount_FullMethodName           = "/smartcore.bos.AccountApiService/CreateAccount"
 	AccountApiService_UpdateAccount_FullMethodName           = "/smartcore.bos.AccountApiService/UpdateAccount"
 	AccountApiService_UpdateAccountPassword_FullMethodName   = "/smartcore.bos.AccountApiService/UpdateAccountPassword"
+	AccountApiService_DeleteAccount_FullMethodName           = "/smartcore.bos.AccountApiService/DeleteAccount"
 	AccountApiService_CreateServiceCredential_FullMethodName = "/smartcore.bos.AccountApiService/CreateServiceCredential"
 	AccountApiService_DeleteServiceCredential_FullMethodName = "/smartcore.bos.AccountApiService/DeleteServiceCredential"
 	AccountApiService_GetRole_FullMethodName                 = "/smartcore.bos.AccountApiService/GetRole"
@@ -31,24 +32,33 @@ const (
 	AccountApiService_CreateRole_FullMethodName              = "/smartcore.bos.AccountApiService/CreateRole"
 	AccountApiService_UpdateRole_FullMethodName              = "/smartcore.bos.AccountApiService/UpdateRole"
 	AccountApiService_DeleteRole_FullMethodName              = "/smartcore.bos.AccountApiService/DeleteRole"
+	AccountApiService_GetRoleAssignment_FullMethodName       = "/smartcore.bos.AccountApiService/GetRoleAssignment"
+	AccountApiService_ListRoleAssignments_FullMethodName     = "/smartcore.bos.AccountApiService/ListRoleAssignments"
+	AccountApiService_CreateRoleAssignment_FullMethodName    = "/smartcore.bos.AccountApiService/CreateRoleAssignment"
+	AccountApiService_DeleteRoleAssignment_FullMethodName    = "/smartcore.bos.AccountApiService/DeleteRoleAssignment"
 )
 
 // AccountApiServiceClient is the client API for AccountApiService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AccountApiServiceClient interface {
-	GetAccount(ctx context.Context, in *GetAccountRequest, opts ...grpc.CallOption) (*GetAccountResponse, error)
+	GetAccount(ctx context.Context, in *GetAccountRequest, opts ...grpc.CallOption) (*Account, error)
 	ListAccounts(ctx context.Context, in *ListAccountsRequest, opts ...grpc.CallOption) (*ListAccountsResponse, error)
-	CreateAccount(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*CreateAccountResponse, error)
-	UpdateAccount(ctx context.Context, in *UpdateAccountRequest, opts ...grpc.CallOption) (*UpdateAccountResponse, error)
+	CreateAccount(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*Account, error)
+	UpdateAccount(ctx context.Context, in *UpdateAccountRequest, opts ...grpc.CallOption) (*Account, error)
 	UpdateAccountPassword(ctx context.Context, in *UpdateAccountPasswordRequest, opts ...grpc.CallOption) (*UpdateAccountPasswordResponse, error)
+	DeleteAccount(ctx context.Context, in *DeleteAccountRequest, opts ...grpc.CallOption) (*DeleteAccountResponse, error)
 	CreateServiceCredential(ctx context.Context, in *CreateServiceCredentialRequest, opts ...grpc.CallOption) (*CreateServiceCredentialResponse, error)
 	DeleteServiceCredential(ctx context.Context, in *DeleteServiceCredentialRequest, opts ...grpc.CallOption) (*DeleteServiceCredentialResponse, error)
-	GetRole(ctx context.Context, in *GetRoleRequest, opts ...grpc.CallOption) (*GetRoleResponse, error)
+	GetRole(ctx context.Context, in *GetRoleRequest, opts ...grpc.CallOption) (*Role, error)
 	ListRoles(ctx context.Context, in *ListRolesRequest, opts ...grpc.CallOption) (*ListRolesResponse, error)
-	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateRoleResponse, error)
-	UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*UpdateRoleResponse, error)
+	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*Role, error)
+	UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*Role, error)
 	DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...grpc.CallOption) (*DeleteRoleResponse, error)
+	GetRoleAssignment(ctx context.Context, in *GetRoleAssignmentRequest, opts ...grpc.CallOption) (*RoleAssignment, error)
+	ListRoleAssignments(ctx context.Context, in *ListRoleAssignmentsRequest, opts ...grpc.CallOption) (*ListRoleAssignmentsResponse, error)
+	CreateRoleAssignment(ctx context.Context, in *CreateRoleAssignmentRequest, opts ...grpc.CallOption) (*RoleAssignment, error)
+	DeleteRoleAssignment(ctx context.Context, in *DeleteRoleAssignmentRequest, opts ...grpc.CallOption) (*DeleteRoleAssignmentResponse, error)
 }
 
 type accountApiServiceClient struct {
@@ -59,9 +69,9 @@ func NewAccountApiServiceClient(cc grpc.ClientConnInterface) AccountApiServiceCl
 	return &accountApiServiceClient{cc}
 }
 
-func (c *accountApiServiceClient) GetAccount(ctx context.Context, in *GetAccountRequest, opts ...grpc.CallOption) (*GetAccountResponse, error) {
+func (c *accountApiServiceClient) GetAccount(ctx context.Context, in *GetAccountRequest, opts ...grpc.CallOption) (*Account, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetAccountResponse)
+	out := new(Account)
 	err := c.cc.Invoke(ctx, AccountApiService_GetAccount_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -79,9 +89,9 @@ func (c *accountApiServiceClient) ListAccounts(ctx context.Context, in *ListAcco
 	return out, nil
 }
 
-func (c *accountApiServiceClient) CreateAccount(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*CreateAccountResponse, error) {
+func (c *accountApiServiceClient) CreateAccount(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*Account, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateAccountResponse)
+	out := new(Account)
 	err := c.cc.Invoke(ctx, AccountApiService_CreateAccount_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -89,9 +99,9 @@ func (c *accountApiServiceClient) CreateAccount(ctx context.Context, in *CreateA
 	return out, nil
 }
 
-func (c *accountApiServiceClient) UpdateAccount(ctx context.Context, in *UpdateAccountRequest, opts ...grpc.CallOption) (*UpdateAccountResponse, error) {
+func (c *accountApiServiceClient) UpdateAccount(ctx context.Context, in *UpdateAccountRequest, opts ...grpc.CallOption) (*Account, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateAccountResponse)
+	out := new(Account)
 	err := c.cc.Invoke(ctx, AccountApiService_UpdateAccount_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -103,6 +113,16 @@ func (c *accountApiServiceClient) UpdateAccountPassword(ctx context.Context, in 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpdateAccountPasswordResponse)
 	err := c.cc.Invoke(ctx, AccountApiService_UpdateAccountPassword_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accountApiServiceClient) DeleteAccount(ctx context.Context, in *DeleteAccountRequest, opts ...grpc.CallOption) (*DeleteAccountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteAccountResponse)
+	err := c.cc.Invoke(ctx, AccountApiService_DeleteAccount_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -129,9 +149,9 @@ func (c *accountApiServiceClient) DeleteServiceCredential(ctx context.Context, i
 	return out, nil
 }
 
-func (c *accountApiServiceClient) GetRole(ctx context.Context, in *GetRoleRequest, opts ...grpc.CallOption) (*GetRoleResponse, error) {
+func (c *accountApiServiceClient) GetRole(ctx context.Context, in *GetRoleRequest, opts ...grpc.CallOption) (*Role, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetRoleResponse)
+	out := new(Role)
 	err := c.cc.Invoke(ctx, AccountApiService_GetRole_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -149,9 +169,9 @@ func (c *accountApiServiceClient) ListRoles(ctx context.Context, in *ListRolesRe
 	return out, nil
 }
 
-func (c *accountApiServiceClient) CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateRoleResponse, error) {
+func (c *accountApiServiceClient) CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*Role, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateRoleResponse)
+	out := new(Role)
 	err := c.cc.Invoke(ctx, AccountApiService_CreateRole_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -159,9 +179,9 @@ func (c *accountApiServiceClient) CreateRole(ctx context.Context, in *CreateRole
 	return out, nil
 }
 
-func (c *accountApiServiceClient) UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*UpdateRoleResponse, error) {
+func (c *accountApiServiceClient) UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*Role, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateRoleResponse)
+	out := new(Role)
 	err := c.cc.Invoke(ctx, AccountApiService_UpdateRole_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -179,22 +199,67 @@ func (c *accountApiServiceClient) DeleteRole(ctx context.Context, in *DeleteRole
 	return out, nil
 }
 
+func (c *accountApiServiceClient) GetRoleAssignment(ctx context.Context, in *GetRoleAssignmentRequest, opts ...grpc.CallOption) (*RoleAssignment, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RoleAssignment)
+	err := c.cc.Invoke(ctx, AccountApiService_GetRoleAssignment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accountApiServiceClient) ListRoleAssignments(ctx context.Context, in *ListRoleAssignmentsRequest, opts ...grpc.CallOption) (*ListRoleAssignmentsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListRoleAssignmentsResponse)
+	err := c.cc.Invoke(ctx, AccountApiService_ListRoleAssignments_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accountApiServiceClient) CreateRoleAssignment(ctx context.Context, in *CreateRoleAssignmentRequest, opts ...grpc.CallOption) (*RoleAssignment, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RoleAssignment)
+	err := c.cc.Invoke(ctx, AccountApiService_CreateRoleAssignment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accountApiServiceClient) DeleteRoleAssignment(ctx context.Context, in *DeleteRoleAssignmentRequest, opts ...grpc.CallOption) (*DeleteRoleAssignmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteRoleAssignmentResponse)
+	err := c.cc.Invoke(ctx, AccountApiService_DeleteRoleAssignment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountApiServiceServer is the server API for AccountApiService service.
 // All implementations must embed UnimplementedAccountApiServiceServer
 // for forward compatibility.
 type AccountApiServiceServer interface {
-	GetAccount(context.Context, *GetAccountRequest) (*GetAccountResponse, error)
+	GetAccount(context.Context, *GetAccountRequest) (*Account, error)
 	ListAccounts(context.Context, *ListAccountsRequest) (*ListAccountsResponse, error)
-	CreateAccount(context.Context, *CreateAccountRequest) (*CreateAccountResponse, error)
-	UpdateAccount(context.Context, *UpdateAccountRequest) (*UpdateAccountResponse, error)
+	CreateAccount(context.Context, *CreateAccountRequest) (*Account, error)
+	UpdateAccount(context.Context, *UpdateAccountRequest) (*Account, error)
 	UpdateAccountPassword(context.Context, *UpdateAccountPasswordRequest) (*UpdateAccountPasswordResponse, error)
+	DeleteAccount(context.Context, *DeleteAccountRequest) (*DeleteAccountResponse, error)
 	CreateServiceCredential(context.Context, *CreateServiceCredentialRequest) (*CreateServiceCredentialResponse, error)
 	DeleteServiceCredential(context.Context, *DeleteServiceCredentialRequest) (*DeleteServiceCredentialResponse, error)
-	GetRole(context.Context, *GetRoleRequest) (*GetRoleResponse, error)
+	GetRole(context.Context, *GetRoleRequest) (*Role, error)
 	ListRoles(context.Context, *ListRolesRequest) (*ListRolesResponse, error)
-	CreateRole(context.Context, *CreateRoleRequest) (*CreateRoleResponse, error)
-	UpdateRole(context.Context, *UpdateRoleRequest) (*UpdateRoleResponse, error)
+	CreateRole(context.Context, *CreateRoleRequest) (*Role, error)
+	UpdateRole(context.Context, *UpdateRoleRequest) (*Role, error)
 	DeleteRole(context.Context, *DeleteRoleRequest) (*DeleteRoleResponse, error)
+	GetRoleAssignment(context.Context, *GetRoleAssignmentRequest) (*RoleAssignment, error)
+	ListRoleAssignments(context.Context, *ListRoleAssignmentsRequest) (*ListRoleAssignmentsResponse, error)
+	CreateRoleAssignment(context.Context, *CreateRoleAssignmentRequest) (*RoleAssignment, error)
+	DeleteRoleAssignment(context.Context, *DeleteRoleAssignmentRequest) (*DeleteRoleAssignmentResponse, error)
 	mustEmbedUnimplementedAccountApiServiceServer()
 }
 
@@ -205,20 +270,23 @@ type AccountApiServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAccountApiServiceServer struct{}
 
-func (UnimplementedAccountApiServiceServer) GetAccount(context.Context, *GetAccountRequest) (*GetAccountResponse, error) {
+func (UnimplementedAccountApiServiceServer) GetAccount(context.Context, *GetAccountRequest) (*Account, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAccount not implemented")
 }
 func (UnimplementedAccountApiServiceServer) ListAccounts(context.Context, *ListAccountsRequest) (*ListAccountsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAccounts not implemented")
 }
-func (UnimplementedAccountApiServiceServer) CreateAccount(context.Context, *CreateAccountRequest) (*CreateAccountResponse, error) {
+func (UnimplementedAccountApiServiceServer) CreateAccount(context.Context, *CreateAccountRequest) (*Account, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateAccount not implemented")
 }
-func (UnimplementedAccountApiServiceServer) UpdateAccount(context.Context, *UpdateAccountRequest) (*UpdateAccountResponse, error) {
+func (UnimplementedAccountApiServiceServer) UpdateAccount(context.Context, *UpdateAccountRequest) (*Account, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAccount not implemented")
 }
 func (UnimplementedAccountApiServiceServer) UpdateAccountPassword(context.Context, *UpdateAccountPasswordRequest) (*UpdateAccountPasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAccountPassword not implemented")
+}
+func (UnimplementedAccountApiServiceServer) DeleteAccount(context.Context, *DeleteAccountRequest) (*DeleteAccountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAccount not implemented")
 }
 func (UnimplementedAccountApiServiceServer) CreateServiceCredential(context.Context, *CreateServiceCredentialRequest) (*CreateServiceCredentialResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateServiceCredential not implemented")
@@ -226,20 +294,32 @@ func (UnimplementedAccountApiServiceServer) CreateServiceCredential(context.Cont
 func (UnimplementedAccountApiServiceServer) DeleteServiceCredential(context.Context, *DeleteServiceCredentialRequest) (*DeleteServiceCredentialResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteServiceCredential not implemented")
 }
-func (UnimplementedAccountApiServiceServer) GetRole(context.Context, *GetRoleRequest) (*GetRoleResponse, error) {
+func (UnimplementedAccountApiServiceServer) GetRole(context.Context, *GetRoleRequest) (*Role, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRole not implemented")
 }
 func (UnimplementedAccountApiServiceServer) ListRoles(context.Context, *ListRolesRequest) (*ListRolesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListRoles not implemented")
 }
-func (UnimplementedAccountApiServiceServer) CreateRole(context.Context, *CreateRoleRequest) (*CreateRoleResponse, error) {
+func (UnimplementedAccountApiServiceServer) CreateRole(context.Context, *CreateRoleRequest) (*Role, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateRole not implemented")
 }
-func (UnimplementedAccountApiServiceServer) UpdateRole(context.Context, *UpdateRoleRequest) (*UpdateRoleResponse, error) {
+func (UnimplementedAccountApiServiceServer) UpdateRole(context.Context, *UpdateRoleRequest) (*Role, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateRole not implemented")
 }
 func (UnimplementedAccountApiServiceServer) DeleteRole(context.Context, *DeleteRoleRequest) (*DeleteRoleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRole not implemented")
+}
+func (UnimplementedAccountApiServiceServer) GetRoleAssignment(context.Context, *GetRoleAssignmentRequest) (*RoleAssignment, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRoleAssignment not implemented")
+}
+func (UnimplementedAccountApiServiceServer) ListRoleAssignments(context.Context, *ListRoleAssignmentsRequest) (*ListRoleAssignmentsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRoleAssignments not implemented")
+}
+func (UnimplementedAccountApiServiceServer) CreateRoleAssignment(context.Context, *CreateRoleAssignmentRequest) (*RoleAssignment, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateRoleAssignment not implemented")
+}
+func (UnimplementedAccountApiServiceServer) DeleteRoleAssignment(context.Context, *DeleteRoleAssignmentRequest) (*DeleteRoleAssignmentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteRoleAssignment not implemented")
 }
 func (UnimplementedAccountApiServiceServer) mustEmbedUnimplementedAccountApiServiceServer() {}
 func (UnimplementedAccountApiServiceServer) testEmbeddedByValue()                           {}
@@ -348,6 +428,24 @@ func _AccountApiService_UpdateAccountPassword_Handler(srv interface{}, ctx conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccountApiServiceServer).UpdateAccountPassword(ctx, req.(*UpdateAccountPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AccountApiService_DeleteAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountApiServiceServer).DeleteAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountApiService_DeleteAccount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountApiServiceServer).DeleteAccount(ctx, req.(*DeleteAccountRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -478,6 +576,78 @@ func _AccountApiService_DeleteRole_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccountApiService_GetRoleAssignment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRoleAssignmentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountApiServiceServer).GetRoleAssignment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountApiService_GetRoleAssignment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountApiServiceServer).GetRoleAssignment(ctx, req.(*GetRoleAssignmentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AccountApiService_ListRoleAssignments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRoleAssignmentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountApiServiceServer).ListRoleAssignments(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountApiService_ListRoleAssignments_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountApiServiceServer).ListRoleAssignments(ctx, req.(*ListRoleAssignmentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AccountApiService_CreateRoleAssignment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateRoleAssignmentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountApiServiceServer).CreateRoleAssignment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountApiService_CreateRoleAssignment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountApiServiceServer).CreateRoleAssignment(ctx, req.(*CreateRoleAssignmentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AccountApiService_DeleteRoleAssignment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRoleAssignmentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountApiServiceServer).DeleteRoleAssignment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountApiService_DeleteRoleAssignment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountApiServiceServer).DeleteRoleAssignment(ctx, req.(*DeleteRoleAssignmentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AccountApiService_ServiceDesc is the grpc.ServiceDesc for AccountApiService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -506,6 +676,10 @@ var AccountApiService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AccountApiService_UpdateAccountPassword_Handler,
 		},
 		{
+			MethodName: "DeleteAccount",
+			Handler:    _AccountApiService_DeleteAccount_Handler,
+		},
+		{
 			MethodName: "CreateServiceCredential",
 			Handler:    _AccountApiService_CreateServiceCredential_Handler,
 		},
@@ -532,6 +706,22 @@ var AccountApiService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteRole",
 			Handler:    _AccountApiService_DeleteRole_Handler,
+		},
+		{
+			MethodName: "GetRoleAssignment",
+			Handler:    _AccountApiService_GetRoleAssignment_Handler,
+		},
+		{
+			MethodName: "ListRoleAssignments",
+			Handler:    _AccountApiService_ListRoleAssignments_Handler,
+		},
+		{
+			MethodName: "CreateRoleAssignment",
+			Handler:    _AccountApiService_CreateRoleAssignment_Handler,
+		},
+		{
+			MethodName: "DeleteRoleAssignment",
+			Handler:    _AccountApiService_DeleteRoleAssignment_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

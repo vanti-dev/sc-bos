@@ -77,7 +77,7 @@ func (r *AccountApiServiceRouter) GetAccountApiServiceClient(name string) (Accou
 	return res.(AccountApiServiceClient), nil
 }
 
-func (r *AccountApiServiceRouter) GetAccount(ctx context.Context, request *GetAccountRequest) (*GetAccountResponse, error) {
+func (r *AccountApiServiceRouter) GetAccount(ctx context.Context, request *GetAccountRequest) (*Account, error) {
 	child, err := r.GetAccountApiServiceClient(request.Name)
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func (r *AccountApiServiceRouter) ListAccounts(ctx context.Context, request *Lis
 	return child.ListAccounts(ctx, request)
 }
 
-func (r *AccountApiServiceRouter) CreateAccount(ctx context.Context, request *CreateAccountRequest) (*CreateAccountResponse, error) {
+func (r *AccountApiServiceRouter) CreateAccount(ctx context.Context, request *CreateAccountRequest) (*Account, error) {
 	child, err := r.GetAccountApiServiceClient(request.Name)
 	if err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ func (r *AccountApiServiceRouter) CreateAccount(ctx context.Context, request *Cr
 	return child.CreateAccount(ctx, request)
 }
 
-func (r *AccountApiServiceRouter) UpdateAccount(ctx context.Context, request *UpdateAccountRequest) (*UpdateAccountResponse, error) {
+func (r *AccountApiServiceRouter) UpdateAccount(ctx context.Context, request *UpdateAccountRequest) (*Account, error) {
 	child, err := r.GetAccountApiServiceClient(request.Name)
 	if err != nil {
 		return nil, err
@@ -120,6 +120,15 @@ func (r *AccountApiServiceRouter) UpdateAccountPassword(ctx context.Context, req
 	}
 
 	return child.UpdateAccountPassword(ctx, request)
+}
+
+func (r *AccountApiServiceRouter) DeleteAccount(ctx context.Context, request *DeleteAccountRequest) (*DeleteAccountResponse, error) {
+	child, err := r.GetAccountApiServiceClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.DeleteAccount(ctx, request)
 }
 
 func (r *AccountApiServiceRouter) CreateServiceCredential(ctx context.Context, request *CreateServiceCredentialRequest) (*CreateServiceCredentialResponse, error) {
@@ -140,7 +149,7 @@ func (r *AccountApiServiceRouter) DeleteServiceCredential(ctx context.Context, r
 	return child.DeleteServiceCredential(ctx, request)
 }
 
-func (r *AccountApiServiceRouter) GetRole(ctx context.Context, request *GetRoleRequest) (*GetRoleResponse, error) {
+func (r *AccountApiServiceRouter) GetRole(ctx context.Context, request *GetRoleRequest) (*Role, error) {
 	child, err := r.GetAccountApiServiceClient(request.Name)
 	if err != nil {
 		return nil, err
@@ -158,7 +167,7 @@ func (r *AccountApiServiceRouter) ListRoles(ctx context.Context, request *ListRo
 	return child.ListRoles(ctx, request)
 }
 
-func (r *AccountApiServiceRouter) CreateRole(ctx context.Context, request *CreateRoleRequest) (*CreateRoleResponse, error) {
+func (r *AccountApiServiceRouter) CreateRole(ctx context.Context, request *CreateRoleRequest) (*Role, error) {
 	child, err := r.GetAccountApiServiceClient(request.Name)
 	if err != nil {
 		return nil, err
@@ -167,7 +176,7 @@ func (r *AccountApiServiceRouter) CreateRole(ctx context.Context, request *Creat
 	return child.CreateRole(ctx, request)
 }
 
-func (r *AccountApiServiceRouter) UpdateRole(ctx context.Context, request *UpdateRoleRequest) (*UpdateRoleResponse, error) {
+func (r *AccountApiServiceRouter) UpdateRole(ctx context.Context, request *UpdateRoleRequest) (*Role, error) {
 	child, err := r.GetAccountApiServiceClient(request.Name)
 	if err != nil {
 		return nil, err
@@ -183,4 +192,40 @@ func (r *AccountApiServiceRouter) DeleteRole(ctx context.Context, request *Delet
 	}
 
 	return child.DeleteRole(ctx, request)
+}
+
+func (r *AccountApiServiceRouter) GetRoleAssignment(ctx context.Context, request *GetRoleAssignmentRequest) (*RoleAssignment, error) {
+	child, err := r.GetAccountApiServiceClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.GetRoleAssignment(ctx, request)
+}
+
+func (r *AccountApiServiceRouter) ListRoleAssignments(ctx context.Context, request *ListRoleAssignmentsRequest) (*ListRoleAssignmentsResponse, error) {
+	child, err := r.GetAccountApiServiceClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.ListRoleAssignments(ctx, request)
+}
+
+func (r *AccountApiServiceRouter) CreateRoleAssignment(ctx context.Context, request *CreateRoleAssignmentRequest) (*RoleAssignment, error) {
+	child, err := r.GetAccountApiServiceClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.CreateRoleAssignment(ctx, request)
+}
+
+func (r *AccountApiServiceRouter) DeleteRoleAssignment(ctx context.Context, request *DeleteRoleAssignmentRequest) (*DeleteRoleAssignmentResponse, error) {
+	child, err := r.GetAccountApiServiceClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.DeleteRoleAssignment(ctx, request)
 }

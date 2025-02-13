@@ -8,21 +8,26 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/field_mask.proto";
 
 service AccountApiService {
-  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
+  rpc GetAccount(GetAccountRequest) returns (Account);
   rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
-
-  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse);
-  rpc UpdateAccount(UpdateAccountRequest) returns (UpdateAccountResponse);
+  rpc CreateAccount(CreateAccountRequest) returns (Account);
+  rpc UpdateAccount(UpdateAccountRequest) returns (Account);
   rpc UpdateAccountPassword(UpdateAccountPasswordRequest) returns (UpdateAccountPasswordResponse);
+  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse);
 
   rpc CreateServiceCredential(CreateServiceCredentialRequest) returns (CreateServiceCredentialResponse);
   rpc DeleteServiceCredential(DeleteServiceCredentialRequest) returns (DeleteServiceCredentialResponse);
 
-  rpc GetRole(GetRoleRequest) returns (GetRoleResponse);
+  rpc GetRole(GetRoleRequest) returns (Role);
   rpc ListRoles(ListRolesRequest) returns (ListRolesResponse);
-  rpc CreateRole(CreateRoleRequest) returns (CreateRoleResponse);
-  rpc UpdateRole(UpdateRoleRequest) returns (UpdateRoleResponse);
+  rpc CreateRole(CreateRoleRequest) returns (Role);
+  rpc UpdateRole(UpdateRoleRequest) returns (Role);
   rpc DeleteRole(DeleteRoleRequest) returns (DeleteRoleResponse);
+
+  rpc GetRoleAssignment(GetRoleAssignmentRequest) returns (RoleAssignment);
+  rpc ListRoleAssignments(ListRoleAssignmentsRequest) returns (ListRoleAssignmentsResponse);
+  rpc CreateRoleAssignment(CreateRoleAssignmentRequest) returns (RoleAssignment);
+  rpc DeleteRoleAssignment(DeleteRoleAssignmentRequest) returns (DeleteRoleAssignmentResponse);
 }
 
 message GetAccountRequest {
@@ -31,12 +36,6 @@ message GetAccountRequest {
   string name = 1;
 
   string id = 2;
-  google.protobuf.FieldMask read_mask = 3;
-}
-
-message GetAccountResponse {
-  Account account = 1;
-  google.protobuf.FieldMask read_mask = 2;
 }
 
 message CreateAccountRequest {
@@ -51,14 +50,9 @@ message CreateAccountRequest {
   string password = 3;
 }
 
-message CreateAccountResponse {
-  Account account = 1;
-}
-
 message ListAccountsRequest {
   // The name of the node to list accounts for. (do we need this?)
   string name = 1;
-  google.protobuf.FieldMask read_mask = 2;
 
   // The maximum number of accounts to return in a single response.
   // If there are more results available, the response will contain a next_page_token to get them.
@@ -82,12 +76,6 @@ message UpdateAccountRequest {
   // The updated account data.
   // The account to update is identified by account.id, which must be present.
   Account account = 2;
-
-  google.protobuf.FieldMask update_mask = 3;
-}
-
-message UpdateAccountResponse {
-  Account account = 1;
 }
 
 message UpdateAccountPasswordRequest {
@@ -107,6 +95,17 @@ message UpdateAccountPasswordRequest {
 message UpdateAccountPasswordResponse {
 
 }
+
+message DeleteAccountRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the account to delete.
+  string id = 2;
+}
+
+message DeleteAccountResponse {}
 
 message CreateServiceCredentialRequest {
   // The name of the node where the account is located.
@@ -140,23 +139,17 @@ message GetRoleRequest {
 
   // The id of the role to get.
   string id = 2;
-  google.protobuf.FieldMask read_mask = 3;
-}
-
-message GetRoleResponse {
-  Role role = 1;
 }
 
 message ListRolesRequest {
   // The name of the node to list roles for.
   string name = 1;
-  google.protobuf.FieldMask read_mask = 2;
 
   // The maximum number of roles to return in a single response.
   // If there are more results available, the response will contain a next_page_token to get them.
-  int32 page_size = 3;
+  int32 page_size = 2;
   // Token from previous ListRoles response, to get the next page of results.
-  string page_token = 4;
+  string page_token = 3;
 }
 
 message ListRolesResponse {
@@ -174,10 +167,6 @@ message CreateRoleRequest {
   Role role = 2;
 }
 
-message CreateRoleResponse {
-  Role role = 1;
-}
-
 message UpdateRoleRequest {
   // The name of the node where the role is located.
   // Optional - if absent, the node you are connected to is assumed.
@@ -186,12 +175,6 @@ message UpdateRoleRequest {
   // The updated role data.
   // The role to update is identified by role.id, which must be present.
   Role role = 2;
-
-  google.protobuf.FieldMask update_mask = 3;
-}
-
-message UpdateRoleResponse {
-  Role role = 1;
 }
 
 message DeleteRoleRequest {
@@ -204,6 +187,62 @@ message DeleteRoleRequest {
 }
 
 message DeleteRoleResponse {}
+
+message GetRoleAssignmentRequest {
+  // The name of the node where the role assignment is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the role assignment to get.
+  string id = 2;
+}
+
+message ListRoleAssignmentsRequest {
+  // The name of the node to list role assignments for.
+  string name = 1;
+
+  // The maximum number of role assignments to return in a single response.
+  // If there are more results available, the response will contain a next_page_token to get them.
+  int32 page_size = 3;
+  // Token from previous ListRoleAssignments response, to get the next page of results.
+  string page_token = 4;
+
+  // Expression to limit the RoleAssignments returned.
+  // If absent, all RoleAssignments are returned.
+  // Supported syntax:
+  //   'account_id = <id>' - return only RoleAssignments for the specified account
+  //   'role_id = <id>' - return only RoleAssignments for the specified role
+  //
+  // If a page_token is supplied, the filter must be the same as the filter used to get the page_token.
+  string filter = 5;
+}
+
+message ListRoleAssignmentsResponse {
+  repeated RoleAssignment role_assignments = 1;
+  // Opaque value which can be provided to ListRoleAssignments to get the next page of results.
+  // Absent if there are no more results.
+  string next_page_token = 2;
+}
+
+message CreateRoleAssignmentRequest {
+  // The name of the node where the role assignment is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The role assignment to create.
+  RoleAssignment role_assignment = 2;
+}
+
+message DeleteRoleAssignmentRequest {
+  // The name of the node where the role assignment is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the role assignment to delete.
+  string id = 2;
+}
+
+message DeleteRoleAssignmentResponse {}
 
 message Account {
   // Unique identifier for this account. Consistent for the life of the account.
@@ -221,16 +260,6 @@ message Account {
   // For user accounts, the username to use for authentication.
   string username = 5;
 
-  // Output-only. Use CreateServiceCredential and DeleteServiceCredential to manipulate service credentials.
-  repeated ServiceCredential service_credentials = 6;
-
-  // An opaque value that changes whenever the account is updated; used to avoid read-modify-write conflicts.
-  // On update, if this field is set, the server etag will be checked against the client-provided etag, and
-  // the request will fail if they do not match.
-  string etag = 9;
-
-  repeated RoleAssignment role_assignments = 8;
-
   enum Kind {
     ACCOUNT_KIND_UNSPECIFIED = 0;
     USER_ACCOUNT = 1;
@@ -238,18 +267,28 @@ message Account {
   }
 }
 
+// A Role is a named collection of permissions.
+//
+// Roles are assigned to accounts using RoleAssignments.
 message Role {
   string id = 1;
   string title = 2;
   repeated string permissions = 3;
-  string etag = 4;
 }
 
+// A RoleAssignment is an assignment of a Role to an Account.
+// It is a sub-resource of the Account.
 message RoleAssignment {
-  string role = 1;
+  // Unique identifier for this role assignment assigned by the system.
+  string id = 1;
+  // The account this role assignment is associated with.
+  string account_id = 2;
+  // The role this assignment grants.
+  string role_id = 3;
   // The scope of the role assignment.
-  // If absent, role assignment has no scope restrictions.
-  Scope scope = 2;
+  // If present, the permissions in the role are only granted for the resources in the scope.
+  // Otherwise, the permissions in the role apply to all resources.
+  Scope scope = 4;
 
   message Scope {
     ResourceKind resource_kind = 1;
@@ -266,6 +305,7 @@ message RoleAssignment {
   }
 }
 
+// Represents
 message ServiceCredential {
   // Auto-generated unique identifier for this service credential.
   string id = 1;

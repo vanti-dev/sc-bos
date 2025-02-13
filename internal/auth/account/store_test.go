@@ -16,10 +16,7 @@ import (
 
 func TestServer(t *testing.T) {
 	store := NewMemoryStore(zap.NewNop())
-	server := NewServer(store)
-	roleFoo := createTestRole(t, server, "foo", "perm1", "perm2")
-	roleBar := createTestRole(t, server, "bar", "perm3", "perm4")
-	roleBaz := createTestRole(t, server, "baz", "perm5", "perm6")
+	server := NewServer(store, zap.NewNop())
 
 	type testCase struct {
 		input        *gen.Account
@@ -39,22 +36,12 @@ func TestServer(t *testing.T) {
 				Kind:        gen.Account_USER_ACCOUNT,
 				Username:    "user_with_roles@example.com",
 				DisplayName: "Foo User with roles",
-				RoleAssignments: []*gen.RoleAssignment{
-					{Role: roleFoo, Scope: &gen.RoleAssignment_Scope{ResourceKind: gen.RoleAssignment_ZONE, Resource: "Gym"}},
-					{Role: roleBar, Scope: &gen.RoleAssignment_Scope{ResourceKind: gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX, Resource: "floor-01"}},
-					{Role: roleBaz},
-				},
 			},
 		},
 		"service_account": {
 			input: &gen.Account{
 				Kind:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service Account",
-				RoleAssignments: []*gen.RoleAssignment{
-					{Role: roleFoo, Scope: &gen.RoleAssignment_Scope{ResourceKind: gen.RoleAssignment_ZONE, Resource: "Gym"}},
-					{Role: roleBar, Scope: &gen.RoleAssignment_Scope{ResourceKind: gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX, Resource: "floor-01"}},
-					{Role: roleBaz},
-				},
 			},
 		},
 	}
@@ -62,15 +49,14 @@ func TestServer(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
-			res, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{Account: tc.input})
-			checkNilIfErrored(t, res, err)
+			created, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{Account: tc.input})
+			checkNilIfErrored(t, created, err)
 			if code := status.Code(err); code != tc.expectStatus {
 				t.Errorf("expected status %v, got error %v", tc.expectStatus, err)
 			}
 			if err != nil {
 				return
 			}
-			created := res.GetAccount()
 			if created.GetId() == "" {
 				t.Error("CreateAccount returned an empty ID")
 			}
@@ -90,12 +76,11 @@ func TestServer(t *testing.T) {
 			}
 
 			// Check that the account was actually stored
-			getRes, err := server.GetAccount(ctx, &gen.GetAccountRequest{Id: created.Id})
-			checkNilIfErrored(t, getRes, err)
+			got, err := server.GetAccount(ctx, &gen.GetAccountRequest{Id: created.Id})
+			checkNilIfErrored(t, got, err)
 			if err != nil {
 				t.Errorf("error getting account %q: %v", created.Id, err)
 			}
-			got := getRes.GetAccount()
 			expect = proto.Clone(expect).(*gen.Account)
 			expect.Id = created.Id
 			expect.CreateTime = created.CreateTime
@@ -126,5 +111,5 @@ func createTestRole(t *testing.T, server *Server, title string, permissions ...s
 	if err != nil {
 		t.Fatalf("failed to create role %q: %v", title, err)
 	}
-	return res.Role.Id
+	return res.Id
 }
