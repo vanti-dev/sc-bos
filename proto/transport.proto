@@ -7,7 +7,6 @@ option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "types/info.proto";
-import "location.proto";
 
 // TransportAPI represents something that can transport something else between places.
 // The transport will often be an elevator, but could be an escalator, conveyor etc.
@@ -82,10 +81,16 @@ message Transport {
       HIGH_WIND_OPERATION = 18;
     }
 
-    enum Alarm {
-      ALARM_UNSPECIFIED = 0;
-      UNACTIVATED = 1;
-      ACTIVATED = 2;
+    message Alarm {
+      enum AlarmState {
+        ALARM_UNSPECIFIED = 0;
+        UNACTIVATED = 1;
+        ACTIVATED = 2;
+      }
+      // The state of the alarm button.
+      AlarmState state = 1;
+      // Optional. The time the alarm entered its current state.
+      google.protobuf.Timestamp time = 2;
     }
 
     enum Active {
@@ -176,7 +181,19 @@ message Transport {
       DoorStatus status = 4;
     }
 
-    // The current location of the transport.
+    // Location describes a specific location within a site that this transport can stop at.
+    message Location {
+      // The id of the location. This should be unique within the site.
+      string id = 1;
+      // The title of the location. e.g. 'Lobby', 'Floor 1', 'Car Park'.
+      string title = 2;
+      // Optional. Description of the location.
+      string description = 3;
+      // Optional. The floor of the location.
+      string floor = 4;
+    }
+
+    // The current location of the transport. e.g. for lifts this will be the floor.
     Location current_location = 1;
     // Optional. The next destination(s) the transport will stop at.
     repeated Location next_destinations = 2;
@@ -204,13 +221,13 @@ message Transport {
     // i.e. For a linear transport, the first and last items in this list should be the termini.
     repeated Location supported_destinations = 10;
     // Optional. The active state of the transport. Note this is different to mode,
-    // as the transport can be in an active or idle state in different modes.
+    // as the transport can be in an active or inactive state in different modes.
     Active active = 11;
 
     message Payload {
         // The id of the payload. The id must be unique within the transport for the duration of the journey.
         // i.e. there should not be two payloads with the same id in the same transport at the same time.
-        string id = 1;
+        string payload_id = 1;
         // The description of the payload.
         string description = 2;
         // The journey the payload is intending to take.
@@ -220,6 +237,12 @@ message Transport {
         // Iff the final destination in intended_journey is the same as the location where the payload leaves the transport,
         // the journey is considered to have been completed successfully.
         Journey actual_journey = 4;
+
+        // IDs holds external identifiers for the payload.
+        // For example, a parcel may have an ID assigned by a courier company,
+        // a person may have an ID assigned by one or more building access systems,
+        // but the transport itself may not know these IDs
+        map<string, string> external_ids = 100;
     }
 
     // Optional. Payloads describes the entities that are currently being transported.

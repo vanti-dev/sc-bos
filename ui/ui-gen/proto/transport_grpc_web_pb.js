@@ -25,8 +25,6 @@ var google_protobuf_field_mask_pb = require('google-protobuf/google/protobuf/fie
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js')
 
 var types_info_pb = require('@smart-core-os/sc-api-grpc-web/types/info_pb.js')
-
-var location_pb = require('./location_pb.js')
 const proto = {};
 proto.smartcore = {};
 proto.smartcore.bos = require('./transport_pb.js');

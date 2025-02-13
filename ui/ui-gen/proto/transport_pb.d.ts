@@ -3,19 +3,18 @@ import * as jspb from 'google-protobuf'
 import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb'; // proto import: "google/protobuf/field_mask.proto"
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
 import * as types_info_pb from '@smart-core-os/sc-api-grpc-web/types/info_pb'; // proto import: "types/info.proto"
-import * as location_pb from './location_pb'; // proto import: "location.proto"
 
 
 export class Transport extends jspb.Message {
-  getCurrentLocation(): location_pb.Location | undefined;
-  setCurrentLocation(value?: location_pb.Location): Transport;
+  getCurrentLocation(): Transport.Location | undefined;
+  setCurrentLocation(value?: Transport.Location): Transport;
   hasCurrentLocation(): boolean;
   clearCurrentLocation(): Transport;
 
-  getNextDestinationsList(): Array<location_pb.Location>;
-  setNextDestinationsList(value: Array<location_pb.Location>): Transport;
+  getNextDestinationsList(): Array<Transport.Location>;
+  setNextDestinationsList(value: Array<Transport.Location>): Transport;
   clearNextDestinationsList(): Transport;
-  addNextDestinations(value?: location_pb.Location, index?: number): location_pb.Location;
+  addNextDestinations(value?: Transport.Location, index?: number): Transport.Location;
 
   getMovingDirection(): Transport.Direction;
   setMovingDirection(value: Transport.Direction): Transport;
@@ -38,18 +37,20 @@ export class Transport extends jspb.Message {
   clearFaultsList(): Transport;
   addFaults(value?: Transport.Fault, index?: number): Transport.Fault;
 
-  getPassengerAlarm(): Transport.Alarm;
-  setPassengerAlarm(value: Transport.Alarm): Transport;
+  getPassengerAlarm(): Transport.Alarm | undefined;
+  setPassengerAlarm(value?: Transport.Alarm): Transport;
+  hasPassengerAlarm(): boolean;
+  clearPassengerAlarm(): Transport;
 
   getSpeed(): number;
   setSpeed(value: number): Transport;
   hasSpeed(): boolean;
   clearSpeed(): Transport;
 
-  getSupportedDestinationsList(): Array<location_pb.Location>;
-  setSupportedDestinationsList(value: Array<location_pb.Location>): Transport;
+  getSupportedDestinationsList(): Array<Transport.Location>;
+  setSupportedDestinationsList(value: Array<Transport.Location>): Transport;
   clearSupportedDestinationsList(): Transport;
-  addSupportedDestinations(value?: location_pb.Location, index?: number): location_pb.Location;
+  addSupportedDestinations(value?: Transport.Location, index?: number): Transport.Location;
 
   getActive(): Transport.Active;
   setActive(value: Transport.Active): Transport;
@@ -69,19 +70,50 @@ export class Transport extends jspb.Message {
 
 export namespace Transport {
   export type AsObject = {
-    currentLocation?: location_pb.Location.AsObject,
-    nextDestinationsList: Array<location_pb.Location.AsObject>,
+    currentLocation?: Transport.Location.AsObject,
+    nextDestinationsList: Array<Transport.Location.AsObject>,
     movingDirection: Transport.Direction,
     load?: number,
     doorsList: Array<Transport.Door.AsObject>,
     operatingMode: Transport.OperatingMode,
     faultsList: Array<Transport.Fault.AsObject>,
-    passengerAlarm: Transport.Alarm,
+    passengerAlarm?: Transport.Alarm.AsObject,
     speed?: number,
-    supportedDestinationsList: Array<location_pb.Location.AsObject>,
+    supportedDestinationsList: Array<Transport.Location.AsObject>,
     active: Transport.Active,
     payloadsList: Array<Transport.Payload.AsObject>,
   }
+
+  export class Alarm extends jspb.Message {
+    getState(): Transport.Alarm.AlarmState;
+    setState(value: Transport.Alarm.AlarmState): Alarm;
+
+    getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setTime(value?: google_protobuf_timestamp_pb.Timestamp): Alarm;
+    hasTime(): boolean;
+    clearTime(): Alarm;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Alarm.AsObject;
+    static toObject(includeInstance: boolean, msg: Alarm): Alarm.AsObject;
+    static serializeBinaryToWriter(message: Alarm, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Alarm;
+    static deserializeBinaryFromReader(message: Alarm, reader: jspb.BinaryReader): Alarm;
+  }
+
+  export namespace Alarm {
+    export type AsObject = {
+      state: Transport.Alarm.AlarmState,
+      time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    }
+
+    export enum AlarmState { 
+      ALARM_UNSPECIFIED = 0,
+      UNACTIVATED = 1,
+      ACTIVATED = 2,
+    }
+  }
+
 
   export class Fault extends jspb.Message {
     getFaultType(): Transport.Fault.FaultType;
@@ -143,15 +175,15 @@ export namespace Transport {
 
 
   export class Journey extends jspb.Message {
-    getStart(): location_pb.Location | undefined;
-    setStart(value?: location_pb.Location): Journey;
+    getStart(): Transport.Location | undefined;
+    setStart(value?: Transport.Location): Journey;
     hasStart(): boolean;
     clearStart(): Journey;
 
-    getDestinationsList(): Array<location_pb.Location>;
-    setDestinationsList(value: Array<location_pb.Location>): Journey;
+    getDestinationsList(): Array<Transport.Location>;
+    setDestinationsList(value: Array<Transport.Location>): Journey;
     clearDestinationsList(): Journey;
-    addDestinations(value?: location_pb.Location, index?: number): location_pb.Location;
+    addDestinations(value?: Transport.Location, index?: number): Transport.Location;
 
     getReason(): string;
     setReason(value: string): Journey;
@@ -176,8 +208,8 @@ export namespace Transport {
 
   export namespace Journey {
     export type AsObject = {
-      start?: location_pb.Location.AsObject,
-      destinationsList: Array<location_pb.Location.AsObject>,
+      start?: Transport.Location.AsObject,
+      destinationsList: Array<Transport.Location.AsObject>,
       reason: string,
       startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
       estimatedArrivalTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
@@ -226,9 +258,40 @@ export namespace Transport {
   }
 
 
-  export class Payload extends jspb.Message {
+  export class Location extends jspb.Message {
     getId(): string;
-    setId(value: string): Payload;
+    setId(value: string): Location;
+
+    getTitle(): string;
+    setTitle(value: string): Location;
+
+    getDescription(): string;
+    setDescription(value: string): Location;
+
+    getFloor(): string;
+    setFloor(value: string): Location;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Location.AsObject;
+    static toObject(includeInstance: boolean, msg: Location): Location.AsObject;
+    static serializeBinaryToWriter(message: Location, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Location;
+    static deserializeBinaryFromReader(message: Location, reader: jspb.BinaryReader): Location;
+  }
+
+  export namespace Location {
+    export type AsObject = {
+      id: string,
+      title: string,
+      description: string,
+      floor: string,
+    }
+  }
+
+
+  export class Payload extends jspb.Message {
+    getPayloadId(): string;
+    setPayloadId(value: string): Payload;
 
     getDescription(): string;
     setDescription(value: string): Payload;
@@ -243,6 +306,9 @@ export namespace Transport {
     hasActualJourney(): boolean;
     clearActualJourney(): Payload;
 
+    getExternalIdsMap(): jspb.Map<string, string>;
+    clearExternalIdsMap(): Payload;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Payload.AsObject;
     static toObject(includeInstance: boolean, msg: Payload): Payload.AsObject;
@@ -253,10 +319,11 @@ export namespace Transport {
 
   export namespace Payload {
     export type AsObject = {
-      id: string,
+      payloadId: string,
       description: string,
       intendedJourney?: Transport.Journey.AsObject,
       actualJourney?: Transport.Journey.AsObject,
+      externalIdsMap: Array<[string, string]>,
     }
   }
 
@@ -301,12 +368,6 @@ export namespace Transport {
     REDUCED_SPEED = 16,
     STORM_OPERATION = 17,
     HIGH_WIND_OPERATION = 18,
-  }
-
-  export enum Alarm { 
-    ALARM_UNSPECIFIED = 0,
-    UNACTIVATED = 1,
-    ACTIVATED = 2,
   }
 
   export enum Active { 
