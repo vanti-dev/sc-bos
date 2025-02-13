@@ -7,6 +7,7 @@ option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "types/info.proto";
+import "location.proto";
 
 // TransportAPI represents something that can transport something else between places.
 // The transport will often be an elevator, but could be an escalator, conveyor etc.
@@ -37,22 +38,15 @@ message Transport {
       WEST = 11;
       NORTH = 12;
       SOUTH = 13;
+      // Left and right are relative to the intended forwards direction of the transport.
+      // If this is not known use SIDEWAYS.
+      LEFT = 14;
+      RIGHT = 15;
+      SIDEWAYS = 16;
     }
 
-    enum DoorStatus {
-      DOOR_STATUS_UNSPECIFIED = 0;
-      CLOSED = 1;
-      OPEN = 2;
-      OPENING = 3;
-      CLOSING = 4;
-      // The door is safety locked.
-      SAFETY_LOCKED = 5;
-      // The door remains in a position that is not fully open or closed.
-      LIMITED_OPENED = 6;
-    }
-
-    enum Mode {
-      MODE_UNSPECIFIED = 0;
+    enum OperatingMode {
+      OPERATING_MODE_UNSPECIFIED = 0;
       NORMAL = 1;
       // The transport is in service or inspection control.
       SERVICE_CONTROL = 2;
@@ -88,39 +82,60 @@ message Transport {
       HIGH_WIND_OPERATION = 18;
     }
 
-    enum Fault {
-      FAULT_UNSPECIFIED = 0;
-      CONTROLLER_FAULT = 1;
-      DRIVE_AND_MOTOR_FAULT = 2;
-      MECHANICAL_COMPONENT_FAULT = 3;
-      OVERSPEED_FAULT = 4;
-      POWER_SUPPLY_FAULT = 5;
-      SAFETY_DEVICE_FAULT = 6;
-      CONTROLLER_SUPPLY_FAULT = 7;
-      DRIVE_TEMPERATURE_EXCEEDED = 8;
-      // A comb plate safety switch is activated.
-      COMB_PLATE_FAULT = 9;
-      GENERAL_FAULT = 10;
-      DOOR_FAULT = 11;
-      LEVELLING_FAULT = 12;
-      SAFETY_CIRCUIT_BREAK_FAULT = 13;
-      FAIL_TO_START = 14;
-      ALARM_BUTTON = 15;
-      DOOR_NOT_CLOSING = 16;
+    enum Alarm {
+      ALARM_UNSPECIFIED = 0;
+      UNACTIVATED = 1;
+      ACTIVATED = 2;
     }
 
-    // Location describes a place that the transport can stop at.
-    message Location {
-      // The id of the location.
-      string id = 1;
-      // The name of the location. e.g. 'Lobby', 'Floor 1', 'Car Park'.
-      string name = 2;
-      // Optional. Description of the location.
+    enum Active {
+      ACTIVE_UNSPECIFIED = 0;
+      INACTIVE = 1;
+      ACTIVE = 2;
+    }
+
+    message Fault {
+      enum FaultType {
+        FAULT_UNSPECIFIED = 0;
+        CONTROLLER_FAULT = 1;
+        DRIVE_AND_MOTOR_FAULT = 2;
+        MECHANICAL_COMPONENT_FAULT = 3;
+        OVERSPEED_FAULT = 4;
+        POWER_SUPPLY_FAULT = 5;
+        SAFETY_DEVICE_FAULT = 6;
+        CONTROLLER_SUPPLY_FAULT = 7;
+        DRIVE_TEMPERATURE_EXCEEDED = 8;
+        // A comb plate safety switch is activated.
+        COMB_PLATE_FAULT = 9;
+        GENERAL_FAULT = 10;
+        DOOR_FAULT = 11;
+        LEVELLING_FAULT = 12;
+        SAFETY_CIRCUIT_BREAK_FAULT = 13;
+        FAIL_TO_START = 14;
+        // A fault has been detected with the alarm button. This is not the same as an activated passenger alarm.
+        // Use the passenger_alarm field to indicate the alarm button has been activated.
+        ALARM_BUTTON = 15;
+        DOOR_NOT_CLOSING = 16;
+        DOOR_NOT_OPENING = 17;
+        GOVERNOR_AND_SAFETY_GEAR_FAULT = 18;
+        // The fault is related to a device inside the lift shaft
+        LIFT_SHAFT_DEVICE_FAULT = 19;
+        CAR_STOPPED_OUTSIDE_LANDING_ZONE = 20;
+        CALL_BUTTON_STUCK = 21;
+        SELF_TEST_FAILURE = 22;
+        // The lift did not reach the expected zone.
+        RUNTIME_LIMIT_EXCEEDED = 23;
+        POSITION_LOST = 24;
+        // The car load measurement system is in a fault condition.
+        LOAD_MEASUREMENT_FAULT = 25;
+        OVERCAPACITY = 26;
+      }
+      // The type of fault.
+      FaultType fault_type = 1;
+      // Optional. The time the fault was detected.
+      google.protobuf.Timestamp time = 2;
+      // Optional. The description of the fault.
       string description = 3;
-      // Optional. The floor number of the location.
-      int32 floor = 4;
-      // Optional. The attributes of the location.
-      repeated string attributes = 5;
     }
 
     // Journey describes the journey of the transport or payload.
@@ -128,45 +143,82 @@ message Transport {
     message Journey {
       // The starting point of the journey.
       Location start = 1;
-      // The destinations of the journey.
+      // The destinations of the journey. These must be in chronological order of intended arrival time.
       repeated Location destinations = 2;
       // Optional. The reason for the journey.
       string reason = 3;
+      // Optional. The time the journey started.
+      google.protobuf.Timestamp start_time = 4;
+      // Optional. The time the journey is estimated to arrive.
+      google.protobuf.Timestamp estimated_arrival_time = 5;
+    }
+
+    message Door {
+      enum DoorStatus {
+        DOOR_STATUS_UNSPECIFIED = 0;
+        CLOSED = 1;
+        OPEN = 2;
+        OPENING = 3;
+        CLOSING = 4;
+        // The door is safety locked.
+        SAFETY_LOCKED = 5;
+        // The door remains in a position that is not fully open or closed.
+        LIMITED_OPENED = 6;
+      }
+
+      // The id of the door, must be unique within the transport. This is used as the id of the door in door_status.
+      int32 id = 1;
+      // Description of the door; front, rear, etc.
+      string description = 2;
+      // If the transport has multiple decks, this is the deck the door is on. 0 is the lowest deck.
+      int32 deck = 3;
+      // The status of the door.
+      DoorStatus status = 4;
     }
 
     // The current location of the transport.
     Location current_location = 1;
     // Optional. The next destination(s) the transport will stop at.
     repeated Location next_destinations = 2;
-    // Optional. The direction the transport is moving.
+    // Optional. The primary direction the transport is moving. An escalator technically moves up/down and forwards,
+    // but the primary intention is to transport up/down.
     Direction moving_direction = 3;
     // Optional. The total amount of load being carried.
     // The units this is measured in is implementation specific. See TransportSupport
-    float load = 4;
-    // Optional. The status of each the door(s) of the transport. For multiple doors, use TransportSupport to identify multiple doors.
-    repeated DoorStatus door_status = 5;
-    // Optional. The mode the transport is in.
-    Mode mode = 6;
+    // A zero value means there is no load, an omitted value means the load is unknown.
+    optional float load = 4;
+    // Optional. The status of each the door(s) of the transport.
+    repeated Door doors = 5;
+    // Optional. The operating mode the transport is in.
+    OperatingMode operating_mode = 6;
     // Optional. A list of active fault signals being reported.
     repeated Fault faults = 7;
-    // Optional. True if the passenger alarm has been activated.
-    bool passenger_alarm = 8;
-    // Optional. The speed of the transport.
-    float speed = 9;
+    // Optional. The status of the passenger alarm button.
+    Alarm passenger_alarm = 8;
+    // Optional. The speed of the transport. Zero represents a stationary transport, omitted means the speed is unknown.
+    // This is the current speed of the transport, not the average or maximum speed etc., this value may change rapidly.
+    // Use TransportSupport to determine the units of speed.
+    optional float speed = 9;
     // Optional. The destinations that are supported by the transport.
+    // These should be ordered logically and consistently depending on the transport device.
+    // i.e. For a linear transport, the first and last items in this list should be the termini.
     repeated Location supported_destinations = 10;
-    // Optional. True if the transport is currently active. Note this is different to mode,
+    // Optional. The active state of the transport. Note this is different to mode,
     // as the transport can be in an active or idle state in different modes.
-    bool active = 11;
+    Active active = 11;
 
     message Payload {
-        // The id of the payload.
+        // The id of the payload. The id must be unique within the transport for the duration of the journey.
+        // i.e. there should not be two payloads with the same id in the same transport at the same time.
         string id = 1;
         // The description of the payload.
         string description = 2;
         // The journey the payload is intending to take.
         Journey intended_journey = 3;
-        // The actual journey the payload has taken.
+        // The actual journey the payload has taken so far.
+        // Once the payload leaves the transport, the journey is considered complete.
+        // Iff the final destination in intended_journey is the same as the location where the payload leaves the transport,
+        // the journey is considered to have been completed successfully.
         Journey actual_journey = 4;
     }
 
@@ -179,22 +231,11 @@ message TransportSupport {
   smartcore.types.ResourceSupport resource_support = 1;
   // The unit associated with the load value, e.g. kg, % of maximum load.
   string load_unit = 2;
-  // Describes the doors of the transport, if any.
-  repeated DoorInfo doors = 3;
   // The maximum load the transport can carry, in kg, if known.
   // This can be used to calculate the current load weight if the load is reported as a percentage of the maximum load.
-  int32 max_load = 4;
+  int32 max_load = 3;
   // The unit associated with the speed value, e.g. m/s, km/h.
-  string speed_unit = 5;
-
-  message DoorInfo {
-    // The id of the door. This is used as the id of the door in door_status.
-    int32 id = 1;
-    // Description of the door; front, rear, etc.
-    string description = 2;
-    // If the transport has multiple decks, this is the deck the door is on. 0 is the lowest deck.
-    int32 deck = 3;
-  }
+  string speed_unit = 4;
 }
 
 // GetTransportRequest is used to request the current state of the transport.
@@ -219,6 +260,6 @@ message PullTransportResponse {
   message Change {
     string name = 1;
     google.protobuf.Timestamp change_time = 2;
-    Transport transport_state = 3;
+    Transport transport = 3;
   }
 }

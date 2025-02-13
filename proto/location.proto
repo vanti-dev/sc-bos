@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+// Location describes a specific location within a site. This can be used when a trait requires multiple locations
+// to be described. For example, a Transport may have multiple locations, such as a lift stop on floor 1,
+// an electric vehicle charging station may have multiple bays that it can serve.
+message Location {
+  // The id of the location. This should be unique within the site.
+  string id = 1;
+  // The title of the location. e.g. 'Lobby', 'Floor 1', 'Car Park'.
+  string title = 2;
+  // Optional. Description of the location.
+  string description = 3;
+  // Optional. The floor of the location.
+  string floor = 4;
+}
