@@ -3,6 +3,7 @@ package account
 import (
 	"context"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -11,11 +12,12 @@ import (
 
 type Server struct {
 	gen.UnimplementedAccountApiServiceServer
-	store *Store
+	store  *Store
+	logger *zap.Logger
 }
 
-func NewServer(store *Store) *Server {
-	return &Server{store: store}
+func NewServer(store *Store, logger *zap.Logger) *Server {
+	return &Server{store: store, logger: logger}
 }
 
 // GetAccount returns a single account by ID.
@@ -72,6 +74,9 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		if account.Username != "" {
 			return nil, ErrUnexpectedUsername
 		}
+		if req.Password != "" {
+			return nil, ErrUnexpectedPassword
+		}
 	default:
 		return nil, ErrInvalidAccountKind
 	}
@@ -93,6 +98,13 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 
 		if len(account.RoleAssignments) > 0 {
 			err = tx.UpdateRoleAssignments(ctx, created.Id, account.RoleAssignments)
+			if err != nil {
+				return err
+			}
+		}
+
+		if req.Password != "" {
+			err = s.setPassword(ctx, tx, created.Id, req.Password)
 			if err != nil {
 				return err
 			}
@@ -149,6 +161,20 @@ func (s *Server) CreateRole(ctx context.Context, req *gen.CreateRoleRequest) (*g
 	}
 
 	return &gen.CreateRoleResponse{Role: created}, nil
+}
+
+func (s *Server) setPassword(ctx context.Context, tx *WriteTx, id, password string) error {
+	if !permitPassword(password) {
+		return ErrInvalidPassword
+	}
+
+	hash, err := HashPassword(password)
+	if err != nil {
+		s.logger.Error("failed to hash password", zap.String("userID", id), zap.Error(err))
+		return status.Error(codes.Internal, "failed to set password")
+	}
+
+	return tx.UpdateAccountPasswordHash(ctx, id, hash)
 }
 
 const (

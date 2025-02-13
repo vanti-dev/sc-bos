@@ -32,6 +32,8 @@ var (
 	ErrMissingUsername        = status.Error(codes.InvalidArgument, "user account requires username")
 	ErrUnexpectedUsername     = status.Error(codes.InvalidArgument, "service account cannot have username")
 	ErrUnexpectedServiceCreds = status.Error(codes.InvalidArgument, "user account cannot have service credentials")
+	ErrUnexpectedPassword     = status.Error(codes.FailedPrecondition, "service account cannot have password")
+	ErrInvalidPassword        = status.Error(codes.InvalidArgument, "password does not comply with policy")
 	ErrInvalidPageSize        = status.Error(codes.InvalidArgument, "page size must be positive")
 )
 
@@ -133,6 +135,33 @@ func (r *readOps) GetAccount(ctx context.Context, id string) (*gen.Account, erro
 	return account, nil
 }
 
+func (r *readOps) AccountByUsername(ctx context.Context, username string) (*gen.Account, PasswordHash, error) {
+	const query = `
+		SELECT a.id, p.password_hash
+		FROM accounts a
+		LEFT OUTER JOIN password_credentials p ON a.id = p.account_id
+		WHERE a.username = ?;
+	`
+
+	var (
+		id   accountID
+		hash []byte
+	)
+	row := r.tx.QueryRowContext(ctx, query, username)
+	err := row.Scan(&id, &hash)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil, ErrAccountNotFound
+	} else if err != nil {
+		return nil, nil, err
+	}
+
+	acc, err := r.GetAccount(ctx, id.String())
+	if err != nil {
+		return nil, nil, err
+	}
+	return acc, hash, nil
+}
+
 func (r *readOps) ListAccounts(ctx context.Context, pageToken string, pageSize int64) (accounts []*gen.Account, nextPage string, err error) {
 	if pageSize <= 0 {
 		return nil, "", ErrInvalidPageSize
@@ -195,6 +224,14 @@ func (w *writeOps) CreateServiceAccount(ctx context.Context, displayName string)
 	}
 
 	return acct, nil
+}
+
+func (w *writeOps) UpdateAccountPasswordHash(ctx context.Context, id string, hash []byte) error {
+	parsedID, err := parseAccountID(id)
+	if err != nil {
+		return err
+	}
+	return updateAccountPasswordHash(ctx, w.tx, parsedID, hash)
 }
 
 func (w *writeOps) UpdateRoleAssignments(ctx context.Context, accountID string, roleAssignments []*gen.RoleAssignment) error {
@@ -518,6 +555,43 @@ func createAccount(ctx context.Context, tx *sql.Tx, kind gen.Account_Kind, usern
 		DisplayName: displayName,
 		Username:    username,
 	}, nil
+}
+
+func checkAccountKind(ctx context.Context, tx *sql.Tx, id accountID, expect gen.Account_Kind, mismatch error) error {
+	const query = `
+		SELECT kind
+		FROM accounts
+		WHERE id = ?;
+	`
+
+	var kind string
+	err := tx.QueryRowContext(ctx, query, id).Scan(&kind)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrAccountNotFound
+	} else if err != nil {
+		return err
+	}
+	if kind != gen.Account_Kind_name[int32(expect)] {
+		return mismatch
+	}
+	return nil
+}
+
+func updateAccountPasswordHash(ctx context.Context, tx *sql.Tx, id accountID, hash []byte) error {
+	const query = `
+		INSERT INTO password_credentials (account_id, password_hash)
+		VALUES (?, ?)
+		ON CONFLICT (account_id) DO UPDATE
+		SET password_hash = excluded.password_hash;
+	`
+
+	err := checkAccountKind(ctx, tx, id, gen.Account_USER_ACCOUNT, ErrUnexpectedPassword)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, query, hash, id)
+	return err
 }
 
 func getAccountServiceCreds(ctx context.Context, tx *sql.Tx, id accountID) ([]*gen.ServiceCredential, error) {
