@@ -58,14 +58,21 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 	}
 
-	var client *wordpressHttp.Client
+	var opts []wordpressHttp.Option
 
-	switch cfg.Auth.Type {
-	case config.AuthenticationBearer:
-		client = wordpressHttp.New(wordpressHttp.WithAuthorizationBearer(cfg.Auth.Token), wordpressHttp.WithLogger(cfg.Logs, logger))
-	default:
-		return fmt.Errorf("authentication type %s not supported", cfg.Auth.Type)
+	for _, auth := range cfg.Auths {
+		switch auth.Type {
+		case config.AuthenticationBearer:
+			opts = append(opts, wordpressHttp.WithAuthorizationBearer(auth.Token))
+		case config.AuthenticationBasic:
+			opts = append(opts, wordpressHttp.WithAuthorizationBasic(auth.Token))
+		default:
+			return fmt.Errorf("authentication type %s not supported", auth.Type)
+		}
 	}
+
+	opts = append(opts, wordpressHttp.WithLogger(cfg.Logs, logger))
+	client := wordpressHttp.New(opts...)
 
 	go func() {
 		mulpx := job.Multiplex(jobs...)

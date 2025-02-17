@@ -1,23 +1,28 @@
 package config
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
-const AuthenticationBearer = "Bearer"
+const (
+	AuthenticationBearer = "Bearer"
+	AuthenticationBasic  = "Basic"
+)
 
 type Root struct {
 	auto.Config
 
-	BaseUrl string         `json:"baseUrl"`
-	Site    string         `json:"site"`
-	Auth    Authentication `json:"authentication"`
-	Logs    bool           `json:"logs"`
+	BaseUrl string            `json:"baseUrl"`
+	Site    string            `json:"site"`
+	Auths   []*Authentication `json:"authentication"`
+	Logs    bool              `json:"logs"`
 	Sources struct {
 		Occupancy   *Occupancy   `json:"occupancy,omitempty"`
 		Temperature *Temperature `json:"temperature,omitempty"`
@@ -74,18 +79,34 @@ func ReadBytes(data []byte) (cfg Root, err error) {
 		return
 	}
 
-	switch cfg.Auth.Type {
-	case AuthenticationBearer:
-		var tok []byte
-		tok, err = os.ReadFile(cfg.Auth.SecretFile)
+	for _, auth := range cfg.Auths {
+		err := resolveAuth(auth)
+
 		if err != nil {
-			return
+			return cfg, err
 		}
-		cfg.Auth.Token = string(tok)
-	default:
-		err = fmt.Errorf("authentication type %s not yet supported", cfg.Auth.Type)
-		return
 	}
 
 	return
+}
+
+func resolveAuth(auth *Authentication) error {
+	switch auth.Type {
+	case AuthenticationBearer:
+		tok, err := os.ReadFile(auth.SecretFile)
+		if err != nil {
+			return err
+		}
+		auth.Token = strings.TrimSpace(string(tok))
+	case AuthenticationBasic:
+		usernamePassword, err := os.ReadFile(auth.SecretFile)
+		if err != nil {
+			return err
+		}
+		auth.Token = base64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(string(usernamePassword))))
+	default:
+		return fmt.Errorf("authentication type %s not yet supported", auth.Type)
+	}
+
+	return nil
 }

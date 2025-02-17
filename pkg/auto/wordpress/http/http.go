@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -46,6 +47,12 @@ func WithAuthorizationBearer(token string) Option {
 	}
 }
 
+func WithAuthorizationBasic(base64Token string) Option {
+	return func(cli *Client) {
+		cli.headers.Add("Authorization", fmt.Sprintf("Basic %s", base64Token))
+	}
+}
+
 func WithLogger(noop bool, loggers ...*zap.Logger) Option {
 	return func(cli *Client) {
 		if noop || len(loggers) < 1 {
@@ -64,7 +71,14 @@ func (c *Client) Post(ctx context.Context, url string, body []byte) error {
 		return err
 	}
 
-	req.Header = c.headers
+	req.Header = c.headers.Clone()
+
+	var authHeaders []string
+	for _, header := range c.headers.Values("Authorization") {
+		authHeaders = append(authHeaders, header)
+	}
+
+	req.Header.Set("Authorization", strings.Join(authHeaders, " , "))
 
 	resp, err := c.client.Do(req)
 

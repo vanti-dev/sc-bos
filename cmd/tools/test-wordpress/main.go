@@ -92,12 +92,18 @@ const (
   "name":     "wordpress-test",
   "type":     "wordpress",
   "disabled": false,
-  "baseUrl": "https://vanti-plugin-test-com.stackstaging.com/wp-json/recording/v1/create",
+  "baseUrl": "https://app-my-paradise-co-uk.corestaging.co.uk/wp-json/recording/v1/create",
   "site":     "abc-test1",
-  "authentication": {
-	"type":       "Bearer",
-	"secretFile": "./.data/secrets/wordpress"
-  },
+  "authentication": [
+    {
+        "type":       "Basic",
+        "secretFile": "./.data/secrets/wordpress-basic"
+    },
+    {
+        "type":       "Bearer",
+        "secretFile": "./.data/secrets/wordpress-bearer"
+    }
+  ],
   "sources": {
 	"occupancy":    {
 	  "path": "occupancy",
