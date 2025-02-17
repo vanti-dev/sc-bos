@@ -1,15 +1,16 @@
 import * as jspb from 'google-protobuf'
 
+import * as google_protobuf_duration_pb from 'google-protobuf/google/protobuf/duration_pb'; // proto import: "google/protobuf/duration.proto"
 import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb'; // proto import: "google/protobuf/field_mask.proto"
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
 import * as types_info_pb from '@smart-core-os/sc-api-grpc-web/types/info_pb'; // proto import: "types/info.proto"
 
 
 export class Transport extends jspb.Message {
-  getCurrentLocation(): Transport.Location | undefined;
-  setCurrentLocation(value?: Transport.Location): Transport;
-  hasCurrentLocation(): boolean;
-  clearCurrentLocation(): Transport;
+  getActualPosition(): Transport.Location | undefined;
+  setActualPosition(value?: Transport.Location): Transport;
+  hasActualPosition(): boolean;
+  clearActualPosition(): Transport;
 
   getNextDestinationsList(): Array<Transport.Location>;
   setNextDestinationsList(value: Array<Transport.Location>): Transport;
@@ -60,6 +61,11 @@ export class Transport extends jspb.Message {
   clearPayloadsList(): Transport;
   addPayloads(value?: Transport.Payload, index?: number): Transport.Payload;
 
+  getEtaToNextDestination(): google_protobuf_duration_pb.Duration | undefined;
+  setEtaToNextDestination(value?: google_protobuf_duration_pb.Duration): Transport;
+  hasEtaToNextDestination(): boolean;
+  clearEtaToNextDestination(): Transport;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Transport.AsObject;
   static toObject(includeInstance: boolean, msg: Transport): Transport.AsObject;
@@ -70,7 +76,7 @@ export class Transport extends jspb.Message {
 
 export namespace Transport {
   export type AsObject = {
-    currentLocation?: Transport.Location.AsObject,
+    actualPosition?: Transport.Location.AsObject,
     nextDestinationsList: Array<Transport.Location.AsObject>,
     movingDirection: Transport.Direction,
     load?: number,
@@ -82,6 +88,7 @@ export namespace Transport {
     supportedDestinationsList: Array<Transport.Location.AsObject>,
     active: Transport.Active,
     payloadsList: Array<Transport.Payload.AsObject>,
+    etaToNextDestination?: google_protobuf_duration_pb.Duration.AsObject,
   }
 
   export class Alarm extends jspb.Message {
@@ -108,7 +115,7 @@ export namespace Transport {
     }
 
     export enum AlarmState { 
-      ALARM_UNSPECIFIED = 0,
+      ALARM_STATE_UNSPECIFIED = 0,
       UNACTIVATED = 1,
       ACTIVATED = 2,
     }
@@ -143,7 +150,7 @@ export namespace Transport {
     }
 
     export enum FaultType { 
-      FAULT_UNSPECIFIED = 0,
+      FAULT_TYPE_UNSPECIFIED = 0,
       CONTROLLER_FAULT = 1,
       DRIVE_AND_MOTOR_FAULT = 2,
       MECHANICAL_COMPONENT_FAULT = 3,
@@ -218,11 +225,8 @@ export namespace Transport {
 
 
   export class Door extends jspb.Message {
-    getId(): number;
-    setId(value: number): Door;
-
-    getDescription(): string;
-    setDescription(value: string): Door;
+    getTitle(): string;
+    setTitle(value: string): Door;
 
     getDeck(): number;
     setDeck(value: number): Door;
@@ -240,8 +244,7 @@ export namespace Transport {
 
   export namespace Door {
     export type AsObject = {
-      id: number,
-      description: string,
+      title: string,
       deck: number,
       status: Transport.Door.DoorStatus,
     }

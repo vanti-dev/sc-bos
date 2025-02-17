@@ -20,6 +20,8 @@ const grpc = {};
 grpc.web = require('grpc-web');
 
 
+var google_protobuf_duration_pb = require('google-protobuf/google/protobuf/duration_pb.js')
+
 var google_protobuf_field_mask_pb = require('google-protobuf/google/protobuf/field_mask_pb.js')
 
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js')

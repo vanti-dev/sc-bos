@@ -21,6 +21,8 @@ var global =
     (function () { return this; }).call(null) ||
     Function('return this')();
 
+var google_protobuf_duration_pb = require('google-protobuf/google/protobuf/duration_pb.js');
+goog.object.extend(proto, google_protobuf_duration_pb);
 var google_protobuf_field_mask_pb = require('google-protobuf/google/protobuf/field_mask_pb.js');
 goog.object.extend(proto, google_protobuf_field_mask_pb);
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
@@ -358,7 +360,7 @@ proto.smartcore.bos.Transport.prototype.toObject = function(opt_includeInstance)
  */
 proto.smartcore.bos.Transport.toObject = function(includeInstance, msg) {
   var f, obj = {
-currentLocation: (f = msg.getCurrentLocation()) && proto.smartcore.bos.Transport.Location.toObject(includeInstance, f),
+actualPosition: (f = msg.getActualPosition()) && proto.smartcore.bos.Transport.Location.toObject(includeInstance, f),
 nextDestinationsList: jspb.Message.toObjectList(msg.getNextDestinationsList(),
     proto.smartcore.bos.Transport.Location.toObject, includeInstance),
 movingDirection: jspb.Message.getFieldWithDefault(msg, 3, 0),
@@ -374,7 +376,8 @@ supportedDestinationsList: jspb.Message.toObjectList(msg.getSupportedDestination
     proto.smartcore.bos.Transport.Location.toObject, includeInstance),
 active: jspb.Message.getFieldWithDefault(msg, 11, 0),
 payloadsList: jspb.Message.toObjectList(msg.getPayloadsList(),
-    proto.smartcore.bos.Transport.Payload.toObject, includeInstance)
+    proto.smartcore.bos.Transport.Payload.toObject, includeInstance),
+etaToNextDestination: (f = msg.getEtaToNextDestination()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -414,7 +417,7 @@ proto.smartcore.bos.Transport.deserializeBinaryFromReader = function(msg, reader
     case 1:
       var value = new proto.smartcore.bos.Transport.Location;
       reader.readMessage(value,proto.smartcore.bos.Transport.Location.deserializeBinaryFromReader);
-      msg.setCurrentLocation(value);
+      msg.setActualPosition(value);
       break;
     case 2:
       var value = new proto.smartcore.bos.Transport.Location;
@@ -466,6 +469,11 @@ proto.smartcore.bos.Transport.deserializeBinaryFromReader = function(msg, reader
       reader.readMessage(value,proto.smartcore.bos.Transport.Payload.deserializeBinaryFromReader);
       msg.addPayloads(value);
       break;
+    case 13:
+      var value = new google_protobuf_duration_pb.Duration;
+      reader.readMessage(value,google_protobuf_duration_pb.Duration.deserializeBinaryFromReader);
+      msg.setEtaToNextDestination(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -495,7 +503,7 @@ proto.smartcore.bos.Transport.prototype.serializeBinary = function() {
  */
 proto.smartcore.bos.Transport.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getCurrentLocation();
+  f = message.getActualPosition();
   if (f != null) {
     writer.writeMessage(
       1,
@@ -584,6 +592,14 @@ proto.smartcore.bos.Transport.serializeBinaryToWriter = function(message, writer
       12,
       f,
       proto.smartcore.bos.Transport.Payload.serializeBinaryToWriter
+    );
+  }
+  f = message.getEtaToNextDestination();
+  if (f != null) {
+    writer.writeMessage(
+      13,
+      f,
+      google_protobuf_duration_pb.Duration.serializeBinaryToWriter
     );
   }
 };
@@ -776,7 +792,7 @@ proto.smartcore.bos.Transport.Alarm.serializeBinaryToWriter = function(message, 
  * @enum {number}
  */
 proto.smartcore.bos.Transport.Alarm.AlarmState = {
-  ALARM_UNSPECIFIED: 0,
+  ALARM_STATE_UNSPECIFIED: 0,
   UNACTIVATED: 1,
   ACTIVATED: 2
 };
@@ -978,7 +994,7 @@ proto.smartcore.bos.Transport.Fault.serializeBinaryToWriter = function(message, 
  * @enum {number}
  */
 proto.smartcore.bos.Transport.Fault.FaultType = {
-  FAULT_UNSPECIFIED: 0,
+  FAULT_TYPE_UNSPECIFIED: 0,
   CONTROLLER_FAULT: 1,
   DRIVE_AND_MOTOR_FAULT: 2,
   MECHANICAL_COMPONENT_FAULT: 3,
@@ -1455,10 +1471,9 @@ proto.smartcore.bos.Transport.Door.prototype.toObject = function(opt_includeInst
  */
 proto.smartcore.bos.Transport.Door.toObject = function(includeInstance, msg) {
   var f, obj = {
-id: jspb.Message.getFieldWithDefault(msg, 1, 0),
-description: jspb.Message.getFieldWithDefault(msg, 2, ""),
-deck: jspb.Message.getFieldWithDefault(msg, 3, 0),
-status: jspb.Message.getFieldWithDefault(msg, 4, 0)
+title: jspb.Message.getFieldWithDefault(msg, 1, ""),
+deck: jspb.Message.getFieldWithDefault(msg, 2, 0),
+status: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -1496,18 +1511,14 @@ proto.smartcore.bos.Transport.Door.deserializeBinaryFromReader = function(msg, r
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {number} */ (reader.readInt32());
-      msg.setId(value);
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTitle(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setDescription(value);
-      break;
-    case 3:
       var value = /** @type {number} */ (reader.readInt32());
       msg.setDeck(value);
       break;
-    case 4:
+    case 3:
       var value = /** @type {!proto.smartcore.bos.Transport.Door.DoorStatus} */ (reader.readEnum());
       msg.setStatus(value);
       break;
@@ -1540,31 +1551,24 @@ proto.smartcore.bos.Transport.Door.prototype.serializeBinary = function() {
  */
 proto.smartcore.bos.Transport.Door.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getId();
-  if (f !== 0) {
-    writer.writeInt32(
-      1,
-      f
-    );
-  }
-  f = message.getDescription();
+  f = message.getTitle();
   if (f.length > 0) {
     writer.writeString(
-      2,
+      1,
       f
     );
   }
   f = message.getDeck();
   if (f !== 0) {
     writer.writeInt32(
-      3,
+      2,
       f
     );
   }
   f = message.getStatus();
   if (f !== 0.0) {
     writer.writeEnum(
-      4,
+      3,
       f
     );
   }
@@ -1585,29 +1589,11 @@ proto.smartcore.bos.Transport.Door.DoorStatus = {
 };
 
 /**
- * optional int32 id = 1;
- * @return {number}
- */
-proto.smartcore.bos.Transport.Door.prototype.getId = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.smartcore.bos.Transport.Door} returns this
- */
-proto.smartcore.bos.Transport.Door.prototype.setId = function(value) {
-  return jspb.Message.setProto3IntField(this, 1, value);
-};
-
-
-/**
- * optional string description = 2;
+ * optional string title = 1;
  * @return {string}
  */
-proto.smartcore.bos.Transport.Door.prototype.getDescription = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+proto.smartcore.bos.Transport.Door.prototype.getTitle = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
@@ -1615,17 +1601,17 @@ proto.smartcore.bos.Transport.Door.prototype.getDescription = function() {
  * @param {string} value
  * @return {!proto.smartcore.bos.Transport.Door} returns this
  */
-proto.smartcore.bos.Transport.Door.prototype.setDescription = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
+proto.smartcore.bos.Transport.Door.prototype.setTitle = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
 /**
- * optional int32 deck = 3;
+ * optional int32 deck = 2;
  * @return {number}
  */
 proto.smartcore.bos.Transport.Door.prototype.getDeck = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
 };
 
 
@@ -1634,16 +1620,16 @@ proto.smartcore.bos.Transport.Door.prototype.getDeck = function() {
  * @return {!proto.smartcore.bos.Transport.Door} returns this
  */
 proto.smartcore.bos.Transport.Door.prototype.setDeck = function(value) {
-  return jspb.Message.setProto3IntField(this, 3, value);
+  return jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
 /**
- * optional DoorStatus status = 4;
+ * optional DoorStatus status = 3;
  * @return {!proto.smartcore.bos.Transport.Door.DoorStatus}
  */
 proto.smartcore.bos.Transport.Door.prototype.getStatus = function() {
-  return /** @type {!proto.smartcore.bos.Transport.Door.DoorStatus} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+  return /** @type {!proto.smartcore.bos.Transport.Door.DoorStatus} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
 };
 
 
@@ -1652,7 +1638,7 @@ proto.smartcore.bos.Transport.Door.prototype.getStatus = function() {
  * @return {!proto.smartcore.bos.Transport.Door} returns this
  */
 proto.smartcore.bos.Transport.Door.prototype.setStatus = function(value) {
-  return jspb.Message.setProto3EnumField(this, 4, value);
+  return jspb.Message.setProto3EnumField(this, 3, value);
 };
 
 
@@ -2173,10 +2159,10 @@ proto.smartcore.bos.Transport.Payload.prototype.clearExternalIdsMap = function()
 
 
 /**
- * optional Location current_location = 1;
+ * optional Location actual_position = 1;
  * @return {?proto.smartcore.bos.Transport.Location}
  */
-proto.smartcore.bos.Transport.prototype.getCurrentLocation = function() {
+proto.smartcore.bos.Transport.prototype.getActualPosition = function() {
   return /** @type{?proto.smartcore.bos.Transport.Location} */ (
     jspb.Message.getWrapperField(this, proto.smartcore.bos.Transport.Location, 1));
 };
@@ -2186,7 +2172,7 @@ proto.smartcore.bos.Transport.prototype.getCurrentLocation = function() {
  * @param {?proto.smartcore.bos.Transport.Location|undefined} value
  * @return {!proto.smartcore.bos.Transport} returns this
 */
-proto.smartcore.bos.Transport.prototype.setCurrentLocation = function(value) {
+proto.smartcore.bos.Transport.prototype.setActualPosition = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
@@ -2195,8 +2181,8 @@ proto.smartcore.bos.Transport.prototype.setCurrentLocation = function(value) {
  * Clears the message field making it undefined.
  * @return {!proto.smartcore.bos.Transport} returns this
  */
-proto.smartcore.bos.Transport.prototype.clearCurrentLocation = function() {
-  return this.setCurrentLocation(undefined);
+proto.smartcore.bos.Transport.prototype.clearActualPosition = function() {
+  return this.setActualPosition(undefined);
 };
 
 
@@ -2204,7 +2190,7 @@ proto.smartcore.bos.Transport.prototype.clearCurrentLocation = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.smartcore.bos.Transport.prototype.hasCurrentLocation = function() {
+proto.smartcore.bos.Transport.prototype.hasActualPosition = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -2559,6 +2545,43 @@ proto.smartcore.bos.Transport.prototype.addPayloads = function(opt_value, opt_in
  */
 proto.smartcore.bos.Transport.prototype.clearPayloadsList = function() {
   return this.setPayloadsList([]);
+};
+
+
+/**
+ * optional google.protobuf.Duration eta_to_next_destination = 13;
+ * @return {?proto.google.protobuf.Duration}
+ */
+proto.smartcore.bos.Transport.prototype.getEtaToNextDestination = function() {
+  return /** @type{?proto.google.protobuf.Duration} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_duration_pb.Duration, 13));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Duration|undefined} value
+ * @return {!proto.smartcore.bos.Transport} returns this
+*/
+proto.smartcore.bos.Transport.prototype.setEtaToNextDestination = function(value) {
+  return jspb.Message.setWrapperField(this, 13, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Transport} returns this
+ */
+proto.smartcore.bos.Transport.prototype.clearEtaToNextDestination = function() {
+  return this.setEtaToNextDestination(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Transport.prototype.hasEtaToNextDestination = function() {
+  return jspb.Message.getField(this, 13) != null;
 };
 
 

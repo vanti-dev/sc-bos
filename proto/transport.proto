@@ -4,6 +4,7 @@ package smartcore.bos;
 
 option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 
+import "google/protobuf/duration.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "types/info.proto";
@@ -83,7 +84,7 @@ message Transport {
 
     message Alarm {
       enum AlarmState {
-        ALARM_UNSPECIFIED = 0;
+        ALARM_STATE_UNSPECIFIED = 0;
         UNACTIVATED = 1;
         ACTIVATED = 2;
       }
@@ -101,7 +102,7 @@ message Transport {
 
     message Fault {
       enum FaultType {
-        FAULT_UNSPECIFIED = 0;
+        FAULT_TYPE_UNSPECIFIED = 0;
         CONTROLLER_FAULT = 1;
         DRIVE_AND_MOTOR_FAULT = 2;
         MECHANICAL_COMPONENT_FAULT = 3;
@@ -171,14 +172,12 @@ message Transport {
         LIMITED_OPENED = 6;
       }
 
-      // The id of the door, must be unique within the transport. This is used as the id of the door in door_status.
-      int32 id = 1;
-      // Description of the door; front, rear, etc.
-      string description = 2;
+      // Title/display name of the door; front, rear, etc.
+      string title = 1;
       // If the transport has multiple decks, this is the deck the door is on. 0 is the lowest deck.
-      int32 deck = 3;
+      int32 deck = 2;
       // The status of the door.
-      DoorStatus status = 4;
+      DoorStatus status = 3;
     }
 
     // Location describes a specific location within a site that this transport can stop at.
@@ -193,8 +192,9 @@ message Transport {
       string floor = 4;
     }
 
-    // The current location of the transport. e.g. for lifts this will be the floor.
-    Location current_location = 1;
+    // The actual position the transport. As the transport is moving towards its next destination,
+    // this value may be updated with intermediate locations.
+    Location actual_position = 1;
     // Optional. The next destination(s) the transport will stop at.
     repeated Location next_destinations = 2;
     // Optional. The primary direction the transport is moving. An escalator technically moves up/down and forwards,
@@ -247,6 +247,8 @@ message Transport {
 
     // Optional. Payloads describes the entities that are currently being transported.
     repeated Payload payloads = 12;
+    // Optional. The estimated time the transport will take to arrive at it's next destination.
+    google.protobuf.Duration eta_to_next_destination = 13;
 }
 
 message TransportSupport {
