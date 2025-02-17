@@ -1254,7 +1254,7 @@ type Transport_Location struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The id of the location. This should be unique within the site.
+	// The id of the location. This should be unique within the context of the transport.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// The title of the location. e.g. 'Lobby', 'Floor 1', 'Car Park'.
 	Title string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`

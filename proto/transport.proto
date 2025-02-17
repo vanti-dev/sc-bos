@@ -182,7 +182,7 @@ message Transport {
 
     // Location describes a specific location within a site that this transport can stop at.
     message Location {
-      // The id of the location. This should be unique within the site.
+      // The id of the location. This should be unique within the context of the transport.
       string id = 1;
       // The title of the location. e.g. 'Lobby', 'Floor 1', 'Car Park'.
       string title = 2;
