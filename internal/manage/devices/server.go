@@ -37,6 +37,7 @@ type Server struct {
 	downloadKey          func() ([]byte, error)
 	downloadExpiry       time.Duration // defaults to 1 hour
 	downloadExpiryLeeway time.Duration // defaults to 1 minute
+	downloadPageTimeout  time.Duration // defaults to 10 seconds, applies to get and history cursor calls
 }
 
 func NewServer(n *node.Node, opts ...Option) *Server {
@@ -48,6 +49,7 @@ func NewServer(n *node.Node, opts ...Option) *Server {
 		downloadExpiry:       time.Hour,
 		downloadExpiryLeeway: time.Minute,
 		downloadKey:          newHMACKeyGen(64), // todo: replace with something that works between nodes
+		downloadPageTimeout:  10 * time.Second,
 	}
 	for _, opt := range opts {
 		opt(s)
