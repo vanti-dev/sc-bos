@@ -1,65 +1,35 @@
 <template>
-  <div class="glance-widget mt-2" @click="emits('adminClick')">
+  <div class="glance-widget mt-2" @pointerup="emits('adminClick')">
     <div class="timedate">
       <h1 class="time">{{ timeStr }}</h1>
       <span class="text-h5">{{ dateStr }}</span>
-    </div>
-    <div class="weather" v-if="showWeather">
-      <span class="text-body-large">{{ outdoorTemperature }}&deg;</span>
-      <v-icon end>mdi-weather-partly-cloudy</v-icon>
     </div>
   </div>
 </template>
 
 <script setup>
-import {onMounted, onUnmounted, ref} from 'vue';
+import {SECOND, useNow} from '@/components/now';
+import {computed, defineEmits} from 'vue';
 
-const timeStr = ref('');
-const dateStr = ref('');
-const outdoorTemperature = ref('18');
+const {now} = useNow(SECOND);
+const timeStr = computed(() => now.value.toLocaleTimeString('en-GB', {
+  hour: 'numeric',
+  minute: 'numeric'
+}));
+const dateStr = computed(() => now.value.toLocaleDateString('en-GB', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+}));
 
 const emits = defineEmits(['adminClick']);
-
-defineProps({
-  showWeather: Boolean
-});
-
-/**
- */
-function updateDateTime() {
-  const now = new Date();
-  timeStr.value = new Intl.DateTimeFormat('en-GB', {
-    hour: 'numeric',
-    minute: 'numeric'
-  }).format(now);
-  dateStr.value = new Intl.DateTimeFormat('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  }).format(now);
-}
-
-let timeInterval;
-onMounted(() => {
-  updateDateTime();
-  timeInterval = setInterval(updateDateTime, 1000);
-});
-onUnmounted(() => {
-  clearInterval(timeInterval);
-});
-
 </script>
 
 <style scoped>
 .glance-widget {
-  position: relative;
-}
-
-.timedate {
-  position: absolute;
-  left: 0;
-  top: 0;
+  cursor: pointer;
+  user-select: none;
 }
 
 .time {
@@ -70,15 +40,5 @@ onUnmounted(() => {
   -webkit-font-smoothing: subpixel-antialiased;
   letter-spacing: 0.02em;
   font-weight: 900;
-}
-
-.weather {
-  position: absolute;
-  right: 0;
-  top: -10px;
-}
-
-.weather .v-icon {
-  font-size: 100px;
 }
 </style>
