@@ -1,28 +1,25 @@
 <template>
-  <div class="pa-8 d-flex flex-column fill-height">
+  <div class="home pa-8 d-flex flex-column fill-height">
     <glance-widget @admin-click="handle10Click"/>
     <v-spacer/>
-    <light-card :name="zoneId"/>
-    <air-temperature-card :name="zoneId" class="mt-6"/>
-    <img :src="uiConfigStore.theme.logoUrl" class="logo pt-14 pr-3 align-self-end" alt="Smart Core logo">
+    <component v-for="widget in widgets" :key="widget.key" :is="widget.is" v-bind="widget.props"/>
+    <img :src="uiConfigStore.theme.logoUrl" class="logo pt-3 pr-3 align-self-end" alt="Smart Core logo">
     <NotificationToast :show-alert="alertMessage.show" :message="alertMessage.message"/>
   </div>
 </template>
 
 <script setup>
 import NotificationToast from '@/components/NotificationToast.vue';
-import AirTemperatureCard from '@/routes/components/AirTemperatureCard.vue';
 import GlanceWidget from '@/routes/components/GlanceWidget.vue';
-import LightCard from '@/routes/components/LightCard.vue';
 import {useConfigStore} from '@/stores/config';
 import {useUiConfigStore} from '@/stores/ui-config.js';
 import {computed, ref} from 'vue';
+import {useHomeConfig} from './home';
 
 const configStore = useConfigStore();
-const zoneId = computed(() => configStore.zoneId);
 
 const uiConfigStore = useUiConfigStore();
-
+const {widgets} = useHomeConfig();
 
 // ----------------- 10 click safety feature ----------------- //
 const clickCount = ref(0); // Define a ref to keep track of the click count
@@ -58,6 +55,10 @@ const handle10Click = () => {
 <style>
 .logo {
   max-width: 50%;
-  max-height: 115px;
+  max-height: 75px;
+}
+
+.home {
+  gap: 1.5em;
 }
 </style>
