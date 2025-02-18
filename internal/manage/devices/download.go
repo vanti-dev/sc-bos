@@ -166,7 +166,9 @@ func (s *Server) writeLiveData(ctx context.Context, out writer, devices []*trait
 			if !ok {
 				continue
 			}
-			values, err := info.get(ctx, d.Name)
+			pageCtx, cleanup := context.WithTimeout(ctx, s.downloadPageTimeout)
+			values, err := info.get(pageCtx, d.Name)
+			cleanup()
 			if err != nil {
 				row[info.headers[0]] = fmt.Sprintf("ERR: %v", err)
 				continue
@@ -211,22 +213,24 @@ func (s *Server) writeHistoricalData(ctx context.Context, out writer, devices []
 
 	switch order {
 	case "source":
-		writeHistoryDataBySource(ctx, out, sources)
+		s.writeHistoryDataBySource(ctx, out, sources)
 	case "device":
-		writeHistoryDataByDevice(ctx, out, sources)
+		s.writeHistoryDataByDevice(ctx, out, sources)
 	case "time":
-		writeHistoryDataByTime(ctx, out, sources)
+		s.writeHistoryDataByTime(ctx, out, sources)
 	}
 }
 
 // writeHistoryDataBySource writes history data ordered by source, then time.
 // This means each devices trait records are written together.
-func writeHistoryDataBySource(ctx context.Context, out writer, sources []*source) {
+func (s *Server) writeHistoryDataBySource(ctx context.Context, out writer, sources []*source) {
 	for _, source := range sources {
 		mdVals := make(map[string]string)
 		captureMDValues(source.device, mdVals)
 		for {
-			head, err := source.cursor.Head(ctx)
+			pageCtx, cleanup := context.WithTimeout(ctx, s.downloadPageTimeout)
+			head, err := source.cursor.Head(pageCtx)
+			cleanup()
 			if err != nil {
 				break
 			}
@@ -240,20 +244,20 @@ func writeHistoryDataBySource(ctx context.Context, out writer, sources []*source
 }
 
 // writeHistoryDataByDevice writes history data ordered by device, then time.
-func writeHistoryDataByDevice(ctx context.Context, out writer, sources []*source) {
+func (s *Server) writeHistoryDataByDevice(ctx context.Context, out writer, sources []*source) {
 	sourcesByDevice := make(map[string][]*source)
 	for _, source := range sources {
 		sourcesByDevice[source.device.Name] = append(sourcesByDevice[source.device.Name], source)
 	}
 
 	for _, sources := range sourcesByDevice {
-		writeHistoryDataByTime(ctx, out, sources)
+		s.writeHistoryDataByTime(ctx, out, sources)
 	}
 }
 
 // writeHistoryDataByTime writes history data ordered by time.
 // This means device trait records are interleaved in time order.
-func writeHistoryDataByTime(ctx context.Context, out writer, sources []*source) {
+func (s *Server) writeHistoryDataByTime(ctx context.Context, out writer, sources []*source) {
 	// cache of metadata values we can reuse during the main loop
 	mds := make(map[string]map[string]string, len(sources))
 	for _, source := range sources {
@@ -272,7 +276,9 @@ func writeHistoryDataByTime(ctx context.Context, out writer, sources []*source) 
 			anySkipped   bool
 		)
 		for _, source := range sources {
-			head, err := source.cursor.Head(ctx)
+			pageCtx, cleanup := context.WithTimeout(ctx, s.downloadPageTimeout)
+			head, err := source.cursor.Head(pageCtx)
+			cleanup()
 			if err != nil {
 				anySkipped = true
 				source.skip = true
