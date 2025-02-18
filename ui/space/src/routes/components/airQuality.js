@@ -45,13 +45,19 @@ export function usePullAirQuality(query, paused = false) {
   return toRefs(resource);
 }
 
+export const status = {
+  ERROR: 'error',
+  WARNING: 'warning',
+  SUCCESS: 'success'
+}
+
 /**
  * @typedef {Object} AirQualityMetricDesc
  * @property {string} label
  * @property {string} unit
  * @property {number?} min
  * @property {number?} max
- * @property {Array<{value: number, status: string}>} levels
+ * @property {Array<{value: number, status: valueOf<status>}>} levels
  */
 /**
  * @type {Record<string, AirQualityMetricDesc>}
@@ -63,9 +69,9 @@ export const metrics = {
     min: 0,
     max: 100,
     levels: [
-      {value: 0, status: 'error'},
-      {value: 10, status: 'warning'},
-      {value: 50, status: 'success'}
+      {value: 0, status: status.ERROR},
+      {value: 10, status: status.WARNING},
+      {value: 50, status: status.SUCCESS}
     ]
   },
   'carbonDioxideLevel': {
@@ -74,9 +80,9 @@ export const metrics = {
     min: 0,
     max: 5000,
     levels: [
-      {value: 0, status: 'success'},
-      {value: 1000, status: 'warning'},
-      {value: 2000, status: 'error'}
+      {value: 0, status: status.SUCCESS},
+      {value: 1000, status: status.WARNING},
+      {value: 2000, status: status.ERROR}
     ]
   },
   'volatileOrganicCompounds': {
@@ -85,9 +91,9 @@ export const metrics = {
     min: 0,
     max: 1,
     levels: [
-      {value: 0, status: 'success'},
-      {value: 0.3, status: 'warning'},
-      {value: 0.5, status: 'error'}
+      {value: 0, status: status.SUCCESS},
+      {value: 0.3, status: status.WARNING},
+      {value: 0.5, status: status.ERROR}
     ]
   },
   'airPressure': {
@@ -96,8 +102,8 @@ export const metrics = {
     min: 0,
     max: 1100,
     levels: [
-      {value: 0, status: 'error'},
-      {value: 1000, status: 'success'}
+      {value: 0, status: status.ERROR},
+      {value: 1000, status: status.SUCCESS}
     ]
   },
   'infectionRisk': {
@@ -106,9 +112,9 @@ export const metrics = {
     min: 0,
     max: 100,
     levels: [
-      {value: 0, status: 'success'},
-      {value: 25, status: 'warning'},
-      {value: 50, status: 'error'}
+      {value: 0, status: status.SUCCESS},
+      {value: 25, status: status.WARNING},
+      {value: 50, status: status.ERROR}
     ]
   },
   'particulateMatter1': {
@@ -117,9 +123,9 @@ export const metrics = {
     min: 0,
     max: 50,
     levels: [
-      {value: 0, status: 'success'},
-      {value: 10, status: 'warning'},
-      {value: 20, status: 'error'}
+      {value: 0, status: status.SUCCESS},
+      {value: 10, status: status.WARNING},
+      {value: 20, status: status.ERROR}
     ]
   },
   'particulateMatter25': {
@@ -128,9 +134,9 @@ export const metrics = {
     min: 0,
     max: 50,
     levels: [
-      {value: 0, status: 'success'},
-      {value: 10, status: 'warning'},
-      {value: 20, status: 'error'}
+      {value: 0, status: status.SUCCESS},
+      {value: 10, status: status.WARNING},
+      {value: 20, status: status.ERROR}
     ]
   },
   'particulateMatter10': {
@@ -139,9 +145,9 @@ export const metrics = {
     min: 0,
     max: 50,
     levels: [
-      {value: 0, status: 'success'},
-      {value: 10, status: 'warning'},
-      {value: 20, status: 'error'}
+      {value: 0, status: status.SUCCESS},
+      {value: 10, status: status.WARNING},
+      {value: 20, status: status.ERROR}
     ]
   },
   'airChangePerHour': {
@@ -150,16 +156,16 @@ export const metrics = {
     min: 0,
     max: 10,
     levels: [
-      {value: 0, status: 'error'},
-      {value: 5, status: 'success'}
+      {value: 0, status: status.ERROR},
+      {value: 5, status: status.SUCCESS}
     ]
   },
   'comfort': {
     label: 'Comfort',
     unit: '',
     levels: [
-      {value: AirQuality.Comfort.COMFORTABLE, status: 'success'},
-      {value: AirQuality.Comfort.UNCOMFORTABLE, status: 'error'}
+      {value: AirQuality.Comfort.COMFORTABLE, status: status.SUCCESS},
+      {value: AirQuality.Comfort.UNCOMFORTABLE, status: status.ERROR}
     ]
   }
 }
@@ -167,14 +173,14 @@ export const metrics = {
 /**
  * @typedef {Object} AirQualityMetric
  * @property {number} value
- * @property {string} status
+ * @property {valueOf<status>} status
  */
 
 /**
  * @typedef {Object} AirQualityScore
  * @property {number} value
  * @property {string} label
- * @property {string} status
+ * @property {valueOf<status>} status
  */
 
 /**
@@ -211,9 +217,9 @@ export function useAirQuality(value) {
     const presentScore = presentMetrics.value['score'];
     const statusToLabel = (status) => {
       switch (status) {
-        case 'error': return 'Poor';
-        case 'warning': return 'Fair';
-        case 'success': return 'Good';
+        case status.ERROR: return 'Poor';
+        case status.WARNING: return 'Fair';
+        case status.SUCCESS: return 'Good';
         default: return '';
       }
     }
