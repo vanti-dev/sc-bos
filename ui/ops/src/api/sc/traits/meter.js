@@ -108,7 +108,7 @@ function describeMeterReadingRequestFromObject(obj) {
 function listMeterReadingHistoryRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new ListMeterReadingHistoryRequest();
-  setProperties(dst, obj, 'name', 'pageToken', 'pageSize');
+  setProperties(dst, obj, 'name', 'pageToken', 'pageSize', 'orderBy');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setPeriod(periodFromObject(obj.period));
   return dst;

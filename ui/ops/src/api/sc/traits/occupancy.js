@@ -76,7 +76,7 @@ function pullOccupancyRequestFromObject(obj) {
 function listOccupancySensorHistoryRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new ListOccupancyHistoryRequest();
-  setProperties(dst, obj, 'name', 'pageToken', 'pageSize');
+  setProperties(dst, obj, 'name', 'pageToken', 'pageSize', 'orderBy');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setPeriod(periodFromObject(obj.period));
   return dst;
