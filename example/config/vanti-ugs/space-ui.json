@@ -5,7 +5,7 @@
   "config": {
     "home": "/home",
     "auth": {
-      "disabled": false,
+      "disabled": true,
       "keycloak": {
         "realm": "Smart_Core",
         "url": "http://localhost:8888/",
@@ -21,6 +21,15 @@
           "altText": "Smart Core logo - representing nodes and connections",
           "src": ""
         }
+      }
+    },
+    "pages": {
+      "home": {
+        "widgets": [
+          {"name": "air-quality"},
+          {"name": "lighting"},
+          {"name": "temperature"}
+        ]
       }
     }
   }
