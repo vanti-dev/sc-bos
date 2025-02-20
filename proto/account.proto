@@ -15,7 +15,9 @@ service AccountApiService {
   rpc UpdateAccountPassword(UpdateAccountPasswordRequest) returns (UpdateAccountPasswordResponse);
   rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse);
 
-  rpc CreateServiceCredential(CreateServiceCredentialRequest) returns (CreateServiceCredentialResponse);
+  rpc GetServiceCredential(GetServiceCredentialRequest) returns (ServiceCredential);
+  rpc ListServiceCredential(ListServiceCredentialsRequest) returns (ListServiceCredentialsResponse);
+  rpc CreateServiceCredential(CreateServiceCredentialRequest) returns (ServiceCredential);
   rpc DeleteServiceCredential(DeleteServiceCredentialRequest) returns (DeleteServiceCredentialResponse);
 
   rpc GetRole(GetRoleRequest) returns (Role);
@@ -76,6 +78,8 @@ message UpdateAccountRequest {
   // The updated account data.
   // The account to update is identified by account.id, which must be present.
   Account account = 2;
+
+  google.protobuf.FieldMask update_mask = 3;
 }
 
 message UpdateAccountPasswordRequest {
@@ -107,16 +111,33 @@ message DeleteAccountRequest {
 
 message DeleteAccountResponse {}
 
+message GetServiceCredentialRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the service credential to get.
+  string id = 2;
+}
+
+message ListServiceCredentialsRequest {
+  // The name of the node to list service credentials for.
+  string name = 1;
+
+  // The ID of the Account to list service credentials for.
+  string account_id = 2;
+}
+
+message ListServiceCredentialsResponse {
+  repeated ServiceCredential service_credentials = 1;
+}
+
 message CreateServiceCredentialRequest {
   // The name of the node where the account is located.
   // Optional - if absent, the node you are connected to is assumed.
   string name = 1;
 
   ServiceCredential service_credential = 2;
-}
-
-message CreateServiceCredentialResponse {
-  ServiceCredential service_credential = 1;
 }
 
 message DeleteServiceCredentialRequest {
@@ -175,6 +196,8 @@ message UpdateRoleRequest {
   // The updated role data.
   // The role to update is identified by role.id, which must be present.
   Role role = 2;
+
+  google.protobuf.FieldMask update_mask = 3;
 }
 
 message DeleteRoleRequest {

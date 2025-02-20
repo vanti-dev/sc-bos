@@ -7,4 +7,3 @@ sql:
       go:
         package: "accountdb"
         out: "."
-        emit_prepared_queries: true

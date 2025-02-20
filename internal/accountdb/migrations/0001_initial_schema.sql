@@ -12,7 +12,7 @@ CREATE UNIQUE INDEX accounts_username ON accounts (username);
 
 CREATE TABLE service_credentials (
     id                  INTEGER PRIMARY KEY,
-    account_id          INTEGER,
+    account_id          INTEGER NOT NULL,
     title               TEXT NOT NULL,
     secret_hash         BLOB NOT NULL,
     create_time         DATETIME NOT NULL,
@@ -47,6 +47,7 @@ CREATE TABLE role_permissions (
 CREATE UNIQUE INDEX role_permissions_unique ON role_permissions (role_id, permission);
 
 CREATE TABLE role_assignments (
+    id              INTEGER PRIMARY KEY,
     account_id      INTEGER NOT NULL,
     role_id         INTEGER NOT NULL,
     scope_kind      TEXT,

@@ -28,6 +28,7 @@ type Role struct {
 }
 
 type RoleAssignment struct {
+	ID            int64
 	AccountID     int64
 	RoleID        int64
 	ScopeKind     sql.NullString
@@ -41,7 +42,7 @@ type RolePermission struct {
 
 type ServiceCredential struct {
 	ID         int64
-	AccountID  sql.NullInt64
+	AccountID  int64
 	Title      string
 	SecretHash []byte
 	CreateTime time.Time

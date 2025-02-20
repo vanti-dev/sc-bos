@@ -131,7 +131,25 @@ func (r *AccountApiServiceRouter) DeleteAccount(ctx context.Context, request *De
 	return child.DeleteAccount(ctx, request)
 }
 
-func (r *AccountApiServiceRouter) CreateServiceCredential(ctx context.Context, request *CreateServiceCredentialRequest) (*CreateServiceCredentialResponse, error) {
+func (r *AccountApiServiceRouter) GetServiceCredential(ctx context.Context, request *GetServiceCredentialRequest) (*ServiceCredential, error) {
+	child, err := r.GetAccountApiServiceClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.GetServiceCredential(ctx, request)
+}
+
+func (r *AccountApiServiceRouter) ListServiceCredential(ctx context.Context, request *ListServiceCredentialsRequest) (*ListServiceCredentialsResponse, error) {
+	child, err := r.GetAccountApiServiceClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.ListServiceCredential(ctx, request)
+}
+
+func (r *AccountApiServiceRouter) CreateServiceCredential(ctx context.Context, request *CreateServiceCredentialRequest) (*ServiceCredential, error) {
 	child, err := r.GetAccountApiServiceClient(request.Name)
 	if err != nil {
 		return nil, err
