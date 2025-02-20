@@ -767,6 +767,21 @@
           "appearance": {"title": "Security Events"}
         }
       ]
+    },
+    {
+      "name": "van/uk/brum/ugs/eg-bc-01/driver/building-waste",
+      "type": "mock",
+      "devices": [
+        {
+          "name": "van/uk/brum/ugs/devices/waste",
+          "traits": [
+            {
+              "name" : "smartcore.traits.Waste"
+            }
+          ],
+          "appearance": {"title": "Waste"}
+        }
+      ]
     }
   ],
   "zones": [

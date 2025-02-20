@@ -24,6 +24,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
 	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
+	"github.com/smart-core-os/sc-golang/pkg/trait/waste"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
@@ -246,6 +247,9 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		return nil, nil
 	case trait.Vending:
 		return []wrap.ServiceUnwrapper{vending.WrapApi(vending.NewModelServer(vending.NewModel()))}, nil
+	case trait.Waste:
+		model := waste.NewModel()
+		return []wrap.ServiceUnwrapper{waste.WrapApi(waste.NewModelServer(model))}, auto.WasteRecordsAuto(model)
 
 	case accesspb.TraitName:
 		model := accesspb.NewModel()
