@@ -61,7 +61,7 @@ func (pr pageReader[R]) listRecords(ctx context.Context, store history.Store, pe
 	}
 
 	if tokenPb.RecordId != "" {
-		slice = pager(slice, history.Record{ID: tokenPb.RecordId})
+		slice = pager(slice, from, to, history.Record{ID: tokenPb.RecordId})
 	}
 
 	dst := make([]history.Record, pageSize+1) // +1 to know if there's a next page or not
@@ -134,7 +134,7 @@ func marshalPageToken(pb *PageToken) (string, error) {
 // sliceNextFunc returns the record that will be used as the next page token, closely related to slicePagerFunc.
 type (
 	sliceReadFunc  = func(slice history.Slice, ctx context.Context, dst []history.Record) (int, error)
-	slicePagerFunc = func(slice history.Slice, token history.Record) history.Slice
+	slicePagerFunc = func(slice history.Slice, from, to, token history.Record) history.Slice
 	sliceNextFunc  = func(all []history.Record) history.Record
 )
 
@@ -152,12 +152,12 @@ func parseOrderBy(orderBy string) (sliceReadFunc, slicePagerFunc, sliceNextFunc,
 	}
 }
 
-func ascPager(slice history.Slice, token history.Record) history.Slice {
-	return slice.Slice(token, history.Record{})
+func ascPager(slice history.Slice, _, to, token history.Record) history.Slice {
+	return slice.Slice(token, to)
 }
 
-func descPager(slice history.Slice, token history.Record) history.Slice {
-	return slice.Slice(history.Record{}, token)
+func descPager(slice history.Slice, from, _, token history.Record) history.Slice {
+	return slice.Slice(from, token)
 }
 
 func ascNext(all []history.Record) history.Record {
