@@ -4,7 +4,6 @@ package history
 
 import (
 	"context"
-	"strings"
 	"time"
 )
 
@@ -19,7 +18,7 @@ type Store interface {
 
 // Slice describes a read-only ordered segment of a Store.
 type Slice interface {
-	// Slice returns a slice from the records in this slice where the records are also >= from and < to.
+	// Slice creates a new slice including records >= from and < to.
 	// If from is zero then it is treated as the first record available,
 	// if to is zero then it is the record immediately after the last record,
 	// just like with go slices.
@@ -47,56 +46,4 @@ type Record struct {
 // IsZero returns whether r is equivalent to Record{}, the zero record.
 func (r Record) IsZero() bool {
 	return r.ID == "" && r.CreateTime.IsZero() && len(r.Payload) == 0
-}
-
-// Compare compares this record r with b, returning -1 if r is before b, 1 if r is after b, and 0 if they are equal.
-// A zero CreateTime is considered before any non-zero CreateTime, an empty ID is considered before any non-empty ID.
-func (r Record) Compare(b Record) int {
-	// time.Time{} is before any other time.Time
-	i := r.CreateTime.Compare(b.CreateTime)
-	if i != 0 {
-		return i
-	}
-	// "" already compares before other strings
-	return strings.Compare(r.ID, b.ID)
-}
-
-// CompareZeroAfter compares this record r with b, returning -1 if r is before b, 1 if r is after b, and 0 if they are equal.
-// A zero CreateTime is considered after any non-zero CreateTime, an empty ID is considered after any non-empty ID.
-func (r Record) CompareZeroAfter(b Record) int {
-	if b.CreateTime.IsZero() && !r.CreateTime.IsZero() {
-		return -1
-	}
-	if r.CreateTime.IsZero() && !b.CreateTime.IsZero() {
-		return 1
-	}
-	i := r.CreateTime.Compare(b.CreateTime)
-	if i != 0 {
-		return i
-	}
-
-	if b.ID == "" && r.ID != "" {
-		return -1
-	}
-	if r.ID == "" && b.ID != "" {
-		return 1
-	}
-	return strings.Compare(r.ID, b.ID)
-}
-
-// IntersectRecords returns the smallest [from, to) range that is common to both input ranges.
-// If there is no such range, then from will compare after to.
-// If the range is exactly one record, then from will be equal to to.
-func IntersectRecords(from1, to1, from2, to2 Record) (from, to Record) {
-	if from1.Compare(from2) > 0 {
-		from = from1
-	} else {
-		from = from2
-	}
-	if to1.CompareZeroAfter(to2) < 0 {
-		to = to1
-	} else {
-		to = to2
-	}
-	return from, to
 }

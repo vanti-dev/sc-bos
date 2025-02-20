@@ -132,12 +132,12 @@ type slice struct {
 }
 
 func (s slice) Slice(from, to history.Record) history.Slice {
-	s2 := slice{
+	return slice{
 		db:     s.db,
 		bucket: s.bucket,
+		from:   from,
+		to:     to,
 	}
-	s2.from, s2.to = history.IntersectRecords(s.from, s.to, from, to)
-	return s2
 }
 
 func (s slice) getQuery() *bolthold.Query {
