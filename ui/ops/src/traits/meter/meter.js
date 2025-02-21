@@ -1,7 +1,9 @@
+import {timestampToDate} from '@/api/convpb.js';
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
-import {describeMeterReading, pullMeterReading} from '@/api/sc/traits/meter';
+import {describeMeterReading, listMeterReadingHistory, pullMeterReading} from '@/api/sc/traits/meter';
 import {toQueryObject, watchResource} from '@/util/traits.js';
-import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
+import {isNullOrUndef} from '@/util/types.js';
+import {computed, onScopeDispose, reactive, ref, toRefs, toValue, watch} from 'vue';
 
 /**
  * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/meter_pb').MeterReading} MeterReading
@@ -91,7 +93,10 @@ export function useMeterReading(value, support = null) {
     return _v.value?.usage;
   });
   const usageStr = computed(() => {
-    return usage.value?.toFixed(2) ?? '-';
+    const u = /** @type {null | undefined | number} */ usage.value
+    if (isNullOrUndef(u)) return '-';
+    if (u < 100) return u.toPrecision(2);
+    return u.toLocaleString(undefined, {maximumFractionDigits: 0});
   });
   const usageAndUnit = computed(() => {
     let val = usageStr.value;
@@ -116,4 +121,113 @@ export function useMeterReading(value, support = null) {
     usageAndUnit,
     table
   };
+}
+
+/**
+ * Returns a ref containing the estimated meter reading at time t.
+ * Name must implement MeterHistory trait aspect.
+ * Results can be very inaccurate if the history records for the meter are sparse around time t.
+ *
+ * @param {import('vue').MaybeRefOrGetter<string>} name
+ * @param {import('vue').MaybeRefOrGetter<Date>} t
+ * @return {import('vue').ComputedRef<null | MeterReading.AsObject>}
+ */
+export function useMeterReadingAt(name, t) {
+  const usageAtT = ref(/** @type {null|number} */ null);
+  const readingAtT = computed(() => {
+    if (usageAtT.value === null) return null;
+    return /** @type {MeterReading.AsObject} */ {usage: usageAtT.value};
+  });
+
+  const fetching = ref(/** @type {null | {t: Date, cancel: () => void}} */ null);
+  watch([() => toValue(name), () => toValue(t)], async ([name, t]) => {
+    const cancelled = () => {
+      if (fetching.value === null) return true;
+      return fetching.value.t.getTime() !== t.getTime();
+    };
+    if (fetching.value !== null) {
+      if (fetching.value.t.getTime() === t.getTime()) {
+        return; // already working on it
+      }
+      fetching.value.cancel();
+    }
+
+    // if we don't have all the info, don't do anything
+    if (isNullOrUndef(name) || isNullOrUndef(t)) {
+      fetching.value = null;
+      return;
+    }
+
+    // note: currently no way to cancel unary RPCs,
+    // see: https://github.com/grpc/grpc-web/issues/946
+    fetching.value = {t, cancel: () => {}};
+    try {
+      const [before, after] = await Promise.all([
+        getReadingBefore(name, t),
+        getReadingOnOrAfter(name, t)
+      ]);
+      if (cancelled()) return;
+      usageAtT.value = interpolateUsage(before, after, t);
+    } finally {
+      if (!cancelled()) {
+        fetching.value = null;
+      }
+    }
+  }, {immediate: true});
+
+  return readingAtT;
+}
+
+/**
+ * Returns the newest meter reading record before t, if there is one.
+ *
+ * @param {string} name
+ * @param {Date} t
+ * @return {Promise<MeterReadingRecord.AsObject | undefined>}
+ */
+async function getReadingBefore(name, t) {
+  const res = await listMeterReadingHistory({
+    name,
+    pageSize: 1,
+    orderBy: 'recordTime desc',
+    period: {endTime: t}
+  });
+  return res.meterReadingRecordsList?.[0];
+};
+
+/**
+ * Returns the oldest meter reading record at or after t.
+ *
+ * @param {string} name
+ * @param {Date} t
+ * @return {Promise<MeterReadingRecord.AsObject | undefined>}
+ */
+async function getReadingOnOrAfter(name, t) {
+  const res = await listMeterReadingHistory({name, pageSize: 1, period: {startTime: t}});
+  return res.meterReadingRecordsList?.[0];
+}
+
+
+/**
+ * Returns the estimated meter usage at `at` between the two known readings.
+ *
+ * @param {MeterReadingRecord.AsObject | undefined} a
+ * @param {MeterReadingRecord.AsObject | undefined} b
+ * @param {Date} at
+ * @return {number | null}
+ */
+function interpolateUsage(a, b, at) {
+  if (a && b) {
+    // meters only decrease if they are reset, if they are reset use the later reading
+    if (a.meterReading.usage > b.meterReading.usage) return b.meterReading.usage;
+    const dt = (at.getTime() - timestampToDate(a.recordTime)) /
+        (timestampToDate(b.recordTime) - timestampToDate(a.recordTime));
+    return (dt * (b.meterReading.usage - a.meterReading.usage)) + a.meterReading.usage;
+  } else if (a) {
+    return a.meterReading.usage;
+  } else if (b) {
+    return b.meterReading.usage
+  } else {
+    return null;
+  }
 }
