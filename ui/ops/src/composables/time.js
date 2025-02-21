@@ -1,4 +1,18 @@
-import {computed, onMounted, onUnmounted, ref, toValue} from 'vue';
+import {
+  addDays,
+  addHours,
+  addMinutes,
+  addMonths,
+  addWeeks,
+  addYears,
+  startOfDay,
+  startOfHour,
+  startOfMinute,
+  startOfMonth,
+  startOfWeek,
+  startOfYear
+} from 'date-fns';
+import {computed, onMounted, onScopeDispose, onUnmounted, ref, toValue} from 'vue';
 
 /**
  * Returns values that can show time since a given time.
@@ -62,4 +76,45 @@ export function useTimeSince(date) {
     showTimeSince,
     timeSinceStr
   };
+}
+
+/**
+ * Returns a ref to a date that is updated to represent the start of a period.
+ * The startOf function converts a date to the start of a period.
+ * The nextOf function converts a date to an equivalent date in the next period.
+ *
+ * @example
+ * const t = useStartOfPeriod(startOfDay, addDays);
+ * // t will always be the start of the current day
+ *
+ * @param {function(Date):Date} startOf - return a new date that is at the start of the period enclosing the passed Date
+ * @param {function(Date, number):Date} nextOf - return a new date that is some number of periods after the passed Date
+ * @return {import('vue').Ref<Date>}
+ */
+export function useStartOfPeriod(startOf, nextOf) {
+  const tRef = ref(startOf(new Date()));
+  let startTimeHandle = 0;
+  const updateStartTime = () => {
+    const n = new Date();
+    const t = startOf(n);
+    tRef.value = t;
+    const startOfNext = startOf(nextOf(t, 1));
+    startTimeHandle = setTimeout(updateStartTime, startOfNext.getTime() - n.getTime());
+  }
+
+  updateStartTime();
+  onScopeDispose(() => {
+    clearTimeout(startTimeHandle);
+  });
+
+  return tRef;
+}
+
+export const useStartOf = {
+  minute: () => useStartOfPeriod(startOfMinute, addMinutes),
+  hour: () => useStartOfPeriod(startOfHour, addHours),
+  day: () => useStartOfPeriod(startOfDay, addDays),
+  week: () => useStartOfPeriod(startOfWeek, addWeeks),
+  month: () => useStartOfPeriod(startOfMonth, addMonths),
+  year: () => useStartOfPeriod(startOfYear, addYears)
 }
