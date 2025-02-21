@@ -32,7 +32,7 @@ export function pullAirQualitySensor(request, resource) {
  * @return {Promise<ListAirQualityHistoryResponse.AsObject>}
  */
 export function listAirQualitySensorHistory(request, tracker) {
-  return trackAction('AirQualitySensorHistory.listAirQualitySensorHistory', tracker, (endpoint) => {
+  return trackAction('AirQualitySensorHistory.listAirQualitySensorHistory', tracker ?? {}, (endpoint) => {
     const api = historyClient(endpoint);
     return api.listAirQualityHistory(listAirQualitySensorHistoryRequestFromObject(request));
   });

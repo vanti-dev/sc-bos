@@ -34,7 +34,7 @@ export function pullOccupancy(request, resource) {
  * @return {Promise<ListOccupancyHistoryResponse.AsObject>}
  */
 export function listOccupancySensorHistory(request, tracker) {
-  return trackAction('OccupancySensorHistory.listOccupancySensorHistory', tracker, (endpoint) => {
+  return trackAction('OccupancySensorHistory.listOccupancySensorHistory', tracker ?? {}, (endpoint) => {
     const api = historyClient(endpoint);
     return api.listOccupancyHistory(listOccupancySensorHistoryRequestFromObject(request));
   });

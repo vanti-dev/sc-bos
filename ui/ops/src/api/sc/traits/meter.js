@@ -44,7 +44,7 @@ export function describeMeterReading(request, tracker) {
  * @param {ActionTracker<ListMeterReadingHistoryResponse.AsObject>} [tracker]
  * @return {Promise<ListMeterReadingHistoryResponse.AsObject>}
  */
-export function listMeterReadingHistory(request, tracker) {
+export function listMeterReadingHistory(request, tracker = {}) {
   return trackAction('MeterReadingHistory.listMeterReadingHistory', tracker, endpoint => {
     const api = historyClient(endpoint);
     return api.listMeterReadingHistory(listMeterReadingHistoryRequestFromObject(request));

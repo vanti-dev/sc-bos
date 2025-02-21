@@ -51,7 +51,7 @@ export function updateAirTemperature(request, tracker) {
  * @return {Promise<ListAirTemperatureHistoryResponse.AsObject>}
  */
 export function listAirTemperatureHistory(request, tracker) {
-  return trackAction('AirTemperatureHistory.listAirTemperatureHistory', tracker, endpoint => {
+  return trackAction('AirTemperatureHistory.listAirTemperatureHistory', tracker ?? {}, endpoint => {
     const api = historyClient(endpoint);
     return api.listAirTemperatureHistory(listAirTemperatureHistoryRequestFromObject(request));
   });
