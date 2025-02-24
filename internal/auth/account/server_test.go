@@ -439,6 +439,109 @@ func TestServer_UpdateAccount(t *testing.T) {
 	}
 }
 
+func TestServer_DeleteAccount(t *testing.T) {
+	ctx := context.Background()
+	store := NewMemoryStore(zap.NewNop())
+	server := NewServer(store, zap.NewNop())
+
+	createAccount := func(kind gen.Account_Kind, username, displayName, password string) *gen.Account {
+		t.Helper()
+		res, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
+			Account: &gen.Account{
+				Kind:        kind,
+				Username:    username,
+				DisplayName: displayName,
+			},
+			Password: password,
+		})
+		checkNilIfErrored(t, res, err)
+		if err != nil {
+			t.Fatalf("failed to create account: %v", err)
+		}
+		return res
+	}
+	user := createAccount(gen.Account_USER_ACCOUNT, "user1", "User 1", "user1Password")
+	service := createAccount(gen.Account_SERVICE_ACCOUNT, "", "Service", "")
+
+	// add a service credential to the service account, to check that
+	//  - existence of service credentials does not prevent deletion of the account
+	//  - service credentials are deleted when the account is deleted
+	cred, err := server.CreateServiceCredential(ctx, &gen.CreateServiceCredentialRequest{
+		ServiceCredential: &gen.ServiceCredential{
+			AccountId: service.Id,
+			Title:     "Credential",
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create service credential: %v", err)
+	}
+
+	// assign a role to the accounts
+	// to check that role assignments
+	//   - do not prevent deletion of the account
+	//   - are deleted when the account is deleted
+	role, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
+		Role: &gen.Role{
+			Title:       "Foo Role",
+			Permissions: []string{"foo"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create role: %v", err)
+	}
+	ra1, err := server.CreateRoleAssignment(ctx, &gen.CreateRoleAssignmentRequest{
+		RoleAssignment: &gen.RoleAssignment{
+			AccountId: user.Id,
+			RoleId:    role.Id,
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create role assignment: %v", err)
+	}
+	ra2, err := server.CreateRoleAssignment(ctx, &gen.CreateRoleAssignmentRequest{
+		RoleAssignment: &gen.RoleAssignment{
+			AccountId: service.Id,
+			RoleId:    role.Id,
+		},
+	})
+
+	// delete the accounts
+	_, err = server.DeleteAccount(ctx, &gen.DeleteAccountRequest{Id: user.Id})
+	if err != nil {
+		t.Errorf("failed to delete user account: %v", err)
+	}
+	_, err = server.DeleteAccount(ctx, &gen.DeleteAccountRequest{Id: service.Id})
+	if err != nil {
+		t.Errorf("failed to delete service account: %v", err)
+	}
+
+	// check that the accounts are actually gone
+	_, err = server.GetAccount(ctx, &gen.GetAccountRequest{Id: user.Id})
+	if status.Code(err) != codes.NotFound {
+		t.Errorf("expected NotFound error for user account, got %v", err)
+	}
+	_, err = server.GetAccount(ctx, &gen.GetAccountRequest{Id: service.Id})
+	if status.Code(err) != codes.NotFound {
+		t.Errorf("expected NotFound error for service account, got %v", err)
+	}
+
+	// check that the service credential is gone
+	_, err = server.GetServiceCredential(ctx, &gen.GetServiceCredentialRequest{Id: cred.Id})
+	if status.Code(err) != codes.NotFound {
+		t.Errorf("expected NotFound error for service credential, got %v", err)
+	}
+
+	// check that the role assignments are gone
+	_, err = server.GetRoleAssignment(ctx, &gen.GetRoleAssignmentRequest{Id: ra1.Id})
+	if status.Code(err) != codes.NotFound {
+		t.Errorf("expected NotFound error for role assignment, got %v", err)
+	}
+	_, err = server.GetRoleAssignment(ctx, &gen.GetRoleAssignmentRequest{Id: ra2.Id})
+	if status.Code(err) != codes.NotFound {
+		t.Errorf("expected NotFound error for role assignment, got %v", err)
+	}
+}
+
 // tests that uniqueness of usernames is enforced
 func TestServer_Account_Username(t *testing.T) {
 	ctx := context.Background()

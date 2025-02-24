@@ -171,6 +171,19 @@ func (q *Queries) CreateUserAccount(ctx context.Context, arg CreateUserAccountPa
 	return i, err
 }
 
+const deleteAccount = `-- name: DeleteAccount :execrows
+DELETE FROM accounts
+WHERE id = ?1
+`
+
+func (q *Queries) DeleteAccount(ctx context.Context, id int64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteAccount, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const deleteRole = `-- name: DeleteRole :execrows
 DELETE FROM roles
 WHERE id = ?1

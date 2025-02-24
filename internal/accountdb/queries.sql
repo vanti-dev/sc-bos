@@ -46,6 +46,10 @@ UPDATE accounts
 SET username = :username
 WHERE id = :id;
 
+-- name: DeleteAccount :execrows
+DELETE FROM accounts
+WHERE id = :id;
+
 -- name: CreateServiceCredential :one
 INSERT INTO service_credentials (account_id, title, secret_hash, create_time, expire_time)
 VALUES (:account_id, :title, :secret_hash, datetime('now', 'subsec'), :expire_time)

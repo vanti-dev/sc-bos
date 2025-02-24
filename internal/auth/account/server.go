@@ -271,6 +271,31 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 	return accountToProto(account), nil
 }
 
+func (s *Server) DeleteAccount(ctx context.Context, req *gen.DeleteAccountRequest) (*gen.DeleteAccountResponse, error) {
+	id, ok := parseID(req.Id)
+	if !ok {
+		return nil, ErrAccountNotFound
+	}
+
+	var deleted bool
+	err := s.store.Write(ctx, func(tx *Tx) error {
+		rowsDeleted, err := tx.DeleteAccount(ctx, id)
+		if err != nil {
+			return err
+		}
+		deleted = rowsDeleted > 0
+		return nil
+	})
+	if err != nil {
+		s.logger.Error("failed to delete account", zap.Error(err), zap.String("id", req.Id))
+		return nil, ErrDatabase
+	}
+	if !deleted {
+		return nil, ErrAccountNotFound
+	}
+	return &gen.DeleteAccountResponse{}, nil
+}
+
 func (s *Server) GetServiceCredential(ctx context.Context, req *gen.GetServiceCredentialRequest) (*gen.ServiceCredential, error) {
 	id, ok := parseID(req.Id)
 	if !ok {

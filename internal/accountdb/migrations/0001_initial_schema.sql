@@ -18,7 +18,7 @@ CREATE TABLE service_credentials (
     create_time         DATETIME NOT NULL,
     expire_time         DATETIME,
 
-    FOREIGN KEY (account_id) REFERENCES accounts (id),
+    FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE,
     CONSTRAINT create_time_format CHECK ( create_time IS datetime(create_time, 'subsec') ),
     CONSTRAINT expire_time_format CHECK ( expire_time IS datetime(expire_time, 'subsec') )
 );
@@ -27,7 +27,7 @@ CREATE TABLE password_credentials (
     account_id          INTEGER PRIMARY KEY, -- at most one password credential per account
     password_hash       BLOB NOT NULL,
 
-    FOREIGN KEY (account_id) REFERENCES accounts (id)
+    FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE
 );
 
 CREATE TABLE roles (
@@ -53,7 +53,7 @@ CREATE TABLE role_assignments (
     scope_kind      TEXT,
     scope_resource  TEXT,
 
-    FOREIGN KEY (account_id) REFERENCES accounts (id),
+    FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE,
     FOREIGN KEY (role_id) REFERENCES roles (id)
 );
 
