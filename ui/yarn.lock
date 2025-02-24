@@ -870,6 +870,14 @@
     google-protobuf "^3.21.2"
     grpc-web "^1.5.0"
 
+"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.51":
+  version "1.0.0-beta.51"
+  resolved "https://npm.pkg.github.com/download/@smart-core-os/sc-api-grpc-web/1.0.0-beta.51/2111364c63f9ef4f6e7ced717a11d9ec39dc1667#2111364c63f9ef4f6e7ced717a11d9ec39dc1667"
+  integrity sha512-9Y9w0EkMo6r64Uw6f3MzWNPjHLETIbcFwRGllIA+Phm1GjhSQM1Z6jDcDlZ1rAOudnwCepe5cHSk+ScZaNDHWQ==
+  dependencies:
+    google-protobuf "^3.21.2"
+    grpc-web "^1.5.0"
+
 "@sphinxxxx/color-conversion@^2.2.2":
   version "2.2.2"
   resolved "https://registry.npmjs.org/@sphinxxxx/color-conversion/-/color-conversion-2.2.2.tgz"
