@@ -18,7 +18,7 @@ export function listWasteRecords(request, tracker) {
 
 /**
  * @param {Partial<PullWasteRecordsRequest.AsObject>} request
- * @param {ResourceCollection<Alert.AsObject, PullWasteRecordsResponse>} resource
+ * @param {ResourceCollection<WasteRecord.AsObject, PullWasteRecordsResponse>} resource
  */
 export function pullWasteRecords(request, resource) {
   pullResource('Waste.pullWasteRecords', resource, endpoint => {

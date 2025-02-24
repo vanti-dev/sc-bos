@@ -862,14 +862,6 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/merge-streams/-/merge-streams-2.3.0.tgz#719df7fb41766bc143369eaa0dd56d8dc87c9958"
   integrity sha512-LtoMMhxAlorcGhmFYI+LhPgbPZCkgP6ra1YL604EeF6U98pLlQ3iWIGMdWSC+vWmPBWBNgmDBAhnAobLROJmwg==
 
-"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.48":
-  version "1.0.0-beta.48"
-  resolved "https://npm.pkg.github.com/download/@smart-core-os/sc-api-grpc-web/1.0.0-beta.48/b833c42f262b0f07c3cd5c7a43417f7b06989c69#b833c42f262b0f07c3cd5c7a43417f7b06989c69"
-  integrity sha512-ngaHoSu5RTXK5kGKj/Q67vDRPyCHA4IC0kVo9/3cjZQDC96CJPmBkq8iosnDdQ7otIUno/WN4m957BQeKWSvrw==
-  dependencies:
-    google-protobuf "^3.21.2"
-    grpc-web "^1.5.0"
-
 "@smart-core-os/sc-api-grpc-web@^1.0.0-beta.51":
   version "1.0.0-beta.51"
   resolved "https://npm.pkg.github.com/download/@smart-core-os/sc-api-grpc-web/1.0.0-beta.51/2111364c63f9ef4f6e7ced717a11d9ec39dc1667#2111364c63f9ef4f6e7ced717a11d9ec39dc1667"

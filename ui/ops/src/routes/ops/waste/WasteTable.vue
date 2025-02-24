@@ -16,7 +16,7 @@
           {{ timestampToDate(item.wasteCreateTime).toLocaleString() }}
         </template>
         <template #item.weight="{ item }">
-          {{ item.weight.toFixed(2) }} {{ uiConfig.config.wasteRecordUnit }}
+          {{ item.weight.toFixed(2) }} {{ uiConfig.config.wasteRecordUnit ?? "kg" }}
         </template>
         <template #item.disposalMethod="{ item }">
           {{ getDisposalMethod(item.disposalMethod) }}
