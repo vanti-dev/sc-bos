@@ -12,19 +12,19 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/util/chans"
 )
 
 func Test_automation_collectOccupancyChanges(t *testing.T) {
-	model := occupancysensor.NewModel()
+	model := occupancysensorpb.NewModel()
 	// n is used as the clienter and announcer in the automation
 	n := node.New("test")
 	n.Announce("device",
 		node.HasTrait(trait.OccupancySensor),
-		node.HasServer(traits.RegisterOccupancySensorApiServer, traits.OccupancySensorApiServer(occupancysensor.NewModelServer(model))),
+		node.HasServer(traits.RegisterOccupancySensorApiServer, traits.OccupancySensorApiServer(occupancysensorpb.NewModelServer(model))),
 	)
 
 	collector := &automation{

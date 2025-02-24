@@ -9,7 +9,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/fanspeed"
+	"github.com/smart-core-os/sc-golang/pkg/trait/fanspeedpb"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
@@ -37,8 +37,8 @@ type fanSpeed struct {
 	statuses *statuspb.Map
 	logger   *zap.Logger
 
-	model *fanspeed.Model
-	*fanspeed.ModelServer
+	model *fanspeedpb.Model
+	*fanspeedpb.ModelServer
 	config   fanSpeedConfig
 	pollTask *task.Intermittent
 }
@@ -48,14 +48,14 @@ func newFanSpeed(client *gobacnet.Client, devices known.Context, statuses *statu
 	if err != nil {
 		return nil, err
 	}
-	model := fanspeed.NewModel()
+	model := fanspeedpb.NewModel()
 	t := &fanSpeed{
 		client:      client,
 		known:       devices,
 		statuses:    statuses,
 		logger:      logger,
 		model:       model,
-		ModelServer: fanspeed.NewModelServer(model),
+		ModelServer: fanspeedpb.NewModelServer(model),
 		config:      cfg,
 	}
 	t.pollTask = task.NewIntermittent(t.startPoll)
@@ -71,7 +71,7 @@ func (t *fanSpeed) startPoll(init context.Context) (stop task.StopFn, err error)
 }
 
 func (t *fanSpeed) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(t.config.Name, node.HasTrait(trait.FanSpeed, node.WithClients(fanspeed.WrapApi(t))))
+	return a.Announce(t.config.Name, node.HasTrait(trait.FanSpeed, node.WithClients(fanspeedpb.WrapApi(t))))
 }
 
 func (t *fanSpeed) GetFanSpeed(ctx context.Context, request *traits.GetFanSpeedRequest) (*traits.FanSpeed, error) {

@@ -8,8 +8,8 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/enterleavesensor"
-	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/enterleavesensorpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/enterleave/config"
 )
@@ -19,7 +19,7 @@ type enterLeave struct {
 	client traits.EnterLeaveSensorApiClient
 	names  []string
 
-	model *occupancysensor.Model
+	model *occupancysensorpb.Model
 }
 
 func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
@@ -31,15 +31,15 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 
 		if len(cfg.EnterLeaveSensors) > 0 {
 			elServer := &enterLeave{
-				model: occupancysensor.NewModel(),
+				model: occupancysensorpb.NewModel(),
 				names: cfg.EnterLeaveSensors,
 			}
 			if err := f.clients.Client(&elServer.client); err != nil {
 				return err
 			}
-			group.enterLeaveClients = append(group.enterLeaveClients, enterleavesensor.WrapApi(elServer))
+			group.enterLeaveClients = append(group.enterLeaveClients, enterleavesensorpb.WrapApi(elServer))
 		}
-		announce.Announce(cfg.Name, node.HasTrait(trait.EnterLeaveSensor, node.WithClients(enterleavesensor.WrapApi(group))))
+		announce.Announce(cfg.Name, node.HasTrait(trait.EnterLeaveSensor, node.WithClients(enterleavesensorpb.WrapApi(group))))
 	}
 
 	return nil

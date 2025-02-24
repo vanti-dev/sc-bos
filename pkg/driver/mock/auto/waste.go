@@ -6,11 +6,11 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/smart-core-os/sc-golang/pkg/trait/waste"
+	"github.com/smart-core-os/sc-golang/pkg/trait/wastepb"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
-func WasteRecordsAuto(model *waste.Model) *service.Service[string] {
+func WasteRecordsAuto(model *wastepb.Model) *service.Service[string] {
 
 	slc := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
 		ticker := time.NewTicker(30 * time.Second)

@@ -8,7 +8,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
+	"github.com/smart-core-os/sc-golang/pkg/trait/modepb"
 	"github.com/vanti-dev/sc-bos/internal/driver/settings/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -48,7 +48,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	collectModes(modes, "lighting.mode", cfg.LightingModes...)
 	collectModes(modes, "hvac.mode", cfg.HVACModes...)
 
-	modeModel := mode.NewModelModes(modes)
+	modeModel := modepb.NewModelModes(modes)
 	info := &infoServer{
 		Modes: &traits.ModesSupport{
 			ModeValuesSupport: &types.ResourceSupport{
@@ -59,8 +59,8 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	}
 
 	announcer.Announce(cfg.Name, node.HasTrait(trait.Mode, node.WithClients(
-		mode.WrapApi(mode.NewModelServer(modeModel)),
-		mode.WrapInfo(info),
+		modepb.WrapApi(modepb.NewModelServer(modeModel)),
+		modepb.WrapInfo(info),
 	)))
 
 	return nil

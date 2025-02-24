@@ -14,8 +14,8 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
-	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/onoffpb"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
@@ -26,19 +26,19 @@ func TestRouter(t *testing.T) {
 	check(t, r.AddService(routedRegistryService(t, traits.OccupancySensorApi_ServiceDesc.ServiceName, "name")))
 	check(t, r.AddService(routedRegistryService(t, traits.AirQualitySensorApi_ServiceDesc.ServiceName, "name")))
 
-	fooModel := onoff.NewModel(resource.WithInitialValue(&traits.OnOff{State: traits.OnOff_OFF}))
-	defaultModel := onoff.NewModel(resource.WithInitialValue(&traits.OnOff{State: traits.OnOff_ON}))
-	occupancyModel := occupancysensor.NewModel(resource.WithInitialValue(&traits.Occupancy{State: traits.Occupancy_OCCUPIED}))
+	fooModel := onoffpb.NewModel(resource.WithInitialValue(&traits.OnOff{State: traits.OnOff_OFF}))
+	defaultModel := onoffpb.NewModel(resource.WithInitialValue(&traits.OnOff{State: traits.OnOff_ON}))
+	occupancyModel := occupancysensorpb.NewModel(resource.WithInitialValue(&traits.Occupancy{State: traits.Occupancy_OCCUPIED}))
 
 	// register a specific route for "foo"
 	check(t, r.AddRoute("", "foo",
-		wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoff.NewModelServer(fooModel))))
+		wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoffpb.NewModelServer(fooModel))))
 	// register a specific route for "foo" for the occupancy service - this should have higher priority
 	check(t, r.AddRoute(traits.OccupancySensorApi_ServiceDesc.ServiceName, "foo",
-		wrap.ServerToClient(traits.OccupancySensorApi_ServiceDesc, occupancysensor.NewModelServer(occupancyModel))))
+		wrap.ServerToClient(traits.OccupancySensorApi_ServiceDesc, occupancysensorpb.NewModelServer(occupancyModel))))
 	// add a catch-all for all OnOffApi requests that are not to "foo"
 	check(t, r.AddRoute(traits.OnOffApi_ServiceDesc.ServiceName, "",
-		wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoff.NewModelServer(defaultModel))))
+		wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoffpb.NewModelServer(defaultModel))))
 
 	conn := NewLoopback(r)
 	onOffClient := traits.NewOnOffApiClient(conn)
@@ -87,11 +87,11 @@ func TestRouter(t *testing.T) {
 
 func TestRouter_AddService(t *testing.T) {
 	r := New()
-	model := onoff.NewModel(resource.WithInitialValue(&traits.OnOff{State: traits.OnOff_OFF}))
+	model := onoffpb.NewModel(resource.WithInitialValue(&traits.OnOff{State: traits.OnOff_OFF}))
 	client := traits.NewOnOffApiClient(NewLoopback(r))
 
 	// add a device route
-	err := r.AddRoute("", "foo", wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoff.NewModelServer(model)))
+	err := r.AddRoute("", "foo", wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoffpb.NewModelServer(model)))
 	if err != nil {
 		t.Fatalf("(1) failed to add route: %v", err)
 	}
@@ -163,8 +163,8 @@ func TestWithKeyInterceptor(t *testing.T) {
 	}))
 
 	check(t, r.AddService(routedRegistryService(t, traits.OnOffApi_ServiceDesc.ServiceName, "name")))
-	model := onoff.NewModel(resource.WithInitialValue(&traits.OnOff{State: traits.OnOff_OFF}))
-	check(t, r.AddRoute("", "foo", wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoff.NewModelServer(model))))
+	model := onoffpb.NewModel(resource.WithInitialValue(&traits.OnOff{State: traits.OnOff_OFF}))
+	check(t, r.AddRoute("", "foo", wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoffpb.NewModelServer(model))))
 
 	// interceptor should map the request to "FOO" to the handler for "foo"
 	conn := NewLoopback(r)

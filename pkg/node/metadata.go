@@ -10,12 +10,12 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
+	"github.com/smart-core-os/sc-golang/pkg/trait/metadatapb"
 )
 
 var MetadataTraitNotSupported = errors.New("metadata is not supported")
 
-type MetadataChange = metadata.CollectionChange
+type MetadataChange = metadatapb.CollectionChange
 
 // ListAllMetadata returns a slice containing all metadata set via Announce.
 func (n *Node) ListAllMetadata(opts ...resource.ReadOption) []*traits.Metadata {

@@ -11,7 +11,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensorpb"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
@@ -40,8 +40,8 @@ type airQualitySensor struct {
 	statuses *statuspb.Map
 	logger   *zap.Logger
 
-	model *airqualitysensor.Model
-	*airqualitysensor.ModelServer
+	model *airqualitysensorpb.Model
+	*airqualitysensorpb.ModelServer
 	config   airQualityConfig
 	pollTask *task.Intermittent
 }
@@ -51,7 +51,7 @@ func newAirQualitySensor(client *gobacnet.Client, devices known.Context, statuse
 	if err != nil {
 		return nil, err
 	}
-	model := airqualitysensor.NewModel(resource.WithMessageEquivalence(cmp.Equal(
+	model := airqualitysensorpb.NewModel(resource.WithMessageEquivalence(cmp.Equal(
 		cmp.FloatValueApprox(0, 10), // report co2 changes of 10ppm or more
 	)))
 	t := &airQualitySensor{
@@ -60,7 +60,7 @@ func newAirQualitySensor(client *gobacnet.Client, devices known.Context, statuse
 		statuses:    statuses,
 		logger:      logger,
 		model:       model,
-		ModelServer: airqualitysensor.NewModelServer(model),
+		ModelServer: airqualitysensorpb.NewModelServer(model),
 		config:      cfg,
 	}
 	t.pollTask = task.NewIntermittent(t.startPoll)
@@ -76,7 +76,7 @@ func (aq *airQualitySensor) startPoll(init context.Context) (stop task.StopFn, e
 }
 
 func (aq *airQualitySensor) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(aq.config.Name, node.HasTrait(trait.AirQualitySensor, node.WithClients(airqualitysensor.WrapApi(aq))))
+	return a.Announce(aq.config.Name, node.HasTrait(trait.AirQualitySensor, node.WithClients(airqualitysensorpb.WrapApi(aq))))
 }
 
 func (aq *airQualitySensor) GetAirQuality(ctx context.Context, request *traits.GetAirQualityRequest) (*traits.AirQuality, error) {

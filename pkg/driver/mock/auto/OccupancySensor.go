@@ -8,11 +8,11 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
-func OccupancySensorAuto(model *occupancysensor.Model) *service.Service[string] {
+func OccupancySensorAuto(model *occupancysensorpb.Model) *service.Service[string] {
 	slc := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
 		go func() {
 			ticker := time.NewTicker(30 * time.Second)

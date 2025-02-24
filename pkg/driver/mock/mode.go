@@ -5,9 +5,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
+	"github.com/smart-core-os/sc-golang/pkg/trait/modepb"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/modepb"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
@@ -17,18 +16,18 @@ import (
 // You can specify a "modes" key which has the JSON format of `{modes:[{name, ordered?, values}, ...]}`,
 // this format is the protojson serialized form of traits.Modes.
 func mockMode(traitMd *traits.TraitMetadata, deviceName string, logger *zap.Logger) ([]wrap.ServiceUnwrapper, service.Lifecycle) {
-	var model *mode.Model
+	var model *modepb.Model
 	if modes, err := parseModes(traitMd); modes != nil {
-		model = mode.NewModelModes(modes)
+		model = modepb.NewModelModes(modes)
 	} else {
 		if err != nil {
 			logger.Warn("Unable to parse modes for mock device", zap.String("device", deviceName), zap.Error(err))
 		}
-		model = mode.NewModel()
+		model = modepb.NewModel()
 	}
 	modes := model.Modes()
 	infoServer := &modepb.InfoServer{Modes: &traits.ModesSupport{AvailableModes: modes}}
-	return []wrap.ServiceUnwrapper{mode.WrapApi(mode.NewModelServer(model)), mode.WrapInfo(infoServer)}, nil
+	return []wrap.ServiceUnwrapper{modepb.WrapApi(modepb.NewModelServer(model)), modepb.WrapInfo(infoServer)}, nil
 }
 
 func parseModes(traitMd *traits.TraitMetadata) (*traits.Modes, error) {

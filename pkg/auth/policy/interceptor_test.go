@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/smart-core-os/sc-golang/pkg/trait/onoffpb"
 )
 
 func TestInterceptor_GRPC(t *testing.T) {
@@ -30,7 +30,7 @@ func TestInterceptor_GRPC(t *testing.T) {
 		grpc.ChainUnaryInterceptor(interceptor.GRPCUnaryInterceptor()),
 		grpc.ChainStreamInterceptor(interceptor.GRPCStreamingInterceptor()),
 	)
-	traits.RegisterOnOffApiServer(server, onoff.NewModelServer(onoff.NewModel()))
+	traits.RegisterOnOffApiServer(server, onoffpb.NewModelServer(onoffpb.NewModel()))
 	go func() {
 		if err := server.Serve(lis); err != nil {
 			t.Errorf("server stopped with error: %v", err)
