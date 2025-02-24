@@ -280,6 +280,15 @@ func IsForeignKeyError(err error) bool {
 	return errors.Is(sqlErr.ExtendedCode(), sqlite3.CONSTRAINT_FOREIGNKEY)
 }
 
+func IsUniqueConstraintError(err error) bool {
+	var sqlErr *sqlite3.Error
+	if !errors.As(err, &sqlErr) {
+		return false
+	}
+
+	return errors.Is(sqlErr.ExtendedCode(), sqlite3.CONSTRAINT_UNIQUE)
+}
+
 var ErrApplicationIDMismatch = errors.New("database application ID mismatch")
 
 type Timestamp time.Time

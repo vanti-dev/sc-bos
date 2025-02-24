@@ -3,6 +3,7 @@ package account
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"regexp"
 
 	"go.uber.org/zap"
@@ -10,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/internal/accountdb"
+	"github.com/vanti-dev/sc-bos/internal/database"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -21,9 +23,12 @@ var (
 	ErrServiceCredentialNotFound = status.Error(codes.NotFound, "service credential not found")
 	ErrInvalidAccountKind        = status.Error(codes.InvalidArgument, "invalid account kind")
 	ErrMissingUsername           = status.Error(codes.InvalidArgument, "user account requires username")
-	ErrUnexpectedUsername        = status.Error(codes.InvalidArgument, "service account cannot have username")
+	ErrMissingDisplayName        = status.Error(codes.InvalidArgument, "account requires display name")
+	ErrUnexpectedUsernameCreate  = status.Error(codes.InvalidArgument, "service account cannot have username")
+	ErrUnexpectedUsernameUpdate  = status.Error(codes.FailedPrecondition, "service account cannot have username")
 	ErrUnexpectedServiceCreds    = status.Error(codes.FailedPrecondition, "user account cannot have service credentials")
-	ErrServiceCredentialLimit    = status.Error(codes.FailedPrecondition, "too many service credentials")
+	ErrServiceCredentialLimit    = status.Error(codes.ResourceExhausted, "too many service credentials")
+	ErrUsernameExists            = status.Error(codes.AlreadyExists, "username already exists")
 	ErrUnexpectedPassword        = status.Error(codes.FailedPrecondition, "only user account can have password")
 	ErrInvalidPassword           = status.Error(codes.InvalidArgument, "password does not comply with policy")
 	ErrInvalidPageToken          = status.Error(codes.InvalidArgument, "invalid page token")
@@ -53,8 +58,11 @@ func (s *Server) GetAccount(ctx context.Context, req *gen.GetAccountRequest) (*g
 		dbAccount, err = tx.GetAccount(ctx, id)
 		return err
 	})
-	if err != nil {
-		return nil, err
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrAccountNotFound
+	} else if err != nil {
+		s.logger.Error("failed to get account", zap.Error(err), zap.String("id", req.Id))
+		return nil, ErrDatabase
 	}
 
 	return accountToProto(dbAccount), nil
@@ -79,7 +87,8 @@ func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest)
 		}
 
 		if int64(len(page)) > pageSize {
-			res.NextPageToken = formatPageToken(page[pageSize].ID)
+			last := page[pageSize-1] // last element that we are going to send
+			res.NextPageToken = formatPageToken(last.ID)
 			page = page[:pageSize]
 		}
 		for _, dbAccount := range page {
@@ -88,7 +97,12 @@ func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest)
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		s.logger.Error("failed to list accounts",
+			zap.Error(err),
+			zap.String("pageToken", req.PageToken),
+			zap.Int64("pageSize", pageSize),
+		)
+		return nil, ErrDatabase
 	}
 
 	return res, nil
@@ -99,14 +113,20 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 	if account == nil {
 		return nil, status.Error(codes.InvalidArgument, "account is required")
 	}
+	if account.DisplayName == "" {
+		return nil, ErrMissingDisplayName
+	}
 	switch account.Kind {
 	case gen.Account_USER_ACCOUNT:
 		if account.Username == "" {
 			return nil, ErrMissingUsername
 		}
+		if req.Password != "" && !permitPassword(req.Password) {
+			return nil, ErrInvalidPassword
+		}
 	case gen.Account_SERVICE_ACCOUNT:
 		if account.Username != "" {
-			return nil, ErrUnexpectedUsername
+			return nil, ErrUnexpectedUsernameCreate
 		}
 		if req.Password != "" {
 			return nil, ErrUnexpectedPassword
@@ -141,8 +161,15 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		}
 		return nil
 	})
-	if err != nil {
-		return nil, err
+	if database.IsUniqueConstraintError(err) {
+		return nil, ErrUsernameExists
+	} else if err != nil {
+		s.logger.Error("failed to create account",
+			zap.Error(err),
+			zap.String("kind", account.Kind.String()),
+			zap.String("username", account.Username),
+		)
+		return nil, ErrDatabase
 	}
 
 	return accountToProto(created), nil
@@ -158,36 +185,17 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		return nil, ErrAccountNotFound
 	}
 
-	// work out what parts of the account should be updated
-	var (
-		updateUsername    bool
-		updateDisplayName bool
+	const (
+		fieldDisplayName = "display_name"
+		fieldUsername    = "username"
 	)
-	if req.UpdateMask == nil {
-		// default behavior: update all supplied fields
-		updateUsername = req.Account.Username != ""
-		updateDisplayName = req.Account.DisplayName != ""
-	} else {
-		for _, path := range req.UpdateMask.Paths {
-			switch path {
-			case "username":
-				updateUsername = true
-			case "display_name":
-				updateDisplayName = true
-			case "*":
-				updateUsername = true
-				updateDisplayName = true
-			default:
-				return nil, status.Errorf(codes.InvalidArgument, "unsupported field %q in update mask", path)
-			}
-		}
-	}
 
-	// validate updated fields
-	if updateDisplayName && req.Account.DisplayName == "" {
+	mask := maskOrDefault(req.Account, req.UpdateMask)
+	// validate updated field values
+	if maskContains(mask, fieldDisplayName) && req.Account.DisplayName == "" {
 		return nil, status.Error(codes.InvalidArgument, "display_name must be non-empty")
 	}
-	if updateUsername && req.Account.Username == "" {
+	if maskContains(mask, fieldUsername) && req.Account.Username == "" {
 		return nil, status.Error(codes.InvalidArgument, "username must be non-empty")
 	}
 
@@ -196,7 +204,27 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		var err error
 		account, err = tx.GetAccount(ctx, id)
 		if err != nil {
+			s.logger.Error("failed to get account", zap.Error(err), zap.String("id", req.Account.Id))
+			return ErrDatabase
+		}
+
+		var (
+			updateUsername    bool
+			updateDisplayName bool
+		)
+		fields, err := fieldsToUpdate(accountToProto(account), req.Account, mask)
+		if err != nil {
 			return err
+		}
+		for _, field := range fields {
+			switch field {
+			case fieldDisplayName:
+				updateDisplayName = true
+			case fieldUsername:
+				updateUsername = true
+			default:
+				return status.Errorf(codes.InvalidArgument, "field %q unsupported for update", field)
+			}
 		}
 
 		if updateDisplayName {
@@ -205,7 +233,9 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 				DisplayName: req.Account.DisplayName,
 			})
 			if err != nil {
-				return err
+				s.logger.Error("failed to update account display name", zap.Error(err),
+					zap.String("id", req.Account.Id), zap.String("displayName", req.Account.DisplayName))
+				return ErrDatabase
 			}
 			account.DisplayName = req.Account.DisplayName
 		}
@@ -213,7 +243,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		// only user accounts can have usernames
 		usernameAllowed := account.Kind == gen.Account_USER_ACCOUNT.String()
 		if updateUsername && !usernameAllowed {
-			return ErrUnexpectedUsername
+			return ErrUnexpectedUsernameUpdate
 		}
 
 		if updateUsername {
@@ -221,8 +251,13 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 				ID:       id,
 				Username: sql.NullString{Valid: true, String: req.Account.Username},
 			})
-			if err != nil {
-				return err
+			if database.IsUniqueConstraintError(err) {
+				return ErrUsernameExists
+			} else if err != nil {
+				s.logger.Error("failed to update account username", zap.Error(err),
+					zap.String("id", req.Account.Id),
+					zap.String("username", req.Account.Username))
+				return ErrDatabase
 			}
 			account.Username = sql.NullString{Valid: true, String: req.Account.Username}
 		}
@@ -248,8 +283,11 @@ func (s *Server) GetServiceCredential(ctx context.Context, req *gen.GetServiceCr
 		cred, err = tx.GetServiceCredential(ctx, id)
 		return err
 	})
-	if err != nil {
-		return nil, err
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrServiceCredentialNotFound
+	} else if err != nil {
+		s.logger.Error("failed to get service credential", zap.Error(err), zap.String("id", req.Id))
+		return nil, ErrDatabase
 	}
 
 	return serviceCredentialToProto(cred, ""), nil
@@ -281,8 +319,11 @@ func (s *Server) ListServiceCredentials(ctx context.Context, req *gen.ListServic
 		}
 		return nil
 	})
-	if err != nil {
-		return nil, err
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrAccountNotFound
+	} else if err != nil {
+		s.logger.Error("failed to list service credentials", zap.Error(err), zap.String("accountId", req.AccountId))
+		return nil, ErrDatabase
 	}
 
 	return res, nil
