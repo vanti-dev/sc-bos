@@ -682,7 +682,7 @@ const updateAccountPasswordHash = `-- name: UpdateAccountPasswordHash :exec
 INSERT INTO password_credentials (account_id, password_hash)
 VALUES (?1, ?2)
 ON CONFLICT (account_id) DO UPDATE
-SET password_hash = :password_hash
+SET password_hash = excluded.password_hash
 `
 
 type UpdateAccountPasswordHashParams struct {

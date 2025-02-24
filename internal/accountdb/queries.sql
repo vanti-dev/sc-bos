@@ -34,7 +34,7 @@ WHERE account_id = :account_id;
 INSERT INTO password_credentials (account_id, password_hash)
 VALUES (:account_id, :password_hash)
 ON CONFLICT (account_id) DO UPDATE
-SET password_hash = :password_hash;
+SET password_hash = excluded.password_hash;
 
 -- name: UpdateAccountDisplayName :exec
 UPDATE accounts

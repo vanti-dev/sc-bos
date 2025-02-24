@@ -624,6 +624,24 @@ func TestServer_ServiceCredentials(t *testing.T) {
 		if diff != "" {
 			t.Errorf("unexpected service credentials (-got +want):\n%s", diff)
 		}
+
+		// fetch them individually, checking we get the same result as in the list
+		for _, cred := range res.ServiceCredentials {
+			// a secret should never be returned except at creation time
+			if cred.Secret != "" {
+				t.Errorf("service credential %q has a secret", cred.Id)
+			}
+
+			fetched, err := server.GetServiceCredential(ctx, &gen.GetServiceCredentialRequest{Id: cred.Id})
+			checkNilIfErrored(t, fetched, err)
+			if err != nil {
+				t.Fatalf("failed to get service credential %q: %v", cred.Id, err)
+			}
+			diff = cmp.Diff(cred, fetched, protocmp.Transform())
+			if diff != "" {
+				t.Errorf("unexpected fetched service credential %q (-got +want):\n%s", cred.Id, diff)
+			}
+		}
 	}
 
 	var creds []*gen.ServiceCredential
@@ -681,6 +699,71 @@ func TestServer_ServiceCredentials(t *testing.T) {
 		t.Errorf("expected NotFound error querying for credentials of deleted account, got %v", err)
 	}
 
+}
+
+func TestServer_Password(t *testing.T) {
+	ctx := context.Background()
+	store := NewMemoryStore(zap.NewNop())
+	server := NewServer(store, zap.NewNop())
+
+	account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
+		Account: &gen.Account{
+			Kind:        gen.Account_USER_ACCOUNT,
+			DisplayName: "User 1",
+			Username:    "user1",
+		},
+		Password: "user1Password",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	internalID, ok := parseID(account.Id)
+	if !ok {
+		t.Fatal("failed to parse account ID")
+	}
+
+	// check the password matches user1Password and not something else
+	err = store.Read(ctx, func(tx *Tx) error {
+		err := tx.CheckAccountPassword(ctx, internalID, "user1Password")
+		if err != nil {
+			return err
+		}
+
+		err = tx.CheckAccountPassword(ctx, internalID, "wrongPassword")
+		if err == nil {
+			t.Error("expected error for wrong password, got nil")
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("failed to check password (1): %v", err)
+	}
+
+	// update the password
+	_, err = server.UpdateAccountPassword(ctx, &gen.UpdateAccountPasswordRequest{
+		Id:          account.Id,
+		NewPassword: "user1Password2",
+	})
+	if err != nil {
+		t.Fatalf("failed to update password (1): %v", err)
+	}
+	// update again, but also provide the old password for verification
+	_, err = server.UpdateAccountPassword(ctx, &gen.UpdateAccountPasswordRequest{
+		Id:          account.Id,
+		OldPassword: "user1Password2",
+		NewPassword: "user1Password3",
+	})
+	if err != nil {
+		t.Fatalf("failed to update password (2): %v", err)
+	}
+
+	// check the new password
+	err = store.Read(ctx, func(tx *Tx) error {
+		return tx.CheckAccountPassword(ctx, internalID, "user1Password3")
+	})
+	if err != nil {
+		t.Fatalf("failed to check password (2): %v", err)
+	}
 }
 
 func comparePages[T messageWithID](t *testing.T, pageSize int32, expect []T, gotPages [][]T, ignoreFields ...protoreflect.Name) {
