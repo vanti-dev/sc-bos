@@ -911,6 +911,170 @@ func comparePages[T messageWithID](t *testing.T, pageSize int32, expect []T, got
 	}
 }
 
+func TestServer_RoleAssignments(t *testing.T) {
+	ctx := context.Background()
+	store := NewMemoryStore(zap.NewNop())
+	server := NewServer(store, zap.NewNop())
+
+	createAccount := func(displayName string) *gen.Account {
+		t.Helper()
+		res, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
+			Account: &gen.Account{
+				Kind:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: displayName,
+			},
+		})
+		checkNilIfErrored(t, res, err)
+		if err != nil {
+			t.Fatalf("failed to create account: %v", err)
+		}
+		return res
+	}
+	createRole := func(displayName string, permissions ...string) *gen.Role {
+		t.Helper()
+		res, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
+			Role: &gen.Role{
+				Title:       displayName,
+				Permissions: permissions,
+			},
+		})
+		checkNilIfErrored(t, res, err)
+		if err != nil {
+			t.Fatalf("failed to create role: %v", err)
+		}
+		return res
+	}
+
+	var accounts []*gen.Account
+	var roles []*gen.Role
+	const numAccounts = 50
+	const numRoles = 50
+
+	for i := range numAccounts {
+		accounts = append(accounts, createAccount(fmt.Sprintf("Account %d", i)))
+	}
+	for i := range numRoles {
+		roles = append(roles, createRole(fmt.Sprintf("Role %d", i)))
+	}
+
+	// create role assignments randomly
+	var assignments []*gen.RoleAssignment
+	for _, account := range accounts {
+		for _, role := range roles {
+			// don't assign all roles to all accounts, just some
+			if rand.IntN(2) == 0 {
+				continue
+			}
+
+			assignment, err := server.CreateRoleAssignment(ctx, &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: account.Id,
+					RoleId:    role.Id,
+				},
+			})
+			checkNilIfErrored(t, assignment, err)
+			if err != nil {
+				t.Errorf("failed to create role assignment between account=%s and role=%s: %v", account.Id, role.Id, err)
+			}
+
+			assignments = append(assignments, assignment)
+		}
+	}
+
+	type filter struct {
+		name   string
+		filter string
+		expect []*gen.RoleAssignment
+	}
+	var filters []filter
+	// no filter
+	filters = append(filters, filter{
+		name:   "no filter",
+		filter: "",
+		expect: assignments,
+	})
+	{
+		// filter by account
+		account := accounts[rand.IntN(len(accounts))]
+		var expect []*gen.RoleAssignment
+		for _, a := range assignments {
+			if a.AccountId == account.Id {
+				expect = append(expect, a)
+			}
+		}
+		filters = append(filters, filter{
+			name:   "account",
+			filter: fmt.Sprintf("account_id = %s", account.Id),
+			expect: expect,
+		})
+	}
+	{
+		// filter by role
+		role := roles[rand.IntN(len(roles))]
+		var expect []*gen.RoleAssignment
+		for _, a := range assignments {
+			if a.RoleId == role.Id {
+				expect = append(expect, a)
+			}
+		}
+		filters = append(filters, filter{
+			name:   "role",
+			filter: fmt.Sprintf("role_id = %s", role.Id),
+			expect: expect,
+		})
+	}
+
+	for _, f := range filters {
+		t.Run(f.name, func(t *testing.T) {
+			var got [][]*gen.RoleAssignment
+			const pageSize = 15
+			var nextPageToken string
+			for {
+				res, err := server.ListRoleAssignments(ctx, &gen.ListRoleAssignmentsRequest{
+					Filter:    f.filter,
+					PageToken: nextPageToken,
+					PageSize:  pageSize,
+				})
+				checkNilIfErrored(t, res, err)
+				if err != nil {
+					t.Errorf("failed to list role assignments with filter %q: %v", f.filter, err)
+				}
+				t.Logf("fetched page with token %q, returned %d results", nextPageToken, len(res.RoleAssignments))
+
+				if res.NextPageToken != "" && len(res.RoleAssignments) < pageSize {
+					t.Errorf("fewer results (%d) returned than expected (%d), but got a page token", len(res.RoleAssignments), pageSize)
+				}
+
+				got = append(got, res.RoleAssignments)
+				nextPageToken = res.NextPageToken
+				if nextPageToken == "" {
+					break
+				}
+			}
+
+			comparePages(t, pageSize, f.expect, got)
+		})
+	}
+
+	// delete a role assignment, check it's gone
+	_, err := server.DeleteRoleAssignment(ctx, &gen.DeleteRoleAssignmentRequest{
+		Id: assignments[0].Id,
+	})
+	if err != nil {
+		t.Fatalf("failed to delete role assignment: %v", err)
+	}
+	// check that the role assignment is actually gone
+	_, err = server.GetRoleAssignment(ctx, &gen.GetRoleAssignmentRequest{Id: assignments[0].Id})
+	if status.Code(err) != codes.NotFound {
+		t.Errorf("expected NotFound error for get role assignment, got %v", err)
+	}
+	// deleting it again should fail
+	_, err = server.DeleteRoleAssignment(ctx, &gen.DeleteRoleAssignmentRequest{Id: assignments[0].Id})
+	if status.Code(err) != codes.NotFound {
+		t.Errorf("expected NotFound error for delete role assignment, got %v", err)
+	}
+}
+
 type messageWithID interface {
 	proto.Message
 	GetId() string

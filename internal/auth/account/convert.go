@@ -75,6 +75,7 @@ func serviceCredentialToProto(cred accountdb.ServiceCredential, secret string) *
 
 func roleAssignmentToProto(assignment accountdb.RoleAssignment) *gen.RoleAssignment {
 	ra := &gen.RoleAssignment{
+		Id:        formatID(assignment.ID),
 		AccountId: formatID(assignment.AccountID),
 		RoleId:    formatID(assignment.RoleID),
 	}

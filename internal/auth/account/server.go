@@ -659,6 +659,9 @@ func (s *Server) GetRoleAssignment(ctx context.Context, req *gen.GetRoleAssignme
 	err := s.store.Read(ctx, func(tx *Tx) error {
 		var err error
 		assignment, err = tx.GetRoleAssignment(ctx, id)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrRoleAssignmentNotFound
+		}
 		return err
 	})
 	if err != nil {
@@ -714,7 +717,8 @@ func (s *Server) ListRoleAssignments(ctx context.Context, req *gen.ListRoleAssig
 		}
 
 		if int64(len(page)) > pageSize {
-			res.NextPageToken = formatPageToken(page[pageSize].ID)
+			last := page[pageSize-1] // last element that we are going to send
+			res.NextPageToken = formatPageToken(last.ID)
 			page = page[:pageSize]
 		}
 
@@ -827,7 +831,7 @@ const (
 //   - ""               - matches all role assignments (the empty string is a valid filter)
 func parseRoleAssignmentFilter(filter string) (field roleAssignmentField, id int64, ok bool) {
 	if filter == "" {
-		return roleAssignmentUnfiltered, 0, false
+		return roleAssignmentUnfiltered, 0, true
 	}
 	m := filterRoleAssignmentsRegexp.FindStringSubmatch(filter)
 	if m == nil {
