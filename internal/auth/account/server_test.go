@@ -3,12 +3,14 @@ package account
 import (
 	"context"
 	"fmt"
+	"math/rand/v2"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -766,6 +768,115 @@ func TestServer_Password(t *testing.T) {
 	}
 }
 
+func TestServer_Role(t *testing.T) {
+	ctx := context.Background()
+	store := NewMemoryStore(zap.NewNop())
+	server := NewServer(store, zap.NewNop())
+
+	const numRoles = 200
+	const numPermissions = 10
+
+	var roles []*gen.Role
+	for i := range numRoles {
+		title := fmt.Sprintf("Role %d", i)
+		role, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
+			Role: &gen.Role{
+				Title: title,
+				// supply the permissions shuffled to check they are returned in order instead
+				Permissions: shuffledPermissions(numPermissions),
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to create role %q: %v", title, err)
+		}
+		expect := &gen.Role{
+			Id:          role.Id,
+			Title:       title,
+			Permissions: orderedPermissions(numPermissions),
+		}
+		diff := cmp.Diff(expect, role, protocmp.Transform())
+		if diff != "" {
+			t.Errorf("unexpected role value (-got +want):\n%s", diff)
+		}
+
+		roles = append(roles, role)
+	}
+
+	checkAll := func(expect []*gen.Role) {
+		var pages [][]*gen.Role
+		const pageSize = 42
+		var nextPageToken string
+		for {
+			res, err := server.ListRoles(ctx, &gen.ListRolesRequest{
+				PageToken: nextPageToken,
+				PageSize:  pageSize,
+			})
+			checkNilIfErrored(t, res, err)
+			if err != nil {
+				t.Fatalf("failed to list roles: %v", err)
+			}
+			t.Logf("fetched page with token %q, returned %d results", nextPageToken, len(res.Roles))
+
+			if res.NextPageToken != "" && len(res.Roles) < pageSize {
+				t.Errorf("fewer results (%d) returned than expected (%d), but got a page token", len(res.Roles), pageSize)
+			}
+
+			pages = append(pages, res.Roles)
+			nextPageToken = res.NextPageToken
+			if nextPageToken == "" {
+				break
+			}
+		}
+		comparePages(t, pageSize, roles, pages)
+	}
+
+	checkAll(roles)
+
+	// test that roles can be updated
+	role := roles[0]
+	role.Permissions = append(role.Permissions, "000-new-permission") // should go at the beginning
+	role.Title += " MODIFIED"
+	updated, err := server.UpdateRole(ctx, &gen.UpdateRoleRequest{
+		Role: role,
+	})
+	slices.Sort(role.Permissions)
+	checkNilIfErrored(t, role, err)
+	if err != nil {
+		t.Fatalf("failed to update role: %v", err)
+	}
+	diff := cmp.Diff(role, updated, protocmp.Transform())
+	if diff != "" {
+		t.Errorf("unexpected updated role value (-got +want):\n%s", diff)
+	}
+	// test that update is persisted
+	updated, err = server.GetRole(ctx, &gen.GetRoleRequest{Id: role.Id})
+	checkNilIfErrored(t, updated, err)
+	if err != nil {
+		t.Fatalf("failed to get updated role: %v", err)
+	}
+	diff = cmp.Diff(role, updated, protocmp.Transform())
+	if diff != "" {
+		t.Errorf("unexpected retrieved role value (-got +want):\n%s", diff)
+	}
+
+	// test that roles can be deleted
+	_, err = server.DeleteRole(ctx, &gen.DeleteRoleRequest{Id: role.Id})
+	if err != nil {
+		t.Fatalf("failed to delete role: %v", err)
+	}
+
+	// check that the role is actually gone
+	_, err = server.GetRole(ctx, &gen.GetRoleRequest{Id: role.Id})
+	if status.Code(err) != codes.NotFound {
+		t.Errorf("expected NotFound error for role, got %v", err)
+	}
+	// deleting it again should fail
+	_, err = server.DeleteRole(ctx, &gen.DeleteRoleRequest{Id: role.Id})
+	if status.Code(err) != codes.NotFound {
+		t.Errorf("expected NotFound error for role, got %v", err)
+	}
+}
+
 func comparePages[T messageWithID](t *testing.T, pageSize int32, expect []T, gotPages [][]T, ignoreFields ...protoreflect.Name) {
 	var zero T
 	t.Helper()
@@ -813,4 +924,21 @@ func checkNilIfErrored[V any](t *testing.T, v *V, err error) {
 	if err == nil && v == nil {
 		t.Error("expected non-nil return but got nil")
 	}
+}
+
+func shuffledPermissions(n int) []string {
+	source := rand.Perm(n)
+	perms := make([]string, n)
+	for i, p := range source {
+		perms[i] = fmt.Sprintf("perm-%02d", p)
+	}
+	return perms
+}
+
+func orderedPermissions(n int) []string {
+	perms := make([]string, n)
+	for i := range n {
+		perms[i] = fmt.Sprintf("perm-%02d", i)
+	}
+	return perms
 }

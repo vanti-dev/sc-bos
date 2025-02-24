@@ -41,7 +41,7 @@ CREATE TABLE role_permissions (
     role_id INTEGER NOT NULL,
     permission TEXT NOT NULL,
 
-    FOREIGN KEY (role_id) REFERENCES roles (id)
+    FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX role_permissions_unique ON role_permissions (role_id, permission);

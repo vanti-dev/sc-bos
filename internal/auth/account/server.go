@@ -451,7 +451,9 @@ func (s *Server) GetRole(ctx context.Context, req *gen.GetRoleRequest) (*gen.Rol
 	err := s.store.Read(ctx, func(tx *Tx) error {
 		var err error
 		role, err = tx.GetRole(ctx, id)
-		if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrRoleNotFound
+		} else if err != nil {
 			return err
 		}
 		permissions, err = tx.ListRolePermissions(ctx, id)
@@ -483,7 +485,8 @@ func (s *Server) ListRoles(ctx context.Context, req *gen.ListRolesRequest) (*gen
 		}
 
 		if int64(len(page)) > pageSize {
-			res.NextPageToken = formatPageToken(page[pageSize].Role.ID)
+			last := page[pageSize-1] // last element that we are going to send
+			res.NextPageToken = formatPageToken(last.Role.ID)
 			page = page[:pageSize]
 		}
 
