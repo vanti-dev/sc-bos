@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/vanti-dev/sc-bos/internal/accountdb"
+	"github.com/vanti-dev/sc-bos/internal/account/queries"
 	"github.com/vanti-dev/sc-bos/internal/database"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
@@ -52,7 +52,7 @@ func (s *Server) GetAccount(ctx context.Context, req *gen.GetAccountRequest) (*g
 		return nil, ErrAccountNotFound
 	}
 
-	var dbAccount accountdb.Account
+	var dbAccount queries.Account
 	err := s.store.Read(ctx, func(tx *Tx) error {
 		var err error
 		dbAccount, err = tx.GetAccount(ctx, id)
@@ -78,7 +78,7 @@ func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest)
 
 	res := &gen.ListAccountsResponse{}
 	err := s.store.Read(ctx, func(tx *Tx) error {
-		page, err := tx.ListAccounts(ctx, accountdb.ListAccountsParams{
+		page, err := tx.ListAccounts(ctx, queries.ListAccountsParams{
 			AfterID: afterID,
 			Limit:   pageSize + 1, // fetch one extra to determine if there are more
 		})
@@ -135,12 +135,12 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		return nil, ErrInvalidAccountKind
 	}
 
-	var created accountdb.Account
+	var created queries.Account
 	err := s.store.Write(ctx, func(tx *Tx) error {
 		var err error
 		switch req.Account.Kind {
 		case gen.Account_USER_ACCOUNT:
-			created, err = tx.CreateUserAccount(ctx, accountdb.CreateUserAccountParams{
+			created, err = tx.CreateUserAccount(ctx, queries.CreateUserAccountParams{
 				Username:    sql.NullString{Valid: true, String: account.Username},
 				DisplayName: account.DisplayName,
 			})
@@ -199,7 +199,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		return nil, status.Error(codes.InvalidArgument, "username must be non-empty")
 	}
 
-	var account accountdb.Account
+	var account queries.Account
 	err := s.store.Write(ctx, func(tx *Tx) error {
 		var err error
 		account, err = tx.GetAccount(ctx, id)
@@ -228,7 +228,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		}
 
 		if updateDisplayName {
-			err = tx.UpdateAccountDisplayName(ctx, accountdb.UpdateAccountDisplayNameParams{
+			err = tx.UpdateAccountDisplayName(ctx, queries.UpdateAccountDisplayNameParams{
 				ID:          id,
 				DisplayName: req.Account.DisplayName,
 			})
@@ -247,7 +247,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		}
 
 		if updateUsername {
-			err = tx.UpdateAccountUsername(ctx, accountdb.UpdateAccountUsernameParams{
+			err = tx.UpdateAccountUsername(ctx, queries.UpdateAccountUsernameParams{
 				ID:       id,
 				Username: sql.NullString{Valid: true, String: req.Account.Username},
 			})
@@ -302,7 +302,7 @@ func (s *Server) GetServiceCredential(ctx context.Context, req *gen.GetServiceCr
 		return nil, ErrServiceCredentialNotFound
 	}
 
-	var cred accountdb.ServiceCredential
+	var cred queries.ServiceCredential
 	err := s.store.Read(ctx, func(tx *Tx) error {
 		var err error
 		cred, err = tx.GetServiceCredential(ctx, id)
@@ -445,7 +445,7 @@ func (s *Server) GetRole(ctx context.Context, req *gen.GetRoleRequest) (*gen.Rol
 	}
 
 	var (
-		role        accountdb.Role
+		role        queries.Role
 		permissions []string
 	)
 	err := s.store.Read(ctx, func(tx *Tx) error {
@@ -476,7 +476,7 @@ func (s *Server) ListRoles(ctx context.Context, req *gen.ListRolesRequest) (*gen
 
 	res := &gen.ListRolesResponse{}
 	err := s.store.Read(ctx, func(tx *Tx) error {
-		page, err := tx.ListRolesWithPermissions(ctx, accountdb.ListRolesWithPermissionsParams{
+		page, err := tx.ListRolesWithPermissions(ctx, queries.ListRolesWithPermissionsParams{
 			AfterID: afterID,
 			Limit:   pageSize + 1, // fetch one extra to determine if there are more
 		})
@@ -510,7 +510,7 @@ func (s *Server) CreateRole(ctx context.Context, req *gen.CreateRoleRequest) (*g
 	}
 
 	var (
-		role        accountdb.Role
+		role        queries.Role
 		permissions []string
 	)
 	err := s.store.Write(ctx, func(tx *Tx) error {
@@ -521,7 +521,7 @@ func (s *Server) CreateRole(ctx context.Context, req *gen.CreateRoleRequest) (*g
 		}
 
 		for _, perm := range req.Role.Permissions {
-			err = tx.AddRolePermission(ctx, accountdb.AddRolePermissionParams{
+			err = tx.AddRolePermission(ctx, queries.AddRolePermissionParams{
 				RoleID:     role.ID,
 				Permission: perm,
 			})
@@ -573,7 +573,7 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 	}
 
 	var (
-		role        accountdb.Role
+		role        queries.Role
 		permissions []string
 	)
 	err := s.store.Write(ctx, func(tx *Tx) error {
@@ -584,7 +584,7 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 		}
 
 		if updateTitle {
-			_, err = tx.UpdateRoleName(ctx, accountdb.UpdateRoleNameParams{
+			_, err = tx.UpdateRoleName(ctx, queries.UpdateRoleNameParams{
 				ID:   id,
 				Name: req.Role.Title,
 			})
@@ -603,7 +603,7 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 
 			// add new permissions
 			for _, perm := range req.Role.Permissions {
-				err = tx.AddRolePermission(ctx, accountdb.AddRolePermissionParams{
+				err = tx.AddRolePermission(ctx, queries.AddRolePermissionParams{
 					RoleID:     id,
 					Permission: perm,
 				})
@@ -655,7 +655,7 @@ func (s *Server) GetRoleAssignment(ctx context.Context, req *gen.GetRoleAssignme
 		return nil, ErrRoleAssignmentNotFound
 	}
 
-	var assignment accountdb.RoleAssignment
+	var assignment queries.RoleAssignment
 	err := s.store.Read(ctx, func(tx *Tx) error {
 		var err error
 		assignment, err = tx.GetRoleAssignment(ctx, id)
@@ -689,22 +689,22 @@ func (s *Server) ListRoleAssignments(ctx context.Context, req *gen.ListRoleAssig
 		err error
 	)
 	err = s.store.Read(ctx, func(tx *Tx) error {
-		var page []accountdb.RoleAssignment
+		var page []queries.RoleAssignment
 		switch filterField {
 		case roleAssignmentAccountID:
-			page, err = tx.ListRoleAssignmentsForAccount(ctx, accountdb.ListRoleAssignmentsForAccountParams{
+			page, err = tx.ListRoleAssignmentsForAccount(ctx, queries.ListRoleAssignmentsForAccountParams{
 				AfterID:   afterID,
 				Limit:     pageSize + 1, // fetch one extra to determine if there are more
 				AccountID: filterID,
 			})
 		case roleAssignmentRoleID:
-			page, err = tx.ListRoleAssignmentsForRole(ctx, accountdb.ListRoleAssignmentsForRoleParams{
+			page, err = tx.ListRoleAssignmentsForRole(ctx, queries.ListRoleAssignmentsForRoleParams{
 				AfterID: afterID,
 				Limit:   pageSize + 1,
 				RoleID:  filterID,
 			})
 		case roleAssignmentUnfiltered:
-			page, err = tx.ListRoleAssignments(ctx, accountdb.ListRoleAssignmentsParams{
+			page, err = tx.ListRoleAssignments(ctx, queries.ListRoleAssignmentsParams{
 				AfterID: afterID,
 				Limit:   pageSize + 1,
 			})
@@ -752,10 +752,10 @@ func (s *Server) CreateRoleAssignment(ctx context.Context, req *gen.CreateRoleAs
 		scopeResource = sql.NullString{Valid: true, String: req.RoleAssignment.Scope.Resource}
 	}
 
-	var assignment accountdb.RoleAssignment
+	var assignment queries.RoleAssignment
 	err := s.store.Write(ctx, func(tx *Tx) error {
 		var err error
-		assignment, err = tx.CreateRoleAssignment(ctx, accountdb.CreateRoleAssignmentParams{
+		assignment, err = tx.CreateRoleAssignment(ctx, queries.CreateRoleAssignmentParams{
 			AccountID:     accountID,
 			RoleID:        roleID,
 			ScopeKind:     scopeKind,

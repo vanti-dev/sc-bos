@@ -1,3 +1,3 @@
-package accountdb
+package account
 
 //go:generate sqlc generate

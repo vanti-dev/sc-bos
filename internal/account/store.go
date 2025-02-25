@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/vanti-dev/sc-bos/internal/accountdb"
+	"github.com/vanti-dev/sc-bos/internal/account/queries"
 	"github.com/vanti-dev/sc-bos/internal/database"
 	"github.com/vanti-dev/sc-bos/internal/util/pass"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -35,7 +35,7 @@ func OpenStore(ctx context.Context, path string, logger *zap.Logger) (*Store, er
 		return nil, err
 	}
 
-	err = db.Migrate(ctx, accountdb.Schema)
+	err = db.Migrate(ctx, schema)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func NewMemoryStore(logger *zap.Logger) *Store {
 		database.WithApplicationID(appID),
 	)
 
-	err := db.Migrate(context.Background(), accountdb.Schema)
+	err := db.Migrate(context.Background(), schema)
 	if err != nil {
 		// this can only happen if the migrations are broken
 		panic(err)
@@ -66,20 +66,20 @@ func (s *Store) Close() error {
 
 func (s *Store) Read(ctx context.Context, f func(tx *Tx) error) error {
 	return s.db.ReadTx(ctx, func(tx *sql.Tx) error {
-		storeTx := &Tx{Queries: accountdb.New(tx)}
+		storeTx := &Tx{Queries: queries.New(tx)}
 		return f(storeTx)
 	})
 }
 
 func (s *Store) Write(ctx context.Context, f func(tx *Tx) error) error {
 	return s.db.WriteTx(ctx, func(tx *sql.Tx) error {
-		storeTx := &Tx{Queries: accountdb.New(tx)}
+		storeTx := &Tx{Queries: queries.New(tx)}
 		return f(storeTx)
 	})
 }
 
 type Tx struct {
-	*accountdb.Queries
+	*queries.Queries
 }
 
 func (tx *Tx) UpdateAccountPassword(ctx context.Context, accountID int64, password string) error {
@@ -101,7 +101,7 @@ func (tx *Tx) UpdateAccountPassword(ctx context.Context, accountID int64, passwo
 		return ErrUnexpectedPassword
 	}
 
-	return tx.UpdateAccountPasswordHash(ctx, accountdb.UpdateAccountPasswordHashParams{
+	return tx.UpdateAccountPasswordHash(ctx, queries.UpdateAccountPasswordHashParams{
 		AccountID:    accountID,
 		PasswordHash: hash,
 	})
@@ -144,7 +144,7 @@ func (tx *Tx) GenerateServiceCredential(ctx context.Context, accountID int64, ti
 
 	hash := sha256.Sum256([]byte(secret))
 
-	cred, err := tx.CreateServiceCredential(ctx, accountdb.CreateServiceCredentialParams{
+	cred, err := tx.CreateServiceCredential(ctx, queries.CreateServiceCredentialParams{
 		AccountID:  accountID,
 		Title:      title,
 		ExpireTime: expiry,
@@ -161,7 +161,7 @@ func (tx *Tx) GenerateServiceCredential(ctx context.Context, accountID int64, ti
 }
 
 type GeneratedServiceCredential struct {
-	accountdb.ServiceCredential
+	queries.ServiceCredential
 	Secret string
 }
 

@@ -6,7 +6,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/vanti-dev/sc-bos/internal/accountdb"
+	"github.com/vanti-dev/sc-bos/internal/account/queries"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -36,7 +36,7 @@ func parsePageToken(token string) (int64, bool) {
 	return parseID(token)
 }
 
-func accountToProto(account accountdb.Account) *gen.Account {
+func accountToProto(account queries.Account) *gen.Account {
 	var (
 		username string
 		// default to ACCOUNT_KIND_UNSPECIFIED
@@ -55,7 +55,7 @@ func accountToProto(account accountdb.Account) *gen.Account {
 	}
 }
 
-func roleToProto(role accountdb.Role, permissions []string) *gen.Role {
+func roleToProto(role queries.Role, permissions []string) *gen.Role {
 	return &gen.Role{
 		Id:          formatID(role.ID),
 		Title:       role.Name,
@@ -63,7 +63,7 @@ func roleToProto(role accountdb.Role, permissions []string) *gen.Role {
 	}
 }
 
-func serviceCredentialToProto(cred accountdb.ServiceCredential, secret string) *gen.ServiceCredential {
+func serviceCredentialToProto(cred queries.ServiceCredential, secret string) *gen.ServiceCredential {
 	return &gen.ServiceCredential{
 		Id:         formatID(cred.ID),
 		Title:      cred.Title,
@@ -73,7 +73,7 @@ func serviceCredentialToProto(cred accountdb.ServiceCredential, secret string) *
 	}
 }
 
-func roleAssignmentToProto(assignment accountdb.RoleAssignment) *gen.RoleAssignment {
+func roleAssignmentToProto(assignment queries.RoleAssignment) *gen.RoleAssignment {
 	ra := &gen.RoleAssignment{
 		Id:        formatID(assignment.ID),
 		AccountId: formatID(assignment.AccountID),

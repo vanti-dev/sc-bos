@@ -23,7 +23,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/vanti-dev/sc-bos/internal/auth/account"
+	"github.com/vanti-dev/sc-bos/internal/account"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/interceptors"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
