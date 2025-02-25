@@ -269,7 +269,7 @@ message DeleteRoleAssignmentResponse {}
 
 message Account {
   // Unique identifier for this account. Consistent for the life of the account.
-  // Generated automatically on account creation. Output only.
+  // Generated automatically on account creation.
   // For service accounts, this is the OAuth2 Client ID for authenticating.
   string id = 1;
   // The time this account was created. Output only.

@@ -177,6 +177,17 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 }
 
 func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountRequest) (*gen.Account, error) {
+	const (
+		fieldDisplayName = "display_name"
+		fieldUsername    = "username"
+		fieldCreateTime  = "create_time"
+	)
+	// ignore output-only fields in masks, as per AIP-203
+	mask, err := resolveMask(req.Account, req.UpdateMask, fieldCreateTime)
+	if err != nil {
+		return nil, err
+	}
+
 	if req.Account == nil {
 		return nil, status.Error(codes.InvalidArgument, "account is required")
 	}
@@ -186,22 +197,8 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		return nil, ErrAccountNotFound
 	}
 
-	const (
-		fieldDisplayName = "display_name"
-		fieldUsername    = "username"
-	)
-
-	mask := maskOrDefault(req.Account, req.UpdateMask)
-	// validate updated field values
-	if maskContains(mask, fieldDisplayName) && req.Account.DisplayName == "" {
-		return nil, status.Error(codes.InvalidArgument, "display_name must be non-empty")
-	}
-	if maskContains(mask, fieldUsername) && req.Account.Username == "" {
-		return nil, status.Error(codes.InvalidArgument, "username must be non-empty")
-	}
-
 	var account queries.Account
-	err := s.store.Write(ctx, func(tx *Tx) error {
+	err = s.store.Write(ctx, func(tx *Tx) error {
 		var err error
 		account, err = tx.GetAccount(ctx, id)
 		if err != nil {
@@ -229,6 +226,9 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		}
 
 		if updateDisplayName {
+			if !validateTitle(req.Account.DisplayName) {
+				return ErrMissingDisplayName
+			}
 			err = tx.UpdateAccountDisplayName(ctx, queries.UpdateAccountDisplayNameParams{
 				ID:          id,
 				DisplayName: req.Account.DisplayName,
@@ -248,6 +248,9 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		}
 
 		if updateUsername {
+			if !validateUsername(req.Account.Username) {
+				return ErrMissingUsername
+			}
 			err = tx.UpdateAccountUsername(ctx, queries.UpdateAccountUsernameParams{
 				ID:       id,
 				Username: sql.NullString{Valid: true, String: req.Account.Username},
@@ -547,41 +550,54 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 	if req.Role == nil {
 		return nil, status.Error(codes.InvalidArgument, "role is required")
 	}
+
+	const (
+		fieldTitle       = "title"
+		fieldPermissions = "permissions"
+	)
+	mask, err := resolveMask(req.Role, req.UpdateMask)
+	if err != nil {
+		return nil, err
+	}
+
 	id, ok := parseID(req.Role.Id)
 	if !ok {
 		return nil, ErrRoleNotFound
 	}
 
 	var (
-		updateTitle       bool
-		updatePermissions bool
-	)
-	if req.UpdateMask == nil {
-		// if no update mask is provided, update all fields that are set
-		updateTitle = req.Role.Title != ""
-		updatePermissions = len(req.Role.Permissions) > 0
-	} else {
-		for _, path := range req.UpdateMask.Paths {
-			switch path {
-			case "title":
-				updateTitle = true
-			case "permissions":
-				updatePermissions = true
-			default:
-				return nil, status.Errorf(codes.InvalidArgument, "unsupported field %q in update mask", path)
-			}
-		}
-	}
-
-	var (
 		role        queries.Role
 		permissions []string
 	)
-	err := s.store.Write(ctx, func(tx *Tx) error {
+	err = s.store.Write(ctx, func(tx *Tx) error {
 		var err error
 		role, err = tx.GetRole(ctx, id)
 		if err != nil {
 			return err
+		}
+		permissions, err = tx.ListRolePermissions(ctx, id)
+		if err != nil {
+			return err
+		}
+
+		// decide which fields to update
+		var (
+			updateTitle       bool
+			updatePermissions bool
+		)
+		fields, err := fieldsToUpdate(roleToProto(role, permissions), req.Role, mask)
+		if err != nil {
+			return err
+		}
+		for _, field := range fields {
+			switch field {
+			case fieldTitle:
+				updateTitle = true
+			case fieldPermissions:
+				updatePermissions = true
+			default:
+				return status.Errorf(codes.InvalidArgument, "field %q unsupported for update", field)
+			}
 		}
 
 		if updateTitle {
@@ -612,10 +628,13 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 					return err
 				}
 			}
-		}
 
-		permissions, err = tx.ListRolePermissions(ctx, id)
-		return err
+			permissions, err = tx.ListRolePermissions(ctx, id)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
 	})
 	if err != nil {
 		return nil, err

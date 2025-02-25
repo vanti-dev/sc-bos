@@ -12,6 +12,8 @@ import (
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
+var ErrInvalidWildcardMask = status.Error(codes.InvalidArgument, "field mask cannot contain wildcard and field names")
+
 func maskContains(mask fmutils.NestedMask, field protoreflect.Name) bool {
 	if _, ok := mask[string(field)]; ok {
 		return true
@@ -19,11 +21,30 @@ func maskContains(mask fmutils.NestedMask, field protoreflect.Name) bool {
 	return false
 }
 
-func maskOrDefault(m proto.Message, mask *fieldmaskpb.FieldMask) fmutils.NestedMask {
+func resolveMask(m proto.Message, mask *fieldmaskpb.FieldMask, ignore ...protoreflect.Name) (fmutils.NestedMask, error) {
 	if mask == nil {
-		return maskForAllFields(m)
+		return maskForSetFields(m, ignore...), nil
 	}
-	return fmutils.NestedMaskFromPaths(mask.GetPaths())
+	if slices.Contains(mask.GetPaths(), "*") {
+		if len(mask.GetPaths()) != 1 {
+			return nil, ErrInvalidWildcardMask
+		}
+		return maskForAllFields(m, ignore...), nil
+	}
+
+	// check that all fields specified in the mask exist on the message descriptor
+	desc := m.ProtoReflect().Descriptor()
+	paths := make([]string, 0, len(mask.GetPaths()))
+	for _, path := range mask.GetPaths() {
+		field := desc.Fields().ByName(protoreflect.Name(path))
+		if field == nil {
+			return nil, status.Errorf(codes.InvalidArgument, "unknown field %q in mask", path)
+		}
+		if !slices.Contains(ignore, field.Name()) {
+			paths = append(paths, path)
+		}
+	}
+	return fmutils.NestedMaskFromPaths(paths), nil
 }
 
 // returns a FieldMask with the fields that are set in the message
@@ -36,36 +57,27 @@ func maskForSetFields(m proto.Message, ignore ...protoreflect.Name) fmutils.Nest
 		if slices.Contains(ignore, descriptor.Name()) {
 			return true
 		}
-		if r.Has(descriptor) {
-			setFields = append(setFields, string(descriptor.Name()))
-		}
+		setFields = append(setFields, string(descriptor.Name()))
 		return true
 	})
 	return fmutils.NestedMaskFromPaths(setFields)
 }
 
-func maskForAllFields(m proto.Message) fmutils.NestedMask {
+func maskForAllFields(m proto.Message, ignore ...protoreflect.Name) fmutils.NestedMask {
 	var allFields []string
-	m.ProtoReflect().Range(func(descriptor protoreflect.FieldDescriptor, _ protoreflect.Value) bool {
-		allFields = append(allFields, string(descriptor.Name()))
-		return true
-	})
+	fieldDescs := m.ProtoReflect().Descriptor().Fields()
+	for i := 0; i < fieldDescs.Len(); i++ {
+		fieldDesc := fieldDescs.Get(i)
+		name := fieldDesc.Name()
+		if slices.Contains(ignore, name) {
+			continue
+		}
+		allFields = append(allFields, string(name))
+	}
 	return fmutils.NestedMaskFromPaths(allFields)
 }
 
 func fieldsToUpdate(old, new proto.Message, mask fmutils.NestedMask) ([]protoreflect.Name, error) {
-	if _, ok := mask["*"]; ok {
-		if len(mask) != 1 {
-			// a wildcard should be the only field in the mask
-			return nil, status.Errorf(codes.InvalidArgument, "mask containing wildcard and other fields is invalid")
-		}
-		mask = maskForAllFields(new)
-	}
-	maskFields := make(map[protoreflect.Name]bool)
-	for path := range mask {
-		maskFields[protoreflect.Name(path)] = true
-	}
-
 	var fields []protoreflect.Name
 	newR, oldR := new.ProtoReflect(), old.ProtoReflect()
 	newDesc, oldDesc := newR.Descriptor(), oldR.Descriptor()
@@ -77,7 +89,7 @@ func fieldsToUpdate(old, new proto.Message, mask fmutils.NestedMask) ([]protoref
 		if field == nil {
 			return nil, status.Errorf(codes.InvalidArgument, "invalid field %q in mask", path)
 		}
-		if !maskFields[field.Name()] {
+		if _, ok := mask[string(field.Name())]; !ok {
 			continue
 		}
 

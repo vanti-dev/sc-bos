@@ -339,7 +339,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 			},
 			code: codes.InvalidArgument,
 		},
-		"update_username_empty": {
+		"update_username_empty_user": {
 			initial: &gen.Account{
 				Kind:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
@@ -357,6 +357,22 @@ func TestServer_UpdateAccount(t *testing.T) {
 				Username:    "user1",
 			},
 			code: codes.InvalidArgument,
+		},
+		"update_username_empty_service": {
+			initial: &gen.Account{
+				Kind:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: "Service",
+			},
+			update: &gen.UpdateAccountRequest{
+				Account: &gen.Account{
+					Username: "",
+				},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"username"}},
+			},
+			expected: &gen.Account{
+				Kind:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: "Service",
+			},
 		},
 		"invalid_update_mask": {
 			initial: &gen.Account{
@@ -393,6 +409,44 @@ func TestServer_UpdateAccount(t *testing.T) {
 				Kind:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1 MODIFIED",
 				Username:    "user1-modified",
+			},
+		},
+		"wildcard_update_mask_zero": {
+			initial: &gen.Account{
+				Kind:        gen.Account_USER_ACCOUNT,
+				DisplayName: "User 1",
+				Username:    "user1",
+			},
+			update: &gen.UpdateAccountRequest{
+				Account: &gen.Account{
+					Kind:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1 MODIFIED",
+					Username:    "",
+				},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"*"}},
+			},
+			expected: &gen.Account{
+				Kind:        gen.Account_USER_ACCOUNT,
+				DisplayName: "User 1", // not changed, because updates are all-or-nothing
+				Username:    "user1",
+			},
+			code: codes.InvalidArgument, // because username is required, and we have tried to clear it
+		},
+		"wildcard_update_mask_service": {
+			initial: &gen.Account{
+				Kind:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: "Service",
+			},
+			update: &gen.UpdateAccountRequest{
+				Account: &gen.Account{
+					Kind:        gen.Account_SERVICE_ACCOUNT,
+					DisplayName: "Service MODIFIED",
+				},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"*"}},
+			},
+			expected: &gen.Account{
+				Kind:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: "Service MODIFIED",
 			},
 		},
 	}
@@ -907,6 +961,158 @@ func TestServer_Role(t *testing.T) {
 	_, err = server.DeleteRole(ctx, &gen.DeleteRoleRequest{Id: role.Id})
 	if status.Code(err) != codes.NotFound {
 		t.Errorf("expected NotFound error for role, got %v", err)
+	}
+}
+
+func TestServer_UpdateRole(t *testing.T) {
+	ctx := context.Background()
+
+	type testCase struct {
+		initial  *gen.Role
+		update   *gen.UpdateRoleRequest
+		expected *gen.Role
+		code     codes.Code
+	}
+	cases := map[string]testCase{
+		"empty update": {
+			initial: &gen.Role{
+				Title:       "Role 1",
+				Permissions: []string{"foo", "bar"},
+			},
+			update: &gen.UpdateRoleRequest{
+				Role: &gen.Role{},
+			},
+			expected: &gen.Role{
+				Title:       "Role 1",
+				Permissions: []string{"bar", "foo"},
+			},
+		},
+		"update_title_implicit": {
+			initial: &gen.Role{
+				Title:       "Role 1",
+				Permissions: []string{"foo", "bar"},
+			},
+			update: &gen.UpdateRoleRequest{
+				Role: &gen.Role{
+					Title: "Role 1 MODIFIED",
+				},
+			},
+			expected: &gen.Role{
+				Title:       "Role 1 MODIFIED",
+				Permissions: []string{"bar", "foo"},
+			},
+		},
+		"update_title_explicit": {
+			initial: &gen.Role{
+				Title:       "Role 1",
+				Permissions: []string{"foo", "bar"},
+			},
+			update: &gen.UpdateRoleRequest{
+				Role: &gen.Role{
+					Title:       "Role 1 MODIFIED",
+					Permissions: []string{"foo2", "bar2"},
+				},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"title"}},
+			},
+			expected: &gen.Role{
+				Title:       "Role 1 MODIFIED",
+				Permissions: []string{"bar", "foo"},
+			},
+		},
+		"update_permissions_implicit": {
+			initial: &gen.Role{
+				Title:       "Role 1",
+				Permissions: []string{"foo", "bar"},
+			},
+			update: &gen.UpdateRoleRequest{
+				Role: &gen.Role{
+					Permissions: []string{"foo2", "bar2"},
+				},
+			},
+			expected: &gen.Role{
+				Title:       "Role 1",
+				Permissions: []string{"bar2", "foo2"},
+			},
+		},
+		"update_permissions_explicit": {
+			initial: &gen.Role{
+				Title:       "Role 1",
+				Permissions: []string{"foo", "bar"},
+			},
+			update: &gen.UpdateRoleRequest{
+				Role: &gen.Role{
+					Title:       "Role 1 MODIFIED",
+					Permissions: []string{"foo2", "bar2"},
+				},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"permissions"}},
+			},
+			expected: &gen.Role{
+				Title:       "Role 1",
+				Permissions: []string{"bar2", "foo2"},
+			},
+		},
+		"update_permissions_empty": {
+			initial: &gen.Role{
+				Title:       "Role 1",
+				Permissions: []string{"foo", "bar"},
+			},
+			update: &gen.UpdateRoleRequest{
+				Role: &gen.Role{
+					Permissions: nil,
+				},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"permissions"}},
+			},
+			expected: &gen.Role{
+				Title:       "Role 1",
+				Permissions: nil,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			store := NewMemoryStore(zap.NewNop())
+			server := NewServer(store, zap.NewNop())
+
+			role, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
+				Role: tc.initial,
+			})
+			checkNilIfErrored(t, role, err)
+			if err != nil {
+				t.Fatalf("failed to create role: %v", err)
+			}
+
+			// inject ID, which is now known, into update and expected
+			id := role.Id
+			update := proto.Clone(tc.update).(*gen.UpdateRoleRequest)
+			update.Role.Id = id
+			expected := proto.Clone(tc.expected).(*gen.Role)
+			expected.Id = id
+
+			updated, err := server.UpdateRole(ctx, update)
+			checkNilIfErrored(t, updated, err)
+			if status.Code(err) != tc.code {
+				t.Errorf("expected error with code %v, got %v", tc.code, err)
+			}
+
+			if updated != nil {
+				diff := cmp.Diff(expected, updated, protocmp.Transform())
+				if diff != "" {
+					t.Errorf("unexpected updated role value (-got +want):\n%s", diff)
+				}
+			}
+
+			// fetch again to check that the update was persisted
+			role, err = server.GetRole(ctx, &gen.GetRoleRequest{Id: id})
+			checkNilIfErrored(t, role, err)
+			if err != nil {
+				t.Fatalf("failed to get role: %v", err)
+			}
+			diff := cmp.Diff(expected, role, protocmp.Transform())
+			if diff != "" {
+				t.Errorf("unexpected retrieved role value (-got +want):\n%s", diff)
+			}
+		})
 	}
 }
 
