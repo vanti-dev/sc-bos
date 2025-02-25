@@ -777,6 +777,7 @@ func TestServer_Role(t *testing.T) {
 	const numPermissions = 10
 
 	var roles []*gen.Role
+	t.Log("CreateRole:")
 	for i := range numRoles {
 		title := fmt.Sprintf("Role %d", i)
 		role, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
@@ -833,6 +834,7 @@ func TestServer_Role(t *testing.T) {
 	checkAll(roles)
 
 	// test that roles can be updated
+	t.Log("UpdateRole:")
 	role := roles[0]
 	role.Permissions = append(role.Permissions, "000-new-permission") // should go at the beginning
 	role.Title += " MODIFIED"
@@ -857,6 +859,37 @@ func TestServer_Role(t *testing.T) {
 	diff = cmp.Diff(role, updated, protocmp.Transform())
 	if diff != "" {
 		t.Errorf("unexpected retrieved role value (-got +want):\n%s", diff)
+	}
+
+	// test that a role can't be deleted if it is assigned
+	t.Log("DeleteRole:")
+	account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
+		Account: &gen.Account{
+			Kind:        gen.Account_SERVICE_ACCOUNT,
+			DisplayName: "foo account",
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create account: %v", err)
+	}
+	assignment, err := server.CreateRoleAssignment(ctx, &gen.CreateRoleAssignmentRequest{
+		RoleAssignment: &gen.RoleAssignment{
+			AccountId: account.Id,
+			RoleId:    role.Id,
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create role assignment: %v", err)
+	}
+	_, err = server.DeleteRole(ctx, &gen.DeleteRoleRequest{Id: role.Id})
+	if status.Code(err) != codes.FailedPrecondition {
+		t.Errorf("expected FailedPrecondition error when deleting role with assignments, got %v", err)
+	}
+
+	// delete the assignment and try again
+	_, err = server.DeleteRoleAssignment(ctx, &gen.DeleteRoleAssignmentRequest{Id: assignment.Id})
+	if err != nil {
+		t.Fatalf("failed to delete role assignment: %v", err)
 	}
 
 	// test that roles can be deleted

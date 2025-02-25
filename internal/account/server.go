@@ -33,6 +33,7 @@ var (
 	ErrInvalidPassword           = status.Error(codes.InvalidArgument, "password does not comply with policy")
 	ErrInvalidPageToken          = status.Error(codes.InvalidArgument, "invalid page token")
 	ErrInvalidFilter             = status.Error(codes.InvalidArgument, "invalid filter")
+	ErrRoleInUse                 = status.Error(codes.FailedPrecondition, "role is in use")
 )
 
 type Server struct {
@@ -632,15 +633,17 @@ func (s *Server) DeleteRole(ctx context.Context, req *gen.DeleteRoleRequest) (*g
 	var deleted bool
 	err := s.store.Write(ctx, func(tx *Tx) error {
 		rowsDeleted, err := tx.DeleteRole(ctx, id)
-		if err != nil {
-			return err
+		if database.IsForeignKeyError(err) {
+			return ErrRoleInUse
+		} else if err != nil {
+			s.logger.Error("failed to delete role", zap.Error(err), zap.String("id", req.Id))
+			return ErrDatabase
 		}
 		deleted = rowsDeleted > 0
 		return nil
 	})
 	if err != nil {
-		s.logger.Error("failed to delete role", zap.Error(err), zap.String("id", req.Id))
-		return nil, ErrDatabase
+		return nil, err
 	}
 	if !deleted {
 		return nil, ErrRoleNotFound
