@@ -28,6 +28,7 @@ func (o *OccupancyJob) GetClients() []any {
 
 func (o *OccupancyJob) Do(ctx context.Context, sendFn sender) error {
 	sum := int32(0)
+	hasCounted := false
 
 	for _, sensor := range o.Sensors {
 		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -40,7 +41,18 @@ func (o *OccupancyJob) Do(ctx context.Context, sendFn sender) error {
 			continue
 		}
 
-		sum += resp.PeopleCount
+		// confidence value semantics can vary between driver implementations
+		// 0.2 can be a bad threshold. We will assume it isn't for WordPress
+		if resp.GetConfidence() > 0.2 {
+			hasCounted = true
+			sum += resp.GetPeopleCount()
+		}
+	}
+
+	// don't submit a reading if we aren't confident for any people counts
+	if !hasCounted {
+		o.Logger.Debug("no occupancy counts with sufficient confidence found, skipping post")
+		return nil
 	}
 
 	body := &types.TotalOccupancy{
