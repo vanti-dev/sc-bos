@@ -782,6 +782,24 @@
           "appearance": {"title": "Waste"}
         }
       ]
+    },
+    {
+      "name": "van/uk/brum/ugs/eg-bc-01/driver/building-transport",
+      "type": "mock",
+      "devices": [
+        {
+          "name": "van/uk/brum/ugs/devices/lift",
+          "traits": [
+            {
+              "name" : "smartcore.bos.Transport",
+              "more" : {
+                "numFloors" : "2"
+              }
+            }
+          ],
+          "appearance": {"title": "Lifts"}
+        }
+      ]
     }
   ],
   "zones": [
