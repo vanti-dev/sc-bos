@@ -11,17 +11,21 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
-func getFloorName(f int) string {
+func getLocation(f int) *gen.Transport_Location {
+
+	floorName := fmt.Sprintf("%2d", f)
 	if f == 0 {
-		return "GF"
-	} else {
-		return fmt.Sprintf("%2d", f)
+		floorName = "GF"
+	}
+	return &gen.Transport_Location{
+		Floor: floorName,
+		Title: floorName,
 	}
 }
 
-func getNextDestination(maxFloor int) string {
+func getNextDestination(maxFloor int) *gen.Transport_Location {
 	f := 1 + rand.Int()%maxFloor
-	return getFloorName(f)
+	return getLocation(f)
 }
 
 func initTransport(load *float32) *gen.Transport {
@@ -50,7 +54,7 @@ func initTransport(load *float32) *gen.Transport {
 	}
 }
 
-func openCloseDoor(t *gen.Transport, nextDest string, load float32) {
+func openCloseDoor(t *gen.Transport, nextDest *gen.Transport_Location, load float32) {
 	t.MovingDirection = gen.Transport_NO_DIRECTION
 	if t.Doors[0].Status == gen.Transport_Door_CLOSED {
 		t.Doors[0].Status = gen.Transport_Door_OPENING
@@ -61,7 +65,7 @@ func openCloseDoor(t *gen.Transport, nextDest string, load float32) {
 		t.Load = &load
 	} else if t.Doors[0].Status == gen.Transport_Door_CLOSING {
 		t.Doors[0].Status = gen.Transport_Door_CLOSED
-		t.NextDestinations[0].Floor = nextDest
+		t.NextDestinations[0] = nextDest
 	}
 }
 
@@ -95,16 +99,16 @@ func TransportAuto(model *transport.Model, maxFloor int) *service.Service[string
 						t.MovingDirection = gen.Transport_NO_DIRECTION
 						gfCurrentWait = 0
 						load = 0
-						openCloseDoor(t, "GF", load)
+						openCloseDoor(t, getLocation(0), load)
 					} else { // we are on the move,
 						if t.NextDestinations[0].Floor == "GF" {
 							t.MovingDirection = gen.Transport_DOWN
 							currentFloor--
-							t.ActualPosition.Floor = getFloorName(currentFloor)
+							t.ActualPosition = getLocation(currentFloor)
 						} else {
 							t.MovingDirection = gen.Transport_UP
 							currentFloor++
-							t.ActualPosition.Floor = getFloorName(currentFloor)
+							t.ActualPosition = getLocation(currentFloor)
 						}
 					}
 					_, _ = model.UpdateTransport(t)
