@@ -1,9 +1,9 @@
 import {builtinLayouts} from '@/dynamic/layout/pallet.js';
+import {builtinWidgets} from '@/dynamic/widgets/pallet.js';
 import useBuildingConfig from '@/routes/ops/overview/pages/buildingConfig.js';
 import useDashPage from '@/routes/ops/overview/pages/dashPage.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {findActiveItem} from '@/util/router.js';
-import {builtinWidgets} from '@/dynamic/widgets/pallet.js';
 import {computed, markRaw, reactive, toValue} from 'vue';
 
 /**
@@ -44,33 +44,29 @@ export default function usePageConfig(path) {
     const cfg = pageConfig.value;
     if (!cfg) return cfg;
 
-    const normObj = (o) => {
-      return Object.entries(o).reduce((acc, [k, v]) => {
-        if (Array.isArray(v)) {
-          acc[k] = v.map(o => normObj(o));
-        } else if (typeof v === 'object') {
-          acc[k] = normObj(v);
-        } else if (typeof v === 'string') {
-          if (v.startsWith('builtin:')) {
-            const [, builtin] = v.split(':');
-            switch (k) {
-              case 'layout':
-                acc[k] = markRaw(builtinLayouts[builtin]);
-                return acc;
-              case 'component':
-                acc[k] = markRaw(builtinWidgets[builtin]);
-                return acc;
-            }
+    const norm = (o, k = null) => {
+      if (Array.isArray(o)) {
+        return o.map(v => norm(v));
+      } else if (typeof o === 'object') {
+        return Object.entries(o).reduce((acc, [k, v]) => {
+          acc[k] = norm(v, k);
+          return acc;
+        }, {});
+      } else if (typeof o === 'string') {
+        if (o.startsWith('builtin:')) {
+          const [, builtin] = o.split(':');
+          switch (k) {
+            case 'layout':
+              return markRaw(builtinLayouts[builtin]);
+            case 'component':
+              return markRaw(builtinWidgets[builtin]);
           }
-          acc[k] = v;
-        } else {
-          acc[k] = v;
         }
-        return acc;
-      }, {});
+      }
+      return o;
     };
 
-    return normObj(cfg);
+    return norm(cfg);
   });
 
   const isLegacyOverview = computed(() => !pageConfig.value && pathSegments.value.length === 1);
