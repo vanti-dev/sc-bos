@@ -16,12 +16,12 @@ FROM accounts
 WHERE username = :username;
 
 -- name: CreateUserAccount :one
-INSERT INTO accounts (username, display_name, kind, create_time)
+INSERT INTO accounts (username, display_name, type, create_time)
 VALUES (:username, :display_name, 'USER_ACCOUNT', datetime('now', 'subsec'))
 RETURNING *;
 
 -- name: CreateServiceAccount :one
-INSERT INTO accounts (display_name, kind, create_time)
+INSERT INTO accounts (display_name, type, create_time)
 VALUES (:display_name, 'SERVICE_ACCOUNT', datetime('now', 'subsec'))
 RETURNING *;
 
@@ -51,8 +51,8 @@ DELETE FROM accounts
 WHERE id = :id;
 
 -- name: CreateServiceCredential :one
-INSERT INTO service_credentials (account_id, title, secret_hash, create_time, expire_time)
-VALUES (:account_id, :title, :secret_hash, datetime('now', 'subsec'), :expire_time)
+INSERT INTO service_credentials (account_id, display_name, secret_hash, create_time, expire_time)
+VALUES (:account_id, :display_name, :secret_hash, datetime('now', 'subsec'), :expire_time)
 RETURNING *;
 
 -- name: GetServiceCredential :one
@@ -97,13 +97,13 @@ ORDER BY roles.id
 LIMIT :limit;
 
 -- name: CreateRole :one
-INSERT INTO roles (name)
-VALUES (:name)
+INSERT INTO roles (display_name, description)
+VALUES (:display_name, :description)
 RETURNING *;
 
--- name: UpdateRoleName :execrows
+-- name: UpdateRoleDisplayName :execrows
 UPDATE roles
-SET name = :name
+SET display_name = :display_name
 WHERE id = :id;
 
 -- name: DeleteRole :execrows
@@ -158,7 +158,7 @@ ORDER BY id
 LIMIT :limit;
 
 -- name: CreateRoleAssignment :one
-INSERT INTO role_assignments (account_id, role_id, scope_kind, scope_resource)
+INSERT INTO role_assignments (account_id, role_id, scope_type, scope_resource)
 VALUES (:account_id, :role_id, :scope_kind, :scope_resource)
 RETURNING *;
 

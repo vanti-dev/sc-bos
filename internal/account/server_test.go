@@ -71,37 +71,37 @@ func TestServer_CreateAccount(t *testing.T) {
 
 	user1 := createAccount(&gen.CreateAccountRequest{
 		Account: &gen.Account{
-			Kind:        gen.Account_USER_ACCOUNT,
+			Type:        gen.Account_USER_ACCOUNT,
 			DisplayName: "User 1",
 			Username:    "user1",
 		},
 	})
 	checkAccount(user1, &gen.Account{
-		Kind:        gen.Account_USER_ACCOUNT,
+		Type:        gen.Account_USER_ACCOUNT,
 		DisplayName: "User 1",
 		Username:    "user1",
 	})
 	user2 := createAccount(&gen.CreateAccountRequest{
 		Account: &gen.Account{
-			Kind:        gen.Account_USER_ACCOUNT,
+			Type:        gen.Account_USER_ACCOUNT,
 			DisplayName: "User 2",
 			Username:    "user2",
 		},
 		Password: "user2Password",
 	})
 	checkAccount(user2, &gen.Account{
-		Kind:        gen.Account_USER_ACCOUNT,
+		Type:        gen.Account_USER_ACCOUNT,
 		DisplayName: "User 2",
 		Username:    "user2",
 	})
 	service := createAccount(&gen.CreateAccountRequest{
 		Account: &gen.Account{
-			Kind:        gen.Account_SERVICE_ACCOUNT,
+			Type:        gen.Account_SERVICE_ACCOUNT,
 			DisplayName: "Service",
 		},
 	})
 	checkAccount(service, &gen.Account{
-		Kind:        gen.Account_SERVICE_ACCOUNT,
+		Type:        gen.Account_SERVICE_ACCOUNT,
 		DisplayName: "Service",
 	})
 
@@ -114,21 +114,21 @@ func TestServer_CreateAccount(t *testing.T) {
 	// missing display name
 	failCreateAccount(&gen.CreateAccountRequest{
 		Account: &gen.Account{
-			Kind:     gen.Account_USER_ACCOUNT,
+			Type:     gen.Account_USER_ACCOUNT,
 			Username: "foo",
 		},
 	}, codes.InvalidArgument)
 	// missing username for user account
 	failCreateAccount(&gen.CreateAccountRequest{
 		Account: &gen.Account{
-			Kind:        gen.Account_USER_ACCOUNT,
+			Type:        gen.Account_USER_ACCOUNT,
 			DisplayName: "Missing Username",
 		},
 	}, codes.InvalidArgument)
 	// username supplied for service account
 	failCreateAccount(&gen.CreateAccountRequest{
 		Account: &gen.Account{
-			Kind:        gen.Account_SERVICE_ACCOUNT,
+			Type:        gen.Account_SERVICE_ACCOUNT,
 			DisplayName: "Service Account",
 			Username:    "service",
 		},
@@ -142,11 +142,11 @@ func TestServer_ListAccounts(t *testing.T) {
 	store := NewMemoryStore(zap.NewNop())
 	server := NewServer(store, zap.NewNop())
 
-	createAccount := func(kind gen.Account_Kind, username, displayName string) string {
+	createAccount := func(ty gen.Account_Type, username, displayName string) string {
 		t.Helper()
 		res, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
 			Account: &gen.Account{
-				Kind:        kind,
+				Type:        ty,
 				Username:    username,
 				DisplayName: displayName,
 			},
@@ -170,7 +170,7 @@ func TestServer_ListAccounts(t *testing.T) {
 			id := createAccount(gen.Account_USER_ACCOUNT, username, displayName)
 			expected = append(expected, &gen.Account{
 				Id:          id,
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				Username:    username,
 				DisplayName: displayName,
 			})
@@ -179,7 +179,7 @@ func TestServer_ListAccounts(t *testing.T) {
 			id := createAccount(gen.Account_SERVICE_ACCOUNT, "", displayName)
 			expected = append(expected, &gen.Account{
 				Id:          id,
-				Kind:        gen.Account_SERVICE_ACCOUNT,
+				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: displayName,
 			})
 		}
@@ -226,7 +226,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 	cases := map[string]testCase{
 		"empty update": {
 			initial: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
 			},
@@ -234,24 +234,24 @@ func TestServer_UpdateAccount(t *testing.T) {
 				Account: &gen.Account{},
 			},
 			expected: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
 			},
 		},
 		"kind_change_prohibited": {
 			initial: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
-					Kind: gen.Account_SERVICE_ACCOUNT,
+					Type: gen.Account_SERVICE_ACCOUNT,
 				},
 			},
 			expected: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
 			},
@@ -259,24 +259,24 @@ func TestServer_UpdateAccount(t *testing.T) {
 		},
 		"same_kind_allowed": {
 			initial: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
-					Kind: gen.Account_USER_ACCOUNT,
+					Type: gen.Account_USER_ACCOUNT,
 				},
 			},
 			expected: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
 			},
 		},
 		"update_display_name": {
 			initial: &gen.Account{
-				Kind:        gen.Account_SERVICE_ACCOUNT,
+				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
 			},
 			update: &gen.UpdateAccountRequest{
@@ -285,13 +285,13 @@ func TestServer_UpdateAccount(t *testing.T) {
 				},
 			},
 			expected: &gen.Account{
-				Kind:        gen.Account_SERVICE_ACCOUNT,
+				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service MODIFIED",
 			},
 		},
 		"update_username": {
 			initial: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
 			},
@@ -301,14 +301,14 @@ func TestServer_UpdateAccount(t *testing.T) {
 				},
 			},
 			expected: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1-modified",
 			},
 		},
 		"update_username_service_account": {
 			initial: &gen.Account{
-				Kind:        gen.Account_SERVICE_ACCOUNT,
+				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
 			},
 			update: &gen.UpdateAccountRequest{
@@ -317,14 +317,14 @@ func TestServer_UpdateAccount(t *testing.T) {
 				},
 			},
 			expected: &gen.Account{
-				Kind:        gen.Account_SERVICE_ACCOUNT,
+				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
 			},
 			code: codes.FailedPrecondition,
 		},
 		"update_display_name_empty": {
 			initial: &gen.Account{
-				Kind:        gen.Account_SERVICE_ACCOUNT,
+				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
 			},
 			update: &gen.UpdateAccountRequest{
@@ -334,14 +334,14 @@ func TestServer_UpdateAccount(t *testing.T) {
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"display_name"}},
 			},
 			expected: &gen.Account{
-				Kind:        gen.Account_SERVICE_ACCOUNT,
+				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
 			},
 			code: codes.InvalidArgument,
 		},
 		"update_username_empty_user": {
 			initial: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
 			},
@@ -352,7 +352,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"username"}},
 			},
 			expected: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
 			},
@@ -360,7 +360,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 		},
 		"update_username_empty_service": {
 			initial: &gen.Account{
-				Kind:        gen.Account_SERVICE_ACCOUNT,
+				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
 			},
 			update: &gen.UpdateAccountRequest{
@@ -370,13 +370,13 @@ func TestServer_UpdateAccount(t *testing.T) {
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"username"}},
 			},
 			expected: &gen.Account{
-				Kind:        gen.Account_SERVICE_ACCOUNT,
+				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
 			},
 		},
 		"invalid_update_mask": {
 			initial: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
 			},
@@ -385,7 +385,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"foo"}},
 			},
 			expected: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
 			},
@@ -393,40 +393,40 @@ func TestServer_UpdateAccount(t *testing.T) {
 		},
 		"wildcard_update_mask": {
 			initial: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
-					Kind:        gen.Account_USER_ACCOUNT,
+					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1 MODIFIED",
 					Username:    "user1-modified",
 				},
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"*"}},
 			},
 			expected: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1 MODIFIED",
 				Username:    "user1-modified",
 			},
 		},
 		"wildcard_update_mask_zero": {
 			initial: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
-					Kind:        gen.Account_USER_ACCOUNT,
+					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1 MODIFIED",
 					Username:    "",
 				},
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"*"}},
 			},
 			expected: &gen.Account{
-				Kind:        gen.Account_USER_ACCOUNT,
+				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1", // not changed, because updates are all-or-nothing
 				Username:    "user1",
 			},
@@ -434,18 +434,18 @@ func TestServer_UpdateAccount(t *testing.T) {
 		},
 		"wildcard_update_mask_service": {
 			initial: &gen.Account{
-				Kind:        gen.Account_SERVICE_ACCOUNT,
+				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
-					Kind:        gen.Account_SERVICE_ACCOUNT,
+					Type:        gen.Account_SERVICE_ACCOUNT,
 					DisplayName: "Service MODIFIED",
 				},
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"*"}},
 			},
 			expected: &gen.Account{
-				Kind:        gen.Account_SERVICE_ACCOUNT,
+				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service MODIFIED",
 			},
 		},
@@ -500,11 +500,11 @@ func TestServer_DeleteAccount(t *testing.T) {
 	store := NewMemoryStore(zap.NewNop())
 	server := NewServer(store, zap.NewNop())
 
-	createAccount := func(kind gen.Account_Kind, username, displayName, password string) *gen.Account {
+	createAccount := func(ty gen.Account_Type, username, displayName, password string) *gen.Account {
 		t.Helper()
 		res, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
 			Account: &gen.Account{
-				Kind:        kind,
+				Type:        ty,
 				Username:    username,
 				DisplayName: displayName,
 			},
@@ -524,8 +524,8 @@ func TestServer_DeleteAccount(t *testing.T) {
 	//  - service credentials are deleted when the account is deleted
 	cred, err := server.CreateServiceCredential(ctx, &gen.CreateServiceCredentialRequest{
 		ServiceCredential: &gen.ServiceCredential{
-			AccountId: service.Id,
-			Title:     "Credential",
+			AccountId:   service.Id,
+			DisplayName: "Credential",
 		},
 	})
 	if err != nil {
@@ -538,7 +538,7 @@ func TestServer_DeleteAccount(t *testing.T) {
 	//   - are deleted when the account is deleted
 	role, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
 		Role: &gen.Role{
-			Title:       "Foo Role",
+			DisplayName: "Foo Role",
 			Permissions: []string{"foo"},
 		},
 	})
@@ -606,7 +606,7 @@ func TestServer_Account_Username(t *testing.T) {
 
 	_, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
 		Account: &gen.Account{
-			Kind:        gen.Account_USER_ACCOUNT,
+			Type:        gen.Account_USER_ACCOUNT,
 			DisplayName: "User 1",
 			Username:    "user1",
 		},
@@ -616,7 +616,7 @@ func TestServer_Account_Username(t *testing.T) {
 	}
 	user2, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
 		Account: &gen.Account{
-			Kind:        gen.Account_USER_ACCOUNT,
+			Type:        gen.Account_USER_ACCOUNT,
 			DisplayName: "User 2",
 			Username:    "user2",
 		},
@@ -628,7 +628,7 @@ func TestServer_Account_Username(t *testing.T) {
 	// try to create account that collides with user1
 	_, err = server.CreateAccount(ctx, &gen.CreateAccountRequest{
 		Account: &gen.Account{
-			Kind:        gen.Account_USER_ACCOUNT,
+			Type:        gen.Account_USER_ACCOUNT,
 			DisplayName: "User 1A",
 			Username:    "user1",
 		},
@@ -656,7 +656,7 @@ func TestServer_ServiceCredentials(t *testing.T) {
 
 	account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
 		Account: &gen.Account{
-			Kind:        gen.Account_SERVICE_ACCOUNT,
+			Type:        gen.Account_SERVICE_ACCOUNT,
 			DisplayName: "Service",
 		},
 	})
@@ -705,9 +705,9 @@ func TestServer_ServiceCredentials(t *testing.T) {
 	for i := range maxServiceCredentialsPerAccount {
 		cred, err := server.CreateServiceCredential(ctx, &gen.CreateServiceCredentialRequest{
 			ServiceCredential: &gen.ServiceCredential{
-				AccountId:  account.Id,
-				Title:      fmt.Sprintf("Credential %d", i),
-				ExpireTime: timestamppb.New(expiry),
+				AccountId:   account.Id,
+				DisplayName: fmt.Sprintf("Credential %d", i),
+				ExpireTime:  timestamppb.New(expiry),
 			},
 		})
 		if err != nil {
@@ -721,8 +721,8 @@ func TestServer_ServiceCredentials(t *testing.T) {
 	// creating a new credential should fail because the limit is reached
 	_, err = server.CreateServiceCredential(ctx, &gen.CreateServiceCredentialRequest{
 		ServiceCredential: &gen.ServiceCredential{
-			AccountId: account.Id,
-			Title:     "Credential",
+			AccountId:   account.Id,
+			DisplayName: "Credential",
 		},
 	})
 	if status.Code(err) != codes.ResourceExhausted {
@@ -764,7 +764,7 @@ func TestServer_Password(t *testing.T) {
 
 	account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
 		Account: &gen.Account{
-			Kind:        gen.Account_USER_ACCOUNT,
+			Type:        gen.Account_USER_ACCOUNT,
 			DisplayName: "User 1",
 			Username:    "user1",
 		},
@@ -833,20 +833,20 @@ func TestServer_Role(t *testing.T) {
 	var roles []*gen.Role
 	t.Log("CreateRole:")
 	for i := range numRoles {
-		title := fmt.Sprintf("Role %d", i)
+		displayName := fmt.Sprintf("Role %d", i)
 		role, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
 			Role: &gen.Role{
-				Title: title,
+				DisplayName: displayName,
 				// supply the permissions shuffled to check they are returned in order instead
 				Permissions: shuffledPermissions(numPermissions),
 			},
 		})
 		if err != nil {
-			t.Fatalf("failed to create role %q: %v", title, err)
+			t.Fatalf("failed to create role %q: %v", displayName, err)
 		}
 		expect := &gen.Role{
 			Id:          role.Id,
-			Title:       title,
+			DisplayName: displayName,
 			Permissions: orderedPermissions(numPermissions),
 		}
 		diff := cmp.Diff(expect, role, protocmp.Transform())
@@ -891,7 +891,7 @@ func TestServer_Role(t *testing.T) {
 	t.Log("UpdateRole:")
 	role := roles[0]
 	role.Permissions = append(role.Permissions, "000-new-permission") // should go at the beginning
-	role.Title += " MODIFIED"
+	role.DisplayName += " MODIFIED"
 	updated, err := server.UpdateRole(ctx, &gen.UpdateRoleRequest{
 		Role: role,
 	})
@@ -919,7 +919,7 @@ func TestServer_Role(t *testing.T) {
 	t.Log("DeleteRole:")
 	account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
 		Account: &gen.Account{
-			Kind:        gen.Account_SERVICE_ACCOUNT,
+			Type:        gen.Account_SERVICE_ACCOUNT,
 			DisplayName: "foo account",
 		},
 	})
@@ -976,52 +976,52 @@ func TestServer_UpdateRole(t *testing.T) {
 	cases := map[string]testCase{
 		"empty update": {
 			initial: &gen.Role{
-				Title:       "Role 1",
+				DisplayName: "Role 1",
 				Permissions: []string{"foo", "bar"},
 			},
 			update: &gen.UpdateRoleRequest{
 				Role: &gen.Role{},
 			},
 			expected: &gen.Role{
-				Title:       "Role 1",
+				DisplayName: "Role 1",
 				Permissions: []string{"bar", "foo"},
 			},
 		},
-		"update_title_implicit": {
+		"update_display_name_implicit": {
 			initial: &gen.Role{
-				Title:       "Role 1",
+				DisplayName: "Role 1",
 				Permissions: []string{"foo", "bar"},
 			},
 			update: &gen.UpdateRoleRequest{
 				Role: &gen.Role{
-					Title: "Role 1 MODIFIED",
+					DisplayName: "Role 1 MODIFIED",
 				},
 			},
 			expected: &gen.Role{
-				Title:       "Role 1 MODIFIED",
+				DisplayName: "Role 1 MODIFIED",
 				Permissions: []string{"bar", "foo"},
 			},
 		},
-		"update_title_explicit": {
+		"update_display_name_explicit": {
 			initial: &gen.Role{
-				Title:       "Role 1",
+				DisplayName: "Role 1",
 				Permissions: []string{"foo", "bar"},
 			},
 			update: &gen.UpdateRoleRequest{
 				Role: &gen.Role{
-					Title:       "Role 1 MODIFIED",
+					DisplayName: "Role 1 MODIFIED",
 					Permissions: []string{"foo2", "bar2"},
 				},
-				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"title"}},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"display_name"}},
 			},
 			expected: &gen.Role{
-				Title:       "Role 1 MODIFIED",
+				DisplayName: "Role 1 MODIFIED",
 				Permissions: []string{"bar", "foo"},
 			},
 		},
 		"update_permissions_implicit": {
 			initial: &gen.Role{
-				Title:       "Role 1",
+				DisplayName: "Role 1",
 				Permissions: []string{"foo", "bar"},
 			},
 			update: &gen.UpdateRoleRequest{
@@ -1030,30 +1030,30 @@ func TestServer_UpdateRole(t *testing.T) {
 				},
 			},
 			expected: &gen.Role{
-				Title:       "Role 1",
+				DisplayName: "Role 1",
 				Permissions: []string{"bar2", "foo2"},
 			},
 		},
 		"update_permissions_explicit": {
 			initial: &gen.Role{
-				Title:       "Role 1",
+				DisplayName: "Role 1",
 				Permissions: []string{"foo", "bar"},
 			},
 			update: &gen.UpdateRoleRequest{
 				Role: &gen.Role{
-					Title:       "Role 1 MODIFIED",
+					DisplayName: "Role 1 MODIFIED",
 					Permissions: []string{"foo2", "bar2"},
 				},
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"permissions"}},
 			},
 			expected: &gen.Role{
-				Title:       "Role 1",
+				DisplayName: "Role 1",
 				Permissions: []string{"bar2", "foo2"},
 			},
 		},
 		"update_permissions_empty": {
 			initial: &gen.Role{
-				Title:       "Role 1",
+				DisplayName: "Role 1",
 				Permissions: []string{"foo", "bar"},
 			},
 			update: &gen.UpdateRoleRequest{
@@ -1063,7 +1063,7 @@ func TestServer_UpdateRole(t *testing.T) {
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"permissions"}},
 			},
 			expected: &gen.Role{
-				Title:       "Role 1",
+				DisplayName: "Role 1",
 				Permissions: nil,
 			},
 		},
@@ -1159,7 +1159,7 @@ func TestServer_RoleAssignments(t *testing.T) {
 		t.Helper()
 		res, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
 			Account: &gen.Account{
-				Kind:        gen.Account_SERVICE_ACCOUNT,
+				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: displayName,
 			},
 		})
@@ -1173,7 +1173,7 @@ func TestServer_RoleAssignments(t *testing.T) {
 		t.Helper()
 		res, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
 			Role: &gen.Role{
-				Title:       displayName,
+				DisplayName: displayName,
 				Permissions: permissions,
 			},
 		})

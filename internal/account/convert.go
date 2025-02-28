@@ -39,8 +39,8 @@ func parsePageToken(token string) (int64, bool) {
 func accountToProto(account queries.Account) *gen.Account {
 	var (
 		username string
-		// default to ACCOUNT_KIND_UNSPECIFIED
-		kind = gen.Account_Kind(gen.Account_Kind_value[account.Kind])
+		// default to ACCOUNT_TYPE_UNSPECIFIED
+		type_ = gen.Account_Type(gen.Account_Type_value[account.Type])
 	)
 	if account.Username.Valid {
 		username = account.Username.String
@@ -50,7 +50,7 @@ func accountToProto(account queries.Account) *gen.Account {
 		Id:          formatID(account.ID),
 		Username:    username,
 		DisplayName: account.DisplayName,
-		Kind:        kind,
+		Type:        type_,
 		CreateTime:  timestamppb.New(account.CreateTime),
 	}
 }
@@ -58,18 +58,18 @@ func accountToProto(account queries.Account) *gen.Account {
 func roleToProto(role queries.Role, permissions []string) *gen.Role {
 	return &gen.Role{
 		Id:          formatID(role.ID),
-		Title:       role.Name,
+		DisplayName: role.DisplayName,
 		Permissions: permissions,
 	}
 }
 
 func serviceCredentialToProto(cred queries.ServiceCredential, secret string) *gen.ServiceCredential {
 	return &gen.ServiceCredential{
-		Id:         formatID(cred.ID),
-		Title:      cred.Title,
-		CreateTime: timestamppb.New(cred.CreateTime),
-		ExpireTime: timestamppb.New(cred.ExpireTime.Time),
-		Secret:     secret,
+		Id:          formatID(cred.ID),
+		DisplayName: cred.DisplayName,
+		CreateTime:  timestamppb.New(cred.CreateTime),
+		ExpireTime:  timestamppb.New(cred.ExpireTime.Time),
+		Secret:      secret,
 	}
 }
 
@@ -79,10 +79,10 @@ func roleAssignmentToProto(assignment queries.RoleAssignment) *gen.RoleAssignmen
 		AccountId: formatID(assignment.AccountID),
 		RoleId:    formatID(assignment.RoleID),
 	}
-	if assignment.ScopeKind.Valid && assignment.ScopeResource.Valid {
+	if assignment.ScopeType.Valid && assignment.ScopeResource.Valid {
 		ra.Scope = &gen.RoleAssignment_Scope{
 			// defaults to RESOURCE_KIND_UNSPECIFIED
-			ResourceKind: gen.RoleAssignment_ResourceKind(gen.RoleAssignment_ResourceKind_value[assignment.ScopeKind.String]),
+			ResourceType: gen.RoleAssignment_ResourceType(gen.RoleAssignment_ResourceType_value[assignment.ScopeType.String]),
 			Resource:     assignment.ScopeResource.String,
 		}
 	}

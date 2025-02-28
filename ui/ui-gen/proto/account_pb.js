@@ -5632,7 +5632,7 @@ proto.smartcore.bos.Account.serializeBinaryToWriter = function(message, writer) 
  * @enum {number}
  */
 proto.smartcore.bos.Account.Type = {
-  ACCOUNT_KIND_UNSPECIFIED: 0,
+  ACCOUNT_TYPE_UNSPECIFIED: 0,
   USER_ACCOUNT: 1,
   SERVICE_ACCOUNT: 2
 };
@@ -6146,7 +6146,7 @@ proto.smartcore.bos.RoleAssignment.serializeBinaryToWriter = function(message, w
  * @enum {number}
  */
 proto.smartcore.bos.RoleAssignment.ResourceType = {
-  RESOURCE_KIND_UNSPECIFIED: 0,
+  RESOURCE_TYPE_UNSPECIFIED: 0,
   NAMED_RESOURCE: 1,
   NAMED_RESOURCE_PATH_PREFIX: 2,
   NODE: 3,

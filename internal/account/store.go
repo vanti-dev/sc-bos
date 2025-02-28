@@ -97,7 +97,7 @@ func (tx *Tx) UpdateAccountPassword(ctx context.Context, accountID int64, passwo
 	if err != nil {
 		return err
 	}
-	if account.Kind != gen.Account_USER_ACCOUNT.String() {
+	if account.Type != gen.Account_USER_ACCOUNT.String() {
 		return ErrUnexpectedPassword
 	}
 
@@ -123,9 +123,9 @@ func (tx *Tx) CheckAccountPassword(ctx context.Context, accountID int64, passwor
 	return nil
 }
 
-func (tx *Tx) GenerateServiceCredential(ctx context.Context, accountID int64, title string, expiry sql.NullTime) (GeneratedServiceCredential, error) {
-	if !validateTitle(title) {
-		return GeneratedServiceCredential{}, status.Error(codes.InvalidArgument, "invalid title")
+func (tx *Tx) GenerateServiceCredential(ctx context.Context, accountID int64, displayName string, expiry sql.NullTime) (GeneratedServiceCredential, error) {
+	if !validateDisplayName(displayName) {
+		return GeneratedServiceCredential{}, status.Error(codes.InvalidArgument, "invalid display_name")
 	}
 
 	count, err := tx.CountServiceCredentialsForAccount(ctx, accountID)
@@ -145,10 +145,10 @@ func (tx *Tx) GenerateServiceCredential(ctx context.Context, accountID int64, ti
 	hash := sha256.Sum256([]byte(secret))
 
 	cred, err := tx.CreateServiceCredential(ctx, queries.CreateServiceCredentialParams{
-		AccountID:  accountID,
-		Title:      title,
-		ExpireTime: expiry,
-		SecretHash: hash[:],
+		AccountID:   accountID,
+		DisplayName: displayName,
+		ExpireTime:  expiry,
+		SecretHash:  hash[:],
 	})
 	if err != nil {
 		return GeneratedServiceCredential{}, err

@@ -672,7 +672,7 @@ export namespace Account {
   }
 
   export enum Type { 
-    ACCOUNT_KIND_UNSPECIFIED = 0,
+    ACCOUNT_TYPE_UNSPECIFIED = 0,
     USER_ACCOUNT = 1,
     SERVICE_ACCOUNT = 2,
   }
@@ -765,7 +765,7 @@ export namespace RoleAssignment {
 
 
   export enum ResourceType { 
-    RESOURCE_KIND_UNSPECIFIED = 0,
+    RESOURCE_TYPE_UNSPECIFIED = 0,
     NAMED_RESOURCE = 1,
     NAMED_RESOURCE_PATH_PREFIX = 2,
     NODE = 3,

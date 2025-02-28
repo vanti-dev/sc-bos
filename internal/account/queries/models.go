@@ -13,7 +13,7 @@ type Account struct {
 	ID          int64
 	Username    sql.NullString
 	DisplayName string
-	Kind        string
+	Type        string
 	CreateTime  time.Time
 }
 
@@ -23,15 +23,16 @@ type PasswordCredential struct {
 }
 
 type Role struct {
-	ID   int64
-	Name string
+	ID          int64
+	DisplayName string
+	Description sql.NullString
 }
 
 type RoleAssignment struct {
 	ID            int64
 	AccountID     int64
 	RoleID        int64
-	ScopeKind     sql.NullString
+	ScopeType     sql.NullString
 	ScopeResource sql.NullString
 }
 
@@ -41,10 +42,10 @@ type RolePermission struct {
 }
 
 type ServiceCredential struct {
-	ID         int64
-	AccountID  int64
-	Title      string
-	SecretHash []byte
-	CreateTime time.Time
-	ExpireTime sql.NullTime
+	ID          int64
+	AccountID   int64
+	DisplayName string
+	SecretHash  []byte
+	CreateTime  time.Time
+	ExpireTime  sql.NullTime
 }

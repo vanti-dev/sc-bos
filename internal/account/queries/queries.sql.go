@@ -53,22 +53,27 @@ func (q *Queries) CountServiceCredentialsForAccount(ctx context.Context, account
 }
 
 const createRole = `-- name: CreateRole :one
-INSERT INTO roles (name)
-VALUES (?1)
-RETURNING id, name
+INSERT INTO roles (display_name, description)
+VALUES (?1, ?2)
+RETURNING id, display_name, description
 `
 
-func (q *Queries) CreateRole(ctx context.Context, name string) (Role, error) {
-	row := q.db.QueryRowContext(ctx, createRole, name)
+type CreateRoleParams struct {
+	DisplayName string
+	Description sql.NullString
+}
+
+func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, error) {
+	row := q.db.QueryRowContext(ctx, createRole, arg.DisplayName, arg.Description)
 	var i Role
-	err := row.Scan(&i.ID, &i.Name)
+	err := row.Scan(&i.ID, &i.DisplayName, &i.Description)
 	return i, err
 }
 
 const createRoleAssignment = `-- name: CreateRoleAssignment :one
-INSERT INTO role_assignments (account_id, role_id, scope_kind, scope_resource)
+INSERT INTO role_assignments (account_id, role_id, scope_type, scope_resource)
 VALUES (?1, ?2, ?3, ?4)
-RETURNING id, account_id, role_id, scope_kind, scope_resource
+RETURNING id, account_id, role_id, scope_type, scope_resource
 `
 
 type CreateRoleAssignmentParams struct {
@@ -90,16 +95,16 @@ func (q *Queries) CreateRoleAssignment(ctx context.Context, arg CreateRoleAssign
 		&i.ID,
 		&i.AccountID,
 		&i.RoleID,
-		&i.ScopeKind,
+		&i.ScopeType,
 		&i.ScopeResource,
 	)
 	return i, err
 }
 
 const createServiceAccount = `-- name: CreateServiceAccount :one
-INSERT INTO accounts (display_name, kind, create_time)
+INSERT INTO accounts (display_name, type, create_time)
 VALUES (?1, 'SERVICE_ACCOUNT', datetime('now', 'subsec'))
-RETURNING id, username, display_name, kind, create_time
+RETURNING id, username, display_name, type, create_time
 `
 
 func (q *Queries) CreateServiceAccount(ctx context.Context, displayName string) (Account, error) {
@@ -109,29 +114,29 @@ func (q *Queries) CreateServiceAccount(ctx context.Context, displayName string) 
 		&i.ID,
 		&i.Username,
 		&i.DisplayName,
-		&i.Kind,
+		&i.Type,
 		&i.CreateTime,
 	)
 	return i, err
 }
 
 const createServiceCredential = `-- name: CreateServiceCredential :one
-INSERT INTO service_credentials (account_id, title, secret_hash, create_time, expire_time)
+INSERT INTO service_credentials (account_id, display_name, secret_hash, create_time, expire_time)
 VALUES (?1, ?2, ?3, datetime('now', 'subsec'), ?4)
-RETURNING id, account_id, title, secret_hash, create_time, expire_time
+RETURNING id, account_id, display_name, secret_hash, create_time, expire_time
 `
 
 type CreateServiceCredentialParams struct {
-	AccountID  int64
-	Title      string
-	SecretHash []byte
-	ExpireTime sql.NullTime
+	AccountID   int64
+	DisplayName string
+	SecretHash  []byte
+	ExpireTime  sql.NullTime
 }
 
 func (q *Queries) CreateServiceCredential(ctx context.Context, arg CreateServiceCredentialParams) (ServiceCredential, error) {
 	row := q.db.QueryRowContext(ctx, createServiceCredential,
 		arg.AccountID,
-		arg.Title,
+		arg.DisplayName,
 		arg.SecretHash,
 		arg.ExpireTime,
 	)
@@ -139,7 +144,7 @@ func (q *Queries) CreateServiceCredential(ctx context.Context, arg CreateService
 	err := row.Scan(
 		&i.ID,
 		&i.AccountID,
-		&i.Title,
+		&i.DisplayName,
 		&i.SecretHash,
 		&i.CreateTime,
 		&i.ExpireTime,
@@ -148,9 +153,9 @@ func (q *Queries) CreateServiceCredential(ctx context.Context, arg CreateService
 }
 
 const createUserAccount = `-- name: CreateUserAccount :one
-INSERT INTO accounts (username, display_name, kind, create_time)
+INSERT INTO accounts (username, display_name, type, create_time)
 VALUES (?1, ?2, 'USER_ACCOUNT', datetime('now', 'subsec'))
-RETURNING id, username, display_name, kind, create_time
+RETURNING id, username, display_name, type, create_time
 `
 
 type CreateUserAccountParams struct {
@@ -165,7 +170,7 @@ func (q *Queries) CreateUserAccount(ctx context.Context, arg CreateUserAccountPa
 		&i.ID,
 		&i.Username,
 		&i.DisplayName,
-		&i.Kind,
+		&i.Type,
 		&i.CreateTime,
 	)
 	return i, err
@@ -242,7 +247,7 @@ func (q *Queries) DeleteServiceCredential(ctx context.Context, id int64) (int64,
 }
 
 const getAccount = `-- name: GetAccount :one
-SELECT id, username, display_name, kind, create_time
+SELECT id, username, display_name, type, create_time
 FROM accounts
 WHERE id = ?1
 `
@@ -254,14 +259,14 @@ func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
 		&i.ID,
 		&i.Username,
 		&i.DisplayName,
-		&i.Kind,
+		&i.Type,
 		&i.CreateTime,
 	)
 	return i, err
 }
 
 const getAccountByUsername = `-- name: GetAccountByUsername :one
-SELECT id, username, display_name, kind, create_time
+SELECT id, username, display_name, type, create_time
 FROM accounts
 WHERE username = ?1
 `
@@ -273,7 +278,7 @@ func (q *Queries) GetAccountByUsername(ctx context.Context, username sql.NullStr
 		&i.ID,
 		&i.Username,
 		&i.DisplayName,
-		&i.Kind,
+		&i.Type,
 		&i.CreateTime,
 	)
 	return i, err
@@ -293,7 +298,7 @@ func (q *Queries) GetAccountPasswordHash(ctx context.Context, accountID int64) (
 }
 
 const getRole = `-- name: GetRole :one
-SELECT id, name
+SELECT id, display_name, description
 FROM roles
 WHERE id = ?1
 `
@@ -301,12 +306,12 @@ WHERE id = ?1
 func (q *Queries) GetRole(ctx context.Context, id int64) (Role, error) {
 	row := q.db.QueryRowContext(ctx, getRole, id)
 	var i Role
-	err := row.Scan(&i.ID, &i.Name)
+	err := row.Scan(&i.ID, &i.DisplayName, &i.Description)
 	return i, err
 }
 
 const getRoleAssignment = `-- name: GetRoleAssignment :one
-SELECT id, account_id, role_id, scope_kind, scope_resource
+SELECT id, account_id, role_id, scope_type, scope_resource
 FROM role_assignments
 WHERE id = ?1
 `
@@ -318,14 +323,14 @@ func (q *Queries) GetRoleAssignment(ctx context.Context, id int64) (RoleAssignme
 		&i.ID,
 		&i.AccountID,
 		&i.RoleID,
-		&i.ScopeKind,
+		&i.ScopeType,
 		&i.ScopeResource,
 	)
 	return i, err
 }
 
 const getServiceCredential = `-- name: GetServiceCredential :one
-SELECT id, account_id, title, secret_hash, create_time, expire_time
+SELECT id, account_id, display_name, secret_hash, create_time, expire_time
 FROM service_credentials
 WHERE id = ?1
 `
@@ -336,7 +341,7 @@ func (q *Queries) GetServiceCredential(ctx context.Context, id int64) (ServiceCr
 	err := row.Scan(
 		&i.ID,
 		&i.AccountID,
-		&i.Title,
+		&i.DisplayName,
 		&i.SecretHash,
 		&i.CreateTime,
 		&i.ExpireTime,
@@ -345,7 +350,7 @@ func (q *Queries) GetServiceCredential(ctx context.Context, id int64) (ServiceCr
 }
 
 const listAccountServiceCredentials = `-- name: ListAccountServiceCredentials :many
-SELECT id, account_id, title, secret_hash, create_time, expire_time
+SELECT id, account_id, display_name, secret_hash, create_time, expire_time
 FROM service_credentials
 WHERE account_id = ?1
 ORDER BY id
@@ -363,7 +368,7 @@ func (q *Queries) ListAccountServiceCredentials(ctx context.Context, accountID i
 		if err := rows.Scan(
 			&i.ID,
 			&i.AccountID,
-			&i.Title,
+			&i.DisplayName,
 			&i.SecretHash,
 			&i.CreateTime,
 			&i.ExpireTime,
@@ -382,7 +387,7 @@ func (q *Queries) ListAccountServiceCredentials(ctx context.Context, accountID i
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT id, username, display_name, kind, create_time
+SELECT id, username, display_name, type, create_time
 FROM accounts
 WHERE id > ?1
 ORDER BY id
@@ -407,7 +412,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 			&i.ID,
 			&i.Username,
 			&i.DisplayName,
-			&i.Kind,
+			&i.Type,
 			&i.CreateTime,
 		); err != nil {
 			return nil, err
@@ -424,7 +429,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 }
 
 const listRoleAssignments = `-- name: ListRoleAssignments :many
-SELECT id, account_id, role_id, scope_kind, scope_resource
+SELECT id, account_id, role_id, scope_type, scope_resource
 FROM role_assignments
 WHERE id > ?1
 ORDER BY id
@@ -449,7 +454,7 @@ func (q *Queries) ListRoleAssignments(ctx context.Context, arg ListRoleAssignmen
 			&i.ID,
 			&i.AccountID,
 			&i.RoleID,
-			&i.ScopeKind,
+			&i.ScopeType,
 			&i.ScopeResource,
 		); err != nil {
 			return nil, err
@@ -466,7 +471,7 @@ func (q *Queries) ListRoleAssignments(ctx context.Context, arg ListRoleAssignmen
 }
 
 const listRoleAssignmentsForAccount = `-- name: ListRoleAssignmentsForAccount :many
-SELECT id, account_id, role_id, scope_kind, scope_resource
+SELECT id, account_id, role_id, scope_type, scope_resource
 FROM role_assignments
 WHERE account_id = ?1
   AND id > ?2
@@ -493,7 +498,7 @@ func (q *Queries) ListRoleAssignmentsForAccount(ctx context.Context, arg ListRol
 			&i.ID,
 			&i.AccountID,
 			&i.RoleID,
-			&i.ScopeKind,
+			&i.ScopeType,
 			&i.ScopeResource,
 		); err != nil {
 			return nil, err
@@ -510,7 +515,7 @@ func (q *Queries) ListRoleAssignmentsForAccount(ctx context.Context, arg ListRol
 }
 
 const listRoleAssignmentsForRole = `-- name: ListRoleAssignmentsForRole :many
-SELECT id, account_id, role_id, scope_kind, scope_resource
+SELECT id, account_id, role_id, scope_type, scope_resource
 FROM role_assignments
 WHERE role_id = ?1
   AND id > ?2
@@ -537,7 +542,7 @@ func (q *Queries) ListRoleAssignmentsForRole(ctx context.Context, arg ListRoleAs
 			&i.ID,
 			&i.AccountID,
 			&i.RoleID,
-			&i.ScopeKind,
+			&i.ScopeType,
 			&i.ScopeResource,
 		); err != nil {
 			return nil, err
@@ -584,7 +589,7 @@ func (q *Queries) ListRolePermissions(ctx context.Context, roleID int64) ([]stri
 }
 
 const listRoles = `-- name: ListRoles :many
-SELECT id, name
+SELECT id, display_name, description
 FROM roles
 WHERE id > ?1
 ORDER BY id
@@ -605,7 +610,7 @@ func (q *Queries) ListRoles(ctx context.Context, arg ListRolesParams) ([]Role, e
 	var items []Role
 	for rows.Next() {
 		var i Role
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		if err := rows.Scan(&i.ID, &i.DisplayName, &i.Description); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -620,7 +625,7 @@ func (q *Queries) ListRoles(ctx context.Context, arg ListRolesParams) ([]Role, e
 }
 
 const listRolesWithPermissions = `-- name: ListRolesWithPermissions :many
-SELECT roles.id, roles.name, group_concat(role_permissions.permission, ',') AS permissions
+SELECT roles.id, roles.display_name, roles.description, group_concat(role_permissions.permission, ',') AS permissions
 FROM roles
 LEFT OUTER JOIN role_permissions ON roles.id = role_permissions.role_id
 WHERE roles.id > ?1
@@ -648,7 +653,12 @@ func (q *Queries) ListRolesWithPermissions(ctx context.Context, arg ListRolesWit
 	var items []ListRolesWithPermissionsRow
 	for rows.Next() {
 		var i ListRolesWithPermissionsRow
-		if err := rows.Scan(&i.Role.ID, &i.Role.Name, &i.Permissions); err != nil {
+		if err := rows.Scan(
+			&i.Role.ID,
+			&i.Role.DisplayName,
+			&i.Role.Description,
+			&i.Permissions,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -711,19 +721,19 @@ func (q *Queries) UpdateAccountUsername(ctx context.Context, arg UpdateAccountUs
 	return err
 }
 
-const updateRoleName = `-- name: UpdateRoleName :execrows
+const updateRoleDisplayName = `-- name: UpdateRoleDisplayName :execrows
 UPDATE roles
-SET name = ?1
+SET display_name = ?1
 WHERE id = ?2
 `
 
-type UpdateRoleNameParams struct {
-	Name string
-	ID   int64
+type UpdateRoleDisplayNameParams struct {
+	DisplayName string
+	ID          int64
 }
 
-func (q *Queries) UpdateRoleName(ctx context.Context, arg UpdateRoleNameParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, updateRoleName, arg.Name, arg.ID)
+func (q *Queries) UpdateRoleDisplayName(ctx context.Context, arg UpdateRoleDisplayNameParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateRoleDisplayName, arg.DisplayName, arg.ID)
 	if err != nil {
 		return 0, err
 	}

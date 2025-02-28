@@ -17,7 +17,7 @@ func normalisePassword(password string) string {
 	return strings.TrimSpace(password)
 }
 
-func validateTitle(title string) bool {
+func validateDisplayName(title string) bool {
 	return len(title) > 0
 }
 

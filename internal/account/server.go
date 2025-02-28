@@ -30,6 +30,7 @@ var (
 	ErrServiceCredentialLimit    = status.Error(codes.ResourceExhausted, "too many service credentials")
 	ErrUsernameExists            = status.Error(codes.AlreadyExists, "username already exists")
 	ErrUnexpectedPassword        = status.Error(codes.FailedPrecondition, "only user account can have password")
+	ErrInvalidDisplayName        = status.Error(codes.InvalidArgument, "invalid display name")
 	ErrInvalidPassword           = status.Error(codes.InvalidArgument, "password does not comply with policy")
 	ErrInvalidPageToken          = status.Error(codes.InvalidArgument, "invalid page token")
 	ErrInvalidFilter             = status.Error(codes.InvalidArgument, "invalid filter")
@@ -117,7 +118,7 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 	if account.DisplayName == "" {
 		return nil, ErrMissingDisplayName
 	}
-	switch account.Kind {
+	switch account.Type {
 	case gen.Account_USER_ACCOUNT:
 		if account.Username == "" {
 			return nil, ErrMissingUsername
@@ -139,7 +140,7 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 	var created queries.Account
 	err := s.store.Write(ctx, func(tx *Tx) error {
 		var err error
-		switch req.Account.Kind {
+		switch req.Account.Type {
 		case gen.Account_USER_ACCOUNT:
 			created, err = tx.CreateUserAccount(ctx, queries.CreateUserAccountParams{
 				Username:    sql.NullString{Valid: true, String: account.Username},
@@ -167,7 +168,7 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 	} else if err != nil {
 		s.logger.Error("failed to create account",
 			zap.Error(err),
-			zap.String("kind", account.Kind.String()),
+			zap.String("type", account.Type.String()),
 			zap.String("username", account.Username),
 		)
 		return nil, ErrDatabase
@@ -226,7 +227,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		}
 
 		if updateDisplayName {
-			if !validateTitle(req.Account.DisplayName) {
+			if !validateDisplayName(req.Account.DisplayName) {
 				return ErrMissingDisplayName
 			}
 			err = tx.UpdateAccountDisplayName(ctx, queries.UpdateAccountDisplayNameParams{
@@ -242,7 +243,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		}
 
 		// only user accounts can have usernames
-		usernameAllowed := account.Kind == gen.Account_USER_ACCOUNT.String()
+		usernameAllowed := account.Type == gen.Account_USER_ACCOUNT.String()
 		if updateUsername && !usernameAllowed {
 			return ErrUnexpectedUsernameUpdate
 		}
@@ -334,7 +335,7 @@ func (s *Server) ListServiceCredentials(ctx context.Context, req *gen.ListServic
 		if err != nil {
 			return err
 		}
-		if account.Kind != gen.Account_SERVICE_ACCOUNT.String() {
+		if account.Type != gen.Account_SERVICE_ACCOUNT.String() {
 			return ErrUnexpectedServiceCreds
 		}
 
@@ -363,8 +364,8 @@ func (s *Server) CreateServiceCredential(ctx context.Context, req *gen.CreateSer
 		return nil, status.Error(codes.InvalidArgument, "service_credential is required")
 	}
 
-	if !validateTitle(req.ServiceCredential.Title) {
-		return nil, status.Error(codes.InvalidArgument, "invalid title")
+	if !validateDisplayName(req.ServiceCredential.DisplayName) {
+		return nil, ErrInvalidDisplayName
 	}
 
 	accountID, ok := parseID(req.ServiceCredential.AccountId)
@@ -379,7 +380,7 @@ func (s *Server) CreateServiceCredential(ctx context.Context, req *gen.CreateSer
 			expiry = sql.NullTime{Valid: true, Time: req.ServiceCredential.ExpireTime.AsTime()}
 		}
 		var err error
-		generated, err = tx.GenerateServiceCredential(ctx, accountID, req.ServiceCredential.Title, expiry)
+		generated, err = tx.GenerateServiceCredential(ctx, accountID, req.ServiceCredential.DisplayName, expiry)
 		return err
 	})
 	if err != nil {
@@ -513,13 +514,23 @@ func (s *Server) CreateRole(ctx context.Context, req *gen.CreateRoleRequest) (*g
 		return nil, status.Error(codes.InvalidArgument, "role is required")
 	}
 
+	if !validateDisplayName(req.Role.DisplayName) {
+		return nil, ErrInvalidDisplayName
+	}
+
 	var (
 		role        queries.Role
 		permissions []string
 	)
 	err := s.store.Write(ctx, func(tx *Tx) error {
 		var err error
-		role, err = tx.CreateRole(ctx, req.Role.Title)
+		params := queries.CreateRoleParams{
+			DisplayName: req.Role.DisplayName,
+		}
+		if req.Role.Description != "" {
+			params.Description = sql.NullString{Valid: true, String: req.Role.Description}
+		}
+		role, err = tx.CreateRole(ctx, params)
 		if err != nil {
 			return err
 		}
@@ -552,7 +563,7 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 	}
 
 	const (
-		fieldTitle       = "title"
+		fieldDisplayName = "display_name"
 		fieldPermissions = "permissions"
 	)
 	mask, err := resolveMask(req.Role, req.UpdateMask)
@@ -582,7 +593,7 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 
 		// decide which fields to update
 		var (
-			updateTitle       bool
+			updateDisplayName bool
 			updatePermissions bool
 		)
 		fields, err := fieldsToUpdate(roleToProto(role, permissions), req.Role, mask)
@@ -591,8 +602,8 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 		}
 		for _, field := range fields {
 			switch field {
-			case fieldTitle:
-				updateTitle = true
+			case fieldDisplayName:
+				updateDisplayName = true
 			case fieldPermissions:
 				updatePermissions = true
 			default:
@@ -600,15 +611,15 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 			}
 		}
 
-		if updateTitle {
-			_, err = tx.UpdateRoleName(ctx, queries.UpdateRoleNameParams{
-				ID:   id,
-				Name: req.Role.Title,
+		if updateDisplayName {
+			_, err = tx.UpdateRoleDisplayName(ctx, queries.UpdateRoleDisplayNameParams{
+				ID:          id,
+				DisplayName: req.Role.DisplayName,
 			})
 			if err != nil {
 				return err
 			}
-			role.Name = req.Role.Title
+			role.DisplayName = req.Role.DisplayName
 		}
 
 		if updatePermissions {
@@ -767,10 +778,10 @@ func (s *Server) CreateRoleAssignment(ctx context.Context, req *gen.CreateRoleAs
 	}
 
 	var (
-		scopeKind, scopeResource sql.NullString
+		scopeType, scopeResource sql.NullString
 	)
 	if req.RoleAssignment.Scope != nil {
-		scopeKind = sql.NullString{Valid: true, String: req.RoleAssignment.Scope.ResourceKind.String()}
+		scopeType = sql.NullString{Valid: true, String: req.RoleAssignment.Scope.ResourceType.String()}
 		scopeResource = sql.NullString{Valid: true, String: req.RoleAssignment.Scope.Resource}
 	}
 
@@ -780,7 +791,7 @@ func (s *Server) CreateRoleAssignment(ctx context.Context, req *gen.CreateRoleAs
 		assignment, err = tx.CreateRoleAssignment(ctx, queries.CreateRoleAssignmentParams{
 			AccountID:     accountID,
 			RoleID:        roleID,
-			ScopeKind:     scopeKind,
+			ScopeKind:     scopeType,
 			ScopeResource: scopeResource,
 		})
 		return err
