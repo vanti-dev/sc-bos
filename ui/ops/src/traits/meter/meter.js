@@ -3,7 +3,7 @@ import {closeResource, newActionTracker, newResourceValue} from '@/api/resource'
 import {describeMeterReading, listMeterReadingHistory, pullMeterReading} from '@/api/sc/traits/meter';
 import {toQueryObject, watchResource} from '@/util/traits.js';
 import {isNullOrUndef} from '@/util/types.js';
-import {computed, onScopeDispose, reactive, ref, toRefs, toValue, watch} from 'vue';
+import {computed, effectScope, onScopeDispose, reactive, ref, toRefs, toValue, watch} from 'vue';
 
 /**
  * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/meter_pb').MeterReading} MeterReading
@@ -71,6 +71,25 @@ export function useDescribeMeterReading(query) {
 }
 
 /**
+ * Converts a usage and optional unit to a string with appropriate precision.
+ *
+ * @param {number | null | undefined} usage
+ * @param {string} [unit]
+ * @return {string}
+ */
+export function usageToString(usage, unit = '') {
+  const usageStr = (() => {
+    if (isNullOrUndef(usage)) return '-';
+    if (Math.abs(usage) < 100) return usage.toPrecision(2);
+    return usage.toLocaleString(undefined, {maximumFractionDigits: 0});
+  })();
+  if (unit) {
+    return `${usageStr} ${unit}`;
+  }
+  return usageStr;
+}
+
+/**
  * @param {MaybeRefOrGetter<MeterReading.AsObject|null>} value
  * @param {MaybeRefOrGetter<MeterReadingSupport.AsObject|null>=} support
  * @return {{
@@ -92,12 +111,7 @@ export function useMeterReading(value, support = null) {
   const usage = computed(() => {
     return _v.value?.usage;
   });
-  const usageStr = computed(() => {
-    const u = /** @type {null | undefined | number} */ usage.value
-    if (isNullOrUndef(u)) return '-';
-    if (u < 100) return u.toPrecision(2);
-    return u.toLocaleString(undefined, {maximumFractionDigits: 0});
-  });
+  const usageStr = computed(() => usageToString(usage.value));
   const usageAndUnit = computed(() => {
     let val = usageStr.value;
     if (unit.value) {
@@ -168,6 +182,10 @@ export function useMeterReadingAt(name, t) {
       ]);
       if (cancelled()) return;
       usageAtT.value = interpolateUsage(before, after, t);
+    } catch (e) {
+      if (!cancelled()) {
+        console.warn('Failed to get meter reading at', t, e.message ?? e);
+      }
     } finally {
       if (!cancelled()) {
         fetching.value = null;
@@ -176,6 +194,54 @@ export function useMeterReadingAt(name, t) {
   }, {immediate: true});
 
   return readingAtT;
+}
+
+/**
+ * Returns an of meter readings, one for each of the times in ts.
+ * Times in the future will result in a null returned reading at that index.
+ *
+ * @param {import('vue').MaybeRefOrGetter<string>} name
+ * @param {import('vue').MaybeRefOrGetter<Date[]>} ts
+ * @return {import('vue').ComputedRef<Array<null | MeterReading.AsObject>>}
+ */
+export function useMeterReadingsAt(name, ts) {
+  /**
+   * @typedef {Object} Watcher
+   * @property {function(): void} stop
+   * @property {import('vue').ComputedRef<null | MeterReading.AsObject>} reading
+   */
+  /** @type {Record<number, Watcher>} */
+  const trackers = {}; // keyed by Date.getTime()
+  onScopeDispose(() => Object.values(trackers).forEach(({stop}) => stop()));
+
+  return computed(() => {
+    const _ts = toValue(ts);
+    const toStop = Object.fromEntries(Object.keys(trackers).map(k => [k, true]));
+
+    for (const t of _ts) {
+      const k = t.getTime();
+      const tracker = trackers[k];
+      if (tracker) {
+        delete toStop[k];
+        continue;
+      }
+      const scope = effectScope();
+      scope.run(() => {
+        const reading = useMeterReadingAt(name, t);
+        trackers[k] = {stop: () => scope.stop(), reading};
+      });
+    }
+
+    for (const k of Object.keys(toStop)) {
+      trackers[k].stop();
+      delete trackers[k];
+    }
+
+    return _ts.map(t => {
+      const k = t.getTime();
+      return trackers[k]?.reading.value ?? null;
+    });
+  });
 }
 
 /**

@@ -12,6 +12,10 @@ p {
   margin-bottom: 16px;
 }
 
+.no-pointer-events {
+  pointer-events: none !important;
+}
+
 .v-text-field--outlined {
   background: var(--v-neutral-lighten1);
   border-color: var(--v-neutral-lighten2);
