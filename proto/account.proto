@@ -41,7 +41,8 @@ message GetAccountRequest {
 }
 
 message CreateAccountRequest {
-  // The name of the node where the account is located.
+  // The name of the node to create the account on.
+  // Optional - if absent, the node you are connected to is assumed.
   string name = 1;
 
   // The account to create.
@@ -53,14 +54,15 @@ message CreateAccountRequest {
 }
 
 message ListAccountsRequest {
-  // The name of the node to list accounts for. (do we need this?)
+  // The name of the node to list accounts for.
+  // Optional - if absent, the node you are connected to is assumed.
   string name = 1;
 
   // The maximum number of accounts to return in a single response.
   // If there are more results available, the response will contain a next_page_token to get them.
-  int32 page_size = 3;
+  int32 page_size = 2;
   // Token from previous ListAccounts response, to get the next page of results.
-  string page_token = 4;
+  string page_token = 3;
 }
 
 message ListAccountsResponse {
@@ -226,9 +228,9 @@ message ListRoleAssignmentsRequest {
 
   // The maximum number of role assignments to return in a single response.
   // If there are more results available, the response will contain a next_page_token to get them.
-  int32 page_size = 3;
+  int32 page_size = 2;
   // Token from previous ListRoleAssignments response, to get the next page of results.
-  string page_token = 4;
+  string page_token = 3;
 
   // Expression to limit the RoleAssignments returned.
   // If absent, all RoleAssignments are returned.
@@ -237,7 +239,7 @@ message ListRoleAssignmentsRequest {
   //   'role_id = <id>' - return only RoleAssignments for the specified role
   //
   // If a page_token is supplied, the filter must be the same as the filter used to get the page_token.
-  string filter = 5;
+  string filter = 4;
 }
 
 message ListRoleAssignmentsResponse {
@@ -294,9 +296,14 @@ message Account {
 //
 // Roles are assigned to accounts using RoleAssignments.
 message Role {
+  // Unique identifier for this role assigned by the system.
   string id = 1;
-  string title = 2;
-  repeated string permissions = 3;
+  // Short human-readable name for this role, for display purposes. Required. Must be unique.
+  string display_name = 2;
+  // Longer human-readable description of this role, for display purposes. Optional.
+  string description = 3;
+  // The permissions granted by this role.
+  repeated string permissions = 4;
 }
 
 // A RoleAssignment is an assignment of a Role to an Account.
@@ -336,8 +343,8 @@ message ServiceCredential {
   // At creation, must be set to the ID of a service account.
   string account_id = 2;
   // Must be present on creation.
-  // A human-readable short description of the service credential, so that users can identify it.
-  string title = 3;
+  // A human-readable short name of the service credential, so that users can identify it.
+  string display_name = 3;
   // Output only. Only returned on creation.
   string secret = 4;
   // Output only. Set automatically on creation.
